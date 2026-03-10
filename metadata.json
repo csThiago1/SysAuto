@@ -1,0 +1,5 @@
+{
+  "name": "AutoRepair Manager",
+  "description": "Sistema de gestão para oficinas mecânicas e funilarias, incluindo O.S, Kanban, Estoque e Dashboard.",
+  "requestFramePermissions": []
+}
