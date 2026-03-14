@@ -1,0 +1,23 @@
+-r base.txt
+
+# ─── Testes ──────────────────────────────────────────────────────────────────
+pytest==8.3.4
+pytest-django==4.9.0
+pytest-asyncio==0.24.0
+factory-boy==3.3.1
+faker==33.1.0
+
+# ─── Linting / Formatação ────────────────────────────────────────────────────
+black==24.10.0
+isort==5.13.2
+flake8==7.1.1
+
+# ─── Type checking ───────────────────────────────────────────────────────────
+mypy==1.13.0
+django-stubs[compatible-mypy]==5.1.1
+djangorestframework-stubs==3.15.1
+
+# ─── Dev tools ───────────────────────────────────────────────────────────────
+ipython==8.29.0
+django-debug-toolbar==4.4.6
+watchdog==6.0.0
