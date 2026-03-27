@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ServiceOrder, Person, OSStatus, OSType, InsuranceClaimType, Part, ServiceCategory, OSTemplate, Reminder } from '../types';
-import { formatCurrency, cn } from '../utils';
+import { formatCurrency, cn, canTransitionOSStatus, OS_STATUS_TRANSITIONS } from '../utils';
 import { Plus, Search, FileText, MoreVertical, ShieldAlert, User, Shield, Wrench, History, Clock, ChevronDown, ChevronUp, Package, Trash2, Car, Save, Copy, Edit2, AlertTriangle, Bell, Calendar, Check } from 'lucide-react';
 import { FilterBar } from './FilterBar';
 import { VehicleHistoryModal } from './VehicleHistoryModal';
@@ -63,6 +63,7 @@ export function ServiceOrders({ orders, people, parts, addOrder, updateOrder, te
   const [observations, setObservations] = useState('');
   const [scheduledDate, setScheduledDate] = useState('');
   const [status, setStatus] = useState<OSStatus>('Em vistoria');
+  const [statusValidationError, setStatusValidationError] = useState('');
   const [orderReminders, setOrderReminders] = useState<Reminder[]>([]);
 
   useEffect(() => {
@@ -250,6 +251,7 @@ export function ServiceOrders({ orders, people, parts, addOrder, updateOrder, te
   };
 
   const handleEditOrder = (order: ServiceOrder) => {
+    setStatusValidationError('');
     setEditingOrderId(order.id);
     setClientId(order.clientId);
     setIsNewClient(false);
@@ -304,6 +306,11 @@ export function ServiceOrders({ orders, people, parts, addOrder, updateOrder, te
     if (editingOrderId) {
       const existingOrder = orders.find(o => o.id === editingOrderId);
       if (existingOrder) {
+        if (!canTransitionOSStatus(existingOrder.status, status)) {
+          setStatusValidationError(`Transição inválida: ${existingOrder.status} -> ${status}.`);
+          return;
+        }
+
         // Update status history if status changed
         let updatedStatusHistory = [...(existingOrder.statusHistory || [])];
         if (existingOrder.status !== status) {
@@ -420,6 +427,7 @@ export function ServiceOrders({ orders, people, parts, addOrder, updateOrder, te
     setOrderParts([]);
     setOrderServices([]);
     setPartError('');
+    setStatusValidationError('');
   };
 
   return (
@@ -453,6 +461,7 @@ export function ServiceOrders({ orders, people, parts, addOrder, updateOrder, te
             setOrderParts([]);
             setOrderServices([]);
             setPartError('');
+            setStatusValidationError('');
             setSelectedPartPrice('');
             setIsModalOpen(true);
           }}
@@ -1054,16 +1063,30 @@ export function ServiceOrders({ orders, people, parts, addOrder, updateOrder, te
                   <label className="text-sm font-medium text-slate-700">Status da O.S</label>
                   <select 
                     value={status}
-                    onChange={(e) => setStatus(e.target.value as OSStatus)}
+                    onChange={(e) => {
+                      setStatusValidationError('');
+                      setStatus(e.target.value as OSStatus);
+                    }}
                     className="w-full px-3 py-2 bg-page-bg border border-surface rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   >
-                    <option value="Em vistoria">Em Vistoria</option>
-                    <option value="Aguardando Liberação">Aguardando Liberação</option>
-                    <option value="Aguardando Peças">Aguardando Peças</option>
-                    <option value="Em serviço">Em Serviço</option>
-                    <option value="Veículo Pronto">Veículo Pronto</option>
-                    <option value="Veículo Entregue">Veículo Entregue</option>
+                    {(editingOrderId
+                      ? (() => {
+                          const currentStatus = orders.find(o => o.id === editingOrderId)?.status;
+                          if (!currentStatus) {
+                            return ['Em vistoria' as OSStatus];
+                          }
+                          return [currentStatus, ...OS_STATUS_TRANSITIONS[currentStatus]];
+                        })()
+                      : ['Em vistoria' as OSStatus]
+                    ).map((availableStatus) => (
+                      <option key={availableStatus} value={availableStatus}>
+                        {availableStatus}
+                      </option>
+                    ))}
                   </select>
+                  {statusValidationError && (
+                    <p className="text-xs text-red-600 font-medium">{statusValidationError}</p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-slate-700">Prioridade</label>
@@ -1456,7 +1479,10 @@ export function ServiceOrders({ orders, people, parts, addOrder, updateOrder, te
             <div className="p-6 border-t border-surface bg-page-bg flex justify-end items-center">
               <div className="flex gap-3">
                 <button 
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={() => {
+                    setStatusValidationError('');
+                    setIsModalOpen(false);
+                  }}
                   className="px-4 py-2 text-slate-600 font-medium hover:bg-surface rounded-xl transition-colors"
                 >
                   Cancelar

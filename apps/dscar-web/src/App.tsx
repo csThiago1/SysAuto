@@ -11,6 +11,7 @@ import { Invoicing } from './components/Invoicing';
 import { WorkshopManagement } from './components/WorkshopManagement';
 import { mockOrders, mockPeople, mockParts, mockInvoices } from './mockData';
 import { ServiceOrder, OSStatus, Invoice, Part, OSTemplate, Person } from './types';
+import { canTransitionOSStatus } from './utils';
 
 export default function App() {
   const [currentView, setCurrentView] = useState('dashboard');
@@ -27,6 +28,11 @@ export default function App() {
   };
 
   const updateOrderStatus = (orderId: string, newStatus: OSStatus, changedBy: string = 'Sistema', notes?: string) => {
+    const currentOrder = orders.find(o => o.id === orderId);
+    if (currentOrder && !canTransitionOSStatus(currentOrder.status, newStatus)) {
+      return;
+    }
+
     setOrders(prev => prev.map(o => {
       if (o.id === orderId) {
         const now = new Date().toISOString();

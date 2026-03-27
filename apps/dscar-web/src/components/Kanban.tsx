@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ServiceOrder, OSStatus, Person } from '../types';
-import { formatCurrency, cn } from '../utils';
+import { formatCurrency, cn, canTransitionOSStatus, OS_STATUS_TRANSITIONS } from '../utils';
 import { Clock, AlertCircle, CheckCircle2, Wrench, Car, CheckSquare, Shield, ArrowRightLeft, Image as ImageIcon, Package, DollarSign, UserPlus, Bell, X } from 'lucide-react';
 import { FilterBar } from './FilterBar';
 import { motion, AnimatePresence } from 'motion/react';
@@ -75,6 +75,14 @@ export function Kanban({ orders, people, updateOrderStatus, updateOrder }: Kanba
 
   const confirmStatusChange = () => {
     if (statusModal) {
+      const currentOrder = orders.find(o => o.id === statusModal.orderId);
+      if (!currentOrder || !canTransitionOSStatus(currentOrder.status, statusModal.status)) {
+        setStatusModal(null);
+        setStatusNote('');
+        setChangedBy('');
+        return;
+      }
+
       updateOrderStatus(statusModal.orderId, statusModal.status, changedBy.trim() || 'Sistema (Kanban)', statusNote.trim() || undefined);
       setStatusModal(null);
       setStatusNote('');
@@ -245,7 +253,7 @@ export function Kanban({ orders, people, updateOrderStatus, updateOrder }: Kanba
                                   <p className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-surface mb-1">
                                     Mover para:
                                   </p>
-                                  {COLUMNS.filter(c => c.id !== order.status).map(col => (
+                                  {COLUMNS.filter(c => OS_STATUS_TRANSITIONS[order.status].includes(c.id)).map(col => (
                                     <button
                                       key={col.id}
                                       onClick={(e) => {

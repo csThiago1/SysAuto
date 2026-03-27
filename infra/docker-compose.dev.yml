@@ -1,0 +1,57 @@
+version: '3.9'
+
+# Paddock Solutions — Ambiente de Desenvolvimento
+# ERP DS Car · grupo-dscar monorepo
+# Uso: docker compose -f infra/docker-compose.dev.yml up -d
+
+services:
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: paddock-postgres
+    environment:
+      POSTGRES_DB: paddock_dev
+      POSTGRES_USER: paddock
+      POSTGRES_PASSWORD: paddock_dev_2025
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paddock -d paddock_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: paddock-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: paddock-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KC_DB: dev-mem
+      KC_HTTP_PORT: 8080
+    ports:
+      - "8080:8080"
+    command: start-dev
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  postgres_data:

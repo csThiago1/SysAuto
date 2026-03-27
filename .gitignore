@@ -1,8 +1,35 @@
+# Secrets
+.env
+.env.*
+*.pem
+*.p12
+*.pfx
+*.key
+secrets/
+
+# Config com tokens — NUNCA versionar
+.claude/config.json
+
+# Dependências
 node_modules/
-build/
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Build
+.next/
 dist/
-coverage/
+build/
+out/
+
+# macOS
 .DS_Store
+
+# IDEs
+.vscode/settings.json
+.idea/
+
+# Logs
 *.log
-.env*
-!.env.example
