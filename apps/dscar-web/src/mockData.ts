@@ -1,23 +1,25 @@
 import { Person, Part, ServiceOrder, OSStatus, FinancialStatus, OSType, InsuranceClaimType, PaymentMethod, Invoice, StatusHistory } from './types';
 
 export const mockPeople: Person[] = [
-  { id: 'p1', name: 'João Silva', type: 'Cliente', phone: '(11) 99999-1111', email: 'joao@email.com' },
-  { id: 'p2', name: 'Maria Souza', type: 'Cliente', phone: '(11) 98888-2222', email: 'maria@email.com' },
-  { id: 'p3', name: 'Carlos Mecânico', type: 'Colaborador', role: 'Mecânico', phone: '(11) 97777-3333', email: 'carlos@oficina.com' },
-  { id: 'p4', name: 'Porto Seguro', type: 'Seguradora', phone: '(11) 3333-4444', email: 'contato@porto.com' },
-  { id: 'p5', name: 'Roberto Corretor', type: 'Corretor', phone: '(11) 96666-5555', email: 'roberto@corretora.com' },
-  { id: 'p6', name: 'Allianz Seguros', type: 'Seguradora', phone: '(11) 4444-5555', email: 'contato@allianz.com' },
-  { id: 'p7', name: 'Pedro Santos', type: 'Cliente', phone: '(11) 95555-6666', email: 'pedro@email.com' },
-  { id: 'p8', name: 'Ana Oliveira', type: 'Cliente', phone: '(11) 94444-7777', email: 'ana@email.com' },
-  { id: 'p9', name: 'Tokio Marine', type: 'Seguradora', phone: '(11) 5555-6666', email: 'contato@tokio.com' },
-  { id: 'p10', name: 'Lucas Costa', type: 'Cliente', phone: '(11) 93333-8888', email: 'lucas@email.com' },
-  { id: 'p11', name: 'Ricardo Pintor', type: 'Colaborador', role: 'Pintor', phone: '(11) 92222-1111', email: 'ricardo@oficina.com' },
-  { id: 'p12', name: 'Marcos Funileiro', type: 'Colaborador', role: 'Funileiro', phone: '(11) 91111-2222', email: 'marcos@oficina.com' },
-  { id: 'p13', name: 'Sérgio Polidor', type: 'Colaborador', role: 'Polidor', phone: '(11) 90000-3333', email: 'sergio@oficina.com' },
-  { id: 'p14', name: 'André Montador', type: 'Colaborador', role: 'Montador', phone: '(11) 98888-4444', email: 'andre@oficina.com' },
-  { id: 'p15', name: 'Felipe Lavador', type: 'Colaborador', role: 'Lavador', phone: '(11) 97777-5555', email: 'felipe@oficina.com' },
-  { id: 'p16', name: 'Juliana Consultora', type: 'Colaborador', role: 'Consultor', phone: '(11) 96666-6666', email: 'juliana@oficina.com' },
-  { id: 'p17', name: 'Admin Master', type: 'Colaborador', role: 'Administrador', phone: '(11) 99999-9999', email: 'admin@oficina.com' },
+  { id: 'p1', name: 'João Silva', type: 'Cliente', phone: '(92) 99999-1111', email: 'joao@email.com' },
+  { id: 'p2', name: 'Maria Souza', type: 'Cliente', phone: '(92) 98888-2222', email: 'maria@email.com' },
+  { id: 'p3', name: 'Carlos Mecânico', type: 'Colaborador', role: 'Mecânico', phone: '(92) 97777-3333', email: 'carlos@dscar.com.br' },
+  { id: 'p4', name: 'Porto Seguro', type: 'Seguradora', phone: '0800-727-4879', email: 'contato@porto.com' },
+  { id: 'p5', name: 'Roberto Corretor', type: 'Corretor', phone: '(92) 96666-5555', email: 'roberto@corretora.com' },
+  { id: 'p6', name: 'Allianz Seguros', type: 'Seguradora', phone: '0800-722-5522', email: 'contato@allianz.com' },
+  { id: 'p7', name: 'Pedro Santos', type: 'Cliente', phone: '(92) 95555-6666', email: 'pedro@email.com' },
+  { id: 'p8', name: 'Ana Oliveira', type: 'Cliente', phone: '(92) 94444-7777', email: 'ana@email.com' },
+  { id: 'p9', name: 'Tokio Marine', type: 'Seguradora', phone: '0800-722-2366', email: 'contato@tokiomarine.com.br' },
+  { id: 'p10', name: 'Lucas Costa', type: 'Cliente', phone: '(92) 93333-8888', email: 'lucas@email.com' },
+  { id: 'p11', name: 'Ricardo Pintor', type: 'Colaborador', role: 'Pintor', phone: '(92) 92222-1111', email: 'ricardo@dscar.com.br' },
+  { id: 'p12', name: 'Marcos Funileiro', type: 'Colaborador', role: 'Funileiro', phone: '(92) 91111-2222', email: 'marcos@dscar.com.br' },
+  { id: 'p13', name: 'Sérgio Polidor', type: 'Colaborador', role: 'Polidor', phone: '(92) 90000-3333', email: 'sergio@dscar.com.br' },
+  { id: 'p14', name: 'André Montador', type: 'Colaborador', role: 'Montador', phone: '(92) 98888-4444', email: 'andre@dscar.com.br' },
+  { id: 'p15', name: 'Felipe Lavador', type: 'Colaborador', role: 'Lavador', phone: '(92) 97777-5555', email: 'felipe@dscar.com.br' },
+  { id: 'p16', name: 'Juliana Consultora', type: 'Colaborador', role: 'Consultor', phone: '(92) 96666-6666', email: 'juliana@dscar.com.br' },
+  { id: 'p17', name: 'Dory Campos', type: 'Colaborador', role: 'Administrador', phone: '(92) 99999-9999', email: 'dory@dscar.com.br' },
+  { id: 'p18', name: 'Bradesco Seguros', type: 'Seguradora', phone: '0800-701-1616', email: 'contato@bradescoseguros.com.br' },
+  { id: 'p19', name: 'HDI Seguros', type: 'Seguradora', phone: '0800-722-4737', email: 'contato@hdi.com.br' },
 ];
 
 export const mockParts: Part[] = [
@@ -50,7 +52,20 @@ const plates = [
   'MNO-7890', 'PQR-1234', 'STU-5678', 'VWX-9012', 'YZA-3456'
 ];
 
-const statuses: OSStatus[] = ['Em vistoria', 'Aguardando Liberação', 'Aguardando Peças', 'Em serviço', 'Veículo Pronto', 'Veículo Entregue'];
+// 15 estados reais do fluxo DS Car
+const statuses: OSStatus[] = [
+  'reception', 'initial_survey', 'budget', 'waiting_parts', 'repair',
+  'mechanic', 'bodywork', 'painting', 'assembly', 'polishing',
+  'washing', 'final_survey', 'ready', 'delivered', 'cancelled',
+];
+
+// Distribuição realista: maioria nas etapas de reparo
+const activeStatuses: OSStatus[] = [
+  'reception', 'initial_survey', 'budget', 'waiting_parts',
+  'repair', 'mechanic', 'bodywork', 'painting', 'assembly',
+  'polishing', 'washing', 'final_survey', 'ready', 'delivered',
+];
+
 const financialStatuses: FinancialStatus[] = ['A Faturar', 'Faturado', 'Em aberto', 'Parcialmente Pago', 'Pago'];
 const osTypes: OSType[] = ['Particular', 'Seguradora'];
 const claimTypes: InsuranceClaimType[] = ['Segurado', 'Terceiro'];
@@ -62,52 +77,49 @@ const employees = mockPeople.filter(p => p.type === 'Colaborador');
 
 const generateMockOrders = (count: number): ServiceOrder[] => {
   const orders: ServiceOrder[] = [];
-  
+
   for (let i = 0; i < count; i++) {
-    const isSeguradora = Math.random() > 0.4; // 60% chance of being Seguradora
+    const isSeguradora = Math.random() > 0.4;
     const osType: OSType = isSeguradora ? 'Seguradora' : 'Particular';
-    
+
     const client = clients[Math.floor(Math.random() * clients.length)];
     const vehicle = vehicles[Math.floor(Math.random() * vehicles.length)];
     const plate = plates[Math.floor(Math.random() * plates.length)];
     const employee = employees[Math.floor(Math.random() * employees.length)];
-    
-    const status = statuses[Math.floor(Math.random() * statuses.length)];
-    
-    // Logic for financial status based on OS status
+
+    const status = activeStatuses[Math.floor(Math.random() * activeStatuses.length)];
+
     let financialStatus: FinancialStatus = 'A Faturar';
-    if (status === 'Veículo Entregue') {
+    if (status === 'delivered') {
       const rand = Math.random();
       if (rand > 0.6) financialStatus = 'Pago';
       else if (rand > 0.4) financialStatus = 'Parcialmente Pago';
       else if (rand > 0.2) financialStatus = 'Em aberto';
       else financialStatus = 'Faturado';
-    } else if (status === 'Veículo Pronto') {
+    } else if (status === 'ready') {
       financialStatus = Math.random() > 0.5 ? 'Em aberto' : 'A Faturar';
     }
 
-    const pastDays = Math.floor(Math.random() * 60); // Up to 60 days ago
+    const pastDays = Math.floor(Math.random() * 60);
     const createdAt = getPastDate(pastDays);
-    const updatedAt = getPastDate(Math.floor(Math.random() * pastDays));
-    
+    const updatedAt = getPastDate(Math.floor(Math.random() * Math.max(pastDays, 1)));
+
     let insuranceCompanyId;
-    let insuranceClaimType;
+    let insuranceClaimType: InsuranceClaimType | undefined;
     let deductibleAmount = 0;
     let deductiblePaid = false;
 
     if (osType === 'Seguradora') {
       insuranceCompanyId = insurances[Math.floor(Math.random() * insurances.length)].id;
       insuranceClaimType = claimTypes[Math.floor(Math.random() * claimTypes.length)];
-      
       if (insuranceClaimType === 'Segurado') {
-        deductibleAmount = Math.floor(Math.random() * 1500) + 500; // Franquia between 500 and 2000
-        if (financialStatus === 'Pago' || financialStatus === 'Parcialmente Pago' || financialStatus === 'Faturado' || financialStatus === 'Em aberto') {
-          deductiblePaid = Math.random() > 0.2; // 80% chance of having paid the deductible if billed
+        deductibleAmount = Math.floor(Math.random() * 1500) + 500;
+        if (['Pago', 'Parcialmente Pago', 'Faturado', 'Em aberto'].includes(financialStatus)) {
+          deductiblePaid = Math.random() > 0.2;
         }
       }
     }
 
-    // Generate random services and parts
     const services = [
       { name: 'Funilaria e Pintura', price: Math.floor(Math.random() * 2000) + 500 },
       { name: 'Mão de obra mecânica', price: Math.floor(Math.random() * 1000) + 200 }
@@ -121,15 +133,15 @@ const generateMockOrders = (count: number): ServiceOrder[] => {
     }
 
     const totalValue = services.reduce((acc, s) => acc + s.price, 0) + partsList.reduce((acc, p) => acc + (p.price * p.quantity), 0);
-    
+
     const statusHistory: StatusHistory[] = [
-      { status: 'Em vistoria' as OSStatus, changedBy: 'Juliana Consultora', changedAt: createdAt },
+      { status: 'reception' as OSStatus, changedBy: 'Juliana Consultora', changedAt: createdAt },
     ];
-    
-    if (status !== 'Em vistoria') {
-      statusHistory.push({ 
-        status: status, 
-        changedBy: employee.name, 
+
+    if (status !== 'reception') {
+      statusHistory.push({
+        status,
+        changedBy: employee.name,
         changedAt: updatedAt,
         notes: 'Atualização de status via sistema'
       });
@@ -138,23 +150,22 @@ const generateMockOrders = (count: number): ServiceOrder[] => {
     let amountPaid = 0;
     let invoiceNumber;
     let billedAt;
-    let paymentMethod;
+    let paymentMethod: PaymentMethod | undefined;
 
     if (financialStatus === 'Pago') {
       amountPaid = totalValue;
-      invoiceNumber = `NF-2023-${1000 + i}`;
+      invoiceNumber = `NFS-e ${1000 + i}`;
       billedAt = getPastDate(Math.floor(Math.random() * pastDays));
       paymentMethod = paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
     } else if (financialStatus === 'Parcialmente Pago') {
-      amountPaid = Math.floor(totalValue * (Math.random() * 0.5 + 0.2)); // 20% to 70% paid
-      invoiceNumber = `NF-2023-${1000 + i}`;
+      amountPaid = Math.floor(totalValue * (Math.random() * 0.5 + 0.2));
+      invoiceNumber = `NFS-e ${1000 + i}`;
       billedAt = getPastDate(Math.floor(Math.random() * pastDays));
       paymentMethod = paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
     } else if (financialStatus === 'Faturado' || financialStatus === 'Em aberto') {
       amountPaid = 0;
-      invoiceNumber = `NF-2023-${1000 + i}`;
+      invoiceNumber = `NFS-e ${1000 + i}`;
       billedAt = getPastDate(Math.floor(Math.random() * pastDays));
-      paymentMethod = paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
     }
 
     const priorities: ('Baixa' | 'Média' | 'Alta' | 'Urgente')[] = ['Baixa', 'Média', 'Alta', 'Urgente'];
@@ -186,7 +197,7 @@ const generateMockOrders = (count: number): ServiceOrder[] => {
       updatedAt,
     });
   }
-  
+
   return orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 };
 
@@ -200,8 +211,8 @@ export const mockInvoices: Invoice[] = [
     type: 'NFSe',
     direction: 'Emitida',
     status: 'Autorizada',
-    issuerName: 'Oficina Master Car',
-    issuerCnpj: '12.345.678/0001-90',
+    issuerName: 'DS Car Centro Automotivo',
+    issuerCnpj: 'XX.XXX.XXX/0001-XX',
     receiverName: 'João Silva',
     receiverCnpj: '111.222.333-44',
     value: 1500.00,
@@ -218,8 +229,8 @@ export const mockInvoices: Invoice[] = [
     status: 'Autorizada',
     issuerName: 'Distribuidora de Peças XYZ',
     issuerCnpj: '98.765.432/0001-10',
-    receiverName: 'Oficina Master Car',
-    receiverCnpj: '12.345.678/0001-90',
+    receiverName: 'DS Car Centro Automotivo',
+    receiverCnpj: 'XX.XXX.XXX/0001-XX',
     value: 850.50,
     issueDate: getPastDate(2),
     xmlUrl: '#'
@@ -231,8 +242,8 @@ export const mockInvoices: Invoice[] = [
     type: 'NFSe',
     direction: 'Emitida',
     status: 'Pendente',
-    issuerName: 'Oficina Master Car',
-    issuerCnpj: '12.345.678/0001-90',
+    issuerName: 'DS Car Centro Automotivo',
+    issuerCnpj: 'XX.XXX.XXX/0001-XX',
     receiverName: 'Maria Souza',
     receiverCnpj: '222.333.444-55',
     value: 2200.00,

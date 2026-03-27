@@ -1,6 +1,61 @@
 export type PersonType = 'Cliente' | 'Colaborador' | 'Seguradora' | 'Corretor';
 export type EmployeeRole = 'Pintor' | 'Mecânico' | 'Funileiro' | 'Consultor' | 'Polidor' | 'Lavador' | 'Montador' | 'Administrador';
-export type OSStatus = 'Em vistoria' | 'Aguardando Liberação' | 'Aguardando Peças' | 'Em serviço' | 'Veículo Pronto' | 'Veículo Entregue';
+
+// 15 estados reais do Kanban — alinhados com o backend Django
+export type OSStatus =
+  | 'reception'
+  | 'initial_survey'
+  | 'budget'
+  | 'waiting_parts'
+  | 'repair'
+  | 'mechanic'
+  | 'bodywork'
+  | 'painting'
+  | 'assembly'
+  | 'polishing'
+  | 'washing'
+  | 'final_survey'
+  | 'ready'
+  | 'delivered'
+  | 'cancelled';
+
+export const OS_STATUS_LABEL: Record<OSStatus, string> = {
+  reception:      'Recepção',
+  initial_survey: 'Vistoria Inicial',
+  budget:         'Orçamento',
+  waiting_parts:  'Aguardando Peças',
+  repair:         'Reparo',
+  mechanic:       'Mecânica',
+  bodywork:       'Funilaria',
+  painting:       'Pintura',
+  assembly:       'Montagem',
+  polishing:      'Polimento',
+  washing:        'Lavagem',
+  final_survey:   'Vistoria Final',
+  ready:          'Pronto para Entrega',
+  delivered:      'Entregue',
+  cancelled:      'Cancelada',
+};
+
+// Transições válidas — espelha VALID_TRANSITIONS do backend
+export const VALID_TRANSITIONS: Record<OSStatus, OSStatus[]> = {
+  reception:      ['initial_survey', 'cancelled'],
+  initial_survey: ['budget'],
+  budget:         ['waiting_parts', 'repair'],
+  waiting_parts:  ['repair'],
+  repair:         ['mechanic', 'bodywork', 'polishing'],
+  mechanic:       ['bodywork', 'polishing'],
+  bodywork:       ['painting'],
+  painting:       ['assembly'],
+  assembly:       ['polishing'],
+  polishing:      ['washing'],
+  washing:        ['final_survey'],
+  final_survey:   ['ready'],
+  ready:          ['delivered'],
+  delivered:      [],
+  cancelled:      [],
+};
+
 export type FinancialStatus = 'A Faturar' | 'Faturado' | 'Em aberto' | 'Parcialmente Pago' | 'Pago';
 export type OSType = 'Particular' | 'Seguradora';
 export type ServiceCategory = 'Funilaria/Pintura' | 'Reparação/Pintura' | 'Troca/Pintura' | 'Alinhamento' | 'Balanceamento' | 'Lavagem simples/técnica' | 'Mecânica' | 'Outros serviços';
@@ -133,4 +188,50 @@ export interface ServiceOrder {
   scheduledDate?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// ── Veículos ──────────────────────────────────────────────────────────────────
+
+export interface VehicleBrand {
+  id: number;
+  fipe_brand_id: number;
+  name: string;
+  vehicle_type: 'car' | 'motorcycle' | 'truck';
+}
+
+export interface VehicleModel {
+  id: number;
+  fipe_model_id: number;
+  name: string;
+  brand_name: string;
+}
+
+export interface VehicleVersion {
+  id: number;
+  fipe_code: string;
+  year_model: number;
+  fuel: string;
+  full_name: string;
+}
+
+export interface Vehicle {
+  id: number;
+  plate: string;
+  version?: VehicleVersion;
+  description: string;
+  display_name: string;
+  color: string;
+  year_manufacture?: number;
+  chassis: string;
+  renavam: string;
+}
+
+export interface PlateLookupResult {
+  plate: string;
+  fipe_code: string;
+  full_name: string;
+  year_model?: number;
+  fuel: string;
+  color: string;
+  version_id?: number;
 }
