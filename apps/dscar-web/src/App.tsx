@@ -9,49 +9,26 @@ import { Inventory } from './components/Inventory';
 import { Finance } from './components/Finance';
 import { Invoicing } from './components/Invoicing';
 import { WorkshopManagement } from './components/WorkshopManagement';
-import { mockOrders, mockPeople, mockParts, mockInvoices } from './mockData';
+import { LoginScreen } from './components/LoginScreen';
+import { mockParts, mockInvoices } from './mockData';
 import { ServiceOrder, OSStatus, Invoice, Part, OSTemplate, Person } from './types';
-import { canTransitionOSStatus } from './utils';
+import { useAuth } from './AuthContext';
+import { useServiceOrders } from './hooks/useServiceOrders';
+import { usePersons } from './hooks/usePersons';
 
 export default function App() {
+  const { authenticated, loading: authLoading, logout } = useAuth();
   const [currentView, setCurrentView] = useState('dashboard');
-  const [orders, setOrders] = useState<ServiceOrder[]>(mockOrders);
+  const { orders, updateOrderStatus, updateOrder } = useServiceOrders();
+  const { people, setPeople } = usePersons();
   const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
-  const [people, setPeople] = useState(mockPeople);
   const [parts, setParts] = useState(mockParts);
   const [templates, setTemplates] = useState<OSTemplate[]>([]);
   const [initialDateForNewOS, setInitialDateForNewOS] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState(mockPeople.find(p => p.role === 'Administrador') || mockPeople[0]);
+  const [currentUser, setCurrentUser] = useState(() => people.find(p => p.role === 'Administrador') ?? people[0]);
 
   const updatePerson = (updatedPerson: Person) => {
     setPeople(prev => prev.map(p => p.id === updatedPerson.id ? updatedPerson : p));
-  };
-
-  const updateOrderStatus = (orderId: string, newStatus: OSStatus, changedBy: string = 'Sistema', notes?: string) => {
-    const currentOrder = orders.find(o => o.id === orderId);
-    if (currentOrder && !canTransitionOSStatus(currentOrder.status, newStatus)) {
-      return;
-    }
-
-    setOrders(prev => prev.map(o => {
-      if (o.id === orderId) {
-        const now = new Date().toISOString();
-        return { 
-          ...o, 
-          status: newStatus, 
-          updatedAt: now,
-          statusHistory: [
-            ...(o.statusHistory || []),
-            { status: newStatus, changedBy, changedAt: now, notes }
-          ]
-        };
-      }
-      return o;
-    }));
-  };
-
-  const updateOrder = (updatedOrder: ServiceOrder) => {
-    setOrders(prev => prev.map(o => o.id === updatedOrder.id ? updatedOrder : o));
   };
 
   const updatePartQuantity = (partId: string, quantityToSubtract: number) => {
@@ -83,7 +60,7 @@ export default function App() {
         { status: order.status, changedBy: 'Sistema', changedAt: now }
       ]
     };
-    setOrders(prev => [newOrder, ...prev]);
+    updateOrder(newOrder);
     
     // Subtract parts from inventory
     order.parts.forEach(part => {
@@ -176,13 +153,26 @@ export default function App() {
     }
   };
 
+  // Auth guard
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-page-bg flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!authenticated) {
+    return <LoginScreen />;
+  }
+
   return (
     <div className="flex h-screen bg-page-bg font-sans text-slate-900 overflow-hidden">
-      <Sidebar 
-        currentView={currentView} 
-        setCurrentView={setCurrentView} 
-        userRole={currentUser.role} 
-        onLogout={() => setCurrentView('dashboard')} 
+      <Sidebar
+        currentView={currentView}
+        setCurrentView={setCurrentView}
+        userRole={currentUser.role}
+        onLogout={logout}
       />
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="h-16 bg-white border-b border-surface flex items-center justify-between px-8 shadow-sm z-10">

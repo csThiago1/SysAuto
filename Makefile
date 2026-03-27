@@ -17,11 +17,22 @@ dev-logs:
 	$(COMPOSE) logs -f
 
 # ── Banco de dados ────────────────────────────────────────────────────────────
-migrate:
-	cd backend/core && python manage.py migrate_schemas
+# setup: instala deps e cria tabelas (primeira execução)
+setup:
+	cd backend/core && pip install -r requirements.txt && python manage.py migrate
 
-migrate-tenant:
-	cd backend/core && python manage.py migrate_schemas --schema=$(t)
+migrate:
+	cd backend/core && python manage.py migrate
+
+# Quando multitenancy estiver ativo:
+# migrate: cd backend/core && python manage.py migrate_schemas
+# migrate-tenant: cd backend/core && python manage.py migrate_schemas --schema=$(t)
+
+createsuperuser:
+	cd backend/core && python manage.py createsuperuser
+
+fipe-import:
+	cd backend/core && python scripts/fipe_import.py
 
 shell:
 	cd backend/core && python manage.py shell
