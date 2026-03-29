@@ -3,6 +3,8 @@ import { Car, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../AuthContext';
 import { cn } from '../utils';
 
+const IS_MOCK = import.meta.env.VITE_USE_MOCK_DATA !== 'false';
+
 export function LoginScreen() {
   const { login, loading, error } = useAuth();
   const [username, setUsername] = useState('');
@@ -76,6 +78,12 @@ export function LoginScreen() {
                 <AlertCircle size={16} className="shrink-0" />
                 {error}
               </div>
+            )}
+
+            {IS_MOCK && (
+              <p className="text-xs text-center text-slate-400 bg-slate-50 rounded-xl px-3 py-2 border border-slate-100">
+                Modo demo — usuário: qualquer · senha: <span className="font-bold text-slate-600">dscar</span>
+              </p>
             )}
 
             <button

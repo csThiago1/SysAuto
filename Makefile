@@ -44,6 +44,9 @@ createsuperuser: $(VENV)
 fipe-import: $(VENV)
 	cd backend/core && $(abspath $(PY)) scripts/fipe_import.py
 
+runserver: $(VENV)
+	$(MANAGE) runserver 0.0.0.0:8000
+
 shell: $(VENV)
 	$(MANAGE) shell
 
@@ -81,6 +84,6 @@ test-cov: $(VENV)
 	cd backend/core && $(abspath $(PY)) -m pytest --cov=. --cov-report=html
 
 .PHONY: dev dev-stop dev-down dev-ps dev-logs \
-        setup migrate createsuperuser fipe-import shell db-reader \
+        setup migrate createsuperuser fipe-import runserver shell db-reader \
         lint format typecheck \
         test test-backend test-web test-cov

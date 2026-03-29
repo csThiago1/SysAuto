@@ -6,6 +6,10 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { login as apiLogin, logout as apiLogout, isAuthenticated } from './api/client';
 
+// Em modo mock, autenticação é local (sem backend)
+const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA !== 'false';
+const MOCK_AUTH_KEY = 'dscar_mock_auth';
+
 interface AuthState {
   authenticated: boolean;
   loading: boolean;
@@ -26,10 +30,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error: null,
   });
 
-  // Restaura sessão ao montar — tenta refresh se houver token salvo
+  // Restaura sessão ao montar
   useEffect(() => {
-    if (isAuthenticated()) {
-      // Refresh token presente — marcar como autenticado (cliente.ts vai fazer refresh no primeiro request)
+    if (USE_MOCK_DATA) {
+      const saved = localStorage.getItem(MOCK_AUTH_KEY) === 'true';
+      setState({ authenticated: saved, loading: false, error: null });
+    } else if (isAuthenticated()) {
       setState({ authenticated: true, loading: false, error: null });
     } else {
       setState({ authenticated: false, loading: false, error: null });
@@ -38,6 +44,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (username: string, password: string) => {
     setState(s => ({ ...s, loading: true, error: null }));
+
+    if (USE_MOCK_DATA) {
+      // Credenciais mock: qualquer usuário não-vazio com senha "dscar"
+      if (username.trim() && password === 'dscar') {
+        localStorage.setItem(MOCK_AUTH_KEY, 'true');
+        setState({ authenticated: true, loading: false, error: null });
+      } else {
+        setState({ authenticated: false, loading: false, error: 'Senha incorreta. Em modo demo use: dscar' });
+      }
+      return;
+    }
+
     try {
       await apiLogin(username, password);
       setState({ authenticated: true, loading: false, error: null });
@@ -47,7 +65,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
-    apiLogout();
+    if (USE_MOCK_DATA) {
+      localStorage.removeItem(MOCK_AUTH_KEY);
+    } else {
+      apiLogout();
+    }
     setState({ authenticated: false, loading: false, error: null });
   }, []);
 
