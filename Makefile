@@ -1,4 +1,9 @@
-COMPOSE = docker compose -f infra/docker-compose.dev.yml
+COMPOSE  = docker compose -f infra/docker-compose.dev.yml
+PYTHON   = python3.12
+VENV     = backend/core/.venv
+PY       = $(VENV)/bin/python
+PIP      = $(VENV)/bin/pip
+MANAGE   = cd backend/core && $(abspath $(PY)) manage.py
 
 # ── Ambiente ──────────────────────────────────────────────────────────────────
 dev:
@@ -17,25 +22,30 @@ dev-logs:
 	$(COMPOSE) logs -f
 
 # ── Banco de dados ────────────────────────────────────────────────────────────
-# setup: instala deps e cria tabelas (primeira execução)
-setup:
-	cd backend/core && pip install -r requirements.txt && python manage.py migrate
+# setup: cria venv, instala deps e roda migrations (primeira execução)
+$(VENV):
+	$(PYTHON) -m venv $(VENV)
 
-migrate:
-	cd backend/core && python manage.py migrate
+setup: $(VENV)
+	$(PIP) install --upgrade pip
+	$(PIP) install -r backend/core/requirements.txt
+	$(MANAGE) migrate
+
+migrate: $(VENV)
+	$(MANAGE) migrate
 
 # Quando multitenancy estiver ativo:
-# migrate: cd backend/core && python manage.py migrate_schemas
-# migrate-tenant: cd backend/core && python manage.py migrate_schemas --schema=$(t)
+# migrate: $(MANAGE) migrate_schemas
+# migrate-tenant: $(MANAGE) migrate_schemas --schema=$(t)
 
-createsuperuser:
-	cd backend/core && python manage.py createsuperuser
+createsuperuser: $(VENV)
+	$(MANAGE) createsuperuser
 
-fipe-import:
-	cd backend/core && python scripts/fipe_import.py
+fipe-import: $(VENV)
+	cd backend/core && $(abspath $(PY)) scripts/fipe_import.py
 
-shell:
-	cd backend/core && python manage.py shell
+shell: $(VENV)
+	$(MANAGE) shell
 
 db-reader:
 	docker exec -it paddock-postgres psql -U paddock -d paddock_dev -c "\
@@ -45,32 +55,32 @@ db-reader:
 		GRANT SELECT ON ALL TABLES IN SCHEMA public TO mcp_reader;"
 
 # ── Qualidade ─────────────────────────────────────────────────────────────────
-lint:
-	cd backend/core && black --check . && isort --check-only .
+lint: $(VENV)
+	cd backend/core && $(abspath $(PY)) -m black --check . && $(abspath $(PY)) -m isort --check-only .
 	cd apps/dscar-web && npx eslint .
 
-format:
-	cd backend/core && black . && isort .
+format: $(VENV)
+	cd backend/core && $(abspath $(PY)) -m black . && $(abspath $(PY)) -m isort .
 
-typecheck:
-	cd backend/core && mypy .
+typecheck: $(VENV)
+	cd backend/core && $(abspath $(PY)) -m mypy .
 	cd apps/dscar-web && npx tsc --noEmit
 
 # ── Testes ────────────────────────────────────────────────────────────────────
-test:
-	cd backend/core && pytest
+test: $(VENV)
+	cd backend/core && $(abspath $(PY)) -m pytest
 	cd apps/dscar-web && npx vitest run
 
-test-backend:
-	cd backend/core && pytest
+test-backend: $(VENV)
+	cd backend/core && $(abspath $(PY)) -m pytest
 
 test-web:
 	cd apps/dscar-web && npx vitest run
 
-test-cov:
-	cd backend/core && pytest --cov=. --cov-report=html
+test-cov: $(VENV)
+	cd backend/core && $(abspath $(PY)) -m pytest --cov=. --cov-report=html
 
 .PHONY: dev dev-stop dev-down dev-ps dev-logs \
-        migrate migrate-tenant shell db-reader \
+        setup migrate createsuperuser fipe-import shell db-reader \
         lint format typecheck \
         test test-backend test-web test-cov
