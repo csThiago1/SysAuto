@@ -51,9 +51,35 @@ function parseStatusParam(param: string | null): ServiceOrderStatus[] {
     );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ─── Page (wraps inner with Suspense — required by useSearchParams) ───────────
 
 export default function OSListPage(): React.ReactElement {
+  return (
+    <React.Suspense fallback={<OSListSkeleton />}>
+      <OSListInner />
+    </React.Suspense>
+  );
+}
+
+function OSListSkeleton(): React.ReactElement {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-9 w-28" />
+      </div>
+      <div className="grid grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-20 rounded-md" />
+        ))}
+      </div>
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-64 w-full rounded-md" />
+    </div>
+  );
+}
+
+function OSListInner(): React.ReactElement {
   const router = useRouter();
   const searchParams = useSearchParams();
 
