@@ -6,6 +6,7 @@ import { LayoutList, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useServiceOrders } from "@/hooks/useServiceOrders";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function KanbanPage(): React.ReactElement {
   // Fetch all active OS without status filter — group on the client
@@ -18,6 +19,7 @@ export default function KanbanPage(): React.ReactElement {
   const orders = data?.results ?? [];
 
   return (
+    <ErrorBoundary>
     <div className="flex flex-col h-full gap-4">
       {/* Header */}
       <div className="flex items-center justify-between shrink-0">
@@ -53,5 +55,6 @@ export default function KanbanPage(): React.ReactElement {
         <KanbanBoard orders={orders} isLoading={isLoading} />
       </div>
     </div>
+    </ErrorBoundary>
   );
 }

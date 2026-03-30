@@ -13,15 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCustomers, type Customer } from "@/hooks/useCustomers";
 import { cn } from "@/lib/utils";
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = React.useState(value);
-  React.useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-  return debounced;
-}
+import { useDebounce } from "@/hooks/useDebounce";
 
 const novaOSSchema = z.object({
   customer_id: z.string().min(1, "Selecione um cliente"),

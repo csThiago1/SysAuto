@@ -241,6 +241,14 @@ export default function OSDetailPage({ params }: OSDetailPageProps): React.React
               <p className="text-sm text-neutral-900 mt-0.5">
                 {os.customer_name}
               </p>
+              {os.customer_id && (
+                <Link
+                  href={`/clientes/${os.customer_id}`}
+                  className="text-xs text-primary-600 hover:text-primary-700 hover:underline mt-1 inline-block"
+                >
+                  Ver cliente →
+                </Link>
+              )}
             </div>
             {os.estimated_delivery && (
               <div>

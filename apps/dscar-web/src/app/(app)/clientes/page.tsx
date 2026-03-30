@@ -12,16 +12,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import Link from "next/link";
 import { useCustomers } from "@/hooks/useCustomers";
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = React.useState(value);
-  React.useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-  return debounced;
-}
+import { useDebounce } from "@/hooks/useDebounce";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function ClientesPage(): React.ReactElement {
   const [searchInput, setSearchInput] = useState("");
@@ -31,6 +25,7 @@ export default function ClientesPage(): React.ReactElement {
   const hasSearched = debouncedSearch.length >= 2;
 
   return (
+    <ErrorBoundary>
     <div className="space-y-6">
       {/* Header */}
       <div>
@@ -121,15 +116,33 @@ export default function ClientesPage(): React.ReactElement {
               {!isLoading &&
                 !isError &&
                 data?.results?.map((customer) => (
-                  <TableRow key={customer.id}>
+                  <TableRow
+                    key={customer.id}
+                    className="cursor-pointer hover:bg-neutral-50"
+                  >
                     <TableCell className="font-medium text-neutral-900">
-                      {customer.name}
+                      <Link
+                        href={`/clientes/${customer.id}`}
+                        className="block w-full h-full"
+                      >
+                        {customer.name}
+                      </Link>
                     </TableCell>
                     <TableCell className="text-neutral-600 font-mono text-sm">
-                      {customer.document_masked}
+                      <Link
+                        href={`/clientes/${customer.id}`}
+                        className="block w-full h-full"
+                      >
+                        {customer.document_masked}
+                      </Link>
                     </TableCell>
                     <TableCell className="text-neutral-600">
-                      {customer.phone_masked}
+                      <Link
+                        href={`/clientes/${customer.id}`}
+                        className="block w-full h-full"
+                      >
+                        {customer.phone_masked}
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -149,5 +162,6 @@ export default function ClientesPage(): React.ReactElement {
         </div>
       )}
     </div>
+    </ErrorBoundary>
   );
 }

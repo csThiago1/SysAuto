@@ -1,113 +1,79 @@
-# Backlog — Sprint 02 (Kanban & Dashboard)
+# Backlog — Sprint 03 (Robustez, Filtros e Detalhe de Cliente)
 
 **Projeto:** DS Car ERP
-**Sprint:** 02
-**Última atualização:** 2026-03-29
+**Sprint:** 03
+**Última atualização:** 2026-03-30
 **Legenda:** `[ ]` pendente · `[x]` concluído · `[~]` em progresso · `[!]` bloqueado
 
 ---
 
 ## Frontend
 
-### US-01 — Kanban de OS
+### US-01 — Robustez Global
 
-- [ ] Instalar dependências: `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`
-- [ ] Criar store Zustand `useKanbanStore` em `src/store/kanban.ts` (ordem local dos cards por coluna)
-- [ ] Criar hook `useKanbanData` em `src/hooks/useKanbanData.ts` — fetcha OS com `page_size=200`, agrupa por status
-- [ ] Criar componente `<KanbanColumn>` em `src/components/kanban/KanbanColumn.tsx` — recebe status, lista de OS, exibe header com contagem
-- [ ] Criar componente `<KanbanCard>` em `src/components/kanban/KanbanCard.tsx` — número OS, cliente mascarado, placa, consultor, tempo decorrido
-- [ ] Criar componente `<KanbanBoard>` em `src/components/kanban/KanbanBoard.tsx` — `<DndContext>` + `<SortableContext>` por coluna
-- [ ] Implementar `DragOverlay` com preview do card durante arrasto
-- [ ] Implementar rollback otimista: `onMutate` salva estado anterior, `onError` restaura via `queryClient.setQueryData`
-- [ ] Criar página `src/app/os/kanban/page.tsx`
-- [ ] Adicionar skeleton de 3 cards por coluna (loading state)
-- [ ] Adicionar suporte a teclado (`KeyboardSensor`) no `<DndContext>`
-- [ ] Adicionar `aria-label` nos cards com número da OS e status
-- [ ] Adicionar item "Kanban" na `Sidebar` com ícone `LayoutKanban`
-
-### US-02 — Dashboard Home
-
-- [ ] Criar hook `useDashboardStats` em `src/hooks/useDashboardStats.ts` com `staleTime: 60_000`
-- [ ] Criar componente `<StatCard>` em `src/components/dashboard/StatCard.tsx` — ícone, label, valor, variação
-- [ ] Criar componente `<RecentOrdersTable>` em `src/components/dashboard/RecentOrdersTable.tsx` — 10 OS mais recentes
-- [ ] Implementar skeleton loader para os cards de stats
-- [ ] Implementar botão "Atualizar" com `queryClient.invalidateQueries(["dashboard", "stats"])`
-- [ ] Criar/atualizar página `src/app/page.tsx` com grid responsivo (`grid-cols-2 md:grid-cols-4`)
-- [ ] Adicionar badges de status coloridos na tabela de OS recentes
-- [ ] Tratar estado de erro nos cards (exibir `"—"` quando API falha)
-
-### US-03 — Tratamento Global de Erros
-
-- [ ] Instalar dependências: `sonner`, `react-error-boundary`
-- [ ] Adicionar `<Toaster />` ao layout raiz `src/app/layout.tsx` com tema DS Car
-- [ ] Atualizar `apiFetch` em `src/lib/api.ts`: integrar `toast.error()` para erros HTTP
-- [ ] Tratar erro 401 em `apiFetch`: chamar `signOut()` + toast `"Sessão expirada"` + redirect `/login`
-- [ ] Tratar erro de rede (catch de fetch): toast `"Sem conexão com o servidor"`
-- [ ] Criar componente `<ErrorBoundary>` em `src/components/error-boundary.tsx` usando `react-error-boundary`
-- [ ] Criar componente `<PageSkeleton>` em `src/components/page-skeleton.tsx`
+- [ ] Criar `src/hooks/useDebounce.ts` com hook genérico `useDebounce<T>(value: T, delay: number): T`
+- [ ] Remover todas as definições locais de `useDebounce` e substituir pela importação de `src/hooks/useDebounce.ts`
+- [ ] Criar/atualizar `src/lib/api.ts` com função `apiFetch(path, init?)` exportada como default
+- [ ] Integrar `toast.error()` via `sonner` no `apiFetch` para erros HTTP (mensagem do campo `detail` DRF; fallback genérico)
+- [ ] Tratar erro 401 em `apiFetch`: `signOut()` + toast `"Sessão expirada"` + redirect `/login`
+- [ ] Tratar erro de rede (fetch throws) em `apiFetch`: toast `"Sem conexão com o servidor"`
+- [ ] Migrar todos os hooks (`useServiceOrders`, `useClients`, `useDashboardStats`, etc.) para usar `apiFetch` — eliminar `fetch()` direto nos hooks
+- [ ] Criar componente `src/components/ErrorBoundary.tsx` usando `react-error-boundary`
+- [ ] Implementar fallback da `<ErrorBoundary>`: mensagem de erro + botão "Tentar novamente" (`resetErrorBoundary`) + stack oculto em produção
+- [ ] Adicionar `Sentry.captureException` no `componentDidCatch` com degradação silenciosa se `SENTRY_DSN` ausente
+- [ ] Envolver página `/` (dashboard) em `<ErrorBoundary>` + `<Suspense>`
 - [ ] Envolver página `/os` em `<ErrorBoundary>` + `<Suspense>`
 - [ ] Envolver página `/os/kanban` em `<ErrorBoundary>` + `<Suspense>`
-- [ ] Envolver página `/` (dashboard) em `<ErrorBoundary>` + `<Suspense>`
 - [ ] Envolver página `/clientes` em `<ErrorBoundary>` + `<Suspense>`
-- [ ] Configurar fallback da `<ErrorBoundary>` com botão "Tentar novamente" (`resetErrorBoundary`)
-- [ ] Adicionar `Sentry.captureException` no `<ErrorBoundary>` com degradação silenciosa se `SENTRY_DSN` ausente
+- [ ] Envolver página `/clientes/[id]` (nova) em `<ErrorBoundary>` + `<Suspense>`
 
-### US-05 — Paginação na Lista de OS
+### US-02 — Filtros na Lista de OS
 
-- [ ] Criar componente `<Pagination>` em `src/components/ui/pagination.tsx`
-- [ ] Atualizar `useServiceOrders` para ler `page` de `searchParams` e passar `?page=<n>&page_size=20`
-- [ ] Atualizar `QueryKey` para `["service-orders", { page, status, search }]`
-- [ ] Implementar `router.push` para atualizar URL ao mudar de página
-- [ ] Implementar reset para página 1 ao aplicar novo filtro
-- [ ] Adicionar scroll automático ao topo da tabela ao mudar de página
-- [ ] Adicionar skeleton de 20 linhas durante fetch de nova página
-- [ ] Exibir texto auxiliar `"Exibindo X–Y de Z ordens de serviço"`
-- [ ] Desabilitar botão "Anterior" na página 1 e "Próximo" na última página
+- [ ] Criar componente `<OSFilterBar>` em `src/components/os/OSFilterBar.tsx` com campo de busca por texto e select de status múltiplo
+- [ ] Implementar debounce de 400 ms no campo de texto via `useDebounce` (US-01)
+- [ ] Implementar badges removíveis para cada status selecionado
+- [ ] Implementar botão "Limpar filtros" (visível apenas com filtro ativo)
+- [ ] Sincronizar parâmetro `search` na URL via `useSearchParams` + `router.push`
+- [ ] Sincronizar parâmetro `status` (multi-valor) na URL via `useSearchParams` + `router.push`
+- [ ] Resetar `page` para `1` automaticamente ao alterar `search` ou `status`
+- [ ] Atualizar `useServiceOrders` para aceitar `{ page, search, status[] }` e construir query string corretamente
+- [ ] Atualizar `QueryKey` para `["service-orders", { page, search, status }]`
+- [ ] Exibir skeleton de 20 linhas durante `isFetching` na troca de filtro
+- [ ] Exibir mensagem de "sem resultados" quando a API retorna lista vazia
+- [ ] Atualizar texto auxiliar da paginação para refletir total filtrado
 
----
+### US-03 — Detalhe de Cliente
 
-## Backend
-
-### US-04 — PUT/DELETE no Proxy (Next.js route handler)
-
-- [ ] Implementar `export async function PUT` em `src/app/api/proxy/[...path]/route.ts`
-  - Injeta headers `Host`, `Authorization`, `Content-Type`
-  - Repassa body JSON do request
-  - Retorna status code + body originais do Django
-- [ ] Implementar `export async function DELETE` em `src/app/api/proxy/[...path]/route.ts`
-  - Injeta headers `Host`, `Authorization`
-  - Sem body
-  - Retorna 204 para DELETE bem-sucedido
-- [ ] Garantir que ambos os métodos retornam 401 se `getServerSession()` retornar null
-- [ ] Validar manualmente: `PUT /api/proxy/service-orders/1/` → 200
-- [ ] Validar manualmente: `DELETE /api/proxy/service-orders/1/` → 204
-- [ ] Validar manualmente: requisição sem token → 401 (sem chegar ao Django)
-
-### Débito Técnico DT-01 — Keycloak Dev Credentials
-
-- [ ] Adicionar verificação em `src/auth.config.ts`: se `NEXTAUTH_DEV_PROVIDERS !== "true"`, não registrar provider `Credentials`
-- [ ] Documentar variável `NEXTAUTH_DEV_PROVIDERS` no `CLAUDE.md` e `.env.example`
-
----
-
-## Infra
-
-- [ ] Adicionar `NEXTAUTH_DEV_PROVIDERS` ao `.env.local.example` com valor `true`
-- [ ] Adicionar `SENTRY_DSN` ao `.env.local.example` com valor vazio e comentário explicativo
-- [ ] Verificar que `@dnd-kit/*`, `sonner` e `react-error-boundary` estão no `package.json` de `apps/dscar-web`
-- [ ] Confirmar que `turbo.json` inclui `build` de `apps/dscar-web` sem cache stale após novas dependências
+- [ ] Criar hook `useClient(id: string)` em `src/hooks/useClient.ts` com `QueryKey: ["client", id]`
+- [ ] Criar hook `useClientOrders(customerId: string)` em `src/hooks/useClientOrders.ts` com `QueryKey: ["service-orders", "by-client", customerId]`
+- [ ] Criar página `src/app/clientes/[id]/page.tsx`
+- [ ] Implementar seção de dados do cliente: nome, CPF/CNPJ mascarado (LGPD), telefone formatado, e-mail
+- [ ] Implementar tabela de histórico de OS (últimas 10, colunas: Número, Data, Placa, Status badge, Consultor, Valor)
+- [ ] Adicionar link para `/os/[id]` no número de cada OS da tabela de histórico
+- [ ] Implementar skeleton de carregamento (dados + tabela)
+- [ ] Implementar mensagem "Nenhuma OS encontrada para este cliente." quando histórico vazio
+- [ ] Adicionar botão "Voltar" (`← Clientes`) com `router.back()`
+- [ ] Adicionar breadcrumb `Clientes / <Nome do cliente>`
+- [ ] Adicionar link para `/clientes/[id]` nas linhas da lista de clientes (`/clientes`)
+- [ ] Adicionar link para `/clientes/[id]` nos cards do Kanban (`<KanbanCard>`)
+- [ ] Adicionar link para `/clientes/[id]` no detalhe de OS (`/os/[id]`)
+- [ ] Resolver DT-04: substituir `href as never` por tipagem correta nos novos links
 
 ---
 
 ## QA
 
-- [ ] Testar Kanban drag-and-drop em Chrome, Safari e Firefox (desktop)
-- [ ] Testar Kanban com teclado (Tab para focar card, Space para iniciar arrasto, setas para mover, Enter para soltar)
-- [ ] Testar rollback otimista: simular falha de rede durante drag (DevTools → Network → Offline)
-- [ ] Testar Dashboard com backend retornando erro 500 (verificar que cards exibem `"—"` e toast aparece)
-- [ ] Testar paginação: navegar para página 2, aplicar filtro, confirmar reset para página 1
-- [ ] Testar `apiFetch` com token expirado: confirmar redirect para `/login` com toast
-- [ ] Testar `<ErrorBoundary>`: lançar erro manual em componente e verificar fallback
+- [ ] Testar US-01: simular erro 401 em DevTools → confirmar signOut + toast + redirect `/login`
+- [ ] Testar US-01: simular Offline em DevTools → confirmar toast "Sem conexão com o servidor"
+- [ ] Testar US-01: lançar erro manual em componente filho → confirmar fallback da `<ErrorBoundary>` com botão "Tentar novamente" funcional
+- [ ] Testar US-01: confirmar que nenhum `fetch()` direto existe fora de `src/lib/api.ts` (`grep` no CI)
+- [ ] Testar US-02: filtrar por placa parcial → URL atualizada → recarregar página restaura filtro
+- [ ] Testar US-02: selecionar dois status → URL com dois `status=` → recarregar restaura ambos
+- [ ] Testar US-02: clicar "Limpar filtros" → URL limpa → tabela volta ao estado padrão
+- [ ] Testar US-02: filtrar em página 3 → `page` resetado para `1` automaticamente
+- [ ] Testar US-03: acessar `/clientes/[id]` → CPF/CNPJ mascarado conforme LGPD
+- [ ] Testar US-03: histórico de OS exibe até 10 itens com links para `/os/[id]`
+- [ ] Testar US-03: links nas listas de clientes, Kanban e detalhe de OS navegam para `/clientes/[id]`
 - [ ] Verificar que `make lint` passa sem erros após todas as alterações
 - [ ] Verificar que `make typecheck` passa (tsc sem erros, nenhum `any` novo)
 
@@ -117,12 +83,12 @@
 
 | Área | Total | Concluído | Em Progresso | Bloqueado |
 |------|-------|-----------|--------------|-----------|
-| Frontend | 38 | 0 | 0 | 0 |
-| Backend | 6 | 0 | 0 | 0 |
-| Infra | 4 | 0 | 0 | 0 |
-| QA | 9 | 0 | 0 | 0 |
-| **Total** | **57** | **0** | **0** | **0** |
+| Frontend (US-01) | 15 | 0 | 0 | 0 |
+| Frontend (US-02) | 12 | 0 | 0 | 0 |
+| Frontend (US-03) | 14 | 0 | 0 | 0 |
+| QA | 13 | 0 | 0 | 0 |
+| **Total** | **54** | **0** | **0** | **0** |
 
 ---
 
-*Atualizado por: PM Agent · Paddock Solutions · 2026-03-29*
+*Atualizado por: PM Agent · Paddock Solutions · 2026-03-30*

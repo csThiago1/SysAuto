@@ -3,17 +3,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Plus, Search, ClipboardX } from "lucide-react";
+import { Plus, Search, ClipboardX, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -23,26 +16,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useServiceOrders, useDashboardStats } from "@/hooks/useServiceOrders";
-import { SERVICE_ORDER_STATUS_CONFIG } from "@/lib/design-tokens";
+import { useDebounce } from "@/hooks/useDebounce";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import {
+  SERVICE_ORDER_STATUS_CONFIG,
+  KANBAN_COLUMNS_ORDER,
+} from "@/lib/design-tokens";
 import type { ServiceOrderStatus } from "@paddock/types";
 import { cn } from "@/lib/utils";
 
-const STATUS_OPTIONS: { value: string; label: string }[] = [
-  { value: "", label: "Todos os status" },
-  ...Object.entries(SERVICE_ORDER_STATUS_CONFIG).map(([value, cfg]) => ({
-    value,
-    label: cfg.label,
-  })),
-];
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-  return debounced;
-}
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("pt-BR", {
@@ -59,45 +42,84 @@ function formatCurrency(value: number): string {
   }).format(value);
 }
 
+function parseStatusParam(param: string | null): ServiceOrderStatus[] {
+  if (!param) return [];
+  return param
+    .split(",")
+    .filter((s): s is ServiceOrderStatus =>
+      s in SERVICE_ORDER_STATUS_CONFIG
+    );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function OSListPage(): React.ReactElement {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Inicializa estado a partir da URL
   const [searchInput, setSearchInput] = useState(
     searchParams.get("search") ?? ""
   );
-  const [status, setStatus] = useState(searchParams.get("status") ?? "");
-  const [page, setPage] = useState(
-    Number(searchParams.get("page") ?? "1")
+  const [selectedStatuses, setSelectedStatuses] = useState<ServiceOrderStatus[]>(
+    parseStatusParam(searchParams.get("status"))
   );
+  const [page, setPage] = useState(Number(searchParams.get("page") ?? "1"));
 
   const debouncedSearch = useDebounce(searchInput, 300);
 
-  // Sync URL
+  // Sincroniza estado → URL
   useEffect(() => {
     const params = new URLSearchParams();
     if (debouncedSearch) params.set("search", debouncedSearch);
-    if (status) params.set("status", status);
+    if (selectedStatuses.length > 0)
+      params.set("status", selectedStatuses.join(","));
     if (page > 1) params.set("page", String(page));
-    router.replace(`/os?${params.toString()}`);
-  }, [debouncedSearch, status, page, router]);
+    const qs = params.size > 0 ? `?${params.toString()}` : "";
+    router.replace((`/os${qs}`) as Parameters<typeof router.replace>[0]);
+  }, [debouncedSearch, selectedStatuses, page, router]);
 
+  // Monta filtros para o hook
   const filters: Record<string, string> = {
     ordering: "-opened_at",
-    ...(debouncedSearch ? { search: debouncedSearch } : {}),
-    ...(status ? { status } : {}),
-    ...(page > 1 ? { page: String(page) } : {}),
   };
+  if (debouncedSearch) filters.search = debouncedSearch;
+  if (selectedStatuses.length > 0)
+    filters.status = selectedStatuses.join(",");
+  if (page > 1) filters.page = String(page);
 
   const { data, isLoading, isError } = useServiceOrders(filters);
   const { data: stats } = useDashboardStats();
 
-  const handleStatusChange = useCallback((val: string) => {
-    setStatus(val);
+  // Verifica se há filtros ativos (excluindo ordenação e paginação)
+  const hasActiveFilters = debouncedSearch !== "" || selectedStatuses.length > 0;
+
+  // Toggle de um status no grupo de botões
+  const handleStatusToggle = useCallback((status: ServiceOrderStatus) => {
+    setSelectedStatuses((prev) => {
+      const next = prev.includes(status)
+        ? prev.filter((s) => s !== status)
+        : [...prev, status];
+      return next;
+    });
+    setPage(1);
+  }, []);
+
+  // Limpa todos os filtros de status
+  const handleClearStatuses = useCallback(() => {
+    setSelectedStatuses([]);
+    setPage(1);
+  }, []);
+
+  // Limpa todos os filtros ativos
+  const handleClearAllFilters = useCallback(() => {
+    setSearchInput("");
+    setSelectedStatuses([]);
     setPage(1);
   }, []);
 
   return (
+    <ErrorBoundary>
     <div className="space-y-6">
       {/* Page header */}
       <div className="flex items-center justify-between">
@@ -145,33 +167,74 @@ export default function OSListPage(): React.ReactElement {
         />
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-48">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
-          <Input
-            placeholder="Buscar por placa, veículo ou cliente..."
-            value={searchInput}
-            onChange={(e) => {
-              setSearchInput(e.target.value);
-              setPage(1);
-            }}
-            className="pl-9"
-          />
+      {/* Barra de filtros */}
+      <div className="space-y-3">
+        {/* Linha 1: busca + limpar filtros */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-48">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
+            <Input
+              placeholder="Placa ou cliente..."
+              value={searchInput}
+              onChange={(e) => {
+                setSearchInput(e.target.value);
+                setPage(1);
+              }}
+              className="pl-9"
+            />
+          </div>
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClearAllFilters}
+              className="text-neutral-500 hover:text-neutral-700 gap-1.5 shrink-0"
+            >
+              <X className="h-3.5 w-3.5" />
+              Limpar filtros
+            </Button>
+          )}
         </div>
-        <div className="w-56">
-          <Select value={status} onValueChange={handleStatusChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Filtrar por status" />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+
+        {/* Linha 2: botões de status */}
+        <div className="flex flex-wrap gap-2">
+          {/* Botão "Todos" */}
+          <button
+            type="button"
+            onClick={handleClearStatuses}
+            className={cn(
+              "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border transition-colors",
+              selectedStatuses.length === 0
+                ? "bg-neutral-900 text-white border-neutral-900"
+                : "bg-white text-neutral-600 border-neutral-300 hover:border-neutral-400 hover:bg-neutral-50"
+            )}
+          >
+            Todos
+          </button>
+
+          {/* Um botão por status na ordem do kanban */}
+          {KANBAN_COLUMNS_ORDER.map((status) => {
+            const cfg = SERVICE_ORDER_STATUS_CONFIG[status];
+            const isActive = selectedStatuses.includes(status);
+            return (
+              <button
+                key={status}
+                type="button"
+                onClick={() => handleStatusToggle(status)}
+                className={cn(
+                  "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border transition-all",
+                  isActive
+                    ? cn(cfg.badge, "ring-2 ring-offset-1 ring-current opacity-100")
+                    : cn(cfg.badge, "opacity-60 hover:opacity-100")
+                )}
+              >
+                <span
+                  className={cn("mr-1.5 h-1.5 w-1.5 rounded-full shrink-0", cfg.dot)}
+                />
+                {cfg.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -193,7 +256,7 @@ export default function OSListPage(): React.ReactElement {
           <TableBody>
             {isLoading && (
               <>
-                {Array.from({ length: 6 }).map((_, i) => (
+                {Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
                     {Array.from({ length: 8 }).map((_, j) => (
                       <TableCell key={j}>
@@ -207,7 +270,10 @@ export default function OSListPage(): React.ReactElement {
 
             {isError && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-12 text-error-600">
+                <TableCell
+                  colSpan={8}
+                  className="text-center py-12 text-error-600"
+                >
                   Erro ao carregar ordens de serviço.
                 </TableCell>
               </TableRow>
@@ -276,11 +342,12 @@ export default function OSListPage(): React.ReactElement {
         </Table>
       </div>
 
-      {/* Pagination */}
+      {/* Rodapé: contador + paginação */}
       {data && data.count > 0 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-neutral-500">
-            {data.count} resultado{data.count !== 1 ? "s" : ""}
+            {data.count}{" "}
+            {data.count === 1 ? "ordem de serviço" : "ordens de serviço"}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -306,8 +373,11 @@ export default function OSListPage(): React.ReactElement {
         </div>
       )}
     </div>
+    </ErrorBoundary>
   );
 }
+
+// ─── StatCard ─────────────────────────────────────────────────────────────────
 
 interface StatCardProps {
   label: string;
@@ -323,7 +393,12 @@ const accentClasses: Record<StatCardProps["accent"], string> = {
   neutral: "text-neutral-700",
 };
 
-function StatCard({ label, value, isLoading, accent }: StatCardProps): React.ReactElement {
+function StatCard({
+  label,
+  value,
+  isLoading,
+  accent,
+}: StatCardProps): React.ReactElement {
   return (
     <div className="rounded-md border border-neutral-200 bg-white p-4 shadow-card">
       <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide">

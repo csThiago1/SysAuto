@@ -8,6 +8,7 @@ import { useDashboardStats, useServiceOrders } from "@/hooks/useServiceOrders";
 import { SERVICE_ORDER_STATUS_CONFIG } from "@/lib/design-tokens";
 import type { ServiceOrderStatus } from "@paddock/types";
 import { cn } from "@/lib/utils";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -108,6 +109,7 @@ export default function DashboardPage(): React.ReactElement {
   const recentOrders = ordersData?.results?.slice(0, 5) ?? [];
 
   return (
+    <ErrorBoundary>
     <div className="space-y-6">
       {/* Page title */}
       <div>
@@ -246,5 +248,6 @@ export default function DashboardPage(): React.ReactElement {
         )}
       </div>
     </div>
+    </ErrorBoundary>
   );
 }

@@ -70,6 +70,7 @@ export interface ServiceOrder {
     model: string;
     year: number | null;
     customer_name: string;
+    customer_id: string | null;
     status: ServiceOrderStatus;
     opened_at: string; // ISO datetime
     estimated_delivery: string | null;
