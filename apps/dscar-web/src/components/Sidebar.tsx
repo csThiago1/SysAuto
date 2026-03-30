@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gauge, ClipboardList, Users, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Gauge, ClipboardList, LayoutGrid, Users, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { DsCarLogo } from "@/components/DsCarLogo";
 import { useUIStore } from "@/store/ui.store";
 import { cn } from "@/lib/utils";
@@ -12,13 +12,32 @@ interface NavItem {
   href: string;
   label: string;
   icon: React.ReactNode;
+  /** Match only the exact path, not sub-paths */
+  exact?: boolean;
+}
+
+function isNavItemActive(item: NavItem, pathname: string): boolean {
+  if (item.exact) return pathname === item.href;
+  return pathname === item.href || pathname.startsWith(item.href + "/");
 }
 
 const navItems: NavItem[] = [
   {
+    href: "/dashboard",
+    label: "Dashboard",
+    icon: <Gauge className="h-5 w-5 shrink-0" />,
+  },
+  {
     href: "/os",
     label: "Ordens de Serviço",
     icon: <ClipboardList className="h-5 w-5 shrink-0" />,
+    // exact so /os/kanban doesn't also highlight this item
+    exact: true,
+  },
+  {
+    href: "/os/kanban",
+    label: "Kanban",
+    icon: <LayoutGrid className="h-5 w-5 shrink-0" />,
   },
   {
     href: "/clientes",
@@ -50,7 +69,7 @@ export function Sidebar(): React.ReactElement {
       {/* Nav */}
       <nav className="flex-1 px-2 py-4 space-y-1">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+          const isActive = isNavItemActive(item, pathname);
           return (
             <Link
               key={`${item.href}-${item.label}`}

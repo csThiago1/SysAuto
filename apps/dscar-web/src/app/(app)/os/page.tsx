@@ -282,22 +282,25 @@ export default function OSListPage(): React.ReactElement {
           <p className="text-sm text-neutral-500">
             {data.count} resultado{data.count !== 1 ? "s" : ""}
           </p>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={!data.previous}
+              disabled={data.previous === null}
             >
-              Anterior
+              &larr; Anterior
             </Button>
+            <span className="text-sm text-neutral-600 px-2">
+              Página {page} de {Math.max(1, Math.ceil(data.count / 25))}
+            </span>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setPage((p) => p + 1)}
-              disabled={!data.next}
+              disabled={data.next === null}
             >
-              Próxima
+              Pr&oacute;xima &rarr;
             </Button>
           </div>
         </div>

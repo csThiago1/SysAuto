@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { PaginatedResponse, ServiceOrder } from "@paddock/types";
+import { toast } from "sonner";
 
 const API = "/api/proxy";
 
@@ -19,7 +20,8 @@ export function useServiceOrders(
   return useQuery<PaginatedResponse<ServiceOrder>>({
     queryKey: ["service-orders", filters],
     queryFn: () => apiFetch<PaginatedResponse<ServiceOrder>>(`${API}/service-orders/?${params}`),
-  });
+    onError: (err: Error) => toast.error(err.message),
+  } as Parameters<typeof useQuery<PaginatedResponse<ServiceOrder>>>[0]);
 }
 
 export function useServiceOrder(
@@ -41,7 +43,8 @@ export function useDashboardStats(): ReturnType<typeof useQuery<DashboardStats>>
   return useQuery<DashboardStats>({
     queryKey: ["dashboard-stats"],
     queryFn: () => apiFetch<DashboardStats>(`${API}/service-orders/dashboard/stats/`),
-  });
+    onError: (err: Error) => toast.error(err.message),
+  } as Parameters<typeof useQuery<DashboardStats>>[0]);
 }
 
 export function useTransitionStatus(id: string) {
