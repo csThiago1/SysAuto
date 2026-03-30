@@ -22,8 +22,12 @@
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": true,
       "protocol": "openid-connect",
-      "redirectUris": ["http://localhost:8000/*"],
-      "webOrigins": ["http://localhost:8000"]
+      "redirectUris": [
+        "http://localhost:8000/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8000"
+      ]
     },
     {
       "clientId": "paddock-frontend",
@@ -46,11 +50,25 @@
   ],
   "roles": {
     "realm": [
-      { "name": "ADMIN",      "description": "Administrador do sistema" },
-      { "name": "MANAGER",    "description": "Gerente de unidade" },
-      { "name": "CONSULTANT", "description": "Atendente / Consultor" },
-      { "name": "MECHANIC",   "description": "Mecânico / Técnico" },
-      { "name": "CASHIER",    "description": "Caixa" }
+      {
+        "name": "ADMIN",
+        "description": "Administrador do sistema"
+      },
+      {
+        "name": "MANAGER",
+        "description": "Gerente de unidade"
+      },
+      {
+        "name": "CONSULTANT",
+        "description": "Atendente / Consultor"
+      },
+      {
+        "name": "STOREKEEPER",
+        "description": "Almoxarife — gestão de estoque de peças",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "paddock"
+      }
     ]
   },
   "users": [
@@ -61,8 +79,16 @@
       "lastName": "Paddock",
       "enabled": true,
       "emailVerified": true,
-      "credentials": [{ "type": "password", "value": "admin123", "temporary": false }],
-      "realmRoles": ["ADMIN"]
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "ADMIN"
+      ]
     },
     {
       "username": "thiago@paddock.solutions",
@@ -71,8 +97,16 @@
       "lastName": "Campos",
       "enabled": true,
       "emailVerified": true,
-      "credentials": [{ "type": "password", "value": "paddock123", "temporary": false }],
-      "realmRoles": ["ADMIN"]
+      "credentials": [
+        {
+          "type": "password",
+          "value": "paddock123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "ADMIN"
+      ]
     }
   ]
 }

@@ -8,7 +8,7 @@
 #   ./seed-users.sh reset-password <email> <senha>   → reseta senha
 #   ./seed-users.sh delete <email>                   → remove usuário
 #
-# Roles disponíveis: ADMIN | MANAGER | CONSULTANT | MECHANIC | CASHIER
+# Roles disponíveis: ADMIN | MANAGER | CONSULTANT | STOREKEEPER
 #
 # Exemplo:
 #   ./seed-users.sh create joao@dscar.com Senha123! CONSULTANT
@@ -138,6 +138,6 @@ case "${1:-}" in
   delete)           cmd_delete "$2" ;;
   *)
     echo "Uso: $0 list | create <email> <senha> <role> | reset-password <email> <senha> | delete <email>"
-    echo "Roles: ADMIN | MANAGER | CONSULTANT | MECHANIC | CASHIER"
+    echo "Roles: ADMIN | MANAGER | CONSULTANT | STOREKEEPER"
     exit 1 ;;
 esac

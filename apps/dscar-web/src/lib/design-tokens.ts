@@ -157,10 +157,7 @@ export const ROLE_LABEL: Record<PaddockRole, string> = {
   ADMIN:       "Administrador",
   MANAGER:     "Gerente",
   CONSULTANT:  "Consultor",
-  TECHNICIAN:  "Técnico",
-  SALESPERSON: "Vendedor",
-  ACCOUNTANT:  "Contador",
-  READONLY:    "Visualização",
+  STOREKEEPER: "Almoxarife",
 } as const;
 
 // ─── Urgência IA → Cores ─────────────────────────────────────────────────────

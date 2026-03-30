@@ -26,13 +26,18 @@ export function useCompanyAccess() {
         /** Role do usuário */
         role: token?.role ?? ("READONLY" as PaddockRole),
 
-        /** Pode gerenciar (MANAGER, ADMIN, OWNER) */
+        /** Pode gerenciar OS e equipe (MANAGER, ADMIN, OWNER) */
         canManage: (["OWNER", "ADMIN", "MANAGER"] as PaddockRole[]).includes(
             token?.role
         ),
 
-        /** Pode administrar (ADMIN, OWNER) */
+        /** Pode administrar o sistema (ADMIN, OWNER) */
         canAdmin: (["OWNER", "ADMIN"] as PaddockRole[]).includes(token?.role),
+
+        /** Pode acessar módulo de estoque (STOREKEEPER, MANAGER, ADMIN, OWNER) */
+        canAccessInventory: (["OWNER", "ADMIN", "MANAGER", "STOREKEEPER"] as PaddockRole[]).includes(
+            token?.role
+        ),
 
         /** Tenant schema ativo */
         tenantSchema: token?.tenant_schema ?? "",
@@ -48,10 +53,7 @@ export function hasMinRole(
     minRole: PaddockRole
 ): boolean {
     const hierarchy: PaddockRole[] = [
-        "READONLY",
-        "SALESPERSON",
-        "TECHNICIAN",
-        "ACCOUNTANT",
+        "STOREKEEPER",
         "CONSULTANT",
         "MANAGER",
         "ADMIN",

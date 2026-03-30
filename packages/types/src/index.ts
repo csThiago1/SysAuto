@@ -6,14 +6,11 @@
 // ─── Autenticação / JWT ───────────────────────────────────────────────────────
 
 export type PaddockRole =
-    | "OWNER"
-    | "ADMIN"
-    | "MANAGER"
-    | "CONSULTANT"
-    | "TECHNICIAN"
-    | "SALESPERSON"
-    | "ACCOUNTANT"
-    | "READONLY";
+    | "OWNER"       // fundador / acesso total
+    | "ADMIN"       // administrador da empresa
+    | "MANAGER"     // gerente operacional
+    | "CONSULTANT"  // consultor de atendimento (abre e acompanha OS)
+    | "STOREKEEPER"; // almoxarife (gestão de estoque de peças)
 
 export interface PaddockJWT {
     sub: string; // UUID global do usuário
