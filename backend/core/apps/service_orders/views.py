@@ -61,7 +61,7 @@ class ServiceOrderViewSet(
     filterset_fields = {
         "status": ["exact", "in"],
         "is_active": ["exact"],
-        "customer": ["exact"],
+        "customer_id": ["exact"],
         "estimated_delivery": ["date__lte", "date__gte", "date"],
     }
     search_fields = ["plate", "customer_name"]
