@@ -9,6 +9,10 @@ declare module "next-auth" {
   interface User {
     accessToken?: string;
   }
+  // JWT augmentation (next-auth v5 re-exports JWT through the main module)
+  interface JWT {
+    accessToken?: string;
+  }
 }
 
 // next-auth/jwt augmentation handled via next-auth module above
@@ -47,7 +51,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      session.accessToken = token.accessToken as string | undefined;
+      if (typeof token.accessToken === "string") {
+        session.accessToken = token.accessToken;
+      }
       return session;
     },
   },

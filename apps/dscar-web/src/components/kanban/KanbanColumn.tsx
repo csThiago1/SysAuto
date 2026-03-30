@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import type { ServiceOrder, ServiceOrderStatus } from "@paddock/types";
@@ -14,10 +14,15 @@ interface KanbanColumnProps {
   orders: ServiceOrder[];
 }
 
-export function KanbanColumn({ status, orders }: KanbanColumnProps): React.ReactElement {
+export const KanbanColumn = React.memo(function KanbanColumn({
+  status,
+  orders,
+}: KanbanColumnProps): React.ReactElement {
   const { setNodeRef, isOver } = useDroppable({ id: status });
   const cfg = SERVICE_ORDER_STATUS_CONFIG[status];
-  const ids = orders.map((o) => o.id);
+
+  // Stable array reference — SortableContext only re-processes when IDs actually change
+  const ids = useMemo(() => orders.map((o) => o.id), [orders]);
 
   return (
     <div className="flex flex-col min-w-[280px] w-[280px] max-h-full">
@@ -60,7 +65,7 @@ export function KanbanColumn({ status, orders }: KanbanColumnProps): React.React
       </div>
     </div>
   );
-}
+});
 
 /** Skeleton shown while data is loading */
 export function KanbanColumnSkeleton(): React.ReactElement {

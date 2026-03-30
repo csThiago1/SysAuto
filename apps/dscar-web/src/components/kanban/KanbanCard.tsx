@@ -15,7 +15,10 @@ interface CardContentProps {
   className?: string;
 }
 
-function CardContent({ order, className }: CardContentProps): React.ReactElement {
+const CardContent = React.memo(function CardContent({
+  order,
+  className,
+}: CardContentProps): React.ReactElement {
   const statusCfg = SERVICE_ORDER_STATUS_CONFIG[order.status as ServiceOrderStatus];
 
   return (
@@ -52,7 +55,7 @@ function CardContent({ order, className }: CardContentProps): React.ReactElement
       </div>
     </div>
   );
-}
+});
 
 // ── Draggable card (inside a column) ────────────────────────────────────────
 
@@ -60,7 +63,9 @@ interface KanbanCardProps {
   order: ServiceOrder;
 }
 
-export function KanbanCard({ order }: KanbanCardProps): React.ReactElement {
+export const KanbanCard = React.memo(function KanbanCard({
+  order,
+}: KanbanCardProps): React.ReactElement {
   const {
     attributes,
     listeners,
@@ -87,7 +92,6 @@ export function KanbanCard({ order }: KanbanCardProps): React.ReactElement {
         href={`/os/${order.id}`}
         draggable={false}
         onClick={(e) => {
-          // Block navigation while the card is being dragged
           if (isDragging) e.preventDefault();
         }}
       >
@@ -102,7 +106,7 @@ export function KanbanCard({ order }: KanbanCardProps): React.ReactElement {
       </Link>
     </div>
   );
-}
+});
 
 // ── Overlay — pure presentational, no dnd hooks ──────────────────────────────
 
