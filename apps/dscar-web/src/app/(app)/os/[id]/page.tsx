@@ -3,6 +3,7 @@
 import React, { use } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Loader2, CheckCircle2, Circle } from "lucide-react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,6 +40,14 @@ function formatCurrency(value: number): string {
 }
 
 export default function OSDetailPage({ params }: OSDetailPageProps): React.ReactElement {
+  return (
+    <ErrorBoundary>
+      <OSDetailContent params={params} />
+    </ErrorBoundary>
+  );
+}
+
+function OSDetailContent({ params }: OSDetailPageProps): React.ReactElement {
   const { id } = use(params);
   const { data: os, isLoading, isError } = useServiceOrder(id);
   const { mutate: transition, isPending, error: transitionError } = useTransitionStatus(id);

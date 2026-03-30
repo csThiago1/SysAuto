@@ -3,6 +3,7 @@
 import React, { use } from "react";
 import Link from "next/link";
 import { ArrowLeft, User } from "lucide-react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +36,16 @@ function formatDate(iso: string): string {
 }
 
 export default function ClienteDetailPage({
+  params,
+}: ClienteDetailPageProps): React.ReactElement {
+  return (
+    <ErrorBoundary>
+      <ClienteDetailContent params={params} />
+    </ErrorBoundary>
+  );
+}
+
+function ClienteDetailContent({
   params,
 }: ClienteDetailPageProps): React.ReactElement {
   const { id } = use(params);

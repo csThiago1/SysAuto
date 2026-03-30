@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -40,6 +41,14 @@ interface ApiError {
 }
 
 export default function NovaOSPage(): React.ReactElement {
+  return (
+    <ErrorBoundary>
+      <NovaOSContent />
+    </ErrorBoundary>
+  );
+}
+
+function NovaOSContent(): React.ReactElement {
   const router = useRouter();
   const [customerSearch, setCustomerSearch] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);

@@ -1,7 +1,7 @@
-# Backlog — Sprint 03 (Robustez, Filtros e Detalhe de Cliente)
+# Backlog — Sprint 04 (RBAC, Notificações de Prazo e Melhorias Sprint 03)
 
 **Projeto:** DS Car ERP
-**Sprint:** 03
+**Sprint:** 04
 **Última atualização:** 2026-03-30
 **Legenda:** `[ ]` pendente · `[x]` concluído · `[~]` em progresso · `[!]` bloqueado
 
@@ -9,72 +9,61 @@
 
 ## Frontend
 
-### US-01 — Robustez Global
+### US-01 — RBAC no Frontend
 
-- [ ] Criar `src/hooks/useDebounce.ts` com hook genérico `useDebounce<T>(value: T, delay: number): T`
-- [ ] Remover todas as definições locais de `useDebounce` e substituir pela importação de `src/hooks/useDebounce.ts`
-- [ ] Criar/atualizar `src/lib/api.ts` com função `apiFetch(path, init?)` exportada como default
-- [ ] Integrar `toast.error()` via `sonner` no `apiFetch` para erros HTTP (mensagem do campo `detail` DRF; fallback genérico)
-- [ ] Tratar erro 401 em `apiFetch`: `signOut()` + toast `"Sessão expirada"` + redirect `/login`
-- [ ] Tratar erro de rede (fetch throws) em `apiFetch`: toast `"Sem conexão com o servidor"`
-- [ ] Migrar todos os hooks (`useServiceOrders`, `useClients`, `useDashboardStats`, etc.) para usar `apiFetch` — eliminar `fetch()` direto nos hooks
-- [ ] Criar componente `src/components/ErrorBoundary.tsx` usando `react-error-boundary`
-- [ ] Implementar fallback da `<ErrorBoundary>`: mensagem de erro + botão "Tentar novamente" (`resetErrorBoundary`) + stack oculto em produção
-- [ ] Adicionar `Sentry.captureException` no `componentDidCatch` com degradação silenciosa se `SENTRY_DSN` ausente
-- [ ] Envolver página `/` (dashboard) em `<ErrorBoundary>` + `<Suspense>`
-- [ ] Envolver página `/os` em `<ErrorBoundary>` + `<Suspense>`
-- [ ] Envolver página `/os/kanban` em `<ErrorBoundary>` + `<Suspense>`
-- [ ] Envolver página `/clientes` em `<ErrorBoundary>` + `<Suspense>`
-- [ ] Envolver página `/clientes/[id]` (nova) em `<ErrorBoundary>` + `<Suspense>`
+- [ ] Definir tipo `PaddockRole` e `ROLE_HIERARCHY` em `packages/types/src/auth.ts`
+- [ ] Criar hook `src/hooks/usePermission.ts` lendo `session.user.role` via `useSession()`
+- [ ] Criar componente `src/components/PermissionGate.tsx` com props `role`, `fallback?` e `children`
+- [ ] Criar guard `src/lib/withRoleGuard.ts` para uso nas páginas protegidas
+- [ ] Proteger `/os/nova`: redirecionar `STOREKEEPER` → `/os` com `toast.info`
+- [ ] Proteger `/admin/**` e `/configuracoes/**`: redirecionar `CONSULTANT` e `STOREKEEPER` → `/`
+- [ ] Esconder botão "Nova OS" em `/os` para `STOREKEEPER` via `<PermissionGate role="CONSULTANT">`
+- [ ] Adicionar module augmentation de `role` no tipo `Session` em `src/types/next-auth.d.ts`
+- [ ] Escrever testes unitários Vitest para `usePermission` (hierarquia de papéis)
 
-### US-02 — Filtros na Lista de OS
+### US-02 — Notificações de Prazo de OS
 
-- [ ] Criar componente `<OSFilterBar>` em `src/components/os/OSFilterBar.tsx` com campo de busca por texto e select de status múltiplo
-- [ ] Implementar debounce de 400 ms no campo de texto via `useDebounce` (US-01)
-- [ ] Implementar badges removíveis para cada status selecionado
-- [ ] Implementar botão "Limpar filtros" (visível apenas com filtro ativo)
-- [ ] Sincronizar parâmetro `search` na URL via `useSearchParams` + `router.push`
-- [ ] Sincronizar parâmetro `status` (multi-valor) na URL via `useSearchParams` + `router.push`
-- [ ] Resetar `page` para `1` automaticamente ao alterar `search` ou `status`
-- [ ] Atualizar `useServiceOrders` para aceitar `{ page, search, status[] }` e construir query string corretamente
-- [ ] Atualizar `QueryKey` para `["service-orders", { page, search, status }]`
-- [ ] Exibir skeleton de 20 linhas durante `isFetching` na troca de filtro
-- [ ] Exibir mensagem de "sem resultados" quando a API retorna lista vazia
-- [ ] Atualizar texto auxiliar da paginação para refletir total filtrado
+- [ ] Criar hook `src/hooks/useOverdueOrders.ts` com `staleTime: 60_000` e `refetchOnWindowFocus: true`
+- [ ] Criar componente `src/components/header/NotificationBell.tsx` com badge de contagem
+- [ ] Badge exibe `99+` para contagens maiores que 99; oculto quando `count === 0`
+- [ ] Criar componente `src/components/header/OverdueDropdown.tsx` com lista de OS vencidas/hoje
+- [ ] Diferenciar visualmente OS vencidas (vermelho) de OS com entrega hoje (âmbar)
+- [ ] Cada item do dropdown é link para `/os/[id]`
+- [ ] Integrar `<NotificationBell>` no `src/components/Header.tsx`
+- [ ] Escrever testes de componente (Vitest + Testing Library) para badge e dropdown
 
-### US-03 — Detalhe de Cliente
+### US-03 — Melhorias Pendentes do Sprint 03
 
-- [ ] Criar hook `useClient(id: string)` em `src/hooks/useClient.ts` com `QueryKey: ["client", id]`
-- [ ] Criar hook `useClientOrders(customerId: string)` em `src/hooks/useClientOrders.ts` com `QueryKey: ["service-orders", "by-client", customerId]`
-- [ ] Criar página `src/app/clientes/[id]/page.tsx`
-- [ ] Implementar seção de dados do cliente: nome, CPF/CNPJ mascarado (LGPD), telefone formatado, e-mail
-- [ ] Implementar tabela de histórico de OS (últimas 10, colunas: Número, Data, Placa, Status badge, Consultor, Valor)
-- [ ] Adicionar link para `/os/[id]` no número de cada OS da tabela de histórico
-- [ ] Implementar skeleton de carregamento (dados + tabela)
-- [ ] Implementar mensagem "Nenhuma OS encontrada para este cliente." quando histórico vazio
-- [ ] Adicionar botão "Voltar" (`← Clientes`) com `router.back()`
-- [ ] Adicionar breadcrumb `Clientes / <Nome do cliente>`
-- [ ] Adicionar link para `/clientes/[id]` nas linhas da lista de clientes (`/clientes`)
-- [ ] Adicionar link para `/clientes/[id]` nos cards do Kanban (`<KanbanCard>`)
-- [ ] Adicionar link para `/clientes/[id]` no detalhe de OS (`/os/[id]`)
-- [ ] Resolver DT-04: substituir `href as never` por tipagem correta nos novos links
+- [ ] Criar `src/hooks/useClientOrders.ts` com `QueryKey: ["service-orders", "by-client", customerId]`
+- [ ] Atualizar `/clientes/[id]/page.tsx` para usar `useClientOrders` em vez de `useServiceOrders` direto
+- [ ] Criar componente `<Breadcrumb>` em `src/components/ui/breadcrumb.tsx` (se não existir via shadcn)
+- [ ] Adicionar breadcrumb `Clientes / <Nome do cliente>` no topo de `/clientes/[id]/page.tsx`
+- [ ] Extrair skeleton de `/clientes/[id]` para `<ClienteDetailSkeleton>` reutilizável
+- [ ] Envolver `/clientes/[id]` em `<ErrorBoundary>` + `<Suspense fallback={<ClienteDetailSkeleton />}>`
+- [ ] Instalar `@sentry/nextjs` e adicionar `Sentry.captureException` no `ErrorBoundary` com degradação silenciosa
+- [ ] Adicionar `NEXT_PUBLIC_SENTRY_DSN` ao `.env.example`
+- [ ] Adicionar link `<Link href={`/clientes/${order.customer_id}`}>` no nome do cliente em `<KanbanCard>`
+- [ ] Garantir que o link no KanbanCard não interfere no drag do DnD Kit (`e.stopPropagation()`)
+- [ ] Listar e corrigir todas as ocorrências de `href as never` no codebase (DT-04)
 
 ---
 
 ## QA
 
-- [ ] Testar US-01: simular erro 401 em DevTools → confirmar signOut + toast + redirect `/login`
-- [ ] Testar US-01: simular Offline em DevTools → confirmar toast "Sem conexão com o servidor"
-- [ ] Testar US-01: lançar erro manual em componente filho → confirmar fallback da `<ErrorBoundary>` com botão "Tentar novamente" funcional
-- [ ] Testar US-01: confirmar que nenhum `fetch()` direto existe fora de `src/lib/api.ts` (`grep` no CI)
-- [ ] Testar US-02: filtrar por placa parcial → URL atualizada → recarregar página restaura filtro
-- [ ] Testar US-02: selecionar dois status → URL com dois `status=` → recarregar restaura ambos
-- [ ] Testar US-02: clicar "Limpar filtros" → URL limpa → tabela volta ao estado padrão
-- [ ] Testar US-02: filtrar em página 3 → `page` resetado para `1` automaticamente
-- [ ] Testar US-03: acessar `/clientes/[id]` → CPF/CNPJ mascarado conforme LGPD
-- [ ] Testar US-03: histórico de OS exibe até 10 itens com links para `/os/[id]`
-- [ ] Testar US-03: links nas listas de clientes, Kanban e detalhe de OS navegam para `/clientes/[id]`
-- [ ] Verificar que `make lint` passa sem erros após todas as alterações
+- [ ] Testar US-01: `STOREKEEPER` tenta `/os/nova` → redirect `/os` + toast
+- [ ] Testar US-01: `CONSULTANT` tenta `/admin` → redirect `/`
+- [ ] Testar US-01: `<PermissionGate role="MANAGER">` oculta para `CONSULTANT`, exibe para `MANAGER`/`ADMIN`
+- [ ] Testar US-01: sem flash de conteúdo restrito durante carregamento de sessão
+- [ ] Testar US-02: badge exibe contagem correta de OS vencidas + hoje
+- [ ] Testar US-02: badge oculto quando não há OS pendentes
+- [ ] Testar US-02: item do dropdown navega para `/os/[id]` correto
+- [ ] Testar US-02: refetch dispara ao recuperar foco da janela
+- [ ] Testar US-03: breadcrumb aparece em `/clientes/[id]` com link funcional para `/clientes`
+- [ ] Testar US-03: erro em `ClienteDetailPage` → fallback `<ErrorBoundary>` com "Tentar novamente"
+- [ ] Testar US-03: clique no nome do cliente no KanbanCard navega para `/clientes/[id]`
+- [ ] Testar US-03: drag de card no Kanban não é interrompido pelo link do cliente
+- [ ] Verificar que `make typecheck` passa sem `href as never` (DT-04 resolvido)
+- [ ] Verificar que `make lint` passa sem erros
 - [ ] Verificar que `make typecheck` passa (tsc sem erros, nenhum `any` novo)
 
 ---
@@ -83,11 +72,13 @@
 
 | Área | Total | Concluído | Em Progresso | Bloqueado |
 |------|-------|-----------|--------------|-----------|
-| Frontend (US-01) | 15 | 0 | 0 | 0 |
-| Frontend (US-02) | 12 | 0 | 0 | 0 |
-| Frontend (US-03) | 14 | 0 | 0 | 0 |
-| QA | 13 | 0 | 0 | 0 |
-| **Total** | **54** | **0** | **0** | **0** |
+| Frontend (US-01) | 9 | 0 | 0 | 0 |
+| Frontend (US-02) | 8 | 0 | 0 | 0 |
+| Frontend (US-03) | 11 | 0 | 0 | 0 |
+| QA | 15 | 0 | 0 | 0 |
+| **Total** | **43** | **0** | **0** | **0** |
+
+**Taxa de conclusão do Sprint 04:** 0/43 (0%)
 
 ---
 
