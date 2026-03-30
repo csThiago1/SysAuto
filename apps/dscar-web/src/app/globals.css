@@ -2,10 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Google Fonts ─────────────────────────────────────────────────────────── */
-/* Inter: corpo / formulários / tabelas                                        */
-/* Rajdhani: placas, badges de número, identidade automotiva                   */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600;700&display=swap');
+/* Fontes carregadas via next/font/google em layout.tsx (self-hosted, sem CDN) */
 
 /* ─── CSS Custom Properties — DS Car Design System ─────────────────────────── */
 :root {
