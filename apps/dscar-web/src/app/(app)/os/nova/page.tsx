@@ -6,13 +6,14 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Search, Loader2 } from "lucide-react";
+import { ArrowLeft, Search, Loader2, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCustomers, type Customer } from "@/hooks/useCustomers";
+import { useCreateCustomer, ApiError } from "@/hooks/useCreateCustomer";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 
@@ -54,6 +55,13 @@ function NovaOSContent(): React.ReactElement {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [showInlineCreate, setShowInlineCreate] = useState(false);
+  const [inlineName, setInlineName] = useState("");
+  const [inlinePhone, setInlinePhone] = useState("");
+  const [inlineCpf, setInlineCpf] = useState("");
+  const [inlineLgpd, setInlineLgpd] = useState(false);
+  const [inlineErrors, setInlineErrors] = useState<Record<string, string>>({});
+  const { mutate: createCustomer, isPending: creatingCustomer } = useCreateCustomer();
 
   const debouncedSearch = useDebounce(customerSearch, 300);
   const { data: customersData, isFetching: fetchingCustomers } =
@@ -176,9 +184,23 @@ function NovaOSContent(): React.ReactElement {
                   customersData && (
                     <div className="absolute left-0 top-full z-50 mt-1 w-full rounded border border-neutral-200 bg-white shadow-dropdown">
                       {customersData.results.length === 0 ? (
-                        <div className="px-4 py-3 text-sm text-neutral-500">
-                          Nenhum cliente encontrado
-                        </div>
+                        <>
+                          <div className="px-4 py-3 text-sm text-neutral-500">
+                            Nenhum cliente encontrado
+                          </div>
+                          <button
+                            type="button"
+                            className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-primary-600 hover:bg-primary-50 border-t border-neutral-100 font-medium"
+                            onClick={() => {
+                              setInlineName(debouncedSearch);
+                              setShowInlineCreate(true);
+                              setShowDropdown(false);
+                            }}
+                          >
+                            <UserPlus className="h-4 w-4" />
+                            Cadastrar &quot;{debouncedSearch}&quot; como novo cliente
+                          </button>
+                        </>
                       ) : (
                         customersData.results.map((customer) => (
                           <button
@@ -211,6 +233,163 @@ function NovaOSContent(): React.ReactElement {
                 </div>
               )}
             </div>
+
+            {/* Inline create form */}
+            {showInlineCreate && !selectedCustomer && (
+              <div className="rounded border border-primary-200 bg-primary-50 p-4 space-y-3">
+                <p className="text-sm font-medium text-primary-800 flex items-center gap-1.5">
+                  <UserPlus className="h-4 w-4" />
+                  Cadastrar novo cliente
+                </p>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="inline-name">Nome</Label>
+                  <Input
+                    id="inline-name"
+                    value={inlineName}
+                    onChange={(e) => {
+                      setInlineName(e.target.value);
+                      if (inlineErrors.name) setInlineErrors((prev) => ({ ...prev, name: "" }));
+                    }}
+                    placeholder="Nome completo"
+                    className={cn("bg-white", inlineErrors.name ? "border-error-400" : "")}
+                  />
+                  {inlineErrors.name && (
+                    <p className="text-xs text-error-600">{inlineErrors.name}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="inline-phone">Telefone</Label>
+                  <Input
+                    id="inline-phone"
+                    value={inlinePhone}
+                    onChange={(e) => {
+                      setInlinePhone(e.target.value);
+                      if (inlineErrors.phone) setInlineErrors((prev) => ({ ...prev, phone: "" }));
+                    }}
+                    placeholder="92991234567"
+                    inputMode="numeric"
+                    className={cn("bg-white", inlineErrors.phone ? "border-error-400" : "")}
+                  />
+                  {inlineErrors.phone && (
+                    <p className="text-xs text-error-600">{inlineErrors.phone}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="inline-cpf">CPF (opcional)</Label>
+                  <Input
+                    id="inline-cpf"
+                    value={inlineCpf}
+                    onChange={(e) => setInlineCpf(e.target.value)}
+                    placeholder="00000000000"
+                    inputMode="numeric"
+                    maxLength={11}
+                    className="bg-white"
+                  />
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <input
+                    id="inline-lgpd"
+                    type="checkbox"
+                    className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+                    checked={inlineLgpd}
+                    onChange={(e) => {
+                      setInlineLgpd(e.target.checked);
+                      if (inlineErrors.lgpd_consent) setInlineErrors((prev) => ({ ...prev, lgpd_consent: "" }));
+                    }}
+                  />
+                  <Label
+                    htmlFor="inline-lgpd"
+                    className="text-xs text-neutral-700 leading-snug cursor-pointer"
+                  >
+                    Autorizo o armazenamento e uso dos meus dados pessoais
+                    conforme a LGPD (Lei 13.709/2018).
+                  </Label>
+                </div>
+                {inlineErrors.lgpd_consent && (
+                  <p className="text-xs text-error-600">{inlineErrors.lgpd_consent}</p>
+                )}
+
+                {inlineErrors.general && (
+                  <p className="text-xs text-error-600">{inlineErrors.general}</p>
+                )}
+
+                <div className="flex gap-2 justify-end pt-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowInlineCreate(false);
+                      setInlineErrors({});
+                      setInlineName("");
+                      setInlinePhone("");
+                      setInlineCpf("");
+                      setInlineLgpd(false);
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={creatingCustomer}
+                    onClick={() => {
+                      const name = inlineName.trim();
+                      const errs: Record<string, string> = {};
+                      if (!name || name.length < 2) errs.name = "Nome obrigatório";
+                      if (!inlinePhone || inlinePhone.length < 10) errs.phone = "Telefone inválido";
+                      else if (!/^\d+$/.test(inlinePhone)) errs.phone = "Apenas números";
+                      if (!inlineLgpd) errs.lgpd_consent = "Consentimento LGPD obrigatório";
+                      if (Object.keys(errs).length > 0) {
+                        setInlineErrors(errs);
+                        return;
+                      }
+                      createCustomer(
+                        {
+                          name,
+                          phone: inlinePhone,
+                          cpf: inlineCpf || undefined,
+                          lgpd_consent: true,
+                        },
+                        {
+                          onSuccess: (created) => {
+                            handleSelectCustomer({
+                              id: created.id,
+                              name: created.name,
+                              document_masked: created.cpf_masked ?? "",
+                              phone_masked: created.phone_masked,
+                            });
+                            setShowInlineCreate(false);
+                            setInlineErrors({});
+                            setInlinePhone("");
+                            setInlineCpf("");
+                            setInlineLgpd(false);
+                          },
+                          onError: (err) => {
+                            if (err instanceof ApiError && err.fieldErrors) {
+                              const mapped: Record<string, string> = {};
+                              Object.entries(err.fieldErrors).forEach(([f, msgs]) => {
+                                mapped[f] = msgs[0] ?? "";
+                              });
+                              setInlineErrors(mapped);
+                            } else {
+                              setInlineErrors({ general: (err as Error).message });
+                            }
+                          },
+                        }
+                      );
+                    }}
+                  >
+                    {creatingCustomer && <Loader2 className="h-3 w-3 animate-spin" />}
+                    Cadastrar
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 

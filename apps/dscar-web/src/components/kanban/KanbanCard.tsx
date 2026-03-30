@@ -51,7 +51,18 @@ const CardContent = React.memo(function CardContent({
         </p>
 
         {/* Customer */}
-        <p className="text-xs text-neutral-500 truncate">{order.customer_name}</p>
+        {order.customer_id ? (
+          <Link
+            href={`/clientes/${order.customer_id}`}
+            className="text-xs text-neutral-500 truncate hover:text-primary-600 hover:underline transition-colors block"
+            onClick={(e) => e.stopPropagation()}
+            draggable={false}
+          >
+            {order.customer_name}
+          </Link>
+        ) : (
+          <p className="text-xs text-neutral-500 truncate">{order.customer_name}</p>
+        )}
       </div>
     </div>
   );

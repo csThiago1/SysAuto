@@ -1,9 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, Users } from "lucide-react";
+import { Search, Users, UserPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
+import { PermissionGate } from "@/components/PermissionGate";
 import {
   Table,
   TableBody,
@@ -12,7 +15,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Link from "next/link";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useDebounce } from "@/hooks/useDebounce";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -28,11 +30,21 @@ export default function ClientesPage(): React.ReactElement {
     <ErrorBoundary>
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-semibold text-neutral-900">Clientes</h2>
-        <p className="text-sm text-neutral-500 mt-0.5">
-          Consulte e localize clientes cadastrados
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-semibold text-neutral-900">Clientes</h2>
+          <p className="text-sm text-neutral-500 mt-0.5">
+            Consulte e localize clientes cadastrados
+          </p>
+        </div>
+        <PermissionGate role="CONSULTANT">
+          <Button asChild>
+            <Link href="/clientes/novo">
+              <UserPlus className="h-4 w-4" />
+              Novo Cliente
+            </Link>
+          </Button>
+        </PermissionGate>
       </div>
 
       {/* Search */}

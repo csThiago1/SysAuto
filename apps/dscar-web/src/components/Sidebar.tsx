@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { Route } from "next";
 import { Gauge, ClipboardList, LayoutGrid, Users, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { DsCarLogo } from "@/components/DsCarLogo";
 import { useUIStore } from "@/store/ui.store";
@@ -73,7 +74,7 @@ export function Sidebar(): React.ReactElement {
           return (
             <Link
               key={`${item.href}-${item.label}`}
-              href={item.href as never}
+              href={item.href as Route}
               className={cn(
                 "flex items-center gap-3 rounded px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive

@@ -58,7 +58,12 @@ class ServiceOrderViewSet(
 
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["status", "is_active"]
+    filterset_fields = {
+        "status": ["exact", "in"],
+        "is_active": ["exact"],
+        "customer": ["exact"],
+        "estimated_delivery": ["date__lte", "date__gte", "date"],
+    }
     search_fields = ["plate", "customer_name"]
     ordering_fields = ["opened_at", "number", "estimated_delivery"]
     ordering = ["-opened_at"]

@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { LogOut, Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { NotificationBell } from "@/components/header/NotificationBell";
 
 const PAGE_TITLES: Record<string, string> = {
   "/os": "Ordens de Serviço",
@@ -31,6 +32,9 @@ export function AppHeader(): React.ReactElement {
 
       {/* Right side */}
       <div className="flex items-center gap-3">
+        {/* Notification bell — overdue / due-today service orders */}
+        <NotificationBell />
+
         {/* Active company badge */}
         <Badge variant="secondary" className="gap-1.5 font-medium">
           <Building2 className="h-3 w-3" />

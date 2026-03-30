@@ -16,7 +16,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useCustomer } from "@/hooks/useCustomer";
-import { useServiceOrders } from "@/hooks/useServiceOrders";
+import { useClientOrders } from "@/hooks/useClientOrders";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { SERVICE_ORDER_STATUS_CONFIG } from "@/lib/design-tokens";
 import { cn } from "@/lib/utils";
 import type { ServiceOrderStatus } from "@paddock/types";
@@ -53,11 +54,7 @@ function ClienteDetailContent({
   const { data: customer, isLoading: loadingCustomer, isError: errorCustomer } =
     useCustomer(id);
 
-  const { data: osData, isLoading: loadingOS } = useServiceOrders({
-    customer: id,
-    ordering: "-opened_at",
-    page_size: "10",
-  });
+  const { data: osData, isLoading: loadingOS } = useClientOrders(id);
 
   if (loadingCustomer) {
     return (
@@ -86,6 +83,11 @@ function ClienteDetailContent({
 
   return (
     <div className="max-w-3xl space-y-6">
+      <Breadcrumb items={[
+        { label: "Clientes", href: "/clientes" },
+        { label: customer?.name ?? "..." },
+      ]} />
+
       {/* Header */}
       <div className="flex items-start gap-3">
         <Button variant="ghost" size="icon" asChild>

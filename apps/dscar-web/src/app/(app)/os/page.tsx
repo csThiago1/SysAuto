@@ -18,6 +18,7 @@ import {
 import { useServiceOrders, useDashboardStats } from "@/hooks/useServiceOrders";
 import { useDebounce } from "@/hooks/useDebounce";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { PermissionGate } from "@/components/PermissionGate";
 import {
   SERVICE_ORDER_STATUS_CONFIG,
   KANBAN_COLUMNS_ORDER,
@@ -157,12 +158,14 @@ function OSListInner(): React.ReactElement {
             Gerencie e acompanhe todas as OS
           </p>
         </div>
-        <Button asChild>
-          <Link href="/os/nova">
-            <Plus className="h-4 w-4" />
-            Nova OS
-          </Link>
-        </Button>
+        <PermissionGate role="CONSULTANT">
+          <Button asChild>
+            <Link href="/os/nova">
+              <Plus className="h-4 w-4" />
+              Nova OS
+            </Link>
+          </Button>
+        </PermissionGate>
       </div>
 
       {/* Stats cards */}

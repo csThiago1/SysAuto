@@ -11,7 +11,11 @@ from rest_framework import filters, mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
 
 from .models import UnifiedCustomer
-from .serializers import UnifiedCustomerDetailSerializer, UnifiedCustomerListSerializer
+from .serializers import (
+    UnifiedCustomerCreateSerializer,
+    UnifiedCustomerDetailSerializer,
+    UnifiedCustomerListSerializer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +29,17 @@ logger = logging.getLogger(__name__)
         ],
     ),
     retrieve=extend_schema(summary="Detalhar cliente"),
+    create=extend_schema(
+        summary="Criar cliente",
+        description=(
+            "Cria um novo cliente unificado. "
+            "Consentimento LGPD (lgpd_consent=true) é obrigatório. "
+            "CPF e telefone são normalizados para apenas dígitos antes do armazenamento."
+        ),
+    ),
 )
 class UnifiedCustomerViewSet(
+    mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
@@ -40,7 +53,11 @@ class UnifiedCustomerViewSet(
 
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ["is_active", "group_sharing_consent"]
+    filterset_fields = {
+        "is_active": ["exact"],
+        "group_sharing_consent": ["exact"],
+        "created_at": ["date"],
+    }
     search_fields = ["name"]
     ordering_fields = ["name", "created_at"]
     ordering = ["name"]
@@ -54,7 +71,9 @@ class UnifiedCustomerViewSet(
         )
 
     def get_serializer_class(self):  # type: ignore[override]
-        """Lista usa serializer compacto; detalhe usa serializer completo."""
+        """Seleciona serializer conforme a ação."""
+        if self.action == "create":
+            return UnifiedCustomerCreateSerializer
         if self.action == "list":
             return UnifiedCustomerListSerializer
         return UnifiedCustomerDetailSerializer
