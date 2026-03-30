@@ -18,6 +18,7 @@ declare module "next-auth" {
 // next-auth/jwt augmentation handled via next-auth module above
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   providers: [
     Keycloak({
       clientId: process.env.KEYCLOAK_CLIENT_ID ?? "paddock-frontend",
