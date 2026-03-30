@@ -63,7 +63,7 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
     total = serializers.FloatField(read_only=True)
     status_display = serializers.CharField(source="get_status_display", read_only=True)
     allowed_transitions = serializers.SerializerMethodField()
-    photos = ServiceOrderPhotoSerializer(many=True, read_only=True, source="photos")
+    photos = ServiceOrderPhotoSerializer(many=True, read_only=True)
 
     class Meta:
         model = ServiceOrder

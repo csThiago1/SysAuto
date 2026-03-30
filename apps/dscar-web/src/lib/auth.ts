@@ -1,7 +1,20 @@
 import NextAuth from "next-auth";
 import Keycloak from "next-auth/providers/keycloak";
 import Credentials from "next-auth/providers/credentials";
+import { SignJWT } from "jose";
 import type { PaddockRole } from "@paddock/types";
+
+const DEV_JWT_SECRET = new TextEncoder().encode(
+  process.env.DEV_JWT_SECRET ?? "dscar-dev-secret-paddock-2025"
+);
+
+async function makeDevToken(email: string): Promise<string> {
+  return new SignJWT({ email, role: "ADMIN", token_type: "access" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("8h")
+    .sign(DEV_JWT_SECRET);
+}
 
 declare module "next-auth" {
   interface Session {
@@ -37,11 +50,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (credentials?.email && credentials?.password === "paddock123") {
+          const token = await makeDevToken(credentials.email as string);
           return {
             id: "dev-user-id",
             email: credentials.email as string,
             name: "Dev User",
-            accessToken: "dev-mock-token",
+            accessToken: token,
           };
         }
         return null;
