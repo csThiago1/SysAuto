@@ -1,0 +1,78 @@
+{
+  "realm": "paddock",
+  "enabled": true,
+  "displayName": "Paddock Solutions",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "accessTokenLifespan": 3600,
+  "ssoSessionMaxLifespan": 1209600,
+  "clients": [
+    {
+      "clientId": "paddock-backend",
+      "name": "Paddock Backend",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "dev-backend-secret",
+      "bearerOnly": false,
+      "publicClient": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect",
+      "redirectUris": ["http://localhost:8000/*"],
+      "webOrigins": ["http://localhost:8000"]
+    },
+    {
+      "clientId": "paddock-frontend",
+      "name": "Paddock Frontend",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "protocol": "openid-connect",
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://localhost:3001/*",
+        "http://localhost:3002/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002"
+      ]
+    }
+  ],
+  "roles": {
+    "realm": [
+      { "name": "ADMIN",      "description": "Administrador do sistema" },
+      { "name": "MANAGER",    "description": "Gerente de unidade" },
+      { "name": "CONSULTANT", "description": "Atendente / Consultor" },
+      { "name": "MECHANIC",   "description": "Mecânico / Técnico" },
+      { "name": "CASHIER",    "description": "Caixa" }
+    ]
+  },
+  "users": [
+    {
+      "username": "admin@paddock.solutions",
+      "email": "admin@paddock.solutions",
+      "firstName": "Admin",
+      "lastName": "Paddock",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "admin123", "temporary": false }],
+      "realmRoles": ["ADMIN"]
+    },
+    {
+      "username": "thiago@paddock.solutions",
+      "email": "thiago@paddock.solutions",
+      "firstName": "Thiago",
+      "lastName": "Campos",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "paddock123", "temporary": false }],
+      "realmRoles": ["ADMIN"]
+    }
+  ]
+}

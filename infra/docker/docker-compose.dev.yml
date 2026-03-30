@@ -66,6 +66,65 @@ services:
       retries: 10
       start_period: 60s
 
+  # ─── Django 5 — API principal ─────────────────────────────────────────────
+  django:
+    build:
+      context: ../../backend/core
+      dockerfile: Dockerfile.dev
+    image: paddock-django:dev
+    container_name: paddock_django
+    restart: unless-stopped
+    command: python manage.py runserver 0.0.0.0:8000 --settings=config.settings.dev
+    env_file:
+      - ../../.env
+    volumes:
+      - ../../backend/core:/app          # hot-reload
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/schema/')\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # ─── Celery Worker ────────────────────────────────────────────────────────
+  celery:
+    image: paddock-django:dev
+    container_name: paddock_celery
+    restart: unless-stopped
+    command: celery -A config worker --loglevel=info --concurrency=4 -Q celery,fiscal,crm,ai
+    env_file:
+      - ../../.env
+    volumes:
+      - ../../backend/core:/app
+    depends_on:
+      django:
+        condition: service_started
+      redis:
+        condition: service_healthy
+
+  # ─── Celery Beat (tarefas agendadas) ──────────────────────────────────────
+  celery-beat:
+    image: paddock-django:dev
+    container_name: paddock_celery_beat
+    restart: unless-stopped
+    command: celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    env_file:
+      - ../../.env
+    volumes:
+      - ../../backend/core:/app
+    depends_on:
+      django:
+        condition: service_started
+      redis:
+        condition: service_healthy
+
   # ─── Mailhog (e-mail local) ───────────────────────────────────────────────
   mailhog:
     image: mailhog/mailhog:latest
