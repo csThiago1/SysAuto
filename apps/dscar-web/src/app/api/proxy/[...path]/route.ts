@@ -11,7 +11,10 @@ async function proxyRequest(
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
-    Host: "dscar.localhost",
+    // X-Tenant-Domain identifica o tenant para o DevTenantMiddleware no Django.
+    // Node.js fetch sobrescreve o header Host com o hostname da URL de destino,
+    // por isso usamos um header customizado que o middleware lê como fallback.
+    "X-Tenant-Domain": "dscar.localhost",
     ...(session?.accessToken
       ? { Authorization: `Bearer ${session.accessToken}` }
       : {}),

@@ -7,8 +7,9 @@ import logging
 from django.db.models import QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
-from rest_framework import filters, mixins, viewsets
+from rest_framework import filters, mixins, status, viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from .models import UnifiedCustomer
 from .serializers import (
@@ -77,3 +78,14 @@ class UnifiedCustomerViewSet(
         if self.action == "list":
             return UnifiedCustomerListSerializer
         return UnifiedCustomerDetailSerializer
+
+    def create(self, request, *args, **kwargs):  # type: ignore[override]
+        """
+        Cria o cliente usando UnifiedCustomerCreateSerializer para validação,
+        mas retorna UnifiedCustomerListSerializer (inclui id, cpf_masked, phone_masked).
+        """
+        serializer = UnifiedCustomerCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        response_data = UnifiedCustomerListSerializer(instance).data
+        return Response(response_data, status=status.HTTP_201_CREATED)
