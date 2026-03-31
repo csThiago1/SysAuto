@@ -12,6 +12,14 @@ export type PaddockRole =
     | "CONSULTANT"  // consultor de atendimento (abre e acompanha OS)
     | "STOREKEEPER"; // almoxarife (gestão de estoque de peças)
 
+export const ROLE_HIERARCHY: Record<PaddockRole, number> = {
+  OWNER: 5,
+  ADMIN: 4,
+  MANAGER: 3,
+  CONSULTANT: 2,
+  STOREKEEPER: 1,
+};
+
 export interface PaddockJWT {
     sub: string; // UUID global do usuário
     email: string;

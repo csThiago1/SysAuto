@@ -36,12 +36,24 @@ function formatDate(iso: string): string {
   });
 }
 
+function ClienteDetailSkeleton(): React.ReactElement {
+  return (
+    <div className="space-y-6 max-w-3xl">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-32 w-full" />
+      <Skeleton className="h-64 w-full" />
+    </div>
+  );
+}
+
 export default function ClienteDetailPage({
   params,
 }: ClienteDetailPageProps): React.ReactElement {
   return (
     <ErrorBoundary>
-      <ClienteDetailContent params={params} />
+      <React.Suspense fallback={<ClienteDetailSkeleton />}>
+        <ClienteDetailContent params={params} />
+      </React.Suspense>
     </ErrorBoundary>
   );
 }
@@ -57,13 +69,7 @@ function ClienteDetailContent({
   const { data: osData, isLoading: loadingOS } = useClientOrders(id);
 
   if (loadingCustomer) {
-    return (
-      <div className="space-y-6 max-w-3xl">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    );
+    return <ClienteDetailSkeleton />;
   }
 
   if (errorCustomer || !customer) {

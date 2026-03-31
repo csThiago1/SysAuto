@@ -4,6 +4,7 @@ import React from "react";
 import { ErrorBoundary as ReactErrorBoundary } from "react-error-boundary";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import * as Sentry from "@sentry/nextjs";
 
 function ErrorFallback({
   error,
@@ -12,6 +13,12 @@ function ErrorFallback({
   error: Error;
   resetErrorBoundary: () => void;
 }): React.ReactElement {
+  React.useEffect(() => {
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      Sentry.captureException(error);
+    }
+  }, [error]);
+
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <AlertTriangle className="h-10 w-10 text-error-500 mb-3" />

@@ -37,7 +37,7 @@ const novaOSSchema = z.object({
 
 type NovaOSFormData = z.infer<typeof novaOSSchema>;
 
-interface ApiError {
+interface OSApiFieldError {
   [field: string]: string[];
 }
 
@@ -107,7 +107,7 @@ function NovaOSContent(): React.ReactElement {
         const os = (await response.json()) as { id: string };
         router.push(`/os/${os.id}`);
       } else {
-        const errs = (await response.json()) as ApiError;
+        const errs = (await response.json()) as OSApiFieldError;
         let hasFieldError = false;
         Object.entries(errs).forEach(([field, msgs]) => {
           if (
@@ -365,6 +365,7 @@ function NovaOSContent(): React.ReactElement {
                             });
                             setShowInlineCreate(false);
                             setInlineErrors({});
+                            setInlineName("");
                             setInlinePhone("");
                             setInlineCpf("");
                             setInlineLgpd(false);

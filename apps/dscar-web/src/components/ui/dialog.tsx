@@ -28,7 +28,7 @@ function Dialog({ open = false, onOpenChange = () => undefined, children }: Dial
   );
 }
 
-function DialogTrigger({ children, asChild: _asChild }: { children: React.ReactNode; asChild?: boolean }): React.ReactElement {
+function DialogTrigger({ children }: { children: React.ReactNode; asChild?: boolean }): React.ReactElement {
   const { onOpenChange } = React.useContext(DialogContext);
   return (
     <span onClick={() => onOpenChange(true)} style={{ display: "contents" }}>

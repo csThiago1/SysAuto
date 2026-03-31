@@ -62,7 +62,7 @@ test-backend: ## Apenas pytest (backend Django)
 	$(BACKEND) && .venv/bin/pytest --tb=short -q
 
 test-web: ## Vitest + Playwright (frontend)
-	npm run test
+	npm run test --workspace=dscar-web
 
 ## ─ Qualidade de código ──────────────────────────────────────────────────────
 

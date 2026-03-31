@@ -32,31 +32,31 @@ e bloquear rotas e componentes conforme o papel do usuário logado.
 
 ### Tasks Técnicas
 
-- [ ] Definir tipo `PaddockRole` em `packages/types/src/auth.ts`:
+- [x] Definir tipo `PaddockRole` em `packages/types/src/auth.ts`:
   ```ts
   export type PaddockRole = 'ADMIN' | 'MANAGER' | 'CONSULTANT' | 'STOREKEEPER';
   export const ROLE_HIERARCHY: Record<PaddockRole, number> = {
     ADMIN: 4, MANAGER: 3, CONSULTANT: 2, STOREKEEPER: 1,
   };
   ```
-- [ ] Criar hook `src/hooks/usePermission.ts`:
+- [x] Criar hook `src/hooks/usePermission.ts`:
   - Lê `session.user.role` via `useSession()` do `next-auth`
   - Compara usando `ROLE_HIERARCHY`
   - Assinatura: `usePermission(required: PaddockRole): boolean`
-- [ ] Criar componente `src/components/PermissionGate.tsx`:
+- [x] Criar componente `src/components/PermissionGate.tsx`:
   - Props: `role: PaddockRole`, `fallback?: React.ReactNode`, `children: React.ReactNode`
   - Usa `usePermission` internamente
   - Não renderiza nada enquanto `status === "loading"` (evita flash)
-- [ ] Criar HOC / guard `src/lib/withRoleGuard.ts`:
+- [x] Criar HOC / guard `src/lib/withRoleGuard.ts`:
   - Recebe o papel mínimo exigido e o redirect de destino
   - Usado nas rotas protegidas via `middleware.ts` ou no topo das páginas
-- [ ] Proteger rota `/os/nova`:
+- [x] Proteger rota `/os/nova`:
   - Redirecionar `STOREKEEPER` → `/os` com `toast.info("Sem permissão para criar OS")`
 - [ ] Proteger rotas `/admin/**` e `/configuracoes/**`:
   - Redirecionar `CONSULTANT` e `STOREKEEPER` → `/` com toast informativo
-- [ ] Adicionar `role` ao tipo `Session` via `next-auth` module augmentation em
+- [x] Adicionar `role` ao tipo `Session` via `next-auth` module augmentation em
   `src/types/next-auth.d.ts`
-- [ ] Esconder botão "Nova OS" na lista `/os` para `STOREKEEPER` usando
+- [x] Esconder botão "Nova OS" na lista `/os` para `STOREKEEPER` usando
   `<PermissionGate role="CONSULTANT">`
 - [ ] Escrever testes unitários (Vitest) para `usePermission`:
   - ADMIN satisfaz qualquer papel exigido
@@ -85,22 +85,22 @@ imediata no header, sem forçar o usuário a abrir o Kanban.
 
 ### Tasks Técnicas
 
-- [ ] Criar hook `src/hooks/useOverdueOrders.ts`:
+- [x] Criar hook `src/hooks/useOverdueOrders.ts`:
   - Parâmetro de query: `estimated_delivery__lte=<hoje>` + `status__in=OPEN,IN_PROGRESS`
   - `QueryKey: ["service-orders", "overdue"]`
   - `staleTime: 60_000`, `refetchOnWindowFocus: true`
   - Retorna `{ orders: ServiceOrder[]; count: number; isLoading: boolean }`
-- [ ] Criar componente `src/components/header/NotificationBell.tsx`:
+- [x] Criar componente `src/components/header/NotificationBell.tsx`:
   - Usa `useOverdueOrders`
   - Badge: `<span>` absoluto sobre o ícone, vermelho, oculto quando `count === 0`
   - Badge trunca em `99+` para contagens altas
-- [ ] Criar componente `src/components/header/OverdueDropdown.tsx`:
+- [x] Criar componente `src/components/header/OverdueDropdown.tsx`:
   - `<Popover>` ou `<DropdownMenu>` do shadcn/ui
   - Lista OS com chip de status (reutilizar `SERVICE_ORDER_STATUS_CONFIG`)
   - Destacar itens vencidos com texto vermelho; itens de hoje com texto âmbar
   - Formatação da data: `dd/MM/yyyy` usando `date-fns/ptBR`
-- [ ] Integrar `<NotificationBell>` no `src/components/Header.tsx` (ou equivalente)
-- [ ] Garantir que a query não bloqueia a renderização do header (dados chegam de forma assíncrona, skeleton ou badge zerado enquanto carrega)
+- [x] Integrar `<NotificationBell>` no `src/components/Header.tsx` (ou equivalente)
+- [x] Garantir que a query não bloqueia a renderização do header (dados chegam de forma assíncrona, skeleton ou badge zerado enquanto carrega)
 - [ ] Escrever testes de componente (Vitest + Testing Library):
   - Badge exibe `3` quando hook retorna 3 OS
   - Badge oculto quando `count === 0`
@@ -125,19 +125,19 @@ Itens que ficaram de fora do Sprint 03 por dependência ou tempo.
 ### Tasks Técnicas
 
 #### Breadcrumb em `/clientes/[id]`
-- [ ] Verificar se existe componente `<Breadcrumb>` em `packages/ui` ou `src/components/ui`
-- [ ] Se não existir, criar `src/components/ui/breadcrumb.tsx` usando shadcn/ui (`npx shadcn@latest add breadcrumb`) ou implementação manual com `<nav aria-label="breadcrumb">`
-- [ ] Adicionar breadcrumb no topo de `src/app/(app)/clientes/[id]/page.tsx`:
+- [x] Verificar se existe componente `<Breadcrumb>` em `packages/ui` ou `src/components/ui`
+- [x] Se não existir, criar `src/components/ui/breadcrumb.tsx` usando shadcn/ui (`npx shadcn@latest add breadcrumb`) ou implementação manual com `<nav aria-label="breadcrumb">`
+- [x] Adicionar breadcrumb no topo de `src/app/(app)/clientes/[id]/page.tsx`:
   `Clientes` (link para `/clientes`) → `<Nome do cliente>` (texto atual, sem link)
-- [ ] O breadcrumb só renderiza o nome do cliente após `useCustomer` resolver (exibir placeholder "..." enquanto carrega)
+- [x] O breadcrumb só renderiza o nome do cliente após `useCustomer` resolver (exibir placeholder "..." enquanto carrega)
 
 #### ErrorBoundary + Suspense em `/clientes/[id]`
-- [ ] Criar (ou atualizar) `src/app/(app)/clientes/[id]/layout.tsx` (ou envolver diretamente na página) com `<ErrorBoundary>` + `<Suspense fallback={<ClienteDetailSkeleton />}>`
-- [ ] Extrair o skeleton de carregamento atual para componente `<ClienteDetailSkeleton>` reutilizável
+- [x] Criar (ou atualizar) `src/app/(app)/clientes/[id]/layout.tsx` (ou envolver diretamente na página) com `<ErrorBoundary>` + `<Suspense fallback={<ClienteDetailSkeleton />}>`
+- [x] Extrair o skeleton de carregamento atual para componente `<ClienteDetailSkeleton>` reutilizável
 
 #### Sentry no ErrorBoundary
-- [ ] Instalar `@sentry/nextjs` (se ainda não instalado): `pnpm add @sentry/nextjs`
-- [ ] Atualizar `src/components/ErrorBoundary.tsx`:
+- [x] Instalar `@sentry/nextjs` (se ainda não instalado): `pnpm add @sentry/nextjs`
+- [x] Atualizar `src/components/ErrorBoundary.tsx`:
   ```ts
   import * as Sentry from '@sentry/nextjs';
   // No onError / componentDidCatch:
@@ -145,10 +145,10 @@ Itens que ficaram de fora do Sprint 03 por dependência ou tempo.
     Sentry.captureException(error);
   }
   ```
-- [ ] Adicionar `NEXT_PUBLIC_SENTRY_DSN` ao `.env.example` com valor em branco
+- [x] Adicionar `NEXT_PUBLIC_SENTRY_DSN` ao `.env.example` com valor em branco
 
 #### Hook `useClientOrders`
-- [ ] Criar `src/hooks/useClientOrders.ts`:
+- [x] Criar `src/hooks/useClientOrders.ts`:
   ```ts
   export function useClientOrders(customerId: string) {
     return useQuery({
@@ -160,17 +160,17 @@ Itens que ficaram de fora do Sprint 03 por dependência ou tempo.
     });
   }
   ```
-- [ ] Atualizar `src/app/(app)/clientes/[id]/page.tsx` para importar e usar `useClientOrders` em vez de `useServiceOrders` diretamente
+- [x] Atualizar `src/app/(app)/clientes/[id]/page.tsx` para importar e usar `useClientOrders` em vez de `useServiceOrders` diretamente
 
 #### Link para `/clientes/[id]` no KanbanCard
-- [ ] Ler `src/components/kanban/KanbanCard.tsx` e identificar onde o nome do cliente é exibido
-- [ ] Envolver o nome do cliente em `<Link href={`/clientes/${order.customer_id}`}>` usando `next/link`
-- [ ] Evitar que o clique no link propague o evento de drag-and-drop do DnD Kit (`e.stopPropagation()` se necessário)
+- [x] Ler `src/components/kanban/KanbanCard.tsx` e identificar onde o nome do cliente é exibido
+- [x] Envolver o nome do cliente em `<Link href={`/clientes/${order.customer_id}`}>` usando `next/link`
+- [x] Evitar que o clique no link propague o evento de drag-and-drop do DnD Kit (`e.stopPropagation()` se necessário)
 
 #### Resolver DT-04 — tipagem `href as never`
-- [ ] Fazer `grep -r "as never" apps/dscar-web/src` para listar todas as ocorrências
-- [ ] Para cada ocorrência relacionada a `href`, substituir por tipagem correta usando as rotas do App Router (considerar `Route` do `next/navigation` ou type assertion correta)
-- [ ] Garantir que `make typecheck` passa sem erros após as correções
+- [x] Fazer `grep -r "as never" apps/dscar-web/src` para listar todas as ocorrências
+- [x] Para cada ocorrência relacionada a `href`, substituir por tipagem correta usando as rotas do App Router (considerar `Route` do `next/navigation` ou type assertion correta)
+- [x] Garantir que `make typecheck` passa sem erros após as correções
 
 ---
 
@@ -197,13 +197,18 @@ Itens que ficaram de fora do Sprint 03 por dependência ou tempo.
 
 | Área | Total | Concluído | Pendente |
 |------|-------|-----------|----------|
-| Frontend (US-01 RBAC) | 9 | 0 | 9 |
-| Frontend (US-02 Notificações) | 7 | 0 | 7 |
-| Frontend (US-03 Melhorias) | 13 | 0 | 13 |
+| Frontend (US-01 RBAC) | 9 | 7 | 2 |
+| Frontend (US-02 Notificações) | 7 | 5 | 2 |
+| Frontend (US-03 Melhorias) | 13 | 13 | 0 |
 | QA | 14 | 0 | 14 |
-| **Total** | **43** | **0** | **43** |
+| **Total** | **43** | **25** | **18** |
 
-**Taxa de conclusão do Sprint 04:** 0/43 (0%)
+**Taxa de conclusão do Sprint 04:** 25/43 (58%)
+
+### Pendente
+- **US-01:** Proteger rotas `/admin/**` e `/configuracoes/**` no middleware (outro agente) · Testes unitários usePermission (outro agente)
+- **US-02:** Testes de componente NotificationBell/OverdueDropdown (outro agente)
+- **QA:** Todos os itens de QA pendentes de execução manual/automatizada
 
 ---
 
