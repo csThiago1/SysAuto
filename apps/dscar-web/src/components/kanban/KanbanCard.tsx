@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { ServiceOrder, ServiceOrderStatus } from "@paddock/types";
@@ -77,6 +78,7 @@ interface KanbanCardProps {
 export const KanbanCard = React.memo(function KanbanCard({
   order,
 }: KanbanCardProps): React.ReactElement {
+  const router = useRouter();
   const {
     attributes,
     listeners,
@@ -97,24 +99,21 @@ export const KanbanCard = React.memo(function KanbanCard({
       style={style}
       {...attributes}
       {...listeners}
+      role="button"
+      tabIndex={0}
+      aria-label={`OS #${order.number} — ${order.plate}`}
       className="cursor-grab active:cursor-grabbing select-none"
+      onClick={() => { if (!isDragging) router.push(`/os/${order.id}`); }}
+      onKeyDown={(e) => { if (e.key === "Enter" && !isDragging) router.push(`/os/${order.id}`); }}
     >
-      <Link
-        href={`/os/${order.id}`}
-        draggable={false}
-        onClick={(e) => {
-          if (isDragging) e.preventDefault();
-        }}
-      >
-        <CardContent
-          order={order}
-          className={cn(
-            isDragging
-              ? "opacity-40 shadow-kanban"
-              : "shadow-kanban hover:shadow-kanban-drag transition-shadow duration-normal"
-          )}
-        />
-      </Link>
+      <CardContent
+        order={order}
+        className={cn(
+          isDragging
+            ? "opacity-40 shadow-kanban"
+            : "shadow-kanban hover:shadow-kanban-drag transition-shadow duration-normal"
+        )}
+      />
     </div>
   );
 });
