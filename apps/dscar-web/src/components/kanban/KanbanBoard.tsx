@@ -90,12 +90,25 @@ export function KanbanBoard({
       if (!over) return;
 
       const orderId = active.id as string;
-      const newStatus = over.id as ServiceOrderStatus;
       const order = orders.find((o) => o.id === orderId);
+      if (!order) return;
 
-      // No-op: same column or unknown target
-      if (!order || order.status === newStatus) return;
-      if (!KANBAN_COLUMNS_ORDER.includes(newStatus)) return;
+      // over.id pode ser o status da coluna (area vazia) ou o UUID de um card alvo.
+      // Se for UUID de card, encontra em qual coluna ele está para derivar o status.
+      const overId = over.id as string;
+      let newStatus: ServiceOrderStatus;
+      if (KANBAN_COLUMNS_ORDER.includes(overId as ServiceOrderStatus)) {
+        newStatus = overId as ServiceOrderStatus;
+      } else {
+        // Resolve a coluna do card alvo
+        const targetOrder = orders.find((o) => o.id === overId);
+        if (!targetOrder) return;
+        newStatus = (optimisticMoves[targetOrder.id] ?? targetOrder.status) as ServiceOrderStatus;
+      }
+
+      // Usa o status otimista (se existir) para evitar double-submit durante refetch
+      const currentStatus = optimisticMoves[orderId] ?? order.status;
+      if (currentStatus === newStatus) return;
 
       // Optimistic update — move card immediately
       setOptimisticMoves((prev) => ({ ...prev, [orderId]: newStatus }));
