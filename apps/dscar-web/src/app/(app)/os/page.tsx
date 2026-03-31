@@ -19,6 +19,7 @@ import { useServiceOrders, useDashboardStats } from "@/hooks/useServiceOrders";
 import { useDebounce } from "@/hooks/useDebounce";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { PermissionGate } from "@/components/PermissionGate";
+import { NovaOSModal } from "@/components/modals/NovaOSModal";
 import {
   SERVICE_ORDER_STATUS_CONFIG,
   KANBAN_COLUMNS_ORDER,
@@ -83,6 +84,7 @@ function OSListSkeleton(): React.ReactElement {
 function OSListInner(): React.ReactElement {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [novaOSOpen, setNovaOSOpen] = useState(false);
 
   // Inicializa estado a partir da URL
   const [searchInput, setSearchInput] = useState(
@@ -159,11 +161,9 @@ function OSListInner(): React.ReactElement {
           </p>
         </div>
         <PermissionGate role="CONSULTANT">
-          <Button asChild>
-            <Link href="/os/nova">
-              <Plus className="h-4 w-4" />
-              Nova OS
-            </Link>
+          <Button onClick={() => setNovaOSOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Nova OS
           </Button>
         </PermissionGate>
       </div>
@@ -402,6 +402,7 @@ function OSListInner(): React.ReactElement {
         </div>
       )}
     </div>
+      <NovaOSModal open={novaOSOpen} onOpenChange={setNovaOSOpen} />
     </ErrorBoundary>
   );
 }

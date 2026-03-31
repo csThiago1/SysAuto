@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { PermissionGate } from "@/components/PermissionGate";
+import { NovoClienteModal } from "@/components/modals/NovoClienteModal";
 import {
   Table,
   TableBody,
@@ -21,6 +22,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function ClientesPage(): React.ReactElement {
   const [searchInput, setSearchInput] = useState("");
+  const [novoClienteOpen, setNovoClienteOpen] = useState(false);
   const debouncedSearch = useDebounce(searchInput, 300);
 
   const { data, isLoading, isError } = useCustomers(debouncedSearch);
@@ -38,11 +40,9 @@ export default function ClientesPage(): React.ReactElement {
           </p>
         </div>
         <PermissionGate role="CONSULTANT">
-          <Button asChild>
-            <Link href="/clientes/novo">
-              <UserPlus className="h-4 w-4" />
-              Novo Cliente
-            </Link>
+          <Button onClick={() => setNovoClienteOpen(true)}>
+            <UserPlus className="h-4 w-4" />
+            Novo Cliente
           </Button>
         </PermissionGate>
       </div>
@@ -174,6 +174,7 @@ export default function ClientesPage(): React.ReactElement {
         </div>
       )}
     </div>
+      <NovoClienteModal open={novoClienteOpen} onOpenChange={setNovoClienteOpen} />
     </ErrorBoundary>
   );
 }
