@@ -7,7 +7,9 @@ async function proxyRequest(
   method: string
 ): Promise<NextResponse> {
   const session = await auth();
-  const backendUrl = `http://localhost:8000/api/v1/${pathSegments.join("/")}${req.nextUrl.search}`;
+  const joined = pathSegments.join("/");
+  const withSlash = joined.endsWith("/") ? joined : `${joined}/`;
+  const backendUrl = `http://localhost:8000/api/v1/${withSlash}${req.nextUrl.search}`;
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
