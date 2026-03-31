@@ -94,12 +94,12 @@ function NovaOSContent(): React.ReactElement {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customer: data.customer_id,
+          customer_id: data.customer_id,
+          customer_name: selectedCustomer?.name ?? "",
           plate: data.plate.toUpperCase(),
           make: data.make,
           model: data.model,
           year: data.year ?? null,
-          description: data.description ?? "",
         }),
       });
 
@@ -111,15 +111,14 @@ function NovaOSContent(): React.ReactElement {
         let hasFieldError = false;
         Object.entries(errs).forEach(([field, msgs]) => {
           if (
-            field === "customer" ||
+            field === "customer_id" ||
+            field === "customer_name" ||
             field === "plate" ||
             field === "make" ||
             field === "model" ||
-            field === "year" ||
-            field === "description"
+            field === "year"
           ) {
-            const key =
-              field === "customer" ? "customer_id" : (field as keyof NovaOSFormData);
+            const key = field === "customer_name" ? "customer_id" : (field as keyof NovaOSFormData);
             setError(key, { message: msgs[0] });
             hasFieldError = true;
           }

@@ -121,6 +121,7 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceOrder
         fields = [
+            "id",
             "number",
             "customer_id",
             "customer_name",
@@ -132,6 +133,10 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
             "mileage_in",
             "estimated_delivery",
         ]
+        read_only_fields = ["id"]
+        extra_kwargs = {
+            "number": {"required": False},
+        }
 
     def validate_number(self, value: int) -> int:
         """Garante unicidade do número da OS dentro do schema do tenant."""
