@@ -115,14 +115,13 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
 class ServiceOrderCreateSerializer(serializers.ModelSerializer):
     """
     Serializer para abertura de nova OS.
-    Número é gerado automaticamente se não fornecido.
+    Número é gerado automaticamente pelo perform_create — não exposto como campo de entrada.
     """
 
     class Meta:
         model = ServiceOrder
         fields = [
             "id",
-            "number",
             "customer_id",
             "customer_name",
             "plate",
@@ -134,17 +133,6 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
             "estimated_delivery",
         ]
         read_only_fields = ["id"]
-        extra_kwargs = {
-            "number": {"required": False},
-        }
-
-    def validate_number(self, value: int) -> int:
-        """Garante unicidade do número da OS dentro do schema do tenant."""
-        if ServiceOrder.objects.filter(number=value).exists():
-            raise serializers.ValidationError(
-                f"Já existe uma OS com o número {value} neste tenant."
-            )
-        return value
 
 
 class ServiceOrderStatusTransitionSerializer(serializers.Serializer):

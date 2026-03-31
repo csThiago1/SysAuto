@@ -87,16 +87,13 @@ class ServiceOrderViewSet(
     def perform_create(self, serializer: ServiceOrderCreateSerializer) -> None:
         """Vincula o usuário autenticado como criador da OS e gera número sequencial."""
         user = self.request.user
-        extra: dict = {"created_by": user}
-        if "number" not in serializer.validated_data:
-            max_num = ServiceOrder.objects.aggregate(Max("number"))["number__max"] or 0
-            extra["number"] = max_num + 1
+        max_num = ServiceOrder.objects.aggregate(Max("number"))["number__max"] or 0
         logger.info(
             "Abrindo OS para placa=%s por user_id=%s",
             serializer.validated_data.get("plate"),
             user.id,
         )
-        serializer.save(**extra)
+        serializer.save(created_by=user, number=max_num + 1)
 
     def perform_update(self, serializer: ServiceOrderDetailSerializer) -> None:
         """Log de auditoria ao atualizar OS."""
