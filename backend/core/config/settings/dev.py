@@ -113,10 +113,30 @@ class DevJWTAuthentication(BaseAuthentication):
         return "Bearer"
 
 
+class SafeJWTAuthentication(BaseAuthentication):
+    """
+    Wrapper de segurança para JWTAuthentication em dev.
+    Importa JWTAuthentication lazily para evitar AppRegistryNotReady.
+    Captura InvalidKeyError (chave Keycloak não configurada) e retorna None
+    em vez de propagar um 500.
+    """
+
+    def authenticate(self, request) -> tuple | None:  # type: ignore[override]
+        from rest_framework_simplejwt.authentication import JWTAuthentication
+        try:
+            return JWTAuthentication().authenticate(request)
+        except pyjwt.exceptions.InvalidKeyError:
+            logger.debug("SafeJWTAuthentication: chave RS256 não configurada — ignorando token.")
+            return None
+
+    def authenticate_header(self, request) -> str:  # type: ignore[override]
+        return "Bearer"
+
+
 REST_FRAMEWORK = {
     **REST_FRAMEWORK,  # type: ignore[name-defined]
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "config.settings.dev.DevJWTAuthentication",
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "config.settings.dev.SafeJWTAuthentication",
     ],
 }

@@ -28,6 +28,7 @@ declare module "next-auth" {
   }
   interface User {
     accessToken?: string;
+    role?: string;
   }
   // JWT augmentation (next-auth v5 re-exports JWT through the main module)
   interface JWT {
@@ -61,6 +62,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: credentials.email as string,
             name: "Dev User",
             accessToken: token,
+            role: "ADMIN",
           };
         }
         return null;
@@ -71,6 +73,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, account, user }) {
       if (account?.access_token) token.accessToken = account.access_token;
       if (user && "accessToken" in user) token.accessToken = user.accessToken;
+      // Propaga role do provider dev-credentials
+      if (user && "role" in user && typeof user.role === "string") token.role = user.role;
       // Extrai role do JWT Keycloak (claim "role" ou "realm_access.roles")
       if (token.realm_access && typeof token.realm_access === "object") {
         const roles = (token.realm_access as { roles?: string[] }).roles ?? [];
