@@ -9,7 +9,12 @@ const DEV_JWT_SECRET = new TextEncoder().encode(
 );
 
 async function makeDevToken(email: string): Promise<string> {
-  return new SignJWT({ email, role: "ADMIN", token_type: "access" })
+  return new SignJWT({
+    email,
+    role: "ADMIN",
+    token_type: "access",
+    jti: crypto.randomUUID(),
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("8h")
