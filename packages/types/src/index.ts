@@ -50,6 +50,23 @@ export interface CartItem {
 
 // ─── Ordens de Serviço ────────────────────────────────────────────────────────
 
+/** Espelha VALID_TRANSITIONS do backend — manter sincronizado com service_orders/models.py */
+export const VALID_TRANSITIONS: Record<string, string[]> = {
+  reception:      ["initial_survey", "cancelled"],
+  initial_survey: ["budget"],
+  budget:         ["waiting_parts", "repair"],
+  waiting_parts:  ["repair"],
+  repair:         ["mechanic", "bodywork", "polishing"],
+  mechanic:       ["bodywork", "polishing"],
+  bodywork:       ["painting"],
+  painting:       ["assembly"],
+  assembly:       ["polishing"],
+  polishing:      ["washing"],
+  washing:        ["final_survey"],
+  final_survey:   ["ready"],
+  ready:          ["delivered"],
+};
+
 export type ServiceOrderStatus =
     | "reception"
     | "initial_survey"

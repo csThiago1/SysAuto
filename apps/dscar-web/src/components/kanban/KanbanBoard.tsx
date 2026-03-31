@@ -13,9 +13,11 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { ServiceOrder, ServiceOrderStatus } from "@paddock/types";
+import { VALID_TRANSITIONS } from "@paddock/types";
 import {
   KANBAN_COLUMNS_ORDER,
   KANBAN_HIDDEN_BY_DEFAULT,
+  SERVICE_ORDER_STATUS_CONFIG,
 } from "@/lib/design-tokens";
 import { KanbanColumn, KanbanColumnSkeleton } from "./KanbanColumn";
 import { KanbanCardOverlay } from "./KanbanCard";
@@ -110,6 +112,20 @@ export function KanbanBoard({
       const currentStatus = optimisticMoves[orderId] ?? order.status;
       if (currentStatus === newStatus) return;
 
+      // Valida transição client-side antes de chamar o backend
+      const allowed = VALID_TRANSITIONS[currentStatus] ?? [];
+      if (!allowed.includes(newStatus)) {
+        const targetLabel = SERVICE_ORDER_STATUS_CONFIG[newStatus]?.label ?? newStatus;
+        const allowedLabels = allowed
+          .map((s) => SERVICE_ORDER_STATUS_CONFIG[s as ServiceOrderStatus]?.label ?? s)
+          .join(", ");
+        toast.error(
+          `Não é possível mover para "${targetLabel}". ` +
+          (allowedLabels ? `Próximo(s) passo(s): ${allowedLabels}` : "Nenhuma transição disponível.")
+        );
+        return;
+      }
+
       // Optimistic update — move card immediately
       setOptimisticMoves((prev) => ({ ...prev, [orderId]: newStatus }));
 
@@ -124,10 +140,13 @@ export function KanbanBoard({
         );
 
         if (!res.ok) {
-          const err = await res.json().catch(() => ({ detail: res.statusText }));
-          throw new Error(
-            (err as { detail?: string }).detail ?? `HTTP ${res.status}`
-          );
+          // Extrai mensagem de erro DRF (field error ou detail)
+          const body = await res.json().catch(() => ({})) as Record<string, unknown>;
+          const msg =
+            (body.detail as string | undefined) ??
+            (Array.isArray(body.new_status) ? (body.new_status as string[])[0] : undefined) ??
+            `Erro ao mover OS (HTTP ${res.status})`;
+          throw new Error(msg);
         }
 
         // Sync server state after success
