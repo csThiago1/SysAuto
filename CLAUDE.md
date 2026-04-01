@@ -58,7 +58,7 @@ grupo-dscar/
 │
 ├── packages/
 │   ├── ui/                           ← Design system compartilhado
-│   ├── types/                        ← TypeScript types
+│   ├── types/                        ← TypeScript types + VALID_TRANSITIONS
 │   ├── auth/                         ← Auth helpers (JWT, OIDC)
 │   └── utils/
 │
@@ -84,8 +84,9 @@ Estilo:      Tailwind CSS + shadcn/ui
 State:       Zustand (global) + TanStack Query v5 (server state)
 Forms:       React Hook Form + Zod
 Realtime:    Socket.io client
-Auth:        next-auth v5 (OIDC → Keycloak)
+Auth:        next-auth v5 (OIDC → Keycloak + dev-credentials)
 Testes:      Vitest + Playwright
+DnD:         @dnd-kit/core + @dnd-kit/sortable (Kanban)
 ```
 
 ### Mobile
@@ -103,7 +104,7 @@ State:       Zustand + MMKV
 Framework:   Django 5 + Django REST Framework
 Linguagem:   Python 3.12 (type hints OBRIGATÓRIOS)
 Tenancy:     django-tenants (schema-per-tenant)
-Auth:        mozilla-django-oidc + simplejwt
+Auth:        mozilla-django-oidc + simplejwt + PyJWT (JWKS)
 Tasks:       Celery 5 + Redis
 Realtime:    Django Channels + Redis
 Fiscal:      nfelib (NF-e/NFC-e) + Focus NF-e (NFS-e)
@@ -163,6 +164,34 @@ refactor(customers): extrai lógica LGPD para serviço
 
 ---
 
+## 🔐 Autenticação — Fluxo Dev vs Prod
+
+### Dev (dev-credentials)
+- Provider `dev-credentials` no next-auth: qualquer email + senha `paddock123`
+- Gera JWT **HS256** com `{ email, role: "ADMIN", jti }` — secret `dscar-dev-secret-paddock-2025`
+- Backend: `DevJWTAuthentication` valida HS256 e faz `get_or_create` do `GlobalUser` por `email_hash`
+- `session.role = "ADMIN"` propagado automaticamente → todos os `PermissionGate` liberados
+
+### Prod (Keycloak)
+- Provider `Keycloak` no next-auth — OIDC padrão
+- Gera JWT **RS256** — chave pública via JWKS endpoint
+- Backend: `KeycloakJWTAuthentication` usa `PyJWKClient` para validar RS256
+  - JWKS URL: `http://keycloak:8080/realms/paddock/protocol/openid-connect/certs`
+  - Fallback: retorna `None` (warn) se Keycloak offline — sem crash 500
+- `session.role` extraído de `token.realm_access.roles`
+
+### Tenant Routing (dev)
+- Node.js fetch ignora header `Host` customizado
+- Proxy Next.js envia `X-Tenant-Domain: dscar.localhost`
+- `DevTenantMiddleware` lê `X-Tenant-Domain` antes de usar o `Host` padrão
+
+### Proxy API Route
+- Rota: `apps/dscar-web/src/app/api/proxy/[...path]/route.ts`
+- **Sempre adiciona trailing slash** antes de repassar ao Django (`APPEND_SLASH=True`)
+- Encaminha `Authorization: Bearer <token>` e `X-Tenant-Domain`
+
+---
+
 ## 🔐 Regras de Negócio Críticas
 
 ### Multitenancy — nunca violar
@@ -195,12 +224,38 @@ def my_task(data: dict, tenant_schema: str) -> None:
 }
 ```
 
+### RBAC — hierarquia de roles
+```typescript
+// packages/types/src/index.ts
+OWNER: 5 > ADMIN: 4 > MANAGER: 3 > CONSULTANT: 2 > STOREKEEPER: 1
+
+// Proteção de componentes
+<PermissionGate role="CONSULTANT">  // mínimo CONSULTANT para ver
+  <Button>Nova OS</Button>
+</PermissionGate>
+
+// Hook
+const canEdit = usePermission("MANAGER"); // true se role >= MANAGER
+```
+
+### Ordens de Serviço — regras Kanban
+```typescript
+// packages/types/src/index.ts — VALID_TRANSITIONS (espelho do backend)
+// Transições são validadas CLIENT-SIDE antes de chamar o backend
+// O backend também valida — dupla proteção
+
+// Número da OS: gerado automaticamente (MAX + 1) — nunca enviar no POST
+// customer_id: UUID ref ao schema público — não é FK, não tem validação cross-schema
+// customer_name: campo desnormalizado — sempre enviar junto com customer_id
+```
+
 ### LGPD — dados pessoais
 ```python
 # CPF, email, telefone: SEMPRE EncryptedField
 # group_sharing_consent: SEMPRE verificar antes de cruzar dados entre empresas
 # Logs: NUNCA incluir CPF, email ou telefone em texto claro
 # Hard delete de clientes: PROIBIDO — usar erasure (anonimização)
+# Lookup por email: usar email_hash (SHA-256) — EncryptedEmailField não suporta filter()
 ```
 
 ### Estoque — nunca negativo
@@ -226,6 +281,38 @@ def my_task(data: dict, tenant_schema: str) -> None:
 
 ---
 
+## 🖥️ Componentes Frontend Relevantes (dscar-web)
+
+### Modais de Criação
+```
+src/components/modals/
+├── NovoClienteModal.tsx   ← Dialog: nome, telefone, CPF, email, LGPD
+└── NovaOSModal.tsx        ← Dialog scrollável: busca cliente + inline create + veículo
+```
+- Abertos a partir de `/clientes` e `/os` via `useState(false)` no botão
+- Inline create: dentro do `NovaOSModal`, permite cadastrar cliente sem sair do fluxo
+
+### Kanban
+```
+src/components/kanban/
+├── KanbanBoard.tsx   ← DndContext + validação VALID_TRANSITIONS client-side
+├── KanbanColumn.tsx  ← useDroppable por status
+└── KanbanCard.tsx    ← useSortable + router.push (sem <Link> aninhado)
+```
+- `over.id` pode ser UUID de card ou status de coluna — KanbanBoard resolve ambos
+- Otimismo: override de status enquanto refetch não completa
+- Erros: toast com próximos passos permitidos
+
+### RBAC
+```
+src/hooks/usePermission.ts     ← retorna boolean baseado em ROLE_HIERARCHY
+src/components/PermissionGate.tsx  ← wrapper condicional por role
+src/lib/withRoleGuard.ts           ← HOC para páginas inteiras
+src/middleware.ts                  ← proteção de rotas /admin e /configuracoes
+```
+
+---
+
 ## 🔌 Variáveis de Ambiente
 
 | Variável | Serviço |
@@ -240,6 +327,8 @@ def my_task(data: dict, tenant_schema: str) -> None:
 | `DW_S3_BUCKET` | Data Warehouse |
 | `SEFAZ_ENV` | `homologation` ou `production` |
 | `SENTRY_DSN` | Monitoramento |
+| `DEV_JWT_SECRET` | Secret HS256 dev (padrão: `dscar-dev-secret-paddock-2025`) |
+| `KEYCLOAK_CLIENT_ID` / `_SECRET` / `_ISSUER` | OIDC Keycloak |
 
 ---
 
@@ -275,8 +364,8 @@ make typecheck       # mypy + tsc
 ## 🧠 Uso da IA (Claude API)
 
 ```python
-# Modelo padrão:   claude-sonnet-4-5 (custo-benefício)
-# Modelo pesado:   claude-opus-4-5 (tarefas complexas)
+# Modelo padrão:   claude-sonnet-4-6 (custo-benefício)
+# Modelo pesado:   claude-opus-4-6 (tarefas complexas)
 # Temperature:     0.3 para dados factuais | 0.7+ para texto criativo
 # Embeddings RAG:  pgvector no PostgreSQL
 
@@ -301,5 +390,27 @@ make typecheck       # mypy + tsc
 
 ---
 
+## 📦 Sprints Entregues
+
+### Sprint 4 — Abril 2026
+**RBAC, UX de criação e correções de integração**
+
+Backend:
+- `DevJWTAuthentication`: valida HS256, `get_or_create` GlobalUser por `email_hash`
+- `KeycloakJWTAuthentication`: valida RS256 via `PyJWKClient` (JWKS), resiliente a Keycloak offline
+- `DevTenantMiddleware`: lê `X-Tenant-Domain` (Node.js fetch ignora header `Host`)
+- `ServiceOrder.number`: gerado automaticamente em `perform_create` (`MAX + 1`) — removido dos campos do serializer para evitar conflito com `unique_together`
+- `UnifiedCustomerViewSet.create`: retorna `UnifiedCustomerListSerializer` (inclui `id`, `cpf_masked`, `phone_masked`)
+
+Frontend:
+- `NovoClienteModal` + `NovaOSModal`: dialogs com scroll, inline customer create no fluxo de OS
+- `PermissionGate` + `usePermission`: RBAC por role com fallback `STOREKEEPER`
+- `session.role` propagado do provider `dev-credentials` para o token next-auth
+- Proxy API route: trailing slash garantida em todas as chamadas ao Django
+- Kanban: validação client-side de `VALID_TRANSITIONS`, resolução de `over.id` card→coluna, guard otimista contra double-submit
+- `VALID_TRANSITIONS` exportado de `@paddock/types` (espelho do backend)
+
+---
+
 *Paddock Solutions · paddock.solutions · Manaus, AM*
-*Última atualização: Março 2025*
+*Última atualização: Abril 2026*
