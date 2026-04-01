@@ -171,7 +171,7 @@ export function KanbanBoard({
         return next;
       });
     },
-    [orders, qc]
+    [orders, qc, optimisticMoves]
   );
 
   if (isLoading) {
