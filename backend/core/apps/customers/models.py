@@ -42,6 +42,17 @@ class UnifiedCustomer(PaddockBaseModel):
         help_text="Opt-in EXPLÍCITO — verificar antes de qualquer cross-sell",
     )
 
+    # Conta de acesso vinculada — preenchida automaticamente no primeiro login
+    global_user = models.OneToOneField(
+        "authentication.GlobalUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="customer_profile",
+        verbose_name="Conta de acesso",
+        help_text="GlobalUser vinculado a este cliente. Preenchido automaticamente no 1º login.",
+    )
+
     class Meta(PaddockBaseModel.Meta):
         db_table = "customers_unified"
         verbose_name = "Cliente Unificado"

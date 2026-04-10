@@ -2,14 +2,19 @@
 Paddock Solutions — Customers Views
 Somente-leitura: clientes são gerenciados via processo de consentimento LGPD.
 """
+import hashlib
 import logging
 
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import filters, mixins, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
+
+from apps.authentication.permissions import IsConsultantOrAbove
 
 from .models import UnifiedCustomer
 from .serializers import (
@@ -52,7 +57,7 @@ class UnifiedCustomerViewSet(
     não exposto diretamente nesta API por enquanto.
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
         "is_active": ["exact"],
@@ -89,3 +94,36 @@ class UnifiedCustomerViewSet(
         instance = serializer.save()
         response_data = UnifiedCustomerListSerializer(instance).data
         return Response(response_data, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        summary="Buscar clientes por nome, CPF ou telefone",
+        parameters=[OpenApiParameter("q", description="Termo de busca (mín. 3 chars)", required=True)],
+    )
+    @action(detail=False, methods=["get"], url_path="search")
+    def search(self, request: Request) -> Response:
+        """
+        GET /customers/search/?q=<termo>
+
+        Busca por nome (icontains) e por hash de CPF/telefone (apenas dígitos).
+        Retorna até 20 resultados no formato { count, results }.
+        """
+        q = request.query_params.get("q", "").strip()
+        if len(q) < 3:
+            return Response({"count": 0, "results": []})
+
+        # Hash do termo normalizado para CPF/telefone
+        digits = "".join(filter(str.isdigit, q))
+        digits_hash = hashlib.sha256(digits.encode()).hexdigest() if digits else None
+
+        lookup = Q(name__icontains=q)
+        if digits_hash:
+            lookup |= Q(cpf_hash=digits_hash) | Q(phone_hash=digits_hash)
+
+        qs = (
+            UnifiedCustomer.objects.filter(is_active=True)
+            .filter(lookup)
+            .order_by("name")[:20]
+        )
+        serializer = UnifiedCustomerListSerializer(qs, many=True)
+        logger.debug("Customer search q=%r → %d resultado(s)", q, len(serializer.data))
+        return Response({"count": len(serializer.data), "results": serializer.data})
