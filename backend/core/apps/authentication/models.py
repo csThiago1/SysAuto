@@ -2,6 +2,7 @@
 Paddock Solutions — Authentication App
 GlobalUser + PaddockBaseModel (abstract)
 """
+import hashlib
 import uuid
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -45,8 +46,14 @@ class PaddockBaseModel(models.Model):
 class GlobalUserManager(BaseUserManager):
     """Manager customizado para GlobalUser."""
 
+    def get_by_natural_key(self, username: str) -> "GlobalUser":
+        """Aceita e-mail legível OU email_hash — necessário para o login do Django admin."""
+        if "@" in username:
+            username = hashlib.sha256(username.lower().encode()).hexdigest()
+        return self.get(**{self.model.USERNAME_FIELD: username})
+
     def create_user(
-        self, email: str, password: str | None = None, **extra_fields: object
+        self, email: str, password: str | None = None, **extra_fields
     ) -> "GlobalUser":
         """Cria usuário comum."""
         if not email:
@@ -58,7 +65,7 @@ class GlobalUserManager(BaseUserManager):
         return user
 
     def create_superuser(
-        self, email: str, password: str, **extra_fields: object
+        self, email: str, password: str, **extra_fields
     ) -> "GlobalUser":
         """Cria superusuário."""
         extra_fields.setdefault("is_staff", True)
@@ -73,6 +80,15 @@ class GlobalUser(AbstractBaseUser, PermissionsMixin):
     Autenticado via OIDC (Keycloak) ou JWT local.
     """
 
+    class JobTitle(models.TextChoices):
+        RECEPTION = "reception", "Recepção"
+        PAINTING = "painting", "Pintura"
+        MECHANICAL = "mechanical", "Mecânica"
+        ADMIN = "admin", "Administração"
+        INVENTORY = "inventory", "Estoque"
+        SALES = "sales", "Vendas"
+        PURCHASING = "purchasing", "Compras"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     # LGPD: email criptografado em repouso
     email = EncryptedEmailField(unique=True)
@@ -80,6 +96,13 @@ class GlobalUser(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=200)
     # Keycloak subject (sub) — vazio para usuários locais
     keycloak_id = models.UUIDField(null=True, blank=True, unique=True)
+    job_title = models.CharField(
+        max_length=20,
+        choices=JobTitle.choices,
+        blank=True,
+        default="",
+        verbose_name="Setor / Cargo",
+    )
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -96,6 +119,18 @@ class GlobalUser(AbstractBaseUser, PermissionsMixin):
         db_table = "users_global"
         verbose_name = "Usuário Global"
         verbose_name_plural = "Usuários Globais"
+
+    def save(self, *args, **kwargs) -> None:
+        """Computa email_hash automaticamente antes de salvar."""
+        if self.email and not self.email_hash:
+            self.email_hash = hashlib.sha256(self.email.lower().encode()).hexdigest()
+        super().save(*args, **kwargs)
+
+    def get_full_name(self) -> str:
+        return self.name
+
+    def get_short_name(self) -> str:
+        return self.name.split()[0] if self.name else ""
 
     def __str__(self) -> str:
         return f"{self.name} ({self.id})"

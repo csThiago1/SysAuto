@@ -3,15 +3,19 @@
 # seed-users.sh — Gerencia usuários do realm paddock no Keycloak
 #
 # Uso:
-#   ./seed-users.sh list                             → lista todos os usuários
-#   ./seed-users.sh create <email> <senha> <role>    → cria usuário
-#   ./seed-users.sh reset-password <email> <senha>   → reseta senha
-#   ./seed-users.sh delete <email>                   → remove usuário
+#   ./seed-users.sh list                                      → lista todos os usuários
+#   ./seed-users.sh create <email> <senha> <role> [company]   → cria usuário com atributos de tenant
+#   ./seed-users.sh reset-password <email> <senha>            → reseta senha
+#   ./seed-users.sh delete <email>                            → remove usuário
+#   ./seed-users.sh set-tenant <email> [company]              → atualiza atributos de tenant
 #
 # Roles disponíveis: ADMIN | MANAGER | CONSULTANT | STOREKEEPER
+# Company (default: dscar): dscar | pecas | vidros | estetica
 #
-# Exemplo:
+# Exemplos:
 #   ./seed-users.sh create joao@dscar.com Senha123! CONSULTANT
+#   ./seed-users.sh create maria@pecas.com Senha123! MANAGER pecas
+#   ./seed-users.sh set-tenant joao@dscar.com dscar
 # ─────────────────────────────────────────────────────────────────────────────
 
 set -euo pipefail
@@ -59,12 +63,14 @@ print(f'\nTotal: {len(users)}')
 }
 
 cmd_create() {
-  local email="$1" senha="$2" role="$3"
+  local email="$1" senha="$2" role="$3" company="${4:-dscar}"
+  local tenant_schema="tenant_${company}"
+  local client_slug="grupo-dscar"
   local token; token=$(get_token)
 
-  echo "Criando usuário: $email (role: $role)..."
+  echo "Criando usuário: $email (role: $role, company: $company)..."
 
-  # Cria usuário
+  # Cria usuário com atributos de tenant
   HTTP=$(curl -sf -o /dev/null -w "%{http_code}" -X POST \
     "$KEYCLOAK_URL/admin/realms/$REALM/users" \
     -H "Authorization: Bearer $token" \
@@ -74,11 +80,17 @@ cmd_create() {
       \"email\": \"$email\",
       \"enabled\": true,
       \"emailVerified\": true,
-      \"credentials\": [{\"type\":\"password\",\"value\":\"$senha\",\"temporary\":false}]
+      \"credentials\": [{\"type\":\"password\",\"value\":\"$senha\",\"temporary\":false}],
+      \"attributes\": {
+        \"active_company\": [\"$company\"],
+        \"tenant_schema\": [\"$tenant_schema\"],
+        \"client_slug\": [\"$client_slug\"],
+        \"companies\": [\"$company\"]
+      }
     }")
 
   if [ "$HTTP" = "201" ]; then
-    echo "  ✓ Usuário criado"
+    echo "  ✓ Usuário criado com atributos de tenant"
   else
     echo "  ✗ Erro HTTP $HTTP (usuário já existe?)"
     exit 1
@@ -100,6 +112,7 @@ cmd_create() {
 
   echo "  ✓ Role '$role' atribuída"
   echo "  → Login: $email / $senha"
+  echo "  → Tenant: $company (schema: $tenant_schema)"
 }
 
 cmd_reset_password() {
@@ -130,14 +143,40 @@ cmd_delete() {
   echo "✓ Usuário '$email' removido"
 }
 
+# Atualiza atributos de tenant em usuário existente
+cmd_set_tenant() {
+  local email="$1" company="${2:-dscar}"
+  local tenant_schema="tenant_${company}"
+  local token; token=$(get_token)
+  local user_id; user_id=$(get_user_id "$token" "$email")
+  [ -z "$user_id" ] && { echo "Usuário '$email' não encontrado"; exit 1; }
+
+  curl -sf -X PUT \
+    "$KEYCLOAK_URL/admin/realms/$REALM/users/$user_id" \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"attributes\": {
+        \"active_company\": [\"$company\"],
+        \"tenant_schema\": [\"tenant_${company}\"],
+        \"client_slug\": [\"grupo-dscar\"],
+        \"companies\": [\"$company\"]
+      }
+    }"
+
+  echo "✓ Atributos de tenant de '$email' atualizados → $company"
+}
+
 # ── dispatch ──────────────────────────────────────────────────────────────────
 case "${1:-}" in
   list)             cmd_list ;;
-  create)           cmd_create "$2" "$3" "$4" ;;
+  create)           cmd_create "$2" "$3" "$4" "${5:-dscar}" ;;
   reset-password)   cmd_reset_password "$2" "$3" ;;
   delete)           cmd_delete "$2" ;;
+  set-tenant)       cmd_set_tenant "$2" "${3:-dscar}" ;;
   *)
-    echo "Uso: $0 list | create <email> <senha> <role> | reset-password <email> <senha> | delete <email>"
+    echo "Uso: $0 list | create <email> <senha> <role> [company] | reset-password <email> <senha> | delete <email> | set-tenant <email> [company]"
     echo "Roles: ADMIN | MANAGER | CONSULTANT | STOREKEEPER"
+    echo "Company (default: dscar): dscar | pecas | vidros | estetica"
     exit 1 ;;
 esac

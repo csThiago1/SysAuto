@@ -6,58 +6,67 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import type { PaddockJWT, PaddockRole } from "@paddock/types";
+import type { PaddockRole } from "@paddock/types";
 
+export type { MeResponse, MeEmployeeSnapshot, MeCustomerSnapshot } from "@paddock/types";
+
+/**
+ * Retorna dados de acesso multi-empresa do usuário autenticado.
+ * Lê os claims diretamente da sessão next-auth v5 (companies, activeCompany,
+ * tenantSchema, clientSlug) — propagados pelo callback session() em auth.ts.
+ */
 export function useCompanyAccess() {
-    const { data: session } = useSession();
-    const token = session?.user as unknown as PaddockJWT;
+  const { data: session } = useSession();
 
-    return {
-        /** Verifica se o usuário tem acesso à empresa especificada */
-        hasAccess: (company: string): boolean =>
-            token?.companies?.includes(company) ?? false,
+  const companies: string[] = session?.companies ?? [];
+  const activeCompany: string = session?.activeCompany ?? "";
+  const tenantSchema: string = session?.tenantSchema ?? "";
+  const clientSlug: string = session?.clientSlug ?? "";
+  const role: PaddockRole = session?.role ?? "STOREKEEPER";
 
-        /** Usuário pertence a mais de uma empresa */
-        isMultiCompany: (token?.companies?.length ?? 0) > 1,
+  return {
+    /** Verifica se o usuário tem acesso à empresa especificada */
+    hasAccess: (company: string): boolean => companies.includes(company),
 
-        /** Empresa atualmente ativa */
-        activeCompany: token?.active_company ?? "",
+    /** Usuário pertence a mais de uma empresa */
+    isMultiCompany: companies.length > 1,
 
-        /** Role do usuário */
-        role: token?.role ?? ("READONLY" as PaddockRole),
+    /** Empresa atualmente ativa */
+    activeCompany,
 
-        /** Pode gerenciar OS e equipe (MANAGER, ADMIN, OWNER) */
-        canManage: (["OWNER", "ADMIN", "MANAGER"] as PaddockRole[]).includes(
-            token?.role
-        ),
+    /** Role do usuário */
+    role,
 
-        /** Pode administrar o sistema (ADMIN, OWNER) */
-        canAdmin: (["OWNER", "ADMIN"] as PaddockRole[]).includes(token?.role),
+    /** Pode gerenciar OS e equipe (MANAGER, ADMIN, OWNER) */
+    canManage: (["OWNER", "ADMIN", "MANAGER"] as PaddockRole[]).includes(role),
 
-        /** Pode acessar módulo de estoque (STOREKEEPER, MANAGER, ADMIN, OWNER) */
-        canAccessInventory: (["OWNER", "ADMIN", "MANAGER", "STOREKEEPER"] as PaddockRole[]).includes(
-            token?.role
-        ),
+    /** Pode administrar o sistema (ADMIN, OWNER) */
+    canAdmin: (["OWNER", "ADMIN"] as PaddockRole[]).includes(role),
 
-        /** Tenant schema ativo */
-        tenantSchema: token?.tenant_schema ?? "",
+    /** Pode acessar módulo de estoque (STOREKEEPER, MANAGER, ADMIN, OWNER) */
+    canAccessInventory: (
+      ["OWNER", "ADMIN", "MANAGER", "STOREKEEPER"] as PaddockRole[]
+    ).includes(role),
 
-        /** Client slug (ex: 'grupo-dscar') */
-        clientSlug: token?.client_slug ?? "",
-    };
+    /** Tenant schema ativo (ex: "tenant_dscar") */
+    tenantSchema,
+
+    /** Client slug (ex: "grupo-dscar") */
+    clientSlug,
+  };
 }
 
 /** Verifica papel mínimo de acesso */
 export function hasMinRole(
-    userRole: PaddockRole,
-    minRole: PaddockRole
+  userRole: PaddockRole,
+  minRole: PaddockRole
 ): boolean {
-    const hierarchy: PaddockRole[] = [
-        "STOREKEEPER",
-        "CONSULTANT",
-        "MANAGER",
-        "ADMIN",
-        "OWNER",
-    ];
-    return hierarchy.indexOf(userRole) >= hierarchy.indexOf(minRole);
+  const hierarchy: PaddockRole[] = [
+    "STOREKEEPER",
+    "CONSULTANT",
+    "MANAGER",
+    "ADMIN",
+    "OWNER",
+  ];
+  return hierarchy.indexOf(userRole) >= hierarchy.indexOf(minRole);
 }

@@ -1,12 +1,8 @@
 import { auth } from "@/lib/auth";
-import type { PaddockRole } from "@paddock/types";
-
-const ROLE_HIERARCHY: Record<string, number> = {
-  OWNER: 5, ADMIN: 4, MANAGER: 3, CONSULTANT: 2, STOREKEEPER: 1,
-};
+import { ROLE_HIERARCHY, type PaddockRole } from "@paddock/types";
 
 function hasMinRole(role: string | undefined, minRole: PaddockRole): boolean {
-  return (ROLE_HIERARCHY[role ?? ""] ?? 0) >= (ROLE_HIERARCHY[minRole] ?? 0);
+  return (ROLE_HIERARCHY[role as PaddockRole] ?? 0) >= (ROLE_HIERARCHY[minRole] ?? 0);
 }
 
 export default auth((req) => {
@@ -20,6 +16,11 @@ export default auth((req) => {
 
   if (!isLoggedIn) return; // não autenticado em /login — ok
 
+  // Usuário já autenticado tentando acessar /login → redireciona para OS
+  if (isLoggedIn && isAuthPage) {
+    return Response.redirect(new URL("/service-orders", req.url));
+  }
+
   const role = req.auth?.role as string | undefined;
 
   // Admin e configurações: MANAGER ou superior
@@ -27,6 +28,12 @@ export default auth((req) => {
     pathname.startsWith("/admin") || pathname.startsWith("/configuracoes");
   if (isAdminRoute && !hasMinRole(role, "MANAGER")) {
     return Response.redirect(new URL("/", req.url));
+  }
+
+  // Criar nova OS: CONSULTANT ou superior
+  const isNewOSRoute = pathname === "/service-orders/new";
+  if (isNewOSRoute && !hasMinRole(role, "CONSULTANT")) {
+    return Response.redirect(new URL("/service-orders", req.url));
   }
 });
 

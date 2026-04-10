@@ -2,40 +2,43 @@
 
 import React, { useState } from "react";
 import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { DsCarLogo } from "@/components/DsCarLogo";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
 export default function LoginPage(): React.ReactElement {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleKeycloak(): Promise<void> {
-    setLoading(true);
-    await signIn("keycloak", { callbackUrl: "/os" });
+    setIsLoading(true);
+    await signIn("keycloak", { callbackUrl: "/service-orders" });
   }
 
-  async function handleDevLogin(e: React.FormEvent<HTMLFormElement>): Promise<void> {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
-    setLoading(true);
-    setError("");
+    setIsLoading(true);
+    setError(null);
 
     const result = await signIn("dev-credentials", {
       email,
       password,
-      callbackUrl: "/os",
       redirect: false,
     });
 
-    if (result?.error) {
-      setError("Email ou senha inválidos.");
-      setLoading(false);
-    } else if (result?.url) {
-      window.location.href = result.url;
+    if (!result?.ok) {
+      setError("E-mail ou senha incorretos.");
+      setIsLoading(false);
+    } else {
+      router.push("/os");
     }
   }
 
@@ -56,75 +59,78 @@ export default function LoginPage(): React.ReactElement {
           <DsCarLogo variant="light" size={28} />
         </div>
 
-        <div className="rounded-lg border border-secondary-800 bg-secondary-900 p-8 shadow-dropdown">
-          <h2 className="text-xl font-semibold text-white mb-2">Bem-vindo</h2>
-          <p className="text-sm text-secondary-400 mb-6">
-            Acesse o sistema de gestão DS Car
-          </p>
+        <Card className="w-full max-w-md border-secondary-800 bg-secondary-900 shadow-dropdown">
+          <CardHeader>
+            <CardTitle className="text-white">DS Car ERP</CardTitle>
+            <p className="text-sm text-secondary-400">Acesse sua conta</p>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-secondary-300">
+                  E-mail
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="dev@dscar.com.br"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-secondary-950 border-secondary-700 text-white placeholder:text-secondary-600 focus-visible:ring-primary-500"
+                  autoComplete="email"
+                  required
+                />
+              </div>
 
-          {/* Keycloak SSO */}
-          <Button
-            className="w-full"
-            onClick={() => void handleKeycloak()}
-            disabled={loading}
-          >
-            Entrar com conta corporativa
-          </Button>
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="text-secondary-300">
+                  Senha
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-secondary-950 border-secondary-700 text-white placeholder:text-secondary-600 focus-visible:ring-primary-500"
+                  autoComplete="current-password"
+                  required
+                />
+              </div>
 
-          <div className="my-6 flex items-center gap-3">
-            <Separator className="flex-1 bg-secondary-700" />
-            <span className="text-xs text-secondary-500">ou acesso dev</span>
-            <Separator className="flex-1 bg-secondary-700" />
-          </div>
+              {error && (
+                <p className="text-sm text-red-600">{error}</p>
+              )}
 
-          {/* Dev credentials form */}
-          <form onSubmit={(e) => void handleDevLogin(e)} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-secondary-300">
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="dev@dscar.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-secondary-950 border-secondary-700 text-white placeholder:text-secondary-600 focus-visible:ring-primary-500"
-                autoComplete="email"
-                required
-              />
-            </div>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isLoading}
+              >
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Entrar
+              </Button>
+            </form>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-secondary-300">
-                Senha
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="paddock123"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="bg-secondary-950 border-secondary-700 text-white placeholder:text-secondary-600 focus-visible:ring-primary-500"
-                autoComplete="current-password"
-                required
-              />
-            </div>
+            {process.env.NODE_ENV !== "production" && (
+              <>
+                <div className="my-6 flex items-center gap-3">
+                  <Separator className="flex-1 bg-secondary-700" />
+                  <span className="text-xs text-secondary-500">ou SSO</span>
+                  <Separator className="flex-1 bg-secondary-700" />
+                </div>
 
-            {error && (
-              <p className="text-xs text-error-400 mt-1">{error}</p>
+                <Button
+                  variant="outline"
+                  className="w-full border-secondary-700 bg-transparent text-secondary-200 hover:bg-secondary-800 hover:text-white"
+                  onClick={() => void handleKeycloak()}
+                  disabled={isLoading}
+                >
+                  Entrar com conta corporativa
+                </Button>
+              </>
             )}
-
-            <Button
-              type="submit"
-              variant="outline"
-              className="w-full border-secondary-700 bg-transparent text-secondary-200 hover:bg-secondary-800 hover:text-white"
-              disabled={loading}
-            >
-              Entrar (Dev)
-            </Button>
-          </form>
-        </div>
+          </CardContent>
+        </Card>
 
         <p className="mt-6 text-center text-xs text-secondary-600">
           Paddock Solutions · Sistema Interno DS Car

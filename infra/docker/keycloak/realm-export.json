@@ -45,6 +45,83 @@
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:3002"
+      ],
+      "protocolMappers": [
+        {
+          "name": "role-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "false",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "role",
+            "jsonType.label": "String",
+            "single": "true"
+          }
+        },
+        {
+          "name": "companies-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "companies",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "companies",
+            "jsonType.label": "String",
+            "multivalued": "true"
+          }
+        },
+        {
+          "name": "active-company-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "active_company",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "active_company",
+            "jsonType.label": "String",
+            "multivalued": "false"
+          }
+        },
+        {
+          "name": "tenant-schema-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "tenant_schema",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "tenant_schema",
+            "jsonType.label": "String",
+            "multivalued": "false"
+          }
+        },
+        {
+          "name": "client-slug-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "client_slug",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "client_slug",
+            "jsonType.label": "String",
+            "multivalued": "false"
+          }
+        }
       ]
     }
   ],
@@ -88,7 +165,13 @@
       ],
       "realmRoles": [
         "ADMIN"
-      ]
+      ],
+      "attributes": {
+        "active_company": ["dscar"],
+        "tenant_schema": ["tenant_dscar"],
+        "client_slug": ["grupo-dscar"],
+        "companies": ["dscar"]
+      }
     },
     {
       "username": "thiago@paddock.solutions",
@@ -106,7 +189,13 @@
       ],
       "realmRoles": [
         "ADMIN"
-      ]
+      ],
+      "attributes": {
+        "active_company": ["dscar"],
+        "tenant_schema": ["tenant_dscar"],
+        "client_slug": ["grupo-dscar"],
+        "companies": ["dscar"]
+      }
     }
   ]
 }
