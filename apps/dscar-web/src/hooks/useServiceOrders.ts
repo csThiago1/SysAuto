@@ -1,5 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { PaginatedResponse, ServiceOrder } from "@paddock/types";
+import type {
+  PaginatedResponse,
+  ServiceOrder,
+  ServiceOrderPart,
+  ServiceOrderPartPayload,
+  ServiceOrderLabor,
+  ServiceOrderLaborPayload,
+} from "@paddock/types";
 import { apiFetch } from "@/lib/api";
 
 const API = "/api/proxy";
@@ -48,6 +55,114 @@ export function useTransitionStatus(id: string) {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["service-orders", id] });
       void qc.invalidateQueries({ queryKey: ["service-orders"] });
+    },
+  });
+}
+
+export function useOSParts(osId: string) {
+  return useQuery<ServiceOrderPart[]>({
+    queryKey: ["service-order", osId, "parts"],
+    queryFn: () => apiFetch<ServiceOrderPart[]>(`${API}/service-orders/${osId}/parts/`),
+    enabled: Boolean(osId),
+  });
+}
+
+export function useAddOSPart(osId: string) {
+  const qc = useQueryClient();
+  return useMutation<ServiceOrderPart, Error, ServiceOrderPartPayload>({
+    mutationFn: (payload) =>
+      apiFetch<ServiceOrderPart>(`${API}/service-orders/${osId}/parts/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["service-order", osId, "parts"] });
+      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
+    },
+  });
+}
+
+export function useUpdateOSPart(osId: string) {
+  const qc = useQueryClient();
+  return useMutation<ServiceOrderPart, Error, { partId: string } & Partial<ServiceOrderPartPayload>>({
+    mutationFn: ({ partId, ...payload }) =>
+      apiFetch<ServiceOrderPart>(`${API}/service-orders/${osId}/parts/${partId}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["service-order", osId, "parts"] });
+      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
+    },
+  });
+}
+
+export function useDeleteOSPart(osId: string) {
+  const qc = useQueryClient();
+  return useMutation<void, Error, string>({
+    mutationFn: (partId) =>
+      apiFetch<void>(`${API}/service-orders/${osId}/parts/${partId}/`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["service-order", osId, "parts"] });
+      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
+    },
+  });
+}
+
+export function useOSLabor(osId: string) {
+  return useQuery<ServiceOrderLabor[]>({
+    queryKey: ["service-order", osId, "labor"],
+    queryFn: () => apiFetch<ServiceOrderLabor[]>(`${API}/service-orders/${osId}/labor/`),
+    enabled: Boolean(osId),
+  });
+}
+
+export function useAddOSLabor(osId: string) {
+  const qc = useQueryClient();
+  return useMutation<ServiceOrderLabor, Error, ServiceOrderLaborPayload>({
+    mutationFn: (payload) =>
+      apiFetch<ServiceOrderLabor>(`${API}/service-orders/${osId}/labor/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["service-order", osId, "labor"] });
+      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
+    },
+  });
+}
+
+export function useUpdateOSLabor(osId: string) {
+  const qc = useQueryClient();
+  return useMutation<ServiceOrderLabor, Error, { laborId: string } & Partial<ServiceOrderLaborPayload>>({
+    mutationFn: ({ laborId, ...payload }) =>
+      apiFetch<ServiceOrderLabor>(`${API}/service-orders/${osId}/labor/${laborId}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["service-order", osId, "labor"] });
+      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
+    },
+  });
+}
+
+export function useDeleteOSLabor(osId: string) {
+  const qc = useQueryClient();
+  return useMutation<void, Error, string>({
+    mutationFn: (laborId) =>
+      apiFetch<void>(`${API}/service-orders/${osId}/labor/${laborId}/`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["service-order", osId, "labor"] });
+      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
     },
   });
 }

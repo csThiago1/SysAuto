@@ -7,7 +7,7 @@ export function useClientOrders(customerId: string) {
     queryKey: ["service-orders", "by-client", customerId],
     queryFn: () =>
       apiFetch<PaginatedResponse<ServiceOrder>>(
-        `/api/proxy/service-orders/?customer_id=${customerId}&ordering=-opened_at&page_size=10`
+        `/api/proxy/service-orders/?customer=${customerId}&ordering=-opened_at&page_size=10`
       ),
     enabled: !!customerId,
   });

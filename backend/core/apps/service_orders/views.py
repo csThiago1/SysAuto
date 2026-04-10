@@ -3,7 +3,8 @@ Paddock Solutions — Service Orders Views
 ViewSet completo para OS + endpoint de dashboard stats.
 """
 import logging
-from typing import Any
+from datetime import timedelta
+from typing import Any, Optional
 
 from django.db.models import Count, Max, Q, QuerySet
 from django.utils import timezone
@@ -12,17 +13,39 @@ from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+import httpx
+
+from apps.authentication.permissions import IsConsultantOrAbove
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import ServiceOrder, ServiceOrderStatus
+from .models import (
+    ServiceOrder,
+    ServiceOrderActivityLog,
+    ServiceOrderPhoto,
+    ServiceOrderStatus,
+    StatusTransitionLog,
+    ServiceOrderPart,
+    ServiceOrderLabor,
+)
 from .serializers import (
+    BudgetSnapshotSerializer,
+    DeliverOSSerializer,
+    ServiceOrderActivityLogSerializer,
     ServiceOrderCreateSerializer,
     ServiceOrderDetailSerializer,
+    ServiceOrderLaborSerializer,
     ServiceOrderListSerializer,
+    ServiceOrderOverdueSerializer,
+    ServiceOrderPartSerializer,
+    ServiceOrderPhotoSerializer,
     ServiceOrderStatusTransitionSerializer,
+    ServiceOrderUpdateSerializer,
+    StatusTransitionLogSerializer,
+    UploadPhotoSerializer,
 )
+from .services import ServiceOrderDeliveryService, ServiceOrderService
 
 logger = logging.getLogger(__name__)
 
@@ -32,15 +55,16 @@ logger = logging.getLogger(__name__)
         summary="Listar ordens de serviço",
         parameters=[
             OpenApiParameter("status", description="Filtrar por status", required=False),
-            OpenApiParameter("search", description="Busca por placa ou nome do cliente", required=False),
-            OpenApiParameter("ordering", description="Ordenar por campo (ex: opened_at, -opened_at)", required=False),
+            OpenApiParameter("customer_type", description="insurer | private", required=False),
+            OpenApiParameter("os_type", description="Tipo de OS", required=False),
+            OpenApiParameter("search", description="Busca por placa, número, sinistro ou cliente", required=False),
+            OpenApiParameter("ordering", description="Ordenar por campo", required=False),
         ],
     ),
     retrieve=extend_schema(summary="Detalhar ordem de serviço"),
     create=extend_schema(summary="Abrir nova ordem de serviço"),
     update=extend_schema(summary="Atualizar ordem de serviço"),
     partial_update=extend_schema(summary="Atualizar parcialmente uma OS"),
-    transition=extend_schema(summary="Transitar status da OS (Kanban)"),
 )
 class ServiceOrderViewSet(
     mixins.CreateModelMixin,
@@ -53,62 +77,103 @@ class ServiceOrderViewSet(
     ViewSet para Ordens de Serviço.
 
     Não expõe destroy — OS nunca são deletadas (soft delete via is_active).
-    Transição de status feita via action /transition/.
+    Transição de status: POST /service-orders/{id}/transition/
+    Histórico de transições: GET /service-orders/{id}/transitions/
+    Próximo número: GET /service-orders/next-number/
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
         "status": ["exact", "in"],
+        "customer_type": ["exact"],
+        "os_type": ["exact"],
+        "insurer": ["exact"],
+        "consultant": ["exact"],
         "is_active": ["exact"],
-        "customer_id": ["exact"],
-        "estimated_delivery": ["date__lte", "date__gte", "date"],
+        "entry_date": ["gte", "lte", "date"],
+        "estimated_delivery_date": ["gte", "lte"],
+        "created_at": ["gte", "lte", "date"],
     }
-    search_fields = ["plate", "customer_name"]
-    ordering_fields = ["opened_at", "number", "estimated_delivery"]
+    search_fields = ["number", "casualty_number", "customer_name", "plate"]
+    ordering_fields = ["number", "created_at", "entry_date", "estimated_delivery_date", "opened_at"]
     ordering = ["-opened_at"]
 
     def get_queryset(self) -> QuerySet[ServiceOrder]:
-        """Retorna apenas OS ativas do tenant atual, com select_related."""
-        return (
+        """
+        Retorna apenas OS ativas do tenant, com select_related otimizado.
+
+        Parâmetro opcional: ?exclude_closed=true
+        Exclui delivered e cancelled do resultado — ideal para o Kanban
+        (reduz payload ~70% em oficinas com muitas OS entregues).
+        """
+        qs = (
             ServiceOrder.objects.filter(is_active=True)
-            .select_related("created_by")
+            .select_related("consultant", "insurer", "expert", "customer", "created_by")
+            .prefetch_related(
+                "transition_logs__changed_by",
+                "photos",
+                "parts",
+                "labor_items",
+                "budget_snapshots",
+                "activities",
+            )
             .order_by("-opened_at")
         )
+        if self.request.query_params.get("exclude_closed") == "true":
+            qs = qs.exclude(
+                status__in=[ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED]
+            )
+        return qs
 
     def get_serializer_class(self):  # type: ignore[override]
-        """Seleciona serializer conforme a ação."""
         if self.action == "list":
             return ServiceOrderListSerializer
         if self.action == "create":
             return ServiceOrderCreateSerializer
+        if self.action in ["update", "partial_update"]:
+            return ServiceOrderUpdateSerializer
         return ServiceOrderDetailSerializer
 
-    def perform_create(self, serializer: ServiceOrderCreateSerializer) -> None:
-        """Vincula o usuário autenticado como criador da OS e gera número sequencial."""
-        user = self.request.user
-        max_num = ServiceOrder.objects.aggregate(Max("number"))["number__max"] or 0
-        logger.info(
-            "Abrindo OS para placa=%s por user_id=%s",
-            serializer.validated_data.get("plate"),
-            user.id,
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Cria nova OS via ServiceOrderService (gera número automático)."""
+        serializer = ServiceOrderCreateSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        order = ServiceOrderService.create(
+            data=serializer.validated_data,
+            created_by_id=str(request.user.id),
         )
-        serializer.save(created_by=user, number=max_num + 1)
-
-    def perform_update(self, serializer: ServiceOrderDetailSerializer) -> None:
-        """Log de auditoria ao atualizar OS."""
         logger.info(
-            "Atualizando OS id=%s por user_id=%s",
-            self.get_object().id,
-            self.request.user.id,
+            "OS #%d aberta para placa=%s por user_id=%s",
+            order.number,
+            order.plate,
+            request.user.id,
         )
-        serializer.save()
+        return Response(
+            ServiceOrderDetailSerializer(order, context={"request": request}).data,
+            status=status.HTTP_201_CREATED,
+        )
 
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Atualiza OS via ServiceOrderService (processa auto-transitions)."""
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = ServiceOrderUpdateSerializer(
+            instance, data=request.data, partial=partial, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        order = ServiceOrderService.update(
+            order_id=str(instance.id),
+            data=serializer.validated_data,
+            updated_by_id=str(request.user.id),
+        )
+        return Response(ServiceOrderDetailSerializer(order, context={"request": request}).data)
+
+    @extend_schema(summary="Transitar status da OS (Kanban)")
     @action(detail=True, methods=["post"], url_path="transition")
-    def transition(self, request: Request, pk: Any = None) -> Response:
+    def transition(self, request: Request, pk: Optional[str] = None) -> Response:
         """
-        Transita o status de uma OS seguindo as regras do Kanban DS Car.
-
+        POST /service-orders/{id}/transition/
         Body: {"new_status": "<status>"}
         """
         service_order: ServiceOrder = self.get_object()
@@ -117,28 +182,429 @@ class ServiceOrderViewSet(
             context={"service_order": service_order, "request": request},
         )
         serializer.is_valid(raise_exception=True)
+        order = ServiceOrderService.transition(
+            order_id=str(service_order.id),
+            new_status=serializer.validated_data["new_status"],
+            changed_by_id=str(request.user.id),
+        )
+        return Response(ServiceOrderDetailSerializer(order, context={"request": request}).data)
 
-        old_status = service_order.status
-        new_status: str = serializer.validated_data["new_status"]
-        service_order.status = new_status
+    @extend_schema(summary="Histórico de transições de status")
+    @action(detail=True, methods=["get"], url_path="transitions")
+    def transitions(self, request: Request, pk: Optional[str] = None) -> Response:
+        """GET /service-orders/{id}/transitions/"""
+        logs = (
+            StatusTransitionLog.objects.filter(service_order_id=pk)
+            .select_related("changed_by")
+            .order_by("-created_at")
+        )
+        return Response(StatusTransitionLogSerializer(logs, many=True).data)
 
-        if new_status == ServiceOrderStatus.DELIVERED:
-            service_order.delivered_at = timezone.now()
+    @extend_schema(summary="Próximo número de OS disponível")
+    @action(detail=False, methods=["get"], url_path="next-number")
+    def next_number(self, request: Request) -> Response:
+        """GET /service-orders/next-number/"""
+        return Response({"next_number": ServiceOrderService.get_next_number()})
 
-        service_order.save(update_fields=["status", "delivered_at", "updated_at"])
+    @extend_schema(summary="Ver histórico detalhado da OS", responses=ServiceOrderActivityLogSerializer(many=True))
+    @action(detail=True, methods=["get", "post"], url_path="history")
+    def history(self, request: Request, pk: Optional[str] = None) -> Response:
+        """
+        GET /service-orders/{id}/history/ -> Lista o histórico
+        POST /service-orders/{id}/history/ -> Adiciona uma nova nota/lembrete (body: {"message": "..."})
+        """
+        service_order = self.get_object()
 
+        if request.method == "POST":
+            message = request.data.get("message")
+            if not message:
+                return Response({"message": ["Este campo é obrigatório."]}, status=status.HTTP_400_BAD_REQUEST)
+            
+            from .models import ServiceOrderActivityLog
+            log = ServiceOrderActivityLog.objects.create(
+                service_order=service_order,
+                user=request.user,
+                activity_type="reminder",
+                description=message
+            )
+            return Response(ServiceOrderActivityLogSerializer(log).data, status=status.HTTP_201_CREATED)
+
+        # GET
+        from .models import ServiceOrderActivityLog
+        logs = ServiceOrderActivityLog.objects.filter(service_order=service_order)
+        serializer = ServiceOrderActivityLogSerializer(logs, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(summary="Importar orçamento da Cilia para a OS existente")
+    @action(detail=True, methods=["post"], url_path="import-cilia")
+    def import_cilia(self, request: Request, pk: Optional[str] = None) -> Response:
+        """
+        POST /service-orders/{id}/import-cilia/
+        Body: {"sinistro": "...", "orcamento": "..."}
+        """
+        service_order: ServiceOrder = self.get_object()
+        sinistro = request.data.get("sinistro")
+        orcamento = request.data.get("orcamento")
+        versao = request.data.get("versao")
+        
+        if not sinistro or not orcamento:
+            return Response({"erro": "sinistro e orcamento são obrigatórios"}, status=400)
+            
+        if isinstance(orcamento, str) and "." in orcamento and not versao:
+            parts = orcamento.split(".")
+            orcamento = parts[0]
+            versao = parts[1]
+
+        from apps.cilia.client import buscar_orcamento
+        try:
+            dados = buscar_orcamento(str(sinistro), str(orcamento), str(versao) if versao else None)
+        except httpx.HTTPError as e:
+            logger.error(f"Erro Cilia API: {e}")
+            return Response({"erro": "Erro ao comunicar com a API Cilia"}, status=502)
+        except Exception as e:
+            return Response({"erro": str(e)}, status=500)
+            
+        # Update ServiceOrder
+        totals = dados.get("totals", {})
+        service_order.parts_total = totals.get("total_pieces_cost", 0)
+        service_order.services_total = totals.get("total_workforce_cost", 0)
+        service_order.casualty_number = str(sinistro)
+        
+        # Opcional: Atualizar a seguradora se vier no json e quisermos forçar, 
+        # mas como é update, atualizamos apenas dados financeiros e o ID do sinistro.
+        service_order.save(update_fields=["parts_total", "services_total", "casualty_number", "updated_at"])
+        
+        from .models import ServiceOrderActivityLog
+        ServiceOrderActivityLog.objects.create(
+            service_order=service_order,
+            user=request.user,
+            activity_type="updated",
+            description=f"Orçamento Cilia (Sinistro {sinistro} / Orçamento {orcamento}) sincronizado com sucesso."
+        )
+        
+        # Save exact payload to OrcamentoCilia backup
+        from apps.cilia.models import OrcamentoCilia
+        try:
+            conclusion_dict = dados.get("conclusion") or {}
+            OrcamentoCilia.objects.update_or_create(
+                budget_version_id=dados.get("budget_version_id"),
+                defaults={
+                    "budget_id": dados.get("budget_id"),
+                    "casualty_number": str(dados.get("casualty_number", sinistro)),
+                    "budget_number": dados.get("budget_number"),
+                    "version_number": dados.get("version_number", 1),
+                    "status": dados.get("status", ""),
+                    "total_liquid": totals.get("total_liquid", 0),
+                    "total_pieces": totals.get("total_pieces_cost", 0),
+                    "total_workforce": totals.get("total_workforce_cost", 0),
+                    "total_hours": totals.get("total_hours", 0),
+                    "raw_data": dados,
+                }
+            )
+        except Exception as e:
+            logger.error(f"Erro ao salvar backup de OrcamentoCilia: {e}")
+
+        return Response({"sucesso": True, "total": service_order.total})
+
+    @extend_schema(summary="Listar/adicionar peças da OS")
+    @action(detail=True, methods=["get", "post"], url_path="parts")
+    def parts(self, request: Request, pk: Optional[str] = None) -> Response:
+        """
+        GET  /service-orders/{id}/parts/  → lista peças
+        POST /service-orders/{id}/parts/  → adiciona peça
+        """
+        service_order: ServiceOrder = self.get_object()
+
+        if request.method == "POST":
+            if service_order.status in (
+                ServiceOrderStatus.READY,
+                ServiceOrderStatus.DELIVERED,
+                ServiceOrderStatus.CANCELLED,
+            ):
+                return Response(
+                    {"detail": "Não é possível modificar itens de uma OS encerrada ou pronta para entrega."},
+                    status=422,
+                )
+            serializer = ServiceOrderPartSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(service_order=service_order, created_by=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        items = service_order.parts.all()
+        return Response(ServiceOrderPartSerializer(items, many=True).data)
+
+    @extend_schema(summary="Editar/remover peça da OS")
+    @action(detail=True, methods=["patch", "delete"], url_path=r"parts/(?P<part_pk>[^/.]+)")
+    def part_detail(self, request: Request, pk: Optional[str] = None, part_pk: Optional[str] = None) -> Response:
+        """
+        PATCH  /service-orders/{id}/parts/{part_pk}/  → edita peça
+        DELETE /service-orders/{id}/parts/{part_pk}/  → remove peça
+        """
+        service_order: ServiceOrder = self.get_object()
+        try:
+            part = service_order.parts.get(pk=part_pk)
+        except ServiceOrderPart.DoesNotExist:
+            return Response({"detail": "Peça não encontrada."}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == "DELETE":
+            desc = part.description
+            part.delete()
+            ServiceOrderActivityLog.objects.create(
+                service_order=service_order,
+                user=request.user,
+                activity_type="part_removed",
+                description=f"Peça '{desc}' removida da OS",
+            )
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        if service_order.status in (
+            ServiceOrderStatus.READY,
+            ServiceOrderStatus.DELIVERED,
+            ServiceOrderStatus.CANCELLED,
+        ):
+            return Response(
+                {"detail": "Não é possível modificar itens de uma OS encerrada ou pronta para entrega."},
+                status=422,
+            )
+        serializer = ServiceOrderPartSerializer(part, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    @extend_schema(summary="Listar/adicionar serviços da OS")
+    @action(detail=True, methods=["get", "post"], url_path="labor")
+    def labor(self, request: Request, pk: Optional[str] = None) -> Response:
+        """
+        GET  /service-orders/{id}/labor/  → lista serviços
+        POST /service-orders/{id}/labor/  → adiciona serviço
+        """
+        service_order: ServiceOrder = self.get_object()
+
+        if request.method == "POST":
+            if service_order.status in (
+                ServiceOrderStatus.READY,
+                ServiceOrderStatus.DELIVERED,
+                ServiceOrderStatus.CANCELLED,
+            ):
+                return Response(
+                    {"detail": "Não é possível modificar itens de uma OS encerrada ou pronta para entrega."},
+                    status=422,
+                )
+            serializer = ServiceOrderLaborSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(service_order=service_order, created_by=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        items = service_order.labor_items.all()
+        return Response(ServiceOrderLaborSerializer(items, many=True).data)
+
+    @extend_schema(summary="Editar/remover serviço da OS")
+    @action(detail=True, methods=["patch", "delete"], url_path=r"labor/(?P<labor_pk>[^/.]+)")
+    def labor_detail(self, request: Request, pk: Optional[str] = None, labor_pk: Optional[str] = None) -> Response:
+        """
+        PATCH  /service-orders/{id}/labor/{labor_pk}/  → edita serviço
+        DELETE /service-orders/{id}/labor/{labor_pk}/  → remove serviço
+        """
+        service_order: ServiceOrder = self.get_object()
+        try:
+            item = service_order.labor_items.get(pk=labor_pk)
+        except ServiceOrderLabor.DoesNotExist:
+            return Response({"detail": "Serviço não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == "DELETE":
+            desc = item.description
+            item.delete()
+            ServiceOrderActivityLog.objects.create(
+                service_order=service_order,
+                user=request.user,
+                activity_type="labor_removed",
+                description=f"Serviço '{desc}' removido da OS",
+            )
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        if service_order.status in (
+            ServiceOrderStatus.READY,
+            ServiceOrderStatus.DELIVERED,
+            ServiceOrderStatus.CANCELLED,
+        ):
+            return Response(
+                {"detail": "Não é possível modificar itens de uma OS encerrada ou pronta para entrega."},
+                status=422,
+            )
+        serializer = ServiceOrderLaborSerializer(item, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary="OS vencidas ou com entrega hoje",
+        parameters=[
+            OpenApiParameter(
+                "days_ahead",
+                description="Incluir OS vencendo nos próximos N dias (default: 0)",
+                required=False,
+            ),
+            OpenApiParameter(
+                "ordering",
+                description="Ordenar por campo (estimated_delivery_date, -estimated_delivery_date, number)",
+                required=False,
+            ),
+            OpenApiParameter(
+                "status",
+                description="Filtrar por status específico",
+                required=False,
+            ),
+        ],
+        responses=ServiceOrderOverdueSerializer(many=True),
+    )
+    @action(detail=False, methods=["get"], url_path="overdue")
+    def overdue(self, request: Request) -> Response:
+        """
+        GET /api/v1/service-orders/overdue/
+        Retorna OS ativas com estimated_delivery_date <= cutoff, excluindo delivered/cancelled.
+        """
+        today = timezone.localdate()
+        days_ahead = int(request.query_params.get("days_ahead", 0))
+        cutoff = today + timedelta(days=days_ahead)
+
+        open_statuses = [
+            s for s in ServiceOrderStatus.values
+            if s not in (ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED)
+        ]
+
+        status_filter = request.query_params.get("status")
+        if status_filter and status_filter in open_statuses:
+            open_statuses = [status_filter]
+
+        qs = (
+            ServiceOrder.objects.filter(
+                is_active=True,
+                status__in=open_statuses,
+                estimated_delivery_date__isnull=False,
+                estimated_delivery_date__lte=cutoff,
+            )
+            .select_related("consultant", "insurer")
+            .order_by("estimated_delivery_date")
+        )
+
+        ordering = request.query_params.get("ordering")
+        if ordering in ("estimated_delivery_date", "-estimated_delivery_date", "number"):
+            qs = qs.order_by(ordering)
+
+        serializer = ServiceOrderOverdueSerializer(qs, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(summary="Listar/fazer upload de fotos da OS")
+    @action(detail=True, methods=["get", "post"], url_path="photos")
+    def photos(self, request: Request, pk: Optional[str] = None) -> Response:
+        """
+        GET  /service-orders/{id}/photos/  → lista fotos ativas com URL
+        POST /service-orders/{id}/photos/  → upload de foto (multipart: file, folder, caption)
+
+        Fotos são imutáveis — soft delete apenas (is_active=False).
+        """
+        from .models import ActivityType, OSPhotoFolder
+
+        service_order: ServiceOrder = self.get_object()
+
+        if request.method == "POST":
+            serializer = UploadPhotoSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            file = serializer.validated_data["file"]
+            folder = serializer.validated_data["folder"]
+            caption = serializer.validated_data.get("caption", "")
+
+            from django.core.files.storage import default_storage
+            import uuid as _uuid
+
+            ext = file.name.rsplit(".", 1)[-1].lower() if "." in file.name else "jpg"
+            path = f"service_orders/{service_order.id}/{folder}/{_uuid.uuid4().hex}.{ext}"
+            saved_path = default_storage.save(path, file)
+
+            photo = ServiceOrderPhoto.objects.create(
+                service_order=service_order,
+                folder=folder,
+                caption=caption,
+                s3_key=saved_path,
+                uploaded_by_id=request.user.id,
+            )
+
+            folder_label = dict(OSPhotoFolder.choices).get(folder, folder)
+            ServiceOrderActivityLog.objects.create(
+                service_order=service_order,
+                user=request.user,
+                activity_type=ActivityType.FILE_UPLOAD,
+                description=f"Foto adicionada na pasta: {folder_label}",
+                metadata={"folder": folder, "s3_key": saved_path},
+            )
+
+            logger.info(
+                "Foto enviada para OS #%d — pasta=%s path=%s por user_id=%s",
+                service_order.number,
+                folder,
+                saved_path,
+                request.user.id,
+            )
+            return Response(ServiceOrderPhotoSerializer(photo).data, status=status.HTTP_201_CREATED)
+
+        active_photos = service_order.photos.filter(is_active=True).order_by("uploaded_at")
+        return Response(ServiceOrderPhotoSerializer(active_photos, many=True).data)
+
+    @extend_schema(summary="Entregar OS ao cliente")
+    @action(detail=True, methods=["post"], url_path="deliver")
+    def deliver(self, request: Request, pk: Optional[str] = None) -> Response:
+        """
+        POST /service-orders/{id}/deliver/
+        Entrega a OS ao cliente. Requer status 'ready'.
+        Clientes particulares: nfe_key ou nfse_number obrigatório.
+        """
+        service_order: ServiceOrder = self.get_object()
+        serializer = DeliverOSSerializer(
+            data=request.data,
+            context={"service_order": service_order},
+        )
+        serializer.is_valid(raise_exception=True)
+
+        updated = ServiceOrderDeliveryService.deliver(
+            order=service_order,
+            data=serializer.validated_data,
+            delivered_by_id=str(request.user.id),
+        )
+        return Response(ServiceOrderDetailSerializer(updated).data)
+
+    @extend_schema(summary="Listar snapshots de orçamento da OS")
+    @action(detail=True, methods=["get"], url_path="budget-snapshots")
+    def budget_snapshots(self, request: Request, pk: Optional[str] = None) -> Response:
+        """GET /service-orders/{id}/budget-snapshots/"""
+        service_order: ServiceOrder = self.get_object()
+        snapshots = service_order.budget_snapshots.all()
+        return Response(BudgetSnapshotSerializer(snapshots, many=True).data)
+
+    @extend_schema(summary="Remover foto da OS (soft delete)")
+    @action(detail=True, methods=["delete"], url_path=r"photos/(?P<photo_pk>[^/.]+)")
+    def photo_detail(
+        self, request: Request, pk: Optional[str] = None, photo_pk: Optional[str] = None
+    ) -> Response:
+        """
+        DELETE /service-orders/{id}/photos/{photo_pk}/
+        Soft delete apenas — s3_key preservado como evidência de sinistro.
+        """
+        service_order: ServiceOrder = self.get_object()
+        try:
+            photo = service_order.photos.get(pk=photo_pk)
+        except ServiceOrderPhoto.DoesNotExist:
+            return Response({"detail": "Foto não encontrada."}, status=status.HTTP_404_NOT_FOUND)
+
+        photo.is_active = False
+        photo.save(update_fields=["is_active"])
         logger.info(
-            "OS id=%s: transição %s → %s por user_id=%s",
-            service_order.id,
-            old_status,
-            new_status,
+            "Foto %s da OS #%d desativada (soft delete) por user_id=%s",
+            photo_pk,
+            service_order.number,
             request.user.id,
         )
-
-        return Response(
-            ServiceOrderDetailSerializer(service_order, context={"request": request}).data
-        )
-
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 @extend_schema(
     summary="Dashboard — métricas de OS",
@@ -165,36 +631,26 @@ class DashboardStatsView(APIView):
 
     def get(self, request: Request) -> Response:
         """Retorna estatísticas agregadas das OS do tenant."""
-        # OS ativas (não entregues e não canceladas)
         open_statuses = [
             s
             for s in ServiceOrderStatus.values
             if s not in (ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED)
         ]
 
-        active_qs = ServiceOrder.objects.filter(
-            is_active=True, status__in=open_statuses
-        )
-
+        active_qs = ServiceOrder.objects.filter(is_active=True, status__in=open_statuses)
         total_open: int = active_qs.count()
 
-        # Agrupamento por status
         by_status_qs = (
-            active_qs.values("status")
-            .annotate(count=Count("id"))
-            .order_by("status")
+            active_qs.values("status").annotate(count=Count("id")).order_by("status")
         )
         by_status: dict[str, int] = {row["status"]: row["count"] for row in by_status_qs}
 
-        # Entregas previstas para hoje (estimated_delivery no dia corrente)
         today = timezone.localdate()
-        today_deliveries: int = (
-            ServiceOrder.objects.filter(
-                is_active=True,
-                estimated_delivery__date=today,
-                status__in=open_statuses,
-            ).count()
-        )
+        today_deliveries: int = ServiceOrder.objects.filter(
+            is_active=True,
+            estimated_delivery_date=today,
+            status__in=open_statuses,
+        ).count()
 
         logger.debug(
             "Dashboard stats: total_open=%d today_deliveries=%d",

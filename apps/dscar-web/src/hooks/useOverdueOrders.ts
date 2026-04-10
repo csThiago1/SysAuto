@@ -1,26 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
-import type { PaginatedResponse, ServiceOrder } from "@paddock/types";
-
-function todayISO(): string {
-  return new Date().toISOString().split("T")[0]!;
-}
+import type { OverdueServiceOrder } from "@paddock/types";
 
 export function useOverdueOrders() {
-  return useQuery<PaginatedResponse<ServiceOrder>>({
+  return useQuery<OverdueServiceOrder[]>({
     queryKey: ["service-orders", "overdue"],
     queryFn: () =>
-      apiFetch<PaginatedResponse<ServiceOrder>>(
-        `/api/proxy/service-orders/?estimated_delivery__date__lte=${todayISO()}&page_size=20&ordering=estimated_delivery`
-      ),
-    staleTime: 60_000,
-    refetchOnWindowFocus: true,
-    select: (data) => ({
-      ...data,
-      // Filtra client-side: remove delivered e cancelled
-      results: data.results.filter(
-        (o) => o.status !== "delivered" && o.status !== "cancelled"
-      ),
-    }),
+      apiFetch<OverdueServiceOrder[]>("/api/proxy/service-orders/overdue/"),
+    staleTime: 10 * 60_000,       // 10 min — dados de prazo não mudam segundo a segundo
+    refetchInterval: false,        // Sem polling automático — invalidado por mutações
+    refetchOnWindowFocus: false,   // Evita refetch desnecessário ao trocar de aba
   });
 }
