@@ -64,3 +64,11 @@ yarn-error.log*
 *.crt
 .cache/
 coverage/
+
+# ─── Dados operacionais sensíveis (não versionar) ─────────────────────────────
+faturamento_*.csv
+docs/*.xls
+docs/*.xlsx
+docs/Relatorio*.txt
+data/seeds/*.csv
+next
