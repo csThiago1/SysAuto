@@ -1,0 +1,183 @@
+"use client";
+
+/**
+ * Gestão de Vales — Fluxo solicitado → aprovado → pago.
+ * Tabs por status. Approve (MANAGER+), Pay (ADMIN+).
+ */
+
+import React from "react";
+import type { AllowanceStatus, AllowanceType } from "@paddock/types";
+import { ALLOWANCE_TYPE_LABELS, ALLOWANCE_STATUS_CONFIG } from "@paddock/types";
+import {
+  useAllowances,
+  useApproveAllowance,
+  usePayAllowance,
+  useEmployees,
+  useCreateEmployee,
+} from "@/hooks";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Skeleton } from "@/components/ui";
+import { cn } from "@/lib/utils";
+
+const STATUS_TABS: { id: AllowanceStatus; label: string }[] = [
+  { id: "requested", label: "Pendentes" },
+  { id: "approved", label: "Aprovados" },
+  { id: "paid", label: "Pagos" },
+];
+
+const STATUS_CLASSES: Record<string, string> = {
+  success: "bg-success-100 text-success-700",
+  warning: "bg-warning-100 text-warning-700",
+  destructive: "bg-red-100 text-red-700",
+  default: "bg-neutral-100 text-neutral-600",
+};
+
+export default function ValesPage(): React.ReactElement {
+  const [activeStatus, setActiveStatus] =
+    React.useState<AllowanceStatus>("requested");
+
+  const { data, isLoading } = useAllowances({ status: activeStatus });
+  const approve = useApproveAllowance();
+  const pay = usePayAllowance();
+  const allowances = data?.results ?? [];
+
+  return (
+    <ErrorBoundary>
+      <div className="space-y-5">
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold text-neutral-900">
+            Vales e Benefícios
+          </h1>
+          <p className="text-sm text-neutral-500 mt-0.5">
+            Gestão de solicitações, aprovações e pagamentos
+          </p>
+        </div>
+
+        {/* Status tabs */}
+        <div className="border-b border-neutral-200">
+          <nav className="flex gap-1">
+            {STATUS_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveStatus(tab.id)}
+                className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                  activeStatus === tab.id
+                    ? "border-primary-600 text-primary-600"
+                    : "border-transparent text-neutral-500 hover:text-neutral-900"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {/* Cards */}
+        {isLoading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 w-full rounded-md" />
+            ))}
+          </div>
+        ) : allowances.length === 0 ? (
+          <div className="rounded-md bg-white shadow-card p-10 text-center text-sm text-neutral-500">
+            Nenhum vale{" "}
+            {activeStatus === "requested"
+              ? "pendente"
+              : activeStatus === "approved"
+              ? "aprovado"
+              : "pago"}
+            .
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {allowances.map((allowance) => {
+              const statusCfg = ALLOWANCE_STATUS_CONFIG[allowance.status];
+              return (
+                <div
+                  key={allowance.id}
+                  className="rounded-md bg-white shadow-card p-card-padding"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-semibold text-neutral-900">
+                          {ALLOWANCE_TYPE_LABELS[allowance.allowance_type]}
+                        </p>
+                        <span
+                          className={cn(
+                            "rounded-full px-2 py-0.5 text-xs font-medium",
+                            STATUS_CLASSES[statusCfg.variant]
+                          )}
+                        >
+                          {statusCfg.label}
+                        </span>
+                        {allowance.is_recurring && (
+                          <span className="text-xs text-neutral-400">
+                            recorrente
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-neutral-500 mt-0.5">
+                        Ref:{" "}
+                        {new Date(allowance.reference_month).toLocaleDateString(
+                          "pt-BR",
+                          { month: "long", year: "numeric" }
+                        )}
+                        {allowance.notes && ` · ${allowance.notes}`}
+                      </p>
+                      {allowance.approved_by_name && (
+                        <p className="text-xs text-neutral-400 mt-0.5">
+                          Aprovado por {allowance.approved_by_name}
+                          {allowance.approved_at &&
+                            ` em ${new Date(allowance.approved_at).toLocaleDateString("pt-BR")}`}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="text-base font-bold text-neutral-900">
+                        {new Intl.NumberFormat("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        }).format(parseFloat(allowance.amount))}
+                      </span>
+
+                      {allowance.status === "requested" && (
+                        <button
+                          onClick={() => approve.mutate(allowance.id)}
+                          disabled={approve.isPending}
+                          className="rounded-md border border-success-300 bg-success-50 px-3 py-1.5 text-xs font-medium text-success-700 hover:bg-success-100 disabled:opacity-50"
+                        >
+                          Aprovar
+                        </button>
+                      )}
+                      {allowance.status === "approved" && (
+                        <button
+                          onClick={() => pay.mutate({ id: allowance.id })}
+                          disabled={pay.isPending}
+                          className="rounded-md border border-primary-300 bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-700 hover:bg-primary-100 disabled:opacity-50"
+                        >
+                          Marcar pago
+                        </button>
+                      )}
+                      {allowance.status === "paid" && allowance.paid_at && (
+                        <span className="text-xs text-neutral-400">
+                          Pago em{" "}
+                          {new Date(allowance.paid_at).toLocaleDateString(
+                            "pt-BR"
+                          )}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </ErrorBoundary>
+  );
+}

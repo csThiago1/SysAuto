@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Contracheque — {{ payslip.reference_month }}</title>
+<style>
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 24px;
+  }
+  .header {
+    border-bottom: 2px solid #2c3e50;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .company-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c3e50;
+  }
+  .company-sub {
+    font-size: 10px;
+    color: #666;
+    margin-top: 3px;
+  }
+  .doc-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #2c3e50;
+    text-align: right;
+  }
+  .employee-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    background: #f5f7fa;
+    border: 1px solid #dde3ea;
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+  }
+  .info-cell {
+    flex: 0 0 33%;
+    padding: 4px 8px 4px 0;
+  }
+  .info-label {
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+    font-weight: bold;
+  }
+  .info-value {
+    font-size: 12px;
+    color: #1a1a1a;
+    margin-top: 2px;
+    font-weight: 500;
+  }
+  .section-title {
+    font-size: 10px;
+    font-weight: bold;
+    color: #2c3e50;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 14px 0 4px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #dde3ea;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 8px;
+  }
+  thead th {
+    background: #2c3e50;
+    color: #fff;
+    padding: 5px 8px;
+    text-align: left;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  thead th.right {
+    text-align: right;
+  }
+  tbody td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #edf0f3;
+    font-size: 11px;
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) td {
+    background: #fafbfc;
+  }
+  td.right, th.right {
+    text-align: right;
+    font-family: "Courier New", monospace;
+  }
+  .total-row td {
+    font-weight: bold;
+    background: #e8f0f8 !important;
+    border-top: 2px solid #2c3e50;
+    font-size: 12px;
+  }
+  .net-box {
+    background: #2c3e50;
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+  }
+  .net-label {
+    font-size: 13px;
+    font-weight: bold;
+  }
+  .net-value {
+    font-size: 20px;
+    font-weight: bold;
+    font-family: "Courier New", monospace;
+  }
+  .footer {
+    margin-top: 24px;
+    border-top: 1px solid #dde3ea;
+    padding-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 8px;
+    color: #aaa;
+  }
+  .ponto-grid {
+    display: flex;
+    gap: 16px;
+    background: #fafbfc;
+    border: 1px solid #edf0f3;
+    border-radius: 4px;
+    padding: 8px 14px;
+    margin-bottom: 16px;
+  }
+  .ponto-item {
+    text-align: center;
+  }
+  .ponto-value {
+    font-size: 14px;
+    font-weight: bold;
+    color: #2c3e50;
+  }
+  .ponto-label {
+    font-size: 8px;
+    color: #888;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<!-- Cabeçalho -->
+<div class="header">
+  <div>
+    <div class="company-name">DS Car Centro Automotivo</div>
+    <div class="company-sub">CNPJ: {{ cnpj|default:"—" }}</div>
+  </div>
+  <div>
+    <div class="doc-title">CONTRACHEQUE DE REMUNERAÇÃO</div>
+    <div class="company-sub" style="text-align:right;">
+      Referência: {{ payslip.reference_month|date:"m/Y" }}
+    </div>
+  </div>
+</div>
+
+<!-- Dados do colaborador -->
+<div class="employee-grid">
+  <div class="info-cell">
+    <div class="info-label">Colaborador</div>
+    <div class="info-value">{{ payslip.employee.user.get_full_name }}</div>
+  </div>
+  <div class="info-cell">
+    <div class="info-label">Cargo</div>
+    <div class="info-value">{{ payslip.employee.get_position_display }}</div>
+  </div>
+  <div class="info-cell">
+    <div class="info-label">Setor</div>
+    <div class="info-value">{{ payslip.employee.get_department_display }}</div>
+  </div>
+  <div class="info-cell">
+    <div class="info-label">Contrato</div>
+    <div class="info-value">{{ payslip.employee.get_contract_type_display }}</div>
+  </div>
+  <div class="info-cell">
+    <div class="info-label">Dias trabalhados</div>
+    <div class="info-value">{{ payslip.worked_days }}</div>
+  </div>
+  <div class="info-cell">
+    <div class="info-label">Mês de referência</div>
+    <div class="info-value">{{ payslip.reference_month|date:"m/Y" }}</div>
+  </div>
+</div>
+
+<!-- Proventos -->
+<div class="section-title">Proventos</div>
+<table>
+  <thead>
+    <tr>
+      <th>Descrição</th>
+      <th class="right">Valor (R$)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Salário Base</td>
+      <td class="right">{{ payslip.base_salary|floatformat:2 }}</td>
+    </tr>
+    {% if payslip.total_bonuses > 0 %}
+    <tr>
+      <td>
+        Bonificações / Comissões
+        {% if payslip.bonus_breakdown %}
+        <br>
+        {% for item in payslip.bonus_breakdown %}
+        <span style="font-size:9px;color:#888;">· {{ item.description|default:item.type }}: R$ {{ item.amount }}</span><br>
+        {% endfor %}
+        {% endif %}
+      </td>
+      <td class="right">{{ payslip.total_bonuses|floatformat:2 }}</td>
+    </tr>
+    {% endif %}
+    {% if payslip.total_allowances > 0 %}
+    <tr>
+      <td>
+        Vales
+        {% if payslip.allowance_breakdown %}
+        <br>
+        {% for item in payslip.allowance_breakdown %}
+        <span style="font-size:9px;color:#888;">· {{ item.type }}: R$ {{ item.amount }}</span><br>
+        {% endfor %}
+        {% endif %}
+      </td>
+      <td class="right">{{ payslip.total_allowances|floatformat:2 }}</td>
+    </tr>
+    {% endif %}
+    {% if payslip.total_overtime_value > 0 %}
+    <tr>
+      <td>Horas Extras ({{ payslip.total_overtime_hours }}h)</td>
+      <td class="right">{{ payslip.total_overtime_value|floatformat:2 }}</td>
+    </tr>
+    {% endif %}
+    <tr class="total-row">
+      <td>Total de Proventos (Salário Bruto)</td>
+      <td class="right">{{ payslip.gross_pay|floatformat:2 }}</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Descontos -->
+<div class="section-title">Descontos</div>
+<table>
+  <thead>
+    <tr>
+      <th>Descrição</th>
+      <th class="right">Valor (R$)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if payslip.deduction_breakdown %}
+      {% for item in payslip.deduction_breakdown %}
+      <tr>
+        <td>{{ item.type|upper }}{% if item.description %} — {{ item.description }}{% endif %}</td>
+        <td class="right">{{ item.amount|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+    {% else %}
+      {% if payslip.total_deductions > 0 %}
+      <tr>
+        <td>Descontos diversos</td>
+        <td class="right">{{ payslip.total_deductions|floatformat:2 }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="2" style="color:#aaa;text-align:center;">Sem descontos neste período</td>
+      </tr>
+      {% endif %}
+    {% endif %}
+    <tr class="total-row">
+      <td>Total de Descontos</td>
+      <td class="right">{{ payslip.total_deductions|floatformat:2 }}</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Salário líquido -->
+<div class="net-box">
+  <span class="net-label">Salário Líquido</span>
+  <span class="net-value">R$ {{ payslip.net_pay|floatformat:2 }}</span>
+</div>
+
+<!-- Rodapé -->
+<div class="footer">
+  <span>DS Car Centro Automotivo · CNPJ: {{ cnpj|default:"—" }}</span>
+  <span>Emitido em {{ issue_date }} · Documento gerado eletronicamente</span>
+</div>
+
+</body>
+</html>
