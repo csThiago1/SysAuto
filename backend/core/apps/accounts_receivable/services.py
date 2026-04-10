@@ -188,20 +188,28 @@ class ReceivableDocumentService:
         document.save(update_fields=["amount_received", "status", "updated_at"])
 
         # Gerar lancamento contabil automatico
-        try:
-            from .accounting_service import ReceivableAccountingService
-
-            entry = ReceivableAccountingService.post_receipt(receipt, document, user)
-            if entry is not None:
-                receipt.journal_entry_id = entry.id
-                receipt.save(update_fields=["journal_entry_id", "updated_at"])
-        except Exception as exc:
-            logger.warning(
-                "ReceivableDocumentService.record_receipt: falha ao gerar lancamento "
-                "para receipt %s: %s",
+        # Idempotencia: nao cria lancamento se ja existe para este receipt (ex: retry Celery)
+        if receipt.journal_entry_id:
+            logger.info(
+                "ReceivableDocumentService.record_receipt: journal_entry ja existe "
+                "para receipt=%s, pulando",
                 receipt.id,
-                exc,
             )
+        else:
+            try:
+                from .accounting_service import ReceivableAccountingService
+
+                entry = ReceivableAccountingService.post_receipt(receipt, document, user)
+                if entry is not None:
+                    receipt.journal_entry_id = entry.id
+                    receipt.save(update_fields=["journal_entry_id", "updated_at"])
+            except Exception as exc:
+                logger.warning(
+                    "ReceivableDocumentService.record_receipt: falha ao gerar lancamento "
+                    "para receipt %s: %s",
+                    receipt.id,
+                    exc,
+                )
 
         logger.info(
             "ReceivableDocumentService.record_receipt: recebimento %s registrado — "
@@ -245,6 +253,31 @@ class ReceivableDocumentService:
             )
         if document.status == ReceivableStatus.CANCELLED:
             raise ValidationError({"detail": "Titulo ja esta cancelado."})
+
+        # Estorna lancamentos contabeis dos recebimentos ja realizados (titulos PARTIAL)
+        receipts_with_entries = document.receipts.filter(
+            is_active=True, journal_entry_id__isnull=False
+        )
+        for receipt in receipts_with_entries:
+            try:
+                from apps.accounting.models.journal_entry import JournalEntry
+                from apps.accounting.services.journal_entry_service import JournalEntryService
+
+                entry = JournalEntry.objects.get(id=receipt.journal_entry_id)
+                JournalEntryService.reverse_entry(
+                    entry=entry,
+                    user=user,
+                    description=(
+                        f"Estorno automatico — titulo "
+                        f"{document.document_number or document.id} cancelado"
+                    ),
+                )
+            except Exception:
+                logger.warning(
+                    "cancel_receivable: falha ao estornar journal_entry=%s para receipt=%s",
+                    receipt.journal_entry_id,
+                    receipt.id,
+                )
 
         document.status = ReceivableStatus.CANCELLED
         document.cancelled_at = timezone.now()

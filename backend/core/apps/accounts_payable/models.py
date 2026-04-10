@@ -11,6 +11,7 @@ from decimal import Decimal
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from encrypted_model_fields.fields import EncryptedCharField
 
 from apps.accounting.models.chart_of_accounts import CostCenter
 from apps.authentication.models import GlobalUser, PaddockBaseModel
@@ -48,7 +49,7 @@ class Supplier(PaddockBaseModel):
 
     name = models.CharField(_("Nome"), max_length=200, db_index=True)
     cnpj = models.CharField(_("CNPJ"), max_length=14, blank=True, default="")
-    cpf = models.CharField(_("CPF"), max_length=11, blank=True, default="")
+    cpf = EncryptedCharField(_("CPF"), max_length=11, blank=True, default="")
     email = models.EmailField(_("E-mail"), blank=True, default="")
     phone = models.CharField(_("Telefone"), max_length=20, blank=True, default="")
     contact_name = models.CharField(_("Contato"), max_length=200, blank=True, default="")

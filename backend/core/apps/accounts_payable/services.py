@@ -185,20 +185,28 @@ class PayableDocumentService:
         document.save(update_fields=["amount_paid", "status", "updated_at"])
 
         # Gerar lancamento contabil automatico
-        try:
-            from .accounting_service import PayableAccountingService
-
-            entry = PayableAccountingService.post_payment(payment, document, user)
-            if entry is not None:
-                payment.journal_entry_id = entry.id
-                payment.save(update_fields=["journal_entry_id", "updated_at"])
-        except Exception as exc:
-            logger.warning(
-                "PayableDocumentService.record_payment: falha ao gerar lancamento "
-                "para payment %s: %s",
+        # Idempotencia: nao cria lancamento se ja existe para este payment (ex: retry Celery)
+        if payment.journal_entry_id:
+            logger.info(
+                "PayableDocumentService.record_payment: journal_entry ja existe "
+                "para payment=%s, pulando",
                 payment.id,
-                exc,
             )
+        else:
+            try:
+                from .accounting_service import PayableAccountingService
+
+                entry = PayableAccountingService.post_payment(payment, document, user)
+                if entry is not None:
+                    payment.journal_entry_id = entry.id
+                    payment.save(update_fields=["journal_entry_id", "updated_at"])
+            except Exception as exc:
+                logger.warning(
+                    "PayableDocumentService.record_payment: falha ao gerar lancamento "
+                    "para payment %s: %s",
+                    payment.id,
+                    exc,
+                )
 
         logger.info(
             "PayableDocumentService.record_payment: pagamento %s registrado — "
@@ -242,6 +250,31 @@ class PayableDocumentService:
             )
         if document.status == DocumentStatus.CANCELLED:
             raise ValidationError({"detail": "Titulo ja esta cancelado."})
+
+        # Estorna lancamentos contabeis das baixas ja realizadas (titulos PARTIAL)
+        payments_with_entries = document.payments.filter(
+            is_active=True, journal_entry_id__isnull=False
+        )
+        for payment in payments_with_entries:
+            try:
+                from apps.accounting.models.journal_entry import JournalEntry
+                from apps.accounting.services.journal_entry_service import JournalEntryService
+
+                entry = JournalEntry.objects.get(id=payment.journal_entry_id)
+                JournalEntryService.reverse_entry(
+                    entry=entry,
+                    user=user,
+                    description=(
+                        f"Estorno automatico — titulo "
+                        f"{document.document_number or document.id} cancelado"
+                    ),
+                )
+            except Exception:
+                logger.warning(
+                    "cancel_payable: falha ao estornar journal_entry=%s para payment=%s",
+                    payment.journal_entry_id,
+                    payment.id,
+                )
 
         document.status = DocumentStatus.CANCELLED
         document.cancelled_at = timezone.now()

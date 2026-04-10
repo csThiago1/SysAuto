@@ -296,3 +296,44 @@ class OSPartsTestCase(TenantTestCase):
             Decimal("200.00"),
             "parts_total deve ser recalculado para R$200 apos deletar peca_a de R$300",
         )
+
+    def test_bulk_delete_recalculates_totals(self) -> None:
+        """QuerySet.delete() em multiplas pecas deve recalcular parts_total via ServiceOrderPartQuerySet."""
+        from apps.service_orders.models import ServiceOrderPart
+
+        os_bulk = ServiceOrder.objects.create(
+            number=9040,
+            plate="BLK0001",
+            customer_name="Bulk Delete Test",
+            status=ServiceOrderStatus.REPAIR,
+            created_by=self.user,
+        )
+        ServiceOrderPart.objects.create(
+            service_order=os_bulk,
+            created_by=self.user,
+            description="Peca Bulk 1",
+            quantity=Decimal("1.00"),
+            unit_price=Decimal("400.00"),
+            discount=Decimal("0.00"),
+        )
+        ServiceOrderPart.objects.create(
+            service_order=os_bulk,
+            created_by=self.user,
+            description="Peca Bulk 2",
+            quantity=Decimal("2.00"),
+            unit_price=Decimal("150.00"),
+            discount=Decimal("0.00"),
+        )
+        os_bulk.refresh_from_db()
+        self.assertEqual(os_bulk.parts_total, Decimal("700.00"))
+
+        # Bulk delete via QuerySet — Model.delete() nao e chamado pelo Django;
+        # ServiceOrderPartQuerySet.delete() garante o recalculo nesse cenario.
+        ServiceOrderPart.objects.filter(service_order=os_bulk).delete()
+
+        os_bulk = ServiceOrder.objects.get(id=os_bulk.id)
+        self.assertEqual(
+            os_bulk.parts_total,
+            Decimal("0.00"),
+            "parts_total deve ser zerado apos bulk delete de todas as pecas da OS",
+        )
