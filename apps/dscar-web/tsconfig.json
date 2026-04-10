@@ -28,6 +28,9 @@
       "@paddock/types": [
         "../../packages/types/src"
       ],
+      "@paddock/utils": [
+        "../../packages/utils/src"
+      ],
       "@paddock/auth": [
         "../../packages/auth/src"
       ],

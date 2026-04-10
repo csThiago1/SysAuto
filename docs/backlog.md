@@ -1,85 +1,132 @@
-# Backlog — Sprint 04 (RBAC, Notificações de Prazo e Melhorias Sprint 03)
+# Backlog — Sprint 14 (Contas a Pagar + Contas a Receber)
 
 **Projeto:** DS Car ERP
-**Sprint:** 04
-**Última atualização:** 2026-03-30
+**Sprint:** 14
+**Última atualização:** 2026-04-09
 **Legenda:** `[ ]` pendente · `[x]` concluído · `[~]` em progresso · `[!]` bloqueado
 
 ---
 
-## Frontend
+## Sprint 13 — Concluído ✅
 
-### US-01 — RBAC no Frontend
+### Backend
+- [x] `apps/hr/tax_calculator.py` — INSS/IRRF/FGTS progressivo (tabelas 2024/2025)
+- [x] `apps/hr/accounting_service.py` — lançamentos automáticos ao fechar contracheque/vale/bônus
+- [x] `PayslipService.generate_payslip()` — INSS e IRRF calculados automaticamente
+- [x] `DevTenantMiddleware` — fallback `dscar.localhost` (admin Django funcionando)
+- [x] Fix admissão colaborador HTTP 400 (campos opcionais vazios filtrados)
 
-- [ ] Definir tipo `PaddockRole` e `ROLE_HIERARCHY` em `packages/types/src/auth.ts`
-- [ ] Criar hook `src/hooks/usePermission.ts` lendo `session.user.role` via `useSession()`
-- [ ] Criar componente `src/components/PermissionGate.tsx` com props `role`, `fallback?` e `children`
-- [ ] Criar guard `src/lib/withRoleGuard.ts` para uso nas páginas protegidas
-- [ ] Proteger `/os/nova`: redirecionar `STOREKEEPER` → `/os` com `toast.info`
-- [ ] Proteger `/admin/**` e `/configuracoes/**`: redirecionar `CONSULTANT` e `STOREKEEPER` → `/`
-- [ ] Esconder botão "Nova OS" em `/os` para `STOREKEEPER` via `<PermissionGate role="CONSULTANT">`
-- [ ] Adicionar module augmentation de `role` no tipo `Session` em `src/types/next-auth.d.ts`
-- [ ] Escrever testes unitários Vitest para `usePermission` (hierarquia de papéis)
-
-### US-02 — Notificações de Prazo de OS
-
-- [ ] Criar hook `src/hooks/useOverdueOrders.ts` com `staleTime: 60_000` e `refetchOnWindowFocus: true`
-- [ ] Criar componente `src/components/header/NotificationBell.tsx` com badge de contagem
-- [ ] Badge exibe `99+` para contagens maiores que 99; oculto quando `count === 0`
-- [ ] Criar componente `src/components/header/OverdueDropdown.tsx` com lista de OS vencidas/hoje
-- [ ] Diferenciar visualmente OS vencidas (vermelho) de OS com entrega hoje (âmbar)
-- [ ] Cada item do dropdown é link para `/os/[id]`
-- [ ] Integrar `<NotificationBell>` no `src/components/Header.tsx`
-- [ ] Escrever testes de componente (Vitest + Testing Library) para badge e dropdown
-
-### US-03 — Melhorias Pendentes do Sprint 03
-
-- [ ] Criar `src/hooks/useClientOrders.ts` com `QueryKey: ["service-orders", "by-client", customerId]`
-- [ ] Atualizar `/clientes/[id]/page.tsx` para usar `useClientOrders` em vez de `useServiceOrders` direto
-- [ ] Criar componente `<Breadcrumb>` em `src/components/ui/breadcrumb.tsx` (se não existir via shadcn)
-- [ ] Adicionar breadcrumb `Clientes / <Nome do cliente>` no topo de `/clientes/[id]/page.tsx`
-- [ ] Extrair skeleton de `/clientes/[id]` para `<ClienteDetailSkeleton>` reutilizável
-- [ ] Envolver `/clientes/[id]` em `<ErrorBoundary>` + `<Suspense fallback={<ClienteDetailSkeleton />}>`
-- [ ] Instalar `@sentry/nextjs` e adicionar `Sentry.captureException` no `ErrorBoundary` com degradação silenciosa
-- [ ] Adicionar `NEXT_PUBLIC_SENTRY_DSN` ao `.env.example`
-- [ ] Adicionar link `<Link href={`/clientes/${order.customer_id}`}>` no nome do cliente em `<KanbanCard>`
-- [ ] Garantir que o link no KanbanCard não interfere no drag do DnD Kit (`e.stopPropagation()`)
-- [ ] Listar e corrigir todas as ocorrências de `href as never` no codebase (DT-04)
+### Frontend
+- [x] `packages/types/src/accounting.types.ts` — tipos contábeis completos
+- [x] `src/hooks/useAccounting.ts` — 9 hooks TanStack Query v5
+- [x] Sidebar — menu "Financeiro" colapsável
+- [x] `/financeiro` — dashboard
+- [x] `/financeiro/lancamentos` — lista de lançamentos
+- [x] `/financeiro/lancamentos/[id]` — detalhe (fix TypeError)
+- [x] `/financeiro/lancamentos/novo` — formulário partidas dobradas
+- [x] `/financeiro/plano-contas` — árvore hierárquica
+- [x] `/financeiro/plano-contas/nova` — criação de conta
+- [x] Contracheque → link para lançamento contábil
 
 ---
 
-## QA
+## Sprint 14 — Em Progresso 🚧
 
-- [ ] Testar US-01: `STOREKEEPER` tenta `/os/nova` → redirect `/os` + toast
-- [ ] Testar US-01: `CONSULTANT` tenta `/admin` → redirect `/`
-- [ ] Testar US-01: `<PermissionGate role="MANAGER">` oculta para `CONSULTANT`, exibe para `MANAGER`/`ADMIN`
-- [ ] Testar US-01: sem flash de conteúdo restrito durante carregamento de sessão
-- [ ] Testar US-02: badge exibe contagem correta de OS vencidas + hoje
-- [ ] Testar US-02: badge oculto quando não há OS pendentes
-- [ ] Testar US-02: item do dropdown navega para `/os/[id]` correto
-- [ ] Testar US-02: refetch dispara ao recuperar foco da janela
-- [ ] Testar US-03: breadcrumb aparece em `/clientes/[id]` com link funcional para `/clientes`
-- [ ] Testar US-03: erro em `ClienteDetailPage` → fallback `<ErrorBoundary>` com "Tentar novamente"
-- [ ] Testar US-03: clique no nome do cliente no KanbanCard navega para `/clientes/[id]`
-- [ ] Testar US-03: drag de card no Kanban não é interrompido pelo link do cliente
-- [ ] Verificar que `make typecheck` passa sem `href as never` (DT-04 resolvido)
-- [ ] Verificar que `make lint` passa sem erros
-- [ ] Verificar que `make typecheck` passa (tsc sem erros, nenhum `any` novo)
+### Backend — `apps/accounts_payable`
+
+- [~] `Supplier` model (nome, CNPJ, contato)
+- [~] `PayableDocument` model (título a pagar, status progressivo)
+- [~] `PayablePayment` model (baixa parcial/total)
+- [~] `PayableDocumentService` — create/pay/cancel + overdue refresh
+- [~] `PayableAccountingService` — lançamento automático na baixa (D: Fornecedores / C: Banco)
+- [~] Serializers: SupplierSerializer, PayableDocumentListSerializer, PayableDocumentSerializer, CreatePayableDocumentSerializer, RecordPaymentSerializer
+- [~] ViewSets: SupplierViewSet, PayableDocumentViewSet (+ `pay` + `cancel` actions)
+- [~] Migration `0001_initial.py`
+
+### Backend — `apps/accounts_receivable`
+
+- [~] `ReceivableDocument` model (título a receber, origin: OS/NF-e/Manual)
+- [~] `ReceivableReceipt` model (baixa de recebimento)
+- [~] `ReceivableDocumentService` — create/receive/cancel + overdue refresh
+- [~] `ReceivableAccountingService` — lançamento na baixa (D: Banco / C: Clientes a Receber)
+- [~] Serializers + ViewSets + Migration
+
+### Backend — Integrações
+
+- [~] `config/settings/base.py` — adicionar apps em `TENANT_APPS`
+- [~] `config/urls.py` — registrar novas URLs
+- [~] `hr/services.py` — ao fechar contracheque, criar `PayableDocument(origin='FOLHA')`
+- [ ] `service_orders/services.py` — ao entregar OS, criar `ReceivableDocument(origin='OS')`
+- [ ] Celery beat task `task_refresh_overdue_payables` (diário 06:15)
+- [ ] Celery beat task `task_refresh_overdue_receivables` (diário 06:15)
+- [ ] Asaas webhook stub `POST /api/v1/accounts-payable/asaas/webhook/`
+
+### Frontend
+
+- [~] `packages/types/src/financeiro.types.ts` — tipos AP/AR
+- [~] `src/hooks/useFinanceiro.ts` — hooks TanStack Query v5
+- [~] `/financeiro/contas-pagar/page.tsx` — lista + cards + RecordPaymentDialog
+- [~] `/financeiro/contas-pagar/novo/page.tsx` — formulário novo título
+- [~] `/financeiro/contas-receber/page.tsx` — lista + cards + RecordReceiptDialog
+- [ ] `/financeiro/contas-receber/novo/page.tsx` — formulário novo título
+- [ ] `/financeiro/contas-pagar/[id]/page.tsx` — detalhe + histórico de baixas
+- [ ] `/financeiro/contas-receber/[id]/page.tsx` — detalhe + histórico de recebimentos
+- [~] `/financeiro/page.tsx` — atualizar cards de visão geral
 
 ---
 
-## Progresso do Sprint
+## Sprint 15 — Backlog
 
-| Área | Total | Concluído | Em Progresso | Bloqueado |
-|------|-------|-----------|--------------|-----------|
-| Frontend (US-01) | 9 | 0 | 0 | 0 |
-| Frontend (US-02) | 8 | 0 | 0 | 0 |
-| Frontend (US-03) | 11 | 0 | 0 | 0 |
-| QA | 15 | 0 | 0 | 0 |
-| **Total** | **43** | **0** | **0** | **0** |
+### Banking (app `accounts_banking`)
+- [ ] `BankAccount` model (nome, banco, agência, conta, saldo)
+- [ ] `BankTransaction` model (lançamento bancário OFX/manual)
+- [ ] `OFXImportService` — importação de extrato OFX
+- [ ] Reconciliação manual AP/AR ↔ lançamentos bancários
+- [ ] `CashFlowService` — fluxo de caixa projetado (AP vencimentos + AR previsões)
 
-**Taxa de conclusão do Sprint 04:** 0/43 (0%)
+### Asaas Integration (completo)
+- [ ] Webhook handler completo (payment_received, payment_overdue, etc.)
+- [ ] Auto-baixa de `ReceivableDocument` ao receber evento Asaas
+- [ ] Geração de cobrança Asaas ao criar `ReceivableDocument`
+
+### Relatórios Financeiros
+- [ ] DRE (Demonstração do Resultado) — por período fiscal
+- [ ] Balanço Patrimonial
+- [ ] Fluxo de Caixa Realizado vs. Projetado
+- [ ] Export PDF (reportlab) + XLSX (openpyxl)
+- [ ] Frontend: `/financeiro/relatorios`
 
 ---
 
-*Atualizado por: PM Agent · Paddock Solutions · 2026-03-30*
+## Progresso do Sprint 14
+
+| Área | Total | Concluído | Em Progresso | Pendente |
+|------|-------|-----------|--------------|---------|
+| Backend AP | 8 | 0 | 7 | 1 |
+| Backend AR | 5 | 0 | 4 | 1 |
+| Backend Integrações | 6 | 0 | 3 | 3 |
+| Frontend | 9 | 0 | 5 | 4 |
+| **Total** | **28** | **0** | **19** | **9** |
+
+**Taxa de conclusão do Sprint 14:** Em progresso (implementação iniciada 2026-04-09)
+
+---
+
+## Sprints Anteriores — Resumo
+
+| Sprint | Tema | Status |
+|--------|------|--------|
+| 1–3 | OS, Kanban, Filtros | ✅ |
+| 4 | RBAC, UX criação | ✅ |
+| 5–6 | HR Backend completo | ✅ |
+| 7–8 | HR Frontend completo | ✅ |
+| 9 | Person↔Employee (admissão sem UUID) | ✅ |
+| 10 | OS Peças + Notificações | ✅ |
+| 11 | Módulo Contábil (fundação) | ✅ |
+| 12 | Auth & SSO Keycloak | ✅ |
+| 13 | RH↔Contabilidade + Impostos trabalhistas | ✅ |
+| 14 | Contas a Pagar + Contas a Receber | 🚧 |
+
+---
+
+*Atualizado por: Paddock Solutions · 2026-04-09*

@@ -11,21 +11,46 @@ async function proxyRequest(
   const withSlash = joined.endsWith("/") ? joined : `${joined}/`;
   const backendUrl = `http://localhost:8000/api/v1/${withSlash}${req.nextUrl.search}`;
 
+  const incomingContentType = req.headers.get("Content-Type") ?? ""
+  const isMultipart = incomingContentType.startsWith("multipart/form-data")
+
+  // Constrói X-Tenant-Domain dinamicamente a partir da empresa ativa na sessão.
+  // Fallback para variável de ambiente DEFAULT_TENANT_DOMAIN ou "dscar.localhost".
+  const activeCompany = session?.activeCompany ?? "";
+  const tenantDomain = activeCompany
+    ? `${activeCompany}.localhost`
+    : (process.env.DEFAULT_TENANT_DOMAIN ?? "dscar.localhost");
+
   const headers: HeadersInit = {
-    "Content-Type": "application/json",
+    // Preserva Content-Type do client (multipart ou application/json).
+    // Para multipart o browser já inclui o boundary correto — não sobreescrever.
+    "Content-Type": isMultipart ? incomingContentType : "application/json",
     // X-Tenant-Domain identifica o tenant para o DevTenantMiddleware no Django.
     // Node.js fetch sobrescreve o header Host com o hostname da URL de destino,
     // por isso usamos um header customizado que o middleware lê como fallback.
-    "X-Tenant-Domain": "dscar.localhost",
+    "X-Tenant-Domain": tenantDomain,
     ...(session?.accessToken
       ? { Authorization: `Bearer ${session.accessToken}` }
       : {}),
   };
 
-  const body = method !== "GET" ? await req.text() : undefined;
+  // Multipart usa ArrayBuffer para preservar bytes do arquivo intactos
+  const body =
+    method !== "GET"
+      ? isMultipart
+        ? await req.arrayBuffer()
+        : await req.text()
+      : undefined;
 
   const response = await fetch(backendUrl, { method, headers, body });
   const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    console.error(`[proxy] ${method} ${backendUrl} → ${response.status}`, JSON.stringify(data))
+    if (typeof body === "string") {
+      console.error(`[proxy] request body:`, body.slice(0, 500))
+    }
+  }
 
   return NextResponse.json(data, { status: response.status });
 }

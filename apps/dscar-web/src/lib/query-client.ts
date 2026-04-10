@@ -7,9 +7,11 @@ export function getQueryClient(): QueryClient {
     client = new QueryClient({
       defaultOptions: {
         queries: {
-          staleTime: 30_000,   // 30s — evita refetch em navegação rápida
-          gcTime:    5 * 60_000, // 5min — mantém cache entre páginas
+          staleTime: 60_000,            // 1 min — reduz refetches em navegação rápida
+          gcTime: 10 * 60_000,          // 10 min — mantém cache entre páginas
           retry: 1,
+          refetchOnWindowFocus: false,  // Principal fonte de lentidão: evita refetch ao trocar aba
+          refetchOnReconnect: "always", // Reconectar = dados podem ter mudado
         },
       },
     });

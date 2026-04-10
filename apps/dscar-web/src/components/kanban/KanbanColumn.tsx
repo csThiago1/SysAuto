@@ -25,30 +25,30 @@ export const KanbanColumn = React.memo(function KanbanColumn({
   const ids = useMemo(() => orders.map((o) => o.id), [orders]);
 
   return (
-    <div className="flex flex-col min-w-[280px] w-[280px] max-h-full">
+    <div className="flex flex-col min-w-[220px] w-[220px]">
       {/* Column header */}
       <div
         className={cn(
-          "flex items-center justify-between px-3 py-2.5 rounded-t-md",
+          "flex items-center justify-between px-3 py-2 rounded-t-md",
           cfg.column
         )}
       >
-        <span className="text-sm font-semibold text-white truncate">
+        <span className="text-xs font-semibold truncate">
           {cfg.label}
         </span>
-        <span className="ml-2 shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold text-white">
+        <span className="ml-2 shrink-0 rounded-full bg-black/20 px-1.5 py-0.5 text-xs font-bold leading-none">
           {orders.length}
         </span>
       </div>
 
-      {/* Drop zone */}
+      {/* Drop zone — independent scroll per column */}
       <div
         ref={setNodeRef}
         className={cn(
-          "flex-1 overflow-y-auto rounded-b-md p-2 space-y-2 min-h-[120px]",
+          "overflow-y-auto rounded-b-md p-2 space-y-2 min-h-[100px] max-h-[calc(100vh-220px)]",
           "bg-neutral-100 border border-t-0 border-neutral-200",
-          "transition-colors duration-fast",
-          isOver && "bg-neutral-200 border-neutral-300"
+          "transition-colors",
+          isOver && "bg-blue-50 border-blue-300"
         )}
       >
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
@@ -58,8 +58,8 @@ export const KanbanColumn = React.memo(function KanbanColumn({
         </SortableContext>
 
         {orders.length === 0 && (
-          <div className="flex items-center justify-center h-20 text-xs text-neutral-400 italic">
-            Nenhuma OS
+          <div className="flex items-center justify-center h-16 text-xs text-neutral-400 select-none">
+            Vazia
           </div>
         )}
       </div>

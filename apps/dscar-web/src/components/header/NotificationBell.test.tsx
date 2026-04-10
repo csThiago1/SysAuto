@@ -31,7 +31,7 @@ import { useOverdueOrders } from "@/hooks/useOverdueOrders";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { PaginatedResponse, ServiceOrder } from "@paddock/types";
 
-const baseOrder: ServiceOrder = {
+const baseOrder = {
   id: "1",
   number: 101,
   plate: "ABC1D23",
@@ -39,10 +39,10 @@ const baseOrder: ServiceOrder = {
   model: "Corolla",
   year: 2020,
   customer_name: "João Silva",
-  customer_id: "cust-1",
+  customer: "cust-1",
   status: "repair",
   opened_at: "2024-01-01T10:00:00Z",
-  estimated_delivery: "2024-01-01",
+  estimated_delivery_date: "2024-01-01",
   total: 500,
 };
 
@@ -97,7 +97,7 @@ describe("NotificationBell", () => {
       { ...baseOrder, id: "2" },
       { ...baseOrder, id: "3" },
     ];
-    mockHook(orders);
+    mockHook(orders as unknown as ServiceOrder[]);
 
     render(<NotificationBell />);
     expect(screen.getByText("3")).toBeTruthy();
@@ -109,7 +109,7 @@ describe("NotificationBell", () => {
       ...baseOrder,
       id: String(i),
     }));
-    mockHook(orders);
+    mockHook(orders as unknown as ServiceOrder[]);
 
     render(<NotificationBell />);
     expect(screen.getByText("99+")).toBeTruthy();

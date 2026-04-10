@@ -1,120 +1,18 @@
 /**
- * Paddock Solutions — TypeScript Types Compartilhados
- * Usado em hub, dscar-web, store-web e mobile
+ * @paddock/types — Barrel Export
+ *
+ * Importação unificada de todos os tipos do monorepo.
+ * Uso: import type { Person, ServiceOrder, ModalProps } from "@paddock/types"
  */
 
-// ─── Autenticação / JWT ───────────────────────────────────────────────────────
-
-export type PaddockRole =
-    | "OWNER"       // fundador / acesso total
-    | "ADMIN"       // administrador da empresa
-    | "MANAGER"     // gerente operacional
-    | "CONSULTANT"  // consultor de atendimento (abre e acompanha OS)
-    | "STOREKEEPER"; // almoxarife (gestão de estoque de peças)
-
-export const ROLE_HIERARCHY: Record<PaddockRole, number> = {
-  OWNER: 5,
-  ADMIN: 4,
-  MANAGER: 3,
-  CONSULTANT: 2,
-  STOREKEEPER: 1,
-};
-
-export interface PaddockJWT {
-    sub: string; // UUID global do usuário
-    email: string;
-    name: string;
-    companies: string[]; // ['dscar', 'pecas']
-    active_company: string; // empresa ativa na sessão
-    role: PaddockRole;
-    tenant_schema: string; // 'tenant_dscar'
-    client_slug: string; // 'grupo-dscar'
-    iat: number;
-    exp: number;
-}
-
-// ─── PDV / Carrinho ───────────────────────────────────────────────────────────
-
-export type DiscountReason = "group_loyalty" | "promotion" | "manual";
-
-export interface CartItem {
-    product_id: string;
-    sku: string;
-    name: string;
-    quantity: number;
-    unit_price: number;
-    discount_pct: number; // 0–100
-    discount_reason?: DiscountReason;
-    total: number;
-}
-
-// ─── Ordens de Serviço ────────────────────────────────────────────────────────
-
-/** Espelha VALID_TRANSITIONS do backend — manter sincronizado com service_orders/models.py */
-export const VALID_TRANSITIONS: Record<string, string[]> = {
-  reception:      ["initial_survey", "cancelled"],
-  initial_survey: ["budget"],
-  budget:         ["waiting_parts", "repair"],
-  waiting_parts:  ["repair"],
-  repair:         ["mechanic", "bodywork", "polishing"],
-  mechanic:       ["bodywork", "polishing"],
-  bodywork:       ["painting"],
-  painting:       ["assembly"],
-  assembly:       ["polishing"],
-  polishing:      ["washing"],
-  washing:        ["final_survey"],
-  final_survey:   ["ready"],
-  ready:          ["delivered"],
-};
-
-export type ServiceOrderStatus =
-    | "reception"
-    | "initial_survey"
-    | "budget"
-    | "waiting_parts"
-    | "repair"
-    | "mechanic"
-    | "bodywork"
-    | "painting"
-    | "assembly"
-    | "polishing"
-    | "washing"
-    | "final_survey"
-    | "ready"
-    | "delivered"
-    | "cancelled";
-
-export interface ServiceOrder {
-    id: string;
-    number: number;
-    plate: string;
-    make: string;
-    model: string;
-    year: number | null;
-    customer_name: string;
-    customer_id: string | null;
-    status: ServiceOrderStatus;
-    opened_at: string; // ISO datetime
-    estimated_delivery: string | null;
-    total: number;
-}
-
-// ─── Paginação DRF ────────────────────────────────────────────────────────────
-
-export interface PaginatedResponse<T> {
-    count: number;
-    next: string | null;
-    previous: string | null;
-    results: T[];
-}
-
-// ─── Recomendações IA ─────────────────────────────────────────────────────────
-
-export type RecommendationUrgency = "critical" | "high" | "medium" | "low";
-
-export interface AIRecommendationItem {
-    service: string;
-    urgency: RecommendationUrgency;
-    reason: string;
-    estimated_price_range: { min: number; max: number };
-}
+export * from "./auth.types";
+export * from "./person.types";
+export * from "./service-order.types";
+export * from "./insurer.types";
+export * from "./expert.types";
+export * from "./vehicle.types";
+export * from "./api.types";
+export * from "./ui.types";
+export * from "./hr.types";
+export * from "./accounting.types";
+export * from "./financeiro.types";

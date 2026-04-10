@@ -126,7 +126,7 @@ Cloud:       AWS (ECS Fargate + RDS + ElastiCache + S3)
 IaC:         Terraform
 CI/CD:       GitHub Actions
 WhatsApp:    Evolution API (self-hosted)
-Consulta placa: Sieve API
+Consulta placa: placa-fipe.apibrasil.com.br (gratuita, sem chave, POST /placa/consulta)
 IA:          Claude API (Anthropic) + RAG (pgvector)
 Monit:       Sentry + Grafana
 ```
@@ -179,16 +179,24 @@ refactor(customers): extrai lógica LGPD para serviço
   - JWKS URL: `http://keycloak:8080/realms/paddock/protocol/openid-connect/certs`
   - Fallback: retorna `None` (warn) se Keycloak offline — sem crash 500
 - `session.role` extraído de `token.realm_access.roles`
+- **Setup Keycloak:** Antes do primeiro `docker compose up`, criar schema PostgreSQL:
+  ```bash
+  docker exec paddock_postgres psql -U paddock -d paddock_dev -c "CREATE SCHEMA IF NOT EXISTS keycloak;"
+  ```
+- **Seed users:**
+  - `admin@paddock.solutions / admin123` (ADMIN)
+  - `thiago@paddock.solutions / paddock123` (OWNER)
 
 ### Tenant Routing (dev)
 - Node.js fetch ignora header `Host` customizado
-- Proxy Next.js envia `X-Tenant-Domain: dscar.localhost`
+- Proxy Next.js envia `X-Tenant-Domain: dscar.localhost` (dinâmico via `session.activeCompany`)
 - `DevTenantMiddleware` lê `X-Tenant-Domain` antes de usar o `Host` padrão
 
 ### Proxy API Route
 - Rota: `apps/dscar-web/src/app/api/proxy/[...path]/route.ts`
 - **Sempre adiciona trailing slash** antes de repassar ao Django (`APPEND_SLASH=True`)
 - Encaminha `Authorization: Bearer <token>` e `X-Tenant-Domain`
+- **Redirect pós-login:** `/login` → `/os` (não `result.url` que é URL interna)
 
 ---
 
@@ -317,9 +325,10 @@ src/middleware.ts                  ← proteção de rotas /admin e /configuraco
 
 | Variável | Serviço |
 |----------|---------|
+| `AUTH_SECRET` | next-auth v5 (signing JWTs) |
 | `ANTHROPIC_API_KEY` | Claude API (IA) |
 | `EVOLUTION_API_URL` / `_KEY` | WhatsApp |
-| `SIEVE_API_KEY` | Consulta de placa |
+| ~~`SIEVE_API_KEY`~~ | Removido — usar placa-fipe.apibrasil.com.br (sem chave) |
 | `DSCAR_CNPJ` / `_CERT_PATH` / `_CERT_PASSWORD` | NF-e DS Car |
 | `FOCUSNFE_TOKEN` | NFS-e |
 | `ASAAS_API_KEY` / `_ENV` | Pagamentos |
@@ -390,7 +399,150 @@ make typecheck       # mypy + tsc
 
 ---
 
+## 🗺️ Sprints em Andamento
+
+### Sprint 14 — Abril 2026 (em progresso)
+**Contas a Pagar + Contas a Receber**
+- Backend: `apps.accounts_payable` + `apps.accounts_receivable` (TENANT_APPS)
+- Integração automática com `accounting.JournalEntryService` (baixa gera lançamento)
+- Frontend: `/financeiro/contas-pagar` + `/financeiro/contas-receber` (substituindo placeholders)
+
+---
+
 ## 📦 Sprints Entregues
+
+### Sprint 13 — Abril 2026
+**Integração RH↔Contabilidade + Impostos Trabalhistas**
+- `apps/hr/tax_calculator.py` — INSS/IRRF/FGTS progressivo (tabelas 2024/2025)
+- `apps/hr/accounting_service.py` — lançamentos automáticos ao fechar contracheque/pagar vale/registrar bônus
+- `PayslipService.generate_payslip()` — INSS e IRRF calculados automaticamente; base tributável exclui vales (art. 458 CLT)
+- Frontend: módulo `/financeiro` completo (dashboard, lançamentos, plano de contas, páginas novo/detalhe)
+- `packages/types/src/accounting.types.ts` criado; hooks `useAccounting.ts` (9 hooks TanStack Query v5)
+- Sidebar: menu Financeiro colapsável
+- Fix: `DevTenantMiddleware` fallback `dscar.localhost` (admin Django funcionando)
+- Fix: admissão colaborador HTTP 400 (filtro de campos vazios antes do POST)
+- Spec: `docs/sprint-13-hr-accounting-integration.md`
+
+---
+
+### Sprint 12 — Abril 2026
+**Auth & SSO: Keycloak Funcionando End-to-End**
+- `AUTH_SECRET` (next-auth v5), schema keycloak PostgreSQL, redirect pós-login, RBAC backend, identidade unificada (/me), Protocol Mappers Keycloak
+- Spec/review: `docs/sprint-12-auth-sso-fix.md`
+
+---
+
+### Sprint 11 — Abril 2026
+**Módulo Financeiro: Fundação Contábil**
+
+Backend (app `apps.accounting` — TENANT_APPS):
+- **Models:** `ChartOfAccount` (plano de contas hierárquico, 5 níveis, SPED-compatível), `CostCenter`, `FiscalYear`, `FiscalPeriod`, `JournalEntry` (GenericFK para rastreabilidade), `JournalEntryLine` (partidas dobradas), `NumberSequence`
+- **Services:** `JournalEntryService` (create/approve/reverse + `create_from_service_order`), `NumberingService` (sequencial thread-safe com `select_for_update`), `AccountBalanceService` (saldo com subárvore via `code__startswith`), `FiscalPeriodService` (criação automática + fechamento)
+- **API:** 5 ViewSets — `ChartOfAccountViewSet` (CRUD + `tree` + `balance`), `CostCenterViewSet`, `FiscalYearViewSet`, `FiscalPeriodViewSet` (+ `close` + `current`), `JournalEntryViewSet` (+ `approve` + `reverse`, DELETE=405)
+- **Fixture:** 84 contas do plano DS Car (fixture `chart_of_accounts_dscar.py`)
+- **Management command:** `setup_chart_of_accounts [--reset]` — popula plano de contas por tenant
+- **Migration:** `0001_initial.py` — 7 models, 10 índices
+- **Testes:** 93 testes (28 models + 32 services + 33 views) em `TenantTestCase` — requerem `make dev` para rodar
+- `manage.py check` — 0 issues; 0 SyntaxWarnings
+
+**Regras contábeis críticas:**
+- `JournalEntry` imutável após aprovação — correção apenas via `reverse_entry()`
+- `FiscalPeriod.can_post()` verificado em todo `create_entry()` — período fechado bloqueia lançamentos
+- `DecimalField(max_digits=18, decimal_places=2)` em todos os valores — nunca `float`
+- `GenericForeignKey` em `JournalEntry` rastreia origem (OS, NF-e, Asaas, etc.)
+- DRE e Balanço baseados em `JournalEntryLine` (competência) — nunca em AP/AR
+- `NumberingService.next()` usa `select_for_update()` — thread-safe em multitenancy
+
+**Centros de Custo padrão (criar via `setup_chart_of_accounts`):**
+```
+CC-OS       Centro Automotivo (OS)
+CC-PECAS    Loja de Peças
+CC-VIDROS   Loja de Vidros
+CC-ESTETICA Estética Automotiva
+CC-ADM      Administrativo (rateado)
+```
+
+**Contas contábeis-chave (DS Car):**
+```
+1.1.01.001   Caixa Geral
+1.1.01.002   Banco Bradesco C/C
+1.1.02.001   Clientes Particulares (AR)
+1.1.02.002   Seguradoras (AR)
+4.1.01.001   Receita Bruta Peças
+4.1.02.001   Receita Bruta Serviços OS
+5.1.01.001   CMV Peças
+```
+
+**Spec completa:** `docs/spec-financial-module.md`
+**Review:** `docs/sprint-11-accounting-review.md`
+
+---
+
+### Sprint 9 — Abril 2026
+**Integração Person↔Employee: admissão sem UUID**
+
+Backend:
+- `GlobalUser.save()` — override que computa `email_hash` automaticamente (bug fix); type hints `*args: object`/`**kwargs: object` corrigidos (Django não tipifica esses parâmetros)
+- `GlobalUserManager.create_user/create_superuser` — `**extra_fields: object` → `**extra_fields` (idem)
+- `EmployeeCreateSerializer` — aceita `name` + `email` em vez do UUID do GlobalUser; `create()` envolto em `transaction.atomic()` (evita race condition em admissões simultâneas); faz `get_or_create` do GlobalUser por `email_hash`; `validate_email()` bloqueia e-mail com colaborador ativo; resposta inclui `id`
+- `test_employee_views.py` — migrado para `TenantTestCase` + `APIClient` (base `HRTestCase`); `make_user` computa `email_hash` explicitamente; 18/18 testes passando
+
+Frontend:
+- `CreateEmployeePayload` — substituído `user: string` por `name: string` + `email: string`
+- `UpdateEmployeePayload` — Omit atualizado para excluir `name`/`email`
+- Formulário `/rh/colaboradores/novo` — `z.enum()` para `department`/`position`/`contract_type` (narrowing automático, sem `as Type` casts); `FormDraft` type para estado do form (selects precisam de `""` inicial); `FormData = z.infer<>` para o payload validado; 0 erros `tsc --strict`
+
+**Documentação:** `docs/sprint-09-hr-onboarding-integration.md` (spec) · `docs/sprint-09-review.md` (review + guia de validação humana)
+
+---
+
+### Sprint 8 — Abril 2026
+**HR Frontend: Ponto, Metas, Vales e Folha de Pagamento**
+
+Frontend (Next.js 15 · TypeScript strict · shadcn/ui):
+- **Tabs colaborador:** `TabBonificacoes`, `TabVales`, `TabDescontos` no detalhe do colaborador
+- **Ponto `/rh/ponto`:** `LiveClock` (atualiza 1s), botão contextual sequencial, histórico do dia
+- **Espelho `/rh/ponto/espelho`:** visão gestor com data+setor, `EspelhoRow` (query independente por colaborador)
+- **Metas `/rh/metas`:** progress bars, filtros status+setor, `CreateGoalForm` (XOR employee|department)
+- **Vales `/rh/vales`:** tabs por status, approve/pay inline, badges coloridos
+- **Folha `/rh/folha`:** lista meses agrupados por `reference_month`, form "Gerar contracheque"
+- **Folha detalhe `/rh/folha/[month]`:** tabela com tfoot totais, summary cards, "Fechar Folha" com dupla confirmação
+- **Contracheques self-service `/rh/folha/contracheque`:** filtrado por `useMyEmployee()`, breakdown visual, download PDF
+- **Backend adição:** `GET /hr/employees/me/` action no `EmployeeViewSet`
+- **Hooks:** 15 novos hooks em `useHR.ts` (TimeClock, Goals, Allowances, Payslips)
+- `tsc --strict` — 0 erros
+
+---
+
+### Sprint 7 — Abril 2026
+**HR Frontend: Dashboard + Colaboradores**
+
+Frontend (Next.js 15 · TypeScript strict · shadcn/ui):
+- **Types:** `packages/types/src/hr.types.ts` — 15 interfaces, 8 union types, 4 display config objects
+- **Hooks:** `src/hooks/useHR.ts` — useEmployees, useEmployee, useCreateEmployee, useUpdateEmployee, useTerminateEmployee, useEmployeeDocuments, useSalaryHistory, useCreateSalaryHistory + `hrKeys`
+- **Sidebar:** item "Recursos Humanos" com ícone Briefcase
+- **Dashboard `/rh`:** cards headcount (total/ativo/afastado/férias) + quick links + alerta documentos
+- **Lista `/rh/colaboradores`:** tabela com filtros status+setor+busca (debounce), EmployeeStatusBadge
+- **Admissão `/rh/colaboradores/novo`:** form Zod em 3 seções (trabalhista / pessoal / endereço), redirect pós-criação
+- **Detalhe `/rh/colaboradores/[id]`:** 6 tabs — TabDadosPessoais (edição inline PATCH), TabDocumentos (soft-delete), TabSalario (reajuste + timeline), + 3 placeholders Sprint 8
+- **Placeholders:** /rh/ponto, /rh/metas, /rh/vales, /rh/folha
+- `tsc --strict` — 0 erros
+
+---
+
+### Sprint 5 + 6 — Abril 2026
+**HR Backend Completo**
+
+Backend (app `apps.hr` — TENANT_APPS):
+- **10 models:** Employee, EmployeeDocument, SalaryHistory, Bonus, GoalTarget, Allowance, Deduction, TimeClockEntry, WorkSchedule, Payslip
+- **Services:** TimeClockService (sequência válida de batidas), AllowanceService (fluxo solicitação→aprovação→pagamento), GoalService (achieve gera Bonus automático), PayslipService (cálculo completo + fechamento imutável)
+- **ViewSets:** Employee (CRUD + terminate), Document (soft delete), SalaryHistory, Bonus, Goal (+ achieve action), Allowance (+ approve/pay), Deduction, TimeClock (+ approve), WorkSchedule, Payslip (+ generate/close)
+- **Migrations:** 0001 (3 models) + 0002 (7 models + constraints XOR + unique_payslip + manual_entry_requires_justification)
+- **Tasks Celery:** task_generate_recurring_allowances, task_check_expiring_documents, task_generate_payslip_pdf
+- **Testes:** 18 unit tests passando sem Docker; DB tests requerem `make dev`
+- `manage.py check` — 0 issues (Sprint 5 e Sprint 6)
+
+---
 
 ### Sprint 4 — Abril 2026
 **RBAC, UX de criação e correções de integração**
@@ -409,6 +561,74 @@ Frontend:
 - Proxy API route: trailing slash garantida em todas as chamadas ao Django
 - Kanban: validação client-side de `VALID_TRANSITIONS`, resolução de `over.id` card→coluna, guard otimista contra double-submit
 - `VALID_TRANSITIONS` exportado de `@paddock/types` (espelho do backend)
+
+---
+
+## 🧑‍💼 Módulo de RH — Contexto e Padrões
+
+### App Django: `apps.hr` (TENANT_APPS)
+
+```python
+# 10 models no app hr:
+# Employee, EmployeeDocument, SalaryHistory,
+# Bonus, GoalTarget, Allowance, Deduction,
+# TimeClockEntry, WorkSchedule, Payslip
+
+# NÃO existem models Department/Position separados
+# Usar CharField com choices de apps.persons:
+from apps.persons.models import SetorPessoa, CargoPessoa
+
+class Employee(PaddockBaseModel):
+    department = models.CharField(max_length=30, choices=SetorPessoa.choices)
+    position   = models.CharField(max_length=30, choices=CargoPessoa.choices)
+```
+
+### Services (regras de negócio — nunca nos ViewSets)
+- `TimeClockService` — sequência válida: clock_in → break_start → break_end → clock_out
+- `AllowanceService` — fluxo: requested → approved → paid (sem pulo)
+- `PayslipService` — cálculo: base + bônus + vales + HE - descontos = net
+
+### Regras HR Críticas
+1. LGPD: CPF, RG, PIX, telefone → sempre `EncryptedField`
+2. Contracheque fechado → imutável (correção via lançamento compensatório)
+3. Ponto manual → justificativa obrigatória + aprovação gestor
+4. Documentos → soft delete apenas (nunca hard delete)
+5. Desligamento → `status='terminated'`, dados retidos 5-10 anos
+6. source='biometric' → bloqueado (erro amigável, integração futura)
+
+### Skill File HR
+- Localização: `~/Downloads/hr-module-skill-v2.md`
+- Skill docs: `docs/sprint-05-hr-backend-foundation.md` ... `sprint-08-hr-frontend-ponto-folha.md`
+
+### Frontend HR (Sprint 7 entregue)
+```
+packages/types/src/hr.types.ts          ← todos os tipos HR
+apps/dscar-web/src/hooks/useHR.ts       ← hooks TanStack Query v5
+app/(app)/rh/
+  page.tsx                    ✅ Dashboard (headcount 4 cards + quick links)
+  _components/HRStatCard.tsx  ✅
+  colaboradores/
+    page.tsx                  ✅ Lista com filtros + debounce
+    _components/EmployeeStatusBadge.tsx ✅
+    _components/EmployeeTable.tsx       ✅
+    novo/page.tsx             ✅ Admissão (Zod)
+    [id]/page.tsx             ✅ Detalhe (6 tabs)
+    [id]/_components/         ✅ Header, DadosPessoais, Documentos, Salario, Placeholders
+  ponto/page.tsx              ✅ Relógio de ponto (Sprint 8)
+  ponto/espelho/page.tsx      ✅ Espelho gestor (Sprint 8)
+  metas/page.tsx              ✅ Painel metas + form (Sprint 8)
+  vales/page.tsx              ✅ Gestão vales tabs (Sprint 8)
+  folha/page.tsx              ✅ Lista meses (Sprint 8)
+  folha/[month]/page.tsx      ✅ Detalhe + fechar folha (Sprint 8)
+  folha/contracheque/page.tsx ✅ Self-service contracheques (Sprint 8)
+```
+
+### Frontend HR Sprint 8 (entregue)
+- TabBonificacoes, TabVales, TabDescontos (detalhe colaborador) ✅
+- `/rh/ponto` — relógio (LiveClock) + espelho de ponto (gestor) ✅
+- `/rh/metas` — painel de metas individuais/setor + CreateGoalForm ✅
+- `/rh/vales` — fluxo aprovação vales (tabs requested/approved/paid) ✅
+- `/rh/folha` — lista meses + detalhe [month] + self-service contracheques ✅
 
 ---
 

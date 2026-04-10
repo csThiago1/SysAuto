@@ -31,17 +31,35 @@ INTERNAL_IPS = ["127.0.0.1"]
 # Node.js fetch não encaminha headers Host customizados.
 # O proxy Next.js envia X-Tenant-Domain para identificar o tenant.
 
+_DEV_FALLBACK_TENANT = "dscar.localhost"
+
+
 class DevTenantMiddleware(TenantMainMiddleware):
     """
-    Em dev, lê X-Tenant-Domain header como fonte do hostname do tenant.
-    Permite que o proxy Next.js selecione o tenant sem depender do Host header.
+    Em dev, resolve o tenant pelo seguinte ordem de prioridade:
+
+    1. Header X-Tenant-Domain  — enviado pelo proxy Next.js
+    2. Cookie paddock_dev_tenant — permite mudar de tenant no browser (admin, swagger)
+    3. Fallback para dscar.localhost quando host é localhost/127.0.0.1
+       Evita acesso ao schema public onde tabelas de TENANT_APPS não existem.
     """
 
     def hostname_from_request(self, request) -> str:  # type: ignore[override]
+        # 1. Header do proxy Next.js
         x_tenant = request.META.get("HTTP_X_TENANT_DOMAIN", "")
         if x_tenant:
             return x_tenant
-        return super().hostname_from_request(request)
+
+        # 2. Cookie de override — útil no browser (admin, /api/docs/)
+        cookie_tenant = request.COOKIES.get("paddock_dev_tenant", "")
+        if cookie_tenant:
+            return cookie_tenant
+
+        # 3. Fallback: localhost → dscar.localhost para evitar schema public
+        hostname = super().hostname_from_request(request)
+        if hostname in ("localhost", "127.0.0.1"):
+            return _DEV_FALLBACK_TENANT
+        return hostname
 
 
 # Substitui TenantMainMiddleware pelo DevTenantMiddleware

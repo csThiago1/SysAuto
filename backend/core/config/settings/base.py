@@ -4,6 +4,7 @@ Paddock Solutions — Django Settings Base
 import os
 from pathlib import Path
 
+from celery.schedules import crontab
 from decouple import config
 
 # ─── Caminhos ────────────────────────────────────────────────────────────────
@@ -39,6 +40,8 @@ SHARED_APPS = [
     "apps.authentication",
     "apps.tenants",
     "apps.customers",
+    "apps.insurers",
+    "apps.vehicle_catalog",
 ]
 
 # Apps instalados em cada SCHEMA DE TENANT
@@ -46,12 +49,19 @@ TENANT_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.auth",
     # Paddock apps (por tenant)
+    "apps.persons",
     "apps.service_orders",
+    "apps.experts",
     "apps.inventory",
     "apps.fiscal",
     "apps.crm",
     "apps.store",
     "apps.ai",
+    "apps.cilia",
+    "apps.hr",
+    "apps.accounting",
+    "apps.accounts_payable",
+    "apps.accounts_receivable",
 ]
 
 INSTALLED_APPS = list(set(SHARED_APPS + TENANT_APPS))
@@ -104,8 +114,11 @@ DATABASES = {
         "PASSWORD": config("DB_PASSWORD", default="paddock"),
         "HOST": config("DB_HOST", default="localhost"),
         "PORT": config("DB_PORT", default="5432"),
+        # Mantém conexões abertas por até 10 min — evita handshake TCP a cada request
+        "CONN_MAX_AGE": config("DB_CONN_MAX_AGE", default=600, cast=int),
         "OPTIONS": {
             "sslmode": config("DB_SSLMODE", default="disable"),
+            "connect_timeout": 10,
         },
     }
 }
@@ -153,7 +166,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "DEFAULT_PAGINATION_CLASS": "config.pagination.StandardPagination",
     "PAGE_SIZE": 25,
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
@@ -188,6 +201,14 @@ CELERY_TASK_ROUTES = {
     "apps.fiscal.*": {"queue": "fiscal"},
     "apps.crm.*": {"queue": "crm"},
     "apps.ai.*": {"queue": "ai"},
+}
+
+CELERY_BEAT_SCHEDULE = {
+    # Módulo Contábil — tarefas periódicas
+    "accounting-update-overdue": {
+        "task": "apps.accounting.tasks.update_overdue_entries",
+        "schedule": crontab(hour=6, minute=0),  # Todo dia às 06:00
+    },
 }
 
 # ─── Django Channels ─────────────────────────────────────────────────────────
@@ -273,3 +294,7 @@ LOGGING = {
 ANTHROPIC_API_KEY = config("ANTHROPIC_API_KEY", default="")
 AI_DEFAULT_MODEL = "claude-sonnet-4-5"
 AI_HEAVY_MODEL = "claude-opus-4-5"
+
+# ─── Cilia Web Service ───────────────────────────────────────────────────────
+CILIA_BASE_URL = config("CILIA_BASE_URL", default="https://sistema.cilia.com.br")
+CILIA_AUTH_TOKEN = config("CILIA_AUTH_TOKEN", default="")

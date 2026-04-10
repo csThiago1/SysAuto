@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -17,8 +17,10 @@ import { VALID_TRANSITIONS } from "@paddock/types";
 import {
   KANBAN_COLUMNS_ORDER,
   KANBAN_HIDDEN_BY_DEFAULT,
+  KANBAN_PHASE_GROUPS,
   SERVICE_ORDER_STATUS_CONFIG,
-} from "@/lib/design-tokens";
+} from "@paddock/utils";
+import { apiFetch } from "@/lib/api";
 import { KanbanColumn, KanbanColumnSkeleton } from "./KanbanColumn";
 import { KanbanCardOverlay } from "./KanbanCard";
 
@@ -32,7 +34,7 @@ type OrdersMap = Record<ServiceOrderStatus, ServiceOrder[]>;
 
 function groupByStatus(orders: ServiceOrder[]): OrdersMap {
   const map = {} as OrdersMap;
-  for (const status of KANBAN_COLUMNS_ORDER) {
+  for (const status of KANBAN_COLUMNS_ORDER as ServiceOrderStatus[]) {
     map[status] = [];
   }
   for (const order of orders) {
@@ -55,6 +57,8 @@ export function KanbanBoard({
   const [optimisticMoves, setOptimisticMoves] = useState<
     Record<string, ServiceOrderStatus>
   >({});
+  // Tracks in-flight POSTs — prevents double-submit if user drags before refetch
+  const pendingIds = useRef(new Set<string>());
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
@@ -92,6 +96,8 @@ export function KanbanBoard({
       if (!over) return;
 
       const orderId = active.id as string;
+      // Block while a transition for this card is already in flight
+      if (pendingIds.current.has(orderId)) return;
       const order = orders.find((o) => o.id === orderId);
       if (!order) return;
 
@@ -128,9 +134,10 @@ export function KanbanBoard({
 
       // Optimistic update — move card immediately
       setOptimisticMoves((prev) => ({ ...prev, [orderId]: newStatus }));
+      pendingIds.current.add(orderId);
 
       try {
-        const res = await fetch(
+        await apiFetch(
           `/api/proxy/service-orders/${orderId}/transition/`,
           {
             method: "POST",
@@ -139,20 +146,10 @@ export function KanbanBoard({
           }
         );
 
-        if (!res.ok) {
-          // Extrai mensagem de erro DRF (field error ou detail)
-          const body = await res.json().catch(() => ({})) as Record<string, unknown>;
-          const msg =
-            (body.detail as string | undefined) ??
-            (Array.isArray(body.new_status) ? (body.new_status as string[])[0] : undefined) ??
-            `Erro ao mover OS (HTTP ${res.status})`;
-          throw new Error(msg);
-        }
-
         // Sync server state after success
         void qc.invalidateQueries({ queryKey: ["service-orders"] });
       } catch (err) {
-        // Rollback
+        // Rollback optimistic move on any error
         setOptimisticMoves((prev) => {
           const next = { ...prev };
           delete next[orderId];
@@ -162,6 +159,8 @@ export function KanbanBoard({
           err instanceof Error ? err.message : "Erro ao mover OS"
         );
         return;
+      } finally {
+        pendingIds.current.delete(orderId);
       }
 
       // Clear override after server sync is triggered
@@ -184,19 +183,40 @@ export function KanbanBoard({
     );
   }
 
+  // Build phase groups filtered to only visible columns
+  const visiblePhaseGroups = KANBAN_PHASE_GROUPS.map((group) => ({
+    ...group,
+    statuses: group.statuses.filter((s) =>
+      columns.includes(s as ServiceOrderStatus)
+    ) as ServiceOrderStatus[],
+  })).filter((g) => g.statuses.length > 0);
+
   return (
     <DndContext
       sensors={sensors}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-3 overflow-x-auto pb-4 min-h-0 flex-1">
-        {columns.map((status) => (
-          <KanbanColumn
-            key={status}
-            status={status}
-            orders={groupedOrders[status] ?? []}
-          />
+      <div className="flex gap-4 overflow-x-auto pb-4 min-h-0 flex-1 items-start">
+        {visiblePhaseGroups.map((group) => (
+          <div key={group.id} className="flex flex-col shrink-0">
+            {/* Phase group header */}
+            <div
+              className={`rounded-t-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wide ${group.headerClass}`}
+            >
+              {group.label}
+            </div>
+            {/* Columns in this group */}
+            <div className="flex gap-3">
+              {group.statuses.map((status) => (
+                <KanbanColumn
+                  key={status}
+                  status={status}
+                  orders={groupedOrders[status] ?? []}
+                />
+              ))}
+            </div>
+          </div>
         ))}
       </div>
 
