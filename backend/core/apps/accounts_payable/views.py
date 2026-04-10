@@ -13,6 +13,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
@@ -48,9 +49,16 @@ class SupplierViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = SupplierFilter
-    search_fields = ["name", "cnpj"]
+    search_fields = ["name"]
     ordering_fields = ["name", "created_at"]
     ordering = ["name"]
+
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Soft delete — nunca hard delete em fornecedores."""
+        instance = self.get_object()
+        instance.is_active = False
+        instance.save(update_fields=["is_active", "updated_at"])
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get_serializer_class(self) -> type:
         """Retorna serializer adequado para cada acao."""
@@ -160,7 +168,12 @@ class PayableDocumentViewSet(ModelViewSet):
             status=status.HTTP_405_METHOD_NOT_ALLOWED,
         )
 
-    @action(methods=["post"], detail=True, url_path="pay")
+    @action(
+        methods=["post"],
+        detail=True,
+        url_path="pay",
+        permission_classes=[IsAuthenticated, IsManagerOrAbove],
+    )
     def pay(self, request: Request, pk: str | None = None) -> Response:
         """
         Registra pagamento (baixa) de titulo a pagar.
@@ -230,3 +243,30 @@ class PayableDocumentViewSet(ModelViewSet):
         )
 
         return Response(PayableDocumentSerializer(document).data)
+
+
+class AsaasWebhookView(APIView):
+    """
+    Stub para webhook Asaas — Sprint 15 implementara a logica completa.
+
+    Recebe eventos do Asaas (pagamento confirmado, vencido, etc.) sem
+    autenticacao JWT, pois o Asaas nao envia token de usuario.
+    A verificacao de autenticidade sera feita pelo HMAC no Sprint 15.
+    """
+
+    permission_classes: list = []  # Asaas nao envia token JWT
+
+    def post(self, request: Request) -> Response:
+        """
+        Recebe evento do Asaas e registra no log para processamento futuro.
+
+        Args:
+            request: Request com payload do evento Asaas.
+
+        Returns:
+            Response confirmando o recebimento (200 OK).
+        """
+        event = request.data.get("event", "")
+        logger.info("asaas_webhook_received event=%s", event)
+        # TODO Sprint 15: implementar auto-baixa de ReceivableDocument
+        return Response({"received": True}, status=status.HTTP_200_OK)

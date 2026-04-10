@@ -129,7 +129,12 @@ class ReceivableDocumentViewSet(ModelViewSet):
             status=status.HTTP_405_METHOD_NOT_ALLOWED,
         )
 
-    @action(methods=["post"], detail=True, url_path="receive")
+    @action(
+        methods=["post"],
+        detail=True,
+        url_path="receive",
+        permission_classes=[IsAuthenticated, IsManagerOrAbove],
+    )
     def receive(self, request: Request, pk: str | None = None) -> Response:
         """
         Registra recebimento (baixa) de titulo a receber.

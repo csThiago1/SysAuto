@@ -476,12 +476,45 @@ class ServiceOrderActivityLog(PaddockBaseModel):
         return f"[{self.created_at.strftime('%d/%m/%Y %H:%M')}] OS #{self.service_order.number} - {self.description}"
 
 
+class ServiceOrderPartQuerySet(models.QuerySet):
+    """
+    QuerySet customizado para ServiceOrderPart.
+
+    Sobrescreve delete() para garantir que o recalculo de totais da OS
+    tambem ocorra em bulk deletes via queryset (ex: .filter(...).delete()),
+    pois o Django nao dispara Model.delete() nem sinais post_delete nesse caso.
+    """
+
+    def delete(self) -> tuple[int, dict[str, int]]:
+        """
+        Remove as pecas e recalcula os totais de todas as OS afetadas.
+
+        Returns:
+            Tupla (total_deletados, {modelo: contagem}) no padrao do Django.
+        """
+        so_ids = list(self.values_list("service_order_id", flat=True).distinct())
+        result = super().delete()
+        for so in ServiceOrder.objects.filter(id__in=so_ids):
+            so.recalculate_totals()
+        return result
+
+
+class ServiceOrderPartManager(models.Manager):
+    """Manager que usa ServiceOrderPartQuerySet."""
+
+    def get_queryset(self) -> ServiceOrderPartQuerySet:
+        """Retorna QuerySet customizado."""
+        return ServiceOrderPartQuerySet(self.model, using=self._db)
+
+
 class ServiceOrderPart(PaddockBaseModel):
     """
     Item de peça de uma OS.
     Pode referenciar um produto do catálogo (opcional) ou ser de texto livre.
     Ao salvar/deletar recalcula parts_total na OS.
     """
+
+    objects = ServiceOrderPartManager()
 
     service_order = models.ForeignKey(
         ServiceOrder,
@@ -528,11 +561,44 @@ class ServiceOrderPart(PaddockBaseModel):
         return result
 
 
+class ServiceOrderLaborQuerySet(models.QuerySet):
+    """
+    QuerySet customizado para ServiceOrderLabor.
+
+    Sobrescreve delete() para garantir que o recalculo de totais da OS
+    tambem ocorra em bulk deletes via queryset (ex: .filter(...).delete()),
+    pois o Django nao dispara Model.delete() nem sinais post_delete nesse caso.
+    """
+
+    def delete(self) -> tuple[int, dict[str, int]]:
+        """
+        Remove os servicos e recalcula os totais de todas as OS afetadas.
+
+        Returns:
+            Tupla (total_deletados, {modelo: contagem}) no padrao do Django.
+        """
+        so_ids = list(self.values_list("service_order_id", flat=True).distinct())
+        result = super().delete()
+        for so in ServiceOrder.objects.filter(id__in=so_ids):
+            so.recalculate_totals()
+        return result
+
+
+class ServiceOrderLaborManager(models.Manager):
+    """Manager que usa ServiceOrderLaborQuerySet."""
+
+    def get_queryset(self) -> ServiceOrderLaborQuerySet:
+        """Retorna QuerySet customizado."""
+        return ServiceOrderLaborQuerySet(self.model, using=self._db)
+
+
 class ServiceOrderLabor(PaddockBaseModel):
     """
     Item de mão-de-obra / serviço de uma OS.
     Ao salvar/deletar recalcula services_total na OS.
     """
+
+    objects = ServiceOrderLaborManager()
 
     service_order = models.ForeignKey(
         ServiceOrder,

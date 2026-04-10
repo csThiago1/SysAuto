@@ -209,6 +209,15 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.accounting.tasks.update_overdue_entries",
         "schedule": crontab(hour=6, minute=0),  # Todo dia às 06:00
     },
+    # Módulo Financeiro — atualização de vencidos (AP + AR)
+    "ap-refresh-overdue": {
+        "task": "apps.accounts_payable.tasks.task_refresh_overdue_payables_all_tenants",
+        "schedule": crontab(hour=6, minute=15),  # Todo dia às 06:15
+    },
+    "ar-refresh-overdue": {
+        "task": "apps.accounts_receivable.tasks.task_refresh_overdue_receivables_all_tenants",
+        "schedule": crontab(hour=6, minute=15),  # Todo dia às 06:15
+    },
 }
 
 # ─── Django Channels ─────────────────────────────────────────────────────────

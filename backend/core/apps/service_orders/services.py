@@ -550,6 +550,45 @@ class ServiceOrderDeliveryService:
             },
         )
 
+        # Criar título a receber automaticamente ao entregar a OS.
+        # Savepoint isola a criação do recebível: se falhar, apenas reverte
+        # esse bloco sem abortar a transação principal da entrega da OS.
+        from django.db import transaction as _tx
+
+        _sp = _tx.savepoint()
+        try:
+            from apps.accounts_receivable.models import ReceivableOrigin
+            from apps.accounts_receivable.services import ReceivableDocumentService
+
+            os_total = order.parts_total + order.services_total
+            if os_total > 0:
+                ReceivableDocumentService.create_receivable(
+                    customer_id=str(order.customer_id) if order.customer_id else str(order.id),
+                    customer_name=order.customer_name,
+                    description=f"OS #{order.number} — {order.plate}",
+                    amount=os_total,
+                    due_date=now.date(),
+                    competence_date=now.date(),
+                    origin=ReceivableOrigin.OS,
+                    service_order_id=str(order.id),
+                    user=GlobalUser.objects.filter(id=delivered_by_id).first(),
+                )
+                _tx.savepoint_commit(_sp)
+                logger.info(
+                    "OS #%d: ReceivableDocument criado automaticamente (R$%s)",
+                    order.number,
+                    os_total,
+                )
+            else:
+                _tx.savepoint_commit(_sp)
+        except Exception as exc:
+            _tx.savepoint_rollback(_sp)
+            logger.error(
+                "OS #%d: falha ao criar ReceivableDocument na entrega — %s",
+                order.number,
+                exc,
+            )
+
         logger.info(
             "OS #%d: entregue ao cliente por user_id=%s",
             order.number,
