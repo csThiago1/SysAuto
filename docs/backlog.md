@@ -30,52 +30,62 @@
 
 ---
 
-## Sprint 14 — Em Progresso 🚧
+## Sprint 14 — Finalizando 🔄
 
-### Backend — `apps/accounts_payable`
+### Backend — `apps/accounts_payable` ✅
 
-- [~] `Supplier` model (nome, CNPJ, contato)
-- [~] `PayableDocument` model (título a pagar, status progressivo)
-- [~] `PayablePayment` model (baixa parcial/total)
-- [~] `PayableDocumentService` — create/pay/cancel + overdue refresh
-- [~] `PayableAccountingService` — lançamento automático na baixa (D: Fornecedores / C: Banco)
-- [~] Serializers: SupplierSerializer, PayableDocumentListSerializer, PayableDocumentSerializer, CreatePayableDocumentSerializer, RecordPaymentSerializer
-- [~] ViewSets: SupplierViewSet, PayableDocumentViewSet (+ `pay` + `cancel` actions)
-- [~] Migration `0001_initial.py`
+- [x] `Supplier` model (nome, CNPJ, contato)
+- [x] `PayableDocument` model (título a pagar, status progressivo)
+- [x] `PayablePayment` model (baixa parcial/total)
+- [x] `PayableDocumentService` — create/pay/cancel + overdue refresh
+- [x] `PayableAccountingService` — lançamento automático na baixa (D: Fornecedores / C: Banco)
+- [x] Serializers: SupplierSerializer, PayableDocumentListSerializer, PayableDocumentSerializer, CreatePayableDocumentSerializer, RecordPaymentSerializer
+- [x] ViewSets: SupplierViewSet, PayableDocumentViewSet (+ `pay` + `cancel` actions)
+- [x] Migration `0001_initial.py`
 
-### Backend — `apps/accounts_receivable`
+### Backend — `apps/accounts_receivable` ✅
 
-- [~] `ReceivableDocument` model (título a receber, origin: OS/NF-e/Manual)
-- [~] `ReceivableReceipt` model (baixa de recebimento)
-- [~] `ReceivableDocumentService` — create/receive/cancel + overdue refresh
-- [~] `ReceivableAccountingService` — lançamento na baixa (D: Banco / C: Clientes a Receber)
-- [~] Serializers + ViewSets + Migration
+- [x] `ReceivableDocument` model (título a receber, origin: OS/NF-e/Manual)
+- [x] `ReceivableReceipt` model (baixa de recebimento)
+- [x] `ReceivableDocumentService` — create/receive/cancel + overdue refresh
+- [x] `ReceivableAccountingService` — lançamento na baixa (D: Banco / C: Clientes a Receber)
+- [x] Serializers + ViewSets + Migration
 
-### Backend — Integrações
+### Backend — Integrações (Parcial)
 
-- [~] `config/settings/base.py` — adicionar apps em `TENANT_APPS`
-- [~] `config/urls.py` — registrar novas URLs
-- [~] `hr/services.py` — ao fechar contracheque, criar `PayableDocument(origin='FOLHA')`
+- [x] `config/settings/base.py` — adicionar apps em `TENANT_APPS`
+- [x] `config/urls.py` — registrar novas URLs
+- [x] `hr/services.py` — ao fechar contracheque, criar `PayableDocument(origin='FOLHA')`
 - [ ] `service_orders/services.py` — ao entregar OS, criar `ReceivableDocument(origin='OS')`
 - [ ] Celery beat task `task_refresh_overdue_payables` (diário 06:15)
 - [ ] Celery beat task `task_refresh_overdue_receivables` (diário 06:15)
 - [ ] Asaas webhook stub `POST /api/v1/accounts-payable/asaas/webhook/`
 
-### Frontend
+### Frontend (Parcial)
 
-- [~] `packages/types/src/financeiro.types.ts` — tipos AP/AR
-- [~] `src/hooks/useFinanceiro.ts` — hooks TanStack Query v5
-- [~] `/financeiro/contas-pagar/page.tsx` — lista + cards + RecordPaymentDialog
-- [~] `/financeiro/contas-pagar/novo/page.tsx` — formulário novo título
-- [~] `/financeiro/contas-receber/page.tsx` — lista + cards + RecordReceiptDialog
+- [x] `packages/types/src/financeiro.types.ts` — tipos AP/AR
+- [x] `src/hooks/useFinanceiro.ts` — hooks TanStack Query v5
+- [x] `/financeiro/contas-pagar/page.tsx` — lista + cards + RecordPaymentDialog
+- [x] `/financeiro/contas-pagar/novo/page.tsx` — formulário novo título
+- [x] `/financeiro/contas-receber/page.tsx` — lista + cards + RecordReceiptDialog
 - [ ] `/financeiro/contas-receber/novo/page.tsx` — formulário novo título
 - [ ] `/financeiro/contas-pagar/[id]/page.tsx` — detalhe + histórico de baixas
 - [ ] `/financeiro/contas-receber/[id]/page.tsx` — detalhe + histórico de recebimentos
-- [~] `/financeiro/page.tsx` — atualizar cards de visão geral
+- [x] `/financeiro/page.tsx` — atualizar cards de visão geral
 
 ---
 
 ## Sprint 15 — Backlog
+
+### Testes AP/AR (prioridade alta)
+- [ ] Testes unitários `apps/accounts_payable` — suíte completa (modelos + services + views)
+- [ ] Testes unitários `apps/accounts_receivable` — suíte completa (modelos + services + views)
+- [ ] Cobertura mínima: 85% (similar ao `apps/accounting`)
+
+### Dívida Técnica Sprint 10
+- [ ] Fix: teste `test_add_part_with_product_link` (nunca foi implementado)
+- [ ] Fix: bulk delete signal em `ServiceOrderPart` para `recalculate_totals`
+- [ ] Testes para validar fixes acima
 
 ### Banking (app `accounts_banking`)
 - [ ] `BankAccount` model (nome, banco, agência, conta, saldo)
@@ -100,15 +110,15 @@
 
 ## Progresso do Sprint 14
 
-| Área | Total | Concluído | Em Progresso | Pendente |
-|------|-------|-----------|--------------|---------|
-| Backend AP | 8 | 0 | 7 | 1 |
-| Backend AR | 5 | 0 | 4 | 1 |
-| Backend Integrações | 6 | 0 | 3 | 3 |
-| Frontend | 9 | 0 | 5 | 4 |
-| **Total** | **28** | **0** | **19** | **9** |
+| Área | Total | Concluído | Pendente |
+|------|-------|-----------|---------|
+| Backend AP | 8 | 8 | 0 |
+| Backend AR | 5 | 5 | 0 |
+| Backend Integrações | 6 | 3 | 3 |
+| Frontend | 9 | 6 | 3 |
+| **Total** | **28** | **22** | **6** |
 
-**Taxa de conclusão do Sprint 14:** Em progresso (implementação iniciada 2026-04-09)
+**Taxa de conclusão do Sprint 14:** 78,6% (finalizando 2026-04-09)
 
 ---
 
@@ -125,7 +135,7 @@
 | 11 | Módulo Contábil (fundação) | ✅ |
 | 12 | Auth & SSO Keycloak | ✅ |
 | 13 | RH↔Contabilidade + Impostos trabalhistas | ✅ |
-| 14 | Contas a Pagar + Contas a Receber | 🚧 |
+| 14 | Contas a Pagar + Contas a Receber | 🔄 |
 
 ---
 

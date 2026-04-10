@@ -46,13 +46,22 @@ grupo-dscar/
 │   │   ├── apps/
 │   │   │   ├── authentication/       ← SSO, JWT, OIDC (Keycloak)
 │   │   │   ├── tenants/              ← Multitenancy (django-tenants)
+│   │   │   ├── persons/              ← Modelo unificado Person (PF/PJ, SetorPessoa/CargoPessoa)
 │   │   │   ├── customers/            ← Cliente unificado + LGPD
 │   │   │   ├── service_orders/       ← OS, Kanban, Checklist (DS Car)
 │   │   │   ├── inventory/            ← Estoque por tenant
 │   │   │   ├── fiscal/               ← NF-e, NFS-e, NFC-e (nfelib)
 │   │   │   ├── crm/                  ← CRM + WhatsApp (Evolution API)
 │   │   │   ├── store/                ← PDV + E-commerce
-│   │   │   └── ai/                   ← Claude API + RAG
+│   │   │   ├── ai/                   ← Claude API + RAG
+│   │   │   ├── hr/                   ← RH: Employee, Payslip, TimeClock, etc. (TENANT_APP)
+│   │   │   ├── experts/              ← Especialistas externos (peritos) (TENANT_APP)
+│   │   │   ├── accounting/           ← Plano de contas, JournalEntry, DRE (TENANT_APP)
+│   │   │   ├── accounts_payable/     ← Contas a Pagar (TENANT_APP)
+│   │   │   ├── accounts_receivable/  ← Contas a Receber (TENANT_APP)
+│   │   │   ├── cilia/                ← Integração API Cilia
+│   │   │   ├── vehicle_catalog/      ← Catálogo de veículos/cores (SHARED_APP)
+│   │   │   └── insurers/             ← Seguradoras (SHARED_APP)
 │   │   └── config/
 │   └── workers/                      ← Node.js workers (WhatsApp, NF-e)
 │
@@ -291,21 +300,81 @@ const canEdit = usePermission("MANAGER"); // true se role >= MANAGER
 
 ## 🖥️ Componentes Frontend Relevantes (dscar-web)
 
+### Módulo Financeiro (`/financeiro`)
+```
+app/(app)/financeiro/
+├── page.tsx                           ← Dashboard de visão geral (4 cards + links)
+├── lancamentos/
+│   ├── page.tsx                       ← Lista de lançamentos contábeis
+│   ├── [id]/page.tsx                  ← Detalhe + histórico
+│   └── novo/page.tsx                  ← Formulário partidas dobradas
+├── plano-contas/
+│   ├── page.tsx                       ← Árvore hierárquica do plano de contas
+│   └── nova/page.tsx                  ← Criação de nova conta
+├── contas-pagar/
+│   ├── page.tsx                       ← Lista AP + cards + RecordPaymentDialog
+│   ├── novo/page.tsx                  ← Novo título a pagar
+│   └── [id]/page.tsx                  ← Detalhe + histórico de baixas
+├── contas-receber/
+│   ├── page.tsx                       ← Lista AR + cards + RecordReceiptDialog
+│   ├── novo/page.tsx                  ← Novo título a receber
+│   └── [id]/page.tsx                  ← Detalhe + histórico de recebimentos
+└── relatorios/
+    ├── page.tsx                       ← Dashboard de relatórios (Sprint 15)
+    ├── dre/page.tsx                   ← DRE por período
+    ├── balanco/page.tsx               ← Balanço Patrimonial
+    └── fluxo-caixa/page.tsx           ← Fluxo de Caixa Realizado vs. Projetado
+```
+- **Types:** `packages/types/src/financeiro.types.ts` (tipos AP/AR)
+- **Hooks:** `src/hooks/useFinanceiro.ts` (TanStack Query v5)
+- Sidebar menu "Financeiro" colapsável
+
+### Módulo RH (`/rh`)
+```
+app/(app)/rh/
+├── page.tsx                           ← Dashboard (headcount 4 cards + quick links)
+├── colaboradores/
+│   ├── page.tsx                       ← Lista com filtros + debounce
+│   ├── novo/page.tsx                  ← Formulário admissão (3 seções Zod)
+│   └── [id]/page.tsx                  ← Detalhe com 6 tabs (dados, docs, salário, bônus, vales, descontos)
+├── ponto/
+│   ├── page.tsx                       ← Relógio de ponto (LiveClock)
+│   └── espelho/page.tsx               ← Visão gestor com data+setor
+├── metas/page.tsx                     ← Painel metas + CreateGoalForm
+├── vales/page.tsx                     ← Gestão vales (tabs: solicitado/aprovado/pago)
+└── folha/
+    ├── page.tsx                       ← Lista meses agrupados
+    ├── [month]/page.tsx               ← Detalhe + fechar folha
+    └── contracheque/page.tsx          ← Self-service contracheques
+```
+- **Types:** `packages/types/src/hr.types.ts` (15 interfaces + 8 unions)
+- **Hooks:** `src/hooks/useHR.ts` (15+ hooks TanStack Query v5)
+- Sidebar menu "Recursos Humanos" com ícone Briefcase
+
+### Feature: Criação de OS
+```
+src/features/create-os/
+├── CreateOSDialog.tsx                 ← Dialog com busca cliente + inline create + veículo
+├── useCreateOS.ts                     ← Hook com validação client-side
+└── types.ts                           ← CreateOSPayload + validações
+```
+- Acesso via botão sidebar ou modal em `/os`
+- Número da OS gerado automaticamente (MAX + 1)
+
 ### Modais de Criação
 ```
 src/components/modals/
-├── NovoClienteModal.tsx   ← Dialog: nome, telefone, CPF, email, LGPD
-└── NovaOSModal.tsx        ← Dialog scrollável: busca cliente + inline create + veículo
+├── NovoClienteModal.tsx               ← Dialog: nome, telefone, CPF, email, LGPD
+└── NovaOSModal.tsx                    ← Dialog scrollável (substituído por CreateOSDialog)
 ```
-- Abertos a partir de `/clientes` e `/os` via `useState(false)` no botão
-- Inline create: dentro do `NovaOSModal`, permite cadastrar cliente sem sair do fluxo
+- Inline create: permite cadastrar cliente sem sair do fluxo
 
 ### Kanban
 ```
 src/components/kanban/
-├── KanbanBoard.tsx   ← DndContext + validação VALID_TRANSITIONS client-side
-├── KanbanColumn.tsx  ← useDroppable por status
-└── KanbanCard.tsx    ← useSortable + router.push (sem <Link> aninhado)
+├── KanbanBoard.tsx                    ← DndContext + validação VALID_TRANSITIONS client-side
+├── KanbanColumn.tsx                   ← useDroppable por status
+└── KanbanCard.tsx                     ← useSortable + router.push (sem <Link> aninhado)
 ```
 - `over.id` pode ser UUID de card ou status de coluna — KanbanBoard resolve ambos
 - Otimismo: override de status enquanto refetch não completa
@@ -313,10 +382,10 @@ src/components/kanban/
 
 ### RBAC
 ```
-src/hooks/usePermission.ts     ← retorna boolean baseado em ROLE_HIERARCHY
-src/components/PermissionGate.tsx  ← wrapper condicional por role
-src/lib/withRoleGuard.ts           ← HOC para páginas inteiras
-src/middleware.ts                  ← proteção de rotas /admin e /configuracoes
+src/hooks/usePermission.ts             ← retorna boolean baseado em ROLE_HIERARCHY
+src/components/PermissionGate.tsx      ← wrapper condicional por role
+src/lib/withRoleGuard.ts               ← HOC para páginas inteiras
+src/middleware.ts                      ← proteção de rotas /admin e /configuracoes
 ```
 
 ---
@@ -396,20 +465,47 @@ make typecheck       # mypy + tsc
 - [ ] Migrations sem operações destrutivas (ou aprovadas)
 - [ ] Novas variáveis de ambiente documentadas aqui
 - [ ] Commit segue Conventional Commits
+- [ ] `make sprint-close SPRINT=XX` executado ao fim de cada sprint
 
 ---
 
 ## 🗺️ Sprints em Andamento
 
-### Sprint 14 — Abril 2026 (em progresso)
+### Sprint 14 — Abril 2026 (finalizando)
 **Contas a Pagar + Contas a Receber**
-- Backend: `apps.accounts_payable` + `apps.accounts_receivable` (TENANT_APPS)
-- Integração automática com `accounting.JournalEntryService` (baixa gera lançamento)
-- Frontend: `/financeiro/contas-pagar` + `/financeiro/contas-receber` (substituindo placeholders)
+- Backend AP: `apps.accounts_payable` completo (Supplier, PayableDocument, PayablePayment, services, serializers, viewsets) ✅
+- Backend AR: `apps.accounts_receivable` completo (ReceivableDocument, ReceivableReceipt, services, serializers, viewsets) ✅
+- Apps registrados em `TENANT_APPS` e URLs em `config/urls.py` ✅
+- HR integrado: HR → PayableDocument ao fechar folha ✅
+- Frontend: types + hooks + `/financeiro/contas-pagar/page.tsx` + `/financeiro/contas-pagar/novo` + `/financeiro/contas-receber/page.tsx` ✅
+- Pendente: OS → ReceivableDocument na entrega, tasks Celery beat, Asaas webhook stub
+- **Progresso:** 78,6% (22/28 tarefas)
+
+### Sprint 15 — Abril 2026 (próxima)
+**Banking + Asaas Completo + Relatórios Financeiros**
+- App `accounts_banking`: BankAccount, BankTransaction, OFXImportService
+- Reconciliação AP/AR ↔ lançamentos bancários
+- `CashFlowService`: fluxo de caixa projetado (AP vencimentos + AR previsões)
+- Asaas webhook completo: auto-baixa ReceivableDocument ao receber evento
+- Relatórios: DRE, Balanço Patrimonial, Fluxo de Caixa (PDF + XLSX)
+- Frontend: `/financeiro/relatorios`
+- Testes: suíte AP/AR (85% cobertura)
+- Dívida técnica: fix Sprint 10 (bulk delete signal + teste missing)
 
 ---
 
 ## 📦 Sprints Entregues
+
+### Sprint 14 — Abril 2026 (em conclusão)
+**Contas a Pagar + Contas a Receber**
+- Backend AP: `Supplier`, `PayableDocument`, `PayablePayment` + service/serializers/viewsets ✅
+- Backend AR: `ReceivableDocument`, `ReceivableReceipt` + service/serializers/viewsets ✅
+- Integração HR: ao fechar folha, cria `PayableDocument(origin='FOLHA')` ✅
+- Apps registrados em `TENANT_APPS` e URLs em `config/urls.py` ✅
+- Frontend: types + hooks + 3 pages (`contas-pagar`, `contas-pagar/novo`, `contas-receber`) ✅
+- Pendente: OS → ReceivableDocument, tasks Celery beat, Asaas webhook, páginas detalhe
+
+---
 
 ### Sprint 13 — Abril 2026
 **Integração RH↔Contabilidade + Impostos Trabalhistas**
