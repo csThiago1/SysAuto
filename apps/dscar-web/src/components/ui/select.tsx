@@ -33,7 +33,7 @@ function Select({ value = "", onValueChange = () => undefined, children }: Selec
   );
 }
 
-function SelectTrigger({ className, children, ...props }: React.HTMLAttributes<HTMLButtonElement>): React.ReactElement {
+function SelectTrigger({ className, children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>): React.ReactElement {
   const { open, setOpen } = React.useContext(SelectContext);
   return (
     <button
