@@ -96,6 +96,16 @@ setup-node: ## Instala dependências Node.js
 	@echo "📦 Instalando dependências Node.js..."
 	npm install
 
+## ─ Git / Sprint ─────────────────────────────────────────────────────────────
+
+sprint-close: ## Fecha sprint com commits por domínio. Uso: make sprint-close SPRINT=14
+	@bash scripts/sprint-close.sh $(SPRINT)
+
+install-hooks: ## Instala git hooks do projeto (pre-commit)
+	@cp -f scripts/sprint-close.sh scripts/sprint-close.sh
+	@chmod +x .git/hooks/pre-commit
+	@echo "✅  Hooks instalados."
+
 ## ─ Help ─────────────────────────────────────────────────────────────────────
 
 help: ## Mostra esta mensagem de ajuda
