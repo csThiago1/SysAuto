@@ -198,6 +198,46 @@ class OSPartsTestCase(TenantTestCase):
         os5.refresh_from_db()
         self.assertEqual(os5.services_total, Decimal("120.00"))
 
+    def test_add_part_with_product_link(self) -> None:
+        """
+        Verifica que uma peca pode ser criada vinculada a um produto do catalogo,
+        que product_id e persistido corretamente e que product_name aparece na resposta
+        como campo read-only via SerializerMethodField.
+        """
+        from apps.inventory.models import Product
+        from apps.service_orders.models import ServiceOrderPart
+
+        product = Product.objects.create(
+            sku="PARA-001",
+            name="Parachoque Dianteiro Universal",
+        )
+
+        os_product = ServiceOrder.objects.create(
+            number=9020,
+            plate="PRD0001",
+            customer_name="Teste Produto",
+            status=ServiceOrderStatus.REPAIR,
+            created_by=self.user,
+        )
+
+        payload = {
+            "description": "Parachoque dianteiro",
+            "product": str(product.id),
+            "quantity": "1.00",
+            "unit_price": "950.00",
+            "discount": "0.00",
+        }
+        resp = self.client.post(self._parts_url(str(os_product.id)), payload, format="json")
+        self.assertEqual(resp.status_code, 201)
+
+        # product_id persistido corretamente no banco
+        part = ServiceOrderPart.objects.get(id=resp.data["id"])
+        self.assertEqual(part.product_id, product.id)
+
+        # product_name presente na resposta como campo read-only
+        self.assertIn("product_name", resp.data)
+        self.assertEqual(resp.data["product_name"], "Parachoque Dianteiro Universal")
+
     def test_list_labor_returns_all_items(self) -> None:
         from apps.service_orders.models import ServiceOrderLabor
 
@@ -217,3 +257,42 @@ class OSPartsTestCase(TenantTestCase):
         resp = self.client.get(self._labor_url(str(os6.id)))
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.data), 2)
+
+    def test_single_instance_delete_recalculates_totals(self) -> None:
+        """TC-SO-02: deletar peça via instância direta (.delete()) recalcula parts_total da OS."""
+        from apps.service_orders.models import ServiceOrderPart
+
+        os_del = ServiceOrder.objects.create(
+            number=9030,
+            plate="SID0001",
+            customer_name="Single Instance Delete",
+            status=ServiceOrderStatus.REPAIR,
+            created_by=self.user,
+        )
+        part_a = ServiceOrderPart.objects.create(
+            service_order=os_del,
+            created_by=self.user,
+            description="Peca A",
+            quantity=Decimal("1.00"),
+            unit_price=Decimal("300.00"),
+            discount=Decimal("0.00"),
+        )
+        ServiceOrderPart.objects.create(
+            service_order=os_del,
+            created_by=self.user,
+            description="Peca B",
+            quantity=Decimal("2.00"),
+            unit_price=Decimal("100.00"),
+            discount=Decimal("0.00"),
+        )
+        os_del.refresh_from_db()
+        self.assertEqual(os_del.parts_total, Decimal("500.00"))
+
+        # Deletar via instância direta (não via ViewSet) para testar o signal/guard
+        part_a.delete()
+        os_del.refresh_from_db()
+        self.assertEqual(
+            os_del.parts_total,
+            Decimal("200.00"),
+            "parts_total deve ser recalculado para R$200 apos deletar peca_a de R$300",
+        )
