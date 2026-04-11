@@ -28,7 +28,7 @@ def buscar_orcamento(casualty_number: str, budget_number: str, version_number: i
 
     endpoint = f"{CILIA_BASE_URL}/api/integration/insurer_budgets/by_casualty_number_and_budget_number"
     
-    with httpx.Client(verify=False, timeout=30) as client:
+    with httpx.Client(timeout=30) as client:
         response = client.get(endpoint, params=params)
         response.raise_for_status()
         return response.json()

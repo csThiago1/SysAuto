@@ -14,9 +14,11 @@ import Credentials from "next-auth/providers/credentials";
 import { SignJWT } from "jose";
 import type { PaddockRole } from "@paddock/types";
 
-const DEV_JWT_SECRET = new TextEncoder().encode(
-  process.env.DEV_JWT_SECRET ?? "dscar-dev-secret-paddock-2025"
-);
+function getDevJWTSecret(): Uint8Array {
+  const secret = process.env.DEV_JWT_SECRET;
+  if (!secret) throw new Error("DEV_JWT_SECRET não está definido — configure no .env.local");
+  return new TextEncoder().encode(secret);
+}
 
 /** Gera JWT HS256 para o provider dev-credentials. */
 async function makeDevToken(email: string): Promise<string> {
@@ -34,7 +36,7 @@ async function makeDevToken(email: string): Promise<string> {
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("8h")
-    .sign(DEV_JWT_SECRET);
+    .sign(getDevJWTSecret());
 }
 
 const KNOWN_ROLES: PaddockRole[] = ["OWNER", "ADMIN", "MANAGER", "CONSULTANT", "STOREKEEPER"];

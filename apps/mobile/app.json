@@ -10,12 +10,7 @@
         "plugins": [
             "expo-router",
             "expo-camera",
-            [
-                "expo-auth-session",
-                {
-                    "scheme": "paddock"
-                }
-            ]
+            "expo-secure-store"
         ],
         "ios": {
             "supportsTablet": false,
@@ -27,6 +22,9 @@
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#ffffff"
             }
+        },
+        "web": {
+            "bundler": "metro"
         },
         "experiments": {
             "typedRoutes": true

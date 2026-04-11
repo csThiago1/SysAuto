@@ -75,6 +75,24 @@
 
 ---
 
+## Pré-Produção — Segurança 🔒
+
+> Detalhes completos em `docs/pre-production-security.md`
+
+- [x] JWT secret hardcoded removido (`auth.ts`) — 2026-04-10
+- [x] TLS verification habilitado nos clientes httpx — 2026-04-10
+- [x] WebSocket consumer rejeita conexões não autenticadas — 2026-04-10
+- [ ] **SEC-01** Rotacionar `FIELD_ENCRYPTION_KEY` + re-encriptar dados (LGPD) — **Crítico**
+- [ ] **SEC-02** `AUTH_SECRET` único por app (hub ≠ dscar-web)
+- [ ] **SEC-03** Confirmar `DEV_JWT_SECRET` no `.env.local` de todos os devs
+- [ ] **SEC-04** Rate limiting nos endpoints DRF
+- [ ] **SEC-05** `dev-credentials` provider condicional via `DEV_CREDENTIALS_ENABLED`
+- [ ] **SEC-06** Restringir Swagger/OpenAPI em produção
+- [ ] **SEC-07** JWT audience verification habilitada
+- [ ] **SEC-08** Validação de MIME type e tamanho em upload de fotos de OS
+
+---
+
 ## Sprint 15 — Backlog
 
 ### Testes AP/AR (prioridade alta)

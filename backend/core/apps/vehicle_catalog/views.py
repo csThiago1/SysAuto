@@ -64,7 +64,7 @@ def plate_lookup(request: Request, plate: str) -> Response:
         return Response({"detail": "Placa inválida."}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        with httpx.Client(timeout=10.0, verify=False) as client:
+        with httpx.Client(timeout=10.0) as client:
             resp = client.post(
                 PLACA_FIPE_URL,
                 json={"placa": plate},
