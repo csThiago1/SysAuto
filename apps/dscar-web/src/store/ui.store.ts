@@ -1,12 +1,7 @@
 import { create } from "zustand";
 
-interface UIStore {
-  sidebarCollapsed: boolean;
-  toggleSidebar: () => void;
-}
+// Store de UI — adicionar outros estados globais de UI aqui conforme necessário
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface UIStore {}
 
-export const useUIStore = create<UIStore>((set) => ({
-  sidebarCollapsed: false,
-  toggleSidebar: () =>
-    set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
-}));
+export const useUIStore = create<UIStore>()(() => ({}));
