@@ -252,7 +252,7 @@ export function Sidebar() {
 
   const handleNav = useCallback(
     (href: string) => {
-      router.push(href);
+      router.push(href as Parameters<typeof router.push>[0]);
     },
     [router]
   );
