@@ -495,3 +495,64 @@ class UploadPhotoSerializer(serializers.Serializer):
     file    = serializers.ImageField()
     folder  = serializers.ChoiceField(choices=OSPhotoFolder.choices)
     caption = serializers.CharField(required=False, allow_blank=True, max_length=200)
+
+
+class ServiceOrderSyncSerializer(serializers.ModelSerializer):
+    """
+    Serializer para sync incremental WatermelonDB.
+
+    Mapeia campos do modelo para o schema do WatermelonDB,
+    expondo timestamps em milissegundos (epoch ms) conforme
+    o protocolo de sync do WatermelonDB.
+    """
+
+    remote_id = serializers.CharField(source="id")
+    vehicle_brand = serializers.CharField(source="make")
+    vehicle_model = serializers.CharField(source="model")
+    vehicle_year = serializers.IntegerField(source="year", allow_null=True)
+    vehicle_color = serializers.CharField(source="color")
+    vehicle_plate = serializers.CharField(source="plate")
+    consultant_name = serializers.SerializerMethodField()
+    total_parts = serializers.DecimalField(
+        source="parts_total", max_digits=12, decimal_places=2
+    )
+    total_services = serializers.DecimalField(
+        source="services_total", max_digits=12, decimal_places=2
+    )
+    created_at_remote = serializers.SerializerMethodField()
+    updated_at_remote = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ServiceOrder
+        fields = [
+            "remote_id",
+            "number",
+            "status",
+            "customer_name",
+            "customer_type",
+            "os_type",
+            "vehicle_plate",
+            "vehicle_brand",
+            "vehicle_model",
+            "vehicle_year",
+            "vehicle_color",
+            "consultant_name",
+            "total_parts",
+            "total_services",
+            "created_at_remote",
+            "updated_at_remote",
+        ]
+
+    def get_consultant_name(self, obj: ServiceOrder) -> str:
+        """Retorna nome completo ou email do consultor, ou string vazia."""
+        if obj.consultant:
+            return obj.consultant.get_full_name() or obj.consultant.email
+        return ""
+
+    def get_created_at_remote(self, obj: ServiceOrder) -> int:
+        """Retorna opened_at como epoch em milissegundos para o WatermelonDB."""
+        return int(obj.opened_at.timestamp() * 1000)
+
+    def get_updated_at_remote(self, obj: ServiceOrder) -> int:
+        """Retorna updated_at como epoch em milissegundos para o WatermelonDB."""
+        return int(obj.updated_at.timestamp() * 1000)

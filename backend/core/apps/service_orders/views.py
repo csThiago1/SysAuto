@@ -41,6 +41,7 @@ from .serializers import (
     ServiceOrderPartSerializer,
     ServiceOrderPhotoSerializer,
     ServiceOrderStatusTransitionSerializer,
+    ServiceOrderSyncSerializer,
     ServiceOrderUpdateSerializer,
     StatusTransitionLogSerializer,
     UploadPhotoSerializer,
@@ -205,6 +206,50 @@ class ServiceOrderViewSet(
     def next_number(self, request: Request) -> Response:
         """GET /service-orders/next-number/"""
         return Response({"next_number": ServiceOrderService.get_next_number()})
+
+    @extend_schema(
+        summary="Sync incremental para WatermelonDB",
+        parameters=[
+            OpenApiParameter(
+                "since",
+                description="ISO datetime — retorna apenas OS atualizadas desde esta data",
+                required=False,
+            )
+        ],
+    )
+    @action(detail=False, methods=["get"], url_path="sync")
+    def sync(self, request: Request) -> Response:
+        """
+        GET /api/v1/service-orders/sync/?since=<iso_datetime>
+
+        Retorna OS no formato WatermelonDB sync protocol.
+        Pull incremental: se since informado, filtra por updated_at >= since.
+        OS deletadas (is_active=False) são retornadas na chave deleted como lista de ids.
+        """
+        from django.utils.dateparse import parse_datetime
+
+        qs = ServiceOrder.objects.filter(is_active=True).select_related("consultant")
+
+        since_str = request.query_params.get("since")
+        if since_str:
+            since_dt = parse_datetime(since_str)
+            if since_dt:
+                qs = qs.filter(updated_at__gte=since_dt)
+
+        serializer = ServiceOrderSyncSerializer(qs, many=True)
+
+        return Response(
+            {
+                "changes": {
+                    "service_orders": {
+                        "created": serializer.data,
+                        "updated": [],
+                        "deleted": [],
+                    }
+                },
+                "timestamp": int(timezone.now().timestamp() * 1000),
+            }
+        )
 
     @extend_schema(summary="Ver histórico detalhado da OS", responses=ServiceOrderActivityLogSerializer(many=True))
     @action(detail=True, methods=["get", "post"], url_path="history")
