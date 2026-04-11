@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -164,7 +164,7 @@ function getInitials(name: string | null | undefined): string {
   return name
     .split(" ")
     .slice(0, 2)
-    .map((n) => n[0])
+    .map((n) => n[0] ?? "")
     .join("")
     .toUpperCase();
 }
@@ -200,6 +200,7 @@ export function Sidebar() {
   const router = useRouter();
   const { data: session } = useSession();
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const expandTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: overdueData } = useOverdueOrders();
   const overdueCount = (overdueData ?? []).filter(
@@ -229,7 +230,7 @@ export function Sidebar() {
     (id: string) => {
       if (collapsed) {
         setCollapsed(false);
-        setTimeout(() => {
+        expandTimeoutRef.current = setTimeout(() => {
           setExpandedGroups((prev) =>
             prev.includes(id) ? prev : [...prev, id]
           );
@@ -242,6 +243,12 @@ export function Sidebar() {
     },
     [collapsed]
   );
+
+  useEffect(() => {
+    return () => {
+      if (expandTimeoutRef.current) clearTimeout(expandTimeoutRef.current);
+    };
+  }, []);
 
   const handleNav = useCallback(
     (href: string) => {
