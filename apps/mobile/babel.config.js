@@ -21,6 +21,12 @@ module.exports = function (api) {
   api.cache(true);
   return {
     presets: ['babel-preset-expo'],
-    plugins: [importMetaPlugin],
+    plugins: [
+      importMetaPlugin,
+      // WatermelonDB decorators (@field, @text, @relation, etc.)
+      // @nozbe/watermelondb@0.28+ nao inclui mais o babel/plugin proprio —
+      // usar @babel/plugin-proposal-decorators em modo legacy (Stage 1)
+      ['@babel/plugin-proposal-decorators', { version: 'legacy' }],
+    ],
   };
 };

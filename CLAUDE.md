@@ -390,6 +390,362 @@ src/middleware.ts                      ← proteção de rotas /admin e /configu
 
 ---
 
+## 📡 Módulo: Paddock Inbox
+
+Módulo SaaS omnichannel reutilizável desenvolvido pela Paddock Solutions.
+Backend multi-tenant central. Dois pacotes frontend consumíveis por qualquer projeto.
+**Todo desenvolvimento e deploy é da Paddock — sem devs externos.**
+
+### Visão geral
+
+```
+Backend central:  services/inbox-api/        ← Django 5, único para todos os clientes
+Pacote web:       packages/inbox-web/         ← @paddock/inbox-web (React/Next.js)
+Pacote mobile:    packages/inbox-native/      ← @paddock/inbox-native (React Native/Expo)
+Contrato shared:  packages/inbox-core/        ← tipos TS + useInbox() hook (FONTE DA VERDADE)
+```
+
+Canais suportados: **WhatsApp** (Meta WABA oficial) · **Instagram DM** · **Instagram Comentários** · **Facebook Messenger**
+
+Clientes ativos: DS Car ERP · Paddock Agências · futuros clientes Paddock
+
+### Estrutura de pastas
+
+```
+services/inbox-api/
+└── inbox/
+    ├── models/
+    │   ├── contact.py          # Contact unificado por tenant
+    │   ├── conversation.py     # Thread por contato+canal+tenant
+    │   ├── message.py          # Mensagem individual com source e status
+    │   └── channel.py          # Configuração de canal por tenant (credentials encrypted)
+    ├── connectors/
+    │   ├── base.py             # Classe abstrata — todos os connectors herdam
+    │   ├── whatsapp.py         # Evolution API + WABA
+    │   ├── instagram.py        # Meta Graph API — DM e comentários
+    │   └── facebook.py         # Meta Graph API — Messenger
+    ├── webhooks/
+    │   ├── receiver.py         # Endpoint único — valida assinatura + enfileira
+    │   └── normalizer.py       # Converte payload de qualquer canal para Message padrão
+    ├── consumers/
+    │   └── inbox_consumer.py   # Django Channels WebSocket — push em tempo real
+    ├── tasks/
+    │   └── message_tasks.py    # Celery: processar e entregar mensagens
+    ├── onboarding/
+    │   └── embedded_signup.py  # Fluxo OAuth Meta por tenant
+    └── urls.py
+
+packages/inbox-core/src/
+    ├── types.ts                # InboxMessage, InboxConversation, ChannelType, InboxEvent
+    └── useInbox.ts             # hook principal — única interface para os pacotes frontend
+
+packages/inbox-web/src/
+    ├── components/
+    │   ├── InboxPanel.tsx      # Componente raiz exportado — recebe token + wsUrl
+    │   ├── ConversationList.tsx
+    │   ├── ConversationView.tsx
+    │   ├── MessageComposer.tsx
+    │   └── ChannelBadge.tsx
+    └── hooks/useInbox.ts       # re-exporta de inbox-core — nunca reimplementar
+
+packages/inbox-native/src/
+    ├── components/             # Mesma estrutura do inbox-web, adaptada para RN
+    └── hooks/useInbox.ts       # re-exporta de inbox-core
+```
+
+### Modelos Django
+
+```python
+# contact.py
+class Contact(models.Model):
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20, null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
+    instagram_id = models.CharField(max_length=100, null=True, blank=True)
+    facebook_id = models.CharField(max_length=100, null=True, blank=True)
+    whatsapp_id = models.CharField(max_length=100, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        unique_together = [['tenant', 'phone'], ['tenant', 'instagram_id']]
+
+# conversation.py
+class Conversation(models.Model):
+    CHANNEL_TYPES = [('whatsapp','WhatsApp'),('instagram_dm','Instagram DM'),
+                     ('instagram_comment','Instagram Comentário'),('facebook','Facebook')]
+    STATUS = [('open','Aberta'),('resolved','Resolvida'),('pending','Pendente')]
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
+    channel_type = models.CharField(max_length=30, choices=CHANNEL_TYPES)
+    status = models.CharField(max_length=20, choices=STATUS, default='open')
+    last_message_at = models.DateTimeField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+# message.py
+class Message(models.Model):
+    DIRECTIONS = [('in','Recebida'),('out','Enviada')]
+    STATUSES = [('sent','Enviada'),('delivered','Entregue'),('read','Lida'),('failed','Falhou')]
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
+    direction = models.CharField(max_length=3, choices=DIRECTIONS)
+    source = models.CharField(max_length=30)  # whatsapp | instagram_dm | instagram_comment | facebook
+    content = models.TextField(blank=True)
+    media_url = models.URLField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUSES, default='sent')
+    external_id = models.CharField(max_length=255, unique=True)  # ID da plataforma
+    created_at = models.DateTimeField(auto_now_add=True)
+
+# channel.py
+class Channel(models.Model):
+    TYPES = [('whatsapp','WhatsApp'),('instagram','Instagram'),('facebook','Facebook')]
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
+    type = models.CharField(max_length=20, choices=TYPES)
+    credentials = models.JSONField()  # encrypted com django-cryptography
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+```
+
+### Endpoints REST
+
+```
+POST   /webhooks/meta/                      # Eventos Meta (Instagram + Facebook)
+POST   /webhooks/whatsapp/                  # Eventos WhatsApp (Evolution API)
+GET    /webhooks/meta/                      # Verificação de webhook Meta
+
+GET    /api/conversations/                  # Lista conversas do tenant (paginado)
+GET    /api/conversations/{id}/messages/    # Mensagens de uma conversa
+POST   /api/conversations/{id}/messages/    # Envia mensagem de volta ao canal
+PATCH  /api/conversations/{id}/             # Atualiza status (open/resolved/pending)
+
+GET    /api/channels/                       # Canais configurados do tenant
+POST   /api/channels/                       # Cria canal (pós Embedded Signup)
+DELETE /api/channels/{id}/                  # Desconecta canal
+
+POST   /api/onboarding/meta/start/          # Inicia Embedded Signup — retorna OAuth URL
+POST   /api/onboarding/meta/callback/       # Recebe code OAuth, troca por token, salva
+```
+
+### Contrato WebSocket (inbox-core — fonte da verdade)
+
+```typescript
+// packages/inbox-core/src/types.ts
+export type ChannelType = 'whatsapp' | 'instagram_dm' | 'instagram_comment' | 'facebook'
+
+export interface InboxMessage {
+  id: string; conversationId: string; direction: 'in' | 'out'
+  source: ChannelType; content: string; mediaUrl?: string
+  status: 'sent' | 'delivered' | 'read' | 'failed'; createdAt: string
+}
+
+export interface InboxConversation {
+  id: string; contact: { id: string; name: string; phone?: string }
+  channelType: ChannelType; status: 'open' | 'resolved' | 'pending'
+  lastMessageAt: string; unreadCount: number
+}
+
+export type InboxEvent =
+  | { type: 'conversation.new';      payload: InboxConversation }
+  | { type: 'message.new';           payload: InboxMessage }
+  | { type: 'message.status';        payload: { id: string; status: string } }
+  | { type: 'conversation.assigned'; payload: { id: string; assignedTo: string } }
+
+// packages/inbox-core/src/useInbox.ts
+export function useInbox(token: string, wsUrl?: string): {
+  conversations: InboxConversation[]
+  messages: (conversationId: string) => InboxMessage[]
+  sendMessage: (conversationId: string, content: string) => Promise<void>
+  isConnected: boolean
+}
+```
+
+### Como usar nos projetos cliente
+
+```tsx
+// Qualquer app Next.js da Paddock
+import { InboxPanel } from '@paddock/inbox-web'
+
+<InboxPanel
+  token={clientToken}     // API token do tenant — vem do backend
+  wsUrl={process.env.NEXT_PUBLIC_INBOX_WS_URL}  // opcional
+  onConversationSelect={(id) => router.push(`/inbox/${id}`)}
+/>
+```
+
+### Regras invioláveis do módulo
+
+```
+1. inbox-core é a FONTE DA VERDADE para tipos e eventos.
+   Nenhum pacote redefine tipos que já existem lá.
+
+2. Frontend NUNCA abre WebSocket diretamente.
+   Sempre via useInbox() do inbox-core.
+
+3. Agente Integrações NUNCA altera modelos Django.
+   Apenas consome via ORM nos connectors/.
+
+4. Channel.credentials NUNCA vai para o frontend.
+   Apenas o backend acessa credenciais de canal.
+
+5. Webhook receiver SEMPRE valida assinatura antes de processar.
+   Payloads sem assinatura válida: 403, sem enfileirar.
+
+6. Novos canais: criar connector + registrar no receiver + adicionar tipo no ChannelType.
+   PR revisado antes de merge.
+```
+
+### Infra do módulo (Coolify · mesmo VPS do ERP)
+
+```
+Serviços Docker via Coolify:
+  inbox-api        ← Django ASGI (Daphne) — API REST + WebSocket
+  inbox-worker     ← Celery worker (mesma imagem Django)
+  inbox-redis      ← Redis 7 (filas Celery + Django Channels layer)
+
+Externos:
+  Neon DB          ← PostgreSQL gerenciado (database: paddock_inbox)
+  Cloudflare R2    ← Mídia (bucket: paddock-inbox-media)
+  Cloudflare CDN   ← Proxy SSL + rate limit em /webhooks/*
+
+Domínio:  api.paddockinbox.com.br
+WebSocket: wss://api.paddockinbox.com.br/ws/inbox/
+```
+
+### Onboarding de novo cliente (feito pela Paddock)
+
+```
+1. Criar tenant no banco (Agente Infra)
+2. Gerar API token para o tenant
+3. Cliente faz Embedded Signup no painel (autoriza Meta — similar a "Entrar com Google")
+4. Dev Paddock instala @paddock/inbox-web no projeto do cliente
+5. Adiciona <InboxPanel token={token} /> no layout
+```
+
+### Variáveis de ambiente do módulo
+
+```bash
+# Meta (Instagram + Facebook + WhatsApp WABA)
+META_APP_ID=
+META_APP_SECRET=
+META_WEBHOOK_VERIFY_TOKEN=        # string aleatória — configurar no painel Meta
+META_ACCESS_TOKEN=                 # token de sistema do app Meta
+WABA_ID=                           # WhatsApp Business Account ID
+WABA_PHONE_NUMBER_ID=              # ID do número WABA
+
+# Evolution API (se usado como camada WABA)
+EVOLUTION_API_URL=https://evolution.paddock.solutions
+EVOLUTION_API_KEY=
+
+# Banco e cache (inbox-api)
+DATABASE_URL=postgresql://...@ep-xxx.neon.tech/paddock_inbox?sslmode=require
+REDIS_URL=redis://inbox-redis:6379/0
+CELERY_BROKER_URL=redis://inbox-redis:6379/1
+DJANGO_CHANNELS_LAYER_URL=redis://inbox-redis:6379/2
+
+# Storage de mídia
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET_NAME=paddock-inbox-media
+R2_PUBLIC_URL=https://media.paddockinbox.com.br
+
+# Segurança
+FIELD_ENCRYPTION_KEY=              # Fernet key — para Channel.credentials
+```
+
+### Agentes IA do módulo (system prompts completos)
+
+Cada agente tem escopo fechado. Handoff só ocorre quando a etapa anterior está completa e documentada.
+
+**Ordem de execução:**
+1. Agente Infra — serviços rodando + .env.example entregue
+2. Agente Backend — modelos + migrations + endpoints documentados
+3. Agente Integrações — connectors WhatsApp + Meta + Embedded Signup
+4. Agente Backend — WebSocket consumer + eventos inbox-core publicados
+5. Agente Frontend Web — InboxPanel funcional consumindo inbox-core
+6. Agente Mobile — paridade funcional em React Native
+
+#### Agente PM
+
+```
+Você é o Agente PM do projeto Paddock Inbox (Paddock Solutions).
+PAPEL: coordenar agentes, definir prioridades, validar escapes de escopo, tomar decisões de produto.
+NUNCA escreva código. Apenas especifique, revise e coordene.
+Handoff só ocorre quando a etapa anterior está completa e documentada.
+Qualquer mudança de escopo passa pelo PM antes de ser implementada.
+```
+
+#### Agente Backend
+
+```
+Você é o Agente Backend do Paddock Inbox (Paddock Solutions).
+STACK: Django 5 + DRF + Django Channels + Celery + Redis + PostgreSQL (Neon DB)
+ESCOPO: services/inbox-api/inbox/ — models, serializers, views, consumers, tasks, webhooks/
+RESPONSABILIDADES:
+- Implementar e manter modelos, migrations, serializers, viewsets, consumers, tasks
+- Manter inbox-core atualizado com tipos TypeScript e contrato de eventos
+- Documentar todos os endpoints no README antes de handoff para Frontend
+NÃO FAZER: não toque em connectors/ — escopo do Agente Integrações
+CRITÉRIO DE CONCLUSÃO: migrations rodando + testes passando + endpoints documentados + eventos inbox-core publicados
+```
+
+#### Agente Integrações
+
+```
+Você é o Agente Integrações do Paddock Inbox (Paddock Solutions).
+STACK: Python + httpx + Meta Graph API v21 + Evolution API + OAuth 2.0
+ESCOPO: inbox/connectors/ · inbox/webhooks/ · inbox/onboarding/
+RESPONSABILIDADES:
+- Connectors de canal (whatsapp, instagram, facebook)
+- Webhook receiver: recebe, valida assinatura HMAC, normaliza, enfileira no Celery
+- Embedded Signup: fluxo OAuth Meta completo por tenant
+- Envio de mensagens de volta (reply) para cada canal
+NÃO FAZER: não altere modelos Django. Não toque no WebSocket consumer.
+CONTRATO: normalizer SEMPRE retorna {source, external_id, direction, content, media_url, contact_data}
+REGRA: credentials acessados APENAS via Channel.credentials (ORM) — nunca hardcode
+```
+
+#### Agente Frontend Web
+
+```
+Você é o Agente Frontend Web do Paddock Inbox (Paddock Solutions).
+STACK: Next.js 15 + TypeScript strict + React + Tailwind CSS + @paddock/inbox-core
+ESCOPO: packages/inbox-web/
+RESPONSABILIDADES: InboxPanel, ConversationList, ConversationView, MessageComposer, ChannelBadge
+CONTRATO DA PROP PRINCIPAL:
+  <InboxPanel token={string} wsUrl?={string} onConversationSelect?={fn} />
+NÃO FAZER: não reimplemente WebSocket — use useInbox() do inbox-core. Sem dependências pesadas sem aprovação PM.
+PRÉ-REQUISITO: inbox-core publicado e documentado antes de iniciar.
+```
+
+#### Agente Mobile
+
+```
+Você é o Agente Mobile do Paddock Inbox (Paddock Solutions).
+STACK: React Native + Expo SDK 52 + TypeScript + @paddock/inbox-core
+ESCOPO: packages/inbox-native/
+RESPONSABILIDADES: paridade funcional com inbox-web, adaptada para RN
+DIFERENÇAS OBRIGATÓRIAS: FlatList para listas, KeyboardAvoidingView no composer,
+  expo-image para cache, swipe para arquivar, TouchableOpacity sem hover states,
+  Expo Notifications para push em mensagem nova.
+PRÉ-REQUISITO: inbox-web funcional antes de iniciar.
+```
+
+#### Agente Infra
+
+```
+Você é o Agente Infra do Paddock Inbox (Paddock Solutions).
+STACK: Coolify + Hostinger KVM 4 (Ubuntu 24.04) + Neon DB + Redis + Cloudflare + Docker
+SERVIÇOS: inbox-api (Django ASGI/Daphne) · inbox-worker (Celery) · inbox-redis · Neon DB · Cloudflare
+RESPONSABILIDADES:
+- Provisionar todos os serviços antes de qualquer agente iniciar dev
+- Configurar health checks e restart policy no Coolify
+- Cloudflare: SSL + rate limit em /webhooks/*
+- Entregar .env.example completo para o Backend antes do handoff
+NÃO FAZER: não escreva código da aplicação — apenas infra e deploy.
+CRITÉRIO DE CONCLUSÃO: todos os serviços healthy no Coolify + WebSocket acessível em wss:// + webhook endpoint em https:// com SSL válido
+```
+
+---
+
 ## 🔌 Variáveis de Ambiente
 
 | Variável | Serviço |
