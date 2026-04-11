@@ -164,7 +164,7 @@ const config: Config = {
       // Inter: sans-serif principal — legibilidade em formulários e tabelas
       // Rajdhani: condensada técnica — usada em placas veiculares, badges de OS e números
       fontFamily: {
-        sans:  ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans:  ["var(--font-montserrat)", "ui-sans-serif", "system-ui", "sans-serif"],
         plate: ["var(--font-rajdhani)", "ui-sans-serif", "system-ui", "sans-serif"],
         mono:  ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
@@ -236,8 +236,8 @@ const config: Config = {
           "100%": { transform: "translateX(0)",     opacity: "1" },
         },
         "fade-in": {
-          "0%":   { opacity: "0" },
-          "100%": { opacity: "1" },
+          from: { opacity: "0", transform: "translateX(-8px)" },
+          to:   { opacity: "1", transform: "translateX(0)" },
         },
         "pulse-red": {
           "0%, 100%": { opacity: "1" },
