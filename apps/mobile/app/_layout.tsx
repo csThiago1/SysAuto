@@ -2,10 +2,8 @@ import React, { useEffect } from 'react';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { DatabaseProvider } from '@nozbe/watermelondb/DatabaseProvider';
 import { useAuthStore } from '@/stores/auth.store';
 import { OfflineBanner } from '@/components/common/OfflineBanner';
-import { database } from '@/db';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,15 +34,13 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout() {
   return (
-    <DatabaseProvider database={database}>
-      <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthGuard>
-            <OfflineBanner />
-            <Slot />
-          </AuthGuard>
-        </QueryClientProvider>
-      </SafeAreaProvider>
-    </DatabaseProvider>
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthGuard>
+          <OfflineBanner />
+          <Slot />
+        </AuthGuard>
+      </QueryClientProvider>
+    </SafeAreaProvider>
   );
 }
