@@ -7,8 +7,9 @@
 /* ─── CSS Custom Properties — DS Car Design System ─────────────────────────── */
 :root {
   /* Fontes */
-  --font-inter:    'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-rajdhani: 'Rajdhani', ui-sans-serif, system-ui, sans-serif;
+  --font-inter:       'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-rajdhani:    'Rajdhani', ui-sans-serif, system-ui, sans-serif;
+  --font-montserrat:  'Montserrat', ui-sans-serif, system-ui, sans-serif;
 
   /* shadcn/ui tokens mapeados para DS Car */
   --background:          0 0% 98%;         /* neutral-50 */
@@ -94,7 +95,7 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -139,7 +140,10 @@
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--border));
-    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15);
   }
 }
