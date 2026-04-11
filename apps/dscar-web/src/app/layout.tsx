@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { Inter, Rajdhani } from "next/font/google";
+import { Montserrat, Rajdhani } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 
 // ─── Fontes DS Car ────────────────────────────────────────────────────────────
-const inter = Inter({
+const montserrat = Montserrat({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-montserrat",
   display: "swap",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const rajdhani = Rajdhani({
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     template: "%s · DS Car",
   },
   description: "Sistema de gestão DS Car Centro Automotivo",
-  robots: { index: false, follow: false }, // sistema interno
+  robots: { index: false, follow: false },
 };
 
 // ─── Layout raiz ──────────────────────────────────────────────────────────────
@@ -37,7 +37,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${inter.variable} ${rajdhani.variable}`}
+      className={`${montserrat.variable} ${rajdhani.variable}`}
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-background font-sans antialiased">
