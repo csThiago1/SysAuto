@@ -1,3 +1,6 @@
+# ─── Worktrees ──────────────────────────────────────────────────────────────
+.worktrees/
+
 # ─── Node.js ────────────────────────────────────────────────────────────────
 node_modules/
 .next/
@@ -72,3 +75,4 @@ docs/*.xlsx
 docs/Relatorio*.txt
 data/seeds/*.csv
 next
+.expo/
