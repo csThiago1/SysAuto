@@ -282,7 +282,7 @@ export function Sidebar() {
     <aside
       ref={sidebarRef}
       className={[
-        "relative flex flex-col h-screen bg-[#0f0f0f] border-r border-white/[0.06]",
+        "relative flex flex-col h-screen bg-[#0f0f0f] shadow-[4px_0_16px_rgba(0,0,0,0.18)]",
         "transition-[width] duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
         "flex-shrink-0 overflow-hidden",
         collapsed ? "w-[72px]" : "w-[260px]",
@@ -326,6 +326,12 @@ export function Sidebar() {
         )}
       </div>
 
+      {collapsed && (
+        <div className="flex justify-center py-1.5">
+          <NotificationBell />
+        </div>
+      )}
+
       {/* ── Search ── */}
       <div
         className={[
@@ -352,14 +358,13 @@ export function Sidebar() {
         {NAV_SECTIONS.map((section) => (
           <div key={section.label}>
             {/* Section label */}
-            <div
-              className={[
-                "text-[10px] font-semibold text-white/25 tracking-[1.5px] uppercase",
-                collapsed ? "py-4 text-center" : "px-5 pt-4 pb-1.5",
-              ].join(" ")}
-            >
-              {collapsed ? "•" : section.label}
-            </div>
+            {collapsed ? (
+              <hr className="border-white/[0.08] mx-3 my-2" />
+            ) : (
+              <div className="text-[10px] font-semibold text-white/25 tracking-[1.5px] uppercase px-5 pt-4 pb-1.5">
+                {section.label}
+              </div>
+            )}
 
             {section.items.map((item) => {
               const active = isGroupActive(pathname, item);
@@ -488,7 +493,7 @@ export function Sidebar() {
             collapsed ? "p-2 justify-center" : "p-2 gap-2.5",
           ].join(" ")}
         >
-          <div className="w-[34px] h-[34px] rounded-lg bg-gradient-to-br from-[#ea0e03] to-[#ffe000] flex items-center justify-center font-bold text-[13px] text-white flex-shrink-0">
+          <div className="w-[34px] h-[34px] rounded-lg bg-gradient-to-br from-[#ea0e03] to-[#9a0802] flex items-center justify-center font-bold text-[13px] text-white flex-shrink-0">
             {userInitials}
           </div>
           {!collapsed && (
