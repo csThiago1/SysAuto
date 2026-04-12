@@ -5,15 +5,15 @@ export default function OSLayout() {
   return (
     <Stack
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         headerStyle: { backgroundColor: '#ffffff' },
         headerTintColor: '#e31b1b',
         headerTitleStyle: { fontWeight: '600', color: '#111111' },
         headerShadowVisible: false,
       }}
     >
-      <Stack.Screen name="index" options={{ title: 'Ordens de Servico' }} />
-      <Stack.Screen name="[id]" options={{ title: 'Detalhes da OS' }} />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="[id]" options={{ headerShown: true, title: 'Detalhes da OS' }} />
     </Stack>
   );
 }
