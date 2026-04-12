@@ -173,45 +173,45 @@ interface OSHeaderProps {
 }
 
 function OSHeader({ paddingTop, firstName, stats }: OSHeaderProps): React.JSX.Element {
+  const hasChips = stats.open > 0 || stats.ready > 0 || stats.overdue > 0;
   return (
     <LinearGradient
       colors={['#1c1c1e', '#2a0e0e']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={[styles.header, { paddingTop: paddingTop + 4 }]}
+      style={[styles.header, { paddingTop: paddingTop + 2 }]}
     >
-      {/* Top row: logo + greeting */}
       <View style={styles.headerRow}>
         <Image source={LOGO} style={styles.headerLogo} resizeMode="contain" />
         <View style={styles.headerRight}>
           <Text style={styles.headerGreeting}>{getGreeting()}</Text>
           <Text style={styles.headerName}>{firstName}</Text>
+          {hasChips && (
+            <View style={styles.statChipsRow}>
+              {stats.open > 0 && (
+                <View style={[styles.statChip, styles.statChipOpen]}>
+                  <Text style={[styles.statChipText, styles.statChipOpenText]}>
+                    {stats.open} Abertas
+                  </Text>
+                </View>
+              )}
+              {stats.ready > 0 && (
+                <View style={[styles.statChip, styles.statChipReady]}>
+                  <Text style={[styles.statChipText, styles.statChipReadyText]}>
+                    {stats.ready} Prontas
+                  </Text>
+                </View>
+              )}
+              {stats.overdue > 0 && (
+                <View style={[styles.statChip, styles.statChipOverdue]}>
+                  <Text style={[styles.statChipText, styles.statChipOverdueText]}>
+                    {stats.overdue} Atrasadas
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
         </View>
-      </View>
-
-      {/* Stat chips */}
-      <View style={styles.statChipsRow}>
-        {stats.open > 0 && (
-          <View style={[styles.statChip, styles.statChipOpen]}>
-            <Text style={[styles.statChipText, styles.statChipOpenText]}>
-              {stats.open} Abertas
-            </Text>
-          </View>
-        )}
-        {stats.ready > 0 && (
-          <View style={[styles.statChip, styles.statChipReady]}>
-            <Text style={[styles.statChipText, styles.statChipReadyText]}>
-              {stats.ready} Prontas
-            </Text>
-          </View>
-        )}
-        {stats.overdue > 0 && (
-          <View style={[styles.statChip, styles.statChipOverdue]}>
-            <Text style={[styles.statChipText, styles.statChipOverdueText]}>
-              {stats.overdue} Atrasadas
-            </Text>
-          </View>
-        )}
       </View>
     </LinearGradient>
   );
@@ -385,9 +385,8 @@ const styles = StyleSheet.create({
 
   // OS Header
   header: {
-    paddingBottom: 8,
+    paddingBottom: 10,
     paddingHorizontal: 14,
-    gap: 4,
   },
   headerRow: {
     flexDirection: 'row',
@@ -395,27 +394,28 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   headerLogo: {
-    width: 160,
-    height: 52,
+    width: 200,
+    height: 80,
   },
   headerRight: {
     alignItems: 'flex-end',
-    gap: 1,
+    gap: 3,
   },
   headerGreeting: {
-    fontSize: 12,
+    fontSize: 13,
     color: 'rgba(255,255,255,0.5)',
     fontWeight: '400' as const,
   },
   headerName: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '700' as const,
     color: '#ffffff',
   },
   statChipsRow: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 4,
     flexWrap: 'wrap',
+    justifyContent: 'flex-end',
   },
   statChip: {
     paddingHorizontal: 10,
