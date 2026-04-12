@@ -16,6 +16,11 @@ const SECTION_TITLE = "text-[11px] font-semibold uppercase tracking-widest text-
 const LABEL = "block text-xs font-medium text-gray-600 mb-1"
 const SELECT_NATIVE = "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 
+const CUSTOMER_TYPE_LABELS: Record<string, string> = {
+  private: "Particular",
+  insurer: "Seguradora",
+}
+
 interface OpeningInfoSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
   /** Nome do consultor salvo na OS — usado como fallback enquanto a lista carrega */
@@ -44,19 +49,20 @@ export function OpeningInfoSection({ form, consultantName }: OpeningInfoSectionP
             control={control}
             render={({ field }) => {
               const selectedConsultant = consultants.find((c) => c.id === field.value)
-              // Fallback label: use consultantName from the OS when the list is still
-              // loading or the UUID is not present in the HR staff list.
-              const placeholderLabel =
-                field.value && !selectedConsultant
-                  ? (consultantName ?? "Consultor não encontrado")
-                  : "Selecionar consultor..."
+              // Resolve display text explicitly to avoid shadcn SelectValue
+              // rendering the raw UUID string via the portal.
+              const displayLabel = field.value
+                ? (selectedConsultant?.name ?? consultantName ?? "Consultor não encontrado")
+                : undefined
               return (
                 <Select
                   value={field.value ?? ""}
                   onValueChange={(val) => field.onChange(val === "__none__" ? "" : val)}
                 >
                   <SelectTrigger className="h-9" disabled={loadingConsultants}>
-                    <SelectValue placeholder={placeholderLabel} />
+                    <SelectValue placeholder="Selecionar consultor...">
+                      {displayLabel}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">
@@ -94,7 +100,9 @@ export function OpeningInfoSection({ form, consultantName }: OpeningInfoSectionP
                 onValueChange={field.onChange}
               >
                 <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Selecionar..." />
+                  <SelectValue placeholder="Selecionar...">
+                    {field.value ? (CUSTOMER_TYPE_LABELS[field.value] ?? field.value) : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="insurer">Seguradora</SelectItem>
