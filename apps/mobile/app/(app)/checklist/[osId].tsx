@@ -167,7 +167,7 @@ export default function ChecklistDetailScreen(): React.ReactElement {
         >
           <Ionicons name="chevron-back" size={22} color="#141414" />
           <Text variant="label" style={styles.backLabel}>
-            Voltar
+            {order != null ? `OS #${order.number}` : 'OS'}
           </Text>
         </TouchableOpacity>
 

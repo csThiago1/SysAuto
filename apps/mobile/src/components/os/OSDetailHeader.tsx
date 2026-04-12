@@ -34,7 +34,7 @@ export function OSDetailHeader({
       <View style={styles.topBar}>
         <TouchableOpacity onPress={onBack} style={styles.backButton} activeOpacity={0.7}>
           <Text variant="body" color="#e31b1b">
-            {'← Voltar'}
+            {'← Ordens de Serviço'}
           </Text>
         </TouchableOpacity>
         <Text variant="label" color="#374151">

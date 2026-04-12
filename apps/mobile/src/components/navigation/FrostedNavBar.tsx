@@ -2,10 +2,12 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  Platform,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { BlurView } from 'expo-blur';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -234,33 +236,55 @@ export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.J
     return <View style={styles.hiddenPlaceholder} />;
   }
 
+  // Two-layer approach: outer View provides shadow (iOS needs no overflow:hidden for shadows),
+  // inner BlurView clips content + border and provides the actual frosted glass effect on iOS.
+  const tabContent = (
+    <>
+      {/* Sliding bubble — sits behind tab icons via zIndex */}
+      {containerWidth > 0 && (
+        <Animated.View style={[styles.bubble, bubbleStyle]} />
+      )}
+
+      {visibleRoutes.map((route) => {
+        const config = TAB_CONFIG.find((c) => c.routeName === route.name);
+        if (!config) return null;
+        const isActive = state.routes[state.index]?.name === route.name;
+        return (
+          <TabItem
+            key={route.key}
+            config={config}
+            isActive={isActive}
+            onPress={() => handleTabPress(route.name, route.key, isActive)}
+          />
+        );
+      })}
+    </>
+  );
+
   return (
     <View
       style={[styles.container, { bottom: Math.max(insets.bottom, 16) + 8 }]}
       pointerEvents="box-none"
     >
-      <View
-        style={styles.frostedBar}
-        onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
-      >
-        {/* Sliding bubble — sits behind tab icons via zIndex */}
-        {containerWidth > 0 && (
-          <Animated.View style={[styles.bubble, bubbleStyle]} />
+      {/* Shadow wrapper — outer View so iOS shadow works without overflow:hidden */}
+      <View style={styles.shadowWrapper}>
+        {Platform.OS === 'ios' ? (
+          <BlurView
+            intensity={72}
+            tint="light"
+            style={styles.frostedBar}
+            onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+          >
+            {tabContent}
+          </BlurView>
+        ) : (
+          <View
+            style={[styles.frostedBar, styles.frostedBarAndroid]}
+            onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+          >
+            {tabContent}
+          </View>
         )}
-
-        {visibleRoutes.map((route) => {
-          const config = TAB_CONFIG.find((c) => c.routeName === route.name);
-          if (!config) return null;
-          const isActive = state.routes[state.index]?.name === route.name;
-          return (
-            <TabItem
-              key={route.key}
-              config={config}
-              isActive={isActive}
-              onPress={() => handleTabPress(route.name, route.key, isActive)}
-            />
-          );
-        })}
       </View>
     </View>
   );
@@ -275,22 +299,31 @@ const styles = StyleSheet.create({
     right: 12,
     alignItems: 'center',
   },
+  shadowWrapper: {
+    // Outer shadow layer — must NOT have overflow:hidden so iOS shadows render
+    width: '100%',
+    borderRadius: 32,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 32,
+    elevation: 12,
+  },
   frostedBar: {
+    // Inner layer — clips content, border, and blur effect
     flexDirection: 'row',
-    // Fix 3: background alpha 0.72
-    backgroundColor: 'rgba(255, 255, 255, 0.72)',
     borderRadius: 32,
     paddingVertical: 6,
     alignItems: 'center',
     width: '100%',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.6)',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 32,
-    elevation: 12,
-    // Fix 5: removed Platform.select Android border override
+    overflow: 'hidden', // required for BlurView + borderRadius
+  },
+  // Android: no blur available, use semi-transparent white fallback
+  frostedBarAndroid: {
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    borderColor: 'rgba(0, 0, 0, 0.08)',
   },
   // Sliding red bubble — absolutely positioned inside frostedBar
   bubble: {
