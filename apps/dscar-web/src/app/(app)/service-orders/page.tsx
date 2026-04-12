@@ -2,13 +2,13 @@
 
 import React, { useState } from "react"
 import Link from "next/link"
-import { Search, FilterX } from "lucide-react"
+import { Search, FilterX, Plus } from "lucide-react"
 
 import { useServiceOrders, useDebounce, usePersons } from "@/hooks"
-import { 
-  Button, 
-  Input, 
-  TableSkeleton, 
+import {
+  Button,
+  Input,
+  TableSkeleton,
   EmptyState,
   Select,
   SelectContent,
@@ -17,8 +17,10 @@ import {
   SelectValue
 } from "@/components/ui"
 import { ServiceOrderTable } from "./_components/ServiceOrderTable"
+import { NewOSDrawer } from "./_components/NewOSDrawer"
 
 export default function ServiceOrdersPage() {
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState<string>("ALL")
   const [customerType, setCustomerType] = useState<string>("ALL")
@@ -49,6 +51,8 @@ export default function ServiceOrdersPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
+      <NewOSDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Ordens de Serviço</h1>
@@ -61,12 +65,14 @@ export default function ServiceOrdersPage() {
           >
             Ver Kanban
           </Link>
-          <Link
-            href="/service-orders/new"
-            className="rounded-md bg-[#ea0e03] px-4 py-2 text-sm font-medium text-white hover:bg-red-700 shadow-sm"
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            className="flex items-center gap-1.5 rounded-md bg-[#ea0e03] px-4 py-2 text-sm font-medium text-white hover:bg-red-700 shadow-sm"
           >
+            <Plus className="h-4 w-4" />
             Nova OS
-          </Link>
+          </button>
         </div>
       </div>
 

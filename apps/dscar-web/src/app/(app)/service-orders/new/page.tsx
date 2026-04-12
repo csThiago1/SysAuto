@@ -1,17 +1,9 @@
-import { NewOSForm } from "./_components/NewOSForm"
+import { redirect } from "next/navigation"
 
+// OS creation is now handled by NewOSDrawer (Sheet) on the list and kanban pages.
+// Accessing /service-orders/new directly redirects to the list where the drawer can be opened.
 export default function NewServiceOrderPage() {
-  return (
-    <div className="mx-auto max-w-2xl px-6 py-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-neutral-900">Nova Ordem de Serviço</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Preencha os dados essenciais — os demais campos ficam disponíveis após a criação.
-        </p>
-      </div>
-      <NewOSForm />
-    </div>
-  )
+  redirect("/service-orders")
 }
 
 export const metadata = { title: "Nova OS — DS Car" }

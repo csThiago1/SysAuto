@@ -8,8 +8,10 @@ import { useServiceOrders } from "@/hooks/useServiceOrders";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { cn } from "@/lib/utils";
+import { NewOSDrawer } from "../_components/NewOSDrawer";
 
 export default function KanbanPage(): React.ReactElement {
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [showDelivered, setShowDelivered] = useState(false);
 
   // Sem entregues: exclui delivered/cancelled do backend — reduz payload ~70%
@@ -25,6 +27,8 @@ export default function KanbanPage(): React.ReactElement {
   return (
     <ErrorBoundary>
     <div className="flex flex-col h-full gap-4">
+      <NewOSDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
+
       {/* Header */}
       <div className="flex items-center justify-between shrink-0">
         <div>
@@ -60,11 +64,9 @@ export default function KanbanPage(): React.ReactElement {
               Ver Lista
             </Link>
           </Button>
-          <Button asChild>
-            <Link href="/service-orders/new">
-              <Plus className="h-4 w-4" />
-              Nova OS
-            </Link>
+          <Button onClick={() => setDrawerOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Nova OS
           </Button>
         </div>
       </div>
