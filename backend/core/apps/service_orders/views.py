@@ -559,6 +559,8 @@ class ServiceOrderViewSet(
             file = serializer.validated_data["file"]
             folder = serializer.validated_data["folder"]
             caption = serializer.validated_data.get("caption", "")
+            slot = serializer.validated_data.get("slot", "")
+            checklist_type = serializer.validated_data.get("checklist_type", "")
 
             from django.core.files.storage import default_storage
             import uuid as _uuid
@@ -571,6 +573,8 @@ class ServiceOrderViewSet(
                 service_order=service_order,
                 folder=folder,
                 caption=caption,
+                slot=slot,
+                checklist_type=checklist_type,
                 s3_key=saved_path,
                 uploaded_by_id=request.user.id,
             )

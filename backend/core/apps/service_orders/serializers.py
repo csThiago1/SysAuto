@@ -55,7 +55,19 @@ class ServiceOrderPhotoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ServiceOrderPhoto
-        fields = ["id", "folder", "folder_display", "caption", "original_stage", "s3_key", "url", "uploaded_at", "is_active"]
+        fields = [
+            "id",
+            "folder",
+            "folder_display",
+            "slot",
+            "checklist_type",
+            "caption",
+            "original_stage",
+            "s3_key",
+            "url",
+            "uploaded_at",
+            "is_active",
+        ]
         read_only_fields = ["id", "s3_key", "url", "uploaded_at", "original_stage", "folder_display"]
 
     def get_url(self, obj: ServiceOrderPhoto) -> str | None:
@@ -490,11 +502,13 @@ class DeliverOSSerializer(serializers.Serializer):
 
 
 class UploadPhotoSerializer(serializers.Serializer):
-    """Serializer para upload de foto com pasta e legenda."""
+    """Serializer para upload de foto com pasta, slot, tipo de checklist e legenda."""
 
-    file    = serializers.ImageField()
-    folder  = serializers.ChoiceField(choices=OSPhotoFolder.choices)
-    caption = serializers.CharField(required=False, allow_blank=True, max_length=200)
+    file           = serializers.ImageField()
+    folder         = serializers.ChoiceField(choices=OSPhotoFolder.choices)
+    caption        = serializers.CharField(required=False, allow_blank=True, max_length=200)
+    slot           = serializers.CharField(required=False, allow_blank=True, default="")
+    checklist_type = serializers.CharField(required=False, allow_blank=True, default="")
 
 
 class ServiceOrderSyncSerializer(serializers.ModelSerializer):
