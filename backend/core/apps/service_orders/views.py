@@ -21,6 +21,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import (
+    ChecklistItem,
     ServiceOrder,
     ServiceOrderActivityLog,
     ServiceOrderPhoto,
@@ -31,6 +32,8 @@ from .models import (
 )
 from .serializers import (
     BudgetSnapshotSerializer,
+    ChecklistItemBulkSerializer,
+    ChecklistItemSerializer,
     DeliverOSSerializer,
     ServiceOrderActivityLogSerializer,
     ServiceOrderCreateSerializer,
@@ -654,6 +657,58 @@ class ServiceOrderViewSet(
             request.user.id,
         )
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    # ── Checklist Items (Sprint M4) ──────────────────────────────────────────
+
+    @extend_schema(
+        summary="Listar itens de checklist da OS",
+        parameters=[
+            OpenApiParameter("checklist_type", description="entrada | acompanhamento | saida", required=False),
+        ],
+    )
+    @action(detail=True, methods=["get"], url_path="checklist-items")
+    def list_checklist_items(self, request: Request, pk: Optional[str] = None) -> Response:
+        """Lista todos os itens de checklist de uma OS, opcionalmente filtrados por tipo."""
+        service_order = self.get_object()
+        checklist_type = request.query_params.get("checklist_type")
+        qs = service_order.checklist_items.all()
+        if checklist_type:
+            qs = qs.filter(checklist_type=checklist_type)
+        serializer = ChecklistItemSerializer(qs, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(
+        summary="Upsert em lote de itens de checklist",
+        request=ChecklistItemBulkSerializer,
+        responses={200: ChecklistItemSerializer(many=True)},
+    )
+    @action(detail=True, methods=["post"], url_path="checklist-items/bulk")
+    def bulk_upsert_checklist_items(self, request: Request, pk: Optional[str] = None) -> Response:
+        """
+        Recebe lista de itens e faz upsert (create_or_update) por
+        (service_order, checklist_type, category, item_key).
+        Usado pelo app mobile para sincronizar o estado offline.
+        """
+        service_order = self.get_object()
+        serializer = ChecklistItemBulkSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        updated: list[ChecklistItem] = []
+        for item_data in serializer.validated_data["items"]:
+            obj, _ = ChecklistItem.objects.update_or_create(
+                service_order=service_order,
+                checklist_type=item_data["checklist_type"],
+                category=item_data["category"],
+                item_key=item_data["item_key"],
+                defaults={
+                    "status": item_data["status"],
+                    "notes": item_data.get("notes", ""),
+                },
+            )
+            updated.append(obj)
+
+        return Response(ChecklistItemSerializer(updated, many=True).data)
+
 
 @extend_schema(
     summary="Dashboard — métricas de OS",
