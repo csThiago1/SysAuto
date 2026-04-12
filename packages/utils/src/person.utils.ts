@@ -40,11 +40,11 @@ export const PERSON_KIND_LABEL: Record<PersonKind, string> = {
 // ─── Classes Tailwind por role ─────────────────────────────────────────────────
 
 export const PERSON_ROLE_BADGE: Record<PersonRole, string> = {
-  CLIENT:   "bg-primary/10 text-primary border-primary/20",
-  INSURER:  "bg-amber-100 text-amber-700 border-amber-200",
-  BROKER:   "bg-orange-100 text-orange-700 border-orange-200",
-  EMPLOYEE: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  SUPPLIER: "bg-slate-100 text-slate-600 border-slate-200",
+  CLIENT:   "bg-blue-50 text-blue-700 border-blue-200",
+  INSURER:  "bg-purple-50 text-purple-700 border-purple-200",
+  BROKER:   "bg-amber-50 text-amber-700 border-amber-200",
+  EMPLOYEE: "bg-green-50 text-green-700 border-green-200",
+  SUPPLIER: "bg-orange-50 text-orange-700 border-orange-200",
 } as const;
 
 // ─── Choices de Funcionário ───────────────────────────────────────────────────
