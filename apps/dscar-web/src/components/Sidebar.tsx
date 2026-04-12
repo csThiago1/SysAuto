@@ -16,11 +16,9 @@ import {
   UserCog,
   UserPlus,
   Clock,
-  CalendarCheck,
   Target,
   Ticket,
   FileSpreadsheet,
-  FileText,
   Search,
   LogOut,
   ChevronLeft,
@@ -104,6 +102,7 @@ const NAV_SECTIONS: NavSection[] = [
         id: "financeiro",
         label: "Financeiro",
         icon: DollarSign,
+        href: "/financeiro",
         children: [
           { id: "fin-dash",        label: "Visão Geral",     href: "/financeiro",                 icon: DollarSign },
           { id: "fin-lancamentos", label: "Lançamentos",     href: "/financeiro/lancamentos",      icon: Receipt },
@@ -121,15 +120,14 @@ const NAV_SECTIONS: NavSection[] = [
         id: "rh",
         label: "Recursos Humanos",
         icon: UserCog,
+        href: "/rh",
         children: [
-          { id: "rh-dash",         label: "Dashboard RH",    href: "/rh",                      icon: UserCog },
-          { id: "rh-colab",        label: "Colaboradores",   href: "/rh/colaboradores",         icon: UserPlus },
-          { id: "rh-ponto",        label: "Ponto",           href: "/rh/ponto",                 icon: Clock },
-          { id: "rh-espelho",      label: "Espelho de Ponto",href: "/rh/ponto/espelho",         icon: CalendarCheck },
-          { id: "rh-metas",        label: "Metas",           href: "/rh/metas",                 icon: Target },
-          { id: "rh-vales",        label: "Vales",           href: "/rh/vales",                 icon: Ticket },
-          { id: "rh-folha",        label: "Folha",           href: "/rh/folha",                 icon: FileSpreadsheet },
-          { id: "rh-contracheque", label: "Contracheques",   href: "/rh/folha/contracheque",    icon: FileText },
+          { id: "rh-dash",  label: "Dashboard RH",  href: "/rh",               icon: UserCog },
+          { id: "rh-colab", label: "Colaboradores", href: "/rh/colaboradores",  icon: UserPlus },
+          { id: "rh-ponto", label: "Ponto",         href: "/rh/ponto",          icon: Clock },
+          { id: "rh-metas", label: "Metas",         href: "/rh/metas",          icon: Target },
+          { id: "rh-vales", label: "Vales",         href: "/rh/vales",          icon: Ticket },
+          { id: "rh-folha", label: "Folha",         href: "/rh/folha",          icon: FileSpreadsheet },
         ],
       },
     ],
@@ -381,7 +379,12 @@ export function Sidebar() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (item.children) {
+                      if (item.children && item.href) {
+                        handleNav(item.href);
+                        if (!expandedGroups.includes(item.id)) {
+                          toggleGroup(item.id);
+                        }
+                      } else if (item.children) {
                         toggleGroup(item.id);
                       } else if (item.href) {
                         handleNav(item.href);
@@ -435,9 +438,11 @@ export function Sidebar() {
                       </>
                     )}
 
-                    {/* Dot badge no modo colapsado */}
+                    {/* Numeric badge no modo colapsado */}
                     {collapsed && badge != null && (
-                      <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#ea0e03]" />
+                      <span className="absolute top-1 right-1 min-w-[16px] h-4 rounded-full bg-[#ea0e03] text-white text-[9px] font-bold flex items-center justify-center px-0.5 leading-none">
+                        {badge > 9 ? "9+" : badge}
+                      </span>
                     )}
                   </button>
 
