@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { OSStatusBadge } from './OSStatusBadge';
 
@@ -11,7 +11,7 @@ export interface OSDetailHeaderProps {
   model: string;
   year?: number;
   color?: string;
-  onBack: () => void;
+  onBack: () => void; // kept for API compat but no longer renders a button
 }
 
 export function OSDetailHeader({
@@ -22,7 +22,6 @@ export function OSDetailHeader({
   model,
   year,
   color,
-  onBack,
 }: OSDetailHeaderProps): React.JSX.Element {
   const vehicleLine = [make, model, year ? String(year) : undefined, color]
     .filter(Boolean)
@@ -30,27 +29,20 @@ export function OSDetailHeader({
 
   return (
     <View style={styles.container}>
-      {/* Barra superior: botao voltar + numero da OS */}
+      {/* Número da OS + badge de status */}
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton} activeOpacity={0.7}>
-          <Text variant="body" color="#e31b1b">
-            {'← Ordens de Serviço'}
-          </Text>
-        </TouchableOpacity>
         <Text variant="label" color="#374151">
           OS #{number}
-        </Text>
-      </View>
-
-      {/* Placa + badge de status */}
-      <View style={styles.plateRow}>
-        <Text variant="heading3" style={styles.plate}>
-          {plate.toUpperCase()}
         </Text>
         <OSStatusBadge status={status} />
       </View>
 
-      {/* Veiculo */}
+      {/* Placa */}
+      <Text variant="heading3" style={styles.plate}>
+        {plate.toUpperCase()}
+      </Text>
+
+      {/* Veículo */}
       {vehicleLine.length > 0 && (
         <Text variant="bodySmall" color="#6b7280" numberOfLines={1}>
           {vehicleLine}
@@ -74,15 +66,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  backButton: {
-    paddingVertical: 4,
-    paddingRight: 8,
-  },
-  plateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
   },
   plate: {
     letterSpacing: 1,
