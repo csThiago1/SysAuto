@@ -27,6 +27,12 @@ export {
   DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "./dialog";
 
+// Sheet / Drawer
+export {
+  Sheet, SheetContent, SheetDescription,
+  SheetFooter, SheetHeader, SheetTitle, SheetTrigger, SheetOverlay, SheetPortal, SheetClose,
+} from "./sheet";
+
 // Select
 export {
   Select, SelectContent, SelectItem,
