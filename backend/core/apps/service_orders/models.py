@@ -407,6 +407,20 @@ class ServiceOrderPhoto(models.Model):
         default=OSPhotoFolder.INITIAL_SURVEY,
         verbose_name="Pasta",
     )
+    slot = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        help_text="Slot de vistoria (ex: frente, traseira, lateral_esq)",
+        verbose_name="Slot",
+    )
+    checklist_type = models.CharField(
+        max_length=20,
+        blank=True,
+        default="",
+        help_text="Tipo de checklist: entrada, saida ou acompanhamento",
+        verbose_name="Tipo de checklist",
+    )
     original_stage = models.CharField(
         max_length=30,
         blank=True,
