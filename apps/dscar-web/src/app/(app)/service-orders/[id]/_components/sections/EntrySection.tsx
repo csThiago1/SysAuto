@@ -22,9 +22,9 @@ export function EntrySection({ form }: EntrySectionProps) {
         <span className={SECTION_TITLE}>Entrada</span>
       </div>
 
-      {/* Linha 1: Data | KM | Local */}
-      <div className="grid grid-cols-3 gap-2">
-        <div>
+      {/* Linha 1: Data (2/4) | KM (1/4) | Local (1/4) */}
+      <div className="grid grid-cols-4 gap-2">
+        <div className="col-span-2">
           <label className={LABEL}>Data / hora entrada</label>
           <Controller
             name="entry_date"
@@ -44,7 +44,6 @@ export function EntrySection({ form }: EntrySectionProps) {
           <input
             className={INPUT}
             type="number"
-            min="0"
             placeholder="0"
             {...register("mileage_in", { valueAsNumber: true })}
           />
