@@ -214,7 +214,7 @@ export default function ChecklistDetailScreen(): React.ReactElement {
           const isActive = index === activeTabIndex;
           return (
             <TouchableOpacity
-              key={tab.checklistType}
+              key={tab.label}
               style={styles.tab}
               onPress={() => setActiveTabIndex(index)}
               activeOpacity={0.7}

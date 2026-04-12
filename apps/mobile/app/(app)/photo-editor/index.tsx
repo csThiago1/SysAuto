@@ -179,7 +179,10 @@ export default function PhotoEditorScreen(): React.ReactElement {
         if (activeToolRef.current === 'text' && dist < 8) {
           // Treat as tap — open text input modal
           setPendingTextPos({ x: start.x, y: start.y });
-        } else if ((activeToolRef.current === 'arrow' || activeToolRef.current === 'circle') && dist >= 5) {
+        } else if (
+          (activeToolRef.current === 'arrow' && dist >= 5) ||
+          (activeToolRef.current === 'circle' && dist >= 12)
+        ) {
           const id = Crypto.randomUUID();
           if (activeToolRef.current === 'arrow') {
             addAnnotationRef.current({
@@ -255,6 +258,7 @@ export default function PhotoEditorScreen(): React.ReactElement {
       setObservation(photoId, observation.trim());
 
       // 4. Navigate back to checklist
+      setIsSaving(false);
       router.replace(`/(app)/checklist/${osId ?? ''}`);
     } catch (err: unknown) {
       console.error('[PhotoEditorScreen] save error:', err);
