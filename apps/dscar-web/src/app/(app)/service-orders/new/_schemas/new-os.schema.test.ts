@@ -38,4 +38,19 @@ describe("newOSSchema", () => {
     const r = newOSSchema.safeParse({ ...baseValid, plate: "ABC123" })
     expect(r.success).toBe(false)
   })
+
+  it("exige insurer e insured_type quando customer_type=insurer", () => {
+    const r = newOSSchema.safeParse({ ...baseValid, customer_type: "insurer" as const })
+    expect(r.success).toBe(false)
+  })
+
+  it("aceita insurer quando campos de seguradora preenchidos", () => {
+    const r = newOSSchema.safeParse({
+      ...baseValid,
+      customer_type: "insurer" as const,
+      insurer: "550e8400-e29b-41d4-a716-446655440001",
+      insured_type: "insured" as const,
+    })
+    expect(r.success).toBe(true)
+  })
 })
