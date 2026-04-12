@@ -5,7 +5,6 @@ import { useAuthStore } from '@/stores/auth.store';
 import { API_BASE_URL } from '@/lib/constants';
 
 // ─── MMKV storage (module-level — never recreated on render) ─────────────────
-// MMKV requer JSI nativo — não disponível no Expo Go. Fallback in-memory.
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _mmkv: any = null;
@@ -14,38 +13,68 @@ try {
   const { MMKV } = require('react-native-mmkv');
   _mmkv = new MMKV({ id: 'photo-queue' });
 } catch {
-  // Expo Go — JSI não disponível, fila vive apenas em memória nesta sessão
+  // Expo Go — JSI não disponível
 }
 
 const mmkvStorage = {
   getItem: (name: string): string | null => _mmkv?.getString(name) ?? null,
-  setItem: (name: string, value: string): void => {
-    _mmkv?.set(name, value);
-  },
-  removeItem: (name: string): void => {
-    _mmkv?.delete(name);
-  },
+  setItem: (name: string, value: string): void => { _mmkv?.set(name, value); },
+  removeItem: (name: string): void => { _mmkv?.delete(name); },
 };
+
+// ─── Annotation types (exported for use in editor) ────────────────────────────
+
+export type AnnotationColor = '#e31b1b' | '#facc15' | '#ffffff';
+export type AnnotationTool = 'arrow' | 'circle' | 'text';
+
+export interface ArrowAnnotation {
+  id: string;
+  type: 'arrow';
+  x1: number; y1: number;
+  x2: number; y2: number;
+  color: AnnotationColor;
+}
+
+export interface CircleAnnotation {
+  id: string;
+  type: 'circle';
+  cx: number; cy: number;
+  r: number;
+  color: AnnotationColor;
+}
+
+export interface TextAnnotation {
+  id: string;
+  type: 'text';
+  x: number; y: number;
+  text: string;
+  color: AnnotationColor;
+}
+
+export type Annotation = ArrowAnnotation | CircleAnnotation | TextAnnotation;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface PhotoQueueItem {
-  id: string;               // local UUID
-  osId: string;             // service order remote ID
-  slot: string;             // checklist slot key ('frente', 'traseira', etc.)
-  folder: string;           // 'checklist_entrada' | 'acompanhamento' | 'checklist_saida' | etc.
-  checklistType: string;    // 'entrada' | 'saida' | 'acompanhamento'
-  localUri: string;         // expo-file-system URI (file://)
+  id: string;
+  osId: string;
+  slot: string;
+  folder: string;
+  checklistType: string;
+  localUri: string;
   uploadStatus: 'pending' | 'uploading' | 'done' | 'error';
-  remoteUrl: string | null; // S3 URL after successful upload
+  remoteUrl: string | null;
   errorMessage: string | null;
-  createdAt: number;        // timestamp ms
+  createdAt: number;
+  // Annotation fields (Sprint M4)
+  annotations?: Annotation[];
+  annotatedLocalUri?: string | null; // flattened image — used for upload if present
+  observation?: string | null;       // text note for this photo
 }
 
 interface PhotoStoreState {
   queue: PhotoQueueItem[];
-  // Actions
-  addPhoto: (photo: Omit<PhotoQueueItem, 'uploadStatus' | 'remoteUrl' | 'errorMessage' | 'createdAt'>) => void;
+  addPhoto: (photo: Omit<PhotoQueueItem, 'uploadStatus' | 'remoteUrl' | 'errorMessage' | 'createdAt' | 'annotations' | 'annotatedLocalUri' | 'observation'>) => void;
   setUploading: (id: string) => void;
   setDone: (id: string, remoteUrl: string) => void;
   setError: (id: string, message: string) => void;
@@ -53,15 +82,14 @@ interface PhotoStoreState {
   removePhoto: (id: string) => void;
   getPhotoForSlot: (osId: string, slot: string) => PhotoQueueItem | undefined;
   getPendingCount: () => number;
+  // Annotation actions
+  setAnnotations: (id: string, annotations: Annotation[], annotatedLocalUri: string) => void;
+  setObservation: (id: string, observation: string) => void;
 }
-
-// ─── Upload API response shape ────────────────────────────────────────────────
 
 interface PhotoUploadResponse {
   url: string;
 }
-
-// ─── Store ────────────────────────────────────────────────────────────────────
 
 export const usePhotoStore = create<PhotoStoreState>()(
   persist(
@@ -78,6 +106,9 @@ export const usePhotoStore = create<PhotoStoreState>()(
               remoteUrl: null,
               errorMessage: null,
               createdAt: Date.now(),
+              annotations: undefined,
+              annotatedLocalUri: null,
+              observation: null,
             },
           ],
         })),
@@ -85,49 +116,55 @@ export const usePhotoStore = create<PhotoStoreState>()(
       setUploading: (id) =>
         set((state) => ({
           queue: state.queue.map((item) =>
-            item.id === id
-              ? { ...item, uploadStatus: 'uploading', errorMessage: null }
-              : item,
+            item.id === id ? { ...item, uploadStatus: 'uploading', errorMessage: null } : item,
           ),
         })),
 
       setDone: (id, remoteUrl) =>
         set((state) => ({
           queue: state.queue.map((item) =>
-            item.id === id
-              ? { ...item, uploadStatus: 'done', remoteUrl, errorMessage: null }
-              : item,
+            item.id === id ? { ...item, uploadStatus: 'done', remoteUrl, errorMessage: null } : item,
           ),
         })),
 
       setError: (id, message) =>
         set((state) => ({
           queue: state.queue.map((item) =>
-            item.id === id
-              ? { ...item, uploadStatus: 'error', errorMessage: message }
-              : item,
+            item.id === id ? { ...item, uploadStatus: 'error', errorMessage: message } : item,
           ),
         })),
 
       retryPhoto: (id) =>
         set((state) => ({
           queue: state.queue.map((item) =>
-            item.id === id
-              ? { ...item, uploadStatus: 'pending', errorMessage: null }
-              : item,
+            item.id === id ? { ...item, uploadStatus: 'pending', errorMessage: null } : item,
           ),
         })),
 
       removePhoto: (id) =>
-        set((state) => ({
-          queue: state.queue.filter((item) => item.id !== id),
-        })),
+        set((state) => ({ queue: state.queue.filter((item) => item.id !== id) })),
 
       getPhotoForSlot: (osId, slot) =>
         get().queue.find((item) => item.osId === osId && item.slot === slot),
 
       getPendingCount: () =>
         get().queue.filter((item) => item.uploadStatus === 'pending').length,
+
+      setAnnotations: (id, annotations, annotatedLocalUri) =>
+        set((state) => ({
+          queue: state.queue.map((item) =>
+            item.id === id
+              ? { ...item, annotations, annotatedLocalUri, uploadStatus: 'pending' }
+              : item,
+          ),
+        })),
+
+      setObservation: (id, observation) =>
+        set((state) => ({
+          queue: state.queue.map((item) =>
+            item.id === id ? { ...item, observation } : item,
+          ),
+        })),
     }),
     {
       name: 'photo-queue',
@@ -136,25 +173,26 @@ export const usePhotoStore = create<PhotoStoreState>()(
   ),
 );
 
-// ─── uploadPendingPhotos (standalone — not part of the store) ─────────────────
-//
-// Processes all 'pending' items sequentially to avoid overwhelming the mobile
-// connection. Mutates store state via the exported actions.
+// ─── uploadPendingPhotos ──────────────────────────────────────────────────────
+// Uses annotatedLocalUri if present (flattened image with annotations baked in),
+// falls back to localUri (original).
 
 export async function uploadPendingPhotos(): Promise<void> {
   const { queue, setUploading, setDone, setError } = usePhotoStore.getState();
   const pending = queue.filter((item) => item.uploadStatus === 'pending');
 
   for (const item of pending) {
-    const { id, osId, localUri, folder, slot, checklistType } = item;
+    const { id, osId, localUri, annotatedLocalUri, folder, slot, checklistType } = item;
     const { token, activeCompany } = useAuthStore.getState();
 
     setUploading(id);
 
+    const uploadUri = annotatedLocalUri ?? localUri;
+
     try {
       const result = await uploadAsync(
         `${API_BASE_URL}/api/v1/service-orders/${osId}/photos/`,
-        localUri,
+        uploadUri,
         {
           httpMethod: 'POST',
           uploadType: FileSystemUploadType.MULTIPART,

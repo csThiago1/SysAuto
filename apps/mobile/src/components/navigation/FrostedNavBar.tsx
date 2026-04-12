@@ -64,7 +64,7 @@ const TAB_CONFIG: TabConfig[] = [
   },
 ];
 
-const HIDDEN_ROUTES = new Set(['os', 'checklist', 'camera']);
+const HIDDEN_ROUTES = new Set(['os', 'checklist', 'camera', 'photo-editor']);
 
 // Flex ratios — must match StyleSheet below
 const NORMAL_FLEX = 1;

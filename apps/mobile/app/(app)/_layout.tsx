@@ -8,7 +8,6 @@ export default function AppLayout() {
       tabBar={(props) => <FrostedNavBar {...props} />}
       screenOptions={{ headerShown: false }}
     >
-      {/* The 5 tabs that appear in the FrostedNavBar, in TAB_CONFIG order */}
       <Tabs.Screen name="index" options={{ title: 'OS' }} />
       <Tabs.Screen name="busca/index" options={{ title: 'Busca' }} />
       <Tabs.Screen name="nova-os/index" options={{ title: 'Nova OS' }} />
@@ -18,6 +17,7 @@ export default function AppLayout() {
       <Tabs.Screen name="os" options={{ href: null }} />
       <Tabs.Screen name="checklist" options={{ href: null }} />
       <Tabs.Screen name="camera" options={{ href: null }} />
+      <Tabs.Screen name="photo-editor" options={{ href: null }} />
     </Tabs>
   );
 }
