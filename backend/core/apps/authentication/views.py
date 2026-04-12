@@ -1,9 +1,13 @@
 """
 Paddock Solutions — Authentication Views
 """
+import hashlib
+import time
+
+import jwt as pyjwt
 from rest_framework import serializers as drf_serializers
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,6 +15,59 @@ from rest_framework.views import APIView
 from .models import GlobalUser
 from .permissions import IsManagerOrAbove
 from .serializers import MeSerializer, StaffUserSerializer
+
+_DEV_JWT_SECRET = "dscar-dev-secret-paddock-2025"
+_DEV_ACCESS_CODE = "paddock123"
+
+
+class DevTokenView(APIView):
+    """
+    POST /api/v1/auth/dev-token/
+
+    Emite um JWT HS256 devidamente assinado para uso no ambiente de desenvolvimento.
+    Aceita qualquer e-mail + senha 'paddock123'. Não existe em produção.
+
+    Body: {"email": "...", "password": "paddock123"}
+    Response: {"access": "<jwt>", "refresh": "<jwt>"}
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+
+    def post(self, request: Request) -> Response:
+        """Valida credenciais dev e retorna JWT HS256 assinado."""
+        email: str = request.data.get("email", "").strip().lower()
+        password: str = request.data.get("password", "")
+
+        if not email:
+            return Response({"detail": "Campo 'email' obrigatório."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if password != _DEV_ACCESS_CODE:
+            return Response({"detail": "Credenciais inválidas."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        now = int(time.time())
+        payload: dict = {
+            "sub": f"dev-{email}",
+            "email": email,
+            "name": email.split("@")[0],
+            "role": "ADMIN",
+            "active_company": "dscar",
+            "tenant_schema": "tenant_dscar",
+            "client_slug": "grupo-dscar",
+            "iat": now,
+            "exp": now + 86400,  # 24 horas
+        }
+
+        token: str = pyjwt.encode(payload, _DEV_JWT_SECRET, algorithm="HS256")
+
+        # Cria o GlobalUser automaticamente se não existir
+        email_hash = hashlib.sha256(email.encode()).hexdigest()
+        GlobalUser.objects.get_or_create(
+            email_hash=email_hash,
+            defaults={"email": email, "name": payload["name"], "is_active": True},
+        )
+
+        return Response({"access": token, "refresh": token})
 
 
 class MeView(APIView):

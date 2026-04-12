@@ -2,26 +2,9 @@ import { useCallback } from 'react';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { useAuthStore } from '@/stores/auth.store';
-import { DEV_ACCESS_CODE } from '@/lib/constants';
+import { API_BASE_URL, DEFAULT_TENANT } from '@/lib/constants';
 
 type AuthUser = NonNullable<ReturnType<typeof useAuthStore.getState>['user']> | null;
-
-// Dev JWT simples — base64 fake (sem assinatura real, apenas para dev local)
-function createDevToken(email: string): string {
-  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const payload = btoa(
-    JSON.stringify({
-      sub: `dev-${email}`,
-      email,
-      role: 'ADMIN',
-      active_company: 'dscar',
-      tenant_schema: 'tenant_dscar',
-      exp: Math.floor(Date.now() / 1000) + 86400,
-    })
-  );
-  const signature = btoa('dev-signature');
-  return `${header}.${payload}.${signature}`;
-}
 
 interface AuthReturn {
   loginDev: (email: string, password: string) => Promise<boolean>;
@@ -35,14 +18,40 @@ export function useAuth(): AuthReturn {
 
   const loginDev = useCallback(
     async (email: string, password: string): Promise<boolean> => {
-      if (password !== DEV_ACCESS_CODE) return false;
-      const token = createDevToken(email);
-      setAuth(
-        { id: `dev-${email}`, email, name: email.split('@')[0] ?? email, role: 'ADMIN' },
-        token,
-        token
-      );
-      return true;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/v1/auth/dev-token/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Tenant-Domain': DEFAULT_TENANT,
+          },
+          body: JSON.stringify({ email, password }),
+        });
+
+        if (!res.ok) return false;
+
+        const data = (await res.json()) as { access: string; refresh: string };
+        const token = data.access;
+
+        // Decodifica payload para extrair name (sem verificar assinatura — já validado pelo backend)
+        const payloadB64 = token.split('.')[1] ?? '';
+        let name = email.split('@')[0] ?? email;
+        try {
+          const decoded = JSON.parse(atob(payloadB64)) as { name?: string };
+          if (decoded.name) name = decoded.name;
+        } catch {
+          // mantém name do email
+        }
+
+        setAuth(
+          { id: `dev-${email}`, email, name, role: 'ADMIN' },
+          token,
+          data.refresh,
+        );
+        return true;
+      } catch {
+        return false;
+      }
     },
     [setAuth]
   );
