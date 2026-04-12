@@ -21,43 +21,7 @@ import { useJournalEntries, useCurrentFiscalPeriod, usePayableDocuments, useRece
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-
-// ── Stat Card ─────────────────────────────────────────────────────────────────
-
-interface StatCardProps {
-  label: string;
-  value: React.ReactNode;
-  icon: React.ReactNode;
-  iconBg: string;
-  badge?: React.ReactNode;
-}
-
-function StatCard({ label, value, icon, iconBg, badge }: StatCardProps): React.ReactElement {
-  return (
-    <div className="rounded-md bg-white shadow-card p-4 flex items-start gap-3">
-      <div className={`flex h-10 w-10 items-center justify-center rounded-md shrink-0 ${iconBg}`}>
-        {icon}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs text-neutral-500 font-medium">{label}</p>
-        <p className="text-xl font-bold text-neutral-900 mt-0.5">{value}</p>
-        {badge && <div className="mt-1">{badge}</div>}
-      </div>
-    </div>
-  );
-}
-
-function StatCardSkeleton(): React.ReactElement {
-  return (
-    <div className="rounded-md bg-white shadow-card p-4 flex items-start gap-3">
-      <Skeleton className="h-10 w-10 rounded-md shrink-0" />
-      <div className="flex-1 space-y-1.5">
-        <Skeleton className="h-3 w-24" />
-        <Skeleton className="h-6 w-16" />
-      </div>
-    </div>
-  );
-}
+import { StatCard } from "@/app/(app)/dashboard/_components/StatCard";
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -109,7 +73,7 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
         {/* Stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
+            Array.from({ length: 4 }).map((_, i) => <StatCard.Skeleton key={i} />)
           ) : (
             <>
               <StatCard

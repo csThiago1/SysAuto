@@ -57,7 +57,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       expert_date: order.expert_date ?? undefined,
       survey_date: order.survey_date ?? undefined,
       authorization_date: order.authorization_date ?? undefined,
-      quotation_date: order.quotation_date ?? undefined,
+      quotation_date: order.quotation_date ?? new Date().toISOString().split("T")[0],
       customer: order.customer ?? undefined,
       customer_name: order.customer_name ?? "",
       plate: order.plate ?? "",

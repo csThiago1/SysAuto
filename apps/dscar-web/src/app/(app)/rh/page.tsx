@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useEmployees } from "@/hooks";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { HRStatCard } from "./_components/HRStatCard";
+import { StatCard } from "@/app/(app)/dashboard/_components/StatCard";
 
 export default function RHDashboardPage(): React.ReactElement {
   const { data: activeData, isLoading: loadingActive } = useEmployees({
@@ -65,29 +65,29 @@ export default function RHDashboardPage(): React.ReactElement {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {isLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <HRStatCard.Skeleton key={i} />
+              <StatCard.Skeleton key={i} />
             ))
           ) : (
             <>
-              <HRStatCard
+              <StatCard
                 label="Headcount total"
                 value={totalHeadcount}
                 iconBg="bg-primary-100"
                 icon={<Users className="h-5 w-5 text-primary-600" />}
               />
-              <HRStatCard
+              <StatCard
                 label="Ativos"
                 value={totalActive}
                 iconBg="bg-success-100"
                 icon={<UserCheck className="h-5 w-5 text-success-600" />}
               />
-              <HRStatCard
+              <StatCard
                 label="Afastados"
                 value={totalLeave}
                 iconBg="bg-warning-100"
                 icon={<UserMinus className="h-5 w-5 text-warning-600" />}
               />
-              <HRStatCard
+              <StatCard
                 label="Férias"
                 value={totalVacation}
                 iconBg="bg-neutral-100"

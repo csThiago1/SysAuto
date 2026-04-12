@@ -422,7 +422,7 @@ export default function ContasReceberPage(): React.ReactElement {
   const documents = data?.results ?? [];
 
   // ── Summary computations ──────────────────────────────────────────────────
-  const { data: allData } = useReceivableDocuments({});
+  const { data: allData, isLoading: isAllLoading } = useReceivableDocuments({});
   const allDocs = allData?.results ?? [];
 
   const totalOpen = allDocs
@@ -478,28 +478,28 @@ export default function ContasReceberPage(): React.ReactElement {
             value={formatBRL(String(totalOpen))}
             iconBg="bg-blue-100"
             icon={<TrendingUp className="h-5 w-5 text-blue-600" />}
-            isLoading={isLoading}
+            isLoading={isAllLoading}
           />
           <SummaryCard
             label="Total Vencido"
             value={formatBRL(String(totalOverdue))}
             iconBg="bg-red-100"
             icon={<AlertCircle className="h-5 w-5 text-red-600" />}
-            isLoading={isLoading}
+            isLoading={isAllLoading}
           />
           <SummaryCard
             label="Recebido no Mês"
             value={formatBRL(String(receivedThisMonth))}
             iconBg="bg-success-100"
             icon={<CheckCircle2 className="h-5 w-5 text-success-600" />}
-            isLoading={isLoading}
+            isLoading={isAllLoading}
           />
           <SummaryCard
             label="A Vencer Hoje"
             value={formatBRL(String(dueToday))}
             iconBg="bg-amber-100"
             icon={<Clock className="h-5 w-5 text-amber-600" />}
-            isLoading={isLoading}
+            isLoading={isAllLoading}
           />
         </div>
 

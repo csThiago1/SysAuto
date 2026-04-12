@@ -416,7 +416,7 @@ export default function ContasPagarPage(): React.ReactElement {
 
   // ── Summary computations ──────────────────────────────────────────────────
   // Use the unfiltered list for the summary (re-fetch without filters)
-  const { data: allData } = usePayableDocuments({});
+  const { data: allData, isLoading: isAllLoading } = usePayableDocuments({});
   const allDocs = allData?.results ?? [];
 
   const totalOpen = allDocs
@@ -472,28 +472,28 @@ export default function ContasPagarPage(): React.ReactElement {
             value={formatBRL(String(totalOpen))}
             iconBg="bg-blue-100"
             icon={<TrendingDown className="h-5 w-5 text-blue-600" />}
-            isLoading={isLoading}
+            isLoading={isAllLoading}
           />
           <SummaryCard
             label="Total Vencido"
             value={formatBRL(String(totalOverdue))}
             iconBg="bg-red-100"
             icon={<AlertCircle className="h-5 w-5 text-red-600" />}
-            isLoading={isLoading}
+            isLoading={isAllLoading}
           />
           <SummaryCard
             label="Pago no Mês"
             value={formatBRL(String(paidThisMonth))}
             iconBg="bg-success-100"
             icon={<CheckCircle2 className="h-5 w-5 text-success-600" />}
-            isLoading={isLoading}
+            isLoading={isAllLoading}
           />
           <SummaryCard
             label="A Vencer Hoje"
             value={formatBRL(String(dueToday))}
             iconBg="bg-amber-100"
             icon={<Clock className="h-5 w-5 text-amber-600" />}
-            isLoading={isLoading}
+            isLoading={isAllLoading}
           />
         </div>
 
