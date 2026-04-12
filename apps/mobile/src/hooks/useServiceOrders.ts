@@ -127,17 +127,18 @@ export function useServiceOrdersList(filters: OSFilters): UseServiceOrdersListRe
     }
     if (filters.search) {
       const term = filters.search;
+      const sanitized = Q.sanitizeLikeString(term);
       const numericTerm = Number(term);
-      if (!isNaN(numericTerm) && term.trim() !== '') {
-        conditions.push(
-          Q.or(
-            Q.where('vehicle_plate', Q.like(`%${Q.sanitizeLikeString(term)}%`)),
-            Q.where('number', numericTerm),
-          ),
-        );
-      } else {
-        conditions.push(Q.where('vehicle_plate', Q.like(`%${Q.sanitizeLikeString(term)}%`)));
-      }
+      const isNumeric = !isNaN(numericTerm) && term.trim() !== '';
+      conditions.push(
+        Q.or(
+          Q.where('vehicle_plate', Q.like(`%${sanitized}%`)),
+          Q.where('customer_name', Q.like(`%${sanitized}%`)),
+          Q.where('vehicle_model', Q.like(`%${sanitized}%`)),
+          Q.where('vehicle_brand', Q.like(`%${sanitized}%`)),
+          ...(isNumeric ? [Q.where('number', numericTerm)] : []),
+        ),
+      );
     }
 
     const subscription = collection
