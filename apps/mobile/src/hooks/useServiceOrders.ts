@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Q } from '@nozbe/watermelondb';
 import type { Where } from '@nozbe/watermelondb/QueryDescription/type';
 
@@ -7,6 +7,7 @@ import { database } from '@/db/index';
 import { ServiceOrder } from '@/db/models/ServiceOrder';
 import { syncServiceOrders } from '@/db/sync';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/stores/auth.store';
 import { useConnectivity } from './useConnectivity';
 
 // ─── API Types ────────────────────────────────────────────────────────────────
@@ -101,58 +102,33 @@ export const serviceOrderKeys = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function buildQueryString(filters: OSFilters, page: number): string {
-  const params = new URLSearchParams();
-  params.set('page', String(page));
-  if (filters.search) {
-    params.set('search', filters.search);
-  }
-  if (filters.status) {
-    params.set('status', filters.status);
-  }
-  return params.toString();
-}
-
-/**
- * Best-effort sync to keep local WatermelonDB cache warm after an API fetch.
- * Failures are intentionally swallowed — the UI is already rendering fresh API data.
- */
-async function syncAfterFetch(): Promise<void> {
-  try {
-    await syncServiceOrders();
-  } catch {
-    // Non-fatal: local cache may be slightly stale until next foreground sync.
-  }
-}
 
 // ─── useServiceOrdersList ─────────────────────────────────────────────────────
+//
+// WatermelonDB é a fonte de verdade única (online e offline).
+// Quando online, aciona sync no mount e no pull-to-refresh.
+// O observer WatermelonDB reage automaticamente quando o sync escreve registros.
 
 export function useServiceOrdersList(filters: OSFilters): UseServiceOrdersListResult {
   const isOnline = useConnectivity();
+  const logout = useAuthStore((s) => s.logout);
 
-  // ── Offline path: observe WatermelonDB collection ───────────────────────────
-  const [offlineOrders, setOfflineOrders] = useState<ServiceOrder[]>([]);
-  const [isOfflineLoading, setIsOfflineLoading] = useState<boolean>(false);
+  const [orders, setOrders] = useState<ServiceOrder[]>([]);
+  const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
+  // Observa WatermelonDB — dispara sempre que o sync escreve registros
   useEffect(() => {
-    if (isOnline) return;
-
-    let cancelled = false;
-    setIsOfflineLoading(true);
-
     const collection = database.get<ServiceOrder>('service_orders');
     const conditions: Where[] = [];
 
     if (filters.status) {
       conditions.push(Q.where('status', filters.status));
     }
-
     if (filters.search) {
       const term = filters.search;
       const numericTerm = Number(term);
-
       if (!isNaN(numericTerm) && term.trim() !== '') {
-        // Search by OS number (exact match).
         conditions.push(
           Q.or(
             Q.where('vehicle_plate', Q.like(`%${Q.sanitizeLikeString(term)}%`)),
@@ -160,112 +136,55 @@ export function useServiceOrdersList(filters: OSFilters): UseServiceOrdersListRe
           ),
         );
       } else {
-        // Search by plate substring only when input is not numeric.
         conditions.push(Q.where('vehicle_plate', Q.like(`%${Q.sanitizeLikeString(term)}%`)));
       }
     }
 
-    const query = collection.query(...conditions).observe();
-    const subscription = query.subscribe((results) => {
-      if (!cancelled) {
-        setOfflineOrders(results);
-        setIsOfflineLoading(false);
+    const subscription = collection
+      .query(...conditions)
+      .observe()
+      .subscribe((results) => {
+        setOrders(results);
+        setIsInitialLoad(false);
+      });
+
+    return () => subscription.unsubscribe();
+  }, [filters.status, filters.search]);
+
+  // Executa sync quando online — result popula WatermelonDB, observer reage
+  const doSync = useCallback(async (): Promise<void> => {
+    try {
+      await syncServiceOrders();
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      if (msg.includes('401')) {
+        logout();
+      } else {
+        console.warn('Sync failed:', error);
       }
-    });
-
-    return () => {
-      cancelled = true;
-      subscription.unsubscribe();
-    };
-  }, [isOnline, filters.status, filters.search]);
-
-  // ── Online path: TanStack Query with infinite pagination ─────────────────────
-  const {
-    data,
-    isLoading: isOnlineLoading,
-    isFetching,
-    isFetchingNextPage,
-    hasNextPage,
-    refetch,
-    fetchNextPage,
-  } = useInfiniteQuery({
-    queryKey: serviceOrderKeys.list(filters),
-    queryFn: async ({ pageParam }) => {
-      const qs = buildQueryString(filters, pageParam as number);
-      const result = await api.get<PaginatedResponse<ServiceOrderAPI>>(
-        `/service-orders/?${qs}`,
-      );
-      // Fire-and-forget — keep WatermelonDB cache warm for offline use.
-      void syncAfterFetch();
-      return result;
-    },
-    initialPageParam: 1,
-    getNextPageParam: (lastPage, _allPages, lastPageParam) => {
-      if (lastPage.next === null) return undefined;
-      return (lastPageParam as number) + 1;
-    },
-    enabled: isOnline,
-    staleTime: 1000 * 60 * 2, // 2 minutes
-  });
-
-  // ── Map API page results to WatermelonDB models for a consistent return type ─
-  // WatermelonDB models are observed reactively. After syncAfterFetch() writes the
-  // records, these observers pick up the current state from the local DB.
-  const [onlineOrders, setOnlineOrders] = useState<ServiceOrder[]>([]);
+    }
+  }, [logout]);
 
   useEffect(() => {
-    if (!isOnline || !data) return;
+    if (!isOnline) return;
+    void doSync();
+  }, [isOnline, doSync]);
 
-    const apiIds = data.pages.flatMap((p) => p.results.map((r) => r.id));
-    if (apiIds.length === 0) {
-      setOnlineOrders([]);
-      return;
-    }
-
-    let cancelled = false;
-    const collection = database.get<ServiceOrder>('service_orders');
-
-    const query = collection.query(Q.where('remote_id', Q.oneOf(apiIds))).observe();
-    const subscription = query.subscribe((results) => {
-      if (!cancelled) {
-        // Preserve API page order.
-        const byRemoteId = new Map(results.map((o) => [o.remoteId, o]));
-        const ordered = apiIds.flatMap((id) => {
-          const model = byRemoteId.get(id);
-          return model ? [model] : [];
-        });
-        setOnlineOrders(ordered);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-      subscription.unsubscribe();
-    };
-  }, [isOnline, data]);
-
-  if (!isOnline) {
-    return {
-      orders: offlineOrders,
-      isLoading: isOfflineLoading,
-      isRefreshing: false,
-      isFetchingNextPage: false,
-      hasNextPage: false,
-      refetch: () => undefined,
-      fetchNextPage: () => undefined,
-      isOffline: true,
-    };
-  }
+  const refetch = useCallback((): void => {
+    if (!isOnline) return;
+    setIsRefreshing(true);
+    void doSync().finally(() => setIsRefreshing(false));
+  }, [isOnline, doSync]);
 
   return {
-    orders: onlineOrders,
-    isLoading: isOnlineLoading,
-    isRefreshing: isFetching && !isFetchingNextPage,
-    isFetchingNextPage,
-    hasNextPage: hasNextPage ?? false,
-    refetch: () => void refetch(),
-    fetchNextPage: () => void fetchNextPage(),
-    isOffline: false,
+    orders,
+    isLoading: isInitialLoad,
+    isRefreshing,
+    isFetchingNextPage: false,
+    hasNextPage: false,
+    refetch,
+    fetchNextPage: () => undefined,
+    isOffline: !isOnline,
   };
 }
 
