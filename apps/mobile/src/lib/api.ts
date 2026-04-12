@@ -34,6 +34,10 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 
   if (!response.ok) {
     const data: unknown = await response.json().catch(() => null);
+    if (response.status === 401) {
+      // Token inválido ou expirado — forçar logout para redirecionar ao login.
+      useAuthStore.getState().logout();
+    }
     throw new ApiError(response.status, `HTTP ${response.status}`, data);
   }
 
