@@ -13,6 +13,23 @@ export interface CustomerResult {
   phone_masked: string | null
 }
 
+export interface CustomerDetail {
+  id: string
+  name: string
+  cpf_masked: string | null
+  phone_masked: string | null
+  email: string | null
+  birth_date: string | null
+  // Endereço — campos individuais (migração 0004)
+  zip_code: string
+  street: string
+  street_number: string
+  complement: string
+  neighborhood: string
+  city: string
+  state: string
+}
+
 interface SearchResponse {
   count: number
   results: CustomerResult[]
@@ -35,6 +52,23 @@ interface CustomerCreateInput {
   phone?: string
   cpf?: string
   email?: string
+  birth_date?: string
+  zip_code?: string
+  street?: string
+  street_number?: string
+  complement?: string
+  neighborhood?: string
+  city?: string
+  state?: string
+}
+
+export function useCustomerDetail(id: string | null) {
+  return useQuery<CustomerDetail>({
+    queryKey: ["customer-detail", id],
+    queryFn: () => apiFetch<CustomerDetail>(`${API}/customers/${id}/`),
+    enabled: !!id,
+    staleTime: 5 * 60_000,
+  })
 }
 
 export function useCustomerCreate() {
