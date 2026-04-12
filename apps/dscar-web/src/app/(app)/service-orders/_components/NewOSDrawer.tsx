@@ -19,7 +19,7 @@ import { CustomerSearch } from "../[id]/_components/shared/CustomerSearch"
 import { InsurerSelect } from "../[id]/_components/shared/InsurerSelect"
 import { ColorSelect } from "../[id]/_components/shared/ColorSelect"
 import { usePlateLookup } from "../[id]/_hooks/useVehicleCatalog"
-import { ApiError } from "@/lib/api"
+import { ApiError, handleApiFormError } from "@/lib/api"
 
 const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
 const INPUT =
@@ -55,6 +55,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
     setValue,
     handleSubmit,
     reset,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<NewOSInput>({
     resolver: zodResolver(newOSSchema),
@@ -108,7 +109,8 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
       router.push(`/service-orders/${os.id}`)
     } catch (err) {
       if (err instanceof ApiError) {
-        setServerError(err.message)
+        handleApiFormError(err, setError)
+        if (err.message) setServerError(err.message)
       } else {
         setServerError("Erro ao criar OS. Tente novamente.")
       }
