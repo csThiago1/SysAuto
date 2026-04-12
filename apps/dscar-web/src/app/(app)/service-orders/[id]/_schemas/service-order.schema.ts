@@ -27,6 +27,7 @@ const serviceOrderBaseSchema = z.object({
   plate: z.string().min(7, "Placa inválida").max(8),
   make: z.string().optional().default(""),
   model: z.string().optional().default(""),
+  vehicle_version: z.string().optional().default(""),
   year: z.number().int().min(1900).max(2100).optional().nullable(),
   color: z.string().optional().default(""),
   chassis: z.string().max(17).optional().default(""),

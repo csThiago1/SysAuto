@@ -24,13 +24,16 @@ export const newOSSchema = z
       .min(7, "Placa inválida — mínimo 7 caracteres")
       .max(8, "Placa inválida — máximo 8 caracteres")
       .regex(/^[A-Z]{3}\d[A-Z0-9]\d{2}$/, "Formato de placa inválido"),
-    make: z.string().optional().default(""),
-    model: z.string().optional().default(""),
+    make: z.string().min(1, "Montadora é obrigatória"),
+    model: z.string().min(1, "Modelo é obrigatório"),
+    vehicle_version: z.string().optional().default(""),
     year: z.preprocess(
       (v) => (v === "" || v === null || (typeof v === "number" && isNaN(v)) ? undefined : v),
       z.number().int().min(1900).max(2100).optional().nullable()
     ),
     color: z.string().optional().default(""),
+    fuel_type: z.string().optional().default(""),
+    chassis: z.string().max(17).optional().default(""),
   })
   .refine(
     (data) => {
