@@ -11,7 +11,7 @@ const SELECT =
 
 interface TypeBarProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
-  consultantName?: string
+  customerType: "insurer" | "private"
 }
 
 const OS_TYPES = [
@@ -22,9 +22,8 @@ const OS_TYPES = [
   { value: "aesthetic", label: "Estética" },
 ] as const
 
-export function TypeBar({ form, consultantName: _consultantName }: TypeBarProps) {
-  const { register, control, watch } = form
-  const customerType = watch("customer_type")
+export function TypeBar({ form, customerType }: TypeBarProps) {
+  const { register, control } = form
   const { data: consultants = [], isLoading: loadingConsultants } = useConsultants()
 
   return (

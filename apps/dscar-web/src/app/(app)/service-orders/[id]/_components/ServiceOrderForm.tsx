@@ -142,7 +142,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       {/* Conteúdo das abas */}
       <div className="flex-1 overflow-y-auto bg-gray-50 px-6">
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          {activeTab === "opening" && <OpeningTab form={form} consultantName={order.consultant_name} />}
+          {activeTab === "opening" && <OpeningTab form={form} />}
           {activeTab === "parts" && <PartsTab orderId={order.id} />}
           {activeTab === "services" && <ServicesTab orderId={order.id} />}
           {activeTab === "notes" && <NotesTab orderId={order.id} initialNotes={order.notes} />}

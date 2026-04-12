@@ -11,16 +11,15 @@ import { PrazosSection } from "../sections/PrazosSection"
 
 interface OpeningTabProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
-  consultantName?: string
 }
 
-export function OpeningTab({ form, consultantName }: OpeningTabProps) {
-  const customerType = form.watch("customer_type")
+export function OpeningTab({ form }: OpeningTabProps) {
+  const customerType = form.watch("customer_type") ?? "private"
 
   return (
     <div className="space-y-3 py-4">
       {/* Barra tipo — full width */}
-      <TypeBar form={form} consultantName={consultantName} />
+      <TypeBar form={form} customerType={customerType} />
 
       {/* Duas colunas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
