@@ -2,6 +2,10 @@
 from django.test import TestCase
 
 from apps.customers.models import UnifiedCustomer
+from apps.customers.serializers import (
+    UnifiedCustomerCreateSerializer,
+    UnifiedCustomerDetailSerializer,
+)
 
 
 class UnifiedCustomerAddressTest(TestCase):
@@ -48,12 +52,6 @@ class UnifiedCustomerAddressTest(TestCase):
     def test_address_property_empty_when_no_street(self) -> None:
         c = self._make_customer()
         self.assertEqual(c.address, "")
-
-
-from apps.customers.serializers import (  # noqa: E402
-    UnifiedCustomerDetailSerializer,
-    UnifiedCustomerCreateSerializer,
-)
 
 
 class UnifiedCustomerDetailSerializerTest(TestCase):
