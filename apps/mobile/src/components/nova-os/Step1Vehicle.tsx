@@ -40,11 +40,15 @@ export function Step1Vehicle({ onNext }: Step1VehicleProps): React.JSX.Element {
 
   const handleLookup = async (): Promise<void> => {
     setLookupAttempted(true);
-    const result = await lookup(vehiclePlate);
-    if (result !== null) {
-      setVehicleInfo(result, 'api');
-    } else {
-      // Not found — switch to manual mode
+    try {
+      const result = await lookup(vehiclePlate);
+      if (result !== null) {
+        setVehicleInfo(result, 'api');
+      } else {
+        // Not found — switch to manual mode
+        setVehicleInfo(null, 'manual');
+      }
+    } catch {
       setVehicleInfo(null, 'manual');
     }
   };

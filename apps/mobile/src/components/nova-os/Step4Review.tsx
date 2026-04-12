@@ -51,11 +51,12 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
   const osType = useNewOSStore((s) => s.osType);
   const insurerName = useNewOSStore((s) => s.insurerName);
   const claimNumber = useNewOSStore((s) => s.claimNumber);
+  const deductible = useNewOSStore((s) => s.deductible);
 
   // Derived vehicle display values
   const displayBrand = vehicleInfo?.brand ?? vehicleManualBrand;
   const displayModel = vehicleInfo?.model ?? vehicleManualModel;
-  const displayYear = vehicleInfo?.year !== undefined ? String(vehicleInfo.year) : vehicleManualYear;
+  const displayYear = vehicleInfo?.year != null && vehicleInfo.year > 0 ? String(vehicleInfo.year) : vehicleManualYear;
   const displayColor = vehicleInfo?.color ?? vehicleManualColor;
   const plateBadgeLabel = plateSource === 'api' ? 'API' : 'Manual';
 
@@ -141,6 +142,9 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
             Sinistro: {claimNumber}
           </Text>
         )}
+        {customerType === 'insurer' && deductible.length > 0 ? (
+          <Text variant="bodySmall" color="#6b7280">Franquia: R$ {deductible}</Text>
+        ) : null}
       </View>
 
       {/* Error */}
@@ -180,7 +184,12 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
       </TouchableOpacity>
 
       {/* Back link */}
-      <TouchableOpacity onPress={onBack} style={styles.backLink} activeOpacity={0.7}>
+      <TouchableOpacity
+        onPress={onBack}
+        disabled={isCreating}
+        style={[styles.backLink, isCreating && { opacity: 0.4 }]}
+        activeOpacity={0.7}
+      >
         <Text variant="bodySmall" color="#6b7280" style={styles.backText}>
           Voltar
         </Text>
