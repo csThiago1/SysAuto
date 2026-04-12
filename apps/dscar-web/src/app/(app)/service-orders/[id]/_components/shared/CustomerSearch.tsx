@@ -75,12 +75,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
     setTimeout(() => inputRef.current?.focus(), 50)
   }
 
-  function handleBuscarOutro() {
-    onChange(null)
-    setQuery("")
-    setMode("search")
-    setTimeout(() => inputRef.current?.focus(), 50)
-  }
+  const handleBuscarOutro = handleClear
 
   async function handleCreate() {
     setCreateError(null)
@@ -108,7 +103,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
   const canCreate =
     newName.trim().length > 0 &&
     newCpf.replace(/\D/g, "").length === 11 &&
-    newPhone.trim().length >= 10 &&
+    newPhone.replace(/\D/g, "").length >= 10 &&
     newEmail.trim().includes("@")
 
   // ── Modo: chip (selecionado) ─────────────────────────────────────
