@@ -350,6 +350,7 @@ export default function OSListScreen(): React.JSX.Element {
 
       {/* Order list */}
       <FlatList<ServiceOrder>
+        style={styles.list}
         data={orders}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
@@ -467,7 +468,11 @@ const styles = StyleSheet.create({
   // Chips
   chipsScroll: {
     flexGrow: 0,
+    flexShrink: 0,
     marginBottom: 8,
+  },
+  list: {
+    flex: 1,
   },
   chipsContent: {
     paddingHorizontal: 16,
