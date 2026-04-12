@@ -13,6 +13,9 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; backgroundCo
   waiting_parts: { label: 'Aguard. Pecas', color: '#475569', backgroundColor: '#f1f5f9' },
   final_survey: { label: 'Vistoria Final', color: '#6d28d9', backgroundColor: '#ede9fe' },
   ready: { label: 'Pronto', color: '#166534', backgroundColor: '#dcfce7' },
+  polishing: { label: 'Polimento', color: '#0e7490', backgroundColor: '#cffafe' },
+  painting: { label: 'Pintura', color: '#7c3aed', backgroundColor: '#ede9fe' },
+  assembly: { label: 'Montagem', color: '#b45309', backgroundColor: '#fef3c7' },
   delivered: { label: 'Entregue', color: '#374151', backgroundColor: '#f3f4f6' },
   cancelled: { label: 'Cancelado', color: '#991b1b', backgroundColor: '#fee2e2' },
 };
