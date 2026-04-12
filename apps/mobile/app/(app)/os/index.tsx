@@ -112,7 +112,6 @@ interface OSHeaderProps {
 
 function OSHeader({ paddingTop }: OSHeaderProps): React.JSX.Element {
   const navigation = useNavigation();
-  const canGoBack = navigation.canGoBack();
 
   return (
     <LinearGradient
@@ -122,17 +121,7 @@ function OSHeader({ paddingTop }: OSHeaderProps): React.JSX.Element {
       style={[styles.header, { paddingTop: paddingTop + 8 }]}
     >
       <View style={styles.headerRow}>
-        {canGoBack ? (
-          <TouchableOpacity
-            style={styles.headerBtn}
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="chevron-back" size={22} color="#ffffff" />
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.headerBtn} />
-        )}
+        <View style={styles.headerBtn} />
 
         <View style={styles.headerLogoWrapper}>
           <Image source={LOGO} style={styles.headerLogo} resizeMode="cover" />
