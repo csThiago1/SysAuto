@@ -1,16 +1,16 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { type UseFormReturn } from "react-hook-form"
+import { Controller, type UseFormReturn } from "react-hook-form"
+import { toast } from "sonner"
 import { usePlateLookup } from "../../_hooks/useVehicleCatalog"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import { ColorSelect } from "../shared/ColorSelect"
-import { Controller } from "react-hook-form"
-import { toast } from "sonner"
 
 const SECTION_TITLE = "text-[11px] font-semibold uppercase tracking-widest text-neutral-500"
-const LABEL = "block text-xs font-medium text-gray-600 mb-1"
-const INPUT = "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
+const INPUT =
+  "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 
 interface VehicleSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
@@ -27,7 +27,6 @@ export function VehicleSection({ form }: VehicleSectionProps) {
     if (v.length >= 7) setPlateQuery(v)
   }
 
-  // Preenche campos do veículo quando a API de placa retorna dados
   useEffect(() => {
     if (!plateData || !plateQuery || isFetching) return
     const currentMake = watch("make")
@@ -42,18 +41,24 @@ export function VehicleSection({ form }: VehicleSectionProps) {
   }, [plateData, isFetching])
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-3 border-b pb-2">
+    <div className="space-y-2">
+      <div className="flex items-center gap-3 border-b pb-1.5">
         <span className={SECTION_TITLE}>Dados do Veículo</span>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Placa */}
-        <div>
+      {/* Header: slot visual + placa destaque */}
+      <div className="flex items-start gap-3">
+        {/* Slot visual 56×56px — futuro: logo da montadora */}
+        <div className="h-14 w-14 shrink-0 rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50 flex items-center justify-center">
+          <span className="text-2xl">🚗</span>
+        </div>
+
+        {/* Placa destaque */}
+        <div className="flex-1">
           <label className={LABEL}>Placa *</label>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <input
-              className={INPUT}
+              className="flex h-9 w-32 rounded-md border-2 border-input bg-background px-3 py-1 text-base font-bold font-mono tracking-widest shadow-sm focus:outline-none focus:ring-1 focus:ring-ring uppercase"
               type="text"
               placeholder="ABC1D23"
               maxLength={8}
@@ -61,32 +66,35 @@ export function VehicleSection({ form }: VehicleSectionProps) {
               onChange={handlePlateChange}
             />
             {isFetching && (
-              <div className="flex items-center">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[#ea0e03]" />
-              </div>
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-[#ea0e03]" />
             )}
           </div>
           {errors.plate && (
-            <p className="mt-1 text-xs text-red-600">{errors.plate.message}</p>
+            <p className="mt-0.5 text-[10px] text-red-600">{errors.plate.message}</p>
           )}
           {error && (
-            <p className="mt-1 text-xs text-amber-600">Placa não encontrada — preencha manualmente</p>
+            <p className="mt-0.5 text-[10px] text-amber-600">Placa não encontrada — preencha manualmente</p>
           )}
         </div>
+      </div>
 
-        {/* Marca */}
+      {/* Grid campos */}
+      <div className="grid grid-cols-3 gap-2">
         <div>
-          <label className={LABEL}>Marca</label>
-          <input className={INPUT} type="text" placeholder="Ex: Honda" {...register("make")} />
+          <label className={LABEL}>Montadora</label>
+          <input className={INPUT} type="text" placeholder="Honda" {...register("make")} />
         </div>
-
-        {/* Modelo */}
         <div>
           <label className={LABEL}>Modelo</label>
-          <input className={INPUT} type="text" placeholder="Ex: Civic" {...register("model")} />
+          <input className={INPUT} type="text" placeholder="Civic" {...register("model")} />
         </div>
+        <div>
+          <label className={LABEL}>Versão</label>
+          <input className={INPUT} type="text" placeholder="EX 2.0" {...register("vehicle_version")} />
+        </div>
+      </div>
 
-        {/* Ano */}
+      <div className="grid grid-cols-3 gap-2">
         <div>
           <label className={LABEL}>Ano</label>
           <input
@@ -98,9 +106,7 @@ export function VehicleSection({ form }: VehicleSectionProps) {
             {...register("year", { valueAsNumber: true })}
           />
         </div>
-
-        {/* Cor */}
-        <div className="sm:col-span-2">
+        <div>
           <label className={LABEL}>Cor</label>
           <Controller
             name="color"
@@ -110,22 +116,19 @@ export function VehicleSection({ form }: VehicleSectionProps) {
             )}
           />
         </div>
-
-        {/* Combustível */}
         <div>
           <label className={LABEL}>Combustível</label>
-          <input className={INPUT} type="text" placeholder="Flex, Gasolina..." {...register("fuel_type")} />
+          <input className={INPUT} type="text" placeholder="Flex" {...register("fuel_type")} />
         </div>
+      </div>
 
-        {/* Chassi */}
+      <div className="grid grid-cols-[1fr_120px] gap-2">
         <div>
           <label className={LABEL}>Chassi</label>
           <input className={INPUT} type="text" maxLength={17} placeholder="17 caracteres" {...register("chassis")} />
         </div>
-
-        {/* Valor FIPE */}
         <div>
-          <label className={LABEL}>Valor FIPE</label>
+          <label className={LABEL}>FIPE (R$)</label>
           <input
             className={INPUT}
             type="number"
@@ -133,18 +136,6 @@ export function VehicleSection({ form }: VehicleSectionProps) {
             min="0"
             placeholder="0,00"
             {...register("fipe_value", { valueAsNumber: true })}
-          />
-        </div>
-
-        {/* KM entrada */}
-        <div>
-          <label className={LABEL}>KM entrada</label>
-          <input
-            className={INPUT}
-            type="number"
-            min="0"
-            placeholder="0"
-            {...register("mileage_in", { valueAsNumber: true })}
           />
         </div>
       </div>
