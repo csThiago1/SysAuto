@@ -121,7 +121,7 @@ function OSHeader({ paddingTop }: OSHeaderProps): React.JSX.Element {
       style={[styles.header, { paddingTop: paddingTop + 8 }]}
     >
       <View style={styles.headerRow}>
-        <View style={styles.headerBtn} />
+        <View style={styles.headerSpacer} />
 
         <View style={styles.headerLogoWrapper}>
           <Image source={LOGO} style={styles.headerLogo} resizeMode="cover" />
@@ -310,6 +310,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  headerSpacer: {
+    width: 40,
+    height: 40,
   },
   headerLogoWrapper: {
     flex: 1,
