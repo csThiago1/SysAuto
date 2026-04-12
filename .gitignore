@@ -76,3 +76,4 @@ docs/Relatorio*.txt
 data/seeds/*.csv
 next
 .expo/
+.superpowers/
