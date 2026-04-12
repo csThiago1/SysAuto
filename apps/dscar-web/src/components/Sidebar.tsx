@@ -290,8 +290,10 @@ export function Sidebar() {
       <div
         className={[
           "flex items-center border-b border-white/[0.06] min-h-[76px]",
-          collapsed ? "px-[18px] justify-center" : "px-5 justify-between",
+          collapsed ? "px-[18px] justify-center cursor-pointer" : "px-5 justify-between",
         ].join(" ")}
+        onClick={collapsed ? () => setCollapsed(false) : undefined}
+        title={collapsed ? "Expandir sidebar" : undefined}
       >
         <DSCarLogoInline collapsed={collapsed} />
 
@@ -308,19 +310,6 @@ export function Sidebar() {
               <ChevronLeft size={18} />
             </button>
           </div>
-        )}
-
-        {collapsed && (
-          <button
-            onClick={() => setCollapsed(false)}
-            className="absolute -right-3 top-6 z-10 w-6 h-6 rounded-full bg-[#0f0f0f]
-                       border border-white/[0.08] flex items-center justify-center
-                       text-white/40 hover:bg-[#1a1a1a] hover:text-[#ea0e03]
-                       transition-all duration-150"
-            title="Expandir sidebar"
-          >
-            <ChevronRight size={16} />
-          </button>
         )}
       </div>
 
