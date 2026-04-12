@@ -1,9 +1,60 @@
-# Backlog — Sprint 14 (Contas a Pagar + Contas a Receber)
+# Backlog — Sprint 15 (Banking + Asaas + Relatórios Financeiros)
 
-**Projeto:** DS Car ERP
-**Sprint:** 14
-**Última atualização:** 2026-04-09
+**Projeto:** DS Car ERP + Mobile
+**Sprint atual:** 15 (web) · M5 (mobile)
+**Última atualização:** 2026-04-12
 **Legenda:** `[ ]` pendente · `[x]` concluído · `[~]` em progresso · `[!]` bloqueado
+
+---
+
+## Sprint M4 Mobile — Concluído ✅
+> Checklist de Itens + Editor de Anotações nas Fotos · 2026-04-12
+
+### Backend
+- [x] Migration `0012_add_checklist_item.py` — model `ChecklistItem` (checklist_type, category, item_key, status, notes)
+- [x] `ChecklistItemSerializer` e `ChecklistItemBulkSerializer`
+- [x] `GET /service-orders/{id}/checklist-items/` — lista por OS (filtra por checklist_type)
+- [x] `POST /service-orders/{id}/checklist-items/bulk/` — upsert em lote (sync offline)
+- [x] Migration `0014_vehicle_version.py` — campo `vehicle_version` em `ServiceOrder`
+- [x] Migration `customers/0003` — campos `birth_date` e `address` em `UnifiedCustomer`
+
+### Mobile
+- [x] `AnnotationCanvas.tsx` — SVG dupla camada (committed + live preview), arrowhead path helper
+- [x] `EditorToolBar.tsx` — ferramentas seta/círculo/texto, paleta 3 cores, undo/redo, salvar
+- [x] `photo-editor/index.tsx` — editor completo com PanResponder, histórico 10 estados, ViewShot, expo-file-system novo API
+- [x] `photo-editor/_layout.tsx` — Stack com `headerShown: false`
+- [x] `checklist-items.store.ts` — Zustand offline-first para itens de checklist + `syncChecklistItems()`
+- [x] `ItemChecklistGrid.tsx` — 7 categorias expansíveis, ciclo pending→ok→attention→critical, `ChecklistSummaryBar`
+- [x] `checklist/[osId].tsx` — aba "Itens" + `handlePhotoPress` + botão upload unificado (fotos + itens)
+- [x] `PhotoSlotGrid.tsx` — `onPhotoPress` prop, overlay anotação (badge roxo), thumbnail via `annotatedLocalUri`
+- [x] `photo.store.ts` — tipos `Annotation` (arrow/circle/text), campos `annotations?`, `annotatedLocalUri?`, `observation?`
+- [x] Upload unificado: `uploadPendingPhotos` usa `annotatedLocalUri ?? localUri`
+
+### Correções pós-M4
+- [x] Migration `0012` e `customers/0003` adicionadas ao git (estavam untracked)
+- [x] `checklist-items.store.ts` e `ItemChecklistGrid.tsx` adicionados ao git (estavam untracked)
+- [x] `os/index` stats: `observeCount()` reativo em vez de `Promise.all` com `fetchCount`
+- [x] Bug raiz da regressão: `make migrate` não tinha sido rodado com migration `0014_vehicle_version` → resolvido
+
+---
+
+## Sprint 14 — Concluído ✅
+
+### OS Form Web (dscar-web) — Sessão Paralela
+- [x] `NewOSDrawer` — Sheet lateral para criação de OS (substitui modal/dialog antigo)
+- [x] `TypeBar` — pill toggle cliente_type + selects de tipo OS e consultor
+- [x] `VehicleSection` — seção com campo `vehicle_version` (versão/trim do veículo)
+- [x] `CustomerSection` — seção de cliente com busca inline
+- [x] `CustomerSearch` — combobox de busca de cliente por nome/CPF/placa
+- [x] `InsurerSection` — seção seguradora com logo, número sinistro, franquia, perito
+- [x] `InsurerSelect` / `InsurerLogo` — select de seguradoras com exibição do logo
+- [x] `ExpertCombobox` — combobox de peritos (especialistas externos)
+- [x] `OpeningTab` — layout duas colunas com TypeBar e PrazosSection
+- [x] `PrazosSection` — campos de prazo de entrega e prometido
+
+### Backend OS Form
+- [x] Migration `0014_vehicle_version.py` — campo `vehicle_version` em `ServiceOrder`
+- [x] `insurers/serializers.py` — `LogoField` com URL absoluta
 
 ---
 
@@ -30,7 +81,7 @@
 
 ---
 
-## Sprint 14 — Finalizando 🔄
+## Sprint 14 (AP/AR) — Concluído ✅
 
 ### Backend — `apps/accounts_payable` ✅
 
@@ -51,26 +102,26 @@
 - [x] `ReceivableAccountingService` — lançamento na baixa (D: Banco / C: Clientes a Receber)
 - [x] Serializers + ViewSets + Migration
 
-### Backend — Integrações (Parcial)
+### Backend — Integrações
 
 - [x] `config/settings/base.py` — adicionar apps em `TENANT_APPS`
 - [x] `config/urls.py` — registrar novas URLs
 - [x] `hr/services.py` — ao fechar contracheque, criar `PayableDocument(origin='FOLHA')`
-- [ ] `service_orders/services.py` — ao entregar OS, criar `ReceivableDocument(origin='OS')`
-- [ ] Celery beat task `task_refresh_overdue_payables` (diário 06:15)
-- [ ] Celery beat task `task_refresh_overdue_receivables` (diário 06:15)
-- [ ] Asaas webhook stub `POST /api/v1/accounts-payable/asaas/webhook/`
+- [ ] `service_orders/services.py` — ao entregar OS, criar `ReceivableDocument(origin='OS')` → **Sprint 15**
+- [ ] Celery beat task `task_refresh_overdue_payables` (diário 06:15) → **Sprint 15**
+- [ ] Celery beat task `task_refresh_overdue_receivables` (diário 06:15) → **Sprint 15**
+- [ ] Asaas webhook stub `POST /api/v1/accounts-payable/asaas/webhook/` → **Sprint 15**
 
-### Frontend (Parcial)
+### Frontend
 
 - [x] `packages/types/src/financeiro.types.ts` — tipos AP/AR
 - [x] `src/hooks/useFinanceiro.ts` — hooks TanStack Query v5
 - [x] `/financeiro/contas-pagar/page.tsx` — lista + cards + RecordPaymentDialog
 - [x] `/financeiro/contas-pagar/novo/page.tsx` — formulário novo título
 - [x] `/financeiro/contas-receber/page.tsx` — lista + cards + RecordReceiptDialog
-- [ ] `/financeiro/contas-receber/novo/page.tsx` — formulário novo título
-- [ ] `/financeiro/contas-pagar/[id]/page.tsx` — detalhe + histórico de baixas
-- [ ] `/financeiro/contas-receber/[id]/page.tsx` — detalhe + histórico de recebimentos
+- [ ] `/financeiro/contas-receber/novo/page.tsx` → **Sprint 15**
+- [ ] `/financeiro/contas-pagar/[id]/page.tsx` → **Sprint 15**
+- [ ] `/financeiro/contas-receber/[id]/page.tsx` → **Sprint 15**
 - [x] `/financeiro/page.tsx` — atualizar cards de visão geral
 
 ---
@@ -94,6 +145,24 @@
 ---
 
 ## Sprint 15 — Backlog
+
+### Testes AP/AR (prioridade alta)
+- [ ] Testes unitários `apps/accounts_payable` — suíte completa (modelos + services + views)
+- [ ] Testes unitários `apps/accounts_receivable` — suíte completa (modelos + services + views)
+- [ ] Cobertura mínima: 85% (similar ao `apps/accounting`)
+
+---
+
+## Sprint 15 — Backlog 🆕
+
+### Pendências do Sprint 14 (carregadas)
+- [ ] `service_orders/services.py` — ao entregar OS, criar `ReceivableDocument(origin='OS')`
+- [ ] Celery beat task `task_refresh_overdue_payables` (diário 06:15)
+- [ ] Celery beat task `task_refresh_overdue_receivables` (diário 06:15)
+- [ ] Asaas webhook stub `POST /api/v1/accounts-payable/asaas/webhook/`
+- [ ] `/financeiro/contas-receber/novo/page.tsx`
+- [ ] `/financeiro/contas-pagar/[id]/page.tsx` — detalhe + histórico de baixas
+- [ ] `/financeiro/contas-receber/[id]/page.tsx` — detalhe + histórico de recebimentos
 
 ### Testes AP/AR (prioridade alta)
 - [ ] Testes unitários `apps/accounts_payable` — suíte completa (modelos + services + views)
@@ -126,21 +195,36 @@
 
 ---
 
-## Progresso do Sprint 14
+## Sprint M5 Mobile — Backlog 🆕
+> Abertura de OS no Mobile · próximo sprint
 
-| Área | Total | Concluído | Pendente |
-|------|-------|-----------|---------|
-| Backend AP | 8 | 8 | 0 |
-| Backend AR | 5 | 5 | 0 |
-| Backend Integrações | 6 | 3 | 3 |
-| Frontend | 9 | 6 | 3 |
-| **Total** | **28** | **22** | **6** |
-
-**Taxa de conclusão do Sprint 14:** 78,6% (finalizando 2026-04-09)
+- [ ] Wizard 4 steps: Veículo (placa-fipe) → Cliente (busca inline) → Tipo OS (seguradora, sinistro) → Revisão
+- [ ] Consulta de placa online + cache MMKV (últimas 50) + fallback manual offline
+- [ ] Criação de OS offline (WatermelonDB) + sync ao reconectar
+- [ ] Atalho "Iniciar Checklist Agora" pós-criação
+- [ ] Integração EAS Build dev build (necessário para react-native-view-shot em produção)
 
 ---
 
-## Sprints Anteriores — Resumo
+## Pré-Produção — Segurança 🔒
+
+> Detalhes completos em `docs/pre-production-security.md`
+
+- [x] JWT secret hardcoded removido (`auth.ts`) — 2026-04-10
+- [x] TLS verification habilitado nos clientes httpx — 2026-04-10
+- [x] WebSocket consumer rejeita conexões não autenticadas — 2026-04-10
+- [ ] **SEC-01** Rotacionar `FIELD_ENCRYPTION_KEY` + re-encriptar dados (LGPD) — **Crítico**
+- [ ] **SEC-02** `AUTH_SECRET` único por app (hub ≠ dscar-web)
+- [ ] **SEC-03** Confirmar `DEV_JWT_SECRET` no `.env.local` de todos os devs
+- [ ] **SEC-04** Rate limiting nos endpoints DRF
+- [ ] **SEC-05** `dev-credentials` provider condicional via `DEV_CREDENTIALS_ENABLED`
+- [ ] **SEC-06** Restringir Swagger/OpenAPI em produção
+- [ ] **SEC-07** JWT audience verification habilitada
+- [ ] **SEC-08** Validação de MIME type e tamanho em upload de fotos de OS
+
+---
+
+## Histórico de Sprints
 
 | Sprint | Tema | Status |
 |--------|------|--------|
@@ -153,8 +237,14 @@
 | 11 | Módulo Contábil (fundação) | ✅ |
 | 12 | Auth & SSO Keycloak | ✅ |
 | 13 | RH↔Contabilidade + Impostos trabalhistas | ✅ |
-| 14 | Contas a Pagar + Contas a Receber | 🔄 |
+| 14 | Contas a Pagar + Contas a Receber + OS Form web | ✅ |
+| M1 | Mobile Fundação + Auth + Navegação | ✅ |
+| M2 | Mobile OS Read-Only + Offline Foundation | ✅ |
+| M3 | Mobile Checklist Fotográfico + Câmera + Fila Upload | ✅ |
+| M4 | Mobile Checklist Itens + Editor Anotações | ✅ |
+| **15** | **Banking + Asaas + Relatórios** | 🔄 |
+| **M5** | **Abertura de OS no Mobile** | 🔄 |
 
 ---
 
-*Atualizado por: Paddock Solutions · 2026-04-09*
+*Atualizado por: Paddock Solutions · 2026-04-12*

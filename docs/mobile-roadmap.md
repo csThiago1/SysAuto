@@ -3,7 +3,7 @@
 **Produto:** App Mobile DS Car (React Native + Expo)
 **Objetivo:** Aplicação operacional leve para consultores, mecânicos e gestores, focada em checklist de veículos, gestão de OS e vistorias — sem módulo fiscal.
 **Timeline:** 8 sprints (~2 meses) — Sprints M1 a M8
-**Stack:** React Native 0.76 · Expo SDK 52 · Expo Router v4 · WatermelonDB (offline) · Zustand + MMKV · expo-camera · expo-image-manipulator
+**Stack:** React Native 0.83.4 · Expo SDK 55 · Expo Router v4 · WatermelonDB (offline) · Zustand + MMKV · expo-camera · expo-image-manipulator · react-native-svg · react-native-view-shot
 **Distribuição:** Interna (APK direto + TestFlight) — sem publicação em App Store / Google Play
 **Público:** ~30 colaboradores internos DS Car (consultores, mecânicos, gestores)
 
@@ -23,12 +23,12 @@ O app é para uso exclusivo da equipe DS Car. Publicar nas lojas traria burocrac
 
 ## Visão Geral das Fases
 
-| Fase | Sprints | Tema | Entrega Principal |
-|------|---------|------|-------------------|
-| **1 — Fundação** | M1–M2 | Infra, Auth, Navegação, OS read-only | App funcionando com login e lista de OS |
-| **2 — Checklist & Fotos** | M3–M4 | Checklist completo, câmera com marca d'água, anotações | Fluxo de recepção de veículo completo |
-| **3 — OS Completa** | M5–M6 | Abertura de OS, acompanhamento, vistorias | Ciclo de vida da OS no mobile |
-| **4 — Documentos & Polish** | M7–M8 | Assinatura digital, termos/recibos PDF, UX final | App pronto para produção |
+| Fase | Sprints | Tema | Status |
+|------|---------|------|--------|
+| **1 — Fundação** | M1–M2 | Infra, Auth, Navegação, OS read-only | ✅ Concluído |
+| **2 — Checklist & Fotos** | M3–M4 | Checklist completo, câmera com marca d'água, anotações | ✅ Concluído |
+| **3 — OS Completa** | M5–M6 | Abertura de OS, acompanhamento, vistorias | 🔄 Em andamento (M5 próximo) |
+| **4 — Documentos & Polish** | M7–M8 | Assinatura digital, termos/recibos PDF, UX final | ⏳ Planejado |
 
 ---
 
@@ -70,13 +70,13 @@ O app é para uso exclusivo da equipe DS Car. Publicar nas lojas traria burocrac
 - Tipagem de respostas com types do `@paddock/types`
 - Error handling centralizado (toast + retry)
 
-### Critérios de Aceite
-- [ ] Login funciona com dev-credentials
-- [ ] Token persiste entre sessões (SecureStore)
-- [ ] Pill tab bar com glow animado no ícone ativo
-- [ ] Transições de página suaves (slide horizontal)
-- [ ] Navegação tabs + stack sem flickering
-- [ ] TypeScript strict sem erros
+### Critérios de Aceite ✅
+- [x] Login funciona com dev-credentials
+- [x] Token persiste entre sessões (SecureStore)
+- [x] Pill tab bar com glow animado no ícone ativo
+- [x] Transições de página suaves (slide horizontal)
+- [x] Navegação tabs + stack sem flickering
+- [x] TypeScript strict sem erros
 
 ---
 
@@ -107,11 +107,11 @@ O app é para uso exclusivo da equipe DS Car. Publicar nas lojas traria burocrac
 - Sync automático ao recuperar conexão
 - MMKV para preferências rápidas (último filtro, tema)
 
-### Critérios de Aceite
-- [ ] Lista carrega OS do backend com paginação
-- [ ] Detalhe exibe todas as informações da OS
-- [ ] App funciona offline após primeiro sync (lista + detalhe)
-- [ ] Indicador visual de modo offline
+### Critérios de Aceite ✅
+- [x] Lista carrega OS do backend com paginação
+- [x] Detalhe exibe todas as informações da OS
+- [x] App funciona offline após primeiro sync (lista + detalhe)
+- [x] Indicador visual de modo offline
 
 ---
 
@@ -146,12 +146,12 @@ O app é para uso exclusivo da equipe DS Car. Publicar nas lojas traria burocrac
 - Indicador por foto: ✓ enviado | ↻ enviando | ⏳ na fila | ✕ erro (retry)
 - Metadata em MMKV: `{ photoId, osId, folder, slot, watermarked, uploadStatus, localUri, s3Key }`
 
-### Critérios de Aceite
-- [ ] Grid de checklist exibe silhuetas corretas para cada slot
-- [ ] Câmera captura e aplica marca d'água automaticamente
-- [ ] Fotos aparecem no slot correto após captura
-- [ ] Funciona 100% offline — fotos ficam na fila e enviam quando reconectar
-- [ ] Barra de progresso reflete fotos obrigatórias vs. capturadas
+### Critérios de Aceite ✅
+- [x] Grid de checklist exibe silhuetas corretas para cada slot
+- [x] Câmera captura e aplica marca d'água automaticamente
+- [x] Fotos aparecem no slot correto após captura
+- [x] Funciona 100% offline — fotos ficam na fila e enviam quando reconectar
+- [x] Barra de progresso reflete fotos obrigatórias vs. capturadas
 
 ---
 
@@ -191,12 +191,12 @@ O app é para uso exclusivo da equipe DS Car. Publicar nas lojas traria burocrac
 - Status do checklist: Rascunho → Concluído → Enviado
 - Checklist concluído é imutável (pode adicionar complemento, nunca editar)
 
-### Critérios de Aceite
-- [ ] Checklist de itens com 7 categorias funciona e persiste offline
-- [ ] Editor de anotações funciona com seta, círculo e texto
-- [ ] Anotações salvas como layer separada (original preservada)
-- [ ] Checklist vinculado à OS e visível na web após sync
-- [ ] Resumo de gravidade (OK/Atenção/Crítico) exibido corretamente
+### Critérios de Aceite ✅
+- [x] Checklist de itens com 7 categorias funciona e persiste offline
+- [x] Editor de anotações funciona com seta, círculo e texto
+- [x] Anotações salvas como layer separada (original preservada)
+- [x] Checklist vinculado à OS e visível na web após sync (bulk endpoint disponível)
+- [x] Resumo de gravidade (OK/Atenção/Crítico) exibido corretamente
 
 ---
 

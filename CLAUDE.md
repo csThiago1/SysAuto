@@ -827,39 +827,51 @@ make typecheck       # mypy + tsc
 
 ## 🗺️ Sprints em Andamento
 
-### Sprint 14 — Abril 2026 (finalizando)
-**Contas a Pagar + Contas a Receber**
-- Backend AP: `apps.accounts_payable` completo (Supplier, PayableDocument, PayablePayment, services, serializers, viewsets) ✅
-- Backend AR: `apps.accounts_receivable` completo (ReceivableDocument, ReceivableReceipt, services, serializers, viewsets) ✅
-- Apps registrados em `TENANT_APPS` e URLs em `config/urls.py` ✅
-- HR integrado: HR → PayableDocument ao fechar folha ✅
-- Frontend: types + hooks + `/financeiro/contas-pagar/page.tsx` + `/financeiro/contas-pagar/novo` + `/financeiro/contas-receber/page.tsx` ✅
-- Pendente: OS → ReceivableDocument na entrega, tasks Celery beat, Asaas webhook stub
-- **Progresso:** 78,6% (22/28 tarefas)
-
-### Sprint 15 — Abril 2026 (próxima)
+### Sprint 15 — Abril 2026 (iniciando)
 **Banking + Asaas Completo + Relatórios Financeiros**
 - App `accounts_banking`: BankAccount, BankTransaction, OFXImportService
 - Reconciliação AP/AR ↔ lançamentos bancários
 - `CashFlowService`: fluxo de caixa projetado (AP vencimentos + AR previsões)
 - Asaas webhook completo: auto-baixa ReceivableDocument ao receber evento
+- OS → ReceivableDocument na entrega (pendência Sprint 14)
+- Celery beat tasks overdue refresh (pendência Sprint 14)
 - Relatórios: DRE, Balanço Patrimonial, Fluxo de Caixa (PDF + XLSX)
-- Frontend: `/financeiro/relatorios`
+- Frontend: `/financeiro/relatorios` + páginas detalhe AP/AR (pendências Sprint 14)
 - Testes: suíte AP/AR (85% cobertura)
 - Dívida técnica: fix Sprint 10 (bulk delete signal + teste missing)
+
+### Sprint M5 Mobile — Abril 2026 (iniciando)
+**Abertura de OS no Mobile**
+- Wizard 4 steps: Veículo (placa-fipe) → Cliente (busca inline) → Tipo OS → Revisão
+- Consulta de placa online + cache MMKV + fallback manual offline
+- Criação offline (WatermelonDB) + sync ao reconectar
+- Atalho "Iniciar Checklist Agora" pós-criação
+- EAS Build dev build (necessário para `react-native-view-shot` em produção)
 
 ---
 
 ## 📦 Sprints Entregues
 
-### Sprint 14 — Abril 2026 (em conclusão)
-**Contas a Pagar + Contas a Receber**
+### Sprint M4 Mobile — Abril 2026 ✅
+**Checklist de Itens + Editor de Anotações nas Fotos**
+- `AnnotationCanvas.tsx` — SVG dupla camada (committed + live preview), arrowhead
+- `EditorToolBar.tsx` — seta/círculo/texto, 3 cores, undo/redo, salvar
+- `photo-editor/index.tsx` — PanResponder, histórico 10 estados, ViewShot, expo-file-system
+- `checklist-items.store.ts` — Zustand offline-first + `syncChecklistItems()`
+- `ItemChecklistGrid.tsx` — 7 categorias, ciclo OK/Atenção/Crítico, `ChecklistSummaryBar`
+- Backend: `ChecklistItem` model + migration `0012` + endpoints GET + bulk POST
+- Correção: migrations `0012` e `customers/0003` adicionadas ao git (estavam untracked)
+- Bug raiz regressão corrigido: migration `0014_vehicle_version` não aplicada → `make migrate`
+
+### Sprint 14 — Abril 2026 ✅
+**Contas a Pagar + Contas a Receber + OS Form Melhorado**
 - Backend AP: `Supplier`, `PayableDocument`, `PayablePayment` + service/serializers/viewsets ✅
 - Backend AR: `ReceivableDocument`, `ReceivableReceipt` + service/serializers/viewsets ✅
 - Integração HR: ao fechar folha, cria `PayableDocument(origin='FOLHA')` ✅
 - Apps registrados em `TENANT_APPS` e URLs em `config/urls.py` ✅
-- Frontend: types + hooks + 3 pages (`contas-pagar`, `contas-pagar/novo`, `contas-receber`) ✅
-- Pendente: OS → ReceivableDocument, tasks Celery beat, Asaas webhook, páginas detalhe
+- Frontend AP/AR: types + hooks + pages (contas-pagar, contas-pagar/novo, contas-receber) ✅
+- OS Form: `NewOSDrawer` (Sheet), `TypeBar`, `VehicleSection` (vehicle_version), `CustomerSearch`, `InsurerSection` com logo ✅
+- Migration `0014_vehicle_version` — campo vehicle_version em ServiceOrder ✅
 
 ---
 
