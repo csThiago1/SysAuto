@@ -200,6 +200,9 @@ class ServiceOrder(PaddockBaseModel):
     plate = models.CharField(max_length=10, db_index=True, verbose_name="Placa")
     make = models.CharField(max_length=100, default="", verbose_name="Marca")
     model = models.CharField(max_length=100, default="", verbose_name="Modelo")
+    vehicle_version = models.CharField(
+        max_length=50, blank=True, default="", verbose_name="Versão"
+    )
     year = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name="Ano")
     color = models.CharField(max_length=50, default="", verbose_name="Cor")
     chassis = models.CharField(max_length=17, blank=True, default="", verbose_name="Chassi")
@@ -705,3 +708,76 @@ class BudgetSnapshot(PaddockBaseModel):
     def grand_total(self) -> float:
         """Total = peças + serviços - descontos."""
         return float(self.parts_total + self.services_total - self.discount_total)
+
+
+# ─── Checklist Item (Sprint M4) ───────────────────────────────────────────────
+
+class ChecklistItemStatus(models.TextChoices):
+    OK = "ok", "OK"
+    ATTENTION = "attention", "Atenção"
+    CRITICAL = "critical", "Crítico"
+    PENDING = "pending", "Pendente"
+
+
+class ChecklistItem(PaddockBaseModel):
+    """Item individual do checklist textual de vistoria (não-fotográfico)."""
+
+    CATEGORY_CHOICES = [
+        ("bodywork", "Lataria / Pintura"),
+        ("glass", "Vidros"),
+        ("lighting", "Iluminação"),
+        ("tires", "Pneus"),
+        ("interior", "Interior"),
+        ("accessories", "Acessórios"),
+        ("mechanical", "Mecânico Visual"),
+    ]
+
+    CHECKLIST_TYPE_CHOICES = [
+        ("entrada", "Entrada"),
+        ("acompanhamento", "Acompanhamento"),
+        ("saida", "Saída"),
+    ]
+
+    service_order = models.ForeignKey(
+        ServiceOrder,
+        on_delete=models.CASCADE,
+        related_name="checklist_items",
+        verbose_name="Ordem de Serviço",
+    )
+    checklist_type = models.CharField(
+        max_length=20,
+        choices=CHECKLIST_TYPE_CHOICES,
+        default="entrada",
+        verbose_name="Tipo de Checklist",
+    )
+    category = models.CharField(
+        max_length=30,
+        choices=CATEGORY_CHOICES,
+        verbose_name="Categoria",
+    )
+    item_key = models.CharField(
+        max_length=60,
+        verbose_name="Chave do Item",
+        help_text="Identificador único do item dentro da categoria (ex: arranhoes)",
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=ChecklistItemStatus.choices,
+        default=ChecklistItemStatus.PENDING,
+        verbose_name="Status",
+    )
+    notes = models.TextField(
+        blank=True,
+        default="",
+        verbose_name="Observações",
+    )
+
+    class Meta:
+        db_table = "service_orders_checklist_item"
+        unique_together = [("service_order", "checklist_type", "category", "item_key")]
+        ordering = ["category", "item_key"]
+        verbose_name = "Item de Checklist"
+        verbose_name_plural = "Itens de Checklist"
+
+    def __str__(self) -> str:
+        return f"OS #{self.service_order.number} — {self.category}/{self.item_key}: {self.status}"

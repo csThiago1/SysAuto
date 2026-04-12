@@ -15,6 +15,8 @@ from .models import (
     VALID_TRANSITIONS,
     ActivityType,
     BudgetSnapshot,
+    ChecklistItem,
+    ChecklistItemStatus,
     OSPhotoFolder,
     ServiceOrder,
     ServiceOrderActivityLog,
@@ -306,6 +308,7 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
             "plate",
             "make",
             "model",
+            "vehicle_version",
             "year",
             "color",
             "insurer_detail",
@@ -401,12 +404,13 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
         exclude = ["number", "created_by", "invoice_issued", "opened_at"]
         extra_kwargs = {
             # Campos opcionais do veículo — model tem default="" mas sem blank=True
-            "make":       {"required": False, "allow_blank": True},
-            "model":      {"required": False, "allow_blank": True},
-            "color":      {"required": False, "allow_blank": True},
-            "chassis":    {"required": False, "allow_blank": True},
-            "fuel_type":  {"required": False, "allow_blank": True},
-            "broker_name":    {"required": False, "allow_blank": True},
+            "make":            {"required": False, "allow_blank": True},
+            "model":           {"required": False, "allow_blank": True},
+            "vehicle_version": {"required": False, "allow_blank": True},
+            "color":           {"required": False, "allow_blank": True},
+            "chassis":         {"required": False, "allow_blank": True},
+            "fuel_type":       {"required": False, "allow_blank": True},
+            "broker_name":     {"required": False, "allow_blank": True},
             "casualty_number": {"required": False, "allow_blank": True},
         }
 
@@ -432,6 +436,7 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "make":            {"required": False, "allow_blank": True},
             "model":           {"required": False, "allow_blank": True},
+            "vehicle_version": {"required": False, "allow_blank": True},
             "color":           {"required": False, "allow_blank": True},
             "chassis":         {"required": False, "allow_blank": True},
             "fuel_type":       {"required": False, "allow_blank": True},
@@ -580,3 +585,34 @@ class ServiceOrderSyncSerializer(serializers.ModelSerializer):
     def get_updated_at_remote(self, obj: ServiceOrder) -> int:
         """Retorna updated_at como epoch em milissegundos para o WatermelonDB."""
         return int(obj.updated_at.timestamp() * 1000)
+
+
+# ─── ChecklistItem Serializers (Sprint M4) ───────────────────────────────────
+
+class ChecklistItemSerializer(serializers.ModelSerializer):
+    """Serializer para leitura e escrita de itens de checklist."""
+
+    class Meta:
+        model = ChecklistItem
+        fields = [
+            "id",
+            "checklist_type",
+            "category",
+            "item_key",
+            "status",
+            "notes",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class ChecklistItemBulkSerializer(serializers.Serializer):
+    """Aceita lista de itens para upsert em lote — usado pelo app mobile."""
+
+    items = ChecklistItemSerializer(many=True)
+
+    def validate_items(self, items: list) -> list:
+        if not items:
+            raise serializers.ValidationError("Lista de itens não pode ser vazia.")
+        return items
