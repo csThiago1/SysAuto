@@ -45,14 +45,14 @@ dev-reset: ## Para e remove volumes (limpa banco)
 
 ## ─ Banco de dados ───────────────────────────────────────────────────────────
 
-migrate: ## Roda migrations em todos os tenants
-	$(BACKEND) && .venv/bin/python manage.py migrate_schemas --settings=config.settings.dev
+migrate: ## Roda migrations em todos os tenants (dentro do container Django)
+	$(COMPOSE) exec django python manage.py migrate_schemas --settings=config.settings.dev
 
-migrate-shared: ## Roda migrations apenas no schema public
-	$(BACKEND) && .venv/bin/python manage.py migrate_schemas --shared --settings=config.settings.dev
+migrate-shared: ## Roda migrations apenas no schema public (dentro do container)
+	$(COMPOSE) exec django python manage.py migrate_schemas --shared --settings=config.settings.dev
 
-shell: ## Django shell com contexto de tenant
-	$(BACKEND) && .venv/bin/python manage.py shell --settings=config.settings.dev
+shell: ## Django shell com contexto de tenant (dentro do container)
+	$(COMPOSE) exec django python manage.py shell --settings=config.settings.dev
 
 ## ─ Testes ───────────────────────────────────────────────────────────────────
 

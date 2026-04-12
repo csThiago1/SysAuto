@@ -74,7 +74,9 @@ services:
     image: paddock-django:dev
     container_name: paddock_django
     restart: unless-stopped
-    command: python manage.py runserver 0.0.0.0:8000 --settings=config.settings.dev
+    command: >
+      sh -c "python manage.py migrate_schemas --settings=config.settings.dev &&
+             python manage.py runserver 0.0.0.0:8000 --settings=config.settings.dev"
     env_file:
       - ../../.env
     volumes:
