@@ -1,13 +1,11 @@
 // apps/mobile/src/components/navigation/FrostedNavBar.tsx
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import {
-  Platform,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { BlurView } from 'expo-blur';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -18,14 +16,13 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Text } from '@/components/ui/Text';
 
 // ─── Tab configuration ─────────────────────────────────────────────────────
 
 interface TabConfig {
   routeName: string;
-  iconInactive: keyof typeof Ionicons.glyphMap;
   iconActive: keyof typeof Ionicons.glyphMap;
+  iconInactive: keyof typeof Ionicons.glyphMap;
   label: string;
   isCentral?: boolean;
 }
@@ -33,49 +30,38 @@ interface TabConfig {
 const TAB_CONFIG: TabConfig[] = [
   {
     routeName: 'index',
-    iconInactive: 'list-outline',
     iconActive: 'list',
+    iconInactive: 'list-outline',
     label: 'OS',
   },
   {
     routeName: 'busca/index',
-    iconInactive: 'search-outline',
     iconActive: 'search',
+    iconInactive: 'search-outline',
     label: 'Busca',
   },
   {
     routeName: 'nova-os/index',
-    iconInactive: 'add-circle-outline',
-    iconActive: 'add-circle',
+    iconActive: 'add',
+    iconInactive: 'add',
     label: 'Nova OS',
     isCentral: true,
   },
   {
     routeName: 'notificacoes/index',
-    iconInactive: 'notifications-outline',
     iconActive: 'notifications',
+    iconInactive: 'notifications-outline',
     label: 'Alertas',
   },
   {
     routeName: 'perfil/index',
-    iconInactive: 'person-outline',
     iconActive: 'person',
+    iconInactive: 'person-outline',
     label: 'Perfil',
   },
 ];
 
 const HIDDEN_ROUTES = new Set(['os', 'checklist', 'camera', 'photo-editor']);
-
-// Flex ratios — must match StyleSheet below
-const NORMAL_FLEX = 1;
-const CENTRAL_FLEX = 1.2;
-const TOTAL_FLEX = NORMAL_FLEX * 4 + CENTRAL_FLEX; // 5.2
-
-function tabWidth(config: TabConfig, containerWidth: number): number {
-  return config.isCentral
-    ? (CENTRAL_FLEX / TOTAL_FLEX) * containerWidth
-    : (NORMAL_FLEX / TOTAL_FLEX) * containerWidth;
-}
 
 // ─── TabItem ───────────────────────────────────────────────────────────────
 
@@ -86,93 +72,75 @@ interface TabItemProps {
 }
 
 function TabItem({ config, isActive, onPress }: TabItemProps): React.JSX.Element {
-  // Fix 2: separate pressScale + restingScale for persistent active scale 1.05
   const pressScale = useSharedValue(1);
-  // Must be keyed by route.key in the parent so useSharedValue re-initializes on route change
   const restingScale = useSharedValue(isActive ? 1.05 : 1);
-
-  // Fix 6: maxWidth target 56 → 60
-  const labelMaxWidth = useSharedValue(isActive && !config.isCentral ? 60 : 0);
-  const labelOpacity = useSharedValue(isActive && !config.isCentral ? 1 : 0);
+  const lineOpacity = useSharedValue(isActive && !config.isCentral ? 1 : 0);
 
   useEffect(() => {
     restingScale.value = withTiming(isActive ? 1.05 : 1, { duration: 200 });
   }, [isActive, restingScale]);
 
   useEffect(() => {
-    if (config.isCentral) return; // central never shows label
-    // Fix 6: maxWidth target 60
-    labelMaxWidth.value = withSpring(isActive ? 60 : 0, {
-      damping: 20,
-      stiffness: 200,
-    });
-    labelOpacity.value = withTiming(isActive ? 1 : 0, { duration: 200 });
-  }, [isActive, labelMaxWidth, labelOpacity, config.isCentral]);
+    if (config.isCentral) return;
+    lineOpacity.value = withTiming(isActive ? 1 : 0, { duration: 200 });
+  }, [isActive, lineOpacity, config.isCentral]);
 
   const handlePress = useCallback((): void => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    // Fix 2: use pressScale for bounce
     pressScale.value = withSpring(0.92, { damping: 10, stiffness: 300 }, () => {
       pressScale.value = withSpring(1, { damping: 10, stiffness: 200 });
     });
     onPress();
   }, [pressScale, onPress]);
 
-  // Fix 2: combined style multiplies pressScale * restingScale
   const iconAnimStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pressScale.value * restingScale.value }],
   }));
 
-  const labelAnimStyle = useAnimatedStyle(() => ({
-    maxWidth: labelMaxWidth.value,
-    opacity: labelOpacity.value,
+  const lineAnimStyle = useAnimatedStyle(() => ({
+    opacity: lineOpacity.value,
   }));
 
-  const iconColor = config.isCentral
-    ? '#ffffff'
-    : isActive
-    ? 'rgba(255,255,255,0.95)'
-    : '#94a3b8';
-  const iconSize = config.isCentral ? 28 : 22;
+  if (config.isCentral) {
+    return (
+      <TouchableOpacity
+        style={styles.centralItem}
+        onPress={handlePress}
+        activeOpacity={1}
+        accessibilityRole="tab"
+        accessibilityLabel={config.label}
+      >
+        <Animated.View style={[styles.centralButton, iconAnimStyle]}>
+          <Ionicons name="add" size={22} color="#ffffff" />
+        </Animated.View>
+      </TouchableOpacity>
+    );
+  }
+
+  const iconColor = isActive ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.28)';
   const iconName = isActive ? config.iconActive : config.iconInactive;
 
   return (
     <TouchableOpacity
-      style={[styles.tabItem, config.isCentral && styles.centralTabItem]}
+      style={styles.tabItem}
       onPress={handlePress}
       activeOpacity={1}
       accessibilityRole="tab"
       accessibilityState={{ selected: isActive }}
     >
-      <View style={styles.tabContent}>
-        <Animated.View style={iconAnimStyle}>
-          <Ionicons name={iconName} size={iconSize} color={iconColor} />
-        </Animated.View>
-        {!config.isCentral && (
-          <Animated.View style={[styles.labelWrapper, labelAnimStyle]}>
-            <Text
-              variant="caption"
-              color={iconColor}
-              style={styles.tabLabel}
-              numberOfLines={1}
-            >
-              {config.label}
-            </Text>
-          </Animated.View>
-        )}
-      </View>
+      <Animated.View style={[styles.iconWrapper, iconAnimStyle]}>
+        <Ionicons name={iconName} size={22} color={iconColor} />
+        <Animated.View style={[styles.activeLine, lineAnimStyle]} />
+      </Animated.View>
     </TouchableOpacity>
   );
 }
 
 // ─── FrostedNavBar ─────────────────────────────────────────────────────────
+// Name kept for compatibility with _layout.tsx import.
 
 export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
-  const [containerWidth, setContainerWidth] = useState(0);
-
-  const bubbleX = useSharedValue(0);
-  const bubbleW = useSharedValue(0);
 
   const visibleRoutes = useMemo(
     () => state.routes.filter((r) => !HIDDEN_ROUTES.has(r.name)),
@@ -180,42 +148,7 @@ export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.J
   );
 
   const activeRouteName = state.routes[state.index]?.name;
-
-  // Fix 4: derive hidden state before hooks finish (non-hook derived value)
   const isHiddenRoute = activeRouteName !== undefined && HIDDEN_ROUTES.has(activeRouteName);
-
-  // Animate bubble to the active tab
-  useEffect(() => {
-    if (containerWidth === 0) return;
-
-    const activeVisibleIdx = visibleRoutes.findIndex(
-      (r) => r.name === activeRouteName,
-    );
-    if (activeVisibleIdx === -1) return;
-
-    const activeCfg = TAB_CONFIG.find(
-      (c) => c.routeName === visibleRoutes[activeVisibleIdx]?.name,
-    );
-
-    // Fix 1: central button never gets bubble
-    if (!activeCfg || activeCfg.isCentral) return;
-
-    let x = 0;
-    for (let i = 0; i < activeVisibleIdx; i++) {
-      const cfg = TAB_CONFIG.find((c) => c.routeName === visibleRoutes[i]?.name);
-      if (cfg) x += tabWidth(cfg, containerWidth);
-    }
-
-    const w = tabWidth(activeCfg, containerWidth);
-
-    bubbleX.value = withSpring(x, { damping: 18, stiffness: 160 });
-    bubbleW.value = withSpring(w, { damping: 18, stiffness: 160 });
-  }, [activeRouteName, containerWidth, visibleRoutes, bubbleX, bubbleW]);
-
-  const bubbleStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: bubbleX.value }],
-    width: bubbleW.value,
-  }));
 
   const handleTabPress = useCallback(
     (routeName: string, routeKey: string, isFocused: boolean): void => {
@@ -231,60 +164,29 @@ export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.J
     [navigation],
   );
 
-  // Fix 4: all hooks have run — safe to return early for hidden routes
   if (isHiddenRoute) {
     return <View style={styles.hiddenPlaceholder} />;
   }
 
-  // Two-layer approach: outer View provides shadow (iOS needs no overflow:hidden for shadows),
-  // inner BlurView clips content + border and provides the actual frosted glass effect on iOS.
-  const tabContent = (
-    <>
-      {/* Sliding bubble — sits behind tab icons via zIndex */}
-      {containerWidth > 0 && (
-        <Animated.View style={[styles.bubble, bubbleStyle]} />
-      )}
-
-      {visibleRoutes.map((route) => {
-        const config = TAB_CONFIG.find((c) => c.routeName === route.name);
-        if (!config) return null;
-        const isActive = state.routes[state.index]?.name === route.name;
-        return (
-          <TabItem
-            key={route.key}
-            config={config}
-            isActive={isActive}
-            onPress={() => handleTabPress(route.name, route.key, isActive)}
-          />
-        );
-      })}
-    </>
-  );
-
   return (
     <View
-      style={[styles.container, { bottom: Math.max(insets.bottom, 16) + 8 }]}
+      style={[styles.container, { bottom: Math.max(insets.bottom, 10) }]}
       pointerEvents="box-none"
     >
-      {/* Shadow wrapper — outer View so iOS shadow works without overflow:hidden */}
-      <View style={styles.shadowWrapper}>
-        {Platform.OS === 'ios' ? (
-          <BlurView
-            intensity={72}
-            tint="light"
-            style={styles.frostedBar}
-            onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
-          >
-            {tabContent}
-          </BlurView>
-        ) : (
-          <View
-            style={[styles.frostedBar, styles.frostedBarAndroid]}
-            onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
-          >
-            {tabContent}
-          </View>
-        )}
+      <View style={styles.pill}>
+        {visibleRoutes.map((route) => {
+          const config = TAB_CONFIG.find((c) => c.routeName === route.name);
+          if (!config) return null;
+          const isActive = state.routes[state.index]?.name === route.name;
+          return (
+            <TabItem
+              key={route.key}
+              config={config}
+              isActive={isActive}
+              onPress={() => handleTabPress(route.name, route.key, isActive)}
+            />
+          );
+        })}
       </View>
     </View>
   );
@@ -295,73 +197,66 @@ export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.J
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    left: 12,
-    right: 12,
+    left: 10,
+    right: 10,
     alignItems: 'center',
   },
-  shadowWrapper: {
-    // Outer shadow layer — must NOT have overflow:hidden so iOS shadows render
+  pill: {
     width: '100%',
-    borderRadius: 32,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 32,
-    elevation: 12,
-  },
-  frostedBar: {
-    // Inner layer — clips content, border, and blur effect
+    backgroundColor: '#141414',
+    borderRadius: 22,
+    paddingVertical: 9,
+    paddingHorizontal: 4,
     flexDirection: 'row',
-    borderRadius: 32,
-    paddingVertical: 6,
     alignItems: 'center',
-    width: '100%',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.6)',
-    overflow: 'hidden', // required for BlurView + borderRadius
-  },
-  // Android: no blur available, use semi-transparent white fallback
-  frostedBarAndroid: {
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
-    borderColor: 'rgba(0, 0, 0, 0.08)',
-  },
-  // Sliding red bubble — absolutely positioned inside frostedBar
-  bubble: {
-    position: 'absolute',
-    top: 4,
-    bottom: 4,
-    backgroundColor: '#e31b1b',
-    borderRadius: 28,
-    // Glow — only visible on iOS (elevation doesn't support custom shadow color)
-    shadowColor: '#e31b1b',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
+    justifyContent: 'space-around',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
     shadowRadius: 20,
+    elevation: 12,
   },
   tabItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
+    paddingVertical: 2,
     minHeight: 44,
-    zIndex: 1, // above bubble
   },
-  centralTabItem: {
-    flex: 1.2,
-  },
-  tabContent: {
-    flexDirection: 'row',
+  iconWrapper: {
     alignItems: 'center',
-    gap: 4,
   },
-  labelWrapper: {
-    overflow: 'hidden',
+  activeLine: {
+    position: 'absolute',
+    bottom: -5,
+    width: 28,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: '#e31b1b',
+    shadowColor: '#e31b1b',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
   },
-  tabLabel: {
-    fontWeight: '600',
-    fontSize: 12,
+  centralItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
   },
-  // Fix 4: placeholder for hidden routes
+  centralButton: {
+    backgroundColor: '#e31b1b',
+    borderRadius: 16,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#e31b1b',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.55,
+    shadowRadius: 12,
+    elevation: 6,
+  },
   hiddenPlaceholder: {
     height: 0,
   },
