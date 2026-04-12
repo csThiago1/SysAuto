@@ -109,6 +109,7 @@ function TabItem({ config, isActive, onPress }: TabItemProps): React.JSX.Element
         activeOpacity={1}
         accessibilityRole="tab"
         accessibilityLabel={config.label}
+        accessibilityState={{ selected: isActive }}
       >
         <Animated.View style={[styles.centralButton, iconAnimStyle]}>
           <Ionicons name="add" size={22} color="#ffffff" />
