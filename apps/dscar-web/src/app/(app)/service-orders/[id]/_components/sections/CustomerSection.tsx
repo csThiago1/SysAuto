@@ -6,20 +6,18 @@ import { CustomerSearch } from "../shared/CustomerSearch"
 import { useCustomerDetail } from "../../_hooks/useCustomerSearch"
 
 const SECTION_TITLE = "text-[11px] font-semibold uppercase tracking-widest text-neutral-500"
-const LABEL = "block text-[10px] font-semibold uppercase tracking-wide text-neutral-400 mb-0.5"
-const INPUT = "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
-const INPUT_DISPLAY = "flex h-8 w-full rounded-md border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-sm text-neutral-600 cursor-default select-all"
+const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
+const INPUT_DISPLAY =
+  "flex h-8 w-full rounded-md border border-neutral-100 bg-neutral-50 px-2.5 py-1 text-sm text-neutral-600 cursor-default select-all"
 
 interface CustomerSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
 }
 
 export function CustomerSection({ form }: CustomerSectionProps) {
-  const { register, control, setValue, watch, formState: { errors } } = form
+  const { control, setValue, watch } = form
   const customerId = watch("customer")
-  const customerType = watch("customer_type")
 
-  // Busca detalhes do cliente selecionado (email, nasc., endereço)
   const { data: detail } = useCustomerDetail(customerId ?? null)
 
   return (
@@ -28,7 +26,7 @@ export function CustomerSection({ form }: CustomerSectionProps) {
         <span className={SECTION_TITLE}>Dados do Cliente</span>
       </div>
 
-      {/* Busca — sempre visível */}
+      {/* Busca / chip */}
       <Controller
         name="customer"
         control={control}
@@ -46,110 +44,83 @@ export function CustomerSection({ form }: CustomerSectionProps) {
             }
             onChange={(customer) => {
               field.onChange(customer?.id ?? null)
-              if (customer) setValue("customer_name", customer.name)
+              setValue("customer_name", customer?.name ?? "")
             }}
           />
         )}
       />
 
-      {/* Linha 1: Nome | CPF | Telefone | Nasc. */}
-      <div className="grid grid-cols-4 gap-2">
-        <div className="col-span-2">
-          <label className={LABEL}>Nome na OS</label>
-          <input
-            className={INPUT}
-            type="text"
-            placeholder="Nome do cliente"
-            {...register("customer_name")}
-          />
-          {errors.customer_name && (
-            <p className="mt-0.5 text-[10px] text-red-600">{errors.customer_name.message}</p>
-          )}
-        </div>
+      {/* Campos do cliente — visíveis apenas quando selecionado */}
+      {customerId && detail && (
+        <>
+          {/* Linha 1: CPF | Telefone | Nascimento | Email */}
+          <div className="grid grid-cols-4 gap-2">
+            <div>
+              <label className={LABEL}>CPF</label>
+              <input className={INPUT_DISPLAY} readOnly value={detail.cpf_masked ?? ""} placeholder="—" />
+            </div>
+            <div>
+              <label className={LABEL}>Telefone</label>
+              <input className={INPUT_DISPLAY} readOnly value={detail.phone_masked ?? ""} placeholder="—" />
+            </div>
+            <div>
+              <label className={LABEL}>Nascimento</label>
+              <input
+                className={INPUT_DISPLAY}
+                readOnly
+                value={
+                  detail.birth_date
+                    ? new Date(detail.birth_date + "T00:00:00").toLocaleDateString("pt-BR")
+                    : ""
+                }
+                placeholder="—"
+              />
+            </div>
+            <div>
+              <label className={LABEL}>E-mail</label>
+              <input className={INPUT_DISPLAY} readOnly value={detail.email ?? ""} placeholder="—" />
+            </div>
+          </div>
 
-        <div>
-          <label className={LABEL}>CPF</label>
-          <input
-            className={INPUT_DISPLAY}
-            readOnly
-            value={detail?.cpf_masked ?? ""}
-            placeholder="—"
-          />
-        </div>
-
-        <div>
-          <label className={LABEL}>Telefone</label>
-          <input
-            className={INPUT_DISPLAY}
-            readOnly
-            value={detail?.phone_masked ?? ""}
-            placeholder="—"
-          />
-        </div>
-      </div>
-
-      {/* Linha 2: Email | Nasc. | Endereço */}
-      <div className="grid grid-cols-4 gap-2">
-        <div className="col-span-2">
-          <label className={LABEL}>E-mail</label>
-          <input
-            className={INPUT_DISPLAY}
-            readOnly
-            value={detail?.email ?? ""}
-            placeholder="—"
-          />
-        </div>
-
-        <div>
-          <label className={LABEL}>Nascimento</label>
-          <input
-            className={INPUT_DISPLAY}
-            readOnly
-            type="text"
-            value={
-              detail?.birth_date
-                ? new Date(detail.birth_date + "T00:00:00").toLocaleDateString("pt-BR")
-                : ""
-            }
-            placeholder="—"
-          />
-        </div>
-
-        <div>
-          {customerType === "private" && (
-            <>
-              <label className={LABEL}>Orçamento</label>
-              <input className={INPUT} type="date" {...register("quotation_date")} />
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Linha 3: Endereço — full width */}
-      <div>
-        <label className={LABEL}>Endereço</label>
-        <input
-          className={INPUT_DISPLAY}
-          readOnly
-          value={
-            detail
-              ? [
-                  detail.street,
-                  detail.street_number,
-                  detail.complement,
-                  detail.neighborhood,
-                  detail.city && detail.state
-                    ? `${detail.city} / ${detail.state}`
-                    : detail.city || detail.state,
-                  detail.zip_code,
-                ]
-                  .filter(Boolean)
-                  .join(", ")
-              : ""
-          }
-          placeholder="—"
-        />
-      </div>
+          {/* Endereço — 7 campos */}
+          <div className="space-y-1.5">
+            <div className="grid grid-cols-[72px_1fr_52px] gap-2">
+              <div>
+                <label className={LABEL}>CEP</label>
+                <input className={INPUT_DISPLAY} readOnly value={detail.zip_code} placeholder="—" />
+              </div>
+              <div>
+                <label className={LABEL}>Rua / Av.</label>
+                <input className={INPUT_DISPLAY} readOnly value={detail.street} placeholder="—" />
+              </div>
+              <div>
+                <label className={LABEL}>Nº</label>
+                <input className={INPUT_DISPLAY} readOnly value={detail.street_number} placeholder="—" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className={LABEL}>Complemento</label>
+                <input className={INPUT_DISPLAY} readOnly value={detail.complement} placeholder="—" />
+              </div>
+              <div>
+                <label className={LABEL}>Bairro</label>
+                <input className={INPUT_DISPLAY} readOnly value={detail.neighborhood} placeholder="—" />
+              </div>
+            </div>
+            <div className="grid grid-cols-[1fr_44px] gap-2">
+              <div>
+                <label className={LABEL}>Cidade</label>
+                <input className={INPUT_DISPLAY} readOnly value={detail.city} placeholder="—" />
+              </div>
+              <div>
+                <label className={LABEL}>UF</label>
+                <input className={INPUT_DISPLAY} readOnly value={detail.state} placeholder="—" />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
