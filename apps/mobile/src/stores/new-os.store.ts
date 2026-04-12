@@ -67,13 +67,13 @@ const initialState = {
 
 // ─── Store ─────────────────────────────────────────────────────────────────────
 
-export const useNewOSStore = create<NewOSState>((set) => ({
+export const useNewOSStore = create<NewOSState>()((set) => ({
   ...initialState,
 
   setVehiclePlate: (plate: string): void => set({ vehiclePlate: plate }),
 
   setVehicleInfo: (info: VehicleInfo | null, source: 'api' | 'manual'): void =>
-    set({ vehicleInfo: info, plateSource: info !== null ? source : source }),
+    set({ vehicleInfo: info, plateSource: info !== null ? source : null }),
 
   setVehicleManualField: (field: 'brand' | 'model' | 'year' | 'color', value: string): void => {
     switch (field) {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -122,21 +123,26 @@ export function Step2Customer({ onNext, onBack }: Step2CustomerProps): React.JSX
 
           {/* Results list */}
           {results.length > 0 && (
-            <View style={styles.resultsList}>
-              {results.map((result) => (
+            <FlatList
+              style={[styles.resultsList, { maxHeight: 200 }]}
+              data={results}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
                 <TouchableOpacity
-                  key={result.id}
                   style={styles.resultRow}
-                  onPress={() => handleSelectCustomer(result)}
+                  onPress={() => handleSelectCustomer(item)}
                   activeOpacity={0.7}
                 >
-                  <Text variant="label">{result.name}</Text>
+                  <Text variant="label">{item.name}</Text>
                   <Text variant="bodySmall" color="#6b7280">
-                    {result.cpf_masked}
+                    {item.cpf_masked}
+                  </Text>
+                  <Text variant="bodySmall" color="#6b7280">
+                    {item.phone_masked}
                   </Text>
                 </TouchableOpacity>
-              ))}
-            </View>
+              )}
+            />
           )}
 
           {/* Manual entry */}

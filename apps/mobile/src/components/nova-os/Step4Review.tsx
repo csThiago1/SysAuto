@@ -57,11 +57,11 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
   const displayModel = vehicleInfo?.model ?? vehicleManualModel;
   const displayYear = vehicleInfo?.year !== undefined ? String(vehicleInfo.year) : vehicleManualYear;
   const displayColor = vehicleInfo?.color ?? vehicleManualColor;
-  const plateBadgeLabel = plateSource === 'api' ? 'Consultado' : 'Manual';
+  const plateBadgeLabel = plateSource === 'api' ? 'API' : 'Manual';
 
   // Derived customer display values
   const displayCustomerName = customer?.name ?? customerManualName;
-  const customerBadgeLabel = customerSource === 'search' ? 'Cadastrado' : 'Novo';
+  const customerBadgeLabel = customerSource === 'search' ? 'Cadastro' : 'Novo';
 
   return (
     <ScrollView
