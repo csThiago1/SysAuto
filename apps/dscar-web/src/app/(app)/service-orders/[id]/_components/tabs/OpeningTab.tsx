@@ -13,14 +13,16 @@ import { FinalSurveySection } from "../sections/FinalSurveySection"
 
 interface OpeningTabProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
+  /** Nome do consultor salvo na OS — repassado para exibição de fallback */
+  consultantName?: string
 }
 
-export function OpeningTab({ form }: OpeningTabProps) {
+export function OpeningTab({ form, consultantName }: OpeningTabProps) {
   const customerType = form.watch("customer_type")
 
   return (
     <div className="space-y-6 py-4">
-      <OpeningInfoSection form={form} />
+      <OpeningInfoSection form={form} consultantName={consultantName} />
       {customerType === "insurer" && <InsurerSection form={form} />}
       {customerType === "private" && <PrivateSection form={form} />}
       <CustomerSection form={form} />
