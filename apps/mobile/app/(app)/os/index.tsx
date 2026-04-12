@@ -178,7 +178,7 @@ function OSHeader({ paddingTop, firstName, stats }: OSHeaderProps): React.JSX.El
       colors={['#1c1c1e', '#2a0e0e']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={[styles.header, { paddingTop: paddingTop + 10 }]}
+      style={[styles.header, { paddingTop: paddingTop + 4 }]}
     >
       {/* Top row: logo + greeting */}
       <View style={styles.headerRow}>
@@ -384,9 +384,9 @@ const styles = StyleSheet.create({
 
   // OS Header
   header: {
-    paddingBottom: 14,
+    paddingBottom: 8,
     paddingHorizontal: 14,
-    gap: 10,
+    gap: 4,
   },
   headerRow: {
     flexDirection: 'row',
@@ -394,20 +394,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   headerLogo: {
-    width: 120,
-    height: 60,
+    width: 160,
+    height: 52,
   },
   headerRight: {
     alignItems: 'flex-end',
     gap: 1,
   },
   headerGreeting: {
-    fontSize: 13,
+    fontSize: 12,
     color: 'rgba(255,255,255,0.5)',
     fontWeight: '400' as const,
   },
   headerName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700' as const,
     color: '#ffffff',
   },

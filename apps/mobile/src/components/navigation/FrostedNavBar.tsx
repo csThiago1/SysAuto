@@ -57,9 +57,9 @@ const TAB_CONFIG: TabConfig[] = [
   },
   {
     routeName: 'perfil/index',
-    iconActive: 'person',
-    iconInactive: 'person-outline',
-    label: 'Perfil',
+    iconActive: 'settings',
+    iconInactive: 'settings-outline',
+    label: 'Config',
   },
 ];
 
