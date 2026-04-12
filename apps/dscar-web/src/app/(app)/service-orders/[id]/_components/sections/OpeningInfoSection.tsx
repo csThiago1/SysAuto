@@ -2,32 +2,19 @@
 
 import { Controller, type UseFormReturn } from "react-hook-form"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { useConsultants } from "../../_hooks/useStaff"
 import { Loader2 } from "lucide-react"
 
 const SECTION_TITLE = "text-[11px] font-semibold uppercase tracking-widest text-neutral-500"
 const LABEL = "block text-xs font-medium text-gray-600 mb-1"
-const SELECT_NATIVE = "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
-
-const CUSTOMER_TYPE_LABELS: Record<string, string> = {
-  private: "Particular",
-  insurer: "Seguradora",
-}
+const SELECT = "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 
 interface OpeningInfoSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
-  /** Nome do consultor salvo na OS — usado como fallback enquanto a lista carrega */
   consultantName?: string
 }
 
-export function OpeningInfoSection({ form, consultantName }: OpeningInfoSectionProps) {
+export function OpeningInfoSection({ form, consultantName: _consultantName }: OpeningInfoSectionProps) {
   const { register, control, formState: { errors } } = form
   const { data: consultants = [], isLoading: loadingConsultants } = useConsultants()
 
@@ -47,44 +34,21 @@ export function OpeningInfoSection({ form, consultantName }: OpeningInfoSectionP
           <Controller
             name="consultant_id"
             control={control}
-            render={({ field }) => {
-              const selectedConsultant = consultants.find((c) => c.id === field.value)
-              // Resolve display text explicitly to avoid shadcn SelectValue
-              // rendering the raw UUID string via the portal.
-              const displayLabel = field.value
-                ? (selectedConsultant?.name ?? consultantName ?? "Consultor não encontrado")
-                : undefined
-              return (
-                <Select
-                  value={field.value ?? ""}
-                  onValueChange={(val) => field.onChange(val === "__none__" ? "" : val)}
-                >
-                  <SelectTrigger className="h-9" disabled={loadingConsultants}>
-                    <SelectValue placeholder="Selecionar consultor...">
-                      {displayLabel}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">
-                      <span className="text-neutral-400">Nenhum</span>
-                    </SelectItem>
-                    {consultants.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        <span>{c.name}</span>
-                        {c.job_title_display && (
-                          <span className="ml-1 text-xs text-neutral-400">({c.job_title_display})</span>
-                        )}
-                      </SelectItem>
-                    ))}
-                    {consultants.length === 0 && !loadingConsultants && (
-                      <div className="px-2 py-1.5 text-sm text-neutral-400 select-none">
-                        Nenhum consultor cadastrado no RH
-                      </div>
-                    )}
-                  </SelectContent>
-                </Select>
-              )
-            }}
+            render={({ field }) => (
+              <select
+                className={SELECT}
+                value={field.value ?? ""}
+                onChange={(e) => field.onChange(e.target.value || null)}
+                disabled={loadingConsultants}
+              >
+                <option value="">Selecionar consultor...</option>
+                {consultants.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}{c.job_title_display ? ` (${c.job_title_display})` : ""}
+                  </option>
+                ))}
+              </select>
+            )}
           />
         </div>
 
@@ -95,20 +59,15 @@ export function OpeningInfoSection({ form, consultantName }: OpeningInfoSectionP
             name="customer_type"
             control={control}
             render={({ field }) => (
-              <Select
+              <select
+                className={SELECT}
                 value={field.value ?? ""}
-                onValueChange={field.onChange}
+                onChange={(e) => field.onChange(e.target.value || null)}
               >
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Selecionar...">
-                    {field.value ? (CUSTOMER_TYPE_LABELS[field.value] ?? field.value) : undefined}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="insurer">Seguradora</SelectItem>
-                  <SelectItem value="private">Particular</SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="">Selecionar...</option>
+                <option value="insurer">Seguradora</option>
+                <option value="private">Particular</option>
+              </select>
             )}
           />
           {errors.customer_type && (
@@ -119,7 +78,7 @@ export function OpeningInfoSection({ form, consultantName }: OpeningInfoSectionP
         {/* Tipo de OS */}
         <div>
           <label className={LABEL}>Tipo de OS</label>
-          <select className={SELECT_NATIVE} {...register("os_type")}>
+          <select className={SELECT} {...register("os_type")}>
             <option value="">Selecionar...</option>
             <option value="bodywork">Chapeação</option>
             <option value="warranty">Garantia</option>
