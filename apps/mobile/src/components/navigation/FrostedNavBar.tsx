@@ -86,6 +86,7 @@ interface TabItemProps {
 function TabItem({ config, isActive, onPress }: TabItemProps): React.JSX.Element {
   // Fix 2: separate pressScale + restingScale for persistent active scale 1.05
   const pressScale = useSharedValue(1);
+  // Must be keyed by route.key in the parent so useSharedValue re-initializes on route change
   const restingScale = useSharedValue(isActive ? 1.05 : 1);
 
   // Fix 6: maxWidth target 56 → 60
@@ -149,7 +150,8 @@ function TabItem({ config, isActive, onPress }: TabItemProps): React.JSX.Element
           <Animated.View style={[styles.labelWrapper, labelAnimStyle]}>
             <Text
               variant="caption"
-              style={[styles.tabLabel, { color: iconColor }]}
+              color={iconColor}
+              style={styles.tabLabel}
               numberOfLines={1}
             >
               {config.label}
