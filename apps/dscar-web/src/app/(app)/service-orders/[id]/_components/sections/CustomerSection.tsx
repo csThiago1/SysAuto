@@ -87,35 +87,35 @@ export function CustomerSection({ form }: CustomerSectionProps) {
             <div className="grid grid-cols-[72px_1fr_52px] gap-2">
               <div>
                 <label className={LABEL}>CEP</label>
-                <input className={INPUT_DISPLAY} readOnly value={detail.zip_code} placeholder="—" />
+                <input className={INPUT_DISPLAY} readOnly value={detail.zip_code || "—"} />
               </div>
               <div>
                 <label className={LABEL}>Rua / Av.</label>
-                <input className={INPUT_DISPLAY} readOnly value={detail.street} placeholder="—" />
+                <input className={INPUT_DISPLAY} readOnly value={detail.street || "—"} />
               </div>
               <div>
                 <label className={LABEL}>Nº</label>
-                <input className={INPUT_DISPLAY} readOnly value={detail.street_number} placeholder="—" />
+                <input className={INPUT_DISPLAY} readOnly value={detail.street_number || "—"} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className={LABEL}>Complemento</label>
-                <input className={INPUT_DISPLAY} readOnly value={detail.complement} placeholder="—" />
+                <input className={INPUT_DISPLAY} readOnly value={detail.complement || "—"} />
               </div>
               <div>
                 <label className={LABEL}>Bairro</label>
-                <input className={INPUT_DISPLAY} readOnly value={detail.neighborhood} placeholder="—" />
+                <input className={INPUT_DISPLAY} readOnly value={detail.neighborhood || "—"} />
               </div>
             </div>
             <div className="grid grid-cols-[1fr_44px] gap-2">
               <div>
                 <label className={LABEL}>Cidade</label>
-                <input className={INPUT_DISPLAY} readOnly value={detail.city} placeholder="—" />
+                <input className={INPUT_DISPLAY} readOnly value={detail.city || "—"} />
               </div>
               <div>
                 <label className={LABEL}>UF</label>
-                <input className={INPUT_DISPLAY} readOnly value={detail.state} placeholder="—" />
+                <input className={INPUT_DISPLAY} readOnly value={detail.state || "—"} />
               </div>
             </div>
           </div>
