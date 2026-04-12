@@ -273,7 +273,7 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
         source="get_customer_type_display", read_only=True
     )
     os_type_display = serializers.CharField(source="get_os_type_display", read_only=True)
-    insurer_display = InsurerMinimalSerializer(source="insurer", read_only=True)
+    insurer_detail = InsurerMinimalSerializer(source="insurer", read_only=True)
     consultant_name = serializers.SerializerMethodField()
     days_in_shop = serializers.SerializerMethodField()
     allowed_transitions = serializers.SerializerMethodField()
@@ -296,7 +296,7 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
             "model",
             "year",
             "color",
-            "insurer_display",
+            "insurer_detail",
             "consultant_name",
             "entry_date",
             "estimated_delivery_date",

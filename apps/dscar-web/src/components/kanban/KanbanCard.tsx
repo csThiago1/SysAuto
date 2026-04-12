@@ -112,9 +112,25 @@ const CardContent = React.memo(function CardContent({
           <div className="flex items-center gap-1 flex-wrap pt-0.5">
             {isOverdue && <UrgencyIndicator order={order} />}
             {!isOverdue && order.insurer_detail && (
-              <span className="text-[10px] text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded-sm border border-indigo-200 truncate max-w-[120px]">
-                {order.insurer_detail.name}
-              </span>
+              <div className="flex items-center gap-1 bg-indigo-50 border border-indigo-200 rounded-sm px-1 py-0.5 max-w-full">
+                {order.insurer_detail.logo ? (
+                  <img
+                    src={order.insurer_detail.logo}
+                    alt=""
+                    className="h-3.5 w-3.5 object-contain shrink-0"
+                  />
+                ) : (
+                  <span
+                    className="h-3.5 w-3.5 rounded-full flex items-center justify-center text-white text-[7px] font-bold shrink-0"
+                    style={{ backgroundColor: order.insurer_detail.brand_color ?? "#6366f1" }}
+                  >
+                    {order.insurer_detail.abbreviation?.charAt(0)}
+                  </span>
+                )}
+                <span className="text-[10px] text-indigo-700 font-medium truncate max-w-[90px]">
+                  {order.insurer_detail.display_name ?? order.insurer_detail.name}
+                </span>
+              </div>
             )}
           </div>
         )}

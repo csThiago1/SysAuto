@@ -59,9 +59,21 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                       </span>
                       <span className="text-xs text-neutral-500 font-medium flex items-center gap-1">
                         {order.customer_type === "insurer" ? (
-                           <><span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-0.5"></span>Seguradora</>
+                          <>
+                            {order.insurer_detail?.logo ? (
+                              <img src={order.insurer_detail.logo} alt="" className="h-3.5 w-3.5 object-contain" />
+                            ) : (
+                              <span
+                                className="h-3.5 w-3.5 rounded-full flex items-center justify-center text-white text-[7px] font-bold shrink-0"
+                                style={{ backgroundColor: order.insurer_detail?.brand_color ?? "#6366f1" }}
+                              >
+                                {order.insurer_detail?.abbreviation?.charAt(0) ?? "S"}
+                              </span>
+                            )}
+                            {order.insurer_detail?.display_name ?? "Seguradora"}
+                          </>
                         ) : (
-                           <><span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-0.5"></span>Particular</>
+                          <><span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-0.5"></span>Particular</>
                         )}
                       </span>
                     </div>
