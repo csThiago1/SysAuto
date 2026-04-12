@@ -29,9 +29,9 @@ interface TabConfig {
 
 const TAB_CONFIG: TabConfig[] = [
   {
-    // app/(app)/index.tsx redirects to /(app)/os, so the active route
-    // name when on the OS list is 'os'. Match that here.
-    routeName: 'os',
+    // Tabs.Screen name="index" — the OS list entry point declared in _layout.tsx.
+    // 'os' is a detail route (href: null) and never appears as a tab route name.
+    routeName: 'index',
     iconActive: 'list',
     iconInactive: 'list-outline',
     label: 'OS',
