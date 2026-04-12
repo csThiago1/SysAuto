@@ -3,6 +3,8 @@ import {
   ActivityIndicator,
   Animated,
   FlatList,
+  Image,
+  ImageSourcePropType,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -10,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Q } from '@nozbe/watermelondb';
 
@@ -23,21 +26,8 @@ import {
   getStatusColor,
   getStatusLabel,
 } from '@/components/os/OSStatusBadge';
-import { SyncIndicator } from '@/components/common/SyncIndicator';
 import { Text } from '@/components/ui/Text';
 
-// ─── Company display names ─────────────────────────────────────────────────
-
-const COMPANY_NAMES: Record<string, string> = {
-  dscar:    'DS Car',
-  pecas:    'Peças Automotivas',
-  vidros:   'Vidros',
-  estetica: 'Estética',
-};
-
-function getCompanyName(slug: string): string {
-  return COMPANY_NAMES[slug] ?? slug;
-}
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -172,59 +162,58 @@ function FilterChip({ label, selected, color, backgroundColor, onPress }: Filter
   );
 }
 
-// ─── Dark header ──────────────────────────────────────────────────────────
+// ─── OS Header ─────────────────────────────────────────────────────────────
 
-interface DarkHeaderProps {
+const LOGO: ImageSourcePropType = require('../../../assets/dscar-logo.png');
+
+interface OSHeaderProps {
   paddingTop: number;
   firstName: string;
-  companyName: string;
   stats: OSStats;
 }
 
-function DarkHeader({ paddingTop, firstName, companyName, stats }: DarkHeaderProps): React.JSX.Element {
+function OSHeader({ paddingTop, firstName, stats }: OSHeaderProps): React.JSX.Element {
   return (
-    <View style={[styles.darkHeader, { paddingTop: paddingTop + 16 }]}>
-      {/* Gradient overlay approximation */}
-      <View style={styles.darkHeaderOverlay} pointerEvents="none" />
-
-      {/* Top row: greeting + sync indicator */}
-      <View style={styles.darkHeaderTopRow}>
-        <View>
-          <Text variant="heading3" style={styles.greetingText}>
-            {getGreeting()}, {firstName} 👋
-          </Text>
-          <Text variant="bodySmall" style={styles.companyText}>
-            {companyName}
-          </Text>
+    <LinearGradient
+      colors={['#1c1c1e', '#2a0e0e']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[styles.header, { paddingTop: paddingTop + 10 }]}
+    >
+      {/* Top row: logo + greeting */}
+      <View style={styles.headerRow}>
+        <Image source={LOGO} style={styles.headerLogo} resizeMode="contain" />
+        <View style={styles.headerRight}>
+          <Text style={styles.headerGreeting}>{getGreeting()} 👋</Text>
+          <Text style={styles.headerName}>{firstName}</Text>
         </View>
-        <SyncIndicator />
       </View>
 
-      {/* Stat chips row */}
+      {/* Stat chips */}
       <View style={styles.statChipsRow}>
         {stats.open > 0 && (
           <View style={[styles.statChip, styles.statChipOpen]}>
-            <Text variant="caption" style={styles.statChipOpenText}>
+            <Text style={[styles.statChipText, styles.statChipOpenText]}>
               {stats.open} Abertas
             </Text>
           </View>
         )}
         {stats.ready > 0 && (
           <View style={[styles.statChip, styles.statChipReady]}>
-            <Text variant="caption" style={styles.statChipReadyText}>
+            <Text style={[styles.statChipText, styles.statChipReadyText]}>
               {stats.ready} Prontas
             </Text>
           </View>
         )}
         {stats.overdue > 0 && (
           <View style={[styles.statChip, styles.statChipOverdue]}>
-            <Text variant="caption" style={styles.statChipOverdueText}>
-              {stats.overdue} ⚠ Atrasadas
+            <Text style={[styles.statChipText, styles.statChipOverdueText]}>
+              {stats.overdue} Atrasadas
             </Text>
           </View>
         )}
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -233,11 +222,9 @@ function DarkHeader({ paddingTop, firstName, companyName, stats }: DarkHeaderPro
 export default function OSListScreen(): React.JSX.Element {
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
-  const activeCompany = useAuthStore((s) => s.activeCompany);
   const stats = useOSStats();
 
   const firstName = user?.name?.split(' ')[0] ?? 'Usuário';
-  const companyName = getCompanyName(activeCompany);
 
   const [search, setSearch] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
@@ -279,10 +266,9 @@ export default function OSListScreen(): React.JSX.Element {
   if (isLoading && orders.length === 0) {
     return (
       <View style={styles.safe}>
-        <DarkHeader
+        <OSHeader
           paddingTop={insets.top}
           firstName={firstName}
-          companyName={companyName}
           stats={stats}
         />
         <View style={styles.skeletonContainer}>
@@ -315,10 +301,9 @@ export default function OSListScreen(): React.JSX.Element {
 
   return (
     <View style={styles.safe}>
-      <DarkHeader
+      <OSHeader
         paddingTop={insets.top}
         firstName={firstName}
-        companyName={companyName}
         stats={stats}
       />
 
@@ -397,66 +382,70 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb',
   },
 
-  // Dark header
-  darkHeader: {
-    backgroundColor: '#0f172a',
-    paddingBottom: 16,
-    paddingHorizontal: 20,
-    gap: 12,
+  // OS Header
+  header: {
+    paddingBottom: 14,
+    paddingHorizontal: 14,
+    gap: 10,
   },
-  darkHeaderOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#1e293b',
-    opacity: 0.5,
-  },
-  darkHeaderTopRow: {
+  headerRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
   },
-  greetingText: {
-    color: '#f1f5f9',
+  headerLogo: {
+    width: 80,
+    height: 44,
   },
-  companyText: {
-    color: '#94a3b8',
-    marginTop: 2,
+  headerRight: {
+    alignItems: 'flex-end',
+    gap: 1,
+  },
+  headerGreeting: {
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.4)',
+    fontWeight: '400' as const,
+  },
+  headerName: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: '#ffffff',
   },
   statChipsRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
     flexWrap: 'wrap',
   },
   statChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
     borderRadius: 20,
+    borderWidth: 1,
+  },
+  statChipText: {
+    fontSize: 11,
+    fontWeight: '600' as const,
   },
   statChipOpen: {
-    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.4)',
+    backgroundColor: 'rgba(252,165,165,0.1)',
+    borderColor: 'rgba(252,165,165,0.35)',
   },
   statChipOpenText: {
-    color: '#93c5fd',
-    fontWeight: '600',
+    color: '#fca5a5',
   },
   statChipReady: {
-    backgroundColor: 'rgba(34, 197, 94, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(34, 197, 94, 0.4)',
+    backgroundColor: 'rgba(134,239,172,0.1)',
+    borderColor: 'rgba(134,239,172,0.35)',
   },
   statChipReadyText: {
     color: '#86efac',
-    fontWeight: '600',
   },
   statChipOverdue: {
-    backgroundColor: 'rgba(245, 158, 11, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.4)',
+    backgroundColor: 'rgba(252,211,77,0.1)',
+    borderColor: 'rgba(252,211,77,0.35)',
   },
   statChipOverdueText: {
     color: '#fcd34d',
-    fontWeight: '600',
   },
 
   // Search
