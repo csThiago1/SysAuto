@@ -8,7 +8,7 @@ from rest_framework import filters, mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
 
 from apps.insurers.models import Insurer
-from apps.insurers.serializers import InsurerSerializer
+from apps.insurers.serializers import InsurerMinimalSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class InsurerViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
 
     permission_classes = [IsAuthenticated]
-    serializer_class = InsurerSerializer
+    serializer_class = InsurerMinimalSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ["name", "trade_name", "abbreviation"]
 

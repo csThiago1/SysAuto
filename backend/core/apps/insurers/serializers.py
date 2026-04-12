@@ -29,10 +29,11 @@ class InsurerMinimalSerializer(serializers.ModelSerializer):
     """Serializer compacto para uso em nested (exibição em OS)."""
 
     display_name = serializers.SerializerMethodField()
+    logo = serializers.CharField(source="logo_url", default="")
 
     class Meta:
         model = Insurer
-        fields = ["id", "name", "trade_name", "brand_color", "abbreviation", "display_name", "uses_cilia"]
+        fields = ["id", "name", "trade_name", "brand_color", "abbreviation", "display_name", "logo", "uses_cilia"]
 
     def get_display_name(self, obj: Insurer) -> str:
         return obj.trade_name or obj.name
