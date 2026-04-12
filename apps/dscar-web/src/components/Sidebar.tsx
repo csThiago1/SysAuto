@@ -172,20 +172,32 @@ function getInitials(name: string | null | undefined): string {
 function DSCarLogoInline({ collapsed }: { collapsed: boolean }) {
   if (collapsed) {
     return (
-      <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#ea0e03] to-[#b50a02] flex items-center justify-center flex-shrink-0">
-        <span className="font-black text-[13px] text-white tracking-tight">DS</span>
-      </div>
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src="/dscar-logo.png"
+        alt="DS Car"
+        className="h-9 w-9 object-contain"
+        draggable={false}
+      />
     );
   }
   return (
-    <div className="flex items-center gap-2.5 animate-fade-in">
+    <div className="flex items-center gap-3 animate-fade-in">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/dscar-logo.png"
         alt="DS Car"
-        className="h-10 w-auto object-contain"
+        className="h-12 w-auto object-contain flex-shrink-0"
         draggable={false}
       />
+      <div className="flex flex-col leading-none">
+        <span className="font-extrabold text-[16px] text-white tracking-wide">
+          DSCAR
+        </span>
+        <span className="font-normal text-[9.5px] text-white/40 tracking-[1.5px] uppercase mt-0.5">
+          Centro Automotivo
+        </span>
+      </div>
     </div>
   );
 }
