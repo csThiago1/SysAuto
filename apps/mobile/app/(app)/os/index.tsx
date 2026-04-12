@@ -62,24 +62,37 @@ function useOSStats(): OSStats {
     const fiveDaysAgo = Date.now() - FIVE_DAYS_MS;
     const collection = database.collections.get<ServiceOrder>('service_orders');
 
-    void Promise.all([
-      collection
-        .query(Q.where('status', Q.notIn(['delivered', 'cancelled'])))
-        .fetchCount(),
-      collection
-        .query(Q.where('status', 'ready'))
-        .fetchCount(),
-      collection
-        .query(
-          Q.and(
-            Q.where('status', Q.notIn(['delivered', 'cancelled'])),
-            Q.where('created_at_remote', Q.lt(fiveDaysAgo)),
-          ),
-        )
-        .fetchCount(),
-    ]).then(([open, ready, overdue]) => {
-      setStats({ open, ready, overdue });
-    });
+    const sub1 = collection
+      .query(Q.where('status', Q.notIn(['delivered', 'cancelled'])))
+      .observeCount()
+      .subscribe((count: number) => {
+        setStats((prev) => ({ ...prev, open: count }));
+      });
+
+    const sub2 = collection
+      .query(Q.where('status', 'ready'))
+      .observeCount()
+      .subscribe((count: number) => {
+        setStats((prev) => ({ ...prev, ready: count }));
+      });
+
+    const sub3 = collection
+      .query(
+        Q.and(
+          Q.where('status', Q.notIn(['delivered', 'cancelled'])),
+          Q.where('created_at_remote', Q.lt(fiveDaysAgo)),
+        ),
+      )
+      .observeCount()
+      .subscribe((count: number) => {
+        setStats((prev) => ({ ...prev, overdue: count }));
+      });
+
+    return () => {
+      sub1.unsubscribe();
+      sub2.unsubscribe();
+      sub3.unsubscribe();
+    };
   }, []);
 
   return stats;

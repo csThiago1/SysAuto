@@ -8,12 +8,12 @@ function formatLastSync(lastSyncAt: number): string {
   const diffMin = Math.floor(diffMs / (1000 * 60));
 
   if (diffMin < 1) return 'Sincronizado agora';
-  if (diffMin === 1) return 'Sync ha 1 min';
-  if (diffMin < 60) return `Sync ha ${diffMin} min`;
+  if (diffMin === 1) return 'Sincronizado há 1 min';
+  if (diffMin < 60) return `Sincronizado há ${diffMin} min`;
 
   const diffH = Math.floor(diffMin / 60);
-  if (diffH === 1) return 'Sync ha 1 h';
-  return `Sync ha ${diffH} h`;
+  if (diffH === 1) return 'Sincronizado há 1 h';
+  return `Sincronizado há ${diffH} h`;
 }
 
 export function SyncIndicator(): React.JSX.Element {
@@ -24,7 +24,7 @@ export function SyncIndicator(): React.JSX.Element {
       <View style={styles.container}>
         <View style={[styles.dot, styles.dotOffline]} />
         <Text variant="caption" color="#ef4444">
-          Offline
+          Sem conexão
         </Text>
       </View>
     );
@@ -45,7 +45,7 @@ export function SyncIndicator(): React.JSX.Element {
     <View style={styles.container}>
       <View style={[styles.dot, styles.dotOnline]} />
       <Text variant="caption" color="#6b7280">
-        {lastSyncAt != null ? formatLastSync(lastSyncAt) : 'Online'}
+        {lastSyncAt != null ? formatLastSync(lastSyncAt) : 'Conectado'}
       </Text>
     </View>
   );

@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { useAuth } from '@/hooks/useAuth';
 
 const ROLE_LABELS: Record<string, string> = {
-  OWNER: 'Proprietario',
+  OWNER: 'Proprietário',
   ADMIN: 'Administrador',
   MANAGER: 'Gerente',
   CONSULTANT: 'Consultor',
@@ -36,7 +36,7 @@ export default function PerfilScreen() {
             </Text>
           </View>
           <Text variant="heading3" style={styles.userName}>
-            {user?.name ?? 'Usuario'}
+            {user?.name ?? 'Usuário'}
           </Text>
           <Text variant="bodySmall" color="#6b7280">
             {user?.email ?? ''}
@@ -47,7 +47,7 @@ export default function PerfilScreen() {
         <Card style={styles.infoCard}>
           <View style={styles.infoRow}>
             <Text variant="label" color="#6b7280">
-              Funcao
+              Função
             </Text>
             <Text variant="body">
               {user?.role ? (ROLE_LABELS[user.role] ?? user.role) : '—'}
@@ -70,7 +70,7 @@ export default function PerfilScreen() {
               Ambiente
             </Text>
             <Text variant="body" color={__DEV__ ? '#b45309' : '#15803d'}>
-              {__DEV__ ? 'Desenvolvimento' : 'Producao'}
+              {__DEV__ ? 'Desenvolvimento' : 'Produção'}
             </Text>
           </View>
         </Card>

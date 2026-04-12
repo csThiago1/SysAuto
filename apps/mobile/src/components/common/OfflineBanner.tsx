@@ -13,7 +13,7 @@ export function OfflineBanner() {
   return (
     <View style={[styles.banner, { paddingTop: insets.top > 0 ? insets.top : 8 }]}>
       <Text variant="label" style={styles.text}>
-        Sem conexao — modo offline
+        Sem conexão — modo offline
       </Text>
     </View>
   );

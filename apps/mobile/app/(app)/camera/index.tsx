@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { CameraView, CameraType, FlashMode, useCameraPermissions } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { SaveFormat } from 'expo-image-manipulator';
@@ -165,8 +166,6 @@ export default function CameraScreen(): React.ReactElement {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  const flashIcon = flash === 'on' ? '⚡' : '🔦';
-
   return (
     <View style={styles.container}>
       <CameraView
@@ -193,9 +192,13 @@ export default function CameraScreen(): React.ReactElement {
           disabled={isSaving}
           activeOpacity={0.7}
         >
-          <Text style={styles.sideButtonIcon}>{flashIcon}</Text>
+          <Ionicons
+            name={flash === 'on' ? 'flash' : 'flash-off-outline'}
+            size={26}
+            color={flash === 'on' ? '#facc15' : '#ffffff'}
+          />
           <Text style={styles.sideButtonLabel}>
-            {flash === 'on' ? 'Flash on' : 'Flash off'}
+            {flash === 'on' ? 'Flash ligado' : 'Flash desligado'}
           </Text>
         </TouchableOpacity>
 
@@ -216,7 +219,7 @@ export default function CameraScreen(): React.ReactElement {
           disabled={isSaving}
           activeOpacity={0.7}
         >
-          <Text style={styles.sideButtonIcon}>🔄</Text>
+          <Ionicons name="camera-reverse-outline" size={26} color="#ffffff" />
           <Text style={styles.sideButtonLabel}>Virar</Text>
         </TouchableOpacity>
       </View>
@@ -314,9 +317,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 64,
     height: 64,
-  },
-  sideButtonIcon: {
-    fontSize: 26,
   },
   sideButtonLabel: {
     color: '#ffffff',

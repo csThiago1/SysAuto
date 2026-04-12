@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -18,23 +18,17 @@ import type { ServiceOrder } from '@/db/models/ServiceOrder';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-type ChecklistStatus = 'reception' | 'initial_survey' | 'final_survey';
-
-const CHECKLIST_STATUSES: readonly ChecklistStatus[] = [
-  'reception',
-  'initial_survey',
-  'final_survey',
-] as const;
-
-const CHECKLIST_TYPE_LABEL: Record<ChecklistStatus, string> = {
+const CHECKLIST_TYPE_LABEL: Record<string, string> = {
   reception: 'Checklist de Entrada',
   initial_survey: 'Vistoria Inicial',
   final_survey: 'Vistoria Final',
+  in_progress: 'Em Execução',
+  waiting_parts: 'Aguardando Peça',
+  budget: 'Orçamento',
+  approved: 'Aprovado',
+  completed: 'Concluído',
+  delivered: 'Entregue',
 };
-
-function isChecklistStatus(status: string): status is ChecklistStatus {
-  return (CHECKLIST_STATUSES as readonly string[]).includes(status);
-}
 
 // ─── ChecklistCard ────────────────────────────────────────────────────────────
 
@@ -48,9 +42,7 @@ function ChecklistCard({ order, onPress }: ChecklistCardProps): React.JSX.Elemen
     (state) => state.queue.filter((item) => item.osId === order.remoteId).length,
   );
 
-  const checklistLabel = isChecklistStatus(order.status)
-    ? CHECKLIST_TYPE_LABEL[order.status]
-    : order.status;
+  const checklistLabel = CHECKLIST_TYPE_LABEL[order.status] ?? order.status;
 
   return (
     <TouchableOpacity
@@ -103,7 +95,7 @@ function EmptyState(): React.JSX.Element {
         Nenhuma OS aguardando checklist
       </Text>
       <Text variant="bodySmall" color="#9ca3af" style={styles.emptyHint}>
-        OS em recepção, vistoria inicial ou vistoria final aparecem aqui.
+        Nenhuma OS encontrada. Sincronize para carregar as ordens de serviço.
       </Text>
     </View>
   );
@@ -116,10 +108,7 @@ export default function ChecklistIndexScreen(): React.JSX.Element {
 
   const { orders, isLoading, isRefreshing, refetch } = useServiceOrdersList({});
 
-  const checklistOrders = useMemo(
-    () => orders.filter((o) => isChecklistStatus(o.status)),
-    [orders],
-  );
+  const checklistOrders = orders;
 
   function handleCardPress(order: ServiceOrder): void {
     router.push(`/(app)/checklist/${order.remoteId}`);
