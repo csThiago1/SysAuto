@@ -14,12 +14,11 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Q } from '@nozbe/watermelondb';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 import { ServiceOrder } from '@/db/models/ServiceOrder';
-import { database } from '@/db/index';
 import { useServiceOrdersList } from '@/hooks/useServiceOrders';
-import { useAuthStore } from '@/stores/auth.store';
 import { OSCard } from '@/components/os/OSCard';
 import {
   getStatusBackgroundColor,
@@ -28,65 +27,6 @@ import {
 } from '@/components/os/OSStatusBadge';
 import { Text } from '@/components/ui/Text';
 
-
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Bom dia';
-  if (hour < 18) return 'Boa tarde';
-  return 'Boa noite';
-}
-
-// ─── OS stats hook (WatermelonDB counts) ──────────────────────────────────
-
-interface OSStats {
-  open: number;
-  ready: number;
-  overdue: number;
-}
-
-function useOSStats(): OSStats {
-  const [stats, setStats] = useState<OSStats>({ open: 0, ready: 0, overdue: 0 });
-
-  useEffect(() => {
-    const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
-    const fiveDaysAgo = Date.now() - FIVE_DAYS_MS;
-    const collection = database.collections.get<ServiceOrder>('service_orders');
-
-    const sub1 = collection
-      .query(Q.where('status', Q.notIn(['delivered', 'cancelled'])))
-      .observeCount()
-      .subscribe((count: number) => {
-        setStats((prev) => ({ ...prev, open: count }));
-      });
-
-    const sub2 = collection
-      .query(Q.where('status', 'ready'))
-      .observeCount()
-      .subscribe((count: number) => {
-        setStats((prev) => ({ ...prev, ready: count }));
-      });
-
-    const sub3 = collection
-      .query(
-        Q.and(
-          Q.where('status', Q.notIn(['delivered', 'cancelled'])),
-          Q.where('created_at_remote', Q.lt(fiveDaysAgo)),
-        ),
-      )
-      .observeCount()
-      .subscribe((count: number) => {
-        setStats((prev) => ({ ...prev, overdue: count }));
-      });
-
-    return () => {
-      sub1.unsubscribe();
-      sub2.unsubscribe();
-      sub3.unsubscribe();
-    };
-  }, []);
-
-  return stats;
-}
 
 // ─── Status chips configuration ───────────────────────────────────────────
 
@@ -168,50 +108,43 @@ const LOGO: ImageSourcePropType = require('../../../assets/dscar-logo.png');
 
 interface OSHeaderProps {
   paddingTop: number;
-  firstName: string;
-  stats: OSStats;
 }
 
-function OSHeader({ paddingTop, firstName, stats }: OSHeaderProps): React.JSX.Element {
-  const hasChips = stats.open > 0 || stats.ready > 0 || stats.overdue > 0;
+function OSHeader({ paddingTop }: OSHeaderProps): React.JSX.Element {
+  const navigation = useNavigation();
+  const canGoBack = navigation.canGoBack();
+
   return (
     <LinearGradient
-      colors={['#1c1c1e', '#2a0e0e']}
+      colors={['#1c1c1e', '#141414']}
       start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={[styles.header, { paddingTop: paddingTop + 2 }]}
+      end={{ x: 0, y: 1 }}
+      style={[styles.header, { paddingTop: paddingTop + 8 }]}
     >
       <View style={styles.headerRow}>
-        <Image source={LOGO} style={styles.headerLogo} resizeMode="contain" />
-        <View style={styles.headerRight}>
-          <Text style={styles.headerGreeting}>{getGreeting()}</Text>
-          <Text style={styles.headerName}>{firstName}</Text>
-          {hasChips && (
-            <View style={styles.statChipsRow}>
-              {stats.open > 0 && (
-                <View style={[styles.statChip, styles.statChipOpen]}>
-                  <Text style={[styles.statChipText, styles.statChipOpenText]}>
-                    {stats.open} Abertas
-                  </Text>
-                </View>
-              )}
-              {stats.ready > 0 && (
-                <View style={[styles.statChip, styles.statChipReady]}>
-                  <Text style={[styles.statChipText, styles.statChipReadyText]}>
-                    {stats.ready} Prontas
-                  </Text>
-                </View>
-              )}
-              {stats.overdue > 0 && (
-                <View style={[styles.statChip, styles.statChipOverdue]}>
-                  <Text style={[styles.statChipText, styles.statChipOverdueText]}>
-                    {stats.overdue} Atrasadas
-                  </Text>
-                </View>
-              )}
-            </View>
-          )}
+        {canGoBack ? (
+          <TouchableOpacity
+            style={styles.headerBtn}
+            onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="chevron-back" size={22} color="#ffffff" />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.headerBtn} />
+        )}
+
+        <View style={styles.headerLogoWrapper}>
+          <Image source={LOGO} style={styles.headerLogo} resizeMode="cover" />
         </View>
+
+        <TouchableOpacity
+          style={styles.headerBtn}
+          onPress={() => navigation.navigate('notificacoes' as never)}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="notifications-outline" size={22} color="#ffffff" />
+        </TouchableOpacity>
       </View>
     </LinearGradient>
   );
@@ -221,10 +154,6 @@ function OSHeader({ paddingTop, firstName, stats }: OSHeaderProps): React.JSX.El
 
 export default function OSListScreen(): React.JSX.Element {
   const insets = useSafeAreaInsets();
-  const user = useAuthStore((s) => s.user);
-  const stats = useOSStats();
-
-  const firstName = user?.name?.split(' ')[0] ?? 'Usuário';
 
   const [search, setSearch] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
@@ -266,11 +195,7 @@ export default function OSListScreen(): React.JSX.Element {
   if (isLoading && orders.length === 0) {
     return (
       <View style={styles.safe}>
-        <OSHeader
-          paddingTop={insets.top}
-          firstName={firstName}
-          stats={stats}
-        />
+        <OSHeader paddingTop={insets.top} />
         <View style={styles.skeletonContainer}>
           <SkeletonCard />
           <SkeletonCard />
@@ -301,11 +226,7 @@ export default function OSListScreen(): React.JSX.Element {
 
   return (
     <View style={styles.safe}>
-      <OSHeader
-        paddingTop={insets.top}
-        firstName={firstName}
-        stats={stats}
-      />
+      <OSHeader paddingTop={insets.top} />
 
       {/* Search input */}
       <View style={styles.searchWrapper}>
@@ -383,72 +304,35 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb',
   },
 
-  // OS Header
+  // Header
   header: {
-    paddingBottom: 10,
-    paddingHorizontal: 14,
+    paddingBottom: 12,
+    paddingHorizontal: 12,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  headerLogo: {
+  headerBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerLogoWrapper: {
     flex: 1,
-    height: 88,
-    marginRight: 12,
+    height: 52,
+    marginHorizontal: 12,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  headerRight: {
-    alignItems: 'flex-end',
-    gap: 3,
-    minWidth: 90,
-  },
-  headerGreeting: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.5)',
-    fontWeight: '400' as const,
-  },
-  headerName: {
-    fontSize: 22,
-    fontWeight: '700' as const,
-    color: '#ffffff',
-  },
-  statChipsRow: {
-    flexDirection: 'row',
-    gap: 4,
-    flexWrap: 'wrap',
-    justifyContent: 'flex-end',
-  },
-  statChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  statChipText: {
-    fontSize: 11,
-    fontWeight: '600' as const,
-  },
-  statChipOpen: {
-    backgroundColor: 'rgba(252,165,165,0.1)',
-    borderColor: 'rgba(252,165,165,0.35)',
-  },
-  statChipOpenText: {
-    color: '#fca5a5',
-  },
-  statChipReady: {
-    backgroundColor: 'rgba(134,239,172,0.1)',
-    borderColor: 'rgba(134,239,172,0.35)',
-  },
-  statChipReadyText: {
-    color: '#86efac',
-  },
-  statChipOverdue: {
-    backgroundColor: 'rgba(252,211,77,0.1)',
-    borderColor: 'rgba(252,211,77,0.35)',
-  },
-  statChipOverdueText: {
-    color: '#fcd34d',
+  headerLogo: {
+    width: '100%',
+    height: '100%',
   },
 
   // Search

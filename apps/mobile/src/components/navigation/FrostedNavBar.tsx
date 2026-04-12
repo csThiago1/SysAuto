@@ -38,9 +38,9 @@ const TAB_CONFIG: TabConfig[] = [
   },
   {
     routeName: 'busca/index',
-    iconActive: 'search',
-    iconInactive: 'search-outline',
-    label: 'Busca',
+    iconActive: 'calendar',
+    iconInactive: 'calendar-outline',
+    label: 'Agenda',
   },
   {
     routeName: 'nova-os/index',
