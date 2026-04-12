@@ -394,12 +394,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   headerLogo: {
-    width: 200,
-    height: 80,
+    flex: 1,
+    height: 88,
+    marginRight: 12,
   },
   headerRight: {
     alignItems: 'flex-end',
     gap: 3,
+    minWidth: 90,
   },
   headerGreeting: {
     fontSize: 13,
