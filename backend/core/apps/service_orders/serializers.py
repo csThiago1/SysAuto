@@ -520,7 +520,8 @@ class ServiceOrderSyncSerializer(serializers.ModelSerializer):
     o protocolo de sync do WatermelonDB.
     """
 
-    remote_id = serializers.CharField(source="id")
+    id = serializers.UUIDField()                      # obrigatório pelo protocolo WatermelonDB sync
+    remote_id = serializers.CharField(source="id")   # mantido para o campo remote_id do schema
     vehicle_brand = serializers.CharField(source="make")
     vehicle_model = serializers.CharField(source="model")
     vehicle_year = serializers.IntegerField(source="year", allow_null=True)
@@ -539,6 +540,7 @@ class ServiceOrderSyncSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceOrder
         fields = [
+            "id",
             "remote_id",
             "number",
             "status",
