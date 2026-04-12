@@ -37,6 +37,7 @@ export function VehicleSection({ form }: VehicleSectionProps) {
       if (plateData.chassis) setValue("chassis", plateData.chassis)
       toast.success("Dados do veículo preenchidos pela placa!")
     }
+  // watch is stable across renders (RHF guarantee) — only run when plateData or isFetching changes
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plateData, isFetching])
 
@@ -57,6 +58,7 @@ export function VehicleSection({ form }: VehicleSectionProps) {
         <div className="flex-1">
           <label className={LABEL}>Placa *</label>
           <div className="flex items-center gap-2">
+            {/* h-9 intentional — placa é campo destaque */}
             <input
               className="flex h-9 w-32 rounded-md border-2 border-input bg-background px-3 py-1 text-base font-bold font-mono tracking-widest shadow-sm focus:outline-none focus:ring-1 focus:ring-ring uppercase"
               type="text"

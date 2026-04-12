@@ -6,8 +6,6 @@ import { DateTimeNow } from "../shared/DateTimeNow"
 
 const SECTION_TITLE = "text-[11px] font-semibold uppercase tracking-widest text-neutral-500"
 const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
-const SELECT =
-  "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 const INPUT =
   "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 
@@ -39,7 +37,7 @@ export function EntrySection({ form }: EntrySectionProps) {
               />
             )}
           />
-          <p className="mt-0.5 text-[9px] text-amber-600">Preencher muda status</p>
+          <p className="mt-0.5 text-xs text-amber-600">Preencher muda status</p>
         </div>
         <div>
           <label className={LABEL}>KM entrada</label>
@@ -53,7 +51,7 @@ export function EntrySection({ form }: EntrySectionProps) {
         </div>
         <div>
           <label className={LABEL}>Localização</label>
-          <select className={SELECT} {...register("vehicle_location")}>
+          <select className={INPUT} {...register("vehicle_location")}>
             <option value="workshop">Na Oficina</option>
             <option value="in_transit">Em Trânsito</option>
           </select>

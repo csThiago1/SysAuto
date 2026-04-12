@@ -36,23 +36,7 @@ export function SchedulingSection({ form }: SchedulingSectionProps) {
         <span className={SECTION_TITLE}>Agendamento e Previsão</span>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Agendamento */}
-        <div>
-          <label className={LABEL}>Data de agendamento</label>
-          <Controller
-            name="scheduling_date"
-            control={control}
-            render={({ field }) => (
-              <DateTimeNow
-                value={field.value ? field.value.slice(0, 16) : ""}
-                onChange={field.onChange}
-                onSetNow={(iso) => field.onChange(iso)}
-              />
-            )}
-          />
-        </div>
-
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {/* Dias de reparo */}
         <div>
           <label className={LABEL}>Dias estimados de reparo</label>
