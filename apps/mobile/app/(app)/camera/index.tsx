@@ -86,7 +86,7 @@ export default function CameraScreen(): React.ReactElement {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.permissionCancelButton}
-          onPress={() => router.back()}
+          onPress={() => router.replace(`/(app)/checklist/${osId ?? ''}`)}
           activeOpacity={0.8}
         >
           <Text style={styles.permissionCancelText}>Voltar</Text>
@@ -154,8 +154,9 @@ export default function CameraScreen(): React.ReactElement {
         localUri: destFile.uri,
       });
 
-      // 7. Navigate back
-      router.back();
+      // 7. Retorna para o checklist da OS (navegação explícita — evita
+      //    router.back() que retorna ao Tab raiz em vez da tela [osId])
+      router.replace(`/(app)/checklist/${osId ?? ''}`);
     } catch (err: unknown) {
       console.error('[CameraScreen] capture error:', err);
       setIsSaving(false);
