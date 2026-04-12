@@ -12,11 +12,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { OSDetailHeader } from '@/components/os/OSDetailHeader';
 import { useServiceOrder } from '@/hooks/useServiceOrders';
+import { useShallow } from 'zustand/react/shallow';
+import { usePhotoStore } from '@/stores/photo.store';
+import { useChecklistItemsStore } from '@/stores/checklist-items.store';
 
 // ─── Extended detail type (superset of what the hook returns) ─────────────────
 
@@ -72,8 +76,8 @@ interface ServiceOrderDetail {
 const FOLDER_LABELS: Record<string, string> = {
   checklist_entrada: 'Checklist de Entrada',
   acompanhamento: 'Acompanhamento',
-  checklist_saida: 'Checklist de Saida',
-  pericia: 'Pericia',
+  checklist_saida: 'Checklist de Saída',
+  pericia: 'Perícia',
   outros: 'Outros',
 };
 
@@ -81,13 +85,30 @@ const OS_TYPE_LABELS: Record<string, string> = {
   insurance: 'Sinistro',
   particular: 'Particular',
   warranty: 'Garantia',
-  revision: 'Revisao',
+  revision: 'Revisão',
 };
 
 const CUSTOMER_TYPE_LABELS: Record<string, string> = {
   individual: 'Particular',
   insurer: 'Seguradora',
   company: 'Empresa',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  reception:        'Recepção',
+  initial_survey:   'Vistoria Inicial',
+  budget:           'Orçamento',
+  waiting_approval: 'Ag. Aprovação',
+  approved:         'Aprovado',
+  in_progress:      'Em Andamento',
+  waiting_parts:    'Ag. Peças',
+  final_survey:     'Vistoria Final',
+  ready:            'Pronto',
+  polishing:        'Polimento',
+  painting:         'Pintura',
+  assembly:         'Montagem',
+  delivered:        'Entregue',
+  cancelled:        'Cancelado',
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -239,12 +260,15 @@ interface TransitionLogItemProps {
 }
 
 function TransitionLogItem({ log }: TransitionLogItemProps): React.JSX.Element {
+  const fromLabel = STATUS_LABELS[log.from_status] ?? log.from_status;
+  const toLabel = STATUS_LABELS[log.to_status] ?? log.to_status;
+
   return (
     <View style={styles.logItem}>
       <View style={styles.logDot} />
       <View style={styles.logContent}>
         <Text variant="bodySmall" color="#374151">
-          {log.from_status} → {log.to_status}
+          {fromLabel} → {toLabel}
         </Text>
         <Text variant="caption" color="#9ca3af">
           {formatDateTime(log.changed_at)}
@@ -253,6 +277,49 @@ function TransitionLogItem({ log }: TransitionLogItemProps): React.JSX.Element {
             : ''}
         </Text>
       </View>
+    </View>
+  );
+}
+
+// ─── Checklist Progress Row ───────────────────────────────────────────────────
+
+interface ChecklistProgressRowProps {
+  photoCount: number;
+  ok: number;
+  attention: number;
+  critical: number;
+}
+
+function ChecklistProgressRow({ photoCount, ok, attention, critical }: ChecklistProgressRowProps): React.JSX.Element {
+  const hasAny = photoCount > 0 || ok > 0 || attention > 0 || critical > 0;
+  if (!hasAny) return <View style={styles.progressRowEmpty} />;
+
+  return (
+    <View style={styles.progressRow}>
+      {photoCount > 0 && (
+        <View style={styles.progressChip}>
+          <Ionicons name="camera-outline" size={12} color="#6b7280" />
+          <Text variant="caption" color="#6b7280">{photoCount} foto{photoCount !== 1 ? 's' : ''}</Text>
+        </View>
+      )}
+      {ok > 0 && (
+        <View style={[styles.progressChip, styles.progressChipOk]}>
+          <Ionicons name="checkmark-circle" size={12} color="#16a34a" />
+          <Text variant="caption" style={{ color: '#16a34a' }}>{ok} OK</Text>
+        </View>
+      )}
+      {attention > 0 && (
+        <View style={[styles.progressChip, styles.progressChipAttention]}>
+          <Ionicons name="warning" size={12} color="#d97706" />
+          <Text variant="caption" style={{ color: '#d97706' }}>{attention} Atenção</Text>
+        </View>
+      )}
+      {critical > 0 && (
+        <View style={[styles.progressChip, styles.progressChipCritical]}>
+          <Ionicons name="alert-circle" size={12} color="#dc2626" />
+          <Text variant="caption" style={{ color: '#dc2626' }}>{critical} Crítico</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -270,9 +337,20 @@ export default function OSDetailScreen(): React.JSX.Element {
   const { order: rawOrder, isLoading } = useServiceOrder(id ?? '');
   const order = rawOrder as ServiceOrderDetail | null;
 
+  const osId = id ?? '';
+  const photoCount = usePhotoStore(
+    (s) => s.queue.filter((i) => i.osId === osId).length,
+  );
+  const { ok: itemsOk, attention: itemsAttention, critical: itemsCritical } =
+    useChecklistItemsStore(useShallow((s) => s.getSummary(osId, 'entrada')));
+
   const handleBack = useCallback((): void => {
-    router.back();
+    router.replace('/(app)');
   }, [router]);
+
+  const handleChecklist = useCallback((): void => {
+    router.push(`/(app)/checklist/${id ?? ''}`);
+  }, [router, id]);
 
   const handlePhotoPress = useCallback((url: string): void => {
     setPreviewUrl(url);
@@ -288,8 +366,9 @@ export default function OSDetailScreen(): React.JSX.Element {
       <SafeAreaView style={styles.safe} edges={['bottom']}>
         <View style={styles.loadingHeader}>
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={20} color="#e31b1b" />
             <Text variant="body" color="#e31b1b">
-              {'← Voltar'}
+              Ordens de Serviço
             </Text>
           </TouchableOpacity>
         </View>
@@ -304,10 +383,10 @@ export default function OSDetailScreen(): React.JSX.Element {
       <SafeAreaView style={styles.safe} edges={['bottom']}>
         <View style={styles.emptyContainer}>
           <Text variant="heading3" color="#374151">
-            OS nao encontrada
+            OS não encontrada
           </Text>
           <Text variant="bodySmall" color="#9ca3af" style={styles.emptyHint}>
-            A OS solicitada nao existe ou voce nao tem permissao para visualiza-la.
+            A OS solicitada não existe ou você não tem permissão para visualizá-la.
           </Text>
           <Button label="Voltar" variant="secondary" onPress={handleBack} style={styles.emptyButton} />
         </View>
@@ -343,6 +422,20 @@ export default function OSDetailScreen(): React.JSX.Element {
         onBack={handleBack}
       />
 
+      {/* ── Botão Checklist ─────────────────────────────────────────────── */}
+      <TouchableOpacity style={styles.checklistButton} onPress={handleChecklist} activeOpacity={0.8}>
+        <Ionicons name="camera-outline" size={18} color="#ffffff" />
+        <Text variant="label" color="#ffffff">
+          Checklist Fotográfico
+        </Text>
+      </TouchableOpacity>
+      <ChecklistProgressRow
+        photoCount={photoCount}
+        ok={itemsOk}
+        attention={itemsAttention}
+        critical={itemsCritical}
+      />
+
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -370,7 +463,7 @@ export default function OSDetailScreen(): React.JSX.Element {
           <View style={styles.totalsRow}>
             <View style={styles.totalItem}>
               <Text variant="caption" color="#6b7280">
-                Pecas
+                Peças
               </Text>
               <Text variant="bodySmall" color="#374151">
                 {formatCurrency(order.parts_total)}
@@ -378,7 +471,7 @@ export default function OSDetailScreen(): React.JSX.Element {
             </View>
             <View style={styles.totalItem}>
               <Text variant="caption" color="#6b7280">
-                Servicos
+                Serviços
               </Text>
               <Text variant="bodySmall" color="#374151">
                 {formatCurrency(order.services_total)}
@@ -415,22 +508,22 @@ export default function OSDetailScreen(): React.JSX.Element {
           </>
         )}
 
-        {/* ── Secao 3: Pecas e Servicos ─────────────────────────────────── */}
+        {/* ── Secao 3: Peças e Serviços ─────────────────────────────────── */}
         {hasItems && (
           <>
-            <SectionHeader title="Pecas e Servicos" />
+            <SectionHeader title="Peças e Serviços" />
             <Card style={styles.card}>
               {hasParts && (
                 <>
                   <Text variant="label" color="#6b7280" style={styles.subsectionTitle}>
-                    Pecas
+                    Peças
                   </Text>
                   {order.parts!.map((item) => (
                     <LineItemRow key={item.id} item={item} />
                   ))}
                   <View style={styles.subtotalRow}>
                     <Text variant="bodySmall" color="#6b7280">
-                      Subtotal pecas
+                      Subtotal peças
                     </Text>
                     <Text variant="label" color="#374151">
                       {formatCurrency(order.parts_total)}
@@ -444,14 +537,14 @@ export default function OSDetailScreen(): React.JSX.Element {
               {hasLaborItems && (
                 <>
                   <Text variant="label" color="#6b7280" style={styles.subsectionTitle}>
-                    Servicos
+                    Serviços
                   </Text>
                   {order.labor_items!.map((item) => (
                     <LineItemRow key={item.id} item={item} />
                   ))}
                   <View style={styles.subtotalRow}>
                     <Text variant="bodySmall" color="#6b7280">
-                      Subtotal servicos
+                      Subtotal serviços
                     </Text>
                     <Text variant="label" color="#374151">
                       {formatCurrency(order.services_total)}
@@ -466,7 +559,7 @@ export default function OSDetailScreen(): React.JSX.Element {
         {/* ── Secao 4: Historico ────────────────────────────────────────── */}
         {hasHistory && (
           <>
-            <SectionHeader title="Historico de Status" />
+            <SectionHeader title="Histórico de Status" />
             <Card style={styles.card}>
               {order.transition_logs!.map((log) => (
                 <TransitionLogItem key={log.id} log={log} />
@@ -519,6 +612,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f3f4f6',
   },
   backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
     paddingVertical: 4,
   },
   // Skeleton
@@ -667,6 +763,49 @@ const styles = StyleSheet.create({
   logContent: {
     flex: 1,
     gap: 2,
+  },
+  // Checklist button
+  checklistButton: {
+    backgroundColor: '#e31b1b',
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 0,
+    paddingVertical: 12,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  // Checklist progress row
+  progressRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 2,
+  },
+  progressRowEmpty: {
+    height: 8,
+  },
+  progressChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 20,
+  },
+  progressChipOk: {
+    backgroundColor: '#dcfce7',
+  },
+  progressChipAttention: {
+    backgroundColor: '#fef3c7',
+  },
+  progressChipCritical: {
+    backgroundColor: '#fee2e2',
   },
   // Bottom spacing
   bottomPadding: {

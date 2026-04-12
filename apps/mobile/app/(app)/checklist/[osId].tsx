@@ -13,8 +13,11 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { Text } from '@/components/ui/Text';
 import { PhotoSlotGrid } from '@/components/checklist/PhotoSlotGrid';
+import { ItemChecklistGrid } from '@/components/checklist/ItemChecklistGrid';
 import { useServiceOrder } from '@/hooks/useServiceOrders';
 import { usePhotoStore, uploadPendingPhotos } from '@/stores/photo.store';
+import { useShallow } from 'zustand/react/shallow';
+import { useChecklistItemsStore, syncChecklistItems } from '@/stores/checklist-items.store';
 import { useConnectivity } from '@/hooks/useConnectivity';
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
@@ -23,12 +26,14 @@ interface TabDef {
   label: string;
   folder: string;
   checklistType: string;
+  isItems?: boolean;
 }
 
 const TABS: TabDef[] = [
   { label: 'Entrada',        folder: 'checklist_entrada', checklistType: 'entrada' },
   { label: 'Acompanhamento', folder: 'acompanhamento',    checklistType: 'acompanhamento' },
   { label: 'Saída',          folder: 'checklist_saida',   checklistType: 'saida' },
+  { label: 'Itens',          folder: '',                  checklistType: 'entrada', isItems: true },
 ];
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
@@ -101,16 +106,19 @@ export default function ChecklistDetailScreen(): React.ReactElement {
 
   const { order, isLoading } = useServiceOrder(osId);
   const isOnline = useConnectivity();
-  const pendingCount = usePhotoStore((s) => s.queue.filter((i) => i.uploadStatus === 'pending').length);
+  const pendingPhotoCount = usePhotoStore((s) => s.queue.filter((i) => i.uploadStatus === 'pending').length);
+  const checklistSummary = useChecklistItemsStore(useShallow((s) => s.getSummary(osId, 'entrada')));
+  const pendingItemCount = checklistSummary.ok + checklistSummary.attention + checklistSummary.critical;
 
   const [activeTabIndex, setActiveTabIndex] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
   const activeTab = TABS[activeTabIndex];
+  const pendingCount = pendingPhotoCount;
 
   const handleBack = useCallback((): void => {
-    router.back();
-  }, [router]);
+    router.replace(`/(app)/os/${osId}`);
+  }, [router, osId]);
 
   const handleSlotPress = useCallback(
     (slot: string, folder: string, checklistType: string): void => {
@@ -125,10 +133,13 @@ export default function ChecklistDetailScreen(): React.ReactElement {
   const handleUpload = useCallback((): void => {
     if (isUploading) return;
     setIsUploading(true);
-    void uploadPendingPhotos().finally(() => {
+    void Promise.all([
+      uploadPendingPhotos(),
+      pendingItemCount > 0 ? syncChecklistItems(osId) : Promise.resolve(),
+    ]).finally(() => {
       setIsUploading(false);
     });
-  }, [isUploading]);
+  }, [isUploading, osId, pendingItemCount]);
 
   // ── Header content ──────────────────────────────────────────────────────────
 
@@ -142,7 +153,7 @@ export default function ChecklistDetailScreen(): React.ReactElement {
     ? `${order.make} ${order.model}`
     : null;
 
-  const showUploadButton = pendingCount > 0 && isOnline;
+  const showUploadButton = (pendingCount > 0 || pendingItemCount > 0) && isOnline;
 
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']}>
@@ -219,12 +230,16 @@ export default function ChecklistDetailScreen(): React.ReactElement {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <PhotoSlotGrid
-          osId={osId}
-          folder={activeTab.folder}
-          checklistType={activeTab.checklistType}
-          onSlotPress={handleSlotPress}
-        />
+        {activeTab.isItems === true ? (
+          <ItemChecklistGrid osId={osId} checklistType={activeTab.checklistType} />
+        ) : (
+          <PhotoSlotGrid
+            osId={osId}
+            folder={activeTab.folder}
+            checklistType={activeTab.checklistType}
+            onSlotPress={handleSlotPress}
+          />
+        )}
       </ScrollView>
 
       {/* ── Floating upload button ── */}
@@ -244,7 +259,11 @@ export default function ChecklistDetailScreen(): React.ReactElement {
             <Text variant="label" style={styles.floatingLabel}>
               {isUploading
                 ? 'Enviando...'
-                : `Upload pendentes (${pendingCount})`}
+                : pendingCount > 0 && pendingItemCount > 0
+                  ? `Enviar fotos e itens`
+                  : pendingCount > 0
+                    ? `Enviar fotos (${pendingCount})`
+                    : `Enviar itens (${pendingItemCount})`}
             </Text>
           </TouchableOpacity>
         </View>
