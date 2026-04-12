@@ -364,14 +364,6 @@ export default function OSDetailScreen(): React.JSX.Element {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.safe} edges={['bottom']}>
-        <View style={styles.loadingHeader}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={20} color="#e31b1b" />
-            <Text variant="body" color="#e31b1b">
-              Ordens de Serviço
-            </Text>
-          </TouchableOpacity>
-        </View>
         <LoadingSkeleton />
       </SafeAreaView>
     );
@@ -602,20 +594,6 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: '#f9fafb',
-  },
-  // Loading header
-  loadingHeader: {
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    paddingVertical: 4,
   },
   // Skeleton
   skeletonContainer: {

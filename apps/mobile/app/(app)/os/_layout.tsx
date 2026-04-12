@@ -13,7 +13,7 @@ export default function OSLayout() {
       }}
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="[id]" options={{ headerShown: true, title: 'Detalhes da OS' }} />
+      <Stack.Screen name="[id]" options={{ headerShown: true, title: 'Detalhes da OS', headerBackTitle: 'Voltar' }} />
     </Stack>
   );
 }
