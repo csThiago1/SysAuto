@@ -78,6 +78,14 @@ class UnifiedCustomerDetailSerializer(serializers.ModelSerializer):
             "cpf_masked",
             "email",
             "phone_masked",
+            "birth_date",
+            "zip_code",
+            "street",
+            "street_number",
+            "complement",
+            "neighborhood",
+            "city",
+            "state",
             "lgpd_consent_version",
             "lgpd_consent_date",
             "lgpd_consent_ip",
@@ -122,7 +130,12 @@ class UnifiedCustomerCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UnifiedCustomer
-        fields = ["name", "cpf", "phone", "email", "lgpd_consent"]
+        fields = [
+            "name", "cpf", "phone", "email", "birth_date",
+            "zip_code", "street", "street_number", "complement",
+            "neighborhood", "city", "state",
+            "lgpd_consent",
+        ]
 
     def validate_lgpd_consent(self, value: bool) -> bool:
         """Garante que o consentimento LGPD foi fornecido explicitamente."""
