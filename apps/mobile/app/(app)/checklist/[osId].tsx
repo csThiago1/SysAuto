@@ -130,6 +130,16 @@ export default function ChecklistDetailScreen(): React.ReactElement {
     [router, osId],
   );
 
+  const handlePhotoPress = useCallback(
+    (photoId: string): void => {
+      router.push({
+        pathname: '/(app)/photo-editor',
+        params: { photoId, osId },
+      });
+    },
+    [router, osId],
+  );
+
   const handleUpload = useCallback((): void => {
     if (isUploading) return;
     setIsUploading(true);
@@ -238,6 +248,7 @@ export default function ChecklistDetailScreen(): React.ReactElement {
             folder={activeTab.folder}
             checklistType={activeTab.checklistType}
             onSlotPress={handleSlotPress}
+            onPhotoPress={handlePhotoPress}
           />
         )}
       </ScrollView>

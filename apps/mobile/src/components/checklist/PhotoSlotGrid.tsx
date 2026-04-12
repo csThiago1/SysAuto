@@ -1,3 +1,4 @@
+// apps/mobile/src/components/checklist/PhotoSlotGrid.tsx
 import React, { useMemo } from 'react';
 import {
   ActivityIndicator,
@@ -31,7 +32,7 @@ const DETAIL_SLOTS: SlotDef[] = [
   { key: 'chave',       label: 'Chave / Controle',  icon: 'key-outline' },
   { key: 'painel',      label: 'Painel / Odômetro', icon: 'speedometer-outline' },
   { key: 'motor',       label: 'Motor',             icon: 'hardware-chip-outline' },
-  { key: 'step',        label: 'Step / Estepe',     icon: 'disc-outline' },
+  { key: 'step',        label: 'Estepe',             icon: 'disc-outline' },
   { key: 'ferramentas', label: 'Kit Ferramentas',   icon: 'build-outline' },
   { key: 'combustivel', label: 'Nível Combustível', icon: 'water-outline' },
 ];
@@ -45,52 +46,46 @@ interface PhotoSlotGridProps {
   folder: string;
   checklistType: string;
   onSlotPress: (slot: string, folder: string, checklistType: string) => void;
+  onPhotoPress: (photoId: string) => void;
 }
 
 // ─── Upload status overlay ────────────────────────────────────────────────────
 
 interface StatusOverlayProps {
   status: PhotoQueueItem['uploadStatus'];
+  hasAnnotations: boolean;
 }
 
-function StatusOverlay({ status }: StatusOverlayProps): React.ReactElement | null {
-  if (status === 'done') {
-    return (
-      <View style={styles.statusOverlay}>
+function StatusOverlay({ status, hasAnnotations }: StatusOverlayProps): React.ReactElement | null {
+  return (
+    <View style={styles.statusOverlay}>
+      {hasAnnotations && (
+        <View style={[styles.statusBubble, styles.statusBubbleAnnotated]}>
+          <Ionicons name="pencil" size={11} color="#ffffff" />
+        </View>
+      )}
+      {status === 'done' && (
         <View style={[styles.statusBubble, styles.statusBubbleDone]}>
           <Ionicons name="checkmark" size={12} color="#ffffff" />
         </View>
-      </View>
-    );
-  }
-  if (status === 'uploading') {
-    return (
-      <View style={styles.statusOverlay}>
+      )}
+      {status === 'uploading' && (
         <View style={[styles.statusBubble, styles.statusBubbleUploading]}>
           <ActivityIndicator size="small" color="#ffffff" />
         </View>
-      </View>
-    );
-  }
-  if (status === 'pending') {
-    return (
-      <View style={styles.statusOverlay}>
+      )}
+      {status === 'pending' && (
         <View style={[styles.statusBubble, styles.statusBubblePending]}>
           <Ionicons name="time-outline" size={12} color="#ffffff" />
         </View>
-      </View>
-    );
-  }
-  if (status === 'error') {
-    return (
-      <View style={styles.statusOverlay}>
+      )}
+      {status === 'error' && (
         <View style={[styles.statusBubble, styles.statusBubbleError]}>
           <Text style={styles.statusErrorText}>!</Text>
         </View>
-      </View>
-    );
-  }
-  return null;
+      )}
+    </View>
+  );
 }
 
 // ─── Single slot card ─────────────────────────────────────────────────────────
@@ -104,8 +99,9 @@ interface SlotCardProps {
 }
 
 function SlotCard({ slotKey: _slotKey, label, icon, photo, onPress }: SlotCardProps): React.ReactElement {
-  const imageUri = photo?.remoteUrl ?? photo?.localUri ?? null;
+  const imageUri = photo?.annotatedLocalUri ?? photo?.remoteUrl ?? photo?.localUri ?? null;
   const hasThumbnail = imageUri !== null;
+  const hasAnnotations = (photo?.annotations?.length ?? 0) > 0;
 
   return (
     <TouchableOpacity
@@ -132,7 +128,7 @@ function SlotCard({ slotKey: _slotKey, label, icon, photo, onPress }: SlotCardPr
         </View>
       )}
       {photo !== undefined && (
-        <StatusOverlay status={photo.uploadStatus} />
+        <StatusOverlay status={photo.uploadStatus} hasAnnotations={hasAnnotations} />
       )}
     </TouchableOpacity>
   );
@@ -147,6 +143,7 @@ interface SlotSectionProps {
   folder: string;
   checklistType: string;
   onSlotPress: PhotoSlotGridProps['onSlotPress'];
+  onPhotoPress: PhotoSlotGridProps['onPhotoPress'];
 }
 
 function SlotSection({
@@ -156,6 +153,7 @@ function SlotSection({
   folder,
   checklistType,
   onSlotPress,
+  onPhotoPress,
 }: SlotSectionProps): React.ReactElement {
   const filledCount = slots.filter((s) => photoMap.has(s.key)).length;
 
@@ -165,16 +163,25 @@ function SlotSection({
         {title} ({filledCount}/{slots.length})
       </Text>
       <View style={styles.grid}>
-        {slots.map((slot) => (
-          <SlotCard
-            key={slot.key}
-            slotKey={slot.key}
-            label={slot.label}
-            icon={slot.icon}
-            photo={photoMap.get(slot.key)}
-            onPress={() => onSlotPress(slot.key, folder, checklistType)}
-          />
-        ))}
+        {slots.map((slot) => {
+          const photo = photoMap.get(slot.key);
+          return (
+            <SlotCard
+              key={slot.key}
+              slotKey={slot.key}
+              label={slot.label}
+              icon={slot.icon}
+              photo={photo}
+              onPress={() => {
+                if (photo !== undefined) {
+                  onPhotoPress(photo.id);
+                } else {
+                  onSlotPress(slot.key, folder, checklistType);
+                }
+              }}
+            />
+          );
+        })}
       </View>
     </View>
   );
@@ -187,15 +194,14 @@ export function PhotoSlotGrid({
   folder,
   checklistType,
   onSlotPress,
+  onPhotoPress,
 }: PhotoSlotGridProps): React.ReactElement {
   const queue = usePhotoStore((s) => s.queue);
 
-  // Build slot → PhotoQueueItem map filtered to this OS + checklistType
   const photoMap = useMemo<Map<string, PhotoQueueItem>>(() => {
     const map = new Map<string, PhotoQueueItem>();
     for (const item of queue) {
       if (item.osId === osId && item.checklistType === checklistType) {
-        // Keep the most recent item per slot (last write wins)
         const existing = map.get(item.slot);
         if (existing === undefined || item.createdAt > existing.createdAt) {
           map.set(item.slot, item);
@@ -205,7 +211,6 @@ export function PhotoSlotGrid({
     return map;
   }, [queue, osId, checklistType]);
 
-  // Progress: mandatory slots only (EXTERNAL + DETAIL = 12)
   const completedMandatory = useMemo<number>(() => {
     const allMandatoryKeys = [
       ...EXTERNAL_SLOTS.map((s) => s.key),
@@ -216,7 +221,6 @@ export function PhotoSlotGrid({
 
   const progressFraction = completedMandatory / MANDATORY_COUNT;
 
-  // Extra photos: slots whose keys start with 'extra_'
   const extraPhotos = useMemo<PhotoQueueItem[]>(() => {
     const extras: PhotoQueueItem[] = [];
     for (const [key, item] of photoMap.entries()) {
@@ -224,7 +228,6 @@ export function PhotoSlotGrid({
         extras.push(item);
       }
     }
-    // Sort by slot key so extra_0, extra_1, ... appear in order
     extras.sort((a, b) => a.slot.localeCompare(b.slot));
     return extras;
   }, [photoMap]);
@@ -237,7 +240,7 @@ export function PhotoSlotGrid({
       <View style={styles.progressContainer}>
         <View style={styles.progressRow}>
           <Text variant="caption" style={styles.progressLabel}>
-            Progresso obrigatórias
+            Fotos obrigatórias
           </Text>
           <Text variant="caption" style={styles.progressCount}>
             {completedMandatory}/{MANDATORY_COUNT}
@@ -253,7 +256,6 @@ export function PhotoSlotGrid({
         </View>
       </View>
 
-      {/* External slots section */}
       <SlotSection
         title="Externos"
         slots={EXTERNAL_SLOTS}
@@ -261,9 +263,9 @@ export function PhotoSlotGrid({
         folder={folder}
         checklistType={checklistType}
         onSlotPress={onSlotPress}
+        onPhotoPress={onPhotoPress}
       />
 
-      {/* Detail slots section */}
       <SlotSection
         title="Detalhes"
         slots={DETAIL_SLOTS}
@@ -271,6 +273,7 @@ export function PhotoSlotGrid({
         folder={folder}
         checklistType={checklistType}
         onSlotPress={onSlotPress}
+        onPhotoPress={onPhotoPress}
       />
 
       {/* Extra photos section */}
@@ -288,7 +291,7 @@ export function PhotoSlotGrid({
                 label="Extra"
                 icon="image-outline"
                 photo={photo}
-                onPress={() => onSlotPress(photo.slot, folder, checklistType)}
+                onPress={() => onPhotoPress(photo.id)}
               />
             ))}
           </View>
@@ -296,9 +299,7 @@ export function PhotoSlotGrid({
 
         <TouchableOpacity
           style={styles.addExtraButton}
-          onPress={() =>
-            onSlotPress(`extra_${nextExtraIndex}`, folder, checklistType)
-          }
+          onPress={() => onSlotPress(`extra_${nextExtraIndex}`, folder, checklistType)}
           activeOpacity={0.75}
         >
           <Ionicons name="add-circle-outline" size={20} color="#e31b1b" />
@@ -317,54 +318,16 @@ const SLOT_SIZE = 160;
 const SLOT_GAP = 12;
 
 const styles = StyleSheet.create({
-  container: {
-    gap: 20,
-  },
-
-  // Progress bar
-  progressContainer: {
-    gap: 6,
-  },
-  progressRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  progressLabel: {
-    color: '#6b7280',
-  },
-  progressCount: {
-    color: '#6b7280',
-    fontWeight: '600',
-  },
-  progressTrack: {
-    height: 6,
-    backgroundColor: '#e5e7eb',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#e31b1b',
-    borderRadius: 3,
-  },
-
-  // Section
-  section: {
-    gap: 12,
-  },
-  sectionHeader: {
-    color: '#374151',
-  },
-
-  // Grid — 2-column layout
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SLOT_GAP,
-  },
-
-  // Slot card
+  container: { gap: 20 },
+  progressContainer: { gap: 6 },
+  progressRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  progressLabel: { color: '#6b7280' },
+  progressCount: { color: '#6b7280', fontWeight: '600' },
+  progressTrack: { height: 6, backgroundColor: '#e5e7eb', borderRadius: 3, overflow: 'hidden' },
+  progressFill: { height: '100%', backgroundColor: '#e31b1b', borderRadius: 3 },
+  section: { gap: 12 },
+  sectionHeader: { color: '#374151' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: SLOT_GAP },
   slotCard: {
     width: SLOT_SIZE,
     height: SLOT_SIZE,
@@ -376,57 +339,23 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     position: 'relative',
   },
-  slotEmpty: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    padding: 8,
-  },
-  slotLabel: {
-    textAlign: 'center',
-    color: '#9ca3af',
-  },
-  slotImage: {
-    width: '100%',
-    height: '100%',
-    borderStyle: 'solid',
-    borderColor: '#e5e7eb',
-  },
-
-  // Status overlay (bottom-right)
+  slotEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 8 },
+  slotLabel: { textAlign: 'center', color: '#9ca3af' },
+  slotImage: { width: '100%', height: '100%', borderStyle: 'solid', borderColor: '#e5e7eb' },
   statusOverlay: {
     position: 'absolute',
     bottom: 6,
     right: 6,
+    flexDirection: 'row',
+    gap: 4,
   },
-  statusBubble: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statusBubbleDone: {
-    backgroundColor: '#16a34a',
-  },
-  statusBubbleUploading: {
-    backgroundColor: '#3b82f6',
-  },
-  statusBubblePending: {
-    backgroundColor: '#9ca3af',
-  },
-  statusBubbleError: {
-    backgroundColor: '#ef4444',
-  },
-  statusErrorText: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '700',
-    lineHeight: 16,
-  },
-
-  // Add extra button
+  statusBubble: { width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  statusBubbleDone: { backgroundColor: '#16a34a' },
+  statusBubbleUploading: { backgroundColor: '#3b82f6' },
+  statusBubblePending: { backgroundColor: '#9ca3af' },
+  statusBubbleError: { backgroundColor: '#ef4444' },
+  statusBubbleAnnotated: { backgroundColor: '#7c3aed' },
+  statusErrorText: { color: '#ffffff', fontSize: 13, fontWeight: '700', lineHeight: 16 },
   addExtraButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -439,7 +368,5 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignSelf: 'flex-start',
   },
-  addExtraLabel: {
-    color: '#e31b1b',
-  },
+  addExtraLabel: { color: '#e31b1b' },
 });
