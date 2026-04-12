@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(147, 51, 234, 0.3)',
+    backgroundColor: 'rgba(227, 27, 27, 0.3)',
     alignSelf: 'center',
   },
 });

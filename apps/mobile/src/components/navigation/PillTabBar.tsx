@@ -38,7 +38,7 @@ const TAB_CONFIG: TabConfig[] = [
 ];
 
 // Rotas que nao aparecem na tab bar (href: null)
-const HIDDEN_ROUTES = new Set(['os', 'checklist']);
+const HIDDEN_ROUTES = new Set(['os', 'checklist', 'camera']);
 
 interface TabItemProps {
   config: TabConfig;
@@ -77,7 +77,7 @@ function TabItem({ config, isActive, onPress }: TabItemProps) {
 
   const iconSize = config.isCentral ? 32 : 24;
   const iconName = isActive ? config.iconActive : config.iconInactive;
-  const iconColor = isActive ? '#9333ea' : '#9ca3af';
+  const iconColor = isActive ? '#e31b1b' : '#9ca3af';
 
   return (
     <TouchableOpacity

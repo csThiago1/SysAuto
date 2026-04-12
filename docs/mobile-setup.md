@@ -1,287 +1,400 @@
-# Mobile Setup — DS Car App
-# docs/mobile-setup.md
-# Paddock Solutions · Abril 2026
+# Mobile — Setup e Estado Funcional
+# docs/mobile-setup.md — Paddock Solutions · Abril 2026
 # ─────────────────────────────────────────────────────────────────────────────
 
-## Stack
+## Ambiente de Desenvolvimento
 
-| Item | Versão | Observação |
-|------|--------|-----------|
-| Expo SDK | 55.0.14 | Alinhado com React 19 do monorepo |
-| React Native | 0.83.4 | |
-| React | 19.2.5 | Deve ser igual ao `react-dom` |
-| Expo Router | ~55.0.12 | File-based routing |
-| react-native-reanimated | 4.2.1 | Requer `react-native-worklets` |
-| react-native-worklets | 0.7.2 | Pinado via override no root |
-| Zustand | 5.x | State management + persist |
-| TanStack Query | 5.x | Server state / API calls |
+| Ferramenta | Versão |
+|-----------|--------|
+| Node.js | 22.22.2 |
+| npm | 10.9.7 |
+| Expo CLI | 55.0.23 |
+| Expo Go (iOS) | compatível com SDK 55 |
+| macOS | Darwin 25.2.0 |
+
+---
+
+## Versões Resolvidas (package-lock.json)
+
+### Core
+
+| Pacote | Versão |
+|--------|--------|
+| `expo` | 55.0.14 |
+| `expo-router` | 55.0.12 |
+| `react-native` | 0.83.4 |
+| `react` | 19.2.5 |
+| `@expo/metro-config` | 55.0.15 |
+| `babel-preset-expo` | 55.0.17 |
+
+### Expo Modules
+
+| Pacote | Versão |
+|--------|--------|
+| `expo-auth-session` | 55.0.13 |
+| `expo-camera` | 55.0.15 |
+| `expo-constants` | 55.0.13 |
+| `expo-crypto` | 55.0.14 |
+| `expo-file-system` | 55.0.16 |
+| `expo-haptics` | 55.0.14 |
+| `expo-image-manipulator` | 55.0.15 |
+| `expo-linking` | 55.0.12 |
+| `expo-secure-store` | 55.0.13 |
+| `@expo/vector-icons` | 15.1.1 |
+
+### React Native
+
+| Pacote | Versão |
+|--------|--------|
+| `react-native-reanimated` | 4.2.1 |
+| `react-native-safe-area-context` | 5.6.2 |
+| `react-native-screens` | 4.23.0 |
+| `react-native-worklets` | 0.7.2 |
+| `react-native-web` | 0.21.2 |
+| `react-native-mmkv` | 3.3.3 |
+| `@react-native-community/netinfo` | 11.5.2 |
+
+### Libs
+
+| Pacote | Versão |
+|--------|--------|
+| `@nozbe/watermelondb` | 0.28.0 |
+| `@tanstack/react-query` | 5.95.2 |
+| `zustand` | 5.0.12 |
+| `zod` | 3.24.x |
+
+---
+
+## Overrides no root package.json
+
+Necessários para forçar versões compatíveis em todo o monorepo npm workspaces:
+
+```json
+"overrides": {
+  "expo": "~55.0.14",
+  "expo-modules-core": "~55.0.22",
+  "expo-asset": "~55.0.14",
+  "expo-font": "~55.0.6",
+  "expo-keep-awake": "~55.0.6",
+  "expo-constants": "~55.0.13",
+  "expo-file-system": "~55.0.16",
+  "expo-secure-store": "~55.0.13",
+  "expo-camera": "~55.0.15",
+  "react": "19.2.5",
+  "react-dom": "19.2.5",
+  "react-native": "0.83.4",
+  "react-native-safe-area-context": "5.6.2",
+  "react-native-screens": "4.23.0",
+  "react-native-worklets": "0.7.2",
+  "@types/react": "~19.2.10"
+}
+```
 
 ---
 
 ## Como Rodar
 
-### Web (browser — para desenvolvimento rápido)
 ```bash
-cd apps/mobile
-npx expo start --web --clear
-# Acessa http://localhost:8081/login
-```
+# A partir de apps/mobile:
+node ../../node_modules/.bin/expo start --ios --clear
 
-### Simulador iOS (requer Xcode)
-```bash
-cd apps/mobile
-npx expo start --ios --clear
-# OU via script do root:
+# Ou via script do root do monorepo:
 npm run mobile:ios
 ```
 
-### Simulador Android (requer Android Studio)
-```bash
-cd apps/mobile
-npx expo start --android --clear
-```
-
-### Celular físico via USB (build nativo)
-```bash
-# iOS
-cd apps/mobile && npx expo run:ios --device
-
-# Android
-cd apps/mobile && npx expo run:android --device
-```
-
-> **Importante:** Sempre rodar a partir de `apps/mobile`, nunca da raiz do monorepo.
-> Scripts convenientes no root: `npm run mobile`, `npm run mobile:web`, `npm run mobile:ios`
-
-### Expo Go
-Não funciona com SDK 55 na versão atual do Expo Go disponível na App Store.
-Usar simulador ou build nativo (`expo run:ios / run:android`).
+> **Importante:** usar `node ../../node_modules/.bin/expo` diretamente, NÃO `npx expo`.
+> O `npx` (e `npm exec`) escalam o CWD para o workspace root, quebrando o `projectRoot`
+> do Metro — o bundler tenta resolver `grupo-dscar/.` como entry point e dá 404.
 
 ---
 
-## Distribuição Interna (35 funcionários)
+## metro.config.js
 
-| Plataforma | Método | Custo | Processo |
-|------------|--------|-------|---------|
-| Android (~25) | APK via EAS Build | Grátis | EAS gera APK → link no WhatsApp → habilitar "fontes desconhecidas" uma vez |
-| iOS (~10) | TestFlight | $99/ano (Apple Developer) | EAS gera build → convite por email → funcionário instala TestFlight uma vez |
-
-```bash
-# Gerar builds (quando o app estiver pronto)
-npm install -g eas-cli
-eas login
-eas build --platform android --profile preview  # APK Android
-eas build --platform ios --profile preview       # TestFlight iOS
-```
-
----
-
-## Problemas Encontrados e Soluções
-
-### 1. Metro sem suporte a monorepo
-
-**Sintoma:** `Unable to resolve "@paddock/types"`, `Unable to resolve "@react-navigation/bottom-tabs"` e outros pacotes que estão no `node_modules` da raiz.
-
-**Causa:** O `metro.config.js` original não configurava `watchFolders` nem `nodeModulesPaths` para o monorepo.
-
-**Solução:** `apps/mobile/metro.config.js`
 ```js
-config.watchFolders = [path.resolve(monorepoRoot, 'packages')];
+const { getDefaultConfig } = require('expo/metro-config');
+const path = require('path');
+
+const projectRoot = __dirname;              // apps/mobile/
+const monorepoRoot = path.resolve(projectRoot, '../..');  // grupo-dscar/
+
+const config = getDefaultConfig(projectRoot);
+
+// watchFolders: root node_modules (pacotes hoistados) + packages/ (@paddock/types)
+// NÃO incluir apps/ inteiro nem backend/ — causa refresh loop com Next.js/Django
+config.watchFolders = [
+  path.resolve(monorepoRoot, 'node_modules'),
+  path.resolve(monorepoRoot, 'packages'),
+];
+
+// Resolve pacotes do root e do próprio mobile (fallback)
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
   path.resolve(monorepoRoot, 'node_modules'),
 ];
-```
 
-> **Atenção:** `watchFolders` deve apontar apenas para `packages/`, não para o root inteiro. Assistir o root causa **refresh loop** no simulador porque o Metro detecta mudanças nas apps Next.js, backend Python, etc.
+// Obrigatório para react-native-reanimated e react-native-worklets
+config.resolver.unstable_enablePackageExports = true;
 
----
-
-### 2. Dependências nativas duplicadas
-
-**Sintoma:** `expo-doctor` reportava duplicatas de `react-native-safe-area-context`, `react-native-screens` e `react-native-worklets` com versões diferentes no `apps/mobile/node_modules` e no root `node_modules`.
-
-**Causa:** npm workspaces hoistava versões mais novas para o root, enquanto `expo install` gravava versões mais antigas localmente no mobile.
-
-**Solução:** Adicionar `overrides` no root `package.json` para forçar versões únicas em todo o monorepo:
-```json
-"overrides": {
-  "react-native-safe-area-context": "5.6.2",
-  "react-native-screens": "4.23.0",
-  "react-native-worklets": "0.7.2"
-}
-```
-Depois remover as cópias locais duplicadas e rodar `npm install` do root.
-
----
-
-### 3. `expo-secure-store` quebrando na web
-
-**Sintoma:** App travava ao carregar na web. `SecureStore.getItemAsync` não funciona em browser.
-
-**Causa:** O `auth.store.ts` e `useAuth.ts` usavam `expo-secure-store` diretamente sem verificar a plataforma.
-
-**Solução:** Usar `Platform.OS` para escolher o storage correto:
-```ts
-const secureStorage =
-  Platform.OS === 'web'
-    ? {
-        getItem: (name: string) => localStorage.getItem(name),
-        setItem: (name: string, value: string) => localStorage.setItem(name, value),
-        removeItem: (name: string) => localStorage.removeItem(name),
-      }
-    : {
-        getItem: (name: string) => SecureStore.getItemAsync(name),
-        setItem: (name: string, value: string) => SecureStore.setItemAsync(name, value),
-        removeItem: (name: string) => SecureStore.deleteItemAsync(name),
-      };
+module.exports = config;
 ```
 
 ---
 
-### 4. React e react-dom com versões diferentes
+## babel.config.js
 
-**Sintoma:** React error #527 (`args[]=19.2.0&args[]=19.2.5`) durante `expo export --platform web`. SSR falhava silenciosamente.
-
-**Causa:** O override do root pinava `react: 19.2.0` mas `react-dom` estava em `19.2.5` (mais novo, instalado por alguma dependência transitiva). React e react-dom precisam ter versão idêntica.
-
-**Solução:** Alinhar ambos no root `package.json`:
-```json
-"devDependencies": {
-  "react": "19.2.5",
-  "react-dom": "19.2.5"
-},
-"overrides": {
-  "react": "19.2.5",
-  "react-dom": "19.2.5"
-}
-```
-
----
-
-### 5. `import.meta` quebrando o bundle web
-
-**Sintoma:** `Uncaught SyntaxError: Cannot use 'import.meta' outside a module` na linha 164533 do bundle web. App não carregava no browser.
-
-**Causa:** O Metro com `unstable_transformProfile=hermes-stable` não transpila `import.meta`. O Zustand devtools middleware usa `import.meta.env.MODE` (sintaxe Vite/ESM) que é inválida em bundles CommonJS do Metro.
-
-**Solução:** Plugin Babel inline no `babel.config.js` que substitui `import.meta` por um objeto seguro antes do bundle:
 ```js
-function importMetaPlugin() {
-  return {
-    visitor: {
-      MetaProperty(path) {
-        const { meta, property } = path.node;
-        if (meta.name === 'import' && property.name === 'meta') {
-          path.replaceWithSourceString('({"env":{"MODE":"development"},"url":""})');
-        }
-      },
-    },
-  };
-}
+// importMetaPlugin: substitui import.meta por objeto seguro no bundle web.
+// Zustand devtools usa import.meta.env.MODE — Metro/Hermes não transpila isso.
+// NÃO remover este plugin.
+function importMetaPlugin() { ... }
 
 module.exports = function (api) {
   api.cache(true);
   return {
     presets: ['babel-preset-expo'],
-    plugins: [importMetaPlugin],
+    plugins: [
+      importMetaPlugin,
+      // WatermelonDB decorators (@field, @text, @relation, etc.)
+      // @nozbe/watermelondb@0.28+ não inclui mais o babel plugin próprio.
+      // Usar @babel/plugin-proposal-decorators em modo legacy (Stage 1).
+      // NÃO remover este plugin.
+      ['@babel/plugin-proposal-decorators', { version: 'legacy' }],
+    ],
   };
 };
 ```
 
 ---
 
-### 6. `output: static` causando SSR desnecessário em dev
+## tsconfig.json
 
-**Sintoma:** Expo Router iniciava o servidor SSR (`@expo/router-server`) em modo dev, causando erros de hidratação e o bundle `AppEntry` sendo carregado duplamente.
-
-**Causa:** `app.json` tinha `"web": {"bundler": "metro", "output": "static"}`. O modo `static` ativa SSR/SSG, que em desenvolvimento causa conflitos com o bundle client-side.
-
-**Solução:** Remover `"output": "static"` do `app.json` para desenvolvimento:
 ```json
-"web": {
-  "bundler": "metro"
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "experimentalDecorators": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@paddock/types": ["../../packages/types/src"]
+    }
+  }
 }
 ```
 
 ---
 
-### 7. Nomes de rotas no Expo Router v4
+## Workarounds Críticos — Expo Go vs Native
 
-**Sintoma:** Warnings `[Layout children]: No route named "busca" exists` para todas as tabs exceto `index`.
+### 1. WatermelonDB — SQLite indisponível no Expo Go
 
-**Causa:** No Expo Router v4, pastas sem `_layout.tsx` próprio (ex: `busca/index.tsx`) são registradas como `busca/index`, não como `busca`. Apenas pastas com `_layout.tsx` (ex: `os/`, `checklist/`) mantêm o nome curto.
+**Problema:** Expo Go não inclui `NativeModules.WMDatabaseBridge` (SQLite). Mesmo com
+`jsi: false`, o adapter SQLite tenta chamar o módulo nativo e crasha.
 
-**Solução:** Atualizar `_layout.tsx` e `PillTabBar.tsx` para usar os nomes completos:
-```tsx
-// _layout.tsx
-<Tabs.Screen name="busca/index" />
-<Tabs.Screen name="nova-os/index" />
-<Tabs.Screen name="notificacoes/index" />
-<Tabs.Screen name="perfil/index" />
+**Fix em `src/db/index.ts`:**
 
-// PillTabBar.tsx — TAB_CONFIG
-{ routeName: 'busca/index', ... }
-{ routeName: 'nova-os/index', ... }
-{ routeName: 'notificacoes/index', ... }
-{ routeName: 'perfil/index', ... }
+```ts
+import { NativeModules, Platform } from 'react-native';
+
+// Usa LokiJS (in-memory) no web e no Expo Go (sem WMDatabaseBridge nativo).
+// Builds nativas (EAS Build / expo run:ios) usam SQLite.
+const useLoki = Platform.OS === 'web' || !NativeModules.WMDatabaseBridge;
+
+const adapter = useLoki
+  ? new (require('@nozbe/watermelondb/adapters/lokijs').default)({
+      schema,
+      useWebWorker: false,            // React Native não tem web workers — OBRIGATÓRIO
+      useIncrementalIndexedDB: false, // sem IndexedDB no RN — OBRIGATÓRIO
+    })
+  : new (require('@nozbe/watermelondb/adapters/sqlite').default)({
+      schema,
+      migrations,
+      jsi: false, // JSI só com EAS Build — desabilitado para Expo Go
+    });
+```
+
+**Por que `useWebWorker: false` é obrigatório:**
+Sem esse flag, o LokiJS tenta usar `self` (global de web worker), que é `undefined` no
+React Native, causando `TypeError: constructor is not callable`.
+
+**Consequência:** LokiJS é in-memory — dados não persistem entre sessões no Expo Go.
+Para persistência real, usar `expo run:ios` (development build com SQLite nativo).
+
+---
+
+### 2. react-native-mmkv — JSI indisponível no Expo Go
+
+**Problema:** MMKV usa JSI nativo. Instanciar `new MMKV(...)` no nível do módulo
+crasha com `TypeError: Cannot read property 'initializeJSI' of null`, fazendo a
+rota inteira falhar ("missing default export").
+
+**Fix em `app/(app)/busca/index.tsx`:**
+
+```ts
+// NÃO fazer: import { MMKV } + new MMKV() no nível do módulo
+// FAZER: try/catch com fallback in-memory
+
+const _memCache = new Map<string, string>();
+let _mmkv: any = null;
+try {
+  const { MMKV } = require('react-native-mmkv');
+  _mmkv = new MMKV({ id: 'search-history' });
+} catch {
+  // Expo Go — JSI não disponível, histórico fica só em memória
+}
+
+const searchStorage = {
+  getString: (key: string) => _mmkv ? _mmkv.getString(key) : _memCache.get(key),
+  set: (key: string, value: string) => {
+    if (_mmkv) _mmkv.set(key, value); else _memCache.set(key, value);
+  },
+};
+```
+
+Em production build (EAS), o MMKV nativo é usado automaticamente.
+
+---
+
+### 3. expo-dev-client — REMOVIDO
+
+Causava runtime "custom" incompatível com Expo Go.
+**Não reinstalar** até precisar de development builds oficiais via EAS.
+
+---
+
+## Design System — Cores DS Car
+
+Arquivo central: `src/lib/theme.ts` (espelho de `apps/dscar-web/src/app/globals.css`)
+
+| Token | Hex | Uso |
+|-------|-----|-----|
+| `primary[600]` | `#e31b1b` | CTAs, ícones ativos, filtros selecionados |
+| `primary[700]` | `#c01212` | Pressed/hover states |
+| `secondary[950]` | `#141414` | Tab bar, backgrounds escuros |
+| `accent[500]` | `#7896a7` | Cinza metálico, destaques neutros |
+| `background` | `#f9fafb` | Fundo geral das telas |
+| `surface` | `#ffffff` | Cards, modais |
+| `border` | `#e5e7eb` | Bordas e separadores |
+| `textPrimary` | `#111827` | Texto principal |
+| `textSecondary` | `#6b7280` | Texto secundário |
+
+> **Nunca usar roxo `#9333ea`** — era placeholder de desenvolvimento, já substituído.
+
+---
+
+## Estrutura de Arquivos
+
+```
+apps/mobile/
+├── app/
+│   ├── _layout.tsx              ← Root: DatabaseProvider > SafeArea > QueryClient > AuthGuard
+│   ├── +not-found.tsx
+│   ├── (auth)/
+│   │   ├── _layout.tsx
+│   │   └── login.tsx
+│   └── (app)/
+│       ├── _layout.tsx          ← Tab navigator com PillTabBar customizada
+│       ├── index.tsx            ← Redirect → os/index
+│       ├── os/
+│       │   ├── _layout.tsx
+│       │   ├── index.tsx        ← Lista OS: filtros de status + busca + pull-to-refresh
+│       │   └── [id].tsx         ← Detalhe da OS
+│       ├── busca/index.tsx      ← Busca com histórico (MMKV / fallback in-memory)
+│       ├── checklist/
+│       │   ├── _layout.tsx
+│       │   ├── index.tsx
+│       │   └── [osId].tsx
+│       ├── nova-os/index.tsx    ← Criação de nova OS
+│       ├── notificacoes/index.tsx
+│       └── perfil/index.tsx
+│
+├── src/
+│   ├── components/
+│   │   ├── common/
+│   │   │   ├── OfflineBanner.tsx
+│   │   │   └── SyncIndicator.tsx
+│   │   ├── navigation/
+│   │   │   ├── PillTabBar.tsx   ← Tab bar flutuante animada (Reanimated + Haptics)
+│   │   │   └── GlowEffect.tsx
+│   │   ├── os/
+│   │   │   ├── OSCard.tsx
+│   │   │   ├── OSDetailHeader.tsx
+│   │   │   └── OSStatusBadge.tsx
+│   │   └── ui/
+│   │       ├── Badge.tsx
+│   │       ├── Button.tsx
+│   │       ├── Card.tsx
+│   │       └── Text.tsx
+│   ├── db/
+│   │   ├── index.ts             ← Adapter detection: SQLite (native) vs LokiJS (Expo Go)
+│   │   ├── schema.ts
+│   │   ├── migrations.ts
+│   │   ├── sync.ts              ← WatermelonDB sync com Django backend
+│   │   └── models/
+│   │       ├── ServiceOrder.ts
+│   │       └── ServiceOrderPhoto.ts
+│   ├── hooks/
+│   │   ├── useAuth.ts
+│   │   ├── useConnectivity.ts
+│   │   ├── usePermission.ts
+│   │   ├── useServiceOrders.ts
+│   │   └── useSync.ts
+│   ├── lib/
+│   │   ├── api.ts
+│   │   ├── constants.ts
+│   │   └── theme.ts             ← Design tokens DS Car
+│   └── stores/
+│       ├── auth.store.ts        ← Zustand + expo-secure-store (web: localStorage)
+│       └── sync.store.ts        ← Estado de sync / conectividade
+│
+├── assets/                      ← icon.png, splash, adaptive-icon
+├── app.json
+├── babel.config.js
+├── eas.json
+├── metro.config.js
+├── package.json
+└── tsconfig.json
 ```
 
 ---
 
-### 8. `expo-dev-client` causando runtime "custom" incompatível com Expo Go
+## app.json — Pontos Importantes
 
-**Sintoma:** `[redirect middleware]: Unable to determine redirect location for runtime 'custom' and platform 'ios'`. Expo Go mostrava mensagem de incompatibilidade.
-
-**Causa:** Com `expo-dev-client` instalado, o Expo registra o projeto como runtime "custom" (development build), que é incompatível com Expo Go padrão.
-
-**Solução:** Remover `expo-dev-client` das dependências do `package.json`. Para development builds futuros usar `npx expo run:ios` / `npx expo run:android`.
+```json
+{
+  "expo": {
+    "scheme": "paddock",           // deep links
+    "plugins": ["expo-router", "expo-camera", "expo-secure-store"],
+    "web": { "bundler": "metro" }, // SEM "output": "static" — causa SSR desnecessário
+    "experiments": { "typedRoutes": true },
+    "extra": { "router": { "origin": false } }
+  }
+}
+```
 
 ---
 
-### 9. Servidor rodando do diretório errado
+## EAS Build
 
-**Sintoma:** `Starting project at .../grupo-dscar` (root) em vez de `.../apps/mobile`. Metro tentava resolver `../../App` que não existe no monorepo root.
-
-**Causa:** Rodar `npx expo start` da raiz do monorepo.
-
-**Solução:** Sempre rodar de `apps/mobile`:
 ```bash
-cd apps/mobile && npx expo start --clear
-```
-Ou usar os scripts do root:
-```bash
-npm run mobile        # expo start
-npm run mobile:web    # expo start --web
-npm run mobile:ios    # expo start --ios
+# Development build (com módulos nativos reais: SQLite, MMKV)
+eas build --profile development --platform ios
+
+# Preview (TestFlight interno)
+eas build --profile preview --platform ios
 ```
 
 ---
 
-## Estado Atual (Abril 2026)
+## Expo Go vs Development Build
 
-| Sprint | Status | Entregue |
-|--------|--------|---------|
-| M1 — Fundação & Auth | ✅ Completo | Login, AuthGuard, PillTabBar, stores, API client |
-| M2 — OS Read-Only | 🔄 Próximo | Lista OS, detalhe, WatermelonDB |
-| M3 — Checklist Fotos | ⏳ Planejado | Câmera, marca d'água, upload |
-| M4 — Checklist Itens | ⏳ Planejado | Checkboxes, anotações em fotos |
-| M5 — Abertura de OS | ⏳ Planejado | Wizard 4 steps, consulta placa |
-| M6 — Acompanhamento | ⏳ Planejado | Status updates, notificações push |
-| M7 — Assinatura Digital | ⏳ Planejado | Canvas assinatura, PDFs |
-| M8 — Polish & Deploy | ⏳ Planejado | EAS Build, distribuição interna |
-
----
-
-## Referências
-
-- Roadmap completo: `docs/mobile-roadmap.md`
-- Spec técnica fase 1: `docs/spec-mobile-phase1.md`
-- Metro monorepo (oficial): https://docs.expo.dev/guides/monorepos/
-- EAS Build: https://docs.expo.dev/build/introduction/
-- TestFlight distribuição: https://docs.expo.dev/submit/ios/
-
----
-
-*Paddock Solutions · paddock.solutions · Manaus, AM*
-*Documento criado em: Abril 2026*
+| Feature | Expo Go | Development Build (EAS) |
+|---------|---------|-------------------------|
+| WatermelonDB | LokiJS in-memory | SQLite persistente |
+| MMKV | Map in-memory | MMKV nativo (JSI) |
+| Persistência offline | ❌ não persiste | ✅ persiste |
+| expo-camera | ✅ | ✅ |
+| expo-secure-store | ✅ | ✅ |
+| react-native-reanimated | ✅ | ✅ |
+| Como iniciar | `node ../../node_modules/.bin/expo start --ios` | EAS Build → TestFlight |

@@ -29,7 +29,7 @@ export default function NotFoundScreen() {
         />
 
         <Link href="/(app)" style={styles.link}>
-          <Text variant="bodySmall" color="#9333ea">
+          <Text variant="bodySmall" color="#e31b1b">
             ou toque aqui
           </Text>
         </Link>
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   code: {
-    color: '#9333ea',
+    color: '#e31b1b',
     fontSize: 72,
     fontWeight: '800',
     lineHeight: 80,

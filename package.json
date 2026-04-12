@@ -13,17 +13,19 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "format": "turbo run format",
-    "mobile": "cd apps/mobile && npx expo start --clear",
-    "mobile:web": "cd apps/mobile && npx expo start --web --clear",
-    "mobile:ios": "cd apps/mobile && npx expo start --ios --clear"
+    "mobile": "npm -w apps/mobile run start",
+    "mobile:web": "npm -w apps/mobile run start:web",
+    "mobile:ios": "npm -w apps/mobile run start:ios"
   },
   "devDependencies": {
+    "@expo/metro-config": "55.0.15",
     "expo": "~55.0.14",
     "react": "19.2.5",
     "react-dom": "19.2.5",
     "react-native": "0.83.4",
     "turbo": "^2.3.3",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "babel-preset-expo": "^55.0.17"
   },
   "overrides": {
     "expo": "~55.0.14",

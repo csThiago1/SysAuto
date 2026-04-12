@@ -11,4 +11,6 @@ export class ServiceOrderPhoto extends Model {
   @field('local_uri') localUri!: string;
   @field('upload_status') uploadStatus!: string;
   @field('created_at_remote') createdAtRemote!: number;
+  @field('slot') slot!: string | null;
+  @field('checklist_type') checklistType!: string | null;
 }

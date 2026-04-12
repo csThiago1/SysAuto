@@ -209,7 +209,7 @@ export default function OSListScreen(): React.JSX.Element {
   const ListFooter =
     isFetchingNextPage ? (
       <View style={styles.footerSpinner}>
-        <ActivityIndicator size="small" color="#9333ea" />
+        <ActivityIndicator size="small" color="#e31b1b" />
       </View>
     ) : null;
 
@@ -241,7 +241,7 @@ export default function OSListScreen(): React.JSX.Element {
         <FilterChip
           label="Todas"
           selected={activeStatus === undefined}
-          color="#9333ea"
+          color="#e31b1b"
           backgroundColor="#f3e8ff"
           onPress={() => setActiveStatus(undefined)}
         />
@@ -270,8 +270,8 @@ export default function OSListScreen(): React.JSX.Element {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={refetch}
-            tintColor="#9333ea"
-            colors={['#9333ea']}
+            tintColor="#e31b1b"
+            colors={['#e31b1b']}
           />
         }
         onEndReached={handleEndReached}

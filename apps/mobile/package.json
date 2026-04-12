@@ -4,6 +4,9 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
+    "start:web": "expo start --web --clear",
+    "start:ios": "expo start --ios --clear",
+    "start:android": "expo start --android --clear",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "lint": "expo lint",
@@ -15,7 +18,7 @@
     "@paddock/types": "*",
     "@react-native-community/netinfo": "11.5.2",
     "@tanstack/react-query": "^5.64.1",
-    "expo": "^55.0.0",
+    "expo": "~55.0.14",
     "expo-auth-session": "~55.0.13",
     "expo-camera": "~55.0.15",
     "expo-constants": "~55.0.13",
@@ -41,6 +44,7 @@
     "@types/react": "~19.2.10",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.4.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "babel-preset-expo": "^55.0.17"
   }
 }

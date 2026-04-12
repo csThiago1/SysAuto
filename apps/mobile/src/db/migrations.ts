@@ -1,7 +1,18 @@
-import { schemaMigrations } from '@nozbe/watermelondb/Schema/migrations';
+import { schemaMigrations, addColumns } from '@nozbe/watermelondb/Schema/migrations';
 
-// Schema version 1 — no migrations needed on first release.
-// Add migration entries here whenever the schema version is bumped.
 export default schemaMigrations({
-  migrations: [],
+  migrations: [
+    {
+      toVersion: 2,
+      steps: [
+        addColumns({
+          table: 'service_order_photos',
+          columns: [
+            { name: 'slot', type: 'string', isOptional: true },
+            { name: 'checklist_type', type: 'string', isOptional: true },
+          ],
+        }),
+      ],
+    },
+  ],
 });

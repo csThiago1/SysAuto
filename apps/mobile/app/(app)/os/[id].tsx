@@ -288,7 +288,7 @@ export default function OSDetailScreen(): React.JSX.Element {
       <SafeAreaView style={styles.safe} edges={['bottom']}>
         <View style={styles.loadingHeader}>
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <Text variant="body" color="#9333ea">
+            <Text variant="body" color="#e31b1b">
               {'← Voltar'}
             </Text>
           </TouchableOpacity>
@@ -661,7 +661,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#9333ea',
+    backgroundColor: '#e31b1b',
     marginTop: 6,
   },
   logContent: {

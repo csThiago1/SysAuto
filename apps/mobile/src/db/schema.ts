@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb';
 
 export const schema = appSchema({
-  version: 1,
+  version: 2,
   tables: [
     tableSchema({
       name: 'service_orders',
@@ -35,6 +35,8 @@ export const schema = appSchema({
         { name: 'local_uri', type: 'string', isOptional: true },
         { name: 'upload_status', type: 'string' },
         { name: 'created_at_remote', type: 'number', isOptional: true },
+        { name: 'slot', type: 'string', isOptional: true },
+        { name: 'checklist_type', type: 'string', isOptional: true },
       ],
     }),
   ],

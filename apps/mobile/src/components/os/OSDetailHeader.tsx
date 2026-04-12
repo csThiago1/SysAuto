@@ -33,7 +33,7 @@ export function OSDetailHeader({
       {/* Barra superior: botao voltar + numero da OS */}
       <View style={styles.topBar}>
         <TouchableOpacity onPress={onBack} style={styles.backButton} activeOpacity={0.7}>
-          <Text variant="body" color="#9333ea">
+          <Text variant="body" color="#e31b1b">
             {'← Voltar'}
           </Text>
         </TouchableOpacity>

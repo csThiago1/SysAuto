@@ -17,6 +17,7 @@ export default function AppLayout() {
       {/* Rotas internas — sem tab icon */}
       <Tabs.Screen name="os" options={{ href: null }} />
       <Tabs.Screen name="checklist" options={{ href: null }} />
+      <Tabs.Screen name="camera" options={{ href: null }} />
     </Tabs>
   );
 }

@@ -6,9 +6,11 @@ const monorepoRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
 
-// Monorepo: assiste apenas packages/ (onde fica @paddock/types)
-// NAO assistir o root inteiro — causaria refresh loop (Next.js, Django, etc)
+// Monorepo: inclui node_modules do root (obrigatório — pacotes hoistados ficam aqui)
+// e packages/ (onde fica @paddock/types).
+// Não assistir apps/ ou backend/ — evita refresh loop com Next.js/Django.
 config.watchFolders = [
+  path.resolve(monorepoRoot, 'node_modules'),
   path.resolve(monorepoRoot, 'packages'),
 ];
 
@@ -20,8 +22,5 @@ config.resolver.nodeModulesPaths = [
 
 // Suporte a package.json "exports" field (necessario para reanimated/worklets)
 config.resolver.unstable_enablePackageExports = true;
-
-// NOTA: unstable_transformProfile nao e definido aqui — o Expo CLI
-// aplica 'hermes-stable' automaticamente para native e 'default' para web.
 
 module.exports = config;

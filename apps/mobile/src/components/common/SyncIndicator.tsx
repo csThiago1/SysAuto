@@ -33,8 +33,8 @@ export function SyncIndicator(): React.JSX.Element {
   if (isSyncing) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="small" color="#9333ea" style={styles.spinner} />
-        <Text variant="caption" color="#9333ea">
+        <ActivityIndicator size="small" color="#e31b1b" style={styles.spinner} />
+        <Text variant="caption" color="#e31b1b">
           Sincronizando...
         </Text>
       </View>

@@ -8,16 +8,33 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MMKV } from 'react-native-mmkv';
-
 import { useServiceOrdersList } from '@/hooks/useServiceOrders';
 import { ServiceOrder } from '@/db/models/ServiceOrder';
 import { OSCard } from '@/components/os/OSCard';
 import { Text } from '@/components/ui/Text';
 
 // ─── MMKV storage (module-level — never recreated on render) ─────────────────
+// MMKV requer JSI nativo — não disponível no Expo Go. Fallback in-memory.
 
-const searchStorage = new MMKV({ id: 'search-history' });
+const _memCache = new Map<string, string>();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _mmkv: any = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { MMKV } = require('react-native-mmkv');
+  _mmkv = new MMKV({ id: 'search-history' });
+} catch {
+  // Expo Go — JSI não disponível
+}
+
+const searchStorage = {
+  getString: (key: string): string | undefined =>
+    _mmkv ? (_mmkv.getString(key) as string | undefined) : _memCache.get(key),
+  set: (key: string, value: string): void => {
+    if (_mmkv) _mmkv.set(key, value);
+    else _memCache.set(key, value);
+  },
+};
 const HISTORY_KEY = 'recent_searches';
 const MAX_HISTORY = 10;
 

@@ -7,7 +7,7 @@ export default function OSLayout() {
       screenOptions={{
         headerShown: true,
         headerStyle: { backgroundColor: '#ffffff' },
-        headerTintColor: '#9333ea',
+        headerTintColor: '#e31b1b',
         headerTitleStyle: { fontWeight: '600', color: '#111111' },
         headerShadowVisible: false,
       }}
