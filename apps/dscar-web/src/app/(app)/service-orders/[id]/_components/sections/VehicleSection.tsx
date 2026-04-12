@@ -8,7 +8,7 @@ import { ColorSelect } from "../shared/ColorSelect"
 import { Controller } from "react-hook-form"
 import { toast } from "sonner"
 
-const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-[#ea0e03]"
+const SECTION_TITLE = "text-[11px] font-semibold uppercase tracking-widest text-neutral-500"
 const LABEL = "block text-xs font-medium text-gray-600 mb-1"
 const INPUT = "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 

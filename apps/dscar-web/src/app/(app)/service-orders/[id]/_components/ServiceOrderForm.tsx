@@ -130,7 +130,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
                 "shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors",
                 activeTab === tab.id
                   ? "border-[#ea0e03] text-[#ea0e03]"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                  : "border-transparent text-neutral-600 hover:border-gray-300 hover:text-neutral-800"
               )}
             >
               {tab.label}
@@ -142,7 +142,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       {/* Conteúdo das abas */}
       <div className="flex-1 overflow-y-auto bg-gray-50 px-6">
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          {activeTab === "opening" && <OpeningTab form={form} />}
+          {activeTab === "opening" && <OpeningTab form={form} consultantName={order.consultant_name} />}
           {activeTab === "parts" && <PartsTab orderId={order.id} />}
           {activeTab === "services" && <ServicesTab orderId={order.id} />}
           {activeTab === "notes" && <NotesTab orderId={order.id} initialNotes={order.notes} />}

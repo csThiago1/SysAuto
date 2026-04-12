@@ -12,15 +12,17 @@ import {
 import { useConsultants } from "../../_hooks/useStaff"
 import { Loader2 } from "lucide-react"
 
-const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-[#ea0e03]"
+const SECTION_TITLE = "text-[11px] font-semibold uppercase tracking-widest text-neutral-500"
 const LABEL = "block text-xs font-medium text-gray-600 mb-1"
 const SELECT_NATIVE = "flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 
 interface OpeningInfoSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
+  /** Nome do consultor salvo na OS — usado como fallback enquanto a lista carrega */
+  consultantName?: string
 }
 
-export function OpeningInfoSection({ form }: OpeningInfoSectionProps) {
+export function OpeningInfoSection({ form, consultantName }: OpeningInfoSectionProps) {
   const { register, control, formState: { errors } } = form
   const { data: consultants = [], isLoading: loadingConsultants } = useConsultants()
 
@@ -40,34 +42,43 @@ export function OpeningInfoSection({ form }: OpeningInfoSectionProps) {
           <Controller
             name="consultant_id"
             control={control}
-            render={({ field }) => (
-              <Select
-                value={field.value ?? ""}
-                onValueChange={(val) => field.onChange(val === "__none__" ? "" : val)}
-              >
-                <SelectTrigger className="h-9" disabled={loadingConsultants}>
-                  <SelectValue placeholder="Selecionar consultor..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">
-                    <span className="text-neutral-400">Nenhum</span>
-                  </SelectItem>
-                  {consultants.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      <span>{c.name}</span>
-                      {c.job_title_display && (
-                        <span className="ml-1 text-xs text-neutral-400">({c.job_title_display})</span>
-                      )}
+            render={({ field }) => {
+              const selectedConsultant = consultants.find((c) => c.id === field.value)
+              // Fallback label: use consultantName from the OS when the list is still
+              // loading or the UUID is not present in the HR staff list.
+              const placeholderLabel =
+                field.value && !selectedConsultant
+                  ? (consultantName ?? "Consultor não encontrado")
+                  : "Selecionar consultor..."
+              return (
+                <Select
+                  value={field.value ?? ""}
+                  onValueChange={(val) => field.onChange(val === "__none__" ? "" : val)}
+                >
+                  <SelectTrigger className="h-9" disabled={loadingConsultants}>
+                    <SelectValue placeholder={placeholderLabel} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">
+                      <span className="text-neutral-400">Nenhum</span>
                     </SelectItem>
-                  ))}
-                  {consultants.length === 0 && !loadingConsultants && (
-                    <div className="px-2 py-1.5 text-sm text-neutral-400 select-none">
-                      Nenhum consultor cadastrado no RH
-                    </div>
-                  )}
-                </SelectContent>
-              </Select>
-            )}
+                    {consultants.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        <span>{c.name}</span>
+                        {c.job_title_display && (
+                          <span className="ml-1 text-xs text-neutral-400">({c.job_title_display})</span>
+                        )}
+                      </SelectItem>
+                    ))}
+                    {consultants.length === 0 && !loadingConsultants && (
+                      <div className="px-2 py-1.5 text-sm text-neutral-400 select-none">
+                        Nenhum consultor cadastrado no RH
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
+              )
+            }}
           />
         </div>
 

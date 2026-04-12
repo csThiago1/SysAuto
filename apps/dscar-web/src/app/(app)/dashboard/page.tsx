@@ -11,7 +11,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ClipboardList, CheckCircle2 } from "lucide-react";
+import { ClipboardList, CheckCircle2, Plus } from "lucide-react";
 import type { ServiceOrderStatus } from "@paddock/types";
 import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils";
 import { useDashboardStats, useServiceOrders } from "@/hooks";
@@ -42,11 +42,20 @@ export default function DashboardPage(): React.ReactElement {
     <ErrorBoundary>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-900">Dashboard</h1>
-          <p className="mt-0.5 text-sm text-neutral-500">
-            Visão geral das Ordens de Serviço
-          </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-neutral-900">Dashboard</h1>
+            <p className="mt-0.5 text-sm text-neutral-500">
+              Visão geral das Ordens de Serviço
+            </p>
+          </div>
+          <Link
+            href="/service-orders/new"
+            className="inline-flex items-center gap-1.5 rounded-md bg-[#ea0e03] px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors"
+          >
+            <Plus size={16} />
+            Nova OS
+          </Link>
         </div>
 
         {/* Stats Row */}
