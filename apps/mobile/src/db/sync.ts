@@ -1,6 +1,8 @@
 import { synchronize } from '@nozbe/watermelondb/sync';
+import { Q } from '@nozbe/watermelondb';
 
 import { database } from './index';
+import { ServiceOrder } from './models/ServiceOrder';
 import { API_BASE_URL } from '@/lib/constants';
 import { useAuthStore } from '@/stores/auth.store';
 import { useSyncStore } from '@/stores/sync.store';
@@ -75,9 +77,57 @@ export async function syncServiceOrders(): Promise<void> {
         };
       },
 
-      // Push implementado no Sprint M5 (abertura de OS offline)
       pushChanges: async () => {
-        // no-op for now
+        // Query for pending records directly (more reliable than changes object)
+        const collection = database.get<ServiceOrder>('service_orders');
+        const pending = await collection.query(Q.where('push_status', 'pending')).fetch();
+
+        const token = useAuthStore.getState().token;
+        const company = useAuthStore.getState().activeCompany;
+
+        for (const record of pending) {
+          try {
+            const res = await fetch(`${API_BASE_URL}/api/v1/service-orders/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token ?? ''}`,
+                'X-Tenant-Domain': `${company ?? 'dscar'}.localhost`,
+              },
+              body: JSON.stringify({
+                customer_name: record.customerName,
+                vehicle_plate: record.vehiclePlate,
+                vehicle_model: record.vehicleModel,
+                vehicle_brand: record.vehicleBrand,
+                vehicle_year: record.vehicleYear ?? null,
+                vehicle_color: record.vehicleColor ?? null,
+                customer_type: record.customerType,
+                os_type: record.osType,
+                status: 'reception',
+              }),
+            });
+            if (res.ok) {
+              const data = (await res.json()) as { id: string; number: number };
+              await database.write(async () => {
+                await record.update((r) => {
+                  r.remoteId = data.id;
+                  r.number = data.number;
+                  r.pushStatus = 'synced';
+                });
+              });
+            } else {
+              await database.write(async () => {
+                await record.update((r) => { r.pushStatus = 'error'; });
+              });
+              console.warn('Push OS failed:', res.status);
+            }
+          } catch (err) {
+            console.warn('Push OS error:', err);
+            await database.write(async () => {
+              await record.update((r) => { r.pushStatus = 'error'; });
+            });
+          }
+        }
       },
     });
 

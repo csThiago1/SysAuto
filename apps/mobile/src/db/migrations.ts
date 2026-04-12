@@ -14,5 +14,14 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 3,
+      steps: [
+        addColumns({
+          table: 'service_orders',
+          columns: [{ name: 'push_status', type: 'string', isOptional: true }],
+        }),
+      ],
+    },
   ],
 });
