@@ -527,13 +527,13 @@ class ServiceOrderSyncSerializer(serializers.ModelSerializer):
     vehicle_year = serializers.IntegerField(source="year", allow_null=True)
     vehicle_color = serializers.CharField(source="color")
     vehicle_plate = serializers.CharField(source="plate")
+    # Campos string que podem ser null no DB — WatermelonDB exige string não-nula
+    customer_type = serializers.SerializerMethodField()
+    os_type = serializers.SerializerMethodField()
     consultant_name = serializers.SerializerMethodField()
-    total_parts = serializers.DecimalField(
-        source="parts_total", max_digits=12, decimal_places=2
-    )
-    total_services = serializers.DecimalField(
-        source="services_total", max_digits=12, decimal_places=2
-    )
+    # Decimais como float — WatermelonDB schema type: 'number'
+    total_parts = serializers.FloatField(source="parts_total")
+    total_services = serializers.FloatField(source="services_total")
     created_at_remote = serializers.SerializerMethodField()
     updated_at_remote = serializers.SerializerMethodField()
 
@@ -558,6 +558,14 @@ class ServiceOrderSyncSerializer(serializers.ModelSerializer):
             "created_at_remote",
             "updated_at_remote",
         ]
+
+    def get_customer_type(self, obj: ServiceOrder) -> str:
+        """Retorna customer_type ou string vazia (WatermelonDB não aceita null em string)."""
+        return obj.customer_type or ""
+
+    def get_os_type(self, obj: ServiceOrder) -> str:
+        """Retorna os_type ou string vazia (WatermelonDB não aceita null em string)."""
+        return obj.os_type or ""
 
     def get_consultant_name(self, obj: ServiceOrder) -> str:
         """Retorna nome completo ou email do consultor, ou string vazia."""
