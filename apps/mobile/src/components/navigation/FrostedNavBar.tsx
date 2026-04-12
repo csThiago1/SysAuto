@@ -29,7 +29,9 @@ interface TabConfig {
 
 const TAB_CONFIG: TabConfig[] = [
   {
-    routeName: 'index',
+    // app/(app)/index.tsx redirects to /(app)/os, so the active route
+    // name when on the OS list is 'os'. Match that here.
+    routeName: 'os',
     iconActive: 'list',
     iconInactive: 'list-outline',
     label: 'OS',
@@ -61,7 +63,10 @@ const TAB_CONFIG: TabConfig[] = [
   },
 ];
 
-const HIDDEN_ROUTES = new Set(['os', 'checklist', 'camera', 'photo-editor']);
+// Only routes that should completely hide the nav bar (full-screen sub-screens).
+// 'os' is NOT listed here — it is the main OS list screen (app/(app)/os/index.tsx).
+// checklist, camera, photo-editor are full-screen flows that suppress the pill.
+const HIDDEN_ROUTES = new Set(['checklist', 'camera', 'photo-editor']);
 
 // ─── TabItem ───────────────────────────────────────────────────────────────
 

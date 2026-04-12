@@ -184,7 +184,7 @@ function OSHeader({ paddingTop, firstName, stats }: OSHeaderProps): React.JSX.El
       <View style={styles.headerRow}>
         <Image source={LOGO} style={styles.headerLogo} resizeMode="contain" />
         <View style={styles.headerRight}>
-          <Text style={styles.headerGreeting}>{getGreeting()} 👋</Text>
+          <Text style={styles.headerGreeting}>{getGreeting()}</Text>
           <Text style={styles.headerName}>{firstName}</Text>
         </View>
       </View>
@@ -394,20 +394,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   headerLogo: {
-    width: 80,
-    height: 44,
+    width: 120,
+    height: 60,
   },
   headerRight: {
     alignItems: 'flex-end',
     gap: 1,
   },
   headerGreeting: {
-    fontSize: 10,
-    color: 'rgba(255,255,255,0.4)',
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.5)',
     fontWeight: '400' as const,
   },
   headerName: {
-    fontSize: 14,
+    fontSize: 20,
     fontWeight: '700' as const,
     color: '#ffffff',
   },
@@ -471,8 +471,9 @@ const styles = StyleSheet.create({
   },
   chipsContent: {
     paddingHorizontal: 16,
+    paddingVertical: 4,
     gap: 8,
-    paddingBottom: 2,
+    alignItems: 'center',
   },
   chip: {
     paddingHorizontal: 14,
