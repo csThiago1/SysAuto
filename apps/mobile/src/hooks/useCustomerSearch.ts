@@ -34,6 +34,7 @@ export function useCustomerSearch(): {
 
       if (!isOnline || query.trim().length < 2) {
         setResults([]);
+        setIsLoading(false);
         return;
       }
 

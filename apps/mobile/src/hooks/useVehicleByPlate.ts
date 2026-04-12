@@ -123,6 +123,7 @@ export function useVehicleByPlate(): {
     const normalized = plate.toUpperCase().replace(/[-\s]/g, '').trim();
 
     if (!normalized) {
+      setIsLoading(false);
       setError('Placa inválida');
       return null;
     }
@@ -131,12 +132,19 @@ export function useVehicleByPlate(): {
 
     // Check fresh cache first
     const cached = getCached(normalized);
-    if (cached) return cached;
+    if (cached) {
+      setIsLoading(false);
+      return cached;
+    }
 
     // Offline: return stale cache if available, otherwise null
     if (!isOnline) {
       const stale = getCachedStale(normalized);
-      if (stale) return stale;
+      if (stale) {
+        setIsLoading(false);
+        return stale;
+      }
+      setIsLoading(false);
       setError('Sem conexão');
       return null;
     }

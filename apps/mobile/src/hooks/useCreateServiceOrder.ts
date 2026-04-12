@@ -43,7 +43,7 @@ function generateTempId(): string {
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useCreateServiceOrder(): {
-  create: (payload: CreateOSPayload) => Promise<CreateOSResult>;
+  create: (payload: CreateOSPayload) => Promise<CreateOSResult | null>;
   isCreating: boolean;
   error: string | null;
 } {
@@ -51,7 +51,7 @@ export function useCreateServiceOrder(): {
   const [error, setError] = useState<string | null>(null);
   const isOnline = useConnectivity();
 
-  const create = async (payload: CreateOSPayload): Promise<CreateOSResult> => {
+  const create = async (payload: CreateOSPayload): Promise<CreateOSResult | null> => {
     setIsCreating(true);
     setError(null);
 
@@ -75,9 +75,8 @@ export function useCreateServiceOrder(): {
           });
 
           // Persist to local DB as synced
-          let localId = '';
-          await database.write(async () => {
-            const record = await database
+          const record = await database.write(async () => {
+            return database
               .get<ServiceOrder>('service_orders')
               .create((r) => {
                 r.remoteId = data.id;
@@ -99,8 +98,8 @@ export function useCreateServiceOrder(): {
                 r.syncedAt = Date.now();
                 r.pushStatus = 'synced';
               });
-            localId = record.id;
           });
+          const localId = record.id;
 
           return { localId, remoteId: data.id, number: data.number, isOffline: false };
         } catch {
@@ -110,10 +109,9 @@ export function useCreateServiceOrder(): {
 
       // ── Offline path (or online POST failed) ──────────────────────────────
       const tempId = generateTempId();
-      let localId = '';
 
-      await database.write(async () => {
-        const record = await database
+      const offlineRecord = await database.write(async () => {
+        return database
           .get<ServiceOrder>('service_orders')
           .create((r) => {
             r.remoteId = tempId;
@@ -135,13 +133,13 @@ export function useCreateServiceOrder(): {
             r.syncedAt = 0;
             r.pushStatus = 'pending';
           });
-        localId = record.id;
       });
+      const localId = offlineRecord.id;
 
       return { localId, remoteId: tempId, number: 0, isOffline: true };
     } catch {
       setError('Erro ao criar OS. Tente novamente.');
-      throw new Error('Erro ao criar OS. Tente novamente.');
+      return null;
     } finally {
       setIsCreating(false);
     }

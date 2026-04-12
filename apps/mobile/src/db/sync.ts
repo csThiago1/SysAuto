@@ -77,7 +77,14 @@ export async function syncServiceOrders(): Promise<void> {
         };
       },
 
-      pushChanges: async () => {
+      // We ignore the WatermelonDB `changes` parameter and instead query for
+      // push_status='pending' records directly. This is intentional:
+      // - Our push_status field tracks push state idempotently
+      // - After a successful push, push_status is set to 'synced'
+      // - Subsequent syncs will not re-push the same record
+      // - This approach is more reliable than relying on WatermelonDB's
+      //   internal change tracking for outbound records
+      pushChanges: async (_changes) => {
         // Query for pending records directly (more reliable than changes object)
         const collection = database.get<ServiceOrder>('service_orders');
         const pending = await collection.query(Q.where('push_status', 'pending')).fetch();
