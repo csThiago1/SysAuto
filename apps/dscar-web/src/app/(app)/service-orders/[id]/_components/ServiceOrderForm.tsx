@@ -63,6 +63,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       plate: order.plate ?? "",
       make: order.make ?? "",
       model: order.model ?? "",
+      vehicle_version: order.vehicle_version ?? "",
       year: order.year ?? undefined,
       color: order.color ?? "",
       chassis: order.chassis ?? "",

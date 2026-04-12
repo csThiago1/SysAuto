@@ -283,6 +283,7 @@ export interface ServiceOrder {
   plate: string;
   make: string;
   model: string;
+  vehicle_version: string;
   year: number | null;
   color: string;
   chassis: string;
