@@ -7,7 +7,7 @@ import { useConsultants } from "../../_hooks/useStaff"
 
 const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
 const SELECT =
-  "flex h-8 rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+  "flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 
 interface TypeBarProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
@@ -58,7 +58,7 @@ export function TypeBar({ form, consultantName: _consultantName }: TypeBarProps)
       </div>
 
       {/* Tipo OS */}
-      <div>
+      <div className="min-w-[140px]">
         <label className={LABEL}>Tipo OS</label>
         <select className={SELECT} {...register("os_type")}>
           <option value="">Selecionar...</option>
@@ -69,7 +69,7 @@ export function TypeBar({ form, consultantName: _consultantName }: TypeBarProps)
       </div>
 
       {/* Consultor */}
-      <div>
+      <div className="min-w-[180px]">
         <label className={LABEL}>
           Consultor
           {loadingConsultants && (

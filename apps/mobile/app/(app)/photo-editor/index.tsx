@@ -252,9 +252,7 @@ export default function PhotoEditorScreen(): React.ReactElement {
 
       // 3. Persist to store
       setAnnotations(photoId, currentAnnotations, destFile.uri);
-      if (observation.trim() !== '') {
-        setObservation(photoId, observation.trim());
-      }
+      setObservation(photoId, observation.trim());
 
       // 4. Navigate back to checklist
       router.replace(`/(app)/checklist/${osId ?? ''}`);
