@@ -2,7 +2,6 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Platform,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -85,13 +84,22 @@ interface TabItemProps {
 }
 
 function TabItem({ config, isActive, onPress }: TabItemProps): React.JSX.Element {
-  const scale = useSharedValue(1);
-  const labelMaxWidth = useSharedValue(isActive && !config.isCentral ? 56 : 0);
+  // Fix 2: separate pressScale + restingScale for persistent active scale 1.05
+  const pressScale = useSharedValue(1);
+  const restingScale = useSharedValue(isActive ? 1.05 : 1);
+
+  // Fix 6: maxWidth target 56 → 60
+  const labelMaxWidth = useSharedValue(isActive && !config.isCentral ? 60 : 0);
   const labelOpacity = useSharedValue(isActive && !config.isCentral ? 1 : 0);
 
   useEffect(() => {
+    restingScale.value = withTiming(isActive ? 1.05 : 1, { duration: 200 });
+  }, [isActive, restingScale]);
+
+  useEffect(() => {
     if (config.isCentral) return; // central never shows label
-    labelMaxWidth.value = withSpring(isActive ? 56 : 0, {
+    // Fix 6: maxWidth target 60
+    labelMaxWidth.value = withSpring(isActive ? 60 : 0, {
       damping: 20,
       stiffness: 200,
     });
@@ -100,14 +108,16 @@ function TabItem({ config, isActive, onPress }: TabItemProps): React.JSX.Element
 
   const handlePress = useCallback((): void => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    scale.value = withSpring(0.92, { damping: 10, stiffness: 300 }, () => {
-      scale.value = withSpring(1, { damping: 10, stiffness: 200 });
+    // Fix 2: use pressScale for bounce
+    pressScale.value = withSpring(0.92, { damping: 10, stiffness: 300 }, () => {
+      pressScale.value = withSpring(1, { damping: 10, stiffness: 200 });
     });
     onPress();
-  }, [scale, onPress]);
+  }, [pressScale, onPress]);
 
+  // Fix 2: combined style multiplies pressScale * restingScale
   const iconAnimStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
+    transform: [{ scale: pressScale.value * restingScale.value }],
   }));
 
   const labelAnimStyle = useAnimatedStyle(() => ({
@@ -167,6 +177,9 @@ export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.J
 
   const activeRouteName = state.routes[state.index]?.name;
 
+  // Fix 4: derive hidden state before hooks finish (non-hook derived value)
+  const isHiddenRoute = activeRouteName !== undefined && HIDDEN_ROUTES.has(activeRouteName);
+
   // Animate bubble to the active tab
   useEffect(() => {
     if (containerWidth === 0) return;
@@ -179,7 +192,9 @@ export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.J
     const activeCfg = TAB_CONFIG.find(
       (c) => c.routeName === visibleRoutes[activeVisibleIdx]?.name,
     );
-    if (!activeCfg) return;
+
+    // Fix 1: central button never gets bubble
+    if (!activeCfg || activeCfg.isCentral) return;
 
     let x = 0;
     for (let i = 0; i < activeVisibleIdx; i++) {
@@ -211,6 +226,11 @@ export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.J
     },
     [navigation],
   );
+
+  // Fix 4: all hooks have run — safe to return early for hidden routes
+  if (isHiddenRoute) {
+    return <View style={styles.hiddenPlaceholder} />;
+  }
 
   return (
     <View
@@ -255,7 +275,8 @@ const styles = StyleSheet.create({
   },
   frostedBar: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    // Fix 3: background alpha 0.72
+    backgroundColor: 'rgba(255, 255, 255, 0.72)',
     borderRadius: 32,
     paddingVertical: 6,
     alignItems: 'center',
@@ -267,12 +288,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 32,
     elevation: 12,
-    ...Platform.select({
-      android: {
-        borderWidth: 1,
-        borderColor: 'rgba(0,0,0,0.08)',
-      },
-    }),
+    // Fix 5: removed Platform.select Android border override
   },
   // Sliding red bubble — absolutely positioned inside frostedBar
   bubble: {
@@ -309,5 +325,9 @@ const styles = StyleSheet.create({
   tabLabel: {
     fontWeight: '600',
     fontSize: 12,
+  },
+  // Fix 4: placeholder for hidden routes
+  hiddenPlaceholder: {
+    height: 0,
   },
 });
