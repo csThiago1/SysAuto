@@ -10,11 +10,13 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Q } from '@nozbe/watermelondb';
 
 import { ServiceOrder } from '@/db/models/ServiceOrder';
+import { database } from '@/db/index';
 import { useServiceOrdersList } from '@/hooks/useServiceOrders';
+import { useAuthStore } from '@/stores/auth.store';
 import { OSCard } from '@/components/os/OSCard';
 import {
   getStatusBackgroundColor,
@@ -24,7 +26,66 @@ import {
 import { SyncIndicator } from '@/components/common/SyncIndicator';
 import { Text } from '@/components/ui/Text';
 
-// ─── Status chips configuration ───────────────────────────────────────────────
+// ─── Company display names ─────────────────────────────────────────────────
+
+const COMPANY_NAMES: Record<string, string> = {
+  dscar:    'DS Car',
+  pecas:    'Peças Automotivas',
+  vidros:   'Vidros',
+  estetica: 'Estética',
+};
+
+function getCompanyName(slug: string): string {
+  return COMPANY_NAMES[slug] ?? slug;
+}
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Bom dia';
+  if (hour < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
+
+// ─── OS stats hook (WatermelonDB counts) ──────────────────────────────────
+
+interface OSStats {
+  open: number;
+  ready: number;
+  overdue: number;
+}
+
+function useOSStats(): OSStats {
+  const [stats, setStats] = useState<OSStats>({ open: 0, ready: 0, overdue: 0 });
+
+  useEffect(() => {
+    const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
+    const fiveDaysAgo = Date.now() - FIVE_DAYS_MS;
+    const collection = database.collections.get<ServiceOrder>('service_orders');
+
+    void Promise.all([
+      collection
+        .query(Q.where('status', Q.notIn(['delivered', 'cancelled'])))
+        .fetchCount(),
+      collection
+        .query(Q.where('status', 'ready'))
+        .fetchCount(),
+      collection
+        .query(
+          Q.and(
+            Q.where('status', Q.notIn(['delivered', 'cancelled'])),
+            Q.where('created_at_remote', Q.lt(fiveDaysAgo)),
+          ),
+        )
+        .fetchCount(),
+    ]).then(([open, ready, overdue]) => {
+      setStats({ open, ready, overdue });
+    });
+  }, []);
+
+  return stats;
+}
+
+// ─── Status chips configuration ───────────────────────────────────────────
 
 const STATUS_LIST = [
   'reception',
@@ -42,7 +103,7 @@ const STATUS_LIST = [
 
 type OSStatus = (typeof STATUS_LIST)[number];
 
-// ─── Skeleton placeholder ──────────────────────────────────────────────────────
+// ─── Skeleton placeholder ──────────────────────────────────────────────────
 
 function SkeletonCard(): React.JSX.Element {
   const opacity = useRef(new Animated.Value(0.4)).current;
@@ -50,16 +111,8 @@ function SkeletonCard(): React.JSX.Element {
   useEffect(() => {
     const animation = Animated.loop(
       Animated.sequence([
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 700,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0.4,
-          duration: 700,
-          useNativeDriver: true,
-        }),
+        Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.4, duration: 700, useNativeDriver: true }),
       ]),
     );
     animation.start();
@@ -82,7 +135,7 @@ function SkeletonCard(): React.JSX.Element {
   );
 }
 
-// ─── Filter chip ───────────────────────────────────────────────────────────────
+// ─── Filter chip ──────────────────────────────────────────────────────────
 
 interface FilterChipProps {
   label: string;
@@ -92,55 +145,93 @@ interface FilterChipProps {
   onPress: () => void;
 }
 
-function FilterChip({
-  label,
-  selected,
-  color,
-  backgroundColor,
-  onPress,
-}: FilterChipProps): React.JSX.Element {
+function FilterChip({ label, selected, color, backgroundColor, onPress }: FilterChipProps): React.JSX.Element {
   return (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.75}
-      style={[
-        styles.chip,
-        selected
-          ? { backgroundColor, borderColor: color }
-          : styles.chipOutline,
-      ]}
+      style={[styles.chip, selected ? { backgroundColor, borderColor: color } : styles.chipOutline]}
     >
-      <Text
-        variant="caption"
-        style={[styles.chipLabel, { color: selected ? color : '#6b7280' }]}
-      >
+      <Text variant="caption" style={[styles.chipLabel, { color: selected ? color : '#6b7280' }]}>
         {label}
       </Text>
     </TouchableOpacity>
   );
 }
 
-// ─── Main screen ───────────────────────────────────────────────────────────────
+// ─── Dark header ──────────────────────────────────────────────────────────
+
+interface DarkHeaderProps {
+  paddingTop: number;
+  firstName: string;
+  companyName: string;
+  stats: OSStats;
+}
+
+function DarkHeader({ paddingTop, firstName, companyName, stats }: DarkHeaderProps): React.JSX.Element {
+  return (
+    <View style={[styles.darkHeader, { paddingTop: paddingTop + 16 }]}>
+      {/* Gradient overlay approximation */}
+      <View style={styles.darkHeaderOverlay} pointerEvents="none" />
+
+      {/* Top row: greeting + sync indicator */}
+      <View style={styles.darkHeaderTopRow}>
+        <View>
+          <Text variant="heading3" style={styles.greetingText}>
+            {getGreeting()}, {firstName} 👋
+          </Text>
+          <Text variant="bodySmall" style={styles.companyText}>
+            {companyName}
+          </Text>
+        </View>
+        <SyncIndicator />
+      </View>
+
+      {/* Stat chips row */}
+      <View style={styles.statChipsRow}>
+        {stats.open > 0 && (
+          <View style={[styles.statChip, styles.statChipOpen]}>
+            <Text variant="caption" style={styles.statChipOpenText}>
+              {stats.open} Abertas
+            </Text>
+          </View>
+        )}
+        {stats.ready > 0 && (
+          <View style={[styles.statChip, styles.statChipReady]}>
+            <Text variant="caption" style={styles.statChipReadyText}>
+              {stats.ready} Prontas
+            </Text>
+          </View>
+        )}
+        {stats.overdue > 0 && (
+          <View style={[styles.statChip, styles.statChipOverdue]}>
+            <Text variant="caption" style={styles.statChipOverdueText}>
+              {stats.overdue} ⚠ Atrasadas
+            </Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+// ─── Main screen ──────────────────────────────────────────────────────────
 
 export default function OSListScreen(): React.JSX.Element {
-  const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
+  const user = useAuthStore((s) => s.user);
+  const activeCompany = useAuthStore((s) => s.activeCompany);
+  const stats = useOSStats();
+
+  const firstName = user?.name?.split(' ')[0] ?? 'Usuário';
+  const companyName = getCompanyName(activeCompany);
 
   const [search, setSearch] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
   const [activeStatus, setActiveStatus] = useState<OSStatus | undefined>(undefined);
 
-  // Inject SyncIndicator into native header
   useEffect(() => {
-    navigation.setOptions({
-      headerRight: () => <SyncIndicator />,
-    });
-  }, [navigation]);
-
-  // Debounce search input (300 ms)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search.trim());
-    }, 300);
+    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
     return () => clearTimeout(timer);
   }, [search]);
 
@@ -161,9 +252,7 @@ export default function OSListScreen(): React.JSX.Element {
   } = useServiceOrdersList(filters);
 
   const handleEndReached = useCallback((): void => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const renderItem = useCallback(
@@ -172,31 +261,30 @@ export default function OSListScreen(): React.JSX.Element {
   );
 
   const keyExtractor = useCallback((item: ServiceOrder): string => item.id, []);
-
   const hasActiveFilter = Boolean(activeStatus) || Boolean(debouncedSearch);
 
-  // ── Skeleton loading state ─────────────────────────────────────────────────
   if (isLoading && orders.length === 0) {
     return (
-      <SafeAreaView style={styles.safe} edges={['bottom']}>
-        <View style={styles.searchWrapper}>
-          <View style={styles.searchBox} />
-        </View>
+      <View style={styles.safe}>
+        <DarkHeader
+          paddingTop={insets.top}
+          firstName={firstName}
+          companyName={companyName}
+          stats={stats}
+        />
         <View style={styles.skeletonContainer}>
           <SkeletonCard />
           <SkeletonCard />
           <SkeletonCard />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   const ListEmpty = (
     <View style={styles.emptyContainer}>
       <Text variant="body" color="#6b7280" style={styles.emptyText}>
-        {hasActiveFilter
-          ? 'Nenhuma OS encontrada para esta busca'
-          : 'Nenhuma OS disponivel'}
+        {hasActiveFilter ? 'Nenhuma OS encontrada para esta busca' : 'Nenhuma OS disponível'}
       </Text>
       {isOffline && (
         <Text variant="caption" color="#9ca3af" style={styles.emptyHint}>
@@ -206,20 +294,26 @@ export default function OSListScreen(): React.JSX.Element {
     </View>
   );
 
-  const ListFooter =
-    isFetchingNextPage ? (
-      <View style={styles.footerSpinner}>
-        <ActivityIndicator size="small" color="#e31b1b" />
-      </View>
-    ) : null;
+  const ListFooter = isFetchingNextPage ? (
+    <View style={styles.footerSpinner}>
+      <ActivityIndicator size="small" color="#e31b1b" />
+    </View>
+  ) : null;
 
   return (
-    <SafeAreaView style={styles.safe} edges={['bottom']}>
+    <View style={styles.safe}>
+      <DarkHeader
+        paddingTop={insets.top}
+        firstName={firstName}
+        companyName={companyName}
+        stats={stats}
+      />
+
       {/* Search input */}
       <View style={styles.searchWrapper}>
         <TextInput
           style={styles.searchInput}
-          placeholder="Buscar por placa, numero ou cliente..."
+          placeholder="Buscar por placa, número ou cliente..."
           placeholderTextColor="#9ca3af"
           value={search}
           onChangeText={setSearch}
@@ -237,15 +331,13 @@ export default function OSListScreen(): React.JSX.Element {
         contentContainerStyle={styles.chipsContent}
         style={styles.chipsScroll}
       >
-        {/* ALL chip */}
         <FilterChip
           label="Todas"
           selected={activeStatus === undefined}
           color="#e31b1b"
-          backgroundColor="#f3e8ff"
+          backgroundColor="#fee2e2"
           onPress={() => setActiveStatus(undefined)}
         />
-
         {STATUS_LIST.map((status) => (
           <FilterChip
             key={status}
@@ -253,9 +345,7 @@ export default function OSListScreen(): React.JSX.Element {
             selected={activeStatus === status}
             color={getStatusColor(status)}
             backgroundColor={getStatusBackgroundColor(status)}
-            onPress={() =>
-              setActiveStatus(activeStatus === status ? undefined : status)
-            }
+            onPress={() => setActiveStatus(activeStatus === status ? undefined : status)}
           />
         ))}
       </ScrollView>
@@ -282,16 +372,78 @@ export default function OSListScreen(): React.JSX.Element {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// ─── Styles ───────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: '#f9fafb',
+  },
+
+  // Dark header
+  darkHeader: {
+    backgroundColor: '#0f172a',
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  darkHeaderOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#1e293b',
+    opacity: 0.5,
+  },
+  darkHeaderTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  greetingText: {
+    color: '#f1f5f9',
+  },
+  companyText: {
+    color: '#94a3b8',
+    marginTop: 2,
+  },
+  statChipsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  statChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  statChipOpen: {
+    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(59, 130, 246, 0.4)',
+  },
+  statChipOpenText: {
+    color: '#93c5fd',
+    fontWeight: '600',
+  },
+  statChipReady: {
+    backgroundColor: 'rgba(34, 197, 94, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(34, 197, 94, 0.4)',
+  },
+  statChipReadyText: {
+    color: '#86efac',
+    fontWeight: '600',
+  },
+  statChipOverdue: {
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+  },
+  statChipOverdueText: {
+    color: '#fcd34d',
+    fontWeight: '600',
   },
 
   // Search
@@ -308,11 +460,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 15,
     color: '#1a1a1a',
-  },
-  searchBox: {
-    backgroundColor: '#e5e7eb',
-    borderRadius: 12,
-    height: 44,
   },
 
   // Chips
