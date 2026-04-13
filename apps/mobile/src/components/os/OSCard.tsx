@@ -7,6 +7,7 @@ import { ServiceOrder } from '@/db/models/ServiceOrder';
 import { Text } from '@/components/ui/Text';
 import { OSStatusBadge } from './OSStatusBadge';
 import type { InsurerOption } from '@/hooks/useInsurers';
+import { Colors, Radii, Shadow, Spacing } from '@/constants/theme';
 
 interface OSCardProps {
   order: ServiceOrder;
@@ -37,13 +38,6 @@ function getLeftBorderColor(status: string): string {
   return STATUS_BORDER_COLOR[status] ?? '#94a3b8';
 }
 
-function getDaysOpen(createdAtMs: number): string {
-  const diffMs = Date.now() - createdAtMs;
-  const days = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
-  if (days === 0) return 'hoje';
-  return `${days}d`;
-}
-
 function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
   const router = useRouter();
 
@@ -53,7 +47,6 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
 
   const plateLine = order.vehiclePlate ? order.vehiclePlate.toUpperCase() : '—';
   const vehicleLine = [order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ');
-  const timeAgo = getDaysOpen(order.createdAtRemote);
   const borderColor = getLeftBorderColor(order.status);
 
   return (
@@ -63,7 +56,7 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
       style={styles.touchable}
     >
       <LinearGradient
-        colors={['#3a3a3e', '#1e1e22']}
+        colors={[Colors.cardTop, Colors.cardBottom]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={[styles.card, { borderLeftColor: borderColor }]}
@@ -71,13 +64,10 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
         {/* Glass glint — linha de luz no topo */}
         <View style={styles.topGlint} />
 
-        {/* Row 1: OS number + time ago */}
+        {/* Row 1: OS number */}
         <View style={styles.row}>
           <Text variant="label" style={styles.osNumber}>
             OS #{order.number}
-          </Text>
-          <Text variant="caption" color="#9ca3af">
-            {timeAgo}
           </Text>
         </View>
 
@@ -87,7 +77,7 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
         </Text>
 
         {/* Row 3: customer · vehicle */}
-        <Text variant="bodySmall" color="#9ca3af" numberOfLines={1}>
+        <Text variant="bodySmall" color={Colors.textSecondary} numberOfLines={1}>
           {order.customerName}
           {vehicleLine.length > 0 ? ` · ${vehicleLine}` : ''}
         </Text>
@@ -130,30 +120,26 @@ export const OSCard = React.memo(
 
 const styles = StyleSheet.create({
   touchable: {
-    marginHorizontal: 16,
+    marginHorizontal: Spacing.lg,
     marginBottom: 10,
-    borderRadius: 16,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.5,
-    shadowRadius: 14,
-    elevation: 10,
+    borderRadius: Radii.lg,
+    ...Shadow.card,
   },
   card: {
-    borderRadius: 16,
+    borderRadius: Radii.lg,
     borderLeftWidth: 4,
-    borderLeftColor: '#94a3b8',
+    borderLeftColor: Colors.textSecondary,
     // Borda glass: topo claro, laterais e base mais escuras
     borderTopWidth: 1,
     borderRightWidth: 1,
     borderBottomWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.22)',
-    borderRightColor: 'rgba(255, 255, 255, 0.06)',
-    borderBottomColor: 'rgba(0, 0, 0, 0.4)',
+    borderTopColor: Colors.borderGlintTop,
+    borderRightColor: Colors.borderGlintSide,
+    borderBottomColor: Colors.borderGlintBottom,
     paddingTop: 14,
     paddingBottom: 14,
-    paddingLeft: 16,
-    paddingRight: 16,
+    paddingLeft: Spacing.lg,
+    paddingRight: Spacing.lg,
     gap: 6,
     overflow: 'hidden',
   },
@@ -161,10 +147,10 @@ const styles = StyleSheet.create({
   topGlint: {
     position: 'absolute',
     top: 0,
-    left: 16,
+    left: Spacing.lg,
     right: 0,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: Colors.borderGlintTop,
   },
   row: {
     flexDirection: 'row',
@@ -172,12 +158,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   osNumber: {
-    color: '#ffffff',
+    color: Colors.textPrimary,
   },
   plate: {
     fontWeight: '700',
     letterSpacing: 1.5,
-    color: '#ffffff',
+    color: Colors.textPrimary,
   },
   footer: {
     flexDirection: 'row',
@@ -193,11 +179,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    borderRadius: 6,
-    paddingHorizontal: 8,
+    borderRadius: Radii.sm,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 3,
     borderWidth: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: Colors.surfaceLight,
   },
   insurerDot: {
     width: 6,
@@ -205,7 +191,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   insurerAbbr: {
-    color: '#e5e7eb',
+    color: Colors.textPrimary,
     fontWeight: '600',
     fontSize: 11,
   },
