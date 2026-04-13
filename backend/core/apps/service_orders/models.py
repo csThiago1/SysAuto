@@ -578,6 +578,52 @@ class ServiceOrderPart(PaddockBaseModel):
         return result
 
 
+# ─── Catálogo de Serviços ─────────────────────────────────────────────────────
+
+class ServiceCatalogCategory(models.TextChoices):
+    FUNILARIA   = "funilaria",   "Funilaria / Chapeação"
+    PINTURA     = "pintura",     "Pintura"
+    MECANICA    = "mecanica",    "Mecânica"
+    ELETRICA    = "eletrica",    "Elétrica"
+    ESTETICA    = "estetica",    "Estética"
+    ALINHAMENTO = "alinhamento", "Alinhamento / Balanceamento"
+    REVISAO     = "revisao",     "Revisão"
+    LAVAGEM     = "lavagem",     "Lavagem / Higienização"
+    OUTROS      = "outros",      "Outros"
+
+
+class ServiceCatalog(PaddockBaseModel):
+    """
+    Catálogo de serviços reutilizáveis.
+    Preço sugerido pré-preenche ServiceOrderLabor mas é sempre editável.
+    """
+
+    name = models.CharField(max_length=200, verbose_name="Nome do serviço")
+    description = models.TextField(blank=True, verbose_name="Descrição / observação")
+    category = models.CharField(
+        max_length=20,
+        choices=ServiceCatalogCategory.choices,
+        default=ServiceCatalogCategory.OUTROS,
+        verbose_name="Categoria",
+    )
+    suggested_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        verbose_name="Preço sugerido",
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Ativo")
+
+    class Meta:
+        db_table = "service_catalog"
+        ordering = ["category", "name"]
+        verbose_name = "Serviço do catálogo"
+        verbose_name_plural = "Catálogo de serviços"
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.get_category_display()})"
+
+
 class ServiceOrderLaborQuerySet(models.QuerySet):
     """
     QuerySet customizado para ServiceOrderLabor.
@@ -622,6 +668,14 @@ class ServiceOrderLabor(PaddockBaseModel):
         on_delete=models.CASCADE,
         related_name="labor_items",
         verbose_name="OS",
+    )
+    service_catalog = models.ForeignKey(
+        "ServiceCatalog",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="labor_items",
+        verbose_name="Serviço do catálogo",
     )
     description = models.CharField(max_length=300, verbose_name="Descrição do serviço")
     quantity = models.DecimalField(
