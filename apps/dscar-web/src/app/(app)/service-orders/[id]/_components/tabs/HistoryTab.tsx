@@ -285,15 +285,6 @@ function BudgetSnapshotViewer({ snapshot }: { snapshot: BudgetSnapshot }) {
   )
 }
 
-// Activity types that show FieldDiff instead of a prose description
-const FIELD_DIFF_TYPES = new Set<ActivityType>([
-  "updated",
-  "customer_updated",
-  "vehicle_updated",
-  "schedule_updated",
-  "insurer_updated",
-])
-
 // ─── Activity Entry ───────────────────────────────────────────────────────────
 
 interface ActivityEntryProps {
