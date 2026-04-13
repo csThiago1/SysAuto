@@ -22,6 +22,7 @@ from rest_framework.views import APIView
 
 from .models import (
     ChecklistItem,
+    ServiceCatalog,
     ServiceOrder,
     ServiceOrderActivityLog,
     ServiceOrderPhoto,
@@ -35,6 +36,8 @@ from .serializers import (
     ChecklistItemBulkSerializer,
     ChecklistItemSerializer,
     DeliverOSSerializer,
+    ServiceCatalogListSerializer,
+    ServiceCatalogSerializer,
     ServiceOrderActivityLogSerializer,
     ServiceOrderCreateSerializer,
     ServiceOrderDetailSerializer,
@@ -770,3 +773,36 @@ class DashboardStatsView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class ServiceCatalogViewSet(viewsets.ModelViewSet):
+    """
+    CRUD do catálogo de serviços.
+    DELETE faz soft delete (is_active=False).
+    """
+
+    serializer_class = ServiceCatalogSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self) -> QuerySet:
+        """Retorna catálogo ativo, com filtros opcionais de busca e categoria."""
+        qs = ServiceCatalog.objects.filter(is_active=True)
+        search = self.request.query_params.get("search", "")
+        category = self.request.query_params.get("category", "")
+        if search:
+            qs = qs.filter(name__icontains=search)
+        if category:
+            qs = qs.filter(category=category)
+        return qs
+
+    def get_serializer_class(self):  # type: ignore[override]
+        if self.action == "list":
+            return ServiceCatalogListSerializer
+        return ServiceCatalogSerializer
+
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Soft delete: apenas marca is_active=False."""
+        instance = self.get_object()
+        instance.is_active = False
+        instance.save(update_fields=["is_active", "updated_at"])
+        return Response(status=status.HTTP_204_NO_CONTENT)
