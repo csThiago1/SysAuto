@@ -87,15 +87,16 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
           <OSStatusBadge status={order.status} />
           {insurer != null && (
             insurer.logoUrl ? (
-              <Image
-                source={{ uri: insurer.logoUrl }}
-                style={styles.insurerLogo}
-                resizeMode="contain"
-              />
+              <View style={styles.insurerAvatar}>
+                <Image
+                  source={{ uri: insurer.logoUrl }}
+                  style={styles.insurerLogo}
+                  resizeMode="cover"
+                />
+              </View>
             ) : (
-              <View style={[styles.insurerBadge, { borderColor: insurer.brandColor + '66' }]}>
-                <View style={[styles.insurerDot, { backgroundColor: insurer.brandColor }]} />
-                <Text variant="caption" style={styles.insurerAbbr}>
+              <View style={[styles.insurerAvatar, { backgroundColor: insurer.brandColor + '22', borderColor: insurer.brandColor + '66' }]}>
+                <Text variant="caption" style={[styles.insurerAbbr, { color: insurer.brandColor }]}>
                   {insurer.abbreviation}
                 </Text>
               </View>
@@ -171,30 +172,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 2,
   },
-  insurerLogo: {
-    width: 80,
+  insurerAvatar: {
+    width: 40,
     height: 40,
-    borderRadius: Radii.sm,
+    borderRadius: 20,
     overflow: 'hidden',
-  },
-  insurerBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    borderRadius: Radii.sm,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 3,
     borderWidth: 1,
+    borderColor: Colors.borderGlintSide,
     backgroundColor: Colors.surfaceLight,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  insurerDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+  insurerLogo: {
+    width: 40,
+    height: 40,
   },
   insurerAbbr: {
     color: Colors.textPrimary,
-    fontWeight: '600',
-    fontSize: 11,
+    fontWeight: '700',
+    fontSize: 12,
   },
 });
