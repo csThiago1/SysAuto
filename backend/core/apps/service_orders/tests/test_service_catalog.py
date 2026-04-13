@@ -1,19 +1,32 @@
 """Testes para o catálogo de serviços."""
-import pytest
+import hashlib
 from decimal import Decimal
+
+from django_tenants.test.cases import TenantTestCase
 from rest_framework.test import APIClient
+
+from apps.authentication.models import GlobalUser
 from apps.service_orders.models import ServiceCatalog
 
 
-@pytest.mark.django_db
-class TestServiceCatalogViewSet:
-    def setup_method(self) -> None:
-        self.client = APIClient()
-        from apps.authentication.models import GlobalUser
-        self.user = GlobalUser.objects.create_user(
+def _sha256(value: str) -> str:
+    return hashlib.sha256(value.encode()).hexdigest()
+
+
+class ServiceCatalogViewSetTestCase(TenantTestCase):
+    """Testes para ServiceCatalogViewSet."""
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        super().setUpTestData()
+        cls.user = GlobalUser.objects.create_user(
             email="test@dscar.com",
+            email_hash=_sha256("test@dscar.com"),
             password="testpass",
         )
+
+    def setUp(self) -> None:
+        self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 
     def test_list_returns_active_only(self) -> None:
