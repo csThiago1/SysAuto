@@ -58,7 +58,7 @@ export function ServiceCatalogDialog({ open, onOpenChange, editing }: Props) {
     } else {
       reset({ name: "", description: "", category: "outros", suggested_price: "0.00" })
     }
-  }, [editing, reset])
+  }, [open, editing, reset])
 
   async function onSubmit(data: FormData) {
     try {
