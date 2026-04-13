@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 
 import { ServiceOrder } from '@/db/models/ServiceOrder';
@@ -63,53 +63,62 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
       activeOpacity={0.75}
       style={styles.touchable}
     >
-      <LinearGradient
-        colors={['#2c2c2e', '#1c1c1e']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[styles.card, { borderLeftColor: borderColor }]}
-      >
-        {/* Row 1: OS number + time ago */}
-        <View style={styles.row}>
-          <Text variant="label" style={styles.osNumber}>
-            OS #{order.number}
+      {/* Glass container: clips the BlurView to rounded corners */}
+      <View style={[styles.glassWrapper, { borderLeftColor: borderColor }]}>
+        {/* Blur layer — blurs the dark background behind */}
+        <BlurView intensity={28} tint="dark" style={StyleSheet.absoluteFill} />
+
+        {/* Semi-transparent overlay for the gray gradient tint */}
+        <View style={styles.overlay} />
+
+        {/* Top highlight stripe — simulates glass glint */}
+        <View style={styles.topHighlight} />
+
+        {/* Content */}
+        <View style={styles.content}>
+          {/* Row 1: OS number + time ago */}
+          <View style={styles.row}>
+            <Text variant="label" style={styles.osNumber}>
+              OS #{order.number}
+            </Text>
+            <Text variant="caption" color="#9ca3af">
+              {timeAgo}
+            </Text>
+          </View>
+
+          {/* Row 2: plate */}
+          <Text variant="bodySmall" style={styles.plate}>
+            {plateLine}
           </Text>
-          <Text variant="caption" color="#9ca3af">
-            {timeAgo}
+
+          {/* Row 3: customer · vehicle */}
+          <Text variant="bodySmall" color="#9ca3af" numberOfLines={1}>
+            {order.customerName}
+            {vehicleLine.length > 0 ? ` · ${vehicleLine}` : ''}
           </Text>
+
+          {/* Row 4: status badge + insurer logo/sigla */}
+          <View style={styles.footer}>
+            <OSStatusBadge status={order.status} />
+            {insurer != null && (
+              insurer.logoUrl ? (
+                <Image
+                  source={{ uri: insurer.logoUrl }}
+                  style={styles.insurerLogo}
+                  resizeMode="contain"
+                />
+              ) : (
+                <View style={[styles.insurerBadge, { backgroundColor: insurer.brandColor + '33' }]}>
+                  <View style={[styles.insurerDot, { backgroundColor: insurer.brandColor }]} />
+                  <Text variant="caption" style={styles.insurerAbbr}>
+                    {insurer.abbreviation}
+                  </Text>
+                </View>
+              )
+            )}
+          </View>
         </View>
-
-        {/* Row 2: plate */}
-        <Text variant="bodySmall" style={styles.plate}>
-          {plateLine}
-        </Text>
-
-        {/* Row 3: customer · vehicle */}
-        <Text variant="bodySmall" color="#9ca3af" numberOfLines={1}>
-          {order.customerName}
-          {vehicleLine.length > 0 ? ` · ${vehicleLine}` : ''}
-        </Text>
-
-        {/* Row 4: status badge + insurer logo/sigla */}
-        <View style={styles.footer}>
-          <OSStatusBadge status={order.status} />
-          {insurer != null && (
-            insurer.logoUrl ? (
-              <Image
-                source={{ uri: insurer.logoUrl }}
-                style={styles.insurerLogo}
-                resizeMode="contain"
-              />
-            ) : (
-              <View style={[styles.insurerBadge, { backgroundColor: insurer.brandColor }]}>
-                <Text variant="caption" style={styles.insurerAbbr}>
-                  {insurer.abbreviation}
-                </Text>
-              </View>
-            )
-          )}
-        </View>
-      </LinearGradient>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -130,21 +139,45 @@ const styles = StyleSheet.create({
   touchable: {
     marginHorizontal: 16,
     marginBottom: 10,
+    // Shadow for depth on dark background
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  card: {
+  glassWrapper: {
     borderRadius: 16,
     borderLeftWidth: 4,
     borderLeftColor: '#94a3b8',
+    // Glass border — top/right/bottom edges
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.12)',
+    borderRightColor: 'rgba(255, 255, 255, 0.06)',
+    borderBottomColor: 'rgba(0, 0, 0, 0.3)',
+    overflow: 'hidden',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    // Gradient cinza escuro translúcido — topo mais claro, base mais escura
+    backgroundColor: 'rgba(44, 44, 50, 0.72)',
+  },
+  topHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+  },
+  content: {
     paddingTop: 14,
     paddingBottom: 14,
     paddingLeft: 16,
     paddingRight: 16,
     gap: 6,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
   },
   row: {
     flexDirection: 'row',
@@ -170,13 +203,23 @@ const styles = StyleSheet.create({
     height: 24,
   },
   insurerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  insurerDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   insurerAbbr: {
-    color: '#ffffff',
-    fontWeight: '700',
+    color: '#e5e7eb',
+    fontWeight: '600',
     fontSize: 11,
   },
 });

@@ -68,12 +68,12 @@ export function useCreateServiceOrder(): {
             make: payload.vehicleBrand,
             model: payload.vehicleModel,
             year: payload.vehicleYear ?? null,
-            color: payload.vehicleColor ?? null,
+            color: payload.vehicleColor ?? '',
             customer_type: payload.customerType,
             os_type: payload.osType,
             insurer: payload.insurerId ?? null,
             insured_type: payload.insuredType ?? null,
-            casualty_number: payload.casualtyNumber ?? null,
+            casualty_number: payload.casualtyNumber ?? '',
             deductible_amount: payload.deductibleAmount ?? null,
           });
 

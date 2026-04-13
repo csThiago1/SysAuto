@@ -377,7 +377,7 @@ export default function OSListScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#141414',
   },
 
   // Header
@@ -425,28 +425,28 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 15,
-    color: '#1a1a1a',
+    color: '#ffffff',
   },
   filterBtn: {
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   filterBtnActive: {
-    borderColor: '#fca5a5',
-    backgroundColor: '#fff1f1',
+    borderColor: '#e31b1b',
+    backgroundColor: 'rgba(227, 27, 27, 0.15)',
   },
   filterDot: {
     position: 'absolute',
@@ -508,10 +508,10 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   skeletonCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(44, 44, 50, 0.72)',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#f3f4f6',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     padding: 16,
     marginHorizontal: 16,
     marginBottom: 10,
@@ -523,7 +523,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   skeletonBlock: {
-    backgroundColor: '#e5e7eb',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 6,
   },
   skeletonTitle: {
@@ -546,9 +546,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   modalSheet: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#1c1c1e',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     paddingHorizontal: 16,
     paddingTop: 12,
   },
@@ -556,7 +560,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#d1d5db',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     alignSelf: 'center',
     marginBottom: 16,
   },
@@ -579,7 +583,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   statusRowActive: {
-    backgroundColor: '#fff1f1',
+    backgroundColor: 'rgba(227, 27, 27, 0.15)',
   },
   statusDot: {
     width: 10,
@@ -589,7 +593,7 @@ const styles = StyleSheet.create({
   statusRowLabel: {
     flex: 1,
     fontSize: 15,
-    color: '#374151',
+    color: '#e5e7eb',
   },
   statusCheck: {
     marginLeft: 'auto',
