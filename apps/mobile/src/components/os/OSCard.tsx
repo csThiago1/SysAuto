@@ -68,9 +68,9 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
         <View style={styles.bodyRow}>
           {/* Left: plate, customer·vehicle, status */}
           <View style={styles.leftCol}>
-            <Text variant="bodySmall" style={styles.plate}>
-              {plateLine}
-            </Text>
+            <View style={styles.plateBadge}>
+              <Text style={styles.plate}>{plateLine}</Text>
+            </View>
             <Text variant="bodySmall" color={Colors.textSecondary} numberOfLines={1}>
               {order.customerName}
               {vehicleLine.length > 0 ? ` · ${vehicleLine}` : ''}
@@ -175,10 +175,21 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
+  plateBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    borderRadius: Radii.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 5,
+  },
   plate: {
-    fontWeight: '700',
-    letterSpacing: 1.5,
+    fontWeight: '800',
+    letterSpacing: 3,
+    fontSize: 18,
     color: Colors.textPrimary,
+    fontVariant: ['tabular-nums'],
   },
   insurerAvatar: {
     width: 64,
