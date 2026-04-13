@@ -19,6 +19,8 @@ def make_open_os(user: GlobalUser) -> ServiceOrder:
         make="Honda",
         model="Civic",
         customer_type="private",
+        customer_name="Cliente Teste",
+        number=1,
         status="reception",
         created_by=user,
     )

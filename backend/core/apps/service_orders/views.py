@@ -72,7 +72,7 @@ def _build_field_changes(
     for field, label in field_map.items():
         old_val = str(old_data.get(field, "")) if old_data.get(field) is not None else ""
         new_val = str(new_data.get(field, "")) if new_data.get(field) is not None else ""
-        if old_val != new_val and new_val:
+        if old_val != new_val:
             changes.append({"field_label": label, "old_value": old_val, "new_value": new_val})
     return changes
 

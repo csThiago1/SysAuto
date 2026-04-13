@@ -152,6 +152,16 @@ const DEFAULT_CONFIG: ActivityConfig = {
   label: "Atividade",
 }
 
+const FIELD_DIFF_TYPES = new Set<ActivityType>([
+  "updated",
+  "customer_updated",
+  "vehicle_updated",
+  "schedule_updated",
+  "insurer_updated",
+  "part_updated",
+  "labor_updated",
+])
+
 // ─── Field Diff ───────────────────────────────────────────────────────────────
 
 function FieldDiff({ log }: { log: ActivityLog }) {
@@ -300,7 +310,7 @@ function ActivityEntry({ log, snapshots }: ActivityEntryProps) {
 
         {/* Rich extras */}
         {log.activity_type === "status_changed" && <StatusChangeDisplay log={log} />}
-        {(log.activity_type === "updated" || log.activity_type === "part_updated" || log.activity_type === "labor_updated") && <FieldDiff log={log} />}
+        {FIELD_DIFF_TYPES.has(log.activity_type) && <FieldDiff log={log} />}
         {(log.activity_type === "budget_snapshot" || log.activity_type === "cilia_import") && relatedSnapshot && (
           <BudgetSnapshotViewer snapshot={relatedSnapshot} />
         )}
