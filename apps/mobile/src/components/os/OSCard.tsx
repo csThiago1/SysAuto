@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 
 import { ServiceOrder } from '@/db/models/ServiceOrder';
@@ -13,7 +13,6 @@ interface OSCardProps {
   insurer?: InsurerOption;
 }
 
-// Status → left border color (spec §2.5)
 const STATUS_BORDER_COLOR: Record<string, string> = {
   reception:      '#3b82f6',
   initial_survey: '#6d28d9',
@@ -63,67 +62,61 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
       activeOpacity={0.75}
       style={styles.touchable}
     >
-      {/* Glass container: clips the BlurView to rounded corners */}
-      <View style={[styles.glassWrapper, { borderLeftColor: borderColor }]}>
-        {/* Blur layer — blurs the dark background behind */}
-        <BlurView intensity={28} tint="dark" style={StyleSheet.absoluteFill} />
+      <LinearGradient
+        colors={['#3a3a3e', '#1e1e22']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={[styles.card, { borderLeftColor: borderColor }]}
+      >
+        {/* Glass glint — linha de luz no topo */}
+        <View style={styles.topGlint} />
 
-        {/* Semi-transparent overlay for the gray gradient tint */}
-        <View style={styles.overlay} />
-
-        {/* Top highlight stripe — simulates glass glint */}
-        <View style={styles.topHighlight} />
-
-        {/* Content */}
-        <View style={styles.content}>
-          {/* Row 1: OS number + time ago */}
-          <View style={styles.row}>
-            <Text variant="label" style={styles.osNumber}>
-              OS #{order.number}
-            </Text>
-            <Text variant="caption" color="#9ca3af">
-              {timeAgo}
-            </Text>
-          </View>
-
-          {/* Row 2: plate */}
-          <Text variant="bodySmall" style={styles.plate}>
-            {plateLine}
+        {/* Row 1: OS number + time ago */}
+        <View style={styles.row}>
+          <Text variant="label" style={styles.osNumber}>
+            OS #{order.number}
           </Text>
-
-          {/* Row 3: customer · vehicle */}
-          <Text variant="bodySmall" color="#9ca3af" numberOfLines={1}>
-            {order.customerName}
-            {vehicleLine.length > 0 ? ` · ${vehicleLine}` : ''}
+          <Text variant="caption" color="#9ca3af">
+            {timeAgo}
           </Text>
-
-          {/* Row 4: status badge + insurer logo/sigla */}
-          <View style={styles.footer}>
-            <OSStatusBadge status={order.status} />
-            {insurer != null && (
-              insurer.logoUrl ? (
-                <Image
-                  source={{ uri: insurer.logoUrl }}
-                  style={styles.insurerLogo}
-                  resizeMode="contain"
-                />
-              ) : (
-                <View style={[styles.insurerBadge, { backgroundColor: insurer.brandColor + '33' }]}>
-                  <View style={[styles.insurerDot, { backgroundColor: insurer.brandColor }]} />
-                  <Text variant="caption" style={styles.insurerAbbr}>
-                    {insurer.abbreviation}
-                  </Text>
-                </View>
-              )
-            )}
-          </View>
         </View>
-      </View>
+
+        {/* Row 2: plate */}
+        <Text variant="bodySmall" style={styles.plate}>
+          {plateLine}
+        </Text>
+
+        {/* Row 3: customer · vehicle */}
+        <Text variant="bodySmall" color="#9ca3af" numberOfLines={1}>
+          {order.customerName}
+          {vehicleLine.length > 0 ? ` · ${vehicleLine}` : ''}
+        </Text>
+
+        {/* Row 4: status badge + insurer */}
+        <View style={styles.footer}>
+          <OSStatusBadge status={order.status} />
+          {insurer != null && (
+            insurer.logoUrl ? (
+              <Image
+                source={{ uri: insurer.logoUrl }}
+                style={styles.insurerLogo}
+                resizeMode="contain"
+              />
+            ) : (
+              <View style={[styles.insurerBadge, { borderColor: insurer.brandColor + '66' }]}>
+                <View style={[styles.insurerDot, { backgroundColor: insurer.brandColor }]} />
+                <Text variant="caption" style={styles.insurerAbbr}>
+                  {insurer.abbreviation}
+                </Text>
+              </View>
+            )
+          )}
+        </View>
+      </LinearGradient>
     </TouchableOpacity>
   );
 }
 
-// Comparador explícito: re-renderiza quando status, totais ou seguradora mudarem.
 export const OSCard = React.memo(
   OSCardComponent,
   (prev, next) =>
@@ -139,45 +132,39 @@ const styles = StyleSheet.create({
   touchable: {
     marginHorizontal: 16,
     marginBottom: 10,
-    // Shadow for depth on dark background
+    borderRadius: 16,
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 14,
+    elevation: 10,
   },
-  glassWrapper: {
+  card: {
     borderRadius: 16,
     borderLeftWidth: 4,
     borderLeftColor: '#94a3b8',
-    // Glass border — top/right/bottom edges
+    // Borda glass: topo claro, laterais e base mais escuras
     borderTopWidth: 1,
     borderRightWidth: 1,
     borderBottomWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.12)',
+    borderTopColor: 'rgba(255, 255, 255, 0.22)',
     borderRightColor: 'rgba(255, 255, 255, 0.06)',
-    borderBottomColor: 'rgba(0, 0, 0, 0.3)',
-    overflow: 'hidden',
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    // Gradient cinza escuro translúcido — topo mais claro, base mais escura
-    backgroundColor: 'rgba(44, 44, 50, 0.72)',
-  },
-  topHighlight: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
-  },
-  content: {
+    borderBottomColor: 'rgba(0, 0, 0, 0.4)',
     paddingTop: 14,
     paddingBottom: 14,
     paddingLeft: 16,
     paddingRight: 16,
     gap: 6,
+    overflow: 'hidden',
+  },
+  // Linha de luz que simula o reflexo do vidro
+  topGlint: {
+    position: 'absolute',
+    top: 0,
+    left: 16,
+    right: 0,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
   },
   row: {
     flexDirection: 'row',
@@ -210,7 +197,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
   insurerDot: {
     width: 6,
