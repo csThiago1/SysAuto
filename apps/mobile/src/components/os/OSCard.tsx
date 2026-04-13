@@ -201,10 +201,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceLight,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 8,
   },
   insurerLogo: {
-    width: 64,
-    height: 64,
+    width: 48,
+    height: 48,
   },
   insurerAbbr: {
     color: Colors.textPrimary,
