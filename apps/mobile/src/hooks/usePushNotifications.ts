@@ -60,15 +60,20 @@ async function registerForPushNotifications(): Promise<void> {
     });
   }
 
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
+  // expo-modules-core não resolve via bundler neste tsconfig — cast necessário
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const existingPerms = await Notifications.getPermissionsAsync() as any;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  let finalGranted = Boolean(existingPerms.granted);
 
-  if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
+  if (!finalGranted) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const reqPerms = await Notifications.requestPermissionsAsync() as any;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    finalGranted = Boolean(reqPerms.granted);
   }
 
-  if (finalStatus !== 'granted') {
+  if (!finalGranted) {
     // Usuário negou — não forçar novamente
     return;
   }
