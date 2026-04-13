@@ -142,6 +142,80 @@ Monit:       Sentry + Grafana
 
 ---
 
+## ⚠️ Armadilhas Conhecidas — Não Repetir
+
+### Django — Roteamento DRF com múltiplos routers no mesmo app
+```python
+# ERRADO — DefaultRouter registrado em "" captura qualquer segmento como pk
+# /api/v1/service-orders/service-catalog/ → tratado como pk="service-catalog" → 404
+router = DefaultRouter()
+router.register(r"", ServiceOrderViewSet, basename="service-order")
+catalog_router = DefaultRouter()
+catalog_router.register(r"service-catalog", ServiceCatalogViewSet, ...)
+urlpatterns = [
+    path("", include(router.urls)),
+    path("", include(catalog_router.urls)),  # nunca chega aqui
+]
+
+# CORRETO — prefixo explícito + SimpleRouter (sem API root extra)
+catalog_router = SimpleRouter()
+catalog_router.register(r"", ServiceCatalogViewSet, basename="service-catalog")
+urlpatterns = [
+    path("service-catalog/", include(catalog_router.urls)),  # ANTES do router principal
+    path("", include(router.urls)),
+]
+```
+
+### Django — Migrações com número duplicado após merge de branches
+Ao fazer merge de duas branches que criaram migrações na mesma app (ex: `0015_foo` e `0015_bar`):
+```bash
+# Detecta o conflito
+python manage.py migrate_schemas  # → "Conflicting migrations detected"
+
+# Gera migration de merge
+python manage.py makemigrations --merge <app_name> --no-input
+
+# Aplica
+python manage.py migrate_schemas
+```
+Sempre commitar o arquivo `0016_merge_*.py` gerado.
+
+### Frontend — Hooks de API: sempre usar `/api/proxy/` como prefixo
+```typescript
+// ERRADO — chama o Django direto
+const API = "/api/service-orders"
+
+// CORRETO — passa pelo proxy Next.js (adiciona auth header + tenant header)
+const API = "/api/proxy/service-orders"
+```
+O proxy está em `apps/dscar-web/src/app/api/proxy/[...path]/route.ts`.
+
+### Docker Dev — Django usa volume mount, não rebuild
+O container Django monta `backend/core:/app` — qualquer alteração em `.py` é
+refletida imediatamente via hot-reload do `runserver`. **Não precisa rebuild.**
+Exceções que exigem ação manual:
+- Novas migrations → `make migrate`
+- Novo pacote Python no `requirements.txt` → rebuild: `docker compose build django`
+
+### TypeScript — `ActivityType` deve espelhar `ActivityType` do Django
+```python
+# backend/core/apps/service_orders/models.py — ActivityType choices
+```
+```typescript
+// packages/types/src/service-order.types.ts — ActivityType union
+// Manter sincronizados. Se adicionar no backend, adicionar no tipo TS também.
+```
+
+### npm — Após merge ou adição de dependência, rodar `npm install` na raiz
+```bash
+# No root do monorepo (Turborepo gerencia workspaces)
+npm install
+# Verifica se pacote está acessível
+ls node_modules/<pacote>
+```
+
+---
+
 ## 📐 Padrões de Código
 
 ### Commits (Conventional Commits — obrigatório)
