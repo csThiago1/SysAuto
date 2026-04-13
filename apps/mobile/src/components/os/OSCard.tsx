@@ -172,8 +172,10 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   insurerLogo: {
-    width: 56,
-    height: 24,
+    width: 80,
+    height: 40,
+    borderRadius: Radii.sm,
+    overflow: 'hidden',
   },
   insurerBadge: {
     flexDirection: 'row',
