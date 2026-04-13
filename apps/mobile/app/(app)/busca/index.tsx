@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors, Radii, Spacing } from '@/constants/theme';
 import { useServiceOrdersList } from '@/hooks/useServiceOrders';
 import { ServiceOrder } from '@/db/models/ServiceOrder';
 import { OSCard } from '@/components/os/OSCard';
@@ -155,7 +156,7 @@ export default function BuscaScreen(): React.JSX.Element {
           onPress={() => handleHistoryItemPress(item)}
           activeOpacity={0.6}
         >
-          <Text variant="bodySmall" color="#374151" numberOfLines={1} style={styles.historyText}>
+          <Text variant="bodySmall" color={Colors.textSecondary} numberOfLines={1} style={styles.historyText}>
             {item}
           </Text>
         </TouchableOpacity>
@@ -165,7 +166,7 @@ export default function BuscaScreen(): React.JSX.Element {
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           activeOpacity={0.6}
         >
-          <Text variant="caption" color="#9ca3af">
+          <Text variant="caption" color={Colors.textSecondary}>
             x
           </Text>
         </TouchableOpacity>
@@ -181,6 +182,7 @@ export default function BuscaScreen(): React.JSX.Element {
       <Text variant="caption" color="#92400e">
         Offline — resultados locais
       </Text>
+
     </View>
   ) : null;
 
@@ -191,7 +193,7 @@ export default function BuscaScreen(): React.JSX.Element {
 
   const emptyResult = showEmpty ? (
     <View style={styles.emptyState}>
-      <Text variant="body" color="#6b7280">
+      <Text variant="body" color={Colors.textTertiary}>
         {`Nenhuma OS encontrada para "${debouncedQuery}"`}
       </Text>
     </View>
@@ -205,7 +207,7 @@ export default function BuscaScreen(): React.JSX.Element {
           ref={inputRef}
           style={styles.input}
           placeholder="Buscar OS..."
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={Colors.textSecondary}
           value={inputValue}
           onChangeText={handleChangeText}
           onSubmitEditing={handleSubmitEditing}
@@ -223,7 +225,7 @@ export default function BuscaScreen(): React.JSX.Element {
             style={styles.clearBtn}
             activeOpacity={0.6}
           >
-            <Text variant="caption" color="#6b7280">
+            <Text variant="caption" color={Colors.textTertiary}>
               X
             </Text>
           </TouchableOpacity>
@@ -237,7 +239,7 @@ export default function BuscaScreen(): React.JSX.Element {
         <View style={styles.historyContainer}>
           {history.length > 0 ? (
             <>
-              <Text variant="label" color="#374151" style={styles.sectionTitle}>
+              <Text variant="label" color={Colors.textSecondary} style={styles.sectionTitle}>
                 Buscas recentes
               </Text>
               <FlatList
@@ -252,7 +254,7 @@ export default function BuscaScreen(): React.JSX.Element {
             </>
           ) : (
             <View style={styles.emptyState}>
-              <Text variant="body" color="#9ca3af">
+              <Text variant="body" color={Colors.textSecondary}>
                 Digite para buscar uma OS por placa, numero ou cliente.
               </Text>
             </View>
@@ -282,19 +284,19 @@ export default function BuscaScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: Colors.bg,
   },
   // Search bar
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 8,
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.sm,
+    backgroundColor: Colors.surface,
+    borderRadius: Radii.md,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: Colors.border,
     paddingHorizontal: 14,
     paddingVertical: 0,
     height: 48,
@@ -307,21 +309,21 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
     paddingVertical: 0,
   },
   clearBtn: {
-    paddingLeft: 8,
+    paddingLeft: Spacing.sm,
     justifyContent: 'center',
     alignItems: 'center',
   },
   // Offline badge
   offlineBadge: {
-    marginHorizontal: 16,
-    marginBottom: 8,
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.sm,
     backgroundColor: '#fef3c7',
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    borderRadius: Radii.sm,
+    paddingHorizontal: Spacing.md,
     paddingVertical: 6,
     alignSelf: 'flex-start',
   },
@@ -330,18 +332,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionTitle: {
-    marginHorizontal: 16,
-    marginTop: 8,
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.sm,
     marginBottom: 4,
   },
   historyList: {
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.lg,
     paddingBottom: 120,
   },
   historyRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: Spacing.md,
   },
   historyTextTouchable: {
     flex: 1,
@@ -350,17 +352,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   historyRemoveBtn: {
-    paddingLeft: 12,
+    paddingLeft: Spacing.md,
     justifyContent: 'center',
     alignItems: 'center',
   },
   separator: {
     height: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: Colors.inputBg,
   },
   // Results
   resultsList: {
-    paddingTop: 8,
+    paddingTop: Spacing.sm,
     paddingBottom: 120,
   },
   resultWrapper: {

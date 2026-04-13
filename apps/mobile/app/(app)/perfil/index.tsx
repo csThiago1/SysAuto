@@ -92,27 +92,27 @@ export default function PerfilScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: Colors.bg,
   },
   container: {
     flex: 1,
-    padding: 16,
+    padding: Spacing.lg,
     paddingBottom: 120,
     gap: 20,
   },
   pageTitle: {
-    paddingTop: 8,
+    paddingTop: Spacing.sm,
   },
   avatarContainer: {
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 8,
+    gap: Spacing.sm,
+    paddingVertical: Spacing.sm,
   },
   avatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#e31b1b',
+    backgroundColor: Colors.brand,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
@@ -127,13 +127,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: Spacing.md,
   },
   divider: {
     height: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: Colors.inputBg,
   },
   actions: {
-    marginTop: 8,
+    marginTop: Spacing.sm,
   },
 });

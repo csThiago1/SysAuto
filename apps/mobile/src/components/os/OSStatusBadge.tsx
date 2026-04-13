@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
+import { Colors } from '@/constants/theme';
 
 // Status alinhados com os valores do backend (lowercase snake_case)
 const STATUS_CONFIG: Record<string, { label: string; color: string; backgroundColor: string }> = {
@@ -19,11 +20,11 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; backgroundCo
   washing:        { label: 'Lavagem',                 color: '#0891b2', backgroundColor: '#ecfeff' },
   final_survey:   { label: 'Vistoria Final',          color: '#6d28d9', backgroundColor: '#ede9fe' },
   ready:          { label: 'Pronto p/ Entrega',       color: '#166534', backgroundColor: '#dcfce7' },
-  delivered:      { label: 'Entregue',                color: '#374151', backgroundColor: '#f3f4f6' },
+  delivered:      { label: 'Entregue',                color: Colors.textPrimary, backgroundColor: Colors.bg },
   cancelled:      { label: 'Cancelada',               color: '#991b1b', backgroundColor: '#fee2e2' },
 };
 
-const FALLBACK_CONFIG = { label: 'Desconhecido', color: '#374151', backgroundColor: '#f3f4f6' };
+const FALLBACK_CONFIG = { label: 'Desconhecido', color: Colors.textPrimary, backgroundColor: Colors.bg };
 
 interface OSStatusBadgeProps {
   status: string;

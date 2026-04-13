@@ -113,7 +113,7 @@ export function Step1Vehicle({ onNext }: Step1VehicleProps): React.JSX.Element {
         activeOpacity={0.8}
       >
         {isLoading ? (
-          <ActivityIndicator color="#ffffff" />
+          <ActivityIndicator color={Colors.textPrimary} />
         ) : (
           <Text variant="label" color={Colors.textPrimary}>
             Buscar Placa

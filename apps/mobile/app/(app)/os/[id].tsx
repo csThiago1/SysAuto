@@ -483,7 +483,7 @@ const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
           onPress={onAddPhoto}
           activeOpacity={0.75}
         >
-          <Ionicons name="camera-outline" size={16} color="#e31b1b" />
+          <Ionicons name="camera-outline" size={16} color={Colors.brand} />
           <Text variant="caption" style={styles.acompAddLabel}>
             Adicionar
           </Text>
@@ -493,7 +493,7 @@ const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
       <Card style={styles.card} padded={false}>
         {localPhotos.length === 0 && remotePhotos.length === 0 ? (
           <View style={styles.acompEmpty}>
-            <Ionicons name="images-outline" size={32} color="#d1d5db" />
+            <Ionicons name="images-outline" size={32} color={Colors.skeleton} />
             <Text variant="bodySmall" color={Colors.textSecondary} style={styles.acompEmptyText}>
               Nenhuma foto de acompanhamento ainda
             </Text>
@@ -515,7 +515,7 @@ const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
               >
                 <Image source={{ uri: photo.url }} style={styles.acompThumbImg} resizeMode="cover" />
                 <View style={[styles.acompThumbBadge, styles.acompThumbDone]}>
-                  <Ionicons name="checkmark" size={10} color="#fff" />
+                  <Ionicons name="checkmark" size={10} color={Colors.textPrimary} />
                 </View>
               </TouchableOpacity>
             ))}
@@ -539,12 +539,12 @@ const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
                     ]}
                   >
                     {photo.uploadStatus === 'uploading' ? (
-                      <ActivityIndicator size="small" color="#fff" style={{ width: 10, height: 10 }} />
+                      <ActivityIndicator size="small" color={Colors.textPrimary} style={{ width: 10, height: 10 }} />
                     ) : (
                       <Ionicons
                         name={isDone ? 'checkmark' : isErr ? 'alert' : 'time-outline'}
                         size={10}
-                        color="#fff"
+                        color={Colors.textPrimary}
                       />
                     )}
                   </View>
@@ -562,9 +562,9 @@ const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
             disabled={isUploading}
           >
             {isUploading ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <ActivityIndicator size="small" color={Colors.textPrimary} />
             ) : (
-              <Ionicons name="cloud-upload-outline" size={14} color="#fff" />
+              <Ionicons name="cloud-upload-outline" size={14} color={Colors.textPrimary} />
             )}
             <Text variant="caption" style={styles.acompUploadLabel}>
               {isUploading ? 'Enviando...' : `Enviar fotos (${pendingCount})`}
@@ -705,8 +705,8 @@ export default function OSDetailScreen(): React.JSX.Element {
             onPress={() => setStatusModalVisible(true)}
             activeOpacity={0.8}
           >
-            <Ionicons name="swap-horizontal-outline" size={16} color="#e31b1b" />
-            <Text variant="label" color="#e31b1b">
+            <Ionicons name="swap-horizontal-outline" size={16} color={Colors.brand} />
+            <Text variant="label" color={Colors.brand}>
               Avançar Status
             </Text>
           </TouchableOpacity>
@@ -718,8 +718,8 @@ export default function OSDetailScreen(): React.JSX.Element {
           onPress={handleChecklist}
           activeOpacity={0.8}
         >
-          <Ionicons name="camera-outline" size={16} color="#ffffff" />
-          <Text variant="label" color="#ffffff">
+          <Ionicons name="camera-outline" size={16} color={Colors.textPrimary} />
+          <Text variant="label" color={Colors.textPrimary}>
             Checklist
           </Text>
         </TouchableOpacity>
@@ -1067,7 +1067,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#e31b1b',
+    backgroundColor: Colors.brand,
     marginTop: 6,
   },
   logContent: {
@@ -1279,8 +1279,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  acompThumbDone: { backgroundColor: '#16a34a' },
-  acompThumbErr: { backgroundColor: '#ef4444' },
+  acompThumbDone: { backgroundColor: Colors.success },
+  acompThumbErr: { backgroundColor: Colors.error },
   acompThumbPending: { backgroundColor: Colors.textSecondary },
   acompUploadBtn: {
     flexDirection: 'row',

@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors, Spacing } from '@/constants/theme';
 import { Text } from '@/components/ui/Text';
 import { Card } from '@/components/ui/Card';
 
@@ -12,10 +13,10 @@ export default function NotificacoesScreen() {
           Notificacoes
         </Text>
         <Card style={styles.card}>
-          <Text variant="body" color="#6b7280">
+          <Text variant="body" color={Colors.textTertiary}>
             Disponivel no Sprint M3
           </Text>
-          <Text variant="bodySmall" color="#9ca3af" style={styles.hint}>
+          <Text variant="bodySmall" color={Colors.textSecondary} style={styles.hint}>
             Alertas de OS prontas, mudancas de status, aprovacoes pendentes e mensagens do sistema.
             Push notifications via APNs e FCM.
           </Text>
@@ -28,19 +29,19 @@ export default function NotificacoesScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: Colors.bg,
   },
   container: {
     flex: 1,
-    padding: 16,
+    padding: Spacing.lg,
     paddingBottom: 120,
-    gap: 16,
+    gap: Spacing.lg,
   },
   pageTitle: {
-    paddingTop: 8,
+    paddingTop: Spacing.sm,
   },
   card: {
-    gap: 8,
+    gap: Spacing.sm,
   },
   hint: {
     lineHeight: 18,
