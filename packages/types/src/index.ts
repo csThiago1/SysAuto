@@ -18,3 +18,4 @@ export * from "./accounting.types";
 export * from "./financeiro.types";
 export * from "./service-catalog.types";
 export * from "./agenda.types";
+export * from "./dashboard.types";

@@ -6,6 +6,7 @@ import type {
   ServiceOrderPartPayload,
   ServiceOrderLabor,
   ServiceOrderLaborPayload,
+  AnyDashboardStats,
 } from "@paddock/types";
 import { apiFetch } from "@/lib/api";
 
@@ -30,17 +31,13 @@ export function useServiceOrder(
   });
 }
 
-interface DashboardStats {
-  total_open: number;
-  by_status: Record<string, number>;
-  today_deliveries: number;
-}
-
-export function useDashboardStats(): ReturnType<typeof useQuery<DashboardStats>> {
-  return useQuery<DashboardStats>({
-    queryKey: ["dashboard-stats"],
-    queryFn: () => apiFetch<DashboardStats>(`${API}/service-orders/dashboard/stats/`),
-  });
+export function useDashboardStats(role?: string): ReturnType<typeof useQuery<AnyDashboardStats>> {
+  const param = role ? `?role=${role}` : ""
+  return useQuery<AnyDashboardStats>({
+    queryKey: ["dashboard-stats", role ?? "legacy"],
+    queryFn: () =>
+      apiFetch<AnyDashboardStats>(`${API}/service-orders/dashboard/stats/${param}`),
+  })
 }
 
 export function useTransitionStatus(id: string) {
