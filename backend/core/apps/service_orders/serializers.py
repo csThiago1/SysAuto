@@ -304,6 +304,21 @@ class ServiceOrderOverdueSerializer(serializers.ModelSerializer):
         return "upcoming"
 
 
+class ServiceOrderCalendarSerializer(serializers.ModelSerializer):
+    """Serializer compacto para o endpoint de calendário."""
+
+    status_display = serializers.CharField(source="get_status_display", read_only=True)
+
+    class Meta:
+        model = ServiceOrder
+        fields = [
+            "id", "number", "plate", "make", "model",
+            "customer_name", "customer_type",
+            "status", "status_display",
+            "scheduling_date", "estimated_delivery_date",
+        ]
+
+
 class ServiceOrderListSerializer(serializers.ModelSerializer):
     """
     Serializer compacto para listagem (Kanban, tabelas).
