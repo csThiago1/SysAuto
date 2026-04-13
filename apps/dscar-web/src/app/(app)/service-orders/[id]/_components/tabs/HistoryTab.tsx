@@ -18,6 +18,7 @@ import {
   GitBranch,
   Loader2,
   MessageSquare,
+  Package,
   PackageMinus,
   PackagePlus,
   Paperclip,
