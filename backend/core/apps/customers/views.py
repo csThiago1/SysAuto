@@ -21,6 +21,7 @@ from .serializers import (
     UnifiedCustomerCreateSerializer,
     UnifiedCustomerDetailSerializer,
     UnifiedCustomerListSerializer,
+    UnifiedCustomerUpdateSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -43,20 +44,30 @@ logger = logging.getLogger(__name__)
             "CPF e telefone são normalizados para apenas dígitos antes do armazenamento."
         ),
     ),
+    partial_update=extend_schema(
+        summary="Atualizar cliente (parcial)",
+        description=(
+            "Atualiza campos do cliente via PATCH. "
+            "CPF não é editável. "
+            "phone é normalizado para apenas dígitos antes de salvar."
+        ),
+    ),
 )
 class UnifiedCustomerViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
     """
-    ViewSet somente-leitura para clientes unificados.
+    ViewSet para clientes unificados.
 
-    Criação/edição de clientes ocorre via fluxo de consentimento LGPD —
-    não exposto diretamente nesta API por enquanto.
+    Suporta criação, consulta, listagem e atualização parcial (PATCH).
+    PUT não está disponível — usar PATCH para atualizações.
     """
 
+    http_method_names = ["get", "post", "patch", "head", "options"]
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
@@ -82,6 +93,8 @@ class UnifiedCustomerViewSet(
             return UnifiedCustomerCreateSerializer
         if self.action == "list":
             return UnifiedCustomerListSerializer
+        if self.action == "partial_update":
+            return UnifiedCustomerUpdateSerializer
         return UnifiedCustomerDetailSerializer
 
     def create(self, request, *args, **kwargs):  # type: ignore[override]
@@ -94,6 +107,17 @@ class UnifiedCustomerViewSet(
         instance = serializer.save()
         response_data = UnifiedCustomerListSerializer(instance).data
         return Response(response_data, status=status.HTTP_201_CREATED)
+
+    def partial_update(self, request: Request, *args: object, **kwargs: object) -> Response:
+        """
+        PATCH /customers/{id}/
+        Atualiza parcialmente o cliente e retorna o detalhe atualizado.
+        """
+        instance = self.get_object()
+        serializer = UnifiedCustomerUpdateSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        return Response(UnifiedCustomerDetailSerializer(instance).data)
 
     @extend_schema(
         summary="Buscar clientes por nome, CPF ou telefone",

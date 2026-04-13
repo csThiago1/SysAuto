@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
+import { Colors, Radii, Spacing } from '@/constants/theme';
 import { Text } from '@/components/ui/Text';
 import { PhotoSlotGrid } from '@/components/checklist/PhotoSlotGrid';
 import { ItemChecklistGrid } from '@/components/checklist/ItemChecklistGrid';
@@ -147,7 +148,7 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="chevron-back" size={22} color="#141414" />
+          <Ionicons name="chevron-back" size={22} color={Colors.bg} />
           <Text variant="label" style={styles.backLabel}>
             {order != null ? `OS #${order.number}` : 'OS'}
           </Text>
@@ -155,7 +156,7 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
 
         <View style={styles.headerCenter}>
           {isLoading ? (
-            <ActivityIndicator size="small" color="#e31b1b" />
+            <ActivityIndicator size="small" color={Colors.brand} />
           ) : (
             <>
               <Text variant="label" style={styles.headerTitle} numberOfLines={1}>
@@ -227,7 +228,7 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
 
         {activeTab === 'obs' && (
           <View style={styles.obsContainer}>
-            <Text variant="label" color="#374151" style={styles.obsLabel}>
+            <Text variant="label" color={Colors.textSecondary} style={styles.obsLabel}>
               Observações Gerais da Vistoria
             </Text>
             <TextInput
@@ -235,7 +236,7 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
               value={observacoes}
               onChangeText={setObservacoes}
               placeholder="Descreva o estado geral do veículo, avarias preexistentes, itens de atenção..."
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor={Colors.textSecondary}
               multiline
               numberOfLines={8}
               textAlignVertical="top"
@@ -254,9 +255,9 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
             disabled={isUploading}
           >
             {isUploading ? (
-              <ActivityIndicator size="small" color="#ffffff" />
+              <ActivityIndicator size="small" color={Colors.textPrimary} />
             ) : (
-              <Ionicons name="cloud-upload-outline" size={18} color="#ffffff" />
+              <Ionicons name="cloud-upload-outline" size={18} color={Colors.textPrimary} />
             )}
             <Text variant="label" style={styles.floatingLabel}>
               {isUploading ? 'Enviando...' : `Enviar (${pendingPhotoCount + pendingItemCount})`}
@@ -269,7 +270,7 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
       <View style={styles.footer}>
         {nextStatuses.length > 0 ? (
           <>
-            <Text variant="caption" color="#6b7280" style={styles.footerHint}>
+            <Text variant="caption" color={Colors.textTertiary} style={styles.footerHint}>
               Próximo status sugerido:{' '}
               <Text variant="caption" style={{ color: getStatusColor(nextStatuses[0] as ServiceOrderStatus) }}>
                 {getStatusLabel(nextStatuses[0] as ServiceOrderStatus)}
@@ -282,9 +283,9 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
               disabled={isUpdating}
             >
               {isUpdating ? (
-                <ActivityIndicator size="small" color="#ffffff" />
+                <ActivityIndicator size="small" color={Colors.textPrimary} />
               ) : (
-                <Ionicons name="checkmark-circle-outline" size={20} color="#ffffff" />
+                <Ionicons name="checkmark-circle-outline" size={20} color={Colors.textPrimary} />
               )}
               <Text variant="label" style={styles.concluirLabel}>
                 Concluir Vistoria
@@ -293,7 +294,7 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
           </>
         ) : (
           <View style={[styles.concluirBtn, styles.concluirBtnDisabled]}>
-            <Ionicons name="lock-closed-outline" size={18} color="#ffffff" />
+            <Ionicons name="lock-closed-outline" size={18} color={Colors.textPrimary} />
             <Text variant="label" style={styles.concluirLabel}>
               Nenhuma transição disponível
             </Text>
@@ -309,17 +310,17 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: Colors.bg,
   },
 
   // Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
+    backgroundColor: Colors.surface,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    gap: Spacing.sm,
     ...Platform.select({
       ios: {
         shadowColor: '#000000',
@@ -337,7 +338,7 @@ const styles = StyleSheet.create({
     minWidth: 64,
   },
   backLabel: {
-    color: '#141414',
+    color: Colors.bg,
   },
   headerCenter: {
     flex: 1,
@@ -345,11 +346,11 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   headerTitle: {
-    color: '#141414',
+    color: Colors.bg,
     textAlign: 'center',
   },
   headerSubtitle: {
-    color: '#6b7280',
+    color: Colors.textTertiary,
     textAlign: 'center',
   },
   vistoriaBadge: {
@@ -368,33 +369,33 @@ const styles = StyleSheet.create({
   // Tab bar
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.surface,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: Colors.border,
   },
   tab: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: Spacing.md,
     alignItems: 'center',
     position: 'relative',
     minHeight: 48,
     justifyContent: 'center',
   },
   tabLabel: {
-    color: '#6b7280',
+    color: Colors.textTertiary,
     fontWeight: '400',
   },
   tabLabelActive: {
-    color: '#e31b1b',
+    color: Colors.brand,
     fontWeight: '700',
   },
   tabUnderline: {
     position: 'absolute',
     bottom: 0,
-    left: 16,
-    right: 16,
+    left: Spacing.lg,
+    right: Spacing.lg,
     height: 2.5,
-    backgroundColor: '#e31b1b',
+    backgroundColor: Colors.brand,
     borderRadius: 2,
   },
 
@@ -403,7 +404,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    padding: Spacing.lg,
     paddingBottom: 24,
   },
   scrollContentWithButton: {
@@ -418,14 +419,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   obsInput: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
+    backgroundColor: Colors.surface,
+    borderRadius: Radii.md,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: Colors.border,
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: Spacing.md,
     fontSize: 14,
-    color: '#111827',
+    color: Colors.textPrimary,
     minHeight: 160,
     textAlignVertical: 'top',
   },
@@ -441,8 +442,8 @@ const styles = StyleSheet.create({
   floatingButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#374151',
+    gap: Spacing.sm,
+    backgroundColor: Colors.textSecondary,
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 999,
@@ -458,17 +459,17 @@ const styles = StyleSheet.create({
     }),
   },
   floatingLabel: {
-    color: '#ffffff',
+    color: Colors.textPrimary,
   },
 
   // Footer
   footer: {
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    backgroundColor: Colors.surface,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
     gap: 6,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: Colors.border,
   },
   footerHint: {
     textAlign: 'center',
@@ -477,15 +478,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#e31b1b',
+    gap: Spacing.sm,
+    backgroundColor: Colors.brand,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: Radii.md,
   },
   concluirBtnDisabled: {
-    backgroundColor: '#9ca3af',
+    backgroundColor: Colors.textSecondary,
   },
   concluirLabel: {
-    color: '#ffffff',
+    color: Colors.textPrimary,
   },
 });

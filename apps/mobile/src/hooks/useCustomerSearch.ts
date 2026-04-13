@@ -32,7 +32,7 @@ export function useCustomerSearch(): {
         debounceRef.current = null;
       }
 
-      if (!isOnline || query.trim().length < 2) {
+      if (!isOnline || query.trim().length < 3) {
         setResults([]);
         setIsLoading(false);
         return;
@@ -40,18 +40,18 @@ export function useCustomerSearch(): {
 
       debounceRef.current = setTimeout(() => {
         const trimmed = query.trim();
-        if (trimmed.length < 2) {
+        if (trimmed.length < 3) {
           setResults([]);
           return;
         }
 
         setIsLoading(true);
         api
-          .get<CustomerSearchResult[]>(
+          .get<{ count: number; results: CustomerSearchResult[] }>(
             `/customers/search/?q=${encodeURIComponent(trimmed)}`,
           )
           .then((data) => {
-            setResults(data);
+            setResults(data.results);
           })
           .catch((err: unknown) => {
             console.warn('Customer search error:', err);

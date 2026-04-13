@@ -27,6 +27,7 @@ import {
   getStatusLabel,
 } from '@/components/os/OSStatusBadge';
 import { Text } from '@/components/ui/Text';
+import { Colors, Radii, Spacing, Shadow } from '@/constants/theme';
 
 
 // ─── Status list ───────────────────────────────────────────────────────────
@@ -116,9 +117,9 @@ function StatusFilterModal({
 
         {/* Header */}
         <View style={styles.modalHeader}>
-          <Text variant="label" color="#111827">Filtrar por Status</Text>
+          <Text variant="label" color={Colors.textPrimary}>Filtrar por Status</Text>
           <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={styles.modalClose}>
-            <Ionicons name="close" size={20} color="#6b7280" />
+            <Ionicons name="close" size={20} color={Colors.textTertiary} />
           </TouchableOpacity>
         </View>
 
@@ -131,15 +132,15 @@ function StatusFilterModal({
             activeStatus === undefined && styles.statusRowActive,
           ]}
         >
-          <View style={[styles.statusDot, { backgroundColor: '#e31b1b' }]} />
+          <View style={[styles.statusDot, { backgroundColor: Colors.brand }]} />
           <Text
             variant="body"
-            style={[styles.statusRowLabel, activeStatus === undefined && { color: '#e31b1b', fontWeight: '700' }]}
+            style={[styles.statusRowLabel, activeStatus === undefined && { color: Colors.brand, fontWeight: '700' }]}
           >
             Todas
           </Text>
           {activeStatus === undefined && (
-            <Ionicons name="checkmark" size={18} color="#e31b1b" style={styles.statusCheck} />
+            <Ionicons name="checkmark" size={18} color={Colors.brand} style={styles.statusCheck} />
           )}
         </TouchableOpacity>
 
@@ -186,7 +187,7 @@ function OSHeader({ paddingTop }: OSHeaderProps): React.JSX.Element {
 
   return (
     <LinearGradient
-      colors={['#1c1c1e', '#141414']}
+      colors={[Colors.bgHeader, Colors.bg]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
       style={[styles.header, { paddingTop: paddingTop + 8 }]}
@@ -203,7 +204,7 @@ function OSHeader({ paddingTop }: OSHeaderProps): React.JSX.Element {
           onPress={() => navigation.navigate('notificacoes' as never)}
           activeOpacity={0.7}
         >
-          <Ionicons name="notifications-outline" size={22} color="#ffffff" />
+          <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
         </TouchableOpacity>
       </View>
     </LinearGradient>
@@ -276,11 +277,11 @@ export default function OSListScreen(): React.JSX.Element {
 
   const ListEmpty = (
     <View style={styles.emptyContainer}>
-      <Text variant="body" color="#6b7280" style={styles.emptyText}>
+      <Text variant="body" color={Colors.textTertiary} style={styles.emptyText}>
         {hasActiveFilter ? 'Nenhuma OS encontrada para esta busca' : 'Nenhuma OS disponível'}
       </Text>
       {isOffline && (
-        <Text variant="caption" color="#9ca3af" style={styles.emptyHint}>
+        <Text variant="caption" color={Colors.textSecondary} style={styles.emptyHint}>
           Conecte-se para sincronizar mais dados
         </Text>
       )}
@@ -289,7 +290,7 @@ export default function OSListScreen(): React.JSX.Element {
 
   const ListFooter = isFetchingNextPage ? (
     <View style={styles.footerSpinner}>
-      <ActivityIndicator size="small" color="#e31b1b" />
+      <ActivityIndicator size="small" color={Colors.brand} />
     </View>
   ) : null;
 
@@ -302,7 +303,7 @@ export default function OSListScreen(): React.JSX.Element {
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar por placa, número ou cliente..."
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={Colors.textSecondary}
           value={search}
           onChangeText={setSearch}
           returnKeyType="search"
@@ -319,7 +320,7 @@ export default function OSListScreen(): React.JSX.Element {
           <Ionicons
             name="options-outline"
             size={20}
-            color={activeStatus !== undefined ? '#e31b1b' : '#6b7280'}
+            color={activeStatus !== undefined ? Colors.brand : Colors.textTertiary}
           />
           {activeStatus !== undefined && <View style={styles.filterDot} />}
         </TouchableOpacity>
@@ -328,11 +329,11 @@ export default function OSListScreen(): React.JSX.Element {
       {/* Active filter label */}
       {activeStatus !== undefined && (
         <View style={styles.activeFilterBar}>
-          <Text variant="caption" color="#e31b1b" style={styles.activeFilterLabel}>
+          <Text variant="caption" color={Colors.brand} style={styles.activeFilterLabel}>
             {getStatusLabel(activeStatus)}
           </Text>
           <TouchableOpacity onPress={() => setActiveStatus(undefined)} activeOpacity={0.7}>
-            <Ionicons name="close-circle" size={16} color="#e31b1b" />
+            <Ionicons name="close-circle" size={16} color={Colors.brand} />
           </TouchableOpacity>
         </View>
       )}
@@ -348,8 +349,8 @@ export default function OSListScreen(): React.JSX.Element {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={refetch}
-            tintColor="#e31b1b"
-            colors={['#e31b1b']}
+            tintColor={Colors.brand}
+            colors={[Colors.brand]}
           />
         }
         onEndReached={handleEndReached}
@@ -377,7 +378,7 @@ export default function OSListScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#141414',
+    backgroundColor: Colors.bg,
   },
 
   // Header
@@ -394,7 +395,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: Colors.inputBg,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -419,34 +420,34 @@ const styles = StyleSheet.create({
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: Spacing.lg,
     paddingVertical: 10,
-    gap: 8,
+    gap: Spacing.sm,
   },
   searchInput: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 12,
+    backgroundColor: Colors.inputBg,
+    borderRadius: Radii.md,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: Colors.border,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 15,
-    color: '#ffffff',
+    color: Colors.textPrimary,
   },
   filterBtn: {
     width: 44,
     height: 44,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: Radii.md,
+    backgroundColor: Colors.inputBg,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: Colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   filterBtnActive: {
-    borderColor: '#e31b1b',
-    backgroundColor: 'rgba(227, 27, 27, 0.15)',
+    borderColor: Colors.brand,
+    backgroundColor: Colors.brandTint,
   },
   filterDot: {
     position: 'absolute',
@@ -455,7 +456,7 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 4,
-    backgroundColor: '#e31b1b',
+    backgroundColor: Colors.brand,
     borderWidth: 1.5,
     borderColor: '#fff1f1',
   },
@@ -486,7 +487,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 64,
-    paddingHorizontal: 32,
+    paddingHorizontal: Spacing.xxl,
   },
   emptyText: {
     textAlign: 'center',
@@ -508,12 +509,12 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   skeletonCard: {
-    backgroundColor: 'rgba(44, 44, 50, 0.72)',
-    borderRadius: 16,
+    backgroundColor: Colors.surface,
+    borderRadius: Radii.lg,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    padding: 16,
-    marginHorizontal: 16,
+    borderColor: Colors.borderSubtle,
+    padding: Spacing.lg,
+    marginHorizontal: Spacing.lg,
     marginBottom: 10,
     gap: 10,
   },
@@ -523,7 +524,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   skeletonBlock: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: Colors.skeleton,
     borderRadius: 6,
   },
   skeletonTitle: {
@@ -543,26 +544,26 @@ const styles = StyleSheet.create({
   // Filter modal (bottom sheet)
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: Colors.overlayLight,
   },
   modalSheet: {
-    backgroundColor: '#1c1c1e',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: Colors.surface,
+    borderTopLeftRadius: Radii.xl,
+    borderTopRightRadius: Radii.xl,
     borderTopWidth: 1,
     borderLeftWidth: 1,
     borderRightWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    paddingHorizontal: 16,
-    paddingTop: 12,
+    borderColor: Colors.border,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
   },
   modalHandle: {
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: Colors.border,
     alignSelf: 'center',
-    marginBottom: 16,
+    marginBottom: Spacing.lg,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -583,7 +584,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   statusRowActive: {
-    backgroundColor: 'rgba(227, 27, 27, 0.15)',
+    backgroundColor: Colors.brandTint,
   },
   statusDot: {
     width: 10,
@@ -593,7 +594,7 @@ const styles = StyleSheet.create({
   statusRowLabel: {
     flex: 1,
     fontSize: 15,
-    color: '#e5e7eb',
+    color: Colors.textPrimary,
   },
   statusCheck: {
     marginLeft: 'auto',

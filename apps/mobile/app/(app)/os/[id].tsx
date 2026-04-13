@@ -15,6 +15,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
 import { Card } from '@/components/ui/Card';
+import { Colors, Radii, Spacing, Shadow } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
 import { OSDetailHeader } from '@/components/os/OSDetailHeader';
 import { getStatusLabel, getStatusColor, getStatusBackgroundColor } from '@/components/os/OSStatusBadge';
@@ -169,18 +170,18 @@ function StatusUpdateModal({
       <View style={[styles.modalSheet, { paddingBottom: insets.bottom + 16 }]}>
         <View style={styles.modalHandle} />
         <View style={styles.modalHeader}>
-          <Text variant="label" color="#111827">
+          <Text variant="label" color={Colors.textPrimary}>
             Avançar Status
           </Text>
           <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={styles.modalClose}>
-            <Ionicons name="close" size={20} color="#6b7280" />
+            <Ionicons name="close" size={20} color={Colors.textTertiary} />
           </TouchableOpacity>
         </View>
-        <Text variant="bodySmall" color="#6b7280" style={styles.modalSubtitle}>
-          Status atual: <Text variant="bodySmall" color="#111827">{getStatusLabel(currentStatus)}</Text>
+        <Text variant="bodySmall" color={Colors.textTertiary} style={styles.modalSubtitle}>
+          Status atual: <Text variant="bodySmall" color={Colors.textPrimary}>{getStatusLabel(currentStatus)}</Text>
         </Text>
         {nextStatuses.length === 0 ? (
-          <Text variant="bodySmall" color="#9ca3af" style={styles.modalEmpty}>
+          <Text variant="bodySmall" color={Colors.textSecondary} style={styles.modalEmpty}>
             Nenhuma transição disponível para este status.
           </Text>
         ) : (
@@ -236,7 +237,7 @@ interface SectionHeaderProps {
 function SectionHeader({ title }: SectionHeaderProps): React.JSX.Element {
   return (
     <View style={styles.sectionHeader}>
-      <Text variant="label" color="#374151">
+      <Text variant="label" color={Colors.textSecondary}>
         {title}
       </Text>
     </View>
@@ -251,10 +252,10 @@ interface InfoRowProps {
 function InfoRow({ label, value }: InfoRowProps): React.JSX.Element {
   return (
     <View style={styles.infoRow}>
-      <Text variant="bodySmall" color="#6b7280" style={styles.infoLabel}>
+      <Text variant="bodySmall" color={Colors.textTertiary} style={styles.infoLabel}>
         {label}
       </Text>
-      <Text variant="bodySmall" color="#111827" style={styles.infoValue}>
+      <Text variant="bodySmall" color={Colors.textPrimary} style={styles.infoValue}>
         {value}
       </Text>
     </View>
@@ -272,7 +273,7 @@ function PhotoGroup({ folder, photos, onPhotoPress }: PhotoGroupProps): React.JS
 
   return (
     <View style={styles.photoGroup}>
-      <Text variant="bodySmall" color="#374151" style={styles.photoGroupTitle}>
+      <Text variant="bodySmall" color={Colors.textSecondary} style={styles.photoGroupTitle}>
         {label}
       </Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.photoScroll}>
@@ -289,7 +290,7 @@ function PhotoGroup({ folder, photos, onPhotoPress }: PhotoGroupProps): React.JS
               resizeMode="cover"
             />
             {photo.caption != null && photo.caption.length > 0 && (
-              <Text variant="caption" color="#6b7280" numberOfLines={1} style={styles.photoCaption}>
+              <Text variant="caption" color={Colors.textTertiary} numberOfLines={1} style={styles.photoCaption}>
                 {photo.caption}
               </Text>
             )}
@@ -308,14 +309,14 @@ function LineItemRow({ item }: LineItemRowProps): React.JSX.Element {
   return (
     <View style={styles.lineItemRow}>
       <View style={styles.lineItemInfo}>
-        <Text variant="bodySmall" color="#111827" numberOfLines={2}>
+        <Text variant="bodySmall" color={Colors.textPrimary} numberOfLines={2}>
           {item.description}
         </Text>
-        <Text variant="caption" color="#9ca3af">
+        <Text variant="caption" color={Colors.textSecondary}>
           {item.quantity}x {formatCurrency(item.unit_price)}
         </Text>
       </View>
-      <Text variant="bodySmall" color="#374151" style={styles.lineItemTotal}>
+      <Text variant="bodySmall" color={Colors.textSecondary} style={styles.lineItemTotal}>
         {formatCurrency(item.total)}
       </Text>
     </View>
@@ -334,10 +335,10 @@ function TransitionLogItem({ log }: TransitionLogItemProps): React.JSX.Element {
     <View style={styles.logItem}>
       <View style={styles.logDot} />
       <View style={styles.logContent}>
-        <Text variant="bodySmall" color="#374151">
+        <Text variant="bodySmall" color={Colors.textSecondary}>
           {fromLabel} → {toLabel}
         </Text>
-        <Text variant="caption" color="#9ca3af">
+        <Text variant="caption" color={Colors.textSecondary}>
           {formatDateTime(log.created_at)}
           {log.changed_by_name != null && log.changed_by_name.length > 0
             ? ` · ${log.changed_by_name}`
@@ -365,8 +366,8 @@ function ChecklistProgressRow({ photoCount, ok, attention, critical }: Checklist
     <View style={styles.progressRow}>
       {photoCount > 0 && (
         <View style={styles.progressChip}>
-          <Ionicons name="camera-outline" size={12} color="#6b7280" />
-          <Text variant="caption" color="#6b7280">{photoCount} foto{photoCount !== 1 ? 's' : ''}</Text>
+          <Ionicons name="camera-outline" size={12} color={Colors.textTertiary} />
+          <Text variant="caption" color={Colors.textTertiary}>{photoCount} foto{photoCount !== 1 ? 's' : ''}</Text>
         </View>
       )}
       {ok > 0 && (
@@ -431,7 +432,7 @@ function VistoriaCTACard({ type, osId }: VistoriaCTACardProps): React.JSX.Elemen
         <Text variant="label" style={[styles.vstCardTitle, { color }]}>
           {title}
         </Text>
-        <Text variant="bodySmall" color="#6b7280" style={styles.vstCardDesc}>
+        <Text variant="bodySmall" color={Colors.textTertiary} style={styles.vstCardDesc}>
           {description}
         </Text>
       </View>
@@ -474,7 +475,7 @@ const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
   return (
     <View>
       <View style={styles.acompSectionHeader}>
-        <Text variant="label" color="#374151">
+        <Text variant="label" color={Colors.textSecondary}>
           Fotos de Acompanhamento
         </Text>
         <TouchableOpacity
@@ -493,7 +494,7 @@ const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
         {localPhotos.length === 0 && remotePhotos.length === 0 ? (
           <View style={styles.acompEmpty}>
             <Ionicons name="images-outline" size={32} color="#d1d5db" />
-            <Text variant="bodySmall" color="#9ca3af" style={styles.acompEmptyText}>
+            <Text variant="bodySmall" color={Colors.textSecondary} style={styles.acompEmptyText}>
               Nenhuma foto de acompanhamento ainda
             </Text>
           </View>
@@ -653,10 +654,10 @@ export default function OSDetailScreen(): React.JSX.Element {
     return (
       <SafeAreaView style={styles.safe} edges={['bottom']}>
         <View style={styles.emptyContainer}>
-          <Text variant="heading3" color="#374151">
+          <Text variant="heading3" color={Colors.textPrimary}>
             OS não encontrada
           </Text>
-          <Text variant="bodySmall" color="#9ca3af" style={styles.emptyHint}>
+          <Text variant="bodySmall" color={Colors.textSecondary} style={styles.emptyHint}>
             A OS solicitada não existe ou você não tem permissão para visualizá-la.
           </Text>
           <Button label="Voltar" variant="secondary" onPress={handleBack} style={styles.emptyButton} />
@@ -768,26 +769,26 @@ export default function OSDetailScreen(): React.JSX.Element {
 
           <View style={styles.totalsRow}>
             <View style={styles.totalItem}>
-              <Text variant="caption" color="#6b7280">
+              <Text variant="caption" color={Colors.textTertiary}>
                 Peças
               </Text>
-              <Text variant="bodySmall" color="#374151">
+              <Text variant="bodySmall" color={Colors.textSecondary}>
                 {formatCurrency(order.parts_total)}
               </Text>
             </View>
             <View style={styles.totalItem}>
-              <Text variant="caption" color="#6b7280">
+              <Text variant="caption" color={Colors.textTertiary}>
                 Serviços
               </Text>
-              <Text variant="bodySmall" color="#374151">
+              <Text variant="bodySmall" color={Colors.textSecondary}>
                 {formatCurrency(order.services_total)}
               </Text>
             </View>
             <View style={styles.totalItem}>
-              <Text variant="caption" color="#6b7280">
+              <Text variant="caption" color={Colors.textTertiary}>
                 Total
               </Text>
-              <Text variant="label" color="#111827" style={styles.grandTotal}>
+              <Text variant="label" color={Colors.textPrimary} style={styles.grandTotal}>
                 {grandTotal.toLocaleString('pt-BR', {
                   style: 'currency',
                   currency: 'BRL',

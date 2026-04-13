@@ -61,6 +61,11 @@ class ServiceOrderService:
         # Atribuição automática de consultor para quem abriu
         if not payload.get("consultant_id"):
             payload["consultant_id"] = created_by_id
+        # customer é UUID do UnifiedCustomer (schema public) — não mapeia para o FK inteiro de Person.
+        # Persiste como customer_uuid (UUIDField) e remove da chave FK para não quebrar o INSERT.
+        customer_uuid = payload.pop("customer", None)
+        if customer_uuid is not None:
+            payload["customer_uuid"] = customer_uuid
 
         order = ServiceOrder(**payload)
         order.save()
@@ -101,24 +106,70 @@ class ServiceOrderService:
 
         order = ServiceOrder.objects.select_for_update().get(id=order_id)
 
+        # customer é UUID do UnifiedCustomer — não é FK de Person. Persiste como customer_uuid.
+        data = dict(data)
+        customer_uuid = data.pop("customer", None)
+        if customer_uuid is not None:
+            data["customer_uuid"] = customer_uuid
+
         # Detectar campos de data recém-preenchidos que disparam transição
         triggered_transitions: list[tuple[str, str]] = []
-        
-        # Guardar modificações para log
-        field_changes = []
 
         FIELD_LABELS: dict[str, str] = {
+            # Veículo
             "plate": "Placa", "make": "Marca", "model": "Modelo", "year": "Ano",
             "color": "Cor", "chassis": "Chassi", "fuel_type": "Combustível",
-            "entry_date": "Data de entrada", "estimated_delivery_date": "Previsão de entrega",
-            "repair_days": "Dias de reparo", "notes": "Observações",
-            "consultant_id": "Consultor", "customer_name": "Cliente",
-            "mileage_in": "KM entrada", "mileage_out": "KM saída",
-            "casualty_number": "Número do sinistro", "broker_name": "Corretor",
+            "fipe_value": "Valor FIPE", "mileage_in": "KM entrada", "mileage_out": "KM saída",
+            "vehicle_version": "Versão do veículo", "vehicle_location": "Localização do veículo",
+            # Cliente
+            "customer_name": "Nome do cliente", "customer_uuid": "Cliente vinculado",
+            "customer_type": "Tipo de cliente",
+            # Datas / prazo
+            "entry_date": "Data de entrada",
+            "service_authorization_date": "Autorização do serviço",
+            "scheduling_date": "Agendamento",
             "authorization_date": "Data de autorização",
-            "final_survey_date": "Vistoria final", "client_delivery_date": "Entrega ao cliente",
+            "quotation_date": "Data do orçamento",
+            "repair_days": "Dias de reparo",
+            "estimated_delivery_date": "Previsão de entrega",
+            "delivery_date": "Data de entrega",
+            "final_survey_date": "Vistoria final",
+            "client_delivery_date": "Entrega ao cliente",
+            # Seguradora
+            "insurer": "Seguradora", "insured_type": "Tipo de segurado",
+            "deductible_amount": "Franquia", "casualty_number": "Número do sinistro",
+            "broker_name": "Corretor", "expert": "Perito",
+            "expert_date": "Visita do perito", "survey_date": "Data da vistoria",
+            "os_type": "Tipo de OS",
+            # Geral
+            "consultant_id": "Consultor", "notes": "Observações",
             "invoice_issued": "NF emitida", "nfe_key": "Chave NF-e", "nfse_number": "NFS-e",
         }
+
+        # Grupos de campos → activity_type separado no log
+        FIELD_GROUPS: list[tuple[str, frozenset[str]]] = [
+            ("customer_updated", frozenset({
+                "customer_name", "customer_uuid", "customer_type",
+            })),
+            ("vehicle_updated", frozenset({
+                "plate", "make", "model", "year", "color", "chassis",
+                "fuel_type", "fipe_value", "mileage_in", "mileage_out",
+                "vehicle_version", "vehicle_location",
+            })),
+            ("schedule_updated", frozenset({
+                "entry_date", "service_authorization_date", "scheduling_date",
+                "authorization_date", "quotation_date", "repair_days",
+                "estimated_delivery_date", "delivery_date", "final_survey_date",
+                "client_delivery_date",
+            })),
+            ("insurer_updated", frozenset({
+                "insurer", "insured_type", "deductible_amount", "casualty_number",
+                "broker_name", "expert", "expert_date", "survey_date", "os_type",
+            })),
+            ("updated", frozenset({
+                "consultant_id", "notes", "invoice_issued", "nfe_key", "nfse_number",
+            })),
+        ]
 
         for field, (valid_from, target) in AUTO_TRANSITIONS.items():
             old_value = getattr(order, field)
@@ -127,39 +178,66 @@ class ServiceOrderService:
                 if order.status in valid_from:
                     triggered_transitions.append((field, target))
 
-        # Aplicar todos os campos e rastrear diferenças
-        structured_changes: list[dict[str, Any]] = []
-        desc_parts: list[str] = []
+        # Aplicar todos os campos e rastrear diferenças por grupo
+        changes_by_group: dict[str, list[dict[str, Any]]] = {g: [] for g, _ in FIELD_GROUPS}
+        other_changes: list[dict[str, Any]] = []
+
         for key, value in data.items():
             old_value = getattr(order, key)
             if old_value != value:
                 label = FIELD_LABELS.get(key, key)
-                structured_changes.append({
+                change = {
                     "field": key,
                     "field_label": label,
                     "old_value": str(old_value) if old_value is not None else None,
                     "new_value": str(value) if value is not None else None,
-                })
-                if old_value and value:
-                    desc_parts.append(f"mudou {label} de '{old_value}' para '{value}'")
-                elif value and not old_value:
-                    desc_parts.append(f"definiu {label} como '{value}'")
-                else:
-                    desc_parts.append(f"removeu {label}")
+                }
+                assigned = False
+                for group_type, group_fields in FIELD_GROUPS:
+                    if key in group_fields:
+                        changes_by_group[group_type].append(change)
+                        assigned = True
+                        break
+                if not assigned:
+                    other_changes.append(change)
             setattr(order, key, value)
 
-        if structured_changes:
+        # Criar um log por grupo que teve alterações
+        if any(changes_by_group.values()) or other_changes:
             from apps.authentication.models import GlobalUser
             user = GlobalUser.objects.filter(id=updated_by_id).first()
             user_name = user.get_full_name() or user.email if user else "Usuário"
-            desc = (f"{user_name} " + ", ".join(desc_parts))[:5000]
-            ServiceOrderActivityLog.objects.create(
-                service_order=order,
-                user_id=updated_by_id,
-                activity_type="updated",
-                description=desc,
-                metadata={"field_changes": structured_changes},
-            )
+
+            GROUP_LABELS: dict[str, str] = {
+                "customer_updated": "atualizou dados do cliente",
+                "vehicle_updated": "atualizou dados do veículo",
+                "schedule_updated": "atualizou datas e prazos",
+                "insurer_updated": "atualizou dados da seguradora",
+                "updated": "atualizou informações da OS",
+            }
+
+            for group_type, group_fields in FIELD_GROUPS:
+                group_changes = changes_by_group[group_type]
+                if not group_changes:
+                    continue
+                desc = f"{user_name} {GROUP_LABELS.get(group_type, 'atualizou')}."
+                ServiceOrderActivityLog.objects.create(
+                    service_order=order,
+                    user_id=updated_by_id,
+                    activity_type=group_type,
+                    description=desc,
+                    metadata={"field_changes": group_changes},
+                )
+
+            if other_changes:
+                desc = f"{user_name} {GROUP_LABELS['updated']}."
+                ServiceOrderActivityLog.objects.create(
+                    service_order=order,
+                    user_id=updated_by_id,
+                    activity_type="updated",
+                    description=desc,
+                    metadata={"field_changes": other_changes},
+                )
 
         # Aplicar transição (máximo 1 por update)
         if triggered_transitions:

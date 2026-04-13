@@ -5,9 +5,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { format, isToday, isYesterday, parseISO } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import {
-  AlertCircle,
   ArrowRight,
-  Banknote,
+  Calendar,
+  Car,
   CheckCircle,
   ChevronDown,
   ChevronUp,
@@ -18,13 +18,14 @@ import {
   GitBranch,
   Loader2,
   MessageSquare,
-  Package,
   PackageMinus,
   PackagePlus,
   Paperclip,
   PlusCircle,
   Receipt,
+  Shield,
   Truck,
+  UserCheck,
   Wrench,
 } from "lucide-react"
 import type { ActivityLog, ActivityType, BudgetSnapshot, ServiceOrder } from "@paddock/types"
@@ -64,6 +65,30 @@ const ACTIVITY_CONFIG: Partial<Record<ActivityType, ActivityConfig>> = {
     ringClass: "ring-amber-100",
     bgClass: "bg-amber-50",
     label: "Atualização",
+  },
+  customer_updated: {
+    icon: <UserCheck className="h-4 w-4 text-teal-600" />,
+    ringClass: "ring-teal-100",
+    bgClass: "bg-teal-50",
+    label: "Cliente",
+  },
+  vehicle_updated: {
+    icon: <Car className="h-4 w-4 text-sky-600" />,
+    ringClass: "ring-sky-100",
+    bgClass: "bg-sky-50",
+    label: "Veículo",
+  },
+  schedule_updated: {
+    icon: <Calendar className="h-4 w-4 text-purple-600" />,
+    ringClass: "ring-purple-100",
+    bgClass: "bg-purple-50",
+    label: "Datas/Prazo",
+  },
+  insurer_updated: {
+    icon: <Shield className="h-4 w-4 text-orange-600" />,
+    ringClass: "ring-orange-100",
+    bgClass: "bg-orange-50",
+    label: "Seguradora",
   },
   reminder: {
     icon: <MessageSquare className="h-4 w-4 text-neutral-600" />,
@@ -238,6 +263,15 @@ function BudgetSnapshotViewer({ snapshot }: { snapshot: BudgetSnapshot }) {
   )
 }
 
+// Activity types that show FieldDiff instead of a prose description
+const FIELD_DIFF_TYPES = new Set<ActivityType>([
+  "updated",
+  "customer_updated",
+  "vehicle_updated",
+  "schedule_updated",
+  "insurer_updated",
+])
+
 // ─── Activity Entry ───────────────────────────────────────────────────────────
 
 interface ActivityEntryProps {
@@ -283,12 +317,14 @@ function ActivityEntry({ log, snapshots }: ActivityEntryProps) {
           </span>
         </div>
 
-        {/* Description */}
-        <p className="text-sm text-neutral-600 mt-1 leading-snug">{log.description}</p>
+        {/* Description — only show for non-field-diff types */}
+        {!FIELD_DIFF_TYPES.has(log.activity_type) && (
+          <p className="text-sm text-neutral-600 mt-1 leading-snug">{log.description}</p>
+        )}
 
         {/* Rich extras */}
         {log.activity_type === "status_changed" && <StatusChangeDisplay log={log} />}
-        {log.activity_type === "updated" && <FieldDiff log={log} />}
+        {FIELD_DIFF_TYPES.has(log.activity_type) && <FieldDiff log={log} />}
         {(log.activity_type === "budget_snapshot" || log.activity_type === "cilia_import") && relatedSnapshot && (
           <BudgetSnapshotViewer snapshot={relatedSnapshot} />
         )}

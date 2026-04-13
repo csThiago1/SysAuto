@@ -61,10 +61,8 @@ class UnifiedCustomerListSerializer(serializers.ModelSerializer):
 class UnifiedCustomerDetailSerializer(serializers.ModelSerializer):
     """
     Serializer completo para detalhe de cliente.
-
-    Dados sensíveis descriptografados são retornados apenas neste serializer
-    e apenas para usuários autenticados com permissão adequada.
-    CPF é mascarado — nunca retornar em texto claro na API.
+    Para uso interno (ERP autenticado) — retorna phone e email descriptografados.
+    CPF nunca retorna em texto claro — apenas mascarado.
     """
 
     cpf_masked = serializers.SerializerMethodField()
@@ -76,8 +74,9 @@ class UnifiedCustomerDetailSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "cpf_masked",
-            "email",
+            "phone",           # retornado para edição interna — descriptografado
             "phone_masked",
+            "email",
             "birth_date",
             "zip_code",
             "street",
@@ -94,7 +93,11 @@ class UnifiedCustomerDetailSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = fields
+        read_only_fields = [
+            "id", "cpf_masked", "phone_masked",
+            "lgpd_consent_version", "lgpd_consent_date", "lgpd_consent_ip",
+            "is_active", "created_at", "updated_at",
+        ]
 
     def get_cpf_masked(self, obj: UnifiedCustomer) -> str | None:
         """Retorna CPF mascarado (***.***.***-XX) — nunca em texto claro."""
@@ -116,6 +119,41 @@ class UnifiedCustomerDetailSerializer(serializers.ModelSerializer):
         return "(**) *****-****"
 
 
+class UnifiedCustomerUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer para atualização parcial de cliente (PATCH).
+    CPF não é editável — é o identificador primário.
+    phone e email são normalizados antes de salvar.
+    """
+
+    phone = serializers.CharField(max_length=20, required=False, allow_blank=True)
+
+    class Meta:
+        model = UnifiedCustomer
+        fields = [
+            "name",
+            "phone",
+            "email",
+            "birth_date",
+            "zip_code",
+            "street",
+            "street_number",
+            "complement",
+            "neighborhood",
+            "city",
+            "state",
+        ]
+
+    def validate_phone(self, value: str) -> str:
+        """Remove formatação, valida comprimento."""
+        if not value:
+            return value
+        digits = "".join(filter(str.isdigit, value))
+        if len(digits) < 10:
+            raise serializers.ValidationError("Telefone inválido.")
+        return digits
+
+
 class UnifiedCustomerCreateSerializer(serializers.ModelSerializer):
     """
     Serializer para criação de cliente com validação LGPD.
@@ -124,7 +162,8 @@ class UnifiedCustomerCreateSerializer(serializers.ModelSerializer):
     passam por normalização (apenas dígitos) antes de serem armazenados.
     """
 
-    cpf = serializers.CharField(max_length=11, required=False, allow_blank=True)
+    cpf = serializers.CharField(max_length=11)
+    email = serializers.EmailField()
     phone = serializers.CharField(max_length=20)
     lgpd_consent = serializers.BooleanField(write_only=True)
 
@@ -145,10 +184,10 @@ class UnifiedCustomerCreateSerializer(serializers.ModelSerializer):
 
     def validate_cpf(self, value: str) -> str:
         """Remove formatação e valida comprimento do CPF."""
-        digits = "".join(filter(str.isdigit, value)) if value else ""
-        if digits and len(digits) != 11:
+        digits = "".join(filter(str.isdigit, value))
+        if len(digits) != 11:
             raise serializers.ValidationError("CPF deve ter 11 dígitos.")
-        return digits or ""
+        return digits
 
     def validate_phone(self, value: str) -> str:
         """Remove formatação e valida comprimento mínimo do telefone."""

@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { AppState, type AppStateStatus } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Q } from '@nozbe/watermelondb';
 import type { Where } from '@nozbe/watermelondb/QueryDescription/type';
@@ -9,30 +10,12 @@ import { syncServiceOrders } from '@/db/sync';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth.store';
 import { useConnectivity } from './useConnectivity';
+import type { ServiceOrderStatus } from '@paddock/types';
 
 // ─── API Types ────────────────────────────────────────────────────────────────
 
-type OSStatus =
-  | 'reception'
-  | 'initial_survey'
-  | 'budget'
-  | 'waiting_approval'
-  | 'waiting_auth'
-  | 'authorized'
-  | 'approved'
-  | 'in_progress'
-  | 'waiting_parts'
-  | 'repair'
-  | 'mechanic'
-  | 'bodywork'
-  | 'painting'
-  | 'assembly'
-  | 'polishing'
-  | 'washing'
-  | 'final_survey'
-  | 'ready'
-  | 'delivered'
-  | 'cancelled';
+// Re-export for consumers that import OSStatus from this module.
+type OSStatus = ServiceOrderStatus;
 
 interface ServiceOrderAPI {
   id: string;
@@ -178,6 +161,36 @@ export function useServiceOrdersList(filters: OSFilters): UseServiceOrdersListRe
   useEffect(() => {
     if (!isOnline) return;
     void doSync();
+  }, [isOnline, doSync]);
+
+  // Polling em foreground: sincroniza a cada 60 s enquanto o app está ativo.
+  // Evita bateria desnecessária parando quando backgrounded.
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(() => {
+    if (!isOnline) return;
+
+    const start = (): void => {
+      if (intervalRef.current !== null) return;
+      intervalRef.current = setInterval(() => void doSync(), 60_000);
+    };
+    const stop = (): void => {
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+
+    start();
+
+    const sub = AppState.addEventListener('change', (state: AppStateStatus) => {
+      if (state === 'active') start();
+      else stop();
+    });
+
+    return () => {
+      stop();
+      sub.remove();
+    };
   }, [isOnline, doSync]);
 
   const refetch = useCallback((): void => {

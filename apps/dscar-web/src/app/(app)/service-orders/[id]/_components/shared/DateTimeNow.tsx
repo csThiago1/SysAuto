@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 interface DateTimeNowProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string
   onSetNow?: (isoString: string) => void
+  error?: string
 }
 
 /**
@@ -13,7 +14,7 @@ interface DateTimeNowProps extends React.InputHTMLAttributes<HTMLInputElement> {
  * Emite ISO string via onSetNow e chama onChange normal.
  */
 export const DateTimeNow = forwardRef<HTMLInputElement, DateTimeNowProps>(
-  function DateTimeNow({ label, onSetNow, className, onChange, ...props }, ref) {
+  function DateTimeNow({ label, onSetNow, className, onChange, error, ...props }, ref) {
     function handleSetNow() {
       const now = new Date()
       // datetime-local espera formato YYYY-MM-DDTHH:mm
@@ -29,28 +30,34 @@ export const DateTimeNow = forwardRef<HTMLInputElement, DateTimeNowProps>(
     }
 
     return (
-      <div className="flex gap-1">
-        <input
-          ref={ref}
-          type="datetime-local"
-          className={cn(
-            "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm",
-            "shadow-sm transition-colors placeholder:text-muted-foreground",
-            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-            "disabled:cursor-not-allowed disabled:opacity-50",
-            className
-          )}
-          onChange={onChange}
-          {...props}
-        />
-        <button
-          type="button"
-          onClick={handleSetNow}
-          className="shrink-0 h-8 rounded-md border border-neutral-300 bg-white px-2 text-xs font-medium text-neutral-600 hover:bg-neutral-50 transition-colors"
-          title="Preencher com agora"
-        >
-          Agora
-        </button>
+      <div>
+        <div className="flex gap-1">
+          <input
+            ref={ref}
+            type="datetime-local"
+            className={cn(
+              "flex h-8 w-full rounded-md border bg-background px-2.5 py-1 text-sm",
+              "shadow-sm transition-colors placeholder:text-muted-foreground",
+              "focus-visible:outline-none focus-visible:ring-1",
+              error
+                ? "border-red-500 focus-visible:ring-red-500"
+                : "border-input focus-visible:ring-ring",
+              "disabled:cursor-not-allowed disabled:opacity-50",
+              className
+            )}
+            onChange={onChange}
+            {...props}
+          />
+          <button
+            type="button"
+            onClick={handleSetNow}
+            className="shrink-0 h-8 rounded-md border border-neutral-300 bg-white px-2 text-xs font-medium text-neutral-600 hover:bg-neutral-50 transition-colors"
+            title="Preencher com agora"
+          >
+            Agora
+          </button>
+        </div>
+        {error && <p className="mt-0.5 text-[10px] text-red-500">{error}</p>}
       </div>
     )
   }

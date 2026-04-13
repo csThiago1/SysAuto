@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Colors, Radii, Spacing } from '@/constants/theme';
 
 import { Text } from '@/components/ui/Text';
 import { PhotoSlotGrid } from '@/components/checklist/PhotoSlotGrid';
@@ -19,6 +20,11 @@ import { usePhotoStore, uploadPendingPhotos } from '@/stores/photo.store';
 import { useShallow } from 'zustand/react/shallow';
 import { useChecklistItemsStore, syncChecklistItems } from '@/stores/checklist-items.store';
 import { useConnectivity } from '@/hooks/useConnectivity';
+import {
+  getStatusLabel,
+  getStatusColor,
+  getStatusBackgroundColor,
+} from '@/components/os/OSStatusBadge';
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
@@ -38,56 +44,14 @@ const TABS: TabDef[] = [
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
-const STATUS_LABEL: Record<string, string> = {
-  reception:        'Recepção',
-  initial_survey:   'Vistoria Inicial',
-  budget:           'Orçamento',
-  waiting_approval: 'Ag. Aprovação',
-  approved:         'Aprovado',
-  in_progress:      'Em Progresso',
-  waiting_parts:    'Ag. Peças',
-  final_survey:     'Vistoria Final',
-  ready:            'Pronto',
-  delivered:        'Entregue',
-  cancelled:        'Cancelado',
-};
-
-const STATUS_BG: Record<string, string> = {
-  reception:        '#dbeafe',
-  initial_survey:   '#dbeafe',
-  budget:           '#fef9c3',
-  waiting_approval: '#fef9c3',
-  approved:         '#dcfce7',
-  in_progress:      '#dcfce7',
-  waiting_parts:    '#fef9c3',
-  final_survey:     '#dbeafe',
-  ready:            '#dcfce7',
-  delivered:        '#f3f4f6',
-  cancelled:        '#fee2e2',
-};
-
-const STATUS_TEXT_COLOR: Record<string, string> = {
-  reception:        '#1d4ed8',
-  initial_survey:   '#1d4ed8',
-  budget:           '#854d0e',
-  waiting_approval: '#854d0e',
-  approved:         '#166534',
-  in_progress:      '#166534',
-  waiting_parts:    '#854d0e',
-  final_survey:     '#1d4ed8',
-  ready:            '#166534',
-  delivered:        '#6b7280',
-  cancelled:        '#b91c1c',
-};
-
 interface StatusBadgeProps {
   status: string;
 }
 
 function StatusBadge({ status }: StatusBadgeProps): React.ReactElement {
-  const label = STATUS_LABEL[status] ?? status;
-  const bg = STATUS_BG[status] ?? '#f3f4f6';
-  const color = STATUS_TEXT_COLOR[status] ?? '#374151';
+  const label = getStatusLabel(status);
+  const bg = getStatusBackgroundColor(status);
+  const color = getStatusColor(status);
 
   return (
     <View style={[styles.badge, { backgroundColor: bg }]}>
@@ -175,7 +139,7 @@ export default function ChecklistDetailScreen(): React.ReactElement {
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="chevron-back" size={22} color="#141414" />
+          <Ionicons name="chevron-back" size={22} color={Colors.bg} />
           <Text variant="label" style={styles.backLabel}>
             {order != null ? `OS #${order.number}` : 'OS'}
           </Text>
@@ -183,7 +147,7 @@ export default function ChecklistDetailScreen(): React.ReactElement {
 
         <View style={styles.headerCenter}>
           {isLoading ? (
-            <ActivityIndicator size="small" color="#e31b1b" />
+            <ActivityIndicator size="small" color={Colors.brand} />
           ) : (
             <>
               <Text variant="label" style={styles.headerTitle} numberOfLines={1}>
@@ -263,9 +227,9 @@ export default function ChecklistDetailScreen(): React.ReactElement {
             disabled={isUploading}
           >
             {isUploading ? (
-              <ActivityIndicator size="small" color="#ffffff" />
+              <ActivityIndicator size="small" color={Colors.textPrimary} />
             ) : (
-              <Ionicons name="cloud-upload-outline" size={18} color="#ffffff" />
+              <Ionicons name="cloud-upload-outline" size={18} color={Colors.textPrimary} />
             )}
             <Text variant="label" style={styles.floatingLabel}>
               {isUploading
@@ -288,17 +252,17 @@ export default function ChecklistDetailScreen(): React.ReactElement {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: Colors.bg,
   },
 
   // Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
+    backgroundColor: Colors.surface,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    gap: Spacing.sm,
     ...Platform.select({
       ios: {
         shadowColor: '#000000',
@@ -318,7 +282,7 @@ const styles = StyleSheet.create({
     minWidth: 64,
   },
   backLabel: {
-    color: '#141414',
+    color: Colors.bg,
   },
   headerCenter: {
     flex: 1,
@@ -326,11 +290,11 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   headerTitle: {
-    color: '#141414',
+    color: Colors.bg,
     textAlign: 'center',
   },
   headerSubtitle: {
-    color: '#6b7280',
+    color: Colors.textTertiary,
     textAlign: 'center',
   },
   headerRight: {
@@ -340,9 +304,9 @@ const styles = StyleSheet.create({
 
   // Status badge
   badge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 3,
-    borderRadius: 999,
+    borderRadius: Radii.full,
   },
   badgeText: {
     fontWeight: '600',
@@ -350,37 +314,37 @@ const styles = StyleSheet.create({
 
   // Tab bar
   tabBar: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.surface,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: Colors.border,
     maxHeight: 48,
   },
   tabBarContent: {
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.sm,
   },
   tab: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
     alignItems: 'center',
     position: 'relative',
     minHeight: 48,
     justifyContent: 'center',
   },
   tabLabel: {
-    color: '#6b7280',
+    color: Colors.textTertiary,
     fontWeight: '400',
   },
   tabLabelActive: {
-    color: '#e31b1b',
+    color: Colors.brand,
     fontWeight: '700',
   },
   tabUnderline: {
     position: 'absolute',
     bottom: 0,
-    left: 16,
-    right: 16,
+    left: Spacing.lg,
+    right: Spacing.lg,
     height: 2.5,
-    backgroundColor: '#e31b1b',
+    backgroundColor: Colors.brand,
     borderRadius: 2,
   },
 
@@ -389,8 +353,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
-    paddingBottom: 24,
+    padding: Spacing.lg,
+    paddingBottom: Spacing.xl,
   },
   scrollContentWithButton: {
     paddingBottom: 112,
@@ -407,15 +371,15 @@ const styles = StyleSheet.create({
   floatingButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#e31b1b',
+    gap: Spacing.sm,
+    backgroundColor: Colors.brand,
     paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 999,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: Radii.full,
     minHeight: 52,
     ...Platform.select({
       ios: {
-        shadowColor: '#e31b1b',
+        shadowColor: Colors.brand,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.35,
         shadowRadius: 8,
@@ -426,6 +390,6 @@ const styles = StyleSheet.create({
     }),
   },
   floatingLabel: {
-    color: '#ffffff',
+    color: Colors.textPrimary,
   },
 });

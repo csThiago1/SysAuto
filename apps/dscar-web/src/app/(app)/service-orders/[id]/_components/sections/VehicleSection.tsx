@@ -120,7 +120,15 @@ export function VehicleSection({ form }: VehicleSectionProps) {
         </div>
         <div>
           <label className={LABEL}>Combustível</label>
-          <input className={INPUT} type="text" placeholder="Flex" {...register("fuel_type")} />
+          <select className={INPUT} {...register("fuel_type")}>
+            <option value="">Selecionar...</option>
+            <option value="flex">Flex</option>
+            <option value="gasoline">Gasolina</option>
+            <option value="ethanol">Etanol</option>
+            <option value="diesel">Diesel</option>
+            <option value="electric">Elétrico</option>
+            <option value="hybrid">Híbrido</option>
+          </select>
         </div>
       </div>
 

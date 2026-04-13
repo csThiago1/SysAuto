@@ -10,14 +10,11 @@ import {
   Input,
   TableSkeleton,
   EmptyState,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
 } from "@/components/ui"
 import { ServiceOrderTable } from "./_components/ServiceOrderTable"
 import { NewOSDrawer } from "./_components/NewOSDrawer"
+
+const SELECT_CLS = "h-9 rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm text-neutral-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
 
 export default function ServiceOrdersPage() {
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -89,63 +86,59 @@ export default function ServiceOrdersPage() {
         </div>
 
         <div className="flex flex-col md:flex-row gap-3">
-           <Select value={status} onValueChange={setStatus}>
-             <SelectTrigger className="w-[180px] bg-white">
-               <SelectValue placeholder="Status" />
-             </SelectTrigger>
-             <SelectContent>
-               <SelectItem value="ALL">Todos os status</SelectItem>
-               <SelectItem value="reception">Recepção</SelectItem>
-               <SelectItem value="initial_survey">Vistoria Inicial</SelectItem>
-               <SelectItem value="budget">Orçamento</SelectItem>
-               <SelectItem value="waiting_auth">Aguardando Aprovação</SelectItem>
-               <SelectItem value="authorized">Autorizada</SelectItem>
-               <SelectItem value="waiting_parts">Aguardando Peças</SelectItem>
-               <SelectItem value="repair">Reparo</SelectItem>
-               <SelectItem value="mechanic">Mecânica</SelectItem>
-               <SelectItem value="bodywork">Funilaria</SelectItem>
-               <SelectItem value="painting">Pintura</SelectItem>
-               <SelectItem value="assembly">Montagem</SelectItem>
-               <SelectItem value="polishing">Polimento</SelectItem>
-               <SelectItem value="washing">Lavagem</SelectItem>
-               <SelectItem value="final_survey">Vistoria Final</SelectItem>
-               <SelectItem value="ready">Pronta</SelectItem>
-               <SelectItem value="delivered">Entregue</SelectItem>
-               <SelectItem value="cancelled">Cancelada</SelectItem>
-             </SelectContent>
-           </Select>
+          <select
+            className={SELECT_CLS}
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <option value="ALL">Todos os status</option>
+            <option value="reception">Recepção</option>
+            <option value="initial_survey">Vistoria Inicial</option>
+            <option value="budget">Orçamento</option>
+            <option value="waiting_auth">Aguardando Aprovação</option>
+            <option value="authorized">Autorizada</option>
+            <option value="waiting_parts">Aguardando Peças</option>
+            <option value="repair">Em Reparo</option>
+            <option value="mechanic">Mecânica</option>
+            <option value="bodywork">Funilaria</option>
+            <option value="painting">Pintura</option>
+            <option value="assembly">Montagem</option>
+            <option value="polishing">Polimento</option>
+            <option value="washing">Lavagem</option>
+            <option value="final_survey">Vistoria Final</option>
+            <option value="ready">Pronto p/ Entrega</option>
+            <option value="delivered">Entregue</option>
+            <option value="cancelled">Cancelada</option>
+          </select>
 
-           {/* Insurer Filter */}
-           <Select value={insurerId} onValueChange={setInsurerId}>
-             <SelectTrigger className="w-[160px] bg-white">
-               <SelectValue placeholder="Seguradora" />
-             </SelectTrigger>
-             <SelectContent>
-               <SelectItem value="ALL">Qualquer Seguradora</SelectItem>
-               {insurersData?.results.map((insurer) => (
-                 <SelectItem key={insurer.id} value={String(insurer.id)}>
-                   {insurer.fantasy_name || insurer.full_name}
-                 </SelectItem>
-               ))}
-             </SelectContent>
-           </Select>
+          <select
+            className={SELECT_CLS}
+            value={insurerId}
+            onChange={(e) => setInsurerId(e.target.value)}
+          >
+            <option value="ALL">Qualquer Seguradora</option>
+            {insurersData?.results.map((insurer) => (
+              <option key={insurer.id} value={String(insurer.id)}>
+                {insurer.fantasy_name || insurer.full_name}
+              </option>
+            ))}
+          </select>
 
-           <Select value={customerType} onValueChange={setCustomerType}>
-             <SelectTrigger className="w-[160px] bg-white">
-               <SelectValue placeholder="Tipo de Cliente" />
-             </SelectTrigger>
-             <SelectContent>
-               <SelectItem value="ALL">Qualquer Tipo</SelectItem>
-               <SelectItem value="insurer">Seguradora</SelectItem>
-               <SelectItem value="private">Particular</SelectItem>
-             </SelectContent>
-           </Select>
+          <select
+            className={SELECT_CLS}
+            value={customerType}
+            onChange={(e) => setCustomerType(e.target.value)}
+          >
+            <option value="ALL">Qualquer Tipo</option>
+            <option value="insurer">Seguradora</option>
+            <option value="private">Particular</option>
+          </select>
 
-           {hasFilters && (
-             <Button variant="ghost" onClick={clearFilters} className="text-neutral-500 hover:text-error-600 px-3">
-                <FilterX className="h-4 w-4 mr-2" /> Limpar
-             </Button>
-           )}
+          {hasFilters && (
+            <Button variant="ghost" onClick={clearFilters} className="text-neutral-500 hover:text-error-600 px-3">
+              <FilterX className="h-4 w-4 mr-2" /> Limpar
+            </Button>
+          )}
         </div>
       </div>
 

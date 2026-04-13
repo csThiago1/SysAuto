@@ -5,14 +5,17 @@ export const newOSSchema = z
     customer_type: z.enum(["insurer", "private"], {
       required_error: "Selecione o tipo de atendimento",
     }),
-    os_type: z
-      .enum(["bodywork", "warranty", "rework", "mechanical", "aesthetic"])
-      .optional()
-      .nullable(),
+    os_type: z.preprocess(
+      (v) => (v === "" ? null : v),
+      z.enum(["bodywork", "warranty", "rework", "mechanical", "aesthetic"]).optional().nullable()
+    ),
 
     // Seguradora (obrigatório só quando customer_type === "insurer")
     insurer: z.string().uuid().optional().nullable(),
-    insured_type: z.enum(["insured", "third"]).optional().nullable(),
+    insured_type: z.preprocess(
+      (v) => (v === "" ? null : v),
+      z.enum(["insured", "third"]).optional().nullable()
+    ),
 
     // Cliente
     customer: z.string().uuid().optional().nullable(),

@@ -1,5 +1,8 @@
+"use client"
+
 import React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { ExternalLink, CalendarClock, Car, User } from "lucide-react"
 import { formatDate } from "@paddock/utils"
 
@@ -23,6 +26,7 @@ interface ServiceOrderTableProps {
 
 
 export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
+  const router = useRouter()
   return (
     <div className="rounded-md border bg-white overflow-hidden">
       <Table>
@@ -41,7 +45,11 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
             const isLate = order.estimated_delivery_date && new Date(order.estimated_delivery_date) < new Date() && order.status !== "delivered"
 
             return (
-              <TableRow key={order.id} className="group hover:bg-primary-50/30 cursor-pointer transition-colors">
+              <TableRow
+                key={order.id}
+                className="group hover:bg-primary-50/30 cursor-pointer transition-colors"
+                onClick={() => router.push(`/service-orders/${order.id}`)}
+              >
                 {/* OS Number */}
                 <TableCell className="font-medium text-neutral-900">
                   <div className="flex items-center gap-1.5">

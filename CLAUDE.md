@@ -827,30 +827,72 @@ make typecheck       # mypy + tsc
 
 ## 🗺️ Sprints em Andamento
 
-### Sprint 15 — Abril 2026 (iniciando)
-**Banking + Asaas Completo + Relatórios Financeiros**
+### Sprint 16 — Abril 2026 (planejada)
+**Catálogo de Serviços + Agenda + Dashboard Role-Based**
+- **Catálogo de Serviços** (`/cadastros/servicos`): model `ServiceCatalog` (name, category, suggested_price, is_active), FK opcional em `ServiceOrderLabor`, CRUD frontend, aba ServicesTab na OS; **toda inserção/edição/remoção de peças e serviços gera `ServiceOrderActivityLog`** (`part_added`, `part_updated`, `part_removed`, `labor_added`, `labor_updated`, `labor_removed`)
+- **Agenda** (`/agenda`): visualizações mês/semana/dia de OSs por `scheduling_date` (entrada) e `estimated_delivery_date` (entrega), endpoint `GET /service-orders/calendar/`, agendamento manual via `SchedulingDialog`
+- **Dashboard Role-Based**: Consultor → KPIs pessoais (OS abertas, entregas hoje, atrasadas, concluídas semana); Gerente/Admin/Owner → faturamento, ticket médio, gráfico 6 meses, produtividade da equipe, OS atrasadas
+- **Docs**: `docs/superpowers/plans/2026-04-13-service-catalog.md`, `agenda.md`, `dashboard-rolebased.md`
+
+### Sprint M5 Mobile — Abril 2026 (em andamento)
+**Abertura de OS no Mobile**
+- ✅ Step 2 — Cliente: busca inline (debounce, envelope `{ count, results }`), cadastro rápido (nome/CPF/telefone/email obrigatórios + LGPD), card verde pós-seleção, trocar cliente
+- ✅ `useCustomerSearch` — fix trailing slash + envelope; `useCustomerCreate` — POST `/customers/` com `lgpd_consent: true`
+- ⬜ Step 1 — Veículo: consulta placa-fipe + cache MMKV + fallback manual offline
+- ⬜ Step 3 — Tipo de OS + Step 4 — Revisão
+- ⬜ Criação offline (WatermelonDB) + sync ao reconectar
+- ⬜ Atalho "Iniciar Checklist Agora" pós-criação
+- ⬜ EAS Build dev build (necessário para `react-native-view-shot` em produção)
+
+---
+
+## 🗄️ Backlog Pausado
+
+### Sprint 15 — Banking + Asaas + Relatórios Financeiros
+**Adiado indefinidamente — retomar quando o módulo financeiro for prioridade**
 - App `accounts_banking`: BankAccount, BankTransaction, OFXImportService
 - Reconciliação AP/AR ↔ lançamentos bancários
-- `CashFlowService`: fluxo de caixa projetado (AP vencimentos + AR previsões)
-- Asaas webhook completo: auto-baixa ReceivableDocument ao receber evento
-- OS → ReceivableDocument na entrega (pendência Sprint 14)
-- Celery beat tasks overdue refresh (pendência Sprint 14)
-- Relatórios: DRE, Balanço Patrimonial, Fluxo de Caixa (PDF + XLSX)
-- Frontend: `/financeiro/relatorios` + páginas detalhe AP/AR (pendências Sprint 14)
-- Testes: suíte AP/AR (85% cobertura)
-- Dívida técnica: fix Sprint 10 (bulk delete signal + teste missing)
-
-### Sprint M5 Mobile — Abril 2026 (iniciando)
-**Abertura de OS no Mobile**
-- Wizard 4 steps: Veículo (placa-fipe) → Cliente (busca inline) → Tipo OS → Revisão
-- Consulta de placa online + cache MMKV + fallback manual offline
-- Criação offline (WatermelonDB) + sync ao reconectar
-- Atalho "Iniciar Checklist Agora" pós-criação
-- EAS Build dev build (necessário para `react-native-view-shot` em produção)
+- `CashFlowService`: fluxo de caixa projetado
+- Asaas webhook completo + auto-baixa ReceivableDocument
+- OS → ReceivableDocument na entrega
+- Relatórios DRE, Balanço, Fluxo de Caixa (PDF + XLSX)
+- Frontend `/financeiro/relatorios` + detalhes AP/AR
 
 ---
 
 ## 📦 Sprints Entregues
+
+### UX Refinamentos dscar-web — Abril 2026 ✅
+**Nova Sidebar + OS Form + Filtros em Português**
+- Nova `Sidebar.tsx` — Montserrat, animação fade-in, sem AppHeader, sem sidebarCollapsed
+- OS Form redesign: `NewOSDrawer`, `TypeBar`, `VehicleSection` (fuel_type select PT), `CustomerSection` editável, `InsurerSection` com logo
+- Filtros lista OS: selects nativos com labels em português
+- Histórico OS: agrupamento por tipo de campo (customer/vehicle/schedule/insurer), ícones distintos, sem descrição verbosa
+- Kanban: Tailwind content scan corrigido (packages/utils), `cancelled` → "Cancelada"
+- Mobile: status keys alinhados com backend (waiting_auth, authorized, repair…)
+
+### Refinamentos Mobile — OS Detail + Sync — Abril 2026 ✅
+**OS Detail labels PT + Status Update + Sync fix + Badge reativo**
+
+Mobile:
+- `api.ts` — fix trailing slash corrompendo query string (`path.split('?')` antes de adicionar `/`)
+- `useServiceOrders.ts` — `OSStatus` local substituído por `ServiceOrderStatus` de `@paddock/types`; polling foreground 60 s com `AppState` (para quando backgrounded)
+- `useUpdateOSStatus.ts` — PATCH status + update WatermelonDB (`Q.where('remote_id')`) + invalida TanStack Query detail
+- `OSCard.tsx` — comparador explícito no `React.memo` (checa `status`, `totalParts`, `totalServices`) — resolvia badge estagnado após update (WatermelonDB reutiliza mesma instância de modelo)
+- `os/[id].tsx` — labels PT (`OS_TYPE_LABELS`, `CUSTOMER_TYPE_LABELS`); `OSTransitionLog` com campos reais (`created_at`, `changed_by_name`); `StatusUpdateModal` bottom-sheet com `VALID_TRANSITIONS`; `actionRow` com botões "Avançar Status" + "Checklist"
+- `checklist/[osId].tsx` — `StatusBadge` inline substituído por `getStatusLabel/Color/BackgroundColor` de `OSStatusBadge`
+- `checklist/index.tsx` + `OSCard.tsx` — removidos status obsoletos (`waiting_approval`, `approved`, `in_progress`)
+
+Backend:
+- `service_orders/views.py` — endpoint `sync/`: separado `created` (registros com `created_at >= since`) vs `updated` (existentes modificados) vs `deleted` (is_active=False) — eliminava o erro "[Sync] Server wants client to create record … but it already exists locally"
+
+### Refinamentos UX Mobile pós-M4 — Abril 2026 ✅
+**Nav/Header/Filtros Redesign**
+- `FrostedNavBar.tsx` — T2 dark pill `#141414`, activeLine vermelha com glow, botão central `+` vermelho; fix HIDDEN_ROUTES/TAB_CONFIG; busca→Agenda, perfil→Config
+- `os/index.tsx` — `OSHeader` DubiCars-style (`[spacer][logo centralizado][bell]`, LinearGradient `#1c1c1e→#141414`); filtros status → bottom-sheet modal (botão `options-outline` ao lado da busca) com active filter label bar
+- `OSDetailHeader.tsx` — removido botão de voltar customizado (duplicava com nativo)
+- `os/_layout.tsx` — `headerBackTitle: 'Voltar'` no screen `[id]`
+- `useServiceOrders.ts` — busca expandida: `vehicle_plate`, `customer_name`, `vehicle_model`, `vehicle_brand` + `number`
 
 ### Sprint M4 Mobile — Abril 2026 ✅
 **Checklist de Itens + Editor de Anotações nas Fotos**
@@ -872,6 +914,11 @@ make typecheck       # mypy + tsc
 - Frontend AP/AR: types + hooks + pages (contas-pagar, contas-pagar/novo, contas-receber) ✅
 - OS Form: `NewOSDrawer` (Sheet), `TypeBar`, `VehicleSection` (vehicle_version), `CustomerSearch`, `InsurerSection` com logo ✅
 - Migration `0014_vehicle_version` — campo vehicle_version em ServiceOrder ✅
+- **OS — Vínculo de cliente corrigido:** `ServiceOrder.customer_uuid` (UUIDField, migration `0015`); `services.py` pop+salva o UUID tanto em `create()` quanto em `update()` — antes o campo nunca era persistido ✅
+- **CustomerSection redesenhada:** formulário editável completo (nome, telefone, email, nascimento, CPF mascarado readonly, endereço); PATCH ao `UnifiedCustomer` no save da OS; botão "Trocar cliente" com busca inline; `useCustomerDetail` + `useCustomerUpdate` ✅
+- **`UnifiedCustomer` PATCH:** `UnifiedCustomerUpdateSerializer` + `partial_update` no viewset; `phone` retornado desmascarado para staff; `cpf_masked` como SerializerMethodField ✅
+- **Histórico de OS — campo grouping:** `FIELD_LABELS` completo; `update()` cria 1 log por grupo (`customer_updated`, `vehicle_updated`, `schedule_updated`, `insurer_updated`, `updated`) em vez de 1 log monolítico; novos `ActivityType` no model; history POST aceita `activity_type` + `metadata`; `HistoryTab` com ícone/cor distintos por grupo, sem descrição verbosa — só `FieldDiff` ✅
+- **Playwright E2E:** 6/6 testes passando — fix `waitForResponse` (skip 3xx), `z.preprocess` nos enums, `btn.evaluate()` para bypass de pointer interception ✅
 
 ---
 

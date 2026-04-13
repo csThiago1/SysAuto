@@ -5,6 +5,8 @@ const config: Config = {
   content: [
     "./src/**/*.{ts,tsx}",
     "../../packages/ui/src/**/*.{ts,tsx}",
+    "../../packages/utils/src/**/*.{ts,tsx}",
+    "../../packages/types/src/**/*.{ts,tsx}",
   ],
   theme: {
     extend: {

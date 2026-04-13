@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Colors, Radii } from '@/constants/theme';
 
 // ─── Tab configuration ─────────────────────────────────────────────────────
 
@@ -117,7 +118,7 @@ function TabItem({ config, isActive, onPress }: TabItemProps): React.JSX.Element
         accessibilityState={{ selected: isActive }}
       >
         <Animated.View style={[styles.centralButton, iconAnimStyle]}>
-          <Ionicons name="add" size={22} color="#ffffff" />
+          <Ionicons name="add" size={22} color={Colors.textPrimary} />
         </Animated.View>
       </TouchableOpacity>
     );
@@ -209,7 +210,7 @@ const styles = StyleSheet.create({
   },
   pill: {
     width: '100%',
-    backgroundColor: '#141414',
+    backgroundColor: Colors.bg,
     borderRadius: 22,
     paddingVertical: 9,
     paddingHorizontal: 4,
@@ -238,8 +239,8 @@ const styles = StyleSheet.create({
     width: 28,
     height: 3,
     borderRadius: 2,
-    backgroundColor: '#e31b1b',
-    shadowColor: '#e31b1b',
+    backgroundColor: Colors.brand,
+    shadowColor: Colors.brand,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 6,
@@ -251,13 +252,13 @@ const styles = StyleSheet.create({
     minHeight: 44,
   },
   centralButton: {
-    backgroundColor: '#e31b1b',
-    borderRadius: 16,
+    backgroundColor: Colors.brand,
+    borderRadius: Radii.lg,
     paddingVertical: 9,
     paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#e31b1b',
+    shadowColor: Colors.brand,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.55,
     shadowRadius: 12,

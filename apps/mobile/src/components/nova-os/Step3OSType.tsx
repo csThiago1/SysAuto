@@ -11,6 +11,7 @@ import {
 import { Text } from '@/components/ui/Text';
 import { useInsurers, type InsurerOption } from '@/hooks/useInsurers';
 import { useNewOSStore, type CustomerType, type OSType } from '@/stores/new-os.store';
+import { Colors, Radii } from '@/constants/theme';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -75,7 +76,7 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
       keyboardShouldPersistTaps="handled"
     >
       {/* Step label */}
-      <Text variant="bodySmall" color="#6b7280">
+      <Text variant="bodySmall" color={Colors.textTertiary}>
         Passo 3 de 4
       </Text>
 
@@ -85,7 +86,7 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
       </Text>
 
       {/* Customer type label */}
-      <Text variant="label" color="#374151">
+      <Text variant="label" color={Colors.textPrimary}>
         Tipo de Cliente
       </Text>
 
@@ -102,7 +103,7 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
             >
               <Text
                 variant="label"
-                color={isActive ? '#ffffff' : '#374151'}
+                color={isActive ? Colors.textPrimary : Colors.textPrimary}
               >
                 {ct.label}
               </Text>
@@ -112,7 +113,7 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
       </View>
 
       {/* OS type label */}
-      <Text variant="label" color="#374151" style={styles.serviceLabel}>
+      <Text variant="label" color={Colors.textPrimary} style={styles.serviceLabel}>
         Tipo de Serviço
       </Text>
 
@@ -129,7 +130,7 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
             >
               <Text
                 variant="bodySmall"
-                color={isActive ? '#e31b1b' : '#6b7280'}
+                color={isActive ? Colors.brand : Colors.textTertiary}
                 style={styles.typeChipText}
               >
                 {ot.label}
@@ -146,13 +147,13 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
           <TextInput
             style={styles.input}
             placeholder="Buscar seguradora..."
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={Colors.textSecondary}
             value={filterQuery}
             onChangeText={setFilterQuery}
           />
 
           {/* Loading indicator */}
-          {isLoadingInsurers && <ActivityIndicator size="small" color="#e31b1b" />}
+          {isLoadingInsurers && <ActivityIndicator size="small" color={Colors.brand} />}
 
           {/* Suggestions list */}
           {filteredInsurers.length > 0 && selectedInsurer === null && (
@@ -168,7 +169,7 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
                   activeOpacity={0.75}
                 >
                   <View style={[styles.insurerDot, { backgroundColor: ins.brandColor }]} />
-                  <Text variant="body" color="#374151">{ins.displayName}</Text>
+                  <Text variant="body" color={Colors.textPrimary}>{ins.displayName}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -178,11 +179,11 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
           {selectedInsurer !== null && (
             <View style={styles.selectedInsurerCard}>
               <View style={[styles.insurerDot, { backgroundColor: selectedInsurer.brandColor }]} />
-              <Text variant="body" color="#374151" style={styles.selectedInsurerName}>
+              <Text variant="body" color={Colors.textPrimary} style={styles.selectedInsurerName}>
                 {selectedInsurer.displayName}
               </Text>
               <TouchableOpacity onPress={(): void => setInsurer(null)} activeOpacity={0.7}>
-                <Text variant="bodySmall" color="#e31b1b">Trocar</Text>
+                <Text variant="bodySmall" color={Colors.brand}>Trocar</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -190,7 +191,7 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
           {/* insured_type toggle */}
           {selectedInsurer !== null && (
             <>
-              <Text variant="label" color="#374151">Tipo de segurado</Text>
+              <Text variant="label" color={Colors.textPrimary}>Tipo de segurado</Text>
               <View style={styles.toggleRow}>
                 {INSURED_TYPES.map((it) => {
                   const isActive = insuredType === it.key;
@@ -204,7 +205,7 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
                       onPress={(): void => setInsuredType(it.key)}
                       activeOpacity={0.8}
                     >
-                      <Text variant="label" color={isActive ? '#ffffff' : '#374151'}>
+                      <Text variant="label" color={isActive ? Colors.textPrimary : Colors.textPrimary}>
                         {it.label}
                       </Text>
                     </TouchableOpacity>
@@ -220,7 +221,7 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
               <TextInput
                 style={styles.input}
                 placeholder="Nº Sinistro (opcional)"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={Colors.textSecondary}
                 value={claimNumber}
                 onChangeText={setClaimNumber}
               />
@@ -228,7 +229,7 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
                 <TextInput
                   style={styles.input}
                   placeholder="Franquia R$ (opcional)"
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor={Colors.textSecondary}
                   keyboardType="decimal-pad"
                   value={deductible}
                   onChangeText={setDeductible}
@@ -246,14 +247,14 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
         disabled={isContinueDisabled()}
         activeOpacity={0.8}
       >
-        <Text variant="label" color="#ffffff">
+        <Text variant="label" color={Colors.textPrimary}>
           Continuar
         </Text>
       </TouchableOpacity>
 
       {/* Back link */}
       <TouchableOpacity onPress={onBack} style={styles.backLink} activeOpacity={0.7}>
-        <Text variant="bodySmall" color="#6b7280" style={styles.backText}>
+        <Text variant="bodySmall" color={Colors.textTertiary} style={styles.backText}>
           Voltar
         </Text>
       </TouchableOpacity>
@@ -266,7 +267,7 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.bg,
   },
   content: {
     padding: 20,
@@ -282,18 +283,18 @@ const styles = StyleSheet.create({
   },
   toggleButton: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: Radii.md,
     padding: 14,
     alignItems: 'center',
   },
   toggleActive: {
-    backgroundColor: '#e31b1b',
+    backgroundColor: Colors.brand,
     borderWidth: 0,
   },
   toggleInactive: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.inputBg,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: Colors.border,
   },
   serviceLabel: {
     marginTop: 16,
@@ -310,12 +311,12 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   typeChipActive: {
-    backgroundColor: '#fee2e2',
-    borderColor: '#e31b1b',
+    backgroundColor: Colors.brandTint,
+    borderColor: Colors.brand,
   },
   typeChipInactive: {
-    backgroundColor: '#ffffff',
-    borderColor: '#d1d5db',
+    backgroundColor: Colors.inputBg,
+    borderColor: Colors.border,
   },
   typeChipText: {
     fontWeight: '500',
@@ -325,19 +326,19 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   input: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
+    backgroundColor: Colors.inputBg,
+    borderRadius: Radii.md,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: Colors.border,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
   },
   insurerList: {
-    borderRadius: 12,
+    borderRadius: Radii.md,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: Colors.border,
     overflow: 'hidden',
   },
   insurerRow: {
@@ -347,17 +348,17 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: Colors.bg,
   },
   selectedInsurerCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#f9fafb',
-    borderRadius: 12,
+    backgroundColor: Colors.bg,
+    borderRadius: Radii.md,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: Colors.border,
   },
   selectedInsurerName: {
     flex: 1,
@@ -368,8 +369,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   primaryButton: {
-    backgroundColor: '#e31b1b',
-    borderRadius: 12,
+    backgroundColor: Colors.brand,
+    borderRadius: Radii.md,
     padding: 14,
     alignItems: 'center',
     marginTop: 8,

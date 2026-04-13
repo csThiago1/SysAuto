@@ -27,7 +27,8 @@ O app é para uso exclusivo da equipe DS Car. Publicar nas lojas traria burocrac
 |------|---------|------|--------|
 | **1 — Fundação** | M1–M2 | Infra, Auth, Navegação, OS read-only | ✅ Concluído |
 | **2 — Checklist & Fotos** | M3–M4 | Checklist completo, câmera com marca d'água, anotações | ✅ Concluído |
-| **3 — OS Completa** | M5–M6 | Abertura de OS, acompanhamento, vistorias | 🔄 Em andamento (M5 próximo) |
+| **2.5 — UX Polish** | pós-M4 | Nav/Header/Filtros redesign | ✅ Concluído (2026-04-12) |
+| **3 — OS Completa** | M5–M6 | Abertura de OS, acompanhamento, vistorias | 🔄 Em andamento (M5) |
 | **4 — Documentos & Polish** | M7–M8 | Assinatura digital, termos/recibos PDF, UX final | ⏳ Planejado |
 
 ---
@@ -197,6 +198,34 @@ O app é para uso exclusivo da equipe DS Car. Publicar nas lojas traria burocrac
 - [x] Anotações salvas como layer separada (original preservada)
 - [x] Checklist vinculado à OS e visível na web após sync (bulk endpoint disponível)
 - [x] Resumo de gravidade (OK/Atenção/Crítico) exibido corretamente
+
+---
+
+## Refinamentos UX pós-M4 — Nav/Header/Filtros ✅
+**Entregues em 2026-04-12 (sessão dedicada)**
+
+### FrostedNavBar
+- Reescrita completa: T2 dark pill `#141414`, sem BlurView
+- `activeLine` vermelha com glow (3px) abaixo do ícone ativo
+- Botão central `+` vermelho (red pill com shadow)
+- Correções: HIDDEN_ROUTES removeu `'os'`; TAB_CONFIG `routeName: 'os' → 'index'`
+- Busca → Agenda (calendar icon); Perfil → Config (settings icon)
+
+### OSHeader
+- LinearGradient `#1c1c1e → #141414`
+- Layout DubiCars: `[spacer][logo DS Car centralizado][bell]`
+- Sem saudação, sem nome de usuário
+- Removido header nativo duplicado "Ordens de Serviço"
+- `headerBackTitle: 'Voltar'` no detalhe da OS
+- Removido botão de voltar customizado em `OSDetailHeader`
+
+### Busca (useServiceOrders.ts)
+- Expandida: `vehicle_plate`, `customer_name`, `vehicle_model`, `vehicle_brand` + `number`
+
+### Filtros por status
+- Removed: ScrollView horizontal com chips
+- Adicionado: botão `options-outline` ao lado da busca → bottom-sheet modal com todos os status
+- Active filter label bar com × para limpar
 
 ---
 

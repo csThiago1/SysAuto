@@ -101,7 +101,7 @@ export default function LancamentosPage(): React.ReactElement {
               onChange={(e) => setDateStart(e.target.value)}
               className="w-36"
             />
-            <span className="text-xs text-neutral-500">Ate</span>
+            <span className="text-xs text-neutral-500">Até</span>
             <Input
               type="date"
               value={dateEnd}

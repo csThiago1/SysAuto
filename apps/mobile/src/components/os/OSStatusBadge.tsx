@@ -4,20 +4,23 @@ import { Text } from '@/components/ui/Text';
 
 // Status alinhados com os valores do backend (lowercase snake_case)
 const STATUS_CONFIG: Record<string, { label: string; color: string; backgroundColor: string }> = {
-  reception: { label: 'Recepcao', color: '#1d4ed8', backgroundColor: '#dbeafe' },
-  initial_survey: { label: 'Vistoria Inicial', color: '#6d28d9', backgroundColor: '#ede9fe' },
-  budget: { label: 'Orcamento', color: '#b45309', backgroundColor: '#fef3c7' },
-  waiting_approval: { label: 'Aguard. Aprovacao', color: '#c2410c', backgroundColor: '#ffedd5' },
-  approved: { label: 'Aprovado', color: '#065f46', backgroundColor: '#d1fae5' },
-  in_progress: { label: 'Em Andamento', color: '#0e7490', backgroundColor: '#cffafe' },
-  waiting_parts: { label: 'Aguard. Pecas', color: '#475569', backgroundColor: '#f1f5f9' },
-  final_survey: { label: 'Vistoria Final', color: '#6d28d9', backgroundColor: '#ede9fe' },
-  ready: { label: 'Pronto', color: '#166534', backgroundColor: '#dcfce7' },
-  polishing: { label: 'Polimento', color: '#0e7490', backgroundColor: '#cffafe' },
-  painting: { label: 'Pintura', color: '#7c3aed', backgroundColor: '#ede9fe' },
-  assembly: { label: 'Montagem', color: '#b45309', backgroundColor: '#fef3c7' },
-  delivered: { label: 'Entregue', color: '#374151', backgroundColor: '#f3f4f6' },
-  cancelled: { label: 'Cancelado', color: '#991b1b', backgroundColor: '#fee2e2' },
+  reception:      { label: 'Recepção',               color: '#1d4ed8', backgroundColor: '#dbeafe' },
+  initial_survey: { label: 'Vistoria Inicial',        color: '#6d28d9', backgroundColor: '#ede9fe' },
+  budget:         { label: 'Orçamento',               color: '#b45309', backgroundColor: '#fef3c7' },
+  waiting_auth:   { label: 'Aguard. Autorização',     color: '#c2410c', backgroundColor: '#ffedd5' },
+  authorized:     { label: 'Autorizada',              color: '#065f46', backgroundColor: '#d1fae5' },
+  waiting_parts:  { label: 'Aguard. Peças',           color: '#475569', backgroundColor: '#f1f5f9' },
+  repair:         { label: 'Reparo',                  color: '#0e7490', backgroundColor: '#cffafe' },
+  mechanic:       { label: 'Mecânica',                color: '#0369a1', backgroundColor: '#e0f2fe' },
+  bodywork:       { label: 'Funilaria',               color: '#92400e', backgroundColor: '#fef3c7' },
+  painting:       { label: 'Pintura',                 color: '#7c3aed', backgroundColor: '#ede9fe' },
+  assembly:       { label: 'Montagem',                color: '#b45309', backgroundColor: '#fef3c7' },
+  polishing:      { label: 'Polimento',               color: '#0e7490', backgroundColor: '#cffafe' },
+  washing:        { label: 'Lavagem',                 color: '#0891b2', backgroundColor: '#ecfeff' },
+  final_survey:   { label: 'Vistoria Final',          color: '#6d28d9', backgroundColor: '#ede9fe' },
+  ready:          { label: 'Pronto p/ Entrega',       color: '#166534', backgroundColor: '#dcfce7' },
+  delivered:      { label: 'Entregue',                color: '#374151', backgroundColor: '#f3f4f6' },
+  cancelled:      { label: 'Cancelada',               color: '#991b1b', backgroundColor: '#fee2e2' },
 };
 
 const FALLBACK_CONFIG = { label: 'Desconhecido', color: '#374151', backgroundColor: '#f3f4f6' };

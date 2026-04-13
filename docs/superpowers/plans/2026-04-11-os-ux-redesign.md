@@ -58,14 +58,14 @@
 **Files:**
 - Create: `apps/dscar-web/src/components/ui/sheet.tsx`
 
-- [ ] **Step 1: Instalar Sheet via shadcn CLI**
+- [x] **Step 1: Instalar Sheet via shadcn CLI**
 
 ```bash
 cd apps/dscar-web
 npx shadcn@latest add sheet --yes
 ```
 
-- [ ] **Step 2: Verificar que sheet.tsx existe**
+- [x] **Step 2: Verificar que sheet.tsx existe**
 
 ```bash
 ls apps/dscar-web/src/components/ui/sheet.tsx
@@ -73,7 +73,7 @@ ls apps/dscar-web/src/components/ui/sheet.tsx
 
 Expected: arquivo listado (sem erro).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/dscar-web/src/components/ui/sheet.tsx
@@ -89,7 +89,7 @@ git commit -m "feat(dscar-web): instala Sheet shadcn/ui para drawer Nova OS"
 - Modify: `backend/core/apps/customers/models.py:36`
 - Create: `backend/core/apps/customers/migrations/0004_address_split.py` (auto-generated)
 
-- [ ] **Step 1: Escrever o teste que vai falhar**
+- [x] **Step 1: Escrever o teste que vai falhar**
 
 Em `backend/core/apps/customers/tests.py`:
 
@@ -147,7 +147,7 @@ class UnifiedCustomerAddressTest(TestCase):
         self.assertEqual(c.address, "")  # type: ignore[attr-defined]
 ```
 
-- [ ] **Step 2: Rodar o teste e confirmar que falha**
+- [x] **Step 2: Rodar o teste e confirmar que falha**
 
 ```bash
 cd backend/core
@@ -156,7 +156,7 @@ python manage.py test apps.customers.tests.UnifiedCustomerAddressTest --verbosit
 
 Expected: FAIL — `AttributeError: type object 'UnifiedCustomer' has no attribute 'zip_code'`
 
-- [ ] **Step 3: Modificar o modelo**
+- [x] **Step 3: Modificar o modelo**
 
 Em `backend/core/apps/customers/models.py`, substituir a linha 36:
 ```python
@@ -180,7 +180,7 @@ por:
         return ", ".join(parts) if parts else ""
 ```
 
-- [ ] **Step 4: Gerar e aplicar a migration**
+- [x] **Step 4: Gerar e aplicar a migration**
 
 ```bash
 cd backend/core
@@ -190,7 +190,7 @@ python manage.py migrate
 
 Expected: migration criada em `0004_address_split.py` e aplicada sem erros.
 
-- [ ] **Step 5: Rodar o teste e confirmar que passa**
+- [x] **Step 5: Rodar o teste e confirmar que passa**
 
 ```bash
 python manage.py test apps.customers.tests.UnifiedCustomerAddressTest --verbosity=2
@@ -198,7 +198,7 @@ python manage.py test apps.customers.tests.UnifiedCustomerAddressTest --verbosit
 
 Expected: 3 tests passing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add backend/core/apps/customers/models.py
@@ -215,7 +215,7 @@ git commit -m "feat(backend): split address em 7 campos no UnifiedCustomer (migr
 - Modify: `backend/core/apps/service_orders/models.py`
 - Create: `backend/core/apps/service_orders/migrations/0013_vehicle_version.py` (auto-generated)
 
-- [ ] **Step 1: Encontrar o campo correto no modelo**
+- [x] **Step 1: Encontrar o campo correto no modelo**
 
 ```bash
 grep -n "vehicle_" backend/core/apps/service_orders/models.py | head -20
@@ -223,7 +223,7 @@ grep -n "vehicle_" backend/core/apps/service_orders/models.py | head -20
 
 Localizar onde estão os campos do veículo (plate, make, model, year, etc.) para inserir `vehicle_version` logo após `model`.
 
-- [ ] **Step 2: Adicionar o campo no modelo**
+- [x] **Step 2: Adicionar o campo no modelo**
 
 Após o campo `model` (normalmente seguido de `year`), adicionar:
 
@@ -233,7 +233,7 @@ Após o campo `model` (normalmente seguido de `year`), adicionar:
     )
 ```
 
-- [ ] **Step 3: Gerar e aplicar a migration**
+- [x] **Step 3: Gerar e aplicar a migration**
 
 ```bash
 cd backend/core
@@ -243,7 +243,7 @@ python manage.py migrate
 
 Expected: `0013_vehicle_version.py` criada e aplicada.
 
-- [ ] **Step 4: Atualizar o serializer de ServiceOrder para expor vehicle_version**
+- [x] **Step 4: Atualizar o serializer de ServiceOrder para expor vehicle_version**
 
 Localizar `backend/core/apps/service_orders/serializers.py` e nos serializers de criação e update (normalmente `ServiceOrderCreateSerializer` e `ServiceOrderSerializer`), adicionar `"vehicle_version"` à lista `fields`. Exemplo:
 
@@ -259,7 +259,7 @@ fields = [
 ]
 ```
 
-- [ ] **Step 5: Verificar que manage.py check passa**
+- [x] **Step 5: Verificar que manage.py check passa**
 
 ```bash
 cd backend/core
@@ -268,7 +268,7 @@ python manage.py check
 
 Expected: `System check identified no issues (0 silenced).`
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add backend/core/apps/service_orders/models.py
@@ -285,7 +285,7 @@ git commit -m "feat(backend): adiciona campo vehicle_version em ServiceOrder —
 - Modify: `backend/core/apps/customers/serializers.py`
 - Modify: `backend/core/apps/customers/tests.py`
 
-- [ ] **Step 1: Escrever os testes que vão falhar**
+- [x] **Step 1: Escrever os testes que vão falhar**
 
 Adicionar ao final de `backend/core/apps/customers/tests.py`:
 
@@ -353,7 +353,7 @@ class UnifiedCustomerCreateSerializerTest(TestCase):
         self.assertTrue(s.is_valid(), s.errors)
 ```
 
-- [ ] **Step 2: Rodar os testes e confirmar que falham**
+- [x] **Step 2: Rodar os testes e confirmar que falham**
 
 ```bash
 cd backend/core
@@ -362,7 +362,7 @@ python manage.py test apps.customers.tests.UnifiedCustomerDetailSerializerTest a
 
 Expected: FAIL — campos de endereço não expostos.
 
-- [ ] **Step 3: Atualizar UnifiedCustomerDetailSerializer**
+- [x] **Step 3: Atualizar UnifiedCustomerDetailSerializer**
 
 Em `backend/core/apps/customers/serializers.py`, na classe `UnifiedCustomerDetailSerializer`, substituir o campo `"address"` nos fields por:
 
@@ -394,7 +394,7 @@ Em `backend/core/apps/customers/serializers.py`, na classe `UnifiedCustomerDetai
         read_only_fields = fields
 ```
 
-- [ ] **Step 4: Atualizar UnifiedCustomerCreateSerializer**
+- [x] **Step 4: Atualizar UnifiedCustomerCreateSerializer**
 
 Na classe `UnifiedCustomerCreateSerializer`, substituir `"address"` nos fields e adicionar os novos campos opcionais:
 
@@ -409,7 +409,7 @@ Na classe `UnifiedCustomerCreateSerializer`, substituir `"address"` nos fields e
         ]
 ```
 
-- [ ] **Step 5: Rodar os testes e confirmar que passam**
+- [x] **Step 5: Rodar os testes e confirmar que passam**
 
 ```bash
 cd backend/core
@@ -418,7 +418,7 @@ python manage.py test apps.customers.tests --verbosity=2
 
 Expected: 5 tests passing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add backend/core/apps/customers/serializers.py backend/core/apps/customers/tests.py
@@ -432,7 +432,7 @@ git commit -m "feat(backend): serializers de customer com 7 campos de endereço 
 **Files:**
 - Modify: `apps/dscar-web/src/app/(app)/service-orders/[id]/_hooks/useCustomerSearch.ts`
 
-- [ ] **Step 1: Atualizar a interface `CustomerDetail`**
+- [x] **Step 1: Atualizar a interface `CustomerDetail`**
 
 Substituir a definição atual de `CustomerDetail` (linhas 16-24) por:
 
@@ -455,7 +455,7 @@ export interface CustomerDetail {
 }
 ```
 
-- [ ] **Step 2: Atualizar a interface `CustomerCreateInput`**
+- [x] **Step 2: Atualizar a interface `CustomerCreateInput`**
 
 Substituir a definição atual de `CustomerCreateInput` (linhas 43-50) por:
 
@@ -476,7 +476,7 @@ interface CustomerCreateInput {
 }
 ```
 
-- [ ] **Step 3: Verificar que o TypeScript não tem erros**
+- [x] **Step 3: Verificar que o TypeScript não tem erros**
 
 ```bash
 cd apps/dscar-web
@@ -485,7 +485,7 @@ npx tsc --noEmit 2>&1 | grep useCustomerSearch
 
 Expected: sem linhas de erro.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/(app)/service-orders/[id]/_hooks/useCustomerSearch.ts
@@ -502,7 +502,7 @@ git commit -m "feat(dscar-web): CustomerDetail com 7 campos de endereço individ
 - Create: `apps/dscar-web/src/app/(app)/service-orders/[id]/_schemas/service-order.schema.test.ts`
 - Create: `apps/dscar-web/src/app/(app)/service-orders/new/_schemas/new-os.schema.test.ts`
 
-- [ ] **Step 1: Escrever o teste do service-order.schema que vai falhar**
+- [x] **Step 1: Escrever o teste do service-order.schema que vai falhar**
 
 Criar `apps/dscar-web/src/app/(app)/service-orders/[id]/_schemas/service-order.schema.test.ts`:
 
@@ -527,7 +527,7 @@ describe("serviceOrderUpdateSchema", () => {
 })
 ```
 
-- [ ] **Step 2: Rodar o teste e confirmar que falha**
+- [x] **Step 2: Rodar o teste e confirmar que falha**
 
 ```bash
 cd apps/dscar-web
@@ -536,7 +536,7 @@ npx vitest run src/app/\(app\)/service-orders/\[id\]/_schemas/service-order.sche
 
 Expected: FAIL — `vehicle_version` não existe no schema.
 
-- [ ] **Step 3: Atualizar service-order.schema.ts**
+- [x] **Step 3: Atualizar service-order.schema.ts**
 
 Adicionar `vehicle_version` após `model` na seção "Cliente e veículo":
 
@@ -546,7 +546,7 @@ Adicionar `vehicle_version` após `model` na seção "Cliente e veículo":
   year: z.number().int().min(1900).max(2100).optional().nullable(),
 ```
 
-- [ ] **Step 4: Rodar o teste do service-order.schema e confirmar que passa**
+- [x] **Step 4: Rodar o teste do service-order.schema e confirmar que passa**
 
 ```bash
 cd apps/dscar-web
@@ -555,7 +555,7 @@ npx vitest run src/app/\(app\)/service-orders/\[id\]/_schemas/service-order.sche
 
 Expected: 2 tests passing.
 
-- [ ] **Step 5: Escrever o teste do new-os.schema que vai falhar**
+- [x] **Step 5: Escrever o teste do new-os.schema que vai falhar**
 
 Criar `apps/dscar-web/src/app/(app)/service-orders/new/_schemas/new-os.schema.test.ts`:
 
@@ -603,7 +603,7 @@ describe("newOSSchema", () => {
 })
 ```
 
-- [ ] **Step 6: Rodar o teste do new-os.schema e confirmar que falha**
+- [x] **Step 6: Rodar o teste do new-os.schema e confirmar que falha**
 
 ```bash
 cd apps/dscar-web
@@ -612,7 +612,7 @@ npx vitest run src/app/\(app\)/service-orders/new/_schemas/new-os.schema.test.ts
 
 Expected: FAILs nos testes de `make` e `model` (atualmente são opcionais, portanto `""` passa).
 
-- [ ] **Step 7: Atualizar new-os.schema.ts**
+- [x] **Step 7: Atualizar new-os.schema.ts**
 
 Substituir o schema completo por:
 
@@ -670,7 +670,7 @@ export const newOSSchema = z
 export type NewOSInput = z.infer<typeof newOSSchema>
 ```
 
-- [ ] **Step 8: Rodar todos os testes de schema e confirmar que passam**
+- [x] **Step 8: Rodar todos os testes de schema e confirmar que passam**
 
 ```bash
 cd apps/dscar-web
@@ -680,7 +680,7 @@ npx vitest run src/app/\(app\)/service-orders/\[id\]/_schemas/service-order.sche
 
 Expected: 4 + 2 = 6 tests passing.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/\(app\)/service-orders/\[id\]/_schemas/
@@ -700,7 +700,7 @@ O redesign tem 3 modos:
 2. **selected** (chip) — chip verde com nome + ✕ + "ou buscar outro"
 3. **create** — form inline com CPF/email/telefone obrigatórios
 
-- [ ] **Step 1: Reescrever CustomerSearch.tsx**
+- [x] **Step 1: Reescrever CustomerSearch.tsx**
 
 ```tsx
 "use client"
@@ -1040,7 +1040,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
 }
 ```
 
-- [ ] **Step 2: Verificar TypeScript**
+- [x] **Step 2: Verificar TypeScript**
 
 ```bash
 cd apps/dscar-web
@@ -1049,7 +1049,7 @@ npx tsc --noEmit 2>&1 | grep CustomerSearch
 
 Expected: sem erros.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/\(app\)/service-orders/\[id\]/_components/shared/CustomerSearch.tsx
@@ -1070,7 +1070,7 @@ Mudanças:
 - Mostra 7 campos de endereço readonly quando cliente selecionado
 - Mantém CPF, telefone, email, nascimento readonly
 
-- [ ] **Step 1: Reescrever CustomerSection.tsx**
+- [x] **Step 1: Reescrever CustomerSection.tsx**
 
 ```tsx
 "use client"
@@ -1201,7 +1201,7 @@ export function CustomerSection({ form }: CustomerSectionProps) {
 }
 ```
 
-- [ ] **Step 2: Verificar TypeScript**
+- [x] **Step 2: Verificar TypeScript**
 
 ```bash
 cd apps/dscar-web
@@ -1210,7 +1210,7 @@ npx tsc --noEmit 2>&1 | grep CustomerSection
 
 Expected: sem erros.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/\(app\)/service-orders/\[id\]/_components/sections/CustomerSection.tsx
@@ -1227,7 +1227,7 @@ git commit -m "feat(dscar-web): CustomerSection com chip, 7 campos endereço, se
 
 ### VehicleSection: slot visual + versão + h-8 + remove mileage_in
 
-- [ ] **Step 1: Reescrever VehicleSection.tsx**
+- [x] **Step 1: Reescrever VehicleSection.tsx**
 
 ```tsx
 "use client"
@@ -1378,7 +1378,7 @@ export function VehicleSection({ form }: VehicleSectionProps) {
 
 ### EntrySection: adiciona mileage_in + scheduling_date, inputs h-8
 
-- [ ] **Step 2: Reescrever EntrySection.tsx**
+- [x] **Step 2: Reescrever EntrySection.tsx**
 
 ```tsx
 "use client"
@@ -1479,7 +1479,7 @@ export function EntrySection({ form }: EntrySectionProps) {
 }
 ```
 
-- [ ] **Step 3: Verificar TypeScript**
+- [x] **Step 3: Verificar TypeScript**
 
 ```bash
 cd apps/dscar-web
@@ -1488,7 +1488,7 @@ npx tsc --noEmit 2>&1 | grep -E "VehicleSection|EntrySection"
 
 Expected: sem erros.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/\(app\)/service-orders/\[id\]/_components/sections/VehicleSection.tsx
@@ -1508,7 +1508,7 @@ git commit -m "feat(dscar-web): VehicleSection com slot visual e versão; EntryS
 
 Substitui `OpeningInfoSection` + `PrivateSection`. 1 linha compacta: pill toggle Particular/Seguradora + Tipo OS + Consultor + Data orçamento (condicional).
 
-- [ ] **Step 1: Criar TypeBar.tsx**
+- [x] **Step 1: Criar TypeBar.tsx**
 
 ```tsx
 "use client"
@@ -1631,7 +1631,7 @@ export function TypeBar({ form, consultantName: _consultantName }: TypeBarProps)
 
 Substitui `SchedulingSection` + `FinalSurveySection`. Mantém auto-cálculo de `estimated_delivery_date`.
 
-- [ ] **Step 2: Criar PrazosSection.tsx**
+- [x] **Step 2: Criar PrazosSection.tsx**
 
 ```tsx
 "use client"
@@ -1754,7 +1754,7 @@ export function PrazosSection({ form }: PrazosSectionProps) {
 }
 ```
 
-- [ ] **Step 3: Verificar TypeScript**
+- [x] **Step 3: Verificar TypeScript**
 
 ```bash
 cd apps/dscar-web
@@ -1763,7 +1763,7 @@ npx tsc --noEmit 2>&1 | grep -E "TypeBar|PrazosSection"
 
 Expected: sem erros.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/\(app\)/service-orders/\[id\]/_components/sections/TypeBar.tsx
@@ -1782,7 +1782,7 @@ Substitui: `OpeningInfoSection`, `PrivateSection`, `SchedulingSection`, `FinalSu
 Adiciona: `TypeBar`, `PrazosSection`
 Layout: TypeBar (full width) + `grid-cols-1 lg:grid-cols-2`
 
-- [ ] **Step 1: Reescrever OpeningTab.tsx**
+- [x] **Step 1: Reescrever OpeningTab.tsx**
 
 ```tsx
 "use client"
@@ -1828,7 +1828,7 @@ export function OpeningTab({ form, consultantName }: OpeningTabProps) {
 }
 ```
 
-- [ ] **Step 2: Verificar TypeScript**
+- [x] **Step 2: Verificar TypeScript**
 
 ```bash
 cd apps/dscar-web
@@ -1837,7 +1837,7 @@ npx tsc --noEmit 2>&1 | grep OpeningTab
 
 Expected: sem erros.
 
-- [ ] **Step 3: Deletar arquivos não mais utilizados**
+- [x] **Step 3: Deletar arquivos não mais utilizados**
 
 ```bash
 rm apps/dscar-web/src/app/\(app\)/service-orders/\[id\]/_components/sections/OpeningInfoSection.tsx
@@ -1846,7 +1846,7 @@ rm apps/dscar-web/src/app/\(app\)/service-orders/\[id\]/_components/sections/Sch
 rm apps/dscar-web/src/app/\(app\)/service-orders/\[id\]/_components/sections/FinalSurveySection.tsx
 ```
 
-- [ ] **Step 4: Verificar que não há imports quebrados**
+- [x] **Step 4: Verificar que não há imports quebrados**
 
 ```bash
 cd apps/dscar-web
@@ -1855,7 +1855,7 @@ npx tsc --noEmit 2>&1 | head -30
 
 Expected: sem erros (ou apenas erros pré-existentes não relacionados).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/\(app\)/service-orders/\[id\]/_components/tabs/OpeningTab.tsx
@@ -1880,7 +1880,7 @@ git commit -m "feat(dscar-web): OpeningTab duas colunas com TypeBar e PrazosSect
 
 Sheet sliding da direita (420px). Form inline: pill toggle + seguradora condicional + CustomerSearch + vehicle compacto.
 
-- [ ] **Step 1: Criar pasta _components (se não existir) e criar NewOSDrawer.tsx**
+- [x] **Step 1: Criar pasta _components (se não existir) e criar NewOSDrawer.tsx**
 
 ```bash
 mkdir -p apps/dscar-web/src/app/\(app\)/service-orders/_components
@@ -2288,7 +2288,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
 }
 ```
 
-- [ ] **Step 2: Atualizar service-orders/page.tsx**
+- [x] **Step 2: Atualizar service-orders/page.tsx**
 
 Adicionar import e state no topo (logo após `useState` existente):
 
@@ -2326,7 +2326,7 @@ return (
 )
 ```
 
-- [ ] **Step 3: Atualizar kanban/page.tsx**
+- [x] **Step 3: Atualizar kanban/page.tsx**
 
 Mesma mudança do Step 2, no arquivo `kanban/page.tsx`:
 - Import `NewOSDrawer`
@@ -2334,7 +2334,7 @@ Mesma mudança do Step 2, no arquivo `kanban/page.tsx`:
 - Substituir Link "Nova OS" por button com `onClick={() => setNewOSOpen(true)}`
 - Envolver return com Fragment e adicionar `<NewOSDrawer open={newOSOpen} onOpenChange={setNewOSOpen} />`
 
-- [ ] **Step 4: Atualizar new/page.tsx (redirect)**
+- [x] **Step 4: Atualizar new/page.tsx (redirect)**
 
 Substituir todo o conteúdo de `apps/dscar-web/src/app/(app)/service-orders/new/page.tsx` por:
 
@@ -2348,7 +2348,7 @@ export default function NewServiceOrderPage() {
 export const metadata = { title: "Nova OS — DS Car" }
 ```
 
-- [ ] **Step 5: Deletar NewOSForm.tsx (não mais necessário)**
+- [x] **Step 5: Deletar NewOSForm.tsx (não mais necessário)**
 
 ```bash
 rm apps/dscar-web/src/app/\(app\)/service-orders/new/_components/NewOSForm.tsx
@@ -2362,7 +2362,7 @@ grep -r "NewOSForm" apps/dscar-web/src/ --include="*.tsx" --include="*.ts"
 
 Expected: sem resultados.
 
-- [ ] **Step 6: Verificar TypeScript**
+- [x] **Step 6: Verificar TypeScript**
 
 ```bash
 cd apps/dscar-web
@@ -2371,7 +2371,7 @@ npx tsc --noEmit 2>&1 | head -40
 
 Expected: sem erros (ou apenas erros pré-existentes não relacionados ao redesign).
 
-- [ ] **Step 7: Rodar todos os testes**
+- [x] **Step 7: Rodar todos os testes**
 
 ```bash
 cd apps/dscar-web
@@ -2380,7 +2380,7 @@ npx vitest run
 
 Expected: todos os testes passando.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/\(app\)/service-orders/_components/NewOSDrawer.tsx
@@ -2395,13 +2395,13 @@ git commit -m "feat(dscar-web): NewOSDrawer Sheet lateral; páginas usam drawer 
 
 ## Verificação Final
 
-- [ ] **Confirmar que make dev funciona**
+- [x] **Confirmar que make dev funciona**
 
 ```bash
 make dev
 ```
 
-- [ ] **Testar criação de OS via drawer**
+- [x] **Testar criação de OS via drawer**
   - Abrir `/service-orders` ou `/service-orders/kanban`
   - Clicar "Nova OS" → drawer abre da direita
   - Selecionar tipo Particular / Seguradora (pill toggle)
@@ -2410,12 +2410,12 @@ make dev
   - Preencher placa → auto-fill de montadora/modelo
   - Criar OS → redireciona para `/service-orders/{id}`
 
-- [ ] **Testar aba Abertura da OS**
+- [x] **Testar aba Abertura da OS**
   - Abrir qualquer OS existente
   - Aba "Abertura" deve mostrar layout 2 colunas em telas lg
   - Coluna esquerda: Cliente (chip) + Seguradora (condicional) + Entrada
   - Coluna direita: Veículo (com slot visual) + Prazos e Entrega
   - Pill toggle Particular/Seguradora na barra superior
 
-- [ ] **Testar /service-orders/new**
+- [x] **Testar /service-orders/new**
   - Acessar `/service-orders/new` diretamente → redireciona para `/service-orders`

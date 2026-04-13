@@ -148,7 +148,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
 
   // ── Cancelado ─────────────────────────────────────────────────────────────
   cancelled: {
-    label:  "Cancelado",
+    label:  "Cancelada",
     badge:  "bg-neutral-100 text-neutral-500 border border-neutral-200",
     border: "border-l-4 border-l-neutral-300",
     column: "bg-neutral-600 text-white",

@@ -392,11 +392,13 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
     Número é gerado automaticamente pelo ServiceOrderService — não exposto como campo de entrada.
     """
 
-    # Aceita tanto "customer" quanto "customer_id" para compatibilidade com o frontend
-    customer = serializers.PrimaryKeyRelatedField(
-        queryset=Person.objects.all(),
+    # customer recebe UUID do UnifiedCustomer (schema public) — diferente de Person (tenant FK).
+    # Aceita UUID sem validação FK e descarta no create() para não quebrar o IntegerField do FK.
+    # customer_name (desnormalizado) é a referência real neste fluxo.
+    customer = serializers.UUIDField(
         required=False,
         allow_null=True,
+        write_only=True,
     )
 
     class Meta:
@@ -426,9 +428,21 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
                 )
         return attrs
 
+    def create(self, validated_data: dict) -> "ServiceOrder":
+        # UUID do UnifiedCustomer não pode ser salvo no FK inteiro de Person — descarta.
+        validated_data.pop("customer", None)
+        return super().create(validated_data)
+
 
 class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
     """Serializer para atualização parcial de OS."""
+
+    # customer recebe UUID do UnifiedCustomer (schema public) — igual ao create
+    customer = serializers.UUIDField(
+        required=False,
+        allow_null=True,
+        write_only=True,
+    )
 
     class Meta:
         model = ServiceOrder

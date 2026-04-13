@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { Colors, Radii, Spacing } from '@/constants/theme';
 
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { useCreateServiceOrder, type CreateOSPayload } from '@/hooks/useCreateServiceOrder';
@@ -84,7 +85,7 @@ export default function NovaOSScreen(): React.JSX.Element {
     <View style={styles.safe}>
       {/* Header */}
       <LinearGradient
-        colors={['#1c1c1e', '#141414']}
+        colors={[Colors.bgHeader, Colors.bg]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={[styles.header, { paddingTop: insets.top + 8 }]}
@@ -96,7 +97,7 @@ export default function NovaOSScreen(): React.JSX.Element {
               style={styles.headerBtn}
               activeOpacity={0.7}
             >
-              <Ionicons name="chevron-back" size={22} color="#ffffff" />
+              <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
             </TouchableOpacity>
           ) : (
             <View style={styles.headerSpacer} />
@@ -144,11 +145,11 @@ export default function NovaOSScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: Colors.bg,
   },
   header: {
-    paddingBottom: 12,
-    paddingHorizontal: 12,
+    paddingBottom: Spacing.md,
+    paddingHorizontal: Spacing.md,
   },
   headerRow: {
     flexDirection: 'row',
@@ -156,7 +157,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   headerTitle: {
-    color: '#ffffff',
+    color: Colors.textPrimary,
     fontSize: 17,
     fontWeight: '600',
     flex: 1,
@@ -165,8 +166,8 @@ const styles = StyleSheet.create({
   headerBtn: {
     width: 40,
     height: 40,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: Radii.md,
+    backgroundColor: Colors.inputBg,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -176,25 +177,25 @@ const styles = StyleSheet.create({
   },
   progressContainer: {
     flexDirection: 'row',
-    gap: 4,
-    marginTop: 8,
-    paddingHorizontal: 16,
+    gap: Spacing.xs,
+    marginTop: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
   },
   progressSegment: {
     flex: 1,
     height: 3,
     borderRadius: 2,
-    backgroundColor: '#3a3a3c',
+    backgroundColor: Colors.cardTop,
   },
   progressSegmentActive: {
-    backgroundColor: '#e31b1b',
+    backgroundColor: Colors.brand,
   },
   offlineBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
     backgroundColor: '#fef3c7',
   },
   stepContainer: {

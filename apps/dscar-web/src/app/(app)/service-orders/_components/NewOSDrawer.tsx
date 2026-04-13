@@ -305,19 +305,33 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
               </div>
             </div>
 
-            {/* Cor */}
-            <div>
-              <label className={LABEL}>Cor</label>
-              <Controller
-                name="color"
-                control={control}
-                render={({ field }) => (
-                  <ColorSelect
-                    value={field.value ?? ""}
-                    onChange={field.onChange}
-                  />
-                )}
-              />
+            {/* Cor | Combustível */}
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className={LABEL}>Cor</label>
+                <Controller
+                  name="color"
+                  control={control}
+                  render={({ field }) => (
+                    <ColorSelect
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+              <div>
+                <label className={LABEL}>Combustível</label>
+                <select className={SELECT} {...register("fuel_type")}>
+                  <option value="">Selecionar...</option>
+                  <option value="flex">Flex</option>
+                  <option value="gasoline">Gasolina</option>
+                  <option value="ethanol">Etanol</option>
+                  <option value="diesel">Diesel</option>
+                  <option value="electric">Elétrico</option>
+                  <option value="hybrid">Híbrido</option>
+                </select>
+              </div>
             </div>
           </div>
 

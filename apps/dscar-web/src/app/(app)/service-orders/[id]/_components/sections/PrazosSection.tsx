@@ -4,18 +4,21 @@ import { useEffect } from "react"
 import { Controller, type UseFormReturn } from "react-hook-form"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import { DateTimeNow } from "../shared/DateTimeNow"
+import { cn } from "@/lib/utils"
 
 const SECTION_TITLE = "text-[11px] font-semibold uppercase tracking-widest text-neutral-500"
 const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
 const INPUT =
   "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+const INPUT_ERROR =
+  "flex h-8 w-full rounded-md border border-red-500 bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500 disabled:opacity-50"
 
 interface PrazosSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
 }
 
 export function PrazosSection({ form }: PrazosSectionProps) {
-  const { register, control, watch, setValue } = form
+  const { register, control, watch, setValue, formState: { errors } } = form
   const entryDate = watch("entry_date")
   const repairDays = watch("repair_days")
 
@@ -43,12 +46,15 @@ export function PrazosSection({ form }: PrazosSectionProps) {
         <div>
           <label className={LABEL}>Dias de reparo</label>
           <input
-            className={INPUT}
+            className={cn(errors.repair_days ? INPUT_ERROR : INPUT)}
             type="number"
             min="1"
             placeholder="Ex: 10"
             {...register("repair_days", { valueAsNumber: true })}
           />
+          {errors.repair_days && (
+            <p className="mt-0.5 text-[10px] text-red-500">{errors.repair_days.message}</p>
+          )}
         </div>
         <div>
           <label className={LABEL}>Previsão de entrega</label>
@@ -74,10 +80,13 @@ export function PrazosSection({ form }: PrazosSectionProps) {
                 value={field.value ? field.value.slice(0, 16) : ""}
                 onChange={field.onChange}
                 onSetNow={(iso) => field.onChange(iso)}
+                error={errors.final_survey_date?.message}
               />
             )}
           />
-          <p className="mt-0.5 text-[9px] text-amber-600">Muda status → Vistoria Final</p>
+          {!errors.final_survey_date && (
+            <p className="mt-0.5 text-[9px] text-amber-600">Muda status → Vistoria Final</p>
+          )}
         </div>
         <div>
           <label className={LABEL}>Entrega ao cliente</label>
@@ -89,10 +98,13 @@ export function PrazosSection({ form }: PrazosSectionProps) {
                 value={field.value ? field.value.slice(0, 16) : ""}
                 onChange={field.onChange}
                 onSetNow={(iso) => field.onChange(iso)}
+                error={errors.client_delivery_date?.message}
               />
             )}
           />
-          <p className="mt-0.5 text-[9px] text-amber-600">Muda status → Entregue</p>
+          {!errors.client_delivery_date && (
+            <p className="mt-0.5 text-[9px] text-amber-600">Muda status → Entregue</p>
+          )}
         </div>
       </div>
 
@@ -108,6 +120,7 @@ export function PrazosSection({ form }: PrazosSectionProps) {
                 value={field.value ? field.value.slice(0, 16) : ""}
                 onChange={field.onChange}
                 onSetNow={(iso) => field.onChange(iso)}
+                error={errors.delivery_date?.message}
               />
             )}
           />

@@ -47,6 +47,10 @@ export type ActivityType =
   | "created"
   | "status_changed"
   | "updated"
+  | "customer_updated"
+  | "vehicle_updated"
+  | "schedule_updated"
+  | "insurer_updated"
   | "reminder"
   | "file_upload"
   | "note_added"
@@ -276,7 +280,8 @@ export interface ServiceOrder {
   quotation_date: string | null;
 
   // Cliente
-  customer: string | null;
+  customer: string | null;        // FK inteiro (legado, ignorar)
+  customer_uuid: string | null;   // UUID do UnifiedCustomer — usar este para lookup
   customer_name: string;
 
   // Veículo

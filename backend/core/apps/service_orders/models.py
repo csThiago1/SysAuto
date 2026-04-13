@@ -192,6 +192,10 @@ class ServiceOrder(PaddockBaseModel):
         related_name="service_orders",
         verbose_name="Cliente",
     )
+    # UUID do UnifiedCustomer (schema público) — não é FK, usado para lookup de detalhes
+    customer_uuid = models.UUIDField(
+        null=True, blank=True, db_index=True, verbose_name="UUID do cliente"
+    )
     customer_name = models.CharField(
         max_length=200, verbose_name="Nome do cliente"
     )  # desnormalizado
@@ -456,20 +460,24 @@ class ServiceOrderPhoto(models.Model):
 
 
 class ActivityType(models.TextChoices):
-    CREATED        = "created",         "OS Aberta"
-    STATUS_CHANGED = "status_changed",  "Status Alterado"
-    UPDATED        = "updated",         "Informação Atualizada"
-    REMINDER       = "reminder",        "Lembrete Adicionado"
-    FILE_UPLOAD    = "file_upload",     "Arquivo Anexado"
-    NOTE_ADDED     = "note_added",      "Nota Adicionada"
-    BUDGET_SNAPSHOT = "budget_snapshot", "Snapshot de Orçamento"
-    CILIA_IMPORT   = "cilia_import",    "Importação Cilia"
-    DELIVERY       = "delivery",        "Entrega ao Cliente"
-    PART_ADDED     = "part_added",      "Peça Adicionada"
-    PART_REMOVED   = "part_removed",    "Peça Removida"
-    LABOR_ADDED    = "labor_added",     "Serviço Adicionado"
-    LABOR_REMOVED  = "labor_removed",   "Serviço Removido"
-    INVOICE_ISSUED = "invoice_issued",  "NF Emitida"
+    CREATED           = "created",           "OS Aberta"
+    STATUS_CHANGED    = "status_changed",    "Status Alterado"
+    UPDATED           = "updated",           "Informação Atualizada"
+    CUSTOMER_UPDATED  = "customer_updated",  "Cliente Atualizado"
+    VEHICLE_UPDATED   = "vehicle_updated",   "Veículo Atualizado"
+    SCHEDULE_UPDATED  = "schedule_updated",  "Datas/Prazo Atualizados"
+    INSURER_UPDATED   = "insurer_updated",   "Seguradora Atualizada"
+    REMINDER          = "reminder",          "Lembrete Adicionado"
+    FILE_UPLOAD       = "file_upload",       "Arquivo Anexado"
+    NOTE_ADDED        = "note_added",        "Nota Adicionada"
+    BUDGET_SNAPSHOT   = "budget_snapshot",   "Snapshot de Orçamento"
+    CILIA_IMPORT      = "cilia_import",      "Importação Cilia"
+    DELIVERY          = "delivery",          "Entrega ao Cliente"
+    PART_ADDED        = "part_added",        "Peça Adicionada"
+    PART_REMOVED      = "part_removed",      "Peça Removida"
+    LABOR_ADDED       = "labor_added",       "Serviço Adicionado"
+    LABOR_REMOVED     = "labor_removed",     "Serviço Removido"
+    INVOICE_ISSUED    = "invoice_issued",    "NF Emitida"
 
 class ServiceOrderActivityLog(PaddockBaseModel):
     """Log descritivo e minucioso do histórico da OS."""

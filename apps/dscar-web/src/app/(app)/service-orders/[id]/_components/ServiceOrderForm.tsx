@@ -6,11 +6,13 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import type { ServiceOrder } from "@paddock/types"
 import { cn } from "@/lib/utils"
+import { apiFetch } from "@/lib/api"
 import { toast } from "sonner"
 
 import { serviceOrderUpdateSchema, type ServiceOrderUpdateInput } from "../_schemas/service-order.schema"
 import { useServiceOrderUpdate } from "../_hooks/useServiceOrder"
 import { useAutoTransition } from "../_hooks/useAutoTransition"
+import { useCustomerUpdate, type CustomerUpdateInput } from "../_hooks/useCustomerSearch"
 import { StatusBadge } from "./shared/StatusBadge"
 import { ClosingTab } from "./tabs/ClosingTab"
 import { FilesTab } from "./tabs/FilesTab"
@@ -20,6 +22,30 @@ import { OpeningTab } from "./tabs/OpeningTab"
 import { PartsTab } from "./tabs/PartsTab"
 import { RemindersTab } from "./tabs/RemindersTab"
 import { ServicesTab } from "./tabs/ServicesTab"
+
+const FIELD_LABELS: Record<string, string> = {
+  customer_name: "Nome do cliente",
+  plate: "Placa",
+  year: "Ano do veículo",
+  mileage_in: "KM de entrada",
+  entry_date: "Data/hora de entrada",
+  service_authorization_date: "Autorização do serviço",
+  scheduling_date: "Agendamento",
+  authorization_date: "Data de autorização",
+  delivery_date: "Data real de entrega",
+  final_survey_date: "Vistoria final",
+  client_delivery_date: "Entrega ao cliente",
+  expert_date: "Visita do perito",
+  survey_date: "Data da vistoria",
+  quotation_date: "Data do orçamento",
+  estimated_delivery_date: "Previsão de entrega",
+  repair_days: "Dias de reparo",
+  insurer: "Seguradora",
+  insured_type: "Tipo de segurado",
+  deductible_amount: "Franquia",
+  fipe_value: "Valor FIPE",
+  chassis: "Chassi",
+}
 
 const TABS = [
   { id: "opening", label: "Abertura" },
@@ -41,6 +67,7 @@ interface ServiceOrderFormProps {
 export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabId>("opening")
+  const [customerDirtyData, setCustomerDirtyData] = useState<CustomerUpdateInput | null>(null)
 
   const form = useForm<ServiceOrderUpdateInput>({
     resolver: zodResolver(serviceOrderUpdateSchema),
@@ -58,7 +85,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       survey_date: order.survey_date ?? undefined,
       authorization_date: order.authorization_date ?? undefined,
       quotation_date: order.quotation_date ?? new Date().toISOString().split("T")[0],
-      customer: order.customer ?? undefined,
+      customer: order.customer_uuid ?? undefined,   // UUID do UnifiedCustomer para lookup de detalhes
       customer_name: order.customer_name ?? "",
       plate: order.plate ?? "",
       make: order.make ?? "",
@@ -83,12 +110,41 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   })
 
   const updateMutation = useServiceOrderUpdate(order.id)
+  const customerUpdateMutation = useCustomerUpdate(
+    form.watch("customer") ?? order.customer_uuid ?? null
+  )
   useAutoTransition({ order })
 
-  const isPending = updateMutation.isPending
+  const isPending = updateMutation.isPending || customerUpdateMutation.isPending
 
   async function onSubmit(data: ServiceOrderUpdateInput) {
     await updateMutation.mutateAsync(data)
+    const customerId = data.customer ?? order.customer_uuid
+    if (customerDirtyData && customerId) {
+      await customerUpdateMutation.mutateAsync(customerDirtyData)
+      setCustomerDirtyData(null)
+      // Log customer changes in OS history
+      const CUSTOMER_FIELD_LABELS: Record<string, string> = {
+        name: "Nome", phone: "Telefone", email: "E-mail",
+        birth_date: "Nascimento", zip_code: "CEP", street: "Rua",
+        street_number: "Número", complement: "Complemento",
+        neighborhood: "Bairro", city: "Cidade", state: "UF",
+      }
+      const fieldChanges = Object.entries(customerDirtyData).map(([k, v]) => ({
+        field: k,
+        field_label: CUSTOMER_FIELD_LABELS[k] ?? k,
+        old_value: null,
+        new_value: String(v ?? ""),
+      }))
+      await apiFetch(`/api/proxy/service-orders/${order.id}/history/`, {
+        method: "POST",
+        body: JSON.stringify({
+          activity_type: "customer_updated",
+          message: "Dados do cliente atualizados.",
+          metadata: { field_changes: fieldChanges },
+        }),
+      }).catch(() => {/* non-critical, don't block the save */})
+    }
     toast.success("OS salva!")
   }
 
@@ -143,7 +199,9 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       {/* Conteúdo das abas */}
       <div className="flex-1 overflow-y-auto bg-gray-50 px-6">
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          {activeTab === "opening" && <OpeningTab form={form} />}
+          {activeTab === "opening" && (
+            <OpeningTab form={form} onCustomerDataChange={setCustomerDirtyData} />
+          )}
           {activeTab === "parts" && <PartsTab orderId={order.id} />}
           {activeTab === "services" && <ServicesTab orderId={order.id} />}
           {activeTab === "notes" && <NotesTab orderId={order.id} initialNotes={order.notes} />}
@@ -157,10 +215,15 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       {/* Erros de validação */}
       {Object.keys(form.formState.errors).length > 0 && (
         <div className="border-t bg-red-50 px-6 py-3">
-          <p className="text-xs font-medium text-red-700 mb-1">Corrija os erros antes de salvar:</p>
+          <p className="text-xs font-semibold text-red-700 mb-1">
+            Corrija os erros abaixo antes de salvar:
+          </p>
           <ul className="space-y-0.5">
             {Object.entries(form.formState.errors).map(([field, err]) => (
-              <li key={field} className="text-xs text-red-600">• {err?.message}</li>
+              <li key={field} className="text-xs text-red-600">
+                • <span className="font-medium">{FIELD_LABELS[field] ?? field}:</span>{" "}
+                {err?.message}
+              </li>
             ))}
           </ul>
         </div>

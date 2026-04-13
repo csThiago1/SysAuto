@@ -133,8 +133,15 @@ export function InsurerSection({ form }: InsurerSectionProps) {
             </div>
             <div>
               <label className={LABEL}>Autorização</label>
-              <input className={INPUT} type="datetime-local" {...register("authorization_date")} />
-              <p className="mt-0.5 text-[10px] text-amber-600 font-medium">Preencher muda status</p>
+              <input
+                className={errors.authorization_date ? `${INPUT} !border-red-500` : INPUT}
+                type="datetime-local"
+                {...register("authorization_date")}
+              />
+              {errors.authorization_date
+                ? <p className="mt-0.5 text-[10px] text-red-500">{errors.authorization_date.message}</p>
+                : <p className="mt-0.5 text-[10px] text-amber-600 font-medium">Preencher muda status</p>
+              }
             </div>
           </div>
 

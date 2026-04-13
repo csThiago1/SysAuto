@@ -29,7 +29,7 @@
 
 **Files:** nenhum arquivo modificado
 
-- [ ] **Step 1: Criar e entrar na branch**
+- [x] **Step 1: Criar e entrar na branch**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar
@@ -38,7 +38,7 @@ git checkout -b feat/nova-ui-sidebar
 
 Expected output: `Switched to a new branch 'feat/nova-ui-sidebar'`
 
-- [ ] **Step 2: Confirmar branch ativa**
+- [x] **Step 2: Confirmar branch ativa**
 
 ```bash
 git branch --show-current
@@ -53,7 +53,7 @@ Expected: `feat/nova-ui-sidebar`
 **Files:**
 - Modify: `apps/dscar-web/src/app/globals.css`
 
-- [ ] **Step 1: Adicionar variável `--font-montserrat` nas CSS custom properties**
+- [x] **Step 1: Adicionar variável `--font-montserrat` nas CSS custom properties**
 
 No bloco `:root`, logo após `--font-rajdhani`, adicionar:
 
@@ -70,7 +70,7 @@ O bloco `:root { /* Fontes */ ... }` deve ficar:
   --font-montserrat:  'Montserrat', ui-sans-serif, system-ui, sans-serif;
 ```
 
-- [ ] **Step 2: Atualizar font-family do body para Montserrat**
+- [x] **Step 2: Atualizar font-family do body para Montserrat**
 
 No `@layer base`, trocar a linha `font-family` do `body`:
 
@@ -82,7 +82,7 @@ font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
 ```
 
-- [ ] **Step 3: Atualizar scrollbar-thin com cores dark**
+- [x] **Step 3: Atualizar scrollbar-thin com cores dark**
 
 O sidebar novo é sempre escuro (`#0f0f0f`). Trocar o thumb da scrollbar para rgba escuro:
 
@@ -105,7 +105,7 @@ O sidebar novo é sempre escuro (`#0f0f0f`). Trocar o thumb da scrollbar para rg
 }
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/globals.css
@@ -119,7 +119,7 @@ git commit -m "style(dscar): scrollbar dark + variável Montserrat no globals.cs
 **Files:**
 - Modify: `apps/dscar-web/tailwind.config.ts`
 
-- [ ] **Step 1: Atualizar o keyframe `fade-in` para incluir translateX**
+- [x] **Step 1: Atualizar o keyframe `fade-in` para incluir translateX**
 
 Localizar o bloco `keyframes` e trocar `fade-in`:
 
@@ -139,7 +139,7 @@ Localizar o bloco `keyframes` e trocar `fade-in`:
 },
 ```
 
-- [ ] **Step 2: Atualizar `fontFamily.sans` para Montserrat**
+- [x] **Step 2: Atualizar `fontFamily.sans` para Montserrat**
 
 ```ts
 // antes
@@ -159,7 +159,7 @@ fontFamily: {
 },
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/dscar-web/tailwind.config.ts
@@ -173,7 +173,7 @@ git commit -m "style(dscar): fade-in com translateX + Montserrat como font-sans"
 **Files:**
 - Modify: `apps/dscar-web/src/app/layout.tsx`
 
-- [ ] **Step 1: Substituir import de Inter por Montserrat e atualizar as variáveis**
+- [x] **Step 1: Substituir import de Inter por Montserrat e atualizar as variáveis**
 
 O arquivo atual importa `Inter` e `Rajdhani`. Manter `Rajdhani`, trocar `Inter` por `Montserrat`:
 
@@ -228,7 +228,7 @@ export default function RootLayout({
 }
 ```
 
-- [ ] **Step 2: Typecheck**
+- [x] **Step 2: Typecheck**
 
 ```bash
 cd apps/dscar-web && npx tsc --noEmit 2>&1 | head -20
@@ -236,7 +236,7 @@ cd apps/dscar-web && npx tsc --noEmit 2>&1 | head -20
 
 Expected: 0 erros relacionados ao layout.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/layout.tsx
@@ -250,7 +250,7 @@ git commit -m "style(dscar): troca Inter por Montserrat como fonte principal"
 **Files:**
 - Modify: `apps/dscar-web/src/components/Sidebar.tsx`
 
-- [ ] **Step 1: Substituir o conteúdo completo do arquivo**
+- [x] **Step 1: Substituir o conteúdo completo do arquivo**
 
 ```tsx
 "use client";
@@ -785,7 +785,7 @@ export function Sidebar() {
 }
 ```
 
-- [ ] **Step 2: Typecheck**
+- [x] **Step 2: Typecheck**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/dscar-web && npx tsc --noEmit 2>&1 | head -30
@@ -793,7 +793,7 @@ cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/dscar-web && npx tsc 
 
 Expected: 0 erros no `Sidebar.tsx`. Se houver erro de tipo em `session.role`, confirmar que `apps/dscar-web/src/lib/auth.ts` está importado (o `declare module "next-auth"` fica nesse arquivo e é carregado automaticamente pelo TypeScript).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/dscar-web/src/components/Sidebar.tsx
@@ -807,7 +807,7 @@ git commit -m "feat(dscar): novo Sidebar dark DS Car com seções, grupos, Notif
 **Files:**
 - Modify: `apps/dscar-web/src/app/(app)/layout.tsx`
 
-- [ ] **Step 1: Reescrever o arquivo**
+- [x] **Step 1: Reescrever o arquivo**
 
 ```tsx
 import React from "react";
@@ -832,7 +832,7 @@ Observações:
 - `overflow-hidden` no wrapper impede que scroll do `<main>` mova o sidebar
 - `bg-[#0a0a0a]` cobre o gap visual durante transição de largura do sidebar
 
-- [ ] **Step 2: Typecheck**
+- [x] **Step 2: Typecheck**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/dscar-web && npx tsc --noEmit 2>&1 | head -30
@@ -840,7 +840,7 @@ cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/dscar-web && npx tsc 
 
 Expected: 0 erros. Se aparecer erro de `useUIStore` em algum componente, será corrigido na Task 7.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/\(app\)/layout.tsx
@@ -854,7 +854,7 @@ git commit -m "feat(dscar): layout (app) usa flex h-screen sem AppHeader"
 **Files:**
 - Modify: `apps/dscar-web/src/store/ui.store.ts`
 
-- [ ] **Step 1: Verificar se algum arquivo ainda importa sidebarCollapsed ou toggleSidebar**
+- [x] **Step 1: Verificar se algum arquivo ainda importa sidebarCollapsed ou toggleSidebar**
 
 ```bash
 grep -r "sidebarCollapsed\|toggleSidebar\|useUIStore" \
@@ -864,7 +864,7 @@ grep -r "sidebarCollapsed\|toggleSidebar\|useUIStore" \
 
 Se o único resultado for `ui.store.ts` (o Sidebar.tsx e (app)/layout.tsx não importam mais `useUIStore`), prosseguir. Se outros arquivos ainda importarem, adicionar um step por arquivo para remover a dependência antes de continuar.
 
-- [ ] **Step 2: Substituir ui.store.ts**
+- [x] **Step 2: Substituir ui.store.ts**
 
 Se `UIStore` ficar vazio, deletar o store. Se houver outros campos que devem ser mantidos, remover apenas `sidebarCollapsed` e `toggleSidebar`:
 
@@ -880,7 +880,7 @@ export const useUIStore = create<UIStore>()(() => ({}));
 
 > Se não há outros campos e nenhum outro arquivo importar `useUIStore`, deletar o arquivo e remover a importação em qualquer lugar restante.
 
-- [ ] **Step 3: Typecheck final**
+- [x] **Step 3: Typecheck final**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/dscar-web && npx tsc --noEmit 2>&1
@@ -888,7 +888,7 @@ cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/dscar-web && npx tsc 
 
 Expected: 0 erros em todo o projeto.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/dscar-web/src/store/ui.store.ts
@@ -899,7 +899,7 @@ git commit -m "refactor(dscar): remove sidebarCollapsed do UIStore — sidebar g
 
 ## Task 8: Verificação final e PR
 
-- [ ] **Step 1: Rodar typecheck completo**
+- [x] **Step 1: Rodar typecheck completo**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/dscar-web && npx tsc --noEmit
@@ -907,7 +907,7 @@ cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/dscar-web && npx tsc 
 
 Expected: zero erros.
 
-- [ ] **Step 2: Confirmar que NotificationBell.test.tsx ainda passa**
+- [x] **Step 2: Confirmar que NotificationBell.test.tsx ainda passa**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/dscar-web && npx vitest run src/components/header/NotificationBell.test.tsx 2>&1
@@ -915,7 +915,7 @@ cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/dscar-web && npx vite
 
 Expected: PASS — o componente `NotificationBell` não foi alterado, apenas movido de local.
 
-- [ ] **Step 3: Checar imports órfãos de AppHeader e DsCarLogo (usado pelo Sidebar antigo)**
+- [x] **Step 3: Checar imports órfãos de AppHeader e DsCarLogo (usado pelo Sidebar antigo)**
 
 ```bash
 grep -r "AppHeader\|DsCarLogo" \
@@ -925,13 +925,13 @@ grep -r "AppHeader\|DsCarLogo" \
 
 Expected: `DsCarLogo` aparece apenas em `login/page.tsx` (legítimo — logo na página de login). `AppHeader` não deve aparecer em nenhum arquivo além do próprio `AppHeader.tsx`.
 
-- [ ] **Step 4: Push da branch**
+- [x] **Step 4: Push da branch**
 
 ```bash
 git push -u origin feat/nova-ui-sidebar
 ```
 
-- [ ] **Step 5: Abrir PR (opcional)**
+- [x] **Step 5: Abrir PR (opcional)**
 
 ```bash
 gh pr create \
@@ -946,14 +946,14 @@ gh pr create \
 - Montserrat como fonte principal
 
 ## Test plan
-- [ ] Sidebar renderiza corretamente expandido e colapsado
-- [ ] Scroll da área principal não move o sidebar
-- [ ] NotificationBell abre popover corretamente dentro do sidebar
-- [ ] Footer exibe nome e role do usuário logado
-- [ ] Logout redireciona para /login
-- [ ] Badge de OS some quando não há OS vencidas/hoje
-- [ ] `tsc --noEmit` sem erros
-- [ ] `NotificationBell.test.tsx` passa
+- [x] Sidebar renderiza corretamente expandido e colapsado
+- [x] Scroll da área principal não move o sidebar
+- [x] NotificationBell abre popover corretamente dentro do sidebar
+- [x] Footer exibe nome e role do usuário logado
+- [x] Logout redireciona para /login
+- [x] Badge de OS some quando não há OS vencidas/hoje
+- [x] `tsc --noEmit` sem erros
+- [x] `NotificationBell.test.tsx` passa
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF

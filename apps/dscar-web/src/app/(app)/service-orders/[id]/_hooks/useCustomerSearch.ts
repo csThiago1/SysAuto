@@ -17,6 +17,7 @@ export interface CustomerDetail {
   id: string
   name: string
   cpf_masked: string | null
+  phone: string | null          // descriptografado para edição interna
   phone_masked: string | null
   email: string | null
   birth_date: string | null
@@ -28,6 +29,20 @@ export interface CustomerDetail {
   neighborhood: string
   city: string
   state: string
+}
+
+export interface CustomerUpdateInput {
+  name?: string
+  phone?: string
+  email?: string
+  birth_date?: string
+  zip_code?: string
+  street?: string
+  street_number?: string
+  complement?: string
+  neighborhood?: string
+  city?: string
+  state?: string
 }
 
 interface SearchResponse {
@@ -87,6 +102,24 @@ export function useCustomerCreate() {
     },
     onError: (err) => {
       toast.error(`Erro ao cadastrar cliente: ${err.message}`)
+    },
+  })
+}
+
+export function useCustomerUpdate(id: string | null) {
+  const qc = useQueryClient()
+  return useMutation<CustomerDetail, Error, CustomerUpdateInput>({
+    mutationFn: (data) =>
+      apiFetch<CustomerDetail>(`${API}/customers/${id}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["customer-detail", id] })
+    },
+    onError: (err) => {
+      toast.error(`Erro ao salvar dados do cliente: ${err.message}`)
     },
   })
 }

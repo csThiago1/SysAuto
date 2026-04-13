@@ -53,7 +53,7 @@
 - `handleTabPress` navigation logic
 - `useSafeAreaInsets` for `bottom` positioning
 
-- [ ] **Step 1: Verify existing tests/lint pass**
+- [x] **Step 1: Verify existing tests/lint pass**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/mobile && npx tsc --noEmit
@@ -61,7 +61,7 @@ cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/mobile && npx tsc --n
 
 Expected: 0 errors (establishes baseline).
 
-- [ ] **Step 2: Write the complete new FrostedNavBar.tsx**
+- [x] **Step 2: Write the complete new FrostedNavBar.tsx**
 
 Replace the entire file content with:
 
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-- [ ] **Step 3: Run TypeScript check**
+- [x] **Step 3: Run TypeScript check**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/mobile && npx tsc --noEmit
@@ -339,7 +339,7 @@ cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/mobile && npx tsc --n
 
 Expected: 0 errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar && git add apps/mobile/src/components/navigation/FrostedNavBar.tsx && git commit -m "feat(mobile): redesign tab bar — T2 dark pill with red glow indicator"
@@ -352,7 +352,7 @@ cd /Users/thiagocampos/Documents/Projetos/grupo-dscar && git add apps/mobile/src
 **Files:**
 - Modify: `apps/mobile/package.json`
 
-- [ ] **Step 1: Install the package**
+- [x] **Step 1: Install the package**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/mobile && npm install expo-linear-gradient
@@ -360,7 +360,7 @@ cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/mobile && npm install
 
 Expected: package added to `dependencies` in `package.json`. `expo-linear-gradient` is part of the Expo SDK 55 bundle — no native rebuild required for Expo Go.
 
-- [ ] **Step 2: Verify TypeScript can resolve the import**
+- [x] **Step 2: Verify TypeScript can resolve the import**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/mobile && npx tsc --noEmit
@@ -368,7 +368,7 @@ cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/mobile && npx tsc --n
 
 Expected: 0 errors (the package ships its own types).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar && git add apps/mobile/package.json package-lock.json && git commit -m "chore(mobile): add expo-linear-gradient for OS header gradient"
@@ -390,7 +390,7 @@ cd /Users/thiagocampos/Documents/Projetos/grupo-dscar && git add apps/mobile/pac
 5. In `OSListScreen`: remove `activeCompany` selector and `companyName` variable, update both `<DarkHeader ...>` call sites to `<OSHeader ...>`
 6. In `StyleSheet`: remove `darkHeader*` styles, add new `header*` styles
 
-- [ ] **Step 1: Apply all changes to os/index.tsx**
+- [x] **Step 1: Apply all changes to os/index.tsx**
 
 Make the following targeted edits (apply in order):
 
@@ -768,7 +768,7 @@ New:
   },
 ```
 
-- [ ] **Step 2: Remove unused SyncIndicator import if no longer used in the file**
+- [x] **Step 2: Remove unused SyncIndicator import if no longer used in the file**
 
 Check if `SyncIndicator` is used anywhere else in `os/index.tsx`. If the only usage was in `DarkHeader`, remove the import line:
 
@@ -776,7 +776,7 @@ Check if `SyncIndicator` is used anywhere else in `os/index.tsx`. If the only us
 import { SyncIndicator } from '@/components/common/SyncIndicator';
 ```
 
-- [ ] **Step 3: Run TypeScript check**
+- [x] **Step 3: Run TypeScript check**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar/apps/mobile && npx tsc --noEmit
@@ -786,7 +786,7 @@ Expected: 0 errors. Common errors to watch for:
 - `Module '"expo-linear-gradient"' has no exported member 'LinearGradient'` → ensure Task 2 (npm install) ran first
 - `Cannot find module '../../../assets/dscar-logo.png'` → verify file exists at `apps/mobile/assets/dscar-logo.png`
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar && git add apps/mobile/app/\(app\)/os/index.tsx && git commit -m "feat(mobile): redesign OS screen header — A2+L1 compact with DS Car logo and gradient"
@@ -798,13 +798,13 @@ cd /Users/thiagocampos/Documents/Projetos/grupo-dscar && git add apps/mobile/app
 
 Start the app with `expo start --ios` or `expo start --android` from `apps/mobile/` and verify:
 
-- [ ] Tab bar appears as a dark floating pill (`#141414`) at the bottom of the screen
-- [ ] Inactive tabs show dim icons (outline variant) at ~28% opacity
-- [ ] Active tab shows bright white icon (filled variant) + red glowing line below
-- [ ] Tapping a tab triggers light haptic + spring scale animation
-- [ ] "Nova OS" center tab shows a red pill with `+` icon
-- [ ] Tab bar hides when navigating to OS detail / checklist / camera / photo-editor
-- [ ] OS screen header shows DS Car logo (left) + "Bom dia 👋" / user name (right)
-- [ ] Header background is dark gradient (#1c1c1e → dark red #2a0e0e)
-- [ ] Stat chips are visible: red "Abertas", green "Prontas", yellow "Atrasadas"
-- [ ] Header is compact (no wasted vertical space)
+- [x] Tab bar appears as a dark floating pill (`#141414`) at the bottom of the screen
+- [x] Inactive tabs show dim icons (outline variant) at ~28% opacity
+- [x] Active tab shows bright white icon (filled variant) + red glowing line below
+- [x] Tapping a tab triggers light haptic + spring scale animation
+- [x] "Nova OS" center tab shows a red pill with `+` icon
+- [x] Tab bar hides when navigating to OS detail / checklist / camera / photo-editor
+- [x] OS screen header shows DS Car logo (left) + "Bom dia 👋" / user name (right)
+- [x] Header background is dark gradient (#1c1c1e → dark red #2a0e0e)
+- [x] Stat chips are visible: red "Abertas", green "Prontas", yellow "Atrasadas"
+- [x] Header is compact (no wasted vertical space)

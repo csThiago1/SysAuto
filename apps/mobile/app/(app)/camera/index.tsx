@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Colors, Radii } from '@/constants/theme';
 import { CameraView, CameraType, FlashMode, useCameraPermissions } from 'expo-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { SaveFormat } from 'expo-image-manipulator';
@@ -65,7 +66,7 @@ export default function CameraScreen(): React.ReactElement {
   if (!permission) {
     return (
       <View style={styles.centeredContainer}>
-        <ActivityIndicator size="large" color="#e31b1b" />
+        <ActivityIndicator size="large" color={Colors.brand} />
       </View>
     );
   }

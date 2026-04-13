@@ -12,6 +12,7 @@ import { Text } from '@/components/ui/Text';
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { useVehicleByPlate } from '@/hooks/useVehicleByPlate';
 import { useNewOSStore } from '@/stores/new-os.store';
+import { Colors, Radii } from '@/constants/theme';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -84,7 +85,7 @@ export function Step1Vehicle({ onNext }: Step1VehicleProps): React.JSX.Element {
       )}
 
       {/* Step label */}
-      <Text variant="bodySmall" color="#6b7280">
+      <Text variant="bodySmall" color={Colors.textTertiary}>
         Passo 1 de 4
       </Text>
 
@@ -97,7 +98,7 @@ export function Step1Vehicle({ onNext }: Step1VehicleProps): React.JSX.Element {
       <TextInput
         style={styles.input}
         placeholder="ABC-1234"
-        placeholderTextColor="#9ca3af"
+        placeholderTextColor={Colors.textSecondary}
         autoCapitalize="characters"
         maxLength={8}
         value={vehiclePlate}
@@ -114,7 +115,7 @@ export function Step1Vehicle({ onNext }: Step1VehicleProps): React.JSX.Element {
         {isLoading ? (
           <ActivityIndicator color="#ffffff" />
         ) : (
-          <Text variant="label" color="#ffffff">
+          <Text variant="label" color={Colors.textPrimary}>
             Buscar Placa
           </Text>
         )}
@@ -122,7 +123,7 @@ export function Step1Vehicle({ onNext }: Step1VehicleProps): React.JSX.Element {
 
       {/* Error */}
       {error !== null && (
-        <Text variant="bodySmall" color="#e31b1b" style={styles.errorText}>
+        <Text variant="bodySmall" color={Colors.brand} style={styles.errorText}>
           {error}
         </Text>
       )}
@@ -136,11 +137,11 @@ export function Step1Vehicle({ onNext }: Step1VehicleProps): React.JSX.Element {
           <Text variant="body" style={styles.vehicleName}>
             {vehicleInfo.brand} {vehicleInfo.model}
           </Text>
-          <Text variant="bodySmall" color="#6b7280">
+          <Text variant="bodySmall" color={Colors.textTertiary}>
             {vehicleInfo.year} · {vehicleInfo.color}
           </Text>
           <TouchableOpacity onPress={handleManualFill} style={styles.manualLink}>
-            <Text variant="bodySmall" color="#e31b1b">
+            <Text variant="bodySmall" color={Colors.brand}>
               Preencher manualmente
             </Text>
           </TouchableOpacity>
@@ -153,21 +154,21 @@ export function Step1Vehicle({ onNext }: Step1VehicleProps): React.JSX.Element {
           <TextInput
             style={styles.input}
             placeholder="Marca"
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={Colors.textSecondary}
             value={vehicleManualBrand}
             onChangeText={(v) => setVehicleManualField('brand', v)}
           />
           <TextInput
             style={styles.input}
             placeholder="Modelo"
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={Colors.textSecondary}
             value={vehicleManualModel}
             onChangeText={(v) => setVehicleManualField('model', v)}
           />
           <TextInput
             style={styles.input}
             placeholder="Ano"
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={Colors.textSecondary}
             keyboardType="numeric"
             maxLength={4}
             value={vehicleManualYear}
@@ -176,7 +177,7 @@ export function Step1Vehicle({ onNext }: Step1VehicleProps): React.JSX.Element {
           <TextInput
             style={styles.input}
             placeholder="Cor"
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={Colors.textSecondary}
             value={vehicleManualColor}
             onChangeText={(v) => setVehicleManualField('color', v)}
           />
@@ -190,7 +191,7 @@ export function Step1Vehicle({ onNext }: Step1VehicleProps): React.JSX.Element {
         disabled={isNextDisabled()}
         activeOpacity={0.8}
       >
-        <Text variant="label" color="#ffffff">
+        <Text variant="label" color={Colors.textPrimary}>
           Continuar
         </Text>
       </TouchableOpacity>
@@ -203,7 +204,7 @@ export function Step1Vehicle({ onNext }: Step1VehicleProps): React.JSX.Element {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.bg,
   },
   content: {
     padding: 20,
@@ -221,18 +222,18 @@ const styles = StyleSheet.create({
     borderColor: '#fbbf24',
   },
   input: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
+    backgroundColor: Colors.inputBg,
+    borderRadius: Radii.md,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: Colors.border,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
   },
   primaryButton: {
-    backgroundColor: '#e31b1b',
-    borderRadius: 12,
+    backgroundColor: Colors.brand,
+    borderRadius: Radii.md,
     padding: 14,
     alignItems: 'center',
   },
@@ -246,10 +247,10 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   vehicleCard: {
-    backgroundColor: '#f0fdf4',
+    backgroundColor: Colors.surface,
     borderWidth: 1,
-    borderColor: '#bbf7d0',
-    borderRadius: 12,
+    borderColor: Colors.border,
+    borderRadius: Radii.md,
     padding: 14,
     gap: 4,
   },

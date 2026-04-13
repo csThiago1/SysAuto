@@ -16,8 +16,11 @@ class ApiError extends Error {
 async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const { token, activeCompany } = useAuthStore.getState();
 
-  // Garante trailing slash (Django APPEND_SLASH=True)
-  const normalizedPath = path.endsWith('/') ? path : `${path}/`;
+  // Garante trailing slash no path (Django APPEND_SLASH=True)
+  // Separa query string para não adicionar '/' dentro dos parâmetros
+  const [pathname, queryString] = path.split('?');
+  const slashedPath = pathname.endsWith('/') ? pathname : `${pathname}/`;
+  const normalizedPath = queryString ? `${slashedPath}?${queryString}` : slashedPath;
   const url = `${API_BASE_URL}/api/v1${normalizedPath}`;
 
   const headers: Record<string, string> = {

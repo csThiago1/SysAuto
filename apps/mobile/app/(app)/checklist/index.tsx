@@ -15,19 +15,17 @@ import { OSStatusBadge } from '@/components/os/OSStatusBadge';
 import { useServiceOrdersList } from '@/hooks/useServiceOrders';
 import { usePhotoStore } from '@/stores/photo.store';
 import type { ServiceOrder } from '@/db/models/ServiceOrder';
+import { Colors, Radii, Spacing } from '@/constants/theme';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const CHECKLIST_TYPE_LABEL: Record<string, string> = {
-  reception: 'Checklist de Entrada',
+  reception:      'Checklist de Entrada',
   initial_survey: 'Vistoria Inicial',
-  final_survey: 'Vistoria Final',
-  in_progress: 'Em Execução',
-  waiting_parts: 'Aguardando Peça',
-  budget: 'Orçamento',
-  approved: 'Aprovado',
-  completed: 'Concluído',
-  delivered: 'Entregue',
+  final_survey:   'Vistoria Final',
+  waiting_parts:  'Aguardando Peça',
+  budget:         'Orçamento',
+  delivered:      'Entregue',
 };
 
 // ─── ChecklistCard ────────────────────────────────────────────────────────────
@@ -62,21 +60,21 @@ function ChecklistCard({ order, onPress }: ChecklistCardProps): React.JSX.Elemen
 
         {/* Row 2: OS number + make + model */}
         <View style={styles.row}>
-          <Text variant="label" color="#374151">
+          <Text variant="label" color={Colors.textPrimary}>
             {`OS #${order.number}`}
           </Text>
-          <Text variant="bodySmall" color="#6b7280" style={styles.vehicleInfo}>
+          <Text variant="bodySmall" color={Colors.textTertiary} style={styles.vehicleInfo}>
             {[order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ')}
           </Text>
         </View>
 
         {/* Row 3: checklist type label */}
-        <Text variant="bodySmall" color="#e31b1b" style={styles.checklistType}>
+        <Text variant="bodySmall" color={Colors.brand} style={styles.checklistType}>
           {checklistLabel}
         </Text>
 
         {/* Row 4: photo count */}
-        <Text variant="caption" color="#9ca3af">
+        <Text variant="caption" color={Colors.textSecondary}>
           {photoCount === 0
             ? 'Nenhuma foto capturada'
             : `${photoCount} ${photoCount === 1 ? 'foto capturada' : 'fotos capturadas'}`}
@@ -91,10 +89,10 @@ function ChecklistCard({ order, onPress }: ChecklistCardProps): React.JSX.Elemen
 function EmptyState(): React.JSX.Element {
   return (
     <View style={styles.emptyContainer}>
-      <Text variant="body" color="#374151" style={styles.emptyTitle}>
+      <Text variant="body" color={Colors.textPrimary} style={styles.emptyTitle}>
         Nenhuma OS aguardando checklist
       </Text>
-      <Text variant="bodySmall" color="#9ca3af" style={styles.emptyHint}>
+      <Text variant="bodySmall" color={Colors.textSecondary} style={styles.emptyHint}>
         Nenhuma OS encontrada. Sincronize para carregar as ordens de serviço.
       </Text>
     </View>
@@ -121,7 +119,7 @@ export default function ChecklistIndexScreen(): React.JSX.Element {
         <Text variant="heading2">Checklists</Text>
         {!isLoading && (
           <View style={styles.countBadge}>
-            <Text variant="label" color="#ffffff">
+            <Text variant="label" color={Colors.textPrimary}>
               {checklistOrders.length}
             </Text>
           </View>
@@ -131,7 +129,7 @@ export default function ChecklistIndexScreen(): React.JSX.Element {
       {/* Content */}
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#e31b1b" />
+          <ActivityIndicator size="large" color={Colors.brand} />
         </View>
       ) : (
         <FlatList<ServiceOrder>
@@ -160,22 +158,22 @@ export default function ChecklistIndexScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: Colors.bg,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.sm,
   },
   countBadge: {
-    backgroundColor: '#e31b1b',
-    borderRadius: 12,
+    backgroundColor: Colors.brand,
+    borderRadius: Radii.md,
     minWidth: 24,
     height: 24,
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.sm,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -185,12 +183,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   flatListContent: {
-    padding: 16,
-    gap: 12,
+    padding: Spacing.lg,
+    gap: Spacing.md,
   },
   flatListEmpty: {
     flex: 1,
-    padding: 16,
+    padding: Spacing.lg,
   },
   card: {
     gap: 6,
@@ -216,8 +214,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingHorizontal: 32,
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.xxl,
   },
   emptyTitle: {
     textAlign: 'center',

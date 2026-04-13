@@ -46,7 +46,7 @@ The new `FrostedNavBar` must:
 
 Bubble animation strategy: track container width via `onLayout`, compute tab widths from flex ratios (normal = 1, central = 1.2, total = 5.2), slide bubble to active tab's X position using `withSpring`.
 
-- [ ] **Step 1: Create `FrostedNavBar.tsx` with complete implementation**
+- [x] **Step 1: Create `FrostedNavBar.tsx` with complete implementation**
 
 ```typescript
 // apps/mobile/src/components/navigation/FrostedNavBar.tsx
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-- [ ] **Step 2: Run TypeScript check**
+- [x] **Step 2: Run TypeScript check**
 
 ```bash
 cd apps/mobile && npx tsc --noEmit --skipLibCheck 2>&1 | head -40
@@ -368,7 +368,7 @@ cd apps/mobile && npx tsc --noEmit --skipLibCheck 2>&1 | head -40
 
 Expected: 0 errors for `FrostedNavBar.tsx`. Any errors from unrelated files can be ignored.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar
@@ -394,7 +394,7 @@ import { PillTabBar } from '@/components/navigation/PillTabBar';
 
 Replace `PillTabBar` with `FrostedNavBar`. No other changes needed.
 
-- [ ] **Step 1: Update `_layout.tsx`**
+- [x] **Step 1: Update `_layout.tsx`**
 
 Replace the entire file content:
 
@@ -425,7 +425,7 @@ export default function AppLayout() {
 }
 ```
 
-- [ ] **Step 2: Run TypeScript check**
+- [x] **Step 2: Run TypeScript check**
 
 ```bash
 cd apps/mobile && npx tsc --noEmit --skipLibCheck 2>&1 | head -20
@@ -433,7 +433,7 @@ cd apps/mobile && npx tsc --noEmit --skipLibCheck 2>&1 | head -20
 
 Expected: 0 errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar
@@ -485,7 +485,7 @@ cancelled                               → #ef4444 (red)
 
 **`COMPANY_DISPLAY_NAMES` map:** `dscar → DS Car`, `pecas → Peças`, `vidros → Vidros`, `estetica → Estética`.
 
-- [ ] **Step 1: Update `OSCard.tsx`**
+- [x] **Step 1: Update `OSCard.tsx`**
 
 Replace the entire file content:
 
@@ -633,7 +633,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-- [ ] **Step 2: Update `os/index.tsx` with dark header + stats**
+- [x] **Step 2: Update `os/index.tsx` with dark header + stats**
 
 Replace the entire file content:
 
@@ -1196,7 +1196,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-- [ ] **Step 3: Run TypeScript check**
+- [x] **Step 3: Run TypeScript check**
 
 ```bash
 cd apps/mobile && npx tsc --noEmit --skipLibCheck 2>&1 | head -40
@@ -1204,7 +1204,7 @@ cd apps/mobile && npx tsc --noEmit --skipLibCheck 2>&1 | head -40
 
 Expected: 0 errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar
@@ -1240,7 +1240,7 @@ Back button should show the name of the source screen, not just "Voltar".
 - `handleBack` at line 119: `router.back()` → `router.replace(\`/(app)/os/${osId}\`)`
 - The back button text (in the checklist header) should show `"OS #N"` — already handled by `headerTitle`
 
-- [ ] **Step 1: Fix back button in `os/[id].tsx`**
+- [x] **Step 1: Fix back button in `os/[id].tsx`**
 
 In `apps/mobile/app/(app)/os/[id].tsx`, make these two changes:
 
@@ -1270,7 +1270,7 @@ const handleBack = useCallback((): void => {
 </Text>
 ```
 
-- [ ] **Step 2: Fix back button in `checklist/[osId].tsx`**
+- [x] **Step 2: Fix back button in `checklist/[osId].tsx`**
 
 In `apps/mobile/app/(app)/checklist/[osId].tsx`, change `handleBack` (around line 119):
 
@@ -1286,7 +1286,7 @@ const handleBack = useCallback((): void => {
 }, [router, osId]);
 ```
 
-- [ ] **Step 3: Run TypeScript check**
+- [x] **Step 3: Run TypeScript check**
 
 ```bash
 cd apps/mobile && npx tsc --noEmit --skipLibCheck 2>&1 | head -20
@@ -1294,7 +1294,7 @@ cd apps/mobile && npx tsc --noEmit --skipLibCheck 2>&1 | head -20
 
 Expected: 0 errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 cd /Users/thiagocampos/Documents/Projetos/grupo-dscar

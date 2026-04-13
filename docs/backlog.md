@@ -7,6 +7,40 @@
 
 ---
 
+## Refinamentos UX Mobile pós-M4 — Concluído ✅
+> Nav/Header/Filtros Redesign · 2026-04-12
+
+### FrostedNavBar
+- [x] Reescrita completa: T2 dark pill `#141414`, borderRadius 22, sem BlurView
+- [x] `activeLine` vermelha com glow (3px, shadowColor #e31b1b) abaixo do ícone ativo
+- [x] Botão central `+` vermelho (red pill com shadow)
+- [x] Fix: `HIDDEN_ROUTES` continha `'os'` que era o nome do tab home → removido
+- [x] Fix: `TAB_CONFIG[0].routeName` era `'os'` → corrigido para `'index'`
+- [x] Tab busca → Agenda (ícone `calendar`/`calendar-outline`)
+- [x] Tab perfil → Config (ícone `settings`/`settings-outline`)
+
+### OSHeader (os/index.tsx)
+- [x] LinearGradient `#1c1c1e → #141414` (antes era View sólida)
+- [x] Logo DS Car centralizado com `resizeMode="cover"` + `overflow:hidden`
+- [x] Layout DubiCars: `[spacer 40px][logo flex:1][bell button]`
+- [x] Sem saudação, sem nome de usuário, sem chips de stats
+- [x] Removido header nativo "Ordens de Serviço" do Stack (duplicava)
+- [x] Removido botão de voltar customizado de `OSDetailHeader` (duplicava com nativo)
+- [x] `headerBackTitle: 'Voltar'` no screen `[id]`
+- [x] `headerSpacer` sem background (antes tinha `rgba(255,255,255,0.08)` visível)
+
+### Busca (useServiceOrders.ts)
+- [x] Expandida de somente `vehicle_plate` para `Q.or` em `vehicle_plate`, `customer_name`, `vehicle_model`, `vehicle_brand` + `number` (se numérico)
+
+### Filtros por status (os/index.tsx)
+- [x] Removido ScrollView horizontal com chips de status abaixo da busca
+- [x] Adicionado botão `options-outline` (44×44) à direita da barra de busca
+- [x] Estado ativo: borda/bg vermelhos + badge dot vermelho no canto
+- [x] Modal bottom-sheet: lista "Todas" + 11 status com dot colorido + checkmark
+- [x] Active filter label bar: linha compacta com nome do filtro ativo + botão × para limpar
+
+---
+
 ## Sprint M4 Mobile — Concluído ✅
 > Checklist de Itens + Editor de Anotações nas Fotos · 2026-04-12
 
@@ -242,9 +276,10 @@
 | M2 | Mobile OS Read-Only + Offline Foundation | ✅ |
 | M3 | Mobile Checklist Fotográfico + Câmera + Fila Upload | ✅ |
 | M4 | Mobile Checklist Itens + Editor Anotações | ✅ |
+| M4.5 | Mobile Nav/Header/Filtros Redesign | ✅ |
 | **15** | **Banking + Asaas + Relatórios** | 🔄 |
 | **M5** | **Abertura de OS no Mobile** | 🔄 |
 
 ---
 
-*Atualizado por: Paddock Solutions · 2026-04-12*
+*Atualizado por: Paddock Solutions · 2026-04-12 (pós-M4 UX refinements)*
