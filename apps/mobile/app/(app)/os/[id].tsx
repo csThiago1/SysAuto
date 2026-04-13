@@ -830,17 +830,17 @@ export default function OSDetailScreen(): React.JSX.Element {
             <Card style={styles.card}>
               {hasParts && (
                 <>
-                  <Text variant="label" color="#6b7280" style={styles.subsectionTitle}>
+                  <Text variant="label" color={Colors.textTertiary} style={styles.subsectionTitle}>
                     Peças
                   </Text>
                   {order.parts!.map((item) => (
                     <LineItemRow key={item.id} item={item} />
                   ))}
                   <View style={styles.subtotalRow}>
-                    <Text variant="bodySmall" color="#6b7280">
+                    <Text variant="bodySmall" color={Colors.textTertiary}>
                       Subtotal peças
                     </Text>
-                    <Text variant="label" color="#374151">
+                    <Text variant="label" color={Colors.textSecondary}>
                       {formatCurrency(order.parts_total)}
                     </Text>
                   </View>
@@ -851,17 +851,17 @@ export default function OSDetailScreen(): React.JSX.Element {
 
               {hasLaborItems && (
                 <>
-                  <Text variant="label" color="#6b7280" style={styles.subsectionTitle}>
+                  <Text variant="label" color={Colors.textTertiary} style={styles.subsectionTitle}>
                     Serviços
                   </Text>
                   {order.labor_items!.map((item) => (
                     <LineItemRow key={item.id} item={item} />
                   ))}
                   <View style={styles.subtotalRow}>
-                    <Text variant="bodySmall" color="#6b7280">
+                    <Text variant="bodySmall" color={Colors.textTertiary}>
                       Subtotal serviços
                     </Text>
-                    <Text variant="label" color="#374151">
+                    <Text variant="label" color={Colors.textSecondary}>
                       {formatCurrency(order.services_total)}
                     </Text>
                   </View>
@@ -925,24 +925,24 @@ export default function OSDetailScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: Colors.bg,
   },
   // Skeleton
   skeletonContainer: {
-    padding: 16,
-    gap: 12,
+    padding: Spacing.lg,
+    gap: Spacing.md,
   },
   skeleton: {
-    backgroundColor: '#e5e7eb',
-    borderRadius: 12,
+    backgroundColor: Colors.skeleton,
+    borderRadius: Radii.md,
   },
   // Empty state
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
-    gap: 12,
+    padding: Spacing.xxl,
+    gap: Spacing.md,
   },
   emptyHint: {
     textAlign: 'center',

@@ -9,6 +9,7 @@ import {
 
 import { Text } from '@/components/ui/Text';
 import { useNewOSStore, type CustomerType, type OSType } from '@/stores/new-os.store';
+import { Colors, Radii } from '@/constants/theme';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
