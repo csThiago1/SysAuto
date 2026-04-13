@@ -22,4 +22,6 @@ export class ServiceOrder extends Model {
   @field('updated_at_remote') updatedAtRemote!: number;
   @field('synced_at') syncedAt!: number;
   @field('push_status') pushStatus!: string | null;
+  @field('insurer_id') insurerId!: string | null;
+  @field('insured_type') insuredType!: string | null;
 }

@@ -16,9 +16,11 @@ export interface CreateOSPayload {
   vehicleColor?: string;
   customerType: 'insurer' | 'private';
   osType: 'bodywork' | 'warranty' | 'rework' | 'mechanical' | 'aesthetic';
-  insurerName?: string;
-  claimNumber?: string;
-  deductible?: number;
+  // Insurer fields (only when customerType === 'insurer')
+  insurerId?: string;           // UUID of Insurer model
+  insuredType?: 'insured' | 'third';
+  casualtyNumber?: string;      // nº sinistro
+  deductibleAmount?: number;    // franquia
 }
 
 export interface CreateOSResult {
@@ -61,17 +63,18 @@ export function useCreateServiceOrder(): {
         try {
           const data = await api.post<ServiceOrderApiResponse>('/service-orders/', {
             customer_name: payload.customerName,
-            customer_id: payload.customerId ?? null,
-            vehicle_plate: payload.vehiclePlate,
-            vehicle_brand: payload.vehicleBrand,
-            vehicle_model: payload.vehicleModel,
-            vehicle_year: payload.vehicleYear ?? null,
-            vehicle_color: payload.vehicleColor ?? null,
+            customer: payload.customerId ?? null,
+            plate: payload.vehiclePlate,
+            make: payload.vehicleBrand,
+            model: payload.vehicleModel,
+            year: payload.vehicleYear ?? null,
+            color: payload.vehicleColor ?? null,
             customer_type: payload.customerType,
             os_type: payload.osType,
-            insurer_name: payload.insurerName ?? null,
-            claim_number: payload.claimNumber ?? null,
-            deductible: payload.deductible ?? null,
+            insurer: payload.insurerId ?? null,
+            insured_type: payload.insuredType ?? null,
+            casualty_number: payload.casualtyNumber ?? null,
+            deductible_amount: payload.deductibleAmount ?? null,
           });
 
           // Persist to local DB as synced
@@ -97,6 +100,8 @@ export function useCreateServiceOrder(): {
                 r.updatedAtRemote = Date.now();
                 r.syncedAt = Date.now();
                 r.pushStatus = 'synced';
+                r.insurerId = payload.insurerId ?? null;
+                r.insuredType = payload.insuredType ?? null;
               });
           });
           const localId = record.id;
@@ -132,6 +137,8 @@ export function useCreateServiceOrder(): {
             r.updatedAtRemote = Date.now();
             r.syncedAt = 0;
             r.pushStatus = 'pending';
+            r.insurerId = payload.insurerId ?? null;
+            r.insuredType = payload.insuredType ?? null;
           });
       });
       const localId = offlineRecord.id;

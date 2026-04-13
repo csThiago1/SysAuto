@@ -103,14 +103,16 @@ export async function syncServiceOrders(): Promise<void> {
               },
               body: JSON.stringify({
                 customer_name: record.customerName,
-                vehicle_plate: record.vehiclePlate,
-                vehicle_model: record.vehicleModel,
-                vehicle_brand: record.vehicleBrand,
-                vehicle_year: record.vehicleYear ?? null,
-                vehicle_color: record.vehicleColor ?? null,
+                plate: record.vehiclePlate,
+                make: record.vehicleBrand,
+                model: record.vehicleModel,
+                year: record.vehicleYear ?? null,
+                color: record.vehicleColor ?? null,
                 customer_type: record.customerType,
                 os_type: record.osType,
                 status: 'reception',
+                insurer: record.insurerId ?? null,
+                insured_type: record.insuredType ?? null,
               }),
             });
             if (res.ok) {

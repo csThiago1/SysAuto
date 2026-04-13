@@ -23,5 +23,17 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 4,
+      steps: [
+        addColumns({
+          table: 'service_orders',
+          columns: [
+            { name: 'insurer_id', type: 'string', isOptional: true },
+            { name: 'insured_type', type: 'string', isOptional: true },
+          ],
+        }),
+      ],
+    },
   ],
 });
