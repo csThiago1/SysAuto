@@ -183,7 +183,7 @@ export default function CameraScreen(): React.ReactElement {
       {/* Saving overlay */}
       {isSaving && (
         <View style={styles.savingOverlay}>
-          <ActivityIndicator size="large" color="#ffffff" />
+          <ActivityIndicator size="large" color={Colors.textPrimary} />
           <Text style={styles.savingText}>Salvando...</Text>
         </View>
       )}
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   // Full-screen layout
   container: {
     flex: 1,
-    backgroundColor: '#141414',
+    backgroundColor: Colors.bg,
   },
   camera: {
     flex: 1,
@@ -247,34 +247,34 @@ const styles = StyleSheet.create({
   // Permission screens
   centeredContainer: {
     flex: 1,
-    backgroundColor: '#141414',
+    backgroundColor: Colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 32,
   },
   permissionTitle: {
-    color: '#ffffff',
+    color: Colors.textPrimary,
     fontSize: 22,
     fontWeight: '700',
     marginBottom: 12,
     textAlign: 'center',
   },
   permissionBody: {
-    color: '#cccccc',
+    color: Colors.textSecondary,
     fontSize: 15,
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 22,
   },
   permissionButton: {
-    backgroundColor: '#e31b1b',
-    borderRadius: 12,
+    backgroundColor: Colors.brand,
+    borderRadius: Radii.md,
     paddingVertical: 14,
     paddingHorizontal: 40,
     marginBottom: 12,
   },
   permissionButtonText: {
-    color: '#ffffff',
+    color: Colors.textPrimary,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -283,20 +283,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   permissionCancelText: {
-    color: '#aaaaaa',
+    color: Colors.textSecondary,
     fontSize: 15,
   },
 
   // Saving overlay
   savingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    backgroundColor: Colors.overlay,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 16,
   },
   savingText: {
-    color: '#ffffff',
+    color: Colors.textPrimary,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 120,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: Colors.overlayLight,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
     height: 64,
   },
   sideButtonLabel: {
-    color: '#ffffff',
+    color: Colors.textPrimary,
     fontSize: 11,
     marginTop: 4,
   },
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
     borderWidth: 4,
-    borderColor: '#ffffff',
+    borderColor: Colors.textPrimary,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
@@ -347,6 +347,6 @@ const styles = StyleSheet.create({
     width: 62,
     height: 62,
     borderRadius: 31,
-    backgroundColor: '#e31b1b',
+    backgroundColor: Colors.brand,
   },
 });

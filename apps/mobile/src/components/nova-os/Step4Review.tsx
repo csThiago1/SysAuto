@@ -72,7 +72,7 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
       contentContainerStyle={styles.content}
     >
       {/* Step label */}
-      <Text variant="bodySmall" color="#6b7280">
+      <Text variant="bodySmall" color={Colors.textTertiary}>
         Passo 4 de 4
       </Text>
 
@@ -83,20 +83,20 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
 
       {/* Vehicle card */}
       <View style={styles.summaryCard}>
-        <Text variant="label" color="#6b7280">
+        <Text variant="label" color={Colors.textTertiary}>
           VEÍCULO
         </Text>
         <Text style={styles.plateText}>
           {vehiclePlate.toUpperCase()}
         </Text>
         {(displayBrand || displayModel) ? (
-          <Text variant="body" color="#374151">
+          <Text variant="body" color={Colors.textPrimary}>
             {[displayBrand, displayModel].filter(Boolean).join(' ')}
             {displayYear ? ` · ${displayYear}` : ''}
           </Text>
         ) : null}
         {displayColor ? (
-          <Text variant="bodySmall" color="#6b7280">
+          <Text variant="bodySmall" color={Colors.textTertiary}>
             {displayColor}
           </Text>
         ) : null}
@@ -107,14 +107,14 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
 
       {/* Customer card */}
       <View style={styles.summaryCard}>
-        <Text variant="label" color="#6b7280">
+        <Text variant="label" color={Colors.textTertiary}>
           CLIENTE
         </Text>
-        <Text variant="body" color="#374151" style={styles.customerName}>
+        <Text variant="body" color={Colors.textPrimary} style={styles.customerName}>
           {displayCustomerName}
         </Text>
         {customer?.cpf_masked ? (
-          <Text variant="bodySmall" color="#6b7280">
+          <Text variant="bodySmall" color={Colors.textTertiary}>
             {customer.cpf_masked}
           </Text>
         ) : null}
@@ -125,43 +125,43 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
 
       {/* Service card */}
       <View style={styles.summaryCard}>
-        <Text variant="label" color="#6b7280">
+        <Text variant="label" color={Colors.textTertiary}>
           SERVIÇO
         </Text>
-        <Text variant="body" color="#374151">
+        <Text variant="body" color={Colors.textPrimary}>
           {CUSTOMER_TYPE_LABELS[customerType]}
         </Text>
-        <Text variant="body" color="#374151">
+        <Text variant="body" color={Colors.textPrimary}>
           {OS_TYPE_LABELS[osType]}
         </Text>
         {insurer !== null && (
-          <Text variant="bodySmall" color="#6b7280">{insurer.displayName}</Text>
+          <Text variant="bodySmall" color={Colors.textTertiary}>{insurer.displayName}</Text>
         )}
         {insuredType !== null && (
-          <Text variant="bodySmall" color="#6b7280">
+          <Text variant="bodySmall" color={Colors.textTertiary}>
             {insuredType === 'insured' ? 'Segurado' : 'Terceiro'}
           </Text>
         )}
         {claimNumber.length > 0 && (
-          <Text variant="bodySmall" color="#6b7280">
+          <Text variant="bodySmall" color={Colors.textTertiary}>
             Sinistro: {claimNumber}
           </Text>
         )}
         {customerType === 'insurer' && deductible.length > 0 ? (
-          <Text variant="bodySmall" color="#6b7280">Franquia: R$ {deductible}</Text>
+          <Text variant="bodySmall" color={Colors.textTertiary}>Franquia: R$ {deductible}</Text>
         ) : null}
       </View>
 
       {/* Error */}
       {error !== null && (
-        <Text variant="bodySmall" color="#e31b1b" style={styles.errorText}>
+        <Text variant="bodySmall" color={Colors.brand} style={styles.errorText}>
           {error}
         </Text>
       )}
 
       {/* Loading indicator */}
       {isCreating && (
-        <ActivityIndicator color="#e31b1b" style={styles.spinner} />
+        <ActivityIndicator color={Colors.brand} style={styles.spinner} />
       )}
 
       {/* Primary: Criar OS e Iniciar Checklist */}
@@ -171,7 +171,7 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
         disabled={isCreating}
         activeOpacity={0.8}
       >
-        <Text variant="label" color="#ffffff">
+        <Text variant="label" color={Colors.textPrimary}>
           Criar OS e Iniciar Checklist
         </Text>
       </TouchableOpacity>
@@ -183,7 +183,7 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
         disabled={isCreating}
         activeOpacity={0.8}
       >
-        <Text variant="label" color="#e31b1b">
+        <Text variant="label" color={Colors.brand}>
           Criar OS
         </Text>
       </TouchableOpacity>
@@ -195,7 +195,7 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
         style={[styles.backLink, isCreating && { opacity: 0.4 }]}
         activeOpacity={0.7}
       >
-        <Text variant="bodySmall" color="#6b7280" style={styles.backText}>
+        <Text variant="bodySmall" color={Colors.textTertiary} style={styles.backText}>
           Voltar
         </Text>
       </TouchableOpacity>
@@ -208,7 +208,7 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: Colors.bg,
   },
   content: {
     padding: 20,
@@ -219,10 +219,10 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   summaryCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
+    backgroundColor: Colors.surface,
+    borderRadius: Radii.md,
     borderWidth: 1,
-    borderColor: '#f3f4f6',
+    borderColor: Colors.border,
     padding: 16,
     marginBottom: 12,
     gap: 4,
@@ -231,14 +231,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     letterSpacing: 1,
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
   },
   customerName: {
     fontWeight: '600',
   },
   badge: {
     alignSelf: 'flex-start',
-    backgroundColor: '#e5e7eb',
+    backgroundColor: Colors.inputBg,
     borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 2,

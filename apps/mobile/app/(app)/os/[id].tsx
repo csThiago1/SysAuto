@@ -987,7 +987,7 @@ const styles = StyleSheet.create({
   // Divider
   divider: {
     height: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: Colors.borderSubtle,
     marginVertical: 4,
   },
   // Totals
@@ -1022,8 +1022,8 @@ const styles = StyleSheet.create({
   photo: {
     width: 120,
     height: 120,
-    borderRadius: 8,
-    backgroundColor: '#e5e7eb',
+    borderRadius: Radii.sm,
+    backgroundColor: Colors.skeleton,
   },
   photoCaption: {
     marginTop: 4,
@@ -1052,9 +1052,9 @@ const styles = StyleSheet.create({
   subtotalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingTop: 8,
+    paddingTop: Spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
+    borderTopColor: Colors.borderSubtle,
     marginTop: 4,
   },
   // Transition log
@@ -1090,14 +1090,14 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   actionBtnPrimary: {
-    backgroundColor: '#e31b1b',
+    backgroundColor: Colors.brand,
     flex: 1,
   },
   actionBtnSecondary: {
     flex: 1,
-    backgroundColor: '#fff1f1',
+    backgroundColor: Colors.brandTint,
     borderWidth: 1,
-    borderColor: '#fca5a5',
+    borderColor: Colors.brand,
   },
   actionBtnFlex: {
     flex: 1,
@@ -1106,22 +1106,22 @@ const styles = StyleSheet.create({
   // Status update modal
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: Colors.overlayLight,
   },
   modalSheet: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingHorizontal: 16,
-    paddingTop: 12,
+    backgroundColor: Colors.surface,
+    borderTopLeftRadius: Radii.xl,
+    borderTopRightRadius: Radii.xl,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
   },
   modalHandle: {
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#d1d5db',
+    backgroundColor: Colors.border,
     alignSelf: 'center',
-    marginBottom: 16,
+    marginBottom: Spacing.lg,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -1174,9 +1174,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 8,
+    paddingHorizontal: Spacing.sm,
     paddingVertical: 3,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: Colors.borderSubtle,
     borderRadius: 20,
   },
   progressChipOk: {
@@ -1235,13 +1235,13 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    backgroundColor: '#fff1f1',
+    backgroundColor: Colors.brandTint,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#fca5a5',
+    borderColor: Colors.brand,
   },
   acompAddLabel: {
-    color: '#e31b1b',
+    color: Colors.brand,
   },
   acompEmpty: {
     alignItems: 'center',

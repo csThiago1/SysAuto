@@ -26,6 +26,8 @@ import {
   ChevronDown,
   Settings,
   Building2,
+  Wrench,
+  CalendarDays,
   type LucideIcon,
 } from "lucide-react";
 import { NotificationBell } from "@/components/header/NotificationBell";
@@ -88,10 +90,20 @@ const NAV_SECTIONS: NavSection[] = [
         ],
       },
       {
+        id: "agenda",
+        label: "Agenda",
+        icon: CalendarDays,
+        href: "/agenda",
+      },
+      {
         id: "cadastros",
         label: "Cadastros",
         icon: Users,
         href: "/cadastros",
+        children: [
+          { id: "cad-pessoas",  label: "Pessoas",  href: "/cadastros",          icon: Users },
+          { id: "cad-servicos", label: "Serviços", href: "/cadastros/servicos", icon: Wrench },
+        ],
       },
     ],
   },

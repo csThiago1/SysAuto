@@ -18,6 +18,7 @@ from .models import (
     ChecklistItem,
     ChecklistItemStatus,
     OSPhotoFolder,
+    ServiceCatalog,
     ServiceOrder,
     ServiceOrderActivityLog,
     ServiceOrderLabor,
@@ -215,14 +216,18 @@ class ServiceOrderLaborSerializer(serializers.ModelSerializer):
     """Serializer para itens de mão-de-obra de uma OS."""
 
     total = serializers.FloatField(read_only=True)
+    service_catalog_name = serializers.CharField(
+        source="service_catalog.name", read_only=True, allow_null=True
+    )
 
     class Meta:
         model = ServiceOrderLabor
         fields = [
-            "id", "description", "quantity", "unit_price", "discount", "total",
+            "id", "service_catalog", "service_catalog_name",
+            "description", "quantity", "unit_price", "discount", "total",
             "created_at", "updated_at",
         ]
-        read_only_fields = ["id", "total", "created_at", "updated_at"]
+        read_only_fields = ["id", "service_catalog_name", "total", "created_at", "updated_at"]
 
     def validate(self, attrs: dict) -> dict:
         quantity = attrs.get("quantity")
@@ -243,6 +248,30 @@ class ServiceOrderLaborSerializer(serializers.ModelSerializer):
                     {"discount": "O desconto não pode ser maior que o total da linha."}
                 )
         return attrs
+
+
+class ServiceCatalogSerializer(serializers.ModelSerializer):
+    """Serializer completo para criação/edição do catálogo."""
+
+    category_display = serializers.CharField(source="get_category_display", read_only=True)
+
+    class Meta:
+        model = ServiceCatalog
+        fields = [
+            "id", "name", "description", "category", "category_display",
+            "suggested_price", "is_active", "created_at", "updated_at",
+        ]
+        read_only_fields = ["id", "category_display", "created_at", "updated_at"]
+
+
+class ServiceCatalogListSerializer(serializers.ModelSerializer):
+    """Serializer compacto para listas e combobox."""
+
+    category_display = serializers.CharField(source="get_category_display", read_only=True)
+
+    class Meta:
+        model = ServiceCatalog
+        fields = ["id", "name", "category", "category_display", "suggested_price"]
 
 
 class ServiceOrderOverdueSerializer(serializers.ModelSerializer):
@@ -273,6 +302,21 @@ class ServiceOrderOverdueSerializer(serializers.ModelSerializer):
         if days == 0:
             return "due_today"
         return "upcoming"
+
+
+class ServiceOrderCalendarSerializer(serializers.ModelSerializer):
+    """Serializer compacto para o endpoint de calendário."""
+
+    status_display = serializers.CharField(source="get_status_display", read_only=True)
+
+    class Meta:
+        model = ServiceOrder
+        fields = [
+            "id", "number", "plate", "make", "model",
+            "customer_name", "customer_type",
+            "status", "status_display",
+            "scheduling_date", "estimated_delivery_date",
+        ]
 
 
 class ServiceOrderListSerializer(serializers.ModelSerializer):

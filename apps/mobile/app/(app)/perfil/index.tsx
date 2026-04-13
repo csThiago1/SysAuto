@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors, Spacing } from '@/constants/theme';
 import { Text } from '@/components/ui/Text';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -31,14 +32,14 @@ export default function PerfilScreen() {
         {/* Avatar placeholder */}
         <View style={styles.avatarContainer}>
           <View style={styles.avatar}>
-            <Text variant="heading2" color="#ffffff">
+            <Text variant="heading2" color={Colors.textPrimary}>
               {user?.name?.charAt(0).toUpperCase() ?? 'U'}
             </Text>
           </View>
           <Text variant="heading3" style={styles.userName}>
             {user?.name ?? 'Usuário'}
           </Text>
-          <Text variant="bodySmall" color="#6b7280">
+          <Text variant="bodySmall" color={Colors.textTertiary}>
             {user?.email ?? ''}
           </Text>
         </View>

@@ -460,24 +460,26 @@ class ServiceOrderPhoto(models.Model):
 
 
 class ActivityType(models.TextChoices):
-    CREATED           = "created",           "OS Aberta"
-    STATUS_CHANGED    = "status_changed",    "Status Alterado"
-    UPDATED           = "updated",           "Informação Atualizada"
-    CUSTOMER_UPDATED  = "customer_updated",  "Cliente Atualizado"
-    VEHICLE_UPDATED   = "vehicle_updated",   "Veículo Atualizado"
-    SCHEDULE_UPDATED  = "schedule_updated",  "Datas/Prazo Atualizados"
-    INSURER_UPDATED   = "insurer_updated",   "Seguradora Atualizada"
-    REMINDER          = "reminder",          "Lembrete Adicionado"
-    FILE_UPLOAD       = "file_upload",       "Arquivo Anexado"
-    NOTE_ADDED        = "note_added",        "Nota Adicionada"
-    BUDGET_SNAPSHOT   = "budget_snapshot",   "Snapshot de Orçamento"
-    CILIA_IMPORT      = "cilia_import",      "Importação Cilia"
-    DELIVERY          = "delivery",          "Entrega ao Cliente"
-    PART_ADDED        = "part_added",        "Peça Adicionada"
-    PART_REMOVED      = "part_removed",      "Peça Removida"
-    LABOR_ADDED       = "labor_added",       "Serviço Adicionado"
-    LABOR_REMOVED     = "labor_removed",     "Serviço Removido"
-    INVOICE_ISSUED    = "invoice_issued",    "NF Emitida"
+    CREATED          = "created",          "OS Aberta"
+    STATUS_CHANGED   = "status_changed",   "Status Alterado"
+    UPDATED          = "updated",          "Informação Atualizada"
+    CUSTOMER_UPDATED = "customer_updated", "Cliente Atualizado"
+    VEHICLE_UPDATED  = "vehicle_updated",  "Veículo Atualizado"
+    SCHEDULE_UPDATED = "schedule_updated", "Datas/Prazo Atualizados"
+    INSURER_UPDATED  = "insurer_updated",  "Seguradora Atualizada"
+    REMINDER         = "reminder",         "Lembrete Adicionado"
+    FILE_UPLOAD      = "file_upload",      "Arquivo Anexado"
+    NOTE_ADDED       = "note_added",       "Nota Adicionada"
+    BUDGET_SNAPSHOT  = "budget_snapshot",  "Snapshot de Orçamento"
+    CILIA_IMPORT     = "cilia_import",     "Importação Cilia"
+    DELIVERY         = "delivery",         "Entrega ao Cliente"
+    PART_ADDED       = "part_added",       "Peça Adicionada"
+    PART_REMOVED     = "part_removed",     "Peça Removida"
+    PART_UPDATED     = "part_updated",     "Peça Editada"
+    LABOR_ADDED      = "labor_added",      "Serviço Adicionado"
+    LABOR_REMOVED    = "labor_removed",    "Serviço Removido"
+    LABOR_UPDATED    = "labor_updated",    "Serviço Editado"
+    INVOICE_ISSUED   = "invoice_issued",   "NF Emitida"
 
 class ServiceOrderActivityLog(PaddockBaseModel):
     """Log descritivo e minucioso do histórico da OS."""
@@ -586,6 +588,52 @@ class ServiceOrderPart(PaddockBaseModel):
         return result
 
 
+# ─── Catálogo de Serviços ─────────────────────────────────────────────────────
+
+class ServiceCatalogCategory(models.TextChoices):
+    FUNILARIA   = "funilaria",   "Funilaria / Chapeação"
+    PINTURA     = "pintura",     "Pintura"
+    MECANICA    = "mecanica",    "Mecânica"
+    ELETRICA    = "eletrica",    "Elétrica"
+    ESTETICA    = "estetica",    "Estética"
+    ALINHAMENTO = "alinhamento", "Alinhamento / Balanceamento"
+    REVISAO     = "revisao",     "Revisão"
+    LAVAGEM     = "lavagem",     "Lavagem / Higienização"
+    OUTROS      = "outros",      "Outros"
+
+
+class ServiceCatalog(PaddockBaseModel):
+    """
+    Catálogo de serviços reutilizáveis.
+    Preço sugerido pré-preenche ServiceOrderLabor mas é sempre editável.
+    """
+
+    name = models.CharField(max_length=200, verbose_name="Nome do serviço")
+    description = models.TextField(blank=True, default="", verbose_name="Descrição / observação")
+    category = models.CharField(
+        max_length=20,
+        choices=ServiceCatalogCategory.choices,
+        default=ServiceCatalogCategory.OUTROS,
+        verbose_name="Categoria",
+    )
+    suggested_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        verbose_name="Preço sugerido",
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Ativo")
+
+    class Meta:
+        db_table = "service_catalog"
+        ordering = ["category", "name"]
+        verbose_name = "Serviço do catálogo"
+        verbose_name_plural = "Catálogo de serviços"
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.get_category_display()})"
+
+
 class ServiceOrderLaborQuerySet(models.QuerySet):
     """
     QuerySet customizado para ServiceOrderLabor.
@@ -630,6 +678,14 @@ class ServiceOrderLabor(PaddockBaseModel):
         on_delete=models.CASCADE,
         related_name="labor_items",
         verbose_name="OS",
+    )
+    service_catalog = models.ForeignKey(
+        "ServiceCatalog",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="labor_items",
+        verbose_name="Serviço do catálogo",
     )
     description = models.CharField(max_length=300, verbose_name="Descrição do serviço")
     quantity = models.DecimalField(

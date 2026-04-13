@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
-import type { ServiceOrder } from "@paddock/types"
+import type { ServiceOrder, ServiceOrderStatus } from "@paddock/types"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api"
 import { toast } from "sonner"
@@ -203,7 +203,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
             <OpeningTab form={form} onCustomerDataChange={setCustomerDirtyData} />
           )}
           {activeTab === "parts" && <PartsTab orderId={order.id} />}
-          {activeTab === "services" && <ServicesTab orderId={order.id} />}
+          {activeTab === "services" && <ServicesTab osId={order.id} osStatus={order.status as ServiceOrderStatus} />}
           {activeTab === "notes" && <NotesTab orderId={order.id} initialNotes={order.notes} />}
           {activeTab === "reminders" && <RemindersTab orderId={order.id} />}
           {activeTab === "history" && <HistoryTab order={order} />}
