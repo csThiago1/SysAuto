@@ -77,11 +77,15 @@ export function useCreateServiceOrder(): {
             deductible_amount: payload.deductibleAmount ?? null,
           });
 
-          // Persist to local DB as synced
+          // Persist to local DB as synced.
+          // Use server UUID as WatermelonDB id so future sync pulls match
+          // the existing record (prevents duplicates when id=server-uuid arrives
+          // in the 'created' bucket).
           const record = await database.write(async () => {
             return database
               .get<ServiceOrder>('service_orders')
               .create((r) => {
+                r._raw.id = data.id;
                 r.remoteId = data.id;
                 r.number = data.number;
                 r.status = data.status;

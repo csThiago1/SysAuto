@@ -137,7 +137,19 @@ export function useServiceOrdersList(filters: OSFilters): UseServiceOrdersListRe
       .query(...conditions)
       .observe()
       .subscribe((results) => {
-        setOrders(results);
+        // Deduplicate by remoteId — prefer synced record over pending (temp).
+        // Duplicates arise when an online-created record has a different
+        // WatermelonDB id than what the sync pull later returns.
+        const seen = new Map<string, ServiceOrder>();
+        for (const order of results) {
+          const existing = seen.get(order.remoteId);
+          if (!existing) {
+            seen.set(order.remoteId, order);
+          } else if (order.pushStatus === 'synced' && existing.pushStatus !== 'synced') {
+            seen.set(order.remoteId, order);
+          }
+        }
+        setOrders([...seen.values()]);
         setIsInitialLoad(false);
       });
 

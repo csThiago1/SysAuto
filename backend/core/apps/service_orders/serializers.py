@@ -594,6 +594,8 @@ class ServiceOrderSyncSerializer(serializers.ModelSerializer):
     customer_type = serializers.SerializerMethodField()
     os_type = serializers.SerializerMethodField()
     consultant_name = serializers.SerializerMethodField()
+    insurer_id = serializers.SerializerMethodField()
+    insured_type = serializers.SerializerMethodField()
     # Decimais como float — WatermelonDB schema type: 'number'
     total_parts = serializers.FloatField(source="parts_total")
     total_services = serializers.FloatField(source="services_total")
@@ -616,6 +618,8 @@ class ServiceOrderSyncSerializer(serializers.ModelSerializer):
             "vehicle_year",
             "vehicle_color",
             "consultant_name",
+            "insurer_id",
+            "insured_type",
             "total_parts",
             "total_services",
             "created_at_remote",
@@ -635,6 +639,14 @@ class ServiceOrderSyncSerializer(serializers.ModelSerializer):
         if obj.consultant:
             return obj.consultant.get_full_name() or obj.consultant.email
         return ""
+
+    def get_insurer_id(self, obj: ServiceOrder) -> str:
+        """Retorna UUID da seguradora ou string vazia (WatermelonDB não aceita null em string)."""
+        return str(obj.insurer_id) if obj.insurer_id else ""
+
+    def get_insured_type(self, obj: ServiceOrder) -> str:
+        """Retorna insured_type ou string vazia."""
+        return obj.insured_type or ""
 
     def get_created_at_remote(self, obj: ServiceOrder) -> int:
         """Retorna opened_at como epoch em milissegundos para o WatermelonDB."""
