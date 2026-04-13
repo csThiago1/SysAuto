@@ -27,6 +27,7 @@ import {
   Settings,
   Building2,
   Wrench,
+  CalendarDays,
   type LucideIcon,
 } from "lucide-react";
 import { NotificationBell } from "@/components/header/NotificationBell";
@@ -87,6 +88,12 @@ const NAV_SECTIONS: NavSection[] = [
           { id: "os-lista",  label: "Lista de OS", href: "/service-orders",         icon: ClipboardList },
           { id: "os-kanban", label: "Kanban",       href: "/service-orders/kanban", icon: KanbanSquare },
         ],
+      },
+      {
+        id: "agenda",
+        label: "Agenda",
+        icon: CalendarDays,
+        href: "/agenda",
       },
       {
         id: "cadastros",
