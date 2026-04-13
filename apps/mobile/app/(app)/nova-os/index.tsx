@@ -38,11 +38,9 @@ export default function NovaOSScreen(): React.JSX.Element {
   const [activeStep, setActiveStep] = useState<number>(0);
   const { create, isCreating, error } = useCreateServiceOrder();
 
-  const handleBack = (): void => {
-    if (activeStep > 0) {
-      setActiveStep(activeStep - 1);
-    }
-  };
+  const handleBack = useCallback((): void => {
+    setActiveStep((prev) => (prev > 0 ? prev - 1 : prev));
+  }, []);
 
   const handleConfirm = useCallback(
     async (startChecklist: boolean): Promise<void> => {
@@ -69,7 +67,7 @@ export default function NovaOSScreen(): React.JSX.Element {
             : undefined,
       };
       const result = await create(payload);
-      if (result !== null && !error) {
+      if (result !== null) {
         store.reset();
         if (startChecklist) {
           router.push(`/checklist/${result.localId}` as never);
@@ -78,7 +76,7 @@ export default function NovaOSScreen(): React.JSX.Element {
         }
       }
     },
-    [create, error],
+    [create],
   );
 
   return (

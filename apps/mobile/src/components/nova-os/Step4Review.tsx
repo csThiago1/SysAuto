@@ -13,7 +13,7 @@ import { useNewOSStore, type CustomerType, type OSType } from '@/stores/new-os.s
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface Step4ReviewProps {
-  onConfirm: (startChecklist: boolean) => void;
+  onConfirm: (startChecklist: boolean) => Promise<void>;
   onBack: () => void;
   isCreating: boolean;
   error: string | null;
