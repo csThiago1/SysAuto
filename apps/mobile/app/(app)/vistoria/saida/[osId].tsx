@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
 import { useServiceOrder } from '@/hooks/useServiceOrders';
 import { useUpdateOSStatus } from '@/hooks/useUpdateOSStatus';
+import { useShallow } from 'zustand/react/shallow';
 import { usePhotoStore, uploadPendingPhotos } from '@/stores/photo.store';
 import type { PhotoQueueItem } from '@/stores/photo.store';
 import { useConnectivity } from '@/hooks/useConnectivity';
@@ -217,8 +218,8 @@ export default function VistoriaSaidaScreen(): React.JSX.Element {
   }, [osId, beforeLoaded]);
 
   // After photos (local queue)
-  const afterPhotos = usePhotoStore((s) =>
-    s.queue.filter((p) => p.osId === (osId ?? '') && p.folder === AFTER_FOLDER),
+  const afterPhotos = usePhotoStore(
+    useShallow((s) => s.queue.filter((p) => p.osId === (osId ?? '') && p.folder === AFTER_FOLDER)),
   );
 
   const pendingCount = afterPhotos.filter((p) => p.uploadStatus === 'pending').length;

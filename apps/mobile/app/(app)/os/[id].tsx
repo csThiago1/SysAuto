@@ -458,8 +458,8 @@ const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
   const isOnline = useConnectivity();
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
-  const localPhotos = usePhotoStore((s) =>
-    s.queue.filter((p) => p.osId === osId && p.folder === 'acompanhamento'),
+  const localPhotos = usePhotoStore(
+    useShallow((s) => s.queue.filter((p) => p.osId === osId && p.folder === 'acompanhamento')),
   );
 
   const pendingCount = localPhotos.filter((p) => p.uploadStatus === 'pending').length;
