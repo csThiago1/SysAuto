@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
   FlatList,
   Image,
   ImageSourcePropType,
+  Modal,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   TextInput,
   TouchableOpacity,
@@ -19,6 +19,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { ServiceOrder } from '@/db/models/ServiceOrder';
 import { useServiceOrdersList } from '@/hooks/useServiceOrders';
+import { useInsurers } from '@/hooks/useInsurers';
 import { OSCard } from '@/components/os/OSCard';
 import {
   getStatusBackgroundColor,
@@ -28,16 +29,22 @@ import {
 import { Text } from '@/components/ui/Text';
 
 
-// ─── Status chips configuration ───────────────────────────────────────────
+// ─── Status list ───────────────────────────────────────────────────────────
 
 const STATUS_LIST = [
   'reception',
   'initial_survey',
   'budget',
-  'waiting_approval',
-  'approved',
-  'in_progress',
+  'waiting_auth',
+  'authorized',
   'waiting_parts',
+  'repair',
+  'mechanic',
+  'bodywork',
+  'painting',
+  'assembly',
+  'polishing',
+  'washing',
   'final_survey',
   'ready',
   'delivered',
@@ -78,27 +85,91 @@ function SkeletonCard(): React.JSX.Element {
   );
 }
 
-// ─── Filter chip ──────────────────────────────────────────────────────────
+// ─── Status filter modal ───────────────────────────────────────────────────
 
-interface FilterChipProps {
-  label: string;
-  selected: boolean;
-  color: string;
-  backgroundColor: string;
-  onPress: () => void;
+interface StatusFilterModalProps {
+  visible: boolean;
+  activeStatus: OSStatus | undefined;
+  onSelect: (status: OSStatus | undefined) => void;
+  onClose: () => void;
 }
 
-function FilterChip({ label, selected, color, backgroundColor, onPress }: FilterChipProps): React.JSX.Element {
+function StatusFilterModal({
+  visible,
+  activeStatus,
+  onSelect,
+  onClose,
+}: StatusFilterModalProps): React.JSX.Element {
+  const insets = useSafeAreaInsets();
+
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.75}
-      style={[styles.chip, selected ? { backgroundColor, borderColor: color } : styles.chipOutline]}
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
     >
-      <Text variant="caption" style={[styles.chipLabel, { color: selected ? color : '#6b7280' }]}>
-        {label}
-      </Text>
-    </TouchableOpacity>
+      <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={onClose} />
+      <View style={[styles.modalSheet, { paddingBottom: insets.bottom + 16 }]}>
+        {/* Handle bar */}
+        <View style={styles.modalHandle} />
+
+        {/* Header */}
+        <View style={styles.modalHeader}>
+          <Text variant="label" color="#111827">Filtrar por Status</Text>
+          <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={styles.modalClose}>
+            <Ionicons name="close" size={20} color="#6b7280" />
+          </TouchableOpacity>
+        </View>
+
+        {/* "Todas" option */}
+        <TouchableOpacity
+          activeOpacity={0.75}
+          onPress={() => { onSelect(undefined); onClose(); }}
+          style={[
+            styles.statusRow,
+            activeStatus === undefined && styles.statusRowActive,
+          ]}
+        >
+          <View style={[styles.statusDot, { backgroundColor: '#e31b1b' }]} />
+          <Text
+            variant="body"
+            style={[styles.statusRowLabel, activeStatus === undefined && { color: '#e31b1b', fontWeight: '700' }]}
+          >
+            Todas
+          </Text>
+          {activeStatus === undefined && (
+            <Ionicons name="checkmark" size={18} color="#e31b1b" style={styles.statusCheck} />
+          )}
+        </TouchableOpacity>
+
+        {/* Status rows */}
+        {STATUS_LIST.map((status) => {
+          const color = getStatusColor(status);
+          const bg = getStatusBackgroundColor(status);
+          const isSelected = activeStatus === status;
+          return (
+            <TouchableOpacity
+              key={status}
+              activeOpacity={0.75}
+              onPress={() => { onSelect(isSelected ? undefined : status); onClose(); }}
+              style={[styles.statusRow, isSelected && { backgroundColor: bg }]}
+            >
+              <View style={[styles.statusDot, { backgroundColor: color }]} />
+              <Text
+                variant="body"
+                style={[styles.statusRowLabel, isSelected && { color, fontWeight: '700' }]}
+              >
+                {getStatusLabel(status)}
+              </Text>
+              {isSelected && (
+                <Ionicons name="checkmark" size={18} color={color} style={styles.statusCheck} />
+              )}
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </Modal>
   );
 }
 
@@ -147,6 +218,7 @@ export default function OSListScreen(): React.JSX.Element {
   const [search, setSearch] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
   const [activeStatus, setActiveStatus] = useState<OSStatus | undefined>(undefined);
+  const [filterModalVisible, setFilterModalVisible] = useState<boolean>(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -169,13 +241,21 @@ export default function OSListScreen(): React.JSX.Element {
     isOffline,
   } = useServiceOrdersList(filters);
 
+  const { insurers } = useInsurers();
+  const insurerMap = useMemo(
+    () => Object.fromEntries(insurers.map((ins) => [ins.id, ins])),
+    [insurers],
+  );
+
   const handleEndReached = useCallback((): void => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const renderItem = useCallback(
-    ({ item }: { item: ServiceOrder }): React.JSX.Element => <OSCard order={item} />,
-    [],
+    ({ item }: { item: ServiceOrder }): React.JSX.Element => (
+      <OSCard order={item} insurer={item.insurerId != null ? insurerMap[item.insurerId] : undefined} />
+    ),
+    [insurerMap],
   );
 
   const keyExtractor = useCallback((item: ServiceOrder): string => item.id, []);
@@ -217,8 +297,8 @@ export default function OSListScreen(): React.JSX.Element {
     <View style={styles.safe}>
       <OSHeader paddingTop={insets.top} />
 
-      {/* Search input */}
-      <View style={styles.searchWrapper}>
+      {/* Search + filter row */}
+      <View style={styles.searchRow}>
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar por placa, número ou cliente..."
@@ -230,33 +310,32 @@ export default function OSListScreen(): React.JSX.Element {
           autoCapitalize="none"
           autoCorrect={false}
         />
+
+        <TouchableOpacity
+          style={[styles.filterBtn, activeStatus !== undefined && styles.filterBtnActive]}
+          onPress={() => setFilterModalVisible(true)}
+          activeOpacity={0.75}
+        >
+          <Ionicons
+            name="options-outline"
+            size={20}
+            color={activeStatus !== undefined ? '#e31b1b' : '#6b7280'}
+          />
+          {activeStatus !== undefined && <View style={styles.filterDot} />}
+        </TouchableOpacity>
       </View>
 
-      {/* Status filter chips */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.chipsContent}
-        style={styles.chipsScroll}
-      >
-        <FilterChip
-          label="Todas"
-          selected={activeStatus === undefined}
-          color="#e31b1b"
-          backgroundColor="#fee2e2"
-          onPress={() => setActiveStatus(undefined)}
-        />
-        {STATUS_LIST.map((status) => (
-          <FilterChip
-            key={status}
-            label={getStatusLabel(status)}
-            selected={activeStatus === status}
-            color={getStatusColor(status)}
-            backgroundColor={getStatusBackgroundColor(status)}
-            onPress={() => setActiveStatus(activeStatus === status ? undefined : status)}
-          />
-        ))}
-      </ScrollView>
+      {/* Active filter label */}
+      {activeStatus !== undefined && (
+        <View style={styles.activeFilterBar}>
+          <Text variant="caption" color="#e31b1b" style={styles.activeFilterLabel}>
+            {getStatusLabel(activeStatus)}
+          </Text>
+          <TouchableOpacity onPress={() => setActiveStatus(undefined)} activeOpacity={0.7}>
+            <Ionicons name="close-circle" size={16} color="#e31b1b" />
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Order list */}
       <FlatList<ServiceOrder>
@@ -280,6 +359,14 @@ export default function OSListScreen(): React.JSX.Element {
         removeClippedSubviews
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
+      />
+
+      {/* Status filter modal */}
+      <StatusFilterModal
+        visible={filterModalVisible}
+        activeStatus={activeStatus}
+        onSelect={setActiveStatus}
+        onClose={() => setFilterModalVisible(false)}
       />
     </View>
   );
@@ -328,12 +415,16 @@ const styles = StyleSheet.create({
     height: '100%',
   },
 
-  // Search
-  searchWrapper: {
+  // Search row
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 10,
+    gap: 8,
   },
   searchInput: {
+    flex: 1,
     backgroundColor: '#ffffff',
     borderRadius: 12,
     borderWidth: 1,
@@ -343,38 +434,48 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#1a1a1a',
   },
-
-  // Chips
-  chipsScroll: {
-    flexGrow: 0,
-    flexShrink: 0,
-    marginBottom: 8,
-  },
-  list: {
-    flex: 1,
-  },
-  chipsContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    gap: 8,
-    alignItems: 'center',
-  },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1.5,
-  },
-  chipOutline: {
+  filterBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     backgroundColor: '#ffffff',
-    borderColor: '#d1d5db',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  chipLabel: {
+  filterBtnActive: {
+    borderColor: '#fca5a5',
+    backgroundColor: '#fff1f1',
+  },
+  filterDot: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: '#e31b1b',
+    borderWidth: 1.5,
+    borderColor: '#fff1f1',
+  },
+
+  // Active filter label bar
+  activeFilterBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 16,
+    paddingBottom: 6,
+  },
+  activeFilterLabel: {
     fontWeight: '600',
-    fontSize: 12,
   },
 
   // List
+  list: {
+    flex: 1,
+  },
   listContent: {
     paddingTop: 6,
     paddingBottom: 120,
@@ -437,5 +538,60 @@ const styles = StyleSheet.create({
   skeletonLine: {
     width: '75%',
     height: 12,
+  },
+
+  // Filter modal (bottom sheet)
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  modalSheet: {
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+  modalHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#d1d5db',
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  modalClose: {
+    padding: 4,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    gap: 10,
+    marginBottom: 2,
+  },
+  statusRowActive: {
+    backgroundColor: '#fff1f1',
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  statusRowLabel: {
+    flex: 1,
+    fontSize: 15,
+    color: '#374151',
+  },
+  statusCheck: {
+    marginLeft: 'auto',
   },
 });
