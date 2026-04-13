@@ -7,6 +7,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { apiFetch } from "@/lib/api"
 import type {
+  PaginatedResponse,
   ServiceCatalogItem,
   ServiceCatalogDetail,
   ServiceCatalogCreatePayload,
@@ -29,23 +30,16 @@ export const catalogKeys = {
   labor: (osId: string) => ["service-orders", osId, "labor"] as const,
 }
 
-// ─── Paginated wrapper ────────────────────────────────────────────────────────
-
-interface PaginatedResult<T> {
-  count: number
-  results: T[]
-}
-
 // ─── Catalog CRUD ─────────────────────────────────────────────────────────────
 
 export function useServiceCatalog(
   params?: Record<string, string>
-): ReturnType<typeof useQuery<PaginatedResult<ServiceCatalogItem>>> {
-  return useQuery<PaginatedResult<ServiceCatalogItem>>({
+): ReturnType<typeof useQuery<PaginatedResponse<ServiceCatalogItem>>> {
+  return useQuery<PaginatedResponse<ServiceCatalogItem>>({
     queryKey: catalogKeys.list(params),
     queryFn: () => {
       const qs = params ? "?" + new URLSearchParams(params).toString() : ""
-      return apiFetch<PaginatedResult<ServiceCatalogItem>>(`${CATALOG_API}/${qs}`)
+      return apiFetch<PaginatedResponse<ServiceCatalogItem>>(`${CATALOG_API}/${qs}`)
     },
   })
 }
