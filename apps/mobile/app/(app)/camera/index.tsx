@@ -200,7 +200,7 @@ export default function CameraScreen(): React.ReactElement {
           <Ionicons
             name={flash === 'on' ? 'flash' : 'flash-off-outline'}
             size={26}
-            color={flash === 'on' ? '#facc15' : '#ffffff'}
+            color={flash === 'on' ? '#facc15' : Colors.textPrimary}
           />
           <Text style={styles.sideButtonLabel}>
             {flash === 'on' ? 'Flash ligado' : 'Flash desligado'}
