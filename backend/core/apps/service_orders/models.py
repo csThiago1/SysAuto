@@ -599,7 +599,7 @@ class ServiceCatalog(PaddockBaseModel):
     """
 
     name = models.CharField(max_length=200, verbose_name="Nome do serviço")
-    description = models.TextField(blank=True, verbose_name="Descrição / observação")
+    description = models.TextField(blank=True, default="", verbose_name="Descrição / observação")
     category = models.CharField(
         max_length=20,
         choices=ServiceCatalogCategory.choices,
