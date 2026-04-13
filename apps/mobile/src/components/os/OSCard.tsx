@@ -64,44 +64,45 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
         {/* Glass glint — linha de luz no topo */}
         <View style={styles.topGlint} />
 
-        {/* Row 1: OS number */}
-        <View style={styles.row}>
-          <Text variant="label" style={styles.osNumber}>
-            OS #{order.number}
-          </Text>
-        </View>
+        {/* Two-column layout: info left, OS number + insurer right */}
+        <View style={styles.bodyRow}>
+          {/* Left: plate, customer·vehicle, status */}
+          <View style={styles.leftCol}>
+            <Text variant="bodySmall" style={styles.plate}>
+              {plateLine}
+            </Text>
+            <Text variant="bodySmall" color={Colors.textSecondary} numberOfLines={1}>
+              {order.customerName}
+              {vehicleLine.length > 0 ? ` · ${vehicleLine}` : ''}
+            </Text>
+            <View style={styles.badgeRow}>
+              <OSStatusBadge status={order.status} />
+            </View>
+          </View>
 
-        {/* Row 2: plate */}
-        <Text variant="bodySmall" style={styles.plate}>
-          {plateLine}
-        </Text>
-
-        {/* Row 3: customer · vehicle */}
-        <Text variant="bodySmall" color={Colors.textSecondary} numberOfLines={1}>
-          {order.customerName}
-          {vehicleLine.length > 0 ? ` · ${vehicleLine}` : ''}
-        </Text>
-
-        {/* Row 4: status badge + insurer */}
-        <View style={styles.footer}>
-          <OSStatusBadge status={order.status} />
-          {insurer != null && (
-            insurer.logoUrl ? (
-              <View style={styles.insurerAvatar}>
-                <Image
-                  source={{ uri: insurer.logoUrl }}
-                  style={styles.insurerLogo}
-                  resizeMode="cover"
-                />
-              </View>
-            ) : (
-              <View style={[styles.insurerAvatar, { backgroundColor: insurer.brandColor + '22', borderColor: insurer.brandColor + '66' }]}>
-                <Text variant="caption" style={[styles.insurerAbbr, { color: insurer.brandColor }]}>
-                  {insurer.abbreviation}
-                </Text>
-              </View>
-            )
-          )}
+          {/* Right: OS number on top, insurer avatar below */}
+          <View style={styles.rightCol}>
+            <Text variant="label" style={styles.osNumber}>
+              OS #{order.number}
+            </Text>
+            {insurer != null && (
+              insurer.logoUrl ? (
+                <View style={styles.insurerAvatar}>
+                  <Image
+                    source={{ uri: insurer.logoUrl }}
+                    style={styles.insurerLogo}
+                    resizeMode="cover"
+                  />
+                </View>
+              ) : (
+                <View style={[styles.insurerAvatar, { backgroundColor: insurer.brandColor + '22', borderColor: insurer.brandColor + '66' }]}>
+                  <Text variant="caption" style={[styles.insurerAbbr, { color: insurer.brandColor }]}>
+                    {insurer.abbreviation}
+                  </Text>
+                </View>
+              )
+            )}
+          </View>
         </View>
       </LinearGradient>
     </TouchableOpacity>
@@ -153,29 +154,36 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: Colors.borderGlintTop,
   },
-  row: {
+  bodyRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: Spacing.md,
+  },
+  leftCol: {
+    flex: 1,
+    gap: 6,
+  },
+  rightCol: {
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  badgeRow: {
+    marginTop: 2,
   },
   osNumber: {
-    color: Colors.textPrimary,
+    color: Colors.textSecondary,
+    fontSize: 11,
+    fontWeight: '600',
   },
   plate: {
     fontWeight: '700',
     letterSpacing: 1.5,
     color: Colors.textPrimary,
   },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 2,
-  },
   insurerAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: Colors.borderGlintSide,
@@ -184,12 +192,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   insurerLogo: {
-    width: 40,
-    height: 40,
+    width: 64,
+    height: 64,
   },
   insurerAbbr: {
     color: Colors.textPrimary,
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: 14,
   },
 });
