@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 11,
-    color: '#6b7280',
+    color: Colors.textTertiary,
   },
   errorText: {
     textAlign: 'center',
@@ -255,17 +255,17 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   primaryButton: {
-    backgroundColor: '#e31b1b',
-    borderRadius: 12,
+    backgroundColor: Colors.brand,
+    borderRadius: Radii.md,
     padding: 14,
     alignItems: 'center',
     marginTop: 8,
   },
   secondaryButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: Colors.surface,
     borderWidth: 1,
-    borderColor: '#e31b1b',
-    borderRadius: 12,
+    borderColor: Colors.brand,
+    borderRadius: Radii.md,
     padding: 14,
     alignItems: 'center',
     marginTop: 8,

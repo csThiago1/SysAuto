@@ -1260,7 +1260,7 @@ const styles = StyleSheet.create({
   acompThumb: {
     width: 90,
     height: 90,
-    borderRadius: 8,
+    borderRadius: Radii.sm,
     overflow: 'hidden',
     marginRight: 8,
     position: 'relative',
@@ -1281,20 +1281,20 @@ const styles = StyleSheet.create({
   },
   acompThumbDone: { backgroundColor: '#16a34a' },
   acompThumbErr: { backgroundColor: '#ef4444' },
-  acompThumbPending: { backgroundColor: '#9ca3af' },
+  acompThumbPending: { backgroundColor: Colors.textSecondary },
   acompUploadBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: '#e31b1b',
-    marginHorizontal: 12,
-    marginBottom: 12,
+    backgroundColor: Colors.brand,
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: Radii.sm,
   },
   acompUploadLabel: {
-    color: '#ffffff',
+    color: Colors.textPrimary,
   },
 
   // Bottom spacing
@@ -1306,7 +1306,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.85)',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'center', // sem token — overlay muito escuro específico para preview de foto
   },
   previewImage: {
     width: '100%',

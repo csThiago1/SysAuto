@@ -47,7 +47,7 @@ export default function PerfilScreen() {
         {/* Informacoes */}
         <Card style={styles.infoCard}>
           <View style={styles.infoRow}>
-            <Text variant="label" color="#6b7280">
+            <Text variant="label" color={Colors.textTertiary}>
               Função
             </Text>
             <Text variant="body">
@@ -58,7 +58,7 @@ export default function PerfilScreen() {
           <View style={styles.divider} />
 
           <View style={styles.infoRow}>
-            <Text variant="label" color="#6b7280">
+            <Text variant="label" color={Colors.textTertiary}>
               Empresa
             </Text>
             <Text variant="body">DS Car</Text>
@@ -67,7 +67,7 @@ export default function PerfilScreen() {
           <View style={styles.divider} />
 
           <View style={styles.infoRow}>
-            <Text variant="label" color="#6b7280">
+            <Text variant="label" color={Colors.textTertiary}>
               Ambiente
             </Text>
             <Text variant="body" color={__DEV__ ? '#b45309' : '#15803d'}>
