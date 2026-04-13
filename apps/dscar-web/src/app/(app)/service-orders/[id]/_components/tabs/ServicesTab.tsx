@@ -1,209 +1,245 @@
 "use client"
 
 import { useState } from "react"
+import { Plus, Trash2, Search } from "lucide-react"
 import { useForm } from "react-hook-form"
-import { Loader2, Plus, Pencil, Trash2, Wrench } from "lucide-react"
-
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
-  useOSLabor,
-  useAddLabor,
-  useUpdateLabor,
-  useDeleteLabor,
-} from "../../_hooks/useOSItems"
-import type { ServiceOrderLabor, CreateLaborPayload } from "@paddock/types"
+  useOSLaborItems,
+  useOSLaborCreate,
+  useOSLaborDelete,
+  useServiceCatalog,
+} from "@/hooks/useServiceCatalog"
+import type { ServiceOrderStatus } from "@paddock/types"
 
-interface ServicesTabProps {
-  orderId?: string
+const BLOCKED_STATUSES: ServiceOrderStatus[] = ["ready", "delivered", "cancelled"]
+
+const addSchema = z.object({
+  description:     z.string().min(2, "Descrição obrigatória"),
+  quantity:        z.string().regex(/^\d+(\.\d{1,2})?$/, "Inválido").default("1"),
+  unit_price:      z.string().regex(/^\d+(\.\d{1,2})?$/, "Inválido"),
+  discount:        z.string().regex(/^\d+(\.\d{1,2})?$/, "Inválido").default("0"),
+  service_catalog: z.string().nullable().optional(),
+})
+type AddForm = z.infer<typeof addSchema>
+
+const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
+const INPUT  = "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+
+interface Props {
+  osId: string
+  osStatus: ServiceOrderStatus
 }
 
-type FormValues = {
-  description: string
-  quantity: string
-  unit_price: string
-  discount: string
-}
+export function ServicesTab({ osId, osStatus }: Props) {
+  const isBlocked = BLOCKED_STATUSES.includes(osStatus)
+  const [catalogSearch, setCatalogSearch] = useState("")
+  const [showCatalog, setShowCatalog] = useState(false)
 
-function formatCurrency(value: string | number): string {
-  return Number(value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-}
+  const { data: laborData, isLoading } = useOSLaborItems(osId)
+  const { data: catalogData } = useServiceCatalog(catalogSearch ? { search: catalogSearch } : undefined)
+  const addMutation    = useOSLaborCreate(osId)
+  const deleteMutation = useOSLaborDelete(osId)
 
-export function ServicesTab({ orderId }: ServicesTabProps) {
-  const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } =
+    useForm<AddForm>({ resolver: zodResolver(addSchema), defaultValues: { quantity: "1", discount: "0" } })
 
-  const { data: items, isLoading } = useOSLabor(orderId)
-  const addLabor = useAddLabor(orderId ?? "")
-  const updateLabor = useUpdateLabor(orderId ?? "")
-  const deleteLabor = useDeleteLabor(orderId ?? "")
-
-  const { register, handleSubmit, reset, setValue } = useForm<FormValues>({
-    defaultValues: { description: "", quantity: "1", unit_price: "", discount: "0" },
-  })
-
-  function startEdit(item: ServiceOrderLabor) {
-    setEditingId(item.id)
-    setShowForm(true)
-    setValue("description", item.description)
-    setValue("quantity", item.quantity)
-    setValue("unit_price", item.unit_price)
-    setValue("discount", item.discount)
+  function selectFromCatalog(item: { id: string; name: string; suggested_price: string }) {
+    setValue("description", item.name)
+    setValue("unit_price", item.suggested_price)
+    setValue("service_catalog", item.id)
+    setShowCatalog(false)
+    setCatalogSearch("")
   }
 
-  function cancelForm() {
-    setShowForm(false)
-    setEditingId(null)
-    reset()
-  }
-
-  async function onSubmit(values: FormValues) {
-    if (!orderId) return
-    const payload: CreateLaborPayload = {
-      description: values.description.trim(),
-      quantity: parseFloat(values.quantity) || 1,
-      unit_price: parseFloat(values.unit_price) || 0,
-      discount: parseFloat(values.discount) || 0,
+  async function onAdd(data: AddForm) {
+    try {
+      await addMutation.mutateAsync({
+        description:     data.description,
+        quantity:        data.quantity,
+        unit_price:      data.unit_price,
+        discount:        data.discount || "0",
+        service_catalog: data.service_catalog ?? null,
+      })
+      reset({ quantity: "1", discount: "0", description: "", unit_price: "", service_catalog: null })
+      toast.success("Serviço adicionado.")
+    } catch {
+      toast.error("Erro ao adicionar serviço.")
     }
-    if (editingId) {
-      await updateLabor.mutateAsync({ id: editingId, data: payload })
-    } else {
-      await addLabor.mutateAsync(payload)
+  }
+
+  async function handleDelete(laborId: string, desc: string) {
+    if (!confirm(`Remover "${desc}"?`)) return
+    try {
+      await deleteMutation.mutateAsync(laborId)
+      toast.success("Serviço removido.")
+    } catch {
+      toast.error("Erro ao remover serviço.")
     }
-    cancelForm()
   }
 
-  async function handleDelete(itemId: string) {
-    if (!confirm("Remover este serviço?")) return
-    await deleteLabor.mutateAsync(itemId)
-  }
-
-  const isPending = addLabor.isPending || updateLabor.isPending
-  const laborTotal = (items ?? []).reduce((acc, i) => acc + i.total, 0)
-  const discountTotal = (items ?? []).reduce((acc, i) => acc + parseFloat(i.discount), 0)
-
-  if (!orderId) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-neutral-400">
-        <Wrench className="h-10 w-10 mb-3 opacity-40" />
-        <p className="text-sm">Salve a OS antes de adicionar serviços.</p>
-      </div>
-    )
-  }
+  const items          = laborData ?? []
+  const servicesTotal  = items.reduce((sum, i) => sum + i.total, 0)
 
   return (
-    <div className="py-6 space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-neutral-900">Serviços / Mão de Obra</h2>
-        {!showForm && (
-          <Button size="sm" onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4 mr-1" /> Adicionar Serviço
-          </Button>
-        )}
-      </div>
+    <div className="space-y-4 py-6">
+      {!isBlocked && (
+        <div className="rounded-md border border-neutral-200 bg-neutral-50 p-4 space-y-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+            Adicionar Serviço
+          </p>
 
-      {/* Inline form */}
-      {showForm && (
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="bg-white border border-neutral-200 rounded-lg p-4 shadow-sm space-y-3"
-        >
-          <h3 className="text-sm font-medium text-neutral-700">
-            {editingId ? "Editar Serviço" : "Novo Serviço"}
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2">
-              <Label className="text-xs">Descrição *</Label>
-              <Input {...register("description", { required: true })} placeholder="Ex: Pintura completa para-choque" />
+          {/* Busca no catálogo */}
+          <div className="relative">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400 pointer-events-none" />
+                <input
+                  className={`${INPUT} pl-8`}
+                  placeholder="Buscar no catálogo..."
+                  value={catalogSearch}
+                  onChange={(e) => { setCatalogSearch(e.target.value); setShowCatalog(true) }}
+                  onFocus={() => setShowCatalog(true)}
+                />
+              </div>
             </div>
-            <div>
-              <Label className="text-xs">Quantidade / Horas *</Label>
-              <Input {...register("quantity", { required: true })} type="number" min="0.01" step="0.01" />
-            </div>
-            <div>
-              <Label className="text-xs">Valor Unitário / Hora (R$) *</Label>
-              <Input {...register("unit_price", { required: true })} type="number" min="0" step="0.01" placeholder="0,00" />
-            </div>
-            <div className="col-span-2">
-              <Label className="text-xs">Desconto (R$)</Label>
-              <Input {...register("discount")} type="number" min="0" step="0.01" placeholder="0,00" />
-            </div>
+            {showCatalog && catalogData && catalogData.results.length > 0 && (
+              <div className="absolute z-10 mt-1 w-full rounded-md border border-neutral-200 bg-white shadow-lg max-h-48 overflow-y-auto">
+                {catalogData.results.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-50 flex justify-between items-center"
+                    onMouseDown={() => selectFromCatalog(item)}
+                  >
+                    <span className="font-medium">{item.name}</span>
+                    <span className="text-xs text-neutral-400">
+                      {Number(item.suggested_price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="outline" size="sm" onClick={cancelForm}>Cancelar</Button>
-            <Button type="submit" size="sm" disabled={isPending}>
-              {isPending && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
-              {editingId ? "Salvar" : "Adicionar"}
-            </Button>
-          </div>
-        </form>
+
+          <form onSubmit={handleSubmit(onAdd)} className="space-y-2">
+            <div>
+              <label className={LABEL}>Descrição *</label>
+              <input
+                className={errors.description ? `${INPUT} border-red-400` : INPUT}
+                placeholder="Descrição do serviço"
+                {...register("description")}
+              />
+              {errors.description && (
+                <p className="mt-0.5 text-[10px] text-red-600">{errors.description.message}</p>
+              )}
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <label className={LABEL}>Qtd.</label>
+                <input className={INPUT} type="number" step="0.01" min="0.01" {...register("quantity")} />
+              </div>
+              <div>
+                <label className={LABEL}>Valor Unit. (R$) *</label>
+                <input
+                  className={errors.unit_price ? `${INPUT} border-red-400` : INPUT}
+                  placeholder="0.00"
+                  {...register("unit_price")}
+                />
+                {errors.unit_price && (
+                  <p className="mt-0.5 text-[10px] text-red-600">{errors.unit_price.message}</p>
+                )}
+              </div>
+              <div>
+                <label className={LABEL}>Desconto (R$)</label>
+                <input className={INPUT} placeholder="0.00" {...register("discount")} />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                size="sm"
+                className="bg-[#ea0e03] hover:bg-red-700 text-white gap-1.5"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Adicionar
+              </Button>
+            </div>
+          </form>
+        </div>
       )}
 
-      {/* Table */}
+      {/* Tabela de serviços */}
       {isLoading ? (
-        <div className="flex justify-center py-8"><Loader2 className="animate-spin text-neutral-400 h-5 w-5" /></div>
-      ) : !items || items.length === 0 ? (
-        <div className="bg-white border border-neutral-200 rounded-lg p-8 text-center text-neutral-400 text-sm">
-          Nenhum serviço adicionado.
-        </div>
+        <p className="text-sm text-neutral-400">Carregando serviços...</p>
+      ) : items.length === 0 ? (
+        <p className="py-8 text-center text-sm text-neutral-400">Nenhum serviço adicionado.</p>
       ) : (
-        <div className="bg-white border border-neutral-200 rounded-lg overflow-hidden shadow-sm">
+        <div className="rounded-md border border-neutral-200 overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-neutral-50 border-b border-neutral-200">
+            <thead className="bg-neutral-50 text-[11px] font-semibold uppercase text-neutral-500">
               <tr>
-                <th className="text-left px-4 py-2.5 font-medium text-neutral-600">Descrição</th>
-                <th className="text-right px-4 py-2.5 font-medium text-neutral-600">Qtd/h</th>
-                <th className="text-right px-4 py-2.5 font-medium text-neutral-600">Valor Unit.</th>
-                <th className="text-right px-4 py-2.5 font-medium text-neutral-600 hidden md:table-cell">Desconto</th>
-                <th className="text-right px-4 py-2.5 font-medium text-neutral-600">Total</th>
-                <th className="px-4 py-2.5 w-20"></th>
+                <th className="px-3 py-2 text-left">Descrição</th>
+                <th className="px-3 py-2 text-right">Qtd.</th>
+                <th className="px-3 py-2 text-right">Unit.</th>
+                <th className="px-3 py-2 text-right">Desconto</th>
+                <th className="px-3 py-2 text-right">Total</th>
+                {!isBlocked && <th className="px-3 py-2 w-8" />}
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
+            <tbody className="divide-y divide-neutral-100 bg-white">
               {items.map((item) => (
-                <tr key={item.id} className="hover:bg-neutral-50 transition-colors">
-                  <td className="px-4 py-3 text-neutral-900 font-medium">{item.description}</td>
-                  <td className="px-4 py-3 text-right text-neutral-700">{item.quantity}</td>
-                  <td className="px-4 py-3 text-right text-neutral-700">{formatCurrency(item.unit_price)}</td>
-                  <td className="px-4 py-3 text-right text-neutral-500 hidden md:table-cell">
-                    {parseFloat(item.discount) > 0 ? formatCurrency(item.discount) : "—"}
+                <tr key={item.id} className="hover:bg-neutral-50">
+                  <td className="px-3 py-2.5">
+                    <span className="font-medium text-neutral-800">{item.description}</span>
+                    {item.service_catalog_name && item.service_catalog_name !== item.description && (
+                      <span className="ml-1 text-[10px] text-neutral-400">
+                        ({item.service_catalog_name})
+                      </span>
+                    )}
                   </td>
-                  <td className="px-4 py-3 text-right font-semibold text-neutral-900">{formatCurrency(item.total)}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-1">
+                  <td className="px-3 py-2.5 text-right text-neutral-600">{item.quantity}</td>
+                  <td className="px-3 py-2.5 text-right font-mono text-neutral-600">
+                    {Number(item.unit_price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                  </td>
+                  <td className="px-3 py-2.5 text-right font-mono text-neutral-400">
+                    {Number(item.discount) > 0
+                      ? `- ${Number(item.discount).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
+                      : "—"}
+                  </td>
+                  <td className="px-3 py-2.5 text-right font-mono font-semibold text-neutral-800">
+                    {item.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                  </td>
+                  {!isBlocked && (
+                    <td className="px-3 py-2.5 text-center">
                       <button
                         type="button"
-                        onClick={() => startEdit(item)}
-                        className="p-1.5 rounded text-neutral-400 hover:text-primary hover:bg-neutral-100"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(item.id)}
-                        className="p-1.5 rounded text-neutral-400 hover:text-red-500 hover:bg-red-50"
+                        onClick={() => handleDelete(item.id, item.description)}
+                        className="text-neutral-300 hover:text-red-500 transition-colors"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
-                    </div>
-                  </td>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
-            <tfoot className="bg-neutral-50 border-t border-neutral-200">
-              <tr>
-                <td colSpan={3} className="px-4 py-3 text-right text-sm text-neutral-500 hidden md:table-cell">
-                  {discountTotal > 0 && `Descontos: ${formatCurrency(discountTotal)}`}
+            <tfoot>
+              <tr className="bg-neutral-50 border-t border-neutral-200">
+                <td
+                  colSpan={isBlocked ? 4 : 5}
+                  className="px-3 py-2 text-right text-xs font-semibold uppercase text-neutral-500"
+                >
+                  Total Serviços
                 </td>
-                <td colSpan={2} className="px-4 py-3 text-right text-sm font-bold text-neutral-900 md:hidden">
-                  Total Serviços:
+                <td className="px-3 py-2 text-right font-mono font-bold text-neutral-800">
+                  {servicesTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                 </td>
-                <td className="px-4 py-3 text-right text-sm font-bold text-neutral-900">
-                  {formatCurrency(laborTotal)}
-                </td>
-                <td className="px-4 py-3"></td>
               </tr>
             </tfoot>
           </table>
