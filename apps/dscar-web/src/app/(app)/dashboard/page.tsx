@@ -35,7 +35,7 @@ export default function DashboardPage(): React.ReactElement {
   )
 
   const topStatuses = React.useMemo<{ status: ServiceOrderStatus; count: number }[]>(() => {
-    if (!stats || stats.role !== undefined) return []
+    if (!stats || "role" in stats) return []
     const legacy = stats as { by_status?: Record<ServiceOrderStatus, number> }
     if (!legacy.by_status) return []
     return (Object.entries(legacy.by_status) as [ServiceOrderStatus, number][])

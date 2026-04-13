@@ -59,7 +59,11 @@ export type ActivityType =
   | "labor_added"
   | "labor_removed"
   | "labor_updated"
-  | "invoice_issued";
+  | "invoice_issued"
+  | "customer_updated"
+  | "vehicle_updated"
+  | "schedule_updated"
+  | "insurer_updated";
 
 // ─── Transições de estado (espelha backend VALID_TRANSITIONS) ─────────────────
 
