@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -17,10 +17,15 @@ import { Text } from '@/components/ui/Text';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { OSDetailHeader } from '@/components/os/OSDetailHeader';
+import { getStatusLabel, getStatusColor, getStatusBackgroundColor } from '@/components/os/OSStatusBadge';
 import { useServiceOrder } from '@/hooks/useServiceOrders';
+import { useUpdateOSStatus } from '@/hooks/useUpdateOSStatus';
 import { useShallow } from 'zustand/react/shallow';
-import { usePhotoStore } from '@/stores/photo.store';
+import { usePhotoStore, uploadPendingPhotos } from '@/stores/photo.store';
 import { useChecklistItemsStore } from '@/stores/checklist-items.store';
+import { useConnectivity } from '@/hooks/useConnectivity';
+import { VALID_TRANSITIONS } from '@paddock/types';
+import type { ServiceOrderStatus } from '@paddock/types';
 
 // ─── Extended detail type (superset of what the hook returns) ─────────────────
 
@@ -43,8 +48,8 @@ interface OSTransitionLog {
   id: string;
   from_status: string;
   to_status: string;
-  changed_at: string;
-  changed_by?: string;
+  created_at: string;       // campo real do backend StatusTransitionLog
+  changed_by_name?: string; // campo real do backend (get_full_name ou email)
 }
 
 // The hook's ServiceOrderDetailAPI is the base; we extend it with the rich
@@ -82,33 +87,16 @@ const FOLDER_LABELS: Record<string, string> = {
 };
 
 const OS_TYPE_LABELS: Record<string, string> = {
-  insurance: 'Sinistro',
-  particular: 'Particular',
-  warranty: 'Garantia',
-  revision: 'Revisão',
+  bodywork:   'Lataria/Pintura',
+  warranty:   'Garantia',
+  rework:     'Retrabalho',
+  mechanical: 'Mecânica',
+  aesthetic:  'Estética',
 };
 
 const CUSTOMER_TYPE_LABELS: Record<string, string> = {
-  individual: 'Particular',
   insurer: 'Seguradora',
-  company: 'Empresa',
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  reception:        'Recepção',
-  initial_survey:   'Vistoria Inicial',
-  budget:           'Orçamento',
-  waiting_approval: 'Ag. Aprovação',
-  approved:         'Aprovado',
-  in_progress:      'Em Andamento',
-  waiting_parts:    'Ag. Peças',
-  final_survey:     'Vistoria Final',
-  ready:            'Pronto',
-  polishing:        'Polimento',
-  painting:         'Pintura',
-  assembly:         'Montagem',
-  delivered:        'Entregue',
-  cancelled:        'Cancelado',
+  private: 'Particular',
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -144,6 +132,85 @@ function groupPhotosByFolder(photos: OSPhoto[]): [string, OSPhoto[]][] {
     return acc;
   }, {});
   return Object.entries(grouped);
+}
+
+// ─── Status Update Modal ──────────────────────────────────────────────────────
+
+interface StatusUpdateModalProps {
+  visible: boolean;
+  currentStatus: ServiceOrderStatus;
+  onSelect: (status: ServiceOrderStatus) => void;
+  onClose: () => void;
+  isUpdating: boolean;
+}
+
+function StatusUpdateModal({
+  visible,
+  currentStatus,
+  onSelect,
+  onClose,
+  isUpdating,
+}: StatusUpdateModalProps): React.JSX.Element {
+  const insets = useSafeAreaInsets();
+  const nextStatuses = VALID_TRANSITIONS[currentStatus] ?? [];
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={onClose}
+      />
+      <View style={[styles.modalSheet, { paddingBottom: insets.bottom + 16 }]}>
+        <View style={styles.modalHandle} />
+        <View style={styles.modalHeader}>
+          <Text variant="label" color="#111827">
+            Avançar Status
+          </Text>
+          <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={styles.modalClose}>
+            <Ionicons name="close" size={20} color="#6b7280" />
+          </TouchableOpacity>
+        </View>
+        <Text variant="bodySmall" color="#6b7280" style={styles.modalSubtitle}>
+          Status atual: <Text variant="bodySmall" color="#111827">{getStatusLabel(currentStatus)}</Text>
+        </Text>
+        {nextStatuses.length === 0 ? (
+          <Text variant="bodySmall" color="#9ca3af" style={styles.modalEmpty}>
+            Nenhuma transição disponível para este status.
+          </Text>
+        ) : (
+          nextStatuses.map((s) => {
+            const color = getStatusColor(s);
+            const bg = getStatusBackgroundColor(s);
+            return (
+              <TouchableOpacity
+                key={s}
+                activeOpacity={0.75}
+                disabled={isUpdating}
+                onPress={() => onSelect(s)}
+                style={[styles.statusRow, { backgroundColor: bg }]}
+              >
+                <View style={[styles.statusDot, { backgroundColor: color }]} />
+                <Text variant="body" style={[styles.statusRowLabel, { color }]}>
+                  {getStatusLabel(s)}
+                </Text>
+                {isUpdating ? (
+                  <ActivityIndicator size="small" color={color} />
+                ) : (
+                  <Ionicons name="arrow-forward" size={16} color={color} />
+                )}
+              </TouchableOpacity>
+            );
+          })
+        )}
+      </View>
+    </Modal>
+  );
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -260,8 +327,8 @@ interface TransitionLogItemProps {
 }
 
 function TransitionLogItem({ log }: TransitionLogItemProps): React.JSX.Element {
-  const fromLabel = STATUS_LABELS[log.from_status] ?? log.from_status;
-  const toLabel = STATUS_LABELS[log.to_status] ?? log.to_status;
+  const fromLabel = getStatusLabel(log.from_status);
+  const toLabel = getStatusLabel(log.to_status);
 
   return (
     <View style={styles.logItem}>
@@ -271,9 +338,9 @@ function TransitionLogItem({ log }: TransitionLogItemProps): React.JSX.Element {
           {fromLabel} → {toLabel}
         </Text>
         <Text variant="caption" color="#9ca3af">
-          {formatDateTime(log.changed_at)}
-          {log.changed_by != null && log.changed_by.length > 0
-            ? ` · ${log.changed_by}`
+          {formatDateTime(log.created_at)}
+          {log.changed_by_name != null && log.changed_by_name.length > 0
+            ? ` · ${log.changed_by_name}`
             : ''}
         </Text>
       </View>
@@ -324,18 +391,205 @@ function ChecklistProgressRow({ photoCount, ok, attention, critical }: Checklist
   );
 }
 
+// ─── Vistoria CTA Card ────────────────────────────────────────────────────────
+
+interface VistoriaCTACardProps {
+  type: 'entrada' | 'saida';
+  osId: string;
+}
+
+function VistoriaCTACard({ type, osId }: VistoriaCTACardProps): React.JSX.Element {
+  const router = useRouter();
+  const isEntrada = type === 'entrada';
+  const bg = isEntrada ? '#eff6ff' : '#f0fdf4';
+  const borderColor = isEntrada ? '#bfdbfe' : '#bbf7d0';
+  const color = isEntrada ? '#1d4ed8' : '#15803d';
+  const icon: React.ComponentProps<typeof Ionicons>['name'] = isEntrada ? 'search-outline' : 'checkmark-done-outline';
+  const title = isEntrada ? 'Iniciar Vistoria de Entrada' : 'Iniciar Vistoria de Saída';
+  const description = isEntrada
+    ? 'Registre o estado do veículo na entrada: fotos e checklist completo.'
+    : 'Confirme os reparos realizados com comparativo antes/depois.';
+
+  const handlePress = (): void => {
+    const path = isEntrada
+      ? `/(app)/vistoria/entrada/${osId}`
+      : `/(app)/vistoria/saida/${osId}`;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    router.push(path as any);
+  };
+
+  return (
+    <TouchableOpacity
+      style={[styles.vstCard, { backgroundColor: bg, borderColor }]}
+      onPress={handlePress}
+      activeOpacity={0.85}
+    >
+      <View style={styles.vstCardIcon}>
+        <Ionicons name={icon} size={24} color={color} />
+      </View>
+      <View style={styles.vstCardBody}>
+        <Text variant="label" style={[styles.vstCardTitle, { color }]}>
+          {title}
+        </Text>
+        <Text variant="bodySmall" color="#6b7280" style={styles.vstCardDesc}>
+          {description}
+        </Text>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={color} />
+    </TouchableOpacity>
+  );
+}
+
+// ─── Acompanhamento Section ───────────────────────────────────────────────────
+
+interface AcompanhamentoSectionProps {
+  osId: string;
+  onAddPhoto: () => void;
+  onPhotoPress: (url: string) => void;
+  remotePhotos: OSPhoto[];
+}
+
+const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
+  osId,
+  onAddPhoto,
+  onPhotoPress,
+  remotePhotos,
+}: AcompanhamentoSectionProps): React.JSX.Element {
+  const isOnline = useConnectivity();
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+
+  const localPhotos = usePhotoStore((s) =>
+    s.queue.filter((p) => p.osId === osId && p.folder === 'acompanhamento'),
+  );
+
+  const pendingCount = localPhotos.filter((p) => p.uploadStatus === 'pending').length;
+  const showUpload = pendingCount > 0 && isOnline;
+
+  const handleUpload = useCallback((): void => {
+    if (isUploading) return;
+    setIsUploading(true);
+    void uploadPendingPhotos().finally(() => setIsUploading(false));
+  }, [isUploading]);
+
+  return (
+    <View>
+      <View style={styles.acompSectionHeader}>
+        <Text variant="label" color="#374151">
+          Fotos de Acompanhamento
+        </Text>
+        <TouchableOpacity
+          style={styles.acompAddBtn}
+          onPress={onAddPhoto}
+          activeOpacity={0.75}
+        >
+          <Ionicons name="camera-outline" size={16} color="#e31b1b" />
+          <Text variant="caption" style={styles.acompAddLabel}>
+            Adicionar
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <Card style={styles.card} padded={false}>
+        {localPhotos.length === 0 && remotePhotos.length === 0 ? (
+          <View style={styles.acompEmpty}>
+            <Ionicons name="images-outline" size={32} color="#d1d5db" />
+            <Text variant="bodySmall" color="#9ca3af" style={styles.acompEmptyText}>
+              Nenhuma foto de acompanhamento ainda
+            </Text>
+          </View>
+        ) : (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.photoScroll}
+            contentContainerStyle={styles.acompScrollContent}
+          >
+            {/* Remote (uploaded) photos */}
+            {remotePhotos.map((photo) => (
+              <TouchableOpacity
+                key={photo.id}
+                onPress={() => onPhotoPress(photo.url)}
+                activeOpacity={0.85}
+                style={styles.acompThumb}
+              >
+                <Image source={{ uri: photo.url }} style={styles.acompThumbImg} resizeMode="cover" />
+                <View style={[styles.acompThumbBadge, styles.acompThumbDone]}>
+                  <Ionicons name="checkmark" size={10} color="#fff" />
+                </View>
+              </TouchableOpacity>
+            ))}
+            {/* Local (queued) photos */}
+            {localPhotos.map((photo) => {
+              const uri = photo.annotatedLocalUri ?? photo.localUri;
+              const isDone = photo.uploadStatus === 'done';
+              const isErr = photo.uploadStatus === 'error';
+              return (
+                <TouchableOpacity
+                  key={photo.id}
+                  onPress={() => onPhotoPress(photo.remoteUrl ?? uri)}
+                  activeOpacity={0.85}
+                  style={styles.acompThumb}
+                >
+                  <Image source={{ uri }} style={styles.acompThumbImg} resizeMode="cover" />
+                  <View
+                    style={[
+                      styles.acompThumbBadge,
+                      isDone ? styles.acompThumbDone : isErr ? styles.acompThumbErr : styles.acompThumbPending,
+                    ]}
+                  >
+                    {photo.uploadStatus === 'uploading' ? (
+                      <ActivityIndicator size="small" color="#fff" style={{ width: 10, height: 10 }} />
+                    ) : (
+                      <Ionicons
+                        name={isDone ? 'checkmark' : isErr ? 'alert' : 'time-outline'}
+                        size={10}
+                        color="#fff"
+                      />
+                    )}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        )}
+
+        {showUpload && (
+          <TouchableOpacity
+            style={styles.acompUploadBtn}
+            onPress={handleUpload}
+            activeOpacity={0.8}
+            disabled={isUploading}
+          >
+            {isUploading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Ionicons name="cloud-upload-outline" size={14} color="#fff" />
+            )}
+            <Text variant="caption" style={styles.acompUploadLabel}>
+              {isUploading ? 'Enviando...' : `Enviar fotos (${pendingCount})`}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </Card>
+    </View>
+  );
+});
+
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function OSDetailScreen(): React.JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+  const [statusModalVisible, setStatusModalVisible] = React.useState<boolean>(false);
 
   // The hook returns ServiceOrderDetailAPI; we cast to ServiceOrderDetail because
   // the real API endpoint serializes photos/parts/labor_items/transition_logs.
   // The offline model omits them — they will simply be undefined.
   const { order: rawOrder, isLoading } = useServiceOrder(id ?? '');
   const order = rawOrder as ServiceOrderDetail | null;
+
+  const { update: updateStatus, isUpdating } = useUpdateOSStatus(id ?? '');
 
   const osId = id ?? '';
   const photoCount = usePhotoStore(
@@ -352,6 +606,22 @@ export default function OSDetailScreen(): React.JSX.Element {
     router.push(`/(app)/checklist/${id ?? ''}`);
   }, [router, id]);
 
+  const handleAddAcompanhamento = useCallback((): void => {
+    const queue = usePhotoStore.getState().queue;
+    const existing = queue.filter((p) => p.osId === osId && p.folder === 'acompanhamento');
+    const nextIndex = existing.length;
+    router.push({
+      pathname: '/(app)/camera',
+      params: {
+        osId,
+        slot: `acomp_${nextIndex}`,
+        folder: 'acompanhamento',
+        checklistType: 'acompanhamento',
+        returnTo: `/(app)/os/${osId}`,
+      },
+    });
+  }, [router, osId]);
+
   const handlePhotoPress = useCallback((url: string): void => {
     setPreviewUrl(url);
   }, []);
@@ -359,6 +629,15 @@ export default function OSDetailScreen(): React.JSX.Element {
   const handleClosePreview = useCallback((): void => {
     setPreviewUrl(null);
   }, []);
+
+  const handleSelectStatus = useCallback(async (newStatus: ServiceOrderStatus): Promise<void> => {
+    try {
+      await updateStatus(newStatus);
+      setStatusModalVisible(false);
+    } catch {
+      // erro exibido via toast ou deixado para futuro refinamento
+    }
+  }, [updateStatus]);
 
   // ── Loading state ─────────────────────────────────────────────────────────
   if (isLoading) {
@@ -391,8 +670,10 @@ export default function OSDetailScreen(): React.JSX.Element {
   const servicesTotal = parseFloat(order.services_total);
   const grandTotal = (isNaN(partsTotal) ? 0 : partsTotal) + (isNaN(servicesTotal) ? 0 : servicesTotal);
 
-  const photoGroups = order.photos != null && order.photos.length > 0
-    ? groupPhotosByFolder(order.photos)
+  const acompanhamentoRemote = (order.photos ?? []).filter((p) => p.folder === 'acompanhamento');
+  const nonAcompanhamenntoPhotos = (order.photos ?? []).filter((p) => p.folder !== 'acompanhamento');
+  const photoGroups = nonAcompanhamenntoPhotos.length > 0
+    ? groupPhotosByFolder(nonAcompanhamenntoPhotos)
     : [];
 
   const hasParts = order.parts != null && order.parts.length > 0;
@@ -414,13 +695,34 @@ export default function OSDetailScreen(): React.JSX.Element {
         onBack={handleBack}
       />
 
-      {/* ── Botão Checklist ─────────────────────────────────────────────── */}
-      <TouchableOpacity style={styles.checklistButton} onPress={handleChecklist} activeOpacity={0.8}>
-        <Ionicons name="camera-outline" size={18} color="#ffffff" />
-        <Text variant="label" color="#ffffff">
-          Checklist Fotográfico
-        </Text>
-      </TouchableOpacity>
+      {/* ── Botões de ação ──────────────────────────────────────────────── */}
+      <View style={styles.actionRow}>
+        {/* Avançar Status — só aparece se há transições válidas */}
+        {(VALID_TRANSITIONS[order.status as ServiceOrderStatus] ?? []).length > 0 && (
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.actionBtnSecondary]}
+            onPress={() => setStatusModalVisible(true)}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="swap-horizontal-outline" size={16} color="#e31b1b" />
+            <Text variant="label" color="#e31b1b">
+              Avançar Status
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Checklist Fotográfico */}
+        <TouchableOpacity
+          style={[styles.actionBtn, styles.actionBtnPrimary, (VALID_TRANSITIONS[order.status as ServiceOrderStatus] ?? []).length > 0 && styles.actionBtnFlex]}
+          onPress={handleChecklist}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="camera-outline" size={16} color="#ffffff" />
+          <Text variant="label" color="#ffffff">
+            Checklist
+          </Text>
+        </TouchableOpacity>
+      </View>
       <ChecklistProgressRow
         photoCount={photoCount}
         ok={itemsOk}
@@ -433,6 +735,18 @@ export default function OSDetailScreen(): React.JSX.Element {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {/* ── Vistoria CTAs ─────────────────────────────────────────────── */}
+        {order.status === 'initial_survey' && (
+          <View style={styles.vstCardWrapper}>
+            <VistoriaCTACard type="entrada" osId={osId} />
+          </View>
+        )}
+        {order.status === 'final_survey' && (
+          <View style={styles.vstCardWrapper}>
+            <VistoriaCTACard type="saida" osId={osId} />
+          </View>
+        )}
+
         {/* ── Secao 1: Dados Gerais ─────────────────────────────────────── */}
         <SectionHeader title="Dados Gerais" />
         <Card style={styles.card}>
@@ -483,7 +797,15 @@ export default function OSDetailScreen(): React.JSX.Element {
           </View>
         </Card>
 
-        {/* ── Secao 2: Fotos ────────────────────────────────────────────── */}
+        {/* ── Secao 2: Fotos de Acompanhamento ─────────────────────────── */}
+        <AcompanhamentoSection
+          osId={osId}
+          onAddPhoto={handleAddAcompanhamento}
+          onPhotoPress={handlePhotoPress}
+          remotePhotos={acompanhamentoRemote}
+        />
+
+        {/* ── Secao 3: Outras Fotos ──────────────────────────────────────── */}
         {photoGroups.length > 0 && (
           <>
             <SectionHeader title="Fotos" />
@@ -500,7 +822,7 @@ export default function OSDetailScreen(): React.JSX.Element {
           </>
         )}
 
-        {/* ── Secao 3: Peças e Serviços ─────────────────────────────────── */}
+        {/* ── Secao 4: Peças e Serviços ─────────────────────────────────── */}
         {hasItems && (
           <>
             <SectionHeader title="Peças e Serviços" />
@@ -548,7 +870,7 @@ export default function OSDetailScreen(): React.JSX.Element {
           </>
         )}
 
-        {/* ── Secao 4: Historico ────────────────────────────────────────── */}
+        {/* ── Secao 5: Historico ────────────────────────────────────────── */}
         {hasHistory && (
           <>
             <SectionHeader title="Histórico de Status" />
@@ -562,6 +884,15 @@ export default function OSDetailScreen(): React.JSX.Element {
 
         <View style={styles.bottomPadding} />
       </ScrollView>
+
+      {/* ── Modal de avanço de status ─────────────────────────────────── */}
+      <StatusUpdateModal
+        visible={statusModalVisible}
+        currentStatus={order.status as ServiceOrderStatus}
+        onSelect={handleSelectStatus}
+        onClose={() => setStatusModalVisible(false)}
+        isUpdating={isUpdating}
+      />
 
       {/* ── Modal de preview de foto ───────────────────────────────────── */}
       <Modal
@@ -742,18 +1073,89 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
-  // Checklist button
-  checklistButton: {
-    backgroundColor: '#e31b1b',
+  // Action row
+  actionRow: {
+    flexDirection: 'row',
+    gap: 8,
     marginHorizontal: 16,
     marginTop: 8,
-    marginBottom: 0,
-    paddingVertical: 12,
-    borderRadius: 10,
+  },
+  actionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 10,
+    gap: 6,
+  },
+  actionBtnPrimary: {
+    backgroundColor: '#e31b1b',
+    flex: 1,
+  },
+  actionBtnSecondary: {
+    flex: 1,
+    backgroundColor: '#fff1f1',
+    borderWidth: 1,
+    borderColor: '#fca5a5',
+  },
+  actionBtnFlex: {
+    flex: 1,
+  },
+
+  // Status update modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  modalSheet: {
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+  modalHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#d1d5db',
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  modalClose: {
+    padding: 4,
+  },
+  modalSubtitle: {
+    marginBottom: 12,
+  },
+  modalEmpty: {
+    textAlign: 'center',
+    paddingVertical: 20,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    gap: 10,
+    marginBottom: 4,
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  statusRowLabel: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '500',
   },
   // Checklist progress row
   progressRow: {
@@ -785,6 +1187,115 @@ const styles = StyleSheet.create({
   progressChipCritical: {
     backgroundColor: '#fee2e2',
   },
+  // Vistoria CTA card
+  vstCardWrapper: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+  vstCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1.5,
+    borderRadius: 14,
+    padding: 14,
+  },
+  vstCardIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  vstCardBody: {
+    flex: 1,
+    gap: 2,
+  },
+  vstCardTitle: {
+    fontWeight: '700',
+  },
+  vstCardDesc: {
+    lineHeight: 18,
+  },
+
+  // Acompanhamento section
+  acompSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 6,
+  },
+  acompAddBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: '#fff1f1',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#fca5a5',
+  },
+  acompAddLabel: {
+    color: '#e31b1b',
+  },
+  acompEmpty: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 24,
+    gap: 8,
+  },
+  acompEmptyText: {
+    textAlign: 'center',
+  },
+  acompScrollContent: {
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  acompThumb: {
+    width: 90,
+    height: 90,
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginRight: 8,
+    position: 'relative',
+  },
+  acompThumbImg: {
+    width: '100%',
+    height: '100%',
+  },
+  acompThumbBadge: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  acompThumbDone: { backgroundColor: '#16a34a' },
+  acompThumbErr: { backgroundColor: '#ef4444' },
+  acompThumbPending: { backgroundColor: '#9ca3af' },
+  acompUploadBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#e31b1b',
+    marginHorizontal: 12,
+    marginBottom: 12,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  acompUploadLabel: {
+    color: '#ffffff',
+  },
+
   // Bottom spacing
   bottomPadding: {
     height: 32,

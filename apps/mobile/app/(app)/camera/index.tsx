@@ -23,6 +23,7 @@ interface CameraParams {
   slot: string;
   folder: string;
   checklistType: string;
+  returnTo: string;
   [key: string]: string;
 }
 
@@ -50,7 +51,7 @@ function buildResizeActions(
 
 export default function CameraScreen(): React.ReactElement {
   const params = useLocalSearchParams<CameraParams>();
-  const { osId, slot, folder, checklistType } = params;
+  const { osId, slot, folder, checklistType, returnTo } = params;
 
   const cameraRef = useRef<CameraView>(null);
   const [facing, setFacing] = useState<CameraType>('back');
@@ -155,9 +156,12 @@ export default function CameraScreen(): React.ReactElement {
         localUri: destFile.uri,
       });
 
-      // 7. Retorna para o checklist da OS (navegação explícita — evita
-      //    router.back() que retorna ao Tab raiz em vez da tela [osId])
-      router.replace(`/(app)/checklist/${osId ?? ''}`);
+      // 7. Retorna para a tela de origem (returnTo) ou para o checklist
+      const destination = (returnTo != null && returnTo.length > 0)
+        ? returnTo
+        : `/(app)/checklist/${osId ?? ''}`;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      router.replace(destination as any);
     } catch (err: unknown) {
       console.error('[CameraScreen] capture error:', err);
       setIsSaving(false);
