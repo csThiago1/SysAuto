@@ -7,7 +7,7 @@ import { api } from '@/lib/api';
 let _mmkv: MMKV | null = null;
 try { _mmkv = new MMKV({ id: 'insurers-cache' }); } catch { _mmkv = null; }
 
-const CACHE_KEY = 'insurers_list';
+const CACHE_KEY = 'insurers_list_v2'; // bump version to bust stale cache
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -24,9 +24,10 @@ interface InsurerApiItem {
   id: string;
   name: string;
   trade_name: string;
+  display_name: string;
   brand_color: string;
   abbreviation: string;
-  logo_url: string;
+  logo: string;       // InsurerMinimalSerializer returns 'logo', not 'logo_url'
 }
 
 interface PaginatedResponse {
@@ -68,10 +69,10 @@ export function useInsurers(): {
       const response = await api.get<PaginatedResponse>('/insurers/');
       const mapped: InsurerOption[] = response.results.map((item) => ({
         id: item.id,
-        displayName: item.trade_name || item.name,
+        displayName: item.display_name || item.trade_name || item.name,
         brandColor: item.brand_color || '#6b7280',
         abbreviation: item.abbreviation || item.name.substring(0, 2).toUpperCase(),
-        logoUrl: item.logo_url,
+        logoUrl: item.logo,   // InsurerMinimalSerializer uses 'logo' field
       }));
       setInsurers(mapped);
       try {
