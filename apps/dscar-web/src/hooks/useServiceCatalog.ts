@@ -17,7 +17,7 @@ import type {
 } from "@paddock/types"
 
 const PROXY = "/api/proxy"
-const CATALOG_API = `${PROXY}/service-catalog`
+const CATALOG_API = `${PROXY}/service-orders/service-catalog`
 const OS_API = `${PROXY}/service-orders`
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
