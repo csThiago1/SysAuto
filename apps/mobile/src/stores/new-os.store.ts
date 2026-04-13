@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { VehicleInfo } from '@/hooks/useVehicleByPlate';
 import type { CustomerSearchResult } from '@/hooks/useCustomerSearch';
+import type { InsurerOption } from '@/hooks/useInsurers';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -27,7 +28,8 @@ export interface NewOSState {
   // Step 3 — OS Type
   customerType: CustomerType;
   osType: OSType;
-  insurerName: string;
+  insurer: InsurerOption | null;
+  insuredType: 'insured' | 'third' | null;
   claimNumber: string;
   deductible: string;
 
@@ -39,7 +41,8 @@ export interface NewOSState {
   setCustomerManualName: (name: string) => void;
   setCustomerType: (type: CustomerType) => void;
   setOSType: (type: OSType) => void;
-  setInsurer: (name: string) => void;
+  setInsurer: (insurer: InsurerOption | null) => void;
+  setInsuredType: (type: 'insured' | 'third') => void;
   setClaimNumber: (n: string) => void;
   setDeductible: (d: string) => void;
   reset: () => void;
@@ -60,7 +63,8 @@ const initialState = {
   customerSource: null,
   customerType: 'private' as CustomerType,
   osType: 'bodywork' as OSType,
-  insurerName: '',
+  insurer: null,
+  insuredType: null,
   claimNumber: '',
   deductible: '',
 };
@@ -101,7 +105,9 @@ export const useNewOSStore = create<NewOSState>()((set) => ({
 
   setOSType: (type: OSType): void => set({ osType: type }),
 
-  setInsurer: (name: string): void => set({ insurerName: name }),
+  setInsurer: (insurer: InsurerOption | null): void => set({ insurer }),
+
+  setInsuredType: (type: 'insured' | 'third'): void => set({ insuredType: type }),
 
   setClaimNumber: (n: string): void => set({ claimNumber: n }),
 

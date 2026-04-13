@@ -59,7 +59,9 @@ export default function NovaOSScreen(): React.JSX.Element {
         vehicleColor: (store.vehicleInfo?.color ?? store.vehicleManualColor) || undefined,
         customerType: store.customerType,
         osType: store.osType,
-        casualtyNumber: store.customerType === 'insurer' ? store.claimNumber : undefined,
+        insurerId: store.customerType === 'insurer' ? (store.insurer?.id ?? undefined) : undefined,
+        insuredType: store.customerType === 'insurer' ? (store.insuredType ?? undefined) : undefined,
+        casualtyNumber: store.customerType === 'insurer' ? (store.claimNumber || undefined) : undefined,
         deductibleAmount:
           store.customerType === 'insurer' && store.deductible
             ? parseFloat(store.deductible)

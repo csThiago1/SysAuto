@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -8,6 +9,7 @@ import {
 } from 'react-native';
 
 import { Text } from '@/components/ui/Text';
+import { useInsurers, type InsurerOption } from '@/hooks/useInsurers';
 import { useNewOSStore, type CustomerType, type OSType } from '@/stores/new-os.store';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -32,22 +34,37 @@ const OS_TYPES: { key: OSType; label: string }[] = [
   { key: 'aesthetic', label: 'Estética' },
 ];
 
+const INSURED_TYPES: { key: 'insured' | 'third'; label: string }[] = [
+  { key: 'insured', label: 'Segurado' },
+  { key: 'third', label: 'Terceiro' },
+];
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Element {
   const customerType = useNewOSStore((s) => s.customerType);
   const osType = useNewOSStore((s) => s.osType);
-  const insurerName = useNewOSStore((s) => s.insurerName);
+  const insurer = useNewOSStore((s) => s.insurer);
+  const insuredType = useNewOSStore((s) => s.insuredType);
   const claimNumber = useNewOSStore((s) => s.claimNumber);
   const deductible = useNewOSStore((s) => s.deductible);
   const setCustomerType = useNewOSStore((s) => s.setCustomerType);
   const setOSType = useNewOSStore((s) => s.setOSType);
   const setInsurer = useNewOSStore((s) => s.setInsurer);
+  const setInsuredType = useNewOSStore((s) => s.setInsuredType);
   const setClaimNumber = useNewOSStore((s) => s.setClaimNumber);
   const setDeductible = useNewOSStore((s) => s.setDeductible);
 
+  const { filteredInsurers, isLoading: isLoadingInsurers, filterQuery, setFilterQuery } =
+    useInsurers();
+
+  const selectedInsurer: InsurerOption | null = insurer;
+
   const isContinueDisabled = (): boolean => {
-    if (customerType === 'insurer' && insurerName.trim() === '') return true;
+    if (customerType === 'insurer') {
+      if (!insurer) return true;
+      if (!insuredType) return true;
+    }
     return false;
   };
 
@@ -122,31 +139,103 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
         })}
       </View>
 
-      {/* Insurer fields — only when customerType === 'insurer' */}
+      {/* Insurer section — only when customerType === 'insurer' */}
       {customerType === 'insurer' && (
         <View style={styles.insurerSection}>
+          {/* Search input */}
           <TextInput
             style={styles.input}
-            placeholder="Seguradora"
+            placeholder="Buscar seguradora..."
             placeholderTextColor="#9ca3af"
-            value={insurerName}
-            onChangeText={setInsurer}
+            value={filterQuery}
+            onChangeText={setFilterQuery}
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Nº Sinistro"
-            placeholderTextColor="#9ca3af"
-            value={claimNumber}
-            onChangeText={setClaimNumber}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Franquia (R$)"
-            placeholderTextColor="#9ca3af"
-            keyboardType="numeric"
-            value={deductible}
-            onChangeText={setDeductible}
-          />
+
+          {/* Loading indicator */}
+          {isLoadingInsurers && <ActivityIndicator size="small" color="#e31b1b" />}
+
+          {/* Suggestions list */}
+          {filteredInsurers.length > 0 && selectedInsurer === null && (
+            <View style={styles.insurerList}>
+              {filteredInsurers.slice(0, 6).map((ins) => (
+                <TouchableOpacity
+                  key={ins.id}
+                  style={styles.insurerRow}
+                  onPress={(): void => {
+                    setInsurer(ins);
+                    setFilterQuery('');
+                  }}
+                  activeOpacity={0.75}
+                >
+                  <View style={[styles.insurerDot, { backgroundColor: ins.brandColor }]} />
+                  <Text variant="body" color="#374151">{ins.displayName}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          {/* Selected insurer card */}
+          {selectedInsurer !== null && (
+            <View style={styles.selectedInsurerCard}>
+              <View style={[styles.insurerDot, { backgroundColor: selectedInsurer.brandColor }]} />
+              <Text variant="body" color="#374151" style={styles.selectedInsurerName}>
+                {selectedInsurer.displayName}
+              </Text>
+              <TouchableOpacity onPress={(): void => setInsurer(null)} activeOpacity={0.7}>
+                <Text variant="bodySmall" color="#e31b1b">Trocar</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* insured_type toggle */}
+          {selectedInsurer !== null && (
+            <>
+              <Text variant="label" color="#374151">Tipo de segurado</Text>
+              <View style={styles.toggleRow}>
+                {INSURED_TYPES.map((it) => {
+                  const isActive = insuredType === it.key;
+                  return (
+                    <TouchableOpacity
+                      key={it.key}
+                      style={[
+                        styles.toggleButton,
+                        isActive ? styles.toggleActive : styles.toggleInactive,
+                      ]}
+                      onPress={(): void => setInsuredType(it.key)}
+                      activeOpacity={0.8}
+                    >
+                      <Text variant="label" color={isActive ? '#ffffff' : '#374151'}>
+                        {it.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </>
+          )}
+
+          {/* Casualty + deductible */}
+          {selectedInsurer !== null && (
+            <>
+              <TextInput
+                style={styles.input}
+                placeholder="Nº Sinistro (opcional)"
+                placeholderTextColor="#9ca3af"
+                value={claimNumber}
+                onChangeText={setClaimNumber}
+              />
+              {insuredType === 'insured' && (
+                <TextInput
+                  style={styles.input}
+                  placeholder="Franquia R$ (opcional)"
+                  placeholderTextColor="#9ca3af"
+                  keyboardType="decimal-pad"
+                  value={deductible}
+                  onChangeText={setDeductible}
+                />
+              )}
+            </>
+          )}
         </View>
       )}
 
@@ -244,6 +333,39 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 15,
     color: '#1a1a1a',
+  },
+  insurerList: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    overflow: 'hidden',
+  },
+  insurerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  selectedInsurerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  selectedInsurerName: {
+    flex: 1,
+  },
+  insurerDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
   primaryButton: {
     backgroundColor: '#e31b1b',

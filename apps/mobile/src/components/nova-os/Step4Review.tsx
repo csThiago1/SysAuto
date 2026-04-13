@@ -49,7 +49,8 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
   const customerSource = useNewOSStore((s) => s.customerSource);
   const customerType = useNewOSStore((s) => s.customerType);
   const osType = useNewOSStore((s) => s.osType);
-  const insurerName = useNewOSStore((s) => s.insurerName);
+  const insurer = useNewOSStore((s) => s.insurer);
+  const insuredType = useNewOSStore((s) => s.insuredType);
   const claimNumber = useNewOSStore((s) => s.claimNumber);
   const deductible = useNewOSStore((s) => s.deductible);
 
@@ -132,9 +133,12 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
         <Text variant="body" color="#374151">
           {OS_TYPE_LABELS[osType]}
         </Text>
-        {insurerName.length > 0 && (
+        {insurer !== null && (
+          <Text variant="bodySmall" color="#6b7280">{insurer.displayName}</Text>
+        )}
+        {insuredType !== null && (
           <Text variant="bodySmall" color="#6b7280">
-            {insurerName}
+            {insuredType === 'insured' ? 'Segurado' : 'Terceiro'}
           </Text>
         )}
         {claimNumber.length > 0 && (
