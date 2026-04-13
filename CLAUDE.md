@@ -908,15 +908,14 @@ make typecheck       # mypy + tsc
 - **Dashboard Role-Based**: Consultor → KPIs pessoais (OS abertas, entregas hoje, atrasadas, concluídas semana); Gerente/Admin/Owner → faturamento, ticket médio, gráfico 6 meses, produtividade da equipe, OS atrasadas
 - **Docs**: `docs/superpowers/plans/2026-04-13-service-catalog.md`, `agenda.md`, `dashboard-rolebased.md`
 
-### Sprint M5 Mobile — Abril 2026 (em andamento)
-**Abertura de OS no Mobile**
-- ✅ Step 2 — Cliente: busca inline (debounce, envelope `{ count, results }`), cadastro rápido (nome/CPF/telefone/email obrigatórios + LGPD), card verde pós-seleção, trocar cliente
-- ✅ `useCustomerSearch` — fix trailing slash + envelope; `useCustomerCreate` — POST `/customers/` com `lgpd_consent: true`
-- ⬜ Step 1 — Veículo: consulta placa-fipe + cache MMKV + fallback manual offline
-- ⬜ Step 3 — Tipo de OS + Step 4 — Revisão
-- ⬜ Criação offline (WatermelonDB) + sync ao reconectar
-- ⬜ Atalho "Iniciar Checklist Agora" pós-criação
-- ⬜ EAS Build dev build (necessário para `react-native-view-shot` em produção)
+### Sprint M6 Mobile — Abril 2026 (em andamento)
+**Acompanhamento de Reparos + Vistorias + Push Notifications**
+- ⬜ Fotos de acompanhamento no detalhe da OS (pasta `acompanhamento`, câmera com marca d'água)
+- ⬜ Vistoria Inicial — `vistoria/entrada/[osId].tsx` (esqueleto existe): checklist fotos + itens + transição → `budget`
+- ⬜ Vistoria Final — `vistoria/saida/[osId].tsx` (esqueleto existe): comparativo antes/depois + transição → `ready`
+- ⬜ Push Notifications: `expo-notifications` (já instalado) + `push_token` no `GlobalUser` + Celery task ao mudar status
+- ⬜ EAS Build dev (necessário para `react-native-view-shot` em produção)
+- **Docs**: `docs/sprint-m6-mobile.md`
 
 ---
 
@@ -944,6 +943,23 @@ make typecheck       # mypy + tsc
 - Histórico OS: agrupamento por tipo de campo (customer/vehicle/schedule/insurer), ícones distintos, sem descrição verbosa
 - Kanban: Tailwind content scan corrigido (packages/utils), `cancelled` → "Cancelada"
 - Mobile: status keys alinhados com backend (waiting_auth, authorized, repair…)
+
+### Sprint M5 Mobile — Abril 2026 ✅
+**Abertura de OS no Mobile — Wizard 4 Steps**
+- Wizard nova OS: Step1Vehicle (placa-fipe + MMKV 7d + fallback manual), Step2Customer (busca + cadastro rápido + LGPD), Step3OSType (toggle segurado/particular + grid tipo + campos seguradora), Step4Review (resumo + "Criar OS e Iniciar Checklist")
+- `useVehicleByPlate` — POST placa-fipe.apibrasil.com.br + cache MMKV (TTL 7d, max 50 placas)
+- `useCreateServiceOrder` — online (POST → WatermelonDB com `r._raw.id = server UUID`) + offline (`pushStatus='pending'`)
+- `sync.ts pushChanges` — envia registros pending ao reconectar, atualiza `remoteId` + `number`
+- Fix duplicatas: `r._raw.id = data.id` evita duplicação no sync pull; dedup por `remoteId` no observer
+- `ServiceOrderSyncSerializer` — adicionados `insurer_id` e `insured_type` (logo seguradora no OSCard)
+- `useInsurers` — campo `logo` correto (era `logo_url`); cache MMKV bumped para `v2`
+- OSCard redesign: layout 2 colunas (info esquerda, OS# + avatar seguradora direita), placa em badge glass 18px, avatar circular 64px com padding interno
+
+### Tema Global DS Car Mobile — Abril 2026 ✅
+**Design tokens + glass style aplicados em toda a app**
+- `src/constants/theme.ts` — `Colors`, `Radii`, `Spacing`, `Shadow` (fonte única de verdade)
+- Todos os screens e components tokenizados: `os/index`, `os/[id]`, `checklist/*`, `nova-os/*`, `vistoria/*`, `camera`, `perfil`, `busca`, `notificacoes`, `FrostedNavBar`, `OSStatusBadge`, `OSCard`
+- OSCard glass: `LinearGradient #3a3a3e → #1e1e22`, borda glint top `rgba(255,255,255,0.22)`, sombra pesada
 
 ### Refinamentos Mobile — OS Detail + Sync — Abril 2026 ✅
 **OS Detail labels PT + Status Update + Sync fix + Badge reativo**

@@ -28,7 +28,7 @@ O app é para uso exclusivo da equipe DS Car. Publicar nas lojas traria burocrac
 | **1 — Fundação** | M1–M2 | Infra, Auth, Navegação, OS read-only | ✅ Concluído |
 | **2 — Checklist & Fotos** | M3–M4 | Checklist completo, câmera com marca d'água, anotações | ✅ Concluído |
 | **2.5 — UX Polish** | pós-M4 | Nav/Header/Filtros redesign | ✅ Concluído (2026-04-12) |
-| **3 — OS Completa** | M5–M6 | Abertura de OS, acompanhamento, vistorias | 🔄 Em andamento (M5) |
+| **3 — OS Completa** | M5–M6 | Abertura de OS, acompanhamento, vistorias | 🔄 Em andamento (M6) |
 | **4 — Documentos & Polish** | M7–M8 | Assinatura digital, termos/recibos PDF, UX final | ⏳ Planejado |
 
 ---
@@ -254,12 +254,12 @@ O app é para uso exclusivo da equipe DS Car. Publicar nas lojas traria burocrac
 - Ao criar OS, oferece "Iniciar Checklist Agora" → abre direto no módulo de checklist com a OS vinculada
 - Também acessível depois pela tela de detalhe da OS
 
-### Critérios de Aceite
-- [ ] Wizard de 4 steps completo e funcional
-- [ ] Consulta de placa funciona online e fallback manual offline
-- [ ] OS criada com todos os campos obrigatórios
-- [ ] Transição direta para checklist após criação
-- [ ] Criação offline sincroniza corretamente
+### Critérios de Aceite ✅
+- [x] Wizard de 4 steps completo e funcional
+- [x] Consulta de placa funciona online e fallback manual offline
+- [x] OS criada com todos os campos obrigatórios
+- [x] Transição direta para checklist após criação
+- [x] Criação offline sincroniza corretamente
 
 ---
 
