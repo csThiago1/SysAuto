@@ -125,6 +125,18 @@ const ACTIVITY_CONFIG: Partial<Record<ActivityType, ActivityConfig>> = {
     bgClass: "bg-red-50",
     label: "Serviço",
   },
+  part_updated: {
+    icon: <Package className="h-4 w-4 text-blue-500" />,
+    ringClass: "ring-blue-100",
+    bgClass: "bg-blue-50",
+    label: "Peça",
+  },
+  labor_updated: {
+    icon: <Wrench className="h-4 w-4 text-orange-500" />,
+    ringClass: "ring-orange-100",
+    bgClass: "bg-orange-50",
+    label: "Serviço",
+  },
   invoice_issued: {
     icon: <FileText className="h-4 w-4 text-emerald-600" />,
     ringClass: "ring-emerald-100",
@@ -288,7 +300,7 @@ function ActivityEntry({ log, snapshots }: ActivityEntryProps) {
 
         {/* Rich extras */}
         {log.activity_type === "status_changed" && <StatusChangeDisplay log={log} />}
-        {log.activity_type === "updated" && <FieldDiff log={log} />}
+        {(log.activity_type === "updated" || log.activity_type === "part_updated" || log.activity_type === "labor_updated") && <FieldDiff log={log} />}
         {(log.activity_type === "budget_snapshot" || log.activity_type === "cilia_import") && relatedSnapshot && (
           <BudgetSnapshotViewer snapshot={relatedSnapshot} />
         )}

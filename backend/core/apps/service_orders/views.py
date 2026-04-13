@@ -57,6 +57,41 @@ from .services import ServiceOrderDeliveryService, ServiceOrderService
 logger = logging.getLogger(__name__)
 
 
+# ── Activity logging helpers ──────────────────────────────────────────────────
+
+def _build_field_changes(
+    old_data: dict,
+    new_data: dict,
+    field_map: dict[str, str],
+) -> list[dict]:
+    """
+    Compara old_data e new_data usando field_map {campo: label_pt}.
+    Retorna lista de {field_label, old_value, new_value} para campos alterados.
+    """
+    changes = []
+    for field, label in field_map.items():
+        old_val = str(old_data.get(field, "")) if old_data.get(field) is not None else ""
+        new_val = str(new_data.get(field, "")) if new_data.get(field) is not None else ""
+        if old_val != new_val and new_val:
+            changes.append({"field_label": label, "old_value": old_val, "new_value": new_val})
+    return changes
+
+
+PART_FIELD_MAP: dict[str, str] = {
+    "description": "Descrição",
+    "quantity": "Qtd.",
+    "unit_price": "Valor Unit.",
+    "discount": "Desconto",
+}
+
+LABOR_FIELD_MAP: dict[str, str] = {
+    "description": "Descrição",
+    "quantity": "Qtd.",
+    "unit_price": "Valor Unit.",
+    "discount": "Desconto",
+}
+
+
 @extend_schema_view(
     list=extend_schema(
         summary="Listar ordens de serviço",
@@ -378,7 +413,20 @@ class ServiceOrderViewSet(
                 )
             serializer = ServiceOrderPartSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            serializer.save(service_order=service_order, created_by=request.user)
+            part = serializer.save(service_order=service_order, created_by=request.user)
+            ServiceOrderActivityLog.objects.create(
+                service_order=service_order,
+                user=request.user,
+                activity_type="part_added",
+                description=f"Peça '{part.description}' adicionada — {part.quantity}× R${part.unit_price}",
+                metadata={
+                    "description": part.description,
+                    "quantity": str(part.quantity),
+                    "unit_price": str(part.unit_price),
+                    "discount": str(part.discount),
+                    "total": str(part.total),
+                },
+            )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         items = service_order.parts.all()
@@ -417,9 +465,20 @@ class ServiceOrderViewSet(
                 {"detail": "Não é possível modificar itens de uma OS encerrada ou pronta para entrega."},
                 status=422,
             )
+        old_data = {f: str(getattr(part, f, "")) for f in PART_FIELD_MAP}
         serializer = ServiceOrderPartSerializer(part, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        updated_part = serializer.save()
+        new_data = {f: str(getattr(updated_part, f, "")) for f in PART_FIELD_MAP}
+        changes = _build_field_changes(old_data, new_data, PART_FIELD_MAP)
+        if changes:
+            ServiceOrderActivityLog.objects.create(
+                service_order=service_order,
+                user=request.user,
+                activity_type="part_updated",
+                description=f"Peça '{updated_part.description}' editada",
+                metadata={"field_changes": changes},
+            )
         return Response(serializer.data)
 
     @extend_schema(summary="Listar/adicionar serviços da OS")
@@ -443,7 +502,20 @@ class ServiceOrderViewSet(
                 )
             serializer = ServiceOrderLaborSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            serializer.save(service_order=service_order, created_by=request.user)
+            labor = serializer.save(service_order=service_order, created_by=request.user)
+            ServiceOrderActivityLog.objects.create(
+                service_order=service_order,
+                user=request.user,
+                activity_type="labor_added",
+                description=f"Serviço '{labor.description}' adicionado — {labor.quantity}× R${labor.unit_price}",
+                metadata={
+                    "description": labor.description,
+                    "quantity": str(labor.quantity),
+                    "unit_price": str(labor.unit_price),
+                    "discount": str(labor.discount),
+                    "total": str(labor.total),
+                },
+            )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         items = service_order.labor_items.all()
@@ -482,9 +554,20 @@ class ServiceOrderViewSet(
                 {"detail": "Não é possível modificar itens de uma OS encerrada ou pronta para entrega."},
                 status=422,
             )
+        old_data = {f: str(getattr(item, f, "")) for f in LABOR_FIELD_MAP}
         serializer = ServiceOrderLaborSerializer(item, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        updated = serializer.save()
+        new_data = {f: str(getattr(updated, f, "")) for f in LABOR_FIELD_MAP}
+        changes = _build_field_changes(old_data, new_data, LABOR_FIELD_MAP)
+        if changes:
+            ServiceOrderActivityLog.objects.create(
+                service_order=service_order,
+                user=request.user,
+                activity_type="labor_updated",
+                description=f"Serviço '{updated.description}' editado",
+                metadata={"field_changes": changes},
+            )
         return Response(serializer.data)
 
     @extend_schema(

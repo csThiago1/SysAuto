@@ -467,8 +467,10 @@ class ActivityType(models.TextChoices):
     DELIVERY       = "delivery",        "Entrega ao Cliente"
     PART_ADDED     = "part_added",      "Peça Adicionada"
     PART_REMOVED   = "part_removed",    "Peça Removida"
+    PART_UPDATED   = "part_updated",    "Peça Editada"
     LABOR_ADDED    = "labor_added",     "Serviço Adicionado"
     LABOR_REMOVED  = "labor_removed",   "Serviço Removido"
+    LABOR_UPDATED  = "labor_updated",   "Serviço Editado"
     INVOICE_ISSUED = "invoice_issued",  "NF Emitida"
 
 class ServiceOrderActivityLog(PaddockBaseModel):
