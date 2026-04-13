@@ -1,8 +1,11 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { FrostedNavBar } from '@/components/navigation/FrostedNavBar';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 export default function AppLayout() {
+  usePushNotifications();
+
   return (
     <Tabs
       tabBar={(props) => <FrostedNavBar {...props} />}
@@ -18,6 +21,7 @@ export default function AppLayout() {
       <Tabs.Screen name="checklist" options={{ href: null }} />
       <Tabs.Screen name="camera" options={{ href: null }} />
       <Tabs.Screen name="photo-editor" options={{ href: null }} />
+      <Tabs.Screen name="vistoria" options={{ href: null }} />
     </Tabs>
   );
 }

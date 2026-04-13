@@ -104,6 +104,13 @@ class GlobalUser(AbstractBaseUser, PermissionsMixin):
         verbose_name="Setor / Cargo",
     )
 
+    push_token = models.CharField(
+        max_length=200,
+        blank=True,
+        default="",
+        verbose_name="Expo Push Token",
+    )
+
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 

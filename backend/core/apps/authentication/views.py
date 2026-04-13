@@ -184,6 +184,28 @@ class StaffListView(APIView):
         return Response(StaffUserSerializer(users, many=True).data)
 
 
+class PushTokenView(APIView):
+    """
+    PATCH /api/v1/auth/push-token/
+
+    Registra ou atualiza o Expo Push Token do usuário autenticado.
+    Body: {"token": "ExponentPushToken[...]"}
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request: Request) -> Response:
+        """Salva push token no GlobalUser autenticado."""
+        token: str = request.data.get("token", "").strip()
+        if not token:
+            return Response({"detail": "Campo 'token' obrigatório."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user: GlobalUser = request.user  # type: ignore[assignment]
+        user.push_token = token
+        user.save(update_fields=["push_token", "updated_at"])
+        return Response({"detail": "Push token registrado."})
+
+
 class StaffDetailView(APIView):
     """
     PATCH /api/v1/auth/staff/<pk>/ — atualiza job_title do usuário

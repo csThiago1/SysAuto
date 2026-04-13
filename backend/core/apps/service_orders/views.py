@@ -186,11 +186,36 @@ class ServiceOrderViewSet(
             context={"service_order": service_order, "request": request},
         )
         serializer.is_valid(raise_exception=True)
+        new_status: str = serializer.validated_data["new_status"]
         order = ServiceOrderService.transition(
             order_id=str(service_order.id),
-            new_status=serializer.validated_data["new_status"],
+            new_status=new_status,
             changed_by_id=str(request.user.id),
         )
+
+        # Fire push notification to the consultant (if they have a token registered)
+        consultant = order.consultant
+        if consultant is not None:
+            from apps.authentication.models import GlobalUser
+            from django_tenants.utils import get_tenant
+            from .tasks import task_notify_status_change
+            from .models import ServiceOrderStatus as SOS
+
+            status_label = dict(SOS.choices).get(new_status, new_status)
+            try:
+                tenant = get_tenant(request)
+                schema = getattr(tenant, "schema_name", "public")
+            except Exception:
+                schema = "public"
+
+            task_notify_status_change.delay(
+                tenant_schema=schema,
+                user_id=str(consultant.pk),
+                os_number=order.number,
+                plate=order.plate or "",
+                new_status_label=status_label,
+            )
+
         return Response(ServiceOrderDetailSerializer(order, context={"request": request}).data)
 
     @extend_schema(summary="Histórico de transições de status")
@@ -226,28 +251,45 @@ class ServiceOrderViewSet(
         GET /api/v1/service-orders/sync/?since=<iso_datetime>
 
         Retorna OS no formato WatermelonDB sync protocol.
-        Pull incremental: se since informado, filtra por updated_at >= since.
-        OS deletadas (is_active=False) são retornadas na chave deleted como lista de ids.
+
+        Protocolo correto:
+        - created: registros criados após `since` (ou todos, no primeiro sync)
+        - updated: registros existentes antes de `since` mas modificados depois
+        - deleted: registros desativados (is_active=False) após `since`
+
+        Colocar tudo em `created` causa o aviso "[Sync] Server wants client to create
+        record ... but it already exists locally" no WatermelonDB.
         """
         from django.utils.dateparse import parse_datetime
 
-        qs = ServiceOrder.objects.filter(is_active=True).select_related("consultant")
-
         since_str = request.query_params.get("since")
-        if since_str:
-            since_dt = parse_datetime(since_str)
-            if since_dt:
-                qs = qs.filter(updated_at__gte=since_dt)
+        since_dt = parse_datetime(since_str) if since_str else None
 
-        serializer = ServiceOrderSyncSerializer(qs, many=True)
+        if since_dt is None:
+            # Primeiro sync: todos os registros ativos vão em created
+            created_qs = ServiceOrder.objects.filter(is_active=True).select_related("consultant")
+            updated_qs = ServiceOrder.objects.none()
+            deleted_ids: list[str] = []
+        else:
+            # Sync incremental: separa por data de criação vs atualização
+            changed_qs = ServiceOrder.objects.filter(
+                updated_at__gte=since_dt
+            ).select_related("consultant")
+
+            created_qs = changed_qs.filter(is_active=True, created_at__gte=since_dt)
+            updated_qs = changed_qs.filter(is_active=True, created_at__lt=since_dt)
+            deleted_ids = [
+                str(pk)
+                for pk in changed_qs.filter(is_active=False).values_list("id", flat=True)
+            ]
 
         return Response(
             {
                 "changes": {
                     "service_orders": {
-                        "created": serializer.data,
-                        "updated": [],
-                        "deleted": [],
+                        "created": ServiceOrderSyncSerializer(created_qs, many=True).data,
+                        "updated": ServiceOrderSyncSerializer(updated_qs, many=True).data,
+                        "deleted": deleted_ids,
                     }
                 },
                 "timestamp": int(timezone.now().timestamp() * 1000),
@@ -264,16 +306,25 @@ class ServiceOrderViewSet(
         service_order = self.get_object()
 
         if request.method == "POST":
-            message = request.data.get("message")
-            if not message:
+            message = request.data.get("message", "")
+            activity_type = request.data.get("activity_type", "reminder")
+            metadata = request.data.get("metadata") or {}
+
+            # Only allow safe activity types from the frontend
+            ALLOWED_TYPES = {"reminder", "customer_updated"}
+            if activity_type not in ALLOWED_TYPES:
+                activity_type = "reminder"
+
+            if not message and activity_type == "reminder":
                 return Response({"message": ["Este campo é obrigatório."]}, status=status.HTTP_400_BAD_REQUEST)
-            
+
             from .models import ServiceOrderActivityLog
             log = ServiceOrderActivityLog.objects.create(
                 service_order=service_order,
                 user=request.user,
-                activity_type="reminder",
-                description=message
+                activity_type=activity_type,
+                description=message,
+                metadata=metadata,
             )
             return Response(ServiceOrderActivityLogSerializer(log).data, status=status.HTTP_201_CREATED)
 
