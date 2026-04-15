@@ -41,10 +41,30 @@ export function nowISO(): string {
 
 // ─── Moeda ────────────────────────────────────────────────────────────────────
 
-/** Formata número ou string numérica como BRL */
-export function formatCurrency(value: number | string | null | undefined): string {
+interface FormatCurrencyOptions {
+  /** Exibe valor abreviado: R$1,2k ou R$2,5M */
+  compact?: boolean
+}
+
+/** Formata número ou string numérica como BRL.
+ *  Passar `{ compact: true }` para exibição abreviada (ex.: R$1,2k, R$2,5M).
+ */
+export function formatCurrency(
+  value: number | string | null | undefined,
+  options?: FormatCurrencyOptions,
+): string {
   const n = value == null ? 0 : typeof value === "string" ? parseFloat(value) : value;
   if (isNaN(n)) return "R$ 0,00";
+
+  if (options?.compact) {
+    if (Math.abs(n) >= 1_000_000) {
+      return `R$${(n / 1_000_000).toFixed(1).replace(".", ",")}M`;
+    }
+    if (Math.abs(n) >= 1_000) {
+      return `R$${(n / 1_000).toFixed(1).replace(".", ",")}k`;
+    }
+  }
+
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",

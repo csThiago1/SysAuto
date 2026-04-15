@@ -1,6 +1,7 @@
 "use client"
 
 import { DollarSign, Truck, TrendingUp, AlertTriangle } from "lucide-react"
+import { formatCurrency } from "@paddock/utils"
 import { StatCard } from "./StatCard"
 import { BillingByTypeChart } from "./BillingByTypeChart"
 import { TeamProductivityTable } from "./TeamProductivityTable"
@@ -11,12 +12,6 @@ interface Props {
   data: ManagerDashboardStats
 }
 
-function formatCurrency(value: string | number): string {
-  const n = Number(value)
-  if (n >= 1000) return `R$\u00a0${(n / 1000).toFixed(1)}k`
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n)
-}
-
 export function ManagerDashboard({ data }: Props) {
   return (
     <div className="space-y-6">
@@ -24,7 +19,7 @@ export function ManagerDashboard({ data }: Props) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Faturamento Mês"
-          value={formatCurrency(data.billing_month)}
+          value={formatCurrency(data.billing_month, { compact: true })}
           icon={<DollarSign className="h-5 w-5 text-emerald-600" />}
           iconBg="bg-emerald-50"
         />
@@ -36,7 +31,7 @@ export function ManagerDashboard({ data }: Props) {
         />
         <StatCard
           label="Ticket Médio"
-          value={formatCurrency(data.avg_ticket)}
+          value={formatCurrency(data.avg_ticket, { compact: true })}
           icon={<TrendingUp className="h-5 w-5 text-violet-600" />}
           iconBg="bg-violet-50"
         />

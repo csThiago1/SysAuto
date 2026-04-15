@@ -1,12 +1,8 @@
 "use client"
 
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { formatCurrency } from "@paddock/utils"
 import type { BillingMonthPoint } from "@paddock/types"
-
-function formatShort(value: number): string {
-  if (value >= 1000) return `R$${(value / 1000).toFixed(1)}k`
-  return `R$${value.toFixed(0)}`
-}
 
 function formatMonth(month: string): string {
   // month is already formatted as "abr/26" by the API
@@ -32,7 +28,7 @@ export function BillingByTypeChart({ data }: Props) {
         <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
           <XAxis dataKey="month" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
           <YAxis
-            tickFormatter={formatShort}
+            tickFormatter={(v: number) => formatCurrency(v, { compact: true })}
             tick={{ fontSize: 11 }}
             axisLine={false}
             tickLine={false}
