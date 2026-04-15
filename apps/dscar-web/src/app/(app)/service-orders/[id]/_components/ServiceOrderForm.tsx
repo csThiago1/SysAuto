@@ -5,15 +5,27 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import type { ServiceOrder, ServiceOrderStatus } from "@paddock/types"
+import { VALID_TRANSITIONS } from "@paddock/types"
+import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api"
 import { toast } from "sonner"
+import { ArrowRight, Loader2, ChevronDown } from "lucide-react"
 
 import { serviceOrderUpdateSchema, type ServiceOrderUpdateInput } from "../_schemas/service-order.schema"
 import { useServiceOrderUpdate } from "../_hooks/useServiceOrder"
 import { useAutoTransition } from "../_hooks/useAutoTransition"
 import { useCustomerUpdate, type CustomerUpdateInput } from "../_hooks/useCustomerSearch"
+import { useTransitionStatus } from "@/hooks/useServiceOrders"
 import { StatusBadge } from "./shared/StatusBadge"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
 import { ClosingTab } from "./tabs/ClosingTab"
 import { FilesTab } from "./tabs/FilesTab"
 import { HistoryTab } from "./tabs/HistoryTab"
@@ -113,9 +125,20 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   const customerUpdateMutation = useCustomerUpdate(
     form.watch("customer") ?? order.customer_uuid ?? null
   )
+  const transitionMutation = useTransitionStatus(order.id)
   useAutoTransition({ order })
 
   const isPending = updateMutation.isPending || customerUpdateMutation.isPending
+  const nextStatuses = VALID_TRANSITIONS[order.status as ServiceOrderStatus] ?? []
+
+  async function handleTransition(newStatus: ServiceOrderStatus) {
+    try {
+      await transitionMutation.mutateAsync(newStatus)
+      toast.success(`Status atualizado para "${SERVICE_ORDER_STATUS_CONFIG[newStatus].label}"`)
+    } catch {
+      toast.error("Erro ao atualizar status. Tente novamente.")
+    }
+  }
 
   async function onSubmit(data: ServiceOrderUpdateInput) {
     await updateMutation.mutateAsync(data)
@@ -154,9 +177,47 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       <div className="flex items-center justify-between border-b bg-white px-6 py-4">
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-bold text-gray-900">OS #{order.number}</h1>
-          <StatusBadge status={order.status} />
+          <StatusBadge status={order.status as ServiceOrderStatus} />
         </div>
         <div className="flex items-center gap-3">
+          {/* Status transition dropdown — hidden for terminal statuses */}
+          {nextStatuses.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  disabled={transitionMutation.isPending}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-primary-600 px-3 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 disabled:opacity-50 transition-colors"
+                >
+                  {transitionMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <ArrowRight className="h-4 w-4" />
+                  )}
+                  Avançar Status
+                  <ChevronDown className="h-3.5 w-3.5 opacity-70" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuLabel>Próximos status permitidos</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {nextStatuses.map((nextStatus) => {
+                  const cfg = SERVICE_ORDER_STATUS_CONFIG[nextStatus]
+                  return (
+                    <DropdownMenuItem
+                      key={nextStatus}
+                      onClick={() => void handleTransition(nextStatus)}
+                      disabled={transitionMutation.isPending}
+                    >
+                      <span className={cn("mr-2 h-2 w-2 rounded-full shrink-0", cfg.dot)} />
+                      {cfg.label}
+                    </DropdownMenuItem>
+                  )
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
           <button
             type="button"
             onClick={() => router.back()}
