@@ -5,6 +5,7 @@ import { Package, Trash2, Plus, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { PermissionGate } from "@/components/PermissionGate";
 import { useOSParts, useAddOSPart, useDeleteOSPart } from "@/hooks/useServiceOrders";
 import { formatCurrency } from "@paddock/utils";
@@ -48,6 +49,7 @@ export function OSPartsSection({ osId, osStatus }: OSPartsSectionProps): React.R
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<PartForm>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; desc: string } | null>(null);
 
   const { data: parts = [], isLoading } = useOSParts(osId);
   const addPart = useAddOSPart(osId);
@@ -83,9 +85,7 @@ export function OSPartsSection({ osId, osStatus }: OSPartsSectionProps): React.R
   };
 
   const handleDelete = (partId: string, desc: string): void => {
-    if (window.confirm(`Remover peça "${desc}"? Esta ação não pode ser desfeita.`)) {
-      deletePart.mutate(partId);
-    }
+    setDeleteTarget({ id: partId, desc });
   };
 
   const partsTotal = parts.reduce((sum, p) => sum + p.total, 0);
@@ -247,6 +247,19 @@ export function OSPartsSection({ osId, osStatus }: OSPartsSectionProps): React.R
           </Button>
         </PermissionGate>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Remover peça"
+        description={deleteTarget ? `Remover "${deleteTarget.desc}"? Esta ação não pode ser desfeita.` : undefined}
+        confirmLabel="Remover"
+        variant="destructive"
+        onConfirm={() => {
+          if (deleteTarget) deletePart.mutate(deleteTarget.id);
+          setDeleteTarget(null);
+        }}
+      />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { Wrench, Trash2, Plus, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { PermissionGate } from "@/components/PermissionGate";
 import { useOSLabor, useAddOSLabor, useDeleteOSLabor } from "@/hooks/useServiceOrders";
 import { formatCurrency } from "@paddock/utils";
@@ -46,6 +47,7 @@ export function OSServicesSection({ osId, osStatus }: OSServicesSectionProps): R
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<LaborForm>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; desc: string } | null>(null);
 
   const { data: laborItems = [], isLoading } = useOSLabor(osId);
   const addLabor = useAddOSLabor(osId);
@@ -80,9 +82,7 @@ export function OSServicesSection({ osId, osStatus }: OSServicesSectionProps): R
   };
 
   const handleDelete = (laborId: string, desc: string): void => {
-    if (window.confirm(`Remover serviço "${desc}"? Esta ação não pode ser desfeita.`)) {
-      deleteLabor.mutate(laborId);
-    }
+    setDeleteTarget({ id: laborId, desc });
   };
 
   const servicesTotal = laborItems.reduce((sum, l) => sum + l.total, 0);
@@ -231,6 +231,19 @@ export function OSServicesSection({ osId, osStatus }: OSServicesSectionProps): R
           </Button>
         </PermissionGate>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Remover serviço"
+        description={deleteTarget ? `Remover "${deleteTarget.desc}"? Esta ação não pode ser desfeita.` : undefined}
+        confirmLabel="Remover"
+        variant="destructive"
+        onConfirm={() => {
+          if (deleteTarget) deleteLabor.mutate(deleteTarget.id);
+          setDeleteTarget(null);
+        }}
+      />
     </div>
   );
 }

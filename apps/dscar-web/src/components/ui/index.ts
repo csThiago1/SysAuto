@@ -26,6 +26,7 @@ export {
   Dialog, DialogContent, DialogDescription,
   DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "./dialog";
+export { ConfirmDialog } from "./ConfirmDialog";
 
 // Sheet / Drawer
 export {
