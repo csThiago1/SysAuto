@@ -5,12 +5,8 @@ import { Controller, type UseFormReturn } from "react-hook-form"
 import { toast } from "sonner"
 import { usePlateLookup } from "../../_hooks/useVehicleCatalog"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
+import { FORM_SECTION_TITLE, FORM_LABEL, FORM_INPUT, FORM_ERROR, FORM_WARN } from "@paddock/utils"
 import { ColorSelect } from "../shared/ColorSelect"
-
-const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-neutral-500"
-const LABEL = "block text-xs font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
-const INPUT =
-  "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 
 interface VehicleSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
@@ -44,7 +40,7 @@ export function VehicleSection({ form }: VehicleSectionProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3 border-b pb-1.5">
-        <span className={SECTION_TITLE}>Dados do Veículo</span>
+        <span className={FORM_SECTION_TITLE}>Dados do Veículo</span>
       </div>
 
       {/* Header: slot visual + placa destaque */}
@@ -56,7 +52,7 @@ export function VehicleSection({ form }: VehicleSectionProps) {
 
         {/* Placa destaque */}
         <div className="flex-1">
-          <label className={LABEL}>Placa *</label>
+          <label className={FORM_LABEL}>Placa *</label>
           <div className="flex items-center gap-2">
             {/* h-9 intentional — placa é campo destaque */}
             <input
@@ -72,10 +68,10 @@ export function VehicleSection({ form }: VehicleSectionProps) {
             )}
           </div>
           {errors.plate && (
-            <p className="mt-0.5 text-xs text-red-600">{errors.plate.message}</p>
+            <p className={FORM_ERROR}>{errors.plate.message}</p>
           )}
           {error && (
-            <p className="mt-0.5 text-xs text-amber-600">Placa não encontrada — preencha manualmente</p>
+            <p className={FORM_WARN}>Placa não encontrada — preencha manualmente</p>
           )}
         </div>
       </div>
@@ -83,24 +79,24 @@ export function VehicleSection({ form }: VehicleSectionProps) {
       {/* Grid campos */}
       <div className="grid grid-cols-3 gap-2">
         <div>
-          <label className={LABEL}>Montadora</label>
-          <input className={INPUT} type="text" placeholder="Honda" {...register("make")} />
+          <label className={FORM_LABEL}>Montadora</label>
+          <input className={FORM_INPUT} type="text" placeholder="Honda" {...register("make")} />
         </div>
         <div>
-          <label className={LABEL}>Modelo</label>
-          <input className={INPUT} type="text" placeholder="Civic" {...register("model")} />
+          <label className={FORM_LABEL}>Modelo</label>
+          <input className={FORM_INPUT} type="text" placeholder="Civic" {...register("model")} />
         </div>
         <div>
-          <label className={LABEL}>Versão</label>
-          <input className={INPUT} type="text" placeholder="EX 2.0" {...register("vehicle_version")} />
+          <label className={FORM_LABEL}>Versão</label>
+          <input className={FORM_INPUT} type="text" placeholder="EX 2.0" {...register("vehicle_version")} />
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-2">
         <div>
-          <label className={LABEL}>Ano</label>
+          <label className={FORM_LABEL}>Ano</label>
           <input
-            className={INPUT}
+            className={FORM_INPUT}
             type="number"
             min={1900}
             max={2100}
@@ -109,7 +105,7 @@ export function VehicleSection({ form }: VehicleSectionProps) {
           />
         </div>
         <div>
-          <label className={LABEL}>Cor</label>
+          <label className={FORM_LABEL}>Cor</label>
           <Controller
             name="color"
             control={control}
@@ -119,8 +115,8 @@ export function VehicleSection({ form }: VehicleSectionProps) {
           />
         </div>
         <div>
-          <label className={LABEL}>Combustível</label>
-          <select className={INPUT} {...register("fuel_type")}>
+          <label className={FORM_LABEL}>Combustível</label>
+          <select className={FORM_INPUT} {...register("fuel_type")}>
             <option value="">Selecionar...</option>
             <option value="flex">Flex</option>
             <option value="gasoline">Gasolina</option>
@@ -134,13 +130,13 @@ export function VehicleSection({ form }: VehicleSectionProps) {
 
       <div className="grid grid-cols-[1fr_120px] gap-2">
         <div>
-          <label className={LABEL}>Chassi</label>
-          <input className={INPUT} type="text" maxLength={17} placeholder="17 caracteres" {...register("chassis")} />
+          <label className={FORM_LABEL}>Chassi</label>
+          <input className={FORM_INPUT} type="text" maxLength={17} placeholder="17 caracteres" {...register("chassis")} />
         </div>
         <div>
-          <label className={LABEL}>FIPE (R$)</label>
+          <label className={FORM_LABEL}>FIPE (R$)</label>
           <input
-            className={INPUT}
+            className={FORM_INPUT}
             type="number"
             step="0.01"
             min="0"

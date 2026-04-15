@@ -3,16 +3,9 @@
 import { useEffect } from "react"
 import { Controller, type UseFormReturn } from "react-hook-form"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
+import { FORM_SECTION_TITLE, FORM_SUBSECTION, FORM_LABEL, FORM_INPUT, FORM_INPUT_ERROR, FORM_HINT, FORM_ERROR, FORM_WARN } from "@paddock/utils"
 import { DateTimeNow } from "../shared/DateTimeNow"
 import { cn } from "@/lib/utils"
-
-const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-neutral-500"
-const SUBSECTION = "text-xs font-semibold uppercase tracking-wider text-neutral-400 mt-3 mb-1"
-const LABEL = "block text-xs font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
-const INPUT =
-  "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
-const INPUT_ERROR =
-  "flex h-8 w-full rounded-md border border-red-500 bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-red-500 disabled:opacity-50"
 
 interface PrazosSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
@@ -39,13 +32,13 @@ export function PrazosSection({ form }: PrazosSectionProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3 border-b pb-1.5">
-        <span className={SECTION_TITLE}>Agendamentos</span>
+        <span className={FORM_SECTION_TITLE}>Agendamentos</span>
       </div>
 
       {/* ── 1. Agendamentos lado a lado ──────────────────────────────── */}
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className={LABEL}>Entrada do veículo</label>
+          <label className={FORM_LABEL}>Entrada do veículo</label>
           <Controller
             name="scheduling_date"
             control={control}
@@ -58,10 +51,10 @@ export function PrazosSection({ form }: PrazosSectionProps) {
               />
             )}
           />
-          <p className="mt-0.5 text-xs text-neutral-400">Aparece na agenda como entrada</p>
+          <p className={FORM_HINT}>Aparece na agenda como entrada</p>
         </div>
         <div>
-          <label className={LABEL}>Retirada pelo cliente</label>
+          <label className={FORM_LABEL}>Retirada pelo cliente</label>
           <Controller
             name="delivery_date"
             control={control}
@@ -74,43 +67,43 @@ export function PrazosSection({ form }: PrazosSectionProps) {
               />
             )}
           />
-          <p className="mt-0.5 text-xs text-neutral-400">Aparece na agenda como retirada</p>
+          <p className={FORM_HINT}>Aparece na agenda como retirada</p>
         </div>
       </div>
 
       {/* ── 2. Previsão (auto-calculada) ─────────────────────────────── */}
-      <p className={SUBSECTION}>Previsão de reparo</p>
+      <p className={FORM_SUBSECTION}>Previsão de reparo</p>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className={LABEL}>Dias de reparo</label>
+          <label className={FORM_LABEL}>Dias de reparo</label>
           <input
-            className={cn(errors.repair_days ? INPUT_ERROR : INPUT)}
+            className={cn(errors.repair_days ? FORM_INPUT_ERROR : FORM_INPUT)}
             type="number"
             min="1"
             placeholder="Ex: 10"
             {...register("repair_days", { valueAsNumber: true })}
           />
           {errors.repair_days && (
-            <p className="mt-0.5 text-xs text-red-500">{errors.repair_days.message}</p>
+            <p className={FORM_ERROR}>{errors.repair_days.message}</p>
           )}
         </div>
         <div>
-          <label className={LABEL}>Previsão de entrega</label>
+          <label className={FORM_LABEL}>Previsão de entrega</label>
           <input
-            className={`${INPUT} bg-neutral-50 cursor-default`}
+            className={`${FORM_INPUT} bg-neutral-50 cursor-default`}
             type="date"
             readOnly
             {...register("estimated_delivery_date")}
           />
-          <p className="mt-0.5 text-xs text-neutral-400">Entrada + dias de reparo</p>
+          <p className={FORM_HINT}>Entrada + dias de reparo</p>
         </div>
       </div>
 
       {/* ── 3. Registros automáticos (disparam status ao serem preenchidos) */}
-      <p className={SUBSECTION}>Registros automáticos de status</p>
+      <p className={FORM_SUBSECTION}>Registros automáticos de status</p>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className={LABEL}>Vistoria final</label>
+          <label className={FORM_LABEL}>Vistoria final</label>
           <Controller
             name="final_survey_date"
             control={control}
@@ -124,11 +117,11 @@ export function PrazosSection({ form }: PrazosSectionProps) {
             )}
           />
           {!errors.final_survey_date && (
-            <p className="mt-0.5 text-xs text-amber-600">Muda status → Vistoria Final</p>
+            <p className={FORM_WARN}>Muda status → Vistoria Final</p>
           )}
         </div>
         <div>
-          <label className={LABEL}>Entrega ao cliente</label>
+          <label className={FORM_LABEL}>Entrega ao cliente</label>
           <Controller
             name="client_delivery_date"
             control={control}
@@ -142,7 +135,7 @@ export function PrazosSection({ form }: PrazosSectionProps) {
             )}
           />
           {!errors.client_delivery_date && (
-            <p className="mt-0.5 text-xs text-amber-600">Muda status → Entregue</p>
+            <p className={FORM_WARN}>Muda status → Entregue</p>
           )}
         </div>
       </div>
