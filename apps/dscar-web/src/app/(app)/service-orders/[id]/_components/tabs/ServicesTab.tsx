@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Trash2, Search } from "lucide-react"
+import { Plus, Trash2, Search, Pencil, Check, X } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -20,6 +20,7 @@ import {
   useOSLaborItems,
   useOSLaborCreate,
   useOSLaborDelete,
+  useOSLaborUpdate,
   useServiceCatalog,
 } from "@/hooks/useServiceCatalog"
 import type { ServiceOrderStatus } from "@paddock/types"
@@ -49,10 +50,16 @@ export function ServicesTab({ osId, osStatus }: Props) {
   const [catalogSearch, setCatalogSearch] = useState("")
   const [showCatalog, setShowCatalog] = useState(false)
 
+  // Inline edit state
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editQty, setEditQty] = useState("")
+  const [editPrice, setEditPrice] = useState("")
+
   const { data: laborData, isLoading } = useOSLaborItems(osId)
   const { data: catalogData } = useServiceCatalog(catalogSearch ? { search: catalogSearch } : undefined)
   const addMutation    = useOSLaborCreate(osId)
   const deleteMutation = useOSLaborDelete(osId)
+  const updateMutation = useOSLaborUpdate(osId)
 
   const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } =
     useForm<AddForm>({ resolver: zodResolver(addSchema), defaultValues: { quantity: "1", discount: "0" } })
@@ -88,6 +95,35 @@ export function ServicesTab({ osId, osStatus }: Props) {
       toast.success("Serviço removido.")
     } catch {
       toast.error("Erro ao remover serviço.")
+    }
+  }
+
+  function startEdit(item: { id: string; quantity: string; unit_price: string }) {
+    setEditingId(item.id)
+    setEditQty(item.quantity)
+    setEditPrice(item.unit_price)
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+  }
+
+  async function saveEdit(laborId: string) {
+    const qty = parseFloat(editQty)
+    const price = parseFloat(editPrice)
+    if (isNaN(qty) || qty <= 0 || isNaN(price) || price < 0) {
+      toast.error("Valores inválidos.")
+      return
+    }
+    try {
+      await updateMutation.mutateAsync({
+        laborId,
+        payload: { quantity: String(qty), unit_price: String(price) },
+      })
+      setEditingId(null)
+      toast.success("Serviço atualizado.")
+    } catch {
+      toast.error("Erro ao atualizar serviço.")
     }
   }
 
@@ -202,45 +238,125 @@ export function ServicesTab({ osId, osStatus }: Props) {
                   <TableHead className="text-right">Unit.</TableHead>
                   <TableHead className="text-right">Desconto</TableHead>
                   <TableHead className="text-right">Total</TableHead>
-                  {!isBlocked && <TableHead className="w-8" />}
+                  {!isBlocked && <TableHead className="w-16" />}
                 </TableRow>
               </TableHeader>
               <TableBody className="bg-white">
-                {items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="py-2.5 px-3">
-                      <span className="font-medium text-neutral-800">{item.description}</span>
-                      {item.service_catalog_name && item.service_catalog_name !== item.description && (
-                        <span className="ml-1 text-xs text-neutral-400">
-                          ({item.service_catalog_name})
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="py-2.5 px-3 text-right text-neutral-600">{item.quantity}</TableCell>
-                    <TableCell className="py-2.5 px-3 text-right font-mono text-neutral-600">
-                      {formatCurrency(item.unit_price)}
-                    </TableCell>
-                    <TableCell className="py-2.5 px-3 text-right font-mono text-neutral-400">
-                      {Number(item.discount) > 0
-                        ? `- ${formatCurrency(item.discount)}`
-                        : "—"}
-                    </TableCell>
-                    <TableCell className="py-2.5 px-3 text-right font-mono font-semibold text-neutral-800">
-                      {formatCurrency(item.total)}
-                    </TableCell>
-                    {!isBlocked && (
-                      <TableCell className="py-2.5 px-3 text-center">
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(item.id, item.description)}
-                          className="text-neutral-300 hover:text-red-500 transition-colors"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                {items.map((item) => {
+                  const isEditing = editingId === item.id
+                  return (
+                    <TableRow key={item.id}>
+                      <TableCell className="py-2.5 px-3">
+                        <span className="font-medium text-neutral-800">{item.description}</span>
+                        {item.service_catalog_name && item.service_catalog_name !== item.description && (
+                          <span className="ml-1 text-xs text-neutral-400">
+                            ({item.service_catalog_name})
+                          </span>
+                        )}
                       </TableCell>
-                    )}
-                  </TableRow>
-                ))}
+                      <TableCell className="py-2.5 px-3 text-right text-neutral-600">
+                        {isEditing ? (
+                          <input
+                            type="number"
+                            value={editQty}
+                            onChange={(e) => setEditQty(e.target.value)}
+                            className="w-16 border border-neutral-300 rounded px-1 py-0.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary-500"
+                            min="0.01"
+                            step="0.01"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") void saveEdit(item.id)
+                              if (e.key === "Escape") cancelEdit()
+                            }}
+                          />
+                        ) : (
+                          <span
+                            className={!isBlocked ? "cursor-pointer hover:text-primary-600 transition-colors" : ""}
+                            onClick={!isBlocked ? () => startEdit(item) : undefined}
+                            title={!isBlocked ? "Clique para editar" : undefined}
+                          >
+                            {item.quantity}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="py-2.5 px-3 text-right font-mono text-neutral-600">
+                        {isEditing ? (
+                          <input
+                            type="number"
+                            value={editPrice}
+                            onChange={(e) => setEditPrice(e.target.value)}
+                            className="w-24 border border-neutral-300 rounded px-1 py-0.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary-500"
+                            min="0"
+                            step="0.01"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") void saveEdit(item.id)
+                              if (e.key === "Escape") cancelEdit()
+                            }}
+                          />
+                        ) : (
+                          <span
+                            className={!isBlocked ? "cursor-pointer hover:text-primary-600 transition-colors" : ""}
+                            onClick={!isBlocked ? () => startEdit(item) : undefined}
+                            title={!isBlocked ? "Clique para editar" : undefined}
+                          >
+                            {formatCurrency(item.unit_price)}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="py-2.5 px-3 text-right font-mono text-neutral-400">
+                        {Number(item.discount) > 0
+                          ? `- ${formatCurrency(item.discount)}`
+                          : "—"}
+                      </TableCell>
+                      <TableCell className="py-2.5 px-3 text-right font-mono font-semibold text-neutral-800">
+                        {formatCurrency(item.total)}
+                      </TableCell>
+                      {!isBlocked && (
+                        <TableCell className="py-2.5 px-3 text-center">
+                          {isEditing ? (
+                            <div className="flex items-center gap-1 justify-center">
+                              <button
+                                type="button"
+                                onClick={() => void saveEdit(item.id)}
+                                className="text-green-600 hover:text-green-700 transition-colors"
+                                title="Salvar"
+                              >
+                                <Check className="h-4 w-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={cancelEdit}
+                                className="text-neutral-400 hover:text-neutral-600 transition-colors"
+                                title="Cancelar"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 justify-center">
+                              <button
+                                type="button"
+                                onClick={() => startEdit(item)}
+                                className="text-neutral-300 hover:text-neutral-600 transition-colors"
+                                title="Editar quantidade e preço"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDelete(item.id, item.description)}
+                                className="text-neutral-300 hover:text-red-500 transition-colors"
+                                title="Remover"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </div>
