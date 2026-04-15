@@ -48,9 +48,11 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
   const [pendingFile, setPendingFile] = useState<File | null>(null)
 
   const {
-    register, handleSubmit, reset,
+    register, handleSubmit, reset, watch, setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) })
+
+  const brandColor = watch("brand_color")
 
   useEffect(() => {
     if (!open) return
@@ -213,16 +215,27 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
             <div>
               <label className={LABEL}>Cor da Marca</label>
               <div className="flex items-center gap-2">
+                {/* Native color picker — syncs to text input */}
                 <input
                   type="color"
-                  className="h-8 w-10 rounded border border-input cursor-pointer p-0.5"
-                  {...register("brand_color")}
+                  value={/^#[0-9a-fA-F]{6}$/.test(brandColor ?? "") ? (brandColor ?? "#000000") : "#000000"}
+                  onChange={(e) => setValue("brand_color", e.target.value, { shouldValidate: true })}
+                  className="h-8 w-10 shrink-0 rounded border border-input cursor-pointer p-0.5"
                 />
+                {/* Hex text input — syncs back to color picker */}
                 <Input
                   className="h-8 font-mono text-xs"
                   placeholder="#000000"
+                  maxLength={7}
                   {...register("brand_color")}
                 />
+                {/* Live preview swatch */}
+                {/^#[0-9a-fA-F]{6}$/.test(brandColor ?? "") && (
+                  <div
+                    className="h-8 w-8 shrink-0 rounded border border-neutral-200"
+                    style={{ backgroundColor: brandColor ?? undefined }}
+                  />
+                )}
               </div>
               {errors.brand_color && (
                 <p className="mt-0.5 text-xs text-red-600">{errors.brand_color.message}</p>
