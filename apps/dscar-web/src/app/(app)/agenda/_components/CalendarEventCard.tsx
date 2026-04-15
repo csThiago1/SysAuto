@@ -37,7 +37,9 @@ export function CalendarEventCard({ event, compact = false }: Props) {
       )}
       {event.os.plate}
       {!compact && (
-        <span className="ml-1 opacity-80 text-xs">{event.os.customer_name.split(" ")[0]}</span>
+        <span className="ml-1 opacity-80 text-xs truncate">
+          {[event.os.make, event.os.model].filter(Boolean).join(" ") || event.os.customer_name.split(" ")[0]}
+        </span>
       )}
     </Link>
   )
