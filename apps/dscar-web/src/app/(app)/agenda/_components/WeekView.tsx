@@ -33,9 +33,10 @@ function allDayEvents(events: CalendarEvent[], day: Date): CalendarEvent[] {
 interface Props {
   currentDate: Date
   events: CalendarEvent[]
+  onSwitchToDayView?: (date: Date) => void
 }
 
-export function WeekView({ currentDate, events }: Props) {
+export function WeekView({ currentDate, events, onSwitchToDayView }: Props) {
   const [scheduleOpen, setScheduleOpen] = useState(false)
   const [scheduleDate, setScheduleDate] = useState<Date | null>(null)
 
@@ -114,7 +115,7 @@ export function WeekView({ currentDate, events }: Props) {
                 <div
                   key={day.toISOString()}
                   className={cn(
-                    "border-l border-neutral-100 min-h-[52px] p-1 relative group overflow-hidden min-w-0",
+                    "border-l border-neutral-100 min-h-[64px] p-1 relative group overflow-hidden min-w-0",
                     working ? "cursor-pointer hover:bg-primary-600/5 transition-colors" : "bg-neutral-50"
                   )}
                   onClick={() => working && handleSlotClick(day, hour)}
@@ -127,9 +128,13 @@ export function WeekView({ currentDate, events }: Props) {
                         </div>
                       ))}
                       {dayHourEvents.length > MAX_VISIBLE && (
-                        <span className="text-[10px] text-neutral-500 font-medium px-1 leading-tight">
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); onSwitchToDayView?.(day) }}
+                          className="text-[10px] text-primary-600 font-medium px-1 leading-tight hover:underline text-left w-full"
+                        >
                           +{dayHourEvents.length - MAX_VISIBLE} mais
-                        </span>
+                        </button>
                       )}
                     </div>
                   ) : null}

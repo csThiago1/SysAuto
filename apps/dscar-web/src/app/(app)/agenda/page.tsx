@@ -88,7 +88,7 @@ export default function AgendaPage() {
           <MonthView currentDate={currentDate} events={events} onDayClick={handleDayClick} />
         )}
         {!isLoading && view === "week" && (
-          <WeekView currentDate={currentDate} events={events} />
+          <WeekView currentDate={currentDate} events={events} onSwitchToDayView={handleDayClick} />
         )}
         {!isLoading && view === "day" && (
           <DayView currentDate={currentDate} events={events} />
