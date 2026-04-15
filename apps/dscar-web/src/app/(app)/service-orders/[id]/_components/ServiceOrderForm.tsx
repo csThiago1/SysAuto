@@ -143,71 +143,75 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   }
 
   async function onSubmit(data: ServiceOrderUpdateInput) {
-    const savedOrder = await updateMutation.mutateAsync(data)
-    const customerId = data.customer ?? order.customer_uuid
-    if (customerDirtyData && customerId) {
-      await customerUpdateMutation.mutateAsync(customerDirtyData)
-      setCustomerDirtyData(null)
-      // Log customer changes in OS history
-      const CUSTOMER_FIELD_LABELS: Record<string, string> = {
-        name: "Nome", phone: "Telefone", email: "E-mail",
-        birth_date: "Nascimento", zip_code: "CEP", street: "Rua",
-        street_number: "Número", complement: "Complemento",
-        neighborhood: "Bairro", city: "Cidade", state: "UF",
+    try {
+      const savedOrder = await updateMutation.mutateAsync(data)
+      const customerId = data.customer ?? order.customer_uuid
+      if (customerDirtyData && customerId) {
+        await customerUpdateMutation.mutateAsync(customerDirtyData)
+        setCustomerDirtyData(null)
+        // Log customer changes in OS history
+        const CUSTOMER_FIELD_LABELS: Record<string, string> = {
+          name: "Nome", phone: "Telefone", email: "E-mail",
+          birth_date: "Nascimento", zip_code: "CEP", street: "Rua",
+          street_number: "Número", complement: "Complemento",
+          neighborhood: "Bairro", city: "Cidade", state: "UF",
+        }
+        const fieldChanges = Object.entries(customerDirtyData).map(([k, v]) => ({
+          field: k,
+          field_label: CUSTOMER_FIELD_LABELS[k] ?? k,
+          old_value: null,
+          new_value: String(v ?? ""),
+        }))
+        await apiFetch(`/api/proxy/service-orders/${order.id}/history/`, {
+          method: "POST",
+          body: JSON.stringify({
+            activity_type: "customer_updated",
+            message: "Dados do cliente atualizados.",
+            metadata: { field_changes: fieldChanges },
+          }),
+        }).catch(() => {/* non-critical, don't block the save */})
       }
-      const fieldChanges = Object.entries(customerDirtyData).map(([k, v]) => ({
-        field: k,
-        field_label: CUSTOMER_FIELD_LABELS[k] ?? k,
-        old_value: null,
-        new_value: String(v ?? ""),
-      }))
-      await apiFetch(`/api/proxy/service-orders/${order.id}/history/`, {
-        method: "POST",
-        body: JSON.stringify({
-          activity_type: "customer_updated",
-          message: "Dados do cliente atualizados.",
-          metadata: { field_changes: fieldChanges },
-        }),
-      }).catch(() => {/* non-critical, don't block the save */})
+      // Reset form to saved values so isDirty becomes false
+      form.reset({
+        consultant_id: savedOrder.consultant ?? undefined,
+        customer_type: savedOrder.customer_type ?? undefined,
+        os_type: savedOrder.os_type ?? undefined,
+        insurer: savedOrder.insurer ?? undefined,
+        insured_type: savedOrder.insured_type ?? undefined,
+        casualty_number: savedOrder.casualty_number ?? "",
+        deductible_amount: savedOrder.deductible_amount ? parseFloat(savedOrder.deductible_amount) : undefined,
+        broker_name: savedOrder.broker_name ?? "",
+        expert: savedOrder.expert ?? undefined,
+        expert_date: savedOrder.expert_date ?? undefined,
+        survey_date: savedOrder.survey_date ?? undefined,
+        authorization_date: savedOrder.authorization_date ?? undefined,
+        quotation_date: savedOrder.quotation_date ?? new Date().toISOString().split("T")[0],
+        customer: savedOrder.customer_uuid ?? undefined,
+        customer_name: savedOrder.customer_name ?? "",
+        plate: savedOrder.plate ?? "",
+        make: savedOrder.make ?? "",
+        model: savedOrder.model ?? "",
+        vehicle_version: savedOrder.vehicle_version ?? "",
+        year: savedOrder.year ?? undefined,
+        color: savedOrder.color ?? "",
+        chassis: savedOrder.chassis ?? "",
+        fuel_type: savedOrder.fuel_type ?? "",
+        fipe_value: savedOrder.fipe_value ? parseFloat(savedOrder.fipe_value) : undefined,
+        mileage_in: savedOrder.mileage_in ?? undefined,
+        vehicle_location: savedOrder.vehicle_location ?? "workshop",
+        entry_date: savedOrder.entry_date ?? undefined,
+        service_authorization_date: savedOrder.service_authorization_date ?? undefined,
+        scheduling_date: savedOrder.scheduling_date ?? undefined,
+        repair_days: savedOrder.repair_days ?? undefined,
+        estimated_delivery_date: savedOrder.estimated_delivery_date ?? undefined,
+        delivery_date: savedOrder.delivery_date ?? undefined,
+        final_survey_date: savedOrder.final_survey_date ?? undefined,
+        client_delivery_date: savedOrder.client_delivery_date ?? undefined,
+      })
+      toast.success("OS salva com sucesso!")
+    } catch {
+      toast.error("Erro ao salvar OS. Tente novamente.")
     }
-    // Reset form to saved values so isDirty becomes false
-    form.reset({
-      consultant_id: savedOrder.consultant ?? undefined,
-      customer_type: savedOrder.customer_type ?? undefined,
-      os_type: savedOrder.os_type ?? undefined,
-      insurer: savedOrder.insurer ?? undefined,
-      insured_type: savedOrder.insured_type ?? undefined,
-      casualty_number: savedOrder.casualty_number ?? "",
-      deductible_amount: savedOrder.deductible_amount ? parseFloat(savedOrder.deductible_amount) : undefined,
-      broker_name: savedOrder.broker_name ?? "",
-      expert: savedOrder.expert ?? undefined,
-      expert_date: savedOrder.expert_date ?? undefined,
-      survey_date: savedOrder.survey_date ?? undefined,
-      authorization_date: savedOrder.authorization_date ?? undefined,
-      quotation_date: savedOrder.quotation_date ?? new Date().toISOString().split("T")[0],
-      customer: savedOrder.customer_uuid ?? undefined,
-      customer_name: savedOrder.customer_name ?? "",
-      plate: savedOrder.plate ?? "",
-      make: savedOrder.make ?? "",
-      model: savedOrder.model ?? "",
-      vehicle_version: savedOrder.vehicle_version ?? "",
-      year: savedOrder.year ?? undefined,
-      color: savedOrder.color ?? "",
-      chassis: savedOrder.chassis ?? "",
-      fuel_type: savedOrder.fuel_type ?? "",
-      fipe_value: savedOrder.fipe_value ? parseFloat(savedOrder.fipe_value) : undefined,
-      mileage_in: savedOrder.mileage_in ?? undefined,
-      vehicle_location: savedOrder.vehicle_location ?? "workshop",
-      entry_date: savedOrder.entry_date ?? undefined,
-      service_authorization_date: savedOrder.service_authorization_date ?? undefined,
-      scheduling_date: savedOrder.scheduling_date ?? undefined,
-      repair_days: savedOrder.repair_days ?? undefined,
-      estimated_delivery_date: savedOrder.estimated_delivery_date ?? undefined,
-      delivery_date: savedOrder.delivery_date ?? undefined,
-      final_survey_date: savedOrder.final_survey_date ?? undefined,
-      client_delivery_date: savedOrder.client_delivery_date ?? undefined,
-    })
-    toast.success("OS salva!")
   }
 
   return (
