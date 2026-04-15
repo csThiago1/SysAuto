@@ -20,14 +20,14 @@ export function ManagerDashboard({ data }: Props) {
         <StatCard
           label="Faturamento Mês"
           value={formatCurrency(data.billing_month, { compact: true })}
-          icon={<DollarSign className="h-5 w-5 text-emerald-600" />}
-          iconBg="bg-emerald-50"
+          icon={<DollarSign className="h-5 w-5 text-success-600" />}
+          iconBg="bg-success-50"
         />
         <StatCard
           label="Entregas (mês)"
           value={data.delivered_month}
-          icon={<Truck className="h-5 w-5 text-blue-600" />}
-          iconBg="bg-blue-50"
+          icon={<Truck className="h-5 w-5 text-info-600" />}
+          iconBg="bg-info-50"
         />
         <StatCard
           label="Ticket Médio"

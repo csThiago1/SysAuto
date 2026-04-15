@@ -12,7 +12,7 @@ export function OverdueOSList({ items }: Props) {
   if (items.length === 0) {
     return (
       <div className="bg-white rounded-md border border-neutral-200 shadow-sm p-4 flex items-center gap-2">
-        <span className="text-emerald-500 text-sm font-medium">✓ Nenhuma OS atrasada</span>
+        <span className="text-success-500 text-sm font-medium">✓ Nenhuma OS atrasada</span>
       </div>
     )
   }
@@ -36,7 +36,7 @@ export function OverdueOSList({ items }: Props) {
           {items.map((os) => (
             <tr key={os.id} className="hover:bg-red-50/50">
               <td className="px-4 py-2">
-                <Link href={`/service-orders/${os.id}`} className="font-medium text-neutral-800 hover:text-blue-600">
+                <Link href={`/service-orders/${os.id}`} className="font-medium text-neutral-800 hover:text-info-600">
                   #{os.number} · {os.plate}
                 </Link>
               </td>

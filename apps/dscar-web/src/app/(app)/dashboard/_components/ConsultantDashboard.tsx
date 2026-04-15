@@ -18,14 +18,14 @@ export function ConsultantDashboard({ data }: Props) {
         <StatCard
           label="Minhas OS Abertas"
           value={data.my_open}
-          icon={<ClipboardList className="h-5 w-5 text-blue-600" />}
-          iconBg="bg-blue-50"
+          icon={<ClipboardList className="h-5 w-5 text-info-600" />}
+          iconBg="bg-info-50"
         />
         <StatCard
           label="Entregas Hoje"
           value={data.my_deliveries_today}
-          icon={<Truck className="h-5 w-5 text-emerald-600" />}
-          iconBg="bg-emerald-50"
+          icon={<Truck className="h-5 w-5 text-success-600" />}
+          iconBg="bg-success-50"
         />
         <StatCard
           label="OS Atrasadas"
@@ -64,7 +64,7 @@ export function ConsultantDashboard({ data }: Props) {
                 return (
                   <tr key={os.id} className="hover:bg-neutral-50">
                     <td className="px-4 py-2.5">
-                      <Link href={`/service-orders/${os.id}`} className="font-mono text-sm font-bold text-neutral-800 hover:text-blue-600">
+                      <Link href={`/service-orders/${os.id}`} className="font-mono text-sm font-bold text-neutral-800 hover:text-info-600">
                         {os.plate}
                       </Link>
                     </td>

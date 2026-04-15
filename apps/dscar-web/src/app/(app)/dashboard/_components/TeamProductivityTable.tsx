@@ -33,7 +33,7 @@ export function TeamProductivityTable({ members }: Props) {
               <td className="px-4 py-2.5 font-medium text-neutral-800">{m.name}</td>
               <td className="px-4 py-2.5 text-right text-neutral-600">{m.open_count}</td>
               <td className="px-4 py-2.5 text-right">
-                <span className="font-semibold text-emerald-700">{m.delivered_month}</span>
+                <span className="font-semibold text-success-700">{m.delivered_month}</span>
               </td>
             </tr>
           ))}
