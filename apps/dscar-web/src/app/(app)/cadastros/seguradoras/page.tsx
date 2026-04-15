@@ -5,6 +5,14 @@ import { Plus, Pencil, Trash2, Search, Shield } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { useInsurers, useInsurerDelete, useInsurerUploadLogo } from "@/hooks/useInsurers"
 import { InsurerDialog } from "./_components/InsurerDialog"
 import type { Insurer } from "@paddock/types"
@@ -102,22 +110,22 @@ export default function SeguradorasPage() {
         </div>
       ) : (
         <div className="overflow-hidden rounded-md border border-neutral-200 bg-white">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-xs font-semibold uppercase text-neutral-500">
-              <tr>
-                <th className="px-4 py-2.5 text-left w-16">Logo</th>
-                <th className="px-4 py-2.5 text-left">Nome</th>
-                <th className="px-4 py-2.5 text-left w-20">Abrev.</th>
-                <th className="px-4 py-2.5 text-left w-28">Cor</th>
-                <th className="px-4 py-2.5 text-left">CNPJ</th>
-                <th className="px-4 py-2.5 text-right w-28">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100">
+          <Table>
+            <TableHeader className="bg-neutral-50">
+              <TableRow>
+                <TableHead className="w-16">Logo</TableHead>
+                <TableHead>Nome</TableHead>
+                <TableHead className="w-20">Abrev.</TableHead>
+                <TableHead className="w-28">Cor</TableHead>
+                <TableHead>CNPJ</TableHead>
+                <TableHead className="w-28 text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {insurers.map((ins) => (
-                <tr key={ins.id} className="hover:bg-neutral-50">
+                <TableRow key={ins.id}>
                   {/* Logo cell — click to upload */}
-                  <td className="px-4 py-2">
+                  <TableCell className="py-2">
                     <label className="cursor-pointer group relative" title="Clique para trocar o logo">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-200 bg-white overflow-hidden shadow-sm group-hover:ring-2 group-hover:ring-primary-600/30 transition">
                         {ins.logo_url ? (
@@ -142,18 +150,18 @@ export default function SeguradorasPage() {
                         onChange={(e) => handleLogoUpload(ins, e)}
                       />
                     </label>
-                  </td>
+                  </TableCell>
 
-                  <td className="px-4 py-2">
+                  <TableCell className="py-2">
                     <div className="font-medium text-neutral-800">{ins.trade_name || ins.name}</div>
                     {ins.trade_name && (
                       <div className="text-xs text-neutral-400">{ins.name}</div>
                     )}
-                  </td>
+                  </TableCell>
 
-                  <td className="px-4 py-2 font-mono text-neutral-600">{ins.abbreviation || "—"}</td>
+                  <TableCell className="py-2 font-mono text-neutral-600">{ins.abbreviation || "—"}</TableCell>
 
-                  <td className="px-4 py-2">
+                  <TableCell className="py-2">
                     <div className="flex items-center gap-2">
                       <div
                         className="h-5 w-5 rounded-full border border-neutral-200 shrink-0"
@@ -161,11 +169,11 @@ export default function SeguradorasPage() {
                       />
                       <span className="font-mono text-xs text-neutral-500">{ins.brand_color || "—"}</span>
                     </div>
-                  </td>
+                  </TableCell>
 
-                  <td className="px-4 py-2 font-mono text-xs text-neutral-600">{ins.cnpj}</td>
+                  <TableCell className="py-2 font-mono text-xs text-neutral-600">{ins.cnpj}</TableCell>
 
-                  <td className="px-4 py-2 text-right">
+                  <TableCell className="py-2 text-right">
                     <div className="flex justify-end gap-1">
                       <Button
                         size="icon"
@@ -187,11 +195,11 @@ export default function SeguradorasPage() {
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
 

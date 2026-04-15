@@ -9,6 +9,15 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
   useOSLaborItems,
   useOSLaborCreate,
   useOSLaborDelete,
@@ -182,42 +191,42 @@ export function ServicesTab({ osId, osStatus }: Props) {
         <p className="py-8 text-center text-sm text-neutral-400">Nenhum serviço adicionado.</p>
       ) : (
         <div className="rounded-md border border-neutral-200 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-xs font-semibold uppercase text-neutral-500">
-              <tr>
-                <th className="px-3 py-2 text-left">Descrição</th>
-                <th className="px-3 py-2 text-right">Qtd.</th>
-                <th className="px-3 py-2 text-right">Unit.</th>
-                <th className="px-3 py-2 text-right">Desconto</th>
-                <th className="px-3 py-2 text-right">Total</th>
-                {!isBlocked && <th className="px-3 py-2 w-8" />}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100 bg-white">
+          <Table>
+            <TableHeader className="bg-neutral-50">
+              <TableRow>
+                <TableHead>Descrição</TableHead>
+                <TableHead className="text-right">Qtd.</TableHead>
+                <TableHead className="text-right">Unit.</TableHead>
+                <TableHead className="text-right">Desconto</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+                {!isBlocked && <TableHead className="w-8" />}
+              </TableRow>
+            </TableHeader>
+            <TableBody className="bg-white">
               {items.map((item) => (
-                <tr key={item.id} className="hover:bg-neutral-50">
-                  <td className="px-3 py-2.5">
+                <TableRow key={item.id}>
+                  <TableCell className="py-2.5 px-3">
                     <span className="font-medium text-neutral-800">{item.description}</span>
                     {item.service_catalog_name && item.service_catalog_name !== item.description && (
                       <span className="ml-1 text-xs text-neutral-400">
                         ({item.service_catalog_name})
                       </span>
                     )}
-                  </td>
-                  <td className="px-3 py-2.5 text-right text-neutral-600">{item.quantity}</td>
-                  <td className="px-3 py-2.5 text-right font-mono text-neutral-600">
+                  </TableCell>
+                  <TableCell className="py-2.5 px-3 text-right text-neutral-600">{item.quantity}</TableCell>
+                  <TableCell className="py-2.5 px-3 text-right font-mono text-neutral-600">
                     {Number(item.unit_price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                  </td>
-                  <td className="px-3 py-2.5 text-right font-mono text-neutral-400">
+                  </TableCell>
+                  <TableCell className="py-2.5 px-3 text-right font-mono text-neutral-400">
                     {Number(item.discount) > 0
                       ? `- ${Number(item.discount).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
                       : "—"}
-                  </td>
-                  <td className="px-3 py-2.5 text-right font-mono font-semibold text-neutral-800">
+                  </TableCell>
+                  <TableCell className="py-2.5 px-3 text-right font-mono font-semibold text-neutral-800">
                     {item.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                  </td>
+                  </TableCell>
                   {!isBlocked && (
-                    <td className="px-3 py-2.5 text-center">
+                    <TableCell className="py-2.5 px-3 text-center">
                       <button
                         type="button"
                         onClick={() => handleDelete(item.id, item.description)}
@@ -225,25 +234,25 @@ export function ServicesTab({ osId, osStatus }: Props) {
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
-                    </td>
+                    </TableCell>
                   )}
-                </tr>
+                </TableRow>
               ))}
-            </tbody>
-            <tfoot>
-              <tr className="bg-neutral-50 border-t border-neutral-200">
-                <td
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell
                   colSpan={isBlocked ? 4 : 5}
                   className="px-3 py-2 text-right text-xs font-semibold uppercase text-neutral-500"
                 >
                   Total Serviços
-                </td>
-                <td className="px-3 py-2 text-right font-mono font-bold text-neutral-800">
+                </TableCell>
+                <TableCell className="px-3 py-2 text-right font-mono font-bold text-neutral-800">
                   {servicesTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+                </TableCell>
+              </TableRow>
+            </TableFooter>
+          </Table>
         </div>
       )}
     </div>

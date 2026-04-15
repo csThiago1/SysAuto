@@ -9,6 +9,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
   useOSParts,
   useAddPart,
   useUpdatePart,
@@ -161,30 +170,30 @@ export function PartsTab({ orderId }: PartsTabProps) {
         </div>
       ) : (
         <div className="bg-white border border-neutral-200 rounded-lg overflow-hidden shadow-sm">
-          <table className="w-full text-sm">
-            <thead className="bg-neutral-50 border-b border-neutral-200">
-              <tr>
-                <th className="text-left px-4 py-2.5 font-medium text-neutral-600">Descrição</th>
-                <th className="text-left px-4 py-2.5 font-medium text-neutral-600 hidden sm:table-cell">Código</th>
-                <th className="text-right px-4 py-2.5 font-medium text-neutral-600">Qtd</th>
-                <th className="text-right px-4 py-2.5 font-medium text-neutral-600">Unit.</th>
-                <th className="text-right px-4 py-2.5 font-medium text-neutral-600 hidden md:table-cell">Desconto</th>
-                <th className="text-right px-4 py-2.5 font-medium text-neutral-600">Total</th>
-                <th className="px-4 py-2.5 w-20"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100">
+          <Table>
+            <TableHeader className="bg-neutral-50">
+              <TableRow>
+                <TableHead>Descrição</TableHead>
+                <TableHead className="hidden sm:table-cell">Código</TableHead>
+                <TableHead className="text-right">Qtd</TableHead>
+                <TableHead className="text-right">Unit.</TableHead>
+                <TableHead className="text-right hidden md:table-cell">Desconto</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+                <TableHead className="w-20" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {parts.map((part) => (
-                <tr key={part.id} className="hover:bg-neutral-50 transition-colors">
-                  <td className="px-4 py-3 text-neutral-900 font-medium">{part.description}</td>
-                  <td className="px-4 py-3 text-neutral-500 hidden sm:table-cell">{part.part_number || "—"}</td>
-                  <td className="px-4 py-3 text-right text-neutral-700">{part.quantity}</td>
-                  <td className="px-4 py-3 text-right text-neutral-700">{formatCurrency(part.unit_price)}</td>
-                  <td className="px-4 py-3 text-right text-neutral-500 hidden md:table-cell">
+                <TableRow key={part.id}>
+                  <TableCell className="text-neutral-900 font-medium">{part.description}</TableCell>
+                  <TableCell className="text-neutral-500 hidden sm:table-cell">{part.part_number || "—"}</TableCell>
+                  <TableCell className="text-right text-neutral-700">{part.quantity}</TableCell>
+                  <TableCell className="text-right text-neutral-700">{formatCurrency(part.unit_price)}</TableCell>
+                  <TableCell className="text-right text-neutral-500 hidden md:table-cell">
                     {parseFloat(part.discount) > 0 ? formatCurrency(part.discount) : "—"}
-                  </td>
-                  <td className="px-4 py-3 text-right font-semibold text-neutral-900">{formatCurrency(part.total)}</td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell className="text-right font-semibold text-neutral-900">{formatCurrency(part.total)}</TableCell>
+                  <TableCell>
                     <div className="flex items-center justify-end gap-1">
                       <button
                         type="button"
@@ -201,25 +210,25 @@ export function PartsTab({ orderId }: PartsTabProps) {
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-            <tfoot className="bg-neutral-50 border-t border-neutral-200">
-              <tr>
-                <td colSpan={4} className="px-4 py-3 text-right text-sm text-neutral-500 hidden md:table-cell">
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={4} className="text-right text-sm text-neutral-500 hidden md:table-cell">
                   {discountTotal > 0 && `Descontos: ${formatCurrency(discountTotal)}`}
-                </td>
-                <td colSpan={2} className="px-4 py-3 text-right text-sm font-bold text-neutral-900 md:hidden">
+                </TableCell>
+                <TableCell colSpan={2} className="text-right text-sm font-bold text-neutral-900 md:hidden">
                   Total Peças:
-                </td>
-                <td className="px-4 py-3 text-right text-sm font-bold text-neutral-900">
+                </TableCell>
+                <TableCell className="text-right text-sm font-bold text-neutral-900">
                   {formatCurrency(partsTotal)}
-                </td>
-                <td className="px-4 py-3"></td>
-              </tr>
-            </tfoot>
-          </table>
+                </TableCell>
+                <TableCell />
+              </TableRow>
+            </TableFooter>
+          </Table>
         </div>
       )}
     </div>

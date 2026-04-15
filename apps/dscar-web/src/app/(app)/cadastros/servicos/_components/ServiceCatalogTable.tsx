@@ -4,6 +4,14 @@ import { useState } from "react"
 import { Pencil, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { useServiceCatalogDelete } from "@/hooks/useServiceCatalog"
 import type { ServiceCatalogDetail } from "@paddock/types"
 
@@ -39,24 +47,24 @@ export function ServiceCatalogTable({ items, onEdit }: Props) {
 
   return (
     <div className="overflow-hidden rounded-md border border-neutral-200 bg-white">
-      <table className="w-full text-sm">
-        <thead className="bg-neutral-50 text-xs font-semibold uppercase text-neutral-500">
-          <tr>
-            <th className="px-4 py-2.5 text-left">Nome</th>
-            <th className="px-4 py-2.5 text-left">Categoria</th>
-            <th className="px-4 py-2.5 text-right">Preço Sugerido</th>
-            <th className="px-4 py-2.5 text-right w-20">Ações</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-neutral-100">
+      <Table>
+        <TableHeader className="bg-neutral-50">
+          <TableRow>
+            <TableHead>Nome</TableHead>
+            <TableHead>Categoria</TableHead>
+            <TableHead className="text-right">Preço Sugerido</TableHead>
+            <TableHead className="w-20 text-right">Ações</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {items.map((item) => (
-            <tr key={item.id} className="hover:bg-neutral-50">
-              <td className="px-4 py-2.5 font-medium text-neutral-800">{item.name}</td>
-              <td className="px-4 py-2.5 text-neutral-500">{item.category_display}</td>
-              <td className="px-4 py-2.5 text-right font-mono text-neutral-700">
+            <TableRow key={item.id}>
+              <TableCell className="font-medium text-neutral-800">{item.name}</TableCell>
+              <TableCell className="text-neutral-500">{item.category_display}</TableCell>
+              <TableCell className="text-right font-mono text-neutral-700">
                 {Number(item.suggested_price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-              </td>
-              <td className="px-4 py-2.5 text-right">
+              </TableCell>
+              <TableCell className="text-right">
                 <div className="flex justify-end gap-1">
                   <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onEdit(item)}>
                     <Pencil className="h-3.5 w-3.5" />
@@ -71,11 +79,11 @@ export function ServiceCatalogTable({ items, onEdit }: Props) {
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   )
 }
