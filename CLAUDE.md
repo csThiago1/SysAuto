@@ -214,6 +214,208 @@ npm install
 ls node_modules/<pacote>
 ```
 
+### Frontend — Formulários aninhados em `ServiceOrderForm`
+Qualquer aba renderizada dentro de `ServiceOrderForm` já está dentro de um `<form>`.
+HTML não permite `<form>` dentro de `<form>` — causa hydration error.
+
+```tsx
+// ERRADO — nested form
+<form onSubmit={handleSubmit(onAdd)} className="space-y-2">
+  ...
+  <Button type="submit">Adicionar</Button>
+</form>
+
+// CORRETO — div + onClick dispara o handleSubmit manualmente
+<div className="space-y-2">
+  ...
+  <Button type="button" onClick={() => handleSubmit(onAdd)()}>Adicionar</Button>
+</div>
+```
+Regra: dentro de qualquer tab do `ServiceOrderForm`, **nunca usar `<form>`**. Sempre `<div>` + `onClick={() => handleSubmit(fn)()}`.
+
+### Backend — Editar arquivo no worktree não reflete no dev server
+O dev server roda da pasta principal `/Users/thiagocampos/Documents/Projetos/grupo-dscar/`.
+Editar em `.worktrees/sprint-XX/` não tem efeito no servidor em execução.
+Ao corrigir bugs com o servidor rodando, editar sempre a pasta principal (branch `main`).
+
+---
+
+## 🔐 Padrões de Segurança
+
+### Django DRF — RBAC em ViewSets
+
+Todo `ModelViewSet` com operações de escrita deve usar `get_permissions()` para separar leitura de escrita:
+
+```python
+# ERRADO — todos os verbos com a mesma permissão
+class MyViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+
+# CORRETO — leitura: CONSULTANT+, escrita: MANAGER+
+class MyViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        if self.action in ("create", "update", "partial_update", "destroy"):
+            return [IsAuthenticated(), IsManagerOrAbove()]
+        return [IsAuthenticated(), IsConsultantOrAbove()]
+```
+
+Permission classes disponíveis em `apps.authentication.permissions`:
+- `IsConsultantOrAbove` — CONSULTANT, MANAGER, ADMIN, OWNER
+- `IsManagerOrAbove` — MANAGER, ADMIN, OWNER
+- `IsAdminOrAbove` — ADMIN, OWNER
+- `_get_role(request)` — extrai role do JWT (não usar `request.query_params`)
+
+### Django DRF — Nunca determinar role via query param
+
+O role do usuário **sempre vem do JWT**, nunca de parâmetros da URL.
+
+```python
+# ERRADO — cliente controla qual dashboard recebe (qualquer role pode ver qualquer view)
+role = request.query_params.get("role", "").upper()
+if role == "MANAGER":
+    return Response(self._manager_stats())
+
+# CORRETO — role extraído do token assinado
+from apps.authentication.permissions import _get_role
+role = _get_role(request)
+if role in ("MANAGER", "ADMIN", "OWNER"):
+    return Response(self._manager_stats())
+```
+
+### Django DRF — Serializers de update: nunca usar somente `exclude`
+
+`exclude` expõe todo o modelo por padrão. Campos calculados, de auditoria e de fluxo devem ser `read_only`:
+
+```python
+# ERRADO — is_active, status, totais, campos fiscais ficam graváveis
+class Meta:
+    model = ServiceOrder
+    exclude = ["number", "created_by"]
+
+# CORRETO — proteger campos sensíveis com read_only_fields
+class Meta:
+    model = ServiceOrder
+    exclude = ["number", "created_by"]
+    read_only_fields = [
+        "status",        # use endpoint de transição
+        "is_active",     # não permite soft-delete via PATCH
+        "invoice_issued",
+        "parts_total", "services_total", "discount_total",  # calculados
+        "ai_recommendations", "nfe_key", "nfse_number",     # fiscais/internos
+        "delivered_at", "delivery_date", "client_delivery_date",
+    ]
+```
+
+Alternativa mais segura para novos serializers: usar `fields` explícito em vez de `exclude`.
+
+### Django DRF — `is_active=True` obrigatório em todas as queries de APIView
+
+`ViewSet.get_queryset()` já filtra `is_active=True` pelo padrão do projeto.
+`APIView` separadas **não herdam esse filtro** — precisam incluir explicitamente.
+
+```python
+# ERRADO — APIView retorna OS soft-deleted
+class CalendarView(APIView):
+    def get(self, request):
+        qs = ServiceOrder.objects.filter(
+            Q(scheduling_date__range=...) | Q(estimated_delivery_date__range=...)
+        )
+
+# CORRETO
+class CalendarView(APIView):
+    def get(self, request):
+        qs = ServiceOrder.objects.filter(
+            is_active=True,  # ← obrigatório em APIView
+        ).filter(
+            Q(scheduling_date__range=...) | Q(estimated_delivery_date__range=...)
+        )
+```
+
+Aplica-se a: `CalendarView`, `DashboardStatsView`, endpoints `@action` que constroem queries manualmente.
+
+### Django DRF — Campo correto para "data de entrega"
+
+O modelo `ServiceOrder` tem três campos de data relacionados à entrega:
+
+| Campo | Quando é preenchido | Uso correto |
+|---|---|---|
+| `delivered_at` | No `transition()` para `DELIVERED` | KPIs "entregue hoje/semana", produtividade |
+| `delivery_date` | Previsão de entrega (planejamento) | Nunca usar para contar entregas realizadas |
+| `client_delivery_date` | Data de retirada pelo cliente | Relatórios de SLA ao cliente |
+
+```python
+# ERRADO — delivery_date não é preenchido na transição de status
+completed_week = ServiceOrder.objects.filter(delivery_date__date__gte=week_ago)
+
+# CORRETO
+completed_week = ServiceOrder.objects.filter(delivered_at__date__gte=week_ago)
+```
+
+### Django DRF — Parâmetros numéricos de query string: sempre validar
+
+```python
+# ERRADO — int() de string inválida lança ValueError → 500
+days_ahead = int(request.query_params.get("days_ahead", 0))
+
+# CORRETO — try/except + limite máximo
+try:
+    days_ahead = max(0, min(int(request.query_params.get("days_ahead", 0)), 365))
+except (ValueError, TypeError):
+    days_ahead = 0
+```
+
+### Django DRF — Erros de integração externa: nunca vazar `str(e)`
+
+```python
+# ERRADO — vaza paths internos, detalhes de API, stack traces
+except Exception as e:
+    return Response({"erro": str(e)}, status=500)
+
+# CORRETO — mensagem genérica ao cliente, detalhe no log
+except Exception as e:
+    logger.error(f"Erro inesperado em <contexto>: {e}")
+    return Response({"erro": "Erro interno ao processar requisição."}, status=500)
+```
+
+### Frontend — Proxy Next.js: nunca logar body do request (LGPD)
+
+O body de qualquer PATCH/POST pode conter CPF, email, telefone.
+O arquivo `apps/dscar-web/src/app/api/proxy/[...path]/route.ts` **não deve** logar o body.
+
+```typescript
+// ERRADO — pode incluir CPF, email, telefone em texto claro nos logs
+if (!response.ok) {
+    console.error(`[proxy] request body:`, body.slice(0, 500))
+}
+
+// CORRETO — logar apenas método, URL e status
+if (!response.ok) {
+    console.error(`[proxy] ${method} ${backendUrl} → ${response.status}`)
+}
+```
+
+### Frontend — Mutations React Query: sempre com try/catch
+
+```typescript
+// ERRADO — erro de API trava o formulário sem feedback
+async function onSubmit(values: FormValues) {
+    await mutation.mutateAsync(payload)
+    closeForm()
+}
+
+// CORRETO — usuário recebe feedback, formulário não trava
+async function onSubmit(values: FormValues) {
+    try {
+        await mutation.mutateAsync(payload)
+        closeForm()
+    } catch {
+        toast.error("Erro ao salvar. Tente novamente.")
+    }
+}
+```
+
 ---
 
 ## 📐 Padrões de Código
@@ -356,6 +558,36 @@ const canEdit = usePermission("MANAGER"); // true se role >= MANAGER
 # InsufficientStockError — nunca deixar negativo silenciosamente
 ```
 
+### Seguradoras — Logo Upload
+```python
+# Modelo: apps.insurers.Insurer (SHARED_APP — schema público)
+# logo_url  = CharField(max_500) — URL crua salva no banco
+# logo       = SerializerMethodField — URL resolvida (logo_url OU fallback Person.logo_url)
+
+# Upload via endpoint dedicado (não ImageField — sem Pillow):
+# POST /api/v1/insurers/{id}/upload_logo/  multipart/form-data campo "logo"
+# Aceita: PNG ou SVG · max 2 MB
+# Dev:  salva em MEDIA_ROOT/insurers/logos/<uuid>.<ext> → URL /media/...
+# Prod: salva no S3 via default_storage → URL https://bucket.s3...amazonaws.com/...
+
+# Next.js rewrite para servir media em dev (next.config.ts):
+# /media/* → http://localhost:8000/media/*
+
+# Mobile: resolveLogoUrl() em useInsurers.ts converte URL relativa em absoluta
+# logo.startsWith('/') → `${API_BASE_URL}${logo}`   (dev: localhost:8000)
+# logo.startsWith('http') → passa direto              (prod: S3)
+```
+
+**Campos `Insurer` retornados por `InsurerMinimalSerializer` (list + nested em OS):**
+```
+id · name · trade_name · cnpj · brand_color · abbreviation
+display_name · logo (resolvida) · logo_url (crua) · uses_cilia · is_active
+```
+
+**Semântica `logo` vs `logo_url`:**
+- `logo` → usar em **display** (inclui fallback via `Person.logo_url`)
+- `logo_url` → usar em **admin/edição** (valor bruto armazenado)
+
 ### Fotos de OS — imutáveis
 ```python
 # Fotos são evidência de sinistro para seguradoras
@@ -373,6 +605,19 @@ const canEdit = usePermission("MANAGER"); // true se role >= MANAGER
 ---
 
 ## 🖥️ Componentes Frontend Relevantes (dscar-web)
+
+### Módulo Seguradoras (`/cadastros/seguradoras`)
+```
+app/(app)/cadastros/seguradoras/
+├── page.tsx                            ← Lista + CRUD + upload rápido de logo
+└── _components/
+    └── InsurerDialog.tsx               ← Sheet lateral: form + preview logo + file input
+```
+- CRUD completo via `InsurerViewSet` (antes era read-only)
+- Upload rápido: clicar na logo na tabela abre file input diretamente
+- Upload via dialog: preview antes de salvar, separado do form
+- Hook global: `src/hooks/useInsurers.ts` — `useInsurers`, `useInsurerCreate`, `useInsurerUpdate`, `useInsurerDelete`, `useInsurerUploadLogo`
+- Sidebar: item "Seguradoras" (ícone `Shield`) sob "Cadastros"
 
 ### Módulo Financeiro (`/financeiro`)
 ```
@@ -901,21 +1146,7 @@ make typecheck       # mypy + tsc
 
 ## 🗺️ Sprints em Andamento
 
-### Sprint 16 — Abril 2026 (planejada)
-**Catálogo de Serviços + Agenda + Dashboard Role-Based**
-- **Catálogo de Serviços** (`/cadastros/servicos`): model `ServiceCatalog` (name, category, suggested_price, is_active), FK opcional em `ServiceOrderLabor`, CRUD frontend, aba ServicesTab na OS; **toda inserção/edição/remoção de peças e serviços gera `ServiceOrderActivityLog`** (`part_added`, `part_updated`, `part_removed`, `labor_added`, `labor_updated`, `labor_removed`)
-- **Agenda** (`/agenda`): visualizações mês/semana/dia de OSs por `scheduling_date` (entrada) e `estimated_delivery_date` (entrega), endpoint `GET /service-orders/calendar/`, agendamento manual via `SchedulingDialog`
-- **Dashboard Role-Based**: Consultor → KPIs pessoais (OS abertas, entregas hoje, atrasadas, concluídas semana); Gerente/Admin/Owner → faturamento, ticket médio, gráfico 6 meses, produtividade da equipe, OS atrasadas
-- **Docs**: `docs/superpowers/plans/2026-04-13-service-catalog.md`, `agenda.md`, `dashboard-rolebased.md`
-
-### Sprint M6 Mobile — Abril 2026 (em andamento)
-**Acompanhamento de Reparos + Vistorias + Push Notifications**
-- ⬜ Fotos de acompanhamento no detalhe da OS (pasta `acompanhamento`, câmera com marca d'água)
-- ⬜ Vistoria Inicial — `vistoria/entrada/[osId].tsx` (esqueleto existe): checklist fotos + itens + transição → `budget`
-- ⬜ Vistoria Final — `vistoria/saida/[osId].tsx` (esqueleto existe): comparativo antes/depois + transição → `ready`
-- ⬜ Push Notifications: `expo-notifications` (já instalado) + `push_token` no `GlobalUser` + Celery task ao mudar status
-- ⬜ EAS Build dev (necessário para `react-native-view-shot` em produção)
-- **Docs**: `docs/sprint-m6-mobile.md`
+Nenhuma sprint ativa no momento.
 
 ---
 
@@ -934,6 +1165,139 @@ make typecheck       # mypy + tsc
 ---
 
 ## 📦 Sprints Entregues
+
+### Sprints 17/18/19 — UX/UI Polish dscar-web — Abril 2026 ✅
+**30 melhorias de UX/UI no ERP web — design system, fluxo de OS e módulo de agenda**
+
+Design System (Sprint 17):
+- `tailwind.config.ts`: `primary-600: #ea0e03`, `primary-700: #c50b02` (cor oficial DS Car) ✅
+- Todos os textos abaixo de 12px migrados para `text-xs` (WCAG AA) ✅
+- `ConfirmDialog` — componente reutilizável substitui todos os `window.confirm()` ✅
+- `packages/utils/src/form-styles.ts` — constantes `FORM_LABEL`, `FORM_INPUT`, `FORM_ERROR`, `FORM_HINT` ✅
+- `packages/utils/formatters.ts` — `formatCurrency({ compact: true })` → "R$1,2k" / "R$2,5M" ✅
+- `BillingByTypeChart` — legenda dupla removida (era enganosa), barra única com total ✅
+- `ServicesTab` + `PartsTab` — painel de totais standalone (fora do `<tfoot>`) com `formatCurrency` ✅
+- `InsurerDialog` — seletor de cor nativo (`type="color"`) + input hex + swatch preview ✅
+- `TableSkeleton` — loading states em listas de OS e seguradoras ✅
+
+Fluxo de OS (Sprint 18):
+- Lista OS: paginação 20/página com barra "N–M de total" + reset ao mudar filtro ✅
+- OS detail: badge "Alterações não salvas" (isDirty) + botão Salvar desabilitado quando limpo ✅
+- OS detail: `form.reset(savedOrder)` após save — elimina falso isDirty pós-gravação ✅
+- OS detail: dropdown de transição de status no cabeçalho (usa `VALID_TRANSITIONS`) ✅
+- `ServicesTab`: edição inline de quantidade e preço unitário (Enter salva, Escape cancela) ✅
+- `PartsTab`: `ConfirmDialog` ao remover peça + try/catch em `handleDelete` ✅
+- `PrazosSection`: labels de data desambiguados (`delivery_date` ≠ `estimated_delivery_date`) ✅
+- `EntrySection`: painel read-only de NF-e/NFS-e com validação de 44 dígitos ✅
+- `InsurerDialog`: máscara CNPJ `XX.XXX.XXX/XXXX-XX` ✅
+- Kanban: toggles separados "Entregues" e "Canceladas" + coluna `cancelled` adicionada a `KANBAN_COLUMNS_ORDER` e `KANBAN_PHASE_GROUPS` em `packages/utils` ✅
+- `ServicesTab` + `PartsTab`: toggle de desconto oculto por padrão ✅
+
+Agenda + Polish (Sprint 19):
+- `DayView`: full-width (removido `max-w-xl`) ✅
+- `WeekView` + `DayView`: indicador de hora atual (linha vermelha, atualiza a cada 60s) ✅
+- `WeekView` + `DayView`: células clicáveis abrem `SchedulingDialog` com data/hora pré-preenchidos ✅
+- `WeekView`: máximo 2 eventos por célula + badge "+N mais" clicável → muda para DayView ✅
+  - `MAX_VISIBLE = 2` constante; prop `onSwitchToDayView?: (date: Date) => void`
+  - `agenda/page.tsx` passa `onSwitchToDayView={handleDayClick}` ao WeekView
+- `CalendarEventCard`: cores WCAG AA (600–700 em vez de 500) ✅
+- `CalendarEventCard`: exibe "Marca Modelo" em vez de primeiro nome (fallback para nome) ✅
+- `agenda/page.tsx`: padding `p-6` consistente com outras páginas ✅
+- `Sidebar`: tooltip corrige offset quando nav está scrollada (`navEl.scrollTop`) ✅
+- Dashboard (`ManagerDashboard`, `ConsultantDashboard`, `TeamProductivityTable`, `OverdueOSList`): migração `emerald→success`, `blue→info` (tokens do design system) ✅
+- `dashboard/page.tsx`: grid STOREKEEPER dinâmico via `cn()` baseado em `topStatuses.length` ✅
+
+**Padrões estabelecidos nessas sprints:**
+- `window.confirm()` proibido → sempre usar `ConfirmDialog` com estado `confirmXId`
+- Mutations de delete sempre com try/catch + `toast.error`
+- Campos de data em OS: `scheduling_date` / `delivery_date` / `estimated_delivery_date` / `client_delivery_date` — ver `PrazosSection.tsx` para labels corretos
+- Tokens de cor: `success-*` (verde), `info-*` (azul), `error-*` (vermelho), `warning-*` (âmbar) — `accent-*` é escala cinza metálico, NÃO violet
+
+---
+
+### Sprint 16 — Catálogo de Serviços + Agenda + Dashboard Role-Based — Abril 2026 ✅
+**Três features web entregues em uma sprint**
+
+Backend:
+- `ServiceCatalog` model (name, category, suggested_price, is_active) no app `service_orders` ✅
+- FK opcional `service_catalog` em `ServiceOrderLabor` (ON_DELETE=SET_NULL) ✅
+- Migration de merge `0015` (service_catalog + customer_uuid) ✅
+- Endpoint `GET /service-orders/calendar/?date_start=&date_end=` → `CalendarView` ✅
+- `DashboardStatsView`: retorna `ConsultantDashboardStats` ou `ManagerDashboardStats` por role JWT ✅
+- Billing via `ReceivableDocument` com fallback em `services_total + parts_total` ✅
+
+Frontend web:
+- `/cadastros/servicos` — CRUD completo com busca e filtro por categoria ✅
+- `ServicesTab` na OS: combobox busca catálogo + preço editável + tabela itens ✅
+- `/agenda` — views Mês/Semana/Dia com date-fns (sem lib extra), `SchedulingDialog` ✅
+- `/dashboard` — `ConsultantDashboard` (KPIs pessoais) e `ManagerDashboard` (faturamento, ticket médio, gráfico 6 meses, produtividade equipe, OS atrasadas) ✅
+- Sidebar: item "Agenda" (CalendarDays) entre OS e Cadastros; "Serviços" sob Cadastros ✅
+
+### Sprint M6 Mobile — Acompanhamento + Vistorias + Push Notifications — Abril 2026 ✅
+**App mobile completo: fotos, vistorias e notificações push**
+
+Mobile:
+- Fotos de acompanhamento no detalhe da OS: câmera → upload → pasta `acompanhamento` ✅
+- `vistoria/entrada/[osId].tsx` — checklist fotográfico (PhotoSlotGrid), ItemChecklistGrid, observações, transição → `budget` ✅
+- `vistoria/saida/[osId].tsx` — comparativo antes/depois (fotos `vistoria_inicial` vs slots novos `vistoria_final`), checkboxes de reparos, transição → `ready` ✅
+- `usePushNotifications.ts` — solicita permissão pós-login, registra Expo Push Token, listener foreground ✅
+
+Backend:
+- `GlobalUser.push_token` — `CharField` nullable + migration `authentication/0003_globaluser_push_token` ✅
+- Endpoint `PATCH /api/v1/users/push-token/` — salva token no `GlobalUser` ✅
+- Celery task `task_send_push_notification(tenant_schema, token, title, body)` — POST para `exp.host` ✅
+- Disparada no `ServiceOrderViewSet` ao mudar status ✅
+
+### OS Detail Dark Theme + Foto Sync Mobile — Abril 2026 ✅
+**OS detail redesign completo (dark glass) + upload de fotos end-to-end funcionando**
+
+Mobile — OS detail dark theme:
+- `os/_layout.tsx` — `[id]` screen: `headerShown: false` (remove barra iOS nativa branca) ✅
+- `components/ui/Card.tsx` — fundo dark glass (`Colors.surface #1c1c1e`, borda `Colors.border`) ✅
+- `components/os/OSDetailHeader.tsx` — redesign completo: `LinearGradient`, `useSafeAreaInsets`, botão voltar, badge placa 22px/800 ✅
+- `os/[id].tsx` — `VistoriaCTACard`: tints dark (`rgba(59,130,246,0.10)` / `rgba(22,163,74,0.10)`); `AcompanhamentoSection`: retry para fotos com erro (`errorCount`, `retryPhoto`) ✅
+
+Mobile — foto sync:
+- `lib/constants.ts` — `getTenantDomain(slug)` centralizado (`*.localhost` dev / `*.paddock.solutions` prod) ✅
+- `lib/api.ts` — usa `getTenantDomain(activeCompany)` ✅
+- `stores/photo.store.ts` — `uploadPendingPhotos` reescrito com `fetch + FormData` (remove `expo-file-system/legacy`); `updateOsId(oldId, newId)` action ✅
+- `stores/photo.store.ts` — guard `if (!osId) continue` (pula fotos de OS offline ainda não sincronizadas) ✅
+- `db/sync.ts` — `X-Tenant-Domain` usa `getTenantDomain`; após push bem-sucedido chama `updateOsId(localUUID, serverUUID)` ✅
+- `hooks/usePushNotifications.ts` — `projectId` lido de `Constants.expoConfig?.extra?.eas?.projectId`; skip silencioso se não configurado ✅
+
+Backend:
+- `serializers.py` — `UploadPhotoSerializer.file`: `ImageField` → `FileField` (Pillow não instalado no container) ✅
+- `serializers.py` — `ServiceOrderPhotoSerializer.get_url`: `request.build_absolute_uri(url)` quando URL relativa (dev local) ✅
+- `views.py` — passa `context={'request': request}` nos dois pontos de instanciação do `ServiceOrderPhotoSerializer` ✅
+- `models.py` — `OSPhotoFolder`: adicionados `FINAL_CHECKLIST = "checklist_saida"`, `EXPERTISE = "pericia"`, `OTHER = "outros"` ✅
+
+### Seguradoras CRUD + Logo Upload — Abril 2026 ✅
+**Gestão de Seguradoras com Upload de Logo (Web + Mobile)**
+
+Backend:
+- `InsurerViewSet` expandido para CRUD completo (antes só list) ✅
+- `POST /api/v1/insurers/{id}/upload_logo/` — multipart PNG/SVG máx 2 MB ✅
+- `default_storage` (local dev → `MEDIA_ROOT/insurers/logos/`, prod → S3) ✅
+- `InsurerMinimalSerializer` agora retorna `cnpj`, `logo_url`, `is_active` além dos campos já existentes ✅
+- `urls.py` dev: `static(MEDIA_URL, ...)` para servir uploads localmente ✅
+
+Frontend Web:
+- `/cadastros/seguradoras` — página de gestão com tabela, busca, CRUD ✅
+- Upload rápido: clique na logo na tabela abre file input inline ✅
+- `InsurerDialog` — Sheet com preview de logo, file input (PNG/SVG), cor, abreviação, Cilia ✅
+- `src/hooks/useInsurers.ts` — hook global com create/update/delete/uploadLogo ✅
+- Sidebar: item "Seguradoras" (Shield) adicionado em Cadastros ✅
+- `next.config.ts`: rewrite `/media/*` → `http://localhost:8000/media/*` (dev) ✅
+
+Frontend Mobile:
+- `useInsurers.ts`: `resolveLogoUrl()` converte URL relativa em absoluta para `Image` do RN ✅
+- `OSCard`: logo sem background — só shadow (`insurerLogoShadow` + `insurerLogoClip`) ✅
+- Cache key bumped `v2` → `v3` para invalidar dados sem os novos campos ✅
+
+Tipo `Insurer` (`@paddock/types`):
+- Adicionados: `cnpj`, `logo_url`, `is_active`, `uses_cilia` como required ✅
+- `logo: string | null` mantido (URL resolvida com fallback) ✅
+- Novo: `InsurerFull` para retorno do endpoint CRUD ✅
 
 ### UX Refinamentos dscar-web — Abril 2026 ✅
 **Nova Sidebar + OS Form + Filtros em Português**
