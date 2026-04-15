@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { AlertCircle, CheckSquare, LayoutList, Plus, Square } from "lucide-react";
+import { AlertCircle, CheckCircle, LayoutList, Plus, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useServiceOrders } from "@/hooks/useServiceOrders";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
@@ -13,11 +13,13 @@ import { NewOSDrawer } from "../_components/NewOSDrawer";
 export default function KanbanPage(): React.ReactElement {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showDelivered, setShowDelivered] = useState(false);
+  const [showCancelled, setShowCancelled] = useState(false);
 
-  // Sem entregues: exclui delivered/cancelled do backend — reduz payload ~70%
-  // Com entregues: busca tudo (toggle explícito do usuário)
+  // Sem entregues/canceladas: exclui delivered/cancelled do backend — reduz payload ~70%
+  // Com entregues ou canceladas: busca tudo (toggle explícito do usuário)
+  const fetchAll = showDelivered || showCancelled;
   const { data, isLoading, isError, error } = useServiceOrders(
-    showDelivered
+    fetchAll
       ? { is_active: "true", page_size: "200", ordering: "-opened_at" }
       : { is_active: "true", exclude_closed: "true", page_size: "150", ordering: "-opened_at" }
   );
@@ -45,17 +47,28 @@ export default function KanbanPage(): React.ReactElement {
             type="button"
             onClick={() => setShowDelivered((v) => !v)}
             className={cn(
-              "flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition-colors",
+              "flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
               showDelivered
-                ? "border-green-300 bg-green-50 text-green-700"
-                : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
+                ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                : "bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100"
             )}
           >
-            {showDelivered
-              ? <CheckSquare className="h-4 w-4" />
-              : <Square className="h-4 w-4" />
-            }
-            Entregues
+            <CheckCircle className="h-3.5 w-3.5" />
+            {showDelivered ? "Ocultar Entregues" : "Mostrar Entregues"}
+          </button>
+          {/* Toggle: mostrar canceladas */}
+          <button
+            type="button"
+            onClick={() => setShowCancelled((v) => !v)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
+              showCancelled
+                ? "bg-red-50 border-red-200 text-red-700"
+                : "bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100"
+            )}
+          >
+            <XCircle className="h-3.5 w-3.5" />
+            {showCancelled ? "Ocultar Canceladas" : "Mostrar Canceladas"}
           </button>
 
           <Button variant="outline" asChild>
@@ -84,7 +97,7 @@ export default function KanbanPage(): React.ReactElement {
 
       {/* Board */}
       <div className="flex-1 min-h-0 overflow-x-auto">
-        <KanbanBoard orders={orders} isLoading={isLoading} showHidden={showDelivered} />
+        <KanbanBoard orders={orders} isLoading={isLoading} showDelivered={showDelivered} showCancelled={showCancelled} />
       </div>
     </div>
     </ErrorBoundary>

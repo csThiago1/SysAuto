@@ -16,7 +16,6 @@ import type { ServiceOrder, ServiceOrderStatus } from "@paddock/types";
 import { VALID_TRANSITIONS } from "@paddock/types";
 import {
   KANBAN_COLUMNS_ORDER,
-  KANBAN_HIDDEN_BY_DEFAULT,
   KANBAN_PHASE_GROUPS,
   SERVICE_ORDER_STATUS_CONFIG,
 } from "@paddock/utils";
@@ -27,7 +26,8 @@ import { KanbanCardOverlay } from "./KanbanCard";
 interface KanbanBoardProps {
   orders: ServiceOrder[];
   isLoading: boolean;
-  showHidden?: boolean;
+  showDelivered?: boolean;
+  showCancelled?: boolean;
 }
 
 type OrdersMap = Record<ServiceOrderStatus, ServiceOrder[]>;
@@ -49,7 +49,8 @@ function groupByStatus(orders: ServiceOrder[]): OrdersMap {
 export function KanbanBoard({
   orders,
   isLoading,
-  showHidden = false,
+  showDelivered = false,
+  showCancelled = false,
 }: KanbanBoardProps): React.ReactElement {
   const qc = useQueryClient();
   const [activeOrder, setActiveOrder] = useState<ServiceOrder | null>(null);
@@ -66,12 +67,12 @@ export function KanbanBoard({
 
   const columns = useMemo(
     () =>
-      showHidden
-        ? KANBAN_COLUMNS_ORDER
-        : KANBAN_COLUMNS_ORDER.filter(
-            (s) => !KANBAN_HIDDEN_BY_DEFAULT.includes(s)
-          ),
-    [showHidden]
+      KANBAN_COLUMNS_ORDER.filter((s) => {
+        if (s === "delivered") return showDelivered;
+        if (s === "cancelled") return showCancelled;
+        return true;
+      }),
+    [showDelivered, showCancelled]
   );
 
   // Merge server data with optimistic overrides
