@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { Loader2, Plus, Pencil, Trash2, Package } from "lucide-react"
 import { toast } from "sonner"
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -41,6 +42,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showDiscount, setShowDiscount] = useState(false)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   const { data: parts, isLoading } = useOSParts(orderId)
   const addPart = useAddPart(orderId ?? "")
@@ -96,8 +98,12 @@ export function PartsTab({ orderId }: PartsTabProps) {
   }
 
   async function handleDelete(partId: string) {
-    if (!confirm("Remover esta peça?")) return
-    await deletePart.mutateAsync(partId)
+    try {
+      await deletePart.mutateAsync(partId)
+      toast.success("Peça removida.")
+    } catch {
+      toast.error("Erro ao remover peça.")
+    }
   }
 
   const isPending = addPart.isPending || updatePart.isPending
@@ -225,7 +231,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleDelete(part.id)}
+                          onClick={() => setConfirmDeleteId(part.id)}
                           className="p-1.5 rounded text-neutral-400 hover:text-red-500 hover:bg-red-50"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -257,6 +263,19 @@ export function PartsTab({ orderId }: PartsTabProps) {
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}
+        title="Remover peça"
+        description="Tem certeza que deseja remover esta peça da OS?"
+        confirmLabel="Remover"
+        variant="destructive"
+        onConfirm={() => {
+          if (confirmDeleteId) handleDelete(confirmDeleteId)
+          setConfirmDeleteId(null)
+        }}
+      />
     </div>
   )
 }
