@@ -158,7 +158,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
 
 // ─── Kanban ───────────────────────────────────────────────────────────────────
 
-/** Ordem das colunas no board Kanban (exceto cancelled) */
+/** Ordem das colunas no board Kanban */
 export const KANBAN_COLUMNS_ORDER: ServiceOrderStatus[] = [
   "reception",
   "initial_survey",
@@ -176,6 +176,7 @@ export const KANBAN_COLUMNS_ORDER: ServiceOrderStatus[] = [
   "final_survey",
   "ready",
   "delivered",
+  "cancelled",
 ];
 
 /** Status que ficam ocultos por padrão no Kanban */
@@ -223,6 +224,12 @@ export const KANBAN_PHASE_GROUPS: KanbanPhaseGroup[] = [
     label: "Saída",
     statuses: ["ready", "delivered"],
     headerClass: "bg-green-50 text-green-700 border-b border-green-200",
+  },
+  {
+    id: "cancelled",
+    label: "Canceladas",
+    statuses: ["cancelled"],
+    headerClass: "bg-neutral-100 text-neutral-500 border-b border-neutral-200",
   },
 ];
 
