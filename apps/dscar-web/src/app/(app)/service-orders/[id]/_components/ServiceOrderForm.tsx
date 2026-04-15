@@ -10,7 +10,7 @@ import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api"
 import { toast } from "sonner"
-import { ArrowRight, Loader2, ChevronDown } from "lucide-react"
+import { ArrowRight, Loader2, ChevronDown, Save } from "lucide-react"
 
 import { serviceOrderUpdateSchema, type ServiceOrderUpdateInput } from "../_schemas/service-order.schema"
 import { useServiceOrderUpdate } from "../_hooks/useServiceOrder"
@@ -121,6 +121,8 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
     },
   })
 
+  const { isDirty } = form.formState
+
   const updateMutation = useServiceOrderUpdate(order.id)
   const customerUpdateMutation = useCustomerUpdate(
     form.watch("customer") ?? order.customer_uuid ?? null
@@ -141,7 +143,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   }
 
   async function onSubmit(data: ServiceOrderUpdateInput) {
-    await updateMutation.mutateAsync(data)
+    const savedOrder = await updateMutation.mutateAsync(data)
     const customerId = data.customer ?? order.customer_uuid
     if (customerDirtyData && customerId) {
       await customerUpdateMutation.mutateAsync(customerDirtyData)
@@ -168,6 +170,43 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
         }),
       }).catch(() => {/* non-critical, don't block the save */})
     }
+    // Reset form to saved values so isDirty becomes false
+    form.reset({
+      consultant_id: savedOrder.consultant ?? undefined,
+      customer_type: savedOrder.customer_type ?? undefined,
+      os_type: savedOrder.os_type ?? undefined,
+      insurer: savedOrder.insurer ?? undefined,
+      insured_type: savedOrder.insured_type ?? undefined,
+      casualty_number: savedOrder.casualty_number ?? "",
+      deductible_amount: savedOrder.deductible_amount ? parseFloat(savedOrder.deductible_amount) : undefined,
+      broker_name: savedOrder.broker_name ?? "",
+      expert: savedOrder.expert ?? undefined,
+      expert_date: savedOrder.expert_date ?? undefined,
+      survey_date: savedOrder.survey_date ?? undefined,
+      authorization_date: savedOrder.authorization_date ?? undefined,
+      quotation_date: savedOrder.quotation_date ?? new Date().toISOString().split("T")[0],
+      customer: savedOrder.customer_uuid ?? undefined,
+      customer_name: savedOrder.customer_name ?? "",
+      plate: savedOrder.plate ?? "",
+      make: savedOrder.make ?? "",
+      model: savedOrder.model ?? "",
+      vehicle_version: savedOrder.vehicle_version ?? "",
+      year: savedOrder.year ?? undefined,
+      color: savedOrder.color ?? "",
+      chassis: savedOrder.chassis ?? "",
+      fuel_type: savedOrder.fuel_type ?? "",
+      fipe_value: savedOrder.fipe_value ? parseFloat(savedOrder.fipe_value) : undefined,
+      mileage_in: savedOrder.mileage_in ?? undefined,
+      vehicle_location: savedOrder.vehicle_location ?? "workshop",
+      entry_date: savedOrder.entry_date ?? undefined,
+      service_authorization_date: savedOrder.service_authorization_date ?? undefined,
+      scheduling_date: savedOrder.scheduling_date ?? undefined,
+      repair_days: savedOrder.repair_days ?? undefined,
+      estimated_delivery_date: savedOrder.estimated_delivery_date ?? undefined,
+      delivery_date: savedOrder.delivery_date ?? undefined,
+      final_survey_date: savedOrder.final_survey_date ?? undefined,
+      client_delivery_date: savedOrder.client_delivery_date ?? undefined,
+    })
     toast.success("OS salva!")
   }
 
@@ -218,6 +257,12 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
             </DropdownMenu>
           )}
 
+          {isDirty && (
+            <span className="flex items-center gap-1.5 text-xs font-medium text-amber-600">
+              <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />
+              Alterações não salvas
+            </span>
+          )}
           <button
             type="button"
             onClick={() => router.back()}
@@ -227,11 +272,27 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
           </button>
           <button
             type="button"
-            disabled={isPending}
+            disabled={isPending || !isDirty}
             onClick={form.handleSubmit(onSubmit)}
-            className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-medium transition-all",
+              isDirty
+                ? "bg-primary-600 text-white shadow-md hover:bg-primary-700"
+                : "cursor-not-allowed bg-neutral-200 text-neutral-400",
+              isPending && "opacity-50"
+            )}
           >
-            {isPending ? "Salvando..." : "Salvar"}
+            {isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Salvando...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" />
+                Salvar
+              </>
+            )}
           </button>
         </div>
       </div>
