@@ -285,8 +285,10 @@ export function Sidebar() {
       if (!collapsed) return;
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
       const sidebarRect = sidebarRef.current?.getBoundingClientRect();
+      const navEl = sidebarRef.current?.querySelector("nav");
+      const scrollOffset = navEl?.scrollTop ?? 0;
       setTooltip({
-        top: rect.top - (sidebarRect?.top ?? 0) + rect.height / 2,
+        top: rect.top - (sidebarRect?.top ?? 0) + scrollOffset + rect.height / 2,
         label,
         visible: true,
       });
