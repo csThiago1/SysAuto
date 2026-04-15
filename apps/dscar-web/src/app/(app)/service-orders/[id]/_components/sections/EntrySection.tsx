@@ -1,6 +1,7 @@
 "use client"
 
 import { Controller, type UseFormReturn } from "react-hook-form"
+import { CheckCircle2 } from "lucide-react"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import { FORM_SECTION_TITLE, FORM_LABEL, FORM_INPUT, FORM_INPUT_ERROR, FORM_ERROR, FORM_WARN } from "@paddock/utils"
 import { DateTimeNow } from "../shared/DateTimeNow"
@@ -8,9 +9,14 @@ import { cn } from "@/lib/utils"
 
 interface EntrySectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
+  order?: {
+    nfe_key: string
+    nfse_number: string
+    invoice_issued: boolean
+  }
 }
 
-export function EntrySection({ form }: EntrySectionProps) {
+export function EntrySection({ form, order }: EntrySectionProps) {
   const { register, control, formState: { errors } } = form
 
   return (
@@ -78,6 +84,40 @@ export function EntrySection({ form }: EntrySectionProps) {
           />
         </div>
       </div>
+
+      {/* Documentos fiscais — somente leitura */}
+      {order && (order.nfe_key || order.nfse_number || order.invoice_issued) && (
+        <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 space-y-2">
+          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+            Documentos Fiscais
+          </p>
+          {order.invoice_issued && (
+            <div className="flex items-center gap-1.5 text-xs text-emerald-600">
+              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+              <span>Nota fiscal emitida</span>
+            </div>
+          )}
+          {order.nfe_key && (
+            <div className="space-y-0.5">
+              <p className="text-xs text-neutral-500">Chave NF-e</p>
+              <p className={cn("text-xs font-mono text-neutral-800 break-all bg-white rounded px-2 py-1", order.nfe_key.replace(/\D/g, "").length !== 44 && "text-amber-700 bg-amber-50")}>
+                {order.nfe_key}
+              </p>
+              {order.nfe_key.replace(/\D/g, "").length !== 44 && (
+                <p className="text-xs text-amber-600">Chave NF-e inválida — esperado 44 dígitos</p>
+              )}
+            </div>
+          )}
+          {order.nfse_number && (
+            <div className="space-y-0.5">
+              <p className="text-xs text-neutral-500">Número NFS-e</p>
+              <p className="text-xs font-mono text-neutral-800 bg-white rounded px-2 py-1">
+                {order.nfse_number}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

@@ -326,7 +326,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       <div className="flex-1 overflow-y-auto bg-gray-50 px-6">
         <form onSubmit={form.handleSubmit(onSubmit)}>
           {activeTab === "opening" && (
-            <OpeningTab form={form} onCustomerDataChange={setCustomerDirtyData} />
+            <OpeningTab form={form} order={order} onCustomerDataChange={setCustomerDirtyData} />
           )}
           {activeTab === "parts" && <PartsTab orderId={order.id} />}
           {activeTab === "services" && <ServicesTab osId={order.id} osStatus={order.status as ServiceOrderStatus} />}
