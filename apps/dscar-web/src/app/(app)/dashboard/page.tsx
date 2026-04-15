@@ -7,6 +7,7 @@ import { ClipboardList, CheckCircle2, Plus } from "lucide-react"
 import type { ServiceOrderStatus } from "@paddock/types"
 import { ROLE_HIERARCHY } from "@paddock/types"
 import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
+import { cn } from "@/lib/utils"
 import { useDashboardStats, useServiceOrders } from "@/hooks"
 import { Skeleton, StatusBadge } from "@/components/ui"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
@@ -127,7 +128,14 @@ export default function DashboardPage(): React.ReactElement {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className={cn(
+          "grid gap-4",
+          topStatuses.length === 0
+            ? "grid-cols-2"
+            : topStatuses.length === 1
+            ? "grid-cols-2 lg:grid-cols-3"
+            : "grid-cols-2 lg:grid-cols-4"
+        )}>
           <StatCard
             label="OS em Aberto"
             value={legacyStats?.total_open ?? 0}
