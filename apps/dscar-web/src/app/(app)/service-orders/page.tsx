@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
-import { Search, FilterX, Plus } from "lucide-react"
+import { Search, FilterX, Plus, ChevronLeft, ChevronRight } from "lucide-react"
 
 import { useServiceOrders, useDebounce, usePersons } from "@/hooks"
 import {
@@ -15,6 +15,7 @@ import { ServiceOrderTable } from "./_components/ServiceOrderTable"
 import { NewOSDrawer } from "./_components/NewOSDrawer"
 
 const SELECT_CLS = "h-9 rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm text-neutral-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+const PAGE_SIZE = 20
 
 export default function ServiceOrdersPage() {
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -22,9 +23,10 @@ export default function ServiceOrdersPage() {
   const [status, setStatus] = useState<string>("ALL")
   const [customerType, setCustomerType] = useState<string>("ALL")
   const [insurerId, setInsurerId] = useState<string>("ALL")
+  const [page, setPage] = useState(1)
 
   const debouncedSearch = useDebounce(search, 300)
-  
+
   // Fetch seguradoras dynamically
   const { data: insurersData } = usePersons({ role: "INSURER" })
 
@@ -35,7 +37,12 @@ export default function ServiceOrdersPage() {
   if (customerType !== "ALL") filters.customer_type = customerType
   if (insurerId !== "ALL") filters.insurer = insurerId
 
-  const { data, isLoading, isError } = useServiceOrders(filters)
+  const { data, isLoading, isError } = useServiceOrders(filters, page, PAGE_SIZE)
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch, status, customerType, insurerId])
 
   const clearFilters = () => {
     setSearch("")
@@ -45,6 +52,10 @@ export default function ServiceOrdersPage() {
   }
 
   const hasFilters = search || status !== "ALL" || customerType !== "ALL" || insurerId !== "ALL"
+
+  const totalPages = data ? Math.ceil(data.count / PAGE_SIZE) : 0
+  const firstItem = data && data.count > 0 ? (page - 1) * PAGE_SIZE + 1 : 0
+  const lastItem = data ? Math.min(page * PAGE_SIZE, data.count) : 0
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
@@ -147,31 +158,58 @@ export default function ServiceOrdersPage() {
          {isLoading && <TableSkeleton columns={6} rows={8} />}
 
          {isError && (
-           <EmptyState 
-             title="Erro ao carregar Ordens de Serviço" 
-             description="Tente recarregar a página." 
-             className="bg-white border rounded-md" 
+           <EmptyState
+             title="Erro ao carregar Ordens de Serviço"
+             description="Tente recarregar a página."
+             className="bg-white border rounded-md"
            />
          )}
 
          {!isLoading && !isError && data && (
            <>
              {data.results.length === 0 ? (
-               <EmptyState 
-                 title="Nenhuma Ordem de Serviço encontrada" 
+               <EmptyState
+                 title="Nenhuma Ordem de Serviço encontrada"
                  description={hasFilters ? "Tente ajustar ou limpar seus filtros." : "O sistema ainda não possui ordens de serviço."}
                  className="bg-white border rounded-md"
                />
              ) : (
                <>
                  <ServiceOrderTable orders={data.results} />
-                 
-                 {/* Footer Info */}
+
+                 {/* Pagination */}
                  {data.count > 0 && (
-                   <div className="mt-4 flex items-center justify-between">
+                   <div className="mt-4 flex items-center justify-between border-t border-neutral-200 pt-3">
                      <p className="text-xs text-neutral-500">
-                       Mostrando {Math.min(data.results.length, data.count)} de {data.count} registro{data.count !== 1 ? "s" : ""}
+                       {firstItem}–{lastItem} de {data.count} registro{data.count !== 1 ? "s" : ""}
                      </p>
+                     {totalPages > 1 && (
+                       <div className="flex items-center gap-1">
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => setPage((p) => Math.max(1, p - 1))}
+                           disabled={page === 1}
+                           className="h-8 px-2 text-neutral-600"
+                         >
+                           <ChevronLeft className="h-4 w-4 mr-1" />
+                           Anterior
+                         </Button>
+                         <span className="text-xs text-neutral-600 px-2">
+                           {page} / {totalPages}
+                         </span>
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                           disabled={page === totalPages}
+                           className="h-8 px-2 text-neutral-600"
+                         >
+                           Próxima
+                           <ChevronRight className="h-4 w-4 ml-1" />
+                         </Button>
+                       </div>
+                     )}
                    </div>
                  )}
                </>
