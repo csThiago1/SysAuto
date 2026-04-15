@@ -38,7 +38,7 @@ export function PrazosSection({ form }: PrazosSectionProps) {
       {/* ── 1. Agendamentos lado a lado ──────────────────────────────── */}
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className={FORM_LABEL}>Entrada do veículo</label>
+          <label className={FORM_LABEL}>Data de Agendamento</label>
           <Controller
             name="scheduling_date"
             control={control}
@@ -51,10 +51,10 @@ export function PrazosSection({ form }: PrazosSectionProps) {
               />
             )}
           />
-          <p className={FORM_HINT}>Aparece na agenda como entrada</p>
+          <p className={FORM_HINT}>Data prevista de entrada do veículo</p>
         </div>
         <div>
-          <label className={FORM_LABEL}>Retirada pelo cliente</label>
+          <label className={FORM_LABEL}>Previsão de Entrega</label>
           <Controller
             name="delivery_date"
             control={control}
@@ -67,7 +67,7 @@ export function PrazosSection({ form }: PrazosSectionProps) {
               />
             )}
           />
-          <p className={FORM_HINT}>Aparece na agenda como retirada</p>
+          <p className={FORM_HINT}>Data planejada para conclusão do reparo</p>
         </div>
       </div>
 
@@ -121,7 +121,7 @@ export function PrazosSection({ form }: PrazosSectionProps) {
           )}
         </div>
         <div>
-          <label className={FORM_LABEL}>Entrega ao cliente</label>
+          <label className={FORM_LABEL}>Data de Retirada pelo Cliente</label>
           <Controller
             name="client_delivery_date"
             control={control}
