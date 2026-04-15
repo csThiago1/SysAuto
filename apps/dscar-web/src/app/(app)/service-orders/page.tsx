@@ -65,7 +65,7 @@ export default function ServiceOrdersPage() {
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
-            className="flex items-center gap-1.5 rounded-md bg-[#ea0e03] px-4 py-2 text-sm font-medium text-white hover:bg-red-700 shadow-sm"
+            className="flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 shadow-sm"
           >
             <Plus className="h-4 w-4" />
             Nova OS

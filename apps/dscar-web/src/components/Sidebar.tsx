@@ -28,6 +28,7 @@ import {
   Building2,
   Wrench,
   CalendarDays,
+  Shield,
   type LucideIcon,
 } from "lucide-react";
 import { NotificationBell } from "@/components/header/NotificationBell";
@@ -101,8 +102,9 @@ const NAV_SECTIONS: NavSection[] = [
         icon: Users,
         href: "/cadastros",
         children: [
-          { id: "cad-pessoas",  label: "Pessoas",  href: "/cadastros",          icon: Users },
-          { id: "cad-servicos", label: "Serviços", href: "/cadastros/servicos", icon: Wrench },
+          { id: "cad-pessoas",     label: "Pessoas",      href: "/cadastros",                 icon: Users },
+          { id: "cad-servicos",    label: "Serviços",     href: "/cadastros/servicos",        icon: Wrench },
+          { id: "cad-seguradoras", label: "Seguradoras",  href: "/cadastros/seguradoras",     icon: Shield },
         ],
       },
     ],
@@ -392,8 +394,10 @@ export function Sidebar() {
                     type="button"
                     onClick={() => {
                       if (item.children && item.href) {
-                        handleNav(item.href);
-                        if (!expandedGroups.includes(item.id)) {
+                        if (expandedGroups.includes(item.id)) {
+                          toggleGroup(item.id);
+                        } else {
+                          handleNav(item.href);
                           toggleGroup(item.id);
                         }
                       } else if (item.children) {
@@ -414,7 +418,7 @@ export function Sidebar() {
                       "relative flex items-center w-[calc(100%-20px)] mx-2.5 rounded-lg transition-all duration-150",
                       collapsed ? "py-2.5 justify-center" : "px-5 py-2.5 gap-3",
                       active
-                        ? "bg-[#ea0e03]/[0.12] text-[#ea0e03]"
+                        ? "bg-primary-600/[0.12] text-primary-600"
                         : hovered
                         ? "bg-white/[0.04] text-white/70"
                         : "text-white/50",
@@ -422,7 +426,7 @@ export function Sidebar() {
                   >
                     {/* Active bar */}
                     {active && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-sm bg-[#ea0e03]" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-sm bg-primary-600" />
                     )}
 
                     <item.icon size={20} className="flex-shrink-0" />
@@ -433,7 +437,7 @@ export function Sidebar() {
                           {item.label}
                         </span>
                         {badge != null && (
-                          <span className="ml-auto bg-[#ea0e03] text-white text-[10px] font-bold px-[7px] py-[2px] rounded-[10px] leading-4">
+                          <span className="ml-auto bg-primary-600 text-white text-[10px] font-bold px-[7px] py-[2px] rounded-[10px] leading-4">
                             {badge}
                           </span>
                         )}
@@ -452,7 +456,7 @@ export function Sidebar() {
 
                     {/* Numeric badge no modo colapsado */}
                     {collapsed && badge != null && (
-                      <span className="absolute top-1 right-1 min-w-[16px] h-4 rounded-full bg-[#ea0e03] text-white text-[9px] font-bold flex items-center justify-center px-0.5 leading-none">
+                      <span className="absolute top-1 right-1 min-w-[16px] h-4 rounded-full bg-primary-600 text-white text-[9px] font-bold flex items-center justify-center px-0.5 leading-none">
                         {badge > 9 ? "9+" : badge}
                       </span>
                     )}
@@ -476,7 +480,7 @@ export function Sidebar() {
                               "flex items-center gap-2.5 w-[calc(100%-20px)] mx-2.5 pl-[52px] pr-5 py-2",
                               "rounded-md transition-all duration-150 text-left",
                               childActive
-                                ? "bg-[#ea0e03]/[0.08] text-[#ea0e03] font-medium"
+                                ? "bg-primary-600/[0.08] text-primary-600 font-medium"
                                 : childHovered
                                 ? "bg-white/[0.03] text-white/50"
                                 : "text-white/35",
@@ -485,7 +489,7 @@ export function Sidebar() {
                             <span
                               className={[
                                 "w-[5px] h-[5px] rounded-full flex-shrink-0 transition-colors duration-150",
-                                childActive ? "bg-[#ea0e03]" : "bg-white/15",
+                                childActive ? "bg-primary-600" : "bg-white/15",
                               ].join(" ")}
                             />
                             <span className="text-[12.5px]">{child.label}</span>
@@ -510,7 +514,7 @@ export function Sidebar() {
             collapsed ? "p-2 justify-center" : "p-2 gap-2.5",
           ].join(" ")}
         >
-          <div className="w-[34px] h-[34px] rounded-lg bg-gradient-to-br from-[#ea0e03] to-[#9a0802] flex items-center justify-center font-bold text-[13px] text-white flex-shrink-0">
+          <div className="w-[34px] h-[34px] rounded-lg bg-gradient-to-br from-primary-600 to-primary-950 flex items-center justify-center font-bold text-[13px] text-white flex-shrink-0">
             {userInitials}
           </div>
           {!collapsed && (

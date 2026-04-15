@@ -26,7 +26,7 @@ export default function ServiceOrderError({ error, reset }: ErrorProps) {
         </button>
         <button
           onClick={reset}
-          className="rounded-md bg-[#ea0e03] px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+          className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
         >
           Tentar novamente
         </button>

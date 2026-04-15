@@ -168,7 +168,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
             type="button"
             disabled={isPending}
             onClick={form.handleSubmit(onSubmit)}
-            className="rounded-md bg-[#ea0e03] px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
           >
             {isPending ? "Salvando..." : "Salvar"}
           </button>
@@ -186,7 +186,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
               className={cn(
                 "shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors",
                 activeTab === tab.id
-                  ? "border-[#ea0e03] text-[#ea0e03]"
+                  ? "border-primary-600 text-primary-600"
                   : "border-transparent text-neutral-600 hover:border-gray-300 hover:text-neutral-800"
               )}
             >

@@ -57,7 +57,7 @@ export function MonthView({ currentDate, events, onDayClick }: Props) {
             >
               <div className={cn(
                 "text-xs font-medium mb-1 w-6 h-6 flex items-center justify-center rounded-full",
-                today ? "bg-[#ea0e03] text-white" : inMonth ? "text-neutral-700" : "text-neutral-300",
+                today ? "bg-primary-600 text-white" : inMonth ? "text-neutral-700" : "text-neutral-300",
               )}>
                 {format(day, "d")}
               </div>

@@ -31,21 +31,16 @@ export function buildCalendarEvents(items: CalendarOS[]): CalendarEvent[] {
   for (const os of items) {
     if (os.scheduling_date) {
       const dt = new Date(os.scheduling_date)
-      events.push({
-        type: "entry",
-        os,
-        date: dt,
-        datetime: dt,
-      })
+      events.push({ type: "entry", os, date: dt, datetime: dt })
     }
-    if (os.estimated_delivery_date) {
+    // Se há agendamento de retirada com hora, usa ele como evento preciso.
+    // Caso contrário, usa a previsão de data (sem hora precisa).
+    if (os.delivery_date) {
+      const dt = new Date(os.delivery_date)
+      events.push({ type: "scheduled_delivery", os, date: dt, datetime: dt })
+    } else if (os.estimated_delivery_date) {
       const dt = new Date(os.estimated_delivery_date + "T12:00:00")
-      events.push({
-        type: "delivery",
-        os,
-        date: dt,
-        datetime: null,
-      })
+      events.push({ type: "delivery", os, date: dt, datetime: null })
     }
   }
 

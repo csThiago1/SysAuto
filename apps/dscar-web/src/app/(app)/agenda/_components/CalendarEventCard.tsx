@@ -10,22 +10,29 @@ interface Props {
   compact?: boolean
 }
 
+const EVENT_CONFIG = {
+  entry:              { bg: "bg-blue-500",   label: "Entrada",   icon: "→" },
+  delivery:           { bg: "bg-emerald-500", label: "Entrega",   icon: "↩" },
+  scheduled_delivery: { bg: "bg-orange-500", label: "Retirada",  icon: "↩" },
+} as const
+
 export function CalendarEventCard({ event, compact = false }: Props) {
-  const isEntry = event.type === "entry"
+  const cfg = EVENT_CONFIG[event.type]
+  const showTime = event.datetime !== null
 
   return (
     <Link
       href={`/service-orders/${event.os.id}`}
       className={cn(
         "block rounded px-1.5 py-0.5 text-white text-[10px] font-medium truncate hover:opacity-90 transition-opacity",
-        isEntry ? "bg-blue-500" : "bg-emerald-500",
+        cfg.bg,
         compact && "py-0"
       )}
-      title={`${isEntry ? "Entrada" : "Entrega"}: ${event.os.plate} — ${event.os.customer_name}`}
+      title={`${cfg.label}: ${event.os.plate} — ${event.os.customer_name}`}
     >
       {!compact && (
         <span className="mr-1 text-[9px] opacity-80">
-          {isEntry && event.datetime ? format(event.datetime, "HH:mm") : "↩"}
+          {showTime && event.datetime ? format(event.datetime, "HH:mm") : cfg.icon}
         </span>
       )}
       {event.os.plate}

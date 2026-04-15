@@ -66,7 +66,7 @@ export function EntrySection({ form }: EntrySectionProps) {
         </div>
       </div>
 
-      {/* Linha 2: Autorização | Agendamento */}
+      {/* Linha 2: Autorização */}
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className={LABEL}>Autorização do serviço</label>
@@ -79,21 +79,6 @@ export function EntrySection({ form }: EntrySectionProps) {
                 onChange={field.onChange}
                 onSetNow={(iso) => field.onChange(iso)}
                 error={errors.service_authorization_date?.message}
-              />
-            )}
-          />
-        </div>
-        <div>
-          <label className={LABEL}>Agendamento</label>
-          <Controller
-            name="scheduling_date"
-            control={control}
-            render={({ field }) => (
-              <DateTimeNow
-                value={field.value ? field.value.slice(0, 16) : ""}
-                onChange={field.onChange}
-                onSetNow={(iso) => field.onChange(iso)}
-                error={errors.scheduling_date?.message}
               />
             )}
           />

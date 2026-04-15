@@ -41,7 +41,7 @@ export default function ServicosPage() {
             Serviços padronizados com preço sugerido para agilizar o lançamento nas OS.
           </p>
         </div>
-        <Button onClick={handleNew} className="bg-[#ea0e03] hover:bg-red-700 text-white gap-1.5">
+        <Button onClick={handleNew} className="bg-primary-600 hover:bg-primary-700 text-white gap-1.5">
           <Plus className="h-4 w-4" />
           Novo Serviço
         </Button>

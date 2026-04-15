@@ -73,7 +73,7 @@ export default function DashboardPage(): React.ReactElement {
             </div>
             <Link
               href="/service-orders/new"
-              className="inline-flex items-center gap-1.5 rounded-md bg-[#ea0e03] px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 transition-colors"
             >
               <Plus size={16} />
               Nova OS
@@ -96,7 +96,7 @@ export default function DashboardPage(): React.ReactElement {
             </div>
             <Link
               href="/service-orders/new"
-              className="inline-flex items-center gap-1.5 rounded-md bg-[#ea0e03] px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 transition-colors"
             >
               <Plus size={16} />
               Nova OS
@@ -120,7 +120,7 @@ export default function DashboardPage(): React.ReactElement {
           </div>
           <Link
             href="/service-orders/new"
-            className="inline-flex items-center gap-1.5 rounded-md bg-[#ea0e03] px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 transition-colors"
           >
             <Plus size={16} />
             Nova OS

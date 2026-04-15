@@ -143,7 +143,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                       onClick={() => field.onChange(type)}
                       className={`rounded-md px-3 py-1 text-[11px] font-semibold transition-colors ${
                         field.value === type
-                          ? "bg-[#ea0e03] text-white shadow-sm"
+                          ? "bg-primary-600 text-white shadow-sm"
                           : "text-neutral-500 hover:text-neutral-700"
                       }`}
                     >
@@ -352,7 +352,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-1.5 rounded bg-[#ea0e03] px-4 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded bg-primary-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
             >
               {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               {isSubmitting ? "Criando..." : "Criar OS"}

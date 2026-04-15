@@ -118,7 +118,7 @@ export function ServiceCatalogDialog({ open, onOpenChange, editing }: Props) {
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="bg-[#ea0e03] hover:bg-red-700 text-white">
+            <Button type="submit" disabled={isSubmitting} className="bg-primary-600 hover:bg-primary-700 text-white">
               {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
               {editing ? "Salvar" : "Criar Serviço"}
             </Button>

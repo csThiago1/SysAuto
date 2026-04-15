@@ -29,7 +29,7 @@ export function TeamProductivityTable({ members }: Props) {
         </thead>
         <tbody className="divide-y divide-neutral-100">
           {members.map((m) => (
-            <tr key={m.email} className="hover:bg-neutral-50">
+            <tr key={m.name} className="hover:bg-neutral-50">
               <td className="px-4 py-2.5 font-medium text-neutral-800">{m.name}</td>
               <td className="px-4 py-2.5 text-right text-neutral-600">{m.open_count}</td>
               <td className="px-4 py-2.5 text-right">

@@ -100,6 +100,17 @@ export {
   financeiroKeys,
 } from "./useFinanceiro";
 
+// ── Seguradoras ──────────────────────────────────────────────────────────────
+export {
+  useInsurers,
+  useInsurer,
+  useInsurerCreate,
+  useInsurerUpdate,
+  useInsurerDelete,
+  useInsurerUploadLogo,
+  type InsurerPayload,
+} from "./useInsurers";
+
 // ── UI / Utilitários ──────────────────────────────────────────────────────────
 export { useDebounce } from "./useDebounce";
 export { usePermission } from "./usePermission";

@@ -46,10 +46,8 @@ async function proxyRequest(
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    console.error(`[proxy] ${method} ${backendUrl} → ${response.status}`, JSON.stringify(data))
-    if (typeof body === "string") {
-      console.error(`[proxy] request body:`, body.slice(0, 500))
-    }
+    // Não logar o body do request — pode conter CPF, email, telefone (LGPD)
+    console.error(`[proxy] ${method} ${backendUrl} → ${response.status}`)
   }
 
   return NextResponse.json(data, { status: response.status });

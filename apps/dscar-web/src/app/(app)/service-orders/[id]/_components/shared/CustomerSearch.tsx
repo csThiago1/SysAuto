@@ -219,7 +219,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
             type="button"
             onClick={handleCreate}
             disabled={!canCreate || createMutation.isPending}
-            className="flex items-center gap-1 rounded bg-[#ea0e03] px-2.5 py-1 text-[11px] font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            className="flex items-center gap-1 rounded bg-primary-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-primary-700 disabled:opacity-50"
           >
             {createMutation.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
             {createMutation.isPending ? "Salvando..." : "Cadastrar"}
@@ -296,7 +296,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
           <button
             type="button"
             onClick={() => openCreateForm(query)}
-            className="flex w-full items-center gap-2 border-t border-neutral-100 px-3 py-2 text-xs font-medium text-[#ea0e03] hover:bg-red-50 transition-colors"
+            className="flex w-full items-center gap-2 border-t border-neutral-100 px-3 py-2 text-xs font-medium text-primary-600 hover:bg-red-50 transition-colors"
           >
             <UserPlus className="h-3.5 w-3.5" />
             Cadastrar novo cliente
@@ -312,7 +312,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
           <button
             type="button"
             onClick={() => openCreateForm(query)}
-            className="flex w-full items-center justify-center gap-2 border-t border-neutral-100 px-3 py-2 text-sm font-medium text-[#ea0e03] hover:bg-red-50 transition-colors"
+            className="flex w-full items-center justify-center gap-2 border-t border-neutral-100 px-3 py-2 text-sm font-medium text-primary-600 hover:bg-red-50 transition-colors"
           >
             <UserPlus className="h-4 w-4" />
             Cadastrar &quot;{query}&quot;

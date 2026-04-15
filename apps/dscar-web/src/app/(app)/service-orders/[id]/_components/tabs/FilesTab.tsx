@@ -200,10 +200,13 @@ function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }:
 
   return (
     <div className={cn("rounded-xl border overflow-hidden", cfg.borderColor)}>
-      <button
+      <div
+        role="button"
+        tabIndex={0}
         onClick={onToggle}
+        onKeyDown={(e) => e.key === "Enter" && onToggle()}
         className={cn(
-          "w-full flex items-center justify-between px-4 py-3 hover:opacity-90 transition-opacity",
+          "w-full flex items-center justify-between px-4 py-3 hover:opacity-90 transition-opacity cursor-pointer",
           cfg.bgColor
         )}
       >
@@ -220,6 +223,7 @@ function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }:
           </Badge>
           {canUpload && (
             <button
+              type="button"
               onClick={(e) => { e.stopPropagation(); setShowUpload(true) }}
               className={cn(
                 "flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-md transition-colors",
@@ -236,7 +240,7 @@ function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }:
             : <ChevronRight className={cn("h-4 w-4", cfg.color)} />
           }
         </div>
-      </button>
+      </div>
 
       {isOpen && (
         <div className="p-3 bg-white">

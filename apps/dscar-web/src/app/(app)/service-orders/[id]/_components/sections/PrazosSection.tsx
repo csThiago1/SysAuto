@@ -7,6 +7,7 @@ import { DateTimeNow } from "../shared/DateTimeNow"
 import { cn } from "@/lib/utils"
 
 const SECTION_TITLE = "text-[11px] font-semibold uppercase tracking-widest text-neutral-500"
+const SUBSECTION = "text-[10px] font-semibold uppercase tracking-wider text-neutral-400 mt-3 mb-1"
 const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
 const INPUT =
   "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
@@ -22,7 +23,7 @@ export function PrazosSection({ form }: PrazosSectionProps) {
   const entryDate = watch("entry_date")
   const repairDays = watch("repair_days")
 
-  // Auto-calcula previsão de entrega
+  // Auto-calcula previsão de entrega a partir de entrada + dias de reparo
   useEffect(() => {
     if (entryDate && repairDays && repairDays > 0) {
       const entry = new Date(entryDate)
@@ -38,10 +39,47 @@ export function PrazosSection({ form }: PrazosSectionProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3 border-b pb-1.5">
-        <span className={SECTION_TITLE}>Prazos e Entrega</span>
+        <span className={SECTION_TITLE}>Agendamentos</span>
       </div>
 
-      {/* Dias de reparo | Previsão (auto) */}
+      {/* ── 1. Agendamentos lado a lado ──────────────────────────────── */}
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className={LABEL}>Entrada do veículo</label>
+          <Controller
+            name="scheduling_date"
+            control={control}
+            render={({ field }) => (
+              <DateTimeNow
+                value={field.value ? field.value.slice(0, 16) : ""}
+                onChange={field.onChange}
+                onSetNow={(iso) => field.onChange(iso)}
+                error={errors.scheduling_date?.message}
+              />
+            )}
+          />
+          <p className="mt-0.5 text-[9px] text-neutral-400">Aparece na agenda como entrada</p>
+        </div>
+        <div>
+          <label className={LABEL}>Retirada pelo cliente</label>
+          <Controller
+            name="delivery_date"
+            control={control}
+            render={({ field }) => (
+              <DateTimeNow
+                value={field.value ? field.value.slice(0, 16) : ""}
+                onChange={field.onChange}
+                onSetNow={(iso) => field.onChange(iso)}
+                error={errors.delivery_date?.message}
+              />
+            )}
+          />
+          <p className="mt-0.5 text-[9px] text-neutral-400">Aparece na agenda como retirada</p>
+        </div>
+      </div>
+
+      {/* ── 2. Previsão (auto-calculada) ─────────────────────────────── */}
+      <p className={SUBSECTION}>Previsão de reparo</p>
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className={LABEL}>Dias de reparo</label>
@@ -68,7 +106,8 @@ export function PrazosSection({ form }: PrazosSectionProps) {
         </div>
       </div>
 
-      {/* Vistoria final | Entrega ao cliente */}
+      {/* ── 3. Registros automáticos (disparam status ao serem preenchidos) */}
+      <p className={SUBSECTION}>Registros automáticos de status</p>
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className={LABEL}>Vistoria final</label>
@@ -105,25 +144,6 @@ export function PrazosSection({ form }: PrazosSectionProps) {
           {!errors.client_delivery_date && (
             <p className="mt-0.5 text-[9px] text-amber-600">Muda status → Entregue</p>
           )}
-        </div>
-      </div>
-
-      {/* Entrega real (delivery_date) */}
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className={LABEL}>Data real de entrega</label>
-          <Controller
-            name="delivery_date"
-            control={control}
-            render={({ field }) => (
-              <DateTimeNow
-                value={field.value ? field.value.slice(0, 16) : ""}
-                onChange={field.onChange}
-                onSetNow={(iso) => field.onChange(iso)}
-                error={errors.delivery_date?.message}
-              />
-            )}
-          />
         </div>
       </div>
     </div>

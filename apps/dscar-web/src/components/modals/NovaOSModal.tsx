@@ -33,7 +33,7 @@ export function NovaOSModal({ open, onOpenChange }: ModalProps): React.ReactElem
           <button
             type="button"
             onClick={handleConfirm}
-            className="rounded-md bg-[#ea0e03] px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+            className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
           >
             Criar OS
           </button>
