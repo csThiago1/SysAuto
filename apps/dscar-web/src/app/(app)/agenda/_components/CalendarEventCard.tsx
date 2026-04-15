@@ -11,9 +11,9 @@ interface Props {
 }
 
 const EVENT_CONFIG = {
-  entry:              { bg: "bg-blue-500",   label: "Entrada",   icon: "→" },
-  delivery:           { bg: "bg-emerald-500", label: "Entrega",   icon: "↩" },
-  scheduled_delivery: { bg: "bg-orange-500", label: "Retirada",  icon: "↩" },
+  entry:              { bg: "bg-blue-600",    label: "Entrada",   icon: "→" },
+  delivery:           { bg: "bg-emerald-700", label: "Entrega",   icon: "↩" },
+  scheduled_delivery: { bg: "bg-amber-700",   label: "Retirada",  icon: "↩" },
 } as const
 
 export function CalendarEventCard({ event, compact = false }: Props) {

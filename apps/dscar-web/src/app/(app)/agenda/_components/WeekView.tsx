@@ -87,7 +87,7 @@ export function WeekView({ currentDate, events, onSwitchToDayView }: Props) {
 
         {/* Faixa "dia todo" — previsões sem hora exata */}
         {days.some((d) => allDayEvents(events, d).length > 0) && (
-          <div className="grid border-b border-neutral-200 bg-emerald-50/40" style={{ gridTemplateColumns: "56px repeat(7, 1fr)" }}>
+          <div className="grid border-b border-neutral-200 bg-emerald-50/60" style={{ gridTemplateColumns: "56px repeat(7, 1fr)" }}>
             <div className="text-xs text-neutral-400 text-right pr-2 pt-1.5 leading-tight">
               dia<br />todo
             </div>
