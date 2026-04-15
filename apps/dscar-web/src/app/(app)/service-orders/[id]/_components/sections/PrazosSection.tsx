@@ -88,14 +88,14 @@ export function PrazosSection({ form }: PrazosSectionProps) {
           )}
         </div>
         <div>
-          <label className={FORM_LABEL}>Previsão de entrega</label>
+          <label className={FORM_LABEL}>Previsão de Entrega (calculada)</label>
           <input
             className={`${FORM_INPUT} bg-neutral-50 cursor-default`}
             type="date"
             readOnly
             {...register("estimated_delivery_date")}
           />
-          <p className={FORM_HINT}>Entrada + dias de reparo</p>
+          <p className={FORM_HINT}>Calculada automaticamente: entrada + dias de reparo</p>
         </div>
       </div>
 
