@@ -2,6 +2,7 @@
 
 import { isToday, format, getHours } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { CalendarEventCard } from "./CalendarEventCard"
 import type { CalendarEvent } from "@paddock/types"
@@ -12,6 +13,35 @@ function hoursForDay(date: Date): number[] {
   if (dow === 0) return []                                           // Domingo
   if (dow === 6) return Array.from({ length: 5 }, (_, i) => i + 8) // 8h–12h
   return Array.from({ length: 10 }, (_, i) => i + 8)               // 8h–17h
+}
+
+/** Altura de cada linha de hora em px — deve ser igual ao min-h-[52px] da grade */
+const HOUR_HEIGHT_PX = 52
+
+/**
+ * Calcula a posição vertical (px) do indicador de horário atual dentro da grade.
+ * Retorna null se o horário atual estiver fora da grade visível.
+ */
+function useCurrentTimeTop(hours: number[]): number | null {
+  const [now, setNow] = useState<Date>(() => new Date())
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60_000)
+    return () => clearInterval(timer)
+  }, [])
+
+  if (hours.length === 0) return null
+
+  const currentHour = now.getHours()
+  const currentMinutes = now.getMinutes()
+  const startHour = hours[0]
+  const endHour = hours[hours.length - 1]
+
+  // Only render within [startHour, endHour + 1) window
+  if (currentHour < startHour || currentHour > endHour) return null
+
+  const minutesFromStart = (currentHour - startHour) * 60 + currentMinutes
+  return minutesFromStart * (HOUR_HEIGHT_PX / 60)
 }
 
 interface Props {
@@ -34,9 +64,12 @@ export function DayView({ currentDate, events }: Props) {
   const deliveries = dayEvents.filter((e) => e.type === "delivery")
   const timed = dayEvents.filter((e) => e.type === "entry" || e.type === "scheduled_delivery")
 
+  const showingToday = isToday(currentDate)
+  const currentTimeTop = useCurrentTimeTop(HOURS)
+
   return (
     <div className="flex flex-col h-full w-full overflow-hidden">
-      <div className={cn("py-3 text-center border-b border-neutral-200", isToday(currentDate) && "text-primary-600")}>
+      <div className={cn("py-3 text-center border-b border-neutral-200", showingToday && "text-primary-600")}>
         <p className="text-sm font-semibold">{format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR })}</p>
       </div>
 
@@ -61,20 +94,35 @@ export function DayView({ currentDate, events }: Props) {
               </div>
             )}
 
-            {/* Grade horária */}
-            {HOURS.map((hour) => {
-              const hourEvents = timed.filter((e) => e.datetime && getHours(e.datetime) === hour)
-              return (
-                <div key={hour} className="flex gap-3 px-4 py-2 border-b border-neutral-100 min-h-[52px]">
-                  <span className="text-xs text-neutral-400 w-8 shrink-0 pt-0.5">{hour}h</span>
-                  <div className="flex-1 min-w-0 space-y-1">
-                    {hourEvents.map((e, i) => (
-                      <CalendarEventCard key={`${e.os.id}-ent-${i}`} event={e} />
-                    ))}
+            {/* Grade horária — relative para ancorar o indicador de horário atual */}
+            <div className="relative">
+              {HOURS.map((hour) => {
+                const hourEvents = timed.filter((e) => e.datetime && getHours(e.datetime) === hour)
+                return (
+                  <div key={hour} className="flex gap-3 px-4 py-2 border-b border-neutral-100 min-h-[52px]">
+                    <span className="text-xs text-neutral-400 w-8 shrink-0 pt-0.5">{hour}h</span>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      {hourEvents.map((e, i) => (
+                        <CalendarEventCard key={`${e.os.id}-ent-${i}`} event={e} />
+                      ))}
+                    </div>
                   </div>
+                )
+              })}
+
+              {/* Indicador de horário atual — só exibe ao visualizar hoje */}
+              {showingToday && currentTimeTop !== null && (
+                <div
+                  className="absolute left-0 right-0 z-20 pointer-events-none"
+                  style={{ top: `${currentTimeTop}px` }}
+                >
+                  {/* Bolinha vermelha alinhada à coluna de horários */}
+                  <div className="absolute left-8 -translate-x-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-red-500" />
+                  {/* Linha vermelha */}
+                  <div className="ml-8 h-px bg-red-500 opacity-75" />
                 </div>
-              )
-            })}
+              )}
+            </div>
           </>
         )}
       </div>
