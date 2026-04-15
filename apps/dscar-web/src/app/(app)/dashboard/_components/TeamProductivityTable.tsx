@@ -21,7 +21,7 @@ export function TeamProductivityTable({ members }: Props) {
       </div>
       <table className="w-full text-sm">
         <thead className="bg-neutral-50">
-          <tr className="text-[11px] font-semibold uppercase text-neutral-400">
+          <tr className="text-xs font-semibold uppercase text-neutral-400">
             <th className="px-4 py-2.5 text-left">Colaborador</th>
             <th className="px-4 py-2.5 text-right">OS Abertas</th>
             <th className="px-4 py-2.5 text-right">Entregues (mês)</th>

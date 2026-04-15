@@ -35,7 +35,7 @@ interface Props {
   editing: Insurer | null
 }
 
-const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
+const LABEL = "block text-xs font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
 
 export function InsurerDialog({ open, onOpenChange, editing }: Props) {
   const create = useInsurerCreate()
@@ -160,12 +160,12 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
                     <button
                       type="button"
                       onClick={clearLogo}
-                      className="flex items-center gap-1 text-[10px] text-neutral-400 hover:text-red-500"
+                      className="flex items-center gap-1 text-xs text-neutral-400 hover:text-red-500"
                     >
                       <X className="h-3 w-3" />
                       Remover seleção
                     </button>
-                    <span className="text-[10px] text-neutral-500 truncate max-w-[160px]">
+                    <span className="text-xs text-neutral-500 truncate max-w-[160px]">
                       {pendingFile.name}
                     </span>
                   </>
@@ -185,7 +185,7 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
           <div>
             <label className={LABEL}>Razão Social *</label>
             <Input className="h-8" placeholder="Ex: Porto Seguro Companhia de Seguros Gerais" {...register("name")} />
-            {errors.name && <p className="mt-0.5 text-[10px] text-red-600">{errors.name.message}</p>}
+            {errors.name && <p className="mt-0.5 text-xs text-red-600">{errors.name.message}</p>}
           </div>
 
           {/* Nome fantasia */}
@@ -198,7 +198,7 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
           <div>
             <label className={LABEL}>CNPJ *</label>
             <Input className="h-8" placeholder="00.000.000/0000-00" {...register("cnpj")} />
-            {errors.cnpj && <p className="mt-0.5 text-[10px] text-red-600">{errors.cnpj.message}</p>}
+            {errors.cnpj && <p className="mt-0.5 text-xs text-red-600">{errors.cnpj.message}</p>}
           </div>
 
           {/* Abreviação + Cor */}
@@ -207,7 +207,7 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
               <label className={LABEL}>Abreviação (máx. 4)</label>
               <Input className="h-8" placeholder="Ex: PS" maxLength={4} {...register("abbreviation")} />
               {errors.abbreviation && (
-                <p className="mt-0.5 text-[10px] text-red-600">{errors.abbreviation.message}</p>
+                <p className="mt-0.5 text-xs text-red-600">{errors.abbreviation.message}</p>
               )}
             </div>
             <div>
@@ -225,7 +225,7 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
                 />
               </div>
               {errors.brand_color && (
-                <p className="mt-0.5 text-[10px] text-red-600">{errors.brand_color.message}</p>
+                <p className="mt-0.5 text-xs text-red-600">{errors.brand_color.message}</p>
               )}
             </div>
           </div>

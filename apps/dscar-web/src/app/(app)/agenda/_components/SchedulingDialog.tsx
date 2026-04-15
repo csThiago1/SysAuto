@@ -21,7 +21,7 @@ const schema = z.object({
 })
 type FormData = z.infer<typeof schema>
 
-const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
+const LABEL = "block text-xs font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
 const INPUT = "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
 
 interface Props {
@@ -131,7 +131,7 @@ export function SchedulingDialog({ open, onOpenChange, defaultDate }: Props) {
                 )}
               </div>
             )}
-            {errors.osId && <p className="mt-0.5 text-[10px] text-red-600">{errors.osId.message}</p>}
+            {errors.osId && <p className="mt-0.5 text-xs text-red-600">{errors.osId.message}</p>}
           </div>
 
           {/* Data/hora entrada */}
@@ -139,7 +139,7 @@ export function SchedulingDialog({ open, onOpenChange, defaultDate }: Props) {
             <label className={LABEL}>Data e Hora de Entrada *</label>
             <input type="datetime-local" className={INPUT} {...register("scheduling_date")} />
             {errors.scheduling_date && (
-              <p className="mt-0.5 text-[10px] text-red-600">{errors.scheduling_date.message}</p>
+              <p className="mt-0.5 text-xs text-red-600">{errors.scheduling_date.message}</p>
             )}
           </div>
 
@@ -148,7 +148,7 @@ export function SchedulingDialog({ open, onOpenChange, defaultDate }: Props) {
             <label className={LABEL}>Dias de Reparo</label>
             <input type="number" min="0" className={INPUT} placeholder="Ex: 5" {...register("repair_days")} />
             {estimatedDelivery && (
-              <p className="mt-0.5 text-[10px] text-emerald-600">
+              <p className="mt-0.5 text-xs text-emerald-600">
                 Previsão de entrega: {new Date(estimatedDelivery + "T12:00:00").toLocaleDateString("pt-BR")}
               </p>
             )}

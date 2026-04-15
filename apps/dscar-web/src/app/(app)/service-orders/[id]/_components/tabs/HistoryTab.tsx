@@ -259,14 +259,14 @@ function BudgetSnapshotViewer({ snapshot }: { snapshot: BudgetSnapshot }) {
 
       {expanded && snapshot.items_snapshot.length > 0 && (
         <div className="px-3 pb-3 space-y-1">
-          <div className="grid grid-cols-[1fr_auto_auto_auto] text-[10px] text-indigo-400 font-medium border-b border-indigo-200 pb-1 gap-2">
+          <div className="grid grid-cols-[1fr_auto_auto_auto] text-xs text-indigo-400 font-medium border-b border-indigo-200 pb-1 gap-2">
             <span>Item</span>
             <span className="text-right">Qtd</span>
             <span className="text-right">Unit.</span>
             <span className="text-right">Total</span>
           </div>
           {snapshot.items_snapshot.map((item, i) => (
-            <div key={i} className="grid grid-cols-[1fr_auto_auto_auto] text-[11px] gap-2">
+            <div key={i} className="grid grid-cols-[1fr_auto_auto_auto] text-xs gap-2">
               <span className="truncate text-indigo-900">
                 <span className={cn("inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle", item.type === "part" ? "bg-blue-400" : "bg-orange-400")} />
                 {item.description}
@@ -321,7 +321,7 @@ function ActivityEntry({ log, snapshots }: ActivityEntryProps) {
             <span className="font-semibold text-sm text-neutral-800">{log.user_name}</span>
             <Badge
               variant="secondary"
-              className={cn("text-[10px] py-0 px-1.5", cfg.bgClass)}
+              className={cn("text-xs py-0 px-1.5", cfg.bgClass)}
             >
               {cfg.label}
             </Badge>
@@ -363,7 +363,7 @@ function DateGroupLabel({ date }: { date: string }) {
   return (
     <div className="flex items-center gap-2 my-4">
       <div className="h-px flex-1 bg-neutral-200" />
-      <span className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wide px-2">
+      <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wide px-2">
         {label}
       </span>
       <div className="h-px flex-1 bg-neutral-200" />

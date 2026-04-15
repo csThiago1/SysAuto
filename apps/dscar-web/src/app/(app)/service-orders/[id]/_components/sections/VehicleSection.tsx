@@ -7,8 +7,8 @@ import { usePlateLookup } from "../../_hooks/useVehicleCatalog"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import { ColorSelect } from "../shared/ColorSelect"
 
-const SECTION_TITLE = "text-[11px] font-semibold uppercase tracking-widest text-neutral-500"
-const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
+const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-neutral-500"
+const LABEL = "block text-xs font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
 const INPUT =
   "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 
@@ -72,10 +72,10 @@ export function VehicleSection({ form }: VehicleSectionProps) {
             )}
           </div>
           {errors.plate && (
-            <p className="mt-0.5 text-[10px] text-red-600">{errors.plate.message}</p>
+            <p className="mt-0.5 text-xs text-red-600">{errors.plate.message}</p>
           )}
           {error && (
-            <p className="mt-0.5 text-[10px] text-amber-600">Placa não encontrada — preencha manualmente</p>
+            <p className="mt-0.5 text-xs text-amber-600">Placa não encontrada — preencha manualmente</p>
           )}
         </div>
       </div>

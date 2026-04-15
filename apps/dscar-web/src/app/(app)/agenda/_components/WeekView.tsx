@@ -57,13 +57,13 @@ export function WeekView({ currentDate, events }: Props) {
                 key={day.toISOString()}
                 className={cn("py-2 text-center", isToday(day) && "font-bold text-primary-600", isClosed && "opacity-40")}
               >
-                <div className="text-[11px] uppercase text-neutral-400">
+                <div className="text-xs uppercase text-neutral-400">
                   {format(day, "EEE", { locale: ptBR })}
                 </div>
                 <div className={cn("text-sm font-semibold", isToday(day) ? "text-primary-600" : "text-neutral-700")}>
                   {format(day, "d")}
                 </div>
-                {isClosed && <div className="text-[9px] text-neutral-400">Fechado</div>}
+                {isClosed && <div className="text-xs text-neutral-400">Fechado</div>}
               </div>
             )
           })}
@@ -72,7 +72,7 @@ export function WeekView({ currentDate, events }: Props) {
         {/* Faixa "dia todo" — previsões sem hora exata */}
         {days.some((d) => allDayEvents(events, d).length > 0) && (
           <div className="grid border-b border-neutral-200 bg-emerald-50/40" style={{ gridTemplateColumns: "56px repeat(7, 1fr)" }}>
-            <div className="text-[9px] text-neutral-400 text-right pr-2 pt-1.5 leading-tight">
+            <div className="text-xs text-neutral-400 text-right pr-2 pt-1.5 leading-tight">
               dia<br />todo
             </div>
             {days.map((day) => {
@@ -91,7 +91,7 @@ export function WeekView({ currentDate, events }: Props) {
         {/* Grade de horas */}
         {HOURS.map((hour) => (
           <div key={hour} className="grid border-b border-neutral-100" style={{ gridTemplateColumns: "56px repeat(7, 1fr)" }}>
-            <div className="text-[10px] text-neutral-400 text-right pr-2 pt-1">{hour}h</div>
+            <div className="text-xs text-neutral-400 text-right pr-2 pt-1">{hour}h</div>
             {days.map((day) => {
               const working = isWorkingHour(day, hour)
               const dayHourEvents = eventsForDayHour(day, hour)

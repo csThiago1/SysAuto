@@ -24,20 +24,20 @@ export function CalendarEventCard({ event, compact = false }: Props) {
     <Link
       href={`/service-orders/${event.os.id}`}
       className={cn(
-        "block rounded px-1.5 py-0.5 text-white text-[10px] font-medium truncate hover:opacity-90 transition-opacity",
+        "block rounded px-1.5 py-0.5 text-white text-xs font-medium truncate hover:opacity-90 transition-opacity",
         cfg.bg,
         compact && "py-0"
       )}
       title={`${cfg.label}: ${event.os.plate} — ${event.os.customer_name}`}
     >
       {!compact && (
-        <span className="mr-1 text-[9px] opacity-80">
+        <span className="mr-1 text-xs opacity-80">
           {showTime && event.datetime ? format(event.datetime, "HH:mm") : cfg.icon}
         </span>
       )}
       {event.os.plate}
       {!compact && (
-        <span className="ml-1 opacity-80 text-[9px]">{event.os.customer_name.split(" ")[0]}</span>
+        <span className="ml-1 opacity-80 text-xs">{event.os.customer_name.split(" ")[0]}</span>
       )}
     </Link>
   )

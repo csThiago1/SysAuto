@@ -6,8 +6,8 @@ import { InsurerLogo } from "../shared/InsurerSelect"
 import { ExpertCombobox } from "../shared/ExpertCombobox"
 import { useInsurers } from "../../_hooks/useInsurers"
 
-const SECTION_TITLE = "text-[11px] font-semibold uppercase tracking-widest text-neutral-500"
-const LABEL = "block text-[10px] font-semibold uppercase tracking-wide text-neutral-400 mb-0.5"
+const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-neutral-500"
+const LABEL = "block text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-0.5"
 const INPUT = "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 const SELECT = "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 
@@ -59,7 +59,7 @@ export function InsurerSection({ form }: InsurerSectionProps) {
                   </select>
                 )}
               />
-              {errors.insurer && <p className="mt-0.5 text-[10px] text-red-600">{errors.insurer.message}</p>}
+              {errors.insurer && <p className="mt-0.5 text-xs text-red-600">{errors.insurer.message}</p>}
             </div>
 
             <div className="w-36 shrink-0">
@@ -139,8 +139,8 @@ export function InsurerSection({ form }: InsurerSectionProps) {
                 {...register("authorization_date")}
               />
               {errors.authorization_date
-                ? <p className="mt-0.5 text-[10px] text-red-500">{errors.authorization_date.message}</p>
-                : <p className="mt-0.5 text-[10px] text-amber-600 font-medium">Preencher muda status</p>
+                ? <p className="mt-0.5 text-xs text-red-500">{errors.authorization_date.message}</p>
+                : <p className="mt-0.5 text-xs text-amber-600 font-medium">Preencher muda status</p>
               }
             </div>
           </div>

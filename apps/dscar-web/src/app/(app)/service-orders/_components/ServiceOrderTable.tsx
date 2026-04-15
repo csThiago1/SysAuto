@@ -66,7 +66,7 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                           <img src={order.insurer_detail.logo} alt={order.insurer_detail.display_name ?? ""} className="h-full w-full object-contain p-0.5" />
                         ) : (
                           <span
-                            className="h-full w-full flex items-center justify-center text-white text-[11px] font-bold"
+                            className="h-full w-full flex items-center justify-center text-white text-xs font-bold"
                             style={{ backgroundColor: order.insurer_detail?.brand_color ?? "#6366f1" }}
                           >
                             {order.insurer_detail?.abbreviation?.slice(0, 2) ?? "S"}

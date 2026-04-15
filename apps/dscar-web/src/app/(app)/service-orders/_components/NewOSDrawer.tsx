@@ -21,7 +21,7 @@ import { ColorSelect } from "../[id]/_components/shared/ColorSelect"
 import { usePlateLookup } from "../[id]/_hooks/useVehicleCatalog"
 import { ApiError, handleApiFormError } from "@/lib/api"
 
-const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
+const LABEL = "block text-xs font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
 const INPUT =
   "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 const INPUT_ERROR =
@@ -141,7 +141,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                       key={type}
                       type="button"
                       onClick={() => field.onChange(type)}
-                      className={`rounded-md px-3 py-1 text-[11px] font-semibold transition-colors ${
+                      className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
                         field.value === type
                           ? "bg-primary-600 text-white shadow-sm"
                           : "text-neutral-500 hover:text-neutral-700"
@@ -158,7 +158,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
           {/* Seguradora (condicional) */}
           {customerType === "insurer" && (
             <div className="rounded-lg border border-dashed border-blue-200 bg-blue-50 p-3 space-y-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-blue-600">
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
                 Dados da Seguradora
               </p>
               <div>
@@ -174,7 +174,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                   )}
                 />
                 {errors.insurer && (
-                  <p className="mt-0.5 text-[10px] text-red-600">
+                  <p className="mt-0.5 text-xs text-red-600">
                     {errors.insurer.message}
                   </p>
                 )}
@@ -227,7 +227,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
 
           {/* Veículo */}
           <div className="space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
               Veículo
             </p>
 
@@ -248,7 +248,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                 )}
               </div>
               {errors.plate && (
-                <p className="mt-0.5 text-[10px] text-red-600">
+                <p className="mt-0.5 text-xs text-red-600">
                   {errors.plate.message}
                 </p>
               )}
@@ -264,7 +264,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                   {...register("make")}
                 />
                 {errors.make && (
-                  <p className="mt-0.5 text-[10px] text-red-600">
+                  <p className="mt-0.5 text-xs text-red-600">
                     {errors.make.message}
                   </p>
                 )}
@@ -277,7 +277,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                   {...register("model")}
                 />
                 {errors.model && (
-                  <p className="mt-0.5 text-[10px] text-red-600">
+                  <p className="mt-0.5 text-xs text-red-600">
                     {errors.model.message}
                   </p>
                 )}
@@ -336,7 +336,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
           </div>
 
           {serverError && (
-            <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700">
+            <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
               {serverError}
             </p>
           )}

@@ -5,8 +5,8 @@ import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schem
 import { DateTimeNow } from "../shared/DateTimeNow"
 import { cn } from "@/lib/utils"
 
-const SECTION_TITLE = "text-[11px] font-semibold uppercase tracking-widest text-neutral-500"
-const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
+const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-neutral-500"
+const LABEL = "block text-xs font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
 const INPUT =
   "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 const INPUT_ERROR =
@@ -54,7 +54,7 @@ export function EntrySection({ form }: EntrySectionProps) {
             {...register("mileage_in", { valueAsNumber: true })}
           />
           {errors.mileage_in && (
-            <p className="mt-0.5 text-[10px] text-red-500">{errors.mileage_in.message}</p>
+            <p className="mt-0.5 text-xs text-red-500">{errors.mileage_in.message}</p>
           )}
         </div>
         <div>

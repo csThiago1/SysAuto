@@ -158,7 +158,7 @@ function PhotoThumb({ photo, orderId, canDelete }: PhotoThumbProps) {
       />
       {photo.caption && (
         <div className="absolute bottom-0 inset-x-0 bg-black/60 px-2 py-1">
-          <p className="text-[10px] text-white truncate">{photo.caption}</p>
+          <p className="text-xs text-white truncate">{photo.caption}</p>
         </div>
       )}
       {canDelete && showDelete && (
@@ -214,7 +214,7 @@ function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }:
           <IconComponent className={cn("h-4 w-4 shrink-0", cfg.color)} />
           <div className="text-left">
             <p className={cn("text-sm font-semibold leading-none", cfg.color)}>{cfg.label}</p>
-            <p className="text-[11px] text-neutral-500 mt-0.5 leading-none">{cfg.description}</p>
+            <p className="text-xs text-neutral-500 mt-0.5 leading-none">{cfg.description}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -226,7 +226,7 @@ function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }:
               type="button"
               onClick={(e) => { e.stopPropagation(); setShowUpload(true) }}
               className={cn(
-                "flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-md transition-colors",
+                "flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-md transition-colors",
                 cfg.color,
                 "bg-white/80 hover:bg-white border border-neutral-200"
               )}
@@ -279,7 +279,7 @@ function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }:
                   )}
                 >
                   <Plus className={cn("h-5 w-5", cfg.color)} />
-                  <span className={cn("text-[10px] font-medium", cfg.color)}>Foto</span>
+                  <span className={cn("text-xs font-medium", cfg.color)}>Foto</span>
                 </button>
               )}
             </div>

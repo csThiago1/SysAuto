@@ -12,8 +12,8 @@ import {
 } from "../../_hooks/useCustomerSearch"
 import { useDebounce } from "@/hooks/useDebounce"
 
-const SECTION_TITLE = "text-[11px] font-semibold uppercase tracking-widest text-neutral-500"
-const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
+const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-neutral-500"
+const LABEL = "block text-xs font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
 const INPUT_EDIT =
   "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
 const INPUT_READONLY =
@@ -70,7 +70,7 @@ function InlineSearch({ onSelect, onCancel }: InlineSearchProps) {
         <button
           type="button"
           onClick={onCancel}
-          className="shrink-0 rounded border border-neutral-300 px-2.5 py-1 text-[11px] font-medium text-neutral-500 hover:bg-neutral-100 h-8"
+          className="shrink-0 rounded border border-neutral-300 px-2.5 py-1 text-xs font-medium text-neutral-500 hover:bg-neutral-100 h-8"
         >
           Cancelar
         </button>
@@ -356,7 +356,7 @@ export function CustomerSection({ form, onCustomerDataChange }: CustomerSectionP
           <button
             type="button"
             onClick={() => setSwapping(true)}
-            className="flex items-center gap-1 text-[10px] font-medium text-neutral-400 hover:text-neutral-600"
+            className="flex items-center gap-1 text-xs font-medium text-neutral-400 hover:text-neutral-600"
           >
             <ArrowLeftRight className="h-3 w-3" />
             Trocar cliente
@@ -420,7 +420,7 @@ export function CustomerSection({ form, onCustomerDataChange }: CustomerSectionP
 
       {/* Old OS: customer_name but no UUID — show search pre-filled */}
       {!swapping && !customerId && customerName && (
-        <p className="text-[10px] text-neutral-400 mt-1">
+        <p className="text-xs text-neutral-400 mt-1">
           Cliente &quot;{customerName}&quot; sem vínculo — busque acima para vincular.
         </p>
       )}

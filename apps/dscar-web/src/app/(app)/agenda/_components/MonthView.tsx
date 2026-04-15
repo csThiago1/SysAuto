@@ -33,7 +33,7 @@ export function MonthView({ currentDate, events, onDayClick }: Props) {
       {/* Cabeçalho dias da semana */}
       <div className="grid grid-cols-7 border-b border-neutral-200">
         {WEEKDAYS.map((d) => (
-          <div key={d} className="py-2 text-center text-[11px] font-semibold uppercase text-neutral-400">
+          <div key={d} className="py-2 text-center text-xs font-semibold uppercase text-neutral-400">
             {d}
           </div>
         ))}
@@ -67,7 +67,7 @@ export function MonthView({ currentDate, events, onDayClick }: Props) {
                   <CalendarEventCard key={`${event.os.id}-${event.type}-${i}`} event={event} compact />
                 ))}
                 {dayEvents.length > 3 && (
-                  <p className="text-[10px] text-neutral-400 pl-1">+{dayEvents.length - 3} mais</p>
+                  <p className="text-xs text-neutral-400 pl-1">+{dayEvents.length - 3} mais</p>
                 )}
               </div>
             </div>

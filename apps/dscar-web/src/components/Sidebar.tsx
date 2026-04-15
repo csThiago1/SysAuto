@@ -358,7 +358,7 @@ export function Sidebar() {
             <span className="text-[13px] text-white/30 font-normal">
               Buscar...
             </span>
-            <span className="ml-auto text-[10px] text-white/20 bg-white/[0.05] px-1.5 py-0.5 rounded font-medium">
+            <span className="ml-auto text-xs text-white/20 bg-white/[0.05] px-1.5 py-0.5 rounded font-medium">
               ⌘K
             </span>
           </>
@@ -373,7 +373,7 @@ export function Sidebar() {
             {collapsed ? (
               <hr className="border-white/[0.08] mx-3 my-2" />
             ) : (
-              <div className="text-[10px] font-semibold text-white/25 tracking-[1.5px] uppercase px-5 pt-4 pb-1.5">
+              <div className="text-xs font-semibold text-white/25 tracking-[1.5px] uppercase px-5 pt-4 pb-1.5">
                 {section.label}
               </div>
             )}
@@ -437,7 +437,7 @@ export function Sidebar() {
                           {item.label}
                         </span>
                         {badge != null && (
-                          <span className="ml-auto bg-primary-600 text-white text-[10px] font-bold px-[7px] py-[2px] rounded-[10px] leading-4">
+                          <span className="ml-auto bg-primary-600 text-white text-xs font-bold px-[7px] py-[2px] rounded-[10px] leading-4">
                             {badge}
                           </span>
                         )}
@@ -456,7 +456,7 @@ export function Sidebar() {
 
                     {/* Numeric badge no modo colapsado */}
                     {collapsed && badge != null && (
-                      <span className="absolute top-1 right-1 min-w-[16px] h-4 rounded-full bg-primary-600 text-white text-[9px] font-bold flex items-center justify-center px-0.5 leading-none">
+                      <span className="absolute top-1 right-1 min-w-[16px] h-4 rounded-full bg-primary-600 text-white text-xs font-bold flex items-center justify-center px-0.5 leading-none">
                         {badge > 9 ? "9+" : badge}
                       </span>
                     )}
@@ -525,7 +525,7 @@ export function Sidebar() {
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <Building2 size={10} className="text-white/30 flex-shrink-0" />
-                  <span className="text-[11px] text-white/35 font-normal truncate">
+                  <span className="text-xs text-white/35 font-normal truncate">
                     DS Car{roleLabel ? ` · ${roleLabel}` : ""}
                   </span>
                 </div>

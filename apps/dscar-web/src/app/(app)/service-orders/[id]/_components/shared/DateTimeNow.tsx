@@ -57,7 +57,7 @@ export const DateTimeNow = forwardRef<HTMLInputElement, DateTimeNowProps>(
             Agora
           </button>
         </div>
-        {error && <p className="mt-0.5 text-[10px] text-red-500">{error}</p>}
+        {error && <p className="mt-0.5 text-xs text-red-500">{error}</p>}
       </div>
     )
   }

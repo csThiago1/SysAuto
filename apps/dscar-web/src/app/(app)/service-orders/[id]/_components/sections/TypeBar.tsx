@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import { useConsultants } from "../../_hooks/useStaff"
 
-const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
+const LABEL = "block text-xs font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
 const SELECT =
   "flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 
@@ -42,7 +42,7 @@ export function TypeBar({ form, customerType }: TypeBarProps) {
                   key={type}
                   type="button"
                   onClick={() => field.onChange(type)}
-                  className={`rounded-md px-3 py-1 text-[11px] font-semibold transition-colors ${
+                  className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
                     field.value === type
                       ? "bg-primary-600 text-white shadow-sm"
                       : "text-neutral-500 hover:text-neutral-700"

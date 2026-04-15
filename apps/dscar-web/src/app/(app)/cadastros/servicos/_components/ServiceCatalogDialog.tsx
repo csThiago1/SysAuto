@@ -36,7 +36,7 @@ interface Props {
   editing: ServiceCatalogDetail | null
 }
 
-const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
+const LABEL = "block text-xs font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
 const INPUT = "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
 const SELECT = INPUT
 
@@ -85,7 +85,7 @@ export function ServiceCatalogDialog({ open, onOpenChange, editing }: Props) {
           <div>
             <label className={LABEL}>Nome *</label>
             <Input className="h-8" placeholder="Ex: Pintura Completa" {...register("name")} />
-            {errors.name && <p className="mt-0.5 text-[10px] text-red-600">{errors.name.message}</p>}
+            {errors.name && <p className="mt-0.5 text-xs text-red-600">{errors.name.message}</p>}
           </div>
 
           <div>
@@ -101,7 +101,7 @@ export function ServiceCatalogDialog({ open, onOpenChange, editing }: Props) {
             <label className={LABEL}>Preço Sugerido (R$) *</label>
             <Input className="h-8" placeholder="0.00" {...register("suggested_price")} />
             {errors.suggested_price && (
-              <p className="mt-0.5 text-[10px] text-red-600">{errors.suggested_price.message}</p>
+              <p className="mt-0.5 text-xs text-red-600">{errors.suggested_price.message}</p>
             )}
           </div>
 

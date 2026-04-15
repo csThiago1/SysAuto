@@ -27,7 +27,7 @@ const addSchema = z.object({
 })
 type AddForm = z.infer<typeof addSchema>
 
-const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
+const LABEL = "block text-xs font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
 const INPUT  = "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
 
 interface Props {
@@ -89,7 +89,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
     <div className="space-y-4 py-6">
       {!isBlocked && (
         <div className="rounded-md border border-neutral-200 bg-neutral-50 p-4 space-y-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
             Adicionar Serviço
           </p>
 
@@ -135,7 +135,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                 {...register("description")}
               />
               {errors.description && (
-                <p className="mt-0.5 text-[10px] text-red-600">{errors.description.message}</p>
+                <p className="mt-0.5 text-xs text-red-600">{errors.description.message}</p>
               )}
             </div>
             <div className="grid grid-cols-3 gap-2">
@@ -151,7 +151,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                   {...register("unit_price")}
                 />
                 {errors.unit_price && (
-                  <p className="mt-0.5 text-[10px] text-red-600">{errors.unit_price.message}</p>
+                  <p className="mt-0.5 text-xs text-red-600">{errors.unit_price.message}</p>
                 )}
               </div>
               <div>
@@ -183,7 +183,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
       ) : (
         <div className="rounded-md border border-neutral-200 overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-neutral-50 text-[11px] font-semibold uppercase text-neutral-500">
+            <thead className="bg-neutral-50 text-xs font-semibold uppercase text-neutral-500">
               <tr>
                 <th className="px-3 py-2 text-left">Descrição</th>
                 <th className="px-3 py-2 text-right">Qtd.</th>
@@ -199,7 +199,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                   <td className="px-3 py-2.5">
                     <span className="font-medium text-neutral-800">{item.description}</span>
                     {item.service_catalog_name && item.service_catalog_name !== item.description && (
-                      <span className="ml-1 text-[10px] text-neutral-400">
+                      <span className="ml-1 text-xs text-neutral-400">
                         ({item.service_catalog_name})
                       </span>
                     )}

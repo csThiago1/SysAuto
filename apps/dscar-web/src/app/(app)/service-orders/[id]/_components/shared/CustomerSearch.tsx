@@ -128,7 +128,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
           <button
             type="button"
             onClick={handleBuscarOutro}
-            className="text-[11px] text-neutral-400 hover:text-neutral-600 underline"
+            className="text-xs text-neutral-400 hover:text-neutral-600 underline"
           >
             ou buscar outro
           </button>
@@ -142,14 +142,14 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
     return (
       <div className="rounded-lg border border-dashed border-neutral-300 bg-neutral-50 px-3 py-2 space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-neutral-600">
+          <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-neutral-600">
             <UserPlus className="h-3 w-3" />
             Novo cliente
           </span>
           <button
             type="button"
             onClick={() => setMode("search")}
-            className="text-[11px] text-neutral-400 hover:text-neutral-600"
+            className="text-xs text-neutral-400 hover:text-neutral-600"
           >
             ← Voltar
           </button>
@@ -202,7 +202,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
         />
 
         {createError && (
-          <p className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1">
+          <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1">
             {createError}
           </p>
         )}
@@ -211,7 +211,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
           <button
             type="button"
             onClick={() => setMode("search")}
-            className="rounded border border-neutral-300 px-2.5 py-1 text-[11px] font-medium text-neutral-600 hover:bg-neutral-100"
+            className="rounded border border-neutral-300 px-2.5 py-1 text-xs font-medium text-neutral-600 hover:bg-neutral-100"
           >
             Cancelar
           </button>
@@ -219,7 +219,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
             type="button"
             onClick={handleCreate}
             disabled={!canCreate || createMutation.isPending}
-            className="flex items-center gap-1 rounded bg-primary-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+            className="flex items-center gap-1 rounded bg-primary-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-primary-700 disabled:opacity-50"
           >
             {createMutation.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
             {createMutation.isPending ? "Salvando..." : "Cadastrar"}
@@ -257,7 +257,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
         <button
           type="button"
           onClick={() => openCreateForm(query)}
-          className="shrink-0 flex items-center gap-1 rounded border border-dashed border-neutral-300 px-2 py-1 text-[11px] font-medium text-neutral-500 hover:border-neutral-400 hover:text-neutral-700 h-8"
+          className="shrink-0 flex items-center gap-1 rounded border border-dashed border-neutral-300 px-2 py-1 text-xs font-medium text-neutral-500 hover:border-neutral-400 hover:text-neutral-700 h-8"
         >
           <UserPlus className="h-3 w-3" />
           Novo

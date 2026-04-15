@@ -52,7 +52,7 @@ export function DayView({ currentDate, events }: Props) {
           {/* Previsões sem hora */}
           {deliveries.length > 0 && (
             <div className="px-4 py-2 border-b border-neutral-100 bg-emerald-50/50 space-y-1">
-              <p className="text-[10px] font-semibold uppercase text-emerald-600">Entregas previstas</p>
+              <p className="text-xs font-semibold uppercase text-emerald-600">Entregas previstas</p>
               {deliveries.map((e, i) => (
                 <CalendarEventCard key={`${e.os.id}-del-${i}`} event={e} />
               ))}
@@ -64,7 +64,7 @@ export function DayView({ currentDate, events }: Props) {
             const hourEvents = timed.filter((e) => e.datetime && getHours(e.datetime) === hour)
             return (
               <div key={hour} className="flex gap-3 px-4 py-2 border-b border-neutral-100 min-h-[52px]">
-                <span className="text-[11px] text-neutral-400 w-8 shrink-0 pt-0.5">{hour}h</span>
+                <span className="text-xs text-neutral-400 w-8 shrink-0 pt-0.5">{hour}h</span>
                 <div className="flex-1 space-y-1">
                   {hourEvents.map((e, i) => (
                     <CalendarEventCard key={`${e.os.id}-ent-${i}`} event={e} />

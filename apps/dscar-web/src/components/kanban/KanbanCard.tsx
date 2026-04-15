@@ -27,7 +27,7 @@ function DaysInShopBadge({ days }: { days: number | null }): React.ReactElement 
   if (days === null || days < 0) return null;
   const colorCls = getDaysInShopColor(days);
   return (
-    <span className={cn("flex items-center gap-0.5 text-[10px] font-medium", colorCls)}>
+    <span className={cn("flex items-center gap-0.5 text-xs font-medium", colorCls)}>
       <Clock className="h-3 w-3" />
       {days}d
     </span>
@@ -38,7 +38,7 @@ function UrgencyIndicator({ order }: { order: ServiceOrder }): React.ReactElemen
   const daysOverdue = getDaysOverdue(order);
   if (daysOverdue === null || daysOverdue <= 0) return null;
   return (
-    <span className="flex items-center gap-0.5 text-[10px] font-semibold text-red-600 bg-red-50 px-1.5 py-0.5 rounded-sm border border-red-200">
+    <span className="flex items-center gap-0.5 text-xs font-semibold text-red-600 bg-red-50 px-1.5 py-0.5 rounded-sm border border-red-200">
       <AlertTriangle className="h-3 w-3" />
       {daysOverdue}d atraso
     </span>
@@ -96,14 +96,14 @@ const CardContent = React.memo(function CardContent({
         </div>
 
         {/* Row 3: Vehicle */}
-        <p className="text-[11px] text-neutral-500 leading-snug truncate">
+        <p className="text-xs text-neutral-500 leading-snug truncate">
           {[order.make, order.model, order.year ? String(order.year) : ""]
             .filter(Boolean)
             .join(" · ")}
         </p>
 
         {/* Row 4: Customer */}
-        <p className="text-[11px] text-neutral-600 truncate font-medium">
+        <p className="text-xs text-neutral-600 truncate font-medium">
           {order.customer_name}
         </p>
 
@@ -127,7 +127,7 @@ const CardContent = React.memo(function CardContent({
                     {order.insurer_detail.abbreviation?.charAt(0)}
                   </span>
                 )}
-                <span className="text-[10px] text-indigo-700 font-medium truncate max-w-[90px]">
+                <span className="text-xs text-indigo-700 font-medium truncate max-w-[90px]">
                   {order.insurer_detail.display_name ?? order.insurer_detail.name}
                 </span>
               </div>

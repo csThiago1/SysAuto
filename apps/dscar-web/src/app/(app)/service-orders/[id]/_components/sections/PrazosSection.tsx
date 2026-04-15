@@ -6,9 +6,9 @@ import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schem
 import { DateTimeNow } from "../shared/DateTimeNow"
 import { cn } from "@/lib/utils"
 
-const SECTION_TITLE = "text-[11px] font-semibold uppercase tracking-widest text-neutral-500"
-const SUBSECTION = "text-[10px] font-semibold uppercase tracking-wider text-neutral-400 mt-3 mb-1"
-const LABEL = "block text-[9px] font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
+const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-neutral-500"
+const SUBSECTION = "text-xs font-semibold uppercase tracking-wider text-neutral-400 mt-3 mb-1"
+const LABEL = "block text-xs font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
 const INPUT =
   "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 const INPUT_ERROR =
@@ -58,7 +58,7 @@ export function PrazosSection({ form }: PrazosSectionProps) {
               />
             )}
           />
-          <p className="mt-0.5 text-[9px] text-neutral-400">Aparece na agenda como entrada</p>
+          <p className="mt-0.5 text-xs text-neutral-400">Aparece na agenda como entrada</p>
         </div>
         <div>
           <label className={LABEL}>Retirada pelo cliente</label>
@@ -74,7 +74,7 @@ export function PrazosSection({ form }: PrazosSectionProps) {
               />
             )}
           />
-          <p className="mt-0.5 text-[9px] text-neutral-400">Aparece na agenda como retirada</p>
+          <p className="mt-0.5 text-xs text-neutral-400">Aparece na agenda como retirada</p>
         </div>
       </div>
 
@@ -91,7 +91,7 @@ export function PrazosSection({ form }: PrazosSectionProps) {
             {...register("repair_days", { valueAsNumber: true })}
           />
           {errors.repair_days && (
-            <p className="mt-0.5 text-[10px] text-red-500">{errors.repair_days.message}</p>
+            <p className="mt-0.5 text-xs text-red-500">{errors.repair_days.message}</p>
           )}
         </div>
         <div>
@@ -102,7 +102,7 @@ export function PrazosSection({ form }: PrazosSectionProps) {
             readOnly
             {...register("estimated_delivery_date")}
           />
-          <p className="mt-0.5 text-[9px] text-neutral-400">Entrada + dias de reparo</p>
+          <p className="mt-0.5 text-xs text-neutral-400">Entrada + dias de reparo</p>
         </div>
       </div>
 
@@ -124,7 +124,7 @@ export function PrazosSection({ form }: PrazosSectionProps) {
             )}
           />
           {!errors.final_survey_date && (
-            <p className="mt-0.5 text-[9px] text-amber-600">Muda status → Vistoria Final</p>
+            <p className="mt-0.5 text-xs text-amber-600">Muda status → Vistoria Final</p>
           )}
         </div>
         <div>
@@ -142,7 +142,7 @@ export function PrazosSection({ form }: PrazosSectionProps) {
             )}
           />
           {!errors.client_delivery_date && (
-            <p className="mt-0.5 text-[9px] text-amber-600">Muda status → Entregue</p>
+            <p className="mt-0.5 text-xs text-amber-600">Muda status → Entregue</p>
           )}
         </div>
       </div>

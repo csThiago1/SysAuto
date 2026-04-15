@@ -25,7 +25,7 @@ export function OverdueOSList({ items }: Props) {
       </div>
       <table className="w-full text-sm">
         <thead className="bg-red-50">
-          <tr className="text-[11px] font-semibold uppercase text-red-400">
+          <tr className="text-xs font-semibold uppercase text-red-400">
             <th className="px-4 py-2 text-left">OS / Placa</th>
             <th className="px-4 py-2 text-left">Cliente</th>
             <th className="px-4 py-2 text-right">Previsão</th>

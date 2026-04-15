@@ -50,7 +50,7 @@ export default function AgendaPage() {
   }
 
   const Legend = () => (
-    <div className="flex items-center gap-4 text-[10px] text-neutral-500 px-1">
+    <div className="flex items-center gap-4 text-xs text-neutral-500 px-1">
       <span className="flex items-center gap-1">
         <span className="inline-block w-3 h-2 rounded bg-blue-500" /> Entrada agendada
       </span>

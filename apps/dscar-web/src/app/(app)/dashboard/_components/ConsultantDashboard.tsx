@@ -51,7 +51,7 @@ export function ConsultantDashboard({ data }: Props) {
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-neutral-50">
-              <tr className="text-[11px] font-semibold uppercase text-neutral-400">
+              <tr className="text-xs font-semibold uppercase text-neutral-400">
                 <th className="px-4 py-2.5 text-left">Placa</th>
                 <th className="px-4 py-2.5 text-left">Cliente</th>
                 <th className="px-4 py-2.5 text-left">Status</th>
@@ -70,7 +70,7 @@ export function ConsultantDashboard({ data }: Props) {
                     </td>
                     <td className="px-4 py-2.5 text-neutral-600">{os.customer_name || "—"}</td>
                     <td className="px-4 py-2.5">
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${config?.badge ?? "bg-neutral-100 text-neutral-600"}`}>
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${config?.badge ?? "bg-neutral-100 text-neutral-600"}`}>
                         {os.status_display}
                       </span>
                     </td>
