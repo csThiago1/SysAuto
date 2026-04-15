@@ -5,8 +5,10 @@ import {
   isSameDay, isToday, format, getHours
 } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { CalendarEventCard } from "./CalendarEventCard"
+import { SchedulingDialog } from "./SchedulingDialog"
 import type { CalendarEvent } from "@paddock/types"
 
 // Horários exibidos na grade: máximo do expediente (8h–17h)
@@ -31,6 +33,16 @@ interface Props {
 }
 
 export function WeekView({ currentDate, events }: Props) {
+  const [scheduleOpen, setScheduleOpen] = useState(false)
+  const [scheduleDate, setScheduleDate] = useState<Date | null>(null)
+
+  function handleSlotClick(day: Date, hour: number) {
+    const date = new Date(day)
+    date.setHours(hour, 0, 0, 0)
+    setScheduleDate(date)
+    setScheduleOpen(true)
+  }
+
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 })
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 0 })
   const days = eachDayOfInterval({ start: weekStart, end: weekEnd })
@@ -99,22 +111,38 @@ export function WeekView({ currentDate, events }: Props) {
                 <div
                   key={day.toISOString()}
                   className={cn(
-                    "border-l border-neutral-100 min-h-[52px] p-1 space-y-0.5",
-                    !working && "bg-neutral-50"
+                    "border-l border-neutral-100 min-h-[52px] p-1 space-y-0.5 relative group",
+                    working ? "cursor-pointer hover:bg-primary-600/5 transition-colors" : "bg-neutral-50"
                   )}
+                  onClick={() => working && handleSlotClick(day, hour)}
                 >
                   {working
                     ? dayHourEvents.map((event, i) => (
-                        <CalendarEventCard key={`${event.os.id}-${event.type}-${i}`} event={event} />
+                        <div key={`${event.os.id}-${event.type}-${i}`} onClick={(e) => e.stopPropagation()}>
+                          <CalendarEventCard event={event} />
+                        </div>
                       ))
                     : null
                   }
+                  {working && dayHourEvents.length === 0 && (
+                    <span className="absolute inset-0 flex items-center justify-center text-xs text-primary-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                      +
+                    </span>
+                  )}
                 </div>
               )
             })}
           </div>
         ))}
       </div>
+
+      {scheduleOpen && scheduleDate && (
+        <SchedulingDialog
+          open={scheduleOpen}
+          onOpenChange={setScheduleOpen}
+          defaultDate={scheduleDate}
+        />
+      )}
     </div>
   )
 }

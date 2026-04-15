@@ -5,6 +5,7 @@ import { ptBR } from "date-fns/locale"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { CalendarEventCard } from "./CalendarEventCard"
+import { SchedulingDialog } from "./SchedulingDialog"
 import type { CalendarEvent } from "@paddock/types"
 
 /** Retorna os horários de expediente do dia, ou [] se fechado. */
@@ -50,6 +51,16 @@ interface Props {
 }
 
 export function DayView({ currentDate, events }: Props) {
+  const [scheduleOpen, setScheduleOpen] = useState(false)
+  const [scheduleDate, setScheduleDate] = useState<Date | null>(null)
+
+  function handleSlotClick(hour: number) {
+    const date = new Date(currentDate)
+    date.setHours(hour, 0, 0, 0)
+    setScheduleDate(date)
+    setScheduleOpen(true)
+  }
+
   const dayEvents = events.filter((e) => {
     const d = e.date
     return (
@@ -99,12 +110,23 @@ export function DayView({ currentDate, events }: Props) {
               {HOURS.map((hour) => {
                 const hourEvents = timed.filter((e) => e.datetime && getHours(e.datetime) === hour)
                 return (
-                  <div key={hour} className="flex gap-3 px-4 py-2 border-b border-neutral-100 min-h-[52px]">
+                  <div
+                    key={hour}
+                    className="flex gap-3 px-4 py-2 border-b border-neutral-100 min-h-[52px] cursor-pointer hover:bg-primary-600/5 transition-colors group"
+                    onClick={() => handleSlotClick(hour)}
+                  >
                     <span className="text-xs text-neutral-400 w-8 shrink-0 pt-0.5">{hour}h</span>
-                    <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex-1 min-w-0 space-y-1 relative">
                       {hourEvents.map((e, i) => (
-                        <CalendarEventCard key={`${e.os.id}-ent-${i}`} event={e} />
+                        <div key={`${e.os.id}-ent-${i}`} onClick={(ev) => ev.stopPropagation()}>
+                          <CalendarEventCard event={e} />
+                        </div>
                       ))}
+                      {hourEvents.length === 0 && (
+                        <span className="absolute inset-0 flex items-center text-xs text-primary-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                          + Agendar
+                        </span>
+                      )}
                     </div>
                   </div>
                 )
@@ -126,6 +148,14 @@ export function DayView({ currentDate, events }: Props) {
           </>
         )}
       </div>
+
+      {scheduleOpen && scheduleDate && (
+        <SchedulingDialog
+          open={scheduleOpen}
+          onOpenChange={setScheduleOpen}
+          defaultDate={scheduleDate}
+        />
+      )}
     </div>
   )
 }
