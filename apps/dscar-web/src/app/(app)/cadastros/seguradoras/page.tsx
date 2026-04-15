@@ -5,6 +5,7 @@ import { Plus, Pencil, Trash2, Search, Shield } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { TableSkeleton } from "@/components/ui/table-skeleton"
 import {
   Table,
   TableBody,
@@ -103,7 +104,7 @@ export default function SeguradorasPage() {
 
       {/* Table */}
       {isLoading ? (
-        <div className="py-8 text-center text-sm text-neutral-400">Carregando...</div>
+        <TableSkeleton columns={6} rows={6} />
       ) : insurers.length === 0 ? (
         <div className="py-12 text-center text-sm text-neutral-400">
           {search ? "Nenhuma seguradora encontrada." : "Nenhuma seguradora cadastrada."}
