@@ -12,7 +12,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -24,6 +23,7 @@ import {
   useDeletePart,
 } from "../../_hooks/useOSItems"
 import type { ServiceOrderPart, CreatePartPayload } from "@paddock/types"
+import { formatCurrency } from "@paddock/utils"
 
 interface PartsTabProps {
   orderId?: string
@@ -35,10 +35,6 @@ type FormValues = {
   quantity: string
   unit_price: string
   discount: string
-}
-
-function formatCurrency(value: string | number): string {
-  return Number(value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
 }
 
 export function PartsTab({ orderId }: PartsTabProps) {
@@ -169,67 +165,73 @@ export function PartsTab({ orderId }: PartsTabProps) {
           Nenhuma peça adicionada.
         </div>
       ) : (
-        <div className="bg-white border border-neutral-200 rounded-lg overflow-hidden shadow-sm">
-          <Table>
-            <TableHeader className="bg-neutral-50">
-              <TableRow>
-                <TableHead>Descrição</TableHead>
-                <TableHead className="hidden sm:table-cell">Código</TableHead>
-                <TableHead className="text-right">Qtd</TableHead>
-                <TableHead className="text-right">Unit.</TableHead>
-                <TableHead className="text-right hidden md:table-cell">Desconto</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead className="w-20" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {parts.map((part) => (
-                <TableRow key={part.id}>
-                  <TableCell className="text-neutral-900 font-medium">{part.description}</TableCell>
-                  <TableCell className="text-neutral-500 hidden sm:table-cell">{part.part_number || "—"}</TableCell>
-                  <TableCell className="text-right text-neutral-700">{part.quantity}</TableCell>
-                  <TableCell className="text-right text-neutral-700">{formatCurrency(part.unit_price)}</TableCell>
-                  <TableCell className="text-right text-neutral-500 hidden md:table-cell">
-                    {parseFloat(part.discount) > 0 ? formatCurrency(part.discount) : "—"}
-                  </TableCell>
-                  <TableCell className="text-right font-semibold text-neutral-900">{formatCurrency(part.total)}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        type="button"
-                        onClick={() => startEdit(part)}
-                        className="p-1.5 rounded text-neutral-400 hover:text-primary hover:bg-neutral-100"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(part.id)}
-                        className="p-1.5 rounded text-neutral-400 hover:text-red-500 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </TableCell>
+        <>
+          <div className="rounded-md border border-neutral-200 overflow-hidden">
+            <Table>
+              <TableHeader className="bg-neutral-50">
+                <TableRow>
+                  <TableHead>Descrição</TableHead>
+                  <TableHead className="hidden sm:table-cell">Código</TableHead>
+                  <TableHead className="text-right">Qtd</TableHead>
+                  <TableHead className="text-right">Unit.</TableHead>
+                  <TableHead className="text-right hidden md:table-cell">Desconto</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="w-20" />
                 </TableRow>
-              ))}
-            </TableBody>
-            <TableFooter>
-              <TableRow>
-                <TableCell colSpan={4} className="text-right text-sm text-neutral-500 hidden md:table-cell">
-                  {discountTotal > 0 && `Descontos: ${formatCurrency(discountTotal)}`}
-                </TableCell>
-                <TableCell colSpan={2} className="text-right text-sm font-bold text-neutral-900 md:hidden">
-                  Total Peças:
-                </TableCell>
-                <TableCell className="text-right text-sm font-bold text-neutral-900">
-                  {formatCurrency(partsTotal)}
-                </TableCell>
-                <TableCell />
-              </TableRow>
-            </TableFooter>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {parts.map((part) => (
+                  <TableRow key={part.id}>
+                    <TableCell className="text-neutral-900 font-medium">{part.description}</TableCell>
+                    <TableCell className="text-neutral-500 hidden sm:table-cell">{part.part_number || "—"}</TableCell>
+                    <TableCell className="text-right text-neutral-700">{part.quantity}</TableCell>
+                    <TableCell className="text-right text-neutral-700">{formatCurrency(part.unit_price)}</TableCell>
+                    <TableCell className="text-right text-neutral-500 hidden md:table-cell">
+                      {parseFloat(part.discount) > 0 ? formatCurrency(part.discount) : "—"}
+                    </TableCell>
+                    <TableCell className="text-right font-semibold text-neutral-900">{formatCurrency(part.total)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => startEdit(part)}
+                          className="p-1.5 rounded text-neutral-400 hover:text-primary hover:bg-neutral-100"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(part.id)}
+                          className="p-1.5 rounded text-neutral-400 hover:text-red-500 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Totals panel */}
+          <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-neutral-600">Subtotal</span>
+              <span className="font-medium">{formatCurrency((parts ?? []).reduce((acc, p) => acc + parseFloat(p.unit_price) * parseFloat(p.quantity), 0))}</span>
+            </div>
+            {discountTotal > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-neutral-600">Desconto</span>
+                <span className="font-medium text-red-600">- {formatCurrency(discountTotal)}</span>
+              </div>
+            )}
+            <div className="border-t border-neutral-200 pt-2 flex items-center justify-between">
+              <span className="text-sm font-semibold text-neutral-800">Total Peças</span>
+              <span className="text-base font-bold text-neutral-900">{formatCurrency(partsTotal)}</span>
+            </div>
+          </div>
+        </>
       )}
     </div>
   )

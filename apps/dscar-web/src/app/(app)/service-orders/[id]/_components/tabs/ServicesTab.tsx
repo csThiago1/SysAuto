@@ -12,7 +12,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -24,6 +23,7 @@ import {
   useServiceCatalog,
 } from "@/hooks/useServiceCatalog"
 import type { ServiceOrderStatus } from "@paddock/types"
+import { formatCurrency } from "@paddock/utils"
 
 const BLOCKED_STATUSES: ServiceOrderStatus[] = ["ready", "delivered", "cancelled"]
 
@@ -91,8 +91,10 @@ export function ServicesTab({ osId, osStatus }: Props) {
     }
   }
 
-  const items          = laborData ?? []
-  const servicesTotal  = items.reduce((sum, i) => sum + i.total, 0)
+  const items           = laborData ?? []
+  const servicesSubtotal = items.reduce((sum, i) => sum + Number(i.unit_price) * Number(i.quantity), 0)
+  const servicesDiscount = items.reduce((sum, i) => sum + Number(i.discount), 0)
+  const servicesTotal    = items.reduce((sum, i) => sum + i.total, 0)
 
   return (
     <div className="space-y-4 py-6">
@@ -190,70 +192,77 @@ export function ServicesTab({ osId, osStatus }: Props) {
       ) : items.length === 0 ? (
         <p className="py-8 text-center text-sm text-neutral-400">Nenhum serviço adicionado.</p>
       ) : (
-        <div className="rounded-md border border-neutral-200 overflow-hidden">
-          <Table>
-            <TableHeader className="bg-neutral-50">
-              <TableRow>
-                <TableHead>Descrição</TableHead>
-                <TableHead className="text-right">Qtd.</TableHead>
-                <TableHead className="text-right">Unit.</TableHead>
-                <TableHead className="text-right">Desconto</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                {!isBlocked && <TableHead className="w-8" />}
-              </TableRow>
-            </TableHeader>
-            <TableBody className="bg-white">
-              {items.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="py-2.5 px-3">
-                    <span className="font-medium text-neutral-800">{item.description}</span>
-                    {item.service_catalog_name && item.service_catalog_name !== item.description && (
-                      <span className="ml-1 text-xs text-neutral-400">
-                        ({item.service_catalog_name})
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="py-2.5 px-3 text-right text-neutral-600">{item.quantity}</TableCell>
-                  <TableCell className="py-2.5 px-3 text-right font-mono text-neutral-600">
-                    {Number(item.unit_price).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                  </TableCell>
-                  <TableCell className="py-2.5 px-3 text-right font-mono text-neutral-400">
-                    {Number(item.discount) > 0
-                      ? `- ${Number(item.discount).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`
-                      : "—"}
-                  </TableCell>
-                  <TableCell className="py-2.5 px-3 text-right font-mono font-semibold text-neutral-800">
-                    {item.total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                  </TableCell>
-                  {!isBlocked && (
-                    <TableCell className="py-2.5 px-3 text-center">
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(item.id, item.description)}
-                        className="text-neutral-300 hover:text-red-500 transition-colors"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </TableCell>
-                  )}
+        <>
+          <div className="rounded-md border border-neutral-200 overflow-hidden">
+            <Table>
+              <TableHeader className="bg-neutral-50">
+                <TableRow>
+                  <TableHead>Descrição</TableHead>
+                  <TableHead className="text-right">Qtd.</TableHead>
+                  <TableHead className="text-right">Unit.</TableHead>
+                  <TableHead className="text-right">Desconto</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                  {!isBlocked && <TableHead className="w-8" />}
                 </TableRow>
-              ))}
-            </TableBody>
-            <TableFooter>
-              <TableRow>
-                <TableCell
-                  colSpan={isBlocked ? 4 : 5}
-                  className="px-3 py-2 text-right text-xs font-semibold uppercase text-neutral-500"
-                >
-                  Total Serviços
-                </TableCell>
-                <TableCell className="px-3 py-2 text-right font-mono font-bold text-neutral-800">
-                  {servicesTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                </TableCell>
-              </TableRow>
-            </TableFooter>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody className="bg-white">
+                {items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="py-2.5 px-3">
+                      <span className="font-medium text-neutral-800">{item.description}</span>
+                      {item.service_catalog_name && item.service_catalog_name !== item.description && (
+                        <span className="ml-1 text-xs text-neutral-400">
+                          ({item.service_catalog_name})
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-2.5 px-3 text-right text-neutral-600">{item.quantity}</TableCell>
+                    <TableCell className="py-2.5 px-3 text-right font-mono text-neutral-600">
+                      {formatCurrency(item.unit_price)}
+                    </TableCell>
+                    <TableCell className="py-2.5 px-3 text-right font-mono text-neutral-400">
+                      {Number(item.discount) > 0
+                        ? `- ${formatCurrency(item.discount)}`
+                        : "—"}
+                    </TableCell>
+                    <TableCell className="py-2.5 px-3 text-right font-mono font-semibold text-neutral-800">
+                      {formatCurrency(item.total)}
+                    </TableCell>
+                    {!isBlocked && (
+                      <TableCell className="py-2.5 px-3 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(item.id, item.description)}
+                          className="text-neutral-300 hover:text-red-500 transition-colors"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Totals panel */}
+          <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-neutral-600">Subtotal</span>
+              <span className="font-medium">{formatCurrency(servicesSubtotal)}</span>
+            </div>
+            {servicesDiscount > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-neutral-600">Desconto</span>
+                <span className="font-medium text-red-600">- {formatCurrency(servicesDiscount)}</span>
+              </div>
+            )}
+            <div className="border-t border-neutral-200 pt-2 flex items-center justify-between">
+              <span className="text-sm font-semibold text-neutral-800">Total Serviços</span>
+              <span className="text-base font-bold text-neutral-900">{formatCurrency(servicesTotal)}</span>
+            </div>
+          </div>
+        </>
       )}
     </div>
   )
