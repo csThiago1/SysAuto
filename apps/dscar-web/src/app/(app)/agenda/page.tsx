@@ -61,7 +61,7 @@ export default function AgendaPage() {
   )
 
   return (
-    <div className="flex flex-col h-full gap-2 p-4 max-w-7xl mx-auto">
+    <div className="flex flex-col h-full gap-2 p-6 max-w-7xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold text-neutral-900">Agenda</h1>
         <p className="text-sm text-neutral-500">Visualize e gerencie agendamentos de entrada e entrega das OS.</p>
