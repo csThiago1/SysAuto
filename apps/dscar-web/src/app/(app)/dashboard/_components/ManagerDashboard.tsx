@@ -55,7 +55,6 @@ export function ManagerDashboard({ data }: Props) {
       {/* Billing Chart */}
       <BillingByTypeChart
         data={data.billing_last_6_months}
-        byType={data.billing_by_type}
       />
 
       {/* Productivity + Overdue */}
