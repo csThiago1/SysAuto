@@ -49,6 +49,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
   const isBlocked = BLOCKED_STATUSES.includes(osStatus)
   const [catalogSearch, setCatalogSearch] = useState("")
   const [showCatalog, setShowCatalog] = useState(false)
+  const [showDiscount, setShowDiscount] = useState(false)
 
   // Inline edit state
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -72,6 +73,11 @@ export function ServicesTab({ osId, osStatus }: Props) {
     setCatalogSearch("")
   }
 
+  function handleDiscountToggle(checked: boolean) {
+    setShowDiscount(checked)
+    if (!checked) setValue("discount", "0")
+  }
+
   async function onAdd(data: AddForm) {
     try {
       await addMutation.mutateAsync({
@@ -82,6 +88,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
         service_catalog: data.service_catalog ?? null,
       })
       reset({ quantity: "1", discount: "0", description: "", unit_price: "", service_catalog: null })
+      setShowDiscount(false)
       toast.success("Serviço adicionado.")
     } catch {
       toast.error("Erro ao adicionar serviço.")
@@ -185,7 +192,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                 <p className="mt-0.5 text-xs text-red-600">{errors.description.message}</p>
               )}
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className={LABEL}>Qtd.</label>
                 <input className={INPUT} type="number" step="0.01" min="0.01" {...register("quantity")} />
@@ -201,10 +208,26 @@ export function ServicesTab({ osId, osStatus }: Props) {
                   <p className="mt-0.5 text-xs text-red-600">{errors.unit_price.message}</p>
                 )}
               </div>
-              <div>
-                <label className={LABEL}>Desconto (R$)</label>
-                <input className={INPUT} placeholder="0.00" {...register("discount")} />
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="services-show-discount"
+                  checked={showDiscount}
+                  onChange={(e) => handleDiscountToggle(e.target.checked)}
+                  className="h-4 w-4 rounded border-neutral-300 text-primary-600 cursor-pointer"
+                />
+                <label htmlFor="services-show-discount" className="text-xs font-medium text-neutral-400 uppercase tracking-wide cursor-pointer">
+                  Aplicar desconto
+                </label>
               </div>
+              {showDiscount && (
+                <div>
+                  <label className={LABEL}>Desconto (R$)</label>
+                  <input className={INPUT} placeholder="0.00" {...register("discount")} />
+                </div>
+              )}
             </div>
             <div className="flex justify-end">
               <Button

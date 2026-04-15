@@ -40,6 +40,7 @@ type FormValues = {
 export function PartsTab({ orderId }: PartsTabProps) {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [showDiscount, setShowDiscount] = useState(false)
 
   const { data: parts, isLoading } = useOSParts(orderId)
   const addPart = useAddPart(orderId ?? "")
@@ -58,12 +59,19 @@ export function PartsTab({ orderId }: PartsTabProps) {
     setValue("quantity", part.quantity)
     setValue("unit_price", part.unit_price)
     setValue("discount", part.discount)
+    setShowDiscount(parseFloat(part.discount) > 0)
   }
 
   function cancelForm() {
     setShowForm(false)
     setEditingId(null)
+    setShowDiscount(false)
     reset()
+  }
+
+  function handleDiscountToggle(checked: boolean) {
+    setShowDiscount(checked)
+    if (!checked) setValue("discount", "0")
   }
 
   async function onSubmit(values: FormValues) {
@@ -142,9 +150,25 @@ export function PartsTab({ orderId }: PartsTabProps) {
               <Label className="text-xs">Preço Unitário (R$) *</Label>
               <Input {...register("unit_price", { required: true })} type="number" min="0" step="0.01" placeholder="0,00" />
             </div>
-            <div>
-              <Label className="text-xs">Desconto (R$)</Label>
-              <Input {...register("discount")} type="number" min="0" step="0.01" placeholder="0,00" />
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="parts-show-discount"
+                  checked={showDiscount}
+                  onChange={(e) => handleDiscountToggle(e.target.checked)}
+                  className="h-4 w-4 rounded border-neutral-300 text-primary-600 cursor-pointer"
+                />
+                <label htmlFor="parts-show-discount" className="text-xs font-medium text-neutral-700 cursor-pointer">
+                  Aplicar desconto
+                </label>
+              </div>
+              {showDiscount && (
+                <>
+                  <Label className="text-xs">Desconto (R$)</Label>
+                  <Input {...register("discount")} type="number" min="0" step="0.01" placeholder="0,00" />
+                </>
+              )}
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-1">
