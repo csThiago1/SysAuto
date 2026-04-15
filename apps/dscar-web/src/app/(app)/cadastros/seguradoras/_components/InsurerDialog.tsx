@@ -14,10 +14,24 @@ import { Input } from "@/components/ui/input"
 import { useInsurerCreate, useInsurerUpdate, useInsurerUploadLogo } from "@/hooks/useInsurers"
 import type { Insurer, InsurerFull } from "@paddock/types"
 
+function formatCNPJ(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 14)
+  if (digits.length <= 2) return digits
+  if (digits.length <= 5) return `${digits.slice(0, 2)}.${digits.slice(2)}`
+  if (digits.length <= 8) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5)}`
+  if (digits.length <= 12) return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8)}`
+  return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`
+}
+
+const CNPJ_REGEX = /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/
+
 const schema = z.object({
   name: z.string().min(2, "Razão social obrigatória"),
   trade_name: z.string().optional(),
-  cnpj: z.string().min(14, "CNPJ obrigatório (ex: 00.000.000/0000-00)"),
+  cnpj: z
+    .string()
+    .regex(CNPJ_REGEX, "CNPJ inválido (ex: 00.000.000/0000-00)")
+    .or(z.literal("")),
   abbreviation: z.string().max(4, "Máx. 4 caracteres").optional(),
   brand_color: z
     .string()
@@ -199,7 +213,15 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
           {/* CNPJ */}
           <div>
             <label className={LABEL}>CNPJ *</label>
-            <Input className="h-8" placeholder="00.000.000/0000-00" {...register("cnpj")} />
+            <Input
+              className="h-8 font-mono"
+              placeholder="00.000.000/0000-00"
+              maxLength={18}
+              value={formatCNPJ(watch("cnpj") ?? "")}
+              onChange={(e) => {
+                setValue("cnpj", formatCNPJ(e.target.value), { shouldValidate: true })
+              }}
+            />
             {errors.cnpj && <p className="mt-0.5 text-xs text-red-600">{errors.cnpj.message}</p>}
           </div>
 
