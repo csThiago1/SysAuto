@@ -14,6 +14,9 @@ import type { CalendarEvent } from "@paddock/types"
 // Horários exibidos na grade: máximo do expediente (8h–17h)
 const HOURS = Array.from({ length: 10 }, (_, i) => i + 8)
 
+// Máximo de eventos visíveis por célula hora/dia — excedente exibido como "+N mais"
+const MAX_VISIBLE = 2
+
 /** Retorna true se o horário está dentro do expediente do dia. */
 function isWorkingHour(day: Date, hour: number): boolean {
   const dow = day.getDay() // 0=Dom, 1=Seg … 5=Sex, 6=Sáb
@@ -111,19 +114,25 @@ export function WeekView({ currentDate, events }: Props) {
                 <div
                   key={day.toISOString()}
                   className={cn(
-                    "border-l border-neutral-100 min-h-[52px] p-1 space-y-0.5 relative group",
+                    "border-l border-neutral-100 min-h-[52px] p-1 relative group overflow-hidden min-w-0",
                     working ? "cursor-pointer hover:bg-primary-600/5 transition-colors" : "bg-neutral-50"
                   )}
                   onClick={() => working && handleSlotClick(day, hour)}
                 >
-                  {working
-                    ? dayHourEvents.map((event, i) => (
+                  {working ? (
+                    <div className="flex flex-col gap-0.5 overflow-hidden">
+                      {dayHourEvents.slice(0, MAX_VISIBLE).map((event, i) => (
                         <div key={`${event.os.id}-${event.type}-${i}`} onClick={(e) => e.stopPropagation()}>
-                          <CalendarEventCard event={event} />
+                          <CalendarEventCard event={event} compact />
                         </div>
-                      ))
-                    : null
-                  }
+                      ))}
+                      {dayHourEvents.length > MAX_VISIBLE && (
+                        <span className="text-[10px] text-neutral-500 font-medium px-1 leading-tight">
+                          +{dayHourEvents.length - MAX_VISIBLE} mais
+                        </span>
+                      )}
+                    </div>
+                  ) : null}
                   {working && dayHourEvents.length === 0 && (
                     <span className="absolute inset-0 flex items-center justify-center text-xs text-primary-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                       +
