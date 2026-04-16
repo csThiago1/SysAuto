@@ -17,6 +17,7 @@ from .models import (
     BudgetSnapshot,
     ChecklistItem,
     ChecklistItemStatus,
+    Holiday,
     OSPhotoFolder,
     ServiceCatalog,
     ServiceOrder,
@@ -74,13 +75,21 @@ class ServiceOrderPhotoSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "s3_key", "url", "uploaded_at", "original_stage", "folder_display"]
 
     def get_url(self, obj: ServiceOrderPhoto) -> str | None:
-        """Retorna URL pública/presignada via default_storage (S3 em prod, local em dev)."""
+        """Retorna URL pública/presignada via default_storage (S3 em prod, absoluta em dev)."""
         from django.core.files.storage import default_storage
 
         if not obj.s3_key:
             return None
         try:
-            return default_storage.url(obj.s3_key)
+            url = default_storage.url(obj.s3_key)
+            # Em dev o FileSystemStorage retorna caminhos relativos (/media/...).
+            # O app mobile precisa de URL absoluta — usamos request.build_absolute_uri()
+            # para incluir o host (ex: http://192.168.x.x:8000/media/...).
+            if url.startswith("/"):
+                request = self.context.get("request")
+                if request is not None:
+                    return request.build_absolute_uri(url)
+            return url
         except Exception:
             return None
 
@@ -146,6 +155,40 @@ class StatusTransitionLogSerializer(serializers.ModelSerializer):
 
     def get_to_status_display(self, obj: StatusTransitionLog) -> str:
         return _get_status_display().get(obj.to_status, obj.to_status)
+
+
+class NotificationFeedSerializer(serializers.ModelSerializer):
+    """Item do feed de notificações — transição de status com contexto da OS."""
+
+    os_id = serializers.UUIDField(source="service_order.id")
+    os_number = serializers.IntegerField(source="service_order.number")
+    os_plate = serializers.CharField(source="service_order.plate")
+    os_make = serializers.CharField(source="service_order.make")
+    os_model = serializers.CharField(source="service_order.model")
+    os_customer_name = serializers.CharField(source="service_order.customer_name")
+    changed_by_name = serializers.SerializerMethodField()
+    from_status_display = serializers.SerializerMethodField()
+    to_status_display = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StatusTransitionLog
+        fields = [
+            "id",
+            "os_id", "os_number", "os_plate", "os_make", "os_model", "os_customer_name",
+            "from_status", "from_status_display",
+            "to_status", "to_status_display",
+            "triggered_by_field", "changed_by_name", "created_at",
+        ]
+
+    def get_changed_by_name(self, obj: StatusTransitionLog) -> str:
+        return obj.changed_by.get_full_name() or obj.changed_by.email
+
+    def get_from_status_display(self, obj: StatusTransitionLog) -> str:
+        return _get_status_display().get(obj.from_status, obj.from_status)
+
+    def get_to_status_display(self, obj: StatusTransitionLog) -> str:
+        return _get_status_display().get(obj.to_status, obj.to_status)
+
 
 class ServiceOrderActivityLogSerializer(serializers.ModelSerializer):
     """Serializer para histórico detalhado de atividades da OS."""
@@ -315,7 +358,7 @@ class ServiceOrderCalendarSerializer(serializers.ModelSerializer):
             "id", "number", "plate", "make", "model",
             "customer_name", "customer_type",
             "status", "status_display",
-            "scheduling_date", "estimated_delivery_date",
+            "scheduling_date", "estimated_delivery_date", "delivery_date",
         ]
 
 
@@ -491,6 +534,19 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceOrder
         exclude = ["number", "created_by", "opened_at"]
+        # Campos calculados ou controlados por endpoints dedicados — não graváveis via PATCH
+        read_only_fields = [
+            "status",
+            "is_active",
+            "invoice_issued",
+            "parts_total",
+            "services_total",
+            "discount_total",
+            "ai_recommendations",
+            "nfe_key",
+            "nfse_number",
+            "delivered_at",
+        ]
         extra_kwargs = {
             "make":            {"required": False, "allow_blank": True},
             "model":           {"required": False, "allow_blank": True},
@@ -567,7 +623,7 @@ class DeliverOSSerializer(serializers.Serializer):
 class UploadPhotoSerializer(serializers.Serializer):
     """Serializer para upload de foto com pasta, slot, tipo de checklist e legenda."""
 
-    file           = serializers.ImageField()
+    file           = serializers.FileField()   # ImageField exige Pillow; FileField basta aqui
     folder         = serializers.ChoiceField(choices=OSPhotoFolder.choices)
     caption        = serializers.CharField(required=False, allow_blank=True, max_length=200)
     slot           = serializers.CharField(required=False, allow_blank=True, default="")
@@ -686,3 +742,12 @@ class ChecklistItemBulkSerializer(serializers.Serializer):
         if not items:
             raise serializers.ValidationError("Lista de itens não pode ser vazia.")
         return items
+
+
+class HolidaySerializer(serializers.ModelSerializer):
+    """Serializer para Feriados."""
+
+    class Meta:
+        model = Holiday
+        fields = ["id", "date", "name", "is_active", "created_at"]
+        read_only_fields = ["id", "created_at"]

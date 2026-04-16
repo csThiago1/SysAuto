@@ -15,13 +15,14 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 import httpx
 
-from apps.authentication.permissions import IsConsultantOrAbove
+from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove, _get_role
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import (
     ChecklistItem,
+    Holiday,
     ServiceCatalog,
     ServiceOrder,
     ServiceOrderActivityLog,
@@ -50,7 +51,9 @@ from .serializers import (
     ServiceOrderStatusTransitionSerializer,
     ServiceOrderSyncSerializer,
     ServiceOrderUpdateSerializer,
+    HolidaySerializer,
     StatusTransitionLogSerializer,
+    NotificationFeedSerializer,
     UploadPhotoSerializer,
 )
 from .services import ServiceOrderDeliveryService, ServiceOrderService
@@ -268,6 +271,17 @@ class ServiceOrderViewSet(
         )
         return Response(StatusTransitionLogSerializer(logs, many=True).data)
 
+    @extend_schema(summary="Feed de notificações — últimas transições de status")
+    @action(detail=False, methods=["get"], url_path="notifications")
+    def notifications(self, request: Request) -> Response:
+        """GET /service-orders/notifications/ — últimas 50 transições no tenant."""
+        logs = (
+            StatusTransitionLog.objects.filter(service_order__is_active=True)
+            .select_related("service_order", "changed_by")
+            .order_by("-created_at")[:50]
+        )
+        return Response(NotificationFeedSerializer(logs, many=True).data)
+
     @extend_schema(summary="Próximo número de OS disponível")
     @action(detail=False, methods=["get"], url_path="next-number")
     def next_number(self, request: Request) -> Response:
@@ -400,7 +414,8 @@ class ServiceOrderViewSet(
             logger.error(f"Erro Cilia API: {e}")
             return Response({"erro": "Erro ao comunicar com a API Cilia"}, status=502)
         except Exception as e:
-            return Response({"erro": str(e)}, status=500)
+            logger.error(f"Erro inesperado no import Cilia: {e}")
+            return Response({"erro": "Erro interno ao processar importação."}, status=500)
             
         # Update ServiceOrder
         totals = dados.get("totals", {})
@@ -650,7 +665,10 @@ class ServiceOrderViewSet(
         Retorna OS ativas com estimated_delivery_date <= cutoff, excluindo delivered/cancelled.
         """
         today = timezone.localdate()
-        days_ahead = int(request.query_params.get("days_ahead", 0))
+        try:
+            days_ahead = max(0, min(int(request.query_params.get("days_ahead", 0)), 365))
+        except (ValueError, TypeError):
+            days_ahead = 0
         cutoff = today + timedelta(days=days_ahead)
 
         open_statuses = [
@@ -721,13 +739,32 @@ class ServiceOrderViewSet(
             )
 
             folder_label = dict(OSPhotoFolder.choices).get(folder, folder)
-            ServiceOrderActivityLog.objects.create(
+            from django.utils import timezone
+            import datetime
+            window = timezone.now() - datetime.timedelta(minutes=30)
+            existing_log = ServiceOrderActivityLog.objects.filter(
                 service_order=service_order,
                 user=request.user,
                 activity_type=ActivityType.FILE_UPLOAD,
-                description=f"Foto adicionada na pasta: {folder_label}",
-                metadata={"folder": folder, "s3_key": saved_path},
-            )
+                metadata__folder=folder,
+                created_at__gte=window,
+            ).order_by("-created_at").first()
+
+            if existing_log:
+                count = existing_log.metadata.get("count", 1) + 1
+                existing_log.metadata["count"] = count
+                existing_log.metadata.setdefault("s3_keys", [existing_log.metadata.get("s3_key", "")])
+                existing_log.metadata["s3_keys"].append(saved_path)
+                existing_log.description = f"{count} fotos adicionadas — {folder_label}"
+                existing_log.save(update_fields=["description", "metadata"])
+            else:
+                ServiceOrderActivityLog.objects.create(
+                    service_order=service_order,
+                    user=request.user,
+                    activity_type=ActivityType.FILE_UPLOAD,
+                    description=f"1 foto adicionada — {folder_label}",
+                    metadata={"folder": folder, "count": 1, "s3_key": saved_path},
+                )
 
             logger.info(
                 "Foto enviada para OS #%d — pasta=%s path=%s por user_id=%s",
@@ -736,10 +773,15 @@ class ServiceOrderViewSet(
                 saved_path,
                 request.user.id,
             )
-            return Response(ServiceOrderPhotoSerializer(photo).data, status=status.HTTP_201_CREATED)
+            return Response(
+                ServiceOrderPhotoSerializer(photo, context={"request": request}).data,
+                status=status.HTTP_201_CREATED,
+            )
 
         active_photos = service_order.photos.filter(is_active=True).order_by("uploaded_at")
-        return Response(ServiceOrderPhotoSerializer(active_photos, many=True).data)
+        return Response(
+            ServiceOrderPhotoSerializer(active_photos, many=True, context={"request": request}).data
+        )
 
     @extend_schema(summary="Entregar OS ao cliente")
     @action(detail=True, methods=["post"], url_path="deliver")
@@ -873,8 +915,8 @@ class DashboardStatsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request) -> Response:
-        """Retorna estatísticas do dashboard conforme role."""
-        role = request.query_params.get("role", "").upper()
+        """Retorna estatísticas do dashboard conforme role do JWT (não query param)."""
+        role = _get_role(request)
 
         if role == "CONSULTANT":
             return Response(self._consultant_stats(request))
@@ -882,7 +924,7 @@ class DashboardStatsView(APIView):
         if role in ("MANAGER", "ADMIN", "OWNER"):
             return Response(self._manager_stats())
 
-        # Legacy — retrocompatibilidade
+        # Legacy — STOREKEEPER e fallback
         return Response(self._legacy_stats())
 
     # ── Legacy ────────────────────────────────────────────────────────────────
@@ -921,7 +963,10 @@ class DashboardStatsView(APIView):
         today = timezone.localdate()
         week_ago = today - timedelta(days=7)
 
-        open_qs = ServiceOrder.objects.exclude(
+        open_qs = ServiceOrder.objects.filter(
+            is_active=True,
+            created_by=request.user,
+        ).exclude(
             status__in=(ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED)
         )
         my_open: int = open_qs.count()
@@ -935,11 +980,16 @@ class DashboardStatsView(APIView):
         ).count()
 
         completed_week: int = ServiceOrder.objects.filter(
+            is_active=True,
+            created_by=request.user,
             status=ServiceOrderStatus.DELIVERED,
-            delivery_date__date__gte=week_ago,
+            delivered_at__date__gte=week_ago,
         ).count()
 
-        recent_os = ServiceOrder.objects.exclude(
+        recent_os = ServiceOrder.objects.filter(
+            is_active=True,
+            created_by=request.user,
+        ).exclude(
             status__in=(ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED)
         ).order_by("-opened_at")[:5]
 
@@ -1029,7 +1079,7 @@ class DashboardStatsView(APIView):
             )
             delivered_qs = ServiceOrder.objects.filter(
                 status=ServiceOrderStatus.DELIVERED,
-                delivery_date__date__gte=month_start,
+                delivered_at__date__gte=month_start,
             )
             totals = delivered_qs.aggregate(
                 total=Sum(total_expr),
@@ -1050,8 +1100,9 @@ class DashboardStatsView(APIView):
 
         # ── Entregas do mês ────────────────────────────────────────────────────
         delivered_month: int = ServiceOrder.objects.filter(
+            is_active=True,
             status=ServiceOrderStatus.DELIVERED,
-            delivery_date__date__gte=month_start,
+            delivered_at__date__gte=month_start,
         ).count()
 
         avg_ticket = (
@@ -1062,7 +1113,7 @@ class DashboardStatsView(APIView):
 
         # ── OS atrasadas ───────────────────────────────────────────────────────
         overdue_qs = (
-            ServiceOrder.objects.filter(estimated_delivery_date__lt=today)
+            ServiceOrder.objects.filter(is_active=True, estimated_delivery_date__lt=today)
             .exclude(status__in=(ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED))
             .order_by("estimated_delivery_date")
         )
@@ -1084,8 +1135,9 @@ class DashboardStatsView(APIView):
         # ── Produtividade da equipe (proxy: created_by) ────────────────────────
         productivity_qs = (
             ServiceOrder.objects.filter(
+                is_active=True,
                 status=ServiceOrderStatus.DELIVERED,
-                delivery_date__date__gte=month_start,
+                delivered_at__date__gte=month_start,
             )
             .values("created_by__email")
             .annotate(delivered=Count("id"))
@@ -1093,7 +1145,8 @@ class DashboardStatsView(APIView):
         )
 
         open_by_user = (
-            ServiceOrder.objects.exclude(
+            ServiceOrder.objects.filter(is_active=True)
+            .exclude(
                 status__in=(ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED)
             )
             .values("created_by__email")
@@ -1105,7 +1158,6 @@ class DashboardStatsView(APIView):
 
         team_productivity = [
             {
-                "email": row["created_by__email"],
                 "name": (row["created_by__email"] or "")
                 .split("@")[0]
                 .replace(".", " ")
@@ -1161,8 +1213,12 @@ class CalendarView(APIView):
 
         qs = (
             ServiceOrder.objects.filter(
+                is_active=True,
+            )
+            .filter(
                 Q(scheduling_date__date__range=(date_start, date_end))
                 | Q(estimated_delivery_date__range=(date_start, date_end))
+                | Q(delivery_date__date__range=(date_start, date_end))
             )
             .exclude(status=ServiceOrderStatus.CANCELLED)
             .select_related("created_by")
@@ -1175,11 +1231,17 @@ class CalendarView(APIView):
 class ServiceCatalogViewSet(viewsets.ModelViewSet):
     """
     CRUD do catálogo de serviços.
+    Leitura: CONSULTANT+. Escrita: MANAGER+.
     DELETE faz soft delete (is_active=False).
     """
 
     serializer_class = ServiceCatalogSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        if self.action in ("create", "update", "partial_update", "destroy"):
+            return [IsAuthenticated(), IsManagerOrAbove()]
+        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> QuerySet:
         """Retorna catálogo ativo, com filtros opcionais de busca e categoria."""
@@ -1203,3 +1265,33 @@ class ServiceCatalogViewSet(viewsets.ModelViewSet):
         instance.is_active = False
         instance.save(update_fields=["is_active", "updated_at"])
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class HolidayViewSet(viewsets.ModelViewSet):
+    """
+    CRUD de feriados.
+    Leitura: CONSULTANT+. Escrita: MANAGER+.
+    DELETE faz soft delete (is_active=False).
+    """
+
+    serializer_class = HolidaySerializer
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        if self.action in ("create", "update", "partial_update", "destroy"):
+            return [IsAuthenticated(), IsManagerOrAbove()]
+        return [IsAuthenticated(), IsConsultantOrAbove()]
+
+    def get_queryset(self) -> QuerySet:
+        qs = Holiday.objects.filter(is_active=True).order_by("date")
+        year = self.request.query_params.get("year")
+        if year:
+            try:
+                qs = qs.filter(date__year=int(year))
+            except (ValueError, TypeError):
+                pass
+        return qs
+
+    def perform_destroy(self, instance: Holiday) -> None:
+        instance.is_active = False
+        instance.save(update_fields=["is_active"])
