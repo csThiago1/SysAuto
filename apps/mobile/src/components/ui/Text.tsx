@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text as RNText, TextProps as RNTextProps, StyleSheet } from 'react-native';
+import { Colors } from '@/constants/theme';
 
 type TextVariant = 'heading1' | 'heading2' | 'heading3' | 'body' | 'bodySmall' | 'caption' | 'label';
 
@@ -21,7 +22,7 @@ export function Text({ variant = 'body', color, style, children, ...rest }: Text
 
 const styles = StyleSheet.create({
   base: {
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
     fontFamily: undefined, // usa fonte do sistema (SF Pro / Roboto)
   },
   heading1: {
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '400',
     lineHeight: 16,
-    color: '#6b7280',
+    color: Colors.textTertiary,
   },
   label: {
     fontSize: 14,

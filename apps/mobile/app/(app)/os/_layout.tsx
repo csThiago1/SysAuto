@@ -6,14 +6,10 @@ export default function OSLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        headerStyle: { backgroundColor: '#ffffff' },
-        headerTintColor: '#e31b1b',
-        headerTitleStyle: { fontWeight: '600', color: '#111111' },
-        headerShadowVisible: false,
       }}
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="[id]" options={{ headerShown: true, title: 'Detalhes da OS', headerBackTitle: 'Voltar' }} />
+      <Stack.Screen name="[id]" options={{ headerShown: false }} />
     </Stack>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   StyleSheet,
@@ -13,7 +13,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { SaveFormat } from 'expo-image-manipulator';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as Crypto from 'expo-crypto';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { usePhotoStore } from '@/stores/photo.store';
 import { MAX_PHOTO_SIZE_PX, JPEG_QUALITY } from '@/lib/constants';
 
@@ -58,6 +58,12 @@ export default function CameraScreen(): React.ReactElement {
   const [facing, setFacing] = useState<CameraType>('back');
   const [flash, setFlash] = useState<FlashMode>('off');
   const [isSaving, setIsSaving] = useState<boolean>(false);
+
+  // Reseta isSaving toda vez que a câmera recebe foco — o tab (app) preserva estado
+  // entre visitas, então sem isso o overlay "Salvando..." ficaria travado na 2ª foto.
+  useFocusEffect(useCallback(() => {
+    setIsSaving(false);
+  }, []));
 
   const [permission, requestPermission] = useCameraPermissions();
 
@@ -157,12 +163,12 @@ export default function CameraScreen(): React.ReactElement {
         localUri: destFile.uri,
       });
 
-      // 7. Retorna para a tela de origem (returnTo) ou para o checklist
+      // 7. Retorna para a tela de origem via navigate (troca de tab — não replace)
       const destination = (returnTo != null && returnTo.length > 0)
         ? returnTo
         : `/(app)/checklist/${osId ?? ''}`;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      router.replace(destination as any);
+      router.navigate(destination as any);
     } catch (err: unknown) {
       console.error('[CameraScreen] capture error:', err);
       setIsSaving(false);
@@ -200,7 +206,7 @@ export default function CameraScreen(): React.ReactElement {
           <Ionicons
             name={flash === 'on' ? 'flash' : 'flash-off-outline'}
             size={26}
-            color={flash === 'on' ? '#facc15' : Colors.textPrimary}
+            color={flash === 'on' ? Colors.warning : Colors.textPrimary}
           />
           <Text style={styles.sideButtonLabel}>
             {flash === 'on' ? 'Flash ligado' : 'Flash desligado'}

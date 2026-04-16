@@ -111,8 +111,8 @@ export default function NovaOSScreen(): React.JSX.Element {
       {/* Offline banner */}
       {!isOnline && (
         <View style={styles.offlineBanner}>
-          <Ionicons name="cloud-offline-outline" size={14} color="#92400e" />
-          <Text variant="caption" color="#92400e">
+          <Ionicons name="cloud-offline-outline" size={14} color={Colors.warning} />
+          <Text variant="caption" color={Colors.warning}>
             {' '}Modo offline — OS será sincronizada ao reconectar
           </Text>
         </View>
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
-    backgroundColor: '#fef3c7',
+    backgroundColor: 'rgba(245,158,11,0.15)',
   },
   stepContainer: {
     flex: 1,

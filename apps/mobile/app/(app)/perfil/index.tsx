@@ -70,7 +70,7 @@ export default function PerfilScreen() {
             <Text variant="label" color={Colors.textTertiary}>
               Ambiente
             </Text>
-            <Text variant="body" color={__DEV__ ? '#b45309' : '#15803d'}>
+            <Text variant="body" color={__DEV__ ? Colors.warning : Colors.success}>
               {__DEV__ ? 'Desenvolvimento' : 'Produção'}
             </Text>
           </View>

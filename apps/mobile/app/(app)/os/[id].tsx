@@ -372,20 +372,20 @@ function ChecklistProgressRow({ photoCount, ok, attention, critical }: Checklist
       )}
       {ok > 0 && (
         <View style={[styles.progressChip, styles.progressChipOk]}>
-          <Ionicons name="checkmark-circle" size={12} color="#16a34a" />
-          <Text variant="caption" style={{ color: '#16a34a' }}>{ok} OK</Text>
+          <Ionicons name="checkmark-circle" size={12} color={Colors.success} />
+          <Text variant="caption" style={{ color: Colors.success }}>{ok} OK</Text>
         </View>
       )}
       {attention > 0 && (
         <View style={[styles.progressChip, styles.progressChipAttention]}>
-          <Ionicons name="warning" size={12} color="#d97706" />
-          <Text variant="caption" style={{ color: '#d97706' }}>{attention} Atenção</Text>
+          <Ionicons name="warning" size={12} color={Colors.warning} />
+          <Text variant="caption" style={{ color: Colors.warning }}>{attention} Atenção</Text>
         </View>
       )}
       {critical > 0 && (
         <View style={[styles.progressChip, styles.progressChipCritical]}>
-          <Ionicons name="alert-circle" size={12} color="#dc2626" />
-          <Text variant="caption" style={{ color: '#dc2626' }}>{critical} Crítico</Text>
+          <Ionicons name="alert-circle" size={12} color={Colors.error} />
+          <Text variant="caption" style={{ color: Colors.error }}>{critical} Crítico</Text>
         </View>
       )}
     </View>
@@ -402,9 +402,9 @@ interface VistoriaCTACardProps {
 function VistoriaCTACard({ type, osId }: VistoriaCTACardProps): React.JSX.Element {
   const router = useRouter();
   const isEntrada = type === 'entrada';
-  const bg = isEntrada ? '#eff6ff' : '#f0fdf4';
-  const borderColor = isEntrada ? '#bfdbfe' : '#bbf7d0';
-  const color = isEntrada ? '#1d4ed8' : '#15803d';
+  const bg = isEntrada ? 'rgba(59, 130, 246, 0.10)' : 'rgba(22, 163, 74, 0.10)';
+  const borderColor = isEntrada ? 'rgba(59, 130, 246, 0.28)' : 'rgba(22, 163, 74, 0.28)';
+  const color = isEntrada ? Colors.info : Colors.success;
   const icon: React.ComponentProps<typeof Ionicons>['name'] = isEntrada ? 'search-outline' : 'checkmark-done-outline';
   const title = isEntrada ? 'Iniciar Vistoria de Entrada' : 'Iniciar Vistoria de Saída';
   const description = isEntrada
@@ -464,13 +464,24 @@ const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
   );
 
   const pendingCount = localPhotos.filter((p) => p.uploadStatus === 'pending').length;
-  const showUpload = pendingCount > 0 && isOnline;
+  const errorCount  = localPhotos.filter((p) => p.uploadStatus === 'error').length;
+  // Mostra botão para pending E para retry de erros
+  const showUpload = (pendingCount + errorCount) > 0 && isOnline;
+  const uploadLabel = errorCount > 0 && pendingCount === 0
+    ? `Tentar novamente (${errorCount})`
+    : `Enviar fotos (${pendingCount + errorCount})`;
 
   const handleUpload = useCallback((): void => {
     if (isUploading) return;
+    // Recoloca erros como pending para que uploadPendingPhotos os processe
+    const { queue } = usePhotoStore.getState();
+    const errorIds = queue
+      .filter((p) => p.osId === osId && p.folder === 'acompanhamento' && p.uploadStatus === 'error')
+      .map((p) => p.id);
+    errorIds.forEach((pid) => usePhotoStore.getState().retryPhoto(pid));
     setIsUploading(true);
     void uploadPendingPhotos().finally(() => setIsUploading(false));
-  }, [isUploading]);
+  }, [isUploading, osId]);
 
   return (
     <View>
@@ -567,7 +578,7 @@ const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
               <Ionicons name="cloud-upload-outline" size={14} color={Colors.textPrimary} />
             )}
             <Text variant="caption" style={styles.acompUploadLabel}>
-              {isUploading ? 'Enviando...' : `Enviar fotos (${pendingCount})`}
+              {isUploading ? 'Enviando...' : uploadLabel}
             </Text>
           </TouchableOpacity>
         )}
@@ -1180,13 +1191,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   progressChipOk: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: 'rgba(22,163,74,0.15)',
   },
   progressChipAttention: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: 'rgba(245,158,11,0.15)',
   },
   progressChipCritical: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: 'rgba(239,68,68,0.15)',
   },
   // Vistoria CTA card
   vstCardWrapper: {
@@ -1205,7 +1216,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.7)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
   },

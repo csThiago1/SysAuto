@@ -6,6 +6,7 @@ import {
   TouchableOpacityProps,
   View,
 } from 'react-native';
+import { Colors } from '@/constants/theme';
 import { Text } from './Text';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -45,7 +46,7 @@ export function Button({
         {loading ? (
           <ActivityIndicator
             size="small"
-            color={variant === 'primary' ? '#ffffff' : '#e31b1b'}
+            color={variant === 'primary' ? Colors.textPrimary : Colors.brand}
           />
         ) : (
           <Text
@@ -76,18 +77,18 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
   primary: {
-    backgroundColor: '#e31b1b',
+    backgroundColor: Colors.brand,
   },
   secondary: {
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: '#e31b1b',
+    borderColor: Colors.brand,
   },
   ghost: {
     backgroundColor: 'transparent',
   },
   danger: {
-    backgroundColor: '#ef4444',
+    backgroundColor: Colors.error,
   },
   fullWidth: {
     width: '100%',
@@ -101,16 +102,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
   },
   labelPrimary: {
     color: '#ffffff',
   },
   labelSecondary: {
-    color: '#e31b1b',
+    color: Colors.brand,
   },
   labelGhost: {
-    color: '#6b7280',
+    color: Colors.textTertiary,
   },
   labelDanger: {
     color: '#ffffff',
