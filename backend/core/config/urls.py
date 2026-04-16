@@ -23,6 +23,7 @@ urlpatterns = [
     path("api/v1/experts/", include("apps.experts.urls")),
     path("api/v1/insurers/", include("apps.insurers.urls")),
     path("api/v1/vehicle-catalog/", include("apps.vehicle_catalog.urls")),
+    path("api/v1/pricing/", include("apps.pricing_profile.urls")),
     path("api/v1/cilia/", include("apps.cilia.urls")),
     path("api/v1/hr/", include("apps.hr.urls")),
     path("api/v1/accounting/", include("apps.accounting.urls")),
@@ -41,4 +42,7 @@ urlpatterns = [
 
 if settings.DEBUG:
     import debug_toolbar
+    from django.conf.urls.static import static
+
     urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

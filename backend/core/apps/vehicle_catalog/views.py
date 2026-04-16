@@ -6,13 +6,19 @@ import logging
 import httpx
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, mixins, status, viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.vehicle_catalog.models import VehicleColor
-from apps.vehicle_catalog.serializers import VehicleColorSerializer
+from apps.authentication.permissions import IsConsultantOrAbove
+from apps.vehicle_catalog.models import VehicleColor, VehicleMake, VehicleModel, VehicleYearVersion
+from apps.vehicle_catalog.serializers import (
+    VehicleColorSerializer,
+    VehicleMakeSerializer,
+    VehicleModelSerializer,
+    VehicleYearVersionSerializer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -104,12 +110,70 @@ def plate_lookup(request: Request, plate: str) -> Response:
     except httpx.ConnectError as exc:
         logger.error("plate_lookup: falha de conexão para %s: %s", plate, exc)
         return Response(
-            {"detail": f"Falha de conexão com a API de placa: {exc}"},
+            {"detail": "Serviço de consulta de placa indisponível."},
             status=status.HTTP_502_BAD_GATEWAY,
         )
     except Exception as exc:
-        logger.exception("plate_lookup: erro inesperado para placa %s: %s", plate, exc)
+        logger.exception("plate_lookup: erro inesperado para placa %s", plate, exc)
         return Response(
-            {"detail": f"Erro ao consultar placa: {type(exc).__name__}: {exc}"},
+            {"detail": "Erro interno ao processar consulta de placa."},
             status=status.HTTP_502_BAD_GATEWAY,
         )
+
+
+class VehicleMakeViewSet(viewsets.ReadOnlyModelViewSet):
+    """Lista marcas FIPE cacheadas localmente.
+
+    GET /vehicle-catalog/makes/
+    GET /vehicle-catalog/makes/{id}/models/
+    """
+
+    queryset = VehicleMake.objects.all().order_by("nome")
+    serializer_class = VehicleMakeSerializer
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["nome", "nome_normalizado"]
+
+    @action(detail=True, methods=["get"], url_path="models")
+    def models(self, request: Request, pk: str | None = None) -> Response:
+        """Lista modelos de uma marca específica.
+
+        GET /vehicle-catalog/makes/{id}/models/
+        """
+        make = self.get_object()
+        qs = (
+            VehicleModel.objects.filter(marca=make)
+            .select_related("marca")
+            .order_by("nome")
+        )
+        serializer = VehicleModelSerializer(qs, many=True)
+        return Response(serializer.data)
+
+
+class VehicleModelViewSet(viewsets.ReadOnlyModelViewSet):
+    """Lista modelos FIPE com action de anos/versões.
+
+    GET /vehicle-catalog/models/
+    GET /vehicle-catalog/models/{id}/years/
+    """
+
+    queryset = VehicleModel.objects.all().select_related("marca").order_by("nome")
+    serializer_class = VehicleModelSerializer
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["nome", "nome_normalizado", "marca__nome"]
+
+    @action(detail=True, methods=["get"], url_path="years")
+    def years(self, request: Request, pk: str | None = None) -> Response:
+        """Lista anos/versões de um modelo específico.
+
+        GET /vehicle-catalog/models/{id}/years/
+        """
+        model = self.get_object()
+        qs = (
+            VehicleYearVersion.objects.filter(modelo=model)
+            .select_related("modelo")
+            .order_by("-ano")
+        )
+        serializer = VehicleYearVersionSerializer(qs, many=True)
+        return Response(serializer.data)

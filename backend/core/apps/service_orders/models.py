@@ -56,13 +56,16 @@ VALID_TRANSITIONS: dict[str, list[str]] = {
 
 class OSPhotoFolder(models.TextChoices):
     """Pastas predefinidas para organização de fotos da OS."""
-    INITIAL_SURVEY  = "vistoria_inicial",  "Vistoria Inicial"
-    COMPLEMENT      = "complemento",       "Complemento"
-    ENTRY_CHECKLIST = "checklist_entrada", "Checklist de Entrada"
-    DOCUMENTS       = "documentos",        "Documentos"
-    BUDGETS         = "orcamentos",        "Orçamentos"
-    REPAIR_PROGRESS = "acompanhamento",    "Acompanhamento de Reparos"
-    FINAL_SURVEY    = "vistoria_final",    "Vistoria Final"
+    INITIAL_SURVEY   = "vistoria_inicial",  "Vistoria Inicial"
+    COMPLEMENT       = "complemento",       "Complemento"
+    ENTRY_CHECKLIST  = "checklist_entrada", "Checklist de Entrada"
+    FINAL_CHECKLIST  = "checklist_saida",   "Checklist de Saída"
+    DOCUMENTS        = "documentos",        "Documentos"
+    BUDGETS          = "orcamentos",        "Orçamentos"
+    REPAIR_PROGRESS  = "acompanhamento",    "Acompanhamento de Reparos"
+    FINAL_SURVEY     = "vistoria_final",    "Vistoria Final"
+    EXPERTISE        = "pericia",           "Perícia"
+    OTHER            = "outros",            "Outros"
 
 
 class ServiceOrder(PaddockBaseModel):
@@ -216,6 +219,52 @@ class ServiceOrder(PaddockBaseModel):
     )
     mileage_in = models.PositiveIntegerField(null=True, blank=True, verbose_name="KM entrada")
     mileage_out = models.PositiveIntegerField(null=True, blank=True, verbose_name="KM saída")
+
+    # ── Perfil veicular (Motor de Orçamentos MO-1) ──────────────────────────
+    vehicle_make_id = models.CharField(
+        max_length=10,
+        blank=True,
+        help_text="fipe_id da marca — referência solta a vehicle_catalog.VehicleMake",
+    )
+    vehicle_model_id = models.CharField(
+        max_length=10,
+        blank=True,
+        help_text="fipe_id do modelo — referência solta a vehicle_catalog.VehicleModel",
+    )
+    vehicle_year_version_id = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="fipe_id do ano/versão — referência solta a vehicle_catalog.VehicleYearVersion",
+    )
+    vehicle_fipe_value_snapshot = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Valor FIPE congelado no momento de criação da OS (R$).",
+    )
+    segmento_codigo = models.CharField(
+        max_length=40,
+        blank=True,
+        db_index=True,
+        help_text="Código do SegmentoVeicular resolvido pelo EnquadramentoService.",
+    )
+    tamanho_codigo = models.CharField(
+        max_length=40,
+        blank=True,
+        db_index=True,
+        help_text="Código da CategoriaTamanho resolvida pelo EnquadramentoService.",
+    )
+    tipo_pintura_codigo = models.CharField(
+        max_length=40,
+        blank=True,
+        help_text="Código do TipoPintura resolvido pelo EnquadramentoService.",
+    )
+    empresa_id = models.UUIDField(
+        null=True,
+        blank=True,
+        help_text="UUID da Empresa (pricing_profile.Empresa) — referência solta, igual ao customer_uuid.",
+    )
 
     # ── Entrada do veículo ────────────────────────────────────────────────────
     class VehicleLocation(models.TextChoices):
@@ -845,3 +894,18 @@ class ChecklistItem(PaddockBaseModel):
 
     def __str__(self) -> str:
         return f"OS #{self.service_order.number} — {self.category}/{self.item_key}: {self.status}"
+
+
+class Holiday(PaddockBaseModel):
+    """Feriado cadastrado pela oficina — impacta a agenda."""
+
+    date = models.DateField(unique=True, verbose_name="Data")
+    name = models.CharField(max_length=200, verbose_name="Nome")
+
+    class Meta(PaddockBaseModel.Meta):
+        ordering = ["date"]
+        verbose_name = "Feriado"
+        verbose_name_plural = "Feriados"
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.date})"
