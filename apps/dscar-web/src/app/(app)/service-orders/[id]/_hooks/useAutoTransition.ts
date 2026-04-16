@@ -14,7 +14,7 @@ const AUTO_TRANSITION_FIELDS: Record<
     target: "authorized",
     label: "Autorizada",
   },
-  entry_date: {
+  scheduling_date: {
     validFrom: ["reception"],
     target: "initial_survey",
     label: "Vistoria Inicial",

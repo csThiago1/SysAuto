@@ -51,7 +51,7 @@ export function PrazosSection({ form }: PrazosSectionProps) {
               />
             )}
           />
-          <p className={FORM_HINT}>Data prevista de entrada do veículo</p>
+          <p className={FORM_WARN}>Muda status → Vistoria Inicial</p>
         </div>
         <div>
           <label className={FORM_LABEL}>Previsão de Entrega</label>

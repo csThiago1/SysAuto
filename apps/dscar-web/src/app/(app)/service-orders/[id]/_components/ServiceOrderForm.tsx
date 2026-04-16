@@ -123,6 +123,13 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
 
   const { isDirty } = form.formState
 
+  // Transições de reparo são gerenciadas exclusivamente pelo mobile
+  const REPAIR_PHASE_STATUSES: ServiceOrderStatus[] = [
+    "repair", "mechanic", "bodywork", "painting", "assembly",
+    "polishing", "washing", "final_survey", "ready",
+  ]
+  const isRepairPhase = REPAIR_PHASE_STATUSES.includes(order.status as ServiceOrderStatus)
+
   const updateMutation = useServiceOrderUpdate(order.id)
   const customerUpdateMutation = useCustomerUpdate(
     form.watch("customer") ?? order.customer_uuid ?? null
@@ -131,12 +138,15 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   useAutoTransition({ order })
 
   const isPending = updateMutation.isPending || customerUpdateMutation.isPending
-  const nextStatuses = VALID_TRANSITIONS[order.status as ServiceOrderStatus] ?? []
+  const nextStatuses = isRepairPhase
+    ? []
+    : (VALID_TRANSITIONS[order.status as ServiceOrderStatus] ?? [])
 
   async function handleTransition(newStatus: ServiceOrderStatus) {
     try {
       await transitionMutation.mutateAsync(newStatus)
       toast.success(`Status atualizado para "${SERVICE_ORDER_STATUS_CONFIG[newStatus].label}"`)
+      router.refresh()
     } catch {
       toast.error("Erro ao atualizar status. Tente novamente.")
     }
@@ -209,6 +219,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
         client_delivery_date: savedOrder.client_delivery_date ?? undefined,
       })
       toast.success("OS salva com sucesso!")
+      router.refresh()
     } catch {
       toast.error("Erro ao salvar OS. Tente novamente.")
     }

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 # Quando um desses campos passa de None para um valor, o status muda automaticamente.
 AUTO_TRANSITIONS: dict[str, tuple[list[str], str]] = {
     "authorization_date":   (["budget", "waiting_auth"], "authorized"),
-    "entry_date":           (["reception"],              "initial_survey"),
+    "scheduling_date":      (["reception"],              "initial_survey"),
     "final_survey_date":    (["washing"],                "final_survey"),
     "client_delivery_date": (["ready"],                  "delivered"),
     # Clientes particulares: ao definir data do orçamento, aguarda autorização
