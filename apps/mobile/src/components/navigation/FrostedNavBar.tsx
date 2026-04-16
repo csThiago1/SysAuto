@@ -38,7 +38,7 @@ const TAB_CONFIG: TabConfig[] = [
     label: 'OS',
   },
   {
-    routeName: 'busca/index',
+    routeName: 'agenda/index',
     iconActive: 'calendar',
     iconInactive: 'calendar-outline',
     label: 'Agenda',
