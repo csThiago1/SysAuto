@@ -12,6 +12,10 @@ from .cost_center import (
     CostCenterDetailSerializer,
     CostCenterListSerializer,
 )
+from .despesa_recorrente import (
+    DespesaRecorrenteListSerializer,
+    DespesaRecorrenteSerializer,
+)
 from .fiscal_period import (
     FiscalPeriodDetailSerializer,
     FiscalPeriodListSerializer,
@@ -33,6 +37,8 @@ __all__ = [
     "CostCenterListSerializer",
     "CostCenterDetailSerializer",
     "CostCenterCreateSerializer",
+    "DespesaRecorrenteListSerializer",
+    "DespesaRecorrenteSerializer",
     "FiscalYearSerializer",
     "FiscalPeriodListSerializer",
     "FiscalPeriodDetailSerializer",

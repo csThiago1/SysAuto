@@ -37,6 +37,7 @@ import {
   Boxes,
   HardHat,
   Truck,
+  SlidersHorizontal,
   type LucideIcon,
 } from "lucide-react";
 import { NotificationBell } from "@/components/header/NotificationBell";
@@ -135,6 +136,20 @@ const NAV_SECTIONS: NavSection[] = [
           { id: "motor-tamanhos",      label: "Tamanhos",        href: "/cadastros/perfil-veicular/tamanhos",       icon: Car },
           { id: "motor-tipos-pintura", label: "Tipos de Pintura",href: "/cadastros/perfil-veicular/tipos-pintura",  icon: Car },
           { id: "motor-enquadramentos",label: "Enquadramentos",  href: "/cadastros/perfil-veicular/enquadramentos", icon: Car },
+        ],
+      },
+      {
+        id: "motor-config-custos",
+        label: "Configuração do Motor",
+        icon: SlidersHorizontal,
+        href: "/configuracao-motor/custos",
+        children: [
+          {
+            id: "motor-config-custos-child",
+            label: "Custos",
+            href: "/configuracao-motor/custos",
+            icon: SlidersHorizontal,
+          },
         ],
       },
       {

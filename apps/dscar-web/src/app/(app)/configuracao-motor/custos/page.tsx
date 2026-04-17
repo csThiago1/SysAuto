@@ -1,0 +1,649 @@
+"use client"
+
+import { useState } from "react"
+import { toast } from "sonner"
+import {
+  SlidersHorizontal,
+  Clock,
+  Settings2,
+  Layers,
+  FlaskConical,
+  ExternalLink,
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
+import { Badge } from "@/components/ui/badge"
+import { PermissionGate } from "@/components/PermissionGate"
+import {
+  useCustosHoraFallback,
+  useCreateCustoHoraFallback,
+  useParametrosCustoHora,
+  useCreateParametroCustoHora,
+  useParametrosRateio,
+  useCreateParametroRateio,
+  useDebugCustoHora,
+} from "@/hooks/usePricingCost"
+import type { CustoHoraFallbackCreate, ParametroCustoHoraCreate, ParametroRateioCreate } from "@paddock/types"
+import Link from "next/link"
+import type { Route } from "next"
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatDecimalPercent(value: string): string {
+  const num = parseFloat(value)
+  if (isNaN(num)) return value
+  return `${(num * 100).toFixed(2)}%`
+}
+
+// ─── Aba 1: Custo/Hora Fallback ───────────────────────────────────────────────
+
+function AbaFallback() {
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [form, setForm] = useState<Partial<CustoHoraFallbackCreate>>({
+    vigente_desde: new Date().toISOString().split("T")[0],
+    vigente_ate: null,
+    valor_hora: "",
+    motivo: "",
+  })
+
+  const { data, isLoading } = useCustosHoraFallback()
+  const createMutation = useCreateCustoHoraFallback()
+
+  const fallbacks = data?.results ?? []
+
+  async function handleSave() {
+    if (!form.empresa || !form.categoria || !form.vigente_desde || !form.valor_hora) {
+      toast.error("Preencha todos os campos obrigatórios.")
+      return
+    }
+    try {
+      await createMutation.mutateAsync(form as CustoHoraFallbackCreate)
+      toast.success("Fallback cadastrado com sucesso.")
+      setSheetOpen(false)
+      setForm({ vigente_desde: new Date().toISOString().split("T")[0], vigente_ate: null, valor_hora: "", motivo: "" })
+    } catch {
+      toast.error("Erro ao cadastrar fallback. Tente novamente.")
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-white">Custo/Hora por Categoria</h3>
+          <p className="text-xs text-white/50 mt-0.5">
+            Valor direto utilizado quando o módulo RH não possui dados completos para a categoria.
+          </p>
+        </div>
+        <PermissionGate role="ADMIN">
+          <Button
+            size="sm"
+            onClick={() => setSheetOpen(true)}
+            className="bg-primary-600 hover:bg-primary-700"
+          >
+            Cadastrar fallback
+          </Button>
+        </PermissionGate>
+      </div>
+
+      {isLoading ? (
+        <p className="text-xs text-white/40 py-4">Carregando...</p>
+      ) : fallbacks.length === 0 ? (
+        <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-8 text-center">
+          <Clock className="mx-auto mb-2 h-8 w-8 text-white/20" />
+          <p className="text-sm text-white/40">Nenhum fallback cadastrado.</p>
+          <p className="text-xs text-white/30 mt-1">
+            Enquanto o módulo RH não tem dados, cadastre um valor de referência por categoria.
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-lg border border-white/10 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-white/10">
+                <TableHead className="text-white/50 text-xs">Categoria</TableHead>
+                <TableHead className="text-white/50 text-xs">Valor/hora</TableHead>
+                <TableHead className="text-white/50 text-xs">Vigência</TableHead>
+                <TableHead className="text-white/50 text-xs">Motivo</TableHead>
+                <TableHead className="text-white/50 text-xs">Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {fallbacks.map((fb) => (
+                <TableRow key={fb.id} className="border-white/10">
+                  <TableCell className="text-sm text-white font-medium">
+                    {fb.categoria_nome ?? fb.categoria}
+                  </TableCell>
+                  <TableCell className="text-sm text-white font-mono">
+                    R$ {parseFloat(fb.valor_hora).toFixed(2)}/h
+                  </TableCell>
+                  <TableCell className="text-xs text-white/60">
+                    {fb.vigente_desde}
+                    {fb.vigente_ate ? ` → ${fb.vigente_ate}` : " → atual"}
+                  </TableCell>
+                  <TableCell className="text-xs text-white/60 max-w-[200px] truncate">
+                    {fb.motivo || "—"}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      className={
+                        fb.is_active
+                          ? "border-success-600 text-success-400 text-xs"
+                          : "border-white/20 text-white/40 text-xs"
+                      }
+                    >
+                      {fb.is_active ? "Ativo" : "Inativo"}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+        <SheetContent className="bg-[#1c1c1e] border-white/10 text-white w-[420px]">
+          <SheetHeader>
+            <SheetTitle className="text-white">Novo Fallback de Custo/Hora</SheetTitle>
+          </SheetHeader>
+          <div className="mt-6 space-y-4">
+            <div className="space-y-1">
+              <Label className="text-xs text-white/60">Empresa (UUID)</Label>
+              <Input
+                placeholder="UUID da empresa"
+                value={form.empresa ?? ""}
+                onChange={(e) => setForm({ ...form, empresa: e.target.value })}
+                className="bg-white/5 border-white/10 text-white text-sm"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-white/60">Categoria (UUID)</Label>
+              <Input
+                placeholder="UUID da CategoriaMaoObra"
+                value={form.categoria ?? ""}
+                onChange={(e) => setForm({ ...form, categoria: e.target.value })}
+                className="bg-white/5 border-white/10 text-white text-sm"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs text-white/60">Vigente desde</Label>
+                <Input
+                  type="date"
+                  value={form.vigente_desde ?? ""}
+                  onChange={(e) => setForm({ ...form, vigente_desde: e.target.value })}
+                  className="bg-white/5 border-white/10 text-white text-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-white/60">Vigente até (opcional)</Label>
+                <Input
+                  type="date"
+                  value={form.vigente_ate ?? ""}
+                  onChange={(e) => setForm({ ...form, vigente_ate: e.target.value || null })}
+                  className="bg-white/5 border-white/10 text-white text-sm"
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-white/60">Valor por hora (R$)</Label>
+              <Input
+                placeholder="Ex: 95.00"
+                value={form.valor_hora ?? ""}
+                onChange={(e) => setForm({ ...form, valor_hora: e.target.value })}
+                className="bg-white/5 border-white/10 text-white text-sm font-mono"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-white/60">Motivo (opcional)</Label>
+              <Input
+                placeholder="Ex: Aguardando integração RH"
+                value={form.motivo ?? ""}
+                onChange={(e) => setForm({ ...form, motivo: e.target.value })}
+                className="bg-white/5 border-white/10 text-white text-sm"
+              />
+            </div>
+            <Button
+              className="w-full bg-primary-600 hover:bg-primary-700 mt-2"
+              onClick={handleSave}
+              disabled={createMutation.isPending}
+            >
+              {createMutation.isPending ? "Salvando..." : "Salvar"}
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </div>
+  )
+}
+
+// ─── Aba 2: Parâmetros ────────────────────────────────────────────────────────
+
+function AbaParametros() {
+  const { data: rateioData } = useParametrosRateio()
+  const { data: custoHoraData } = useParametrosCustoHora()
+  const createRateio = useCreateParametroRateio()
+  const createCustoHora = useCreateParametroCustoHora()
+
+  const [rateioForm, setRateioForm] = useState<Partial<ParametroRateioCreate>>({
+    vigente_desde: new Date().toISOString().split("T")[0],
+    vigente_ate: null,
+    horas_produtivas_mes: "168.00",
+    metodo: "por_hora",
+    observacoes: "",
+  })
+  const [custoHoraForm, setCustoHoraForm] = useState<Partial<ParametroCustoHoraCreate>>({
+    vigente_desde: new Date().toISOString().split("T")[0],
+    vigente_ate: null,
+    provisao_13_ferias: "0.1389",
+    multa_fgts_rescisao: "0.0320",
+    beneficios_por_funcionario: "0.00",
+    horas_produtivas_mes: "168.00",
+    observacoes: "",
+  })
+  const [empresaId, setEmpresaId] = useState("")
+
+  const parametrosRateio = rateioData?.results ?? []
+  const parametrosCustoHora = custoHoraData?.results ?? []
+
+  async function handleSaveRateio() {
+    if (!empresaId) {
+      toast.error("Informe o UUID da empresa.")
+      return
+    }
+    try {
+      await createRateio.mutateAsync({ ...rateioForm, empresa: empresaId } as ParametroRateioCreate)
+      toast.success("Parâmetro de rateio salvo. Só afeta orçamentos novos.")
+    } catch {
+      toast.error("Erro ao salvar parâmetro de rateio.")
+    }
+  }
+
+  async function handleSaveCustoHora() {
+    if (!empresaId) {
+      toast.error("Informe o UUID da empresa.")
+      return
+    }
+    try {
+      await createCustoHora.mutateAsync({ ...custoHoraForm, empresa: empresaId } as ParametroCustoHoraCreate)
+      toast.success("Parâmetro de custo/hora salvo. Só afeta orçamentos novos.")
+    } catch {
+      toast.error("Erro ao salvar parâmetro de custo/hora.")
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-lg border border-info-600/20 bg-info-600/5 px-4 py-3">
+        <p className="text-xs text-info-400">
+          Alterações de parâmetros só afetam <strong>orçamentos criados após a data de vigência</strong>.
+          Orçamentos existentes não são recalculados automaticamente.
+        </p>
+      </div>
+
+      <div className="space-y-1">
+        <Label className="text-xs text-white/60">Empresa (UUID) — aplica a todos os formulários abaixo</Label>
+        <Input
+          placeholder="UUID da empresa"
+          value={empresaId}
+          onChange={(e) => setEmpresaId(e.target.value)}
+          className="bg-white/5 border-white/10 text-white text-sm max-w-sm"
+        />
+      </div>
+
+      {/* Parâmetro de Rateio */}
+      <div className="rounded-lg border border-white/10 p-4 space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-white">Parâmetro de Rateio</h3>
+          <p className="text-xs text-white/50 mt-0.5">
+            Horas produtivas mensais e método de rateio de despesas fixas.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <Label className="text-xs text-white/60">Horas produtivas/mês</Label>
+            <Input
+              type="number"
+              step="0.5"
+              value={rateioForm.horas_produtivas_mes ?? "168.00"}
+              onChange={(e) => setRateioForm({ ...rateioForm, horas_produtivas_mes: e.target.value })}
+              className="bg-white/5 border-white/10 text-white text-sm font-mono"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-white/60">Método</Label>
+            <select
+              value={rateioForm.metodo ?? "por_hora"}
+              onChange={(e) => setRateioForm({ ...rateioForm, metodo: e.target.value as "por_hora" | "por_os" })}
+              className="w-full rounded-md bg-white/5 border border-white/10 text-white text-sm px-3 py-2"
+            >
+              <option value="por_hora">Por hora produtiva</option>
+              <option value="por_os">Por OS concluída</option>
+            </select>
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-white/60">Vigente desde</Label>
+            <Input
+              type="date"
+              value={rateioForm.vigente_desde ?? ""}
+              onChange={(e) => setRateioForm({ ...rateioForm, vigente_desde: e.target.value })}
+              className="bg-white/5 border-white/10 text-white text-sm"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-white/60">Vigente até</Label>
+            <Input
+              type="date"
+              value={rateioForm.vigente_ate ?? ""}
+              onChange={(e) => setRateioForm({ ...rateioForm, vigente_ate: e.target.value || null })}
+              className="bg-white/5 border-white/10 text-white text-sm"
+            />
+          </div>
+        </div>
+        <PermissionGate role="ADMIN">
+          <Button
+            size="sm"
+            onClick={handleSaveRateio}
+            disabled={createRateio.isPending}
+            className="bg-primary-600 hover:bg-primary-700"
+          >
+            {createRateio.isPending ? "Salvando..." : "Salvar parâmetro de rateio"}
+          </Button>
+        </PermissionGate>
+
+        {parametrosRateio.length > 0 && (
+          <div className="pt-2 border-t border-white/10">
+            <p className="text-xs text-white/40 mb-2">Histórico de parâmetros</p>
+            {parametrosRateio.slice(0, 3).map((p) => (
+              <div key={p.id} className="flex items-center gap-2 py-1 text-xs text-white/60">
+                <span className="font-mono">{p.horas_produtivas_mes}h/mês</span>
+                <span>·</span>
+                <span>{p.metodo === "por_hora" ? "Por hora" : "Por OS"}</span>
+                <span>·</span>
+                <span>{p.vigente_desde}</span>
+                {p.vigente_ate && <span>→ {p.vigente_ate}</span>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Parâmetro de Custo Hora */}
+      <div className="rounded-lg border border-white/10 p-4 space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold text-white">Parâmetro de Custo/Hora</h3>
+          <p className="text-xs text-white/50 mt-0.5">
+            Encargos e benefícios que compõem o custo real da hora sobre o salário bruto.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <Label className="text-xs text-white/60">
+              Provisão 13º + férias (fração)
+              <span className="ml-1 text-white/30">{formatDecimalPercent(custoHoraForm.provisao_13_ferias ?? "0.1389")}</span>
+            </Label>
+            <Input
+              type="number"
+              step="0.0001"
+              value={custoHoraForm.provisao_13_ferias ?? "0.1389"}
+              onChange={(e) => setCustoHoraForm({ ...custoHoraForm, provisao_13_ferias: e.target.value })}
+              className="bg-white/5 border-white/10 text-white text-sm font-mono"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-white/60">
+              Multa FGTS rescisão (fração)
+              <span className="ml-1 text-white/30">{formatDecimalPercent(custoHoraForm.multa_fgts_rescisao ?? "0.0320")}</span>
+            </Label>
+            <Input
+              type="number"
+              step="0.0001"
+              value={custoHoraForm.multa_fgts_rescisao ?? "0.0320"}
+              onChange={(e) => setCustoHoraForm({ ...custoHoraForm, multa_fgts_rescisao: e.target.value })}
+              className="bg-white/5 border-white/10 text-white text-sm font-mono"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-white/60">Benefícios por funcionário (R$/mês)</Label>
+            <Input
+              type="number"
+              step="0.01"
+              value={custoHoraForm.beneficios_por_funcionario ?? "0.00"}
+              onChange={(e) => setCustoHoraForm({ ...custoHoraForm, beneficios_por_funcionario: e.target.value })}
+              className="bg-white/5 border-white/10 text-white text-sm font-mono"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-white/60">Horas produtivas individuais/mês</Label>
+            <Input
+              type="number"
+              step="0.5"
+              value={custoHoraForm.horas_produtivas_mes ?? "168.00"}
+              onChange={(e) => setCustoHoraForm({ ...custoHoraForm, horas_produtivas_mes: e.target.value })}
+              className="bg-white/5 border-white/10 text-white text-sm font-mono"
+            />
+          </div>
+          <div className="space-y-1 col-span-2">
+            <Label className="text-xs text-white/60">Vigente desde</Label>
+            <Input
+              type="date"
+              value={custoHoraForm.vigente_desde ?? ""}
+              onChange={(e) => setCustoHoraForm({ ...custoHoraForm, vigente_desde: e.target.value })}
+              className="bg-white/5 border-white/10 text-white text-sm max-w-[200px]"
+            />
+          </div>
+        </div>
+        <PermissionGate role="ADMIN">
+          <Button
+            size="sm"
+            onClick={handleSaveCustoHora}
+            disabled={createCustoHora.isPending}
+            className="bg-primary-600 hover:bg-primary-700"
+          >
+            {createCustoHora.isPending ? "Salvando..." : "Salvar parâmetro de custo/hora"}
+          </Button>
+        </PermissionGate>
+
+        {parametrosCustoHora.length > 0 && (
+          <div className="pt-2 border-t border-white/10">
+            <p className="text-xs text-white/40 mb-2">Histórico</p>
+            {parametrosCustoHora.slice(0, 3).map((p) => (
+              <div key={p.id} className="flex items-center gap-2 py-1 text-xs text-white/60 font-mono">
+                <span>{formatDecimalPercent(p.provisao_13_ferias)} 13º/férias</span>
+                <span>·</span>
+                <span>{p.horas_produtivas_mes}h/mês</span>
+                <span>·</span>
+                <span>desde {p.vigente_desde}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Aba 3: Despesas ──────────────────────────────────────────────────────────
+
+function AbaDespesas() {
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg border border-white/10 bg-white/5 p-6 text-center space-y-3">
+        <Layers className="mx-auto h-8 w-8 text-white/20" />
+        <div>
+          <h3 className="text-sm font-semibold text-white">Despesas Recorrentes</h3>
+          <p className="text-xs text-white/50 mt-1">
+            As despesas fixas da oficina (aluguel, energia, etc.) são gerenciadas no módulo financeiro.
+          </p>
+        </div>
+        <Link href={"/financeiro/contas-pagar" as Route}>
+          <Button variant="outline" size="sm" className="border-white/20 text-white/70 hover:text-white gap-2">
+            <ExternalLink className="h-3.5 w-3.5" />
+            Ir para Contas a Pagar
+          </Button>
+        </Link>
+      </div>
+      <p className="text-xs text-white/30 text-center">
+        O Motor de Orçamentos lê automaticamente as despesas com vigência ativa para o mês de referência.
+      </p>
+    </div>
+  )
+}
+
+// ─── Aba 4: Simulação (ADMIN+) ────────────────────────────────────────────────
+
+function AbaSimulacao() {
+  const [form, setForm] = useState({
+    categoria_codigo: "",
+    data: new Date().toISOString().split("T")[0],
+    empresa_id: "",
+  })
+  const [resultado, setResultado] = useState<Record<string, unknown> | null>(null)
+
+  const debugMutation = useDebugCustoHora()
+
+  async function handleSimular() {
+    if (!form.categoria_codigo || !form.data || !form.empresa_id) {
+      toast.error("Preencha todos os campos.")
+      return
+    }
+    try {
+      const res = await debugMutation.mutateAsync(form)
+      setResultado(res as unknown as Record<string, unknown>)
+    } catch {
+      toast.error("Erro ao simular custo/hora. Verifique os dados.")
+      setResultado(null)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg border border-warning-600/20 bg-warning-600/5 px-4 py-3">
+        <p className="text-xs text-warning-400">
+          Endpoint de diagnóstico. Retorna o custo/hora calculado para a categoria+data+empresa
+          informadas, incluindo decomposição completa da fórmula.
+        </p>
+      </div>
+
+      <div className="space-y-3 max-w-sm">
+        <div className="space-y-1">
+          <Label className="text-xs text-white/60">Código da categoria (ex: funileiro)</Label>
+          <Input
+            placeholder="Ex: funileiro, pintor..."
+            value={form.categoria_codigo}
+            onChange={(e) => setForm({ ...form, categoria_codigo: e.target.value })}
+            className="bg-white/5 border-white/10 text-white text-sm"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs text-white/60">Data de referência</Label>
+          <Input
+            type="date"
+            value={form.data}
+            onChange={(e) => setForm({ ...form, data: e.target.value })}
+            className="bg-white/5 border-white/10 text-white text-sm"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs text-white/60">Empresa (UUID)</Label>
+          <Input
+            placeholder="UUID da empresa"
+            value={form.empresa_id}
+            onChange={(e) => setForm({ ...form, empresa_id: e.target.value })}
+            className="bg-white/5 border-white/10 text-white text-sm"
+          />
+        </div>
+        <Button
+          onClick={handleSimular}
+          disabled={debugMutation.isPending}
+          className="w-full bg-primary-600 hover:bg-primary-700"
+        >
+          {debugMutation.isPending ? "Calculando..." : "Simular custo/hora"}
+        </Button>
+      </div>
+
+      {resultado !== null && (
+        <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-2">
+          <p className="text-xs font-semibold text-white/60 uppercase tracking-wide">Resultado</p>
+          <pre className="text-xs text-white/80 whitespace-pre-wrap break-all font-mono">
+            {JSON.stringify(resultado, null, 2)}
+          </pre>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function ConfiguracaoMotorCustosPage() {
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center gap-3">
+        <SlidersHorizontal className="h-5 w-5 text-primary-500" />
+        <div>
+          <h1 className="text-lg font-semibold text-white">Configuração do Motor — Custos</h1>
+          <p className="text-xs text-white/40 mt-0.5">
+            Parâmetros de custo/hora, rateio de despesas e diagnóstico.
+          </p>
+        </div>
+      </div>
+
+      <Tabs defaultValue="custo-hora" className="space-y-4">
+        <TabsList className="bg-white/5 border border-white/10">
+          <TabsTrigger value="custo-hora" className="text-xs data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50">
+            <Clock className="h-3.5 w-3.5 mr-1.5" />
+            Custo/Hora
+          </TabsTrigger>
+          <TabsTrigger value="parametros" className="text-xs data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50">
+            <Settings2 className="h-3.5 w-3.5 mr-1.5" />
+            Parâmetros
+          </TabsTrigger>
+          <TabsTrigger value="despesas" className="text-xs data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50">
+            <Layers className="h-3.5 w-3.5 mr-1.5" />
+            Despesas
+          </TabsTrigger>
+          <PermissionGate role="ADMIN">
+            <TabsTrigger value="simulacao" className="text-xs data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/50">
+              <FlaskConical className="h-3.5 w-3.5 mr-1.5" />
+              Simulação
+            </TabsTrigger>
+          </PermissionGate>
+        </TabsList>
+
+        <TabsContent value="custo-hora">
+          <AbaFallback />
+        </TabsContent>
+        <TabsContent value="parametros">
+          <AbaParametros />
+        </TabsContent>
+        <TabsContent value="despesas">
+          <AbaDespesas />
+        </TabsContent>
+        <TabsContent value="simulacao">
+          <PermissionGate role="ADMIN">
+            <AbaSimulacao />
+          </PermissionGate>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
