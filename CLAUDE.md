@@ -1105,6 +1105,7 @@ CRITÉRIO DE CONCLUSÃO: todos os serviços healthy no Coolify + WebSocket acess
 | `DW_S3_BUCKET` | Data Warehouse |
 | `SEFAZ_ENV` | `homologation` ou `production` |
 | `SENTRY_DSN` | Monitoramento |
+| `VOYAGE_API_KEY` | Embeddings semânticos (Voyage voyage-3) — Motor de Orçamentos MO-2+ |
 | `DEV_JWT_SECRET` | Secret HS256 dev (padrão: `dscar-dev-secret-paddock-2025`) |
 | `KEYCLOAK_CLIENT_ID` / `_SECRET` / `_ISSUER` | OIDC Keycloak |
 
@@ -1190,6 +1191,55 @@ Nenhuma sprint ativa no momento.
 ---
 
 ## 📦 Sprints Entregues
+
+### MO-2 — Catálogo Técnico — Abril 2026 ✅
+**App `apps.pricing_catalog` (TENANT_APP) — catálogo canônico de serviços, peças, materiais e aliases**
+
+Backend:
+- 12 models: `CategoriaServico`, `ServicoCanonico` (VectorField 1024d), `CategoriaMaoObra`, `MaterialCanonico`, `InsumoMaterial` (fator_conversao obrigatório), `PecaCanonica`, `CompatibilidadePeca`, `Fornecedor` (OneToOne → `persons.Person`), `CodigoFornecedorPeca`, `AliasServico/Peca/Material` (índice GIN trgm)
+- Migration `0001_initial` com `CreateExtension("vector")` + `CreateExtension("pg_trgm")`
+- `normalizar_texto` (`apps/pricing_catalog/utils/text.py`) — 21 regras de abreviação automotiva
+- `AliasMatcher` — pipeline exato → fuzzy (`rapidfuzz`) → embedding (pgvector cosine)
+- `embed_texts` / `embed_text` (`utils/embeddings.py`) — Voyage `voyage-3`, batch 128, fallback sem chave
+- Celery task `embed_canonicos_pendentes(tenant_schema)` — multitenancy + bulk
+- 8 ViewSets RBAC com `get_permissions()` + `@action match/`, `by-gtin/`, `revisao/`, `approve/`, `reject/`
+- `setup_catalogo_base` — 12 cats serviço + 8 cats mão de obra + 20 materiais + 30 serviços (idempotente)
+
+Frontend:
+- `packages/types/src/pricing-catalog.types.ts` — 8 interfaces + 3 unions
+- `apps/dscar-web/src/hooks/usePricingCatalog.ts` — todos os hooks com `fetchList<T>`
+- 7 páginas `/cadastros/catalogo/*` (servicos, pecas, materiais, insumos, categorias-mao-obra, fornecedores, aliases/revisao)
+- Sidebar "Catálogo Técnico" sob MOTOR (7 itens)
+
+**Padrões estabelecidos:**
+- `aplica_multiplicador_tamanho=True` APENAS em pintura, funilaria, polimento, vitrificação (default False — armadilha A3)
+- `MaterialCanonico.unidade_base` e `codigo` são `read_only` em serializer de update (imutáveis após uso — armadilha P2)
+- Busca fuzzy v1 em memória (`rapidfuzz`) — migrar para pg_trgm nativo quando catálogo > 5k aliases
+- Todos hooks de lista usam `fetchList<T>` (extrai `.results` do envelope DRF paginado)
+- `VOYAGE_API_KEY` — variável necessária para embeddings (sem chave: vetores zerados com warning)
+
+---
+
+### MO-1 — Fundação Veicular — Abril 2026 ✅
+**App `apps.pricing_profile` (TENANT_APP) + extensão `apps.vehicle_catalog` (SHARED)**
+
+Backend:
+- `apps.pricing_profile`: `Empresa`, `SegmentoVeicular`, `CategoriaTamanho`, `TipoPintura`, `EnquadramentoVeiculo`, `EnquadramentoFaltante`
+- `EnquadramentoService.resolver(marca, modelo, ano)` — 4 níveis de fallback (exato → marca_modelo → marca → fallback "medio/medio")
+- Endpoints CRUD + `POST /resolver/`; RBAC com `get_permissions()`
+- `VehicleMake`, `VehicleModel`, `VehicleYearVersion` em `vehicle_catalog` com integração FIPE (parallelum.com.br)
+- Celery tasks semanais de sync FIPE
+- `ServiceOrder` + 8 campos (segmento_codigo, tamanho_codigo, tipo_pintura_codigo, empresa_id, vehicle_*_id, vehicle_fipe_value_snapshot)
+- `setup_perfil_veicular` — seeds de segmentos/tamanhos/tipos pintura/154 enquadramentos
+
+Frontend:
+- `packages/types/src/pricing.types.ts` — 9 interfaces
+- `usePricingProfile.ts` com `fetchList<T>` (helper extrai `.results` DRF paginado)
+- `FipeSelectGroup.tsx` — 3 selects cascata Marca → Modelo → Ano com badge de perfil resolvido
+- 5 páginas `/cadastros/empresas`, `/cadastros/perfil-veicular/*`
+- Sidebar grupo "MOTOR" com Settings2
+
+---
 
 ### Sprints 17/18/19 — UX/UI Polish dscar-web — Abril 2026 ✅
 **30 melhorias de UX/UI no ERP web — design system, fluxo de OS e módulo de agenda**
