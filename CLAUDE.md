@@ -1192,6 +1192,35 @@ Nenhuma sprint ativa no momento.
 
 ## 📦 Sprints Entregues
 
+### MO-3 — Adapters de Custo — Abril 2026 ✅
+**Extensão `apps.accounting` + skeleton `apps.pricing_engine` + services adapters**
+
+Backend:
+- `DespesaRecorrente` (accounting): FK Empresa + ChartOfAccount, vigência datada, 12 tipos, migration 0002
+- App `apps.pricing_engine` (skeleton TENANT_APP): `ParametroRateio`, `ParametroCustoHora`, `CustoHoraFallback` com vigência temporal
+- `MAPEAMENTO_CATEGORIA_POSITION` em `constants.py` — mapeia categoria MO → hr.position (documento vivo)
+- `RHAdapter`: lê `Payslip.is_closed=True` + `gross_pay` (campos reais do modelo HR, não spec)
+- `DespesaRecorrenteService`: `total_vigente()` + `decomposicao_vigente()`
+- `RateioService`: `por_hora()` = total despesas / horas produtivas
+- `CustoHoraService`: pipeline RH + ParametroCustoHora → CustoHoraFallback → `CustoNaoDefinido`
+- `dataclass CustoHora` com decomposição de auditoria (bruto_folha, com_13_ferias, com_fgts, …)
+- Endpoints `/api/v1/pricing/engine/parametros/*` (ADMIN+ escrita) + `/debug/custo-hora/` + `/debug/rateio/`
+- 32 testes (service + RBAC)
+
+Frontend:
+- `pricing-cost.types.ts` (ParametroRateio, CustoHoraFallback, CustoHoraResult)
+- `usePricingCost.ts` — 12 hooks com fetchList
+- Página `/configuracao-motor/custos` com 4 abas (Custo/Hora, Parâmetros, Despesas, Simulação ADMIN)
+
+**Padrões estabelecidos:**
+- `Payslip.is_closed` (bool) e `gross_pay` — campos reais, não `status="closed"` / `gross_salary`
+- Vigência temporal obrigatória: `Q(vigente_ate__isnull=True) | Q(vigente_ate__gte=data)` em toda query de parâmetro
+- Toda query de parâmetro filtra por `empresa_id` — nunca agregar todas as empresas
+- `CustoHoraService` usa `_default_parametros()` se `ParametroCustoHora` nunca cadastrado
+- Endpoints debug `/debug/*` apenas ADMIN — retornam decomposição completa (não usar em prod)
+
+---
+
 ### MO-2 — Catálogo Técnico — Abril 2026 ✅
 **App `apps.pricing_catalog` (TENANT_APP) — catálogo canônico de serviços, peças, materiais e aliases**
 
