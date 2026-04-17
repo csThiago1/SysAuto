@@ -20,3 +20,4 @@ export * from "./service-catalog.types";
 export * from "./agenda.types";
 export * from "./dashboard.types";
 export * from "./pricing.types";
+export * from "./pricing-catalog.types";

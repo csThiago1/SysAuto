@@ -1,0 +1,95 @@
+"use client"
+
+import { useState } from "react"
+import { Search } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { TableSkeleton } from "@/components/ui/table-skeleton"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { useMateriaisCanonico } from "@/hooks/usePricingCatalog"
+import type { MaterialCanonico } from "@paddock/types"
+
+const TIPO_MATERIAL_COLORS: Record<MaterialCanonico["tipo"], string> = {
+  consumivel: "bg-blue-100 text-blue-700 border-blue-200",
+  ferramenta: "bg-purple-100 text-purple-700 border-purple-200",
+}
+
+const TIPO_MATERIAL_LABELS: Record<MaterialCanonico["tipo"], string> = {
+  consumivel: "Consumível",
+  ferramenta: "Ferramenta",
+}
+
+export default function MateriaisCanonicoPage() {
+  const [search, setSearch] = useState("")
+  const { data: materiais = [], isLoading } = useMateriaisCanonico(search || undefined)
+
+  return (
+    <div className="flex flex-col gap-6 p-6 max-w-5xl mx-auto">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-neutral-900">Materiais Canônicos</h1>
+        <p className="mt-1 text-sm text-neutral-500">
+          Catálogo de materiais e insumos na forma canônica — base do Motor de Orçamentos.
+        </p>
+      </div>
+
+      {/* Search */}
+      <div className="relative max-w-xs">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
+        <Input
+          placeholder="Buscar material..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-9 bg-white h-9"
+        />
+      </div>
+
+      {/* Table */}
+      {isLoading ? (
+        <TableSkeleton columns={4} rows={8} />
+      ) : materiais.length === 0 ? (
+        <div className="py-12 text-center text-sm text-neutral-400">
+          {search ? "Nenhum material encontrado." : "Nenhum material cadastrado."}
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-md border border-neutral-200 bg-white">
+          <Table>
+            <TableHeader className="bg-neutral-50">
+              <TableRow>
+                <TableHead className="w-48">Código</TableHead>
+                <TableHead>Nome</TableHead>
+                <TableHead className="w-28">Unid. Base</TableHead>
+                <TableHead className="w-32">Tipo</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {materiais.map((m: MaterialCanonico) => (
+                <TableRow key={m.id}>
+                  <TableCell className="py-2 font-mono text-xs text-neutral-600">
+                    {m.codigo}
+                  </TableCell>
+                  <TableCell className="py-2 font-medium text-neutral-800">{m.nome}</TableCell>
+                  <TableCell className="py-2 text-sm text-neutral-600">{m.unidade_base}</TableCell>
+                  <TableCell className="py-2">
+                    <Badge className={`text-xs ${TIPO_MATERIAL_COLORS[m.tipo]}`}>
+                      {TIPO_MATERIAL_LABELS[m.tipo]}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      <p className="text-xs text-neutral-400">{materiais.length} materiais carregados.</p>
+    </div>
+  )
+}

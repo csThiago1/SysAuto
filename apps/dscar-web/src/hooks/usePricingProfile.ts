@@ -16,6 +16,14 @@ import { apiFetch } from "@/lib/api"
 
 const BASE = "/api/proxy/pricing"
 
+type Paginated<T> = { results: T[]; count: number; next: string | null; previous: string | null }
+
+async function fetchList<T>(url: string): Promise<T[]> {
+  const data = await apiFetch<Paginated<T> | T[]>(url)
+  if (data && !Array.isArray(data) && "results" in data) return data.results
+  return data as T[]
+}
+
 // ─── Query Keys ───────────────────────────────────────────────────────────────
 
 export const pricingKeys = {
@@ -37,7 +45,7 @@ export const pricingKeys = {
 export function useEmpresas() {
   return useQuery<Empresa[]>({
     queryKey: pricingKeys.empresas,
-    queryFn: () => apiFetch<Empresa[]>(`${BASE}/empresas/`),
+    queryFn: () => fetchList<Empresa>(`${BASE}/empresas/`),
     staleTime: 5 * 60 * 1000,
   })
 }
@@ -89,7 +97,7 @@ export function useUpdateEmpresa(id: string) {
 export function useSegmentos() {
   return useQuery<SegmentoVeicular[]>({
     queryKey: pricingKeys.segmentos,
-    queryFn: () => apiFetch<SegmentoVeicular[]>(`${BASE}/segmentos/`),
+    queryFn: () => fetchList<SegmentoVeicular>(`${BASE}/segmentos/`),
     staleTime: 5 * 60 * 1000,
   })
 }
@@ -142,7 +150,7 @@ export function useUpdateSegmento(id: string) {
 export function useTamanhos() {
   return useQuery<CategoriaTamanho[]>({
     queryKey: pricingKeys.tamanhos,
-    queryFn: () => apiFetch<CategoriaTamanho[]>(`${BASE}/tamanhos/`),
+    queryFn: () => fetchList<CategoriaTamanho>(`${BASE}/tamanhos/`),
     staleTime: 5 * 60 * 1000,
   })
 }
@@ -195,7 +203,7 @@ export function useUpdateTamanho(id: string) {
 export function useTiposPintura() {
   return useQuery<TipoPintura[]>({
     queryKey: pricingKeys.tiposPintura,
-    queryFn: () => apiFetch<TipoPintura[]>(`${BASE}/tipos-pintura/`),
+    queryFn: () => fetchList<TipoPintura>(`${BASE}/tipos-pintura/`),
     staleTime: 5 * 60 * 1000,
   })
 }
@@ -247,8 +255,7 @@ export function useEnquadramentos(search?: string) {
   const params = search ? `?search=${encodeURIComponent(search)}` : ""
   return useQuery<EnquadramentoVeiculo[]>({
     queryKey: pricingKeys.enquadramentos(search),
-    queryFn: () =>
-      apiFetch<EnquadramentoVeiculo[]>(`${BASE}/enquadramentos/${params}`),
+    queryFn: () => fetchList<EnquadramentoVeiculo>(`${BASE}/enquadramentos/${params}`),
     staleTime: 5 * 60 * 1000,
   })
 }

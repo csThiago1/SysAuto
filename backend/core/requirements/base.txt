@@ -55,3 +55,6 @@ ofxparse==0.21          # Importação arquivos OFX bancários
 ofxtools==0.9.4         # OFX leitura/escrita completo
 reportlab==4.2.2        # Geração de PDF (relatórios financeiros)
 openpyxl==3.1.2         # Exportação XLSX (DRE, fluxo de caixa)
+
+# ── Motor de Orçamentos (MO) ────────────────────────────────────────────────
+rapidfuzz==3.12.2       # Fuzzy matching in-memory para AliasMatcher

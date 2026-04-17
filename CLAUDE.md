@@ -180,6 +180,31 @@ python manage.py migrate_schemas
 ```
 Sempre commitar o arquivo `0016_merge_*.py` gerado.
 
+### Frontend — DRF paginado: extrair `.results` nos hooks de lista
+
+Por padrão o `DefaultRouter` retorna envelope paginado:
+`{ count, next, previous, results: [...] }`. Chamar `.map()` diretamente lança
+`TypeError: xxx.map is not a function`.
+
+```typescript
+// ERRADO — retorna envelope, não array
+queryFn: () => apiFetch<Empresa[]>(`${BASE}/empresas/`),
+
+// CORRETO — helper que extrai .results quando presente
+type Paginated<T> = { results: T[]; count: number; next: string | null; previous: string | null }
+
+async function fetchList<T>(url: string): Promise<T[]> {
+  const data = await apiFetch<Paginated<T> | T[]>(url)
+  if (data && !Array.isArray(data) && "results" in data) return data.results
+  return data as T[]
+}
+
+queryFn: () => fetchList<Empresa>(`${BASE}/empresas/`),
+```
+
+Regra: toda `queryFn` de endpoint de lista DRF usa `fetchList<T>` — nunca
+`apiFetch<T[]>` diretamente.
+
 ### Frontend — Hooks de API: sempre usar `/api/proxy/` como prefixo
 ```typescript
 // ERRADO — chama o Django direto
