@@ -111,6 +111,48 @@ export {
   type InsurerPayload,
 } from "./useInsurers";
 
+// ── Motor de Orçamentos — Catálogo FIPE ───────────────────────────────────────
+export {
+  useFipeMakes,
+  useFipeModels,
+  useFipeYears,
+  fipeKeys,
+} from "./useVehicleFipe";
+
+// ── Motor de Orçamentos — Enquadramento Veicular ──────────────────────────────
+export { useResolverEnquadramento, enquadramentoKeys } from "./useEnquadramento";
+
+// ── Motor de Orçamentos — Perfil Veicular CRUD ────────────────────────────────
+export {
+  useEmpresas,
+  useEmpresa,
+  useCreateEmpresa,
+  useUpdateEmpresa,
+  useSegmentos,
+  useSegmento,
+  useCreateSegmento,
+  useUpdateSegmento,
+  useTamanhos,
+  useTamanho,
+  useCreateTamanho,
+  useUpdateTamanho,
+  useTiposPintura,
+  useTipoPintura,
+  useCreateTipoPintura,
+  useUpdateTipoPintura,
+  useEnquadramentos,
+  useEnquadramento,
+  useCreateEnquadramento,
+  useUpdateEnquadramento,
+  useDeleteEnquadramento,
+  pricingKeys,
+  type EmpresaPayload,
+  type SegmentoPayload,
+  type TamanhoPayload,
+  type TipoPinturaPayload,
+  type EnquadramentoPayload,
+} from "./usePricingProfile";
+
 // ── UI / Utilitários ──────────────────────────────────────────────────────────
 export { useDebounce } from "./useDebounce";
 export { usePermission } from "./usePermission";
