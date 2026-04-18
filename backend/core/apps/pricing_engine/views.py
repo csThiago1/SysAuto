@@ -35,6 +35,11 @@ from apps.pricing_engine.services import (
     ParametroRateioNaoDefinido,
     RateioService,
 )
+from apps.pricing_engine.services.custo_base import (
+    CustoBaseIndisponivel,
+    CustoInsumoService,
+    CustoPecaService,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -186,3 +191,54 @@ class DebugRateioView(APIView):
             return Response(
                 {"erro": "Erro interno ao calcular rateio."}, status=500
             )
+
+
+class DebugCustoPecaView(APIView):
+    """Retorna custo base de uma peça canônica (max valor_nf das unidades disponíveis/reservadas).
+
+    ADMIN+ apenas. MO-5 / Armadilha A2.
+    """
+
+    permission_classes = [IsAuthenticated, IsAdminOrAbove]
+
+    def post(self, request: Request) -> Response:
+        """POST /debug/custo-peca/ body: {peca_canonica_id}."""
+        peca_id = request.data.get("peca_canonica_id")
+        if not peca_id:
+            return Response({"erro": "peca_canonica_id é obrigatório."}, status=400)
+        try:
+            custo = CustoPecaService.custo_base(str(peca_id))
+            decomposicao = CustoPecaService.decomposicao(str(peca_id))
+            return Response({"custo_base": str(custo), "decomposicao": decomposicao})
+        except CustoBaseIndisponivel as exc:
+            return Response({"erro": str(exc)}, status=404)
+        except Exception as exc:
+            logger.error("Erro em debug/custo-peca: %s", exc)
+            return Response({"erro": "Erro interno."}, status=500)
+
+
+class DebugCustoInsumoView(APIView):
+    """Retorna custo base de um material canônico (max valor_unitario_base dos lotes com saldo > 0).
+
+    ADMIN+ apenas. MO-5.
+    """
+
+    permission_classes = [IsAuthenticated, IsAdminOrAbove]
+
+    def post(self, request: Request) -> Response:
+        """POST /debug/custo-insumo/ body: {material_canonico_id}."""
+        material_id = request.data.get("material_canonico_id")
+        if not material_id:
+            return Response({"erro": "material_canonico_id é obrigatório."}, status=400)
+        try:
+            custo = CustoInsumoService.custo_base(str(material_id))
+            saldo = CustoInsumoService.saldo_disponivel(str(material_id))
+            decomposicao = CustoInsumoService.decomposicao(str(material_id))
+            return Response(
+                {"custo_base": str(custo), "saldo_disponivel": str(saldo), "decomposicao": decomposicao}
+            )
+        except CustoBaseIndisponivel as exc:
+            return Response({"erro": str(exc)}, status=404)
+        except Exception as exc:
+            logger.error("Erro em debug/custo-insumo: %s", exc)
+            return Response({"erro": "Erro interno."}, status=500)

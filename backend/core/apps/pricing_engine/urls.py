@@ -15,6 +15,8 @@ from rest_framework.routers import DefaultRouter
 from apps.pricing_engine.views import (
     CustoHoraFallbackViewSet,
     DebugCustoHoraView,
+    DebugCustoInsumoView,
+    DebugCustoPecaView,
     DebugRateioView,
     ParametroCustoHoraViewSet,
     ParametroRateioViewSet,
@@ -41,5 +43,7 @@ urlpatterns = [
     # Debug endpoints — antes do router para evitar colisão com DefaultRouter
     path("debug/custo-hora/", DebugCustoHoraView.as_view(), name="debug-custo-hora"),
     path("debug/rateio/", DebugRateioView.as_view(), name="debug-rateio"),
+    path("debug/custo-peca/", DebugCustoPecaView.as_view(), name="debug-custo-peca"),
+    path("debug/custo-insumo/", DebugCustoInsumoView.as_view(), name="debug-custo-insumo"),
     path("", include(router.urls)),
 ]

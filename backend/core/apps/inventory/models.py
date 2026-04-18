@@ -1,6 +1,7 @@
 """
 Paddock Solutions — Inventory App
-InventoryItem com constraint de estoque não-negativo
+InventoryItem com constraint de estoque não-negativo.
+MO-5: modelos de estoque físico em models_physical.py + etiquetagem em models_label.py
 """
 import uuid
 
@@ -75,6 +76,18 @@ class InventoryItem(PaddockBaseModel):
     def is_low_stock(self) -> bool:
         """Retorna True se estoque abaixo do mínimo."""
         return self.quantity <= self.min_quantity
+
+
+# Re-exporta modelos de estoque físico e etiquetagem para que o Django os descubra
+from apps.inventory.models_physical import (  # noqa: E402, F401
+    ConsumoInsumo,
+    LoteInsumo,
+    UnidadeFisica,
+)
+from apps.inventory.models_label import (  # noqa: E402, F401
+    EtiquetaImpressa,
+    ImpressoraEtiqueta,
+)
 
 
 class StockMovement(models.Model):

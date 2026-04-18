@@ -1192,6 +1192,47 @@ Nenhuma sprint ativa no momento.
 
 ## 📦 Sprints Entregues
 
+### MO-5 — Estoque Físico + NF-e Entrada — Abril 2026 ✅
+**Apps `apps.inventory` (extendido) + `apps.fiscal` (extendido) + `apps.pricing_engine` (custo base)**
+
+Backend:
+- `NFeEntrada` + `NFeEntradaItem` em `apps.fiscal.models` — status (importada/validada/estoque_gerado), reconciliação por item (peca/insumo/ignorado), flag `estoque_gerado` para idempotência (Armadilha P10)
+- `UnidadeFisica`: peça fisicamente identificável, barcode `P{pk.hex}` (Armadilha P4), status AVAILABLE/RESERVED/CONSUMED/RETURNED/LOST, FK nullable para OS
+- `LoteInsumo`: insumo fungível, barcode `L{pk.hex}`, FIFO por `created_at`, `valor_unitario_base` calculado no `save()`, CHECK constraint `saldo >= 0`
+- `ConsumoInsumo`: snapshot de `valor_unitario_na_baixa` (Armadilha P8) — imutável
+- `ImpressoraEtiqueta` + `EtiquetaImpressa` (XOR constraint unidade_fisica / lote_insumo)
+- `ReservaUnidadeService`: `select_for_update(skip_locked=True)` (Armadilha P5), `forcar_mais_caro` requer ADMIN+ com log (Armadilha P7)
+- `BaixaInsumoService`: FIFO com `select_for_update`, snapshot de custo, `ReservaIndisponivel` se saldo insuficiente
+- `ZPLService`: gera ZPL para peça e lote; impressão sempre via Celery (Armadilha P6)
+- `NFeIngestaoService.criar_registros_estoque()`: idempotente via `estoque_gerado` flag
+- `CustoPecaService.custo_base()`: `max(valor_nf)` incluindo reservadas (Armadilha A2)
+- `CustoInsumoService.custo_base()`: `max(valor_unitario_base)` de lotes com `saldo > 0`
+- Migrations: `fiscal/0002` + `inventory/0002`; `manage.py check` 0 issues
+- 23 testes (8 ZPL passando imediato; 15 DB em TenantTestCase)
+- Endpoints: `/api/v1/inventory/unidades/`, `/api/v1/inventory/lotes/`, `/api/v1/inventory/baixar-insumo/`, `/api/v1/inventory/impressoras/`, `/api/v1/fiscal/nfe-entrada/`
+- Debug endpoints ADMIN+: `/api/v1/pricing/engine/debug/custo-peca/`, `/debug/custo-insumo/`
+
+Frontend:
+- `packages/types/src/inventory.types.ts` — 15 interfaces + 5 unions
+- `apps/dscar-web/src/hooks/useInventory.ts` — 14 hooks (unidades, lotes, bipagem, impressoras, NF-e)
+- `/estoque` — dashboard com links para submodules
+- `/estoque/unidades` — lista com filtro por status
+- `/estoque/lotes` — lista com barra de saldo visual (%, gradiente vermelho→verde)
+- `/estoque/nfe-recebida` — lista de NF-e com filtro por status
+- `/estoque/nfe-recebida/[id]` — detalhe + tabela de itens reconciliados + botão "Gerar Estoque"
+- `/configuracao-motor/impressoras` — CRUD de impressoras ZPL + botão Testar
+- Sidebar: seção "ESTOQUE" (Unidades, Lotes, NF-e) + seção "MOTOR" (Custos, Impressoras)
+
+**Padrões estabelecidos:**
+- Barcode: `P{pk.hex}` para peças (33 chars), `L{pk.hex}` para lotes — determinístico, nunca global
+- Armadilha A2: `custo_base` inclui unidades RESERVED (não só AVAILABLE) — crítico para não subestimar custo
+- `select_for_update(skip_locked=True)` em toda operação de reserva/baixa — nunca sem lock
+- `valor_unitario_na_baixa` é snapshot imutável do momento da baixa — nunca recalcular
+- `estoque_gerado=True` é flag de idempotência — endpoint `gerar-estoque/` retorna 409 se já executado
+- `StockLocation` não existe no codebase — usar `localizacao = CharField(max_length=80)` em vez de FK
+
+---
+
 ### MO-4 — Ficha Técnica + Multiplicadores — Abril 2026 ✅
 **App `apps.pricing_tech` (TENANT_APP) — fichas técnicas versionadas com aplicação de multiplicadores de tamanho**
 

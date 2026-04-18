@@ -156,6 +156,37 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    label: "ESTOQUE",
+    items: [
+      {
+        id: "estoque",
+        label: "Estoque Físico",
+        icon: Boxes,
+        href: "/estoque",
+        children: [
+          { id: "est-unidades",  label: "Unidades Físicas", href: "/estoque/unidades",       icon: Package },
+          { id: "est-lotes",     label: "Lotes de Insumo",  href: "/estoque/lotes",          icon: Truck },
+          { id: "est-nfe",       label: "NF-e Entrada",     href: "/estoque/nfe-recebida",    icon: FileSpreadsheet },
+        ],
+      },
+    ],
+  },
+  {
+    label: "MOTOR",
+    items: [
+      {
+        id: "configuracao-motor",
+        label: "Motor de Orçamentos",
+        icon: Settings2,
+        href: "/configuracao-motor",
+        children: [
+          { id: "motor-custos",      label: "Custos",       href: "/configuracao-motor/custos",      icon: DollarSign },
+          { id: "motor-impressoras", label: "Impressoras",  href: "/configuracao-motor/impressoras", icon: SlidersHorizontal },
+        ],
+      },
+    ],
+  },
+  {
     label: "SISTEMA",
     items: [
       {
