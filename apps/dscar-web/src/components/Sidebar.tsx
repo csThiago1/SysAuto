@@ -119,58 +119,6 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    label: "MOTOR",
-    items: [
-      {
-        id: "motor-empresas",
-        label: "Empresas",
-        icon: Building2,
-        href: "/cadastros/empresas",
-      },
-      {
-        id: "motor-perfil-veicular",
-        label: "Perfil Veicular",
-        icon: Settings2,
-        children: [
-          { id: "motor-segmentos",     label: "Segmentos",       href: "/cadastros/perfil-veicular/segmentos",      icon: Car },
-          { id: "motor-tamanhos",      label: "Tamanhos",        href: "/cadastros/perfil-veicular/tamanhos",       icon: Car },
-          { id: "motor-tipos-pintura", label: "Tipos de Pintura",href: "/cadastros/perfil-veicular/tipos-pintura",  icon: Car },
-          { id: "motor-enquadramentos",label: "Enquadramentos",  href: "/cadastros/perfil-veicular/enquadramentos", icon: Car },
-        ],
-      },
-      {
-        id: "motor-config-custos",
-        label: "Configuração do Motor",
-        icon: SlidersHorizontal,
-        href: "/configuracao-motor/custos",
-        children: [
-          {
-            id: "motor-config-custos-child",
-            label: "Custos",
-            href: "/configuracao-motor/custos",
-            icon: SlidersHorizontal,
-          },
-        ],
-      },
-      {
-        id: "motor-catalogo",
-        label: "Catálogo Técnico",
-        icon: Boxes,
-        children: [
-          { id: "motor-servicos-canonicos",     label: "Serviços Canônicos",  href: "/cadastros/catalogo/servicos",              icon: Wrench },
-          { id: "motor-pecas-canonicas",        label: "Peças Canônicas",     href: "/cadastros/catalogo/pecas",                 icon: Package },
-          { id: "motor-materiais",              label: "Materiais",           href: "/cadastros/catalogo/materiais",             icon: FlaskConical },
-          { id: "motor-insumos",                label: "Insumos",             href: "/cadastros/catalogo/insumos",               icon: Tag },
-          { id: "motor-cat-mao-obra",           label: "Categ. Mão de Obra",  href: "/cadastros/catalogo/categorias-mao-obra",   icon: HardHat },
-          { id: "motor-fornecedores",           label: "Fornecedores",        href: "/cadastros/catalogo/fornecedores",          icon: Truck },
-          { id: "motor-aliases-revisao",        label: "Aliases (Revisão)",   href: "/cadastros/catalogo/aliases/revisao",       icon: Tag },
-          { id: "motor-fichas-tecnicas",        label: "Fichas Técnicas",     href: "/cadastros/fichas-tecnicas",               icon: ClipboardList },
-          { id: "motor-fichas-simular",         label: "Simulador",           href: "/cadastros/fichas-tecnicas/simular",        icon: FlaskConical },
-        ],
-      },
-    ],
-  },
-  {
     label: "FINANCEIRO",
     items: [
       {
