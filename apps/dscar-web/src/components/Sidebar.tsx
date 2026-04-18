@@ -164,6 +164,8 @@ const NAV_SECTIONS: NavSection[] = [
           { id: "motor-cat-mao-obra",           label: "Categ. Mão de Obra",  href: "/cadastros/catalogo/categorias-mao-obra",   icon: HardHat },
           { id: "motor-fornecedores",           label: "Fornecedores",        href: "/cadastros/catalogo/fornecedores",          icon: Truck },
           { id: "motor-aliases-revisao",        label: "Aliases (Revisão)",   href: "/cadastros/catalogo/aliases/revisao",       icon: Tag },
+          { id: "motor-fichas-tecnicas",        label: "Fichas Técnicas",     href: "/cadastros/fichas-tecnicas",               icon: ClipboardList },
+          { id: "motor-fichas-simular",         label: "Simulador",           href: "/cadastros/fichas-tecnicas/simular",        icon: FlaskConical },
         ],
       },
     ],

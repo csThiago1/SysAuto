@@ -22,3 +22,4 @@ export * from "./dashboard.types";
 export * from "./pricing.types";
 export * from "./pricing-catalog.types";
 export * from "./pricing-cost.types";
+export * from "./pricing-tech.types";

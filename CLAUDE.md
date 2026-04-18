@@ -1192,6 +1192,34 @@ Nenhuma sprint ativa no momento.
 
 ## 📦 Sprints Entregues
 
+### MO-4 — Ficha Técnica + Multiplicadores — Abril 2026 ✅
+**App `apps.pricing_tech` (TENANT_APP) — fichas técnicas versionadas com aplicação de multiplicadores de tamanho**
+
+Backend:
+- App `apps.pricing_tech` registrado em `TENANT_APPS`; migration `0001_initial` aplicada
+- `FichaTecnicaServico`: versão versionada por `(servico, versao, tipo_pintura)` — unique_together; `tipo_pintura=NULL` = genérica
+- `FichaTecnicaMaoObra` + `FichaTecnicaInsumo`: imutáveis por design (Armadilha P1) — `ReadOnlyModelViewSet`
+- `FichaTecnicaInsumo.clean()`: valida `unidade == material_canonico.unidade_base` (Armadilha A5)
+- `FichaTecnicaService.resolver()`: específica → genérica → `FichaNaoEncontrada`
+- `FichaTecnicaService.aplicar_multiplicadores()`: gate geral + per-item `afetada_por_tamanho`
+- `FichaTecnicaService.criar_nova_versao()`: atômica, `select_for_update`, desativa anterior
+- Endpoints: `GET /fichas/`, `GET /fichas/{id}/`, `POST /fichas/resolver/`, `POST /fichas/{id}/nova-versao/`, `DELETE /fichas/{id}/` (soft, ADMIN+)
+- 33 testes unitários passando; management command `setup_fichas_base` idempotente (10 fichas top-10 DS Car)
+
+Frontend:
+- `packages/types/src/pricing-tech.types.ts` — tipos TS para fichas
+- `hooks/useFichaTecnica.ts` — `useFichas`, `useFicha`, `useFichaResolver`, `useNovaVersao`
+- `/cadastros/fichas-tecnicas` — lista + filtro por serviço
+- `/cadastros/fichas-tecnicas/{servico_id}` — editor de receita, histórico de versões, dialog nova versão com Motivo obrigatório
+- `/cadastros/fichas-tecnicas/simular` — debug tool simulador (ADMIN only): base vs multiplicadores lado a lado
+
+**Padrões estabelecidos:**
+- Imutabilidade por versão: fichas não têm PATCH/PUT — mudança = nova versão com motivo obrigatório (min 10 chars)
+- `tipo_pintura=NULL` em `unique_together`: PostgreSQL permite múltiplos NULLs — unicidade de genérica validada no serializer
+- `afetada_por_tamanho` (flag por item) + `aplica_multiplicador_tamanho` (gate do `ServicoCanonico`) são conceitos distintos (ver Armadilhas P4/P5)
+
+---
+
 ### MO-3 — Adapters de Custo — Abril 2026 ✅
 **Extensão `apps.accounting` + skeleton `apps.pricing_engine` + services adapters**
 
