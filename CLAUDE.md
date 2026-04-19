@@ -1192,6 +1192,38 @@ Nenhuma sprint ativa no momento.
 
 ## 📦 Sprints Entregues
 
+### MO-6 — Motor de Precificação + Snapshots — Abril 2026 ✅
+**App `apps.pricing_engine` (completado) — motor de cálculo de preço com audit trail imutável**
+
+Backend:
+- `MargemOperacao`: margem por (empresa, segmento, tipo_operacao) com vigência temporal — hierarquia: peça-específica > faixa de custo > segmento default
+- `MarkupPeca`: markup por `peca_canonica_id` (UUID, `db_constraint=False`) OU faixa de custo `[custo_min, custo_max)` — XOR validado no serializer
+- `CalculoCustoSnapshot`: registro imutável de auditoria — `save()` lança `ValueError` se campos de custo/preço mudarem após criação; FKs `servico_canonico`/`peca_canonica` com `db_constraint=False` (permite snapshot mesmo se catálogo mudar)
+- `MargemResolver`: hierarquia de resolução — `markup_peca_especifico()` > `markup_peca_faixa()` > `margem_segmento()` > `MargemNaoDefinida`
+- `BenchmarkService`: aplica teto de preço por segmento (`preco_teto_benchmark`); `teto_aplicado=True` no resultado quando o teto é acionado
+- `MotorPrecificacaoService`: facade unificada — `calcular_servico()` + `calcular_peca()` + `simular()`; raises `ErroMotorPrecificacao` para erros de domínio
+- Migrations 0002 (motor models), 0003 (created_by fix em modelos gerados manualmente), 0004 (`SeparateDatabaseAndState` + `RunSQL` PL/pgSQL para DROP FK constraints por nome de coluna)
+- 33 testes passando: `test_margem_resolver` (9), `test_snapshot_imutabilidade` (10), `test_motor_peca` (6), `test_motor_servico` (9)
+
+Padrões críticos estabelecidos:
+- `db_constraint=False` em FKs de snapshot — permite audit trail mesmo após deleção de catálogo (sem quebrar integridade dos registros históricos)
+- Imports no nível do módulo em `services/motor.py` — lazy imports impossibilitam `@patch` nos testes (armadilha crítica)
+- UUIDs válidos obrigatórios mesmo com `db_constraint=False` — Django valida formato UUID no Python antes de tocar no DB
+- `SeparateDatabaseAndState` para alterar `db_constraint` em migrations — `AlterField` simples não executa DROP CONSTRAINT no banco
+- `fator_responsabilidade` mínimo 0.5 (validator) — usar `Decimal("1.00")` nos testes, não `Decimal("0.10")`
+- `ordem` NOT NULL em `SegmentoVeicular` e `CategoriaTamanho` — sempre incluir nos helpers de teste
+
+Frontend:
+- `packages/types/src/pricing-engine.types.ts` — `ContextoCalculoInput`, `CalcularServicoInput`, `CalcularPecaInput`, `ResultadoServicoDTO`, `ResultadoPecaDTO`, `SnapshotMin/Mgr/Full`, `Snapshot` union, `MargemOperacao`, `MarkupPeca`
+- `hooks/usePricingEngine.ts` — margens, markups, snapshots (`staleTime: Infinity`), `useCalcularServico`, `useCalcularPeca`, `useSimular`
+- `/configuracao-motor/margens` — 2 abas: MargemOperacao (segmento × operação) e MarkupPeca (por UUID de peça ou faixa de custo)
+- `/configuracao-motor/snapshots` — lista com filtro por origem + busca por veículo/ID
+- `/configuracao-motor/snapshots/[id]` — detalhe: contexto, preços, margens, custos (ADMIN+), decomposição JSON
+- `/configuracao-motor/simulador` — calcula preços de N serviços por UUID com contexto veicular completo
+- Sidebar: "Margens" (Percent), "Snapshots" (Layers), "Simulador" (FlaskConical) adicionados ao grupo Motor
+
+---
+
 ### MO-5 — Estoque Físico + NF-e Entrada — Abril 2026 ✅
 **Apps `apps.inventory` (extendido) + `apps.fiscal` (extendido) + `apps.pricing_engine` (custo base)**
 
