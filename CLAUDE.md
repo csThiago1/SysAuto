@@ -1192,6 +1192,46 @@ Nenhuma sprint ativa no momento.
 
 ## 📦 Sprints Entregues
 
+### MO-7 — Orçamento + OS integrada ao Motor — Abril 2026 ✅
+**App `apps.quotes` (TENANT_APP) + extensão `apps.service_orders` com entidades de execução**
+
+Backend:
+- `Orcamento`: documento comercial versionado (numero ORC-{year}-{seq}, versao 1+), status rascunho→enviado→aprovado/aprovado_parc/recusado/expirado/convertido_os
+- `AreaImpacto`: região do veículo negociada em bloco com seguradora; toda OS nasce com área "Geral"
+- `OrcamentoIntervencao`: (Peça × Ação) — UniqueConstraint(orcamento, area, peca, acao); snapshot imutável obrigatório
+- `OrcamentoItemAdicional`: serviço sem peça específica (alinhamento, polimento, lavagem)
+- `MAPEAMENTO_ACAO_SERVICO` em `pricing_catalog/constants.py`: trocar→INST_PECA, reparar→FUNILARIA, pintar→PINTURA, remocao_instalacao→REMOCAO_INSTAL
+- `OrcamentoService.criar()`: resolves enquadramento (fallback "medio/medio"), gera ORC-{year}-{seq:06d}, cria área "Geral"
+- `OrcamentoService.adicionar_intervencao()`: resolve ServicoCanonico via MAPEAMENTO, FichaTecnicaService.resolver(), ContextoCalculo + calcular_intervencao() → cria OrcamentoIntervencao
+- `OrcamentoService.aprovar()`: @transaction.atomic → cria ServiceOrder, espelha OSAreaImpacto/OSIntervencao/OSItemAdicional, reserva automática TROCAR+OFICINA (ReservaIndisponivel avisa, não bloqueia)
+- `OrcamentoService.nova_versao()`: clona orçamento incrementando versão, recalcula todos snapshots com custos correntes
+- Entidades de execução em `service_orders`:
+  - `OSAreaImpacto`: espelho da AreaImpacto aprovada na OS (related_name: `areas_motor`)
+  - `OSIntervencao`: intervenção aprovada + unidade_reservada nullable (preenchida no picking)  — related_name: `intervencoes_motor`
+  - `OSItemAdicional`: serviço adicional aprovado — related_name: `itens_adicionais_motor`
+  - `ApontamentoHoras`: rastreamento de tempo real por técnico (status: iniciado/encerrado/validado)
+- Migration `quotes/0001_initial` + `service_orders/0019_motor_entities`; `manage.py check` 0 issues
+- RBAC: criação CONSULTANT+, aprovação/recusa MANAGER+
+- Endpoints: `GET/POST /api/v1/quotes/orcamentos/`, `GET /orcamentos/{id}/`, `POST orcamentos/{id}/intervencoes/`, `POST orcamentos/{id}/itens-adicionais/`, `POST orcamentos/{id}/enviar/`, `POST orcamentos/{id}/recusar/`, `POST orcamentos/{id}/aprovar/`, `POST orcamentos/{id}/nova-versao/`
+
+Frontend:
+- `packages/types/src/quote.types.ts` — Acao, StatusItem, QualificadorPeca, Fornecimento, StatusArea, StatusOrcamento, OrcamentoList, Orcamento (completo com areas+intervencoes+itens_adicionais)
+- `hooks/useQuotes.ts` — 9 hooks TanStack Query v5
+- `/orcamentos` — lista com 4 KPIs (rascunhos, enviados, aprovados, volume), filtro por status, tabela com placa
+- `/orcamentos/novo` — formulário: empresa, cliente, seguradora, tipo_responsabilidade, veículo, observações
+- `/orcamentos/[id]` — detalhe: cabeçalho (numero+versao+status), totais (subtotal/desconto/total), intervenções agrupadas por área, itens adicionais; botões de fluxo (enviar, recusar, aprovar→OS, nova versão)
+- Sidebar: item "Orçamentos" (FileText) entre Agenda e Cadastros
+
+**Padrões críticos estabelecidos:**
+- `MAPEAMENTO_ACAO_SERVICO` em `pricing_catalog/constants.py` é o contrato único — nunca duplicar em outros módulos
+- `adicionar_intervencao()` só aceita status="rascunho" — intervenções em orçamento enviado são bloqueadas (OrcamentoNaoEditavel)
+- `aprovar()` é @transaction.atomic — falha na reserva de peças NÃO reverte a aprovação (P10: aviso no log)
+- `OSIntervencao.unidade_reservada` preenchida pelo PickingService após bipar unidade (futuro)
+- `ApontamentoHoras` = tempo real vs. `horas_mao_obra` do snapshot (estimativa do motor) — diferença gera KPI produtividade
+- Endpoint aprovação retorna `{os_id, os_number}` — frontend redireciona para `/os/{os_id}`
+
+---
+
 ### MO-6 — Motor de Precificação + Snapshots — Abril 2026 ✅
 **App `apps.pricing_engine` (completado) — motor de cálculo de preço com audit trail imutável**
 
