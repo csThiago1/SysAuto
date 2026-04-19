@@ -41,6 +41,8 @@ import {
   Percent,
   Layers,
   FileText,
+  BarChart3,
+  Database,
   type LucideIcon,
 } from "lucide-react";
 import { NotificationBell } from "@/components/header/NotificationBell";
@@ -194,6 +196,23 @@ const NAV_SECTIONS: NavSection[] = [
           { id: "motor-margens",     label: "Margens",      href: "/configuracao-motor/margens",     icon: Percent },
           { id: "motor-snapshots",   label: "Snapshots",    href: "/configuracao-motor/snapshots",   icon: Layers },
           { id: "motor-simulador",   label: "Simulador",    href: "/configuracao-motor/simulador",   icon: FlaskConical },
+        ],
+      },
+    ],
+  },
+  {
+    label: "BENCHMARK",
+    items: [
+      {
+        id: "benchmark",
+        label: "Benchmark IA",
+        icon: BarChart3,
+        href: "/benchmark",
+        children: [
+          { id: "bm-fontes",      label: "Fontes",       href: "/benchmark/fontes",      icon: Database },
+          { id: "bm-ingestoes",   label: "Ingestões",    href: "/benchmark/ingestoes",   icon: FileText },
+          { id: "bm-revisao",     label: "Revisão",      href: "/benchmark/revisao",     icon: Tag },
+          { id: "bm-estatisticas",label: "Estatísticas", href: "/benchmark/estatisticas",icon: BarChart3 },
         ],
       },
     ],
