@@ -1,6 +1,6 @@
 "use client"
 
-import { SlidersHorizontal, Clock } from "lucide-react"
+import { SlidersHorizontal, Clock, Percent, Layers, FlaskConical } from "lucide-react"
 import Link from "next/link"
 import type { Route } from "next"
 
@@ -10,6 +10,24 @@ const SUB_MODULOS = [
     icon: Clock,
     title: "Custos",
     description: "Parâmetros de custo/hora, rateio de despesas e fallback por categoria.",
+  },
+  {
+    href: "/configuracao-motor/margens",
+    icon: Percent,
+    title: "Margens",
+    description: "Margens por segmento e markups específicos por peça ou faixa de custo.",
+  },
+  {
+    href: "/configuracao-motor/snapshots",
+    icon: Layers,
+    title: "Snapshots",
+    description: "Histórico imutável de cálculos de preço para auditoria.",
+  },
+  {
+    href: "/configuracao-motor/simulador",
+    icon: FlaskConical,
+    title: "Simulador",
+    description: "Calcule preços de serviços e peças com contexto veicular completo.",
   },
 ]
 

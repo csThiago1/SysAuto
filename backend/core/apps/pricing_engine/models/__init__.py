@@ -1,6 +1,11 @@
 """
 Paddock Solutions — Pricing Engine — Models
 """
+from apps.pricing_engine.models.motor import (
+    CalculoCustoSnapshot,
+    MargemOperacao,
+    MarkupPeca,
+)
 from apps.pricing_engine.models.parametros import (
     CustoHoraFallback,
     ParametroCustoHora,
@@ -8,7 +13,10 @@ from apps.pricing_engine.models.parametros import (
 )
 
 __all__ = [
-    "ParametroRateio",
-    "ParametroCustoHora",
+    "CalculoCustoSnapshot",
     "CustoHoraFallback",
+    "MargemOperacao",
+    "MarkupPeca",
+    "ParametroCustoHora",
+    "ParametroRateio",
 ]

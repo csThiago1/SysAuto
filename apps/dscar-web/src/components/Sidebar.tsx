@@ -38,6 +38,8 @@ import {
   HardHat,
   Truck,
   SlidersHorizontal,
+  Percent,
+  Layers,
   type LucideIcon,
 } from "lucide-react";
 import { NotificationBell } from "@/components/header/NotificationBell";
@@ -182,6 +184,9 @@ const NAV_SECTIONS: NavSection[] = [
         children: [
           { id: "motor-custos",      label: "Custos",       href: "/configuracao-motor/custos",      icon: DollarSign },
           { id: "motor-impressoras", label: "Impressoras",  href: "/configuracao-motor/impressoras", icon: SlidersHorizontal },
+          { id: "motor-margens",     label: "Margens",      href: "/configuracao-motor/margens",     icon: Percent },
+          { id: "motor-snapshots",   label: "Snapshots",    href: "/configuracao-motor/snapshots",   icon: Layers },
+          { id: "motor-simulador",   label: "Simulador",    href: "/configuracao-motor/simulador",   icon: FlaskConical },
         ],
       },
     ],
