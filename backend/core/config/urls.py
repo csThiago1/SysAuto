@@ -25,12 +25,14 @@ urlpatterns = [
     path("api/v1/vehicle-catalog/", include("apps.vehicle_catalog.urls")),
     path("api/v1/pricing/", include("apps.pricing_profile.urls")),
     path("api/v1/pricing/catalog/", include("apps.pricing_catalog.urls")),
+    path("api/v1/pricing/fichas/", include("apps.pricing_tech.urls")),
     path("api/v1/pricing/engine/", include("apps.pricing_engine.urls")),
     path("api/v1/cilia/", include("apps.cilia.urls")),
     path("api/v1/hr/", include("apps.hr.urls")),
     path("api/v1/accounting/", include("apps.accounting.urls")),
     path("api/v1/accounts-payable/", include("apps.accounts_payable.urls")),
     path("api/v1/accounts-receivable/", include("apps.accounts_receivable.urls")),
+    path("api/v1/quotes/", include("apps.quotes.urls")),
     # OIDC
     path("oidc/", include("mozilla_django_oidc.urls")),
     # API Docs

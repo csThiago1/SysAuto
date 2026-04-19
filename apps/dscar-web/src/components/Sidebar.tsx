@@ -40,6 +40,7 @@ import {
   SlidersHorizontal,
   Percent,
   Layers,
+  FileText,
   type LucideIcon,
 } from "lucide-react";
 import { NotificationBell } from "@/components/header/NotificationBell";
@@ -106,6 +107,12 @@ const NAV_SECTIONS: NavSection[] = [
         label: "Agenda",
         icon: CalendarDays,
         href: "/agenda",
+      },
+      {
+        id: "orcamentos",
+        label: "Orçamentos",
+        icon: FileText,
+        href: "/orcamentos",
       },
       {
         id: "cadastros",
