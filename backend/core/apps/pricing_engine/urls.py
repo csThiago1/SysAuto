@@ -36,8 +36,14 @@ from apps.pricing_engine.views import (
     ParametroRateioViewSet,
     SimularView,
 )
+from apps.pricing_engine.views_auditoria import AuditoriaMotorViewSet, HealthcheckMotorView
 
 router = DefaultRouter()
+router.register(
+    "auditoria",
+    AuditoriaMotorViewSet,
+    basename="auditoria-motor",
+)
 router.register(
     "parametros/rateio",
     ParametroRateioViewSet,
@@ -70,6 +76,8 @@ router.register(
 )
 
 urlpatterns = [
+    # Motor — healthcheck
+    path("healthcheck/", HealthcheckMotorView.as_view(), name="motor-healthcheck"),
     # Motor — endpoints de cálculo (antes do router para evitar conflito)
     path("calcular-servico/", CalcularServicoView.as_view(), name="calcular-servico"),
     path("calcular-peca/", CalcularPecaView.as_view(), name="calcular-peca"),

@@ -240,3 +240,105 @@ class FichaTecnicaInsumo(PaddockBaseModel):
             f"{self.material_canonico} "
             f"{self.quantidade}{self.unidade} (ficha {self.ficha_id})"
         )
+
+
+# ── MO-9: Variâncias ──────────────────────────────────────────────────────────
+
+
+class VarianciaFicha(PaddockBaseModel):
+    """
+    Variância entre tempo/insumo estimado (ficha técnica) e realizado (apontamento).
+    Gerada mensalmente por task Celery para alimentar o feedback loop.
+    """
+
+    servico_canonico_id = models.UUIDField(
+        db_index=True,
+        verbose_name="ID Serviço Canônico",
+        help_text="UUID do ServicoCanonico (sem FK para suportar mudanças de catálogo).",
+    )
+    mes_referencia = models.DateField(
+        verbose_name="Mês de referência",
+        help_text="Primeiro dia do mês ao qual a variância se refere.",
+    )
+    qtd_os = models.IntegerField(default=0, verbose_name="Qtd OS amostradas")
+    horas_estimadas_total = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0, verbose_name="Horas estimadas (total)"
+    )
+    horas_realizadas_total = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0, verbose_name="Horas realizadas (total)"
+    )
+    variancia_horas_pct = models.DecimalField(
+        max_digits=7,
+        decimal_places=4,
+        default=0,
+        verbose_name="Variância horas (%)",
+        help_text="(realizadas - estimadas) / estimadas. Negativo = mais rápido que o estimado.",
+    )
+    custo_insumo_estimado = models.DecimalField(
+        max_digits=14, decimal_places=2, default=0, verbose_name="Custo insumo estimado"
+    )
+    custo_insumo_realizado = models.DecimalField(
+        max_digits=14, decimal_places=2, default=0, verbose_name="Custo insumo realizado"
+    )
+    variancia_insumo_pct = models.DecimalField(
+        max_digits=7, decimal_places=4, default=0, verbose_name="Variância insumo (%)"
+    )
+
+    class Meta:
+        verbose_name = "Variância de Ficha Técnica"
+        verbose_name_plural = "Variâncias de Ficha Técnica"
+        unique_together = [("servico_canonico_id", "mes_referencia")]
+        indexes = [
+            models.Index(fields=["mes_referencia"]),
+            models.Index(fields=["variancia_horas_pct"]),
+        ]
+
+    def __str__(self) -> str:
+        return (
+            f"VarianciaFicha {self.servico_canonico_id} "
+            f"{self.mes_referencia.strftime('%Y-%m')} "
+            f"({self.variancia_horas_pct:+.1%})"
+        )
+
+
+class VarianciaPecaCusto(PaddockBaseModel):
+    """
+    Variância entre custo previsto de peça (snapshot do motor) e custo real (NF-e).
+    Detecta divergências de markup antes que impactem rentabilidade.
+    """
+
+    peca_canonica_id = models.UUIDField(
+        db_index=True,
+        verbose_name="ID Peça Canônica",
+    )
+    mes_referencia = models.DateField(verbose_name="Mês de referência")
+    qtd_amostras = models.IntegerField(default=0, verbose_name="Amostras")
+    custo_snapshot_medio = models.DecimalField(
+        max_digits=14, decimal_places=2, default=0, verbose_name="Custo snapshot médio"
+    )
+    custo_nfe_medio = models.DecimalField(
+        max_digits=14, decimal_places=2, default=0, verbose_name="Custo NF-e médio"
+    )
+    variancia_pct = models.DecimalField(
+        max_digits=7, decimal_places=4, default=0, verbose_name="Variância (%)"
+    )
+    alerta = models.BooleanField(
+        default=False,
+        verbose_name="Alerta",
+        help_text="True quando |variancia_pct| > 0.15 (15%).",
+    )
+
+    class Meta:
+        verbose_name = "Variância de Custo de Peça"
+        verbose_name_plural = "Variâncias de Custo de Peças"
+        unique_together = [("peca_canonica_id", "mes_referencia")]
+        indexes = [
+            models.Index(fields=["mes_referencia", "alerta"]),
+        ]
+
+    def __str__(self) -> str:
+        return (
+            f"VarianciaPeca {self.peca_canonica_id} "
+            f"{self.mes_referencia.strftime('%Y-%m')} "
+            f"({self.variancia_pct:+.1%})"
+        )

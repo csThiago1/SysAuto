@@ -16,11 +16,24 @@ from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
 from apps.pricing_tech import views
+from apps.pricing_tech.views_variancia import VarianciaFichaViewSet, VarianciaPecaCustoViewSet
 
 # SimpleRouter — ViewSet com @action customizados (evita conflito de prefixo)
 ficha_router = SimpleRouter()
 ficha_router.register(r"", views.FichaTecnicaServicoViewSet, basename="ficha-tecnica")
 
+variancia_ficha_router = SimpleRouter()
+variancia_ficha_router.register(r"", VarianciaFichaViewSet, basename="variancia-ficha")
+
+variancia_peca_router = SimpleRouter()
+variancia_peca_router.register(r"", VarianciaPecaCustoViewSet, basename="variancia-peca")
+
 urlpatterns = [
     path("", include(ficha_router.urls)),
+]
+
+# Exportado para inclusão em config/urls.py separadamente
+variancia_urlpatterns = [
+    path("fichas/", include(variancia_ficha_router.urls)),
+    path("pecas/", include(variancia_peca_router.urls)),
 ]

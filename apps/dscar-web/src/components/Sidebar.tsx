@@ -43,6 +43,7 @@ import {
   FileText,
   BarChart3,
   Database,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 import { NotificationBell } from "@/components/header/NotificationBell";
@@ -214,6 +215,29 @@ const NAV_SECTIONS: NavSection[] = [
           { id: "bm-revisao",     label: "Revisão",      href: "/benchmark/revisao",     icon: Tag },
           { id: "bm-estatisticas",label: "Estatísticas", href: "/benchmark/estatisticas",icon: BarChart3 },
         ],
+      },
+    ],
+  },
+  {
+    label: "OPERAÇÃO",
+    items: [
+      {
+        id: "capacidade",
+        label: "Capacidade",
+        icon: Users,
+        href: "/capacidade",
+      },
+      {
+        id: "variancias",
+        label: "Variâncias",
+        icon: TrendingUp,
+        href: "/configuracao-motor/variancias",
+      },
+      {
+        id: "auditoria-motor",
+        label: "Auditoria Motor",
+        icon: Shield,
+        href: "/auditoria/motor",
       },
     ],
   },

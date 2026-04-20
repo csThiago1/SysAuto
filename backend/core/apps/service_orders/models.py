@@ -1245,3 +1245,88 @@ class ApontamentoHoras(PaddockBaseModel):
             f"{self.tecnico_id} → OS #{self.service_order.number} "
             f"({self.horas_apontadas}h)"
         )
+
+
+# ── MO-9: Capacidade Técnica ──────────────────────────────────────────────────
+
+def _dias_semana_default() -> list[int]:
+    return [1, 2, 3, 4, 5]  # seg=1 … dom=7 (ISO weekday)
+
+
+class CapacidadeTecnico(PaddockBaseModel):
+    """
+    Capacidade produtiva de um técnico por categoria de mão de obra.
+    Define quantas horas/dia e em quais dias da semana o técnico está disponível,
+    para uma determinada categoria (funilaria, pintura, mecânica…).
+    """
+
+    tecnico = models.ForeignKey(
+        "hr.Employee",
+        on_delete=models.CASCADE,
+        related_name="capacidades",
+        verbose_name="Técnico",
+    )
+    categoria_mao_obra = models.ForeignKey(
+        "pricing_catalog.CategoriaMaoObra",
+        on_delete=models.PROTECT,
+        related_name="capacidades",
+        verbose_name="Categoria de Mão de Obra",
+    )
+    horas_dia_util = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        default=8,
+        verbose_name="Horas por dia útil",
+    )
+    dias_semana = models.JSONField(
+        default=_dias_semana_default,
+        help_text="Lista ISO weekdays (1=seg, 7=dom) em que o técnico trabalha.",
+        verbose_name="Dias de trabalho",
+    )
+    vigente_desde = models.DateField(verbose_name="Vigente desde")
+    vigente_ate = models.DateField(null=True, blank=True, verbose_name="Vigente até")
+
+    class Meta:
+        verbose_name = "Capacidade de Técnico"
+        verbose_name_plural = "Capacidades de Técnicos"
+        unique_together = [("tecnico", "categoria_mao_obra", "vigente_desde")]
+        indexes = [
+            models.Index(fields=["tecnico", "vigente_ate"]),
+            models.Index(fields=["categoria_mao_obra"]),
+        ]
+
+    def __str__(self) -> str:
+        return (
+            f"{self.tecnico_id} — {self.categoria_mao_obra_id} "
+            f"({self.horas_dia_util}h/dia desde {self.vigente_desde})"
+        )
+
+
+class BloqueioCapacidade(PaddockBaseModel):
+    """
+    Bloqueio pontual de capacidade de um técnico (férias, feriado, licença…).
+    O CapacidadeService desconta dias bloqueados ao calcular horas disponíveis.
+    """
+
+    tecnico = models.ForeignKey(
+        "hr.Employee",
+        on_delete=models.CASCADE,
+        related_name="bloqueios",
+        verbose_name="Técnico",
+    )
+    data_inicio = models.DateField(verbose_name="Data início")
+    data_fim = models.DateField(verbose_name="Data fim")
+    motivo = models.CharField(max_length=100, verbose_name="Motivo")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Bloqueio de Capacidade"
+        verbose_name_plural = "Bloqueios de Capacidade"
+        indexes = [
+            models.Index(fields=["tecnico", "data_inicio", "data_fim"]),
+        ]
+
+    def __str__(self) -> str:
+        return (
+            f"{self.tecnico_id}: {self.data_inicio}→{self.data_fim} ({self.motivo})"
+        )
