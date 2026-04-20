@@ -87,12 +87,16 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
             </Text>
             {insurer != null && (
               insurer.logoUrl ? (
-                <View style={styles.insurerAvatar}>
-                  <Image
-                    source={{ uri: insurer.logoUrl }}
-                    style={styles.insurerLogo}
-                    resizeMode="cover"
-                  />
+                // Wrapper externo carrega a sombra (overflow visible).
+                // Inner clip recorta a imagem no círculo sem cancelar a sombra.
+                <View style={styles.insurerLogoShadow}>
+                  <View style={styles.insurerLogoClip}>
+                    <Image
+                      source={{ uri: insurer.logoUrl }}
+                      style={styles.insurerLogo}
+                      resizeMode="contain"
+                    />
+                  </View>
                 </View>
               ) : (
                 <View style={[styles.insurerAvatar, { backgroundColor: insurer.brandColor + '22', borderColor: insurer.brandColor + '66' }]}>
@@ -199,6 +203,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.borderGlintSide,
     backgroundColor: Colors.surfaceLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 8,
+  },
+  insurerLogoShadow: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    ...Shadow.sm,
+    // backgroundColor mínimo para shadow funcionar no iOS
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  insurerLogoClip: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 8,

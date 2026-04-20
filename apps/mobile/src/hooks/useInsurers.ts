@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { MMKV } from 'react-native-mmkv';
 import { api } from '@/lib/api';
+import { API_BASE_URL } from '@/lib/constants';
 
 // ─── MMKV cache ───────────────────────────────────────────────────────────────
 
 let _mmkv: MMKV | null = null;
 try { _mmkv = new MMKV({ id: 'insurers-cache' }); } catch { _mmkv = null; }
 
-const CACHE_KEY = 'insurers_list_v2'; // bump version to bust stale cache
+const CACHE_KEY = 'insurers_list_v3'; // v3: logo_url + cnpj + is_active adicionados ao serializer
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -27,11 +28,27 @@ interface InsurerApiItem {
   display_name: string;
   brand_color: string;
   abbreviation: string;
-  logo: string;       // InsurerMinimalSerializer returns 'logo', not 'logo_url'
+  logo: string | null;    // URL resolvida (logo_url + fallback Person) — pode ser null
+  logo_url: string;       // URL crua armazenada no campo Insurer.logo_url
+  cnpj: string;
+  is_active: boolean;
+  uses_cilia: boolean;
 }
 
 interface PaginatedResponse {
   results: InsurerApiItem[];
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Converte URLs relativas do Django (/media/...) em absolutas.
+ * Em produção, o storage retorna URLs S3 absolutas — retorna sem alteração.
+ */
+function resolveLogoUrl(url: string | null): string {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;   // S3 / CDN — já absoluta
+  return `${API_BASE_URL}${url}`;           // dev: /media/... → http://localhost:8000/media/...
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
@@ -72,7 +89,7 @@ export function useInsurers(): {
         displayName: item.display_name || item.trade_name || item.name,
         brandColor: item.brand_color || '#6b7280',
         abbreviation: item.abbreviation || item.name.substring(0, 2).toUpperCase(),
-        logoUrl: item.logo,   // InsurerMinimalSerializer uses 'logo' field
+        logoUrl: resolveLogoUrl(item.logo),
       }));
       setInsurers(mapped);
       try {

@@ -1,5 +1,5 @@
 import { useAuthStore } from '@/stores/auth.store';
-import { API_BASE_URL } from './constants';
+import { API_BASE_URL, getTenantDomain } from './constants';
 
 class ApiError extends Error {
   public readonly status: number;
@@ -25,7 +25,7 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'X-Tenant-Domain': `${activeCompany}.localhost`,
+    'X-Tenant-Domain': getTenantDomain(activeCompany),
     ...(options.headers as Record<string, string>),
   };
 
