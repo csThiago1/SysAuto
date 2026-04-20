@@ -12,6 +12,7 @@ from apps.pricing_engine.services.motor import (
     ContextoCalculo,
     ErroMotorPrecificacao,
     MotorPrecificacaoService,
+    ResultadoIntervencao,
     ResultadoPeca,
     ResultadoServico,
 )
@@ -34,6 +35,7 @@ __all__ = [
     "MotorPrecificacaoService",
     "ParametroRateioNaoDefinido",
     "RateioService",
+    "ResultadoIntervencao",
     "ResultadoPeca",
     "ResultadoServico",
     "RHAdapter",
