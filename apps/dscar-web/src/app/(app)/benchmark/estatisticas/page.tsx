@@ -2,13 +2,13 @@
 
 import { useState } from "react"
 import { BarChart3 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { useBenchmarkEstatisticas } from "@/hooks/useBenchmark"
 
 const formatBRL = (v: string | null) =>
   v ? parseFloat(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"
-
-const inputCls =
-  "text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-white/20"
 
 export default function BenchmarkEstatisticasPage() {
   const [servicoId, setServicoId] = useState("")
@@ -37,47 +37,47 @@ export default function BenchmarkEstatisticasPage() {
       {/* Filtros */}
       <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs text-white/50 mb-1">UUID do Serviço Canônico</label>
-            <input
-              className={inputCls + " w-full"}
+          <div className="space-y-1.5">
+            <Label className="text-white/70 text-xs">UUID do Serviço Canônico</Label>
+            <Input
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/20 font-mono text-xs"
               placeholder="UUID do ServicoCanonico"
               value={servicoId}
               onChange={(e) => { setServicoId(e.target.value); setBuscar(false) }}
             />
           </div>
-          <div>
-            <label className="block text-xs text-white/50 mb-1">Segmento</label>
-            <input
-              className={inputCls + " w-full"}
+          <div className="space-y-1.5">
+            <Label className="text-white/70 text-xs">Segmento</Label>
+            <Input
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
               placeholder="Código do segmento"
               value={segmento}
               onChange={(e) => setSegmento(e.target.value)}
             />
           </div>
-          <div>
-            <label className="block text-xs text-white/50 mb-1">Tamanho</label>
-            <input
-              className={inputCls + " w-full"}
+          <div className="space-y-1.5">
+            <Label className="text-white/70 text-xs">Tamanho</Label>
+            <Input
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
               placeholder="Código do tamanho"
               value={tamanho}
               onChange={(e) => setTamanho(e.target.value)}
             />
           </div>
         </div>
-        <button
+        <Button
+          size="sm"
           onClick={() => { if (servicoId) setBuscar(true) }}
           disabled={!servicoId}
-          className="px-4 py-1.5 text-sm bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white rounded-md"
         >
           Consultar
-        </button>
+        </Button>
       </div>
 
       {/* Resultado */}
       {buscar && (
         isLoading ? (
-          <div className="text-white/40 text-sm">Consultando...</div>
+          <p className="text-xs text-white/40 py-8 text-center">Consultando...</p>
         ) : stats ? (
           <div className="space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -103,7 +103,7 @@ export default function BenchmarkEstatisticasPage() {
             )}
           </div>
         ) : (
-          <div className="text-white/40 text-sm">Sem dados para este serviço/segmento.</div>
+          <p className="text-white/40 text-sm">Sem dados para este serviço/segmento.</p>
         )
       )}
     </div>

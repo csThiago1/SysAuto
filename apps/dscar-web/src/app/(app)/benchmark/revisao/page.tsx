@@ -3,6 +3,10 @@
 import { useState } from "react"
 import { CheckCheck, Trash2, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
 import { useAmostrasPendentes, useAceitarMatch, useDescartarAmostra } from "@/hooks/useBenchmark"
 import type { BenchmarkAmostra } from "@paddock/types"
 
@@ -48,7 +52,7 @@ export default function BenchmarkRevisaoPage() {
   }
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-6">
       <div className="flex items-center gap-3">
         <AlertCircle className="h-5 w-5 text-yellow-500" />
         <div>
@@ -58,9 +62,12 @@ export default function BenchmarkRevisaoPage() {
           </p>
         </div>
         {pendentes.length > 0 && (
-          <span className="ml-auto inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-yellow-400 bg-yellow-400/10">
+          <Badge
+            variant="outline"
+            className="ml-auto border-yellow-500/30 text-yellow-400 bg-yellow-400/10"
+          >
             {pendentes.length} pendentes
-          </span>
+          </Badge>
         )}
       </div>
 
@@ -68,7 +75,7 @@ export default function BenchmarkRevisaoPage() {
         {/* Lista */}
         <div className="rounded-lg border border-white/10 overflow-hidden">
           {isLoading ? (
-            <div className="p-6 text-white/40 text-sm">Carregando...</div>
+            <div className="p-6 text-white/40 text-xs text-center">Carregando...</div>
           ) : pendentes.length === 0 ? (
             <div className="p-8 text-center text-white/40 text-sm">
               Nenhuma amostra pendente de revisão.
@@ -79,7 +86,11 @@ export default function BenchmarkRevisaoPage() {
                 <button
                   key={a.id}
                   className={`w-full text-left px-4 py-3 hover:bg-white/5 transition-colors ${selected?.id === a.id ? "bg-white/10" : ""}`}
-                  onClick={() => { setSelected(a); setShowDescarte(false); setMotivoDescarte("") }}
+                  onClick={() => {
+                    setSelected(a)
+                    setShowDescarte(false)
+                    setMotivoDescarte("")
+                  }}
                 >
                   <div className="text-sm text-white truncate">{a.descricao_bruta}</div>
                   <div className="flex items-center gap-2 mt-1 text-xs text-white/40">
@@ -120,7 +131,9 @@ export default function BenchmarkRevisaoPage() {
               {selected.veiculo_marca && (
                 <div>
                   <p className="text-white/40">Veículo</p>
-                  <p className="text-white">{selected.veiculo_marca} {selected.veiculo_modelo} {selected.veiculo_ano}</p>
+                  <p className="text-white">
+                    {selected.veiculo_marca} {selected.veiculo_modelo} {selected.veiculo_ano}
+                  </p>
                 </div>
               )}
               {selected.servico_nome && (
@@ -133,52 +146,62 @@ export default function BenchmarkRevisaoPage() {
 
             {!showDescarte ? (
               <div className="space-y-3">
-                <div>
-                  <label className="block text-xs text-white/50 mb-1">UUID do Canônico aceito</label>
-                  <input
-                    className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-white/20"
+                <div className="space-y-1.5">
+                  <Label className="text-white/70 text-xs">UUID do Canônico aceito</Label>
+                  <Input
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/20 font-mono text-xs"
                     placeholder="UUID do ServicoCanonico ou PecaCanonica"
                     value={canonicalId}
                     onChange={(e) => setCanonicalId(e.target.value)}
                   />
                 </div>
                 <div className="flex gap-2">
-                  <button
+                  <Button
                     onClick={handleAceitar}
                     disabled={aceitando}
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-md"
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    size="sm"
                   >
-                    <CheckCheck className="h-3.5 w-3.5" />
+                    <CheckCheck className="h-3.5 w-3.5 mr-1" />
                     {aceitando ? "Aceitando..." : "Aceitar Match"}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setShowDescarte(true)}
-                    className="px-3 py-1.5 text-sm border border-red-500/40 text-red-400 hover:bg-red-500/10 rounded-md"
+                    className="border-red-500/40 text-red-400 hover:bg-red-500/10 hover:text-red-400"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (
               <div className="space-y-3">
-                <div>
-                  <label className="block text-xs text-white/50 mb-1">Motivo do descarte</label>
-                  <input
-                    className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                <div className="space-y-1.5">
+                  <Label className="text-white/70 text-xs">Motivo do descarte</Label>
+                  <Input
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
                     value={motivoDescarte}
                     onChange={(e) => setMotivoDescarte(e.target.value)}
                     placeholder="Ex: linha sem informação útil"
                   />
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => setShowDescarte(false)} className="px-3 py-1.5 text-sm text-white/60 hover:text-white">Cancelar</button>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowDescarte(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
                     onClick={handleDescartar}
                     disabled={descartando}
-                    className="px-4 py-1.5 text-sm bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-md"
                   >
                     {descartando ? "Descartando..." : "Confirmar Descarte"}
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}

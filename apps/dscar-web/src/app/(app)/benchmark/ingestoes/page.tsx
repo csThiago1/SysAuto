@@ -3,6 +3,25 @@
 import { useState } from "react"
 import { Upload, RefreshCw, ChevronRight } from "lucide-react"
 import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Input } from "@/components/ui/input"
 import {
   useBenchmarkIngestoes,
   useBenchmarkFontes,
@@ -18,16 +37,12 @@ const STATUS_LABELS: Record<BenchmarkIngestaoStatus, string> = {
   erro: "Erro",
 }
 
-const STATUS_COLORS: Record<BenchmarkIngestaoStatus, string> = {
-  recebido: "text-white/50 bg-white/10",
-  processando: "text-blue-400 bg-blue-400/10",
-  concluido: "text-emerald-400 bg-emerald-400/10",
-  erro: "text-red-400 bg-red-400/10",
+const STATUS_BADGE_CLS: Record<BenchmarkIngestaoStatus, string> = {
+  recebido: "border-white/20 text-white/50 bg-white/5",
+  processando: "border-blue-500/30 text-blue-400 bg-blue-400/10",
+  concluido: "border-emerald-500/30 text-emerald-400 bg-emerald-400/10",
+  erro: "border-red-500/30 text-red-400 bg-red-400/10",
 }
-
-const labelCls = "block text-xs text-white/50 mb-1"
-const inputCls =
-  "w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-white/20"
 
 export default function BenchmarkIngestoesPage() {
   const { data: ingestoes = [], isLoading, refetch } = useBenchmarkIngestoes()
@@ -73,47 +88,51 @@ export default function BenchmarkIngestoesPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-white/40 hover:text-white"
             onClick={() => refetch()}
-            className="p-1.5 text-white/40 hover:text-white transition-colors"
             title="Atualizar"
           >
             <RefreshCw className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 hover:bg-primary-700 px-3 py-1.5 text-sm text-white transition-colors"
-          >
+          </Button>
+          <Button size="sm" onClick={() => setShowForm(!showForm)}>
+            <Upload className="h-4 w-4 mr-1" />
             Nova Ingestão
-          </button>
+          </Button>
         </div>
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-4">
+        <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-4">
           <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Nova Ingestão</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>Fonte *</label>
-              <select className={inputCls} value={fonteId} onChange={(e) => setFonteId(e.target.value)} required>
-                <option value="">Selecionar fonte...</option>
-                {fontes.map((f) => (
-                  <option key={f.id} value={f.id}>{f.nome}</option>
-                ))}
-              </select>
+            <div className="space-y-1.5">
+              <Label className="text-white/70 text-xs">Fonte *</Label>
+              <Select value={fonteId} onValueChange={setFonteId}>
+                <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                  <SelectValue placeholder="Selecionar fonte..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {fontes.map((f) => (
+                    <SelectItem key={f.id} value={f.id}>{f.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <div>
-              <label className={labelCls}>Período de referência (YYYY-MM-DD)</label>
-              <input
+            <div className="space-y-1.5">
+              <Label className="text-white/70 text-xs">Período de referência</Label>
+              <Input
                 type="date"
-                className={inputCls}
+                className="bg-white/5 border-white/10 text-white"
                 value={periodoRef}
                 onChange={(e) => setPeriodoRef(e.target.value)}
               />
             </div>
           </div>
-          <div>
-            <label className={labelCls}>Arquivo PDF / CSV</label>
+          <div className="space-y-1.5">
+            <Label className="text-white/70 text-xs">Arquivo PDF / CSV</Label>
             <input
               type="file"
               accept=".pdf,.csv"
@@ -122,16 +141,18 @@ export default function BenchmarkIngestoesPage() {
             />
           </div>
           <div className="flex justify-end gap-2">
-            <button type="button" onClick={() => setShowForm(false)} className="px-3 py-1.5 text-sm text-white/60 hover:text-white">Cancelar</button>
-            <button type="submit" disabled={isPending} className="px-4 py-1.5 text-sm bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white rounded-md">
+            <Button variant="ghost" size="sm" onClick={() => setShowForm(false)}>
+              Cancelar
+            </Button>
+            <Button size="sm" onClick={handleSubmit} disabled={isPending}>
               {isPending ? "Enviando..." : "Iniciar"}
-            </button>
+            </Button>
           </div>
-        </form>
+        </div>
       )}
 
       {isLoading ? (
-        <div className="text-white/40 text-sm">Carregando...</div>
+        <p className="text-xs text-white/40 py-8 text-center">Carregando...</p>
       ) : ingestoes.length === 0 ? (
         <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
           Nenhuma ingestão registrada.
@@ -145,9 +166,12 @@ export default function BenchmarkIngestoesPage() {
                 onClick={() => setExpandedId(expandedId === ing.id ? null : ing.id)}
               >
                 <div className="flex items-center gap-3">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[ing.status]}`}>
+                  <Badge
+                    variant="outline"
+                    className={STATUS_BADGE_CLS[ing.status]}
+                  >
                     {STATUS_LABELS[ing.status]}
-                  </span>
+                  </Badge>
                   <span className="text-sm text-white">{ing.fonte_nome}</span>
                   <span className="text-xs text-white/40">
                     {new Date(ing.criado_em).toLocaleDateString("pt-BR")}
@@ -173,7 +197,9 @@ export default function BenchmarkIngestoesPage() {
 function IngestaoDetail({ ingestaoId, logErro }: { ingestaoId: string; logErro: string }) {
   const { data: amostras = [], isLoading } = useAmostrasPorIngestao(ingestaoId)
 
-  if (isLoading) return <div className="px-4 py-3 text-white/40 text-xs">Carregando amostras...</div>
+  if (isLoading) {
+    return <div className="px-4 py-3 text-white/40 text-xs">Carregando amostras...</div>
+  }
 
   return (
     <div className="border-t border-white/10 px-4 py-3 space-y-3">
@@ -186,34 +212,40 @@ function IngestaoDetail({ ingestaoId, logErro }: { ingestaoId: string; logErro: 
         <p className="text-xs text-white/40">Sem amostras ainda.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-white/40 border-b border-white/10">
-                <th className="py-1.5 text-left">Descrição</th>
-                <th className="py-1.5 text-right">Valor</th>
-                <th className="py-1.5 text-right">Confiança</th>
-                <th className="py-1.5 text-left">Canônico</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow className="border-white/10 hover:bg-transparent">
+                <TableHead className="text-white/40 text-xs py-1.5">Descrição</TableHead>
+                <TableHead className="text-white/40 text-xs py-1.5 text-right">Valor</TableHead>
+                <TableHead className="text-white/40 text-xs py-1.5 text-right">Confiança</TableHead>
+                <TableHead className="text-white/40 text-xs py-1.5">Canônico</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {amostras.slice(0, 20).map((a) => (
-                <tr key={a.id} className="border-b border-white/5">
-                  <td className="py-1.5 text-white/70 max-w-xs truncate">{a.descricao_bruta}</td>
-                  <td className="py-1.5 text-right text-white/70">R$ {parseFloat(a.valor_praticado).toFixed(2)}</td>
-                  <td className="py-1.5 text-right">
+                <TableRow key={a.id} className="border-white/5">
+                  <TableCell className="py-1.5 text-xs text-white/70 max-w-xs truncate">
+                    {a.descricao_bruta}
+                  </TableCell>
+                  <TableCell className="py-1.5 text-xs text-right text-white/70">
+                    R$ {parseFloat(a.valor_praticado).toFixed(2)}
+                  </TableCell>
+                  <TableCell className="py-1.5 text-xs text-right">
                     {a.alias_match_confianca ? (
-                      <span className={`${parseFloat(a.alias_match_confianca) >= 0.85 ? "text-emerald-400" : "text-yellow-400"}`}>
+                      <span className={parseFloat(a.alias_match_confianca) >= 0.85 ? "text-emerald-400" : "text-yellow-400"}>
                         {(parseFloat(a.alias_match_confianca) * 100).toFixed(0)}%
                       </span>
                     ) : (
                       <span className="text-white/30">—</span>
                     )}
-                  </td>
-                  <td className="py-1.5 text-white/50">{a.servico_nome || a.peca_nome || "—"}</td>
-                </tr>
+                  </TableCell>
+                  <TableCell className="py-1.5 text-xs text-white/50">
+                    {a.servico_nome || a.peca_nome || "—"}
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
           {amostras.length > 20 && (
             <p className="text-xs text-white/30 mt-2">Mostrando 20 de {amostras.length} amostras.</p>
           )}

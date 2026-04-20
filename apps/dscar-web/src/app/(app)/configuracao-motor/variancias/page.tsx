@@ -3,6 +3,19 @@
 import { useState } from "react"
 import { TrendingUp, AlertTriangle, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { useVarianciasFicha, useVarianciasPeca, useGerarVariancias } from "@/hooks/useCapacidade"
 
 const formatPct = (v: string) => {
@@ -17,10 +30,7 @@ const pctColor = (v: string) => {
   return "text-red-400"
 }
 
-const selectCls = "text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none"
-
 export default function VarianciasPage() {
-  const [tab, setTab] = useState<"fichas" | "pecas">("fichas")
   const [mes, setMes] = useState("")
   const [apenasAlertas, setApenasAlertas] = useState(false)
 
@@ -49,144 +59,156 @@ export default function VarianciasPage() {
             </p>
           </div>
         </div>
-        <button
+        <Button
+          variant="outline"
+          size="sm"
           onClick={handleGerar}
           disabled={gerando}
-          className="inline-flex items-center gap-1.5 rounded-md border border-white/10 hover:bg-white/5 px-3 py-1.5 text-sm text-white transition-colors disabled:opacity-50"
         >
-          <RefreshCw className={`h-4 w-4 ${gerando ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-4 w-4 mr-1 ${gerando ? "animate-spin" : ""}`} />
           {gerando ? "Gerando..." : "Gerar variâncias"}
-        </button>
+        </Button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 rounded-lg bg-white/5 p-1 w-fit">
-        {(["fichas", "pecas"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-4 py-1.5 text-sm rounded-md transition-colors ${
-              tab === t ? "bg-white/10 text-white" : "text-white/50 hover:text-white"
-            }`}
-          >
-            {t === "fichas" ? "Fichas Técnicas" : "Custo de Peças"}
-          </button>
-        ))}
-      </div>
+      <Tabs defaultValue="fichas">
+        <div className="flex items-center gap-4 flex-wrap">
+          <TabsList className="bg-white/5 border border-white/10">
+            <TabsTrigger value="fichas" className="text-xs">
+              Fichas Técnicas
+            </TabsTrigger>
+            <TabsTrigger value="pecas" className="text-xs">
+              Custo de Peças
+            </TabsTrigger>
+          </TabsList>
 
-      {/* Filtros */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div>
-          <label className="block text-xs text-white/50 mb-1">Mês de referência</label>
-          <input
-            type="month"
-            className={selectCls}
-            value={mes}
-            onChange={(e) => setMes(e.target.value)}
-          />
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="space-y-0">
+              <Label className="text-white/50 text-xs block mb-1">Mês de referência</Label>
+              <Input
+                type="month"
+                className="bg-white/5 border-white/10 text-white h-9 text-sm"
+                value={mes}
+                onChange={(e) => setMes(e.target.value)}
+              />
+            </div>
+          </div>
         </div>
-        {tab === "pecas" && (
-          <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer mt-4">
-            <input
-              type="checkbox"
-              checked={apenasAlertas}
-              onChange={(e) => setApenasAlertas(e.target.checked)}
-              className="rounded"
-            />
-            Somente alertas (&gt;15%)
-          </label>
-        )}
-      </div>
 
-      {/* Tabela Fichas */}
-      {tab === "fichas" && (
-        loadingFichas ? (
-          <div className="text-white/40 text-sm">Carregando...</div>
-        ) : fichas.length === 0 ? (
-          <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
-            Sem variâncias de ficha para o período selecionado.
-          </div>
-        ) : (
-          <div className="rounded-lg border border-white/10 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/10 bg-white/5 text-white/50 text-xs">
-                  <th className="px-4 py-3 text-left">Serviço Canônico</th>
-                  <th className="px-4 py-3 text-left">Mês</th>
-                  <th className="px-4 py-3 text-right">OS</th>
-                  <th className="px-4 py-3 text-right">Δ Horas</th>
-                  <th className="px-4 py-3 text-right">Δ Insumo</th>
-                </tr>
-              </thead>
-              <tbody>
-                {fichas.map((f) => (
-                  <tr key={f.id} className="border-b border-white/5">
-                    <td className="px-4 py-3 text-white/70 font-mono text-xs max-w-[200px] truncate">{f.servico_canonico_id}</td>
-                    <td className="px-4 py-3 text-white/60 text-xs">{f.mes_referencia.slice(0, 7)}</td>
-                    <td className="px-4 py-3 text-right text-white/60">{f.qtd_os}</td>
-                    <td className={`px-4 py-3 text-right font-semibold ${pctColor(f.variancia_horas_pct)}`}>
-                      {formatPct(f.variancia_horas_pct)}
-                    </td>
-                    <td className={`px-4 py-3 text-right font-semibold ${pctColor(f.variancia_insumo_pct)}`}>
-                      {formatPct(f.variancia_insumo_pct)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )
-      )}
+        {/* Fichas */}
+        <TabsContent value="fichas" className="mt-4">
+          {loadingFichas ? (
+            <p className="text-xs text-white/40 py-8 text-center">Carregando...</p>
+          ) : fichas.length === 0 ? (
+            <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
+              Sem variâncias de ficha para o período selecionado.
+            </div>
+          ) : (
+            <div className="rounded-lg border border-white/10 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-white/10 hover:bg-transparent">
+                    <TableHead className="text-white/60 text-xs">Serviço Canônico</TableHead>
+                    <TableHead className="text-white/60 text-xs">Mês</TableHead>
+                    <TableHead className="text-white/60 text-xs text-right">OS</TableHead>
+                    <TableHead className="text-white/60 text-xs text-right">Δ Horas</TableHead>
+                    <TableHead className="text-white/60 text-xs text-right">Δ Insumo</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {fichas.map((f) => (
+                    <TableRow key={f.id} className="border-white/10">
+                      <TableCell className="text-white/70 font-mono text-xs max-w-[200px] truncate">
+                        {f.servico_canonico_id}
+                      </TableCell>
+                      <TableCell className="text-white/60 text-xs">{f.mes_referencia.slice(0, 7)}</TableCell>
+                      <TableCell className="text-right text-white/60 text-sm">{f.qtd_os}</TableCell>
+                      <TableCell className={`text-right font-semibold text-sm ${pctColor(f.variancia_horas_pct)}`}>
+                        {formatPct(f.variancia_horas_pct)}
+                      </TableCell>
+                      <TableCell className={`text-right font-semibold text-sm ${pctColor(f.variancia_insumo_pct)}`}>
+                        {formatPct(f.variancia_insumo_pct)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </TabsContent>
 
-      {/* Tabela Peças */}
-      {tab === "pecas" && (
-        loadingPecas ? (
-          <div className="text-white/40 text-sm">Carregando...</div>
-        ) : pecas.length === 0 ? (
-          <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
-            Sem variâncias de peça para o período selecionado.
+        {/* Peças */}
+        <TabsContent value="pecas" className="mt-4 space-y-4">
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={apenasAlertas}
+                onChange={(e) => setApenasAlertas(e.target.checked)}
+                className="rounded"
+              />
+              Somente alertas (&gt;15%)
+            </label>
+            {apenasAlertas && (
+              <Badge
+                variant="outline"
+                className="border-yellow-500/30 text-yellow-400 bg-yellow-400/10"
+              >
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                Filtro ativo
+              </Badge>
+            )}
           </div>
-        ) : (
-          <div className="rounded-lg border border-white/10 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/10 bg-white/5 text-white/50 text-xs">
-                  <th className="px-4 py-3 text-left">Peça Canônica</th>
-                  <th className="px-4 py-3 text-left">Mês</th>
-                  <th className="px-4 py-3 text-right">Amostras</th>
-                  <th className="px-4 py-3 text-right">Custo Snapshot</th>
-                  <th className="px-4 py-3 text-right">Custo NF-e</th>
-                  <th className="px-4 py-3 text-right">Δ</th>
-                  <th className="px-4 py-3 text-center">Alerta</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pecas.map((p) => (
-                  <tr key={p.id} className="border-b border-white/5">
-                    <td className="px-4 py-3 text-white/70 font-mono text-xs max-w-[180px] truncate">{p.peca_canonica_id}</td>
-                    <td className="px-4 py-3 text-white/60 text-xs">{p.mes_referencia.slice(0, 7)}</td>
-                    <td className="px-4 py-3 text-right text-white/60">{p.qtd_amostras}</td>
-                    <td className="px-4 py-3 text-right text-white/70">
-                      R$ {parseFloat(p.custo_snapshot_medio).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-right text-white/70">
-                      R$ {parseFloat(p.custo_nfe_medio).toFixed(2)}
-                    </td>
-                    <td className={`px-4 py-3 text-right font-semibold ${pctColor(p.variancia_pct)}`}>
-                      {formatPct(p.variancia_pct)}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      {p.alerta && (
-                        <AlertTriangle className="h-4 w-4 text-yellow-400 inline-block" />
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )
-      )}
+
+          {loadingPecas ? (
+            <p className="text-xs text-white/40 py-8 text-center">Carregando...</p>
+          ) : pecas.length === 0 ? (
+            <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
+              Sem variâncias de peça para o período selecionado.
+            </div>
+          ) : (
+            <div className="rounded-lg border border-white/10 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-white/10 hover:bg-transparent">
+                    <TableHead className="text-white/60 text-xs">Peça Canônica</TableHead>
+                    <TableHead className="text-white/60 text-xs">Mês</TableHead>
+                    <TableHead className="text-white/60 text-xs text-right">Amostras</TableHead>
+                    <TableHead className="text-white/60 text-xs text-right">Custo Snapshot</TableHead>
+                    <TableHead className="text-white/60 text-xs text-right">Custo NF-e</TableHead>
+                    <TableHead className="text-white/60 text-xs text-right">Δ</TableHead>
+                    <TableHead className="text-white/60 text-xs text-center">Alerta</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pecas.map((p) => (
+                    <TableRow key={p.id} className="border-white/10">
+                      <TableCell className="text-white/70 font-mono text-xs max-w-[180px] truncate">
+                        {p.peca_canonica_id}
+                      </TableCell>
+                      <TableCell className="text-white/60 text-xs">{p.mes_referencia.slice(0, 7)}</TableCell>
+                      <TableCell className="text-right text-white/60 text-sm">{p.qtd_amostras}</TableCell>
+                      <TableCell className="text-right text-white/70 text-sm">
+                        R$ {parseFloat(p.custo_snapshot_medio).toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-right text-white/70 text-sm">
+                        R$ {parseFloat(p.custo_nfe_medio).toFixed(2)}
+                      </TableCell>
+                      <TableCell className={`text-right font-semibold text-sm ${pctColor(p.variancia_pct)}`}>
+                        {formatPct(p.variancia_pct)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {p.alerta && (
+                          <AlertTriangle className="h-4 w-4 text-yellow-400 inline-block" />
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
