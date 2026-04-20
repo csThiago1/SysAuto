@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { uploadAsync, FileSystemUploadType } from 'expo-file-system/legacy';
 import { useAuthStore } from '@/stores/auth.store';
-import { API_BASE_URL } from '@/lib/constants';
+import { API_BASE_URL, getTenantDomain } from '@/lib/constants';
 
 // ─── MMKV storage (module-level — never recreated on render) ─────────────────
 
@@ -85,6 +84,8 @@ interface PhotoStoreState {
   // Annotation actions
   setAnnotations: (id: string, annotations: Annotation[], annotatedLocalUri: string) => void;
   setObservation: (id: string, observation: string) => void;
+  // Sync: substitui o osId local pelo remoteId do servidor após push bem-sucedido
+  updateOsId: (oldOsId: string, newOsId: string) => void;
 }
 
 interface PhotoUploadResponse {
@@ -165,6 +166,13 @@ export const usePhotoStore = create<PhotoStoreState>()(
             item.id === id ? { ...item, observation } : item,
           ),
         })),
+
+      updateOsId: (oldOsId, newOsId) =>
+        set((state) => ({
+          queue: state.queue.map((item) =>
+            item.osId === oldOsId ? { ...item, osId: newOsId } : item,
+          ),
+        })),
     }),
     {
       name: 'photo-queue',
@@ -182,37 +190,49 @@ export async function uploadPendingPhotos(): Promise<void> {
   const pending = queue.filter((item) => item.uploadStatus === 'pending');
 
   for (const item of pending) {
-    const { id, osId, localUri, annotatedLocalUri, folder, slot, checklistType } = item;
+    const { id, osId, localUri, annotatedLocalUri, folder, slot, checklistType, observation } = item;
     const { token, activeCompany } = useAuthStore.getState();
+
+    // Pula fotos de OS offline ainda não sincronizadas com o servidor.
+    if (!osId) {
+      continue;
+    }
 
     setUploading(id);
 
     const uploadUri = annotatedLocalUri ?? localUri;
+    const url = `${API_BASE_URL}/api/v1/service-orders/${osId}/photos/`;
 
     try {
-      const result = await uploadAsync(
-        `${API_BASE_URL}/api/v1/service-orders/${osId}/photos/`,
-        uploadUri,
-        {
-          httpMethod: 'POST',
-          uploadType: FileSystemUploadType.MULTIPART,
-          fieldName: 'image',
-          parameters: { folder, slot, checklist_type: checklistType },
-          headers: {
-            Authorization: `Bearer ${token ?? ''}`,
-            'X-Tenant-Domain': `${activeCompany}.localhost`,
-          },
-        },
-      );
+      // FormData multipart — abordagem padrão React Native, sem depender de expo-file-system/legacy
+      const body = new FormData();
+      body.append('file', { uri: uploadUri, type: 'image/jpeg', name: 'photo.jpg' } as never);
+      body.append('folder', folder);
+      body.append('slot', slot);
+      body.append('checklist_type', checklistType);
+      body.append('caption', observation ?? '');
 
-      if (result.status < 200 || result.status >= 300) {
-        throw new Error(`HTTP ${result.status}`);
+      const response = await fetch(url, {
+        method: 'POST',
+        // Não definir Content-Type manualmente — o fetch seta automaticamente
+        // com o boundary correto para multipart/form-data
+        headers: {
+          Authorization: `Bearer ${token ?? ''}`,
+          'X-Tenant-Domain': getTenantDomain(activeCompany),
+        },
+        body,
+      });
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(`HTTP ${response.status}: ${text.slice(0, 200)}`);
       }
 
-      const parsed = JSON.parse(result.body) as PhotoUploadResponse;
+      const parsed = (await response.json()) as PhotoUploadResponse;
       setDone(id, parsed.url);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Upload failed';
+      console.warn(`[photo upload] id=${id} osId=${osId} folder=${folder} erro:`, message);
       setError(id, message);
     }
   }

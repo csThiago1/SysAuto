@@ -553,7 +553,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   vistoriaBadge: {
-    backgroundColor: '#f0fdf4',
+    backgroundColor: 'rgba(59, 130, 246, 0.15)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 20,
@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   vistoriaBadgeText: {
-    color: '#15803d',
+    color: '#60a5fa',
     fontWeight: '700',
   },
 

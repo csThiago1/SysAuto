@@ -10,6 +10,7 @@ import {
 import { useShallow } from 'zustand/react/shallow';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
+import { Colors, Radii, Spacing } from '@/constants/theme';
 import {
   useChecklistItemsStore,
   type ItemStatus,
@@ -129,10 +130,10 @@ interface StatusConfig {
 }
 
 const STATUS_CONFIG: Record<ItemStatus, StatusConfig> = {
-  pending:   { label: 'Pendente',  color: '#9ca3af', bg: '#f3f4f6', icon: 'ellipse-outline' },
-  ok:        { label: 'OK',        color: '#16a34a', bg: '#dcfce7', icon: 'checkmark-circle' },
-  attention: { label: 'Atenção',   color: '#d97706', bg: '#fef3c7', icon: 'warning' },
-  critical:  { label: 'Crítico',   color: '#dc2626', bg: '#fee2e2', icon: 'alert-circle' },
+  pending:   { label: 'Pendente',  color: Colors.textSecondary, bg: Colors.inputBg,              icon: 'ellipse-outline' },
+  ok:        { label: 'OK',        color: Colors.success,       bg: 'rgba(22, 163, 74, 0.15)',   icon: 'checkmark-circle' },
+  attention: { label: 'Atenção',   color: Colors.warning,       bg: 'rgba(245, 158, 11, 0.15)',  icon: 'warning' },
+  critical:  { label: 'Crítico',   color: Colors.error,         bg: 'rgba(239, 68, 68, 0.15)',   icon: 'alert-circle' },
 };
 
 // ─── ItemRow ──────────────────────────────────────────────────────────────────
@@ -187,7 +188,7 @@ function ItemRow({ osId, checklistType, category, itemDef }: ItemRowProps): Reac
           <Ionicons
             name={notesOpen ? 'chevron-up' : 'create-outline'}
             size={16}
-            color="#9ca3af"
+            color={Colors.textTertiary}
           />
         </TouchableOpacity>
       </TouchableOpacity>
@@ -198,7 +199,7 @@ function ItemRow({ osId, checklistType, category, itemDef }: ItemRowProps): Reac
           value={entry.notes}
           onChangeText={(t) => setItemNotes(osId, checklistType, category, itemDef.key, t)}
           placeholder="Observação..."
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={Colors.textTertiary}
           multiline
           numberOfLines={2}
           returnKeyType="done"
@@ -247,40 +248,40 @@ function CategorySection({ osId, checklistType, category }: CategorySectionProps
         activeOpacity={0.75}
       >
         <View style={styles.categoryLeft}>
-          <Ionicons name={category.icon} size={18} color="#374151" />
+          <Ionicons name={category.icon} size={18} color={Colors.textSecondary} />
           <Text variant="label" style={styles.categoryLabel}>
             {category.label}
           </Text>
         </View>
         <View style={styles.categoryRight}>
           {criticalCount > 0 && (
-            <View style={[styles.countBadge, { backgroundColor: '#fee2e2' }]}>
-              <Text variant="caption" style={{ color: '#dc2626', fontWeight: '700' }}>
+            <View style={[styles.countBadge, { backgroundColor: 'rgba(239, 68, 68, 0.15)' }]}>
+              <Text variant="caption" style={{ color: Colors.error, fontWeight: '700' }}>
                 {criticalCount}
               </Text>
             </View>
           )}
           {attentionCount > 0 && (
-            <View style={[styles.countBadge, { backgroundColor: '#fef3c7' }]}>
-              <Text variant="caption" style={{ color: '#d97706', fontWeight: '700' }}>
+            <View style={[styles.countBadge, { backgroundColor: 'rgba(245, 158, 11, 0.15)' }]}>
+              <Text variant="caption" style={{ color: Colors.warning, fontWeight: '700' }}>
                 {attentionCount}
               </Text>
             </View>
           )}
           {okCount > 0 && (
-            <View style={[styles.countBadge, { backgroundColor: '#dcfce7' }]}>
-              <Text variant="caption" style={{ color: '#16a34a', fontWeight: '700' }}>
+            <View style={[styles.countBadge, { backgroundColor: 'rgba(22, 163, 74, 0.15)' }]}>
+              <Text variant="caption" style={{ color: Colors.success, fontWeight: '700' }}>
                 {okCount}
               </Text>
             </View>
           )}
-          <Text variant="caption" color="#9ca3af">
+          <Text variant="caption" color={Colors.textSecondary}>
             {resolvedCount}/{totalCount}
           </Text>
           <Ionicons
             name={expanded ? 'chevron-up' : 'chevron-down'}
             size={16}
-            color="#9ca3af"
+            color={Colors.textTertiary}
           />
         </View>
       </TouchableOpacity>
@@ -318,27 +319,27 @@ export function ChecklistSummaryBar({ osId, checklistType }: SummaryBarProps): R
   return (
     <View style={styles.summaryBar}>
       <View style={styles.summaryProgress}>
-        <Text variant="caption" color="#6b7280">
+        <Text variant="caption" color={Colors.textTertiary}>
           {resolved}/{total} itens avaliados
         </Text>
       </View>
       <View style={styles.summaryBadges}>
         {ok > 0 && (
-          <View style={[styles.summaryBadge, { backgroundColor: '#dcfce7' }]}>
-            <Ionicons name="checkmark-circle" size={13} color="#16a34a" />
-            <Text variant="caption" style={{ color: '#16a34a', fontWeight: '700' }}>{ok}</Text>
+          <View style={[styles.summaryBadge, { backgroundColor: 'rgba(22, 163, 74, 0.15)' }]}>
+            <Ionicons name="checkmark-circle" size={13} color={Colors.success} />
+            <Text variant="caption" style={{ color: Colors.success, fontWeight: '700' }}>{ok}</Text>
           </View>
         )}
         {attention > 0 && (
-          <View style={[styles.summaryBadge, { backgroundColor: '#fef3c7' }]}>
-            <Ionicons name="warning" size={13} color="#d97706" />
-            <Text variant="caption" style={{ color: '#d97706', fontWeight: '700' }}>{attention}</Text>
+          <View style={[styles.summaryBadge, { backgroundColor: 'rgba(245, 158, 11, 0.15)' }]}>
+            <Ionicons name="warning" size={13} color={Colors.warning} />
+            <Text variant="caption" style={{ color: Colors.warning, fontWeight: '700' }}>{attention}</Text>
           </View>
         )}
         {critical > 0 && (
-          <View style={[styles.summaryBadge, { backgroundColor: '#fee2e2' }]}>
-            <Ionicons name="alert-circle" size={13} color="#dc2626" />
-            <Text variant="caption" style={{ color: '#dc2626', fontWeight: '700' }}>{critical}</Text>
+          <View style={[styles.summaryBadge, { backgroundColor: 'rgba(239, 68, 68, 0.15)' }]}>
+            <Ionicons name="alert-circle" size={13} color={Colors.error} />
+            <Text variant="caption" style={{ color: Colors.error, fontWeight: '700' }}>{critical}</Text>
           </View>
         )}
       </View>
@@ -373,7 +374,7 @@ export function ItemChecklistGrid({ osId, checklistType }: ItemChecklistGridProp
 
 const styles = StyleSheet.create({
   container: {
-    gap: 8,
+    gap: Spacing.sm,
   },
 
   // Summary bar
@@ -381,12 +382,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    backgroundColor: Colors.surface,
+    borderRadius: Radii.md,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: Colors.border,
   },
   summaryProgress: {},
   summaryBadges: {
@@ -399,43 +400,43 @@ const styles = StyleSheet.create({
     gap: 3,
     paddingHorizontal: 7,
     paddingVertical: 3,
-    borderRadius: 20,
+    borderRadius: Radii.full,
   },
 
   // Category
   category: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
+    backgroundColor: Colors.surface,
+    borderRadius: Radii.md,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: Colors.border,
     overflow: 'hidden',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 3,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
       },
-      android: { elevation: 1 },
+      android: { elevation: 3 },
     }),
   },
   categoryHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: Colors.divider,
   },
   categoryLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: Spacing.sm,
     flex: 1,
   },
   categoryLabel: {
-    color: '#111827',
+    color: Colors.textPrimary,
   },
   categoryRight: {
     flexDirection: 'row',
@@ -456,14 +457,14 @@ const styles = StyleSheet.create({
 
   // Item row
   itemRow: {
-    paddingHorizontal: 14,
+    paddingHorizontal: Spacing.lg,
     paddingVertical: 2,
   },
   itemMain: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingVertical: 8,
+    paddingVertical: Spacing.sm,
   },
   statusBadge: {
     width: 30,
@@ -474,17 +475,17 @@ const styles = StyleSheet.create({
   },
   itemLabel: {
     flex: 1,
-    color: '#374151',
+    color: Colors.textPrimary,
   },
   notesInput: {
-    backgroundColor: '#f9fafb',
-    borderRadius: 8,
+    backgroundColor: Colors.inputBg,
+    borderRadius: Radii.sm,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    borderColor: Colors.border,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
     fontSize: 13,
-    color: '#1a1a1a',
+    color: Colors.textPrimary,
     marginBottom: 6,
     minHeight: 52,
     textAlignVertical: 'top',

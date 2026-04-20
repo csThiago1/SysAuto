@@ -2,6 +2,7 @@
 import React, { useMemo } from 'react';
 import {
   ActivityIndicator,
+  Dimensions,
   Image,
   StyleSheet,
   TouchableOpacity,
@@ -9,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
+import { Colors, Radii, Spacing } from '@/constants/theme';
 import { usePhotoStore, type PhotoQueueItem } from '@/stores/photo.store';
 
 // ─── Slot definitions ─────────────────────────────────────────────────────────
@@ -61,22 +63,22 @@ function StatusOverlay({ status, hasAnnotations }: StatusOverlayProps): React.Re
     <View style={styles.statusOverlay}>
       {hasAnnotations && (
         <View style={[styles.statusBubble, styles.statusBubbleAnnotated]}>
-          <Ionicons name="pencil" size={11} color="#ffffff" />
+          <Ionicons name="pencil" size={11} color={Colors.textPrimary} />
         </View>
       )}
       {status === 'done' && (
         <View style={[styles.statusBubble, styles.statusBubbleDone]}>
-          <Ionicons name="checkmark" size={12} color="#ffffff" />
+          <Ionicons name="checkmark" size={12} color={Colors.textPrimary} />
         </View>
       )}
       {status === 'uploading' && (
         <View style={[styles.statusBubble, styles.statusBubbleUploading]}>
-          <ActivityIndicator size="small" color="#ffffff" />
+          <ActivityIndicator size="small" color={Colors.textPrimary} />
         </View>
       )}
       {status === 'pending' && (
         <View style={[styles.statusBubble, styles.statusBubblePending]}>
-          <Ionicons name="time-outline" size={12} color="#ffffff" />
+          <Ionicons name="time-outline" size={12} color={Colors.textPrimary} />
         </View>
       )}
       {status === 'error' && (
@@ -120,7 +122,7 @@ function SlotCard({ slotKey: _slotKey, label, icon, photo, onPress }: SlotCardPr
           <Ionicons
             name={icon as React.ComponentProps<typeof Ionicons>['name']}
             size={32}
-            color="#9ca3af"
+            color={Colors.textSecondary}
           />
           <Text variant="caption" style={styles.slotLabel}>
             {label}
@@ -302,7 +304,7 @@ export function PhotoSlotGrid({
           onPress={() => onSlotPress(`extra_${nextExtraIndex}`, folder, checklistType)}
           activeOpacity={0.75}
         >
-          <Ionicons name="add-circle-outline" size={20} color="#e31b1b" />
+          <Ionicons name="add-circle-outline" size={20} color={Colors.brand} />
           <Text variant="label" style={styles.addExtraLabel}>
             Adicionar foto
           </Text>
@@ -314,34 +316,38 @@ export function PhotoSlotGrid({
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-const SLOT_SIZE = 160;
-const SLOT_GAP = 12;
+const COLUMNS = 3;
+const SLOT_GAP = 8;
+const HORIZONTAL_PADDING = 32; // Spacing.lg * 2
+const SLOT_SIZE = Math.floor(
+  (Dimensions.get('window').width - HORIZONTAL_PADDING - SLOT_GAP * (COLUMNS - 1)) / COLUMNS
+);
 
 const styles = StyleSheet.create({
   container: { gap: 20 },
   progressContainer: { gap: 6 },
   progressRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  progressLabel: { color: '#6b7280' },
-  progressCount: { color: '#6b7280', fontWeight: '600' },
-  progressTrack: { height: 6, backgroundColor: '#e5e7eb', borderRadius: 3, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: '#e31b1b', borderRadius: 3 },
+  progressLabel: { color: Colors.textTertiary },
+  progressCount: { color: Colors.textTertiary, fontWeight: '600' },
+  progressTrack: { height: 6, backgroundColor: Colors.border, borderRadius: 3, overflow: 'hidden' },
+  progressFill: { height: '100%', backgroundColor: Colors.brand, borderRadius: 3 },
   section: { gap: 12 },
-  sectionHeader: { color: '#374151' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: SLOT_GAP },
+  sectionHeader: { color: Colors.textSecondary },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: SLOT_GAP, rowGap: SLOT_GAP },
   slotCard: {
     width: SLOT_SIZE,
     height: SLOT_SIZE,
-    borderRadius: 12,
+    borderRadius: Radii.md,
     overflow: 'hidden',
-    backgroundColor: '#f9fafb',
+    backgroundColor: Colors.surface,
     borderWidth: 1.5,
-    borderColor: '#e5e7eb',
+    borderColor: Colors.border,
     borderStyle: 'dashed',
     position: 'relative',
   },
-  slotEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 8 },
-  slotLabel: { textAlign: 'center', color: '#9ca3af' },
-  slotImage: { width: '100%', height: '100%', borderStyle: 'solid', borderColor: '#e5e7eb' },
+  slotEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.sm, padding: Spacing.sm },
+  slotLabel: { textAlign: 'center', color: Colors.textSecondary },
+  slotImage: { width: '100%', height: '100%', borderStyle: 'solid', borderColor: Colors.border },
   statusOverlay: {
     position: 'absolute',
     bottom: 6,
@@ -350,23 +356,23 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   statusBubble: { width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
-  statusBubbleDone: { backgroundColor: '#16a34a' },
-  statusBubbleUploading: { backgroundColor: '#3b82f6' },
-  statusBubblePending: { backgroundColor: '#9ca3af' },
-  statusBubbleError: { backgroundColor: '#ef4444' },
+  statusBubbleDone: { backgroundColor: Colors.success },
+  statusBubbleUploading: { backgroundColor: Colors.info },
+  statusBubblePending: { backgroundColor: Colors.textSecondary },
+  statusBubbleError: { backgroundColor: Colors.error },
   statusBubbleAnnotated: { backgroundColor: '#7c3aed' },
-  statusErrorText: { color: '#ffffff', fontSize: 13, fontWeight: '700', lineHeight: 16 },
+  statusErrorText: { color: Colors.textPrimary, fontSize: 13, fontWeight: '700', lineHeight: 16 },
   addExtraButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
     borderWidth: 1.5,
-    borderColor: '#e31b1b',
+    borderColor: Colors.brand,
     borderStyle: 'dashed',
-    borderRadius: 12,
+    borderRadius: Radii.md,
     alignSelf: 'flex-start',
   },
-  addExtraLabel: { color: '#e31b1b' },
+  addExtraLabel: { color: Colors.brand },
 });

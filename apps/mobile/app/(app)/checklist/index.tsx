@@ -113,7 +113,7 @@ export default function ChecklistIndexScreen(): React.JSX.Element {
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={['bottom']}>
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       {/* Header */}
       <View style={styles.header}>
         <Text variant="heading2">Checklists</Text>

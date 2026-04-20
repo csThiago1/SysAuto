@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth.store';
@@ -79,7 +80,16 @@ async function registerForPushNotifications(): Promise<void> {
   }
 
   try {
-    const tokenData = await Notifications.getExpoPushTokenAsync();
+    // projectId é obrigatório no Expo Go — se não estiver no app.json/EAS, pula silenciosamente
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId as string | undefined;
+    if (!projectId) {
+      if (__DEV__) {
+        // eslint-disable-next-line no-console
+        console.log('[PushNotifications] projectId não configurado — token ignorado em dev');
+      }
+      return;
+    }
+    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
     const expoPushToken = tokenData.data;
 
     // Registrar no backend

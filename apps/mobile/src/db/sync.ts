@@ -3,9 +3,10 @@ import { Q } from '@nozbe/watermelondb';
 
 import { database } from './index';
 import { ServiceOrder } from './models/ServiceOrder';
-import { API_BASE_URL } from '@/lib/constants';
+import { API_BASE_URL, getTenantDomain } from '@/lib/constants';
 import { useAuthStore } from '@/stores/auth.store';
 import { useSyncStore } from '@/stores/sync.store';
+import { usePhotoStore } from '@/stores/photo.store';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -41,7 +42,7 @@ async function fetchSyncPull(lastPulledAt: number | undefined): Promise<SyncPull
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'X-Tenant-Domain': `${activeCompany}.localhost`,
+    'X-Tenant-Domain': getTenantDomain(activeCompany),
   };
 
   if (token) {
@@ -99,7 +100,7 @@ export async function syncServiceOrders(): Promise<void> {
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token ?? ''}`,
-                'X-Tenant-Domain': `${company ?? 'dscar'}.localhost`,
+                'X-Tenant-Domain': getTenantDomain(company ?? 'dscar'),
               },
               body: JSON.stringify({
                 customer_name: record.customerName,
@@ -117,6 +118,7 @@ export async function syncServiceOrders(): Promise<void> {
             });
             if (res.ok) {
               const data = (await res.json()) as { id: string; number: number };
+              const localId = record.id; // WatermelonDB UUID local
               await database.write(async () => {
                 await record.update((r) => {
                   r.remoteId = data.id;
@@ -124,6 +126,9 @@ export async function syncServiceOrders(): Promise<void> {
                   r.pushStatus = 'synced';
                 });
               });
+              // Atualiza o photo store: fotos tiradas offline usam o UUID local como osId.
+              // Agora que temos o remoteId do servidor, substituímos para que o upload funcione.
+              usePhotoStore.getState().updateOsId(localId, data.id);
             } else {
               await database.write(async () => {
                 await record.update((r) => { r.pushStatus = 'error'; });

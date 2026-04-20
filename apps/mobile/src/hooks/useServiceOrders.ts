@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Q } from '@nozbe/watermelondb';
 import type { Where } from '@nozbe/watermelondb/QueryDescription/type';
 
@@ -91,9 +91,6 @@ export const serviceOrderKeys = {
   details: () => [...serviceOrderKeys.all, 'detail'] as const,
   detail: (id: string) => [...serviceOrderKeys.details(), id] as const,
 };
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 
 // ─── useServiceOrdersList ─────────────────────────────────────────────────────
 //
@@ -223,12 +220,80 @@ export function useServiceOrdersList(filters: OSFilters): UseServiceOrdersListRe
   };
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function mapWdbToDetail(record: ServiceOrder): ServiceOrderDetailAPI {
+  return {
+    id: record.remoteId,
+    number: record.number,
+    status: record.status as OSStatus,
+    customer_name: record.customerName,
+    plate: record.vehiclePlate,
+    make: record.vehicleBrand,
+    model: record.vehicleModel,
+    year: record.vehicleYear ?? undefined,
+    color: record.vehicleColor ?? undefined,
+    customer_type: record.customerType,
+    os_type: record.osType,
+    parts_total: String(record.totalParts),
+    services_total: String(record.totalServices),
+    opened_at: new Date(record.createdAtRemote).toISOString(),
+    updated_at: new Date(record.updatedAtRemote).toISOString(),
+    consultant: record.consultantName
+      ? { id: '', email: '', full_name: record.consultantName }
+      : undefined,
+  };
+}
+
 // ─── useServiceOrder ──────────────────────────────────────────────────────────
+//
+// Estratégia híbrida:
+// 1. WatermelonDB observer (sempre ativo) — fonte de verdade para status/totais
+//    Reage instantaneamente quando o sync (polling 60s da lista) escreve dados.
+// 2. TanStack Query — busca extras da API (checklist_items, photos_count, etc.)
+//    Quando WDB detecta mudança em updatedAtRemote, invalida o cache para refetch.
+//
+// Online: merge WDB (real-time) + API (extras)
+// Offline: apenas WDB
 
 export function useServiceOrder(id: string): UseServiceOrderResult {
   const isOnline = useConnectivity();
+  const queryClient = useQueryClient();
 
-  // ── Online: fetch from API ───────────────────────────────────────────────────
+  // ── WatermelonDB observer — sempre ativo ─────────────────────────────────────
+  const [wdbRecord, setWdbRecord] = useState<ServiceOrder | null>(null);
+  const [isWdbLoading, setIsWdbLoading] = useState<boolean>(true);
+  const prevUpdatedAtRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!id) return;
+
+    setIsWdbLoading(true);
+    prevUpdatedAtRef.current = 0;
+
+    const collection = database.get<ServiceOrder>('service_orders');
+    const subscription = collection
+      .query(Q.where('remote_id', id))
+      .observe()
+      .subscribe((results) => {
+        const record = results[0] ?? null;
+        setWdbRecord(record);
+        setIsWdbLoading(false);
+
+        // Quando online, invalida cache TanStack se o sync trouxe dados novos
+        if (isOnline && record != null) {
+          const updatedAt = record.updatedAtRemote;
+          if (prevUpdatedAtRef.current !== 0 && updatedAt !== prevUpdatedAtRef.current) {
+            void queryClient.invalidateQueries({ queryKey: serviceOrderKeys.detail(id) });
+          }
+          prevUpdatedAtRef.current = updatedAt;
+        }
+      });
+
+    return () => subscription.unsubscribe();
+  }, [id, isOnline, queryClient]);
+
+  // ── Online: busca extras da API ───────────────────────────────────────────────
   const { data: apiOrder, isLoading: isApiLoading } = useQuery({
     queryKey: serviceOrderKeys.detail(id),
     queryFn: () => api.get<ServiceOrderDetailAPI>(`/service-orders/${id}/`),
@@ -236,69 +301,36 @@ export function useServiceOrder(id: string): UseServiceOrderResult {
     staleTime: 1000 * 60 * 2,
   });
 
-  // ── Offline: observe WatermelonDB by remoteId ────────────────────────────────
-  const [localOrder, setLocalOrder] = useState<ServiceOrderDetailAPI | null>(null);
-  const [isLocalLoading, setIsLocalLoading] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (isOnline || !id) return;
-
-    let cancelled = false;
-    setIsLocalLoading(true);
-
-    const collection = database.get<ServiceOrder>('service_orders');
-    const query = collection.query(Q.where('remote_id', id)).observe();
-
-    const subscription = query.subscribe((results) => {
-      if (!cancelled) {
-        const record = results[0];
-        if (record) {
-          // Map WatermelonDB model fields back to the API shape.
-          const mapped: ServiceOrderDetailAPI = {
-            id: record.remoteId,
-            number: record.number,
-            status: record.status as OSStatus,
-            customer_name: record.customerName,
-            plate: record.vehiclePlate,
-            make: record.vehicleBrand,
-            model: record.vehicleModel,
-            year: record.vehicleYear ?? undefined,
-            color: record.vehicleColor ?? undefined,
-            customer_type: record.customerType,
-            os_type: record.osType,
-            parts_total: String(record.totalParts),
-            services_total: String(record.totalServices),
-            opened_at: new Date(record.createdAtRemote).toISOString(),
-            updated_at: new Date(record.updatedAtRemote).toISOString(),
-            consultant: record.consultantName
-              ? { id: '', email: '', full_name: record.consultantName }
-              : undefined,
-          };
-          setLocalOrder(mapped);
-        } else {
-          setLocalOrder(null);
-        }
-        setIsLocalLoading(false);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-      subscription.unsubscribe();
-    };
-  }, [isOnline, id]);
-
+  // ── Offline: apenas WDB ───────────────────────────────────────────────────────
   if (!isOnline) {
     return {
-      order: localOrder,
-      isLoading: isLocalLoading,
+      order: wdbRecord != null ? mapWdbToDetail(wdbRecord) : null,
+      isLoading: isWdbLoading,
       isOffline: true,
     };
   }
 
+  // ── Online: merge API (extras) + WDB (status/totais em tempo real) ────────────
+  let order: ServiceOrderDetailAPI | null = null;
+  if (apiOrder != null) {
+    order = wdbRecord != null
+      ? {
+          ...apiOrder,
+          // Sobrescreve com campos WDB para refletir mudanças em tempo real
+          status: wdbRecord.status as OSStatus,
+          parts_total: String(wdbRecord.totalParts),
+          services_total: String(wdbRecord.totalServices),
+        }
+      : apiOrder;
+  } else if (wdbRecord != null) {
+    // API ainda não respondeu — usa WDB como dados iniciais
+    order = mapWdbToDetail(wdbRecord);
+  }
+
   return {
-    order: apiOrder ?? null,
-    isLoading: isApiLoading,
+    order,
+    // Carregando apenas enquanto nenhuma fonte entregou dados
+    isLoading: isApiLoading && isWdbLoading,
     isOffline: false,
   };
 }

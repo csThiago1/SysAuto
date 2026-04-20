@@ -130,7 +130,7 @@ export default function ChecklistDetailScreen(): React.ReactElement {
   const showUploadButton = (pendingCount > 0 || pendingItemCount > 0) && isOnline;
 
   return (
-    <SafeAreaView style={styles.safe} edges={['bottom']}>
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       {/* ── Sticky header ── */}
       <View style={styles.header}>
         <TouchableOpacity
