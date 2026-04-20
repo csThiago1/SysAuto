@@ -1192,6 +1192,72 @@ Nenhuma sprint ativa no momento.
 
 ## 📦 Sprints Entregues
 
+### MO-9 — Capacidade + Variâncias + Auditoria — Abril 2026 ✅
+**Extensões em `apps.service_orders`, `apps.pricing_tech`, `apps.pricing_engine`**
+
+Backend:
+- `CapacidadeTecnico`: horas/dia por técnico × categoria, dias_semana JSON, vigência temporal
+- `BloqueioCapacidade`: bloqueio pontual (férias, licença) — CapacidadeService desconta ao calcular
+- `CapacidadeService`: `utilizacao()` (horas disponíveis vs. comprometidas), `heatmap_semana()` (7 dias), `proxima_data_disponivel()`
+- `VarianciaFicha`: desvio horas e insumos estimados vs. realizados (por ServicoCanonico + mês)
+- `VarianciaPecaCusto`: desvio custo snapshot motor vs. custo NF-e real, flag `alerta` quando |Δ| > 15%
+- `VarianciaService.gerar_variancia_periodo()`: idempotente via `update_or_create`, dispara via `task_gerar_variancias_mensais`
+- `AuditoriaMotor`: log imutável de cada chamada ao motor — operação, contexto, resultado, tempo_ms, sucesso
+- `AuditoriaService.log()`: context manager → grava AuditoriaMotor sem interromper fluxo principal
+- `AuditoriaService.healthcheck()`: total_chamadas, taxa_erro_pct, tempo_medio_ms
+- `setup_motor_precificacao` management command: onboarding idempotente de MargemOperacao padrão + CustoHoraFallback por Empresa
+- Migrations: `service_orders/0020_capacity_models`, `pricing_tech/0002_variancia_models`, `pricing_engine/0005_auditoria_motor`
+- Endpoints: `GET /api/v1/capacidade/*` (utilizacao, heatmap-semana, proxima-data, capacidades/, bloqueios/), `GET /api/v1/pricing/variancias/fichas|pecas/` (+ `POST fichas/gerar/`), `GET /api/v1/pricing/engine/auditoria/`, `GET /api/v1/pricing/engine/healthcheck/`
+
+Frontend:
+- `capacidade.types.ts` — tipos CapacidadeTecnico, BloqueioCapacidade, UtilizacaoCapacidade, HeatmapDia, VarianciaFicha, VarianciaPecaCusto, AuditoriaMotor, MotorHealthcheck
+- `useCapacidade.ts` — 14 hooks TanStack Query v5
+- `/capacidade` — heatmap semanal (verde/amarelo/vermelho), CRUD capacidades/bloqueios
+- `/configuracao-motor/variancias` — tabs Fichas/Peças, filtro por mês, badge alertas, botão gerar
+- `/auditoria/motor` — KPIs healthcheck + tabela de auditorias com filtros operação/erros
+- Sidebar: seção "OPERAÇÃO" com Capacidade, Variâncias, Auditoria Motor
+
+**Padrões estabelecidos:**
+- `CapacidadeService` usa `select_for_update` não é necessário (leitura) — mas `update_or_create` nas variâncias garante idempotência
+- `AuditoriaService` retorna `False` em `__exit__` — nunca suprime exceção original
+- `task_gerar_variancias_mensais` usa mês anterior se `mes_referencia_iso` omitido — padrão para agendamento Celery beat
+- `dias_semana` usa `_dias_semana_default` (callable) não lista literal — Django JSONField exige callable
+
+---
+
+### MO-8 — Benchmark IA + Ingestão PDF + Circuito de Aprendizado — Abril 2026 ✅
+**App `apps.pricing_benchmark` (TENANT_APP) — coleta, processamento e sugestão IA**
+
+Backend:
+- `BenchmarkFonte`: empresa FK, tipo (seguradora_pdf/seguradora_json/cotacao_externa/concorrente), confiabilidade Decimal
+- `BenchmarkIngestao`: fonte FK, arquivo FileField, status (recebido/processando/concluido/erro), contadores, log_erro
+- `BenchmarkAmostra`: ingestao+fonte FKs, tipo_item (servico/peca), alias_match_confianca, descricao_bruta, valor_praticado; 3 índices DB
+- `SugestaoIA`: orcamento FK nullable, briefing, veiculo_info JSON, resposta_raw JSON, avaliacao, modelo_usado, tempo_resposta_ms
+- `PDFIngestionService.processar()`: pdfplumber, regex valor, AliasMatcher instância (score 0-100), confianca = score/100.0
+- `AliasFeedbackService.aceitar_match()`: cria AliasServico/AliasPeca + atualiza confianca → 1.00 + dispatcha reembed
+- `AliasFeedbackService.descartar()`: marca descartada=True com motivo
+- `IAComposicaoService.sugerir()`: Claude Sonnet 4.6, temperature=0.3, SYSTEM_PROMPT proíbe preço, validação regex TERMOS_PRECO (Armadilha A10)
+- `BenchmarkService` real (substitui stub MO-6): two-pass query (específico ≥ 8 amostras → senão genérico), p90 via statistics.quantiles (Armadilha P4)
+- Migrations: `pricing_benchmark/0001_initial` (FK `persons.Person` não Pessoa, UUID padrão PaddockBaseModel)
+- Endpoints: `GET/POST benchmark/fontes|ingestoes|amostras/`, `POST amostras/{id}/aceitar-match|descartar/`, `GET benchmark/estatisticas/servico/{id}/`, `POST ia/sugestoes/sugerir-composicao/`, `POST ia/{id}/avaliar/`
+
+Frontend:
+- `benchmark.types.ts` — 12 tipos incluindo BenchmarkFonte, BenchmarkAmostra, SugestaoIA, BenchmarkEstatisticas
+- `useBenchmark.ts` — 12 hooks
+- `/benchmark/fontes` — tabela CRUD + form inline
+- `/benchmark/ingestoes` — upload FormData + lista expandível com amostras
+- `/benchmark/revisao` — split-panel: lista pendentes / painel aceitar-match ou descartar
+- `/benchmark/estatisticas` — filtros UUID+segmento+tamanho, KPIs p50/p90/min/max/count
+- Sidebar: seção "BENCHMARK" com 4 sub-itens
+
+**Padrões estabelecidos:**
+- `AliasMatcher()` é instância, não static — `match_servico(descricao, top_k=1)` retorna `list[MatchResult]` com `score` 0-100
+- Armadilha A7: benchmark é teto, nunca alvo — `min(preco_calculado, p90)`
+- Armadilha A10: IA nunca sugere preço — SYSTEM_PROMPT + `_validar()` regex + schema sem campos de preço
+- Armadilha P4: two-pass benchmark — específico primeiro; se < 8, incorpora genérico
+
+---
+
 ### MO-7 — Orçamento + OS integrada ao Motor — Abril 2026 ✅
 **App `apps.quotes` (TENANT_APP) + extensão `apps.service_orders` com entidades de execução**
 
