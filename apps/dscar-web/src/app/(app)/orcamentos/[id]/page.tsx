@@ -261,9 +261,9 @@ export default function OrcamentoDetailPage() {
 
       {/* Sem intervenções */}
       {orc.intervencoes.length === 0 && orc.itens_adicionais.length === 0 && (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
-          Nenhuma intervenção adicionada. Use a API para adicionar via{" "}
-          <code className="text-white/60">POST /api/v1/quotes/orcamentos/{id}/intervencoes/</code>
+        <div className="rounded-lg border border-dashed border-white/10 p-10 text-center">
+          <p className="text-sm text-white/40">Nenhuma intervenção adicionada.</p>
+          <p className="text-xs text-white/25 mt-1">As peças e serviços serão listados aqui após serem incluídos no orçamento.</p>
         </div>
       )}
     </div>
