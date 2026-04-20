@@ -10,15 +10,17 @@ export interface CalendarOS {
   customer_type: "private" | "insurer"
   status: string
   status_display: string
-  scheduling_date: string | null      // ISO datetime — evento de entrada
-  estimated_delivery_date: string | null  // YYYY-MM-DD — evento de entrega
+  scheduling_date: string | null          // ISO datetime — evento de entrada
+  estimated_delivery_date: string | null  // YYYY-MM-DD — previsão (sem hora)
+  delivery_date: string | null            // ISO datetime — agendamento de retirada (com hora)
 }
 
 export interface CalendarEvent {
-  type: "entry" | "delivery"
+  /** entry=entrada (azul), delivery=previsão s/hora (verde), scheduled_delivery=retirada agendada c/hora (laranja) */
+  type: "entry" | "delivery" | "scheduled_delivery"
   os: CalendarOS
   date: Date
-  datetime: Date | null  // apenas para type=entry
+  datetime: Date | null  // null apenas para type=delivery (sem hora precisa)
 }
 
 export interface SchedulingPayload {

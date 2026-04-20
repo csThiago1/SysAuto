@@ -38,7 +38,6 @@ export interface OverdueOSItem {
 }
 
 export interface TeamMember {
-  email: string
   name: string
   delivered_month: number
   open_count: number
