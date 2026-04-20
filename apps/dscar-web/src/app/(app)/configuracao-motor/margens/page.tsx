@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { toast } from "sonner"
-import { Percent, Plus, Trash2 } from "lucide-react"
+import { Percent, Plus, Trash2, Search, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -39,6 +39,7 @@ import {
   useMarkupPecaDelete,
 } from "@/hooks/usePricingEngine"
 import { useSegmentos } from "@/hooks/usePricingProfile"
+import { usePecasCanonicas } from "@/hooks/usePricingCatalog"
 import type { MargemOperacaoCreate, MarkupPecaCreate, TipoOperacao } from "@paddock/types"
 
 const TIPO_OPERACAO_LABELS: Record<TipoOperacao, string> = {
@@ -272,6 +273,11 @@ function MarkupPecaTab({ empresaId }: { empresaId: string }) {
     vigente_desde: new Date().toISOString().slice(0, 10),
   })
 
+  // Peça canônica search
+  const [pecaSearch, setPecaSearch] = useState("")
+  const [pecaNome, setPecaNome] = useState("")
+  const { data: pecas = [] } = usePecasCanonicas(pecaSearch.length >= 2 ? pecaSearch : undefined)
+
   const ativos = markups.filter((m) => m.is_active)
 
   async function handleSave() {
@@ -389,19 +395,53 @@ function MarkupPecaTab({ empresaId }: { empresaId: string }) {
           </SheetHeader>
           <div className="mt-6 space-y-4">
             <p className="text-xs text-white/50">
-              Informe a peça canônica (ID UUID) OU a faixa de custo, nunca ambos.
+              Informe a peça canônica OU a faixa de custo, nunca ambos.
             </p>
 
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">ID da Peça Canônica (opcional)</Label>
-              <Input
-                className="bg-white/5 border-white/10 text-white font-mono text-xs"
-                placeholder="uuid da peça canônica"
-                value={form.peca_canonica ?? ""}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, peca_canonica: e.target.value || null }))
-                }
-              />
+              <Label className="text-white/70 text-xs">Peça canônica (opcional)</Label>
+              {pecaNome ? (
+                <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-md px-3 py-2">
+                  <span className="text-sm text-white">{pecaNome}</span>
+                  <button
+                    type="button"
+                    onClick={() => { setPecaNome(""); setPecaSearch(""); setForm((f) => ({ ...f, peca_canonica: null })) }}
+                    className="text-white/30 hover:text-white/70"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/30" />
+                    <Input
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/20 pl-8"
+                      placeholder="Buscar peça (ou deixar em branco para faixa)"
+                      value={pecaSearch}
+                      onChange={(e) => setPecaSearch(e.target.value)}
+                    />
+                  </div>
+                  {pecas.length > 0 && (
+                    <div className="rounded-md border border-white/10 overflow-hidden max-h-40 overflow-y-auto">
+                      {pecas.slice(0, 6).map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => {
+                            setForm((f) => ({ ...f, peca_canonica: p.id }))
+                            setPecaNome(p.nome)
+                            setPecaSearch("")
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/5 border-b border-white/5 last:border-0 transition-colors"
+                        >
+                          {p.nome}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">

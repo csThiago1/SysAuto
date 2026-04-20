@@ -23,6 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useBenchmarkFontes, useCreateBenchmarkFonte } from "@/hooks/useBenchmark"
+import { useEmpresas } from "@/hooks/usePricingProfile"
 import type { BenchmarkFonteTipo } from "@paddock/types"
 
 const TIPO_LABELS: Record<BenchmarkFonteTipo, string> = {
@@ -35,6 +36,8 @@ const TIPO_LABELS: Record<BenchmarkFonteTipo, string> = {
 export default function BenchmarkFontesPage() {
   const { data: fontes = [], isLoading } = useBenchmarkFontes()
   const { mutateAsync: criar, isPending } = useCreateBenchmarkFonte()
+  const { data: empresasData } = useEmpresas()
+  const empresas = empresasData ?? []
 
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({
@@ -49,7 +52,7 @@ export default function BenchmarkFontesPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.nome || !form.empresa_id) {
-      toast.error("Preencha nome e ID da empresa.")
+      toast.error("Preencha nome e selecione a empresa.")
       return
     }
     try {
@@ -112,13 +115,19 @@ export default function BenchmarkFontesPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">ID da Empresa *</Label>
-              <Input
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/20 font-mono text-xs"
+              <Label className="text-white/70 text-xs">Empresa *</Label>
+              <select
+                className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 value={form.empresa_id}
                 onChange={(e) => set("empresa_id", e.target.value)}
-                placeholder="UUID da empresa"
-              />
+              >
+                <option value="">Selecione a empresa</option>
+                {empresas.map((emp) => (
+                  <option key={emp.id} value={emp.id}>
+                    {emp.nome_fantasia || emp.razao_social}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="space-y-1.5">
               <Label className="text-white/70 text-xs">Confiabilidade (0–1)</Label>

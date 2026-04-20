@@ -43,6 +43,7 @@ import { Label } from "@/components/ui/label"
 import { TableSkeleton } from "@/components/ui/table-skeleton"
 import { useFichas, useNovaVersao } from "@/hooks/useFichaTecnica"
 import { useCategoriaMaoObra } from "@/hooks/useFichaTecnicaHelpers"
+import { useMateriaisCanonico } from "@/hooks/usePricingCatalog"
 import type {
   FichaTecnicaMaoObraItem,
   FichaTecnicaInsumoItem,
@@ -108,6 +109,7 @@ export default function FichaTecnicaDetalhe() {
 
   const { data: fichas = [], isLoading } = useFichas(servicoId)
   const { categoriasMaoObra } = useCategoriaMaoObra()
+  const { data: materiais = [] } = useMateriaisCanonico()
 
   // Ficha ativa atual conforme filtro de tipo pintura
   const fichaAtiva = fichas.find((f) => {
@@ -586,11 +588,20 @@ export default function FichaTecnicaDetalhe() {
                       key={field.id}
                       className="grid grid-cols-[1fr_80px_80px_auto_auto] gap-2 items-center"
                     >
-                      <Input
-                        placeholder="UUID do Material"
-                        className="h-9 text-xs"
-                        {...form.register(`insumos.${idx}.material_canonico`)}
-                      />
+                      <select
+                        className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                        value={form.watch(`insumos.${idx}.material_canonico`)}
+                        onChange={(e) => {
+                          form.setValue(`insumos.${idx}.material_canonico`, e.target.value)
+                          const mat = materiais.find((m) => m.id === e.target.value)
+                          if (mat) form.setValue(`insumos.${idx}.unidade`, mat.unidade_base)
+                        }}
+                      >
+                        <option value="">Selecione o material</option>
+                        {materiais.map((m) => (
+                          <option key={m.id} value={m.id}>{m.nome}</option>
+                        ))}
+                      </select>
                       <Input
                         placeholder="Qtde"
                         className="h-9"

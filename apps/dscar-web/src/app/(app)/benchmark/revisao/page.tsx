@@ -1,28 +1,39 @@
 "use client"
 
 import { useState } from "react"
-import { CheckCheck, Trash2, AlertCircle } from "lucide-react"
+import { CheckCheck, Trash2, AlertCircle, Search, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { useAmostrasPendentes, useAceitarMatch, useDescartarAmostra } from "@/hooks/useBenchmark"
+import { useServicosCanonico, usePecasCanonicas } from "@/hooks/usePricingCatalog"
 import type { BenchmarkAmostra } from "@paddock/types"
 
 export default function BenchmarkRevisaoPage() {
   const { data: pendentes = [], isLoading } = useAmostrasPendentes()
   const [selected, setSelected] = useState<BenchmarkAmostra | null>(null)
   const [canonicalId, setCanonicalId] = useState("")
+  const [canonicalNome, setCanonicalNome] = useState("")
+  const [canonicalSearch, setCanonicalSearch] = useState("")
   const [motivoDescarte, setMotivoDescarte] = useState("")
   const [showDescarte, setShowDescarte] = useState(false)
+
+  const { data: servicos = [] } = useServicosCanonico(
+    selected?.tipo_item !== "peca" && canonicalSearch.length >= 2 ? canonicalSearch : undefined
+  )
+  const { data: pecas = [] } = usePecasCanonicas(
+    selected?.tipo_item === "peca" && canonicalSearch.length >= 2 ? canonicalSearch : undefined
+  )
+  const resultadosBusca = selected?.tipo_item === "peca" ? pecas : servicos
 
   const { mutateAsync: aceitar, isPending: aceitando } = useAceitarMatch(selected?.id ?? "")
   const { mutateAsync: descartar, isPending: descartando } = useDescartarAmostra(selected?.id ?? "")
 
   async function handleAceitar() {
     if (!canonicalId.trim()) {
-      toast.error("Informe o UUID do canônico.")
+      toast.error("Selecione o serviço ou peça canônica.")
       return
     }
     try {
@@ -30,6 +41,8 @@ export default function BenchmarkRevisaoPage() {
       toast.success("Match aceito e alias criado!")
       setSelected(null)
       setCanonicalId("")
+      setCanonicalNome("")
+      setCanonicalSearch("")
     } catch {
       toast.error("Erro ao aceitar match.")
     }
@@ -90,6 +103,9 @@ export default function BenchmarkRevisaoPage() {
                     setSelected(a)
                     setShowDescarte(false)
                     setMotivoDescarte("")
+                    setCanonicalId("")
+                    setCanonicalNome("")
+                    setCanonicalSearch("")
                   }}
                 >
                   <div className="text-sm text-white truncate">{a.descricao_bruta}</div>
@@ -147,13 +163,51 @@ export default function BenchmarkRevisaoPage() {
             {!showDescarte ? (
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label className="text-white/70 text-xs">UUID do Canônico aceito</Label>
-                  <Input
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/20 font-mono text-xs"
-                    placeholder="UUID do ServicoCanonico ou PecaCanonica"
-                    value={canonicalId}
-                    onChange={(e) => setCanonicalId(e.target.value)}
-                  />
+                  <Label className="text-white/70 text-xs">
+                    {selected?.tipo_item === "peca" ? "Peça canônica" : "Serviço canônico"} *
+                  </Label>
+                  {canonicalNome ? (
+                    <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-md px-3 py-2">
+                      <span className="text-sm text-white">{canonicalNome}</span>
+                      <button
+                        type="button"
+                        onClick={() => { setCanonicalId(""); setCanonicalNome(""); setCanonicalSearch("") }}
+                        className="text-white/30 hover:text-white/70"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/30" />
+                        <Input
+                          className="bg-white/5 border-white/10 text-white placeholder:text-white/20 pl-8"
+                          placeholder={selected?.tipo_item === "peca" ? "Buscar peça..." : "Buscar serviço..."}
+                          value={canonicalSearch}
+                          onChange={(e) => setCanonicalSearch(e.target.value)}
+                        />
+                      </div>
+                      {resultadosBusca.length > 0 && (
+                        <div className="rounded-md border border-white/10 overflow-hidden max-h-40 overflow-y-auto">
+                          {resultadosBusca.slice(0, 6).map((item) => (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => {
+                                setCanonicalId(item.id)
+                                setCanonicalNome(item.nome)
+                                setCanonicalSearch("")
+                              }}
+                              className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-white/5 border-b border-white/5 last:border-0 transition-colors"
+                            >
+                              <span className="text-sm text-white">{item.nome}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <Button

@@ -9,9 +9,10 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Route } from "next";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Search, X } from "lucide-react";
 import { z } from "zod";
 import { useCreateReceivable } from "@/hooks";
+import { useCustomers } from "@/hooks/useCustomers";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,9 +26,7 @@ const RECEIVABLE_ORIGINS = ["MAN", "OS", "NFE", "NFCE", "NFSE"] as const;
 const receivableSchema = z.object({
   description: z.string().min(1, "Descrição obrigatória"),
   customer_name: z.string().min(1, "Nome do cliente obrigatório"),
-  customer_id: z
-    .string()
-    .uuid("ID do cliente deve ser um UUID válido"),
+  customer_id: z.string().min(1, "Selecione um cliente"),
   amount: z
     .string()
     .min(1, "Valor obrigatório")
@@ -97,6 +96,12 @@ export default function NovoContaReceberPage(): React.ReactElement {
     origin: "MAN",
     notes: "",
   });
+
+  // Customer search
+  const [clienteSearch, setClienteSearch] = React.useState("");
+  const [clienteSelecionado, setClienteSelecionado] = React.useState<{ id: string; name: string; document_masked: string } | null>(null);
+  const { data: clientesData } = useCustomers(clienteSearch);
+  const clientes = clientesData?.results ?? [];
 
   const [errors, setErrors] = React.useState<FormErrors>({});
 
@@ -198,22 +203,66 @@ export default function NovoContaReceberPage(): React.ReactElement {
             <h2 className="text-sm font-semibold text-neutral-900 border-b border-neutral-100 pb-2">
               Cliente
             </h2>
-            <FormField label="Nome do cliente *" error={errors.customer_name}>
-              <Input
-                value={form.customer_name}
-                onChange={(e) => setField("customer_name", e.target.value)}
-                placeholder="Ex: João da Silva"
-                autoFocus
-              />
-            </FormField>
-            <FormField label="ID do cliente (UUID) *" error={errors.customer_id}>
-              <Input
-                value={form.customer_id}
-                onChange={(e) => setField("customer_id", e.target.value)}
-                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                className="font-mono text-xs"
-              />
-            </FormField>
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-xs font-medium text-neutral-700">Cliente *</Label>
+              {errors.customer_id && <p className="text-xs text-red-600">{errors.customer_id}</p>}
+              {clienteSelecionado ? (
+                <div className="flex items-center justify-between rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2">
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900">{clienteSelecionado.name}</p>
+                    <p className="text-xs text-neutral-500">{clienteSelecionado.document_masked}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setClienteSelecionado(null);
+                      setClienteSearch("");
+                      setField("customer_id", "");
+                      setField("customer_name", "");
+                    }}
+                    className="text-neutral-400 hover:text-neutral-700"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400" />
+                    <Input
+                      className="pl-8"
+                      placeholder="Buscar por nome ou CPF..."
+                      value={clienteSearch}
+                      onChange={(e) => setClienteSearch(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                  {clientes.length > 0 && (
+                    <div className="rounded-md border border-neutral-200 overflow-hidden">
+                      {clientes.slice(0, 5).map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => {
+                            setClienteSelecionado(c);
+                            setClienteSearch("");
+                            setField("customer_id", c.id);
+                            setField("customer_name", c.name);
+                          }}
+                          className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-neutral-50 border-b border-neutral-100 last:border-0 transition-colors"
+                        >
+                          <span className="text-sm text-neutral-900">{c.name}</span>
+                          <span className="text-xs text-neutral-500">{c.document_masked}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {clienteSearch.length >= 2 && clientes.length === 0 && (
+                    <p className="text-xs text-neutral-500 text-center py-2">Nenhum cliente encontrado.</p>
+                  )}
+                </div>
+              )}
+            </div>
           </section>
 
           {/* Documento */}

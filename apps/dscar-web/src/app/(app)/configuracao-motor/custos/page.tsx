@@ -39,6 +39,8 @@ import {
   useCreateParametroRateio,
   useDebugCustoHora,
 } from "@/hooks/usePricingCost"
+import { useEmpresas } from "@/hooks/usePricingProfile"
+import { useCategoriasMaoObra } from "@/hooks/usePricingCatalog"
 import type { CustoHoraFallbackCreate, ParametroCustoHoraCreate, ParametroRateioCreate } from "@paddock/types"
 import Link from "next/link"
 import type { Route } from "next"
@@ -64,6 +66,9 @@ function AbaFallback() {
 
   const { data, isLoading } = useCustosHoraFallback()
   const createMutation = useCreateCustoHoraFallback()
+  const { data: empresasData } = useEmpresas()
+  const empresas = empresasData ?? []
+  const { data: categorias = [] } = useCategoriasMaoObra()
 
   const fallbacks = data?.results ?? []
 
@@ -166,22 +171,30 @@ function AbaFallback() {
           </SheetHeader>
           <div className="mt-6 space-y-4">
             <div className="space-y-1">
-              <Label className="text-xs text-white/60">Empresa (UUID)</Label>
-              <Input
-                placeholder="UUID da empresa"
+              <Label className="text-xs text-white/60">Empresa</Label>
+              <select
+                className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 value={form.empresa ?? ""}
                 onChange={(e) => setForm({ ...form, empresa: e.target.value })}
-                className="bg-white/5 border-white/10 text-white text-sm"
-              />
+              >
+                <option value="">Selecione a empresa</option>
+                {empresas.map((emp) => (
+                  <option key={emp.id} value={emp.id}>{emp.nome_fantasia || emp.razao_social}</option>
+                ))}
+              </select>
             </div>
             <div className="space-y-1">
-              <Label className="text-xs text-white/60">Categoria (UUID)</Label>
-              <Input
-                placeholder="UUID da CategoriaMaoObra"
+              <Label className="text-xs text-white/60">Categoria de mão de obra</Label>
+              <select
+                className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 value={form.categoria ?? ""}
                 onChange={(e) => setForm({ ...form, categoria: e.target.value })}
-                className="bg-white/5 border-white/10 text-white text-sm"
-              />
+              >
+                <option value="">Selecione a categoria</option>
+                {categorias.map((c) => (
+                  <option key={c.id} value={c.id}>{c.nome}</option>
+                ))}
+              </select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -242,6 +255,8 @@ function AbaParametros() {
   const { data: custoHoraData } = useParametrosCustoHora()
   const createRateio = useCreateParametroRateio()
   const createCustoHora = useCreateParametroCustoHora()
+  const { data: empresasData } = useEmpresas()
+  const empresas = empresasData ?? []
 
   const [rateioForm, setRateioForm] = useState<Partial<ParametroRateioCreate>>({
     vigente_desde: new Date().toISOString().split("T")[0],
@@ -266,7 +281,7 @@ function AbaParametros() {
 
   async function handleSaveRateio() {
     if (!empresaId) {
-      toast.error("Informe o UUID da empresa.")
+      toast.error("Selecione a empresa.")
       return
     }
     try {
@@ -279,7 +294,7 @@ function AbaParametros() {
 
   async function handleSaveCustoHora() {
     if (!empresaId) {
-      toast.error("Informe o UUID da empresa.")
+      toast.error("Selecione a empresa.")
       return
     }
     try {
@@ -299,14 +314,18 @@ function AbaParametros() {
         </p>
       </div>
 
-      <div className="space-y-1">
-        <Label className="text-xs text-white/60">Empresa (UUID) — aplica a todos os formulários abaixo</Label>
-        <Input
-          placeholder="UUID da empresa"
+      <div className="space-y-1 max-w-sm">
+        <Label className="text-xs text-white/60">Empresa — aplica a todos os formulários abaixo</Label>
+        <select
+          className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
           value={empresaId}
           onChange={(e) => setEmpresaId(e.target.value)}
-          className="bg-white/5 border-white/10 text-white text-sm max-w-sm"
-        />
+        >
+          <option value="">Selecione a empresa</option>
+          {empresas.map((emp) => (
+            <option key={emp.id} value={emp.id}>{emp.nome_fantasia || emp.razao_social}</option>
+          ))}
+        </select>
       </div>
 
       {/* Parâmetro de Rateio */}
@@ -519,6 +538,8 @@ function AbaSimulacao() {
   const [resultado, setResultado] = useState<Record<string, unknown> | null>(null)
 
   const debugMutation = useDebugCustoHora()
+  const { data: empresasData } = useEmpresas()
+  const empresas = empresasData ?? []
 
   async function handleSimular() {
     if (!form.categoria_codigo || !form.data || !form.empresa_id) {
@@ -563,13 +584,17 @@ function AbaSimulacao() {
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-xs text-white/60">Empresa (UUID)</Label>
-          <Input
-            placeholder="UUID da empresa"
+          <Label className="text-xs text-white/60">Empresa</Label>
+          <select
+            className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
             value={form.empresa_id}
             onChange={(e) => setForm({ ...form, empresa_id: e.target.value })}
-            className="bg-white/5 border-white/10 text-white text-sm"
-          />
+          >
+            <option value="">Selecione a empresa</option>
+            {empresas.map((emp) => (
+              <option key={emp.id} value={emp.id}>{emp.nome_fantasia || emp.razao_social}</option>
+            ))}
+          </select>
         </div>
         <Button
           onClick={handleSimular}
