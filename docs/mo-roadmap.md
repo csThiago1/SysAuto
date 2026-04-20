@@ -42,7 +42,7 @@ Pipeline recomendado por sprint:
 | 4 | MO-4 | Ficha técnica | FichaTecnicaServico + multiplicadores + resolução por contexto | `mo-sprint-04-ficha-tecnica.md` |
 | 5 | MO-5 | Estoque + NFe entrada | UnidadeFisica, LoteInsumo, NFeEntradaService, etiquetagem ZPL | `mo-sprint-05-estoque-nfe.md` |
 | 6 | MO-6 | Motor de precificação | Cálculo completo + CalculoCustoSnapshot + MarkupPeca | `mo-sprint-06-motor-precificacao.md` |
-| 7 | MO-7 | Orçamento + OS + picking | Orcamento com versões + OS + reserva forçada + apontamento | `mo-sprint-07-orcamento-os.md` |
+| 7 | MO-7 | Orçamento + OS + picking | Orçamento versionado + OS + reserva forçada + apontamento. Modelo de linha (Peça × Ação) + Áreas de Impacto, vocabulário Cilia. Redesenhado pelo **[ADR-001](./adr-001-modelo-linha-os-cilia.md)** (abr/2026). | `mo-sprint-07-orcamento-os.md` |
 | 8 | MO-8 | Benchmark + IA | Ingestão PDF seguradora + motor de aliases + sugestão Claude | `mo-sprint-08-benchmark-ia.md` |
 | 9 | MO-9 | Capacity + feedback + auditoria | Capacity/prazo + DesvioExecucao + django-auditlog + hardening | `mo-sprint-09-capacity-feedback.md` |
 
@@ -213,6 +213,21 @@ Prompt explicita: "NÃO sugira preços." Repetir na system message.
 | MO-7 | Orçamento aprovado vira OS em 1 clique | Picking bipado 100% dos itens em teste com 10 OSs |
 | MO-8 | 100 PDFs de seguradora ingestados com ≥ 95% aliases mapeados | Sugestão IA tem recall ≥ 80% no golden set |
 | MO-9 | Dashboard "Saúde do Motor" exibe 6 desvios | auditlog cobre 100% dos models sensíveis |
+
+---
+
+## Decisões arquiteturais registradas (ADRs)
+
+Decisões com impacto transversal em múltiplas sprints do motor são documentadas
+em `docs/adr-XXX-*.md`. Toda ADR é referenciada na sprint que ela afeta.
+
+| # | Título | Status | Sprints afetadas |
+|---|--------|--------|------------------|
+| [ADR-001](./adr-001-modelo-linha-os-cilia.md) | Modelo de linha de OS baseado em (Peça × Ação) e Áreas de Impacto | Proposed · abr/2026 | **MO-7** (redesenhada), MO-8 (ingestão Cilia), MO-9 (análise de variância) |
+
+Ao fim de uma sprint que consuma ADR, mover status para `Accepted` no documento
+da ADR. Se retrabalho futuro contrariar a decisão, criar nova ADR com status
+`Supersedes ADR-NNN`.
 
 ---
 

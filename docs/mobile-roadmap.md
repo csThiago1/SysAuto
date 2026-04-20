@@ -297,7 +297,7 @@ O app é para uso exclusivo da equipe DS Car. Publicar nas lojas traria burocrac
 
 ### Critérios de Aceite
 - [ ] Status da OS pode ser atualizado respeitando VALID_TRANSITIONS
-- [ ] Fotos de acompanhamento com marca d'água e upload
+- [x] Fotos de acompanhamento com marca d'água e upload
 - [ ] Vistoria inicial completa (fotos + checklist + transição)
 - [ ] Vistoria final com comparativo antes/depois
 - [ ] Push notifications funcionando para mudança de status
