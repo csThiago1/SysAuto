@@ -209,3 +209,100 @@ class ServiceOrderVersionItem(ItemFieldsMixin):
 
     class Meta:
         ordering = ["sort_order", "id"]
+
+
+class ServiceOrderEvent(models.Model):
+    """Timeline universal de mutações. Substitui ServiceOrderStatusHistory."""
+
+    EVENT_TYPES = [
+        ("STATUS_CHANGE", "Mudança de status"),
+        ("AUTO_TRANSITION", "Transição automática"),
+        ("VERSION_CREATED", "Nova versão criada"),
+        ("VERSION_APPROVED", "Versão aprovada"),
+        ("VERSION_REJECTED", "Versão rejeitada"),
+        ("ITEM_ADDED", "Item adicionado"),
+        ("ITEM_REMOVED", "Item removido"),
+        ("ITEM_EDITED", "Item editado"),
+        ("IMPORT_RECEIVED", "Importação recebida"),
+        ("PARECER_ADDED", "Parecer adicionado"),
+        ("PHOTO_UPLOADED", "Foto anexada"),
+        ("PHOTO_REMOVED", "Foto removida"),
+        ("PAYMENT_RECORDED", "Pagamento registrado"),
+        ("FISCAL_ISSUED", "Nota fiscal emitida"),
+        ("SIGNATURE_CAPTURED", "Assinatura capturada"),
+        ("BUDGET_LINKED", "Budget aprovado virou OS"),
+    ]
+
+    service_order = models.ForeignKey(ServiceOrder, on_delete=models.CASCADE, related_name="events")
+    event_type = models.CharField(max_length=30, choices=EVENT_TYPES, db_index=True)
+
+    actor = models.CharField(max_length=120, blank=True, default="Sistema")
+    payload = models.JSONField(default=dict, blank=True)
+
+    from_state = models.CharField(max_length=30, blank=True, default="")
+    to_state = models.CharField(max_length=30, blank=True, default="")
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["service_order", "-created_at"], name="soevent_os_created_idx"),
+            models.Index(fields=["event_type", "-created_at"], name="soevent_type_created_idx"),
+        ]
+
+
+class ServiceOrderParecer(models.Model):
+    """Timeline de workflow/pareceres. Externo (importado) + interno (DSCar)."""
+
+    PARECER_TYPE_CHOICES = [
+        ("CONCORDADO", "Concordado"),
+        ("AUTORIZADO", "Autorizado"),
+        ("CORRECAO", "Correção"),
+        ("NEGADO", "Negado"),
+        ("SEM_COBERTURA", "Sem Cobertura"),
+        ("COMENTARIO_INTERNO", "Comentário Interno"),
+    ]
+
+    SOURCE_CHOICES = [
+        ("internal", "Interno DSCar"),
+        ("cilia", "Cilia"),
+        ("hdi", "HDI"),
+        ("xml_porto", "XML Porto"),
+        ("xml_azul", "XML Azul"),
+        ("xml_itau", "XML Itaú"),
+    ]
+
+    service_order = models.ForeignKey(ServiceOrder, on_delete=models.CASCADE, related_name="pareceres")
+    version = models.ForeignKey(
+        ServiceOrderVersion, on_delete=models.CASCADE,
+        null=True, blank=True, related_name="pareceres",
+    )
+
+    source = models.CharField(max_length=20, choices=SOURCE_CHOICES)
+    flow_number = models.IntegerField(null=True, blank=True)
+
+    author_external = models.CharField(max_length=120, blank=True, default="")
+    author_org = models.CharField(max_length=120, blank=True, default="")
+    author_internal = models.CharField(max_length=120, blank=True, default="")
+
+    parecer_type = models.CharField(max_length=30, choices=PARECER_TYPE_CHOICES, blank=True, default="")
+    body = models.TextField()
+
+    created_at_external = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class ImpactAreaLabel(models.Model):
+    """Label opcional das áreas de impacto (1=Frontal, 2=Lateral direita, etc)."""
+
+    service_order = models.ForeignKey(ServiceOrder, on_delete=models.CASCADE, related_name="area_labels")
+    area_number = models.IntegerField()
+    label_text = models.CharField(max_length=100)
+
+    class Meta:
+        unique_together = [("service_order", "area_number")]
+        ordering = ["area_number"]
