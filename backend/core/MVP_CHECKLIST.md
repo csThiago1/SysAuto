@@ -50,14 +50,26 @@
 - [x] Admin registrado pra debug
 - [x] Smoke test `scripts/smoke_foundation.py`
 
-## Próximo ciclo — Core services (Ciclo 2)
+## Entregue no ciclo 4 — Módulo de Orçamentação (Core Services)
 
-- [ ] `BudgetService` — create, send, approve, reject, revision, clone, expire
-- [ ] `ServiceOrderService` — create_from_budget, change_status, create_new_version_from_import, approve_version
-- [ ] `ComplementoParticularService`
-- [ ] `PaymentService`
-- [ ] `OSEventLogger` com helper centralizado
-- [ ] Testes de services (>= 40 casos cobrindo transitions, approval, trava delivery)
+- [x] `OSEventLogger` helper centralizado para timeline unificada
+- [x] `kanban.py` com `VALID_TRANSITIONS` + re-entrada em budget dos 7 estados de reparo
+- [x] `BudgetService`: create, send_to_customer, approve, reject, request_revision, clone, expire_stale_versions
+- [x] Celery task `expire_stale_budgets` (beat diário) + config Celery
+- [x] `ServiceOrderService`: change_status evoluído via OSEventLogger com is_auto + previous_status + trava `_can_deliver`, create_from_budget, create_new_version_from_import, approve_version com auto-return
+- [x] `ComplementoParticularService.add_complement` com copy + recalculate totais por bloco
+- [x] App `payments` com Payment model + PaymentService.record atômico
+- [x] pdf_stub (substituído por WeasyPrint real no Ciclo 5)
+- [x] 140 testes PASS (60 Ciclo 01 + 80 Ciclo 02)
+- [x] Smoke integration `scripts/smoke_ciclo2.py`
+
+## Próximo ciclo — API + Frontend base (Ciclo 3)
+
+- [ ] ViewSets DRF + serializers (Budget, OS, Payment)
+- [ ] Endpoints REST conforme §8 da spec
+- [ ] Frontend Next.js consumindo API real (substituir mockData)
+- [ ] PDF engine real (WeasyPrint) substituindo pdf_stub
+- [ ] Zod schemas frontend + hooks TanStack Query
 
 ## Próximo ciclo — prioridade alta
 

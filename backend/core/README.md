@@ -69,6 +69,78 @@ python manage.py shell < scripts/smoke_foundation.py
 ### Admin
 Todos os models registrados em `/admin/` (user superadmin).
 
+## Módulo de Orçamentação (Ciclo 02 — Core Services)
+
+Services completos implementados em cima da fundação do Ciclo 01.
+
+### Uso típico
+
+```python
+from decimal import Decimal
+from apps.budgets.services import BudgetService
+from apps.service_orders.services import ServiceOrderService, ComplementoParticularService
+from apps.payments.services import PaymentService
+from apps.service_orders.events import OSEventLogger
+
+# Fluxo particular completo
+budget = BudgetService.create(
+    customer=person, vehicle_plate="ABC1D23",
+    vehicle_description="Honda Fit 2019", created_by="alice",
+)
+# ... adicionar items + operations via ORM direto (Ciclo 3 traz endpoints)
+BudgetService.send_to_customer(version=budget.active_version, sent_by="alice")
+os_instance = BudgetService.approve(
+    version=budget.active_version,
+    approved_by="cliente-whatsapp",
+    evidence_s3_key="whatsapp://ok.jpg",
+)
+
+# Kanban
+ServiceOrderService.change_status(
+    service_order=os_instance, new_status="initial_survey", changed_by="alice",
+)
+
+# Complemento particular em OS seguradora
+new_v = ComplementoParticularService.add_complement(
+    service_order=os_seg,
+    items_data=[{
+        "description": "Pintura extra",
+        "quantity": Decimal("1"),
+        "unit_price": Decimal("300"),
+        "net_price": Decimal("300"),
+        "item_type": "SERVICE",
+    }],
+    approved_by="alice",
+)
+
+# Pagamento
+PaymentService.record(
+    service_order=os_instance, payer_block="PARTICULAR",
+    amount=Decimal("1000"), method="PIX",
+    reference="pix-ABC-123", received_by="alice",
+)
+
+# Evento manual (ex: foto uploadada, assinatura capturada)
+OSEventLogger.log_event(os_instance, "PHOTO_UPLOADED", actor="alice", payload={"s3_key": "..."})
+```
+
+### Celery task
+
+```bash
+# Expira budgets vencidos (>30 dias sem resposta) — roda 1x/dia via beat
+celery -A config call apps.budgets.tasks.expire_stale_budgets
+
+# Worker + beat
+celery -A config worker -l info
+celery -A config beat -l info
+```
+
+### Smoke test de integração
+
+```bash
+python manage.py shell < scripts/smoke_ciclo2.py
+```
+
 ## Observações importantes
 
 - Esta base é o primeiro passo do MVP backend.
