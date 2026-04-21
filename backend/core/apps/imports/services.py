@@ -124,6 +124,7 @@ class ParsedBudget:
 # ImportService — orquestra Client + Parser + ServiceOrderService
 # ============================================================================
 
+import hashlib  # noqa: E402
 import logging  # noqa: E402
 import time  # noqa: E402
 
@@ -338,3 +339,93 @@ class ImportService:
             import_attempt=attempt,
         )
         return os_instance, version
+
+    # ------------------------------------------------------------------ XML IFX
+    @classmethod
+    def import_xml_ifx(
+        cls,
+        *,
+        xml_bytes: bytes,
+        insurer_code: str,
+        trigger: str = "upload_manual",
+        created_by: str = "Sistema",
+    ) -> "Any":
+        """Importa orçamento finalizado via upload XML IFX (Porto/Azul/Itaú).
+
+        Diferenças vs Cilia:
+          - Upload único (não tem polling — XML representa versão finalizada)
+          - Seguradora informada explicitamente (XML não identifica)
+          - Sem report_pdf/html (XML não traz)
+          - Status sempre "autorizado" (XML só chega quando finaliza)
+        """
+        from .models import ImportAttempt
+        from .sources.xml_ifx_parser import XmlIfxParser
+
+        source = f"xml_{insurer_code.lower()}" if insurer_code else "xml_ifx"
+        raw_hash = hashlib.sha256(xml_bytes).hexdigest() if xml_bytes else ""
+
+        attempt = ImportAttempt.objects.create(
+            source=source if source in {
+                "xml_porto", "xml_azul", "xml_itau",
+            } else "xml_porto",  # fallback
+            trigger=trigger,
+            created_by=created_by,
+            raw_hash=raw_hash,
+        )
+
+        try:
+            parsed = XmlIfxParser.parse(xml_bytes, insurer_code=insurer_code)
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("XML IFX parse error")
+            attempt.error_message = f"Parse error: {exc}"
+            attempt.error_type = "ParseError"
+            attempt.parsed_ok = False
+            attempt.save(update_fields=["error_message", "error_type", "parsed_ok"])
+            return attempt
+
+        attempt.casualty_number = parsed.casualty_number
+        attempt.budget_number = parsed.external_budget_number
+        attempt.raw_payload = parsed.raw_payload
+        attempt.raw_hash = parsed.raw_hash
+        attempt.save(update_fields=[
+            "casualty_number", "budget_number", "raw_payload", "raw_hash",
+        ])
+
+        # Dedup — mesmo hash já processado
+        previous_ok = (
+            ImportAttempt.objects.filter(
+                parsed_ok=True, raw_hash=parsed.raw_hash,
+            )
+            .exclude(pk=attempt.pk)
+            .first()
+        )
+        if previous_ok:
+            attempt.duplicate_of = previous_ok
+            attempt.parsed_ok = False
+            attempt.error_message = "Payload idêntico já processado"
+            attempt.error_type = "Duplicate"
+            attempt.save(update_fields=[
+                "duplicate_of", "parsed_ok", "error_message", "error_type",
+            ])
+            return attempt
+
+        # Persist — reutiliza mesma lógica do Cilia (parser-agnóstico)
+        try:
+            os_instance, version = cls._persist_cilia_budget(
+                parsed=parsed, attempt=attempt,
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("XML IFX persist error")
+            attempt.error_message = f"Persist error: {exc}"
+            attempt.error_type = "PersistError"
+            attempt.parsed_ok = False
+            attempt.save(update_fields=["error_message", "error_type", "parsed_ok"])
+            return attempt
+
+        attempt.service_order = os_instance
+        attempt.version_created = version
+        attempt.parsed_ok = True
+        attempt.save(update_fields=[
+            "service_order", "version_created", "parsed_ok",
+        ])
+        return attempt

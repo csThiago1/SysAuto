@@ -5,8 +5,14 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from rest_framework.parsers import FormParser, MultiPartParser
+
 from .models import ImportAttempt
-from .serializers import FetchCiliaSerializer, ImportAttemptReadSerializer
+from .serializers import (
+    FetchCiliaSerializer,
+    ImportAttemptReadSerializer,
+    UploadXmlIfxSerializer,
+)
 from .services import ImportService
 
 
@@ -44,6 +50,36 @@ class ImportAttemptViewSet(viewsets.ReadOnlyModelViewSet):
             budget_number=ser.validated_data["budget_number"],
             version_number=ser.validated_data.get("version_number"),
             trigger="user_requested",
+            created_by=getattr(request.user, "username", "API"),
+        )
+        return Response(
+            ImportAttemptReadSerializer(attempt).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="xml/upload",
+        parser_classes=[MultiPartParser, FormParser],
+    )
+    def upload_xml_ifx(self, request):
+        """Upload de XML IFX (Porto/Azul/Itaú).
+
+        Multipart form data:
+          - file: arquivo XML
+          - insurer_code: "porto" | "azul" | "itau"
+        """
+        ser = UploadXmlIfxSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+
+        file = ser.validated_data["file"]
+        xml_bytes = file.read()
+
+        attempt = ImportService.import_xml_ifx(
+            xml_bytes=xml_bytes,
+            insurer_code=ser.validated_data["insurer_code"],
+            trigger="upload_manual",
             created_by=getattr(request.user, "username", "API"),
         )
         return Response(

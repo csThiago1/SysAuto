@@ -105,11 +105,19 @@
 - [x] Smoke live `scripts/smoke_ciclo4.py` com par real `406571903/1446508` (v1 NEGADO, v2 AUTORIZADO, v3 404)
 - [x] Fixtures reais capturadas de prod (1MB × 2 versões) em `apps/imports/tests/fixtures/`
 
-## Próximo — Ciclo 04B: XML IFX (Porto/Azul/Itaú)
-- [ ] XmlIfxParser (schema unificado IFX/finalizacaoOrcamentoVO) usando lxml
-- [ ] Endpoint `POST /imports/xml/upload/` (multipart)
-- [ ] Frontend dropzone no mesmo CiliaImporter (renomear pra ImportCenter)
-- [ ] Fixtures XML já disponíveis: QZP8B26 e TAF7C72
+## Entregue no Ciclo 08 — Importador XML IFX (04B) · Porto/Azul/Itaú
+
+- [x] `XmlIfxParser` usando `xml.etree.ElementTree` (stdlib, sem nova dep) com conversão Brazilian decimal (`"2.548,69"` → `Decimal("2548.69")`)
+- [x] Suporta 5 grupos de peças: trocadas, recuperadas, overlap, DNC, montagem/desmontagem + servicosTerceiros
+- [x] Mapeia `tipoUso` → LaborCategory (FUNILARIA/PINTURA/MECANICA/ELETRICA/TAPECARIA/ACABAMENTO/VIDRACARIA)
+- [x] Mapeia `pecaNegociada` F/G/N → part_type ORIGINAL/GENUINA/OUTRAS_FONTES
+- [x] `ImportService.import_xml_ifx(xml_bytes, insurer_code)` reutiliza `_persist_cilia_budget` (parser-agnóstico)
+- [x] Endpoint `POST /imports/attempts/xml/upload/` com multipart
+- [x] Frontend `XmlIfxUploader.tsx` integrado ao `ImportCenter` (file picker + select seguradora)
+- [x] Helper `apiFetchMultipart` no client TS (preserva JWT refresh)
+- [x] 24 testes novos (16 parser + 8 service/API) — total **270 PASS**
+- [x] Fixtures reais: Honda Fit (Porto 2021) + Chevrolet Montana (2025)
+- [x] Smoke parser live validado ✅ (parse correto do XML real produção)
 
 ## Próximo — Ciclo 04C: HDI HTML
 - [ ] HdiImporter BeautifulSoup (aguardar amostra real do usuário)

@@ -25,3 +25,14 @@ export function useFetchCilia() {
     },
   });
 }
+
+export function useUploadXmlIfx() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: api.uploadXmlIfx,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: importKeys.all });
+      qc.invalidateQueries({ queryKey: ['service-orders'] });
+    },
+  });
+}

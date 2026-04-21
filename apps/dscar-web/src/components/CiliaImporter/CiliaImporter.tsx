@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AlertCircle, CheckCircle, Download, XCircle } from 'lucide-react';
 import { useFetchCilia, useImportAttempts } from '../../hooks/useImports';
 import { formatDateTime } from '../../utils/format';
+import { XmlIfxUploader } from './XmlIfxUploader';
 
 type Props = {
   onOpenServiceOrder?: (osId: number) => void;
@@ -27,14 +28,19 @@ export function CiliaImporter({ onOpenServiceOrder }: Props) {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-slate-800 mb-1">Importar Orçamento Cilia</h1>
-      <p className="text-sm text-slate-500 mb-6">
-        Busca uma versão específica via API de Integração da Cilia. Nova versão → nova
-        ServiceOrderVersion (ou OS nova se sinistro ainda não existir).
-      </p>
+    <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <h1 className="text-2xl font-bold text-slate-800">Central de Importações</h1>
 
-      <div className="bg-white border border-slate-200 rounded-lg p-4 mb-6">
+      <XmlIfxUploader onOpenServiceOrder={onOpenServiceOrder} />
+
+      <div className="bg-white border border-slate-200 rounded-lg p-4">
+        <h2 className="text-lg font-semibold text-slate-800 mb-1">
+          Importar via API Cilia
+        </h2>
+        <p className="text-sm text-slate-500 mb-4">
+          Busca uma versão específica. Nova versão → nova ServiceOrderVersion
+          (ou OS nova se sinistro ainda não existir).
+        </p>
         <div className="grid grid-cols-3 gap-3 mb-3">
           <div>
             <label className="block text-xs text-slate-500 mb-1">Nº do sinistro</label>

@@ -30,3 +30,10 @@ class FetchCiliaSerializer(serializers.Serializer):
     casualty_number = serializers.CharField(max_length=40)
     budget_number = serializers.CharField(max_length=40)
     version_number = serializers.IntegerField(required=False, allow_null=True)
+
+
+class UploadXmlIfxSerializer(serializers.Serializer):
+    """Entrada do endpoint `POST /imports/xml/upload/`."""
+
+    file = serializers.FileField()
+    insurer_code = serializers.ChoiceField(choices=["porto", "azul", "itau"])

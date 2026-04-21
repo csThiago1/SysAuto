@@ -81,6 +81,45 @@ export async function apiRequest<T>(
   return res.json() as Promise<T>;
 }
 
+/**
+ * Variante de apiRequest pra multipart/form-data (upload de arquivos).
+ * Não seta Content-Type (browser cuida disso com boundary). Mesma lógica
+ * de refresh token.
+ */
+export async function apiFetchMultipart(
+  path: string,
+  formData: FormData,
+): Promise<unknown> {
+  const url = `${BASE_URL}${path}`;
+
+  const makeRequest = async (token: string | null): Promise<Response> => {
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return fetch(url, { method: 'POST', body: formData, headers });
+  };
+
+  let res = await makeRequest(accessToken);
+
+  if (res.status === 401 && getRefreshToken()) {
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      res = await makeRequest(newToken);
+    }
+  }
+
+  if (!res.ok) {
+    let detail = `HTTP ${res.status}`;
+    try {
+      const err = await res.json();
+      detail = err.detail ?? err.message ?? JSON.stringify(err);
+    } catch { /* ignore */ }
+    throw new Error(detail);
+  }
+
+  if (res.status === 204) return undefined;
+  return res.json();
+}
+
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 export async function login(username: string, password: string): Promise<void> {
