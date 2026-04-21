@@ -178,6 +178,21 @@ class ServiceOrderVersion(models.Model):
     content_hash = models.CharField(max_length=64, blank=True, default="")
     raw_payload_s3_key = models.CharField(max_length=500, blank=True, default="")
 
+    # Snapshot completo da importacao (preserva payload da fonte original)
+    raw_payload = models.JSONField(
+        null=True, blank=True,
+        help_text="Payload bruto da fonte (Cilia JSON, XML parseado, etc) — preserva dados nao-mapeados",
+    )
+
+    # PDF/HTML oficiais da Cilia (base64 por ora; Ciclo 5 move pra S3)
+    report_pdf_base64 = models.TextField(blank=True, default="")
+    report_html_base64 = models.TextField(blank=True, default="")
+
+    # IDs externos especificos Cilia pra deduplicacao
+    external_budget_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    external_version_id = models.BigIntegerField(null=True, blank=True, db_index=True)
+    external_flow_number = models.IntegerField(null=True, blank=True)
+
     hourly_rates = models.JSONField(default=dict, blank=True)
     global_discount_pct = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("0"))
 

@@ -259,3 +259,34 @@ class TestImpactAreaLabel:
         ImpactAreaLabel.objects.create(service_order=os_instance, area_number=2, label_text="B")
         labels = list(os_instance.area_labels.all())
         assert [label.area_number for label in labels] == [1, 2, 3]
+
+
+@pytest.mark.django_db
+class TestSnapshotFields:
+
+    def test_raw_payload_stores_json(self, person):
+        os = ServiceOrder.objects.create(
+            os_number="OS-SNAP-1", customer=person,
+            vehicle_plate="SNP1234", vehicle_description="Test",
+        )
+        v = ServiceOrderVersion.objects.create(
+            service_order=os, version_number=1,
+            raw_payload={"source": "cilia", "budget_id": 17732641, "items": [1, 2, 3]},
+            external_budget_id=17732641,
+            external_version_id=30629056,
+            external_flow_number=2,
+        )
+        assert v.raw_payload["budget_id"] == 17732641
+        assert v.external_flow_number == 2
+
+    def test_report_base64_fields(self, person):
+        os = ServiceOrder.objects.create(
+            os_number="OS-SNAP-2", customer=person,
+            vehicle_plate="SNP5678", vehicle_description="Test",
+        )
+        v = ServiceOrderVersion.objects.create(
+            service_order=os, version_number=1,
+            report_pdf_base64="PDFCONTENT_BASE64",
+            report_html_base64="<html>base64</html>",
+        )
+        assert v.report_pdf_base64 == "PDFCONTENT_BASE64"
