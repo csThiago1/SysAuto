@@ -20,6 +20,7 @@ export function Sidebar({ currentView, setCurrentView, userRole, onLogout }: Sid
     { id: 'invoicing', label: 'Faturamento', icon: FileText, roles: ['Administrador'] },
     { id: 'people', label: 'Pessoas', icon: Users, roles: ['Administrador', 'Consultor'] },
     { id: 'inventory', label: 'Estoque', icon: Package, roles: ['Administrador', 'Consultor'] },
+    { id: 'budgets', label: 'Orçamentos', icon: FileText, roles: ['Administrador', 'Consultor'] },
   ];
 
   const filteredMenuItems = menuItems.filter(item => 

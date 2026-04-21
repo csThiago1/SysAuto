@@ -74,11 +74,24 @@
 - [x] 174 testes PASS (60 Ciclo 01 + 80 Ciclo 02 + 34 Ciclo 03A)
 - [x] Smoke E2E `scripts/smoke_ciclo3a.py` via APIClient
 
-## Próximo — Ciclo 03B: Frontend
-- [ ] Next.js consumindo API real
-- [ ] Zod schemas + TanStack Query hooks
-- [ ] Componentes Budget + OS V2
-- [ ] Conectar ao `/api/v1/` e substituir mockData.ts
+## Entregue no Ciclo 06 — Frontend Integration (03B)
+
+- [x] TanStack Query v5 + Zod schemas espelhando API
+- [x] API modules: budgets, serviceOrdersV2, payments, referenceData
+- [x] Hooks: useBudget (+ mutations), useServiceOrderV2, useOSEvents, usePayments, useReferenceData
+- [x] Budget UI completa: BudgetList, BudgetDetail, BudgetItemEditor, BudgetActionsPanel, BudgetStatusBadge
+- [x] OS V2 UI: OSDetailV2 com 4 tabs (Versões, Timeline, Pagamentos, Complemento), OSVersionsTab, OSTimeline, OSPaymentsTab, OSComplementForm
+- [x] KanbanV2 conectado à API real (useServiceOrdersV2 + useChangeStatusV2)
+- [x] App.tsx integrado: views "budgets", "budget-detail", "os-v2" adicionadas
+- [x] Sidebar com item "Orçamentos" (FileText icon)
+- [x] mockData.ts legado preservado (coexistência)
+- [x] Smoke manual documentado em `apps/dscar-web/src/__smoke__/smoke_ciclo3b.md`
+- [x] .env.example com VITE_API_URL + VITE_USE_MOCK_DATA=false
+
+## Próximo — Ciclo 04: Importadores Seguradora
+- [ ] CiliaImporter (polling Celery)
+- [ ] XmlIfxImporter (Porto/Azul/Itaú)
+- [ ] HdiImporter (HTML upload)
 
 ## Próximo ciclo — API + Frontend base (Ciclo 3)
 

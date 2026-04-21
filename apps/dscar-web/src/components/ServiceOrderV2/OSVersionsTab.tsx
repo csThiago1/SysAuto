@@ -13,7 +13,7 @@ export function OSVersionsTab({
   const approve = useApproveVersion();
 
   if (!version) {
-    return <div className="text-slate-500">OS ainda sem versao ativa.</div>;
+    return <div className="text-slate-500">OS ainda sem versão ativa.</div>;
   }
 
   const needsApproval =
@@ -39,7 +39,7 @@ export function OSVersionsTab({
               disabled={approve.isPending}
               className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
             >
-              {approve.isPending ? 'Aprovando...' : 'Aprovar versao'}
+              {approve.isPending ? 'Aprovando...' : 'Aprovar versão'}
             </button>
           )}
         </div>
@@ -68,7 +68,7 @@ export function OSVersionsTab({
       </div>
 
       <div className="bg-white border border-slate-200 rounded p-4">
-        <h3 className="font-semibold text-slate-800 mb-3">Itens da versao</h3>
+        <h3 className="font-semibold text-slate-800 mb-3">Itens da versão</h3>
         {version.items.length === 0 ? (
           <p className="text-sm text-slate-500">Nenhum item.</p>
         ) : (

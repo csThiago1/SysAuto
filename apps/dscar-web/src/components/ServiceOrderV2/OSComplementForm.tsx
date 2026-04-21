@@ -53,7 +53,7 @@ export function OSComplementForm({ osId }: { osId: number }) {
     <div className="space-y-4">
       <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm text-blue-800">
         O complemento adiciona itens cobrados do cliente (fora da cobertura da seguradora),
-        criando nova versao da OS.
+        criando nova versão da OS.
       </div>
 
       <div className="bg-white border border-slate-200 rounded p-4 space-y-3">
@@ -62,7 +62,7 @@ export function OSComplementForm({ osId }: { osId: number }) {
           type="text"
           value={newItem.description}
           onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
-          placeholder="Descricao (ex: Pintura extra em roda)"
+          placeholder="Descrição (ex: Pintura extra em roda)"
           className="w-full px-3 py-2 border border-slate-300 rounded"
         />
         <div className="grid grid-cols-3 gap-3">
@@ -77,7 +77,7 @@ export function OSComplementForm({ osId }: { osId: number }) {
             type="text"
             value={newItem.unit_price}
             onChange={(e) => setNewItem({ ...newItem, unit_price: e.target.value })}
-            placeholder="Preco unit."
+            placeholder="Preço unit."
             className="px-3 py-2 border border-slate-300 rounded"
           />
           <select
@@ -85,9 +85,9 @@ export function OSComplementForm({ osId }: { osId: number }) {
             onChange={(e) => setNewItem({ ...newItem, item_type: e.target.value })}
             className="px-3 py-2 border border-slate-300 rounded"
           >
-            <option value="SERVICE">Servico</option>
-            <option value="PART">Peca</option>
-            <option value="EXTERNAL_SERVICE">Servico Terceiro</option>
+            <option value="SERVICE">Serviço</option>
+            <option value="PART">Peça</option>
+            <option value="EXTERNAL_SERVICE">Serviço Terceiro</option>
             <option value="FEE">Taxa</option>
           </select>
         </div>

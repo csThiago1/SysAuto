@@ -70,7 +70,7 @@ export function OSDetailV2({ osId }: { osId: number }) {
             }`}
           >
             {t === 'versions'
-              ? 'Versoes'
+              ? 'Versões'
               : t === 'timeline'
               ? 'Timeline'
               : t === 'payments'
@@ -86,7 +86,7 @@ export function OSDetailV2({ osId }: { osId: number }) {
       {tab === 'complement' && isSeguradora && <OSComplementForm osId={osId} />}
       {tab === 'complement' && !isSeguradora && (
         <div className="p-4 bg-amber-50 border border-amber-200 rounded text-sm text-amber-800">
-          Complemento particular so se aplica a OS de seguradora.
+          Complemento particular só se aplica a OS de seguradora.
         </div>
       )}
     </div>

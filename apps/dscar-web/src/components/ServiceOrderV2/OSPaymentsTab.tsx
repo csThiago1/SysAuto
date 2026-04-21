@@ -65,9 +65,9 @@ export function OSPaymentsTab({ osId }: { osId: number }) {
             >
               <option value="PIX">Pix</option>
               <option value="DINHEIRO">Dinheiro</option>
-              <option value="CARTAO">Cartao</option>
+              <option value="CARTAO">Cartão</option>
               <option value="BOLETO">Boleto</option>
-              <option value="TRANSFERENCIA">Transferencia</option>
+              <option value="TRANSFERENCIA">Transferência</option>
             </select>
           </div>
           <input

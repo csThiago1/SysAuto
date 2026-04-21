@@ -10,15 +10,33 @@ import { Finance } from './components/Finance';
 import { Invoicing } from './components/Invoicing';
 import { WorkshopManagement } from './components/WorkshopManagement';
 import { LoginScreen } from './components/LoginScreen';
+import { BudgetList } from './components/Budget/BudgetList';
+import { BudgetDetail } from './components/Budget/BudgetDetail';
+import { OSDetailV2 } from './components/ServiceOrderV2/OSDetailV2';
 import { mockParts, mockInvoices } from './mockData';
 import { ServiceOrder, OSStatus, Invoice, Part, OSTemplate, Person } from './types';
 import { useAuth } from './AuthContext';
 import { useServiceOrders } from './hooks/useServiceOrders';
 import { usePersons } from './hooks/usePersons';
 
+type SimpleView = 'dashboard' | 'os' | 'agenda' | 'kanban' | 'workshop' | 'finance' | 'invoicing' | 'people' | 'inventory' | 'budgets';
+type DetailView = { type: 'budget-detail'; budgetId: number } | { type: 'os-v2'; osId: number };
+type AppView = SimpleView | DetailView;
+
+function isSimpleView(v: AppView): v is SimpleView {
+  return typeof v === 'string';
+}
+
+function currentViewName(v: AppView): string {
+  if (isSimpleView(v)) return v;
+  return v.type;
+}
+
 export default function App() {
   const { authenticated, loading: authLoading, logout } = useAuth();
-  const [currentView, setCurrentView] = useState('dashboard');
+  const [currentView, setCurrentView] = useState<AppView>('dashboard');
+
+  const setView = (v: string) => setCurrentView(v as SimpleView);
   const { orders, updateOrderStatus, updateOrder } = useServiceOrders();
   const { people, setPeople } = usePersons();
   const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
@@ -95,24 +113,34 @@ export default function App() {
   };
 
   const renderView = () => {
+    // Detail views (discriminated union)
+    if (!isSimpleView(currentView)) {
+      if (currentView.type === 'budget-detail') {
+        return <BudgetDetail budgetId={currentView.budgetId} />;
+      }
+      if (currentView.type === 'os-v2') {
+        return <OSDetailV2 osId={currentView.osId} />;
+      }
+    }
+
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard 
-          orders={orders} 
-          people={people} 
-          parts={parts} 
+        return <Dashboard
+          orders={orders}
+          people={people}
+          parts={parts}
           onViewAgenda={() => setCurrentView('agenda')}
         />;
       case 'os':
         return (
-          <ServiceOrders 
-            orders={orders} 
-            people={people} 
-            addOrder={addOrder} 
-            updateOrder={updateOrder} 
-            parts={parts} 
-            templates={templates} 
-            addTemplate={addTemplate} 
+          <ServiceOrders
+            orders={orders}
+            people={people}
+            addOrder={addOrder}
+            updateOrder={updateOrder}
+            parts={parts}
+            templates={templates}
+            addTemplate={addTemplate}
             updatePart={updatePart}
             initialDate={initialDateForNewOS || undefined}
             onModalClose={() => setInitialDateForNewOS(null)}
@@ -120,15 +148,15 @@ export default function App() {
         );
       case 'agenda':
         return (
-          <Agenda 
-            orders={orders} 
-            people={people} 
-            parts={parts} 
+          <Agenda
+            orders={orders}
+            people={people}
+            parts={parts}
             addOrder={(order) => {
               addOrder(order);
               setCurrentView('os');
-            }} 
-            updateOrder={updateOrder} 
+            }}
+            updateOrder={updateOrder}
             templates={templates}
             onNewOS={(date) => {
               setInitialDateForNewOS(date);
@@ -148,6 +176,12 @@ export default function App() {
         return <People people={people} orders={orders} parts={parts} updatePerson={updatePerson} />;
       case 'inventory':
         return <Inventory parts={parts} addPart={addPart} updatePart={updatePart} />;
+      case 'budgets':
+        return (
+          <BudgetList
+            onOpen={(id) => setCurrentView({ type: 'budget-detail', budgetId: id })}
+          />
+        );
       default:
         return <Dashboard orders={orders} people={people} parts={parts} />;
     }
@@ -169,8 +203,8 @@ export default function App() {
   return (
     <div className="flex h-screen bg-page-bg font-sans text-slate-900 overflow-hidden">
       <Sidebar
-        currentView={currentView}
-        setCurrentView={setCurrentView}
+        currentView={currentViewName(currentView)}
+        setCurrentView={setView}
         userRole={currentUser.role}
         onLogout={logout}
       />
@@ -178,15 +212,24 @@ export default function App() {
         <header className="h-16 bg-white border-b border-surface flex items-center justify-between px-8 shadow-sm z-10">
           <div className="flex items-center gap-4">
             <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest">
-              {currentView === 'dashboard' ? 'Visão Geral' : 
-               currentView === 'os' ? 'Ordens de Serviço' :
-               currentView === 'agenda' ? 'Agenda de Serviços' :
-               currentView === 'kanban' ? 'Quadro Kanban' :
-               currentView === 'workshop' ? 'Oficina' :
-               currentView === 'finance' ? 'Financeiro' :
-               currentView === 'invoicing' ? 'Faturamento' :
-               currentView === 'people' ? 'Pessoas' :
-               currentView === 'inventory' ? 'Estoque' : ''}
+              {(() => {
+                const name = currentViewName(currentView);
+                const titles: Record<string, string> = {
+                  dashboard: 'Visão Geral',
+                  os: 'Ordens de Serviço',
+                  agenda: 'Agenda de Serviços',
+                  kanban: 'Quadro Kanban',
+                  workshop: 'Oficina',
+                  finance: 'Financeiro',
+                  invoicing: 'Faturamento',
+                  people: 'Pessoas',
+                  inventory: 'Estoque',
+                  budgets: 'Orçamentos',
+                  'budget-detail': 'Detalhe do Orçamento',
+                  'os-v2': 'Ordem de Serviço',
+                };
+                return titles[name] ?? '';
+              })()}
             </h2>
           </div>
           <div className="flex items-center gap-4">
