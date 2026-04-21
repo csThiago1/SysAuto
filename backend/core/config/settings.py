@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "apps.items",
     "apps.authz",
     "apps.budgets",
+    "apps.payments",
 ]
 
 MIDDLEWARE = [
