@@ -61,3 +61,58 @@ class NumberSequence(models.Model):
 
     def __str__(self) -> str:
         return f"{self.sequence_type} @ {self.next_number}"
+
+
+class ItemOperation(models.Model):
+    """Operação aplicada a um item. Um item pode ter várias (TROCA + PINTURA + OVERLAP).
+
+    FK polimórfica: uma operação pertence a um BudgetVersionItem OU a um ServiceOrderVersionItem,
+    nunca aos dois. CheckConstraint garante exclusividade XOR.
+    """
+
+    item_budget = models.ForeignKey(
+        "budgets.BudgetVersionItem",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="operations",
+    )
+    item_so = models.ForeignKey(
+        "service_orders.ServiceOrderVersionItem",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="operations",
+    )
+
+    operation_type = models.ForeignKey(
+        ItemOperationType,
+        on_delete=models.PROTECT,
+        related_name="operations",
+    )
+    labor_category = models.ForeignKey(
+        LaborCategory,
+        on_delete=models.PROTECT,
+        related_name="operations",
+    )
+
+    hours = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    labor_cost = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+
+    class Meta:
+        verbose_name = "Operação de Item"
+        verbose_name_plural = "Operações de Item"
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(item_budget__isnull=False, item_so__isnull=True)
+                    | models.Q(item_budget__isnull=True, item_so__isnull=False)
+                ),
+                name="itemop_xor_parent",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        parent = self.item_budget_id or self.item_so_id
+        return f"{self.operation_type_id}/{self.labor_category_id} → item={parent}"
