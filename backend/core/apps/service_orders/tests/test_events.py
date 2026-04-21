@@ -1,8 +1,10 @@
 from decimal import Decimal
 
 import pytest
+from django.utils import timezone
 
 from apps.persons.models import Person
+from apps.service_orders.events import OSEventLogger
 from apps.service_orders.models import (
     ServiceOrder, ServiceOrderEvent, ServiceOrderStatusHistory,
 )
@@ -117,3 +119,53 @@ class TestDataMigrationStatusHistory:
         assert abs((ev.created_at - old_timestamp).total_seconds()) < 2, (
             f"Timestamp não preservado: event.created_at={ev.created_at}, expected={old_timestamp}"
         )
+
+
+@pytest.fixture
+def person_logger(db):
+    return Person.objects.create(full_name="Logger Test", person_type="CLIENT")
+
+
+@pytest.fixture
+def os_instance(person_logger):
+    return ServiceOrder.objects.create(
+        os_number="OS-LOG-1", customer=person_logger,
+        vehicle_plate="LOG1234", vehicle_description="Test",
+    )
+
+
+@pytest.mark.django_db
+class TestOSEventLogger:
+
+    def test_log_event_defaults(self, os_instance):
+        event = OSEventLogger.log_event(os_instance, "STATUS_CHANGE")
+        assert event.service_order == os_instance
+        assert event.event_type == "STATUS_CHANGE"
+        assert event.actor == "Sistema"
+        assert event.payload == {}
+        assert event.from_state == ""
+        assert event.to_state == ""
+
+    def test_log_event_full(self, os_instance):
+        event = OSEventLogger.log_event(
+            os_instance, "VERSION_APPROVED",
+            actor="alice", payload={"version": 3},
+            from_state="budget", to_state="repair",
+        )
+        assert event.actor == "alice"
+        assert event.payload == {"version": 3}
+        assert event.from_state == "budget"
+        assert event.to_state == "repair"
+
+    def test_log_event_returns_instance(self, os_instance):
+        event = OSEventLogger.log_event(os_instance, "PHOTO_UPLOADED")
+        assert isinstance(event, ServiceOrderEvent)
+        assert event.pk is not None
+
+    def test_log_event_respects_ordering(self, os_instance):
+        e1 = OSEventLogger.log_event(os_instance, "STATUS_CHANGE")
+        e2 = OSEventLogger.log_event(os_instance, "VERSION_CREATED")
+        events = list(os_instance.events.all())
+        # ordering is -created_at
+        assert events[0].pk == e2.pk
+        assert events[1].pk == e1.pk
