@@ -5,8 +5,10 @@ from django.db.utils import IntegrityError
 
 from apps.persons.models import Person
 from apps.service_orders.models import (
+    ImpactAreaLabel,
     Insurer,
     ServiceOrder,
+    ServiceOrderParecer,
     ServiceOrderVersion,
     ServiceOrderVersionItem,
 )
@@ -207,3 +209,53 @@ class TestServiceOrderVersionItem:
             net_price=Decimal("1000"),
         )
         assert item.payer_block == "PARTICULAR"  # default do mixin
+
+
+@pytest.fixture
+def os_instance(db, person):
+    return ServiceOrder.objects.create(
+        os_number="OS-PA-1", customer=person,
+        vehicle_plate="PA1A234", vehicle_description="Test",
+    )
+
+
+@pytest.mark.django_db
+class TestParecer:
+    def test_create_internal(self, os_instance):
+        p = ServiceOrderParecer.objects.create(
+            service_order=os_instance,
+            source="internal",
+            author_internal="alice",
+            parecer_type="COMENTARIO_INTERNO",
+            body="Cliente ligou pedindo atualização",
+        )
+        assert p.source == "internal"
+        assert p.body.startswith("Cliente")
+
+    def test_create_external_cilia(self, os_instance):
+        p = ServiceOrderParecer.objects.create(
+            service_order=os_instance,
+            source="cilia",
+            flow_number=1,
+            author_external="Marcelo",
+            author_org="Yelum Seguradora",
+            parecer_type="AUTORIZADO",
+            body="Reparos autorizados.",
+        )
+        assert p.flow_number == 1
+        assert p.author_org == "Yelum Seguradora"
+
+
+@pytest.mark.django_db
+class TestImpactAreaLabel:
+    def test_unique_area_per_os(self, os_instance):
+        ImpactAreaLabel.objects.create(service_order=os_instance, area_number=1, label_text="Frontal")
+        with pytest.raises(IntegrityError):
+            ImpactAreaLabel.objects.create(service_order=os_instance, area_number=1, label_text="Outro")
+
+    def test_ordering_by_area_number(self, os_instance):
+        ImpactAreaLabel.objects.create(service_order=os_instance, area_number=3, label_text="C")
+        ImpactAreaLabel.objects.create(service_order=os_instance, area_number=1, label_text="A")
+        ImpactAreaLabel.objects.create(service_order=os_instance, area_number=2, label_text="B")
+        labels = list(os_instance.area_labels.all())
+        assert [label.area_number for label in labels] == [1, 2, 3]
