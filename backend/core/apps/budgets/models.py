@@ -42,6 +42,11 @@ class Budget(models.Model):
 
     @property
     def active_version(self) -> "BudgetVersion | None":
+        """Última versão (maior version_number).
+
+        N+1 WARNING: iterar queryset chamando .active_version = N queries.
+        Em listas, use Subquery/annotate no ViewSet (Ciclo 2).
+        """
         return self.versions.order_by("-version_number").first()
 
 
@@ -83,6 +88,9 @@ class BudgetVersion(models.Model):
     class Meta:
         unique_together = [("budget", "version_number")]
         ordering = ["-version_number"]
+        indexes = [
+            models.Index(fields=["status", "valid_until"], name="bv_status_valid_idx"),
+        ]
 
     def __str__(self) -> str:
         return self.status_label

@@ -83,9 +83,10 @@ class ServiceOrder(models.Model):
     policy_item = models.CharField(max_length=20, blank=True, default="")
     franchise_amount = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0"))
 
-    total_value = models.DecimalField(  # DEPRECATED: remover no Ciclo 2
+    total_value = models.DecimalField(
         max_digits=12, decimal_places=2, default=Decimal("0"),
-    )
+        help_text="DEPRECATED — remover no Ciclo 2. Use active_version.net_total",
+    )  # DEPRECATED: remover no Ciclo 2
     notes = models.TextField(blank=True, default="")
     is_active = models.BooleanField(default=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -108,6 +109,11 @@ class ServiceOrder(models.Model):
 
     @property
     def active_version(self) -> "ServiceOrderVersion | None":
+        """Última versão (maior version_number). Pode ter qualquer status.
+
+        N+1 WARNING: Iterar queryset de OS chamando .active_version dispara 1 query por instância.
+        Em listas, use Subquery/annotate no ViewSet queryset (implementacao no Ciclo 2).
+        """
         return self.versions.order_by("-version_number").first()
 
 
@@ -181,6 +187,10 @@ class ServiceOrderVersion(models.Model):
     class Meta:
         unique_together = [("service_order", "version_number")]
         ordering = ["-version_number"]
+        indexes = [
+            models.Index(fields=["status", "-created_at"], name="sov_status_created_idx"),
+            models.Index(fields=["source", "status"], name="sov_source_status_idx"),
+        ]
 
     def __str__(self) -> str:
         return self.status_label
