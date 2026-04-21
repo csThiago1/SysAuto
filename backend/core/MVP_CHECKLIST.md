@@ -32,6 +32,33 @@
 - [x] `requirements.txt` atualizado: psycopg3, simplejwt, httpx, cors-headers, dotenv
 - [x] `.env.example` criado para backend e frontend
 
+## Entregue no ciclo 3 — Módulo de Orçamentação (Foundation)
+
+- [x] Apps Django novos: `items`, `authz`, `budgets`
+- [x] Models de referência: `ItemOperationType`, `LaborCategory`, `NumberSequence`, `Insurer`
+- [x] `ItemFieldsMixin` abstract compartilhado entre Budget e OS
+- [x] `ItemOperation` polimórfica (FK nullable Budget/OS)
+- [x] `Budget` + `BudgetVersion` + `BudgetVersionItem`
+- [x] Evolução de `ServiceOrder` (customer_type, source_budget, insurer, casualty, franquia)
+- [x] `ServiceOrderVersion` + `ServiceOrderVersionItem`
+- [x] `ServiceOrderEvent` (timeline universal)
+- [x] `ServiceOrderParecer` + `ImpactAreaLabel`
+- [x] Data migration `ServiceOrderStatusHistory` → `ServiceOrderEvent`
+- [x] Seeds: operation types, labor categories, insurers (10), permissions (18), roles (6)
+- [x] `NumberAllocator` atômico (SELECT FOR UPDATE)
+- [x] `user_has_perm()` helper com precedência override
+- [x] Admin registrado pra debug
+- [x] Smoke test `scripts/smoke_foundation.py`
+
+## Próximo ciclo — Core services (Ciclo 2)
+
+- [ ] `BudgetService` — create, send, approve, reject, revision, clone, expire
+- [ ] `ServiceOrderService` — create_from_budget, change_status, create_new_version_from_import, approve_version
+- [ ] `ComplementoParticularService`
+- [ ] `PaymentService`
+- [ ] `OSEventLogger` com helper centralizado
+- [ ] Testes de services (>= 40 casos cobrindo transitions, approval, trava delivery)
+
 ## Próximo ciclo — prioridade alta
 
 - [ ] Subir docker-compose (`make dev`) e rodar `migrate` para validar as migrations.
