@@ -103,3 +103,133 @@ class TestBudgetServiceSend:
         v.save()
         with pytest.raises(ValidationError):
             BudgetService.send_to_customer(version=v, sent_by="alice")
+
+
+@pytest.mark.django_db
+class TestBudgetServiceApprove:
+
+    def _prepare_sent_version(self, person):
+        budget = BudgetService.create(
+            customer=person, vehicle_plate="A1", vehicle_description="x",
+            created_by="alice",
+        )
+        v = budget.active_version
+        BudgetVersionItem.objects.create(
+            version=v, description="PEÇA",
+            quantity=Decimal("1"), unit_price=Decimal("500"),
+            net_price=Decimal("500"), item_type="PART",
+        )
+        BudgetService.send_to_customer(version=v, sent_by="alice")
+        v.refresh_from_db()
+        return budget, v
+
+    def test_approve_creates_os(self, person):
+        budget, v = self._prepare_sent_version(person)
+        from apps.service_orders.models import ServiceOrder
+        os = BudgetService.approve(
+            version=v, approved_by="cliente-whatsapp",
+            evidence_s3_key="whatsapp://ok-print.jpg",
+        )
+        assert isinstance(os, ServiceOrder)
+        assert os.customer_type == "PARTICULAR"
+        assert os.source_budget == budget
+        assert os.active_version.items.count() == 1
+
+    def test_approve_marks_version_approved(self, person):
+        budget, v = self._prepare_sent_version(person)
+        BudgetService.approve(
+            version=v, approved_by="alice", evidence_s3_key="s3://ev.pdf",
+        )
+        v.refresh_from_db()
+        assert v.status == "approved"
+        assert v.approved_by == "alice"
+        assert v.approved_at is not None
+        assert v.approval_evidence_s3_key == "s3://ev.pdf"
+
+    def test_approve_supersedes_other_versions(self, person):
+        budget, v1 = self._prepare_sent_version(person)
+        # Cria v2 também em sent
+        v2 = BudgetVersion.objects.create(
+            budget=budget, version_number=2, status="sent",
+        )
+        BudgetService.approve(version=v1, approved_by="alice", evidence_s3_key="")
+        v2.refresh_from_db()
+        assert v2.status == "superseded"
+
+    def test_approve_links_budget_to_os(self, person):
+        budget, v = self._prepare_sent_version(person)
+        os = BudgetService.approve(version=v, approved_by="alice", evidence_s3_key="")
+        budget.refresh_from_db()
+        assert budget.service_order == os
+
+    def test_approve_rejects_non_sent(self, person):
+        budget = BudgetService.create(
+            customer=person, vehicle_plate="X", vehicle_description="y",
+            created_by="alice",
+        )
+        v = budget.active_version  # draft
+        with pytest.raises(ValidationError):
+            BudgetService.approve(version=v, approved_by="alice", evidence_s3_key="")
+
+    def test_approve_rejects_expired(self, person):
+        budget, v = self._prepare_sent_version(person)
+        # Forçar expirado
+        v.valid_until = timezone.now() - timedelta(days=1)
+        v.save()
+        with pytest.raises(ValidationError):
+            BudgetService.approve(version=v, approved_by="alice", evidence_s3_key="")
+
+
+@pytest.mark.django_db
+class TestBudgetServiceReject:
+
+    def test_reject_marks_version(self, person):
+        budget = BudgetService.create(
+            customer=person, vehicle_plate="Z", vehicle_description="w", created_by="a",
+        )
+        v = budget.active_version
+        v.status = "sent"
+        v.save()
+        BudgetService.reject(version=v)
+        v.refresh_from_db()
+        assert v.status == "rejected"
+
+    def test_reject_only_sent(self, person):
+        budget = BudgetService.create(
+            customer=person, vehicle_plate="Z2", vehicle_description="w", created_by="a",
+        )
+        v = budget.active_version  # draft
+        with pytest.raises(ValidationError):
+            BudgetService.reject(version=v)
+
+
+@pytest.mark.django_db
+class TestBudgetServiceRevision:
+
+    def test_revision_creates_v2_draft(self, person):
+        budget = BudgetService.create(
+            customer=person, vehicle_plate="R", vehicle_description="w", created_by="a",
+        )
+        v = budget.active_version
+        v.status = "sent"
+        v.save()
+        new_v = BudgetService.request_revision(version=v)
+        assert new_v.version_number == 2
+        assert new_v.status == "draft"
+        v.refresh_from_db()
+        assert v.status == "revision"
+
+    def test_revision_copies_items(self, person):
+        budget = BudgetService.create(
+            customer=person, vehicle_plate="R2", vehicle_description="w", created_by="a",
+        )
+        v = budget.active_version
+        BudgetVersionItem.objects.create(
+            version=v, description="X",
+            quantity=Decimal("1"), unit_price=Decimal("100"),
+            net_price=Decimal("100"),
+        )
+        v.status = "sent"
+        v.save()
+        new_v = BudgetService.request_revision(version=v)
+        assert new_v.items.count() == 1

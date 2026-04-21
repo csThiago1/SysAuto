@@ -109,6 +109,142 @@ class BudgetService:
 
         return version
 
+    @classmethod
+    @transaction.atomic
+    def approve(
+        cls,
+        *,
+        version: BudgetVersion,
+        approved_by: str,
+        evidence_s3_key: str = "",
+    ) -> "ServiceOrder":
+        """Aprova versão enviada e cria ServiceOrder particular.
+
+        Args:
+            version: BudgetVersion com status='sent'.
+            approved_by: nome/username de quem aprovou (auditoria).
+            evidence_s3_key: chave S3 da evidência de aprovação (WhatsApp print, assinatura, etc).
+
+        Returns:
+            ServiceOrder recém-criada vinculada ao Budget.
+
+        Raises:
+            ValidationError: se status != 'sent' ou se versão expirada.
+        """
+        from apps.service_orders.services import ServiceOrderService
+
+        if version.status != "sent":
+            raise ValidationError(
+                {"status": f"Só 'sent' pode ser aprovada (atual: {version.status})"}
+            )
+        if version.valid_until and version.valid_until < timezone.now():
+            raise ValidationError({"validity": "Orçamento expirado — crie um novo"})
+
+        version.status = "approved"
+        version.approved_at = timezone.now()
+        version.approved_by = approved_by
+        version.approval_evidence_s3_key = evidence_s3_key
+        version.save()
+
+        # Supersede versões irmãs não-terminais
+        version.budget.versions.exclude(pk=version.pk).exclude(
+            status__in=["approved", "rejected", "expired", "superseded"],
+        ).update(status="superseded")
+
+        # Cria OS particular
+        os = ServiceOrderService.create_from_budget(version=version)
+
+        version.budget.service_order = os
+        version.budget.save(update_fields=["service_order"])
+        return os
+
+    @classmethod
+    @transaction.atomic
+    def reject(cls, *, version: BudgetVersion) -> BudgetVersion:
+        """Marca versão como rejeitada (cliente disse não).
+
+        Args:
+            version: BudgetVersion com status='sent'.
+
+        Returns:
+            BudgetVersion atualizada com status='rejected'.
+
+        Raises:
+            ValidationError: se status != 'sent'.
+        """
+        if version.status != "sent":
+            raise ValidationError(
+                {"status": f"Só 'sent' pode ser rejeitada (atual: {version.status})"}
+            )
+        version.status = "rejected"
+        version.save(update_fields=["status"])
+        return version
+
+    @classmethod
+    @transaction.atomic
+    def request_revision(cls, *, version: BudgetVersion) -> BudgetVersion:
+        """Cliente pediu ajuste. Marca vN='revision', cria v+1 draft com items copiados.
+
+        Args:
+            version: BudgetVersion com status='sent'.
+
+        Returns:
+            Nova BudgetVersion em status='draft' com items copiados da versão anterior.
+
+        Raises:
+            ValidationError: se status != 'sent'.
+        """
+        if version.status != "sent":
+            raise ValidationError(
+                {"status": f"Só 'sent' pode entrar em revisão (atual: {version.status})"}
+            )
+
+        version.status = "revision"
+        version.save(update_fields=["status"])
+
+        new_version = BudgetVersion.objects.create(
+            budget=version.budget,
+            version_number=version.version_number + 1,
+            status="draft",
+            created_by=version.created_by,
+        )
+        cls._copy_items_between_versions(source=version, target=new_version)
+        return new_version
+
+    @classmethod
+    def _copy_items_between_versions(
+        cls, *, source: BudgetVersion, target: BudgetVersion,
+    ) -> None:
+        """Copia items de uma BudgetVersion pra outra, preservando operations.
+
+        Usado em request_revision para popular a nova versão draft com os
+        mesmos items da versão anterior, prontos para edição.
+        """
+        from apps.items.models import ItemOperation
+
+        shared_fields = [
+            "bucket", "payer_block", "impact_area", "item_type",
+            "description", "external_code", "part_type", "supplier",
+            "quantity", "unit_price", "unit_cost", "discount_pct", "net_price",
+            "flag_abaixo_padrao", "flag_acima_padrao", "flag_inclusao_manual",
+            "flag_codigo_diferente", "flag_servico_manual", "flag_peca_da_conta",
+            "sort_order",
+        ]
+        for item in source.items.all().prefetch_related("operations"):
+            new_item = BudgetVersionItem.objects.create(
+                version=target,
+                **{f: getattr(item, f) for f in shared_fields},
+            )
+            for op in item.operations.all():
+                ItemOperation.objects.create(
+                    item_budget=new_item,
+                    operation_type=op.operation_type,
+                    labor_category=op.labor_category,
+                    hours=op.hours,
+                    hourly_rate=op.hourly_rate,
+                    labor_cost=op.labor_cost,
+                )
+
     # ---- Helpers privados ----
 
     @classmethod
