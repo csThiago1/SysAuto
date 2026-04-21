@@ -22,4 +22,6 @@ class NumberAllocator:
         number = seq.next_number
         seq.next_number += 1
         seq.save(update_fields=["next_number"])
-        return f"{seq.prefix}{number:0{seq.padding}d}"
+        formatted = f"{seq.prefix}{number:0{seq.padding}d}"
+        logger.debug("Allocated %s #%d as %s", sequence_type, number, formatted)
+        return formatted
