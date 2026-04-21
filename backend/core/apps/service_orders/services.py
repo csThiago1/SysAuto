@@ -282,3 +282,139 @@ class ServiceOrderService:
             )
 
         return version
+
+    @classmethod
+    def _copy_items_from_version(cls, *, source: ServiceOrderVersion, target: ServiceOrderVersion) -> None:
+        """Copia ServiceOrderVersionItem entre duas versões da mesma OS, preservando operations."""
+        shared_fields = [
+            "bucket", "payer_block", "impact_area", "item_type",
+            "description", "external_code", "part_type", "supplier",
+            "quantity", "unit_price", "unit_cost", "discount_pct", "net_price",
+            "flag_abaixo_padrao", "flag_acima_padrao", "flag_inclusao_manual",
+            "flag_codigo_diferente", "flag_servico_manual", "flag_peca_da_conta",
+            "sort_order",
+        ]
+        for item in source.items.all().prefetch_related("operations"):
+            new_item = ServiceOrderVersionItem.objects.create(
+                version=target,
+                **{f: getattr(item, f) for f in shared_fields},
+            )
+            for op in item.operations.all():
+                ItemOperation.objects.create(
+                    item_so=new_item,
+                    operation_type=op.operation_type,
+                    labor_category=op.labor_category,
+                    hours=op.hours,
+                    hourly_rate=op.hourly_rate,
+                    labor_cost=op.labor_cost,
+                )
+
+    @classmethod
+    def _recalculate_totals(cls, version: ServiceOrderVersion) -> None:
+        """Calcula totais agregados + totais-por-bloco da versão."""
+        labor = Decimal("0")
+        parts = Decimal("0")
+        subtotal = Decimal("0")
+        discount = Decimal("0")
+        seguradora = Decimal("0")
+        complemento = Decimal("0")
+        franquia = Decimal("0")
+
+        items = version.items.all().prefetch_related("operations")
+        for item in items:
+            gross = item.unit_price * item.quantity
+            item_discount = gross - item.net_price
+            discount += item_discount
+            if item.item_type == "PART":
+                parts += item.net_price
+            subtotal += item.net_price
+            if item.payer_block == "SEGURADORA":
+                seguradora += item.net_price
+            elif item.payer_block == "COMPLEMENTO_PARTICULAR":
+                complemento += item.net_price
+            elif item.payer_block == "FRANQUIA":
+                franquia += item.net_price
+            for op in item.operations.all():
+                labor += op.labor_cost
+
+        version.labor_total = labor
+        version.parts_total = parts
+        version.subtotal = subtotal + labor
+        version.discount_total = discount
+        version.net_total = version.subtotal - version.discount_total
+        version.total_seguradora = seguradora
+        version.total_complemento_particular = complemento
+        version.total_franquia = franquia
+        version.save(update_fields=[
+            "labor_total", "parts_total", "subtotal", "discount_total",
+            "net_total", "total_seguradora", "total_complemento_particular",
+            "total_franquia",
+        ])
+
+
+class ComplementoParticularService:
+    """Adiciona itens de complemento particular a OS-seguradora existente.
+
+    Cria nova versão copiando itens anteriores + adicionando os complementos com
+    payer_block=COMPLEMENTO_PARTICULAR. Status 'approved' direto (cliente já
+    aprovou verbalmente/WhatsApp). Supersede versão anterior.
+    """
+
+    @classmethod
+    @transaction.atomic
+    def add_complement(
+        cls,
+        *,
+        service_order: ServiceOrder,
+        items_data: list[dict],
+        approved_by: str,
+    ) -> ServiceOrderVersion:
+        if service_order.customer_type != "SEGURADORA":
+            raise ValidationError({
+                "customer_type": (
+                    "Complemento particular só em OS seguradora. "
+                    "Para OS particular, use BudgetService."
+                ),
+            })
+
+        prev = service_order.active_version
+        if prev is None:
+            raise ValidationError(
+                {"version": "OS precisa ter pelo menos uma versão ativa"}
+            )
+
+        next_num = prev.version_number + 1
+        new_v = ServiceOrderVersion.objects.create(
+            service_order=service_order,
+            version_number=next_num,
+            source="manual",
+            status="approved",
+            hourly_rates=prev.hourly_rates,
+        )
+
+        # Copia items anteriores
+        ServiceOrderService._copy_items_from_version(source=prev, target=new_v)
+
+        # Adiciona complementos
+        for data in items_data:
+            data_copy = dict(data)
+            data_copy["payer_block"] = "COMPLEMENTO_PARTICULAR"
+            ServiceOrderVersionItem.objects.create(version=new_v, **data_copy)
+
+        # Recalcula totais
+        ServiceOrderService._recalculate_totals(new_v)
+
+        # Supersede anterior
+        prev.status = "superseded"
+        prev.save(update_fields=["status"])
+
+        OSEventLogger.log_event(
+            service_order, "VERSION_CREATED",
+            actor=approved_by,
+            payload={
+                "version": next_num,
+                "reason": "complemento_particular",
+                "items_added": len(items_data),
+            },
+        )
+        return new_v

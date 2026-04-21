@@ -475,3 +475,149 @@ class TestApproveVersion:
         os, v = self._setup(person)
         ServiceOrderService.approve_version(version=v, approved_by="manager")
         assert os.events.filter(event_type="VERSION_APPROVED").exists()
+
+
+from apps.service_orders.models import ServiceOrderVersionItem
+
+
+@pytest.mark.django_db
+class TestComplementoParticularService:
+
+    def _setup_os_seguradora(self, person):
+        yelum = Insurer.objects.get(code="yelum")
+        os = ServiceOrder.objects.create(
+            os_number="OS-CPL-1", customer=person, customer_type="SEGURADORA",
+            insurer=yelum, casualty_number="SIN-CPL",
+            vehicle_plate="CPL1234", vehicle_description="x",
+            status="repair", previous_status="",
+        )
+        v1 = ServiceOrderVersion.objects.create(
+            service_order=os, version_number=1, source="cilia",
+            external_version="100000.1", status="autorizado",
+            net_total=Decimal("5000"), labor_total=Decimal("1000"),
+            parts_total=Decimal("4000"),
+        )
+        ServiceOrderVersionItem.objects.create(
+            version=v1, description="PEÇA SEGURADORA",
+            payer_block="SEGURADORA",
+            quantity=Decimal("1"), unit_price=Decimal("4000"), net_price=Decimal("4000"),
+        )
+        return os, v1
+
+    def test_add_complement_creates_new_version(self, person):
+        from apps.service_orders.services import ComplementoParticularService
+        os, v1 = self._setup_os_seguradora(person)
+        new_v = ComplementoParticularService.add_complement(
+            service_order=os,
+            items_data=[
+                {
+                    "description": "PINTURA EXTRA",
+                    "quantity": Decimal("1"),
+                    "unit_price": Decimal("300"),
+                    "net_price": Decimal("300"),
+                    "item_type": "SERVICE",
+                }
+            ],
+            approved_by="alice",
+        )
+        assert new_v.version_number == 2
+        assert new_v.items.count() == 2  # peça seguradora + pintura extra
+
+    def test_complement_item_has_correct_payer_block(self, person):
+        from apps.service_orders.services import ComplementoParticularService
+        os, _ = self._setup_os_seguradora(person)
+        new_v = ComplementoParticularService.add_complement(
+            service_order=os,
+            items_data=[{
+                "description": "X", "quantity": Decimal("1"),
+                "unit_price": Decimal("100"), "net_price": Decimal("100"),
+                "item_type": "SERVICE",
+            }],
+            approved_by="alice",
+        )
+        complements = new_v.items.filter(payer_block="COMPLEMENTO_PARTICULAR")
+        assert complements.count() == 1
+
+    def test_complement_recalculates_block_totals(self, person):
+        from apps.service_orders.services import ComplementoParticularService
+        os, _ = self._setup_os_seguradora(person)
+        new_v = ComplementoParticularService.add_complement(
+            service_order=os,
+            items_data=[{
+                "description": "X", "quantity": Decimal("1"),
+                "unit_price": Decimal("500"), "net_price": Decimal("500"),
+                "item_type": "SERVICE",
+            }],
+            approved_by="alice",
+        )
+        new_v.refresh_from_db()
+        assert new_v.total_seguradora == Decimal("4000")
+        assert new_v.total_complemento_particular == Decimal("500")
+
+    def test_complement_supersedes_previous_version(self, person):
+        from apps.service_orders.services import ComplementoParticularService
+        os, v1 = self._setup_os_seguradora(person)
+        ComplementoParticularService.add_complement(
+            service_order=os,
+            items_data=[{
+                "description": "X", "quantity": Decimal("1"),
+                "unit_price": Decimal("100"), "net_price": Decimal("100"),
+                "item_type": "SERVICE",
+            }],
+            approved_by="alice",
+        )
+        v1.refresh_from_db()
+        assert v1.status == "superseded"
+
+    def test_complement_emits_version_created_event(self, person):
+        from apps.service_orders.services import ComplementoParticularService
+        os, _ = self._setup_os_seguradora(person)
+        ComplementoParticularService.add_complement(
+            service_order=os,
+            items_data=[{
+                "description": "X", "quantity": Decimal("1"),
+                "unit_price": Decimal("100"), "net_price": Decimal("100"),
+                "item_type": "SERVICE",
+            }],
+            approved_by="alice",
+        )
+        events = os.events.filter(event_type="VERSION_CREATED")
+        assert events.count() == 1
+        ev = events.first()
+        assert ev.actor == "alice"
+        assert ev.payload["reason"] == "complemento_particular"
+
+    def test_complement_only_on_seguradora(self, person):
+        from apps.service_orders.services import ComplementoParticularService
+        os = ServiceOrder.objects.create(
+            os_number="OS-CPL-PART", customer=person, customer_type="PARTICULAR",
+            vehicle_plate="CPLPART", vehicle_description="y",
+        )
+        with pytest.raises(ValidationError):
+            ComplementoParticularService.add_complement(
+                service_order=os,
+                items_data=[{
+                    "description": "X", "quantity": Decimal("1"),
+                    "unit_price": Decimal("100"), "net_price": Decimal("100"),
+                }],
+                approved_by="alice",
+            )
+
+    def test_complement_requires_active_version(self, person):
+        from apps.service_orders.services import ComplementoParticularService
+        yelum = Insurer.objects.get(code="yelum")
+        os = ServiceOrder.objects.create(
+            os_number="OS-CPL-EMPTY", customer=person, customer_type="SEGURADORA",
+            insurer=yelum, casualty_number="SIN-EMPTY",
+            vehicle_plate="EMP", vehicle_description="z",
+        )
+        # Sem nenhuma versão
+        with pytest.raises(ValidationError):
+            ComplementoParticularService.add_complement(
+                service_order=os,
+                items_data=[{
+                    "description": "X", "quantity": Decimal("1"),
+                    "unit_price": Decimal("100"), "net_price": Decimal("100"),
+                }],
+                approved_by="alice",
+            )
