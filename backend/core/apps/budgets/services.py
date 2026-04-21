@@ -245,6 +245,41 @@ class BudgetService:
                     labor_cost=op.labor_cost,
                 )
 
+    @classmethod
+    @transaction.atomic
+    def clone(cls, *, source_budget: Budget, created_by: str) -> Budget:
+        """Clona budget arquivado (rejected/expired) pra reutilizar dados.
+
+        Preserva `cloned_from` FK pra rastreabilidade. Copia itens da última
+        versão não-draft do source (tipicamente a que foi enviada ao cliente).
+        """
+        new_budget = Budget.objects.create(
+            number=NumberAllocator.allocate("BUDGET"),
+            customer=source_budget.customer,
+            vehicle_plate=source_budget.vehicle_plate,
+            vehicle_description=source_budget.vehicle_description,
+            cloned_from=source_budget,
+        )
+        new_v = BudgetVersion.objects.create(
+            budget=new_budget, version_number=1,
+            status="draft", created_by=created_by,
+        )
+        source_v = source_budget.versions.exclude(status="draft").order_by("-version_number").first()
+        if source_v:
+            cls._copy_items_between_versions(source=source_v, target=new_v)
+        return new_budget
+
+    @classmethod
+    def expire_stale_versions(cls) -> int:
+        """Marca versões 'sent' com valid_until < now como 'expired'.
+
+        Retorna quantidade atualizada. Celery task `expire_stale_budgets`
+        roda 1x por dia via beat schedule.
+        """
+        return BudgetVersion.objects.filter(
+            status="sent", valid_until__lt=timezone.now(),
+        ).update(status="expired")
+
     # ---- Helpers privados ----
 
     @classmethod
