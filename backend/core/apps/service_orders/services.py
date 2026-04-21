@@ -7,8 +7,8 @@ from apps.items.models import ItemOperation
 from apps.items.services import NumberAllocator
 
 from .events import OSEventLogger
-from .kanban import VALID_TRANSITIONS
-from .models import ServiceOrder, ServiceOrderStatusHistory, ServiceOrderVersion, ServiceOrderVersionItem
+from .kanban import STATES_WITH_BUDGET_REENTRY, VALID_TRANSITIONS
+from .models import ServiceOrder, ServiceOrderVersion, ServiceOrderVersionItem
 
 
 class ServiceOrderService:
@@ -105,28 +105,72 @@ class ServiceOrderService:
         new_status: str,
         changed_by: str = "Sistema",
         notes: str = "",
+        is_auto: bool = False,
     ) -> ServiceOrder:
-        current_status = service_order.status
-        allowed_statuses = VALID_TRANSITIONS.get(current_status, [])
+        """Valida transição, muda status, loga evento, aplica travas.
 
-        if new_status not in allowed_statuses:
-            raise ValidationError(
-                {
-                    "status": (
-                        f"Transição inválida: {current_status} -> {new_status}. "
-                        f"Permitidos: {allowed_statuses}"
-                    )
-                }
-            )
+        Args:
+            service_order: OS a ser alterada.
+            new_status: próximo status. Validado contra VALID_TRANSITIONS.
+            changed_by: identificação do agente (username ou "Sistema").
+            notes: observação livre para a timeline.
+            is_auto: se True, evento é "AUTO_TRANSITION"; se False, "STATUS_CHANGE".
+
+        Raises:
+            ValidationError: se transição inválida ou trava de delivery ativada.
+        """
+        current = service_order.status
+        allowed = VALID_TRANSITIONS.get(current, [])
+        if new_status not in allowed:
+            raise ValidationError({
+                "status": f"Transição inválida: {current} → {new_status}. Permitidos: {allowed}",
+            })
+
+        # Trava: delivery exige NFS-e (particular) ou versão autorizada (seguradora)
+        if new_status == "delivered":
+            ok, reason = cls._can_deliver(service_order)
+            if not ok:
+                raise ValidationError({"delivery": reason})
+
+        # Ao entrar em 'budget' a partir de estado de reparo, salva previous_status
+        # pra poder retomar depois que a versão for aprovada
+        if new_status == "budget" and current in STATES_WITH_BUDGET_REENTRY:
+            service_order.previous_status = current
 
         service_order.status = new_status
-        service_order.save(update_fields=["status", "updated_at"])
+        service_order.save(update_fields=["status", "previous_status", "updated_at"])
 
-        ServiceOrderStatusHistory.objects.create(
-            service_order=service_order,
-            from_status=current_status,
-            to_status=new_status,
-            changed_by=changed_by,
-            notes=notes,
+        OSEventLogger.log_event(
+            service_order,
+            "AUTO_TRANSITION" if is_auto else "STATUS_CHANGE",
+            actor=changed_by,
+            from_state=current,
+            to_state=new_status,
+            payload={"notes": notes} if notes else {},
         )
         return service_order
+
+    @classmethod
+    def _can_deliver(cls, os: ServiceOrder) -> tuple[bool, str]:
+        """Aplica trava antes de ready → delivered.
+
+        - PARTICULAR: precisa ter pelo menos um Payment com fiscal_doc_ref preenchido
+          (stub de NFS-e emitida; Ciclo 5 substitui por FK real em fiscal.FiscalDocument).
+        - SEGURADORA: versão ativa deve estar em status "autorizado".
+        """
+        if os.customer_type == "PARTICULAR":
+            from apps.payments.models import Payment
+
+            has_nfse = Payment.objects.filter(
+                service_order=os,
+                payer_block="PARTICULAR",
+                fiscal_doc_ref__gt="",
+            ).exists()
+            if not has_nfse:
+                return False, "NFS-e pendente — emitir antes da entrega"
+        else:  # SEGURADORA
+            active = os.active_version
+            if not active or active.status != "autorizado":
+                label = active.external_version if active else "?"
+                return False, f"Versão {label} não autorizada"
+        return True, ""
