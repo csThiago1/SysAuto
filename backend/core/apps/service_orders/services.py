@@ -1,7 +1,7 @@
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
 
-from .kanban import STATES_WITH_BUDGET_REENTRY, VALID_TRANSITIONS
+from .kanban import VALID_TRANSITIONS
 from .models import ServiceOrder, ServiceOrderStatusHistory
 
 

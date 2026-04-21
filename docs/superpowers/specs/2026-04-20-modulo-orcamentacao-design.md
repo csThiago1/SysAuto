@@ -946,7 +946,7 @@ from .kanban import try_auto_transition
 
 
 VALID_TRANSITIONS: Final[dict[str, list[str]]] = {
-    "reception": ["initial_survey", "cancelled", "budget"],
+    "reception": ["initial_survey", "cancelled"],  # budget NÃO: segue CLAUDE.md
     "initial_survey": ["budget"],
     "budget": ["waiting_parts", "repair"],
     "waiting_parts": ["repair"],

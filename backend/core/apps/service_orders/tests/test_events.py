@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 import pytest
 from django.utils import timezone
 
@@ -66,8 +64,6 @@ class TestDataMigrationStatusHistory:
 
     def test_copy_function_creates_event(self, person):
         from datetime import timedelta
-
-        from django.utils import timezone
 
         os = ServiceOrder.objects.create(
             os_number="OS-DM-1", customer=person,
