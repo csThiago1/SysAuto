@@ -63,6 +63,23 @@
 - [x] 140 testes PASS (60 Ciclo 01 + 80 Ciclo 02)
 - [x] Smoke integration `scripts/smoke_ciclo2.py`
 
+## Entregue no Ciclo 05 — Módulo de Orçamentação (API REST + PDF)
+
+- [x] drf-spectacular (OpenAPI) + SwaggerUI em `/api/v1/schema/swagger/`
+- [x] Reference endpoints: operation-types, labor-categories, insurers (15 endpoints)
+- [x] BudgetViewSet + nested versions + items (CRUD + actions send/approve/reject/revision/clone + PDF download)
+- [x] ServiceOrderViewSet + actions (change-status, complement, events, pareceres, approve-version)
+- [x] PaymentViewSet (nested sob ServiceOrder)
+- [x] PDF engine real (WeasyPrint) com templates DS Car + fallback HTML
+- [x] 174 testes PASS (60 Ciclo 01 + 80 Ciclo 02 + 34 Ciclo 03A)
+- [x] Smoke E2E `scripts/smoke_ciclo3a.py` via APIClient
+
+## Próximo — Ciclo 03B: Frontend
+- [ ] Next.js consumindo API real
+- [ ] Zod schemas + TanStack Query hooks
+- [ ] Componentes Budget + OS V2
+- [ ] Conectar ao `/api/v1/` e substituir mockData.ts
+
 ## Próximo ciclo — API + Frontend base (Ciclo 3)
 
 - [ ] ViewSets DRF + serializers (Budget, OS, Payment)

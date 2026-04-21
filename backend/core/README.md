@@ -141,6 +141,52 @@ celery -A config beat -l info
 python manage.py shell < scripts/smoke_ciclo2.py
 ```
 
+## Módulo de Orçamentação (Ciclo 03A — API REST + PDF)
+
+API REST exposta em `/api/v1/`. Docs interativos em `/api/v1/schema/swagger/`.
+
+### Endpoints principais
+
+```
+# Reference data (ReadOnly)
+GET  /api/v1/items/operation-types/
+GET  /api/v1/items/labor-categories/
+GET  /api/v1/insurers/
+
+# Budget
+GET/POST /api/v1/budgets/
+GET/POST /api/v1/budgets/{id}/versions/
+GET/POST /api/v1/budgets/{id}/versions/{v}/items/
+POST /api/v1/budgets/{id}/versions/{v}/send/
+POST /api/v1/budgets/{id}/versions/{v}/approve/
+POST /api/v1/budgets/{id}/versions/{v}/reject/
+POST /api/v1/budgets/{id}/versions/{v}/revision/
+POST /api/v1/budgets/{id}/clone/
+GET  /api/v1/budgets/{id}/versions/{v}/pdf/
+
+# ServiceOrder
+GET  /api/v1/service-orders/
+POST /api/v1/service-orders/{id}/change-status/
+POST /api/v1/service-orders/{id}/complement/
+GET  /api/v1/service-orders/{id}/events/
+GET/POST /api/v1/service-orders/{id}/pareceres/
+POST /api/v1/service-orders/{id}/versions/{v}/approve/
+
+# Payment (nested sob ServiceOrder)
+GET/POST /api/v1/service-orders/{id}/payments/
+```
+
+### Smoke E2E
+
+```bash
+python manage.py shell < scripts/smoke_ciclo3a.py
+```
+
+### OpenAPI
+
+- Schema: `GET /api/v1/schema/`
+- Swagger UI: `/api/v1/schema/swagger/`
+
 ## Observações importantes
 
 - Esta base é o primeiro passo do MVP backend.
