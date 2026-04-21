@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     "apps.vehicles",
     "apps.items",
     "apps.authz",
+    "apps.budgets",
 ]
 
 MIDDLEWARE = [
