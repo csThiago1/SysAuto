@@ -153,3 +153,9 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
 ).split(",")
 
 CORS_ALLOW_CREDENTIALS = True
+
+# ── Cilia API ─────────────────────────────────────────────────────────────────
+CILIA_BASE_URL = os.getenv("CILIA_BASE_URL", "https://sistema.cilia.com.br")
+CILIA_AUTH_TOKEN = os.getenv("CILIA_AUTH_TOKEN", "")
+CILIA_TIMEOUT_SECONDS = int(os.getenv("CILIA_TIMEOUT_SECONDS", "30"))
+CILIA_POLLING_INTERVAL_MINUTES = int(os.getenv("CILIA_POLLING_INTERVAL_MINUTES", "15"))

@@ -42,3 +42,5 @@ pytest-django>=4.8,<5.0
 pytest-cov>=5.0,<6.0
 factory-boy>=3.3,<4.0
 freezegun>=1.5,<2.0
+# Test stubbing de httpx
+respx>=0.21,<1.0
