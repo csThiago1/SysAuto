@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "apps.authz",
     "apps.budgets",
     "apps.payments",
+    "apps.pdf_engine",
     "drf_spectacular",
 ]
 

@@ -90,7 +90,8 @@ class TestBudgetServiceSend:
         _, v, _ = self._create_budget_with_items(person)
         sent = BudgetService.send_to_customer(version=v, sent_by="alice")
         assert sent.pdf_s3_key  # não vazio
-        assert sent.pdf_s3_key.startswith("stub://")
+        # Substituído por PDFService no Ciclo 03 — chave agora no formato budgets/
+        assert sent.pdf_s3_key.startswith("budgets/")
 
     def test_send_computes_content_hash(self, person):
         _, v, _ = self._create_budget_with_items(person)

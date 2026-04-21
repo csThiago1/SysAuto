@@ -180,3 +180,25 @@ class TestBudgetItemAPI:
             format="json",
         )
         assert resp.status_code == 400
+
+
+@pytest.mark.django_db
+class TestPDFEndpoint:
+
+    def test_pdf_download(self, auth_client, person):
+        budget = BudgetService.create(
+            customer=person, vehicle_plate="PDF1", vehicle_description="Fiat Uno 2020", created_by="u",
+        )
+        v = budget.active_version
+        BudgetVersionItem.objects.create(
+            version=v, description="Teste PDF",
+            quantity=Decimal("1"), unit_price=Decimal("100"),
+            net_price=Decimal("100"),
+        )
+        BudgetService.send_to_customer(version=v, sent_by="u")
+
+        resp = auth_client.get(f"/api/v1/budgets/{budget.pk}/versions/{v.pk}/pdf/")
+        assert resp.status_code == 200
+        # WeasyPrint retorna application/pdf; fallback retorna text/html
+        assert resp["Content-Type"] in ("application/pdf", "text/html; charset=utf-8")
+        assert len(resp.content) > 100  # conteúdo não-vazio

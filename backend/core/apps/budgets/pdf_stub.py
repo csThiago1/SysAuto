@@ -1,6 +1,6 @@
-"""Stub de geração de PDF. Substituído por WeasyPrint real no Ciclo 5.
-
-Retorna uma chave S3 simulada; não gera arquivo real.
+"""DEPRECATED: substituído por apps.pdf_engine.services.PDFService no Ciclo 03.
+   Mantido apenas para retrocompat de testes antigos.
+   Remover no Ciclo 5 quando S3Service.put_pdf estiver integrado.
 """
 from __future__ import annotations
 

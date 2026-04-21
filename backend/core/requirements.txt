@@ -33,6 +33,9 @@ drf-spectacular>=0.27,<1.0
 # Nested routers for DRF
 drf-nested-routers>=0.94,<1.0
 
+# PDF generation (opcional — fallback pra HTML se libs nativas não instaladas)
+weasyprint>=62,<63
+
 # Testes
 pytest>=8.0,<9.0
 pytest-django>=4.8,<5.0

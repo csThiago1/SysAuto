@@ -1,6 +1,7 @@
 # apps/budgets/views.py
 from __future__ import annotations
 
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -102,6 +103,18 @@ class BudgetVersionViewSet(viewsets.ReadOnlyModelViewSet):
         version = self.get_object()
         new_v = BudgetService.request_revision(version=version)
         return Response(BudgetVersionReadSerializer(new_v).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["get"], url_path="pdf")
+    def pdf(self, request, budget_pk: str | None = None, pk: str | None = None) -> HttpResponse:
+        """Download do PDF do orçamento. WeasyPrint real ou fallback HTML."""
+        from apps.pdf_engine.services import PDFService
+        version = self.get_object()
+        pdf_bytes = PDFService.render_budget(version)
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        response["Content-Disposition"] = (
+            f'inline; filename="orcamento-{version.budget.number}-v{version.version_number}.pdf"'
+        )
+        return response
 
 
 class BudgetVersionItemViewSet(viewsets.ModelViewSet):

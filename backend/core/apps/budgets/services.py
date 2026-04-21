@@ -19,8 +19,9 @@ from rest_framework.exceptions import ValidationError
 from apps.items.services import NumberAllocator
 from apps.persons.models import Person
 
+from apps.pdf_engine.services import PDFService
+
 from .models import Budget, BudgetVersion, BudgetVersionItem
-from .pdf_stub import render_budget_pdf_stub
 
 
 BUDGET_VALIDITY_DAYS = 30
@@ -101,9 +102,13 @@ class BudgetService:
         version.status = "sent"
         version.sent_at = now
         version.valid_until = now + timedelta(days=BUDGET_VALIDITY_DAYS)
-        version.pdf_s3_key = render_budget_pdf_stub(
-            version.budget.number, version.version_number,
-        )
+        # Gera PDF real (ou fallback HTML bytes se WeasyPrint indisponível em dev)
+        pdf_bytes = PDFService.render_budget(version)
+        pdf_key = PDFService.budget_pdf_key(version.budget.number, version.version_number)
+        # Ciclo 5: salvar pdf_bytes em S3 via S3Service.put_pdf(pdf_key, pdf_bytes)
+        # Por ora: salva apenas a key; bytes ficam em memória
+        del pdf_bytes  # evitar warning de variável não usada
+        version.pdf_s3_key = pdf_key
         version.content_hash = cls._compute_hash(version)
         version.save()
 
