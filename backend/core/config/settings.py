@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "apps.service_orders",
     "apps.vehicles",
     "apps.items",
+    "apps.authz",
 ]
 
 MIDDLEWARE = [
