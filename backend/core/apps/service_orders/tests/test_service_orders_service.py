@@ -317,3 +317,161 @@ class TestDeliveryTrava:
         assert ev is not None
         assert ev.from_state == "ready"
         assert ev.to_state == "delivered"
+
+
+from dataclasses import dataclass, field
+
+
+@dataclass
+class _FakeParsedBudget:
+    """Mock do ParsedBudget (dataclass real fica no Ciclo 4)."""
+    source: str = "cilia"
+    external_version: str = ""
+    external_numero_vistoria: str = ""
+    external_integration_id: str = ""
+    external_status: str = "analisado"
+    hourly_rates: dict = field(default_factory=dict)
+    global_discount_pct: Decimal = Decimal("0")
+    raw_hash: str = ""
+
+
+@pytest.mark.django_db
+class TestCreateNewVersionFromImport:
+
+    def _make_os_seguradora(self, person):
+        yelum = Insurer.objects.get(code="yelum")
+        return ServiceOrder.objects.create(
+            os_number="OS-IMP-1", customer=person, customer_type="SEGURADORA",
+            insurer=yelum, casualty_number="SIN-IMP-1",
+            external_budget_number="821980",
+            vehicle_plate="IMP1234", vehicle_description="Kicks",
+            status="reception",
+        )
+
+    def test_creates_version_numbered_next(self, person):
+        os = self._make_os_seguradora(person)
+        ServiceOrderVersion.objects.create(
+            service_order=os, version_number=1, source="cilia",
+            external_version="821980.1", status="analisado",
+        )
+        parsed = _FakeParsedBudget(
+            source="cilia", external_version="821980.2",
+            external_status="analisado", raw_hash="abc",
+        )
+        new_v = ServiceOrderService.create_new_version_from_import(
+            service_order=os, parsed_budget=parsed, import_attempt=None,
+        )
+        assert new_v.version_number == 2
+        assert new_v.external_version == "821980.2"
+
+    def test_first_version_is_v1(self, person):
+        os = self._make_os_seguradora(person)  # sem versions ainda
+        parsed = _FakeParsedBudget(external_version="999.1", raw_hash="h")
+        new_v = ServiceOrderService.create_new_version_from_import(
+            service_order=os, parsed_budget=parsed, import_attempt=None,
+        )
+        assert new_v.version_number == 1
+
+    def test_emits_version_created_and_import_events(self, person):
+        os = self._make_os_seguradora(person)
+        parsed = _FakeParsedBudget(external_version="821980.1", raw_hash="h")
+        ServiceOrderService.create_new_version_from_import(
+            service_order=os, parsed_budget=parsed, import_attempt=None,
+        )
+        assert os.events.filter(event_type="VERSION_CREATED").exists()
+        assert os.events.filter(event_type="IMPORT_RECEIVED").exists()
+
+    def test_pauses_os_in_budget_if_not_reception(self, person):
+        os = self._make_os_seguradora(person)
+        os.status = "repair"
+        os.save()
+        parsed = _FakeParsedBudget(external_version="821980.2", raw_hash="h")
+        ServiceOrderService.create_new_version_from_import(
+            service_order=os, parsed_budget=parsed, import_attempt=None,
+        )
+        os.refresh_from_db()
+        assert os.status == "budget"
+        assert os.previous_status == "repair"
+
+    def test_does_not_pause_if_reception(self, person):
+        os = self._make_os_seguradora(person)
+        os.status = "reception"
+        os.save()
+        parsed = _FakeParsedBudget(external_version="821980.1", raw_hash="h")
+        ServiceOrderService.create_new_version_from_import(
+            service_order=os, parsed_budget=parsed, import_attempt=None,
+        )
+        os.refresh_from_db()
+        assert os.status == "reception"
+
+    def test_does_not_pause_if_already_in_budget(self, person):
+        os = self._make_os_seguradora(person)
+        os.status = "budget"
+        os.save()
+        parsed = _FakeParsedBudget(external_version="821980.2", raw_hash="h")
+        ServiceOrderService.create_new_version_from_import(
+            service_order=os, parsed_budget=parsed, import_attempt=None,
+        )
+        os.refresh_from_db()
+        assert os.status == "budget"
+
+
+@pytest.mark.django_db
+class TestApproveVersion:
+
+    def _setup(self, person):
+        yelum = Insurer.objects.get(code="yelum")
+        os = ServiceOrder.objects.create(
+            os_number="OS-APV-1", customer=person, customer_type="SEGURADORA",
+            insurer=yelum, casualty_number="SIN-APV-1",
+            vehicle_plate="APV1234", vehicle_description="x",
+            status="budget",
+            previous_status="repair",
+        )
+        v = ServiceOrderVersion.objects.create(
+            service_order=os, version_number=1, source="cilia",
+            external_version="999999.1", status="em_analise",
+        )
+        return os, v
+
+    def test_approve_seguradora_marks_autorizado(self, person):
+        os, v = self._setup(person)
+        ServiceOrderService.approve_version(version=v, approved_by="manager")
+        v.refresh_from_db()
+        assert v.status == "autorizado"
+        assert v.approved_at is not None
+
+    def test_approve_returns_os_to_previous_status(self, person):
+        os, v = self._setup(person)
+        ServiceOrderService.approve_version(version=v, approved_by="manager")
+        os.refresh_from_db()
+        assert os.status == "repair"  # voltou
+
+    def test_approve_particular_uses_approved_status(self, person):
+        os = ServiceOrder.objects.create(
+            os_number="OS-APV-2", customer=person, customer_type="PARTICULAR",
+            vehicle_plate="APV5678", vehicle_description="x",
+            status="budget",
+            previous_status="",
+        )
+        v = ServiceOrderVersion.objects.create(
+            service_order=os, version_number=1, source="manual", status="pending",
+        )
+        ServiceOrderService.approve_version(version=v, approved_by="alice")
+        v.refresh_from_db()
+        assert v.status == "approved"
+
+    def test_approve_supersedes_others(self, person):
+        os, v1 = self._setup(person)
+        v2 = ServiceOrderVersion.objects.create(
+            service_order=os, version_number=2, source="cilia",
+            external_version="999999.2", status="em_analise",
+        )
+        ServiceOrderService.approve_version(version=v2, approved_by="manager")
+        v1.refresh_from_db()
+        assert v1.status == "superseded"
+
+    def test_approve_emits_event(self, person):
+        os, v = self._setup(person)
+        ServiceOrderService.approve_version(version=v, approved_by="manager")
+        assert os.events.filter(event_type="VERSION_APPROVED").exists()

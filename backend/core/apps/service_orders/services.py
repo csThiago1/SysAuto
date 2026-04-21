@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.db import transaction
+from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from apps.items.models import ItemOperation
@@ -174,3 +175,110 @@ class ServiceOrderService:
                 label = active.external_version if active else "?"
                 return False, f"Versão {label} não autorizada"
         return True, ""
+
+    @classmethod
+    @transaction.atomic
+    def create_new_version_from_import(
+        cls,
+        *,
+        service_order: ServiceOrder,
+        parsed_budget,
+        import_attempt=None,
+    ) -> ServiceOrderVersion:
+        """Cria nova ServiceOrderVersion a partir de parse de importação.
+
+        Se OS estiver em estado de reparo (não reception/budget/terminal), pausa
+        em 'budget' pra consultor revisar antes de aceitar.
+
+        Args:
+            service_order: OS existente (matched por sinistro antes).
+            parsed_budget: objeto com atributos source, external_version, etc.
+                No Ciclo 4 será a dataclass ParsedBudget do importers module;
+                por ora usamos duck-typing via getattr.
+            import_attempt: instância de ImportAttempt (Ciclo 4) ou None em testes.
+        """
+        next_num = 1
+        if service_order.active_version:
+            next_num = service_order.active_version.version_number + 1
+
+        version = ServiceOrderVersion.objects.create(
+            service_order=service_order,
+            version_number=next_num,
+            source=parsed_budget.source,
+            external_version=getattr(parsed_budget, "external_version", ""),
+            external_numero_vistoria=getattr(parsed_budget, "external_numero_vistoria", ""),
+            external_integration_id=getattr(parsed_budget, "external_integration_id", ""),
+            status=getattr(parsed_budget, "external_status", "analisado"),
+            content_hash=getattr(parsed_budget, "raw_hash", ""),
+            raw_payload_s3_key=(
+                import_attempt.raw_payload_s3_key if import_attempt else ""
+            ),
+            hourly_rates=getattr(parsed_budget, "hourly_rates", {}),
+            global_discount_pct=getattr(parsed_budget, "global_discount_pct", Decimal("0")),
+        )
+
+        # TODO(Ciclo 4): ImportService.persist_items(parsed_budget=parsed_budget, version=version)
+
+        OSEventLogger.log_event(
+            service_order, "VERSION_CREATED",
+            payload={
+                "version": next_num,
+                "source": parsed_budget.source,
+                "external": getattr(parsed_budget, "external_version", ""),
+            },
+        )
+        OSEventLogger.log_event(
+            service_order, "IMPORT_RECEIVED",
+            payload={
+                "source": parsed_budget.source,
+                "attempt_id": import_attempt.pk if import_attempt else None,
+            },
+        )
+
+        # Pausa se OS estava em estado de reparo
+        non_pausable = {"reception", "budget", "delivered", "cancelled",
+                        "ready", "final_survey"}
+        if service_order.status not in non_pausable:
+            cls.change_status(
+                service_order=service_order, new_status="budget",
+                changed_by="Sistema",
+                notes=f"Nova versão importada: {version.status_label}",
+                is_auto=True,
+            )
+        return version
+
+    @classmethod
+    @transaction.atomic
+    def approve_version(
+        cls,
+        *,
+        version: ServiceOrderVersion,
+        approved_by: str,
+    ) -> ServiceOrderVersion:
+        """Aprova versão da OS. Se OS está em 'budget' (pausa), retorna ao previous_status."""
+        os = version.service_order
+        version.status = "autorizado" if os.customer_type == "SEGURADORA" else "approved"
+        version.approved_at = timezone.now()
+        version.save(update_fields=["status", "approved_at"])
+
+        # Supersede outras versões não-terminais
+        os.versions.exclude(pk=version.pk).exclude(
+            status__in=["autorizado", "approved", "rejected", "negado", "superseded"],
+        ).update(status="superseded")
+
+        OSEventLogger.log_event(
+            os, "VERSION_APPROVED",
+            actor=approved_by,
+            payload={"version": version.version_number},
+        )
+
+        # Se OS está em 'budget' por pausa, retorna ao previous_status
+        if os.status == "budget" and os.previous_status:
+            cls.change_status(
+                service_order=os, new_status=os.previous_status,
+                changed_by="Sistema",
+                notes=f"Auto: versão {version.version_number} aprovada, retomando",
+                is_auto=True,
+            )
+
+        return version
