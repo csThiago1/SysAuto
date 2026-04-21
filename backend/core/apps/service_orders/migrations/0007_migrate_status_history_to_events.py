@@ -29,7 +29,7 @@ def reverse_copy(apps, schema_editor) -> None:
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("service_orders", "0006_add_event_model"),
+        ("service_orders", "0008_fix_event_created_at"),
     ]
 
     operations = [

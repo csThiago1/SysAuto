@@ -63,14 +63,24 @@ class TestDataMigrationStatusHistory:
     """
 
     def test_copy_function_creates_event(self, person):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
         os = ServiceOrder.objects.create(
             os_number="OS-DM-1", customer=person,
             vehicle_plate="DM1A234", vehicle_description="Test",
         )
-        ServiceOrderStatusHistory.objects.create(
+
+        # Criar StatusHistory com timestamp antigo (simular histórico)
+        old_timestamp = timezone.now() - timedelta(days=90)
+        h = ServiceOrderStatusHistory.objects.create(
             service_order=os, from_status="reception", to_status="initial_survey",
             changed_by="alice", notes="first move",
         )
+        # Forçar o changed_at pro passado (auto_now_add não permite direto; update via queryset)
+        ServiceOrderStatusHistory.objects.filter(pk=h.pk).update(changed_at=old_timestamp)
+        h.refresh_from_db()
 
         # Invocar a função de copy manualmente (simula data migration)
         import os as os_module
@@ -103,3 +113,7 @@ class TestDataMigrationStatusHistory:
         assert ev.to_state == "initial_survey"
         assert ev.actor == "alice"
         assert ev.payload == {"notes": "first move"}
+        # Critical: timestamp histórico preservado (não sobrescrito por auto_now_add)
+        assert abs((ev.created_at - old_timestamp).total_seconds()) < 2, (
+            f"Timestamp não preservado: event.created_at={ev.created_at}, expected={old_timestamp}"
+        )

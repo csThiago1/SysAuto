@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.db import models
+from django.utils import timezone
 
 from apps.items.mixins import ItemFieldsMixin
 from apps.persons.models import Person
@@ -242,7 +243,7 @@ class ServiceOrderEvent(models.Model):
     from_state = models.CharField(max_length=30, blank=True, default="")
     to_state = models.CharField(max_length=30, blank=True, default="")
 
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    created_at = models.DateTimeField(default=timezone.now, db_index=True, editable=False)
 
     class Meta:
         ordering = ["-created_at"]
