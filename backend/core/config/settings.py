@@ -21,7 +21,7 @@ INSTALLED_APPS = [
     "apps.persons",
     "apps.service_orders",
     "apps.vehicles",
-    "apps.items",  # ← NOVO
+    "apps.items",
 ]
 
 MIDDLEWARE = [

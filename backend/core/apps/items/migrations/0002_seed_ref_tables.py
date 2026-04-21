@@ -25,7 +25,7 @@ LABOR_CATEGORIES = [
 ]
 
 
-def seed_operation_types(apps, schema_editor):
+def seed_operation_types(apps, schema_editor) -> None:
     ItemOperationType = apps.get_model("items", "ItemOperationType")
     for code, label, desc, order in OPERATION_TYPES:
         ItemOperationType.objects.get_or_create(
@@ -34,7 +34,7 @@ def seed_operation_types(apps, schema_editor):
         )
 
 
-def seed_labor_categories(apps, schema_editor):
+def seed_labor_categories(apps, schema_editor) -> None:
     LaborCategory = apps.get_model("items", "LaborCategory")
     for code, label, desc, order in LABOR_CATEGORIES:
         LaborCategory.objects.get_or_create(
@@ -43,7 +43,7 @@ def seed_labor_categories(apps, schema_editor):
         )
 
 
-def noop_reverse(apps, schema_editor):
+def noop_reverse(apps, schema_editor) -> None:
     pass
 
 
