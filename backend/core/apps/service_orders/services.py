@@ -1,28 +1,8 @@
-from typing import Final
-
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
 
+from .kanban import STATES_WITH_BUDGET_REENTRY, VALID_TRANSITIONS
 from .models import ServiceOrder, ServiceOrderStatusHistory
-
-
-VALID_TRANSITIONS: Final[dict[str, list[str]]] = {
-    "reception": ["initial_survey", "cancelled"],
-    "initial_survey": ["budget"],
-    "budget": ["waiting_parts", "repair"],
-    "waiting_parts": ["repair"],
-    "repair": ["mechanic", "bodywork", "polishing"],
-    "mechanic": ["bodywork", "polishing"],
-    "bodywork": ["painting"],
-    "painting": ["assembly"],
-    "assembly": ["polishing"],
-    "polishing": ["washing"],
-    "washing": ["final_survey"],
-    "final_survey": ["ready"],
-    "ready": ["delivered"],
-    "delivered": [],
-    "cancelled": [],
-}
 
 
 class ServiceOrderService:
