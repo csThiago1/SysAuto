@@ -197,6 +197,9 @@ class ServiceOrderService:
                 por ora usamos duck-typing via getattr.
             import_attempt: instância de ImportAttempt (Ciclo 4) ou None em testes.
         """
+        from apps.items.models import ItemOperation, ItemOperationType, LaborCategory
+        from .models import ServiceOrderParecer
+
         next_num = 1
         if service_order.active_version:
             next_num = service_order.active_version.version_number + 1
@@ -211,13 +214,85 @@ class ServiceOrderService:
             status=getattr(parsed_budget, "external_status", "analisado"),
             content_hash=getattr(parsed_budget, "raw_hash", ""),
             raw_payload_s3_key=(
-                import_attempt.raw_payload_s3_key if import_attempt else ""
+                getattr(import_attempt, "raw_payload_s3_key", "") if import_attempt else ""
             ),
             hourly_rates=getattr(parsed_budget, "hourly_rates", {}),
             global_discount_pct=getattr(parsed_budget, "global_discount_pct", Decimal("0")),
+            # Snapshot Ciclo 04
+            raw_payload=getattr(parsed_budget, "raw_payload", None),
+            external_budget_id=getattr(parsed_budget, "external_budget_id", None),
+            external_version_id=getattr(parsed_budget, "external_version_id", None),
+            external_flow_number=getattr(parsed_budget, "external_flow_number", None),
+            report_pdf_base64=getattr(parsed_budget, "report_pdf_base64", ""),
+            report_html_base64=getattr(parsed_budget, "report_html_base64", ""),
         )
 
-        # TODO(Ciclo 4): ImportService.persist_items(parsed_budget=parsed_budget, version=version)
+        # Persist items + operations
+        hourly_rates = getattr(parsed_budget, "hourly_rates", {}) or {}
+        for item_dto in getattr(parsed_budget, "items", []) or []:
+            item = ServiceOrderVersionItem.objects.create(
+                version=version,
+                bucket=getattr(item_dto, "bucket", "IMPACTO"),
+                payer_block=getattr(item_dto, "payer_block", "SEGURADORA"),
+                impact_area=getattr(item_dto, "impact_area", None),
+                item_type=getattr(item_dto, "item_type", "PART"),
+                description=getattr(item_dto, "description", ""),
+                external_code=getattr(item_dto, "external_code", ""),
+                part_type=getattr(item_dto, "part_type", ""),
+                supplier=getattr(item_dto, "supplier", "OFICINA"),
+                quantity=getattr(item_dto, "quantity", Decimal("1")),
+                unit_price=getattr(item_dto, "unit_price", Decimal("0")),
+                discount_pct=getattr(item_dto, "discount_pct", Decimal("0")),
+                net_price=getattr(item_dto, "net_price", Decimal("0")),
+                flag_abaixo_padrao=getattr(item_dto, "flag_abaixo_padrao", False),
+                flag_acima_padrao=getattr(item_dto, "flag_acima_padrao", False),
+                flag_inclusao_manual=getattr(item_dto, "flag_inclusao_manual", False),
+                flag_codigo_diferente=getattr(item_dto, "flag_codigo_diferente", False),
+                flag_servico_manual=getattr(item_dto, "flag_servico_manual", False),
+                flag_peca_da_conta=getattr(item_dto, "flag_peca_da_conta", False),
+            )
+
+            for op_data in getattr(item_dto, "operations", []) or []:
+                op_type_code = op_data.get("op_type")
+                labor_cat_code = op_data.get("labor_cat")
+                try:
+                    op_type = ItemOperationType.objects.get(code=op_type_code)
+                    labor_cat = LaborCategory.objects.get(code=labor_cat_code)
+                except (ItemOperationType.DoesNotExist, LaborCategory.DoesNotExist):
+                    continue  # skip operations com códigos desconhecidos
+
+                rate_str = op_data.get("rate") or "0"
+                if Decimal(rate_str) == Decimal("0"):
+                    rate_str = str(hourly_rates.get(labor_cat_code, "0"))
+
+                hours = Decimal(op_data.get("hours", "0") or "0")
+                rate = Decimal(rate_str or "0")
+
+                ItemOperation.objects.create(
+                    item_so=item,
+                    operation_type=op_type,
+                    labor_category=labor_cat,
+                    hours=hours,
+                    hourly_rate=rate,
+                    labor_cost=hours * rate,
+                )
+
+        # Recalcular totais após persistir items/operations
+        cls._recalculate_totals(version)
+
+        # Pareceres — 1 parecer por versão tipicamente
+        for parecer_dto in getattr(parsed_budget, "pareceres", []) or []:
+            ServiceOrderParecer.objects.create(
+                service_order=service_order,
+                version=version,
+                source=getattr(parecer_dto, "source", "cilia"),
+                flow_number=getattr(parecer_dto, "flow_number", None),
+                author_external=getattr(parecer_dto, "author_external", ""),
+                author_org=getattr(parecer_dto, "author_org", ""),
+                parecer_type=getattr(parecer_dto, "parecer_type", ""),
+                body=getattr(parecer_dto, "body", ""),
+                created_at_external=getattr(parecer_dto, "created_at_external", None),
+            )
 
         OSEventLogger.log_event(
             service_order, "VERSION_CREATED",
@@ -225,6 +300,7 @@ class ServiceOrderService:
                 "version": next_num,
                 "source": parsed_budget.source,
                 "external": getattr(parsed_budget, "external_version", ""),
+                "items_count": len(getattr(parsed_budget, "items", []) or []),
             },
         )
         OSEventLogger.log_event(

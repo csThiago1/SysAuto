@@ -118,3 +118,223 @@ class ParsedBudget:
     # Cilia entrega report oficial (base64)
     report_pdf_base64: str = ""
     report_html_base64: str = ""
+
+
+# ============================================================================
+# ImportService — orquestra Client + Parser + ServiceOrderService
+# ============================================================================
+
+import logging  # noqa: E402
+import time  # noqa: E402
+
+from django.db import transaction  # noqa: E402
+
+
+logger = logging.getLogger(__name__)
+
+
+class ImportService:
+    """Orquestra o pipeline de importação Cilia: fetch → parse → persist."""
+
+    @classmethod
+    def fetch_cilia_budget(
+        cls,
+        *,
+        casualty_number: str,
+        budget_number: int | str,
+        version_number: int | None = None,
+        trigger: str = "user_requested",
+        created_by: str = "Sistema",
+        client: "Any | None" = None,  # CiliaClient opcional pra DI nos testes
+    ) -> "Any":
+        """Busca orçamento Cilia e persiste como ServiceOrderVersion se novo.
+
+        Pipeline:
+          1. Chama Cilia API via CiliaClient (com timing)
+          2. Cria ImportAttempt (sucesso ou falha)
+          3. 200: dedup por raw_hash, se novo → cria OS (ou reutiliza) + version
+          4. 404: registra NotFound
+          5. 401/403: registra AuthError
+          6. Outros: registra HTTP{status}
+
+        Returns:
+            ImportAttempt (sempre — mesmo em erro). Se sucesso, tem
+            service_order e version_created preenchidos.
+        """
+        from .models import ImportAttempt
+        from .sources.cilia_client import CiliaClient, CiliaError
+        from .sources.cilia_parser import CiliaParser
+
+        client = client or CiliaClient()
+
+        start = time.monotonic()
+        try:
+            response = client.get_budget(
+                casualty_number=casualty_number,
+                budget_number=budget_number,
+                version_number=version_number,
+            )
+        except CiliaError as exc:
+            duration_ms = int((time.monotonic() - start) * 1000)
+            return ImportAttempt.objects.create(
+                source="cilia",
+                trigger=trigger,
+                created_by=created_by,
+                casualty_number=casualty_number,
+                budget_number=str(budget_number),
+                version_number=version_number,
+                parsed_ok=False,
+                error_message=str(exc),
+                error_type="NetworkError",
+                duration_ms=duration_ms,
+            )
+
+        attempt = ImportAttempt.objects.create(
+            source="cilia",
+            trigger=trigger,
+            created_by=created_by,
+            casualty_number=casualty_number,
+            budget_number=str(budget_number),
+            version_number=version_number,
+            http_status=response.status_code,
+            duration_ms=response.duration_ms,
+            raw_payload=response.data if response.status_code == 200 else None,
+        )
+
+        # Respostas não-200
+        if response.status_code == 404:
+            attempt.error_message = "Versão do orçamento não encontrada"
+            attempt.error_type = "NotFound"
+            attempt.parsed_ok = False
+            attempt.save(update_fields=["error_message", "error_type", "parsed_ok"])
+            return attempt
+
+        if response.status_code in (401, 403):
+            attempt.error_message = str((response.data or {}).get("error", "Unauthorized"))
+            attempt.error_type = "AuthError"
+            attempt.parsed_ok = False
+            attempt.save(update_fields=["error_message", "error_type", "parsed_ok"])
+            return attempt
+
+        if response.status_code != 200:
+            attempt.error_message = (
+                f"HTTP {response.status_code}: {response.raw_text[:500]}"
+            )
+            attempt.error_type = f"HTTP{response.status_code}"
+            attempt.parsed_ok = False
+            attempt.save(update_fields=["error_message", "error_type", "parsed_ok"])
+            return attempt
+
+        # 200 — parse
+        try:
+            parsed = CiliaParser.parse(response.data)
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Cilia parse error")
+            attempt.error_message = f"Parse error: {exc}"
+            attempt.error_type = "ParseError"
+            attempt.parsed_ok = False
+            attempt.save(update_fields=["error_message", "error_type", "parsed_ok"])
+            return attempt
+
+        attempt.raw_hash = parsed.raw_hash
+        attempt.save(update_fields=["raw_hash"])
+
+        # Dedup — mesmo hash já processado com sucesso
+        previous_ok = (
+            ImportAttempt.objects.filter(
+                source="cilia", parsed_ok=True, raw_hash=parsed.raw_hash,
+            )
+            .exclude(pk=attempt.pk)
+            .first()
+        )
+        if previous_ok:
+            attempt.duplicate_of = previous_ok
+            attempt.parsed_ok = False
+            attempt.error_message = "Payload idêntico já processado"
+            attempt.error_type = "Duplicate"
+            attempt.save(
+                update_fields=[
+                    "duplicate_of", "parsed_ok", "error_message", "error_type",
+                ],
+            )
+            return attempt
+
+        # Persist
+        try:
+            os_instance, version = cls._persist_cilia_budget(parsed=parsed, attempt=attempt)
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Cilia persist error")
+            attempt.error_message = f"Persist error: {exc}"
+            attempt.error_type = "PersistError"
+            attempt.parsed_ok = False
+            attempt.save(update_fields=["error_message", "error_type", "parsed_ok"])
+            return attempt
+
+        attempt.service_order = os_instance
+        attempt.version_created = version
+        attempt.parsed_ok = True
+        attempt.save(
+            update_fields=["service_order", "version_created", "parsed_ok"],
+        )
+        return attempt
+
+    @classmethod
+    @transaction.atomic
+    def _persist_cilia_budget(
+        cls, *, parsed: ParsedBudget, attempt: "Any",
+    ) -> "tuple":
+        """Encontra/cria OS (por insurer+casualty), depois cria version via
+        ServiceOrderService.create_new_version_from_import.
+        """
+        from apps.items.services import NumberAllocator
+        from apps.persons.models import Person
+        from apps.service_orders.models import Insurer, ServiceOrder
+        from apps.service_orders.services import ServiceOrderService
+
+        insurer = Insurer.objects.filter(code=parsed.insurer_code).first()
+        if insurer is None:
+            trade = (parsed.raw_payload.get("insurer") or {}).get("trade", "?")
+            raise ValueError(
+                f"Insurer '{parsed.insurer_code}' não existe no catálogo "
+                f"(Cilia trade: '{trade}'). Seed a seguradora primeiro."
+            )
+
+        os_instance = ServiceOrder.objects.filter(
+            insurer=insurer, casualty_number=parsed.casualty_number,
+        ).first()
+
+        if os_instance is None:
+            # Cria cliente — Person tem só full_name + person_type + phone
+            customer = Person.objects.create(
+                full_name=parsed.segurado_name or "Cliente Importado Cilia",
+                person_type="CLIENT",
+                phone=parsed.segurado_phone or "",
+            )
+
+            os_instance = ServiceOrder.objects.create(
+                os_number=NumberAllocator.allocate("SERVICE_ORDER"),
+                customer=customer,
+                customer_type="SEGURADORA",
+                insurer=insurer,
+                casualty_number=parsed.casualty_number,
+                external_budget_number=parsed.external_budget_number,
+                franchise_amount=parsed.franchise_amount,
+                vehicle_plate=parsed.vehicle_plate,
+                vehicle_description=parsed.vehicle_description,
+                status="reception",
+            )
+
+        # Idempotência: se já existe version com mesmo external_version_id, retorna ela
+        if parsed.external_version_id:
+            existing = os_instance.versions.filter(
+                external_version_id=parsed.external_version_id,
+            ).first()
+            if existing:
+                return os_instance, existing
+
+        version = ServiceOrderService.create_new_version_from_import(
+            service_order=os_instance,
+            parsed_budget=parsed,
+            import_attempt=attempt,
+        )
+        return os_instance, version
