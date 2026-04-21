@@ -18,3 +18,6 @@ export function canTransitionOSStatus(from: OSStatus, to: OSStatus): boolean {
   if (from === to) return true;
   return (VALID_TRANSITIONS[from] ?? []).includes(to);
 }
+
+// Alias exported for legacy components
+export const OS_STATUS_TRANSITIONS = VALID_TRANSITIONS;
