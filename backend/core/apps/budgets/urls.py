@@ -1,6 +1,16 @@
-from rest_framework.routers import DefaultRouter
+from rest_framework_nested import routers
 
-router = DefaultRouter()
-# Tasks seguintes registram ViewSets aqui
+from .views import BudgetVersionItemViewSet, BudgetVersionViewSet, BudgetViewSet
 
-urlpatterns = router.urls
+
+router = routers.SimpleRouter()
+router.register(r"budgets", BudgetViewSet, basename="budget")
+
+budgets_router = routers.NestedSimpleRouter(router, r"budgets", lookup="budget")
+budgets_router.register(r"versions", BudgetVersionViewSet, basename="budget-version")
+
+versions_router = routers.NestedSimpleRouter(budgets_router, r"versions", lookup="version")
+versions_router.register(r"items", BudgetVersionItemViewSet, basename="budget-item")
+
+
+urlpatterns = router.urls + budgets_router.urls + versions_router.urls

@@ -62,3 +62,27 @@ class ChangeStatusSerializer(serializers.Serializer):
     status = serializers.CharField()
     changed_by = serializers.CharField(required=False, allow_blank=True, default="Sistema")
     notes = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class ServiceOrderReadSerializer(serializers.ModelSerializer):
+    """Read serializer completo para ServiceOrder — usado em budget approve response."""
+
+    customer_name = serializers.CharField(source="customer.full_name", read_only=True)
+
+    class Meta:
+        model = ServiceOrder
+        fields = [
+            "id",
+            "os_number",
+            "customer",
+            "customer_name",
+            "customer_type",
+            "vehicle_plate",
+            "vehicle_description",
+            "status",
+            "notes",
+            "is_active",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = fields
