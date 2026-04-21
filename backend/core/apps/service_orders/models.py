@@ -3,6 +3,28 @@ from django.db import models
 from apps.persons.models import Person
 
 
+class Insurer(models.Model):
+    """Catálogo de seguradoras reconhecidas pelo sistema."""
+
+    IMPORT_SOURCES = [
+        ("cilia_api", "Cilia API"),
+        ("html_upload", "HTML Upload"),
+        ("xml_upload", "XML Upload"),
+    ]
+
+    code = models.CharField(max_length=40, unique=True, db_index=True)
+    name = models.CharField(max_length=120)
+    cnpj = models.CharField(max_length=18, blank=True, default="")
+    import_source = models.CharField(max_length=20, choices=IMPORT_SOURCES, blank=True, default="")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
 class ServiceOrder(models.Model):
     STATUS_CHOICES = [
         ("reception", "Recepção"),
