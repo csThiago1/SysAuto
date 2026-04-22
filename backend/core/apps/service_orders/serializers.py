@@ -751,3 +751,91 @@ class HolidaySerializer(serializers.ModelSerializer):
         model = Holiday
         fields = ["id", "date", "name", "is_active", "created_at"]
         read_only_fields = ["id", "created_at"]
+
+
+# ── Versionamento de OS ──────────────────────────────────────────────────────
+
+from apps.service_orders.models import (  # noqa: E402
+    ServiceOrderVersion,
+    ServiceOrderVersionItem,
+    ServiceOrderEvent,
+    ServiceOrderParecer,
+)
+
+
+class ServiceOrderVersionItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceOrderVersionItem
+        fields = [
+            "id", "version",
+            "bucket", "payer_block", "impact_area", "item_type",
+            "description", "external_code", "part_type", "supplier",
+            "quantity", "unit_price", "unit_cost", "discount_pct", "net_price",
+            "flag_abaixo_padrao", "flag_acima_padrao", "flag_inclusao_manual",
+            "flag_codigo_diferente", "flag_servico_manual", "flag_peca_da_conta",
+            "sort_order",
+        ]
+        read_only_fields = [
+            "id", "version",
+            "bucket", "payer_block", "impact_area", "item_type",
+            "description", "external_code", "part_type", "supplier",
+            "quantity", "unit_price", "unit_cost", "discount_pct", "net_price",
+            "flag_abaixo_padrao", "flag_acima_padrao", "flag_inclusao_manual",
+            "flag_codigo_diferente", "flag_servico_manual", "flag_peca_da_conta",
+            "sort_order",
+        ]
+
+
+class ServiceOrderVersionSerializer(serializers.ModelSerializer):
+    items = ServiceOrderVersionItemSerializer(many=True, read_only=True)
+    status_display = serializers.CharField(source="get_status_display", read_only=True)
+
+    class Meta:
+        model = ServiceOrderVersion
+        fields = [
+            "id", "service_order", "version_number",
+            "external_version", "external_numero_vistoria", "external_integration_id",
+            "source", "status", "status_display",
+            "subtotal", "discount_total", "net_total",
+            "labor_total", "parts_total",
+            "total_seguradora", "total_complemento_particular", "total_franquia",
+            "content_hash", "hourly_rates", "global_discount_pct",
+            "created_at", "created_by", "approved_at",
+            "items",
+        ]
+        read_only_fields = [
+            "id", "service_order", "version_number",
+            "external_version", "external_numero_vistoria", "external_integration_id",
+            "source", "status", "status_display",
+            "subtotal", "discount_total", "net_total",
+            "labor_total", "parts_total",
+            "total_seguradora", "total_complemento_particular", "total_franquia",
+            "content_hash", "hourly_rates", "global_discount_pct",
+            "created_at", "created_by", "approved_at",
+        ]
+
+
+class ServiceOrderEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceOrderEvent
+        fields = [
+            "id", "service_order", "event_type",
+            "actor", "payload", "from_state", "to_state", "created_at",
+        ]
+        read_only_fields = [
+            "id", "service_order", "event_type",
+            "actor", "payload", "from_state", "to_state", "created_at",
+        ]
+
+
+class ServiceOrderParecerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceOrderParecer
+        fields = [
+            "id", "service_order", "version",
+            "source", "flow_number",
+            "author_external", "author_org", "author_internal",
+            "parecer_type", "body",
+            "created_at_external", "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]

@@ -239,3 +239,52 @@ class ValidTransitionsTest(TestCase):
     def test_budget_can_go_to_repair(self) -> None:
         from apps.service_orders.models import VALID_TRANSITIONS
         self.assertIn("repair", VALID_TRANSITIONS["budget"])
+
+
+class ServiceOrderVersionAPITest(TenantTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        from rest_framework.test import APIClient
+        from apps.authentication.models import GlobalUser
+        self.client = APIClient()
+        # Route requests to the test tenant schema via DevTenantMiddleware
+        self.client.defaults["HTTP_X_TENANT_DOMAIN"] = self.domain.domain
+        self.user = GlobalUser.objects.create_user(
+            email="api_test@test.com", password="test123",
+        )
+        self.client.force_authenticate(user=self.user, token={"role": "ADMIN"})
+
+    def _make_order(self) -> "ServiceOrder":
+        from apps.service_orders.models import ServiceOrder
+        return ServiceOrder.objects.create(
+            number=6666, customer_name="API Test", plate="API0001",
+        )
+
+    def test_list_versions_empty(self) -> None:
+        os = self._make_order()
+        resp = self.client.get(f"/api/v1/service-orders/{os.pk}/versions/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data["results"], [])
+
+    def test_list_events(self) -> None:
+        from apps.service_orders.events import OSEventLogger
+        os = self._make_order()
+        OSEventLogger.log_event(os, "STATUS_CHANGE", actor="Thiago")
+        resp = self.client.get(f"/api/v1/service-orders/{os.pk}/events/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.data["results"]), 1)
+
+    def test_approve_version_action(self) -> None:
+        from apps.service_orders.models import ServiceOrderVersion, ServiceOrder
+        os = self._make_order()
+        os.customer_type = "insurer"
+        os.status = "budget"
+        os.previous_status = "repair"
+        os.save(update_fields=["customer_type", "status", "previous_status"])
+        v = ServiceOrderVersion.objects.create(
+            service_order=os, version_number=1, source="cilia", status="analisado",
+        )
+        resp = self.client.post(f"/api/v1/service-orders/versions/{v.pk}/approve/")
+        self.assertEqual(resp.status_code, 200)
+        v.refresh_from_db()
+        self.assertEqual(v.status, "autorizado")

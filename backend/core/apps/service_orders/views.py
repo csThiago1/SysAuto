@@ -889,6 +889,94 @@ class ServiceOrderViewSet(
 
         return Response(ChecklistItemSerializer(updated, many=True).data)
 
+    @action(detail=True, methods=["get"], url_path="versions")
+    def versions(self, request: Request, pk: Optional[str] = None) -> Response:
+        """Lista versões de uma OS específica (GET /service-orders/{id}/versions/)."""
+        from .serializers import ServiceOrderVersionSerializer
+        os = self.get_object()
+        qs = os.versions.prefetch_related("items").order_by("-version_number")
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            return self.get_paginated_response(
+                ServiceOrderVersionSerializer(page, many=True).data
+            )
+        return Response(ServiceOrderVersionSerializer(qs, many=True).data)
+
+    @action(detail=True, methods=["get"], url_path="events")
+    def events(self, request: Request, pk: Optional[str] = None) -> Response:
+        """Lista timeline de eventos de uma OS (GET /service-orders/{id}/events/)."""
+        from .serializers import ServiceOrderEventSerializer
+        os = self.get_object()
+        qs = os.events.order_by("-created_at")
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            return self.get_paginated_response(
+                ServiceOrderEventSerializer(page, many=True).data
+            )
+        return Response(ServiceOrderEventSerializer(qs, many=True).data)
+
+
+# ── Versioning ViewSets ──────────────────────────────────────────────────────
+
+class ServiceOrderVersionViewSet(viewsets.ReadOnlyModelViewSet):
+    """Lista/detalhe de versões de OS + action approve."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        from .serializers import ServiceOrderVersionSerializer
+        return ServiceOrderVersionSerializer
+
+    def get_queryset(self):
+        from .models import ServiceOrderVersion
+        return (
+            ServiceOrderVersion.objects
+            .select_related("service_order", "import_attempt")
+            .prefetch_related("items")
+        )
+
+    @action(detail=True, methods=["post"])
+    def approve(self, request: Request, pk: Optional[str] = None) -> Response:
+        """POST /service-orders/versions/{id}/approve/"""
+        from .serializers import ServiceOrderVersionSerializer
+        version = self.get_object()
+        actor = getattr(request.user, "get_full_name", lambda: "")() or getattr(request.user, "email", "Usuário")
+        updated = ServiceOrderService.approve_version(version=version, approved_by=actor)
+        return Response(ServiceOrderVersionSerializer(updated).data)
+
+
+class ServiceOrderEventViewSet(viewsets.ReadOnlyModelViewSet):
+    """Timeline de eventos de OS (somente leitura)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        from .serializers import ServiceOrderEventSerializer
+        return ServiceOrderEventSerializer
+
+    def get_queryset(self):
+        from .models import ServiceOrderEvent
+        return ServiceOrderEvent.objects.select_related("service_order")
+
+
+class ServiceOrderParecerViewSet(viewsets.ModelViewSet):
+    """CRUD de pareceres (internos). Pareceres importados são read-only."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        from .serializers import ServiceOrderParecerSerializer
+        return ServiceOrderParecerSerializer
+
+    def get_queryset(self):
+        from .models import ServiceOrderParecer
+        return ServiceOrderParecer.objects.select_related("service_order", "version")
+
+    def get_permissions(self) -> list:
+        if self.action in ("destroy",):
+            return [IsAuthenticated(), IsManagerOrAbove()]
+        return [IsAuthenticated(), IsConsultantOrAbove()]
+
 
 @extend_schema(
     summary="Dashboard — métricas de OS",
