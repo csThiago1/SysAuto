@@ -361,6 +361,223 @@ class ServiceOrderService:
         )
         return order
 
+    # ── Novos métodos de versionamento ────────────────────────────────────────
+
+    @classmethod
+    @transaction.atomic
+    def change_status(
+        cls,
+        *,
+        service_order: "ServiceOrder",
+        new_status: str,
+        changed_by: str = "Sistema",
+        notes: str = "",
+        is_auto: bool = False,
+    ) -> "ServiceOrder":
+        """
+        Muda status com validação de transição (nova API — paralela ao transition()).
+        Salva previous_status ao entrar em 'budget'. Loga ServiceOrderEvent.
+
+        Raises:
+            ValidationError: Transição inválida.
+        """
+        from apps.service_orders.models import VALID_TRANSITIONS
+        from apps.service_orders.events import OSEventLogger
+
+        current = service_order.status
+        allowed = VALID_TRANSITIONS.get(current, [])
+        if new_status not in allowed:
+            raise ValidationError({
+                "status": (
+                    f"Transição inválida: {current} → {new_status}. "
+                    f"Permitidas: {allowed}"
+                )
+            })
+
+        if new_status == "budget":
+            service_order.previous_status = current
+
+        service_order.status = new_status
+        service_order.save(update_fields=["status", "previous_status", "updated_at"])
+
+        event_type = "AUTO_TRANSITION" if is_auto else "STATUS_CHANGE"
+        OSEventLogger.log_event(
+            service_order,
+            event_type,
+            actor=changed_by,
+            from_state=current,
+            to_state=new_status,
+            payload={"notes": notes},
+            swallow_errors=True,
+        )
+        return service_order
+
+    @classmethod
+    @transaction.atomic
+    def create_new_version_from_import(
+        cls,
+        *,
+        service_order: "ServiceOrder",
+        parsed_budget: Any,
+        import_attempt: Any,
+    ) -> "ServiceOrderVersion":
+        """
+        Chamado pelos importadores (Cilia, XML) ao receber nova versão de orçamento.
+        Cria ServiceOrderVersion + pausa OS em 'budget'.
+        """
+        from apps.service_orders.models import ServiceOrderVersion
+        from apps.service_orders.events import OSEventLogger
+
+        active = service_order.versions.order_by("-version_number").first()
+        next_num = (active.version_number if active else 0) + 1
+
+        version = ServiceOrderVersion.objects.create(
+            service_order=service_order,
+            version_number=next_num,
+            source=parsed_budget.source,
+            external_version=getattr(parsed_budget, "external_version", ""),
+            external_numero_vistoria=getattr(parsed_budget, "external_numero_vistoria", ""),
+            external_integration_id=getattr(parsed_budget, "external_integration_id", ""),
+            status=getattr(parsed_budget, "external_status", None) or "analisado",
+            content_hash=getattr(parsed_budget, "raw_hash", ""),
+            raw_payload_s3_key=getattr(import_attempt, "raw_payload_s3_key", ""),
+            import_attempt=import_attempt,
+            hourly_rates=getattr(parsed_budget, "hourly_rates", {}),
+            global_discount_pct=getattr(parsed_budget, "global_discount_pct", Decimal("0")),
+        )
+
+        try:
+            from apps.cilia.services import ImportService
+            ImportService.persist_items(parsed_budget=parsed_budget, version=version)
+        except (ImportError, AttributeError):
+            logger.warning(
+                "ImportService.persist_items indisponível — versão criada sem itens (OS #%s v%d)",
+                service_order.pk, next_num,
+            )
+
+        OSEventLogger.log_event(
+            service_order, "VERSION_CREATED",
+            actor="Sistema",
+            payload={
+                "version_number": next_num,
+                "source": parsed_budget.source,
+                "external_version": getattr(parsed_budget, "external_version", ""),
+            },
+            swallow_errors=True,
+        )
+        OSEventLogger.log_event(
+            service_order, "IMPORT_RECEIVED",
+            actor="Sistema",
+            payload={"source": parsed_budget.source, "attempt_id": getattr(import_attempt, "pk", None)},
+            swallow_errors=True,
+        )
+
+        terminal = {"reception", "delivered", "cancelled"}
+        if service_order.status != "budget" and service_order.status not in terminal:
+            cls.change_status(
+                service_order=service_order,
+                new_status="budget",
+                changed_by="Sistema",
+                notes=f"Nova versão importada: {version.external_version or version.version_number}",
+                is_auto=True,
+            )
+
+        return version
+
+    @classmethod
+    @transaction.atomic
+    def approve_version(
+        cls,
+        *,
+        version: "ServiceOrderVersion",
+        approved_by: str,
+    ) -> "ServiceOrderVersion":
+        """
+        Aprova uma versão de OS.
+        - Marca como 'autorizado' (segurado) ou 'approved' (particular).
+        - Supersede outras versões pendentes.
+        - Se OS está em 'budget' com previous_status, retorna ao previous_status.
+        """
+        from django.utils import timezone
+        from apps.service_orders.events import OSEventLogger
+
+        os = version.service_order
+        version.status = "autorizado" if os.customer_type == "insurer" else "approved"
+        version.approved_at = timezone.now()
+        version.save(update_fields=["status", "approved_at"])
+
+        os.versions.exclude(pk=version.pk).exclude(
+            status__in=["approved", "rejected", "autorizado", "negado"]
+        ).update(status="superseded")
+
+        OSEventLogger.log_event(
+            os, "VERSION_APPROVED",
+            actor=approved_by,
+            payload={"version_number": version.version_number, "source": version.source},
+            swallow_errors=True,
+        )
+
+        if os.status == "budget" and os.previous_status:
+            cls.change_status(
+                service_order=os,
+                new_status=os.previous_status,
+                changed_by="Sistema",
+                notes="Auto: versão aprovada, retomando estado anterior",
+                is_auto=True,
+            )
+
+        return version
+
+    @classmethod
+    def recalculate_version_totals(cls, version: "ServiceOrderVersion") -> None:
+        """
+        Recalcula os totais de uma ServiceOrderVersion a partir dos itens e operações.
+        """
+        from decimal import Decimal as D
+
+        items = version.items.all().prefetch_related("operations")
+
+        labor = D("0")
+        parts = D("0")
+        subtotal = D("0")
+        discount = D("0")
+        total_seguradora = D("0")
+        total_complemento = D("0")
+        total_franquia = D("0")
+
+        for item in items:
+            item_net = item.net_price
+            item_gross = item.unit_price * item.quantity
+            item_discount = item_gross - item_net
+            discount += item_discount
+
+            if item.item_type == "PART":
+                parts += item_net
+            subtotal += item_net
+
+            for op in item.operations.all():
+                labor += op.labor_cost
+
+            if item.payer_block == "SEGURADORA":
+                total_seguradora += item_net
+            elif item.payer_block == "COMPLEMENTO_PARTICULAR":
+                total_complemento += item_net
+            elif item.payer_block == "FRANQUIA":
+                total_franquia += item_net
+
+        version.labor_total = labor
+        version.parts_total = parts
+        version.subtotal = subtotal + labor
+        version.discount_total = discount
+        version.net_total = version.subtotal - discount
+        version.total_seguradora = total_seguradora
+        version.total_complemento_particular = total_complemento
+        version.total_franquia = total_franquia
+        version.save(update_fields=[
+            "labor_total", "parts_total", "subtotal", "discount_total", "net_total",
+            "total_seguradora", "total_complemento_particular", "total_franquia",
+        ])
+
     @classmethod
     @transaction.atomic
     def create_budget_snapshot(

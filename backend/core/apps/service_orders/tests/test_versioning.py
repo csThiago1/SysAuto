@@ -4,6 +4,7 @@ from __future__ import annotations
 from decimal import Decimal
 
 from django.db import transaction
+from django.test import TestCase
 from django_tenants.test.cases import TenantTestCase
 
 
@@ -157,3 +158,84 @@ class OSEventLoggerTest(TenantTestCase):
             OSEventLogger.log_event(FakeOS(), "STATUS_CHANGE", swallow_errors=True)
         except Exception:
             self.fail("OSEventLogger não deve propagar exceções quando swallow_errors=True")
+
+
+class ServiceOrderServiceVersioningTest(TenantTestCase):
+
+    def _make_order(self, status: str = "repair") -> "ServiceOrder":
+        from apps.service_orders.models import ServiceOrder
+        return ServiceOrder.objects.create(
+            number=7777, customer_name="Versioning Svc Test", plate="SVC0001",
+            status=status,
+        )
+
+    def test_change_status_valid_transition(self) -> None:
+        from apps.service_orders.services import ServiceOrderService
+        os = self._make_order(status="reception")
+        updated = ServiceOrderService.change_status(
+            service_order=os, new_status="initial_survey", changed_by="Thiago",
+        )
+        self.assertEqual(updated.status, "initial_survey")
+
+    def test_change_status_invalid_raises(self) -> None:
+        from apps.service_orders.services import ServiceOrderService
+        from rest_framework.exceptions import ValidationError
+        os = self._make_order(status="reception")
+        with self.assertRaises(ValidationError):
+            ServiceOrderService.change_status(service_order=os, new_status="delivered")
+
+    def test_change_status_to_budget_saves_previous(self) -> None:
+        from apps.service_orders.services import ServiceOrderService
+        os = self._make_order(status="repair")
+        ServiceOrderService.change_status(service_order=os, new_status="budget")
+        os.refresh_from_db()
+        self.assertEqual(os.previous_status, "repair")
+
+    def test_change_status_logs_event(self) -> None:
+        from apps.service_orders.services import ServiceOrderService
+        from apps.service_orders.models import ServiceOrderEvent
+        os = self._make_order(status="reception")
+        ServiceOrderService.change_status(
+            service_order=os, new_status="initial_survey", changed_by="Thiago",
+        )
+        ev = ServiceOrderEvent.objects.get(service_order=os, event_type="STATUS_CHANGE")
+        self.assertEqual(ev.from_state, "reception")
+        self.assertEqual(ev.to_state, "initial_survey")
+
+    def test_approve_version_returns_to_previous_status(self) -> None:
+        from apps.service_orders.services import ServiceOrderService
+        from apps.service_orders.models import ServiceOrder, ServiceOrderVersion
+        os = ServiceOrder.objects.create(
+            number=7778, customer_name="Versioning Svc Test Ins", plate="SVC0002",
+            status="budget", customer_type="insurer", previous_status="repair",
+        )
+        version = ServiceOrderVersion.objects.create(
+            service_order=os, version_number=1, source="cilia", status="analisado",
+        )
+        ServiceOrderService.approve_version(version=version, approved_by="Thiago")
+        os.refresh_from_db()
+        self.assertEqual(os.status, "repair")
+        version.refresh_from_db()
+        self.assertEqual(version.status, "autorizado")
+
+
+class ValidTransitionsTest(TestCase):
+    def test_repair_can_go_to_budget(self) -> None:
+        from apps.service_orders.models import VALID_TRANSITIONS
+        self.assertIn("budget", VALID_TRANSITIONS["repair"])
+
+    def test_bodywork_can_go_to_budget(self) -> None:
+        from apps.service_orders.models import VALID_TRANSITIONS
+        self.assertIn("budget", VALID_TRANSITIONS["bodywork"])
+
+    def test_painting_can_go_to_budget(self) -> None:
+        from apps.service_orders.models import VALID_TRANSITIONS
+        self.assertIn("budget", VALID_TRANSITIONS["painting"])
+
+    def test_budget_can_go_to_waiting_parts(self) -> None:
+        from apps.service_orders.models import VALID_TRANSITIONS
+        self.assertIn("waiting_parts", VALID_TRANSITIONS["budget"])
+
+    def test_budget_can_go_to_repair(self) -> None:
+        from apps.service_orders.models import VALID_TRANSITIONS
+        self.assertIn("repair", VALID_TRANSITIONS["budget"])
