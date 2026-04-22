@@ -70,6 +70,7 @@ TENANT_APPS = [
     "apps.pricing_benchmark",
     "apps.signatures",
     "apps.pdf_engine",
+    "apps.items",
 ]
 
 INSTALLED_APPS = list(set(SHARED_APPS + TENANT_APPS))
