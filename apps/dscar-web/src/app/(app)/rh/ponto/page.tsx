@@ -40,10 +40,10 @@ function LiveClock(): React.ReactElement {
 
   return (
     <div className="text-center">
-      <p className="text-5xl font-bold font-plate text-neutral-900 tabular-nums">
+      <p className="text-5xl font-bold font-plate text-white tabular-nums">
         {time.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
       </p>
-      <p className="mt-1 text-sm text-neutral-500">
+      <p className="mt-1 text-sm text-white/50">
         {time.toLocaleDateString("pt-BR", {
           weekday: "long",
           day: "numeric",
@@ -82,8 +82,8 @@ export default function PontoPage(): React.ReactElement {
       <div className="space-y-6 max-w-lg mx-auto">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-neutral-900">Ponto</h1>
-            <p className="text-sm text-neutral-500 mt-0.5">
+            <h1 className="text-2xl font-bold text-white">Ponto</h1>
+            <p className="text-sm text-white/50 mt-0.5">
               Registro de ponto do colaborador
             </p>
           </div>
@@ -96,7 +96,7 @@ export default function PontoPage(): React.ReactElement {
         </div>
 
         {/* Clock */}
-        <div className="rounded-md bg-white shadow-card p-8 space-y-6">
+        <div className="rounded-md bg-white/5 shadow-card p-8 space-y-6">
           <LiveClock />
 
           {/* Employee info */}
@@ -110,7 +110,7 @@ export default function PontoPage(): React.ReactElement {
               para criar.
             </p>
           ) : myEmployee ? (
-            <p className="text-center text-sm text-neutral-600">
+            <p className="text-center text-sm text-white/60">
               {myEmployee.user.name} · {myEmployee.position_display}
             </p>
           ) : null}
@@ -145,7 +145,7 @@ export default function PontoPage(): React.ReactElement {
                   {register.isPending ? "Registrando..." : CLOCK_ENTRY_LABELS[nextType]}
                 </button>
               ) : (
-                <p className="text-sm text-neutral-500 font-medium">
+                <p className="text-sm text-white/50 font-medium">
                   Expediente encerrado. Até amanhã!
                 </p>
               )}
@@ -154,9 +154,9 @@ export default function PontoPage(): React.ReactElement {
         </div>
 
         {/* Today's entries */}
-        <div className="rounded-md bg-white shadow-card overflow-hidden">
+        <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
           <div className="px-card-padding py-3 border-b border-neutral-100">
-            <h3 className="text-sm font-semibold text-neutral-900">
+            <h3 className="text-sm font-semibold text-white">
               Registros de hoje
             </h3>
           </div>
@@ -167,7 +167,7 @@ export default function PontoPage(): React.ReactElement {
               ))}
             </div>
           ) : !summary || summary.entries.length === 0 ? (
-            <div className="px-card-padding py-6 text-center text-sm text-neutral-500">
+            <div className="px-card-padding py-6 text-center text-sm text-white/50">
               Nenhum registro hoje.
             </div>
           ) : (
@@ -177,10 +177,10 @@ export default function PontoPage(): React.ReactElement {
                   key={entry.id}
                   className="flex items-center justify-between px-card-padding py-2.5"
                 >
-                  <span className="text-sm text-neutral-700">
+                  <span className="text-sm text-white/70">
                     {CLOCK_ENTRY_LABELS[entry.type]}
                   </span>
-                  <span className="text-sm font-medium text-neutral-900 tabular-nums">
+                  <span className="text-sm font-medium text-white tabular-nums">
                     {new Date(entry.timestamp).toLocaleTimeString("pt-BR", {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -188,11 +188,11 @@ export default function PontoPage(): React.ReactElement {
                   </span>
                 </div>
               ))}
-              <div className="flex items-center justify-between px-card-padding py-2.5 bg-neutral-50">
-                <span className="text-xs font-medium text-neutral-500">
+              <div className="flex items-center justify-between px-card-padding py-2.5 bg-white/[0.03]">
+                <span className="text-xs font-medium text-white/50">
                   Total trabalhado
                 </span>
-                <span className="text-sm font-bold text-neutral-900">
+                <span className="text-sm font-bold text-white">
                   {Math.floor(summary.total_minutes / 60)}h{" "}
                   {summary.total_minutes % 60}min
                 </span>

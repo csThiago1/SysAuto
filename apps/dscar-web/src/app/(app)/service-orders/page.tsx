@@ -14,7 +14,7 @@ import {
 import { ServiceOrderTable } from "./_components/ServiceOrderTable"
 import { NewOSDrawer } from "./_components/NewOSDrawer"
 
-const SELECT_CLS = "h-9 rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm text-neutral-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+const SELECT_CLS = "h-9 rounded-md border border-white/10 bg-white/5 px-3 py-1 text-sm text-white/70 shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
 const PAGE_SIZE = 20
 
 export default function ServiceOrdersPage() {
@@ -63,13 +63,13 @@ export default function ServiceOrdersPage() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Ordens de Serviço</h1>
-          <p className="text-sm text-neutral-500 mt-1">Gerencie a listagem tabular e aplique filtros para encontrar OS.</p>
+          <h1 className="text-2xl font-bold text-white">Ordens de Serviço</h1>
+          <p className="text-sm text-white/50 mt-1">Gerencie a listagem tabular e aplique filtros para encontrar OS.</p>
         </div>
         <div className="flex items-center gap-3">
           <Link
             href="/service-orders/kanban"
-            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-neutral-50"
+            className="rounded-md border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/70 hover:bg-white/[0.03]"
           >
             Ver Kanban
           </Link>
@@ -85,14 +85,14 @@ export default function ServiceOrdersPage() {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-md border border-neutral-200 shadow-sm flex flex-col md:flex-row gap-4">
+      <div className="bg-white/5 p-4 rounded-md border border-white/10 shadow-sm flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 pointer-events-none" />
           <Input
             placeholder="Buscar OS (ex: placa, num, cliente)..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-white"
+            className="pl-9 bg-white/5"
           />
         </div>
 
@@ -146,7 +146,7 @@ export default function ServiceOrdersPage() {
           </select>
 
           {hasFilters && (
-            <Button variant="ghost" onClick={clearFilters} className="text-neutral-500 hover:text-error-600 px-3">
+            <Button variant="ghost" onClick={clearFilters} className="text-white/50 hover:text-error-600 px-3">
               <FilterX className="h-4 w-4 mr-2" /> Limpar
             </Button>
           )}
@@ -161,7 +161,7 @@ export default function ServiceOrdersPage() {
            <EmptyState
              title="Erro ao carregar Ordens de Serviço"
              description="Tente recarregar a página."
-             className="bg-white border rounded-md"
+             className="bg-white/5 border rounded-md"
            />
          )}
 
@@ -171,7 +171,7 @@ export default function ServiceOrdersPage() {
                <EmptyState
                  title="Nenhuma Ordem de Serviço encontrada"
                  description={hasFilters ? "Tente ajustar ou limpar seus filtros." : "O sistema ainda não possui ordens de serviço."}
-                 className="bg-white border rounded-md"
+                 className="bg-white/5 border rounded-md"
                />
              ) : (
                <>
@@ -179,8 +179,8 @@ export default function ServiceOrdersPage() {
 
                  {/* Pagination */}
                  {data.count > 0 && (
-                   <div className="mt-4 flex items-center justify-between border-t border-neutral-200 pt-3">
-                     <p className="text-xs text-neutral-500">
+                   <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
+                     <p className="text-xs text-white/50">
                        {firstItem}–{lastItem} de {data.count} registro{data.count !== 1 ? "s" : ""}
                      </p>
                      {totalPages > 1 && (
@@ -190,12 +190,12 @@ export default function ServiceOrdersPage() {
                            size="sm"
                            onClick={() => setPage((p) => Math.max(1, p - 1))}
                            disabled={page === 1}
-                           className="h-8 px-2 text-neutral-600"
+                           className="h-8 px-2 text-white/60"
                          >
                            <ChevronLeft className="h-4 w-4 mr-1" />
                            Anterior
                          </Button>
-                         <span className="text-xs text-neutral-600 px-2">
+                         <span className="text-xs text-white/60 px-2">
                            {page} / {totalPages}
                          </span>
                          <Button
@@ -203,7 +203,7 @@ export default function ServiceOrdersPage() {
                            size="sm"
                            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                            disabled={page === totalPages}
-                           className="h-8 px-2 text-neutral-600"
+                           className="h-8 px-2 text-white/60"
                          >
                            Próxima
                            <ChevronRight className="h-4 w-4 ml-1" />

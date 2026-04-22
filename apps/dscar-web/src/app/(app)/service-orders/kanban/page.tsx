@@ -34,10 +34,10 @@ export default function KanbanPage(): React.ReactElement {
       {/* Header */}
       <div className="flex items-center justify-between shrink-0">
         <div>
-          <h2 className="text-2xl font-semibold text-neutral-900">
+          <h2 className="text-2xl font-semibold text-white">
             Kanban — Ordens de Serviço
           </h2>
-          <p className="text-sm text-neutral-500 mt-0.5">
+          <p className="text-sm text-white/50 mt-0.5">
             Arraste os cards para mover entre etapas
           </p>
         </div>
@@ -50,7 +50,7 @@ export default function KanbanPage(): React.ReactElement {
               "flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
               showDelivered
                 ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                : "bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100"
+                : "bg-white/[0.03] border-white/10 text-white/60 hover:bg-white/5"
             )}
           >
             <CheckCircle className="h-3.5 w-3.5" />
@@ -64,7 +64,7 @@ export default function KanbanPage(): React.ReactElement {
               "flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
               showCancelled
                 ? "bg-red-50 border-red-200 text-red-700"
-                : "bg-neutral-50 border-neutral-200 text-neutral-600 hover:bg-neutral-100"
+                : "bg-white/[0.03] border-white/10 text-white/60 hover:bg-white/5"
             )}
           >
             <XCircle className="h-3.5 w-3.5" />

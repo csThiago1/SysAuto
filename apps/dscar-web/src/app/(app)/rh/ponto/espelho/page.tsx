@@ -30,7 +30,7 @@ export default function EspelhoPontoPage(): React.ReactElement {
     <ErrorBoundary>
       <div className="space-y-5">
         {/* Header */}
-        <div className="flex items-center gap-2 text-sm text-neutral-500">
+        <div className="flex items-center gap-2 text-sm text-white/50">
           <Link
             href={"/rh/ponto" as Route}
             className="flex items-center gap-1 hover:text-primary-600"
@@ -39,14 +39,14 @@ export default function EspelhoPontoPage(): React.ReactElement {
             Ponto
           </Link>
           <span>/</span>
-          <span className="text-neutral-900">Espelho de ponto</span>
+          <span className="text-white">Espelho de ponto</span>
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">
+          <h1 className="text-2xl font-bold text-white">
             Espelho de Ponto
           </h1>
-          <p className="text-sm text-neutral-500 mt-0.5">
+          <p className="text-sm text-white/50 mt-0.5">
             Visão consolidada do dia para gestores
           </p>
         </div>
@@ -57,14 +57,14 @@ export default function EspelhoPontoPage(): React.ReactElement {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="rounded-md border border-neutral-200 px-3 py-2 text-sm"
+            className="rounded-md border border-white/10 px-3 py-2 text-sm"
           />
           <select
             value={department}
             onChange={(e) =>
               setDepartment(e.target.value as HRDepartment | "")
             }
-            className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm"
+            className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm"
           >
             <option value="">Todos os setores</option>
             {(Object.entries(DEPARTMENT_LABELS) as [HRDepartment, string][]).map(
@@ -78,12 +78,12 @@ export default function EspelhoPontoPage(): React.ReactElement {
         </div>
 
         {/* Table */}
-        <div className="rounded-md bg-white shadow-card overflow-hidden">
+        <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
           <div className="px-card-padding py-3 border-b border-neutral-100 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-neutral-900">
+            <h3 className="text-sm font-semibold text-white">
               {employees.length} colaboradores ativos
             </h3>
-            <span className="text-xs text-neutral-400">
+            <span className="text-xs text-white/40">
               {new Date(selectedDate + "T12:00").toLocaleDateString("pt-BR", {
                 weekday: "long",
                 day: "numeric",
@@ -99,7 +99,7 @@ export default function EspelhoPontoPage(): React.ReactElement {
               ))}
             </div>
           ) : employees.length === 0 ? (
-            <div className="py-10 text-center text-sm text-neutral-500">
+            <div className="py-10 text-center text-sm text-white/50">
               Nenhum colaborador encontrado.
             </div>
           ) : (
@@ -144,8 +144,8 @@ function EspelhoRow({
   return (
     <div className="flex items-center gap-4 px-card-padding py-3">
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-neutral-900 truncate">{name}</p>
-        <p className="text-xs text-neutral-500">{positionDisplay}</p>
+        <p className="text-sm font-medium text-white truncate">{name}</p>
+        <p className="text-xs text-white/50">{positionDisplay}</p>
       </div>
 
       {isLoading ? (
@@ -153,10 +153,10 @@ function EspelhoRow({
       ) : !hasEntries ? (
         <span className="text-xs text-red-500 font-medium">Sem registros</span>
       ) : (
-        <div className="flex items-center gap-4 text-xs text-neutral-600">
+        <div className="flex items-center gap-4 text-xs text-white/60">
           <span>
             Entrada:{" "}
-            <span className="font-medium text-neutral-900">
+            <span className="font-medium text-white">
               {clockIn
                 ? new Date(clockIn.timestamp).toLocaleTimeString("pt-BR", {
                     hour: "2-digit",
@@ -167,7 +167,7 @@ function EspelhoRow({
           </span>
           <span>
             Saída:{" "}
-            <span className="font-medium text-neutral-900">
+            <span className="font-medium text-white">
               {clockOut
                 ? new Date(clockOut.timestamp).toLocaleTimeString("pt-BR", {
                     hour: "2-digit",
@@ -182,7 +182,7 @@ function EspelhoRow({
                 ? "text-success-700"
                 : totalMin > 0
                 ? "text-warning-700"
-                : "text-neutral-400"
+                : "text-white/40"
             }`}
           >
             {Math.floor(totalMin / 60)}h{totalMin % 60}min

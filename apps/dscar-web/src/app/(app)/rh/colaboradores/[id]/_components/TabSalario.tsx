@@ -36,13 +36,13 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
   return (
     <div className="space-y-5">
       {/* Current salary */}
-      <div className="rounded-md bg-white shadow-card p-card-padding">
+      <div className="rounded-md bg-white/5 shadow-card p-card-padding">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
+            <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
               Salário base atual
             </p>
-            <p className="mt-1 text-2xl font-bold text-neutral-900 font-plate">
+            <p className="mt-1 text-2xl font-bold text-white font-plate">
               {new Intl.NumberFormat("pt-BR", {
                 style: "currency",
                 currency: "BRL",
@@ -63,21 +63,21 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="rounded-md bg-white shadow-card p-card-padding space-y-4"
+          className="rounded-md bg-white/5 shadow-card p-card-padding space-y-4"
         >
-          <h3 className="text-sm font-semibold text-neutral-900">
+          <h3 className="text-sm font-semibold text-white">
             Registrar reajuste
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-neutral-500">
+              <label className="text-xs text-white/50">
                 Salário anterior (R$)
               </label>
               <input
                 type="number"
                 step="0.01"
                 required
-                className="rounded border border-neutral-200 px-2 py-1.5 text-sm"
+                className="rounded border border-white/10 px-2 py-1.5 text-sm"
                 value={form.previous_salary}
                 onChange={(e) =>
                   setForm((p) => ({
@@ -88,7 +88,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-neutral-500">
+              <label className="text-xs text-white/50">
                 Novo salário (R$)
               </label>
               <input
@@ -96,7 +96,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
                 step="0.01"
                 required
                 min="0.01"
-                className="rounded border border-neutral-200 px-2 py-1.5 text-sm"
+                className="rounded border border-white/10 px-2 py-1.5 text-sm"
                 value={form.new_salary || ""}
                 onChange={(e) =>
                   setForm((p) => ({
@@ -107,13 +107,13 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-neutral-500">
+              <label className="text-xs text-white/50">
                 Data de vigência
               </label>
               <input
                 type="date"
                 required
-                className="rounded border border-neutral-200 px-2 py-1.5 text-sm"
+                className="rounded border border-white/10 px-2 py-1.5 text-sm"
                 value={form.effective_date}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, effective_date: e.target.value }))
@@ -121,11 +121,11 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-neutral-500">Motivo</label>
+              <label className="text-xs text-white/50">Motivo</label>
               <input
                 type="text"
                 placeholder="Promoção, dissídio, mérito..."
-                className="rounded border border-neutral-200 px-2 py-1.5 text-sm"
+                className="rounded border border-white/10 px-2 py-1.5 text-sm"
                 value={form.reason ?? ""}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, reason: e.target.value }))
@@ -137,7 +137,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="text-xs text-neutral-500 hover:underline"
+              className="text-xs text-white/50 hover:underline"
             >
               Cancelar
             </button>
@@ -153,9 +153,9 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
       )}
 
       {/* History */}
-      <div className="rounded-md bg-white shadow-card overflow-hidden">
+      <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
         <div className="px-card-padding py-3 border-b border-neutral-100">
-          <h3 className="text-sm font-semibold text-neutral-900">
+          <h3 className="text-sm font-semibold text-white">
             Histórico de reajustes
           </h3>
         </div>
@@ -166,7 +166,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
             ))}
           </div>
         ) : historyItems.length === 0 ? (
-          <div className="px-card-padding py-8 text-center text-sm text-neutral-500">
+          <div className="px-card-padding py-8 text-center text-sm text-white/50">
             Nenhum reajuste registrado.
           </div>
         ) : (
@@ -182,7 +182,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
                 <div key={item.id} className="px-card-padding py-3 flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-neutral-900">
+                      <span className="text-sm font-medium text-white">
                         {new Intl.NumberFormat("pt-BR", {
                           style: "currency",
                           currency: "BRL",
@@ -194,7 +194,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-neutral-500 mt-0.5">
+                    <p className="text-xs text-white/50 mt-0.5">
                       Anterior:{" "}
                       {new Intl.NumberFormat("pt-BR", {
                         style: "currency",
@@ -203,12 +203,12 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
                       {item.reason && ` · ${item.reason}`}
                     </p>
                     {item.authorized_by_name && (
-                      <p className="text-xs text-neutral-400 mt-0.5">
+                      <p className="text-xs text-white/40 mt-0.5">
                         Autorizado por {item.authorized_by_name}
                       </p>
                     )}
                   </div>
-                  <span className="text-xs text-neutral-400 shrink-0">
+                  <span className="text-xs text-white/40 shrink-0">
                     {new Date(item.effective_date).toLocaleDateString("pt-BR")}
                   </span>
                 </div>

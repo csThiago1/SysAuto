@@ -109,7 +109,7 @@ interface FormFieldProps {
 function FormField({ label, error, children }: FormFieldProps): React.ReactElement {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label className="text-xs font-medium text-neutral-700">{label}</Label>
+      <Label className="text-xs font-medium text-white/70">{label}</Label>
       {children}
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
@@ -259,7 +259,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
     <ErrorBoundary>
       <div className="space-y-5 max-w-3xl">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-neutral-500">
+        <div className="flex items-center gap-2 text-sm text-white/50">
           <Link
             href={"/financeiro" as Route}
             className="hover:text-primary-600 transition-colors"
@@ -275,20 +275,20 @@ export default function NovoLancamentoPage(): React.ReactElement {
             Lançamentos
           </Link>
           <span>/</span>
-          <span className="text-neutral-900">Novo Lançamento</span>
+          <span className="text-white">Novo Lançamento</span>
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">Novo Lançamento</h1>
-          <p className="mt-0.5 text-sm text-neutral-500">
+          <h1 className="text-2xl font-bold text-white">Novo Lançamento</h1>
+          <p className="mt-0.5 text-sm text-white/50">
             Lançamento contábil manual com partidas dobradas.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Cabecalho */}
-          <section className="rounded-md bg-white shadow-card p-5 space-y-4">
-            <h2 className="text-sm font-semibold text-neutral-900 border-b border-neutral-100 pb-2">
+          <section className="rounded-md bg-white/5 shadow-card p-5 space-y-4">
+            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
               Cabecalho
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -313,7 +313,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
                 <select
                   value={form.origin}
                   onChange={(e) => setField("origin", e.target.value)}
-                  className="w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   {ORIGINS.map(([value, label]) => (
                     <option key={value} value={value}>
@@ -326,9 +326,9 @@ export default function NovoLancamentoPage(): React.ReactElement {
           </section>
 
           {/* Linhas do lançamento */}
-          <section className="rounded-md bg-white shadow-card overflow-hidden">
+          <section className="rounded-md bg-white/5 shadow-card overflow-hidden">
             <div className="p-5 pb-3">
-              <h2 className="text-sm font-semibold text-neutral-900">
+              <h2 className="text-sm font-semibold text-white">
                 Linhas do Lancamento
               </h2>
               {errors.lines && (
@@ -345,7 +345,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
             ) : (
               <>
                 {/* Table header */}
-                <div className="px-5 py-2 bg-neutral-50 border-y border-neutral-100 grid grid-cols-[1fr_80px_140px_1fr_40px] gap-3 text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                <div className="px-5 py-2 bg-white/[0.03] border-y border-neutral-100 grid grid-cols-[1fr_80px_140px_1fr_40px] gap-3 text-xs font-semibold text-white/50 uppercase tracking-wide">
                   <span>Conta *</span>
                   <span className="text-center">D / C</span>
                   <span>Valor *</span>
@@ -368,10 +368,10 @@ export default function NovoLancamentoPage(): React.ReactElement {
                             value={line.account_id}
                             onChange={(e) => setLineField(i, "account_id", e.target.value)}
                             className={cn(
-                              "w-full rounded-md border bg-white px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500",
+                              "w-full rounded-md border bg-white/5 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500",
                               lineErr?.account_id
                                 ? "border-red-300"
-                                : "border-neutral-200"
+                                : "border-white/10"
                             )}
                           >
                             <option value="">Selecione a conta...</option>
@@ -435,7 +435,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
                             type="button"
                             onClick={() => removeLine(i)}
                             disabled={form.lines.length <= 2}
-                            className="p-1.5 rounded text-neutral-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            className="p-1.5 rounded text-white/40 hover:text-red-600 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                             title="Remover linha"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -447,7 +447,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
                 </div>
 
                 {/* Footer */}
-                <div className="px-5 py-3 bg-neutral-50 border-t border-neutral-100 flex items-center justify-between">
+                <div className="px-5 py-3 bg-white/[0.03] border-t border-neutral-100 flex items-center justify-between">
                   <button
                     type="button"
                     onClick={addLine}
@@ -457,20 +457,20 @@ export default function NovoLancamentoPage(): React.ReactElement {
                     Adicionar linha
                   </button>
                   <div className="flex items-center gap-4 text-sm">
-                    <span className="text-neutral-600">
+                    <span className="text-white/60">
                       Total Debito:{" "}
-                      <span className="font-mono font-semibold text-neutral-900">
+                      <span className="font-mono font-semibold text-white">
                         {brl.format(totalDebit)}
                       </span>
                     </span>
-                    <span className="text-neutral-400">|</span>
-                    <span className="text-neutral-600">
+                    <span className="text-white/40">|</span>
+                    <span className="text-white/60">
                       Total Credito:{" "}
-                      <span className="font-mono font-semibold text-neutral-900">
+                      <span className="font-mono font-semibold text-white">
                         {brl.format(totalCredit)}
                       </span>
                     </span>
-                    <span className="text-neutral-400">|</span>
+                    <span className="text-white/40">|</span>
                     {isBalanced ? (
                       <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-success-100 text-success-700 border border-success-200">
                         <span>&#10003;</span> Balanceado
@@ -497,7 +497,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
           <div className="flex items-center gap-3 justify-end">
             <Link
               href={"/financeiro/lancamentos" as Route}
-              className="text-sm text-neutral-500 hover:underline"
+              className="text-sm text-white/50 hover:underline"
             >
               Cancelar
             </Link>

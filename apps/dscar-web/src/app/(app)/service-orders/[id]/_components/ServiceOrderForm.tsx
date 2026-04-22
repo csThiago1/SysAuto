@@ -228,9 +228,9 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between border-b bg-white px-6 py-4">
+      <div className="flex items-center justify-between border-b bg-white/5 px-6 py-4">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-gray-900">OS #{order.number}</h1>
+          <h1 className="text-xl font-bold text-white">OS #{order.number}</h1>
           <StatusBadge status={order.status as ServiceOrderStatus} />
         </div>
         <div className="flex items-center gap-3">
@@ -281,7 +281,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
           <button
             type="button"
             onClick={() => router.back()}
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="rounded-md border border-white/15 px-4 py-2 text-sm font-medium text-white/70 hover:bg-white/[0.03]"
           >
             Voltar
           </button>
@@ -293,7 +293,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
               "inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-medium transition-all",
               isDirty
                 ? "bg-primary-600 text-white shadow-md hover:bg-primary-700"
-                : "cursor-not-allowed bg-neutral-200 text-neutral-400",
+                : "cursor-not-allowed bg-white/10 text-white/40",
               isPending && "opacity-50"
             )}
           >
@@ -313,7 +313,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       </div>
 
       {/* Tabs */}
-      <div className="border-b bg-white">
+      <div className="border-b bg-white/5">
         <nav className="flex overflow-x-auto px-6" aria-label="Abas da OS">
           {TABS.map((tab) => (
             <button
@@ -324,7 +324,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
                 "shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors",
                 activeTab === tab.id
                   ? "border-primary-600 text-primary-600"
-                  : "border-transparent text-neutral-600 hover:border-gray-300 hover:text-neutral-800"
+                  : "border-transparent text-white/60 hover:border-white/15 hover:text-white/90"
               )}
             >
               {tab.label}
@@ -334,7 +334,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       </div>
 
       {/* Conteúdo das abas */}
-      <div className="flex-1 overflow-y-auto bg-gray-50 px-6">
+      <div className="flex-1 overflow-y-auto bg-white/[0.03] px-6">
         <form onSubmit={form.handleSubmit(onSubmit)}>
           {activeTab === "opening" && (
             <OpeningTab form={form} order={order} onCustomerDataChange={setCustomerDirtyData} />

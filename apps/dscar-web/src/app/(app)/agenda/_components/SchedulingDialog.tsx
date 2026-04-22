@@ -21,7 +21,7 @@ const schema = z.object({
 })
 type FormData = z.infer<typeof schema>
 
-const LABEL = "block text-xs font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
+const LABEL = "block text-xs font-bold uppercase tracking-wide text-white/40 mb-0.5"
 const INPUT = "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
 
 interface Props {
@@ -95,10 +95,10 @@ export function SchedulingDialog({ open, onOpenChange, defaultDate }: Props) {
             <label className={LABEL}>OS *</label>
             {selectedOsLabel ? (
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-neutral-800 flex-1">{selectedOsLabel}</span>
+                <span className="text-sm font-medium text-white/90 flex-1">{selectedOsLabel}</span>
                 <button
                   type="button"
-                  className="text-xs text-neutral-400 hover:text-neutral-600"
+                  className="text-xs text-white/40 hover:text-white/60"
                   onClick={() => { setValue("osId", ""); setSelectedOsLabel("") }}
                 >
                   Trocar
@@ -106,7 +106,7 @@ export function SchedulingDialog({ open, onOpenChange, defaultDate }: Props) {
               </div>
             ) : (
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400 pointer-events-none" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/40 pointer-events-none" />
                 <input
                   className={`${INPUT} pl-8`}
                   placeholder="Buscar por placa, número ou cliente..."
@@ -114,17 +114,17 @@ export function SchedulingDialog({ open, onOpenChange, defaultDate }: Props) {
                   onChange={(e) => setOsSearch(e.target.value)}
                 />
                 {osData && osData.results.length > 0 && osSearch.length >= 3 && (
-                  <div className="absolute z-10 mt-1 w-full rounded-md border border-neutral-200 bg-white shadow-lg max-h-48 overflow-y-auto">
+                  <div className="absolute z-10 mt-1 w-full rounded-md border border-white/10 bg-white/5 shadow-lg max-h-48 overflow-y-auto">
                     {osData.results.map((os) => (
                       <button
                         key={os.id}
                         type="button"
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-neutral-50"
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-white/[0.03]"
                         onMouseDown={() => selectOS(os.id, `OS #${os.number} — ${os.plate} / ${os.customer_name ?? "s/cliente"}`)}
                       >
                         <span className="font-medium">OS #{os.number}</span>
-                        <span className="ml-2 text-neutral-500">{os.plate}</span>
-                        {os.customer_name && <span className="ml-2 text-neutral-400 text-xs">{os.customer_name}</span>}
+                        <span className="ml-2 text-white/50">{os.plate}</span>
+                        {os.customer_name && <span className="ml-2 text-white/40 text-xs">{os.customer_name}</span>}
                       </button>
                     ))}
                   </div>

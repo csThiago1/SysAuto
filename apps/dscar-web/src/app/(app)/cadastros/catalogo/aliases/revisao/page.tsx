@@ -52,7 +52,7 @@ export default function AliasesRevisaoPage() {
   }
 
   function getConfiancaBadge(confianca: number | null): string {
-    if (confianca === null) return "text-neutral-500"
+    if (confianca === null) return "text-white/50"
     if (confianca >= 0.9) return "text-emerald-700"
     if (confianca >= 0.75) return "text-amber-700"
     return "text-red-600"
@@ -62,8 +62,8 @@ export default function AliasesRevisaoPage() {
     <div className="flex flex-col gap-6 p-6 max-w-5xl mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-neutral-900">Aliases — Fila de Revisão</h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <h1 className="text-2xl font-bold text-white">Aliases — Fila de Revisão</h1>
+        <p className="mt-1 text-sm text-white/50">
           Aliases gerados automaticamente com confiança média que precisam de revisão humana.
         </p>
       </div>
@@ -81,13 +81,13 @@ export default function AliasesRevisaoPage() {
       {isLoading ? (
         <TableSkeleton columns={5} rows={8} />
       ) : aliases.length === 0 ? (
-        <div className="py-12 text-center text-sm text-neutral-400">
+        <div className="py-12 text-center text-sm text-white/40">
           Nenhum alias pendente de revisão. Tudo em ordem!
         </div>
       ) : (
-        <div className="overflow-hidden rounded-md border border-neutral-200 bg-white">
+        <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
           <Table>
-            <TableHeader className="bg-neutral-50">
+            <TableHeader className="bg-white/[0.03]">
               <TableRow>
                 <TableHead>Texto Original</TableHead>
                 <TableHead>Texto Normalizado</TableHead>
@@ -99,10 +99,10 @@ export default function AliasesRevisaoPage() {
             <TableBody>
               {aliases.map((alias: AliasServico) => (
                 <TableRow key={alias.id}>
-                  <TableCell className="py-2 font-medium text-neutral-800">
+                  <TableCell className="py-2 font-medium text-white/90">
                     {alias.texto}
                   </TableCell>
-                  <TableCell className="py-2 font-mono text-xs text-neutral-500">
+                  <TableCell className="py-2 font-mono text-xs text-white/50">
                     {alias.texto_normalizado}
                   </TableCell>
                   <TableCell className="py-2 text-center">
@@ -111,10 +111,10 @@ export default function AliasesRevisaoPage() {
                         {(alias.confianca * 100).toFixed(0)}%
                       </span>
                     ) : (
-                      <span className="text-neutral-400 text-xs">—</span>
+                      <span className="text-white/40 text-xs">—</span>
                     )}
                   </TableCell>
-                  <TableCell className="py-2 text-center text-sm text-neutral-600">
+                  <TableCell className="py-2 text-center text-sm text-white/60">
                     {alias.ocorrencias}
                   </TableCell>
                   <TableCell className="py-2 text-right">
@@ -148,7 +148,7 @@ export default function AliasesRevisaoPage() {
         </div>
       )}
 
-      <p className="text-xs text-neutral-400">
+      <p className="text-xs text-white/40">
         Aprovar: confirma o mapeamento e promove para confiança alta.
         Rejeitar: desativa o alias (soft-delete).
       </p>

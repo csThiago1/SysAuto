@@ -31,9 +31,9 @@ export function MonthView({ currentDate, events, onDayClick }: Props) {
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       {/* Cabeçalho dias da semana */}
-      <div className="grid grid-cols-7 border-b border-neutral-200">
+      <div className="grid grid-cols-7 border-b border-white/10">
         {WEEKDAYS.map((d) => (
-          <div key={d} className="py-2 text-center text-xs font-semibold uppercase text-neutral-400">
+          <div key={d} className="py-2 text-center text-xs font-semibold uppercase text-white/40">
             {d}
           </div>
         ))}
@@ -50,14 +50,14 @@ export function MonthView({ currentDate, events, onDayClick }: Props) {
             <div
               key={day.toISOString()}
               className={cn(
-                "border-b border-r border-neutral-100 p-1.5 cursor-pointer hover:bg-neutral-50 transition-colors min-h-[100px]",
+                "border-b border-r border-neutral-100 p-1.5 cursor-pointer hover:bg-white/[0.03] transition-colors min-h-[100px]",
                 !inMonth && "bg-neutral-50/50",
               )}
               onClick={() => onDayClick(day)}
             >
               <div className={cn(
                 "text-xs font-medium mb-1 w-6 h-6 flex items-center justify-center rounded-full",
-                today ? "bg-primary-600 text-white" : inMonth ? "text-neutral-700" : "text-neutral-300",
+                today ? "bg-primary-600 text-white" : inMonth ? "text-white/70" : "text-white/30",
               )}>
                 {format(day, "d")}
               </div>
@@ -67,7 +67,7 @@ export function MonthView({ currentDate, events, onDayClick }: Props) {
                   <CalendarEventCard key={`${event.os.id}-${event.type}-${i}`} event={event} compact />
                 ))}
                 {dayEvents.length > 3 && (
-                  <p className="text-xs text-neutral-400 pl-1">+{dayEvents.length - 3} mais</p>
+                  <p className="text-xs text-white/40 pl-1">+{dayEvents.length - 3} mais</p>
                 )}
               </div>
             </div>

@@ -80,7 +80,7 @@ export function DayView({ currentDate, events }: Props) {
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden">
-      <div className={cn("py-3 text-center border-b border-neutral-200", showingToday && "text-primary-600")}>
+      <div className={cn("py-3 text-center border-b border-white/10", showingToday && "text-primary-600")}>
         <p className="text-sm font-semibold">{format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR })}</p>
       </div>
 
@@ -88,7 +88,7 @@ export function DayView({ currentDate, events }: Props) {
       <div className="flex-1 min-h-0 overflow-y-auto">
         {/* Dia fechado */}
         {isClosed && (
-          <div className="flex items-center justify-center py-20 text-neutral-400 text-sm">
+          <div className="flex items-center justify-center py-20 text-white/40 text-sm">
             Não há expediente aos domingos.
           </div>
         )}
@@ -115,7 +115,7 @@ export function DayView({ currentDate, events }: Props) {
                     className="flex gap-3 px-4 py-2 border-b border-neutral-100 min-h-[52px] cursor-pointer hover:bg-primary-600/5 transition-colors group"
                     onClick={() => handleSlotClick(hour)}
                   >
-                    <span className="text-xs text-neutral-400 w-8 shrink-0 pt-0.5">{hour}h</span>
+                    <span className="text-xs text-white/40 w-8 shrink-0 pt-0.5">{hour}h</span>
                     <div className="flex-1 min-w-0 space-y-1 relative">
                       {hourEvents.map((e, i) => (
                         <div key={`${e.os.id}-ent-${i}`} onClick={(ev) => ev.stopPropagation()}>

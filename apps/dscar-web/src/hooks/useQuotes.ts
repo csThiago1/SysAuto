@@ -33,8 +33,13 @@ async function fetchList<T>(url: string): Promise<T[]> {
 async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, init);
   if (!res.ok) {
-    const body = await res.text();
-    throw new Error(body || `${init?.method ?? "GET"} ${url} → ${res.status}`);
+    const err = await res.json().catch(() => ({ detail: res.statusText })) as Record<string, unknown>;
+    const message =
+      (err.detail as string | undefined) ??
+      (err.erro   as string | undefined) ??
+      (err.non_field_errors as string[] | undefined)?.[0] ??
+      `${init?.method ?? "GET"} ${url} → ${res.status}`;
+    throw new Error(message);
   }
   return res.json() as Promise<T>;
 }

@@ -140,7 +140,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
     <ErrorBoundary>
       <div className="space-y-5 max-w-2xl">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-neutral-500">
+        <div className="flex items-center gap-2 text-sm text-white/50">
           <Link
             href={"/rh/colaboradores" as Route}
             className="flex items-center gap-1 hover:text-primary-600 transition-colors"
@@ -149,22 +149,22 @@ export default function NovoColaboradorPage(): React.ReactElement {
             Colaboradores
           </Link>
           <span>/</span>
-          <span className="text-neutral-900">Nova admissão</span>
+          <span className="text-white">Nova admissão</span>
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">
+          <h1 className="text-2xl font-bold text-white">
             Admitir colaborador
           </h1>
-          <p className="mt-0.5 text-sm text-neutral-500">
+          <p className="mt-0.5 text-sm text-white/50">
             O acesso ao sistema será criado automaticamente com o e-mail informado.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Identificação */}
-          <section className="rounded-md bg-white shadow-card p-card-padding space-y-4">
-            <h2 className="text-sm font-semibold text-neutral-900 border-b border-neutral-100 pb-2">
+          <section className="rounded-md bg-white/5 shadow-card p-card-padding space-y-4">
+            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
               Identificação
             </h2>
             <div className="grid grid-cols-2 gap-4">
@@ -192,8 +192,8 @@ export default function NovoColaboradorPage(): React.ReactElement {
           </section>
 
           {/* Dados trabalhistas */}
-          <section className="rounded-md bg-white shadow-card p-card-padding space-y-4">
-            <h2 className="text-sm font-semibold text-neutral-900 border-b border-neutral-100 pb-2">
+          <section className="rounded-md bg-white/5 shadow-card p-card-padding space-y-4">
+            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
               Dados trabalhistas
             </h2>
             <div className="grid grid-cols-2 gap-4">
@@ -208,7 +208,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
                 <select
                   value={form.department}
                   onChange={(e) => set("department", e.target.value)}
-                  className="w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="">Selecione...</option>
                   {(Object.entries(DEPARTMENT_LABELS) as [HRDepartment, string][]).map(
@@ -224,7 +224,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
                 <select
                   value={form.position}
                   onChange={(e) => set("position", e.target.value)}
-                  className="w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="">Selecione...</option>
                   {(Object.entries(POSITION_LABELS) as [HRPosition, string][]).map(([v, l]) => (
@@ -238,7 +238,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
                 <select
                   value={form.contract_type}
                   onChange={(e) => set("contract_type", e.target.value)}
-                  className="w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   {(Object.entries(CONTRACT_TYPE_LABELS) as [ContractType, string][]).map(
                     ([v, l]) => (
@@ -284,7 +284,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
                 <select
                   value={form.pay_frequency}
                   onChange={(e) => set("pay_frequency", e.target.value)}
-                  className="w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="monthly">Mensal</option>
                   <option value="biweekly">Quinzenal</option>
@@ -295,11 +295,11 @@ export default function NovoColaboradorPage(): React.ReactElement {
           </section>
 
           {/* Dados pessoais básicos */}
-          <section className="rounded-md bg-white shadow-card p-card-padding space-y-4">
-            <h2 className="text-sm font-semibold text-neutral-900 border-b border-neutral-100 pb-2">
+          <section className="rounded-md bg-white/5 shadow-card p-card-padding space-y-4">
+            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
               Dados pessoais (opcional)
             </h2>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-white/50">
               CPF armazenado criptografado (LGPD). Pode ser preenchido depois na ficha do
               colaborador.
             </p>
@@ -329,8 +329,8 @@ export default function NovoColaboradorPage(): React.ReactElement {
           </section>
 
           {/* Endereço */}
-          <section className="rounded-md bg-white shadow-card p-card-padding space-y-4">
-            <h2 className="text-sm font-semibold text-neutral-900 border-b border-neutral-100 pb-2">
+          <section className="rounded-md bg-white/5 shadow-card p-card-padding space-y-4">
+            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
               Endereço (opcional)
             </h2>
             <div className="grid grid-cols-2 gap-4">
@@ -386,7 +386,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
           <div className="flex items-center gap-3 justify-end">
             <Link
               href={"/rh/colaboradores" as Route}
-              className="text-sm text-neutral-500 hover:underline"
+              className="text-sm text-white/50 hover:underline"
             >
               Cancelar
             </Link>
@@ -416,9 +416,9 @@ interface FormFieldProps {
 function FormField({ label, error, hint, children }: FormFieldProps): React.ReactElement {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label className="text-xs font-medium text-neutral-700">{label}</Label>
+      <Label className="text-xs font-medium text-white/70">{label}</Label>
       {children}
-      {hint && <p className="text-xs text-neutral-400">{hint}</p>}
+      {hint && <p className="text-xs text-white/40">{hint}</p>}
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );

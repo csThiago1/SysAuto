@@ -65,7 +65,7 @@ interface FormFieldProps {
 function FormField({ label, error, children }: FormFieldProps): React.ReactElement {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label className="text-xs font-medium text-neutral-700">{label}</Label>
+      <Label className="text-xs font-medium text-white/70">{label}</Label>
       {children}
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
@@ -169,7 +169,7 @@ export default function NovoContaReceberPage(): React.ReactElement {
     <ErrorBoundary>
       <div className="space-y-5 max-w-2xl">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-neutral-500">
+        <div className="flex items-center gap-2 text-sm text-white/50">
           <Link
             href={"/financeiro" as Route}
             className="hover:text-primary-600 transition-colors"
@@ -185,32 +185,32 @@ export default function NovoContaReceberPage(): React.ReactElement {
             Contas a Receber
           </Link>
           <span>/</span>
-          <span className="text-neutral-900">Novo Título</span>
+          <span className="text-white">Novo Título</span>
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">
+          <h1 className="text-2xl font-bold text-white">
             Novo Título a Receber
           </h1>
-          <p className="mt-0.5 text-sm text-neutral-500">
+          <p className="mt-0.5 text-sm text-white/50">
             Cadastre um novo título de contas a receber.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Cliente */}
-          <section className="rounded-md bg-white shadow-card p-5 space-y-4">
-            <h2 className="text-sm font-semibold text-neutral-900 border-b border-neutral-100 pb-2">
+          <section className="rounded-md bg-white/5 shadow-card p-5 space-y-4">
+            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
               Cliente
             </h2>
             <div className="flex flex-col gap-1.5">
-              <Label className="text-xs font-medium text-neutral-700">Cliente *</Label>
+              <Label className="text-xs font-medium text-white/70">Cliente *</Label>
               {errors.customer_id && <p className="text-xs text-red-600">{errors.customer_id}</p>}
               {clienteSelecionado ? (
-                <div className="flex items-center justify-between rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2">
+                <div className="flex items-center justify-between rounded-md border border-white/10 bg-white/[0.03] px-3 py-2">
                   <div>
-                    <p className="text-sm font-medium text-neutral-900">{clienteSelecionado.name}</p>
-                    <p className="text-xs text-neutral-500">{clienteSelecionado.document_masked}</p>
+                    <p className="text-sm font-medium text-white">{clienteSelecionado.name}</p>
+                    <p className="text-xs text-white/50">{clienteSelecionado.document_masked}</p>
                   </div>
                   <button
                     type="button"
@@ -220,7 +220,7 @@ export default function NovoContaReceberPage(): React.ReactElement {
                       setField("customer_id", "");
                       setField("customer_name", "");
                     }}
-                    className="text-neutral-400 hover:text-neutral-700"
+                    className="text-white/40 hover:text-white/70"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -228,7 +228,7 @@ export default function NovoContaReceberPage(): React.ReactElement {
               ) : (
                 <div className="space-y-2">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/40" />
                     <Input
                       className="pl-8"
                       placeholder="Buscar por nome ou CPF..."
@@ -238,7 +238,7 @@ export default function NovoContaReceberPage(): React.ReactElement {
                     />
                   </div>
                   {clientes.length > 0 && (
-                    <div className="rounded-md border border-neutral-200 overflow-hidden">
+                    <div className="rounded-md border border-white/10 overflow-hidden">
                       {clientes.slice(0, 5).map((c) => (
                         <button
                           key={c.id}
@@ -249,16 +249,16 @@ export default function NovoContaReceberPage(): React.ReactElement {
                             setField("customer_id", c.id);
                             setField("customer_name", c.name);
                           }}
-                          className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-neutral-50 border-b border-neutral-100 last:border-0 transition-colors"
+                          className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-white/[0.03] border-b border-neutral-100 last:border-0 transition-colors"
                         >
-                          <span className="text-sm text-neutral-900">{c.name}</span>
-                          <span className="text-xs text-neutral-500">{c.document_masked}</span>
+                          <span className="text-sm text-white">{c.name}</span>
+                          <span className="text-xs text-white/50">{c.document_masked}</span>
                         </button>
                       ))}
                     </div>
                   )}
                   {clienteSearch.length >= 2 && clientes.length === 0 && (
-                    <p className="text-xs text-neutral-500 text-center py-2">Nenhum cliente encontrado.</p>
+                    <p className="text-xs text-white/50 text-center py-2">Nenhum cliente encontrado.</p>
                   )}
                 </div>
               )}
@@ -266,8 +266,8 @@ export default function NovoContaReceberPage(): React.ReactElement {
           </section>
 
           {/* Documento */}
-          <section className="rounded-md bg-white shadow-card p-5 space-y-4">
-            <h2 className="text-sm font-semibold text-neutral-900 border-b border-neutral-100 pb-2">
+          <section className="rounded-md bg-white/5 shadow-card p-5 space-y-4">
+            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
               Documento
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -318,7 +318,7 @@ export default function NovoContaReceberPage(): React.ReactElement {
                 <select
                   value={form.origin}
                   onChange={(e) => setField("origin", e.target.value)}
-                  className="w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   {ORIGIN_OPTIONS.map(([value, label]) => (
                     <option key={value} value={value}>
@@ -331,8 +331,8 @@ export default function NovoContaReceberPage(): React.ReactElement {
           </section>
 
           {/* Observações */}
-          <section className="rounded-md bg-white shadow-card p-5 space-y-4">
-            <h2 className="text-sm font-semibold text-neutral-900 border-b border-neutral-100 pb-2">
+          <section className="rounded-md bg-white/5 shadow-card p-5 space-y-4">
+            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
               Observações
             </h2>
             <FormField label="Observações" error={errors.notes}>
@@ -340,7 +340,7 @@ export default function NovoContaReceberPage(): React.ReactElement {
                 value={form.notes}
                 onChange={(e) => setField("notes", e.target.value)}
                 rows={3}
-                className="w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="Informações adicionais sobre este título..."
               />
             </FormField>
@@ -358,7 +358,7 @@ export default function NovoContaReceberPage(): React.ReactElement {
           <div className="flex items-center gap-3 justify-end">
             <Link
               href={"/financeiro/contas-receber" as Route}
-              className="text-sm text-neutral-500 hover:underline"
+              className="text-sm text-white/50 hover:underline"
             >
               Cancelar
             </Link>

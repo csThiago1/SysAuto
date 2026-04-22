@@ -67,7 +67,7 @@ export default function EmployeeDetailPage(): React.ReactElement {
     <ErrorBoundary>
       <div className="space-y-5">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-neutral-500">
+        <div className="flex items-center gap-2 text-sm text-white/50">
           <Link
             href={"/rh/colaboradores" as Route}
             className="flex items-center gap-1 hover:text-primary-600 transition-colors"
@@ -76,7 +76,7 @@ export default function EmployeeDetailPage(): React.ReactElement {
             Colaboradores
           </Link>
           <span>/</span>
-          <span className="text-neutral-900">
+          <span className="text-white">
             {isLoading ? (
               <Skeleton className="h-4 w-32 inline-block" />
             ) : (
@@ -87,7 +87,7 @@ export default function EmployeeDetailPage(): React.ReactElement {
 
         {/* Header card */}
         {isLoading ? (
-          <div className="rounded-md bg-white shadow-card p-card-padding">
+          <div className="rounded-md bg-white/5 shadow-card p-card-padding">
             <div className="flex items-start gap-4">
               <Skeleton className="h-14 w-14 rounded-full" />
               <div className="flex-1 space-y-2">
@@ -132,7 +132,7 @@ export default function EmployeeDetailPage(): React.ReactElement {
         )}
 
         {/* Tabs nav */}
-        <div className="border-b border-neutral-200">
+        <div className="border-b border-white/10">
           <nav className="flex gap-1 overflow-x-auto">
             {TABS.map((tab) => (
               <button
@@ -141,7 +141,7 @@ export default function EmployeeDetailPage(): React.ReactElement {
                 className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab.id
                     ? "border-primary-600 text-primary-600"
-                    : "border-transparent text-neutral-500 hover:text-neutral-900 hover:border-neutral-300"
+                    : "border-transparent text-white/50 hover:text-white hover:border-white/15"
                 }`}
               >
                 {tab.label}

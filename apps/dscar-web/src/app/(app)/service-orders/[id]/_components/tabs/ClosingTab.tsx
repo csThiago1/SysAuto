@@ -63,7 +63,7 @@ function DeliveryConfirmationDialog({ order, onClose, onSuccess }: DeliveryDialo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="bg-white/5 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-2.5 bg-green-50 border-b border-green-200 px-5 py-4">
           <Truck className="h-5 w-5 text-green-600 shrink-0" />
@@ -173,7 +173,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
 
   if (!order) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-neutral-400">
+      <div className="flex flex-col items-center justify-center py-16 text-white/40">
         <p className="text-sm">Salve a OS para visualizar o fechamento.</p>
       </div>
     )
@@ -255,55 +255,55 @@ export function ClosingTab({ order }: ClosingTabProps) {
       )}
 
       {/* Financial summary */}
-      <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-neutral-100 bg-neutral-50">
-          <DollarSign className="h-4 w-4 text-neutral-500" />
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-600">
+      <div className="bg-white/5 border border-white/10 rounded-xl shadow-sm overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-neutral-100 bg-white/[0.03]">
+          <DollarSign className="h-4 w-4 text-white/50" />
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-white/60">
             Resumo Financeiro
           </h2>
         </div>
         <div className="p-5 space-y-3">
           <div className="flex justify-between text-sm">
-            <span className="text-neutral-600">Peças</span>
-            <span className="font-medium text-neutral-900">{fmtCurrency(partsTotal)}</span>
+            <span className="text-white/60">Peças</span>
+            <span className="font-medium text-white">{fmtCurrency(partsTotal)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-neutral-600">Serviços / Mão de obra</span>
-            <span className="font-medium text-neutral-900">{fmtCurrency(servicesTotal)}</span>
+            <span className="text-white/60">Serviços / Mão de obra</span>
+            <span className="font-medium text-white">{fmtCurrency(servicesTotal)}</span>
           </div>
           {discountTotal > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-neutral-600">Descontos</span>
+              <span className="text-white/60">Descontos</span>
               <span className="font-medium text-red-600">− {fmtCurrency(discountTotal)}</span>
             </div>
           )}
-          <div className="border-t border-neutral-200 pt-3 flex justify-between items-baseline">
-            <span className="text-base font-bold text-neutral-900">Total</span>
-            <span className="text-xl font-bold text-neutral-900">{fmtCurrency(grandTotal)}</span>
+          <div className="border-t border-white/10 pt-3 flex justify-between items-baseline">
+            <span className="text-base font-bold text-white">Total</span>
+            <span className="text-xl font-bold text-white">{fmtCurrency(grandTotal)}</span>
           </div>
         </div>
       </div>
 
       {/* KM section */}
-      <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-neutral-100 bg-neutral-50">
-          <Car className="h-4 w-4 text-neutral-500" />
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-600">
+      <div className="bg-white/5 border border-white/10 rounded-xl shadow-sm overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-neutral-100 bg-white/[0.03]">
+          <Car className="h-4 w-4 text-white/50" />
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-white/60">
             Quilometragem
           </h2>
         </div>
         <div className="p-5">
           <div className="grid grid-cols-2 gap-4 items-end">
             <div>
-              <Label className="text-xs text-neutral-500">KM de Entrada</Label>
-              <p className="mt-1 text-sm font-medium text-neutral-700">
+              <Label className="text-xs text-white/50">KM de Entrada</Label>
+              <p className="mt-1 text-sm font-medium text-white/70">
                 {order.mileage_in != null
                   ? `${order.mileage_in.toLocaleString("pt-BR")} km`
                   : "—"}
               </p>
             </div>
             <div>
-              <Label className="text-xs text-neutral-500" htmlFor="mileage-out">KM de Saída</Label>
+              <Label className="text-xs text-white/50" htmlFor="mileage-out">KM de Saída</Label>
               <div className="mt-1 flex gap-2">
                 <Input
                   id="mileage-out"
@@ -330,32 +330,32 @@ export function ClosingTab({ order }: ClosingTabProps) {
       </div>
 
       {/* Fiscal */}
-      <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-neutral-100 bg-neutral-50">
-          <FileText className="h-4 w-4 text-neutral-500" />
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-neutral-600">Fiscal</h2>
+      <div className="bg-white/5 border border-white/10 rounded-xl shadow-sm overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-neutral-100 bg-white/[0.03]">
+          <FileText className="h-4 w-4 text-white/50" />
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-white/60">Fiscal</h2>
         </div>
         <div className="p-5 space-y-3">
           <div className="flex items-center gap-2">
             <CheckCircle2
-              className={cn("h-5 w-5", order.invoice_issued ? "text-green-500" : "text-neutral-300")}
+              className={cn("h-5 w-5", order.invoice_issued ? "text-green-500" : "text-white/30")}
             />
-            <span className={cn("text-sm font-medium", order.invoice_issued ? "text-green-700" : "text-neutral-500")}>
+            <span className={cn("text-sm font-medium", order.invoice_issued ? "text-green-700" : "text-white/50")}>
               {order.invoice_issued ? "Nota fiscal emitida" : "Nota fiscal não emitida"}
             </span>
           </div>
           {order.nfe_key && (
             <div>
-              <Label className="text-xs text-neutral-500">Chave NF-e</Label>
-              <p className="mt-0.5 font-mono text-xs text-neutral-700 break-all bg-neutral-50 rounded px-2 py-1.5">
+              <Label className="text-xs text-white/50">Chave NF-e</Label>
+              <p className="mt-0.5 font-mono text-xs text-white/70 break-all bg-white/[0.03] rounded px-2 py-1.5">
                 {order.nfe_key}
               </p>
             </div>
           )}
           {order.nfse_number && (
             <div>
-              <Label className="text-xs text-neutral-500">Número NFS-e</Label>
-              <p className="mt-0.5 text-sm font-medium text-neutral-700">{order.nfse_number}</p>
+              <Label className="text-xs text-white/50">Número NFS-e</Label>
+              <p className="mt-0.5 text-sm font-medium text-white/70">{order.nfse_number}</p>
             </div>
           )}
           {!order.invoice_issued && order.customer_type === "private" && !isCancelled && (

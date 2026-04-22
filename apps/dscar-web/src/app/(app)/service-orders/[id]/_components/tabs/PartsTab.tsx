@@ -114,7 +114,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
 
   if (!orderId) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-neutral-400">
+      <div className="flex flex-col items-center justify-center py-16 text-white/40">
         <Package className="h-10 w-10 mb-3 opacity-40" />
         <p className="text-sm">Salve a OS antes de adicionar peças.</p>
       </div>
@@ -125,7 +125,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
     <div className="py-6 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-neutral-900">Peças</h2>
+        <h2 className="text-base font-semibold text-white">Peças</h2>
         {!showForm && (
           <Button size="sm" onClick={() => setShowForm(true)}>
             <Plus className="h-4 w-4 mr-1" /> Adicionar Peça
@@ -135,8 +135,8 @@ export function PartsTab({ orderId }: PartsTabProps) {
 
       {/* Inline form */}
       {showForm && (
-        <div className="bg-white border border-neutral-200 rounded-lg p-4 shadow-sm space-y-3">
-          <h3 className="text-sm font-medium text-neutral-700">
+        <div className="bg-white/5 border border-white/10 rounded-lg p-4 shadow-sm space-y-3">
+          <h3 className="text-sm font-medium text-white/70">
             {editingId ? "Editar Peça" : "Nova Peça"}
           </h3>
           <div className="grid grid-cols-2 gap-3">
@@ -163,9 +163,9 @@ export function PartsTab({ orderId }: PartsTabProps) {
                   id="parts-show-discount"
                   checked={showDiscount}
                   onChange={(e) => handleDiscountToggle(e.target.checked)}
-                  className="h-4 w-4 rounded border-neutral-300 text-primary-600 cursor-pointer"
+                  className="h-4 w-4 rounded border-white/15 text-primary-600 cursor-pointer"
                 />
-                <label htmlFor="parts-show-discount" className="text-xs font-medium text-neutral-700 cursor-pointer">
+                <label htmlFor="parts-show-discount" className="text-xs font-medium text-white/70 cursor-pointer">
                   Aplicar desconto
                 </label>
               </div>
@@ -189,16 +189,16 @@ export function PartsTab({ orderId }: PartsTabProps) {
 
       {/* Table */}
       {isLoading ? (
-        <div className="flex justify-center py-8"><Loader2 className="animate-spin text-neutral-400 h-5 w-5" /></div>
+        <div className="flex justify-center py-8"><Loader2 className="animate-spin text-white/40 h-5 w-5" /></div>
       ) : !parts || parts.length === 0 ? (
-        <div className="bg-white border border-neutral-200 rounded-lg p-8 text-center text-neutral-400 text-sm">
+        <div className="bg-white/5 border border-white/10 rounded-lg p-8 text-center text-white/40 text-sm">
           Nenhuma peça adicionada.
         </div>
       ) : (
         <>
-          <div className="rounded-md border border-neutral-200 overflow-hidden">
+          <div className="rounded-md border border-white/10 overflow-hidden">
             <Table>
-              <TableHeader className="bg-neutral-50">
+              <TableHeader className="bg-white/[0.03]">
                 <TableRow>
                   <TableHead>Descrição</TableHead>
                   <TableHead className="hidden sm:table-cell">Código</TableHead>
@@ -212,27 +212,27 @@ export function PartsTab({ orderId }: PartsTabProps) {
               <TableBody>
                 {parts.map((part) => (
                   <TableRow key={part.id}>
-                    <TableCell className="text-neutral-900 font-medium">{part.description}</TableCell>
-                    <TableCell className="text-neutral-500 hidden sm:table-cell">{part.part_number || "—"}</TableCell>
-                    <TableCell className="text-right text-neutral-700">{part.quantity}</TableCell>
-                    <TableCell className="text-right text-neutral-700">{formatCurrency(part.unit_price)}</TableCell>
-                    <TableCell className="text-right text-neutral-500 hidden md:table-cell">
+                    <TableCell className="text-white font-medium">{part.description}</TableCell>
+                    <TableCell className="text-white/50 hidden sm:table-cell">{part.part_number || "—"}</TableCell>
+                    <TableCell className="text-right text-white/70">{part.quantity}</TableCell>
+                    <TableCell className="text-right text-white/70">{formatCurrency(part.unit_price)}</TableCell>
+                    <TableCell className="text-right text-white/50 hidden md:table-cell">
                       {parseFloat(part.discount) > 0 ? formatCurrency(part.discount) : "—"}
                     </TableCell>
-                    <TableCell className="text-right font-semibold text-neutral-900">{formatCurrency(part.total)}</TableCell>
+                    <TableCell className="text-right font-semibold text-white">{formatCurrency(part.total)}</TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1">
                         <button
                           type="button"
                           onClick={() => startEdit(part)}
-                          className="p-1.5 rounded text-neutral-400 hover:text-primary hover:bg-neutral-100"
+                          className="p-1.5 rounded text-white/40 hover:text-primary hover:bg-white/5"
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
                         <button
                           type="button"
                           onClick={() => setConfirmDeleteId(part.id)}
-                          className="p-1.5 rounded text-neutral-400 hover:text-red-500 hover:bg-red-50"
+                          className="p-1.5 rounded text-white/40 hover:text-red-500 hover:bg-red-50"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -245,20 +245,20 @@ export function PartsTab({ orderId }: PartsTabProps) {
           </div>
 
           {/* Totals panel */}
-          <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 space-y-2">
+          <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-neutral-600">Subtotal</span>
+              <span className="text-white/60">Subtotal</span>
               <span className="font-medium">{formatCurrency((parts ?? []).reduce((acc, p) => acc + parseFloat(p.unit_price) * parseFloat(p.quantity), 0))}</span>
             </div>
             {discountTotal > 0 && (
               <div className="flex items-center justify-between text-sm">
-                <span className="text-neutral-600">Desconto</span>
+                <span className="text-white/60">Desconto</span>
                 <span className="font-medium text-red-600">- {formatCurrency(discountTotal)}</span>
               </div>
             )}
-            <div className="border-t border-neutral-200 pt-2 flex items-center justify-between">
-              <span className="text-sm font-semibold text-neutral-800">Total Peças</span>
-              <span className="text-base font-bold text-neutral-900">{formatCurrency(partsTotal)}</span>
+            <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+              <span className="text-sm font-semibold text-white/90">Total Peças</span>
+              <span className="text-base font-bold text-white">{formatCurrency(partsTotal)}</span>
             </div>
           </div>
         </>

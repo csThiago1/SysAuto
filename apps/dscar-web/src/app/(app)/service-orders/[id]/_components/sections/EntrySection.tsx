@@ -87,8 +87,8 @@ export function EntrySection({ form, order }: EntrySectionProps) {
 
       {/* Documentos fiscais — somente leitura */}
       {order && (order.nfe_key || order.nfse_number || order.invoice_issued) && (
-        <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 space-y-2">
-          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+        <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 space-y-2">
+          <p className="text-xs font-semibold text-white/50 uppercase tracking-wide">
             Documentos Fiscais
           </p>
           {order.invoice_issued && (
@@ -99,8 +99,8 @@ export function EntrySection({ form, order }: EntrySectionProps) {
           )}
           {order.nfe_key && (
             <div className="space-y-0.5">
-              <p className="text-xs text-neutral-500">Chave NF-e</p>
-              <p className={cn("text-xs font-mono text-neutral-800 break-all bg-white rounded px-2 py-1", order.nfe_key.replace(/\D/g, "").length !== 44 && "text-amber-700 bg-amber-50")}>
+              <p className="text-xs text-white/50">Chave NF-e</p>
+              <p className={cn("text-xs font-mono text-white/90 break-all bg-white/5 rounded px-2 py-1", order.nfe_key.replace(/\D/g, "").length !== 44 && "text-amber-700 bg-amber-50")}>
                 {order.nfe_key}
               </p>
               {order.nfe_key.replace(/\D/g, "").length !== 44 && (
@@ -110,8 +110,8 @@ export function EntrySection({ form, order }: EntrySectionProps) {
           )}
           {order.nfse_number && (
             <div className="space-y-0.5">
-              <p className="text-xs text-neutral-500">Número NFS-e</p>
-              <p className="text-xs font-mono text-neutral-800 bg-white rounded px-2 py-1">
+              <p className="text-xs text-white/50">Número NFS-e</p>
+              <p className="text-xs font-mono text-white/90 bg-white/5 rounded px-2 py-1">
                 {order.nfse_number}
               </p>
             </div>

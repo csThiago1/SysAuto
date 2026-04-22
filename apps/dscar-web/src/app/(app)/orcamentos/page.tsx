@@ -19,12 +19,12 @@ const STATUS_LABELS: Record<StatusOrcamento, string> = {
 
 const STATUS_COLORS: Record<StatusOrcamento, string> = {
   rascunho:      "text-white/50 bg-white/10",
-  enviado:       "text-blue-400 bg-blue-400/10",
-  aprovado:      "text-emerald-400 bg-emerald-400/10",
-  aprovado_parc: "text-yellow-400 bg-yellow-400/10",
-  recusado:      "text-red-400 bg-red-400/10",
-  expirado:      "text-orange-400 bg-orange-400/10",
-  convertido_os: "text-purple-400 bg-purple-400/10",
+  enviado:       "text-info-400 bg-info-400/10",
+  aprovado:      "text-success-400 bg-success-400/10",
+  aprovado_parc: "text-warning-400 bg-warning-400/10",
+  recusado:      "text-error-400 bg-error-400/10",
+  expirado:      "text-warning-400 bg-warning-400/10",
+  convertido_os: "text-white/60 bg-white/10",
 }
 
 const formatBRL = (v: string | number) =>
@@ -70,9 +70,9 @@ export default function OrcamentosPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: "Rascunhos",  value: rascunhos,  color: "text-white/50" },
-          { label: "Enviados",   value: enviados,   color: "text-blue-400" },
-          { label: "Aprovados",  value: aprovados,  color: "text-emerald-400" },
-          { label: "Volume",     value: formatBRL(totalValue), color: "text-yellow-400" },
+          { label: "Enviados",   value: enviados,   color: "text-info-400" },
+          { label: "Aprovados",  value: aprovados,  color: "text-success-400" },
+          { label: "Volume",     value: formatBRL(totalValue), color: "text-warning-400" },
         ].map((kpi) => (
           <div key={kpi.label} className="rounded-lg border border-white/10 bg-white/5 p-4">
             <p className="text-xs text-white/40">{kpi.label}</p>

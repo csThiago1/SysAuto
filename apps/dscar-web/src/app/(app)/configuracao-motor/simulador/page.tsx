@@ -14,10 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useSession } from "next-auth/react"
 import { useCalcularServico } from "@/hooks/usePricingEngine"
 import { useServicosCanonico } from "@/hooks/usePricingCatalog"
-import { useTiposPintura } from "@/hooks/usePricingProfile"
+import { useTiposPintura, useMinhaEmpresaId } from "@/hooks/usePricingProfile"
 import type { CalcularServicoInput, ResultadoServicoDTO } from "@paddock/types"
 
 function formatCurrency(val: string) {
@@ -127,8 +126,7 @@ interface Resultado {
 // ── Página ────────────────────────────────────────────────────────────────────
 
 export default function SimuladorPage() {
-  const { data: session } = useSession()
-  const empresaId = (session as { empresaId?: string } | null)?.empresaId ?? ""
+  const empresaId = useMinhaEmpresaId()
 
   const { data: tiposPintura = [] } = useTiposPintura()
 

@@ -92,15 +92,15 @@ const ACTIVITY_CONFIG: Partial<Record<ActivityType, ActivityConfig>> = {
     label: "Seguradora",
   },
   reminder: {
-    icon: <MessageSquare className="h-4 w-4 text-neutral-600" />,
+    icon: <MessageSquare className="h-4 w-4 text-white/60" />,
     ringClass: "ring-neutral-100",
-    bgClass: "bg-neutral-50",
+    bgClass: "bg-white/[0.03]",
     label: "Observação",
   },
   note_added: {
-    icon: <MessageSquare className="h-4 w-4 text-neutral-600" />,
+    icon: <MessageSquare className="h-4 w-4 text-white/60" />,
     ringClass: "ring-neutral-100",
-    bgClass: "bg-neutral-50",
+    bgClass: "bg-white/[0.03]",
     label: "Nota",
   },
   file_upload: {
@@ -172,9 +172,9 @@ const ACTIVITY_CONFIG: Partial<Record<ActivityType, ActivityConfig>> = {
 }
 
 const DEFAULT_CONFIG: ActivityConfig = {
-  icon: <ClipboardCheck className="h-4 w-4 text-neutral-500" />,
+  icon: <ClipboardCheck className="h-4 w-4 text-white/50" />,
   ringClass: "ring-neutral-100",
-  bgClass: "bg-neutral-50",
+  bgClass: "bg-white/[0.03]",
   label: "Atividade",
 }
 
@@ -198,14 +198,14 @@ function FieldDiff({ log }: { log: ActivityLog }) {
     <div className="mt-2 space-y-1">
       {changes.map((change, i) => (
         <div key={i} className="flex items-start gap-1.5 text-xs">
-          <span className="text-neutral-500 shrink-0 mt-0.5">{change.field_label}:</span>
+          <span className="text-white/50 shrink-0 mt-0.5">{change.field_label}:</span>
           {change.old_value !== null && (
             <span className="line-through text-red-400 truncate max-w-[120px]">
               {String(change.old_value)}
             </span>
           )}
           {change.old_value !== null && (
-            <ArrowRight className="h-3 w-3 text-neutral-400 shrink-0 mt-0.5" />
+            <ArrowRight className="h-3 w-3 text-white/40 shrink-0 mt-0.5" />
           )}
           <span className="text-green-700 font-medium truncate max-w-[120px]">
             {String(change.new_value)}
@@ -228,11 +228,11 @@ function StatusChangeDisplay({ log }: { log: ActivityLog }) {
 
   return (
     <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
-      <span className={cn("text-xs px-2 py-0.5 rounded-full border", fromCfg?.badge ?? "bg-neutral-100 text-neutral-500 border-neutral-200")}>
+      <span className={cn("text-xs px-2 py-0.5 rounded-full border", fromCfg?.badge ?? "bg-white/5 text-white/50 border-white/10")}>
         {fromCfg?.label ?? from}
       </span>
-      <ArrowRight className="h-3 w-3 text-neutral-400" />
-      <span className={cn("text-xs px-2 py-0.5 rounded-full border", toCfg?.badge ?? "bg-neutral-100 text-neutral-500 border-neutral-200")}>
+      <ArrowRight className="h-3 w-3 text-white/40" />
+      <span className={cn("text-xs px-2 py-0.5 rounded-full border", toCfg?.badge ?? "bg-white/5 text-white/50 border-white/10")}>
         {toCfg?.label ?? to}
       </span>
     </div>
@@ -314,11 +314,11 @@ function ActivityEntry({ log, snapshots }: ActivityEntryProps) {
         {cfg.icon}
       </span>
 
-      <div className="ml-2 rounded-lg border border-neutral-100 bg-white p-3 shadow-sm">
+      <div className="ml-2 rounded-lg border border-neutral-100 bg-white/5 p-3 shadow-sm">
         {/* Header */}
         <div className="flex items-start justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-semibold text-sm text-neutral-800">{log.user_name}</span>
+            <span className="font-semibold text-sm text-white/90">{log.user_name}</span>
             <Badge
               variant="secondary"
               className={cn("text-xs py-0 px-1.5", cfg.bgClass)}
@@ -326,14 +326,14 @@ function ActivityEntry({ log, snapshots }: ActivityEntryProps) {
               {cfg.label}
             </Badge>
           </div>
-          <span className="text-neutral-400 text-xs shrink-0">
+          <span className="text-white/40 text-xs shrink-0">
             {format(parseISO(log.created_at), "HH:mm")}
           </span>
         </div>
 
         {/* Description — only show for non-field-diff types */}
         {!FIELD_DIFF_TYPES.has(log.activity_type) && (
-          <p className="text-sm text-neutral-600 mt-1 leading-snug">{log.description}</p>
+          <p className="text-sm text-white/60 mt-1 leading-snug">{log.description}</p>
         )}
 
         {/* Rich extras */}
@@ -362,11 +362,11 @@ function DateGroupLabel({ date }: { date: string }) {
   else if (isYesterday(d)) label = "Ontem"
   return (
     <div className="flex items-center gap-2 my-4">
-      <div className="h-px flex-1 bg-neutral-200" />
-      <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wide px-2">
+      <div className="h-px flex-1 bg-white/10" />
+      <span className="text-xs font-semibold text-white/40 uppercase tracking-wide px-2">
         {label}
       </span>
-      <div className="h-px flex-1 bg-neutral-200" />
+      <div className="h-px flex-1 bg-white/10" />
     </div>
   )
 }
@@ -414,9 +414,9 @@ export function HistoryTab({ order }: HistoryTabProps) {
   return (
     <div className="space-y-4 max-w-2xl">
       {/* Add note */}
-      <div className="bg-white p-4 rounded-xl border border-neutral-200 shadow-sm space-y-3">
-        <label htmlFor="history-note" className="text-sm font-semibold text-neutral-700 flex items-center gap-1.5">
-          <MessageSquare className="h-4 w-4 text-neutral-400" />
+      <div className="bg-white/5 p-4 rounded-xl border border-white/10 shadow-sm space-y-3">
+        <label htmlFor="history-note" className="text-sm font-semibold text-white/70 flex items-center gap-1.5">
+          <MessageSquare className="h-4 w-4 text-white/40" />
           Adicionar observação
         </label>
         <Textarea
@@ -441,10 +441,10 @@ export function HistoryTab({ order }: HistoryTabProps) {
       {/* Timeline */}
       {isLoading ? (
         <div className="flex justify-center py-10">
-          <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
+          <Loader2 className="h-5 w-5 animate-spin text-white/40" />
         </div>
       ) : logs.length === 0 ? (
-        <div className="text-center py-10 text-neutral-400 text-sm">
+        <div className="text-center py-10 text-white/40 text-sm">
           Nenhum registro ainda.
         </div>
       ) : (

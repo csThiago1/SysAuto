@@ -43,12 +43,12 @@ const STATUS_LABELS: Record<StatusOrcamento, string> = {
 
 const STATUS_COLORS: Record<StatusOrcamento, string> = {
   rascunho:      "text-white/50 bg-white/10",
-  enviado:       "text-blue-400 bg-blue-400/10",
-  aprovado:      "text-emerald-400 bg-emerald-400/10",
-  aprovado_parc: "text-yellow-400 bg-yellow-400/10",
-  recusado:      "text-red-400 bg-red-400/10",
-  expirado:      "text-orange-400 bg-orange-400/10",
-  convertido_os: "text-purple-400 bg-purple-400/10",
+  enviado:       "text-info-400 bg-info-400/10",
+  aprovado:      "text-success-400 bg-success-400/10",
+  aprovado_parc: "text-warning-400 bg-warning-400/10",
+  recusado:      "text-error-400 bg-error-400/10",
+  expirado:      "text-warning-400 bg-warning-400/10",
+  convertido_os: "text-white/60 bg-white/10",
 }
 
 const ACAO_LABELS: Record<Acao, string> = {
@@ -371,7 +371,7 @@ export default function OrcamentoDetailPage() {
   const { mutateAsync: novaVersao, isPending: clonando }  = useNovaVersaoOrcamento(id)
 
   if (isLoading) return <div className="p-6 text-white/40 text-sm">Carregando orçamento...</div>
-  if (error || !orc) return <div className="p-6 text-red-400 text-sm">Orçamento não encontrado.</div>
+  if (error || !orc) return <div className="p-6 text-error-400 text-sm">Orçamento não encontrado.</div>
 
   const isRascunho = orc.status === "rascunho"
   const canEnviar  = isRascunho
@@ -451,7 +451,7 @@ export default function OrcamentoDetailPage() {
           )}
           {canEnviar && (
             <Button variant="outline" size="sm" onClick={handleEnviar} disabled={enviando}
-              className="border-blue-500/40 text-blue-400 hover:bg-blue-500/10"
+              className="border-info-500/40 text-info-400 hover:bg-info-500/10"
             >
               <Send className="h-3.5 w-3.5 mr-1" />
               {enviando ? "Enviando..." : "Enviar"}
@@ -459,7 +459,7 @@ export default function OrcamentoDetailPage() {
           )}
           {canRecusar && orc.status !== "rascunho" && (
             <Button variant="outline" size="sm" onClick={handleRecusar} disabled={recusando}
-              className="border-red-500/40 text-red-400 hover:bg-red-500/10"
+              className="border-error-500/40 text-error-400 hover:bg-error-500/10"
             >
               <XCircle className="h-3.5 w-3.5 mr-1" />
               Recusar
@@ -467,7 +467,7 @@ export default function OrcamentoDetailPage() {
           )}
           {canAprovar && (
             <Button size="sm" onClick={handleAprovar} disabled={aprovando}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="bg-success-600 hover:bg-success-700 text-white"
             >
               <CheckCircle className="h-3.5 w-3.5 mr-1" />
               {aprovando ? "Aprovando..." : "Aprovar → OS"}
@@ -484,7 +484,7 @@ export default function OrcamentoDetailPage() {
         </div>
         <div className="rounded-lg border border-white/10 bg-white/5 p-4">
           <p className="text-xs text-white/40">Desconto</p>
-          <p className="text-lg font-semibold text-red-400 mt-1">-{formatBRL(orc.desconto)}</p>
+          <p className="text-lg font-semibold text-error-400 mt-1">-{formatBRL(orc.desconto)}</p>
         </div>
         <div className="rounded-lg border border-primary-500/20 bg-primary-500/5 p-4">
           <p className="text-xs text-white/40">Total</p>

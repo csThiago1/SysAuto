@@ -6,61 +6,15 @@
 
 /* ─── CSS Custom Properties — DS Car Design System ─────────────────────────── */
 :root {
-  /* Fontes */
   --font-inter:       'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-rajdhani:    'Rajdhani', ui-sans-serif, system-ui, sans-serif;
   --font-montserrat:  'Montserrat', ui-sans-serif, system-ui, sans-serif;
 
-  /* shadcn/ui tokens mapeados para DS Car */
-  --background:          0 0% 98%;         /* neutral-50 */
-  --foreground:          0 0% 9%;          /* neutral-900 */
-
-  --card:                0 0% 100%;
-  --card-foreground:     0 0% 9%;
-
-  --popover:             0 0% 100%;
-  --popover-foreground:  0 0% 9%;
-
-  /* Primary — vermelho DS Car 600 */
-  --primary:             0 82% 42%;
-  --primary-foreground:  0 0% 100%;
-
-  /* Secondary — preto profundo 950 */
-  --secondary:           0 0% 8%;
-  --secondary-foreground:0 0% 98%;
-
-  --muted:               0 0% 96%;
-  --muted-foreground:    0 0% 45%;
-
-  /* Accent — cinza metálico 500 */
-  --accent:              207 14% 59%;
-  --accent-foreground:   0 0% 9%;
-
-  /* Destructive — error 600 */
-  --destructive:         0 100% 47%;
-  --destructive-foreground: 0 0% 100%;
-
-  --border:              0 0% 89%;         /* neutral-200 */
-  --input:               0 0% 89%;
-  --ring:                0 82% 42%;        /* primary-600 */
-
-  --radius: 0.5rem;
-
-  /* Sidebar */
-  --sidebar-bg:          0 0% 8%;          /* secondary-950 */
-  --sidebar-bg-hover:    0 82% 38%;        /* primary-700 */
-  --sidebar-text:        0 0% 72%;         /* neutral-400 claro */
-  --sidebar-text-active: 0 0% 100%;
-  --sidebar-accent:      0 82% 42%;        /* primary-600 */
-  --sidebar-border:      0 0% 16%;         /* secondary-800 */
-}
-
-/* ─── Dark mode (ERP — workspace noturno do mecânico) ───────────────────────── */
-.dark {
-  --background:          0 0% 5%;          /* quase preto */
+  /* Dark theme — DS Car ERP workspace noturno */
+  --background:          0 0% 4%;
   --foreground:          0 0% 95%;
 
-  --card:                0 0% 8%;
+  --card:                0 0% 7%;
   --card-foreground:     0 0% 95%;
 
   --popover:             0 0% 8%;
@@ -84,6 +38,15 @@
   --border:              0 0% 18%;
   --input:               0 0% 18%;
   --ring:                0 82% 42%;
+
+  --radius: 0.5rem;
+
+  --sidebar-bg:          0 0% 8%;
+  --sidebar-bg-hover:    0 82% 38%;
+  --sidebar-text:        0 0% 72%;
+  --sidebar-text-active: 0 0% 100%;
+  --sidebar-accent:      0 82% 42%;
+  --sidebar-border:      0 0% 16%;
 }
 
 /* ─── Base ──────────────────────────────────────────────────────────────────── */

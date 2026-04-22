@@ -24,23 +24,23 @@ function PayslipRow({ payslip }: { payslip: Payslip }): React.ReactElement {
   const close = useClosePayslip();
 
   return (
-    <tr className="border-b border-neutral-100 last:border-0 hover:bg-neutral-50 transition-colors">
-      <td className="px-4 py-3 text-sm text-neutral-900 font-medium">
+    <tr className="border-b border-neutral-100 last:border-0 hover:bg-white/[0.03] transition-colors">
+      <td className="px-4 py-3 text-sm text-white font-medium">
         {payslip.employee_name}
       </td>
-      <td className="px-4 py-3 text-sm text-neutral-700 text-right tabular-nums">
+      <td className="px-4 py-3 text-sm text-white/70 text-right tabular-nums">
         {fmt.format(parseFloat(payslip.base_salary))}
       </td>
-      <td className="px-4 py-3 text-sm text-neutral-700 text-right tabular-nums">
+      <td className="px-4 py-3 text-sm text-white/70 text-right tabular-nums">
         {fmt.format(parseFloat(payslip.total_bonuses))}
       </td>
-      <td className="px-4 py-3 text-sm text-neutral-700 text-right tabular-nums">
+      <td className="px-4 py-3 text-sm text-white/70 text-right tabular-nums">
         {fmt.format(parseFloat(payslip.total_allowances))}
       </td>
       <td className="px-4 py-3 text-sm text-red-600 text-right tabular-nums">
         -{fmt.format(parseFloat(payslip.total_deductions))}
       </td>
-      <td className="px-4 py-3 text-sm font-bold text-neutral-900 text-right tabular-nums">
+      <td className="px-4 py-3 text-sm font-bold text-white text-right tabular-nums">
         {fmt.format(parseFloat(payslip.net_pay))}
       </td>
       <td className="px-4 py-3 text-right">
@@ -53,7 +53,7 @@ function PayslipRow({ payslip }: { payslip: Payslip }): React.ReactElement {
           <button
             onClick={() => close.mutate(payslip.id)}
             disabled={close.isPending}
-            className="text-xs text-neutral-500 hover:text-neutral-900 hover:underline disabled:opacity-50"
+            className="text-xs text-white/50 hover:text-white hover:underline disabled:opacity-50"
           >
             Fechar
           </button>
@@ -107,7 +107,7 @@ export default function FolhaMonthPage({
     <ErrorBoundary>
       <div className="space-y-5">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-neutral-500">
+        <div className="flex items-center gap-2 text-sm text-white/50">
           <Link
             href={"/rh/folha" as Route}
             className="flex items-center gap-1 hover:text-primary-600"
@@ -116,16 +116,16 @@ export default function FolhaMonthPage({
             Folha de Pagamento
           </Link>
           <span>/</span>
-          <span className="text-neutral-900 capitalize">{monthDisplay}</span>
+          <span className="text-white capitalize">{monthDisplay}</span>
         </div>
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-neutral-900 capitalize">
+            <h1 className="text-2xl font-bold text-white capitalize">
               {monthDisplay}
             </h1>
-            <p className="text-sm text-neutral-500 mt-0.5">
+            <p className="text-sm text-white/50 mt-0.5">
               {closedCount}/{payslips.length} contracheques fechados
             </p>
           </div>
@@ -140,7 +140,7 @@ export default function FolhaMonthPage({
                   </span>
                   <button
                     onClick={() => setConfirmClose(false)}
-                    className="text-xs text-neutral-500 hover:underline"
+                    className="text-xs text-white/50 hover:underline"
                   >
                     Cancelar
                   </button>
@@ -155,7 +155,7 @@ export default function FolhaMonthPage({
               ) : (
                 <button
                   onClick={() => setConfirmClose(true)}
-                  className="flex items-center gap-1.5 rounded-md border border-neutral-200 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+                  className="flex items-center gap-1.5 rounded-md border border-white/10 px-4 py-2 text-sm text-white/70 hover:bg-white/[0.03]"
                 >
                   <Lock className="h-4 w-4" />
                   Fechar Folha
@@ -176,7 +176,7 @@ export default function FolhaMonthPage({
         {!isLoading && payslips.length > 0 && (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
             {[
-              { label: "Salário base", value: totals.base, color: "text-neutral-900" },
+              { label: "Salário base", value: totals.base, color: "text-white" },
               { label: "Bônus", value: totals.bonuses, color: "text-success-700" },
               { label: "Vales", value: totals.allowances, color: "text-blue-700" },
               { label: "Descontos", value: totals.deductions, color: "text-red-600" },
@@ -184,9 +184,9 @@ export default function FolhaMonthPage({
             ].map((c) => (
               <div
                 key={c.label}
-                className="rounded-md bg-white shadow-card p-3"
+                className="rounded-md bg-white/5 shadow-card p-3"
               >
-                <p className="text-xs text-neutral-500">{c.label}</p>
+                <p className="text-xs text-white/50">{c.label}</p>
                 <p className={`text-sm font-bold mt-0.5 tabular-nums ${c.color}`}>
                   {fmt.format(c.value)}
                 </p>
@@ -196,7 +196,7 @@ export default function FolhaMonthPage({
         )}
 
         {/* Table */}
-        <div className="rounded-md bg-white shadow-card overflow-hidden">
+        <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
           {isLoading ? (
             <div className="p-4 space-y-3">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -204,33 +204,33 @@ export default function FolhaMonthPage({
               ))}
             </div>
           ) : payslips.length === 0 ? (
-            <div className="py-10 text-center text-sm text-neutral-500">
+            <div className="py-10 text-center text-sm text-white/50">
               Nenhum contracheque para este mês.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-neutral-200 bg-neutral-50">
-                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                  <tr className="border-b border-white/10 bg-white/[0.03]">
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">
                       Colaborador
                     </th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-white/50 uppercase tracking-wide">
                       Salário base
                     </th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-white/50 uppercase tracking-wide">
                       Bônus
                     </th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-white/50 uppercase tracking-wide">
                       Vales
                     </th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-white/50 uppercase tracking-wide">
                       Descontos
                     </th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-white/50 uppercase tracking-wide">
                       Líquido
                     </th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-white/50 uppercase tracking-wide">
                       Status
                     </th>
                   </tr>
@@ -241,17 +241,17 @@ export default function FolhaMonthPage({
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr className="border-t-2 border-neutral-200 bg-neutral-50">
-                    <td className="px-4 py-2.5 text-xs font-semibold text-neutral-700">
+                  <tr className="border-t-2 border-white/10 bg-white/[0.03]">
+                    <td className="px-4 py-2.5 text-xs font-semibold text-white/70">
                       Total ({payslips.length})
                     </td>
-                    <td className="px-4 py-2.5 text-sm font-semibold text-neutral-900 text-right tabular-nums">
+                    <td className="px-4 py-2.5 text-sm font-semibold text-white text-right tabular-nums">
                       {fmt.format(totals.base)}
                     </td>
-                    <td className="px-4 py-2.5 text-sm font-semibold text-neutral-900 text-right tabular-nums">
+                    <td className="px-4 py-2.5 text-sm font-semibold text-white text-right tabular-nums">
                       {fmt.format(totals.bonuses)}
                     </td>
-                    <td className="px-4 py-2.5 text-sm font-semibold text-neutral-900 text-right tabular-nums">
+                    <td className="px-4 py-2.5 text-sm font-semibold text-white text-right tabular-nums">
                       {fmt.format(totals.allowances)}
                     </td>
                     <td className="px-4 py-2.5 text-sm font-semibold text-red-600 text-right tabular-nums">

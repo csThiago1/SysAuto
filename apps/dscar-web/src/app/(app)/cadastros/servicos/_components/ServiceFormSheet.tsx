@@ -97,7 +97,7 @@ export function ServiceFormSheet({ open, onOpenChange, editing }: Props) {
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
           {/* Nome */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-neutral-700">Nome *</label>
+            <label className="text-sm font-medium text-white/70">Nome *</label>
             <Input
               placeholder="Ex: Pintura de capô"
               {...register("name")}
@@ -109,7 +109,7 @@ export function ServiceFormSheet({ open, onOpenChange, editing }: Props) {
 
           {/* Categoria */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-neutral-700">Categoria *</label>
+            <label className="text-sm font-medium text-white/70">Categoria *</label>
             <select
               className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
               {...register("category")}
@@ -122,7 +122,7 @@ export function ServiceFormSheet({ open, onOpenChange, editing }: Props) {
 
           {/* Preço */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-neutral-700">Preço (R$) *</label>
+            <label className="text-sm font-medium text-white/70">Preço (R$) *</label>
             <Input
               placeholder="Ex: 280,00"
               {...register("suggested_price")}
@@ -134,8 +134,8 @@ export function ServiceFormSheet({ open, onOpenChange, editing }: Props) {
 
           {/* Descrição */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-neutral-700">
-              Descrição <span className="text-neutral-400 font-normal">(opcional)</span>
+            <label className="text-sm font-medium text-white/70">
+              Descrição <span className="text-white/40 font-normal">(opcional)</span>
             </label>
             <textarea
               className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring resize-none"

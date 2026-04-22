@@ -6,8 +6,8 @@ import { InsurerLogo } from "../shared/InsurerSelect"
 import { ExpertCombobox } from "../shared/ExpertCombobox"
 import { useInsurers } from "../../_hooks/useInsurers"
 
-const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-neutral-500"
-const LABEL = "block text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-0.5"
+const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-white/50"
+const LABEL = "block text-xs font-semibold uppercase tracking-wide text-white/40 mb-0.5"
 const INPUT = "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 const SELECT = "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 

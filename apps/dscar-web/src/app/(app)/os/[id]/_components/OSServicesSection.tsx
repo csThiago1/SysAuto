@@ -90,31 +90,31 @@ export function OSServicesSection({ osId, osStatus }: OSServicesSectionProps): R
   return (
     <div className="space-y-4">
       {isLoading ? (
-        <div className="flex items-center justify-center py-10 text-neutral-400">
+        <div className="flex items-center justify-center py-10 text-white/40">
           <Loader2 className="h-5 w-5 animate-spin mr-2" />
           <span className="text-sm">Carregando serviços...</span>
         </div>
       ) : laborItems.length === 0 && !showForm ? (
-        <div className="flex flex-col items-center justify-center py-12 text-neutral-400 gap-2">
+        <div className="flex flex-col items-center justify-center py-12 text-white/40 gap-2">
           <Wrench className="h-8 w-8" />
           <p className="text-sm">Nenhum serviço adicionado.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-neutral-200">
+        <div className="overflow-x-auto rounded-lg border border-white/10">
           <table className="w-full text-sm">
-            <thead className="bg-neutral-50 border-b border-neutral-200">
+            <thead className="bg-white/[0.03] border-b border-white/10">
               <tr>
-                <th className="text-left px-3 py-2.5 font-medium text-neutral-600">Descrição</th>
-                <th className="text-right px-3 py-2.5 font-medium text-neutral-600">Qtd/Horas</th>
-                <th className="text-right px-3 py-2.5 font-medium text-neutral-600">Valor Unit.</th>
-                <th className="text-right px-3 py-2.5 font-medium text-neutral-600">Desconto</th>
-                <th className="text-right px-3 py-2.5 font-medium text-neutral-600">Total</th>
+                <th className="text-left px-3 py-2.5 font-medium text-white/60">Descrição</th>
+                <th className="text-right px-3 py-2.5 font-medium text-white/60">Qtd/Horas</th>
+                <th className="text-right px-3 py-2.5 font-medium text-white/60">Valor Unit.</th>
+                <th className="text-right px-3 py-2.5 font-medium text-white/60">Desconto</th>
+                <th className="text-right px-3 py-2.5 font-medium text-white/60">Total</th>
                 <th className="w-10" />
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
               {laborItems.map((labor) => (
-                <tr key={labor.id} className="hover:bg-neutral-50">
+                <tr key={labor.id} className="hover:bg-white/[0.03]">
                   <td className="px-3 py-2.5 font-medium">{labor.description}</td>
                   <td className="px-3 py-2.5 text-right">{labor.quantity}</td>
                   <td className="px-3 py-2.5 text-right">{formatCurrency(parseFloat(labor.unit_price))}</td>
@@ -128,7 +128,7 @@ export function OSServicesSection({ osId, osStatus }: OSServicesSectionProps): R
                         disabled={isClosed || deleteLabor.isPending}
                         title={isClosed ? "OS encerrada — edição bloqueada" : "Remover serviço"}
                         className={cn(
-                          "flex h-7 w-7 items-center justify-center rounded text-neutral-400 transition-colors",
+                          "flex h-7 w-7 items-center justify-center rounded text-white/40 transition-colors",
                           isClosed
                             ? "opacity-30 cursor-not-allowed"
                             : "hover:bg-red-50 hover:text-red-600"
@@ -142,12 +142,12 @@ export function OSServicesSection({ osId, osStatus }: OSServicesSectionProps): R
               ))}
             </tbody>
             {laborItems.length > 0 && (
-              <tfoot className="border-t-2 border-neutral-200 bg-neutral-50">
+              <tfoot className="border-t-2 border-white/10 bg-white/[0.03]">
                 <tr>
-                  <td colSpan={4} className="px-3 py-2.5 text-right text-sm font-semibold text-neutral-700">
+                  <td colSpan={4} className="px-3 py-2.5 text-right text-sm font-semibold text-white/70">
                     Total de Serviços
                   </td>
-                  <td className="px-3 py-2.5 text-right font-bold text-base text-neutral-900">
+                  <td className="px-3 py-2.5 text-right font-bold text-base text-white">
                     {formatCurrency(servicesTotal)}
                   </td>
                   <td />
@@ -162,9 +162,9 @@ export function OSServicesSection({ osId, osStatus }: OSServicesSectionProps): R
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 space-y-3"
+          className="rounded-lg border border-white/10 bg-white/[0.03] p-4 space-y-3"
         >
-          <p className="text-sm font-medium text-neutral-700">Novo serviço</p>
+          <p className="text-sm font-medium text-white/70">Novo serviço</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
               <Input

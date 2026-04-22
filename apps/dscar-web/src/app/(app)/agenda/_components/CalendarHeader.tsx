@@ -52,7 +52,7 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
         <Button variant="outline" size="icon" className="h-8 w-8" onClick={goBack}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <h2 className="text-base font-semibold text-neutral-800 capitalize min-w-[200px] text-center">
+        <h2 className="text-base font-semibold text-white/90 capitalize min-w-[200px] text-center">
           {getLabel()}
         </h2>
         <Button variant="outline" size="icon" className="h-8 w-8" onClick={goForward}>
@@ -61,7 +61,7 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
         <Button
           variant="ghost"
           size="sm"
-          className="text-xs text-neutral-500"
+          className="text-xs text-white/50"
           onClick={() => onDateChange(new Date())}
         >
           Hoje
@@ -70,7 +70,7 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
 
       <div className="flex items-center gap-2">
         {/* Seletor de view */}
-        <div className="flex rounded-md border border-neutral-200 bg-white p-0.5">
+        <div className="flex rounded-md border border-white/10 bg-white/5 p-0.5">
           {(["month", "week", "day"] as CalendarView[]).map((v) => (
             <button
               key={v}
@@ -79,7 +79,7 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
               className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
                 view === v
                   ? "bg-neutral-900 text-white"
-                  : "text-neutral-500 hover:text-neutral-700"
+                  : "text-white/50 hover:text-white/70"
               }`}
             >
               {VIEW_LABELS[v]}

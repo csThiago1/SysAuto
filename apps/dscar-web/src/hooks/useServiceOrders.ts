@@ -165,3 +165,55 @@ export function useDeleteOSLabor(osId: string) {
     },
   });
 }
+
+// ─── Vehicle History ──────────────────────────────────────────────────────────
+
+export interface VehicleHistory {
+  found: boolean
+  plate?: string
+  make?: string
+  model?: string
+  year?: number | null
+  vehicle_version?: string
+  color?: string
+  fuel_type?: string
+  fipe_value?: string | null
+  last_customer_name?: string
+  last_customer_uuid?: string | null
+  visits?: number
+  last_visit?: string | null
+}
+
+export interface PlateApiResult {
+  plate: string
+  make: string
+  model: string
+  year: number | null
+  chassis: string
+  renavam: string
+  city: string
+}
+
+/** Busca veículo no histórico de OS por placa (backend). */
+export function useVehicleHistory(plate: string) {
+  const normalized = plate.toUpperCase().replace(/[^A-Z0-9]/g, "")
+  return useQuery<VehicleHistory>({
+    queryKey: ["vehicle-history", normalized],
+    queryFn: () =>
+      apiFetch<VehicleHistory>(
+        `${API}/service-orders/vehicle-history/?plate=${normalized}`
+      ),
+    enabled: normalized.length >= 7,
+    staleTime: 60 * 1000,
+  })
+}
+
+/** Consulta placa na API externa (placa-fipe via proxy Next.js). Apenas chamado manualmente. */
+export function usePlateApi() {
+  return useMutation<PlateApiResult, Error, string>({
+    mutationFn: (plate: string) => {
+      const normalized = plate.toUpperCase().replace(/[^A-Z0-9]/g, "")
+      return apiFetch<PlateApiResult>(`/api/plate/${normalized}`)
+    },
+  })
+}

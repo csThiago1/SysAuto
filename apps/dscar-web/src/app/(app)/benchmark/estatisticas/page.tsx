@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useBenchmarkEstatisticas } from "@/hooks/useBenchmark"
 import { useServicosCanonico } from "@/hooks/usePricingCatalog"
-import { useSegmentosVeiculares, useCategoriasTamanho } from "@/hooks/usePricingProfile"
+import { useSegmentos, useTamanhos } from "@/hooks/usePricingProfile"
 
 const formatBRL = (v: string | null) =>
   v ? parseFloat(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"
@@ -20,8 +20,8 @@ export default function BenchmarkEstatisticasPage() {
   const [buscar, setBuscar] = useState(false)
 
   const { data: servicos = [] } = useServicosCanonico(servicoSearch.length >= 2 ? servicoSearch : undefined)
-  const { data: segmentos = [] } = useSegmentosVeiculares()
-  const { data: tamanhos = [] } = useCategoriasTamanho()
+  const { data: segmentos = [] } = useSegmentos()
+  const { data: tamanhos = [] } = useTamanhos()
 
   const { data: stats, isLoading } = useBenchmarkEstatisticas(
     buscar && servicoSelecionado ? servicoSelecionado.id : "",

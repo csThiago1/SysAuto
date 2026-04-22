@@ -35,7 +35,7 @@ export default function ContrachequesSelfPage(): React.ReactElement {
     <ErrorBoundary>
       <div className="space-y-5 max-w-2xl mx-auto">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-neutral-500">
+        <div className="flex items-center gap-2 text-sm text-white/50">
           <Link
             href={"/rh/folha" as Route}
             className="flex items-center gap-1 hover:text-primary-600"
@@ -44,16 +44,16 @@ export default function ContrachequesSelfPage(): React.ReactElement {
             Folha de Pagamento
           </Link>
           <span>/</span>
-          <span className="text-neutral-900">Meus contracheques</span>
+          <span className="text-white">Meus contracheques</span>
         </div>
 
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">
+          <h1 className="text-2xl font-bold text-white">
             Meus Contracheques
           </h1>
           {myEmployee && (
-            <p className="text-sm text-neutral-500 mt-0.5">
+            <p className="text-sm text-white/50 mt-0.5">
               {myEmployee.user.name} · {myEmployee.position_display}
             </p>
           )}
@@ -61,7 +61,7 @@ export default function ContrachequesSelfPage(): React.ReactElement {
 
         {/* No employee profile */}
         {!loadingEmployee && employeeError && (
-          <div className="rounded-md bg-white shadow-card p-8 text-center">
+          <div className="rounded-md bg-white/5 shadow-card p-8 text-center">
             <p className="text-sm text-red-600">
               Seu usuário não possui perfil de colaborador. Peça ao administrador
               para criar.
@@ -77,7 +77,7 @@ export default function ContrachequesSelfPage(): React.ReactElement {
             ))}
           </div>
         ) : !employeeError && payslips.length === 0 ? (
-          <div className="rounded-md bg-white shadow-card p-10 text-center text-sm text-neutral-500">
+          <div className="rounded-md bg-white/5 shadow-card p-10 text-center text-sm text-white/50">
             Nenhum contracheque disponível.
           </div>
         ) : (
@@ -85,7 +85,7 @@ export default function ContrachequesSelfPage(): React.ReactElement {
             {payslips.map((payslip) => (
               <div
                 key={payslip.id}
-                className="rounded-md bg-white shadow-card p-card-padding"
+                className="rounded-md bg-white/5 shadow-card p-card-padding"
               >
                 <div className="flex items-start justify-between gap-4">
                   {/* Month + icon */}
@@ -94,7 +94,7 @@ export default function ContrachequesSelfPage(): React.ReactElement {
                       <FileText className="h-5 w-5 text-primary-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-neutral-900 capitalize">
+                      <p className="text-sm font-semibold text-white capitalize">
                         {new Date(
                           payslip.reference_month + "T12:00"
                         ).toLocaleDateString("pt-BR", {
@@ -102,7 +102,7 @@ export default function ContrachequesSelfPage(): React.ReactElement {
                           year: "numeric",
                         })}
                       </p>
-                      <p className="text-xs text-neutral-500 mt-0.5">
+                      <p className="text-xs text-white/50 mt-0.5">
                         {payslip.worked_days} dias trabalhados
                         {payslip.is_closed && (
                           <span className="ml-2 inline-flex items-center gap-0.5 text-success-700">
@@ -117,10 +117,10 @@ export default function ContrachequesSelfPage(): React.ReactElement {
                   {/* Amounts + download */}
                   <div className="flex items-center gap-4 shrink-0">
                     <div className="text-right">
-                      <p className="text-sm font-bold text-neutral-900 tabular-nums">
+                      <p className="text-sm font-bold text-white tabular-nums">
                         {fmt.format(parseFloat(payslip.net_pay))}
                       </p>
-                      <p className="text-xs text-neutral-400 tabular-nums">
+                      <p className="text-xs text-white/40 tabular-nums">
                         Bruto {fmt.format(parseFloat(payslip.gross_pay))}
                       </p>
                     </div>
@@ -130,13 +130,13 @@ export default function ContrachequesSelfPage(): React.ReactElement {
                         href={`/api/proxy/hr/payslips/${payslip.id}/pdf/`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 rounded-md border border-neutral-200 px-3 py-1.5 text-xs text-neutral-700 hover:bg-neutral-50"
+                        className="flex items-center gap-1.5 rounded-md border border-white/10 px-3 py-1.5 text-xs text-white/70 hover:bg-white/[0.03]"
                       >
                         <Download className="h-3.5 w-3.5" />
                         PDF
                       </a>
                     ) : (
-                      <span className="text-xs text-neutral-400">
+                      <span className="text-xs text-white/40">
                         PDF indisponível
                       </span>
                     )}
@@ -152,8 +152,8 @@ export default function ContrachequesSelfPage(): React.ReactElement {
                     { label: "Descontos", value: payslip.total_deductions, color: "text-red-600" },
                   ].map((item) => (
                     <div key={item.label}>
-                      <p className="text-xs text-neutral-400">{item.label}</p>
-                      <p className={`text-xs font-medium tabular-nums ${item.color || "text-neutral-700"}`}>
+                      <p className="text-xs text-white/40">{item.label}</p>
+                      <p className={`text-xs font-medium tabular-nums ${item.color || "text-white/70"}`}>
                         {fmt.format(parseFloat(item.value))}
                       </p>
                     </div>
@@ -162,14 +162,14 @@ export default function ContrachequesSelfPage(): React.ReactElement {
 
                 {/* Lancamento contabil vinculado */}
                 {payslip.journal_entry_id && (
-                  <div className="mt-3 rounded-md border border-neutral-200 bg-neutral-50 p-4 flex items-center justify-between">
+                  <div className="mt-3 rounded-md border border-white/10 bg-white/[0.03] p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary-100">
                         <ReceiptText className="h-4 w-4 text-primary-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-neutral-900">Lancamento Contabil</p>
-                        <p className="text-xs text-neutral-500">Gerado automaticamente ao fechar a folha</p>
+                        <p className="text-sm font-medium text-white">Lancamento Contabil</p>
+                        <p className="text-xs text-white/50">Gerado automaticamente ao fechar a folha</p>
                       </div>
                     </div>
                     <Link

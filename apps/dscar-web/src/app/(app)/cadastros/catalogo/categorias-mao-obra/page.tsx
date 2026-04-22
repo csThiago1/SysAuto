@@ -19,8 +19,8 @@ export default function CategoriasMaoObraPage() {
     <div className="flex flex-col gap-6 p-6 max-w-3xl mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-neutral-900">Categorias de Mão de Obra</h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <h1 className="text-2xl font-bold text-white">Categorias de Mão de Obra</h1>
+        <p className="mt-1 text-sm text-white/50">
           Classificação de mão de obra para o catálogo técnico do Motor de Orçamentos.
         </p>
       </div>
@@ -29,13 +29,13 @@ export default function CategoriasMaoObraPage() {
       {isLoading ? (
         <TableSkeleton columns={3} rows={6} />
       ) : categorias.length === 0 ? (
-        <div className="py-12 text-center text-sm text-neutral-400">
+        <div className="py-12 text-center text-sm text-white/40">
           Nenhuma categoria de mão de obra cadastrada.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-md border border-neutral-200 bg-white">
+        <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
           <Table>
-            <TableHeader className="bg-neutral-50">
+            <TableHeader className="bg-white/[0.03]">
               <TableRow>
                 <TableHead className="w-24">Ordem</TableHead>
                 <TableHead className="w-40">Código</TableHead>
@@ -45,13 +45,13 @@ export default function CategoriasMaoObraPage() {
             <TableBody>
               {categorias.map((c: CategoriaMaoObra) => (
                 <TableRow key={c.id}>
-                  <TableCell className="py-2 text-sm text-neutral-500 text-center">
+                  <TableCell className="py-2 text-sm text-white/50 text-center">
                     {c.ordem}
                   </TableCell>
-                  <TableCell className="py-2 font-mono text-xs text-neutral-600">
+                  <TableCell className="py-2 font-mono text-xs text-white/60">
                     {c.codigo}
                   </TableCell>
-                  <TableCell className="py-2 font-medium text-neutral-800">{c.nome}</TableCell>
+                  <TableCell className="py-2 font-medium text-white/90">{c.nome}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -59,7 +59,7 @@ export default function CategoriasMaoObraPage() {
         </div>
       )}
 
-      <p className="text-xs text-neutral-400">{categorias.length} categorias carregadas.</p>
+      <p className="text-xs text-white/40">{categorias.length} categorias carregadas.</p>
     </div>
   )
 }

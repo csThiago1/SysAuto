@@ -47,8 +47,8 @@ export default function FichasTecnicasPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">Fichas Técnicas</h1>
-          <p className="mt-1 text-sm text-neutral-500">
+          <h1 className="text-2xl font-bold text-white">Fichas Técnicas</h1>
+          <p className="mt-1 text-sm text-white/50">
             Fichas técnicas versionadas — mão de obra e insumos por serviço.
           </p>
         </div>
@@ -56,12 +56,12 @@ export default function FichasTecnicasPage() {
 
       {/* Search */}
       <div className="relative max-w-xs">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 pointer-events-none" />
         <Input
           placeholder="Buscar ficha..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 bg-white h-9"
+          className="pl-9 bg-white/5 h-9"
         />
       </div>
 
@@ -69,13 +69,13 @@ export default function FichasTecnicasPage() {
       {isLoading ? (
         <TableSkeleton columns={5} rows={8} />
       ) : fichasFiltradas.length === 0 ? (
-        <div className="py-12 text-center text-sm text-neutral-400">
+        <div className="py-12 text-center text-sm text-white/40">
           {search ? "Nenhuma ficha encontrada." : "Nenhuma ficha técnica cadastrada."}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-md border border-neutral-200 bg-white">
+        <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
           <Table>
-            <TableHeader className="bg-neutral-50">
+            <TableHeader className="bg-white/[0.03]">
               <TableRow>
                 <TableHead>Serviço</TableHead>
                 <TableHead className="w-20 text-center">Versão</TableHead>
@@ -88,12 +88,12 @@ export default function FichasTecnicasPage() {
               {fichasFiltradas.map((f) => (
                 <TableRow
                   key={f.id}
-                  className="cursor-pointer hover:bg-neutral-50 transition-colors"
+                  className="cursor-pointer hover:bg-white/[0.03] transition-colors"
                   onClick={() => handleRowClick(f)}
                 >
                   <TableCell className="py-2">
-                    <div className="font-medium text-neutral-800">{f.servico_nome}</div>
-                    <div className="text-xs text-neutral-400 font-mono">{f.servico_codigo}</div>
+                    <div className="font-medium text-white/90">{f.servico_nome}</div>
+                    <div className="text-xs text-white/40 font-mono">{f.servico_codigo}</div>
                   </TableCell>
                   <TableCell className="py-2 text-center">
                     <Badge
@@ -103,19 +103,19 @@ export default function FichasTecnicasPage() {
                       v{f.versao}
                     </Badge>
                   </TableCell>
-                  <TableCell className="py-2 text-sm text-neutral-600">
+                  <TableCell className="py-2 text-sm text-white/60">
                     {f.tipo_pintura_nome ? (
                       <Badge variant="outline" className="text-xs">
                         {f.tipo_pintura_nome}
                       </Badge>
                     ) : (
-                      <span className="text-neutral-400">Genérica</span>
+                      <span className="text-white/40">Genérica</span>
                     )}
                   </TableCell>
-                  <TableCell className="py-2 text-sm text-neutral-600">
+                  <TableCell className="py-2 text-sm text-white/60">
                     {formatDate(f.criada_em)}
                   </TableCell>
-                  <TableCell className="py-2 text-sm text-neutral-500 truncate max-w-[160px]">
+                  <TableCell className="py-2 text-sm text-white/50 truncate max-w-[160px]">
                     {f.criada_por_email ?? "—"}
                   </TableCell>
                 </TableRow>
@@ -125,7 +125,7 @@ export default function FichasTecnicasPage() {
         </div>
       )}
 
-      <p className="text-xs text-neutral-400 flex items-center gap-1">
+      <p className="text-xs text-white/40 flex items-center gap-1">
         <ClipboardList className="h-3 w-3" />
         {fichasFiltradas.length} fichas carregadas.
       </p>

@@ -63,7 +63,7 @@ interface JournalEntryTableProps {
 export function JournalEntryTable({ entries }: JournalEntryTableProps): React.ReactElement {
   if (entries.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 gap-3 text-neutral-400">
+      <div className="flex flex-col items-center justify-center py-16 gap-3 text-white/40">
         <ReceiptText className="h-10 w-10" />
         <p className="text-sm font-medium">Nenhum lançamento encontrado</p>
         <p className="text-xs">Ajuste os filtros ou crie um novo lançamento.</p>
@@ -75,26 +75,26 @@ export function JournalEntryTable({ entries }: JournalEntryTableProps): React.Re
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-neutral-100 bg-neutral-50">
-            <th className="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+          <tr className="border-b border-neutral-100 bg-white/[0.03]">
+            <th className="text-left px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wide">
               Número
             </th>
-            <th className="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+            <th className="text-left px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wide">
               Data
             </th>
-            <th className="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+            <th className="text-left px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wide">
               Descrição
             </th>
-            <th className="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+            <th className="text-left px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wide">
               Origem
             </th>
-            <th className="text-right px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+            <th className="text-right px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wide">
               Débito
             </th>
-            <th className="text-right px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+            <th className="text-right px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wide">
               Crédito
             </th>
-            <th className="text-center px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+            <th className="text-center px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wide">
               Status
             </th>
           </tr>
@@ -104,7 +104,7 @@ export function JournalEntryTable({ entries }: JournalEntryTableProps): React.Re
             <tr
               key={entry.id}
               className={cn(
-                "hover:bg-neutral-50 transition-colors cursor-pointer",
+                "hover:bg-white/[0.03] transition-colors cursor-pointer",
                 entry.is_reversed && "opacity-60"
               )}
             >
@@ -116,10 +116,10 @@ export function JournalEntryTable({ entries }: JournalEntryTableProps): React.Re
                   {entry.number}
                 </Link>
               </td>
-              <td className="px-4 py-3 text-neutral-600 whitespace-nowrap">
+              <td className="px-4 py-3 text-white/60 whitespace-nowrap">
                 {new Date(`${entry.competence_date}T12:00:00`).toLocaleDateString("pt-BR")}
               </td>
-              <td className="px-4 py-3 text-neutral-900 max-w-xs truncate">
+              <td className="px-4 py-3 text-white max-w-xs truncate">
                 <Link
                   href={`/financeiro/lancamentos/${entry.id}` as Route}
                   className="hover:text-primary-600 transition-colors"
@@ -127,13 +127,13 @@ export function JournalEntryTable({ entries }: JournalEntryTableProps): React.Re
                   {entry.description}
                 </Link>
               </td>
-              <td className="px-4 py-3 text-neutral-600 whitespace-nowrap">
+              <td className="px-4 py-3 text-white/60 whitespace-nowrap">
                 {ORIGIN_LABELS[entry.origin] ?? entry.origin}
               </td>
-              <td className="px-4 py-3 text-right font-mono text-neutral-700 whitespace-nowrap">
+              <td className="px-4 py-3 text-right font-mono text-white/70 whitespace-nowrap">
                 {formatBRL(entry.total_debit)}
               </td>
-              <td className="px-4 py-3 text-right font-mono text-neutral-700 whitespace-nowrap">
+              <td className="px-4 py-3 text-right font-mono text-white/70 whitespace-nowrap">
                 {formatBRL(entry.total_credit)}
               </td>
               <td className="px-4 py-3 text-center">
@@ -157,12 +157,12 @@ export function JournalEntryTableSkeleton(): React.ReactElement {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-neutral-100 bg-neutral-50">
+          <tr className="border-b border-neutral-100 bg-white/[0.03]">
             {["Número", "Data", "Descrição", "Origem", "Débito", "Crédito", "Status"].map(
               (col) => (
                 <th
                   key={col}
-                  className="text-left px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wide"
+                  className="text-left px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wide"
                 >
                   {col}
                 </th>

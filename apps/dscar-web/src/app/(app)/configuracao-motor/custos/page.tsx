@@ -39,8 +39,8 @@ import {
   useCreateParametroRateio,
   useDebugCustoHora,
 } from "@/hooks/usePricingCost"
-import { useEmpresas } from "@/hooks/usePricingProfile"
 import { useCategoriasMaoObra } from "@/hooks/usePricingCatalog"
+import { useMinhaEmpresaId } from "@/hooks/usePricingProfile"
 import type { CustoHoraFallbackCreate, ParametroCustoHoraCreate, ParametroRateioCreate } from "@paddock/types"
 import Link from "next/link"
 import type { Route } from "next"
@@ -55,7 +55,7 @@ function formatDecimalPercent(value: string): string {
 
 // ─── Aba 1: Custo/Hora Fallback ───────────────────────────────────────────────
 
-function AbaFallback() {
+function AbaFallback({ empresaId }: { empresaId: string }) {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [form, setForm] = useState<Partial<CustoHoraFallbackCreate>>({
     vigente_desde: new Date().toISOString().split("T")[0],
@@ -66,19 +66,17 @@ function AbaFallback() {
 
   const { data, isLoading } = useCustosHoraFallback()
   const createMutation = useCreateCustoHoraFallback()
-  const { data: empresasData } = useEmpresas()
-  const empresas = empresasData ?? []
   const { data: categorias = [] } = useCategoriasMaoObra()
 
   const fallbacks = data?.results ?? []
 
   async function handleSave() {
-    if (!form.empresa || !form.categoria || !form.vigente_desde || !form.valor_hora) {
+    if (!form.categoria || !form.vigente_desde || !form.valor_hora) {
       toast.error("Preencha todos os campos obrigatórios.")
       return
     }
     try {
-      await createMutation.mutateAsync(form as CustoHoraFallbackCreate)
+      await createMutation.mutateAsync({ ...form, empresa: empresaId } as CustoHoraFallbackCreate)
       toast.success("Fallback cadastrado com sucesso.")
       setSheetOpen(false)
       setForm({ vigente_desde: new Date().toISOString().split("T")[0], vigente_ate: null, valor_hora: "", motivo: "" })
@@ -171,19 +169,6 @@ function AbaFallback() {
           </SheetHeader>
           <div className="mt-6 space-y-4">
             <div className="space-y-1">
-              <Label className="text-xs text-white/60">Empresa</Label>
-              <select
-                className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                value={form.empresa ?? ""}
-                onChange={(e) => setForm({ ...form, empresa: e.target.value })}
-              >
-                <option value="">Selecione a empresa</option>
-                {empresas.map((emp) => (
-                  <option key={emp.id} value={emp.id}>{emp.nome_fantasia || emp.razao_social}</option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1">
               <Label className="text-xs text-white/60">Categoria de mão de obra</Label>
               <select
                 className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
@@ -250,13 +235,11 @@ function AbaFallback() {
 
 // ─── Aba 2: Parâmetros ────────────────────────────────────────────────────────
 
-function AbaParametros() {
+function AbaParametros({ empresaId }: { empresaId: string }) {
   const { data: rateioData } = useParametrosRateio()
   const { data: custoHoraData } = useParametrosCustoHora()
   const createRateio = useCreateParametroRateio()
   const createCustoHora = useCreateParametroCustoHora()
-  const { data: empresasData } = useEmpresas()
-  const empresas = empresasData ?? []
 
   const [rateioForm, setRateioForm] = useState<Partial<ParametroRateioCreate>>({
     vigente_desde: new Date().toISOString().split("T")[0],
@@ -274,16 +257,10 @@ function AbaParametros() {
     horas_produtivas_mes: "168.00",
     observacoes: "",
   })
-  const [empresaId, setEmpresaId] = useState("")
-
   const parametrosRateio = rateioData?.results ?? []
   const parametrosCustoHora = custoHoraData?.results ?? []
 
   async function handleSaveRateio() {
-    if (!empresaId) {
-      toast.error("Selecione a empresa.")
-      return
-    }
     try {
       await createRateio.mutateAsync({ ...rateioForm, empresa: empresaId } as ParametroRateioCreate)
       toast.success("Parâmetro de rateio salvo. Só afeta orçamentos novos.")
@@ -293,10 +270,6 @@ function AbaParametros() {
   }
 
   async function handleSaveCustoHora() {
-    if (!empresaId) {
-      toast.error("Selecione a empresa.")
-      return
-    }
     try {
       await createCustoHora.mutateAsync({ ...custoHoraForm, empresa: empresaId } as ParametroCustoHoraCreate)
       toast.success("Parâmetro de custo/hora salvo. Só afeta orçamentos novos.")
@@ -314,19 +287,6 @@ function AbaParametros() {
         </p>
       </div>
 
-      <div className="space-y-1 max-w-sm">
-        <Label className="text-xs text-white/60">Empresa — aplica a todos os formulários abaixo</Label>
-        <select
-          className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
-          value={empresaId}
-          onChange={(e) => setEmpresaId(e.target.value)}
-        >
-          <option value="">Selecione a empresa</option>
-          {empresas.map((emp) => (
-            <option key={emp.id} value={emp.id}>{emp.nome_fantasia || emp.razao_social}</option>
-          ))}
-        </select>
-      </div>
 
       {/* Parâmetro de Rateio */}
       <div className="rounded-lg border border-white/10 p-4 space-y-4">
@@ -529,25 +489,22 @@ function AbaDespesas() {
 
 // ─── Aba 4: Simulação (ADMIN+) ────────────────────────────────────────────────
 
-function AbaSimulacao() {
+function AbaSimulacao({ empresaId }: { empresaId: string }) {
   const [form, setForm] = useState({
     categoria_codigo: "",
     data: new Date().toISOString().split("T")[0],
-    empresa_id: "",
   })
   const [resultado, setResultado] = useState<Record<string, unknown> | null>(null)
 
   const debugMutation = useDebugCustoHora()
-  const { data: empresasData } = useEmpresas()
-  const empresas = empresasData ?? []
 
   async function handleSimular() {
-    if (!form.categoria_codigo || !form.data || !form.empresa_id) {
+    if (!form.categoria_codigo || !form.data) {
       toast.error("Preencha todos os campos.")
       return
     }
     try {
-      const res = await debugMutation.mutateAsync(form)
+      const res = await debugMutation.mutateAsync({ ...form, empresa_id: empresaId })
       setResultado(res as unknown as Record<string, unknown>)
     } catch {
       toast.error("Erro ao simular custo/hora. Verifique os dados.")
@@ -583,19 +540,6 @@ function AbaSimulacao() {
             className="bg-white/5 border-white/10 text-white text-sm"
           />
         </div>
-        <div className="space-y-1">
-          <Label className="text-xs text-white/60">Empresa</Label>
-          <select
-            className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
-            value={form.empresa_id}
-            onChange={(e) => setForm({ ...form, empresa_id: e.target.value })}
-          >
-            <option value="">Selecione a empresa</option>
-            {empresas.map((emp) => (
-              <option key={emp.id} value={emp.id}>{emp.nome_fantasia || emp.razao_social}</option>
-            ))}
-          </select>
-        </div>
         <Button
           onClick={handleSimular}
           disabled={debugMutation.isPending}
@@ -620,6 +564,8 @@ function AbaSimulacao() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ConfiguracaoMotorCustosPage() {
+  const empresaId = useMinhaEmpresaId()
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-3">
@@ -655,17 +601,17 @@ export default function ConfiguracaoMotorCustosPage() {
         </TabsList>
 
         <TabsContent value="custo-hora">
-          <AbaFallback />
+          <AbaFallback empresaId={empresaId} />
         </TabsContent>
         <TabsContent value="parametros">
-          <AbaParametros />
+          <AbaParametros empresaId={empresaId} />
         </TabsContent>
         <TabsContent value="despesas">
           <AbaDespesas />
         </TabsContent>
         <TabsContent value="simulacao">
           <PermissionGate role="ADMIN">
-            <AbaSimulacao />
+            <AbaSimulacao empresaId={empresaId} />
           </PermissionGate>
         </TabsContent>
       </Tabs>

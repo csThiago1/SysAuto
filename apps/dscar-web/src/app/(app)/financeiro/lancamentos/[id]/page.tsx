@@ -81,7 +81,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
 
   if (!entry) {
     return (
-      <div className="rounded-md bg-white shadow-card p-8 text-center text-neutral-500">
+      <div className="rounded-md bg-white/5 shadow-card p-8 text-center text-white/50">
         <p className="text-sm">Lançamento não encontrado.</p>
         <Link
           href={"/financeiro/lancamentos" as Route}
@@ -100,7 +100,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
     <ErrorBoundary>
       <div className="space-y-5 max-w-3xl">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-neutral-500">
+        <div className="flex items-center gap-2 text-sm text-white/50">
           <Link
             href={"/financeiro" as Route}
             className="hover:text-primary-600 transition-colors"
@@ -116,14 +116,14 @@ export default function LancamentoDetailPage(): React.ReactElement {
             Lançamentos
           </Link>
           <span>/</span>
-          <span className="font-mono text-neutral-900">{entry.number}</span>
+          <span className="font-mono text-white">{entry.number}</span>
         </div>
 
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl font-bold text-neutral-900 font-mono">
+              <h1 className="text-2xl font-bold text-white font-mono">
                 {entry.number}
               </h1>
               {entry.is_reversed && (
@@ -141,7 +141,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
                 <Badge variant="destructive">Desbalanceado</Badge>
               )}
             </div>
-            <p className="mt-1 text-sm text-neutral-600">{entry.description}</p>
+            <p className="mt-1 text-sm text-white/60">{entry.description}</p>
           </div>
 
           {/* Action buttons */}
@@ -169,40 +169,40 @@ export default function LancamentoDetailPage(): React.ReactElement {
         </div>
 
         {/* Info section */}
-        <div className="rounded-md bg-white shadow-card p-5">
-          <h2 className="text-sm font-semibold text-neutral-900 border-b border-neutral-100 pb-2 mb-4">
+        <div className="rounded-md bg-white/5 shadow-card p-5">
+          <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2 mb-4">
             Informacoes
           </h2>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
             <div>
-              <dt className="text-neutral-500">Data de Competencia</dt>
-              <dd className="font-medium text-neutral-900 mt-0.5">
+              <dt className="text-white/50">Data de Competencia</dt>
+              <dd className="font-medium text-white mt-0.5">
                 {new Date(`${entry.competence_date}T12:00:00`).toLocaleDateString("pt-BR")}
               </dd>
             </div>
             {entry.document_date && (
               <div>
-                <dt className="text-neutral-500">Data do Documento</dt>
-                <dd className="font-medium text-neutral-900 mt-0.5">
+                <dt className="text-white/50">Data do Documento</dt>
+                <dd className="font-medium text-white mt-0.5">
                   {new Date(`${entry.document_date}T12:00:00`).toLocaleDateString("pt-BR")}
                 </dd>
               </div>
             )}
             <div>
-              <dt className="text-neutral-500">Origem</dt>
-              <dd className="font-medium text-neutral-900 mt-0.5">
+              <dt className="text-white/50">Origem</dt>
+              <dd className="font-medium text-white mt-0.5">
                 {ORIGIN_LABELS[entry.origin] ?? entry.origin}
               </dd>
             </div>
             <div>
-              <dt className="text-neutral-500">Periodo Fiscal</dt>
-              <dd className="font-medium text-neutral-900 mt-0.5">
+              <dt className="text-white/50">Periodo Fiscal</dt>
+              <dd className="font-medium text-white mt-0.5">
                 {entry.fiscal_period_label}
               </dd>
             </div>
             <div>
-              <dt className="text-neutral-500">Criado em</dt>
-              <dd className="font-medium text-neutral-900 mt-0.5">
+              <dt className="text-white/50">Criado em</dt>
+              <dd className="font-medium text-white mt-0.5">
                 {new Date(entry.created_at).toLocaleString("pt-BR")}
               </dd>
             </div>
@@ -210,29 +210,29 @@ export default function LancamentoDetailPage(): React.ReactElement {
         </div>
 
         {/* Lines table */}
-        <div className="rounded-md bg-white shadow-card overflow-hidden">
+        <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
           <div className="p-5 pb-3">
-            <h2 className="text-sm font-semibold text-neutral-900">
+            <h2 className="text-sm font-semibold text-white">
               Partidas ({entry.lines.length} linha{entry.lines.length !== 1 ? "s" : ""})
             </h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-y border-neutral-100 bg-neutral-50">
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                <tr className="border-y border-neutral-100 bg-white/[0.03]">
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-white/50 uppercase tracking-wide">
                     Conta
                   </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-white/50 uppercase tracking-wide">
                     Centro de Custo
                   </th>
-                  <th className="text-right px-4 py-2.5 text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                  <th className="text-right px-4 py-2.5 text-xs font-semibold text-white/50 uppercase tracking-wide">
                     Debito
                   </th>
-                  <th className="text-right px-4 py-2.5 text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                  <th className="text-right px-4 py-2.5 text-xs font-semibold text-white/50 uppercase tracking-wide">
                     Credito
                   </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-neutral-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-white/50 uppercase tracking-wide">
                     Descricao
                   </th>
                 </tr>
@@ -241,41 +241,41 @@ export default function LancamentoDetailPage(): React.ReactElement {
                 {entry.lines.map((line) => (
                   <tr key={line.id} className="hover:bg-neutral-50/50">
                     <td className="px-4 py-3">
-                      <span className="font-mono text-xs text-neutral-500">
+                      <span className="font-mono text-xs text-white/50">
                         {line.account.code}
                       </span>{" "}
-                      <span className="text-neutral-900">{line.account.name}</span>
+                      <span className="text-white">{line.account.name}</span>
                     </td>
-                    <td className="px-4 py-3 text-neutral-600">
+                    <td className="px-4 py-3 text-white/60">
                       {line.cost_center
                         ? `${line.cost_center.code} — ${line.cost_center.name}`
-                        : <span className="text-neutral-300">—</span>}
+                        : <span className="text-white/30">—</span>}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono text-neutral-700">
+                    <td className="px-4 py-3 text-right font-mono text-white/70">
                       {parseFloat(line.debit_amount) > 0
                         ? formatBRL(line.debit_amount)
-                        : <span className="text-neutral-300">—</span>}
+                        : <span className="text-white/30">—</span>}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono text-neutral-700">
+                    <td className="px-4 py-3 text-right font-mono text-white/70">
                       {parseFloat(line.credit_amount) > 0
                         ? formatBRL(line.credit_amount)
-                        : <span className="text-neutral-300">—</span>}
+                        : <span className="text-white/30">—</span>}
                     </td>
-                    <td className="px-4 py-3 text-neutral-600 max-w-xs truncate">
-                      {line.description || <span className="text-neutral-300">—</span>}
+                    <td className="px-4 py-3 text-white/60 max-w-xs truncate">
+                      {line.description || <span className="text-white/30">—</span>}
                     </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t-2 border-neutral-200 bg-neutral-50">
-                  <td colSpan={2} className="px-4 py-3 text-sm font-semibold text-neutral-700">
+                <tr className="border-t-2 border-white/10 bg-white/[0.03]">
+                  <td colSpan={2} className="px-4 py-3 text-sm font-semibold text-white/70">
                     Totais
                   </td>
-                  <td className="px-4 py-3 text-right font-mono font-semibold text-neutral-900">
+                  <td className="px-4 py-3 text-right font-mono font-semibold text-white">
                     {brl.format(totalDebit)}
                   </td>
-                  <td className="px-4 py-3 text-right font-mono font-semibold text-neutral-900">
+                  <td className="px-4 py-3 text-right font-mono font-semibold text-white">
                     {brl.format(totalCredit)}
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -299,12 +299,12 @@ export default function LancamentoDetailPage(): React.ReactElement {
             <DialogTitle>Estornar Lançamento</DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-3">
-            <p className="text-sm text-neutral-600">
+            <p className="text-sm text-white/60">
               Esta ação ira criar um lançamento de estorno automaticamente. O lançamento original
               sera marcado como estornado e sera imutavel.
             </p>
             <div className="flex flex-col gap-1.5">
-              <Label className="text-xs font-medium text-neutral-700">
+              <Label className="text-xs font-medium text-white/70">
                 Motivo do estorno *
               </Label>
               <Input
@@ -329,7 +329,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
                 setReverseReason("");
                 setReverseError("");
               }}
-              className="text-sm text-neutral-500 hover:underline px-3 py-2"
+              className="text-sm text-white/50 hover:underline px-3 py-2"
             >
               Cancelar
             </button>

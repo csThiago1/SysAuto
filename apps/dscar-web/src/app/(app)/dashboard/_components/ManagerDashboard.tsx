@@ -40,10 +40,10 @@ export function ManagerDashboard({ data }: Props) {
           value={data.overdue_count}
           icon={
             <AlertTriangle
-              className={`h-5 w-5 ${data.overdue_count > 0 ? "text-red-600" : "text-neutral-400"}`}
+              className={`h-5 w-5 ${data.overdue_count > 0 ? "text-red-600" : "text-white/40"}`}
             />
           }
-          iconBg={data.overdue_count > 0 ? "bg-red-50" : "bg-neutral-50"}
+          iconBg={data.overdue_count > 0 ? "bg-red-50" : "bg-white/[0.03]"}
         />
       </div>
 

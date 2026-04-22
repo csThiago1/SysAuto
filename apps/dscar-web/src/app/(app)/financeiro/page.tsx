@@ -56,8 +56,8 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-neutral-900">Financeiro</h1>
-            <p className="mt-0.5 text-sm text-neutral-500">
+            <h1 className="text-2xl font-bold text-white">Financeiro</h1>
+            <p className="mt-0.5 text-sm text-white/50">
               Gestão contábil, lançamentos e plano de contas
             </p>
           </div>
@@ -130,8 +130,8 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
         {/* Bottom sections */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Período atual */}
-          <div className="rounded-md bg-white shadow-card p-5">
-            <h2 className="text-sm font-semibold text-neutral-900 mb-4">
+          <div className="rounded-md bg-white/5 shadow-card p-5">
+            <h2 className="text-sm font-semibold text-white mb-4">
               Exercício Fiscal
             </h2>
             {loadingPeriod ? (
@@ -143,21 +143,21 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
             ) : period ? (
               <dl className="space-y-2 text-sm">
                 <div className="flex items-center justify-between">
-                  <dt className="text-neutral-500">Exercício</dt>
-                  <dd className="font-medium text-neutral-900">
+                  <dt className="text-white/50">Exercício</dt>
+                  <dd className="font-medium text-white">
                     {period.fiscal_year.year}
                   </dd>
                 </div>
                 <div className="flex items-center justify-between">
-                  <dt className="text-neutral-500">Período</dt>
-                  <dd className="font-medium text-neutral-900">
+                  <dt className="text-white/50">Período</dt>
+                  <dd className="font-medium text-white">
                     {String(period.number).padStart(2, "0")} —{" "}
                     {new Date(`${period.start_date}T12:00:00`).toLocaleDateString("pt-BR")} a{" "}
                     {new Date(`${period.end_date}T12:00:00`).toLocaleDateString("pt-BR")}
                   </dd>
                 </div>
                 <div className="flex items-center justify-between">
-                  <dt className="text-neutral-500">Status</dt>
+                  <dt className="text-white/50">Status</dt>
                   <dd>
                     {period.is_closed ? (
                       <Badge variant="destructive">Encerrado</Badge>
@@ -168,7 +168,7 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
                 </div>
                 {period.is_adjustment && (
                   <div className="flex items-center justify-between">
-                    <dt className="text-neutral-500">Tipo</dt>
+                    <dt className="text-white/50">Tipo</dt>
                     <dd>
                       <Badge variant="warning">Período de Ajuste</Badge>
                     </dd>
@@ -176,15 +176,15 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
                 )}
               </dl>
             ) : (
-              <p className="text-sm text-neutral-400">
+              <p className="text-sm text-white/40">
                 Nenhum período fiscal ativo encontrado.
               </p>
             )}
           </div>
 
           {/* Acesso rápido */}
-          <div className="rounded-md bg-white shadow-card p-5">
-            <h2 className="text-sm font-semibold text-neutral-900 mb-4">
+          <div className="rounded-md bg-white/5 shadow-card p-5">
+            <h2 className="text-sm font-semibold text-white mb-4">
               Acesso Rápido
             </h2>
             <div className="grid grid-cols-2 gap-3">
@@ -200,12 +200,12 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
                     <link.Icon className={`h-4 w-4 ${link.iconColor}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-neutral-800 group-hover:text-primary-700 truncate">
+                    <p className="text-xs font-semibold text-white/90 group-hover:text-primary-700 truncate">
                       {link.label}
                     </p>
-                    <p className="text-xs text-neutral-400 truncate">{link.description}</p>
+                    <p className="text-xs text-white/40 truncate">{link.description}</p>
                   </div>
-                  <ArrowRight className="h-3.5 w-3.5 text-neutral-300 group-hover:text-primary-500 shrink-0" />
+                  <ArrowRight className="h-3.5 w-3.5 text-white/30 group-hover:text-primary-500 shrink-0" />
                 </Link>
               ))}
             </div>

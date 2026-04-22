@@ -68,9 +68,9 @@ interface FormFieldProps {
 function FormField({ label, hint, error, children }: FormFieldProps): React.ReactElement {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label className="text-xs font-medium text-neutral-700">{label}</Label>
+      <Label className="text-xs font-medium text-white/70">{label}</Label>
       {children}
-      {hint && !error && <p className="text-xs text-neutral-400">{hint}</p>}
+      {hint && !error && <p className="text-xs text-white/40">{hint}</p>}
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );
@@ -132,7 +132,7 @@ export default function NovaContaPage(): React.ReactElement {
     <ErrorBoundary>
       <div className="space-y-5 max-w-2xl">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-neutral-500">
+        <div className="flex items-center gap-2 text-sm text-white/50">
           <Link
             href={"/financeiro" as Route}
             className="hover:text-primary-600 transition-colors"
@@ -148,19 +148,19 @@ export default function NovaContaPage(): React.ReactElement {
             Plano de Contas
           </Link>
           <span>/</span>
-          <span className="text-neutral-900">Nova Conta</span>
+          <span className="text-white">Nova Conta</span>
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">Nova Conta Contabil</h1>
-          <p className="mt-0.5 text-sm text-neutral-500">
+          <h1 className="text-2xl font-bold text-white">Nova Conta Contabil</h1>
+          <p className="mt-0.5 text-sm text-white/50">
             Adicionar uma nova conta ao plano de contas DS Car.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <section className="rounded-md bg-white shadow-card p-5 space-y-4">
-            <h2 className="text-sm font-semibold text-neutral-900 border-b border-neutral-100 pb-2">
+          <section className="rounded-md bg-white/5 shadow-card p-5 space-y-4">
+            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
               Dados da Conta
             </h2>
 
@@ -218,8 +218,8 @@ export default function NovaContaPage(): React.ReactElement {
                   value={form.account_type}
                   onChange={(e) => setField("account_type", e.target.value)}
                   className={cn(
-                    "w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500",
-                    errors.account_type ? "border-red-300" : "border-neutral-200"
+                    "w-full rounded-md border bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500",
+                    errors.account_type ? "border-red-300" : "border-white/10"
                   )}
                 >
                   <option value="">Selecione o tipo...</option>
@@ -237,8 +237,8 @@ export default function NovaContaPage(): React.ReactElement {
                   value={form.nature}
                   onChange={(e) => setField("nature", e.target.value)}
                   className={cn(
-                    "w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500",
-                    errors.nature ? "border-red-300" : "border-neutral-200"
+                    "w-full rounded-md border bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500",
+                    errors.nature ? "border-red-300" : "border-white/10"
                   )}
                 >
                   <option value="">Selecione a natureza...</option>
@@ -253,8 +253,8 @@ export default function NovaContaPage(): React.ReactElement {
 
             {/* Tipo Analitica / Sintetica */}
             <div className="flex flex-col gap-1.5">
-              <Label className="text-xs font-medium text-neutral-700">Tipo *</Label>
-              <div className="flex items-center gap-1 rounded-md border border-neutral-200 bg-neutral-50 p-1 w-fit">
+              <Label className="text-xs font-medium text-white/70">Tipo *</Label>
+              <div className="flex items-center gap-1 rounded-md border border-white/10 bg-white/[0.03] p-1 w-fit">
                 <button
                   type="button"
                   onClick={() => {
@@ -263,8 +263,8 @@ export default function NovaContaPage(): React.ReactElement {
                   className={cn(
                     "rounded px-4 py-1.5 text-sm font-medium transition-colors",
                     form.is_analytical
-                      ? "bg-white text-neutral-900 shadow-sm"
-                      : "text-neutral-500 hover:text-neutral-700"
+                      ? "bg-white/5 text-white shadow-sm"
+                      : "text-white/50 hover:text-white/70"
                   )}
                 >
                   Analitica
@@ -278,14 +278,14 @@ export default function NovaContaPage(): React.ReactElement {
                   className={cn(
                     "rounded px-4 py-1.5 text-sm font-medium transition-colors",
                     !form.is_analytical
-                      ? "bg-white text-neutral-900 shadow-sm"
-                      : "text-neutral-500 hover:text-neutral-700"
+                      ? "bg-white/5 text-white shadow-sm"
+                      : "text-white/50 hover:text-white/70"
                   )}
                 >
                   Sintetica
                 </button>
               </div>
-              <p className="text-xs text-neutral-400">
+              <p className="text-xs text-white/40">
                 {form.is_analytical
                   ? "Conta analitica — recebe lancamentos diretamente."
                   : "Conta sintetica — agrupa outras contas, nao recebe lancamentos."}
@@ -300,12 +300,12 @@ export default function NovaContaPage(): React.ReactElement {
                 checked={form.accepts_cost_center}
                 disabled={!form.is_analytical}
                 onChange={(e) => setField("accepts_cost_center", e.target.checked)}
-                className="h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="h-4 w-4 rounded border-white/15 text-primary-600 focus:ring-primary-500 disabled:opacity-40 disabled:cursor-not-allowed"
               />
               <label
                 htmlFor="accepts_cost_center"
                 className={cn(
-                  "text-sm text-neutral-700 select-none",
+                  "text-sm text-white/70 select-none",
                   !form.is_analytical && "opacity-40 cursor-not-allowed"
                 )}
               >
@@ -325,7 +325,7 @@ export default function NovaContaPage(): React.ReactElement {
           <div className="flex items-center gap-3 justify-end">
             <Link
               href={"/financeiro/plano-contas" as Route}
-              className="text-sm text-neutral-500 hover:underline"
+              className="text-sm text-white/50 hover:underline"
             >
               Cancelar
             </Link>

@@ -11,14 +11,14 @@ interface Props {
 export function OverdueOSList({ items }: Props) {
   if (items.length === 0) {
     return (
-      <div className="bg-white rounded-md border border-neutral-200 shadow-sm p-4 flex items-center gap-2">
+      <div className="bg-white/5 rounded-md border border-white/10 shadow-sm p-4 flex items-center gap-2">
         <span className="text-success-500 text-sm font-medium">✓ Nenhuma OS atrasada</span>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-md border border-red-100 shadow-sm overflow-hidden">
+    <div className="bg-white/5 rounded-md border border-red-100 shadow-sm overflow-hidden">
       <div className="px-4 py-3 border-b border-red-100 flex items-center gap-2">
         <AlertTriangle className="h-4 w-4 text-red-500" />
         <h3 className="text-sm font-semibold text-red-700">{items.length} OS Atrasadas</h3>
@@ -36,12 +36,12 @@ export function OverdueOSList({ items }: Props) {
           {items.map((os) => (
             <tr key={os.id} className="hover:bg-red-50/50">
               <td className="px-4 py-2">
-                <Link href={`/service-orders/${os.id}`} className="font-medium text-neutral-800 hover:text-info-600">
+                <Link href={`/service-orders/${os.id}`} className="font-medium text-white/90 hover:text-info-600">
                   #{os.number} · {os.plate}
                 </Link>
               </td>
-              <td className="px-4 py-2 text-neutral-500">{os.customer_name || "—"}</td>
-              <td className="px-4 py-2 text-right text-neutral-500">
+              <td className="px-4 py-2 text-white/50">{os.customer_name || "—"}</td>
+              <td className="px-4 py-2 text-right text-white/50">
                 {new Date(os.estimated_delivery_date + "T12:00:00").toLocaleDateString("pt-BR")}
               </td>
               <td className="px-4 py-2 text-right font-semibold text-red-600">

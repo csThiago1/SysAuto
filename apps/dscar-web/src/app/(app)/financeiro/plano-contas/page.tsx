@@ -59,7 +59,7 @@ function TreeNode({
     <>
       <div
         className={cn(
-          "flex items-center gap-2 px-4 py-2 hover:bg-neutral-50 transition-colors",
+          "flex items-center gap-2 px-4 py-2 hover:bg-white/[0.03] transition-colors",
           depth === 0 && "bg-neutral-50/60 font-medium",
           node.is_analytical && "italic"
         )}
@@ -72,8 +72,8 @@ function TreeNode({
           className={cn(
             "flex h-5 w-5 items-center justify-center rounded shrink-0",
             hasChildren
-              ? "text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200"
-              : "text-neutral-300 cursor-default"
+              ? "text-white/50 hover:text-white/70 hover:bg-white/10"
+              : "text-white/30 cursor-default"
           )}
         >
           {hasChildren ? (
@@ -88,7 +88,7 @@ function TreeNode({
         </button>
 
         {/* Code */}
-        <span className="font-mono text-xs text-neutral-500 shrink-0 w-24 truncate">
+        <span className="font-mono text-xs text-white/50 shrink-0 w-24 truncate">
           {node.code}
         </span>
 
@@ -96,7 +96,7 @@ function TreeNode({
         <span
           className={cn(
             "flex-1 text-sm min-w-0 truncate",
-            depth === 0 ? "font-semibold text-neutral-900" : "text-neutral-700"
+            depth === 0 ? "font-semibold text-white" : "text-white/70"
           )}
           title={node.name}
         >
@@ -115,16 +115,16 @@ function TreeNode({
           </span>
 
           {node.is_analytical ? (
-            <span className="inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold bg-neutral-100 text-neutral-600 border-neutral-200">
+            <span className="inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold bg-white/5 text-white/60 border-white/10">
               Analitica
             </span>
           ) : (
-            <span className="inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold bg-white text-neutral-400 border-neutral-200">
+            <span className="inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold bg-white/5 text-white/40 border-white/10">
               Sintetica
             </span>
           )}
 
-          <span className="inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold bg-neutral-50 text-neutral-600 border-neutral-200">
+          <span className="inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold bg-white/[0.03] text-white/60 border-white/10">
             {NATURE_LABELS[node.nature as NatureType]}
           </span>
 
@@ -240,12 +240,12 @@ export default function PlanoContasPage(): React.ReactElement {
           <div className="flex items-center gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold text-neutral-900">Plano de Contas</h1>
+                <h1 className="text-2xl font-bold text-white">Plano de Contas</h1>
                 {!isLoading && (
                   <Badge variant="secondary">{totalCount} contas</Badge>
                 )}
               </div>
-              <p className="mt-0.5 text-sm text-neutral-500">
+              <p className="mt-0.5 text-sm text-white/50">
                 Estrutura hierarquica do plano contabil DS Car
               </p>
             </div>
@@ -254,14 +254,14 @@ export default function PlanoContasPage(): React.ReactElement {
             <button
               type="button"
               onClick={expandAll}
-              className="text-xs text-neutral-500 hover:text-primary-600 transition-colors px-2 py-1 rounded hover:bg-neutral-100"
+              className="text-xs text-white/50 hover:text-primary-600 transition-colors px-2 py-1 rounded hover:bg-white/5"
             >
               Expandir tudo
             </button>
             <button
               type="button"
               onClick={collapseAll}
-              className="text-xs text-neutral-500 hover:text-primary-600 transition-colors px-2 py-1 rounded hover:bg-neutral-100"
+              className="text-xs text-white/50 hover:text-primary-600 transition-colors px-2 py-1 rounded hover:bg-white/5"
             >
               Recolher tudo
             </button>
@@ -282,16 +282,16 @@ export default function PlanoContasPage(): React.ReactElement {
             placeholder="Filtrar por codigo ou nome..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-72 rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-72 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
 
         {/* Tree */}
-        <div className="rounded-md bg-white shadow-card overflow-hidden">
+        <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
           {isLoading ? (
             <PlanoContasSkeleton />
           ) : !tree || tree.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 gap-3 text-neutral-400">
+            <div className="flex flex-col items-center justify-center py-16 gap-3 text-white/40">
               <BookOpen className="h-10 w-10" />
               <p className="text-sm font-medium">Plano de contas nao encontrado</p>
               <p className="text-xs">

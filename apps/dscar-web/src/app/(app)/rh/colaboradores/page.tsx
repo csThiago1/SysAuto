@@ -38,10 +38,10 @@ export default function ColaboradoresPage(): React.ReactElement {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-neutral-900">
+            <h1 className="text-2xl font-bold text-white">
               Colaboradores
             </h1>
-            <p className="mt-0.5 text-sm text-neutral-500">
+            <p className="mt-0.5 text-sm text-white/50">
               {data?.count ?? "—"} colaborador
               {(data?.count ?? 0) !== 1 ? "es" : ""}
             </p>
@@ -65,7 +65,7 @@ export default function ColaboradoresPage(): React.ReactElement {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as FilterStatus)}
-            className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70 focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">Todos os status</option>
             <option value="active">Ativos</option>
@@ -76,7 +76,7 @@ export default function ColaboradoresPage(): React.ReactElement {
           <select
             value={department}
             onChange={(e) => setDepartment(e.target.value as FilterDepartment)}
-            className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70 focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">Todos os setores</option>
             {(
@@ -90,7 +90,7 @@ export default function ColaboradoresPage(): React.ReactElement {
         </div>
 
         {/* Table */}
-        <div className="rounded-md bg-white shadow-card overflow-hidden">
+        <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
           {isLoading ? (
             <EmployeeTableSkeleton />
           ) : (

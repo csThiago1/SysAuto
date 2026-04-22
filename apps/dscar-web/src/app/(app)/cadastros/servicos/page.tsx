@@ -72,8 +72,8 @@ export default function ServicosPage() {
       {/* Cabeçalho */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">Serviços</h1>
-          <p className="text-sm text-neutral-400 mt-0.5">
+          <h1 className="text-2xl font-bold text-white">Serviços</h1>
+          <p className="text-sm text-white/40 mt-0.5">
             {total === 0 ? "Nenhum serviço cadastrado" : `${total} serviço${total !== 1 ? "s" : ""}`}
           </p>
         </div>
@@ -84,25 +84,25 @@ export default function ServicosPage() {
 
       {/* Busca */}
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 pointer-events-none" />
         <Input
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Buscar serviço..."
-          className="pl-9 h-9 bg-white"
+          className="pl-9 h-9 bg-white/5"
         />
       </div>
 
       {/* Loading */}
       {isLoading && (
-        <div className="py-16 text-center text-sm text-neutral-400">Carregando…</div>
+        <div className="py-16 text-center text-sm text-white/40">Carregando…</div>
       )}
 
       {/* Vazio */}
       {!isLoading && total === 0 && (
         <div className="py-20 flex flex-col items-center gap-3 text-center">
           <Tag className="h-10 w-10 text-neutral-200" />
-          <p className="font-medium text-neutral-600">
+          <p className="font-medium text-white/60">
             {search ? `Nenhum resultado para "${search}"` : "Ainda não há serviços cadastrados"}
           </p>
           {!search && (
@@ -122,22 +122,22 @@ export default function ServicosPage() {
 
             const isOpen = expanded.has(cat)
             return (
-              <div key={cat} className="rounded-xl border border-neutral-200 bg-white overflow-hidden shadow-sm">
+              <div key={cat} className="rounded-xl border border-white/10 bg-white/5 overflow-hidden shadow-sm">
                 {/* Header da categoria */}
                 <button
                   onClick={() => toggle(cat)}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.03] transition-colors text-left"
                 >
                   <span className="text-lg leading-none">{CATEGORY_EMOJI[cat]}</span>
-                  <span className="flex-1 font-semibold text-sm text-neutral-800">
+                  <span className="flex-1 font-semibold text-sm text-white/90">
                     {SERVICE_CATALOG_CATEGORY_LABELS[cat]}
                   </span>
                   <Badge variant="secondary" className="text-xs tabular-nums font-normal">
                     {catItems.length}
                   </Badge>
                   {isOpen
-                    ? <ChevronDown className="h-4 w-4 text-neutral-400" />
-                    : <ChevronRight className="h-4 w-4 text-neutral-400" />
+                    ? <ChevronDown className="h-4 w-4 text-white/40" />
+                    : <ChevronRight className="h-4 w-4 text-white/40" />
                   }
                 </button>
 

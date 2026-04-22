@@ -14,13 +14,13 @@ export default function ServiceOrderError({ error, reset }: ErrorProps) {
     <div className="flex h-[calc(100vh-64px)] flex-col items-center justify-center gap-4">
       <div className="text-center">
         <p className="text-4xl font-bold text-gray-300">Erro</p>
-        <p className="mt-2 text-lg font-medium text-gray-700">Não foi possível carregar a OS</p>
-        <p className="mt-1 text-sm text-gray-500">{error.message}</p>
+        <p className="mt-2 text-lg font-medium text-white/70">Não foi possível carregar a OS</p>
+        <p className="mt-1 text-sm text-white/50">{error.message}</p>
       </div>
       <div className="flex gap-3">
         <button
           onClick={() => router.back()}
-          className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="rounded-md border border-white/15 px-4 py-2 text-sm font-medium text-white/70 hover:bg-white/[0.03]"
         >
           Voltar
         </button>

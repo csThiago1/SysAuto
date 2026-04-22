@@ -18,14 +18,14 @@ import { cn } from "@/lib/utils";
 // ─── Customer type pill ────────────────────────────────────────────────────────
 
 function CustomerTypePill({ type }: { type: CustomerType | null }) {
-  if (!type) return <span className="text-neutral-300">—</span>;
+  if (!type) return <span className="text-white/30">—</span>;
   return (
     <span
       className={cn(
         "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
         type === "insurer"
           ? "bg-info-100 text-info-700"
-          : "bg-neutral-100 text-neutral-600"
+          : "bg-white/5 text-white/60"
       )}
     >
       {type === "insurer" ? "Seguradora" : "Particular"}
@@ -55,11 +55,11 @@ export function RecentOSTable({ orders }: RecentOSTableProps): React.ReactElemen
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
         <thead>
-          <tr className="bg-neutral-50 border-b border-neutral-100">
+          <tr className="bg-white/[0.03] border-b border-neutral-100">
             {["Nº", "Placa", "Cliente", "Tipo", "Status", "Entrada", "Dias"].map((h) => (
               <th
                 key={h}
-                className="px-4 py-3 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wide"
+                className="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide"
               >
                 {h}
               </th>
@@ -70,18 +70,18 @@ export function RecentOSTable({ orders }: RecentOSTableProps): React.ReactElemen
           {orders.map((order) => (
             <tr
               key={order.id}
-              className="hover:bg-neutral-50 transition-colors cursor-pointer"
+              className="hover:bg-white/[0.03] transition-colors cursor-pointer"
               onClick={() => router.push(`/service-orders/${order.id}` as `/service-orders/${string}`)}
             >
-              <td className="px-4 py-3 font-plate font-semibold text-neutral-800">
+              <td className="px-4 py-3 font-plate font-semibold text-white/90">
                 #{formatOSNumber(order.number)}
               </td>
               <td className="px-4 py-3">
-                <span className="font-plate font-bold tracking-wider text-neutral-900">
+                <span className="font-plate font-bold tracking-wider text-white">
                   {order.plate}
                 </span>
               </td>
-              <td className="px-4 py-3 text-neutral-700 max-w-[160px] truncate">
+              <td className="px-4 py-3 text-white/70 max-w-[160px] truncate">
                 {order.customer_name}
               </td>
               <td className="px-4 py-3">
@@ -91,10 +91,10 @@ export function RecentOSTable({ orders }: RecentOSTableProps): React.ReactElemen
                 {/* Uses global StatusBadge from @/components/ui */}
                 <StatusBadge status={order.status} size="sm" />
               </td>
-              <td className="px-4 py-3 text-neutral-500">
+              <td className="px-4 py-3 text-white/50">
                 {formatDate(order.entry_date)}
               </td>
-              <td className="px-4 py-3 text-neutral-500">
+              <td className="px-4 py-3 text-white/50">
                 {order.days_in_shop != null ? (
                   <span className="inline-flex items-center gap-1">
                     <Clock className="h-3 w-3" />

@@ -93,39 +93,39 @@ export function OSPartsSection({ osId, osStatus }: OSPartsSectionProps): React.R
   return (
     <div className="space-y-4">
       {isLoading ? (
-        <div className="flex items-center justify-center py-10 text-neutral-400">
+        <div className="flex items-center justify-center py-10 text-white/40">
           <Loader2 className="h-5 w-5 animate-spin mr-2" />
           <span className="text-sm">Carregando peças...</span>
         </div>
       ) : parts.length === 0 && !showForm ? (
-        <div className="flex flex-col items-center justify-center py-12 text-neutral-400 gap-2">
+        <div className="flex flex-col items-center justify-center py-12 text-white/40 gap-2">
           <Package className="h-8 w-8" />
           <p className="text-sm">Nenhuma peça adicionada.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-neutral-200">
+        <div className="overflow-x-auto rounded-lg border border-white/10">
           <table className="w-full text-sm">
-            <thead className="bg-neutral-50 border-b border-neutral-200">
+            <thead className="bg-white/[0.03] border-b border-white/10">
               <tr>
-                <th className="text-left px-3 py-2.5 font-medium text-neutral-600">Descrição</th>
-                <th className="text-left px-3 py-2.5 font-medium text-neutral-600">Código</th>
-                <th className="text-right px-3 py-2.5 font-medium text-neutral-600">Qtd</th>
-                <th className="text-right px-3 py-2.5 font-medium text-neutral-600">Preço Unit.</th>
-                <th className="text-right px-3 py-2.5 font-medium text-neutral-600">Desconto</th>
-                <th className="text-right px-3 py-2.5 font-medium text-neutral-600">Total</th>
+                <th className="text-left px-3 py-2.5 font-medium text-white/60">Descrição</th>
+                <th className="text-left px-3 py-2.5 font-medium text-white/60">Código</th>
+                <th className="text-right px-3 py-2.5 font-medium text-white/60">Qtd</th>
+                <th className="text-right px-3 py-2.5 font-medium text-white/60">Preço Unit.</th>
+                <th className="text-right px-3 py-2.5 font-medium text-white/60">Desconto</th>
+                <th className="text-right px-3 py-2.5 font-medium text-white/60">Total</th>
                 <th className="w-10" />
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
               {parts.map((part) => (
-                <tr key={part.id} className="hover:bg-neutral-50">
+                <tr key={part.id} className="hover:bg-white/[0.03]">
                   <td className="px-3 py-2.5">
                     <span className="font-medium">{part.description}</span>
                     {part.product_name && (
-                      <span className="block text-xs text-neutral-400">{part.product_name}</span>
+                      <span className="block text-xs text-white/40">{part.product_name}</span>
                     )}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-xs text-neutral-500">{part.part_number || "—"}</td>
+                  <td className="px-3 py-2.5 font-mono text-xs text-white/50">{part.part_number || "—"}</td>
                   <td className="px-3 py-2.5 text-right">{part.quantity}</td>
                   <td className="px-3 py-2.5 text-right">{formatCurrency(parseFloat(part.unit_price))}</td>
                   <td className="px-3 py-2.5 text-right">{formatCurrency(parseFloat(part.discount))}</td>
@@ -138,7 +138,7 @@ export function OSPartsSection({ osId, osStatus }: OSPartsSectionProps): React.R
                         disabled={isClosed || deletePart.isPending}
                         title={isClosed ? "OS encerrada — edição bloqueada" : "Remover peça"}
                         className={cn(
-                          "flex h-7 w-7 items-center justify-center rounded text-neutral-400 transition-colors",
+                          "flex h-7 w-7 items-center justify-center rounded text-white/40 transition-colors",
                           isClosed
                             ? "opacity-30 cursor-not-allowed"
                             : "hover:bg-red-50 hover:text-red-600"
@@ -152,12 +152,12 @@ export function OSPartsSection({ osId, osStatus }: OSPartsSectionProps): React.R
               ))}
             </tbody>
             {parts.length > 0 && (
-              <tfoot className="border-t-2 border-neutral-200 bg-neutral-50">
+              <tfoot className="border-t-2 border-white/10 bg-white/[0.03]">
                 <tr>
-                  <td colSpan={5} className="px-3 py-2.5 text-right text-sm font-semibold text-neutral-700">
+                  <td colSpan={5} className="px-3 py-2.5 text-right text-sm font-semibold text-white/70">
                     Total de Peças
                   </td>
-                  <td className="px-3 py-2.5 text-right font-bold text-base text-neutral-900">
+                  <td className="px-3 py-2.5 text-right font-bold text-base text-white">
                     {formatCurrency(partsTotal)}
                   </td>
                   <td />
@@ -172,9 +172,9 @@ export function OSPartsSection({ osId, osStatus }: OSPartsSectionProps): React.R
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 space-y-3"
+          className="rounded-lg border border-white/10 bg-white/[0.03] p-4 space-y-3"
         >
-          <p className="text-sm font-medium text-neutral-700">Nova peça</p>
+          <p className="text-sm font-medium text-white/70">Nova peça</p>
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
               <Input

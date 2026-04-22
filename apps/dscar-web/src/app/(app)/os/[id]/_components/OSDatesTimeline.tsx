@@ -106,23 +106,23 @@ export function OSDatesTimeline({ os }: { os: any }) {
                  {/* Dot Timeline */}
                  <div className={cn(
                    "absolute -left-[21px] top-1 h-3 w-3 rounded-full border-2",
-                   isFilled ? "bg-primary-500 border-primary-500" : "bg-white border-neutral-300"
+                   isFilled ? "bg-primary-500 border-primary-500" : "bg-white/5 border-white/15"
                  )} />
                  
                  <div className="flex justify-between items-start gap-4">
                    <div className="flex flex-col">
-                     <p className="text-sm font-medium text-neutral-900 group-hover:text-primary-700 transition">
+                     <p className="text-sm font-medium text-white group-hover:text-primary-700 transition">
                        {milestone.label}
                      </p>
                      {!isEditing && (
-                       <p className="text-xs text-neutral-500 mt-1 flex items-center gap-1">
+                       <p className="text-xs text-white/50 mt-1 flex items-center gap-1">
                          {isFilled ? (
                            <>
                              {milestone.type === "datetime-local" ? <Clock className="h-3 w-3" /> : <Calendar className="h-3 w-3" />}
                              {format(new Date(rawVal), milestone.type === "datetime-local" ? "dd/MM/yyyy 'às' HH:mm" : "dd/MM/yyyy", { locale: ptBR })}
                            </>
                          ) : (
-                           <span className="text-neutral-400 italic">Pendente</span>
+                           <span className="text-white/40 italic">Pendente</span>
                          )}
                        </p>
                      )}
@@ -140,7 +140,7 @@ export function OSDatesTimeline({ os }: { os: any }) {
                        <Button size="icon" variant="ghost" className="h-8 w-8 text-success-600" onClick={() => handleSave(milestone.key)} disabled={isPending}>
                          {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                        </Button>
-                       <Button size="icon" variant="ghost" className="h-8 w-8 text-neutral-400 hover:text-error-600" onClick={() => setEditingKey(null)} disabled={isPending}>
+                       <Button size="icon" variant="ghost" className="h-8 w-8 text-white/40 hover:text-error-600" onClick={() => setEditingKey(null)} disabled={isPending}>
                          <X className="h-4 w-4" />
                        </Button>
                      </div>
@@ -149,7 +149,7 @@ export function OSDatesTimeline({ os }: { os: any }) {
                        <Button 
                          size="icon" 
                          variant="ghost" 
-                         className="h-7 w-7 opacity-0 group-hover:opacity-100 text-neutral-400 hover:text-primary-600 transition"
+                         className="h-7 w-7 opacity-0 group-hover:opacity-100 text-white/40 hover:text-primary-600 transition"
                          onClick={() => handleEdit(milestone)}
                        >
                          <Edit3 className="h-3.5 w-3.5" />

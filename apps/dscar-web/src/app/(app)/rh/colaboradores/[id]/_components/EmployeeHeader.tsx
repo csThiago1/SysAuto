@@ -22,7 +22,7 @@ export function EmployeeHeader({
   const tenureMonths = Math.floor((employee.tenure_days % 365) / 30);
 
   return (
-    <div className="rounded-md bg-white shadow-card p-card-padding">
+    <div className="rounded-md bg-white/5 shadow-card p-card-padding">
       <div className="flex items-start justify-between gap-4">
         {/* Avatar + info */}
         <div className="flex items-start gap-4">
@@ -31,15 +31,15 @@ export function EmployeeHeader({
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl font-bold text-neutral-900">
+              <h2 className="text-xl font-bold text-white">
                 {employee.user.name}
               </h2>
               <EmployeeStatusBadge status={employee.status} />
             </div>
-            <p className="text-sm text-neutral-500 mt-0.5">
+            <p className="text-sm text-white/50 mt-0.5">
               {employee.position_display} · {employee.department_display}
             </p>
-            <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-neutral-500">
+            <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-white/50">
               <span className="flex items-center gap-1">
                 <Hash className="h-3 w-3" />
                 Matrícula {employee.registration_number}

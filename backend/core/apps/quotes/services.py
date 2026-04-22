@@ -442,7 +442,7 @@ class OrcamentoService:
             vehicle_version=orc.veiculo_versao,
             plate=orc.veiculo_placa or "N/A",
             insurer_id=orc.insurer_id,
-            insured_type=("insured" if orc.insurer_id else "particular"),
+            insured_type=("insured" if orc.insurer_id else None),
             status="authorized",
             created_by_id=user_id,
         )

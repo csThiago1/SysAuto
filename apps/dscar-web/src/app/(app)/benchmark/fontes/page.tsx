@@ -23,7 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useBenchmarkFontes, useCreateBenchmarkFonte } from "@/hooks/useBenchmark"
-import { useEmpresas } from "@/hooks/usePricingProfile"
+import { useMinhaEmpresaId } from "@/hooks/usePricingProfile"
 import type { BenchmarkFonteTipo } from "@paddock/types"
 
 const TIPO_LABELS: Record<BenchmarkFonteTipo, string> = {
@@ -34,25 +34,24 @@ const TIPO_LABELS: Record<BenchmarkFonteTipo, string> = {
 }
 
 export default function BenchmarkFontesPage() {
+  const empresaId = useMinhaEmpresaId()
+
   const { data: fontes = [], isLoading } = useBenchmarkFontes()
   const { mutateAsync: criar, isPending } = useCreateBenchmarkFonte()
-  const { data: empresasData } = useEmpresas()
-  const empresas = empresasData ?? []
 
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({
     nome: "",
     tipo: "seguradora_pdf" as BenchmarkFonteTipo,
     confiabilidade: "0.80",
-    empresa_id: "",
   })
 
   const set = (f: string, v: string) => setForm((p) => ({ ...p, [f]: v }))
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.nome || !form.empresa_id) {
-      toast.error("Preencha nome e selecione a empresa.")
+    if (!form.nome) {
+      toast.error("Preencha o nome da fonte.")
       return
     }
     try {
@@ -60,11 +59,11 @@ export default function BenchmarkFontesPage() {
         nome: form.nome,
         tipo: form.tipo,
         confiabilidade: form.confiabilidade,
-        empresa: form.empresa_id,
+        empresa: empresaId,
       })
       toast.success("Fonte criada!")
       setShowForm(false)
-      setForm({ nome: "", tipo: "seguradora_pdf", confiabilidade: "0.80", empresa_id: "" })
+      setForm({ nome: "", tipo: "seguradora_pdf", confiabilidade: "0.80" })
     } catch {
       toast.error("Erro ao criar fonte.")
     }
@@ -113,21 +112,6 @@ export default function BenchmarkFontesPage() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Empresa *</Label>
-              <select
-                className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                value={form.empresa_id}
-                onChange={(e) => set("empresa_id", e.target.value)}
-              >
-                <option value="">Selecione a empresa</option>
-                {empresas.map((emp) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.nome_fantasia || emp.razao_social}
-                  </option>
-                ))}
-              </select>
             </div>
             <div className="space-y-1.5">
               <Label className="text-white/70 text-xs">Confiabilidade (0–1)</Label>

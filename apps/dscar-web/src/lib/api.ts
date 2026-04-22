@@ -53,6 +53,7 @@ export async function apiFetch<T>(
 
     const message =
       (e.detail as string | undefined) ??
+      (e.erro as string | undefined) ??
       (e.non_field_errors as string[] | undefined)?.[0] ??
       "Ocorreu um erro na requisição.";
       

@@ -46,7 +46,7 @@ export function VehicleSection({ form }: VehicleSectionProps) {
       {/* Header: slot visual + placa destaque */}
       <div className="flex items-start gap-3">
         {/* Slot visual 56×56px — futuro: logo da montadora */}
-        <div className="h-14 w-14 shrink-0 rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50 flex items-center justify-center">
+        <div className="h-14 w-14 shrink-0 rounded-lg border-2 border-dashed border-white/10 bg-white/[0.03] flex items-center justify-center">
           <span className="text-2xl">🚗</span>
         </div>
 
@@ -64,7 +64,7 @@ export function VehicleSection({ form }: VehicleSectionProps) {
               onChange={handlePlateChange}
             />
             {isFetching && (
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-primary-600" />
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/15 border-t-primary-600" />
             )}
           </div>
           {errors.plate && (

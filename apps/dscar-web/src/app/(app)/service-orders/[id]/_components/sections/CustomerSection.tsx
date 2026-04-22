@@ -12,12 +12,12 @@ import {
 } from "../../_hooks/useCustomerSearch"
 import { useDebounce } from "@/hooks/useDebounce"
 
-const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-neutral-500"
-const LABEL = "block text-xs font-bold uppercase tracking-wide text-neutral-400 mb-0.5"
+const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-white/50"
+const LABEL = "block text-xs font-bold uppercase tracking-wide text-white/40 mb-0.5"
 const INPUT_EDIT =
   "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
 const INPUT_READONLY =
-  "flex h-8 w-full rounded-md border border-neutral-100 bg-neutral-50 px-2.5 py-1 text-sm text-neutral-500 cursor-default select-all"
+  "flex h-8 w-full rounded-md border border-neutral-100 bg-white/[0.03] px-2.5 py-1 text-sm text-white/50 cursor-default select-all"
 
 interface CustomerSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
@@ -52,7 +52,7 @@ function InlineSearch({ onSelect, onCancel }: InlineSearchProps) {
     <div ref={containerRef} className="relative">
       <div className="relative flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-neutral-400 pointer-events-none" />
+          <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-white/40 pointer-events-none" />
           <input
             type="text"
             autoFocus
@@ -64,32 +64,32 @@ function InlineSearch({ onSelect, onCancel }: InlineSearchProps) {
             autoComplete="off"
           />
           {isFetching && (
-            <Loader2 className="absolute right-2.5 top-2 h-3.5 w-3.5 animate-spin text-neutral-400" />
+            <Loader2 className="absolute right-2.5 top-2 h-3.5 w-3.5 animate-spin text-white/40" />
           )}
         </div>
         <button
           type="button"
           onClick={onCancel}
-          className="shrink-0 rounded border border-neutral-300 px-2.5 py-1 text-xs font-medium text-neutral-500 hover:bg-neutral-100 h-8"
+          className="shrink-0 rounded border border-white/15 px-2.5 py-1 text-xs font-medium text-white/50 hover:bg-white/5 h-8"
         >
           Cancelar
         </button>
       </div>
 
       {open && debouncedQuery.length >= 3 && results.length > 0 && (
-        <div className="absolute z-20 mt-1 w-full rounded-lg border border-neutral-200 bg-white shadow-lg overflow-hidden">
+        <div className="absolute z-20 mt-1 w-full rounded-lg border border-white/10 bg-white/5 shadow-lg overflow-hidden">
           <ul>
             {results.map((c) => (
               <li key={c.id}>
                 <button
                   type="button"
-                  className="flex w-full items-start gap-3 px-3 py-2 text-left hover:bg-neutral-50 transition-colors"
+                  className="flex w-full items-start gap-3 px-3 py-2 text-left hover:bg-white/[0.03] transition-colors"
                   onClick={() => onSelect(c.id, c.name)}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-900 truncate">{c.name}</p>
+                    <p className="text-sm font-medium text-white truncate">{c.name}</p>
                     {(c.cpf_masked || c.phone_masked) && (
-                      <p className="text-xs text-neutral-500 mt-0.5">
+                      <p className="text-xs text-white/50 mt-0.5">
                         {[c.cpf_masked, c.phone_masked].filter(Boolean).join(" · ")}
                       </p>
                     )}
@@ -356,7 +356,7 @@ export function CustomerSection({ form, onCustomerDataChange }: CustomerSectionP
           <button
             type="button"
             onClick={() => setSwapping(true)}
-            className="flex items-center gap-1 text-xs font-medium text-neutral-400 hover:text-neutral-600"
+            className="flex items-center gap-1 text-xs font-medium text-white/40 hover:text-white/60"
           >
             <ArrowLeftRight className="h-3 w-3" />
             Trocar cliente
@@ -379,7 +379,7 @@ export function CustomerSection({ form, onCustomerDataChange }: CustomerSectionP
           control={control}
           render={({ field }) => (
             <div className="relative">
-              <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-neutral-400 pointer-events-none" />
+              <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-white/40 pointer-events-none" />
               <InlineSearch
                 onSelect={(id, name) => {
                   field.onChange(id)
@@ -397,7 +397,7 @@ export function CustomerSection({ form, onCustomerDataChange }: CustomerSectionP
       {!swapping && customerId && (
         <>
           {isLoading && (
-            <div className="flex items-center gap-2 py-2 text-xs text-neutral-400">
+            <div className="flex items-center gap-2 py-2 text-xs text-white/40">
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
               Carregando dados do cliente...
             </div>
@@ -420,7 +420,7 @@ export function CustomerSection({ form, onCustomerDataChange }: CustomerSectionP
 
       {/* Old OS: customer_name but no UUID — show search pre-filled */}
       {!swapping && !customerId && customerName && (
-        <p className="text-xs text-neutral-400 mt-1">
+        <p className="text-xs text-white/40 mt-1">
           Cliente &quot;{customerName}&quot; sem vínculo — busque acima para vincular.
         </p>
       )}

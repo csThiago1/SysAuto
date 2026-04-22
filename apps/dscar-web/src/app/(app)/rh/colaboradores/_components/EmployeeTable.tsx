@@ -28,7 +28,7 @@ export function EmployeeTable({
 }: EmployeeTableProps): React.ReactElement {
   if (employees.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-neutral-500">
+      <div className="flex flex-col items-center justify-center py-12 text-white/50">
         <p className="text-sm">Nenhum colaborador encontrado.</p>
       </div>
     );
@@ -49,33 +49,33 @@ export function EmployeeTable({
       </TableHeader>
       <TableBody>
         {employees.map((emp) => (
-          <TableRow key={emp.id} className="cursor-pointer hover:bg-neutral-50">
+          <TableRow key={emp.id} className="cursor-pointer hover:bg-white/[0.03]">
             <TableCell>
               <Link
                 href={`/rh/colaboradores/${emp.id}` as Route}
                 className="flex flex-col hover:text-primary-600 transition-colors"
               >
-                <span className="font-medium text-neutral-900">
+                <span className="font-medium text-white">
                   {emp.user.name}
                 </span>
               </Link>
             </TableCell>
-            <TableCell className="font-mono text-sm text-neutral-600">
+            <TableCell className="font-mono text-sm text-white/60">
               {emp.registration_number}
             </TableCell>
-            <TableCell className="text-sm text-neutral-600">
+            <TableCell className="text-sm text-white/60">
               {emp.department_display}
             </TableCell>
-            <TableCell className="text-sm text-neutral-600">
+            <TableCell className="text-sm text-white/60">
               {emp.position_display}
             </TableCell>
-            <TableCell className="text-sm text-neutral-600">
+            <TableCell className="text-sm text-white/60">
               {emp.contract_type_display}
             </TableCell>
             <TableCell>
               <EmployeeStatusBadge status={emp.status} />
             </TableCell>
-            <TableCell className="text-sm text-neutral-500">
+            <TableCell className="text-sm text-white/50">
               {new Date(emp.hire_date).toLocaleDateString("pt-BR")}
             </TableCell>
           </TableRow>

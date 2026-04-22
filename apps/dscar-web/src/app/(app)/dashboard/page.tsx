@@ -52,8 +52,8 @@ export default function DashboardPage(): React.ReactElement {
       <div className="space-y-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-neutral-900">Dashboard</h1>
-            <p className="mt-0.5 text-sm text-neutral-500">Carregando...</p>
+            <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+            <p className="mt-0.5 text-sm text-white/50">Carregando...</p>
           </div>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -69,8 +69,8 @@ export default function DashboardPage(): React.ReactElement {
         <div className="space-y-6">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-neutral-900">Dashboard</h1>
-              <p className="mt-0.5 text-sm text-neutral-500">Meu painel de atendimento</p>
+              <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+              <p className="mt-0.5 text-sm text-white/50">Meu painel de atendimento</p>
             </div>
             <Link
               href="/service-orders/new"
@@ -92,8 +92,8 @@ export default function DashboardPage(): React.ReactElement {
         <div className="space-y-6">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-neutral-900">Dashboard</h1>
-              <p className="mt-0.5 text-sm text-neutral-500">Visão gerencial</p>
+              <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+              <p className="mt-0.5 text-sm text-white/50">Visão gerencial</p>
             </div>
             <Link
               href="/service-orders/new"
@@ -116,8 +116,8 @@ export default function DashboardPage(): React.ReactElement {
       <div className="space-y-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-neutral-900">Dashboard</h1>
-            <p className="mt-0.5 text-sm text-neutral-500">Visão geral das Ordens de Serviço</p>
+            <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+            <p className="mt-0.5 text-sm text-white/50">Visão geral das Ordens de Serviço</p>
           </div>
           <Link
             href="/service-orders/new"
@@ -153,7 +153,7 @@ export default function DashboardPage(): React.ReactElement {
               key={status}
               label={SERVICE_ORDER_STATUS_CONFIG[status].label}
               value={count}
-              iconBg="bg-neutral-100"
+              iconBg="bg-white/5"
               icon={
                 <span
                   className={`h-2.5 w-2.5 rounded-full ${SERVICE_ORDER_STATUS_CONFIG[status].dot}`}
@@ -163,9 +163,9 @@ export default function DashboardPage(): React.ReactElement {
           ))}
         </div>
 
-        <div className="rounded-md bg-white shadow-card overflow-hidden">
+        <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
           <div className="flex items-center justify-between px-card-padding py-4 border-b border-neutral-100">
-            <h2 className="text-base font-semibold text-neutral-900">
+            <h2 className="text-base font-semibold text-white">
               Últimas Ordens de Serviço
             </h2>
             <Link

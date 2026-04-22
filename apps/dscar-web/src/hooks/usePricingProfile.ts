@@ -50,6 +50,12 @@ export function useEmpresas() {
   })
 }
 
+/** Retorna o UUID da primeira empresa ativa do tenant. String vazia enquanto carrega. */
+export function useMinhaEmpresaId(): string {
+  const { data: empresas = [] } = useEmpresas()
+  return empresas.find((e) => e.is_active)?.id ?? empresas[0]?.id ?? ""
+}
+
 export function useEmpresa(id: string) {
   return useQuery<Empresa>({
     queryKey: pricingKeys.empresa(id),

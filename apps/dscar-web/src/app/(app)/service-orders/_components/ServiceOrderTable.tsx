@@ -27,16 +27,16 @@ interface ServiceOrderTableProps {
 export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
   const router = useRouter()
   return (
-    <div className="rounded-md border bg-white overflow-hidden">
+    <div className="rounded-md border bg-white/5 overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="bg-neutral-50 hover:bg-neutral-50 border-b border-neutral-200">
-            <TableHead className="w-[100px] font-semibold text-neutral-600">OS</TableHead>
-            <TableHead className="min-w-[200px] font-semibold text-neutral-600">Cliente / Seguradora</TableHead>
-            <TableHead className="min-w-[180px] font-semibold text-neutral-600">Veículo</TableHead>
-            <TableHead className="w-[140px] font-semibold text-neutral-600">Datas</TableHead>
-            <TableHead className="w-[180px] font-semibold text-neutral-600">Status</TableHead>
-            <TableHead className="w-[60px] text-right font-semibold text-neutral-600"></TableHead>
+          <TableRow className="bg-white/[0.03] hover:bg-white/[0.03] border-b border-white/10">
+            <TableHead className="w-[100px] font-semibold text-white/60">OS</TableHead>
+            <TableHead className="min-w-[200px] font-semibold text-white/60">Cliente / Seguradora</TableHead>
+            <TableHead className="min-w-[180px] font-semibold text-white/60">Veículo</TableHead>
+            <TableHead className="w-[140px] font-semibold text-white/60">Datas</TableHead>
+            <TableHead className="w-[180px] font-semibold text-white/60">Status</TableHead>
+            <TableHead className="w-[60px] text-right font-semibold text-white/60"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -50,7 +50,7 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                 onClick={() => router.push(`/service-orders/${order.id}`)}
               >
                 {/* OS Number */}
-                <TableCell className="font-medium text-neutral-900">
+                <TableCell className="font-medium text-white">
                   <div className="flex items-center gap-1.5">
                      <span className="text-primary-600 font-bold">#{order.number}</span>
                   </div>
@@ -61,7 +61,7 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                   <div className="flex items-center gap-3">
                     {/* Logo: seguradora ou DS Car */}
                     {order.customer_type === "insurer" ? (
-                      <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-neutral-100 border border-neutral-200">
+                      <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-white/5 border border-white/10">
                         {order.insurer_detail?.logo ? (
                           <img src={order.insurer_detail.logo} alt={order.insurer_detail.display_name ?? ""} className="h-full w-full object-contain p-0.5" />
                         ) : (
@@ -80,10 +80,10 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                       </div>
                     )}
                     <div className="flex flex-col">
-                      <span className="text-sm font-medium text-neutral-900 truncate max-w-[200px]">
+                      <span className="text-sm font-medium text-white truncate max-w-[200px]">
                         {order.customer_name || "Sem nome"}
                       </span>
-                      <span className="text-xs text-neutral-500 font-medium flex items-center gap-1">
+                      <span className="text-xs text-white/50 font-medium flex items-center gap-1">
                         {order.customer_type === "insurer" ? (
                           order.insurer_detail?.display_name ?? "Seguradora"
                         ) : (
@@ -97,11 +97,11 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                 {/* Veículo */}
                 <TableCell>
                   <div className="flex flex-col">
-                    <span className="text-sm font-medium text-neutral-900 flex items-center gap-1.5">
-                      <Car className="h-3.5 w-3.5 text-neutral-400" />
+                    <span className="text-sm font-medium text-white flex items-center gap-1.5">
+                      <Car className="h-3.5 w-3.5 text-white/40" />
                       {order.make} {order.model} {order.year ? `(${order.year})` : ""}
                     </span>
-                    <span className="text-xs font-mono text-neutral-500 bg-neutral-100 px-1.5 py-0.5 rounded w-fit mt-0.5 border border-neutral-200 uppercase">
+                    <span className="text-xs font-mono text-white/50 bg-white/5 px-1.5 py-0.5 rounded w-fit mt-0.5 border border-white/10 uppercase">
                       {order.plate || "SEM PLACA"}
                     </span>
                   </div>
@@ -110,15 +110,15 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                 {/* Datas */}
                 <TableCell>
                   <div className="flex flex-col gap-1 text-sm">
-                    <div className="flex items-center justify-between gap-2 text-neutral-600">
-                      <span className="text-xs text-neutral-400">Entr:</span>
+                    <div className="flex items-center justify-between gap-2 text-white/60">
+                      <span className="text-xs text-white/40">Entr:</span>
                       <span>{formatDate(order.entry_date)}</span>
                     </div>
                     <div className={cn(
                       "flex items-center justify-between gap-2 font-medium",
-                      isLate ? "text-error-600" : "text-neutral-700"
+                      isLate ? "text-error-600" : "text-white/70"
                     )}>
-                      <span className={cn("text-xs", isLate ? "text-error-500" : "text-neutral-400")}>Prev:</span>
+                      <span className={cn("text-xs", isLate ? "text-error-500" : "text-white/40")}>Prev:</span>
                       <span>{formatDate(order.estimated_delivery_date)}</span>
                     </div>
                   </div>
@@ -133,7 +133,7 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                 <TableCell className="text-right">
                   <Link 
                     href={`/service-orders/${order.id}`}
-                    className="inline-flex items-center justify-center h-8 w-8 rounded-md text-neutral-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"
+                    className="inline-flex items-center justify-center h-8 w-8 rounded-md text-white/40 hover:text-primary-600 hover:bg-primary-50 transition-colors"
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Link>

@@ -46,10 +46,10 @@ export default function RHDashboardPage(): React.ReactElement {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-neutral-900">
+            <h1 className="text-2xl font-bold text-white">
               Recursos Humanos
             </h1>
-            <p className="mt-0.5 text-sm text-neutral-500">
+            <p className="mt-0.5 text-sm text-white/50">
               Gestão de colaboradores, ponto, metas e folha
             </p>
           </div>
@@ -90,8 +90,8 @@ export default function RHDashboardPage(): React.ReactElement {
               <StatCard
                 label="Férias"
                 value={totalVacation}
-                iconBg="bg-neutral-100"
-                icon={<Palmtree className="h-5 w-5 text-neutral-500" />}
+                iconBg="bg-white/5"
+                icon={<Palmtree className="h-5 w-5 text-white/50" />}
               />
             </>
           )}
@@ -103,7 +103,7 @@ export default function RHDashboardPage(): React.ReactElement {
             <Link
               key={link.href}
               href={link.href as Route}
-              className="flex items-center justify-between rounded-md bg-white p-4 shadow-card hover:shadow-card-hover transition-shadow duration-normal group"
+              className="flex items-center justify-between rounded-md bg-white/5 p-4 shadow-card hover:shadow-card-hover transition-shadow duration-normal group"
             >
               <div className="flex items-center gap-3">
                 <div
@@ -112,13 +112,13 @@ export default function RHDashboardPage(): React.ReactElement {
                   <link.Icon className={`h-4 w-4 ${link.iconColor}`} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-neutral-900">
+                  <p className="text-sm font-semibold text-white">
                     {link.label}
                   </p>
-                  <p className="text-xs text-neutral-500">{link.description}</p>
+                  <p className="text-xs text-white/50">{link.description}</p>
                 </div>
               </div>
-              <ArrowRight className="h-4 w-4 text-neutral-400 group-hover:text-primary-600 transition-colors" />
+              <ArrowRight className="h-4 w-4 text-white/40 group-hover:text-primary-600 transition-colors" />
             </Link>
           ))}
         </div>
@@ -171,8 +171,8 @@ const QUICK_LINKS = [
     label: "Vales e Benefícios",
     description: "Solicitações e aprovações",
     Icon: FileWarning,
-    iconBg: "bg-neutral-100",
-    iconColor: "text-neutral-500",
+    iconBg: "bg-white/5",
+    iconColor: "text-white/50",
   },
   {
     href: "/rh/folha",
