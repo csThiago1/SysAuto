@@ -1409,7 +1409,13 @@ class ServiceOrderVersion(models.Model):
 
     @property
     def is_active_version(self) -> bool:
-        """True if this is the highest-numbered version for its OS."""
+        """True if this is the highest-numbered version for its OS.
+
+        WARNING: Fires one DB query per access. Never call inside a loop or
+        from a serializer that iterates over versions. Use queryset annotation
+        instead: .annotate(is_active=...) or prefetch all versions and compare
+        in Python.
+        """
         return (
             self.__class__.objects.filter(service_order=self.service_order)
             .order_by("-version_number")

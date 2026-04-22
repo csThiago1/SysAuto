@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 
+from django.db import transaction
 from django_tenants.test.cases import TenantTestCase
 
 
@@ -31,7 +32,8 @@ class ServiceOrderVersionModelTest(TenantTestCase):
         os = self._make_order(9998)
         ServiceOrderVersion.objects.create(service_order=os, version_number=1, source="manual")
         with self.assertRaises(IntegrityError):
-            ServiceOrderVersion.objects.create(service_order=os, version_number=1, source="manual")
+            with transaction.atomic():
+                ServiceOrderVersion.objects.create(service_order=os, version_number=1, source="manual")
 
     def test_version_item_inherits_mixin_fields(self) -> None:
         from apps.service_orders.models import ServiceOrderVersion, ServiceOrderVersionItem
@@ -95,7 +97,8 @@ class ServiceOrderVersionModelTest(TenantTestCase):
         os = self._make_order(9992)
         ImpactAreaLabel.objects.create(service_order=os, area_number=1, label_text="Frontal")
         with self.assertRaises(IntegrityError):
-            ImpactAreaLabel.objects.create(service_order=os, area_number=1, label_text="Outra")
+            with transaction.atomic():
+                ImpactAreaLabel.objects.create(service_order=os, area_number=1, label_text="Outra")
 
     def test_is_active_version_property(self) -> None:
         from apps.service_orders.models import ServiceOrderVersion
