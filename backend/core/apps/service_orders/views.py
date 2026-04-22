@@ -921,26 +921,32 @@ class ServiceOrderViewSet(
 class ServiceOrderVersionViewSet(viewsets.ReadOnlyModelViewSet):
     """Lista/detalhe de versões de OS + action approve."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type:
         from .serializers import ServiceOrderVersionSerializer
         return ServiceOrderVersionSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> "QuerySet":
         from .models import ServiceOrderVersion
         return (
             ServiceOrderVersion.objects
+            .filter(service_order__is_active=True)
             .select_related("service_order", "import_attempt")
             .prefetch_related("items")
         )
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        if self.action == "approve":
+            return [IsAuthenticated(), IsManagerOrAbove()]
+        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     @action(detail=True, methods=["post"])
     def approve(self, request: Request, pk: Optional[str] = None) -> Response:
         """POST /service-orders/versions/{id}/approve/"""
         from .serializers import ServiceOrderVersionSerializer
         version = self.get_object()
-        actor = getattr(request.user, "get_full_name", lambda: "")() or getattr(request.user, "email", "Usuário")
+        actor = request.user.email if hasattr(request.user, "email") else "Usuário"
         updated = ServiceOrderService.approve_version(version=version, approved_by=actor)
         return Response(ServiceOrderVersionSerializer(updated).data)
 
@@ -948,15 +954,17 @@ class ServiceOrderVersionViewSet(viewsets.ReadOnlyModelViewSet):
 class ServiceOrderEventViewSet(viewsets.ReadOnlyModelViewSet):
     """Timeline de eventos de OS (somente leitura)."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type:
         from .serializers import ServiceOrderEventSerializer
         return ServiceOrderEventSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> "QuerySet":
         from .models import ServiceOrderEvent
-        return ServiceOrderEvent.objects.select_related("service_order")
+        return ServiceOrderEvent.objects.filter(
+            service_order__is_active=True,
+        ).select_related("service_order")
 
 
 class ServiceOrderParecerViewSet(viewsets.ModelViewSet):
@@ -964,18 +972,34 @@ class ServiceOrderParecerViewSet(viewsets.ModelViewSet):
 
     permission_classes = [IsAuthenticated]
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type:
         from .serializers import ServiceOrderParecerSerializer
         return ServiceOrderParecerSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> "QuerySet":
         from .models import ServiceOrderParecer
-        return ServiceOrderParecer.objects.select_related("service_order", "version")
+        return ServiceOrderParecer.objects.filter(
+            service_order__is_active=True,
+        ).select_related("service_order", "version")
 
-    def get_permissions(self) -> list:
+    def get_permissions(self) -> list:  # type: ignore[override]
         if self.action in ("destroy",):
             return [IsAuthenticated(), IsManagerOrAbove()]
         return [IsAuthenticated(), IsConsultantOrAbove()]
+
+    def _assert_internal(self, instance: "ServiceOrderParecer") -> None:
+        """Garante que apenas pareceres internos podem ser modificados."""
+        if instance.source != "internal":
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Pareceres importados são somente leitura.")
+
+    def perform_update(self, serializer: "BaseSerializer") -> None:  # type: ignore[override]
+        self._assert_internal(serializer.instance)
+        super().perform_update(serializer)
+
+    def perform_destroy(self, instance: "ServiceOrderParecer") -> None:  # type: ignore[override]
+        self._assert_internal(instance)
+        super().perform_destroy(instance)
 
 
 @extend_schema(
