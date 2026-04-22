@@ -96,3 +96,16 @@ class ServiceOrderVersionModelTest(TenantTestCase):
         ImpactAreaLabel.objects.create(service_order=os, area_number=1, label_text="Frontal")
         with self.assertRaises(IntegrityError):
             ImpactAreaLabel.objects.create(service_order=os, area_number=1, label_text="Outra")
+
+    def test_is_active_version_property(self) -> None:
+        from apps.service_orders.models import ServiceOrderVersion
+        os = self._make_order(9991)
+        v1 = ServiceOrderVersion.objects.create(
+            service_order=os, version_number=1, source="manual"
+        )
+        self.assertTrue(v1.is_active_version)
+        v2 = ServiceOrderVersion.objects.create(
+            service_order=os, version_number=2, source="manual"
+        )
+        self.assertFalse(v1.is_active_version)
+        self.assertTrue(v2.is_active_version)

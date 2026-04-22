@@ -1407,6 +1407,17 @@ class ServiceOrderVersion(models.Model):
     created_by = models.CharField(max_length=120, blank=True, default="")
     approved_at = models.DateTimeField(null=True, blank=True)
 
+    @property
+    def is_active_version(self) -> bool:
+        """True if this is the highest-numbered version for its OS."""
+        return (
+            self.__class__.objects.filter(service_order=self.service_order)
+            .order_by("-version_number")
+            .values_list("id", flat=True)
+            .first()
+            == self.pk
+        )
+
     class Meta:
         unique_together = [("service_order", "version_number")]
         ordering = ["-version_number"]
