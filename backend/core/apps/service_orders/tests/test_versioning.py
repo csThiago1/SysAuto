@@ -112,3 +112,48 @@ class ServiceOrderVersionModelTest(TenantTestCase):
         )
         self.assertFalse(v1.is_active_version)
         self.assertTrue(v2.is_active_version)
+
+
+class OSEventLoggerTest(TenantTestCase):
+    def _make_order(self):
+        from apps.service_orders.models import ServiceOrder
+        return ServiceOrder.objects.create(number=8888, customer_name="Logger Test", plate="LGG9999")
+
+    def test_log_event_creates_record(self):
+        from apps.service_orders.events import OSEventLogger
+        from apps.service_orders.models import ServiceOrderEvent
+        os = self._make_order()
+        OSEventLogger.log_event(
+            os, "STATUS_CHANGE",
+            actor="Thiago",
+            from_state="reception",
+            to_state="initial_survey",
+        )
+        ev = ServiceOrderEvent.objects.get(service_order=os)
+        self.assertEqual(ev.event_type, "STATUS_CHANGE")
+        self.assertEqual(ev.actor, "Thiago")
+        self.assertEqual(ev.from_state, "reception")
+        self.assertEqual(ev.to_state, "initial_survey")
+
+    def test_log_event_with_payload(self):
+        from apps.service_orders.events import OSEventLogger
+        from apps.service_orders.models import ServiceOrderEvent
+        os = self._make_order()
+        OSEventLogger.log_event(
+            os, "IMPORT_RECEIVED",
+            payload={"source": "cilia", "version": "821980.1"},
+        )
+        ev = ServiceOrderEvent.objects.get(service_order=os, event_type="IMPORT_RECEIVED")
+        self.assertEqual(ev.payload["source"], "cilia")
+
+    def test_log_event_does_not_raise_on_error(self):
+        """Logger nunca interrompe o fluxo principal."""
+        from apps.service_orders.events import OSEventLogger
+        # Passa OS inválido (id=None) — deve logar sem explodir
+        class FakeOS:
+            pk = None
+            id = None
+        try:
+            OSEventLogger.log_event(FakeOS(), "STATUS_CHANGE", swallow_errors=True)
+        except Exception:
+            self.fail("OSEventLogger não deve propagar exceções quando swallow_errors=True")
