@@ -2,12 +2,16 @@
 Paddock Solutions — Service Orders App
 OS, Kanban, checklist de vistoria e log de transições.
 """
+from __future__ import annotations
+
 import uuid
+from decimal import Decimal
 
 from django.db import models
 from django.utils import timezone
 
 from apps.authentication.models import PaddockBaseModel
+from apps.items.mixins import ItemFieldsMixin
 
 
 # ── Status choices ─────────────────────────────────────────────────────────────
@@ -328,6 +332,14 @@ class ServiceOrder(PaddockBaseModel):
         default=ServiceOrderStatus.RECEPTION,
         db_index=True,
         verbose_name="Status",
+    )
+
+    previous_status = models.CharField(
+        max_length=20,
+        blank=True,
+        default="",
+        help_text="Status antes de entrar em 'budget' (auto-Kanban). Restaurado ao aprovar versão.",
+        verbose_name="Status anterior",
     )
 
     # ── Datas legadas (compatibilidade) ───────────────────────────────────────
@@ -1330,3 +1342,215 @@ class BloqueioCapacidade(PaddockBaseModel):
         return (
             f"{self.tecnico_id}: {self.data_inicio}→{self.data_fim} ({self.motivo})"
         )
+
+
+# ── OS Versioning (Task 2) ────────────────────────────────────────────────────
+
+
+class ServiceOrderVersion(models.Model):
+    """
+    Snapshot imutável de uma versão da OS.
+    v1 inicial, v2+ criadas por importações ou complementos.
+    Seguradora: espelha external_version "821980.1", "821980.2".
+    """
+
+    STATUS_CHOICES = [
+        ("pending",    "Pendente"),
+        ("approved",   "Aprovada"),
+        ("rejected",   "Rejeitada"),
+        ("analisado",  "Analisado"),
+        ("autorizado", "Autorizado"),
+        ("correcao",   "Em Correção"),
+        ("em_analise", "Em Análise"),
+        ("negado",     "Negado"),
+        ("superseded", "Superada"),
+    ]
+
+    SOURCE_CHOICES = [
+        ("manual",           "Manual"),
+        ("budget_approval",  "Da aprovação de Orçamento"),
+        ("cilia",            "Cilia API"),
+        ("hdi",              "HDI HTML"),
+        ("xml_porto",        "XML Porto"),
+        ("xml_azul",         "XML Azul"),
+        ("xml_itau",         "XML Itaú"),
+    ]
+
+    service_order = models.ForeignKey(
+        ServiceOrder, on_delete=models.CASCADE, related_name="versions",
+    )
+    version_number = models.IntegerField(verbose_name="Versão")
+    external_version = models.CharField(max_length=40, blank=True, default="")
+    external_numero_vistoria = models.CharField(max_length=60, blank=True, default="")
+    external_integration_id = models.CharField(max_length=40, blank=True, default="")
+    source = models.CharField(max_length=20, choices=SOURCE_CHOICES, db_index=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending", db_index=True)
+
+    subtotal = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0"))
+    discount_total = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0"))
+    net_total = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0"))
+    labor_total = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0"))
+    parts_total = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0"))
+    total_seguradora = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0"))
+    total_complemento_particular = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0"))
+    total_franquia = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0"))
+
+    content_hash = models.CharField(max_length=64, blank=True, default="")
+    raw_payload_s3_key = models.CharField(max_length=500, blank=True, default="")
+    import_attempt = models.ForeignKey(
+        "cilia.ImportAttempt", on_delete=models.SET_NULL, null=True, blank=True,
+    )
+    hourly_rates = models.JSONField(default=dict, blank=True)
+    global_discount_pct = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("0"))
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    created_by = models.CharField(max_length=120, blank=True, default="")
+    approved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = [("service_order", "version_number")]
+        ordering = ["-version_number"]
+        indexes = [
+            models.Index(fields=["service_order", "status"], name="sov_os_status_idx"),
+        ]
+        verbose_name = "Versão de OS"
+        verbose_name_plural = "Versões de OS"
+
+    def __str__(self) -> str:
+        if self.external_version:
+            return f"{self.external_version} — {self.get_status_display()}"
+        return f"v{self.version_number} — {self.get_status_display()}"
+
+
+class ServiceOrderVersionItem(ItemFieldsMixin):
+    """
+    Item de uma versão de OS. Imutável após versão aprovada/autorizada.
+    Herda todos os campos de ItemFieldsMixin (bucket, payer_block, flags, etc.).
+    """
+
+    version = models.ForeignKey(
+        ServiceOrderVersion, on_delete=models.CASCADE, related_name="items",
+    )
+
+    class Meta:
+        ordering = ["sort_order", "id"]
+        verbose_name = "Item de Versão de OS"
+        verbose_name_plural = "Itens de Versão de OS"
+
+
+class ServiceOrderEvent(models.Model):
+    """
+    Timeline universal de mutações em uma OS.
+    Parallel ao ServiceOrderActivityLog (não substitui ainda).
+    Toda mutação via Service deve chamar OSEventLogger.log_event().
+    """
+
+    EVENT_TYPES = [
+        ("STATUS_CHANGE",      "Mudança de status"),
+        ("AUTO_TRANSITION",    "Transição automática"),
+        ("VERSION_CREATED",    "Nova versão criada"),
+        ("VERSION_APPROVED",   "Versão aprovada"),
+        ("VERSION_REJECTED",   "Versão rejeitada"),
+        ("ITEM_ADDED",         "Item adicionado"),
+        ("ITEM_REMOVED",       "Item removido"),
+        ("ITEM_EDITED",        "Item editado"),
+        ("IMPORT_RECEIVED",    "Importação recebida"),
+        ("PARECER_ADDED",      "Parecer adicionado"),
+        ("PHOTO_UPLOADED",     "Foto anexada"),
+        ("PHOTO_REMOVED",      "Foto removida (soft)"),
+        ("PAYMENT_RECORDED",   "Pagamento registrado"),
+        ("FISCAL_ISSUED",      "Nota fiscal emitida"),
+        ("SIGNATURE_CAPTURED", "Assinatura capturada"),
+        ("BUDGET_LINKED",      "Orçamento aprovado virou OS"),
+        ("COMPLEMENT_ADDED",   "Complemento particular adicionado"),
+    ]
+
+    service_order = models.ForeignKey(
+        ServiceOrder, on_delete=models.CASCADE, related_name="events",
+    )
+    event_type = models.CharField(max_length=30, choices=EVENT_TYPES, db_index=True)
+    actor = models.CharField(max_length=120, blank=True, default="Sistema")
+    payload = models.JSONField(default=dict, blank=True)
+    from_state = models.CharField(max_length=30, blank=True, default="")
+    to_state = models.CharField(max_length=30, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["service_order", "-created_at"], name="soe_os_date_idx"),
+            models.Index(fields=["event_type", "-created_at"], name="soe_type_date_idx"),
+        ]
+        verbose_name = "Evento de OS"
+        verbose_name_plural = "Eventos de OS"
+
+    def __str__(self) -> str:
+        return f"{self.event_type} · {self.service_order_id} · {self.actor}"
+
+
+class ServiceOrderParecer(models.Model):
+    """
+    Timeline de workflow entre oficina e seguradora.
+    Pode ser importado (Cilia/XML) ou criado internamente.
+    """
+
+    PARECER_TYPE_CHOICES = [
+        ("CONCORDADO",         "Concordado"),
+        ("AUTORIZADO",         "Autorizado"),
+        ("CORRECAO",           "Correção"),
+        ("NEGADO",             "Negado"),
+        ("SEM_COBERTURA",      "Sem Cobertura"),
+        ("COMENTARIO_INTERNO", "Comentário Interno"),
+    ]
+
+    SOURCE_CHOICES = [
+        ("internal",  "Interno DSCar"),
+        ("cilia",     "Cilia"),
+        ("hdi",       "HDI"),
+        ("xml_porto", "XML Porto"),
+        ("xml_azul",  "XML Azul"),
+        ("xml_itau",  "XML Itaú"),
+    ]
+
+    service_order = models.ForeignKey(
+        ServiceOrder, on_delete=models.CASCADE, related_name="pareceres",
+    )
+    version = models.ForeignKey(
+        ServiceOrderVersion, on_delete=models.CASCADE,
+        null=True, blank=True, related_name="pareceres",
+    )
+    source = models.CharField(max_length=20, choices=SOURCE_CHOICES)
+    flow_number = models.IntegerField(null=True, blank=True)
+    author_external = models.CharField(max_length=120, blank=True, default="")
+    author_org = models.CharField(max_length=120, blank=True, default="")
+    author_internal = models.CharField(max_length=120, blank=True, default="")
+    parecer_type = models.CharField(max_length=30, choices=PARECER_TYPE_CHOICES, blank=True, default="")
+    body = models.TextField()
+    created_at_external = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Parecer de OS"
+        verbose_name_plural = "Pareceres de OS"
+
+    def __str__(self) -> str:
+        return f"Parecer {self.source} · {self.parecer_type or 'interno'}"
+
+
+class ImpactAreaLabel(models.Model):
+    """Label textual das áreas de impacto (1=Frontal, 2=Lateral direita, …)."""
+
+    service_order = models.ForeignKey(
+        ServiceOrder, on_delete=models.CASCADE, related_name="area_labels",
+    )
+    area_number = models.IntegerField()
+    label_text = models.CharField(max_length=100)
+
+    class Meta:
+        unique_together = [("service_order", "area_number")]
+        verbose_name = "Label de Área de Impacto"
+        verbose_name_plural = "Labels de Áreas de Impacto"
+
+    def __str__(self) -> str:
+        return f"Área {self.area_number}: {self.label_text}"
