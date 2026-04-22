@@ -1,4 +1,4 @@
-import { LayoutDashboard, ClipboardList, Trello, Users, Package, Settings, LogOut, Wallet, FileText, Wrench, Calendar } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, Trello, Users, Package, Settings, LogOut, Wallet, FileText, Wrench, Calendar, Download } from 'lucide-react';
 import { cn } from '../utils';
 import { EmployeeRole } from '../types';
 
@@ -20,6 +20,8 @@ export function Sidebar({ currentView, setCurrentView, userRole, onLogout }: Sid
     { id: 'invoicing', label: 'Faturamento', icon: FileText, roles: ['Administrador'] },
     { id: 'people', label: 'Pessoas', icon: Users, roles: ['Administrador', 'Consultor'] },
     { id: 'inventory', label: 'Estoque', icon: Package, roles: ['Administrador', 'Consultor'] },
+    { id: 'budgets', label: 'Orçamentos', icon: FileText, roles: ['Administrador', 'Consultor'] },
+    { id: 'imports', label: 'Importar Seguradora', icon: Download, roles: ['Administrador', 'Consultor'] },
   ];
 
   const filteredMenuItems = menuItems.filter(item => 

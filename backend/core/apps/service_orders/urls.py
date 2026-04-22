@@ -1,9 +1,18 @@
-from rest_framework.routers import DefaultRouter
+from rest_framework_nested import routers
 
-from .views import ServiceOrderViewSet
+from apps.payments.views import PaymentViewSet
+
+from .views import ServiceOrderVersionViewSet, ServiceOrderViewSet
+from .views_insurer import InsurerViewSet
 
 
-router = DefaultRouter()
-router.register(r"", ServiceOrderViewSet, basename="service-order")
+router = routers.SimpleRouter()
+router.register(r"insurers", InsurerViewSet, basename="insurer")
+router.register(r"service-orders", ServiceOrderViewSet, basename="service-order")
 
-urlpatterns = router.urls
+os_router = routers.NestedSimpleRouter(router, r"service-orders", lookup="service_order")
+os_router.register(r"versions", ServiceOrderVersionViewSet, basename="os-version")
+os_router.register(r"payments", PaymentViewSet, basename="os-payment")
+
+
+urlpatterns = router.urls + os_router.urls

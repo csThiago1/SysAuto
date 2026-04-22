@@ -21,6 +21,14 @@ INSTALLED_APPS = [
     "apps.persons",
     "apps.service_orders",
     "apps.vehicles",
+    "apps.items",
+    "apps.authz",
+    "apps.budgets",
+    "apps.payments",
+    "apps.pdf_engine",
+    "apps.imports",
+    "apps.signatures",
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -109,13 +117,23 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 25,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 20,
+}
+
+# ── OpenAPI / drf-spectacular ─────────────────────────────────────────────────
+SPECTACULAR_SETTINGS = {
+    "TITLE": "ERP DS Car API",
+    "DESCRIPTION": "API do módulo de orçamentação — Paddock Solutions",
+    "VERSION": "0.2.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 # ── JWT ───────────────────────────────────────────────────────────────────────
@@ -136,3 +154,9 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
 ).split(",")
 
 CORS_ALLOW_CREDENTIALS = True
+
+# ── Cilia API ─────────────────────────────────────────────────────────────────
+CILIA_BASE_URL = os.getenv("CILIA_BASE_URL", "https://sistema.cilia.com.br")
+CILIA_AUTH_TOKEN = os.getenv("CILIA_AUTH_TOKEN", "")
+CILIA_TIMEOUT_SECONDS = int(os.getenv("CILIA_TIMEOUT_SECONDS", "30"))
+CILIA_POLLING_INTERVAL_MINUTES = int(os.getenv("CILIA_POLLING_INTERVAL_MINUTES", "15"))
