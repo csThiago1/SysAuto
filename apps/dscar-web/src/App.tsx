@@ -13,13 +13,14 @@ import { LoginScreen } from './components/LoginScreen';
 import { BudgetList } from './components/Budget/BudgetList';
 import { BudgetDetail } from './components/Budget/BudgetDetail';
 import { OSDetailV2 } from './components/ServiceOrderV2/OSDetailV2';
+import { CiliaImporter } from './components/CiliaImporter/CiliaImporter';
 import { mockParts, mockInvoices } from './mockData';
 import { ServiceOrder, OSStatus, Invoice, Part, OSTemplate, Person } from './types';
 import { useAuth } from './AuthContext';
 import { useServiceOrders } from './hooks/useServiceOrders';
 import { usePersons } from './hooks/usePersons';
 
-type SimpleView = 'dashboard' | 'os' | 'agenda' | 'kanban' | 'workshop' | 'finance' | 'invoicing' | 'people' | 'inventory' | 'budgets';
+type SimpleView = 'dashboard' | 'os' | 'agenda' | 'kanban' | 'workshop' | 'finance' | 'invoicing' | 'people' | 'inventory' | 'budgets' | 'imports';
 type DetailView = { type: 'budget-detail'; budgetId: number } | { type: 'os-v2'; osId: number };
 type AppView = SimpleView | DetailView;
 
@@ -182,6 +183,12 @@ export default function App() {
             onOpen={(id) => setCurrentView({ type: 'budget-detail', budgetId: id })}
           />
         );
+      case 'imports':
+        return (
+          <CiliaImporter
+            onOpenServiceOrder={(osId) => setCurrentView({ type: 'os-v2', osId })}
+          />
+        );
       default:
         return <Dashboard orders={orders} people={people} parts={parts} />;
     }
@@ -225,6 +232,7 @@ export default function App() {
                   people: 'Pessoas',
                   inventory: 'Estoque',
                   budgets: 'Orçamentos',
+                  imports: 'Importar Seguradora',
                   'budget-detail': 'Detalhe do Orçamento',
                   'os-v2': 'Ordem de Serviço',
                 };
