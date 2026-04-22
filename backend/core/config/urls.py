@@ -34,6 +34,7 @@ urlpatterns = [
     path("api/v1/accounts-receivable/", include("apps.accounts_receivable.urls")),
     path("api/v1/quotes/", include("apps.quotes.urls")),
     path("api/v1/pricing/", include("apps.pricing_benchmark.urls")),
+    path("api/v1/signatures/", include("apps.signatures.urls")),
     # MO-9: Capacidade + Variâncias
     path("api/v1/capacidade/", include("apps.service_orders.urls_capacidade")),
     path("api/v1/pricing/variancias/", include("apps.pricing_tech.urls_variancia")),

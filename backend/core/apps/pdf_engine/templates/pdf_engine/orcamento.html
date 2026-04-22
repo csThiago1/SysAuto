@@ -1,0 +1,117 @@
+{% extends "pdf_engine/base.html" %}
+
+{% block title %}Orçamento {{ orcamento.numero }}{% endblock %}
+
+{% block content %}
+    <div class="section">
+        <h2>Orçamento {{ orcamento.numero }} — v{{ orcamento.versao }}</h2>
+        <table>
+            <tr>
+                <td style="width: 50%;">
+                    <strong>Cliente:</strong> {{ orcamento.customer_name }}<br>
+                    <span class="muted">Responsabilidade: {{ orcamento.get_tipo_responsabilidade_display }}</span>
+                </td>
+                <td style="width: 50%;">
+                    <strong>Veículo:</strong> {{ orcamento.vehicle_description|default:"—" }}<br>
+                    <span class="muted">Placa: {{ orcamento.vehicle_plate|default:"—" }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Emissão:</strong> {{ orcamento.created_at|date:"d/m/Y H:i" }}</td>
+                <td><strong>Status:</strong> {{ orcamento.get_status_display }}</td>
+            </tr>
+            {% if orcamento.insurer %}
+            <tr>
+                <td><strong>Seguradora:</strong> {{ orcamento.insurer.name }}</td>
+                <td></td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Intervenções</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Área</th>
+                    <th>Peça</th>
+                    <th>Ação</th>
+                    <th class="right">Qtd</th>
+                    <th class="right">Unit.</th>
+                    <th class="right">Desc%</th>
+                    <th class="right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in intervencoes %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ i.area.nome|default:"Geral" }}</td>
+                    <td>{{ i.peca.nome|default:"—" }}</td>
+                    <td>{{ i.get_acao_display }}</td>
+                    <td class="right">{{ i.quantidade }}</td>
+                    <td class="right">R$ {{ i.preco_unitario|floatformat:2 }}</td>
+                    <td class="right">{{ i.desconto_pct|default:0 }}%</td>
+                    <td class="right"><strong>R$ {{ i.total|floatformat:2 }}</strong></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="muted">Nenhuma intervenção registrada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if itens_adicionais %}
+    <div class="section">
+        <h2>Serviços Adicionais</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Descrição</th>
+                    <th class="right">Unit.</th>
+                    <th class="right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in itens_adicionais %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.descricao }}</td>
+                    <td class="right">R$ {{ item.preco_unitario|floatformat:2 }}</td>
+                    <td class="right"><strong>R$ {{ item.total|floatformat:2 }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <div class="totals">
+        <table>
+            {% if totals.discount %}
+            <tr>
+                <td>Subtotal</td>
+                <td class="right">R$ {{ totals.subtotal|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Desconto</td>
+                <td class="right">− R$ {{ totals.discount|floatformat:2 }}</td>
+            </tr>
+            {% endif %}
+            <tr class="total-row">
+                <td>TOTAL</td>
+                <td class="right">R$ {{ totals.total|floatformat:2 }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section" style="margin-top: 2em;">
+        <p class="muted" style="font-size: 10px;">
+            Orçamento gerado em {{ orcamento.created_at|date:"d/m/Y" }}.
+            Aprovação pode ser registrada via WhatsApp ou presencialmente com assinatura.
+        </p>
+    </div>
+{% endblock %}
