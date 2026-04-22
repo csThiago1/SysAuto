@@ -1,17 +1,29 @@
 // apps/dscar-web/src/components/ServiceOrderV2/OSDetailV2.tsx
 import { useState } from 'react';
+import { PenLine } from 'lucide-react';
 import { useServiceOrderV2 } from '../../hooks/useServiceOrderV2';
 import { OSTimeline } from './OSTimeline';
 import { OSVersionsTab } from './OSVersionsTab';
 import { OSPaymentsTab } from './OSPaymentsTab';
 import { OSComplementForm } from './OSComplementForm';
+import { SignatureCaptureDialog } from '../Signature/SignatureCaptureDialog';
 import { formatBRL } from '../../utils/format';
+import type { SignatureDocumentType } from '../../schemas/signatures';
 
 type Tab = 'versions' | 'timeline' | 'payments' | 'complement';
+
+const SIG_OPTIONS: Array<{ type: SignatureDocumentType; label: string }> = [
+  { type: 'OS_OPEN', label: 'Recepção do Veículo' },
+  { type: 'OS_DELIVERY', label: 'Entrega do Veículo' },
+  { type: 'COMPLEMENT_APPROVAL', label: 'Aprovação de Complemento' },
+  { type: 'INSURANCE_ACCEPTANCE', label: 'Aceite da Seguradora' },
+];
 
 export function OSDetailV2({ osId }: { osId: number }) {
   const { data: os, isLoading, error } = useServiceOrderV2(osId);
   const [tab, setTab] = useState<Tab>('versions');
+  const [signatureOpt, setSignatureOpt] = useState<SignatureDocumentType | null>(null);
+  const [sigMenuOpen, setSigMenuOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -55,8 +67,45 @@ export function OSDetailV2({ osId }: { osId: number }) {
           <div className="text-sm text-slate-500">Status Kanban</div>
           <div className="text-lg font-semibold">{os.status_display}</div>
           {v && <div className="text-xl font-bold text-red-600 mt-1">{formatBRL(v.net_total)}</div>}
+
+          <div className="relative mt-3">
+            <button
+              onClick={() => setSigMenuOpen((s) => !s)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 text-white text-sm rounded hover:bg-slate-800"
+            >
+              <PenLine size={14} />
+              Capturar assinatura
+            </button>
+            {sigMenuOpen && (
+              <div className="absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded shadow-lg z-10">
+                {SIG_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.type}
+                    onClick={() => {
+                      setSignatureOpt(opt.type);
+                      setSigMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {signatureOpt && (
+        <SignatureCaptureDialog
+          documentType={signatureOpt}
+          documentTypeLabel={
+            SIG_OPTIONS.find((o) => o.type === signatureOpt)?.label ?? signatureOpt
+          }
+          serviceOrderId={osId}
+          onClose={() => setSignatureOpt(null)}
+        />
+      )}
 
       <div className="flex gap-1 border-b border-slate-200 mb-4">
         {(['versions', 'timeline', 'payments', 'complement'] as Tab[]).map((t) => (

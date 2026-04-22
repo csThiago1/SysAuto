@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "apps.payments",
     "apps.pdf_engine",
     "apps.imports",
+    "apps.signatures",
     "drf_spectacular",
 ]
 
