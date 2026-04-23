@@ -45,14 +45,14 @@ class AuthzAPITestCase(TenantTestCase):
         resp = self.client.post("/api/v1/authz/user-roles/", {"user": user2.id, "role": role.id}, format="json")
         assert resp.status_code == 201
 
-    def test_create_user_role_as_storekeeper_forbidden(self) -> None:
-        # STOREKEEPER role — role ausente no token → _get_role retorna STOREKEEPER → bloqueado
+    def test_create_user_role_as_consultant_forbidden(self) -> None:
+        # CONSULTANT role — role ausente no token → _get_role retorna CONSULTANT → bloqueado
         low_priv_user = make_user("storekeeper@x.com")
         low_client = APIClient()
         low_client.defaults["SERVER_NAME"] = self.domain.domain
         low_client.defaults["HTTP_HOST"] = self.domain.domain
-        # Sem role no token → _get_role → STOREKEEPER < ADMIN → 403
-        low_client.force_authenticate(user=low_priv_user, token={"role": "STOREKEEPER"})
+        # Sem role no token → _get_role → CONSULTANT < ADMIN → 403
+        low_client.force_authenticate(user=low_priv_user, token={"role": "CONSULTANT"})
         role = Role.objects.get_or_create(code="MECHANIC", defaults={"label": "Mecânico"})[0]
         resp = low_client.post("/api/v1/authz/user-roles/", {"user": low_priv_user.id, "role": role.id}, format="json")
         assert resp.status_code == 403
