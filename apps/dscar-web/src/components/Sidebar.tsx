@@ -41,6 +41,7 @@ import {
   Percent,
   Layers,
   FileText,
+  ReceiptText,
   BarChart3,
   Database,
   TrendingUp,
@@ -116,6 +117,12 @@ const NAV_SECTIONS: NavSection[] = [
         label: "Orçamentos",
         icon: FileText,
         href: "/orcamentos",
+      },
+      {
+        id: "orcamentos-particulares",
+        label: "Orç. Particulares",
+        icon: ReceiptText,
+        href: "/orcamentos-particulares",
       },
       {
         id: "cadastros",
