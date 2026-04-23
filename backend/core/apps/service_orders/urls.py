@@ -37,5 +37,6 @@ urlpatterns = [
     path("versions/", include(versions_router.urls)),
     path("events/", include(events_router.urls)),
     path("pareceres/", include(pareceres_router.urls)),
+    path("<uuid:service_order_pk>/payments/", include("apps.payments.urls")),
     path("", include(router.urls)),
 ]
