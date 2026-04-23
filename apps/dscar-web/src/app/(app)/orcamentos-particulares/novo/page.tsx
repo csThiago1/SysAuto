@@ -9,8 +9,27 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useQuery } from "@tanstack/react-query"
 import { useCreateBudget } from "@/hooks/useBudgets"
-import { useCustomers } from "@/hooks/useCustomers"
+
+interface PersonResult {
+  id: number
+  full_name: string
+}
+
+function usePersonSearch(search: string) {
+  return useQuery({
+    queryKey: ["persons", "search", search],
+    queryFn: async () => {
+      const res = await fetch(`/api/proxy/persons/?search=${encodeURIComponent(search)}`)
+      if (!res.ok) throw new Error("Erro ao buscar pessoas")
+      const data = await res.json() as { results?: PersonResult[] } | PersonResult[]
+      if (!Array.isArray(data) && "results" in data) return data.results ?? []
+      return data as PersonResult[]
+    },
+    enabled: search.length >= 2,
+  })
+}
 
 export default function NovoBudgetPage() {
   const router = useRouter()
@@ -18,9 +37,8 @@ export default function NovoBudgetPage() {
 
   // Cliente
   const [clienteSearch, setClienteSearch]   = useState("")
-  const [clienteSelecionado, setClienteSel] = useState<{ id: string; name: string } | null>(null)
-  const { data: clientesData }              = useCustomers(clienteSearch)
-  const clientes                            = clientesData?.results ?? []
+  const [clienteSelecionado, setClienteSel] = useState<{ id: number; name: string } | null>(null)
+  const { data: clientes = [] }             = usePersonSearch(clienteSearch)
 
   // Veículo
   const [placa, setPlaca]         = useState("")
@@ -42,7 +60,7 @@ export default function NovoBudgetPage() {
     }
     try {
       const budget = await criar({
-        customer_id:         Number(clienteSelecionado.id),
+        customer_id:         clienteSelecionado.id,
         vehicle_plate:       placa.toUpperCase().trim(),
         vehicle_description: descricao.trim(),
       })
@@ -100,11 +118,11 @@ export default function NovoBudgetPage() {
                         type="button"
                         className="w-full text-left px-3 py-2 text-sm text-white/80 hover:bg-white/5"
                         onClick={() => {
-                          setClienteSel({ id: c.id, name: c.name })
+                          setClienteSel({ id: c.id, name: c.full_name })
                           setClienteSearch("")
                         }}
                       >
-                        {c.name}
+                        {c.full_name}
                       </button>
                     </li>
                   ))}
