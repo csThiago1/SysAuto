@@ -729,6 +729,44 @@ class ServiceOrderService:
         )
         return labor
 
+    @classmethod
+    @transaction.atomic
+    def create_from_budget(cls, *, version: Any) -> "ServiceOrder":
+        """Cria ServiceOrder particular a partir de uma BudgetVersion aprovada.
+
+        Args:
+            version: BudgetVersion. budget.customer deve estar acessível via FK.
+
+        Returns:
+            ServiceOrder recém-criada vinculada ao Budget.
+        """
+        from apps.service_orders.models import ServiceOrder
+        from apps.service_orders.events import OSEventLogger
+
+        budget = version.budget
+        customer = budget.customer
+
+        os_instance = ServiceOrder.objects.create(
+            number=cls.get_next_number(),
+            customer_name=getattr(customer, "full_name", "") or "",
+            plate=budget.vehicle_plate,
+            make=budget.vehicle_description,
+            customer_type="private",
+            status="reception",
+        )
+
+        OSEventLogger.log_event(
+            os_instance,
+            "BUDGET_LINKED",
+            actor="Sistema",
+            payload={
+                "budget_number": budget.number,
+                "version_number": version.version_number,
+            },
+            swallow_errors=True,
+        )
+        return os_instance
+
 
 class ServiceOrderDeliveryService:
     """Lógica de entrega da OS ao cliente."""

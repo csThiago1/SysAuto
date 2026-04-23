@@ -86,3 +86,49 @@ class PDFService:
             Chave S3 no formato orcamentos/<numero>/v<n>-<uuid>.pdf
         """
         return f"orcamentos/{numero}/v{versao}-{uuid.uuid4().hex[:8]}.pdf"
+
+    @classmethod
+    def render_budget(cls, version: Any) -> bytes:
+        """Renderiza PDF de orçamento particular (budgets.BudgetVersion).
+
+        Args:
+            version: BudgetVersion com items acessíveis via FK.
+
+        Returns:
+            bytes do PDF (WeasyPrint) ou bytes do HTML (fallback quando libs ausentes).
+        """
+        items = version.items.all()
+        html = render_to_string("pdf_engine/budget.html", {
+            "version": version,
+            "budget": version.budget,
+            "customer": version.budget.customer,
+            "items": items,
+            "totals": {
+                "subtotal": version.subtotal,
+                "discount": version.discount_total,
+                "total": version.net_total,
+                "labor": version.labor_total,
+                "parts": version.parts_total,
+            },
+        })
+        try:
+            from weasyprint import HTML
+            buf = BytesIO()
+            HTML(string=html).write_pdf(buf)
+            return buf.getvalue()
+        except Exception as exc:
+            logger.warning("WeasyPrint indisponível, retornando HTML bytes: %s", exc)
+            return html.encode("utf-8")
+
+    @classmethod
+    def budget_pdf_key(cls, budget_number: str, version_number: int) -> str:
+        """Gera S3 key para o PDF do orçamento particular.
+
+        Args:
+            budget_number: número do orçamento (ex: ORC-2026-000001).
+            version_number: número da versão (ex: 1).
+
+        Returns:
+            Chave S3 no formato budgets/<number>/v<n>-<uuid>.pdf
+        """
+        return f"budgets/{budget_number}/v{version_number}-{uuid.uuid4().hex[:8]}.pdf"
