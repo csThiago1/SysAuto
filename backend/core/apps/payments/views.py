@@ -1,4 +1,5 @@
 """payments.views — ViewSet aninhado sob ServiceOrder."""
+import logging
 from decimal import Decimal
 
 from rest_framework import status, viewsets
@@ -13,6 +14,8 @@ from .models import Payment
 from .serializers import PaymentSerializer
 from .services import PaymentService
 
+logger = logging.getLogger(__name__)
+
 
 class PaymentViewSet(viewsets.GenericViewSet):
     """Pagamentos aninhados sob uma OS específica."""
@@ -26,7 +29,11 @@ class PaymentViewSet(viewsets.GenericViewSet):
 
     def list(self, request: Request, service_order_pk: str | None = None) -> Response:
         """Lista pagamentos da OS especificada."""
-        qs = Payment.objects.filter(
+        os_exists = ServiceOrder.objects.filter(pk=service_order_pk, is_active=True).exists()
+        if not os_exists:
+            return Response({"detail": "OS não encontrada."}, status=status.HTTP_404_NOT_FOUND)
+
+        qs = Payment.objects.select_related("service_order").filter(
             service_order_id=service_order_pk,
             service_order__is_active=True,
         ).order_by("-created_at")
@@ -41,7 +48,7 @@ class PaymentViewSet(viewsets.GenericViewSet):
         """Registra pagamento na OS especificada via PaymentService."""
         os_instance = ServiceOrder.objects.filter(pk=service_order_pk, is_active=True).first()
         if os_instance is None:
-            return Response({"detail": "OS não encontrada."}, status=404)
+            return Response({"detail": "OS não encontrada."}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -55,4 +62,4 @@ class PaymentViewSet(viewsets.GenericViewSet):
             reference=d.get("reference", ""),
             received_by=d.get("received_by", ""),
         )
-        return Response(PaymentSerializer(payment).data, status=status.HTTP_201_CREATED)
+        return Response(self.get_serializer(payment).data, status=status.HTTP_201_CREATED)
