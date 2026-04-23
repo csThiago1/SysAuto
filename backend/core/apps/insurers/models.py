@@ -23,6 +23,15 @@ class Insurer(models.Model):
     trade_name = models.CharField(
         max_length=200, blank=True, default="", verbose_name="Nome fantasia"
     )
+    code = models.CharField(
+        max_length=40,
+        unique=True,
+        null=True,
+        blank=True,
+        default=None,
+        db_index=True,
+        verbose_name="Código interno",
+    )
     cnpj = models.CharField(max_length=18, unique=True, verbose_name="CNPJ")
     brand_color = models.CharField(
         max_length=7,
