@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ReceiptText, ChevronLeft, Search, X } from "lucide-react"
 import Link from "next/link"
@@ -17,6 +17,14 @@ interface PersonResult {
   full_name: string
 }
 
+interface PlateData {
+  plate: string
+  make: string
+  model: string
+  year: number | null
+  chassis: string
+}
+
 function usePersonSearch(search: string) {
   return useQuery({
     queryKey: ["persons", "search", search],
@@ -31,6 +39,21 @@ function usePersonSearch(search: string) {
   })
 }
 
+function usePlateLookup(plate: string) {
+  const normalized = plate.replace(/[^A-Z0-9]/gi, "").toUpperCase()
+  return useQuery<PlateData>({
+    queryKey: ["plate", normalized],
+    queryFn: async () => {
+      const res = await fetch(`/api/plate/${normalized}`)
+      if (!res.ok) throw new Error("Placa não encontrada")
+      return res.json() as Promise<PlateData>
+    },
+    enabled: normalized.length >= 7,
+    retry: false,
+    staleTime: 1000 * 60 * 60 * 24, // 24h
+  })
+}
+
 export default function NovoBudgetPage() {
   const router = useRouter()
   const { mutateAsync: criar, isPending } = useCreateBudget()
@@ -41,28 +64,38 @@ export default function NovoBudgetPage() {
   const { data: clientes = [] }             = usePersonSearch(clienteSearch)
 
   // Veículo
-  const [placa, setPlaca]         = useState("")
-  const [descricao, setDescricao] = useState("")
+  const [placa,  setPlaca]  = useState("")
+  const [marca,  setMarca]  = useState("")
+  const [modelo, setModelo] = useState("")
+  const [ano,    setAno]    = useState("")
+  const [chassi, setChassi] = useState("")
+
+  const { data: plateData, isFetching: buscandoPlaca, isError: placaNaoEncontrada } =
+    usePlateLookup(placa)
+
+  useEffect(() => {
+    if (!plateData) return
+    if (plateData.make)    setMarca(plateData.make)
+    if (plateData.model)   setModelo(plateData.model)
+    if (plateData.year)    setAno(String(plateData.year))
+    if (plateData.chassis) setChassi(plateData.chassis)
+    toast.success("Dados do veículo preenchidos pela placa!")
+  }, [plateData])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!clienteSelecionado) {
-      toast.error("Selecione um cliente.")
+    if (!clienteSelecionado) { toast.error("Selecione um cliente."); return }
+    if (!placa.trim())        { toast.error("Informe a placa do veículo."); return }
+    if (!marca.trim() || !modelo.trim()) {
+      toast.error("Informe marca e modelo do veículo.")
       return
     }
-    if (!placa.trim()) {
-      toast.error("Informe a placa do veículo.")
-      return
-    }
-    if (!descricao.trim()) {
-      toast.error("Informe a descrição do veículo.")
-      return
-    }
+    const descricao = [marca, modelo, ano].filter(Boolean).join(" ").trim()
     try {
       const budget = await criar({
         customer_id:         clienteSelecionado.id,
         vehicle_plate:       placa.toUpperCase().trim(),
-        vehicle_description: descricao.trim(),
+        vehicle_description: descricao,
       })
       toast.success(`Orçamento ${budget.number} criado!`)
       router.push(`/orcamentos-particulares/${budget.id}` as Route)
@@ -132,30 +165,78 @@ export default function NovoBudgetPage() {
           )}
         </div>
 
-        {/* Placa */}
-        <div className="space-y-2">
-          <Label className="text-white/70">Placa do veículo</Label>
-          <Input
-            placeholder="ABC1D23"
-            value={placa}
-            onChange={(e) => setPlaca(e.target.value.toUpperCase())}
-            maxLength={8}
-            className="bg-white/5 border-white/10 text-white placeholder:text-white/30 font-mono uppercase"
-          />
+        {/* Veículo */}
+        <div className="space-y-3 rounded-xl border border-white/10 bg-white/[0.02] p-4">
+          <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Veículo</p>
+
+          {/* Placa */}
+          <div className="space-y-1.5">
+            <Label className="text-white/70 text-xs">Placa</Label>
+            <div className="flex items-center gap-3">
+              <Input
+                placeholder="ABC1D23"
+                value={placa}
+                onChange={(e) => setPlaca(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+                maxLength={8}
+                className="w-32 bg-white/5 border-white/10 text-white placeholder:text-white/30 font-mono uppercase tracking-widest font-bold"
+              />
+              {buscandoPlaca && (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/15 border-t-primary-600" />
+              )}
+              {placaNaoEncontrada && placa.length >= 7 && !buscandoPlaca && (
+                <span className="text-xs text-warning-400">Não encontrada — preencha manualmente</span>
+              )}
+            </div>
+          </div>
+
+          {/* Montadora + Modelo */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-white/70 text-xs">Montadora *</Label>
+              <Input
+                placeholder="Honda"
+                value={marca}
+                onChange={(e) => setMarca(e.target.value)}
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-white/70 text-xs">Modelo *</Label>
+              <Input
+                placeholder="Civic"
+                value={modelo}
+                onChange={(e) => setModelo(e.target.value)}
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+              />
+            </div>
+          </div>
+
+          {/* Ano + Chassi */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-white/70 text-xs">Ano</Label>
+              <Input
+                placeholder="2024"
+                value={ano}
+                onChange={(e) => setAno(e.target.value)}
+                maxLength={4}
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-white/70 text-xs">Chassi</Label>
+              <Input
+                placeholder="17 caracteres"
+                value={chassi}
+                onChange={(e) => setChassi(e.target.value)}
+                maxLength={17}
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/30 font-mono text-xs"
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Descrição */}
-        <div className="space-y-2">
-          <Label className="text-white/70">Descrição do veículo</Label>
-          <Input
-            placeholder="Ex: Toyota Corolla 2020 XEI"
-            value={descricao}
-            onChange={(e) => setDescricao(e.target.value)}
-            className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
-          />
-        </div>
-
-        <Button type="submit" disabled={isPending} className="w-full">
+        <Button type="submit" disabled={isPending || buscandoPlaca} className="w-full">
           {isPending ? "Criando..." : "Criar Orçamento"}
         </Button>
       </form>

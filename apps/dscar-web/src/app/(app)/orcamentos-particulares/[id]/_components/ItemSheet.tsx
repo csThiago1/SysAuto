@@ -31,20 +31,25 @@ interface Props {
 }
 
 const OPERATION_TYPE_OPTIONS = [
-  { code: "FUNILARIA",      label: "Funilaria" },
-  { code: "PINTURA",        label: "Pintura" },
-  { code: "MECANICA",       label: "Mecânica" },
-  { code: "ELETRICA",       label: "Elétrica" },
-  { code: "INST_PECA",      label: "Instalação de Peça" },
-  { code: "REMOCAO_INSTAL", label: "Remoção/Instalação" },
+  { code: "TROCA",               label: "Troca" },
+  { code: "RECUPERACAO",         label: "Recuperação" },
+  { code: "OVERLAP",             label: "Overlap" },
+  { code: "PINTURA",             label: "Pintura" },
+  { code: "R_I",                 label: "Remoção e Instalação" },
+  { code: "MONTAGEM_DESMONTAGEM", label: "Montagem/Desmontagem" },
+  { code: "DNC",                 label: "DNC" },
 ]
 
 const LABOR_CATEGORY_OPTIONS = [
-  { code: "FUNILEIRO",   label: "Funileiro" },
-  { code: "PINTOR",      label: "Pintor" },
-  { code: "MECANICO",    label: "Mecânico" },
-  { code: "ELETRICISTA", label: "Eletricista" },
-  { code: "POLIDOR",     label: "Polidor" },
+  { code: "FUNILARIA",  label: "Funilaria" },
+  { code: "PINTURA",    label: "Pintura" },
+  { code: "MECANICA",   label: "Mecânica" },
+  { code: "ELETRICA",   label: "Elétrica" },
+  { code: "TAPECARIA",  label: "Tapeçaria" },
+  { code: "ACABAMENTO", label: "Acabamento" },
+  { code: "VIDRACARIA", label: "Vidraçaria" },
+  { code: "REPARACAO",  label: "Reparação" },
+  { code: "SERVICOS",   label: "Serviços" },
 ]
 
 export function ItemSheet({ open, onOpenChange, budgetId, versionId, item }: Props) {
@@ -91,7 +96,7 @@ export function ItemSheet({ open, onOpenChange, budgetId, versionId, item }: Pro
   function addOperation() {
     setOperations((prev) => [
       ...prev,
-      { operation_type_code: "FUNILARIA", labor_category_code: "FUNILEIRO", hours: "1.00", hourly_rate: "80.00" },
+      { operation_type_code: "TROCA", labor_category_code: "FUNILARIA", hours: "1.00", hourly_rate: "80.00" },
     ])
   }
 
