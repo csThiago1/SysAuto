@@ -28,6 +28,7 @@ urlpatterns = [
     path("api/v1/pricing/fichas/", include("apps.pricing_tech.urls")),
     path("api/v1/pricing/engine/", include("apps.pricing_engine.urls")),
     path("api/v1/cilia/", include("apps.cilia.urls")),
+    path("api/v1/imports/", include("apps.imports.urls")),
     path("api/v1/hr/", include("apps.hr.urls")),
     path("api/v1/accounting/", include("apps.accounting.urls")),
     path("api/v1/accounts-payable/", include("apps.accounts_payable.urls")),
