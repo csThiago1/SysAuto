@@ -71,6 +71,7 @@ TENANT_APPS = [
     "apps.signatures",
     "apps.pdf_engine",
     "apps.items",
+    "apps.authz",
 ]
 
 INSTALLED_APPS = list(set(SHARED_APPS + TENANT_APPS))
