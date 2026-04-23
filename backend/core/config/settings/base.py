@@ -72,6 +72,7 @@ TENANT_APPS = [
     "apps.pdf_engine",
     "apps.items",
     "apps.authz",
+    "apps.vehicles",
 ]
 
 INSTALLED_APPS = list(set(SHARED_APPS + TENANT_APPS))
@@ -317,3 +318,8 @@ AI_HEAVY_MODEL = "claude-opus-4-5"
 # ─── Cilia Web Service ───────────────────────────────────────────────────────
 CILIA_BASE_URL = config("CILIA_BASE_URL", default="https://sistema.cilia.com.br")
 CILIA_AUTH_TOKEN = config("CILIA_AUTH_TOKEN", default="")
+
+# ─── API Placas ───────────────────────────────────────────────────────────────
+APIPLACAS_TOKEN = config("APIPLACAS_TOKEN", default="")
+APIPLACAS_URL = "https://apiplacas.com.br/api/v1/placa"
+APIPLACAS_TIMEOUT = 8.0
