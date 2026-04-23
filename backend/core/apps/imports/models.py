@@ -54,7 +54,7 @@ class ImportAttempt(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="imports_attempts",
+        related_name="imports_version_attempts",
     )
     duplicate_of = models.ForeignKey(
         "self",
