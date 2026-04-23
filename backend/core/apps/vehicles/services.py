@@ -7,9 +7,10 @@ from typing import Any
 import httpx
 from django.conf import settings
 
-logger = logging.getLogger(__name__)
+from .models import Vehicle
+from apps.vehicle_catalog.models import VehicleYearVersion
 
-_TIMEOUT = getattr(settings, "APIPLACAS_TIMEOUT", 8.0)
+logger = logging.getLogger(__name__)
 
 
 class VehicleService:
@@ -35,7 +36,6 @@ class VehicleService:
         plate = plate.upper().strip().replace("-", "").replace(" ", "")
 
         # 1. DB-first
-        from .models import Vehicle
         existing = Vehicle.objects.filter(plate=plate, is_active=True).first()
         if existing:
             return {
@@ -54,12 +54,13 @@ class VehicleService:
             logger.warning("APIPLACAS_TOKEN/URL não configurados — lookup desabilitado.")
             return None
 
+        timeout = getattr(settings, "APIPLACAS_TIMEOUT", 8.0)
         try:
             response = httpx.get(
                 url,
                 params={"placa": plate},
                 headers={"Authorization": f"Bearer {token}"},
-                timeout=_TIMEOUT,
+                timeout=timeout,
             )
             response.raise_for_status()
             data = response.json()
@@ -71,7 +72,6 @@ class VehicleService:
         fipe_code = data.get("codigoFipe") or data.get("fipe_code") or ""
         version = None
         if fipe_code:
-            from apps.vehicle_catalog.models import VehicleYearVersion
             version = VehicleYearVersion.objects.filter(codigo_fipe=fipe_code).first()
 
         # 4. Extrai dados da resposta
