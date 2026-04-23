@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name="Permission",
             fields=[
                 ("id", models.BigAutoField(auto_created=True, primary_key=True)),
-                ("code", models.CharField(max_length=60, unique=True, db_index=True)),
+                ("code", models.CharField(max_length=60, unique=True)),
                 ("label", models.CharField(max_length=200)),
                 ("module", models.CharField(max_length=40, db_index=True)),
             ],
@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
             name="Role",
             fields=[
                 ("id", models.BigAutoField(auto_created=True, primary_key=True)),
-                ("code", models.CharField(max_length=40, unique=True, db_index=True)),
+                ("code", models.CharField(max_length=40, unique=True)),
                 ("label", models.CharField(max_length=100)),
                 ("description", models.TextField(blank=True, default="")),
             ],

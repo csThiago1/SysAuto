@@ -3,9 +3,12 @@ from django.db import models
 
 
 class Permission(models.Model):
-    """Permissão nomeada. Ex: 'budget.approve', 'os.cancel', 'payment.record'."""
+    """Permissão nomeada. Ex: 'budget.approve', 'os.cancel', 'payment.record'.
 
-    code = models.CharField(max_length=60, unique=True, db_index=True)
+    Nota: usa models.Model simples (não PaddockBaseModel) — tabela de catálogo sem auditoria de criação necessária.
+    """
+
+    code = models.CharField(max_length=60, unique=True)
     label = models.CharField(max_length=200)
     module = models.CharField(max_length=40, db_index=True)
 
@@ -17,9 +20,12 @@ class Permission(models.Model):
 
 
 class Role(models.Model):
-    """Agrupamento de permissões. Seeds: OWNER, ADMIN, MANAGER, CONSULTANT, MECHANIC, FINANCIAL."""
+    """Agrupamento de permissões. Seeds: OWNER, ADMIN, MANAGER, CONSULTANT, MECHANIC, FINANCIAL.
 
-    code = models.CharField(max_length=40, unique=True, db_index=True)
+    Nota: usa models.Model simples (não PaddockBaseModel) — tabela de catálogo sem auditoria de criação necessária.
+    """
+
+    code = models.CharField(max_length=40, unique=True)
     label = models.CharField(max_length=100)
     description = models.TextField(blank=True, default="")
     permissions = models.ManyToManyField(Permission, through="RolePermission", related_name="roles")
@@ -37,6 +43,9 @@ class RolePermission(models.Model):
     class Meta:
         unique_together = [("role", "permission")]
 
+    def __str__(self) -> str:
+        return f"{self.role} → {self.permission}"
+
 
 class UserRole(models.Model):
     """Atribui Role a um GlobalUser no schema do tenant."""
@@ -48,6 +57,9 @@ class UserRole(models.Model):
 
     class Meta:
         unique_together = [("user", "role")]
+
+    def __str__(self) -> str:
+        return f"{self.user} → {self.role}"
 
 
 class UserPermission(models.Model):
@@ -61,3 +73,6 @@ class UserPermission(models.Model):
 
     class Meta:
         unique_together = [("user", "permission")]
+
+    def __str__(self) -> str:
+        return f"{self.user} → {self.permission} ({'grant' if self.granted else 'revoke'})"
