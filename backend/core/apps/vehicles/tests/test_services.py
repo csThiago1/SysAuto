@@ -53,6 +53,10 @@ class LookupPlateTest(TenantTestCase):
         assert result["plate"] == "XYZ9876"
         assert Vehicle.objects.filter(plate="XYZ9876").exists()
 
+    @override_settings(
+        APIPLACAS_TOKEN="test-token",
+        APIPLACAS_URL="https://apiplacas.com.br/api/v1/placa",
+    )
     def test_api_failure_returns_none(self) -> None:
         """API externa falha → retorna None sem propagar exceção."""
         with patch("apps.vehicles.services.httpx.get", side_effect=Exception("timeout")):
