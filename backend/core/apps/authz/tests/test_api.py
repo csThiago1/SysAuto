@@ -46,7 +46,7 @@ class AuthzAPITestCase(TenantTestCase):
         assert resp.status_code == 201
 
     def test_create_user_role_as_consultant_forbidden(self) -> None:
-        # CONSULTANT role — role ausente no token → _get_role retorna CONSULTANT → bloqueado
+        # CONSULTANT role is below ADMIN — write to user-roles/ must return 403
         low_priv_user = make_user("storekeeper@x.com")
         low_client = APIClient()
         low_client.defaults["SERVER_NAME"] = self.domain.domain

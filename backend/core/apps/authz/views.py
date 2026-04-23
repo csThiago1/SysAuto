@@ -36,9 +36,9 @@ class UserRoleViewSet(viewsets.ModelViewSet):
     serializer_class = UserRoleSerializer
 
     def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("list", "retrieve"):
-            return [IsAuthenticated(), IsConsultantOrAbove()]
-        return [IsAuthenticated(), IsAdminOrAbove()]
+        if self.action in ("create", "update", "partial_update", "destroy"):
+            return [IsAuthenticated(), IsAdminOrAbove()]
+        return [IsAuthenticated(), IsConsultantOrAbove()]
 
 
 class UserPermissionViewSet(viewsets.ModelViewSet):
@@ -48,6 +48,6 @@ class UserPermissionViewSet(viewsets.ModelViewSet):
     serializer_class = UserPermissionSerializer
 
     def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("list", "retrieve"):
-            return [IsAuthenticated(), IsConsultantOrAbove()]
-        return [IsAuthenticated(), IsAdminOrAbove()]
+        if self.action in ("create", "update", "partial_update", "destroy"):
+            return [IsAuthenticated(), IsAdminOrAbove()]
+        return [IsAuthenticated(), IsConsultantOrAbove()]
