@@ -196,7 +196,7 @@ class ManausNfseBuilder:
             "item_lista_servico": lc116_code,
             "discriminacao": discriminacao,
             "codigo_municipio": cls.MUNICIPIO_IBGE_MANAUS,
-            "aliquota": str(aliquota),
+            "aliquota": str(aliquota.quantize(Decimal("0.01"))),
         }
 
     @classmethod
@@ -246,8 +246,8 @@ class ManausNfseBuilder:
                 price = getattr(labor, "unit_price", 0)
                 if desc:
                     lines.append(f"Serviço: {desc} x{qty} = R${price}")
-        except Exception:
-            pass  # OS sem labor_items carregados — não travar a emissão
+        except AttributeError as exc:
+            logger.warning("ServiceOrder %s: labor_items não carregados: %s", os.pk, exc)
 
         # Peças (se parts_as_service) — related_name = "parts"
         if parts_as_service:
@@ -258,13 +258,14 @@ class ManausNfseBuilder:
                     price = getattr(part, "unit_price", 0)
                     if desc:
                         lines.append(f"Peça: {desc} x{qty} = R${price}")
-            except Exception:
-                pass
+            except AttributeError as exc:
+                logger.warning("ServiceOrder %s: parts não carregados: %s", os.pk, exc)
 
         text = "\n".join(lines)
         if len(text) > cls.DISCRIMINACAO_MAX:
             logger.warning(
-                "ManausNfseBuilder: discriminacao truncada de %d para %d chars",
+                "ServiceOrder %s: discriminacao truncada de %d para %d chars",
+                os.pk,
                 len(text),
                 cls.DISCRIMINACAO_MAX,
             )
