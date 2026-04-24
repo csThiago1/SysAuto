@@ -352,6 +352,7 @@ export function PersonFormModal({ open, onOpenChange, person }: PersonFormModalP
                 onClick={() => appendAddress({
                   address_type: "PRINCIPAL", zip_code: "", street: "",
                   number: "", complement: "", neighborhood: "", city: "", state: "",
+                  municipio_ibge: "",
                   is_primary: addressFields.length === 0,
                 })}>
                 + Adicionar
@@ -395,9 +396,23 @@ export function PersonFormModal({ open, onOpenChange, person }: PersonFormModalP
                     <Input {...register(`addresses.${index}.neighborhood`)} /></div>
                   <div><Label className="text-xs">Cidade</Label>
                     <Input {...register(`addresses.${index}.city`)} /></div>
-                  <div className="col-span-4">
+                  <div>
                     <Label className="text-xs">UF</Label>
                     <Input {...register(`addresses.${index}.state`)} maxLength={2} className="w-16" placeholder="AM" />
+                  </div>
+                  <div>
+                    <Label className="text-xs" title="Código IBGE do município (7 dígitos). Obrigatório para NFS-e.">
+                      Cód. IBGE
+                    </Label>
+                    <Input
+                      {...register(`addresses.${index}.municipio_ibge`, {
+                        maxLength: { value: 7, message: "Máximo 7 dígitos" },
+                        pattern: { value: /^\d{0,7}$/, message: "Apenas dígitos" },
+                      })}
+                      maxLength={7}
+                      placeholder="1302603"
+                      title="Código IBGE do município (7 dígitos). Ex: 1302603 para Manaus. Obrigatório para NFS-e."
+                    />
                   </div>
                 </div>
               </div>
