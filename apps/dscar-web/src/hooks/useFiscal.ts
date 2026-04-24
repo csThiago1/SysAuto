@@ -103,6 +103,51 @@ export function useEmitManualNfse() {
   })
 }
 
+// ─── NF-e Recebidas ───────────────────────────────────────────────────────────
+
+export interface NfeRecebida {
+  chave_nfe: string
+  numero: string
+  serie: string
+  emitente_cnpj: string
+  emitente_nome: string
+  data_emissao: string
+  valor_total: string
+  /** null = não manifestada ainda */
+  situacao_manifesto: "ciencia" | "confirmada" | "desconhecida" | "nao_realizada" | null
+}
+
+export function useNfeRecebidas(pagina = 1) {
+  return useQuery({
+    queryKey: ["fiscal", "nfe-recebidas", pagina],
+    queryFn: () =>
+      apiFetch<NfeRecebida[]>(`/api/proxy/fiscal/nfe-recebidas/?pagina=${pagina}`),
+    staleTime: 1000 * 60 * 5, // 5 min
+  })
+}
+
+export function useNfeRecebidaManifest() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      chave,
+      tipo_evento,
+      justificativa,
+    }: {
+      chave: string
+      tipo_evento: string
+      justificativa?: string
+    }) =>
+      apiFetch(`/api/proxy/fiscal/nfe-recebidas/${chave}/manifesto/`, {
+        method: "POST",
+        body: JSON.stringify({ tipo_evento, justificativa }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["fiscal", "nfe-recebidas"] })
+    },
+  })
+}
+
 /** Cancela documento fiscal autorizado (MANAGER+). */
 export function useCancelFiscalDoc() {
   const qc = useQueryClient()

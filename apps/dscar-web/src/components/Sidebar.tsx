@@ -41,6 +41,7 @@ import {
   Percent,
   Layers,
   FileText,
+  Inbox,
   BarChart3,
   Database,
   TrendingUp,
@@ -161,6 +162,7 @@ const NAV_SECTIONS: NavSection[] = [
         icon: FileText,
         children: [
           { id: "fiscal-documentos", label: "Documentos Emitidos", href: "/fiscal/documentos", icon: FileText },
+          { id: "fiscal-nfe-recebidas", label: "NF-e Recebidas", href: "/fiscal/nfe-recebidas", icon: Inbox },
           { id: "fiscal-emitir-nfse", label: "Emitir NFS-e Manual", href: "/fiscal/emitir-nfse", icon: FileText },
         ],
       },

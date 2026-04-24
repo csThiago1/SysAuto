@@ -30,6 +30,7 @@ from apps.authentication.permissions import (
     IsConsultantOrAbove,
     IsManagerOrAbove,
 )
+from apps.fiscal.clients.focus_nfe_client import FocusNFeClient
 from apps.fiscal.models import FiscalDocument, FiscalEvent, NFeEntrada, NFeEntradaItem
 from apps.fiscal.serializers import (
     FiscalDocumentListSerializer,
@@ -376,3 +377,86 @@ class FiscalDocumentViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
         return Response(FiscalDocumentSerializer(doc).data)
+
+
+class NfeRecebidaListView(APIView):
+    """Lista NF-e recebidas pelo CNPJ do emissor fiscal (pass-through Focus).
+
+    GET  /fiscal/nfe-recebidas/?pagina=1
+    RBAC: CONSULTANT+
+    """
+
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get(self, request: Request) -> Response:
+        from apps.fiscal.services.fiscal_service import FiscalService
+
+        try:
+            config = FiscalService.get_config()
+        except Exception:
+            return Response(
+                {"detail": "Configuração fiscal não encontrada."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        try:
+            pagina = max(1, int(request.query_params.get("pagina", 1)))
+        except (ValueError, TypeError):
+            pagina = 1
+
+        with FocusNFeClient() as client:
+            resp = client.listar_nfes_recebidas(config.cnpj, pagina=pagina)
+
+        if resp.status_code == 200:
+            return Response(resp.data or [])
+        if resp.status_code == 404:
+            return Response([])
+
+        logger.error("NfeRecebidaListView: Focus retornou %s: %s", resp.status_code, resp.data)
+        return Response(
+            {"detail": "Erro ao consultar NF-e recebidas."},
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
+
+
+class NfeRecebidaManifestView(APIView):
+    """Manifesta (ciência/confirmação/desconhecimento) de NF-e recebida.
+
+    POST /fiscal/nfe-recebidas/{chave}/manifesto/
+    Body: { "tipo_evento": "ciencia_operacao" | "confirmacao_operacao" | "desconhecimento_operacao" }
+    RBAC: MANAGER+
+    """
+
+    permission_classes = [IsAuthenticated, IsManagerOrAbove]
+
+    def post(self, request: Request, chave: str) -> Response:
+        tipo_evento = request.data.get("tipo_evento", "")
+        if tipo_evento not in (
+            "ciencia_operacao",
+            "confirmacao_operacao",
+            "desconhecimento_operacao",
+            "operacao_nao_realizada",
+        ):
+            return Response(
+                {"detail": "tipo_evento inválido."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        justificativa: str = request.data.get("justificativa", "")
+
+        with FocusNFeClient() as client:
+            resp = client.manifestar(chave, tipo_evento, justificativa)
+
+        if 200 <= resp.status_code < 300:
+            return Response(resp.data or {}, status=status.HTTP_200_OK)
+
+        logger.error(
+            "NfeRecebidaManifestView: Focus %s para chave %s: %s",
+            resp.status_code,
+            chave,
+            resp.data,
+        )
+        return Response(
+            resp.data or {"detail": "Erro ao manifestar NF-e."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
