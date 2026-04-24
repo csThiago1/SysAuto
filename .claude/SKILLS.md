@@ -572,6 +572,222 @@ if FOCUS_NFE_AMBIENTE == "producao" and DEBUG:
     raise ImproperlyConfigured("FOCUS_NFE_AMBIENTE=producao não permitido com DEBUG=True")
 ```
 
+### Emissão manual (ad-hoc) — NFS-e e NF-e
+
+Complementa emissão automatizada (a partir de OS). Ver §8.5 do spec.
+
+**Builder manual (padrão — repetir para NF-e):**
+```python
+# apps/fiscal/services/manaus_nfse.py
+from decimal import Decimal
+from typing import TypedDict
+from ..models import FiscalConfig
+from apps.persons.models import Person
+
+
+class ManualNfseInput(TypedDict, total=False):
+    destinatario_id: int
+    itens: list[dict]
+    discriminacao: str
+    codigo_servico_lc116: str
+    aliquota_iss: Decimal | None
+    iss_retido: bool
+    observacoes_contribuinte: str
+    observacoes_fisco: str
+
+
+class ManausNfseBuilder:
+    """Constrói payload NFS-e Manaus a partir de ServiceOrder (fluxo automatizado)."""
+    def __init__(self, config: FiscalConfig, service_order, payment, numero_rps: int):
+        self.config = config
+        self.so = service_order
+        self.payment = payment
+        self.numero_rps = numero_rps
+
+    def build(self) -> dict:
+        ...  # extrai itens de ServiceOrderVersionItem, agrega por LaborCategory
+
+
+class ManualNfseBuilder:
+    """Constrói payload NFS-e Manaus a partir de form manual (ad-hoc).
+
+    Diferenças do automatizado:
+    - Itens vêm do form, não de SO/Budget (source_os_item e source_budget_item ficam NULL)
+    - Discriminação é texto livre (sem gerar a partir de pareceres/items)
+    - Aliquota ISS é opcional no input (fallback: config.aliquota_iss_default)
+    """
+    def __init__(self, config: FiscalConfig, input_data: ManualNfseInput, numero_rps: int):
+        self.config = config
+        self.input = input_data
+        self.numero_rps = numero_rps
+        self.destinatario = Person.objects.select_related().prefetch_related(
+            "documents", "addresses"
+        ).get(pk=input_data["destinatario_id"])
+
+    def build(self) -> dict:
+        doc_destinatario = self.destinatario.documents.filter(is_primary=True).first()
+        if not doc_destinatario:
+            raise ValueError("Destinatário sem documento primário cadastrado.")
+        addr_destinatario = self.destinatario.addresses.filter(is_primary=True).first()
+        if not addr_destinatario:
+            raise ValueError("Destinatário sem endereço primário cadastrado.")
+
+        valor_servicos = sum(
+            Decimal(str(i["valor_unitario"])) * Decimal(str(i.get("quantidade", 1)))
+            - Decimal(str(i.get("valor_desconto", 0)))
+            for i in self.input["itens"]
+        )
+        aliquota = self.input.get("aliquota_iss") or self.config.aliquota_iss_default
+        valor_iss = (valor_servicos * Decimal(str(aliquota)) / Decimal("100")).quantize(Decimal("0.01"))
+
+        return {
+            "natureza_operacao": "1",
+            "prestador": self._build_prestador(),
+            "tomador": self._build_tomador(doc_destinatario, addr_destinatario),
+            "servico": {
+                "aliquota": float(aliquota),
+                "discriminacao": self.input["discriminacao"],
+                "iss_retido": self.input.get("iss_retido", False),
+                "item_lista_servico": self.input.get("codigo_servico_lc116", "14.01"),
+                "codigo_tributario_municipio": self.input.get("codigo_servico_lc116", "14.01").replace(".", ""),
+                "valor_servicos": float(valor_servicos),
+                "valor_iss": float(valor_iss),
+                "valor_liquido": float(valor_servicos - (valor_iss if self.input.get("iss_retido") else Decimal("0"))),
+                "codigo_municipio": "1302603",
+            },
+            "rps": {"numero": self.numero_rps, "serie": self.config.serie_rps, "tipo": 1},
+            "informacoes_complementares": self.input.get("observacoes_contribuinte", ""),
+        }
+```
+
+**Service manual:**
+```python
+# apps/fiscal/services/fiscal_service.py (adição)
+class FiscalService:
+    @classmethod
+    @transaction.atomic
+    def emit_manual_nfse(
+        cls,
+        input_data: dict,
+        config: FiscalConfig,
+        user,
+        manual_reason: str,
+    ) -> FiscalDocument:
+        """Emissão NFS-e manual (ad-hoc, sem OS). Apenas fiscal_admin/OWNER."""
+        if not user.has_perm("fiscal.can_emit_manual"):
+            raise PermissionDenied("Usuário sem permissão fiscal.can_emit_manual")
+        if len(manual_reason.strip()) < 10:
+            raise FocusValidationError("manual_reason obrigatório (>= 10 chars).")
+
+        from .manaus_nfse import ManualNfseBuilder
+        ref, seq = next_fiscal_ref(config, "NFSE")
+        payload = ManualNfseBuilder(config, input_data, numero_rps=seq).build()
+
+        doc = FiscalDocument.objects.create(
+            config=config,
+            doc_type="NFSE",
+            ref=ref,
+            status="DRAFT",
+            service_order=None,                        # manual: sem OS
+            payment=None,                              # manual: sem Payment
+            destinatario_id=input_data["destinatario_id"],
+            payload_enviado=payload,
+            valor_total=Decimal(str(payload["servico"]["valor_servicos"])),
+            manual_reason=manual_reason,
+            created_by=user,
+        )
+        FiscalEvent.objects.create(
+            document=doc,
+            event_type="EMIT_REQUEST",
+            payload=payload,
+            triggered_by="USER_MANUAL",
+        )
+
+        with FocusNFeClient() as client:
+            resp = client.emit_nfse(ref, payload)
+
+        FiscalEvent.objects.create(
+            document=doc,
+            event_type="EMIT_RESPONSE",
+            http_status=resp.status_code,
+            response=resp.data or {"raw": resp.raw_text},
+            duration_ms=resp.duration_ms,
+            triggered_by="USER_MANUAL",
+        )
+        cls._raise_for_http(resp)
+
+        doc.status = "PROCESSING"
+        doc.ultima_resposta = resp.data
+        doc.save(update_fields=["status", "ultima_resposta", "updated_at"])
+
+        from ..tasks import poll_fiscal_document
+        poll_fiscal_document.apply_async(args=[doc.id], countdown=10)
+        return doc
+
+    # `emit_manual_nfe` segue padrão idêntico usando ManualNfeBuilder
+```
+
+**ViewSet:**
+```python
+# apps/fiscal/views.py (adição)
+class FiscalDocumentViewSet(viewsets.ModelViewSet):
+    # ... outras actions
+
+    @action(detail=False, methods=["post"], url_path="nfse/emit-manual")
+    def emit_nfse_manual(self, request):
+        """POST /api/v1/fiscal/documents/nfse/emit-manual/"""
+        serializer = ManualNfseInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        config = FiscalConfig.objects.get(is_active=True)  # ou por CNPJ em multi-CNPJ
+        doc = FiscalService.emit_manual_nfse(
+            input_data=serializer.validated_data,
+            config=config,
+            user=request.user,
+            manual_reason=serializer.validated_data.pop("manual_reason"),
+        )
+        return Response(FiscalDocumentSerializer(doc).data, status=201)
+```
+
+**Permission custom:**
+```python
+# apps/fiscal/models.py (Meta de FiscalDocument)
+class Meta:
+    permissions = [
+        ("can_emit_manual", "Pode emitir NF manualmente (ad-hoc)"),
+        ("can_cancel_fiscal", "Pode cancelar NF autorizada"),
+    ]
+```
+Atribuir a `fiscal_admin` e `OWNER` em `apps/authz/seeds.py`.
+
+**Frontend — Zod + React Hook Form:**
+```typescript
+// apps/dscar-web/src/schemas/fiscal.ts
+import { z } from "zod";
+
+export const manualNfseSchema = z.object({
+  destinatario_id: z.number().int().positive(),
+  manual_reason: z.string().min(10, "Justificativa obrigatória (>= 10 chars)"),
+  discriminacao: z.string().min(3).max(2000),
+  codigo_servico_lc116: z.string().default("14.01"),
+  aliquota_iss: z.number().min(0).max(100).optional(),
+  iss_retido: z.boolean().default(false),
+  observacoes_contribuinte: z.string().default(""),
+  itens: z.array(z.object({
+    descricao: z.string().min(3).max(500),
+    quantidade: z.number().positive().default(1),
+    valor_unitario: z.number().positive(),
+    valor_desconto: z.number().nonnegative().default(0),
+  })).min(1, "Adicione ao menos 1 item"),
+});
+export type ManualNfseForm = z.infer<typeof manualNfseSchema>;
+```
+
+**Antipadrões específicos de manual:**
+- ❌ Permitir emissão manual sem `manual_reason` — viola CheckConstraint e auditoria
+- ❌ Emissão manual como "backdoor" para burlar trava de OS — permission `can_emit_manual` deve ficar restrita
+- ❌ Reaproveitar `FiscalEvent(triggered_by="USER")` para manual — usar `USER_MANUAL` para filtro de auditoria
+- ❌ Não validar que Person tem Document + Address primários — Focus rejeita ou gera NF inválida
+
 ### Checklist por documento
 
 **NFS-e:**
