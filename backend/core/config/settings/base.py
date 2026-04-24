@@ -1,6 +1,7 @@
 """
 Paddock Solutions — Django Settings Base
 """
+
 import os
 from pathlib import Path
 
@@ -313,3 +314,20 @@ AI_HEAVY_MODEL = "claude-opus-4-5"
 # ─── Cilia Web Service ───────────────────────────────────────────────────────
 CILIA_BASE_URL = config("CILIA_BASE_URL", default="https://sistema.cilia.com.br")
 CILIA_AUTH_TOKEN = config("CILIA_AUTH_TOKEN", default="")
+
+# ─── Focus NF-e ──────────────────────────────────────────────────────────────
+FOCUS_NFE_TOKEN = config("FOCUS_NFE_TOKEN", default="")
+FOCUS_NFE_AMBIENTE = config("FOCUS_NFE_AMBIENTE", default="homologacao")
+FOCUS_NFE_BASE_URL = (
+    "https://homologacao.focusnfe.com.br"
+    if FOCUS_NFE_AMBIENTE == "homologacao"
+    else "https://api.focusnfe.com.br"
+)
+FOCUS_NFE_TIMEOUT_SECONDS = config("FOCUS_NFE_TIMEOUT_SECONDS", default=60, cast=int)
+FOCUS_NFE_WEBHOOK_SECRET = config("FOCUS_NFE_WEBHOOK_SECRET", default="")
+CNPJ_EMISSOR = config("CNPJ_EMISSOR", default="")
+
+if FOCUS_NFE_AMBIENTE == "producao" and DEBUG:
+    from django.core.exceptions import ImproperlyConfigured  # noqa: E402
+
+    raise ImproperlyConfigured("FOCUS_NFE_AMBIENTE=producao não é permitido quando DEBUG=True.")
