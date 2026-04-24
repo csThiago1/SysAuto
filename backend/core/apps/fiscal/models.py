@@ -1,7 +1,11 @@
 """
 Paddock Solutions — Fiscal App
 NF-e, NFC-e e NFS-e: registro e status de emissões
+
+MO-5: FiscalDocument (stub), NFeEntrada, NFeEntradaItem
+06B:  FiscalConfigModel, FiscalDocumentItem, FiscalEvent
 """
+
 from django.db import models
 
 from apps.authentication.models import PaddockBaseModel
@@ -71,7 +75,10 @@ class NFeEntrada(PaddockBaseModel):
         ESTOQUE_GERADO = "estoque_gerado", "Estoque Gerado"
 
     chave_acesso = models.CharField(
-        max_length=44, blank=True, default="", db_index=True,
+        max_length=44,
+        blank=True,
+        default="",
+        db_index=True,
         help_text="Chave de 44 dígitos SEFAZ.",
     )
     numero = models.CharField(max_length=20, blank=True, default="")
@@ -98,7 +105,9 @@ class NFeEntrada(PaddockBaseModel):
         ]
 
     def __str__(self) -> str:
-        return f"NF-e Entrada #{self.numero}/{self.serie} — {self.emitente_nome or self.emitente_cnpj}"
+        return (
+            f"NF-e Entrada #{self.numero}/{self.serie} — {self.emitente_nome or self.emitente_cnpj}"
+        )
 
 
 class NFeEntradaItem(PaddockBaseModel):
@@ -113,9 +122,7 @@ class NFeEntradaItem(PaddockBaseModel):
         INSUMO = "insumo", "Mapeado: Insumo"
         IGNORADO = "ignorado", "Ignorado"
 
-    nfe_entrada = models.ForeignKey(
-        NFeEntrada, on_delete=models.CASCADE, related_name="itens"
-    )
+    nfe_entrada = models.ForeignKey(NFeEntrada, on_delete=models.CASCADE, related_name="itens")
     numero_item = models.PositiveSmallIntegerField()
     descricao_original = models.CharField(max_length=300)
     codigo_produto_nf = models.CharField(max_length=60, blank=True, default="")
@@ -129,23 +136,31 @@ class NFeEntradaItem(PaddockBaseModel):
     # Fator de conversão: unidade_compra → unidade_base do MaterialCanonico
     # A5: obrigatório para insumos; 1 para peças
     fator_conversao = models.DecimalField(
-        max_digits=10, decimal_places=4, default=1,
+        max_digits=10,
+        decimal_places=4,
+        default=1,
         help_text="Quantas unidades_base cabem em 1 unidade_compra.",
     )
     # Reconciliação com catálogo
     peca_canonica = models.ForeignKey(
         "pricing_catalog.PecaCanonica",
-        null=True, blank=True, on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
         related_name="nfe_itens",
     )
     material_canonico = models.ForeignKey(
         "pricing_catalog.MaterialCanonico",
-        null=True, blank=True, on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
         related_name="nfe_itens",
     )
     codigo_fornecedor = models.ForeignKey(
         "pricing_catalog.CodigoFornecedorPeca",
-        null=True, blank=True, on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
         related_name="nfe_itens",
     )
     status_reconciliacao = models.CharField(
@@ -162,3 +177,174 @@ class NFeEntradaItem(PaddockBaseModel):
 
     def __str__(self) -> str:
         return f"Item {self.numero_item} — {self.descricao_original[:40]}"
+
+
+# ─── 06B: Emissor + Itens + Auditoria ─────────────────────────────────────────
+
+
+class FiscalConfigModel(models.Model):
+    """
+    Configuração do emissor fiscal (CNPJ, sequenciadores, token Focus).
+
+    Nome: FiscalConfigModel para evitar conflito com FiscalAppConfig (AppConfig).
+    seq_* são incrementados atomicamente via select_for_update — nunca editar
+    manualmente pelo admin.
+
+    db_table: "fiscal_config" (nome limpo sem o sufixo "model").
+    """
+
+    cnpj = models.CharField(
+        max_length=14, unique=True, help_text="CNPJ sem formatação (14 dígitos)."
+    )
+    inscricao_estadual = models.CharField(max_length=20, blank=True, default="")
+    inscricao_municipal = models.CharField(max_length=20, blank=True, default="")
+    razao_social = models.CharField(max_length=200)
+    nome_fantasia = models.CharField(max_length=200, blank=True, default="")
+    regime_tributario = models.PositiveSmallIntegerField(
+        default=1,
+        help_text="1=Simples Nacional, 2=Simples Nacional Excesso, 3=Normal",
+    )
+    endereco = models.JSONField(default=dict, blank=True, help_text="Endereço completo do emissor.")
+    # Token Focus: plain text aqui — EncryptedField no Ciclo 06C
+    focus_token = models.CharField(max_length=255, blank=True, default="")
+    aliquota_iss_default = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=2,
+        help_text="Alíquota ISS padrão (%). Manaus: 2%.",
+    )
+    # Sequenciadores atômicos — NUNCA editar manualmente
+    seq_nfse = models.PositiveIntegerField(default=1)
+    seq_nfe = models.PositiveIntegerField(default=1)
+    seq_nfce = models.PositiveIntegerField(default=1)
+    serie_rps = models.CharField(max_length=5, default="1")
+    environment = models.CharField(
+        max_length=15,
+        choices=[("homologacao", "Homologação"), ("producao", "Produção")],
+        default="homologacao",
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "fiscal_config"
+        verbose_name = "Configuração Fiscal"
+        verbose_name_plural = "Configurações Fiscais"
+
+    def __str__(self) -> str:
+        return f"{self.razao_social} — CNPJ {self.cnpj}"
+
+
+class FiscalDocumentItem(models.Model):
+    """
+    Item fiscal de um FiscalDocument (linha de NF-e/NFC-e/NFS-e).
+
+    source_budget_item e source_os_item usam db_constraint=False para permitir
+    audit trail mesmo após deleção dos documentos originais (padrão MO-6).
+    """
+
+    document = models.ForeignKey(
+        FiscalDocument,
+        on_delete=models.CASCADE,
+        related_name="itens",
+    )
+    numero_item = models.PositiveSmallIntegerField()
+    descricao = models.CharField(max_length=500)
+    ncm = models.CharField(max_length=8, blank=True, default="")
+    cfop = models.CharField(max_length=5, blank=True, default="")
+    unidade = models.CharField(max_length=6, blank=True, default="")
+    quantidade = models.DecimalField(max_digits=12, decimal_places=4, default=1)
+    valor_unitario = models.DecimalField(max_digits=14, decimal_places=4, default=0)
+    valor_total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    valor_desconto = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    # Alíquotas (%)
+    aliquota_iss = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    aliquota_icms = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    aliquota_pis = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    aliquota_cofins = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    # Rastreabilidade — UUIDs sem FK: audit trail após deleção de documentos originais
+    source_budget_item = models.UUIDField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="UUID do OrcamentoIntervencao de origem (sem FK forçada).",
+    )
+    source_os_item = models.UUIDField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="UUID do OSIntervencao de origem (sem FK forçada).",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "fiscal_document_item"
+        verbose_name = "Item de Documento Fiscal"
+        verbose_name_plural = "Itens de Documentos Fiscais"
+        unique_together = [("document", "numero_item")]
+
+    def __str__(self) -> str:
+        return f"Item {self.numero_item} — {self.descricao[:50]}"
+
+
+class FiscalEvent(models.Model):
+    """
+    Log de auditoria imutável de todas as chamadas HTTP e webhooks fiscais.
+
+    Cada POST/GET/DELETE para a API Focus gera um FiscalEvent.
+    Webhooks recebidos também geram FiscalEvent.
+    document pode ser NULL em webhooks de documentos desconhecidos.
+
+    Regra: NUNCA deletar FiscalEvent — log é evidência fiscal.
+    """
+
+    class EventType(models.TextChoices):
+        EMIT_REQUEST = "EMIT_REQUEST", "Requisição de Emissão"
+        EMIT_RESPONSE = "EMIT_RESPONSE", "Resposta de Emissão"
+        CONSULT = "CONSULT", "Consulta de Status"
+        CANCEL_REQUEST = "CANCEL_REQUEST", "Requisição de Cancelamento"
+        WEBHOOK = "WEBHOOK", "Webhook Recebido"
+        CCE = "CCE", "Carta de Correção"
+        INUTILIZACAO = "INUTILIZACAO", "Inutilização"
+
+    class TriggeredBy(models.TextChoices):
+        USER = "USER", "Usuário (automatizado)"
+        USER_MANUAL = "USER_MANUAL", "Usuário (manual ad-hoc)"
+        CELERY = "CELERY", "Tarefa Celery"
+        WEBHOOK = "WEBHOOK", "Webhook Focus"
+
+    # FK nullable — webhooks orphan não têm document
+    document = models.ForeignKey(
+        FiscalDocument,
+        on_delete=models.CASCADE,
+        related_name="events",
+        null=True,
+        blank=True,
+    )
+    event_type = models.CharField(max_length=20, choices=EventType.choices, db_index=True)
+    http_status = models.PositiveSmallIntegerField(null=True, blank=True)
+    payload = models.JSONField(default=dict, blank=True, help_text="Payload enviado ou recebido.")
+    response = models.JSONField(default=dict, blank=True, help_text="Resposta da API Focus.")
+    duration_ms = models.PositiveIntegerField(null=True, blank=True)
+    error_type = models.CharField(max_length=60, blank=True, default="")
+    error_message = models.TextField(blank=True, default="")
+    triggered_by = models.CharField(
+        max_length=15,
+        choices=TriggeredBy.choices,
+        default=TriggeredBy.USER,
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        db_table = "fiscal_event"
+        verbose_name = "Evento Fiscal"
+        verbose_name_plural = "Eventos Fiscais"
+        indexes = [
+            models.Index(fields=["document", "event_type"]),
+            models.Index(fields=["created_at"]),
+        ]
+
+    def __str__(self) -> str:
+        doc_ref = f" [{self.document_id}]" if self.document_id else " [orphan]"
+        return f"{self.event_type}{doc_ref} @ {self.created_at}"
