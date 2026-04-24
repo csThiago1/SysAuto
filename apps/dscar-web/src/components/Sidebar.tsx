@@ -160,6 +160,7 @@ const NAV_SECTIONS: NavSection[] = [
         label: "Fiscal",
         icon: FileText,
         children: [
+          { id: "fiscal-documentos", label: "Documentos Emitidos", href: "/fiscal/documentos", icon: FileText },
           { id: "fiscal-emitir-nfse", label: "Emitir NFS-e Manual", href: "/fiscal/emitir-nfse", icon: FileText },
         ],
       },

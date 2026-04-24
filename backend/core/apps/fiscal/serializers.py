@@ -219,6 +219,10 @@ class ManualNfseInputSerializer(serializers.Serializer):
 class FiscalDocumentListSerializer(serializers.ModelSerializer):
     """Serializer enxuto para listagem de documentos fiscais."""
 
+    amount = serializers.DecimalField(source="total_value", max_digits=12, decimal_places=2, read_only=True)
+    numero = serializers.CharField(source="number", read_only=True)
+    service_order_id = serializers.UUIDField(read_only=True)
+
     class Meta:
         model = FiscalDocument
         fields = [
@@ -226,9 +230,16 @@ class FiscalDocumentListSerializer(serializers.ModelSerializer):
             "document_type",
             "status",
             "ref",
-            "service_order",
-            "total_value",
+            "environment",
+            "service_order_id",
+            "amount",
             "valor_impostos",
+            "key",
+            "numero",
+            "caminho_xml",
+            "caminho_pdf",
+            "mensagem_sefaz",
+            "natureza_rejeicao",
             "created_at",
             "authorized_at",
             "cancelled_at",
