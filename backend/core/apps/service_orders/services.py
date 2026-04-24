@@ -816,7 +816,11 @@ class ServiceOrderDeliveryService:
         if order.customer_type == "private":
             nfe_key = data.get("nfe_key") or order.nfe_key
             nfse_number = data.get("nfse_number") or order.nfse_number
-            if not nfe_key and not nfse_number:
+            # 06C: aceita também FiscalDocument autorizado vinculado à OS
+            has_authorized_doc = order.fiscal_documents.filter(
+                status="authorized"
+            ).exists() if hasattr(order, "fiscal_documents") else False
+            if not nfe_key and not nfse_number and not has_authorized_doc:
                 raise ValidationError(
                     {"fiscal": "NF-e ou NFS-e obrigatória para entrega de cliente particular."}
                 )

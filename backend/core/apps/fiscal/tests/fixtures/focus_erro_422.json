@@ -1,0 +1,10 @@
+{
+  "codigo": "requisicao_invalida",
+  "mensagem": "Campo obrigatório ausente: servico.valor_servicos",
+  "erros": [
+    {
+      "campo": "servico.valor_servicos",
+      "mensagem": "Campo obrigatório"
+    }
+  ]
+}

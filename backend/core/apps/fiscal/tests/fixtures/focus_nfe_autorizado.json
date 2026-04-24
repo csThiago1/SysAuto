@@ -1,0 +1,11 @@
+{
+  "status": "autorizado",
+  "ref": "12345678-NFE-20260423-000001",
+  "chave_nfe": "35260412345678000195550010000000011234567890",
+  "numero": "1",
+  "serie": "1",
+  "data_autorizacao": "2026-04-23T11:00:00-04:00",
+  "caminho_xml_nota_fiscal": "https://homologacao.focusnfe.com.br/v2/nfe/12345678-NFE-20260423-000001.xml",
+  "caminho_danfe": "https://homologacao.focusnfe.com.br/v2/nfe/12345678-NFE-20260423-000001.pdf",
+  "mensagem_sefaz": "Autorizado o uso da NF-e"
+}

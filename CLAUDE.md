@@ -1192,6 +1192,39 @@ Nenhuma sprint ativa no momento.
 
 ## 📦 Sprints Entregues
 
+### Ciclo 06C — NFS-e Manaus end-to-end + NF-e Recebidas — Abril 2026 ✅
+**App `apps.fiscal` (extendido) — emissão NFS-e Manaus + manifestação de destinatário**
+
+Backend:
+- Migration `fiscal/0004`: `FiscalDocument` expandido com `ref`, `config FK`, `service_order FK`, `destinatario FK`, `protocolo`, `caminho_xml`, `caminho_pdf`, `payload_enviado`, `ultima_resposta`, `mensagem_sefaz`, `natureza_rejeicao`, `valor_impostos`, `documento_referenciado`, `created_by`, `manual_reason` + `CheckConstraint`
+- `ManausNfseBuilder.build()`: monta payload Focus NFS-e para Manaus (IBGE `1302603`) — LC116 6 dígitos (`140100`), RPS, tomador PF/PJ via `Person+PersonDocument+PersonAddress`
+- `ManualNfseBuilder.build()`: monta payload NFS-e a partir de `ManualNfseInputSerializer.validated_data`
+- `FiscalService.emit_nfse()`, `emit_manual_nfse()`, `consult()`, `cancel()` — implementação completa com `@transaction.atomic`, idempotência via `ref`, polling via Celery
+- `poll_fiscal_document` task: polling a cada 10s, max 60 retentativas, encerra quando Focus retorna `autorizado`/`erro_autorizacao`
+- `NfseEmitView`, `NfseEmitManualView`, `FiscalDocumentViewSet` — RBAC: emissão CONSULTANT+, manual ADMIN+, cancelamento MANAGER+
+- `NfeRecebidaListView`: GET `/fiscal/nfe-recebidas/` — pass-through Focus `/v2/nfes_recebidas` por CNPJ
+- `NfeRecebidaManifestView`: POST `/fiscal/nfe-recebidas/{chave}/manifesto/` — encaminha manifestação à Focus
+- Fix crítico: `FOCUSNFE_TOKEN` (env container) vs `FOCUS_NFE_TOKEN` (settings antigo) — fallback chain em `settings/base.py`
+
+Frontend (`dscar-web`):
+- `packages/types/src/fiscal.types.ts` — `FiscalDocument`, `FiscalDocumentList`, `ManualNfseInput`, `ManualNfseItem`
+- `src/hooks/useFiscal.ts` — `useFiscalDocuments`, `useFiscalDocument`, `useEmitNfse`, `useEmitManualNfse`, `useCancelFiscalDoc`, `useNfeRecebidas`, `useNfeRecebidaManifest`
+- `/fiscal/documentos` — lista de documentos fiscais emitidos: KPIs (pendente/autorizado/rejeitado), filtros tipo+status, links PDF/XML, cancelamento MANAGER+
+- `/fiscal/emitir-nfse` — formulário NFS-e manual ADMIN+: busca de Person, array dinâmico de itens, discriminação, motivo obrigatório
+- `/fiscal/nfe-recebidas` — lista NF-e recebidas de fornecedores: manifesto de destinatário (ciência → confirmar/desconhecer)
+- Sidebar: seção "FISCAL" com "Documentos Emitidos" (FileText), "NF-e Recebidas" (Inbox), "Emitir NFS-e Manual" (FileText)
+
+**Padrões estabelecidos:**
+- `FOCUSNFE_TOKEN` é o env var correto no container; settings lê com fallback: `config("FOCUSNFE_TOKEN") or config("FOCUS_NFE_TOKEN")`
+- Manaus IBGE: `"1302603"`; LC116 formato: 6 dígitos numéricos sem ponto (`"140100"`, `"140500"`)
+- `_normalize_lc116(code)`: strip de pontos + ljust(6, "0")[:6]
+- NF-e recebidas: pass-through Focus sem armazenar no banco — `NfeRecebidaListView` e `NfeRecebidaManifestView` são puramente proxy
+- `FocusNFeError` deve ser capturado explicitamente com `isinstance()` nas views — não cai no `except Exception` genérico
+- `FiscalDocumentListSerializer`: nunca usar `source=` quando field name == source (AssertionError DRF)
+- `NfeRecebida` campos reais Focus: `nome_emitente` e `documento_emitente` (não `emitente_nome`/`emitente_cnpj`)
+
+---
+
 ### MO-9 — Capacidade + Variâncias + Auditoria — Abril 2026 ✅
 **Extensões em `apps.service_orders`, `apps.pricing_tech`, `apps.pricing_engine`**
 

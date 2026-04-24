@@ -1,0 +1,10 @@
+{
+  "status": "autorizado",
+  "ref": "12345678-NFSE-20260423-000001",
+  "numero": "42",
+  "codigo_verificacao": "ABCD1234",
+  "data_autorizacao": "2026-04-23T10:30:00-04:00",
+  "cnpj_prestador": "12345678000195",
+  "caminho_xml_nfse": "https://homologacao.focusnfe.com.br/v2/nfse/12345678-NFSE-20260423-000001.xml",
+  "caminho_danfse": "https://homologacao.focusnfe.com.br/v2/nfse/12345678-NFSE-20260423-000001.pdf"
+}

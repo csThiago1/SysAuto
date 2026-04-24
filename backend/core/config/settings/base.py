@@ -1,6 +1,7 @@
 """
 Paddock Solutions — Django Settings Base
 """
+
 import os
 from pathlib import Path
 
@@ -327,3 +328,20 @@ APIPLACAS_TOKEN   = config("APIPLACAS_TOKEN", default="")
 # endpoint: GET https://wdapi2.com.br/consulta/{plate}/{token}
 APIPLACAS_URL     = "https://wdapi2.com.br/consulta"
 APIPLACAS_TIMEOUT = 8.0
+
+# ─── Focus NF-e ──────────────────────────────────────────────────────────────
+FOCUS_NFE_TOKEN = config("FOCUSNFE_TOKEN", default="") or config("FOCUS_NFE_TOKEN", default="")
+FOCUS_NFE_AMBIENTE = config("FOCUS_NFE_AMBIENTE", default="homologacao")
+FOCUS_NFE_BASE_URL = (
+    "https://homologacao.focusnfe.com.br"
+    if FOCUS_NFE_AMBIENTE == "homologacao"
+    else "https://api.focusnfe.com.br"
+)
+FOCUS_NFE_TIMEOUT_SECONDS = config("FOCUS_NFE_TIMEOUT_SECONDS", default=60, cast=int)
+FOCUS_NFE_WEBHOOK_SECRET = config("FOCUS_NFE_WEBHOOK_SECRET", default="")
+CNPJ_EMISSOR = config("CNPJ_EMISSOR", default="")
+
+if FOCUS_NFE_AMBIENTE == "producao" and DEBUG:
+    from django.core.exceptions import ImproperlyConfigured  # noqa: E402
+
+    raise ImproperlyConfigured("FOCUS_NFE_AMBIENTE=producao não é permitido quando DEBUG=True.")
