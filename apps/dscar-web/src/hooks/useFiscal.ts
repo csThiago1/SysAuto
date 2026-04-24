@@ -107,12 +107,12 @@ export function useEmitManualNfse() {
 
 export interface NfeRecebida {
   chave_nfe: string
-  numero: string
-  serie: string
-  emitente_cnpj: string
-  emitente_nome: string
+  nome_emitente: string
+  documento_emitente: string
   data_emissao: string
   valor_total: string
+  /** situacao da NF-e na SEFAZ */
+  situacao: string
   /** null = não manifestada ainda */
   situacao_manifesto: "ciencia" | "confirmada" | "desconhecida" | "nao_realizada" | null
 }

@@ -67,13 +67,8 @@ function NfeRecebidaRow({
     <tr className="border-b border-white/[0.06] hover:bg-white/[0.03] transition-colors">
       {/* Emitente */}
       <td className="py-3 px-4">
-        <p className="text-xs text-white/80 font-medium">{nfe.emitente_nome || "—"}</p>
-        <p className="text-xs text-white/30 font-mono mt-0.5">{cnpjFmt(nfe.emitente_cnpj)}</p>
-      </td>
-
-      {/* Nº / Série */}
-      <td className="py-3 px-4 text-xs text-white/60 tabular-nums">
-        {nfe.numero}/{nfe.serie}
+        <p className="text-xs text-white/80 font-medium">{nfe.nome_emitente || "—"}</p>
+        <p className="text-xs text-white/30 font-mono mt-0.5">{cnpjFmt(nfe.documento_emitente)}</p>
       </td>
 
       {/* Chave (truncada) */}
@@ -211,7 +206,7 @@ export default function NfeRecebidasPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/[0.06]">
-              {["Emitente", "NF/Série", "Chave", "Valor", "Emissão", "Manifesto", ""].map((h) => (
+              {["Emitente", "Chave", "Valor", "Emissão", "Manifesto", ""].map((h) => (
                 <th
                   key={h}
                   className={cn(
@@ -227,13 +222,13 @@ export default function NfeRecebidasPage() {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-xs text-white/30">
+                <td colSpan={6} className="py-12 text-center text-xs text-white/30">
                   Consultando Focus NF-e...
                 </td>
               </tr>
             ) : nfes.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-xs text-white/30">
+                <td colSpan={6} className="py-12 text-center text-xs text-white/30">
                   Nenhuma NF-e recebida encontrada.{" "}
                   {pagina > 1 && (
                     <button
@@ -248,7 +243,7 @@ export default function NfeRecebidasPage() {
             ) : (
               nfes.map((nfe) => (
                 <NfeRecebidaRow
-                  key={nfe.chave_nfe}
+                  key={`${nfe.chave_nfe}-${nfe.situacao}`}
                   nfe={nfe}
                   canManifest={canManifest}
                   onManifest={handleManifest}
