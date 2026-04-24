@@ -4,6 +4,7 @@ Motor de Orçamentos (MO) — Sprint MO-5: NF-e Entrada
 
 Serializers para NFeEntrada e NFeEntradaItem.
 """
+
 from rest_framework import serializers
 
 from apps.fiscal.models import NFeEntrada, NFeEntradaItem
@@ -11,16 +12,28 @@ from apps.fiscal.models import NFeEntrada, NFeEntradaItem
 
 class NFeEntradaItemSerializer(serializers.ModelSerializer):
     peca_nome = serializers.CharField(source="peca_canonica.nome", read_only=True, default=None)
-    material_nome = serializers.CharField(source="material_canonico.nome", read_only=True, default=None)
+    material_nome = serializers.CharField(
+        source="material_canonico.nome", read_only=True, default=None
+    )
 
     class Meta:
         model = NFeEntradaItem
         fields = [
-            "id", "numero_item", "descricao_original", "codigo_produto_nf", "ncm",
-            "unidade_compra", "quantidade", "valor_unitario_bruto",
-            "valor_unitario_com_tributos", "valor_total_com_tributos", "fator_conversao",
-            "peca_canonica_id", "peca_nome",
-            "material_canonico_id", "material_nome",
+            "id",
+            "numero_item",
+            "descricao_original",
+            "codigo_produto_nf",
+            "ncm",
+            "unidade_compra",
+            "quantidade",
+            "valor_unitario_bruto",
+            "valor_unitario_com_tributos",
+            "valor_total_com_tributos",
+            "fator_conversao",
+            "peca_canonica_id",
+            "peca_nome",
+            "material_canonico_id",
+            "material_nome",
             "codigo_fornecedor_id",
             "status_reconciliacao",
         ]
@@ -29,6 +42,7 @@ class NFeEntradaItemSerializer(serializers.ModelSerializer):
 
 class NFeEntradaItemReconciliarSerializer(serializers.Serializer):
     """Input para reconciliar um item com peça ou material canônico."""
+
     peca_canonica_id = serializers.UUIDField(required=False, allow_null=True)
     material_canonico_id = serializers.UUIDField(required=False, allow_null=True)
     codigo_fornecedor_id = serializers.UUIDField(required=False, allow_null=True)
@@ -40,8 +54,12 @@ class NFeEntradaItemReconciliarSerializer(serializers.Serializer):
         status = data.get("status_reconciliacao")
         if status == NFeEntradaItem.StatusReconciliacao.PECA and not data.get("peca_canonica_id"):
             raise serializers.ValidationError("peca_canonica_id obrigatório para status PECA.")
-        if status == NFeEntradaItem.StatusReconciliacao.INSUMO and not data.get("material_canonico_id"):
-            raise serializers.ValidationError("material_canonico_id obrigatório para status INSUMO.")
+        if status == NFeEntradaItem.StatusReconciliacao.INSUMO and not data.get(
+            "material_canonico_id"
+        ):
+            raise serializers.ValidationError(
+                "material_canonico_id obrigatório para status INSUMO."
+            )
         return data
 
 
@@ -51,9 +69,18 @@ class NFeEntradaListSerializer(serializers.ModelSerializer):
     class Meta:
         model = NFeEntrada
         fields = [
-            "id", "chave_acesso", "numero", "serie",
-            "emitente_cnpj", "emitente_nome", "data_emissao",
-            "valor_total", "status", "estoque_gerado", "total_itens", "created_at",
+            "id",
+            "chave_acesso",
+            "numero",
+            "serie",
+            "emitente_cnpj",
+            "emitente_nome",
+            "data_emissao",
+            "valor_total",
+            "status",
+            "estoque_gerado",
+            "total_itens",
+            "created_at",
         ]
         read_only_fields = fields
 
@@ -67,11 +94,21 @@ class NFeEntradaDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = NFeEntrada
         fields = [
-            "id", "chave_acesso", "numero", "serie",
-            "emitente_cnpj", "emitente_nome", "data_emissao",
-            "valor_total", "status", "estoque_gerado",
-            "xml_s3_key", "observacoes", "itens",
-            "created_at", "updated_at",
+            "id",
+            "chave_acesso",
+            "numero",
+            "serie",
+            "emitente_cnpj",
+            "emitente_nome",
+            "data_emissao",
+            "valor_total",
+            "status",
+            "estoque_gerado",
+            "xml_s3_key",
+            "observacoes",
+            "itens",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = fields
 
@@ -82,9 +119,14 @@ class NFeEntradaCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = NFeEntrada
         fields = [
-            "chave_acesso", "numero", "serie",
-            "emitente_cnpj", "emitente_nome", "data_emissao",
-            "valor_total", "observacoes",
+            "chave_acesso",
+            "numero",
+            "serie",
+            "emitente_cnpj",
+            "emitente_nome",
+            "data_emissao",
+            "valor_total",
+            "observacoes",
         ]
 
     def validate_chave_acesso(self, value: str) -> str:

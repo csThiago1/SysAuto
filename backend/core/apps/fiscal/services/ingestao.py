@@ -8,6 +8,7 @@ já reconciliados com o catálogo canônico.
 P10: idempotência via NFeEntrada.estoque_gerado — nunca duplicar.
 P1:  sempre usar item.valor_unitario_com_tributos, nunca valor_unitario_bruto.
 """
+
 import logging
 from decimal import Decimal
 
@@ -99,7 +100,11 @@ class NFeIngestaoService:
 
         logger.info(
             "NF-e %s/%s: %d unidades, %d lotes, %d pendentes",
-            nfe.numero, nfe.serie, len(unidades), len(lotes), len(pendentes),
+            nfe.numero,
+            nfe.serie,
+            len(unidades),
+            len(lotes),
+            len(pendentes),
         )
         return {
             "unidades_criadas": len(unidades),
