@@ -101,6 +101,11 @@ export interface BudgetCreatePayload {
   customer_id: number
   vehicle_plate: string
   vehicle_description: string
+  vehicle_chassis?: string
+  vehicle_version?: string
+  vehicle_engine?: string
+  vehicle_color?: string
+  vehicle_year?: number | null
 }
 
 /** Payload para aprovar versão */

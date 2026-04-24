@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ReceiptText, ChevronLeft, Search, X } from "lucide-react"
+import { ReceiptText, ChevronLeft, Search, X, AlertTriangle, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import type { Route } from "next"
 import { toast } from "sonner"
@@ -21,8 +21,14 @@ interface PlateData {
   plate: string
   make: string
   model: string
+  version: string
+  engine: string
   year: number | null
   chassis: string
+  color: string
+  fuel_type: string
+  situation: string
+  situation_code: number
 }
 
 function usePersonSearch(search: string) {
@@ -64,22 +70,37 @@ export default function NovoBudgetPage() {
   const { data: clientes = [] }             = usePersonSearch(clienteSearch)
 
   // Veículo
-  const [placa,  setPlaca]  = useState("")
-  const [marca,  setMarca]  = useState("")
-  const [modelo, setModelo] = useState("")
-  const [ano,    setAno]    = useState("")
-  const [chassi, setChassi] = useState("")
+  const [placa,       setPlaca]       = useState("")
+  const [marca,       setMarca]       = useState("")
+  const [modelo,      setModelo]      = useState("")
+  const [versao,      setVersao]      = useState("")
+  const [motorizacao, setMotorizacao] = useState("")
+  const [combustivel, setCombustivel] = useState("")
+  const [cor,         setCor]         = useState("")
+  const [ano,         setAno]         = useState("")
+  const [chassi,      setChassi]      = useState("")
 
   const { data: plateData, isFetching: buscandoPlaca, isError: placaNaoEncontrada } =
     usePlateLookup(placa)
 
   useEffect(() => {
     if (!plateData) return
-    if (plateData.make)    setMarca(plateData.make)
-    if (plateData.model)   setModelo(plateData.model)
-    if (plateData.year)    setAno(String(plateData.year))
-    if (plateData.chassis) setChassi(plateData.chassis)
-    toast.success("Dados do veículo preenchidos pela placa!")
+    if (plateData.make)      setMarca(plateData.make)
+    if (plateData.model)     setModelo(plateData.model)
+    if (plateData.version)   setVersao(plateData.version)
+    if (plateData.engine)    setMotorizacao(plateData.engine)
+    if (plateData.fuel_type) setCombustivel(plateData.fuel_type)
+    if (plateData.color)     setCor(plateData.color)
+    if (plateData.year)      setAno(String(plateData.year))
+    // Chassi vem mascarado da API — não preencher automaticamente
+    if (plateData.chassis && !plateData.chassis.includes("*")) {
+      setChassi(plateData.chassis)
+    }
+    if (plateData.situation_code !== 0) {
+      toast.error(`Veículo com restrição: ${plateData.situation}`, { duration: 8000 })
+    } else {
+      toast.success("Dados do veículo preenchidos pela placa!")
+    }
   }, [plateData])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -90,12 +111,19 @@ export default function NovoBudgetPage() {
       toast.error("Informe marca e modelo do veículo.")
       return
     }
-    const descricao = [marca, modelo, ano].filter(Boolean).join(" ").trim()
+    const descricao = [marca, modelo, versao, motorizacao, combustivel, ano]
+      .map((s) => s.trim()).filter(Boolean).join(" ")
+    const anoNum = ano ? parseInt(ano, 10) : null
     try {
       const budget = await criar({
         customer_id:         clienteSelecionado.id,
         vehicle_plate:       placa.toUpperCase().trim(),
         vehicle_description: descricao,
+        vehicle_chassis:     chassi.trim(),
+        vehicle_version:     versao.trim(),
+        vehicle_engine:      motorizacao.trim(),
+        vehicle_color:       cor.trim(),
+        vehicle_year:        anoNum && !isNaN(anoNum) ? anoNum : null,
       })
       toast.success(`Orçamento ${budget.number} criado!`)
       router.push(`/orcamentos-particulares/${budget.id}` as Route)
@@ -103,6 +131,9 @@ export default function NovoBudgetPage() {
       toast.error(err instanceof Error ? err.message : "Erro ao criar orçamento.")
     }
   }
+
+  const hasRestriction = plateData && plateData.situation_code !== 0
+  const isOk           = plateData && plateData.situation_code === 0 && placa.length >= 7
 
   return (
     <div className="p-6 max-w-xl space-y-6">
@@ -169,7 +200,7 @@ export default function NovoBudgetPage() {
         <div className="space-y-3 rounded-xl border border-white/10 bg-white/[0.02] p-4">
           <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Veículo</p>
 
-          {/* Placa */}
+          {/* Placa + status */}
           <div className="space-y-1.5">
             <Label className="text-white/70 text-xs">Placa</Label>
             <div className="flex items-center gap-3">
@@ -183,18 +214,34 @@ export default function NovoBudgetPage() {
               {buscandoPlaca && (
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/15 border-t-primary-600" />
               )}
+              {isOk && !buscandoPlaca && (
+                <span className="flex items-center gap-1 text-xs text-success-400">
+                  <CheckCircle className="h-3.5 w-3.5" /> Sem restrição
+                </span>
+              )}
               {placaNaoEncontrada && placa.length >= 7 && !buscandoPlaca && (
                 <span className="text-xs text-warning-400">Não encontrada — preencha manualmente</span>
               )}
             </div>
           </div>
 
+          {/* Alerta de restrição */}
+          {hasRestriction && (
+            <div className="flex items-start gap-2 rounded-lg border border-error-500/30 bg-error-500/10 px-3 py-2.5">
+              <AlertTriangle className="h-4 w-4 text-error-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-error-300">Veículo com restrição</p>
+                <p className="text-xs text-error-400/80 mt-0.5">{plateData.situation}</p>
+              </div>
+            </div>
+          )}
+
           {/* Montadora + Modelo */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label className="text-white/70 text-xs">Montadora *</Label>
               <Input
-                placeholder="Honda"
+                placeholder="Chevrolet"
                 value={marca}
                 onChange={(e) => setMarca(e.target.value)}
                 className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
@@ -203,7 +250,7 @@ export default function NovoBudgetPage() {
             <div className="space-y-1.5">
               <Label className="text-white/70 text-xs">Modelo *</Label>
               <Input
-                placeholder="Civic"
+                placeholder="Onix"
                 value={modelo}
                 onChange={(e) => setModelo(e.target.value)}
                 className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
@@ -211,28 +258,81 @@ export default function NovoBudgetPage() {
             </div>
           </div>
 
-          {/* Ano + Chassi */}
+          {/* Versão + Motorização */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Ano</Label>
+              <Label className="text-white/70 text-xs">Versão / Trim</Label>
               <Input
-                placeholder="2024"
-                value={ano}
-                onChange={(e) => setAno(e.target.value)}
-                maxLength={4}
+                placeholder="LT1, EXL, Touring…"
+                value={versao}
+                onChange={(e) => setVersao(e.target.value)}
                 className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Chassi</Label>
+              <Label className="text-white/70 text-xs">Motorização</Label>
               <Input
-                placeholder="17 caracteres"
-                value={chassi}
-                onChange={(e) => setChassi(e.target.value)}
-                maxLength={17}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/30 font-mono text-xs"
+                placeholder="1.0T, 2.0, 1.6"
+                value={motorizacao}
+                onChange={(e) => setMotorizacao(e.target.value)}
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
               />
             </div>
+          </div>
+
+          {/* Combustível + Cor */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-white/70 text-xs">Combustível</Label>
+              <Input
+                placeholder="Flex, Gasolina, Diesel…"
+                value={combustivel}
+                onChange={(e) => setCombustivel(e.target.value)}
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-white/70 text-xs">Cor</Label>
+              <Input
+                placeholder="Cinza, Branco, Preto…"
+                value={cor}
+                onChange={(e) => setCor(e.target.value)}
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+              />
+            </div>
+          </div>
+
+          {/* Ano */}
+          <div className="w-32 space-y-1.5">
+            <Label className="text-white/70 text-xs">Ano modelo</Label>
+            <Input
+              placeholder="2024"
+              value={ano}
+              onChange={(e) => setAno(e.target.value)}
+              maxLength={4}
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+            />
+          </div>
+
+          {/* Chassi */}
+          <div className="space-y-1.5">
+            <Label className="text-white/70 text-xs">
+              Chassi{" "}
+              <span className="text-white/30 font-normal">(ver CRLV — API retorna incompleto)</span>
+            </Label>
+            <Input
+              placeholder="9BWZZZ377VT004251"
+              value={chassi}
+              onChange={(e) => setChassi(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+              maxLength={17}
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 font-mono text-xs tracking-widest"
+            />
+            {chassi.length > 0 && chassi.length !== 17 && (
+              <p className="text-xs text-warning-400">{chassi.length}/17 dígitos</p>
+            )}
+            {chassi.length === 17 && (
+              <p className="text-xs text-success-400">✓ Chassi completo</p>
+            )}
           </div>
         </div>
 
