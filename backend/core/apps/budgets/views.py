@@ -52,6 +52,11 @@ class BudgetViewSet(viewsets.ReadOnlyModelViewSet):
             customer=customer,
             vehicle_plate=ser.validated_data["vehicle_plate"],
             vehicle_description=ser.validated_data["vehicle_description"],
+            vehicle_chassis=ser.validated_data.get("vehicle_chassis", ""),
+            vehicle_version=ser.validated_data.get("vehicle_version", ""),
+            vehicle_engine=ser.validated_data.get("vehicle_engine", ""),
+            vehicle_color=ser.validated_data.get("vehicle_color", ""),
+            vehicle_year=ser.validated_data.get("vehicle_year"),
             created_by=request.user.email,
         )
         return Response(

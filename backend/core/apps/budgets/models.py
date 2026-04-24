@@ -22,8 +22,13 @@ class Budget(models.Model):
     customer = models.ForeignKey(
         Person, on_delete=models.PROTECT, related_name="budgets",
     )
-    vehicle_plate = models.CharField(max_length=10, db_index=True)
+    vehicle_plate       = models.CharField(max_length=10, db_index=True)
     vehicle_description = models.CharField(max_length=200)
+    vehicle_chassis     = models.CharField(max_length=17,  blank=True, default="")
+    vehicle_version     = models.CharField(max_length=80,  blank=True, default="", help_text="Versão/trim ex: LT1, EXL")
+    vehicle_engine      = models.CharField(max_length=20,  blank=True, default="", help_text="Motorização ex: 1.0T, 2.0")
+    vehicle_color       = models.CharField(max_length=40,  blank=True, default="", help_text="Cor do veículo")
+    vehicle_year        = models.IntegerField(null=True, blank=True, help_text="Ano modelo do veículo")
     cloned_from = models.ForeignKey(
         "self",
         on_delete=models.SET_NULL,

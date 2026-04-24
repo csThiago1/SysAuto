@@ -2,6 +2,7 @@
 Paddock Solutions — Vehicle Catalog Views
 """
 import logging
+import re
 
 import httpx
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -35,32 +36,137 @@ class VehicleColorViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         return VehicleColor.objects.all()
 
 
-@extend_schema(
-    summary="Consulta dados do veículo pela placa",
-    parameters=[OpenApiParameter("plate", location="path", description="Placa do veículo (7-8 chars)")],
-    responses={
-        200: {
-            "type": "object",
-            "properties": {
-                "plate": {"type": "string"},
-                "make": {"type": "string"},
-                "model": {"type": "string"},
-                "year": {"type": "integer"},
-                "chassis": {"type": "string"},
-                "renavam": {"type": "string"},
-                "city": {"type": "string"},
-            },
-        },
-        404: {"description": "Placa não encontrada"},
-    },
-)
+# ── Normalização de montadora ─────────────────────────────────────────────────
+
+# Abreviações conhecidas usadas pela API → nome completo
+_MAKE_ALIASES: dict[str, str] = {
+    "CHEV":       "Chevrolet",
+    "GM":         "Chevrolet",
+    "VW":         "Volkswagen",
+    "VOLKS":      "Volkswagen",
+    "MB":         "Mercedes-Benz",
+    "MERC":       "Mercedes-Benz",
+    "MERCEDES":   "Mercedes-Benz",
+    "BMW":        "BMW",
+    "RENA":       "Renault",
+    "RENAULT":    "Renault",
+    "PEUG":       "Peugeot",
+    "PEUGEOT":    "Peugeot",
+    "CITR":       "Citroën",
+    "CITRO":      "Citroën",
+    "FORD":       "Ford",
+    "FIAT":       "Fiat",
+    "HONDA":      "Honda",
+    "TOYOTA":     "Toyota",
+    "HYUNDAI":    "Hyundai",
+    "KIA":        "Kia",
+    "NISSAN":     "Nissan",
+    "MITSU":      "Mitsubishi",
+    "MITSUBISHI": "Mitsubishi",
+    "JEEP":       "Jeep",
+    "DODGE":      "Dodge",
+    "AUDI":       "Audi",
+    "VOLVO":      "Volvo",
+    "JAC":        "JAC",
+    "CAOA":       "CAOA Chery",
+    "CHERY":      "Chery",
+    "GWM":        "GWM",
+    "BYD":        "BYD",
+    "SUBARU":     "Subaru",
+    "LAND":       "Land Rover",
+    "LANDROVER":  "Land Rover",
+}
+
+# Palavras técnicas de suffixo a ignorar ao detectar versão
+_ENGINE_RE = re.compile(r"\b(\d+[.,]\d+)\s*(T\b|TURBO\b)?", re.IGNORECASE)
+
+
+def _smart_cap(word: str) -> str:
+    """Capitalização inteligente: preserva códigos curtos (HB20, LT1, EXL, HR-V)."""
+    core = word.replace("-", "")  # ignora hífen ao checar tamanho/dígitos
+    if any(c.isdigit() for c in core) and len(core) <= 5:
+        return word.upper()   # HB20, LT1, GLA-45
+    if core.isupper() and len(core) <= 3:
+        return word.upper()   # EXL, GTS, GT, HR-V (core "HRV" = 3 chars)
+    return word.capitalize()
+
+
+def _parse_modelo(raw: str) -> tuple[str, str, str]:
+    """
+    Extrai (modelo_base, versao, motorizacao) do campo MODELO da API.
+
+    Exemplos:
+      "ONIX LT1 1.0 T 12V FLEX" → ("Onix", "LT1", "1.0T")
+      "CIVIC EXL 2.0 FLEX"      → ("Civic", "EXL", "2.0")
+      "HB20 S 1.6 PREMIUM FLEX" → ("HB20 S", "Premium", "1.6")
+      "CELTA 1.0 MPFI 8V FLEX"  → ("Celta", "", "1.0")
+    """
+    text = raw.strip()
+    if not text:
+        return "", "", ""
+
+    # 1. Encontra motorização (ex: "1.0 T", "2.0", "1.6")
+    m = _ENGINE_RE.search(text)
+    if m:
+        displacement = m.group(1).replace(",", ".")
+        turbo = "T" if m.group(2) else ""
+        engine = displacement + turbo
+        before_engine = text[: m.start()].strip()
+    else:
+        engine = ""
+        before_engine = text
+
+    # 2. Separa palavras antes da motorização
+    parts = before_engine.split()
+    if not parts:
+        return _smart_cap(text), "", engine
+
+    # 3. Modelo base: primeira palavra + opcional sufixo de 1 letra (HB20 S)
+    model_parts = [parts[0]]
+    i = 1
+    if i < len(parts) and len(parts[i]) == 1 and parts[i].isalpha():
+        model_parts.append(parts[i])
+        i += 1
+
+    model_base = " ".join(_smart_cap(p) for p in model_parts)
+    version_parts = parts[i:]
+    version = " ".join(_smart_cap(p) for p in version_parts)
+
+    return model_base, version, engine
+
+
+def _normalize_make(raw: str, fipe_dados: list) -> str:  # type: ignore[type-arg]
+    """
+    Resolve o nome completo da montadora.
+    Prioridade:
+      1. FIPE texto_marca — ex: "GM - Chevrolet" → "Chevrolet"
+      2. Mapa de abreviações sobre o raw da API
+      3. Raw capitalizado como fallback
+    """
+    # 1. FIPE
+    if fipe_dados:
+        texto_marca = fipe_dados[0].get("texto_marca", "")
+        if texto_marca:
+            parts = [p.strip() for p in texto_marca.split("-")]
+            candidate = parts[-1].strip().title() if len(parts) > 1 else parts[0].strip().title()
+            if candidate:
+                return candidate
+
+    # 2. Mapa de abreviações
+    key = raw.upper().strip()
+    if key in _MAKE_ALIASES:
+        return _MAKE_ALIASES[key]
+
+    # 3. Fallback capitalizado
+    return raw.strip().title()
+
+
 def _normalize_plate_response(plate: str, data: dict) -> dict:  # type: ignore[type-arg]
     """Normaliza a resposta da wdapi2.com.br para o formato interno."""
     fipe_dados = data.get("fipe", {}).get("dados", [])
     fipe_value = None
     if fipe_dados:
         texto = fipe_dados[0].get("texto_valor", "")
-        # "R$ 28.799,00" → 28799.00
         try:
             fipe_value = float(
                 texto.replace("R$", "").replace(".", "").replace(",", ".").strip()
@@ -71,21 +177,77 @@ def _normalize_plate_response(plate: str, data: dict) -> dict:  # type: ignore[t
     extra = data.get("extra", {})
     fuel_type = extra.get("combustivel", "") if isinstance(extra, dict) else ""
 
+    raw_make  = data.get("MARCA") or data.get("marca") or ""
+    raw_model = data.get("MODELO") or data.get("modelo") or ""
+
+    # API retorna VERSAO e SUBMODELO separados — usar diretamente quando disponíveis
+    api_versao    = (data.get("VERSAO") or "").strip()
+    api_submodelo = (data.get("SUBMODELO") or "").strip()
+
+    if api_submodelo and api_versao:
+        # Caso ideal: API já separou modelo e versão
+        model_base = _smart_cap(api_submodelo) if " " not in api_submodelo else " ".join(_smart_cap(w) for w in api_submodelo.split())
+        version = api_versao.title()
+        # Extrai motorização via regex no MODELO completo como fallback
+        m = _ENGINE_RE.search(raw_model)
+        if m:
+            displacement = m.group(1).replace(",", ".")
+            engine = displacement + ("T" if m.group(2) else "")
+        else:
+            engine = ""
+    else:
+        # Fallback: parsear do campo MODELO concatenado
+        model_base, version, engine = _parse_modelo(raw_model)
+
+    # Chassi vem mascarado da API (ex: *****04197) — armazenar vazio para não enganar
+    raw_chassis = data.get("chassi") or ""
+    chassis = raw_chassis if raw_chassis and "*" not in raw_chassis else ""
+
+    # Situação do veículo: 0 = sem restrição, >0 = tem restrição (roubo, bloqueio, etc.)
+    situation_code = int(data.get("codigoSituacao") or 0)
+    situation_text = (data.get("situacao") or "").strip()
+
     return {
-        "plate":      plate,
-        "make":       data.get("MARCA") or data.get("marca") or "",
-        "model":      data.get("MODELO") or data.get("modelo") or "",
-        "year":       data.get("anoModelo") or data.get("ano"),
-        "chassis":    data.get("chassi") or "",
-        "renavam":    data.get("renavam") or "",
-        "city":       data.get("municipio") or "",
-        "color":      data.get("cor") or "",
-        "fuel_type":  fuel_type,
-        "fipe_value": fipe_value,
-        "situation":  data.get("situacao") or "",
+        "plate":           plate,
+        "make":            _normalize_make(raw_make, fipe_dados),
+        "model":           model_base,
+        "version":         version,
+        "engine":          engine,
+        "year":            data.get("anoModelo") or data.get("ano"),
+        "chassis":         chassis,
+        "renavam":         data.get("renavam") or "",
+        "city":            data.get("municipio") or "",
+        "color":           (data.get("cor") or "").title(),
+        "fuel_type":       fuel_type,
+        "fipe_value":      fipe_value,
+        "situation":       situation_text,
+        "situation_code":  situation_code,
     }
 
 
+@extend_schema(
+    summary="Consulta dados do veículo pela placa",
+    parameters=[OpenApiParameter("plate", location="path", description="Placa do veículo (7-8 chars)")],
+    responses={
+        200: {
+            "type": "object",
+            "properties": {
+                "plate":   {"type": "string"},
+                "make":    {"type": "string"},
+                "model":   {"type": "string"},
+                "version": {"type": "string"},
+                "engine":  {"type": "string"},
+                "year":    {"type": "integer"},
+                "chassis": {"type": "string"},
+                "renavam": {"type": "string"},
+                "city":    {"type": "string"},
+                "color":   {"type": "string"},
+                "fuel_type": {"type": "string"},
+            },
+        },
+        404: {"description": "Placa não encontrada"},
+    },
+)
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def plate_lookup(request: Request, plate: str) -> Response:
@@ -107,18 +269,21 @@ def plate_lookup(request: Request, plate: str) -> Response:
     if cached:
         logger.info("plate_lookup: cache hit para %s", plate)
         return Response({
-            "plate":      cached.plate,
-            "make":       cached.make,
-            "model":      cached.model,
-            "year":       cached.year,
-            "chassis":    cached.chassis,
-            "renavam":    cached.renavam,
-            "city":       cached.city,
-            "color":      cached.color,
-            "fuel_type":  cached.fuel_type,
-            "fipe_value": None,
-            "situation":  "",
-            "cached":     True,
+            "plate":          cached.plate,
+            "make":           cached.make,
+            "model":          cached.model,
+            "version":        cached.version,
+            "engine":         cached.engine,
+            "year":           cached.year,
+            "chassis":        cached.chassis,
+            "renavam":        cached.renavam,
+            "city":           cached.city,
+            "color":          cached.color,
+            "fuel_type":      cached.fuel_type,
+            "fipe_value":     None,
+            "situation":      "",
+            "situation_code": 0,
+            "cached":         True,
         })
 
     # ── 2. Consulta API externa ───────────────────────────────────────────────
@@ -164,6 +329,8 @@ def plate_lookup(request: Request, plate: str) -> Response:
         defaults={
             "make":         normalized["make"],
             "model":        normalized["model"],
+            "version":      normalized["version"],
+            "engine":       normalized["engine"],
             "year":         int(normalized["year"]) if normalized["year"] else None,
             "chassis":      normalized["chassis"],
             "renavam":      normalized["renavam"],

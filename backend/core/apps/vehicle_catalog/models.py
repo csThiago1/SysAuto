@@ -76,6 +76,8 @@ class PlateCache(models.Model):
     plate      = models.CharField(max_length=8, unique=True, db_index=True, verbose_name="Placa")
     make       = models.CharField(max_length=80,  blank=True, default="")
     model      = models.CharField(max_length=120, blank=True, default="")
+    version    = models.CharField(max_length=80,  blank=True, default="", help_text="Versão/trim ex: LT1, EXL, Premier")
+    engine     = models.CharField(max_length=20,  blank=True, default="", help_text="Motorização ex: 1.0T, 2.0, 1.6")
     year       = models.IntegerField(null=True, blank=True)
     chassis    = models.CharField(max_length=17,  blank=True, default="")
     renavam    = models.CharField(max_length=11,  blank=True, default="")

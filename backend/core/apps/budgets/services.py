@@ -43,6 +43,11 @@ class BudgetService:
         customer: Person,
         vehicle_plate: str,
         vehicle_description: str,
+        vehicle_chassis: str = "",
+        vehicle_version: str = "",
+        vehicle_engine: str = "",
+        vehicle_color: str = "",
+        vehicle_year: int | None = None,
         created_by: str,
     ) -> Budget:
         """Cria Budget novo + BudgetVersion v1 em status draft."""
@@ -51,6 +56,11 @@ class BudgetService:
             customer=customer,
             vehicle_plate=vehicle_plate.upper(),
             vehicle_description=vehicle_description,
+            vehicle_chassis=vehicle_chassis,
+            vehicle_version=vehicle_version,
+            vehicle_engine=vehicle_engine,
+            vehicle_color=vehicle_color,
+            vehicle_year=vehicle_year,
         )
         BudgetVersion.objects.create(
             budget=budget,

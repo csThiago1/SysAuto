@@ -94,15 +94,22 @@ class BudgetReadSerializer(serializers.ModelSerializer):
         fields = [
             "id", "number", "customer", "customer_name",
             "vehicle_plate", "vehicle_description",
+            "vehicle_chassis", "vehicle_version", "vehicle_engine",
+            "vehicle_color", "vehicle_year",
             "cloned_from", "service_order", "active_version",
             "is_active", "created_at", "updated_at",
         ]
 
 
 class BudgetCreateSerializer(serializers.Serializer):
-    customer_id = serializers.IntegerField()
-    vehicle_plate = serializers.CharField(max_length=10)
+    customer_id         = serializers.IntegerField()
+    vehicle_plate       = serializers.CharField(max_length=10)
     vehicle_description = serializers.CharField(max_length=200)
+    vehicle_chassis     = serializers.CharField(max_length=17,  required=False, default="")
+    vehicle_version     = serializers.CharField(max_length=80,  required=False, default="")
+    vehicle_engine      = serializers.CharField(max_length=20,  required=False, default="")
+    vehicle_color       = serializers.CharField(max_length=40,  required=False, default="")
+    vehicle_year        = serializers.IntegerField(required=False, allow_null=True, default=None)
 
 
 class BudgetApproveSerializer(serializers.Serializer):
