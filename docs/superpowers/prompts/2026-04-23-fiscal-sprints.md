@@ -181,21 +181,33 @@ Estamos em plan mode. NÃO implemente até aprovação do plano.
 - `{06X}` = `06C`
 - `{nome_sprint}` = `NFS-e Manaus end-to-end`
 - `{slug}` = `nfse-manaus`
-- `{seções_específicas}` = `§6.4 endpoint NFS-e, §7.4 payload Manaus, §8.1 fluxo, §9.1 mapeamento LC116, §12 gap Manaus`
+- `{seções_específicas}` = `§6.4 endpoint NFS-e, §7.4 payload Manaus, §8.1 fluxo, §8.5 emissão manual, §9.1 mapeamento LC116, §12 gap Manaus`
 - `{arquivos_referência_extras}`:
   - `docs/superpowers/specs/anexos/2026-04-23-focus-suporte-manaus-respostas.md` (resposta Focus)
   - `docs/superpowers/specs/anexos/2026-04-23-contador-tratamento-pecas.md` (decisão contador)
 - `{escopo_bullets}`:
   ```
+  Automatizada (a partir de OS):
   - ManausNfseBuilder: constrói payload a partir de ServiceOrder + Person + Address + BudgetVersionItems
   - FiscalService.emit_nfse / cancel_nfse / consult_nfse completos
   - Celery task poll_fiscal_document reconhecendo doc_type=NFSE
   - Integração com ServiceOrderService: endpoint POST /api/v1/fiscal/nfse/emit/ {service_order_id}
   - Atualizar ServiceOrderService._can_deliver: checa Payment.fiscal_document.status=AUTHORIZED
   - Frontend: modal FiscalEmissionModal na tela OSDetailV2 (tab Pagamentos)
+
+  Manual (ad-hoc, §8.5 do spec):
+  - ManualNfseBuilder: payload a partir de form livre (sem OS)
+  - FiscalService.emit_manual_nfse com permission can_emit_manual + manual_reason obrigatório
+  - Endpoint POST /api/v1/fiscal/documents/nfse/emit-manual/
+  - CheckConstraint no FiscalDocument: service_order=NULL exige manual_reason
+  - Permission can_emit_manual atribuída a fiscal_admin e OWNER (apps/authz/seeds.py)
+  - Frontend: nova tela ManualNfseEmissionPage (rota /fiscal/emitir-nfse) com formulário Zod (cliente + itens livres + discriminação + obs + justificativa) — RHF + react-select para Person
+  - FiscalEvent.triggered_by="USER_MANUAL" para auditoria distinta
+
+  Comum aos dois fluxos:
   - Hook useEmitNfse + useConsultFiscalDocument
   - Webhook dispatcher para evento nfse_autorizado
-  - Smoke homologação: scripts/smoke_ciclo_06c.py emite NFS-e contra prefeitura teste
+  - Smoke homologação: scripts/smoke_ciclo_06c.py emite NFS-e contra prefeitura teste (1 automatizada + 1 manual)
   ```
 - `{bloqueadores}`:
   ```
@@ -206,13 +218,17 @@ Estamos em plan mode. NÃO implemente até aprovação do plano.
   ```
 - `{entregaveis_bullets}`:
   ```
-  - backend/core/apps/fiscal/services/manaus_nfse.py (ManausNfseBuilder)
-  - backend/core/apps/fiscal/services/fiscal_service.py completo para NFS-e
-  - backend/core/apps/fiscal/views.py (FiscalDocumentViewSet + emit_nfse action)
-  - apps/dscar-web/src/components/fiscal/FiscalEmissionModal.tsx
-  - apps/dscar-web/src/api/fiscal.ts + schemas Zod
-  - +35 testes (total projeto ≥ 370)
-  - Smoke live validando emissão autorizada + cancelamento
+  - backend/core/apps/fiscal/services/manaus_nfse.py (ManausNfseBuilder + ManualNfseBuilder)
+  - backend/core/apps/fiscal/services/fiscal_service.py (emit_nfse + emit_manual_nfse + cancel + consult)
+  - backend/core/apps/fiscal/views.py (FiscalDocumentViewSet + actions emit_nfse, emit_nfse_manual)
+  - backend/core/apps/fiscal/serializers.py (ManualNfseInputSerializer)
+  - backend/core/apps/fiscal/migrations/000X_manual_reason_constraint.py
+  - apps/authz/seeds.py atualizado com permission can_emit_manual
+  - apps/dscar-web/src/components/fiscal/FiscalEmissionModal.tsx (automatizada)
+  - apps/dscar-web/src/pages/ManualNfseEmissionPage.tsx (manual)
+  - apps/dscar-web/src/api/fiscal.ts + schemas Zod (incl manualNfseSchema)
+  - +40 testes (total projeto ≥ 375)
+  - Smoke live validando emissão automatizada + manual + cancelamento
   ```
 
 ---
@@ -224,18 +240,30 @@ Estamos em plan mode. NÃO implemente até aprovação do plano.
 - `{06X}` = `06D`
 - `{nome_sprint}` = `NF-e modelo 55 + devolução + CCe`
 - `{slug}` = `nfe-55`
-- `{seções_específicas}` = `§6.3, §7.1, §7.2, §8.2, §9.2 CFOP`
+- `{seções_específicas}` = `§6.3, §7.1, §7.2, §8.2, §8.5 emissão manual, §9.2 CFOP`
 - `{escopo_bullets}`:
   ```
+  Automatizada (a partir de venda estruturada):
   - NfeBuilder: payload NF-e normal (finalidade=1) + devolução (finalidade=4 + notas_referenciadas)
   - FiscalService.emit_nfe, emit_devolucao, cce, inutilizar
   - Mapeamento ItemOperationType → CFOP (tabela em settings)
-  - Endpoint POST /api/v1/fiscal/nfe/emit/ para venda de peça avulsa
+  - Endpoint POST /api/v1/fiscal/nfe/emit/ para venda de peça avulsa estruturada
   - Endpoint POST /api/v1/fiscal/nfe/{id}/devolucao/
   - Endpoint POST /api/v1/fiscal/nfe/{id}/cce/
-  - Frontend: tela nova "Venda de peça" (fora do fluxo OS) + ação "Emitir devolução" em FiscalDocument autorizado
+
+  Manual (ad-hoc, §8.5 do spec):
+  - ManualNfeBuilder: payload a partir de form (cliente + itens NCM/CFOP livres + obs)
+  - FiscalService.emit_manual_nfe com permission can_emit_manual + manual_reason obrigatório
+  - Endpoint POST /api/v1/fiscal/documents/nfe/emit-manual/
+  - Frontend: nova tela ManualNfeEmissionPage (rota /fiscal/emitir-nfe) com formulário Zod
+    (cliente + itens com NCM/CFOP/qty/valor + naturezaOperacao + finalidade + obs + justificativa)
+  - Reuso do mesmo padrão de permission/auditoria criado em 06C
+
+  Comum:
+  - Frontend: ação "Emitir devolução" em FiscalDocument autorizado (modal)
+  - Frontend: ação "Emitir CCe" em FiscalDocument autorizado (modal)
   - Alerta 20h após emissão: "Cancelamento disponível por mais 4h"
-  - Smoke homologação: venda → autorizado → CCe → devolução
+  - Smoke homologação: venda automatizada + venda manual + CCe + devolução
   ```
 - `{bloqueadores}`:
   ```
@@ -244,12 +272,14 @@ Estamos em plan mode. NÃO implemente até aprovação do plano.
   ```
 - `{entregaveis_bullets}`:
   ```
-  - backend/core/apps/fiscal/services/nfe_builder.py
-  - FiscalService expandido (emit_nfe, emit_devolucao, cce, inutilizar)
-  - apps/dscar-web/src/pages/PartsSalePage.tsx
+  - backend/core/apps/fiscal/services/nfe_builder.py (NfeBuilder + ManualNfeBuilder)
+  - FiscalService expandido (emit_nfe, emit_manual_nfe, emit_devolucao, cce, inutilizar)
+  - backend/core/apps/fiscal/serializers.py (ManualNfeInputSerializer)
+  - apps/dscar-web/src/pages/PartsSalePage.tsx (venda estruturada)
+  - apps/dscar-web/src/pages/ManualNfeEmissionPage.tsx (manual)
   - apps/dscar-web/src/components/fiscal/DevolucaoModal.tsx, CceModal.tsx
-  - +30 testes (total projeto ≥ 400)
-  - Smoke live NF-e + devolução + CCe
+  - +35 testes (total projeto ≥ 410)
+  - Smoke live NF-e estruturada + manual + devolução + CCe
   ```
 
 ---

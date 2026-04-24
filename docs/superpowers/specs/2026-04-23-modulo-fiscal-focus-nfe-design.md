@@ -229,10 +229,26 @@ class FiscalDocument(models.Model):
     )
     legacy_databox_id = models.IntegerField(null=True, blank=True, db_index=True)
 
+    # Emissão manual (ad-hoc, fora de OS) — ver §8.5
+    manual_reason = models.CharField(
+        max_length=255, blank=True,
+        help_text="Justificativa obrigatória quando emitido manualmente (auditoria).",
+    )
+
     class Meta:
         indexes = [
             models.Index(fields=["status", "doc_type"]),
             models.Index(fields=["service_order", "doc_type"]),
+        ]
+        constraints = [
+            # Emissão manual exige justificativa; emissão ligada a OS não exige.
+            models.CheckConstraint(
+                name="fiscal_doc_manual_needs_reason",
+                check=(
+                    models.Q(service_order__isnull=False)
+                    | ~models.Q(manual_reason="")
+                ),
+            ),
         ]
 ```
 
@@ -643,6 +659,104 @@ Códigos `forma_pagamento`: `01`=dinheiro, `02`=cheque, `03`=cartão crédito, `
 ```
 Nota: o modelo `FiscalReceivedDocument` será detalhado em sub-spec do Ciclo 06F. Reutiliza `FiscalEvent` para auditoria.
 
+### 8.5 Emissão manual (ad-hoc) — NFS-e e NF-e
+
+**Casos de uso:**
+- Serviço prestado fora de OS (ex: consultoria avulsa, diagnóstico sem abrir ordem, cortesia).
+- Venda de peça pontual sem passar pelo cadastro de peças/estoque.
+- Correção: reemissão de NF anulada por prazo expirado de cancelamento.
+- Notas que o contador pede retroativamente (dentro do mês/competência).
+
+**Princípio:** o operador preenche um formulário livre (cliente + itens + observação) e emite. Não há `ServiceOrder` nem `Payment` vinculados — `FiscalDocument.service_order` e `FiscalDocument.payment` permanecem `null` (o modelo já é nullable, §5.2).
+
+**Permissão:** apenas usuário com role `fiscal_admin` ou `OWNER`. Operador comum do PDV/oficina **não** emite manual (evita lastro paralelo não auditável). Registra em `FiscalEvent.triggered_by="USER_MANUAL"`.
+
+**Fluxo:**
+```
+[Operador autorizado abre tela "Emitir NF manual"]
+  ↓ escolhe tipo (NFS-e ou NF-e mod 55)
+  ↓ seleciona Person (ou cadastra rápido — reutiliza PersonForm §3.1)
+  ↓ preenche itens (descrição, quantidade, valor unitário, código LC116 ou NCM/CFOP)
+  ↓ opcional: alíquota ISS, observação, data de emissão retroativa (validada)
+  ↓ confirma
+  ↓ POST /api/v1/fiscal/{nfse|nfe}/emit-manual/ (payload ManualEmissionSchema)
+[FiscalService.emit_manual_nfse(payload) ou emit_manual_nfe(payload)]
+  ↓ valida Person tem Document + Address primários (LGPD)
+  ↓ ManualNfseBuilder / ManualNfeBuilder constrói payload Focus a partir do form direto
+  ↓ resto idêntico ao fluxo automatizado (ref, POST Focus, polling, webhook)
+  ↓ FiscalDocument criado com service_order=None, payment=None, created_by=user
+  ↓ FiscalEvent(EMIT_REQUEST, triggered_by="USER_MANUAL")
+```
+
+**Schema do form (backend Pydantic/DRF + Zod espelhado no frontend):**
+```python
+class ManualNfseInput(BaseModel):
+    destinatario_id: int                              # FK Person obrigatório
+    itens: list[ManualItemInput]                      # >= 1 item
+    discriminacao: str                                # texto livre da NFS-e, max 2000 chars
+    codigo_servico_lc116: str = "14.01"               # default oficina
+    aliquota_iss: Decimal | None = None               # None = usa alíquota config
+    iss_retido: bool = False
+    data_emissao: datetime | None = None              # None = now(); se informado, valida ≤30d passado
+    observacoes_contribuinte: str = ""
+    observacoes_fisco: str = ""
+
+class ManualItemInput(BaseModel):
+    descricao: str                                    # 3-500 chars
+    quantidade: Decimal = Decimal("1")
+    valor_unitario: Decimal                           # > 0
+    valor_desconto: Decimal = Decimal("0")
+
+
+class ManualNfeInput(BaseModel):
+    destinatario_id: int
+    natureza_operacao: str                            # "Venda", "Prestação de serviço", etc
+    finalidade_emissao: Literal[1, 2, 3, 4] = 1      # 1=normal, 2=complementar, 3=ajuste, 4=devolução
+    nota_referenciada_id: int | None = None           # obrigatório se finalidade=4
+    itens: list[ManualNfeItemInput]                   # >= 1
+    informacoes_adicionais: str = ""
+
+class ManualNfeItemInput(BaseModel):
+    descricao: str
+    ncm: str                                          # 8 dígitos
+    cfop: str                                         # 4 dígitos
+    unidade: str = "UN"
+    quantidade: Decimal
+    valor_unitario: Decimal
+    icms_cst: str = "102"                             # default Simples Nacional
+    origem: str = "0"                                 # nacional
+```
+
+**Diferença em relação à emissão automatizada (a partir de OS):**
+| Aspecto | Automatizada (OS) | Manual (ad-hoc) |
+|---|---|---|
+| Origem dos itens | `ServiceOrderVersionItem` / `BudgetVersionItem` | Form livre |
+| Totais | Copiados de `Version.net_total` | Calculados do form |
+| `FiscalDocumentItem.source_*` FK | Preenchido | `NULL` |
+| Trava `_can_deliver` | Dispara | N/A |
+| Timeline `ServiceOrderEvent(FISCAL_ISSUED)` | Criado | Não criado |
+| Quem pode | Consultor/operador | Apenas `fiscal_admin` / `OWNER` |
+| Auditoria especial | — | `FiscalEvent.triggered_by="USER_MANUAL"` + campo `FiscalDocument.manual_reason` obrigatório |
+
+**Campo extra em `FiscalDocument`** para emissão manual (§5.2 adendo):
+```python
+# Adicionar ao model FiscalDocument
+manual_reason = models.CharField(
+    max_length=255, blank=True,
+    help_text="Justificativa obrigatória quando emitido manualmente (auditoria)",
+)
+```
+`CHECK constraint`: se `service_order IS NULL` então `manual_reason` não pode ser vazio.
+
+**Endpoints:**
+| Operação | Método | URL |
+|---|---|---|
+| Emitir NFS-e manual | POST | `/api/v1/fiscal/nfse/emit-manual/` |
+| Emitir NF-e manual | POST | `/api/v1/fiscal/nfe/emit-manual/` |
+| Emitir NF-e devolução (referencia NF original) | POST | `/api/v1/fiscal/nfe/{id}/devolucao/` (já previsto §8.2) |
+
+NFC-e manual **não existe** — NFC-e é sempre resultado de venda de balcão (PDV) com formas de pagamento capturadas. Se precisar de emissão avulsa de cupom, usar NF-e mod 55 ou NFS-e.
+
 ---
 
 ## 9. Mapeamentos DS Car → fiscal
@@ -812,14 +926,14 @@ Procedimento manual obrigatório antes de habilitar em produção:
 |---|---|---|---|
 | **06A** | `Person` evolução: Document, Category, Contact, Address, EncryptedField LGPD. Migração dos 7.789 cadastros do Databox. | Nenhuma | +40 testes (PII encrypt/decrypt, ETL, soft-delete) |
 | **06B** | App `apps/fiscal` foundation: settings, FiscalConfig, FocusNFeClient, FiscalEvent, FiscalDocument(empty), exception hierarchy, Celery skeleton. | 06A | +25 testes (client mocked, model invariants) |
-| **06C** | NFS-e Manaus end-to-end (após confirmação suporte Focus §12): ManausNfseBuilder, FiscalService.emit_nfse, polling, integração com `_can_deliver`, frontend modal de emissão. | 06B + resposta Focus suporte | +35 testes + smoke live |
-| **06D** | NF-e mod 55 + devolução + CCe + inutilização: NfeBuilder, FiscalService.emit_nfe/devolucao/cce. Mapeamentos CFOP. Frontend tela de venda de peça avulsa. | 06C | +30 testes + smoke |
+| **06C** | NFS-e Manaus end-to-end (após confirmação suporte Focus §12): ManausNfseBuilder + ManualNfseBuilder (§8.5), FiscalService.emit_nfse + emit_manual_nfse, polling, integração com `_can_deliver`, frontend modal de emissão automatizada + tela "Emitir NFS-e manual". | 06B + resposta Focus suporte | +40 testes + smoke live |
+| **06D** | NF-e mod 55 + devolução + CCe + inutilização + emissão manual (§8.5): NfeBuilder + ManualNfeBuilder, FiscalService.emit_nfe/emit_manual_nfe/devolucao/cce. Mapeamentos CFOP. Frontend tela de venda de peça avulsa + tela "Emitir NF-e manual". | 06C | +35 testes + smoke |
 | **06E** | NFC-e mod 65 (síncrono): NfceBuilder, FiscalService.emit_nfce, frontend PDV balcão simplificado, geração de QR-Code visual. | 06D | +20 testes + smoke |
 | **06F** | Manifestação destinatário: FiscalReceivedDocument, manifestacao_service, Celery beat `sync_focus_inbox`, frontend caixa de entrada de NFs. | 06E + validação de payload em homologação | +20 testes + smoke |
 
 **Webhooks** (registro + receiver + dispatcher) entram no Ciclo 06B já preparados, mas só são úteis a partir do 06C (primeira emissão real).
 
-**Total estimado:** ~170 testes novos sobre os ~270 atuais (+63%).
+**Total estimado:** ~180 testes novos sobre os ~270 atuais (+67%).
 
 ---
 
