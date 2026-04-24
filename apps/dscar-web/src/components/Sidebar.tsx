@@ -46,6 +46,7 @@ import {
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
+import { ROLE_HIERARCHY, type PaddockRole } from "@paddock/types";
 import { NotificationBell } from "@/components/header/NotificationBell";
 import { useOverdueOrders } from "@/hooks/useOverdueOrders";
 
@@ -71,6 +72,8 @@ interface NavItem {
 interface NavSection {
   label: string;
   items: NavItem[];
+  /** Papel mínimo para ver esta seção (undefined = todos) */
+  minRole?: PaddockRole;
 }
 
 // ─── Role labels ─────────────────────────────────────────────────────
@@ -144,6 +147,20 @@ const NAV_SECTIONS: NavSection[] = [
           { id: "fin-plano",       label: "Plano de Contas", href: "/financeiro/plano-contas",     icon: BookOpen },
           { id: "fin-pagar",       label: "Contas a Pagar",  href: "/financeiro/contas-pagar",     icon: ArrowUpCircle },
           { id: "fin-receber",     label: "Contas a Receber",href: "/financeiro/contas-receber",   icon: ArrowDownCircle },
+        ],
+      },
+    ],
+  },
+  {
+    label: "FISCAL",
+    minRole: "ADMIN",
+    items: [
+      {
+        id: "fiscal",
+        label: "Fiscal",
+        icon: FileText,
+        children: [
+          { id: "fiscal-emitir-nfse", label: "Emitir NFS-e Manual", href: "/fiscal/emitir-nfse", icon: FileText },
         ],
       },
     ],
@@ -397,6 +414,10 @@ export function Sidebar() {
 
   const userInitials = getInitials(session?.user?.name);
   const roleLabel = ROLE_LABELS[session?.role ?? ""] ?? session?.role ?? "";
+  const userRoleLevel = ROLE_HIERARCHY[(session?.role ?? "STOREKEEPER") as PaddockRole] ?? 0;
+  const visibleSections = NAV_SECTIONS.filter((s) =>
+    !s.minRole || userRoleLevel >= (ROLE_HIERARCHY[s.minRole] ?? 0)
+  );
 
   return (
     <aside
@@ -464,7 +485,7 @@ export function Sidebar() {
 
       {/* ── Navigation ── */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-thin">
-        {NAV_SECTIONS.map((section) => (
+        {visibleSections.map((section) => (
           <div key={section.label}>
             {/* Section label */}
             {collapsed ? (

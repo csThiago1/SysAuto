@@ -99,6 +99,15 @@ class ReceivableDocument(PaddockBaseModel):
     cancel_reason = models.CharField(
         _("Motivo do cancelamento"), max_length=200, blank=True, default=""
     )
+    # 06C: vínculo com documento fiscal emitido (NFS-e/NF-e)
+    fiscal_document = models.ForeignKey(
+        "fiscal.FiscalDocument",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="receivable_documents",
+        verbose_name=_("Documento Fiscal"),
+    )
 
     class Meta:
         ordering = ["due_date", "-created_at"]

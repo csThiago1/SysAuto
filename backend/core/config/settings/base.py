@@ -316,7 +316,7 @@ CILIA_BASE_URL = config("CILIA_BASE_URL", default="https://sistema.cilia.com.br"
 CILIA_AUTH_TOKEN = config("CILIA_AUTH_TOKEN", default="")
 
 # ─── Focus NF-e ──────────────────────────────────────────────────────────────
-FOCUS_NFE_TOKEN = config("FOCUS_NFE_TOKEN", default="")
+FOCUS_NFE_TOKEN = config("FOCUSNFE_TOKEN", default="") or config("FOCUS_NFE_TOKEN", default="")
 FOCUS_NFE_AMBIENTE = config("FOCUS_NFE_AMBIENTE", default="homologacao")
 FOCUS_NFE_BASE_URL = (
     "https://homologacao.focusnfe.com.br"

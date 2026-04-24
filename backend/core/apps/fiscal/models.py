@@ -4,9 +4,12 @@ NF-e, NFC-e e NFS-e: registro e status de emissões
 
 MO-5: FiscalDocument (stub), NFeEntrada, NFeEntradaItem
 06B:  FiscalConfigModel, FiscalDocumentItem, FiscalEvent
+06C:  FiscalDocument spec §5.2 (campos additive), FiscalDocumentItem spec §5.3
 """
 
+from django.conf import settings
 from django.db import models
+from django.db.models import Q
 
 from apps.authentication.models import PaddockBaseModel
 
@@ -16,6 +19,8 @@ class FiscalDocument(PaddockBaseModel):
     Documento fiscal emitido — NF-e, NFC-e ou NFS-e.
     XMLs autorizados SEMPRE salvos no S3.
     Cancelamento: prazo máximo 24h após emissão.
+
+    06C: campos additive (todos null/blank compatíveis com registros MO-5).
     """
 
     class DocumentType(models.TextChoices):
@@ -33,9 +38,9 @@ class FiscalDocument(PaddockBaseModel):
     status = models.CharField(
         max_length=15, choices=Status.choices, default=Status.PENDING, db_index=True
     )
-    # Referência da transação (OS ou venda)
-    reference_id = models.UUIDField(db_index=True)
-    reference_type = models.CharField(max_length=50)  # 'service_order', 'sale'
+    # Referência legada (MO-5) — deprecated, mantidos para retrocompatibilidade até 06D
+    reference_id = models.UUIDField(db_index=True, null=True, blank=True)
+    reference_type = models.CharField(max_length=50, blank=True, default="")  # 'service_order', 'sale'
     # Dados do documento
     key = models.CharField(max_length=44, blank=True, default="", db_index=True)
     number = models.CharField(max_length=20, blank=True, default="")
@@ -44,16 +49,94 @@ class FiscalDocument(PaddockBaseModel):
     total_value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     # Ambiente SEFAZ
     environment = models.CharField(
-        max_length=15, choices=[("homologation", "Homologação"), ("production", "Produção")]
+        max_length=15,
+        choices=[("homologation", "Homologação"), ("production", "Produção")],
+        blank=True,
+        default="homologacao",
     )
     authorized_at = models.DateTimeField(null=True, blank=True)
     cancelled_at = models.DateTimeField(null=True, blank=True)
     rejection_reason = models.TextField(blank=True, default="")
 
+    # ── 06C: spec §5.2 — campos additive ────────────────────────────────────
+    # ref: identificador de idempotência Focus (ex: "12345678-NFSE-20260424-000001")
+    ref = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        unique=True,
+        db_index=True,
+        help_text="Ref de idempotência enviada à Focus.",
+    )
+    config = models.ForeignKey(
+        "fiscal.FiscalConfigModel",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="documents",
+    )
+    service_order = models.ForeignKey(
+        "service_orders.ServiceOrder",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="fiscal_documents",
+    )
+    destinatario = models.ForeignKey(
+        "persons.Person",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="fiscal_received",
+    )
+    protocolo = models.CharField(max_length=50, blank=True, default="")
+    caminho_xml = models.CharField(max_length=500, blank=True, default="")
+    caminho_pdf = models.CharField(max_length=500, blank=True, default="")
+    caminho_xml_cancelamento = models.CharField(max_length=500, blank=True, default="")
+    payload_enviado = models.JSONField(
+        default=dict, blank=True, help_text="Snapshot do payload enviado à Focus."
+    )
+    ultima_resposta = models.JSONField(
+        default=dict, blank=True, help_text="Snapshot da última resposta da Focus."
+    )
+    mensagem_sefaz = models.TextField(blank=True, default="")
+    natureza_rejeicao = models.CharField(max_length=255, blank=True, default="")
+    valor_impostos = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    documento_referenciado = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="devolucoes_complementares",
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    manual_reason = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Justificativa obrigatória para NFS-e manual (sem OS).",
+    )
+
     class Meta(PaddockBaseModel.Meta):
         db_table = "fiscal_document"
         verbose_name = "Documento Fiscal"
         verbose_name_plural = "Documentos Fiscais"
+        constraints = [
+            models.CheckConstraint(
+                name="fiscal_doc_manual_needs_reason",
+                check=Q(service_order__isnull=False) | ~Q(manual_reason=""),
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["status", "document_type"], name="fiscal_doc_status_type_idx"),
+            models.Index(fields=["service_order", "document_type"], name="fiscal_doc_os_type_idx"),
+        ]
 
     def __str__(self) -> str:
         return f"{self.document_type.upper()} #{self.number} — {self.status}"
@@ -277,6 +360,25 @@ class FiscalDocumentItem(models.Model):
         help_text="UUID do OSIntervencao de origem (sem FK forçada).",
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # ── 06C: spec §5.3 — campos additive ────────────────────────────────────
+    codigo_servico_lc116 = models.CharField(
+        max_length=10, blank=True, default="", help_text="Item LC 116 para NFS-e (ex: '14.01')."
+    )
+    valor_bruto = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    valor_liquido = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    # ISS
+    valor_iss = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    iss_retido = models.BooleanField(default=False)
+    # ICMS (campos para NF-e produto)
+    icms_cst = models.CharField(max_length=5, blank=True, default="")
+    icms_aliquota = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    icms_valor = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    # PIS / COFINS
+    pis_cst = models.CharField(max_length=5, blank=True, default="")
+    pis_valor = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    cofins_cst = models.CharField(max_length=5, blank=True, default="")
+    cofins_valor = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     class Meta:
         db_table = "fiscal_document_item"

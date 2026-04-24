@@ -38,3 +38,22 @@ class FocusTimeout(FocusNFeError):
 
 class FocusConflict(FocusNFeError):
     """Conflito de ref — 409. A ref já existe com status diferente de erro."""
+
+
+# ── Ciclo 06C: exceções de domínio (não HTTP) ────────────────────────────────
+
+
+class NfseBuilderError(Exception):
+    """Dados insuficientes para montar payload NFS-e (Person sem documento, sem endereço, etc.)."""
+
+
+class FiscalDocumentAlreadyAuthorized(Exception):
+    """Tentativa de reemissão de documento já autorizado pela SEFAZ."""
+
+
+class FiscalInvalidStatus(Exception):
+    """Operação inválida para o status atual do documento fiscal."""
+
+
+class FiscalValidationError(Exception):
+    """Erro de validação de entrada antes de chamar a Focus (ex: manual_reason vazio)."""

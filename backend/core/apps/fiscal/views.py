@@ -2,11 +2,15 @@
 Paddock Solutions — Fiscal — Views DRF
 Motor de Orçamentos (MO) — Sprint MO-5: NF-e Entrada
 Ciclo 06B: FocusWebhookView
+Ciclo 06C: NfseEmitView, NfseEmitManualView, FiscalDocumentViewSet
 
 RBAC:
   - Leitura: CONSULTANT+
   - Criação/reconciliação: MANAGER+
   - Geração de estoque: MANAGER+
+  - Emissão NFS-e automática: CONSULTANT+
+  - Emissão NFS-e manual: ADMIN+
+  - Cancelamento: MANAGER+
   - Webhook: AllowAny (autenticação via secret no path)
 """
 
@@ -15,14 +19,22 @@ import logging
 from django.conf import settings
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
+from apps.authentication.permissions import (
+    IsAdminOrAbove,
+    IsConsultantOrAbove,
+    IsManagerOrAbove,
+)
 from apps.fiscal.models import FiscalDocument, FiscalEvent, NFeEntrada, NFeEntradaItem
 from apps.fiscal.serializers import (
+    FiscalDocumentListSerializer,
+    FiscalDocumentSerializer,
+    ManualNfseInputSerializer,
     NFeEntradaCreateSerializer,
     NFeEntradaDetailSerializer,
     NFeEntradaItemReconciliarSerializer,
@@ -165,8 +177,10 @@ class FocusWebhookView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Buscar documento
-        doc = FiscalDocument.objects.filter(key=ref).first()
+        # Buscar documento — 06C usa campo ref; fallback em key para registros legados
+        doc = FiscalDocument.objects.filter(ref=ref).first()
+        if doc is None:
+            doc = FiscalDocument.objects.filter(key=ref).first()
 
         if doc is None:
             # Documento não encontrado — registrar evento orphan e retornar OK
@@ -214,3 +228,151 @@ class FocusWebhookView(APIView):
             doc.pk,
         )
         return Response(status=status.HTTP_200_OK)
+
+
+# ─── 06C: Emissão NFS-e ──────────────────────────────────────────────────────
+
+
+class NfseEmitView(APIView):
+    """Emite NFS-e a partir de uma OS.
+
+    Body: {"service_order_id": "uuid"}
+    Retorna: FiscalDocumentSerializer
+    RBAC: CONSULTANT+
+    """
+
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def post(self, request: Request) -> Response:
+        from apps.fiscal.exceptions import FiscalDocumentAlreadyAuthorized
+        from apps.fiscal.services.fiscal_service import FiscalService
+        from apps.service_orders.models import ServiceOrder
+
+        service_order_id = request.data.get("service_order_id")
+        if not service_order_id:
+            return Response(
+                {"detail": "service_order_id obrigatório."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            order = ServiceOrder.objects.prefetch_related(
+                "fiscal_documents"
+            ).get(pk=service_order_id, is_active=True)
+        except ServiceOrder.DoesNotExist:
+            return Response({"detail": "OS não encontrada."}, status=status.HTTP_404_NOT_FOUND)
+
+        if order.customer_type != "private":
+            return Response(
+                {"detail": "NFS-e só aplicável a OS de cliente particular."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            doc = FiscalService.emit_nfse(order)
+        except FiscalDocumentAlreadyAuthorized:
+            return Response(
+                {"detail": "OS já possui NFS-e autorizada."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        except Exception as exc:
+            from apps.fiscal.exceptions import FocusNFeError, NfseBuilderError, FiscalValidationError
+            if isinstance(exc, (FocusNFeError, NfseBuilderError, FiscalValidationError)):
+                return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.error("NfseEmitView: erro ao emitir NFS-e para OS %s: %s", service_order_id, exc)
+            return Response(
+                {"detail": "Erro ao emitir NFS-e."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        return Response(FiscalDocumentSerializer(doc).data, status=status.HTTP_201_CREATED)
+
+
+class NfseEmitManualView(APIView):
+    """Emite NFS-e manual (ad-hoc, sem OS vinculada).
+
+    RBAC: ADMIN+
+    """
+
+    permission_classes = [IsAuthenticated, IsAdminOrAbove]
+
+    def post(self, request: Request) -> Response:
+        from apps.fiscal.exceptions import FiscalValidationError, NfseBuilderError
+        from apps.fiscal.services.fiscal_service import FiscalService
+
+        ser = ManualNfseInputSerializer(data=request.data)
+        if not ser.is_valid():
+            return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            doc = FiscalService.emit_manual_nfse(ser.validated_data, user=request.user)
+        except (NfseBuilderError, FiscalValidationError) as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as exc:
+            from apps.fiscal.exceptions import FocusNFeError
+            if isinstance(exc, FocusNFeError):
+                return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.error("NfseEmitManualView: erro ao emitir NFS-e manual: %s", exc)
+            return Response(
+                {"detail": "Erro ao emitir NFS-e manual."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        return Response(FiscalDocumentSerializer(doc).data, status=status.HTTP_201_CREATED)
+
+
+class FiscalDocumentViewSet(viewsets.ReadOnlyModelViewSet):
+    """Lista e detalhe de documentos fiscais.
+
+    DELETE (action cancel): MANAGER+ cancela documento autorizado.
+    """
+
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get_queryset(self):  # type: ignore[override]
+        qs = FiscalDocument.objects.filter(is_active=True).order_by("-created_at")
+
+        os_id = self.request.query_params.get("service_order")
+        if os_id:
+            qs = qs.filter(service_order_id=os_id)
+
+        doc_type = self.request.query_params.get("document_type")
+        if doc_type:
+            qs = qs.filter(document_type=doc_type)
+
+        doc_status = self.request.query_params.get("status")
+        if doc_status:
+            qs = qs.filter(status=doc_status)
+
+        return qs
+
+    def get_serializer_class(self):  # type: ignore[override]
+        if self.action == "retrieve":
+            return FiscalDocumentSerializer
+        return FiscalDocumentListSerializer
+
+    def destroy(self, request: Request, *args, **kwargs) -> Response:  # type: ignore[override]
+        """Cancela documento fiscal autorizado (MANAGER+)."""
+        if not IsManagerOrAbove().has_permission(request, self):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        from apps.fiscal.exceptions import FiscalInvalidStatus, FiscalValidationError
+        from apps.fiscal.services.fiscal_service import FiscalService
+
+        doc = self.get_object()
+        justificativa = request.data.get("justificativa", "")
+
+        try:
+            doc = FiscalService.cancel(doc, justificativa)
+        except FiscalInvalidStatus as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except FiscalValidationError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as exc:
+            logger.error("FiscalDocumentViewSet.destroy: erro ao cancelar doc %s: %s", doc.pk, exc)
+            return Response(
+                {"detail": "Erro ao cancelar documento."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        return Response(FiscalDocumentSerializer(doc).data)
