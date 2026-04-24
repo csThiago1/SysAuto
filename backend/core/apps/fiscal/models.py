@@ -47,8 +47,8 @@ class FiscalDocument(PaddockBaseModel):
         max_length=15, choices=Status.choices, default=Status.PENDING, db_index=True
     )
     # Referência da transação (OS ou venda) — deprecated em 06C, mantidos para compatibilidade
-    reference_id = models.UUIDField(db_index=True)
-    reference_type = models.CharField(max_length=50)  # 'service_order', 'sale'
+    reference_id = models.UUIDField(db_index=True, null=True, blank=True)  # deprecated — use service_order FK
+    reference_type = models.CharField(max_length=50, blank=True, default="")  # deprecated
     # Dados do documento
     key = models.CharField(max_length=44, blank=True, default="", db_index=True)
     number = models.CharField(max_length=20, blank=True, default="")
@@ -57,7 +57,7 @@ class FiscalDocument(PaddockBaseModel):
     total_value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     # Ambiente SEFAZ
     environment = models.CharField(
-        max_length=15, choices=[("homologation", "Homologação"), ("production", "Produção")]
+        max_length=15, choices=[("homologacao", "Homologação"), ("producao", "Produção")]
     )
     authorized_at = models.DateTimeField(null=True, blank=True)
     cancelled_at = models.DateTimeField(null=True, blank=True)
@@ -71,7 +71,6 @@ class FiscalDocument(PaddockBaseModel):
         null=True,
         blank=True,
         unique=True,
-        db_index=True,
         help_text="Chave de idempotência enviada ao Focus. NULL em registros anteriores à 06C.",
     )
     config = models.ForeignKey(
@@ -409,7 +408,12 @@ class FiscalDocumentItem(models.Model):
         db_table = "fiscal_document_item"
         verbose_name = "Item de Documento Fiscal"
         verbose_name_plural = "Itens de Documentos Fiscais"
-        unique_together = [("document", "numero_item")]
+        constraints = [
+            models.UniqueConstraint(
+                fields=("document", "numero_item"),
+                name="fiscal_docitem_doc_numero_uniq",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"Item {self.numero_item} — {self.descricao[:50]}"
@@ -442,9 +446,11 @@ class FiscalEvent(models.Model):
         WEBHOOK = "WEBHOOK", "Webhook Focus"
 
     # FK nullable — webhooks orphan não têm document
+    # SET_NULL garante que FiscalEvent persiste mesmo se o documento for deletado
+    # (log é evidência fiscal — NUNCA deletar FiscalEvent)
     document = models.ForeignKey(
         FiscalDocument,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="events",
         null=True,
         blank=True,

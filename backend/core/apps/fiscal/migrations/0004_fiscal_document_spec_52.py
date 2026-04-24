@@ -40,7 +40,6 @@ class Migration(migrations.Migration):
             name="ref",
             field=models.CharField(
                 blank=True,
-                db_index=True,
                 help_text="Chave de idempotência enviada ao Focus. NULL em registros anteriores à 06C.",
                 max_length=50,
                 null=True,
@@ -268,5 +267,42 @@ class Migration(migrations.Migration):
             model_name="fiscaldocumentitem",
             name="cofins_valor",
             field=models.DecimalField(decimal_places=2, default=0, max_digits=12),
+        ),
+
+        # ── AlterField: review fixes C2, I1, I4 ────────────────────────────────
+        # C2: FiscalEvent.document on_delete CASCADE → SET_NULL
+        # (no DB change — Django tracks on_delete in migration state)
+        migrations.AlterField(
+            model_name="fiscalevent",
+            name="document",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="events",
+                to="fiscal.fiscaldocument",
+            ),
+        ),
+        # I1: reference_id nullable — prevents IntegrityError in new service layer
+        migrations.AlterField(
+            model_name="fiscaldocument",
+            name="reference_id",
+            field=models.UUIDField(blank=True, db_index=True, null=True),
+        ),
+        # I1: reference_type — blank + default (deprecated field)
+        migrations.AlterField(
+            model_name="fiscaldocument",
+            name="reference_type",
+            field=models.CharField(blank=True, default="", max_length=50),
+        ),
+        # I4: environment choices standardized to Portuguese (matches FiscalConfigModel)
+        # (no DB change — choices are Python-only validation)
+        migrations.AlterField(
+            model_name="fiscaldocument",
+            name="environment",
+            field=models.CharField(
+                choices=[("homologacao", "Homologação"), ("producao", "Produção")],
+                max_length=15,
+            ),
         ),
     ]
