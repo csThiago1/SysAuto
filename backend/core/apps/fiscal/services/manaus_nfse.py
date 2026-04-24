@@ -1,5 +1,5 @@
 """
-Paddock Solutions — Fiscal — ManausNfseBuilder
+Paddock Solutions — Fiscal — ManausNfseBuilder + ManualNfseBuilder
 Ciclo 06C: NFS-e Manaus end-to-end
 
 Constrói o payload Focus /v2/nfse para a Prefeitura de Manaus (IBGE 1302603).
@@ -15,6 +15,7 @@ from typing import Any
 # Module-level imports required for testability with unittest.mock.patch.
 # Lazy imports inside functions block @patch — see CLAUDE.md armadilha MO-6.
 from apps.persons.models import Person  # noqa: E402
+from apps.fiscal.models import FiscalConfigModel  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -271,3 +272,69 @@ class ManausNfseBuilder:
             )
             text = text[: cls.DISCRIMINACAO_MAX]
         return text
+
+
+class ManualNfseBuilder:
+    """Constrói payload NFS-e a partir de ManualNfseInputSerializer.validated_data.
+
+    Diferente do ManausNfseBuilder: origem é form livre, não OS.
+    """
+
+    MUNICIPIO_IBGE_MANAUS = "1302603"
+
+    @classmethod
+    def build(
+        cls,
+        input_data: dict[str, Any],
+        person: Person,
+        config: FiscalConfigModel,
+        ref: str,
+    ) -> dict[str, Any]:
+        """Retorna dict pronto para POST Focus /v2/nfse.
+
+        Args:
+            input_data: validated_data de ManualNfseInputSerializer
+            person: Person destinatário (já carregado e validado)
+            config: FiscalConfigModel do emissor
+            ref: chave de idempotência já gerada
+        """
+        tomador = ManausNfseBuilder._get_tomador(person)  # reusar lógica existente
+        rps = ManausNfseBuilder._get_rps(ref, config)
+
+        valor_total = sum(
+            (Decimal(str(item["valor_unitario"])) * Decimal(str(item.get("quantidade", 1))))
+            - Decimal(str(item.get("valor_desconto", 0)))
+            for item in input_data["itens"]
+        )
+
+        aliquota = input_data.get("aliquota_iss") or config.aliquota_iss_default
+        aliquota = Decimal(str(aliquota))
+        valor_iss = (valor_total * aliquota / Decimal("100")).quantize(Decimal("0.01"))
+
+        servico = {
+            "valor_servicos": str(valor_total),
+            "valor_iss": str(valor_iss),
+            "iss_retido": input_data.get("iss_retido", False),
+            "item_lista_servico": input_data.get("codigo_servico_lc116", "14.01"),
+            "discriminacao": input_data.get("discriminacao", ""),
+            "codigo_municipio": cls.MUNICIPIO_IBGE_MANAUS,
+            "aliquota": str(aliquota.quantize(Decimal("0.01"))),
+        }
+
+        data_emissao = input_data.get("data_emissao")
+        if data_emissao is None:
+            data_emissao = datetime.now(tz=timezone.utc).isoformat()
+        elif hasattr(data_emissao, "isoformat"):
+            data_emissao = data_emissao.isoformat()
+
+        return {
+            "data_emissao": data_emissao,
+            "prestador": {
+                "cnpj": config.cnpj,
+                "inscricao_municipal": config.inscricao_municipal,
+                "codigo_municipio": cls.MUNICIPIO_IBGE_MANAUS,
+            },
+            "tomador": tomador,
+            "rps": rps,
+            "servico": servico,
+        }
