@@ -169,7 +169,13 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
-                <InfoItem label={isPF ? "CPF" : "CNPJ"} value={person.document} />
+                {(person.documents ?? []).map((doc) => (
+                  <InfoItem
+                    key={doc.id}
+                    label={doc.doc_type}
+                    value={`${doc.value_masked}${doc.is_primary ? " · Principal" : ""}`}
+                  />
+                ))}
                 {isPF && <InfoItem label="Data de Nascimento" value={formatDate(person.birth_date)} />}
                 {!isPF && person.fantasy_name && (
                   <InfoItem label="Nome Fantasia" value={person.fantasy_name} />
@@ -179,9 +185,6 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
                 )}
                 {!isPF && person.municipal_registration && (
                   <InfoItem label="Inscrição Municipal" value={person.municipal_registration} />
-                )}
-                {person.insurer_code && (
-                  <InfoItem label="Código Seguradora" value={person.insurer_code} />
                 )}
                 <InfoItem
                   label="Status"
@@ -194,6 +197,23 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
                 <div className="mt-4 pt-4 border-t">
                   <p className="text-xs font-medium text-white/40 uppercase tracking-wide mb-1">Observações</p>
                   <p className="text-sm text-white/70 whitespace-pre-wrap">{person.notes}</p>
+                </div>
+              )}
+              {person.client_profile && (
+                <div className="mt-4 pt-4 border-t border-white/10">
+                  <p className="text-2xs font-medium text-white/40 uppercase tracking-wide mb-2">LGPD</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <InfoItem
+                      label="Consentimento"
+                      value={person.client_profile.lgpd_consent_date
+                        ? new Date(person.client_profile.lgpd_consent_date).toLocaleDateString("pt-BR")
+                        : "Não registrado"}
+                    />
+                    <InfoItem
+                      label="Compartilhamento no grupo"
+                      value={person.client_profile.group_sharing_consent ? "Autorizado" : "Não autorizado"}
+                    />
+                  </div>
                 </div>
               )}
             </CardContent>

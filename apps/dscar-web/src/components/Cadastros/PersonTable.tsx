@@ -88,7 +88,7 @@ export function PersonTable({ persons, onEdit, isLoading = false }: PersonTableP
                 {/* Avatar + nome */}
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <Avatar name={p.full_name} logoUrl={p.logo_url} size="sm" />
+                    <Avatar name={p.full_name} size="sm" />
                     <div>
                       <p className="font-medium text-neutral-900 leading-tight">{p.full_name}</p>
                       {p.fantasy_name && (
