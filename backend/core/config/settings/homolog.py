@@ -26,7 +26,7 @@ AWS_S3_ENDPOINT_URL = f"https://{_R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
 AWS_ACCESS_KEY_ID = config("R2_ACCESS_KEY_ID", default="")  # type: ignore[name-defined]
 AWS_SECRET_ACCESS_KEY = config("R2_SECRET_ACCESS_KEY", default="")  # type: ignore[name-defined]
 AWS_STORAGE_BUCKET_NAME = config("R2_BUCKET_NAME", default="")  # type: ignore[name-defined]
-AWS_S3_CUSTOM_DOMAIN = _R2_PUBLIC_URL  # sem "https://"
+AWS_S3_CUSTOM_DOMAIN = _R2_PUBLIC_URL.removeprefix("https://").removeprefix("http://").rstrip("/")  # sem scheme
 AWS_DEFAULT_ACL = None          # R2 não suporta ACLs
 AWS_QUERYSTRING_AUTH = False    # URLs públicas
 AWS_S3_FILE_OVERWRITE = False   # nunca sobrescrever uploads
@@ -62,12 +62,12 @@ SECURE_HSTS_PRELOAD = True
 
 # ─── Guards — falha imediata se vars críticas estiverem ausentes ──────────────
 _REQUIRED_VARS = {
-    "DJANGO_SECRET_KEY": config("DJANGO_SECRET_KEY", default=""),  # type: ignore[name-defined]
     "FIELD_ENCRYPTION_KEY": config("FIELD_ENCRYPTION_KEY", default=""),  # type: ignore[name-defined]
     "R2_ACCOUNT_ID": _R2_ACCOUNT_ID,
     "R2_ACCESS_KEY_ID": AWS_ACCESS_KEY_ID,
     "R2_SECRET_ACCESS_KEY": AWS_SECRET_ACCESS_KEY,
     "R2_BUCKET_NAME": AWS_STORAGE_BUCKET_NAME,
+    "R2_PUBLIC_URL": _R2_PUBLIC_URL,
 }
 
 for _var, _val in _REQUIRED_VARS.items():
