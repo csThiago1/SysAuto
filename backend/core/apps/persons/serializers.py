@@ -268,6 +268,8 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
             PersonAddress.objects.create(person=person, **a)
 
     def _sync_documents(self, person: Person, documents_data: list) -> None:
+        if not documents_data:
+            return  # empty list = no change; preserve existing documents
         person.documents.all().delete()
         for d in documents_data:
             PersonDocument.objects.create(person=person, **d)

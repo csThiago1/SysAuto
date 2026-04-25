@@ -51,6 +51,9 @@ class PersonViewSet(viewsets.ModelViewSet):
         role = self.request.query_params.get("role")
         if role:
             qs = qs.filter(roles__role=role)
+        kind = self.request.query_params.get("kind")
+        if kind:
+            qs = qs.filter(person_kind=kind)
         return qs.filter(is_active=True).distinct()
 
     def get_serializer_class(self):  # type: ignore[override]

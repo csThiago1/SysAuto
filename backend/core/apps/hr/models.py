@@ -140,7 +140,7 @@ class Employee(PaddockBaseModel):
     emergency_contact_name = models.CharField(
         _("Contato emergência — nome"), max_length=200, blank=True, default=""
     )
-    emergency_contact_phone = models.CharField(
+    emergency_contact_phone = EncryptedCharField(
         _("Contato emergência — telefone"), max_length=20, blank=True, default=""
     )
     emergency_contact_relationship = models.CharField(

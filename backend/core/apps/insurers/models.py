@@ -74,16 +74,23 @@ class InsurerTenantProfile(models.Model):
     Complementa o registro público Insurer com dados operacionais locais:
     contatos, SLA, portal de acionamento, observações internas.
 
-    Nota: esta tabela reside no schema público (apps.insurers está em SHARED_APPS).
-    O isolamento por tenant é feito a nível de aplicação via FK implícita ao tenant
-    ativo no contexto da request.
+    Cada empresa (Company) pode ter seu próprio perfil para cada seguradora.
+    Isolamento garantido pelo par (insurer, company) — unique_together.
     """
 
-    insurer = models.OneToOneField(
+    insurer = models.ForeignKey(
         Insurer,
         on_delete=models.PROTECT,
-        related_name="tenant_profile",
+        related_name="tenant_profiles",
         verbose_name="Seguradora",
+    )
+    company = models.ForeignKey(
+        "tenants.Company",
+        on_delete=models.CASCADE,
+        related_name="insurer_profiles",
+        verbose_name="Empresa",
+        null=True,
+        blank=True,
     )
 
     # Contato de sinistros
@@ -135,6 +142,8 @@ class InsurerTenantProfile(models.Model):
     class Meta:
         verbose_name = "Perfil Operacional da Seguradora"
         verbose_name_plural = "Perfis Operacionais de Seguradoras"
+        unique_together = [("insurer", "company")]
 
     def __str__(self) -> str:
-        return f"Perfil tenant — {self.insurer.name}"
+        company_name = self.company.name if self.company_id else "—"
+        return f"Perfil {company_name} — {self.insurer.name}"

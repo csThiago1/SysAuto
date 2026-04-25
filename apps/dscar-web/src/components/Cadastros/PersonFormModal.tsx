@@ -166,14 +166,9 @@ export function PersonFormModal({
       is_active:   src?.is_active ?? true,
       notes:       src?.notes ?? "",
       roles:       src?.roles.map((r) => r.role) ?? defaultRoles ?? ["CLIENT"],
-      documents:   src?.documents?.map((d) => ({
-        doc_type: d.doc_type,
-        value: d.value_masked ?? "",
-        is_primary: d.is_primary,
-        issued_by: d.issued_by ?? "",
-        issued_at: d.issued_at ?? null,
-        expires_at: d.expires_at ?? null,
-      })) ?? [],
+      // Ao editar, documentos existentes ficam somente-leitura (exibidos abaixo).
+      // Apenas novos documentos são enviados para não sobrescrever dados mascarados.
+      documents: [],
       contacts:    src?.contacts ?? [],
       addresses:   src?.addresses ?? [],
     });
@@ -205,7 +200,12 @@ export function PersonFormModal({
   /** onSubmit delega inteiramente ao hook — sem lógica de fetch manual (PADRÃO-4) */
   async function onSubmit(data: FormValues): Promise<void> {
     if (selectedRoles.length === 0) { toast.error("Selecione ao menos uma categoria."); return; }
-    const payload: CreatePersonPayload = { ...data, roles: selectedRoles };
+    const payload = {
+      ...data,
+      roles: selectedRoles,
+      inscription_type: data.inscription_type || undefined,
+      gender: data.gender || undefined,
+    } as CreatePersonPayload;
     try {
       if (isEditing && person) {
         await updatePerson.mutateAsync({ id: person.id, data: payload });
@@ -369,6 +369,19 @@ export function PersonFormModal({
                 + Adicionar
               </Button>
             </div>
+            {/* Documentos existentes — somente leitura em modo edição */}
+            {isEditing && personData?.documents && personData.documents.length > 0 && (
+              <div className="space-y-1">
+                {personData.documents.map((d) => (
+                  <div key={d.id} className="flex items-center gap-2 px-3 py-1.5 rounded border border-neutral-200 bg-neutral-50 text-xs text-neutral-500">
+                    <span className="font-medium text-neutral-700">{d.doc_type}</span>
+                    <span>{d.value_masked}</span>
+                    {d.is_primary && <span className="ml-auto text-primary-600">principal</span>}
+                  </div>
+                ))}
+                <p className="text-xs text-neutral-400">Para alterar documentos existentes, use o painel de detalhe.</p>
+              </div>
+            )}
             {documentFields.map((field, index) => (
               <div key={field.id} className="space-y-2 p-3 border rounded-md bg-neutral-50">
                 <div className="flex items-center justify-between">
