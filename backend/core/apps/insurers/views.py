@@ -14,8 +14,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.insurers.models import Insurer
-from apps.insurers.serializers import InsurerMinimalSerializer, InsurerSerializer
+from apps.insurers.models import Insurer, InsurerTenantProfile
+from apps.insurers.serializers import (
+    InsurerMinimalSerializer,
+    InsurerSerializer,
+    InsurerTenantProfileSerializer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -122,6 +126,27 @@ class InsurerViewSet(
         logger.info("Logo atualizado para seguradora %s → %s", insurer.name, new_url)
 
         return Response(InsurerSerializer(insurer).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["get", "put"], url_path="tenant_profile")
+    def tenant_profile(self, request: Request, pk: str | None = None) -> Response:
+        """
+        GET  → retorna perfil operacional (ou defaults se não existir).
+        PUT  → cria ou atualiza perfil operacional (upsert).
+        """
+        insurer: Insurer = self.get_object()
+
+        if request.method == "GET":
+            profile, _ = InsurerTenantProfile.objects.get_or_create(insurer=insurer)
+            return Response(InsurerTenantProfileSerializer(profile).data)
+
+        # PUT — upsert
+        profile, _ = InsurerTenantProfile.objects.get_or_create(insurer=insurer)
+        serializer = InsurerTenantProfileSerializer(
+            profile, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 def _extract_storage_path(url: str) -> str | None:

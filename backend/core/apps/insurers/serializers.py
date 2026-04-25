@@ -5,7 +5,7 @@ import logging
 
 from rest_framework import serializers
 
-from apps.insurers.models import Insurer
+from apps.insurers.models import Insurer, InsurerTenantProfile
 
 logger = logging.getLogger(__name__)
 
@@ -53,3 +53,26 @@ class InsurerMinimalSerializer(serializers.ModelSerializer):
         exclusively on the Insurer model via upload_logo endpoint.
         """
         return obj.logo_url or ""
+
+
+class InsurerTenantProfileSerializer(serializers.ModelSerializer):
+    """Serializer para o perfil operacional da seguradora por tenant."""
+
+    class Meta:
+        model = InsurerTenantProfile
+        fields = [
+            "contact_sinistro_nome",
+            "contact_sinistro_phone",
+            "contact_sinistro_email",
+            "contact_financeiro_nome",
+            "contact_financeiro_phone",
+            "contact_financeiro_email",
+            "contact_comercial_nome",
+            "contact_comercial_phone",
+            "contact_comercial_email",
+            "portal_url",
+            "sla_dias_uteis",
+            "observacoes_operacionais",
+            "updated_at",
+        ]
+        read_only_fields = ["updated_at"]
