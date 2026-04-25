@@ -129,6 +129,12 @@ export interface Employee extends EmployeeListItem {
   education_level: string;
   nationality: string;
   emergency_contact_name: string;
+  emergency_contact_phone: string;
+  emergency_contact_relationship: string;
+  bank_name: string;
+  bank_agency: string;
+  bank_account: string;
+  bank_account_type: "corrente" | "poupanca" | "";
   address_street: string;
   address_number: string;
   address_complement: string;
@@ -344,6 +350,11 @@ export interface CreateEmployeePayload {
   nationality?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
+  emergency_contact_relationship?: string;
+  bank_name?: string;
+  bank_agency?: string;
+  bank_account?: string;
+  bank_account_type?: "corrente" | "poupanca";
   address_street?: string;
   address_number?: string;
   address_complement?: string;
