@@ -13,6 +13,8 @@ import logging
 from rest_framework import serializers
 
 from .models import (
+    BrokerOffice,
+    BrokerPerson,
     ClientProfile,
     Person,
     PersonAddress,
@@ -256,10 +258,6 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
     def _sync_contacts(self, person: Person, contacts_data: list) -> None:
         person.contacts.all().delete()
         for c in contacts_data:
-            # Garante que value_hash é populado
-            value = c.get("value", "")
-            if value and "value_hash" not in c:
-                c["value_hash"] = sha256_hex(value)
             PersonContact.objects.create(person=person, **c)
 
     def _sync_addresses(self, person: Person, addresses_data: list) -> None:
@@ -274,6 +272,15 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
         for d in documents_data:
             PersonDocument.objects.create(person=person, **d)
 
+    def _sync_broker_profile(self, person: Person, roles: list) -> None:
+        """Auto-cria BrokerOffice (PJ) ou BrokerPerson (PF) quando role=BROKER."""
+        if "BROKER" not in roles:
+            return
+        if person.person_kind == "PJ":
+            BrokerOffice.objects.get_or_create(person=person)
+        elif person.person_kind == "PF":
+            BrokerPerson.objects.get_or_create(person=person)
+
     def create(self, validated_data: dict) -> Person:
         roles = validated_data.pop("roles")
         contacts = validated_data.pop("contacts", [])
@@ -281,6 +288,7 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
         documents = validated_data.pop("documents", [])
         person = Person.objects.create(**validated_data)
         self._sync_roles(person, roles)
+        self._sync_broker_profile(person, roles)
         self._sync_contacts(person, contacts)
         self._sync_addresses(person, addresses)
         self._sync_documents(person, documents)
@@ -296,6 +304,7 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
         instance.save()
         if roles is not None:
             self._sync_roles(instance, roles)
+            self._sync_broker_profile(instance, roles)
         if contacts is not None:
             self._sync_contacts(instance, contacts)
         if addresses is not None:

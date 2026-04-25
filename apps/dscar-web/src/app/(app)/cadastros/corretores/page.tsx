@@ -13,7 +13,7 @@ export default function CorretoresPage() {
   const { data: officesData, isLoading: loadingOffices } = usePersons({ role: "BROKER", kind: "PJ" })
   const [selectedOffice, setSelectedOffice] = useState<Person | null>(null)
   const { data: membersData, isLoading: loadingMembers } = usePersons(
-    selectedOffice ? { role: "BROKER", kind: "PF" } : undefined
+    selectedOffice ? { role: "BROKER", kind: "PF", officeId: selectedOffice.id } : undefined
   )
   const [newOfficeOpen, setNewOfficeOpen] = useState(false)
   const [newBrokerOpen, setNewBrokerOpen] = useState(false)

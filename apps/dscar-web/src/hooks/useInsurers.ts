@@ -9,6 +9,7 @@ const insurerKeys = {
   all: ["insurers"] as const,
   list: (search = "") => ["insurers", "list", search] as const,
   detail: (id: string) => ["insurers", "detail", id] as const,
+  tenantProfile: (id: string) => ["insurers", "tenant-profile", id] as const,
 }
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
@@ -95,7 +96,7 @@ export function useInsurerUploadLogo() {
 
 export function useInsurerTenantProfile(insurerId: string | null) {
   return useQuery({
-    queryKey: ["insurers", insurerId, "tenant-profile"],
+    queryKey: insurerKeys.tenantProfile(insurerId ?? ""),
     queryFn: () =>
       apiFetch<InsurerTenantProfile>(`${API}/${insurerId}/tenant_profile/`),
     enabled: !!insurerId,
@@ -113,7 +114,7 @@ export function useUpdateInsurerTenantProfile() {
         body: JSON.stringify(data),
       }),
     onSuccess: (_, { insurerId }) => {
-      void qc.invalidateQueries({ queryKey: ["insurers", insurerId, "tenant-profile"] })
+      void qc.invalidateQueries({ queryKey: insurerKeys.tenantProfile(insurerId) })
       toast.success("Perfil operacional atualizado.")
     },
     onError: () => toast.error("Erro ao salvar perfil."),

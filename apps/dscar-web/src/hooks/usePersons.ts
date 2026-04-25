@@ -13,6 +13,7 @@ export interface UsePersonsParams {
   search?: string;
   is_active?: boolean;
   page?: number;
+  officeId?: string;
 }
 
 export function usePersons(params?: UsePersonsParams) {
@@ -22,6 +23,7 @@ export function usePersons(params?: UsePersonsParams) {
   if (params?.search)                    q.set("search", params.search);
   if (params?.is_active !== undefined)   q.set("is_active", String(params.is_active));
   if (params?.page)                      q.set("page", String(params.page));
+  if (params?.officeId)                  q.set("office_id", params.officeId);
 
   return useQuery<PaginatedResponse<Person>>({
     queryKey: ["persons", params],

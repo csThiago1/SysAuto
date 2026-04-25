@@ -43,12 +43,8 @@ export default function InsurerDetailPage({ params }: Props) {
   }
   if (!insurer) return <p className="text-white/50">Seguradora não encontrada.</p>
 
-  async function onSubmit(data: Partial<InsurerTenantProfile>) {
-    try {
-      await updateProfile.mutateAsync({ insurerId: id, data })
-    } catch {
-      // toast já disparado no hook
-    }
+  function onSubmit(data: Partial<InsurerTenantProfile>) {
+    updateProfile.mutate({ insurerId: id, data })
   }
 
   return (

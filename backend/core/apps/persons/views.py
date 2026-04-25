@@ -54,6 +54,9 @@ class PersonViewSet(viewsets.ModelViewSet):
         kind = self.request.query_params.get("kind")
         if kind:
             qs = qs.filter(person_kind=kind)
+        office_id = self.request.query_params.get("office_id")
+        if office_id:
+            qs = qs.filter(broker_person__office__person_id=office_id)
         return qs.filter(is_active=True).distinct()
 
     def get_serializer_class(self):  # type: ignore[override]
