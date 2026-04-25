@@ -67,6 +67,16 @@ class ServiceOrderService:
         if customer_uuid is not None:
             payload["customer_uuid"] = customer_uuid
 
+        # customer_id é FK inteira de Person (fluxo CreateOSForm) — já mapeada como customer_id no payload.
+        # Auto-popula customer_name a partir do nome da Person quando não enviado pelo frontend.
+        customer_id = payload.get("customer_id")
+        if customer_id and not payload.get("customer_name"):
+            from apps.persons.models import Person
+            try:
+                payload["customer_name"] = Person.objects.get(pk=customer_id).full_name
+            except Person.DoesNotExist:
+                pass
+
         order = ServiceOrder(**payload)
         order.save()
         

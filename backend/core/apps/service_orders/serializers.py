@@ -487,10 +487,31 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
         allow_null=True,
         write_only=True,
     )
+    # customer_id recebe o ID inteiro de Person (tenant FK) — fluxo CreateOSForm.
+    # Não conflita com o campo customer (UUID) acima pois são campos distintos no serializer.
+    customer_id = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        write_only=True,
+    )
 
     class Meta:
         model = ServiceOrder
         exclude = ["number", "created_by", "invoice_issued", "opened_at"]
+        # Campos calculados ou controlados por endpoints dedicados — não graváveis via POST
+        read_only_fields = [
+            "status",
+            "is_active",
+            "parts_total",
+            "services_total",
+            "discount_total",
+            "ai_recommendations",
+            "nfe_key",
+            "nfse_number",
+            "delivered_at",
+            "delivery_date",
+            "client_delivery_date",
+        ]
         extra_kwargs = {
             # Campos opcionais do veículo — model tem default="" mas sem blank=True
             "make":            {"required": False, "allow_blank": True},
@@ -501,6 +522,7 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
             "fuel_type":       {"required": False, "allow_blank": True},
             "broker_name":     {"required": False, "allow_blank": True},
             "casualty_number": {"required": False, "allow_blank": True},
+            "customer_name":   {"required": False, "allow_blank": True},
         }
 
     def validate(self, attrs: dict) -> dict:
