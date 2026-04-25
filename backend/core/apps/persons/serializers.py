@@ -12,7 +12,14 @@ import logging
 
 from rest_framework import serializers
 
-from .models import Person, PersonAddress, PersonContact, PersonDocument, PersonRole
+from .models import (
+    ClientProfile,
+    Person,
+    PersonAddress,
+    PersonContact,
+    PersonDocument,
+    PersonRole,
+)
 from .utils import sha256_hex
 
 logger = logging.getLogger(__name__)
@@ -147,6 +154,20 @@ class PersonAddressSerializer(serializers.ModelSerializer):
         ]
 
 
+class ClientProfileSerializer(serializers.ModelSerializer):
+    """Serializer do perfil de cliente — dados de consentimento LGPD."""
+
+    class Meta:
+        model = ClientProfile
+        fields = [
+            "lgpd_consent_version",
+            "lgpd_consent_date",
+            "lgpd_consent_ip",
+            "group_sharing_consent",
+        ]
+        read_only_fields = ["lgpd_consent_date", "lgpd_consent_ip"]
+
+
 class PersonRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = PersonRole
@@ -277,6 +298,7 @@ class PersonDetailSerializer(serializers.ModelSerializer):
     contacts = PersonContactSerializer(many=True, read_only=True)
     addresses = PersonAddressSerializer(many=True, read_only=True)
     documents = PersonDocumentMaskedSerializer(many=True, read_only=True)
+    client_profile = ClientProfileSerializer(read_only=True)
 
     class Meta:
         model = Person
@@ -293,14 +315,15 @@ class PersonDetailSerializer(serializers.ModelSerializer):
             "gender",
             "is_active",
             "notes",
-            "roles",
-            "contacts",
-            "addresses",
-            "documents",
-            "legacy_code",
-            "legacy_category",
             "created_at",
             "updated_at",
+            "legacy_code",
+            "legacy_category",
+            "roles",
+            "documents",
+            "contacts",
+            "addresses",
+            "client_profile",
         ]
         read_only_fields = [
             "id",
