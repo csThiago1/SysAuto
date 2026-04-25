@@ -204,7 +204,7 @@ class PersonListSerializer(serializers.ModelSerializer):
 
 
 class PersonCreateUpdateSerializer(serializers.ModelSerializer):
-    """Serializer de escrita com sync de roles, contatos e endereços."""
+    """Serializer de escrita com sync de roles, contatos, endereços e documentos."""
 
     roles = serializers.ListField(
         child=serializers.ChoiceField(
@@ -214,6 +214,7 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
     )
     contacts = PersonContactWriteSerializer(many=True, required=False)
     addresses = PersonAddressSerializer(many=True, required=False)
+    documents = PersonDocumentWriteSerializer(many=True, required=False)
 
     class Meta:
         model = Person
@@ -232,6 +233,7 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
             "roles",
             "contacts",
             "addresses",
+            "documents",
         ]
 
     def validate_full_name(self, value: str) -> str:
@@ -265,20 +267,28 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
         for a in addresses_data:
             PersonAddress.objects.create(person=person, **a)
 
+    def _sync_documents(self, person: Person, documents_data: list) -> None:
+        person.documents.all().delete()
+        for d in documents_data:
+            PersonDocument.objects.create(person=person, **d)
+
     def create(self, validated_data: dict) -> Person:
         roles = validated_data.pop("roles")
         contacts = validated_data.pop("contacts", [])
         addresses = validated_data.pop("addresses", [])
+        documents = validated_data.pop("documents", [])
         person = Person.objects.create(**validated_data)
         self._sync_roles(person, roles)
         self._sync_contacts(person, contacts)
         self._sync_addresses(person, addresses)
+        self._sync_documents(person, documents)
         return person
 
     def update(self, instance: Person, validated_data: dict) -> Person:
         roles = validated_data.pop("roles", None)
         contacts = validated_data.pop("contacts", None)
         addresses = validated_data.pop("addresses", None)
+        documents = validated_data.pop("documents", None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
@@ -288,6 +298,8 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
             self._sync_contacts(instance, contacts)
         if addresses is not None:
             self._sync_addresses(instance, addresses)
+        if documents is not None:
+            self._sync_documents(instance, documents)
         return instance
 
 
