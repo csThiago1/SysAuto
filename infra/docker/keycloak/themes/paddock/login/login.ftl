@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DS Car — Login</title>
-  <link rel="stylesheet" href="${resourcesPath}/css/login.css">
+  <link rel="stylesheet" href="${url.resourcesPath}/css/login.css">
 </head>
 <body>
 
@@ -38,7 +38,7 @@
 
         <div class="logo-area">
           <img class="logo-img"
-               src="${resourcesPath}/img/logo-dscar.png"
+               src="${url.resourcesPath}/img/logo-dscar.png"
                alt="DS Car">
         </div>
 
@@ -148,7 +148,7 @@
 
 </div>
 
-<script src="${resourcesPath}/js/carousel.js"></script>
+<script src="${url.resourcesPath}/js/carousel.js"></script>
 
 </body>
 </html>
