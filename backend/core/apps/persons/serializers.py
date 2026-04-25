@@ -169,7 +169,6 @@ class PersonListSerializer(serializers.ModelSerializer):
             "roles",
             "primary_contact",
             "is_active",
-            "logo_url",
             "created_at",
         ]
         read_only_fields = fields
@@ -201,17 +200,12 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
             "person_kind",
             "full_name",
             "fantasy_name",
-            "document",
             "secondary_document",
             "municipal_registration",
             "is_simples_nacional",
             "inscription_type",
             "birth_date",
             "gender",
-            "logo_url",
-            "insurer_code",
-            "job_title",
-            "department",
             "is_active",
             "notes",
             "roles",
@@ -283,8 +277,6 @@ class PersonDetailSerializer(serializers.ModelSerializer):
     contacts = PersonContactSerializer(many=True, read_only=True)
     addresses = PersonAddressSerializer(many=True, read_only=True)
     documents = PersonDocumentMaskedSerializer(many=True, read_only=True)
-    job_title_display = serializers.CharField(source="get_job_title_display", read_only=True)
-    department_display = serializers.CharField(source="get_department_display", read_only=True)
 
     class Meta:
         model = Person
@@ -299,12 +291,6 @@ class PersonDetailSerializer(serializers.ModelSerializer):
             "inscription_type",
             "birth_date",
             "gender",
-            "logo_url",
-            "insurer_code",
-            "job_title",
-            "job_title_display",
-            "department",
-            "department_display",
             "is_active",
             "notes",
             "roles",
@@ -318,8 +304,6 @@ class PersonDetailSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "id",
-            "job_title_display",
-            "department_display",
             "created_at",
             "updated_at",
         ]

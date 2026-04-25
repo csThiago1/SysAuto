@@ -47,21 +47,9 @@ class InsurerMinimalSerializer(serializers.ModelSerializer):
         return obj.trade_name or obj.name
 
     def get_logo(self, obj: Insurer) -> str:
-        """Return logo_url from Insurer; fall back to tenant Person.logo_url if empty."""
-        if obj.logo_url:
-            return obj.logo_url
-        try:
-            from apps.persons.models import Person  # tenant-level import
-            lookup_name = obj.trade_name or obj.name
-            person = (
-                Person.objects
-                .filter(roles__role="INSURER")
-                .filter(full_name__iexact=lookup_name)
-                .only("logo_url")
-                .first()
-            )
-            if person and person.logo_url:
-                return person.logo_url
-        except Exception:
-            logger.debug("Could not look up Person logo for insurer %s", obj.name)
-        return ""
+        """Return logo_url from Insurer model.
+
+        Note: Person.logo_url was removed in Ciclo 07 — logo is now stored
+        exclusively on the Insurer model via upload_logo endpoint.
+        """
+        return obj.logo_url or ""

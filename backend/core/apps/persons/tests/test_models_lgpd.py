@@ -6,7 +6,7 @@ Cobertura:
   - PersonDocument (T01): criptografia round-trip, filtro por hash, campos obrigatórios
   - PersonAddress.municipio_ibge (T02): campo IBGE
   - PersonContact.value criptografado (T03): encrypt + filtro por hash
-  - Data migration backfill (T04): Person.document → PersonDocument
+  - Data migration backfill (T04): PersonDocument criado diretamente (Person.document removido Ciclo 07)
 """
 
 import hashlib
@@ -21,12 +21,15 @@ def sha256_hex(value: str) -> str:
 
 
 def make_person(full_name: str = "João Silva", document: str = "") -> object:
-    """Helper para criar Person de teste."""
+    """Helper para criar Person de teste.
+
+    O parâmetro `document` é ignorado desde o Ciclo 07 (campo removido de Person).
+    Mantido na assinatura para compatibilidade com testes existentes.
+    """
     from apps.persons.models import Person, PersonRole
 
     p = Person.objects.create(
         full_name=full_name,
-        document=document,
         person_kind="PF",
     )
     PersonRole.objects.create(person=p, role="CLIENT")
@@ -338,16 +341,11 @@ class TestDataMigrationBackfill(TestCase):
         self.assertIsNotNone(doc)
 
     def test_backfill_empty_document_skipped(self) -> None:
-        """Person com document='' não gera PersonDocument."""
+        """Person sem documentos não possui PersonDocument."""
         from apps.persons.models import PersonDocument
 
+        # Person criada sem documento — não deve ter PersonDocument associado
         p = make_person(document="")
-        # Simula a condição do backfill: exclude(document="")
-        created_count = 0
-        for person in [p]:
-            if person.document:  # type: ignore[union-attr]
-                created_count += 1
-        self.assertEqual(created_count, 0)
         self.assertEqual(PersonDocument.objects.filter(person=p).count(), 0)
 
     def test_backfill_bulk_create_ignore_conflicts(self) -> None:

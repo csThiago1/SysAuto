@@ -111,12 +111,6 @@ class Person(models.Model):
         max_length=200, blank=True, default="", verbose_name="Nome fantasia"
     )
 
-    # Documento principal — DEPRECATED (Ciclo 06A): usar PersonDocument.
-    # Mantido para retrocompatibilidade. Será removido no Ciclo 06B.
-    document = models.CharField(
-        max_length=20, blank=True, default="", db_index=True, verbose_name="CPF / CNPJ (só dígitos)"
-    )
-
     # Dados fiscais
     secondary_document = models.CharField(
         max_length=30, blank=True, default="", verbose_name="RG / IE"
@@ -145,28 +139,6 @@ class Person(models.Model):
         blank=True,
         default="",
         verbose_name="Sexo",
-    )
-
-    # Seguradora
-    logo_url = models.CharField(max_length=500, blank=True, default="", verbose_name="URL do logo")
-    insurer_code = models.CharField(
-        max_length=50, blank=True, default="", verbose_name="Código interno"
-    )
-
-    # Funcionário
-    job_title = models.CharField(
-        max_length=20,
-        choices=CargoPessoa.choices,
-        blank=True,
-        default="",
-        verbose_name="Cargo",
-    )
-    department = models.CharField(
-        max_length=20,
-        choices=SetorPessoa.choices,
-        blank=True,
-        default="",
-        verbose_name="Setor",
     )
 
     # Situação

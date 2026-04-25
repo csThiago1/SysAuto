@@ -86,10 +86,15 @@ class PersonAdmin(admin.ModelAdmin):
     readonly_fields = ["masked_document", "created_at", "updated_at"]
 
     def masked_document(self, obj: Person) -> str:
-        """Exibe document mascarado no admin (campo legacy)."""
-        v: str = obj.document or ""
+        """Exibe CPF/CNPJ mascarado via PersonDocument (campo legacy removido)."""
+        doc = obj.documents.filter(doc_type__in=["CPF", "CNPJ"], is_primary=True).first()
+        if not doc:
+            doc = obj.documents.filter(doc_type__in=["CPF", "CNPJ"]).first()
+        if not doc:
+            return "—"
+        v: str = doc.value or ""
         if len(v) > 4:
             return f"{'*' * (len(v) - 4)}{v[-4:]}"
-        return "****" if v else "—"
+        return "****"
 
     masked_document.short_description = "CPF/CNPJ (mascarado)"  # type: ignore[attr-defined]
