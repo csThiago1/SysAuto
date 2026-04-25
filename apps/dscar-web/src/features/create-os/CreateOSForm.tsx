@@ -34,6 +34,7 @@ export function CreateOSForm({ onSuccess, onCancel }: CreateOSFormProps) {
     resolver: zodResolver(createOSSchema),
     defaultValues: {
       customer_id: 0,
+      customer_name: "",
       plate: "",
       make: "",
       model: "",
@@ -57,7 +58,7 @@ export function CreateOSForm({ onSuccess, onCancel }: CreateOSFormProps) {
   const onSubmit = (data: CreateOSFormData) => {
     createOS({
        ...data,
-       customer_name: "", // handled in backend ideally or we pass it
+       customer_name: data.customer_name ?? "",
     }, {
       onSuccess: (res) => {
         toast.success(`OS #${res.number} criada com sucesso!`);
@@ -118,9 +119,12 @@ export function CreateOSForm({ onSuccess, onCancel }: CreateOSFormProps) {
                 control={control}
                 name="customer_id"
                 render={({ field }) => (
-                  <CustomerPicker 
-                    value={field.value} 
-                    onChange={field.onChange} 
+                  <CustomerPicker
+                    value={field.value}
+                    onChange={(personId, personName) => {
+                      field.onChange(personId);
+                      setValue("customer_name", personName ?? "");
+                    }}
                     error={errors.customer_id?.message}
                   />
                 )}

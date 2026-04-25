@@ -5,6 +5,7 @@ const PLATE_ANTIGA   = /^[A-Z]{3}[0-9]{4}$/i;
 
 export const createOSSchema = z.object({
   customer_id: z.number({ invalid_type_error: "Selecione um cliente" }).min(1, "Selecione um cliente"),
+  customer_name: z.string().optional(),
   plate: z
     .string()
     .min(7, "A placa deve ter 7 caracteres")

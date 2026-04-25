@@ -25,6 +25,7 @@ export function useCreateOS() {
     mutationFn: async (payload) => {
       const resp = await apiFetch<CreateOSResponse>("/api/proxy/service-orders/", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       return resp;
