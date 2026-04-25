@@ -46,6 +46,8 @@ import {
   BarChart3,
   Database,
   TrendingUp,
+  Handshake,
+  UserSearch,
   type LucideIcon,
 } from "lucide-react";
 import { ROLE_HIERARCHY, type PaddockRole } from "@paddock/types";
@@ -134,9 +136,11 @@ const NAV_SECTIONS: NavSection[] = [
         icon: Users,
         href: "/cadastros",
         children: [
-          { id: "cad-pessoas",     label: "Pessoas",      href: "/cadastros",                 icon: Users },
-          { id: "cad-servicos",    label: "Serviços",     href: "/cadastros/servicos",        icon: Wrench },
-          { id: "cad-seguradoras", label: "Seguradoras",  href: "/cadastros/seguradoras",     icon: Shield },
+          { id: "cad-pessoas",       label: "Pessoas",       href: "/cadastros",                    icon: Users },
+          { id: "cad-servicos",      label: "Serviços",      href: "/cadastros/servicos",         icon: Wrench },
+          { id: "cad-seguradoras",   label: "Seguradoras",   href: "/cadastros/seguradoras",      icon: Shield },
+          { id: "cad-corretores",    label: "Corretores",    href: "/cadastros/corretores",       icon: Handshake },
+          { id: "cad-especialistas", label: "Especialistas", href: "/cadastros/especialistas",    icon: UserSearch },
         ],
       },
     ],
@@ -171,6 +175,7 @@ const NAV_SECTIONS: NavSection[] = [
           { id: "fiscal-documentos", label: "Documentos Emitidos", href: "/fiscal/documentos", icon: FileText },
           { id: "fiscal-nfe-recebidas", label: "NF-e Recebidas", href: "/fiscal/nfe-recebidas", icon: Inbox },
           { id: "fiscal-emitir-nfse", label: "Emitir NFS-e Manual", href: "/fiscal/emitir-nfse", icon: FileText },
+          { id: "fiscal-emitir-nfe", label: "Emitir NF-e Produto", href: "/fiscal/emitir-nfe", icon: Package },
         ],
       },
     ],
