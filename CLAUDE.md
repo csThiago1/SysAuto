@@ -144,6 +144,19 @@ Monit:       Sentry + Grafana
 
 ## ⚠️ Armadilhas Conhecidas — Não Repetir
 
+### Keycloak 24 — Freemarker: usar `url.resourcesPath` não `resourcesPath`
+```freemarker
+<!-- ERRADO — resourcesPath não existe no data model do KC 24 → InvalidReferenceException -->
+<link href="${resourcesPath}/css/login.css">
+<img src="${resourcesPath}/img/logo.png">
+
+<!-- CORRETO — KC 24 expõe via objeto url (UrlBean) -->
+<link href="${url.resourcesPath}/css/login.css">
+<img src="${url.resourcesPath}/img/logo.png">
+<script src="${url.resourcesPath}/js/carousel.js">
+```
+Outros vars KC 24 que continuam funcionando: `${url.loginAction}`, `${login.username!''}`, `${messagesPerField.existsError(...)}`.
+
 ### Django — Roteamento DRF com múltiplos routers no mesmo app
 ```python
 # ERRADO — DefaultRouter registrado em "" captura qualquer segmento como pk
@@ -489,10 +502,12 @@ refactor(customers): extrai lógica LGPD para serviço
   - JWKS URL: `http://keycloak:8080/realms/paddock/protocol/openid-connect/certs`
   - Fallback: retorna `None` (warn) se Keycloak offline — sem crash 500
 - `session.role` extraído de `token.realm_access.roles`
-- **Setup Keycloak:** Antes do primeiro `docker compose up`, criar schema PostgreSQL:
-  ```bash
-  docker exec paddock_postgres psql -U paddock -d paddock_dev -c "CREATE SCHEMA IF NOT EXISTS keycloak;"
-  ```
+- **Setup Keycloak:** Schema PostgreSQL criado automaticamente por `infra/docker/init/01_setup.sql` — **não requer passo manual**
+- **Tema de login:** `infra/docker/keycloak/themes/paddock/` — tema customizado DS Car (split 50/50, neon, carrossel)
+  - `docker-compose.dev.yml`: volume + `--health-enabled=true` + `KC_HEALTH_ENABLED: "true"`
+  - `realm-export.json`: `loginTheme: "paddock"`, `resetPasswordAllowed: false`
+  - Aplicar mudanças de realm: `make dev-reset && make dev` (reimporta do zero)
+- **Client ID no realm:** `paddock-frontend` (não `dscar-web`)
 - **Seed users:**
   - `admin@paddock.solutions / admin123` (ADMIN)
   - `thiago@paddock.solutions / paddock123` (OWNER)
@@ -1191,6 +1206,30 @@ Nenhuma sprint ativa no momento.
 ---
 
 ## 📦 Sprints Entregues
+
+### Ciclo 07 — Keycloak Ativação + Tema de Login DS Car — Abril 2026 ✅
+**Keycloak 24 ativo em dev + tema customizado DS Car (split 50/50, neon, carrossel)**
+
+Infra:
+- `infra/docker/docker-compose.dev.yml`: volume do tema + `--health-enabled=true` + `KC_HEALTH_ENABLED`
+- `infra/docker/keycloak/realm-export.json`: `loginTheme: "paddock"`, `resetPasswordAllowed: false`
+- Schema Keycloak criado automaticamente por `infra/docker/init/01_setup.sql` (não requer passo manual)
+
+Tema `infra/docker/keycloak/themes/paddock/login/`:
+- `theme.properties`: `parent=base`, `styles=css/login.css`, `scripts=js/carousel.js`
+- `login.ftl`: template Freemarker — split 50/50, logo DS Car, form OIDC, 4 slides carrossel, 16 neon lines, footer
+- `resources/css/login.css`: dark theme, animações neon (travel-h/travel-v), Montserrat
+- `resources/js/carousel.js`: autoplay 4500ms, dot navigation
+- `resources/img/logo-dscar.png`: copiado de `apps/dscar-web/public/`
+
+**Padrões estabelecidos:**
+- KC 24: usar `${url.resourcesPath}` não `${resourcesPath}` em templates .ftl (ver Armadilhas)
+- Client ID no realm: `paddock-frontend` (não `dscar-web`)
+- Reset de senha self-service: DESATIVADO (`resetPasswordAllowed: false`) — senha temporária via WhatsApp pelo admin
+- Reimportar realm (após mudanças em realm-export.json): `make dev-reset && make dev`
+- Em prod: fluxo de login aponta diretamente para Keycloak (sem tela intermediária Next.js `/login`)
+
+---
 
 ### Ciclo 06C — NFS-e Manaus end-to-end + NF-e Recebidas — Abril 2026 ✅
 **App `apps.fiscal` (extendido) — emissão NFS-e Manaus + manifestação de destinatário**
