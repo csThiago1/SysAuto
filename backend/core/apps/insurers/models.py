@@ -65,3 +65,76 @@ class Insurer(models.Model):
 
     def __str__(self) -> str:
         return self.trade_name or self.name
+
+
+class InsurerTenantProfile(models.Model):
+    """
+    Perfil operacional da seguradora por empresa do grupo (tenant-level).
+
+    Complementa o registro público Insurer com dados operacionais locais:
+    contatos, SLA, portal de acionamento, observações internas.
+
+    Nota: esta tabela reside no schema público (apps.insurers está em SHARED_APPS).
+    O isolamento por tenant é feito a nível de aplicação via FK implícita ao tenant
+    ativo no contexto da request.
+    """
+
+    insurer = models.OneToOneField(
+        Insurer,
+        on_delete=models.PROTECT,
+        related_name="tenant_profile",
+        verbose_name="Seguradora",
+    )
+
+    # Contato de sinistros
+    contact_sinistro_nome = models.CharField(
+        max_length=200, blank=True, default="", verbose_name="Sinistros — Nome"
+    )
+    contact_sinistro_phone = models.CharField(
+        max_length=20, blank=True, default="", verbose_name="Sinistros — Telefone"
+    )
+    contact_sinistro_email = models.CharField(
+        max_length=200, blank=True, default="", verbose_name="Sinistros — E-mail"
+    )
+
+    # Contato financeiro
+    contact_financeiro_nome = models.CharField(
+        max_length=200, blank=True, default="", verbose_name="Financeiro — Nome"
+    )
+    contact_financeiro_phone = models.CharField(
+        max_length=20, blank=True, default="", verbose_name="Financeiro — Telefone"
+    )
+    contact_financeiro_email = models.CharField(
+        max_length=200, blank=True, default="", verbose_name="Financeiro — E-mail"
+    )
+
+    # Contato comercial
+    contact_comercial_nome = models.CharField(
+        max_length=200, blank=True, default="", verbose_name="Comercial — Nome"
+    )
+    contact_comercial_phone = models.CharField(
+        max_length=20, blank=True, default="", verbose_name="Comercial — Telefone"
+    )
+    contact_comercial_email = models.CharField(
+        max_length=200, blank=True, default="", verbose_name="Comercial — E-mail"
+    )
+
+    portal_url = models.URLField(
+        blank=True, default="", verbose_name="Portal de acionamento (URL)"
+    )
+    sla_dias_uteis = models.PositiveSmallIntegerField(
+        null=True, blank=True, verbose_name="SLA de resposta (dias úteis)"
+    )
+    observacoes_operacionais = models.TextField(
+        blank=True, default="", verbose_name="Observações operacionais"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Perfil Operacional da Seguradora"
+        verbose_name_plural = "Perfis Operacionais de Seguradoras"
+
+    def __str__(self) -> str:
+        return f"Perfil tenant — {self.insurer.name}"
