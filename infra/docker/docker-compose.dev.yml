@@ -54,6 +54,7 @@ services:
       KC_HTTP_ENABLED: "true"
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+      - ./keycloak/themes/paddock:/opt/keycloak/themes/paddock
     ports:
       - "8080:8080"
     depends_on:
