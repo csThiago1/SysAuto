@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import type { Insurer, InsurerFull, PaginatedResponse } from "@paddock/types"
+import { toast } from "sonner"
+import type { Insurer, InsurerFull, InsurerTenantProfile, PaginatedResponse } from "@paddock/types"
 import { apiFetch } from "@/lib/api"
 
 const API = "/api/proxy/insurers"
@@ -89,5 +90,32 @@ export function useInsurerUploadLogo() {
       })
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: insurerKeys.all }),
+  })
+}
+
+export function useInsurerTenantProfile(insurerId: string | null) {
+  return useQuery({
+    queryKey: ["insurers", insurerId, "tenant-profile"],
+    queryFn: () =>
+      apiFetch<InsurerTenantProfile>(`${API}/${insurerId}/tenant_profile/`),
+    enabled: !!insurerId,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+export function useUpdateInsurerTenantProfile() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ insurerId, data }: { insurerId: string; data: Partial<InsurerTenantProfile> }) =>
+      apiFetch<InsurerTenantProfile>(`${API}/${insurerId}/tenant_profile/`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: (_, { insurerId }) => {
+      void qc.invalidateQueries({ queryKey: ["insurers", insurerId, "tenant-profile"] })
+      toast.success("Perfil operacional atualizado.")
+    },
+    onError: () => toast.error("Erro ao salvar perfil."),
   })
 }
