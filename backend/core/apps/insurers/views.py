@@ -8,14 +8,21 @@ import uuid
 
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.db import connection
 from rest_framework import filters, mixins, parsers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.insurers.models import Insurer
-from apps.insurers.serializers import InsurerMinimalSerializer, InsurerSerializer
+from apps.authentication.permissions import IsManagerOrAbove
+
+from apps.insurers.models import Insurer, InsurerTenantProfile
+from apps.insurers.serializers import (
+    InsurerMinimalSerializer,
+    InsurerSerializer,
+    InsurerTenantProfileSerializer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +37,7 @@ def _logo_extension(file: object) -> str | None:
 
     if content_type == "image/png" or ext == ".png":
         return ".png"
-    if content_type in ("image/svg+xml", "text/xml", "text/plain") or ext == ".svg":
+    if content_type in ("image/svg+xml", "text/xml", "application/xml") or ext == ".svg":
         return ".svg"
     return None
 
@@ -47,11 +54,16 @@ class InsurerViewSet(
     CRUD de seguradoras.
 
     - list / retrieve: qualquer usuário autenticado
-    - create / update / destroy: qualquer usuário autenticado (admin no frontend)
-    - upload_logo: POST {id}/upload_logo/ — multipart/form-data com campo "logo"
+    - create / update / destroy: MANAGER+
+    - upload_logo: POST {id}/upload_logo/ — MANAGER+
     """
 
     permission_classes = [IsAuthenticated]
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        if self.action in ("create", "update", "partial_update", "destroy", "upload_logo"):
+            return [IsAuthenticated(), IsManagerOrAbove()]
+        return [IsAuthenticated()]
     filter_backends = [filters.SearchFilter]
     search_fields = ["name", "trade_name", "abbreviation"]
 
@@ -122,6 +134,32 @@ class InsurerViewSet(
         logger.info("Logo atualizado para seguradora %s → %s", insurer.name, new_url)
 
         return Response(InsurerSerializer(insurer).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["get", "put"], url_path="tenant_profile")
+    def tenant_profile(self, request: Request, pk: str | None = None) -> Response:
+        """
+        GET  → retorna perfil operacional (ou defaults se não existir).
+        PUT  → cria ou atualiza perfil operacional (upsert).
+        """
+        insurer: Insurer = self.get_object()
+
+        company = connection.tenant
+        if request.method == "GET":
+            profile, _ = InsurerTenantProfile.objects.get_or_create(
+                insurer=insurer, company=company
+            )
+            return Response(InsurerTenantProfileSerializer(profile).data)
+
+        # PUT — upsert
+        profile, _ = InsurerTenantProfile.objects.get_or_create(
+            insurer=insurer, company=company
+        )
+        serializer = InsurerTenantProfileSerializer(
+            profile, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 def _extract_storage_path(url: str) -> str | None:

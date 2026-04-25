@@ -41,11 +41,16 @@ import {
   Percent,
   Layers,
   FileText,
+  ReceiptText,
+  Inbox,
   BarChart3,
   Database,
   TrendingUp,
+  Handshake,
+  UserSearch,
   type LucideIcon,
 } from "lucide-react";
+import { ROLE_HIERARCHY, type PaddockRole } from "@paddock/types";
 import { NotificationBell } from "@/components/header/NotificationBell";
 import { useOverdueOrders } from "@/hooks/useOverdueOrders";
 
@@ -71,6 +76,8 @@ interface NavItem {
 interface NavSection {
   label: string;
   items: NavItem[];
+  /** Papel mínimo para ver esta seção (undefined = todos) */
+  minRole?: PaddockRole;
 }
 
 // ─── Role labels ─────────────────────────────────────────────────────
@@ -118,14 +125,22 @@ const NAV_SECTIONS: NavSection[] = [
         href: "/orcamentos",
       },
       {
+        id: "orcamentos-particulares",
+        label: "Orç. Particulares",
+        icon: ReceiptText,
+        href: "/orcamentos-particulares",
+      },
+      {
         id: "cadastros",
         label: "Cadastros",
         icon: Users,
         href: "/cadastros",
         children: [
-          { id: "cad-pessoas",     label: "Pessoas",      href: "/cadastros",                 icon: Users },
-          { id: "cad-servicos",    label: "Serviços",     href: "/cadastros/servicos",        icon: Wrench },
-          { id: "cad-seguradoras", label: "Seguradoras",  href: "/cadastros/seguradoras",     icon: Shield },
+          { id: "cad-pessoas",       label: "Pessoas",       href: "/cadastros",                    icon: Users },
+          { id: "cad-servicos",      label: "Serviços",      href: "/cadastros/servicos",         icon: Wrench },
+          { id: "cad-seguradoras",   label: "Seguradoras",   href: "/cadastros/seguradoras",      icon: Shield },
+          { id: "cad-corretores",    label: "Corretores",    href: "/cadastros/corretores",       icon: Handshake },
+          { id: "cad-especialistas", label: "Especialistas", href: "/cadastros/especialistas",    icon: UserSearch },
         ],
       },
     ],
@@ -144,6 +159,23 @@ const NAV_SECTIONS: NavSection[] = [
           { id: "fin-plano",       label: "Plano de Contas", href: "/financeiro/plano-contas",     icon: BookOpen },
           { id: "fin-pagar",       label: "Contas a Pagar",  href: "/financeiro/contas-pagar",     icon: ArrowUpCircle },
           { id: "fin-receber",     label: "Contas a Receber",href: "/financeiro/contas-receber",   icon: ArrowDownCircle },
+        ],
+      },
+    ],
+  },
+  {
+    label: "FISCAL",
+    minRole: "ADMIN",
+    items: [
+      {
+        id: "fiscal",
+        label: "Fiscal",
+        icon: FileText,
+        children: [
+          { id: "fiscal-documentos", label: "Documentos Emitidos", href: "/fiscal/documentos", icon: FileText },
+          { id: "fiscal-nfe-recebidas", label: "NF-e Recebidas", href: "/fiscal/nfe-recebidas", icon: Inbox },
+          { id: "fiscal-emitir-nfse", label: "Emitir NFS-e Manual", href: "/fiscal/emitir-nfse", icon: FileText },
+          { id: "fiscal-emitir-nfe", label: "Emitir NF-e Produto", href: "/fiscal/emitir-nfe", icon: Package },
         ],
       },
     ],
@@ -397,6 +429,10 @@ export function Sidebar() {
 
   const userInitials = getInitials(session?.user?.name);
   const roleLabel = ROLE_LABELS[session?.role ?? ""] ?? session?.role ?? "";
+  const userRoleLevel = ROLE_HIERARCHY[(session?.role ?? "STOREKEEPER") as PaddockRole] ?? 0;
+  const visibleSections = NAV_SECTIONS.filter((s) =>
+    !s.minRole || userRoleLevel >= (ROLE_HIERARCHY[s.minRole] ?? 0)
+  );
 
   return (
     <aside
@@ -464,7 +500,7 @@ export function Sidebar() {
 
       {/* ── Navigation ── */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-thin">
-        {NAV_SECTIONS.map((section) => (
+        {visibleSections.map((section) => (
           <div key={section.label}>
             {/* Section label */}
             {collapsed ? (

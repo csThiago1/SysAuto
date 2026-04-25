@@ -1,8 +1,16 @@
 """
 Paddock Solutions — Persons App
 Entidade unificada de pessoas (tenant-level): clientes, seguradoras, corretores, funcionários, fornecedores.
+
+LGPD (Ciclo 06A):
+  - PersonDocument: CPF, CNPJ, RG, IE, IM, CNH criptografados com EncryptedCharField
+  - PersonContact.value: criptografado + value_hash para filter()
+  - PersonAddress.municipio_ibge: código IBGE 7 dígitos (obrigatório NFS-e Manaus)
 """
+
 import logging
+
+from encrypted_model_fields.fields import EncryptedCharField
 
 from django.db import models
 
@@ -40,34 +48,47 @@ class TipoEndereco(models.TextChoices):
 
 class CargoPessoa(models.TextChoices):
     """Cargos operacionais do Grupo DS Car."""
-    RECEPTIONIST  = "receptionist",  "Recepcionista"
-    CONSULTANT    = "consultant",    "Consultor de Serviços"
-    BODYWORKER    = "bodyworker",    "Funileiro"
-    PAINTER       = "painter",       "Pintor"
-    MECHANIC      = "mechanic",      "Mecânico"
-    POLISHER      = "polisher",      "Polidor"
-    WASHER        = "washer",        "Lavador"
-    STOREKEEPER   = "storekeeper",   "Almoxarife"
-    MANAGER       = "manager",       "Gerente"
-    FINANCIAL     = "financial",     "Financeiro"
+
+    RECEPTIONIST = "receptionist", "Recepcionista"
+    CONSULTANT = "consultant", "Consultor de Serviços"
+    BODYWORKER = "bodyworker", "Funileiro"
+    PAINTER = "painter", "Pintor"
+    MECHANIC = "mechanic", "Mecânico"
+    POLISHER = "polisher", "Polidor"
+    WASHER = "washer", "Lavador"
+    STOREKEEPER = "storekeeper", "Almoxarife"
+    MANAGER = "manager", "Gerente"
+    FINANCIAL = "financial", "Financeiro"
     ADMINISTRATIVE = "administrative", "Administrativo"
-    DIRECTOR      = "director",      "Diretor"
+    DIRECTOR = "director", "Diretor"
 
 
 class SetorPessoa(models.TextChoices):
     """Setores operacionais do Grupo DS Car."""
-    RECEPTION    = "reception",    "Recepção"
-    BODYWORK     = "bodywork",     "Funilaria"
-    PAINTING     = "painting",     "Pintura"
-    MECHANICAL   = "mechanical",   "Mecânica"
-    AESTHETICS   = "aesthetics",   "Estética"
-    POLISHING    = "polishing",    "Polimento"
-    WASHING      = "washing",      "Lavagem"
-    INVENTORY    = "inventory",    "Almoxarifado"
-    FINANCIAL    = "financial",    "Financeiro"
+
+    RECEPTION = "reception", "Recepção"
+    BODYWORK = "bodywork", "Funilaria"
+    PAINTING = "painting", "Pintura"
+    MECHANICAL = "mechanical", "Mecânica"
+    AESTHETICS = "aesthetics", "Estética"
+    POLISHING = "polishing", "Polimento"
+    WASHING = "washing", "Lavagem"
+    INVENTORY = "inventory", "Almoxarifado"
+    FINANCIAL = "financial", "Financeiro"
     ADMINISTRATIVE = "administrative", "Administrativo"
-    MANAGEMENT   = "management",   "Gerência"
-    DIRECTION    = "direction",    "Diretoria"
+    MANAGEMENT = "management", "Gerência"
+    DIRECTION = "direction", "Diretoria"
+
+
+class TipoDocumento(models.TextChoices):
+    """Tipos de documento suportados em PersonDocument."""
+
+    CPF = "CPF", "CPF"
+    CNPJ = "CNPJ", "CNPJ"
+    RG = "RG", "RG"
+    IE = "IE", "Inscrição Estadual"
+    IM = "IM", "Inscrição Municipal"
+    CNH = "CNH", "CNH"
 
 
 class Person(models.Model):
@@ -86,16 +107,17 @@ class Person(models.Model):
 
     # Identificação
     full_name = models.CharField(max_length=200, db_index=True, verbose_name="Nome / Razão social")
-    fantasy_name = models.CharField(max_length=200, blank=True, default="", verbose_name="Nome fantasia")
-
-    # Documento principal
-    document = models.CharField(
-        max_length=20, blank=True, default="", db_index=True, verbose_name="CPF / CNPJ (só dígitos)"
+    fantasy_name = models.CharField(
+        max_length=200, blank=True, default="", verbose_name="Nome fantasia"
     )
 
     # Dados fiscais
-    secondary_document = models.CharField(max_length=30, blank=True, default="", verbose_name="RG / IE")
-    municipal_registration = models.CharField(max_length=30, blank=True, default="", verbose_name="IM")
+    secondary_document = models.CharField(
+        max_length=30, blank=True, default="", verbose_name="RG / IE"
+    )
+    municipal_registration = models.CharField(
+        max_length=30, blank=True, default="", verbose_name="IM"
+    )
     is_simples_nacional = models.BooleanField(default=False, verbose_name="Simples Nacional")
     inscription_type = models.CharField(
         max_length=20,
@@ -117,26 +139,6 @@ class Person(models.Model):
         blank=True,
         default="",
         verbose_name="Sexo",
-    )
-
-    # Seguradora
-    logo_url = models.CharField(max_length=500, blank=True, default="", verbose_name="URL do logo")
-    insurer_code = models.CharField(max_length=50, blank=True, default="", verbose_name="Código interno")
-
-    # Funcionário
-    job_title = models.CharField(
-        max_length=20,
-        choices=CargoPessoa.choices,
-        blank=True,
-        default="",
-        verbose_name="Cargo",
-    )
-    department = models.CharField(
-        max_length=20,
-        choices=SetorPessoa.choices,
-        blank=True,
-        default="",
-        verbose_name="Setor",
     )
 
     # Situação
@@ -188,12 +190,68 @@ class PersonRole(models.Model):
         return f"{self.person.full_name} — {self.role}"
 
 
+class PersonDocument(models.Model):
+    """
+    Documento de identificação da pessoa — armazenado criptografado (LGPD Art. 46).
+
+    Filtro: SEMPRE usar value_hash (SHA-256) — EncryptedCharField não suporta filter().
+
+    Exemplo:
+        from apps.persons.utils import sha256_hex
+        PersonDocument.objects.filter(value_hash=sha256_hex(cpf))
+    """
+
+    person = models.ForeignKey(
+        Person,
+        on_delete=models.CASCADE,
+        related_name="documents",
+        verbose_name="Pessoa",
+    )
+    doc_type = models.CharField(
+        max_length=10,
+        choices=TipoDocumento.choices,
+        db_index=True,
+        verbose_name="Tipo de documento",
+    )
+    # PII criptografada em repouso
+    value = EncryptedCharField(max_length=200, verbose_name="Valor")
+    # Hash SHA-256 para filter() — EncryptedCharField não suporta filter()
+    value_hash = models.CharField(
+        max_length=64,
+        db_index=True,
+        default="",
+        verbose_name="Hash do valor",
+    )
+    is_primary = models.BooleanField(default=False, verbose_name="Principal")
+    issued_by = models.CharField(
+        max_length=100, blank=True, default="", verbose_name="Órgão emissor"
+    )
+    issued_at = models.DateField(null=True, blank=True, verbose_name="Data de emissão")
+    expires_at = models.DateField(null=True, blank=True, verbose_name="Data de validade")
+
+    class Meta:
+        unique_together = [("person", "doc_type", "value_hash")]
+        verbose_name = "Documento"
+        verbose_name_plural = "Documentos"
+
+    def __str__(self) -> str:
+        return f"{self.doc_type} — {self.person}"
+
+
 class PersonContact(models.Model):
-    """Contato da pessoa (múltiplos, tipados)."""
+    """Contato da pessoa (múltiplos, tipados) — value criptografado (LGPD)."""
 
     person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="contacts")
     contact_type = models.CharField(max_length=20, choices=TipoContato.choices, verbose_name="Tipo")
-    value = models.CharField(max_length=200, verbose_name="Valor")
+    # PII criptografada em repouso (email, telefone)
+    value = EncryptedCharField(max_length=200, verbose_name="Valor")
+    # Hash SHA-256 para filter()
+    value_hash = models.CharField(
+        max_length=64,
+        db_index=True,
+        default="",
+        verbose_name="Hash do valor",
+    )
     label = models.CharField(max_length=100, blank=True, default="", verbose_name="Rótulo")
     is_primary = models.BooleanField(default=False, verbose_name="Principal")
 
@@ -203,7 +261,7 @@ class PersonContact(models.Model):
         verbose_name_plural = "Contatos"
 
     def __str__(self) -> str:
-        return f"{self.contact_type}: {self.value}"
+        return f"{self.contact_type}: ***"
 
 
 class PersonAddress(models.Model):
@@ -219,10 +277,19 @@ class PersonAddress(models.Model):
     zip_code = models.CharField(max_length=9, blank=True, default="", verbose_name="CEP")
     street = models.CharField(max_length=200, blank=True, default="", verbose_name="Logradouro")
     number = models.CharField(max_length=20, blank=True, default="", verbose_name="Número")
-    complement = models.CharField(max_length=100, blank=True, default="", verbose_name="Complemento")
+    complement = models.CharField(
+        max_length=100, blank=True, default="", verbose_name="Complemento"
+    )
     neighborhood = models.CharField(max_length=100, blank=True, default="", verbose_name="Bairro")
     city = models.CharField(max_length=100, blank=True, default="", verbose_name="Cidade")
     state = models.CharField(max_length=2, blank=True, default="", verbose_name="UF")
+    municipio_ibge = models.CharField(
+        max_length=7,
+        blank=True,
+        default="",
+        verbose_name="Código IBGE do município",
+        help_text="7 dígitos IBGE. Obrigatório para NFS-e Manaus (1302603).",
+    )
     is_primary = models.BooleanField(default=False, verbose_name="Principal")
 
     class Meta:
@@ -232,3 +299,88 @@ class PersonAddress(models.Model):
 
     def __str__(self) -> str:
         return f"{self.street}, {self.number} — {self.city}/{self.state}"
+
+
+class ClientProfile(models.Model):
+    """
+    Perfil de cliente — dados de consentimento LGPD por pessoa.
+    OneToOne: uma pessoa pode ter um único perfil de cliente.
+    """
+
+    person = models.OneToOneField(
+        Person,
+        on_delete=models.CASCADE,
+        related_name="client_profile",
+        verbose_name="Pessoa",
+    )
+    lgpd_consent_version = models.CharField(
+        max_length=10, default="1.0", verbose_name="Versão do consentimento LGPD"
+    )
+    lgpd_consent_date = models.DateTimeField(
+        null=True, blank=True, verbose_name="Data do consentimento LGPD"
+    )
+    lgpd_consent_ip = models.GenericIPAddressField(
+        null=True, blank=True, verbose_name="IP do consentimento LGPD"
+    )
+    group_sharing_consent = models.BooleanField(
+        default=False,
+        verbose_name="Consentimento de compartilhamento no grupo",
+        help_text="Opt-in EXPLÍCITO — verificar antes de cross-sell entre empresas do grupo.",
+    )
+
+    class Meta:
+        verbose_name = "Perfil de Cliente"
+        verbose_name_plural = "Perfis de Cliente"
+
+    def __str__(self) -> str:
+        return f"ClientProfile — {self.person.full_name}"
+
+
+class BrokerOffice(models.Model):
+    """
+    Escritório de corretagem (PJ). Agrupa corretores individuais.
+    person_kind=PJ obrigatório — validado no serializer.
+    """
+
+    person = models.OneToOneField(
+        Person,
+        on_delete=models.CASCADE,
+        related_name="broker_office",
+        verbose_name="Pessoa (PJ)",
+    )
+
+    class Meta:
+        verbose_name = "Escritório de Corretagem"
+        verbose_name_plural = "Escritórios de Corretagem"
+
+    def __str__(self) -> str:
+        return f"Escritório — {self.person.full_name}"
+
+
+class BrokerPerson(models.Model):
+    """
+    Corretor individual (PF). Pode ser vinculado a um BrokerOffice.
+    person_kind=PF obrigatório — validado no serializer.
+    """
+
+    person = models.OneToOneField(
+        Person,
+        on_delete=models.CASCADE,
+        related_name="broker_person",
+        verbose_name="Pessoa (PF)",
+    )
+    office = models.ForeignKey(
+        BrokerOffice,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="members",
+        verbose_name="Escritório de corretagem",
+    )
+
+    class Meta:
+        verbose_name = "Corretor"
+        verbose_name_plural = "Corretores"
+
+    def __str__(self) -> str:
+        return f"Corretor — {self.person.full_name}"

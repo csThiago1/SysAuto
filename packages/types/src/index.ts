@@ -28,3 +28,5 @@ export * from "./pricing-engine.types";
 export * from "./quote.types";
 export * from "./benchmark.types";
 export * from "./capacidade.types";
+export * from "./budget.types";
+export * from "./fiscal.types";

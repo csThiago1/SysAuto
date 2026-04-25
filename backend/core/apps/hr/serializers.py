@@ -11,6 +11,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from apps.authentication.models import GlobalUser
+from apps.persons.models import Person, PersonRole
 
 from .models import (
     Allowance,
@@ -129,7 +130,16 @@ class EmployeeDetailSerializer(serializers.ModelSerializer):
             "marital_status",
             "education_level",
             "nationality",
+            "rg",
+            "mother_name",
+            "father_name",
             "emergency_contact_name",
+            "emergency_contact_phone",
+            "emergency_contact_relationship",
+            "bank_name",
+            "bank_agency",
+            "bank_account",
+            "bank_account_type",
             "address_street",
             "address_number",
             "address_complement",
@@ -245,7 +255,15 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
                 user.pk,
                 "created" if created else "existing",
             )
-            return Employee.objects.create(user=user, **validated_data)
+
+            # Cria Person (PF) com role EMPLOYEE e vincula ao colaborador
+            person = Person.objects.create(
+                person_kind="PF",
+                full_name=name,
+            )
+            PersonRole.objects.create(person=person, role="EMPLOYEE")
+
+            return Employee.objects.create(user=user, person=person, **validated_data)
 
     class Meta:
         model = Employee

@@ -58,3 +58,6 @@ openpyxl==3.1.2         # Exportação XLSX (DRE, fluxo de caixa)
 
 # ── Motor de Orçamentos (MO) ────────────────────────────────────────────────
 rapidfuzz==3.12.2       # Fuzzy matching in-memory para AliasMatcher
+
+# ── Nested routers (budgets URLs) ────────────────────────────────
+drf-nested-routers==0.95.0

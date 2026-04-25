@@ -1,0 +1,91 @@
+{% extends "pdf_engine/base.html" %}
+
+{% block title %}Orçamento {{ budget.number }}{% endblock %}
+
+{% block content %}
+    <div class="section">
+        <h2>Orçamento {{ budget.number }} — v{{ version.version_number }}</h2>
+        <table>
+            <tr>
+                <td style="width: 50%;">
+                    <strong>Cliente:</strong> {{ customer.full_name }}<br>
+                    <span class="muted">CPF/CNPJ: {{ customer.document|default:"—" }}</span>
+                </td>
+                <td style="width: 50%;">
+                    <strong>Veículo:</strong> {{ budget.vehicle_description }}<br>
+                    <span class="muted">Placa: {{ budget.vehicle_plate }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Emissão:</strong> {{ version.sent_at|date:"d/m/Y H:i"|default:version.created_at|date:"d/m/Y H:i" }}</td>
+                <td><strong>Validade:</strong> {{ version.valid_until|date:"d/m/Y"|default:"—" }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>Itens</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Descrição</th>
+                    <th>Qtd</th>
+                    <th class="right">Unit.</th>
+                    <th class="right">Desc%</th>
+                    <th class="right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        {{ item.description }}
+                        {% if item.external_code %}<br><small class="muted">cód.: {{ item.external_code }}</small>{% endif %}
+                        {% for op in item.operations.all %}
+                        <br><small class="muted">▸ {{ op.operation_type.label }} / {{ op.labor_category.label }}: {{ op.hours }}h × R$ {{ op.hourly_rate }}</small>
+                        {% endfor %}
+                    </td>
+                    <td>{{ item.quantity }}</td>
+                    <td class="right">R$ {{ item.unit_price|floatformat:2 }}</td>
+                    <td class="right">{{ item.discount_pct }}%</td>
+                    <td class="right"><strong>R$ {{ item.net_price|floatformat:2 }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="totals">
+        <table>
+            <tr>
+                <td>Subtotal (peças + MO)</td>
+                <td class="right">R$ {{ totals.subtotal|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Peças</td>
+                <td class="right">R$ {{ totals.parts|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Mão-de-obra</td>
+                <td class="right">R$ {{ totals.labor|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td>Desconto</td>
+                <td class="right">− R$ {{ totals.discount|floatformat:2 }}</td>
+            </tr>
+            <tr class="total-row">
+                <td>TOTAL</td>
+                <td class="right">R$ {{ totals.net|floatformat:2 }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section" style="margin-top: 2em;">
+        <p class="muted" style="font-size: 10px;">
+            Este orçamento tem validade até <strong>{{ version.valid_until|date:"d/m/Y"|default:"—" }}</strong>.
+            Após este período, valores podem sofrer reajuste. Aprovação pode ser registrada via WhatsApp ou presencialmente com assinatura.
+        </p>
+    </div>
+{% endblock %}

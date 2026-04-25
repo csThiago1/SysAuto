@@ -4,7 +4,12 @@ import { Input, Button, Label, Avatar, PhoneInput } from "@/components/ui";
 import { useDebounce, usePersons, useCreatePerson } from "@/hooks";
 import type { Person } from "@paddock/types";
 import { cn } from "@/lib/utils";
-import { ApiError } from "@/lib/api"; 
+import { ApiError } from "@/lib/api";
+
+function getDocumentDisplay(person: Person): string {
+  const primary = (person.documents ?? []).find((d) => d.is_primary) ?? (person.documents ?? [])[0];
+  return primary ? primary.value_masked : "";
+}
 
 
 interface CustomerPickerProps {
@@ -111,11 +116,11 @@ export function CustomerPicker({ value, onChange, error }: CustomerPickerProps) 
     return (
       <div className="flex items-center justify-between rounded-md bg-white border border-neutral-200 p-3 shadow-sm">
         <div className="flex items-center gap-3">
-          <Avatar name={selected.full_name} logoUrl={selected.logo_url} />
+          <Avatar name={selected.full_name} />
           <div>
             <p className="text-sm font-medium text-neutral-900">{selected.full_name}</p>
             <p className="text-xs text-neutral-500">
-              {selected.document ? `${selected.document} · ` : ""}
+              {getDocumentDisplay(selected) ? `${getDocumentDisplay(selected)} · ` : ""}
               {primaryContact}
             </p>
           </div>
@@ -176,7 +181,7 @@ export function CustomerPicker({ value, onChange, error }: CustomerPickerProps) 
                 >
                   <span className="text-sm font-medium text-neutral-900">{person.full_name}</span>
                   <span className="text-xs text-neutral-500">
-                    {person.document ? `${person.document} · ` : ""}
+                    {getDocumentDisplay(person) ? `${getDocumentDisplay(person)} · ` : ""}
                     {person.primary_contact?.value ?? "Sem contato"}
                   </span>
                 </button>

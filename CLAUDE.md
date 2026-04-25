@@ -144,6 +144,19 @@ Monit:       Sentry + Grafana
 
 ## ⚠️ Armadilhas Conhecidas — Não Repetir
 
+### Keycloak 24 — Freemarker: usar `url.resourcesPath` não `resourcesPath`
+```freemarker
+<!-- ERRADO — resourcesPath não existe no data model do KC 24 → InvalidReferenceException -->
+<link href="${resourcesPath}/css/login.css">
+<img src="${resourcesPath}/img/logo.png">
+
+<!-- CORRETO — KC 24 expõe via objeto url (UrlBean) -->
+<link href="${url.resourcesPath}/css/login.css">
+<img src="${url.resourcesPath}/img/logo.png">
+<script src="${url.resourcesPath}/js/carousel.js">
+```
+Outros vars KC 24 que continuam funcionando: `${url.loginAction}`, `${login.username!''}`, `${messagesPerField.existsError(...)}`.
+
 ### Django — Roteamento DRF com múltiplos routers no mesmo app
 ```python
 # ERRADO — DefaultRouter registrado em "" captura qualquer segmento como pk
@@ -489,10 +502,12 @@ refactor(customers): extrai lógica LGPD para serviço
   - JWKS URL: `http://keycloak:8080/realms/paddock/protocol/openid-connect/certs`
   - Fallback: retorna `None` (warn) se Keycloak offline — sem crash 500
 - `session.role` extraído de `token.realm_access.roles`
-- **Setup Keycloak:** Antes do primeiro `docker compose up`, criar schema PostgreSQL:
-  ```bash
-  docker exec paddock_postgres psql -U paddock -d paddock_dev -c "CREATE SCHEMA IF NOT EXISTS keycloak;"
-  ```
+- **Setup Keycloak:** Schema PostgreSQL criado automaticamente por `infra/docker/init/01_setup.sql` — **não requer passo manual**
+- **Tema de login:** `infra/docker/keycloak/themes/paddock/` — tema customizado DS Car (split 50/50, neon, carrossel)
+  - `docker-compose.dev.yml`: volume + `--health-enabled=true` + `KC_HEALTH_ENABLED: "true"`
+  - `realm-export.json`: `loginTheme: "paddock"`, `resetPasswordAllowed: false`
+  - Aplicar mudanças de realm: `make dev-reset && make dev` (reimporta do zero)
+- **Client ID no realm:** `paddock-frontend` (não `dscar-web`)
 - **Seed users:**
   - `admin@paddock.solutions / admin123` (ADMIN)
   - `thiago@paddock.solutions / paddock123` (OWNER)
@@ -1191,6 +1206,98 @@ Nenhuma sprint ativa no momento.
 ---
 
 ## 📦 Sprints Entregues
+
+### Ciclo 07 — Cadastros Unificados — Abril 2026 ✅
+**Person limpo + sub-modelos por role + InsurerTenantProfile tenant-aware + Corretores + Especialistas**
+
+Backend:
+- `persons/migrations/0010_person_cleanup`: remove 5 campos deprecated de `Person` (document, logo_url, insurer_code, job_title, department)
+- `persons/migrations/0011_add_submodels`: cria `ClientProfile`, `BrokerOffice`, `BrokerPerson` (OneToOneField → Person)
+- `insurers/migrations/0005`: `InsurerTenantProfile` + `0006`: adiciona `company FK` (tenants.Company) + `unique_together(insurer, company)` — isolamento real por tenant
+- `hr/migrations/0005`: adiciona bank fields + `emergency_contact_relationship`; `0006`: re-encripta `emergency_contact_phone` (LGPD)
+- `EmployeeCreateSerializer.create()`: auto-cria `Person(PF)` + `PersonRole(EMPLOYEE)` na admissão
+- `PersonCreateUpdateSerializer`: suporte a escrita de `documents[]` via `_sync_documents()` (empty list = preserva existentes)
+- `PersonDetailSerializer`: retorna `documents[]` (mascarados) e `client_profile`
+- `PersonViewSet.get_queryset()`: suporte ao filtro `?kind=PF|PJ`
+- `InsurerViewSet`: RBAC — MANAGER+ em write; `_logo_extension()` remove `text/plain` (segurança)
+- `ExpertViewSet`: RBAC — CONSULTANT+ leitura, MANAGER+ escrita
+- Endpoint `GET/PUT /api/v1/insurers/{id}/tenant_profile/` — usa `connection.tenant` para isolamento
+
+Frontend:
+- `packages/types/src/person.types.ts`: remove `document`, adiciona `PersonDocument`, `PersonDocumentWrite`, `ClientProfile`, `InsurerTenantProfile`
+- `packages/types/src/hr.types.ts`: adiciona campos bancários + `emergency_contact_relationship`
+- `PersonFormModal`: seção Documentos com `useFieldArray`; docs existentes read-only (sem pre-fill mascarado)
+- `/cadastros/seguradoras/[id]`: tabs "Dados Gerais" + "Perfil Operacional"
+- `/cadastros/corretores`: split panel escritórios (PJ) + corretores (PF)
+- `/cadastros/especialistas`: lista + dialog peritos externos
+- `useInsurers`: `useInsurerTenantProfile` + `useUpdateInsurerTenantProfile`
+- `useExperts`, `usePersons` (filtro kind) adicionados
+
+**Padrões estabelecidos:**
+- `InsurerTenantProfile` usa `(insurer, company)` unique_together — `get_or_create(insurer=..., company=connection.tenant)`
+- `_sync_documents(person, [])` → return early (preserva docs existentes); lista não-vazia → delete-all + recreate
+- `PersonFormModal` em modo edição: não pre-preenche `value` de documentos com `value_masked` (corrupção de dados)
+- `emergency_contact_phone` SEMPRE EncryptedCharField — telefone de terceiro ainda é PII coberto pelo LGPD
+- `PersonViewSet` aceita `?kind=PF|PJ` como alias de `person_kind`
+
+---
+
+### Ciclo 07 (anterior) — Keycloak Ativação + Tema de Login DS Car — Abril 2026 ✅
+**Keycloak 24 ativo em dev + tema customizado DS Car (split 50/50, neon, carrossel)**
+
+Infra:
+- `infra/docker/docker-compose.dev.yml`: volume do tema + `--health-enabled=true` + `KC_HEALTH_ENABLED`
+- `infra/docker/keycloak/realm-export.json`: `loginTheme: "paddock"`, `resetPasswordAllowed: false`
+- Schema Keycloak criado automaticamente por `infra/docker/init/01_setup.sql` (não requer passo manual)
+
+Tema `infra/docker/keycloak/themes/paddock/login/`:
+- `theme.properties`: `parent=base`, `styles=css/login.css`, `scripts=js/carousel.js`
+- `login.ftl`: template Freemarker — split 50/50, logo DS Car, form OIDC, 4 slides carrossel, 16 neon lines, footer
+- `resources/css/login.css`: dark theme, animações neon (travel-h/travel-v), Montserrat
+- `resources/js/carousel.js`: autoplay 4500ms, dot navigation
+- `resources/img/logo-dscar.png`: copiado de `apps/dscar-web/public/`
+
+**Padrões estabelecidos:**
+- KC 24: usar `${url.resourcesPath}` não `${resourcesPath}` em templates .ftl (ver Armadilhas)
+- Client ID no realm: `paddock-frontend` (não `dscar-web`)
+- Reset de senha self-service: DESATIVADO (`resetPasswordAllowed: false`) — senha temporária via WhatsApp pelo admin
+- Reimportar realm (após mudanças em realm-export.json): `make dev-reset && make dev`
+- Em prod: fluxo de login aponta diretamente para Keycloak (sem tela intermediária Next.js `/login`)
+
+---
+
+### Ciclo 06C — NFS-e Manaus end-to-end + NF-e Recebidas — Abril 2026 ✅
+**App `apps.fiscal` (extendido) — emissão NFS-e Manaus + manifestação de destinatário**
+
+Backend:
+- Migration `fiscal/0004`: `FiscalDocument` expandido com `ref`, `config FK`, `service_order FK`, `destinatario FK`, `protocolo`, `caminho_xml`, `caminho_pdf`, `payload_enviado`, `ultima_resposta`, `mensagem_sefaz`, `natureza_rejeicao`, `valor_impostos`, `documento_referenciado`, `created_by`, `manual_reason` + `CheckConstraint`
+- `ManausNfseBuilder.build()`: monta payload Focus NFS-e para Manaus (IBGE `1302603`) — LC116 6 dígitos (`140100`), RPS, tomador PF/PJ via `Person+PersonDocument+PersonAddress`
+- `ManualNfseBuilder.build()`: monta payload NFS-e a partir de `ManualNfseInputSerializer.validated_data`
+- `FiscalService.emit_nfse()`, `emit_manual_nfse()`, `consult()`, `cancel()` — implementação completa com `@transaction.atomic`, idempotência via `ref`, polling via Celery
+- `poll_fiscal_document` task: polling a cada 10s, max 60 retentativas, encerra quando Focus retorna `autorizado`/`erro_autorizacao`
+- `NfseEmitView`, `NfseEmitManualView`, `FiscalDocumentViewSet` — RBAC: emissão CONSULTANT+, manual ADMIN+, cancelamento MANAGER+
+- `NfeRecebidaListView`: GET `/fiscal/nfe-recebidas/` — pass-through Focus `/v2/nfes_recebidas` por CNPJ
+- `NfeRecebidaManifestView`: POST `/fiscal/nfe-recebidas/{chave}/manifesto/` — encaminha manifestação à Focus
+- Fix crítico: `FOCUSNFE_TOKEN` (env container) vs `FOCUS_NFE_TOKEN` (settings antigo) — fallback chain em `settings/base.py`
+
+Frontend (`dscar-web`):
+- `packages/types/src/fiscal.types.ts` — `FiscalDocument`, `FiscalDocumentList`, `ManualNfseInput`, `ManualNfseItem`
+- `src/hooks/useFiscal.ts` — `useFiscalDocuments`, `useFiscalDocument`, `useEmitNfse`, `useEmitManualNfse`, `useCancelFiscalDoc`, `useNfeRecebidas`, `useNfeRecebidaManifest`
+- `/fiscal/documentos` — lista de documentos fiscais emitidos: KPIs (pendente/autorizado/rejeitado), filtros tipo+status, links PDF/XML, cancelamento MANAGER+
+- `/fiscal/emitir-nfse` — formulário NFS-e manual ADMIN+: busca de Person, array dinâmico de itens, discriminação, motivo obrigatório
+- `/fiscal/nfe-recebidas` — lista NF-e recebidas de fornecedores: manifesto de destinatário (ciência → confirmar/desconhecer)
+- Sidebar: seção "FISCAL" com "Documentos Emitidos" (FileText), "NF-e Recebidas" (Inbox), "Emitir NFS-e Manual" (FileText)
+
+**Padrões estabelecidos:**
+- `FOCUSNFE_TOKEN` é o env var correto no container; settings lê com fallback: `config("FOCUSNFE_TOKEN") or config("FOCUS_NFE_TOKEN")`
+- Manaus IBGE: `"1302603"`; LC116 formato: 6 dígitos numéricos sem ponto (`"140100"`, `"140500"`)
+- `_normalize_lc116(code)`: strip de pontos + ljust(6, "0")[:6]
+- NF-e recebidas: pass-through Focus sem armazenar no banco — `NfeRecebidaListView` e `NfeRecebidaManifestView` são puramente proxy
+- `FocusNFeError` deve ser capturado explicitamente com `isinstance()` nas views — não cai no `except Exception` genérico
+- `FiscalDocumentListSerializer`: nunca usar `source=` quando field name == source (AssertionError DRF)
+- `NfeRecebida` campos reais Focus: `nome_emitente` e `documento_emitente` (não `emitente_nome`/`emitente_cnpj`)
+
+---
 
 ### MO-9 — Capacidade + Variâncias + Auditoria — Abril 2026 ✅
 **Extensões em `apps.service_orders`, `apps.pricing_tech`, `apps.pricing_engine`**

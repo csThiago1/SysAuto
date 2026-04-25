@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Documento DS Car{% endblock %}</title>
+    <style>
+        @page { size: A4; margin: 2cm; }
+        body { font-family: Arial, sans-serif; font-size: 11px; color: #1f2937; }
+        .header { border-bottom: 3px solid #dc2626; padding-bottom: 1em; margin-bottom: 1.5em; }
+        .header h1 { color: #dc2626; margin: 0; font-size: 20px; }
+        .header p { margin: 0.2em 0; color: #6b7280; font-size: 10px; }
+        .section { margin-bottom: 1.5em; }
+        .section h2 { color: #1f2937; font-size: 13px; margin: 0 0 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
+        table { width: 100%; border-collapse: collapse; margin: 0.5em 0; }
+        th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e5e7eb; }
+        th { background-color: #f9fafb; color: #4b5563; font-size: 10px; text-transform: uppercase; }
+        .totals { margin-top: 1em; border: 1px solid #e5e7eb; padding: 1em; background: #f9fafb; }
+        .totals .total-row { font-weight: bold; font-size: 13px; color: #dc2626; border-top: 2px solid #1f2937; padding-top: 0.5em; margin-top: 0.5em; }
+        .footer { position: fixed; bottom: 1cm; left: 2cm; right: 2cm; border-top: 1px solid #e5e7eb; padding-top: 0.5em; color: #9ca3af; font-size: 9px; text-align: center; }
+        .right { text-align: right; }
+        .muted { color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>DS Car Centro Automotivo</h1>
+        <p>CNPJ: 10.362.513/0001-04 · Av. Samaúma 15, Monte das Oliveiras — Manaus/AM · CEP 69093-132</p>
+        <p>(92) 3345-7864 · dscarcentroautomotivo@gmail.com</p>
+    </div>
+
+    {% block content %}{% endblock %}
+
+    <div class="footer">
+        Documento gerado automaticamente pelo ERP Paddock Solutions · DS Car © {% now "Y" %}
+    </div>
+</body>
+</html>

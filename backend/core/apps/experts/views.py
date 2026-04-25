@@ -7,6 +7,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
 from apps.experts.models import Expert
 from apps.experts.serializers import ExpertCreateUpdateSerializer, ExpertSerializer
 
@@ -21,8 +22,13 @@ class ExpertViewSet(viewsets.ModelViewSet):
     Filtro por seguradora: ?insurers=<uuid>
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        if self.action in ("create", "partial_update", "update"):
+            return [IsAuthenticated(), IsManagerOrAbove()]
+        return [IsAuthenticated(), IsConsultantOrAbove()]
     filterset_fields = {"insurers": ["exact"], "is_active": ["exact"]}
     search_fields = ["name", "registration_number"]
     http_method_names = ["get", "post", "patch", "head", "options"]

@@ -1,7 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Pencil, Trash2, Search, Shield } from "lucide-react"
+import Link from "next/link"
+import type { Route } from "next"
+import { Plus, Pencil, Trash2, Search, Shield, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -176,6 +178,17 @@ export default function SeguradorasPage() {
 
                   <TableCell className="py-2 text-right">
                     <div className="flex justify-end gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7"
+                        asChild
+                        title="Perfil Operacional"
+                      >
+                        <Link href={`/cadastros/seguradoras/${ins.id}` as Route}>
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </Link>
+                      </Button>
                       <Button
                         size="icon"
                         variant="ghost"
