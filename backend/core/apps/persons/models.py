@@ -299,3 +299,88 @@ class PersonAddress(models.Model):
 
     def __str__(self) -> str:
         return f"{self.street}, {self.number} — {self.city}/{self.state}"
+
+
+class ClientProfile(models.Model):
+    """
+    Perfil de cliente — dados de consentimento LGPD por pessoa.
+    OneToOne: uma pessoa pode ter um único perfil de cliente.
+    """
+
+    person = models.OneToOneField(
+        Person,
+        on_delete=models.CASCADE,
+        related_name="client_profile",
+        verbose_name="Pessoa",
+    )
+    lgpd_consent_version = models.CharField(
+        max_length=10, default="1.0", verbose_name="Versão do consentimento LGPD"
+    )
+    lgpd_consent_date = models.DateTimeField(
+        null=True, blank=True, verbose_name="Data do consentimento LGPD"
+    )
+    lgpd_consent_ip = models.GenericIPAddressField(
+        null=True, blank=True, verbose_name="IP do consentimento LGPD"
+    )
+    group_sharing_consent = models.BooleanField(
+        default=False,
+        verbose_name="Consentimento de compartilhamento no grupo",
+        help_text="Opt-in EXPLÍCITO — verificar antes de cross-sell entre empresas do grupo.",
+    )
+
+    class Meta:
+        verbose_name = "Perfil de Cliente"
+        verbose_name_plural = "Perfis de Cliente"
+
+    def __str__(self) -> str:
+        return f"ClientProfile — {self.person.full_name}"
+
+
+class BrokerOffice(models.Model):
+    """
+    Escritório de corretagem (PJ). Agrupa corretores individuais.
+    person_kind=PJ obrigatório — validado no serializer.
+    """
+
+    person = models.OneToOneField(
+        Person,
+        on_delete=models.CASCADE,
+        related_name="broker_office",
+        verbose_name="Pessoa (PJ)",
+    )
+
+    class Meta:
+        verbose_name = "Escritório de Corretagem"
+        verbose_name_plural = "Escritórios de Corretagem"
+
+    def __str__(self) -> str:
+        return f"Escritório — {self.person.full_name}"
+
+
+class BrokerPerson(models.Model):
+    """
+    Corretor individual (PF). Pode ser vinculado a um BrokerOffice.
+    person_kind=PF obrigatório — validado no serializer.
+    """
+
+    person = models.OneToOneField(
+        Person,
+        on_delete=models.CASCADE,
+        related_name="broker_person",
+        verbose_name="Pessoa (PF)",
+    )
+    office = models.ForeignKey(
+        BrokerOffice,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="members",
+        verbose_name="Escritório de corretagem",
+    )
+
+    class Meta:
+        verbose_name = "Corretor"
+        verbose_name_plural = "Corretores"
+
+    def __str__(self) -> str:
+        return f"Corretor — {self.person.full_name}"
