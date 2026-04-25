@@ -1207,7 +1207,42 @@ Nenhuma sprint ativa no momento.
 
 ## 📦 Sprints Entregues
 
-### Ciclo 07 — Keycloak Ativação + Tema de Login DS Car — Abril 2026 ✅
+### Ciclo 07 — Cadastros Unificados — Abril 2026 ✅
+**Person limpo + sub-modelos por role + InsurerTenantProfile tenant-aware + Corretores + Especialistas**
+
+Backend:
+- `persons/migrations/0010_person_cleanup`: remove 5 campos deprecated de `Person` (document, logo_url, insurer_code, job_title, department)
+- `persons/migrations/0011_add_submodels`: cria `ClientProfile`, `BrokerOffice`, `BrokerPerson` (OneToOneField → Person)
+- `insurers/migrations/0005`: `InsurerTenantProfile` + `0006`: adiciona `company FK` (tenants.Company) + `unique_together(insurer, company)` — isolamento real por tenant
+- `hr/migrations/0005`: adiciona bank fields + `emergency_contact_relationship`; `0006`: re-encripta `emergency_contact_phone` (LGPD)
+- `EmployeeCreateSerializer.create()`: auto-cria `Person(PF)` + `PersonRole(EMPLOYEE)` na admissão
+- `PersonCreateUpdateSerializer`: suporte a escrita de `documents[]` via `_sync_documents()` (empty list = preserva existentes)
+- `PersonDetailSerializer`: retorna `documents[]` (mascarados) e `client_profile`
+- `PersonViewSet.get_queryset()`: suporte ao filtro `?kind=PF|PJ`
+- `InsurerViewSet`: RBAC — MANAGER+ em write; `_logo_extension()` remove `text/plain` (segurança)
+- `ExpertViewSet`: RBAC — CONSULTANT+ leitura, MANAGER+ escrita
+- Endpoint `GET/PUT /api/v1/insurers/{id}/tenant_profile/` — usa `connection.tenant` para isolamento
+
+Frontend:
+- `packages/types/src/person.types.ts`: remove `document`, adiciona `PersonDocument`, `PersonDocumentWrite`, `ClientProfile`, `InsurerTenantProfile`
+- `packages/types/src/hr.types.ts`: adiciona campos bancários + `emergency_contact_relationship`
+- `PersonFormModal`: seção Documentos com `useFieldArray`; docs existentes read-only (sem pre-fill mascarado)
+- `/cadastros/seguradoras/[id]`: tabs "Dados Gerais" + "Perfil Operacional"
+- `/cadastros/corretores`: split panel escritórios (PJ) + corretores (PF)
+- `/cadastros/especialistas`: lista + dialog peritos externos
+- `useInsurers`: `useInsurerTenantProfile` + `useUpdateInsurerTenantProfile`
+- `useExperts`, `usePersons` (filtro kind) adicionados
+
+**Padrões estabelecidos:**
+- `InsurerTenantProfile` usa `(insurer, company)` unique_together — `get_or_create(insurer=..., company=connection.tenant)`
+- `_sync_documents(person, [])` → return early (preserva docs existentes); lista não-vazia → delete-all + recreate
+- `PersonFormModal` em modo edição: não pre-preenche `value` de documentos com `value_masked` (corrupção de dados)
+- `emergency_contact_phone` SEMPRE EncryptedCharField — telefone de terceiro ainda é PII coberto pelo LGPD
+- `PersonViewSet` aceita `?kind=PF|PJ` como alias de `person_kind`
+
+---
+
+### Ciclo 07 (anterior) — Keycloak Ativação + Tema de Login DS Car — Abril 2026 ✅
 **Keycloak 24 ativo em dev + tema customizado DS Car (split 50/50, neon, carrossel)**
 
 Infra:
