@@ -69,7 +69,7 @@ export default function TiposPinturaPage() {
                       className={[
                         "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
                         t.is_active
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                          ? "bg-success-500/10 text-success-400"
                           : "bg-muted text-muted-foreground",
                       ].join(" ")}
                     >

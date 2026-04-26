@@ -80,7 +80,7 @@ export default function ServicosCanonicoPage() {
                   <TableCell className="py-2 text-sm text-white/60">{s.unidade}</TableCell>
                   <TableCell className="py-2">
                     {s.aplica_multiplicador_tamanho ? (
-                      <Badge className="bg-red-100 text-red-700 border-red-200 text-xs">
+                      <Badge className="bg-error-500/10 text-error-400 border-error-500/20 text-xs">
                         Aplica
                       </Badge>
                     ) : (

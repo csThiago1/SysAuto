@@ -103,7 +103,7 @@ export function ServiceFormSheet({ open, onOpenChange, editing }: Props) {
               {...register("name")}
             />
             {errors.name && (
-              <p className="text-xs text-red-600">{errors.name.message}</p>
+              <p className="text-xs text-error-400">{errors.name.message}</p>
             )}
           </div>
 
@@ -128,7 +128,7 @@ export function ServiceFormSheet({ open, onOpenChange, editing }: Props) {
               {...register("suggested_price")}
             />
             {errors.suggested_price && (
-              <p className="text-xs text-red-600">{errors.suggested_price.message}</p>
+              <p className="text-xs text-error-400">{errors.suggested_price.message}</p>
             )}
           </div>
 

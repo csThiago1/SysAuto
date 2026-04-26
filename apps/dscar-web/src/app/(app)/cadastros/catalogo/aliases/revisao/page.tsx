@@ -53,9 +53,9 @@ export default function AliasesRevisaoPage() {
 
   function getConfiancaBadge(confianca: number | null): string {
     if (confianca === null) return "text-white/50"
-    if (confianca >= 0.9) return "text-emerald-700"
-    if (confianca >= 0.75) return "text-amber-700"
-    return "text-red-600"
+    if (confianca >= 0.9) return "text-success-400"
+    if (confianca >= 0.75) return "text-warning-400"
+    return "text-error-400"
   }
 
   return (
@@ -71,7 +71,7 @@ export default function AliasesRevisaoPage() {
       {/* Contador */}
       {!isLoading && (
         <div className="flex items-center gap-2">
-          <Badge className="bg-amber-100 text-amber-700 border-amber-200">
+          <Badge className="bg-warning-500/10 text-warning-400 border-warning-500/20">
             {aliases.length} pendentes
           </Badge>
         </div>
@@ -122,7 +122,7 @@ export default function AliasesRevisaoPage() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-7 w-7 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50"
+                        className="h-7 w-7 text-success-400 hover:text-success-300 hover:bg-success-500/10"
                         disabled={processingId === alias.id}
                         onClick={() => handleApprove(alias)}
                         title="Aprovar mapeamento"
@@ -132,7 +132,7 @@ export default function AliasesRevisaoPage() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        className="h-7 w-7 text-error-400 hover:text-error-300 hover:bg-error-500/10"
                         disabled={processingId === alias.id}
                         onClick={() => handleReject(alias)}
                         title="Rejeitar mapeamento"

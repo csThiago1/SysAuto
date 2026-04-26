@@ -17,8 +17,8 @@ import { useMateriaisCanonico } from "@/hooks/usePricingCatalog"
 import type { MaterialCanonico } from "@paddock/types"
 
 const TIPO_MATERIAL_COLORS: Record<MaterialCanonico["tipo"], string> = {
-  consumivel: "bg-blue-100 text-blue-700 border-blue-200",
-  ferramenta: "bg-purple-100 text-purple-700 border-purple-200",
+  consumivel: "bg-info-500/10 text-info-400 border-info-500/20",
+  ferramenta: "bg-purple-500/10 text-purple-400 border-purple-500/20",
 }
 
 const TIPO_MATERIAL_LABELS: Record<MaterialCanonico["tipo"], string> = {

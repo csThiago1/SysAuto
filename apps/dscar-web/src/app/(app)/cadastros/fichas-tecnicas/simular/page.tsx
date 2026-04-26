@@ -150,7 +150,7 @@ function SimuladorContent() {
         <div className="flex items-center gap-2 text-sm">
           <span className="text-white/60">Aplica multiplicador de tamanho:</span>
           {aplica ? (
-            <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
+            <Badge className="bg-warning-500/10 text-warning-400 border-warning-500/20 text-xs">
               Sim
             </Badge>
           ) : (
@@ -166,7 +166,7 @@ function SimuladorContent() {
         <p className="text-sm text-white/40">Buscando ficha técnica...</p>
       )}
       {servicoId && error && !loadingFicha && (
-        <div className="p-4 rounded-md bg-red-50 border border-red-200 text-sm text-red-700">
+        <div className="p-4 rounded-md bg-error-500/10 border border-error-500/20 text-sm text-error-400">
           Ficha técnica não encontrada para este serviço/tipo de pintura.
         </div>
       )}
@@ -251,7 +251,7 @@ function FichaTable({
                     <TableCell
                       className={`py-1.5 text-xs text-right font-mono ${
                         isAdjusted && mo.afetada_por_tamanho
-                          ? "text-amber-700 font-semibold"
+                          ? "text-warning-400 font-semibold"
                           : "text-white/70"
                       }`}
                     >
@@ -289,7 +289,7 @@ function FichaTable({
                     <TableCell
                       className={`py-1.5 text-xs text-right font-mono ${
                         isAdjusted && ins.afetado_por_tamanho
-                          ? "text-amber-700 font-semibold"
+                          ? "text-warning-400 font-semibold"
                           : "text-white/70"
                       }`}
                     >

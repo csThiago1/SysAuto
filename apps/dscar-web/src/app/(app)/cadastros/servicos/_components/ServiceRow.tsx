@@ -60,7 +60,7 @@ export function ServiceRow({ item, onEdit }: Props) {
           <Button
             size="icon"
             variant="ghost"
-            className="h-7 w-7 text-white/40 hover:text-red-600"
+            className="h-7 w-7 text-white/40 hover:text-error-400"
             onClick={() => setConfirmOpen(true)}
             disabled={deleteMutation.isPending}
           >

@@ -201,7 +201,7 @@ export default function SeguradorasPage() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-7 w-7 text-red-500 hover:text-red-700"
+                        className="h-7 w-7 text-error-400 hover:text-error-300"
                         disabled={deletingId === ins.id}
                         onClick={() => handleDelete(ins)}
                         title="Remover"

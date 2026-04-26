@@ -189,7 +189,7 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
                 <InfoItem
                   label="Status"
                   value={person.is_active ? "Ativo" : "Inativo"}
-                  valueClassName={person.is_active ? "text-emerald-600" : "text-red-500"}
+                  valueClassName={person.is_active ? "text-success-400" : "text-error-400"}
                 />
                 <InfoItem label="Cadastrado em" value={formatDate(person.created_at)} />
               </div>
@@ -278,7 +278,7 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
                     <Link
                       key={os.id}
                       href={`/service-orders/${os.id}` as `/service-orders/${string}`}
-                      className="flex items-center justify-between gap-3 rounded-md border border-neutral-100 px-3 py-2.5 hover:bg-white/[0.03] transition-colors"
+                      className="flex items-center justify-between gap-3 rounded-md border border-white/10 px-3 py-2.5 hover:bg-white/[0.03] transition-colors"
                     >
                       <div className="flex flex-col min-w-0">
                         <span className="text-sm font-semibold text-white">

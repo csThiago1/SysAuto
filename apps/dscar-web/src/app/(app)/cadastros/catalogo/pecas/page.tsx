@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search, Plus, Package } from "lucide-react"
+import { Search, Plus, Package, Pencil } from "lucide-react"
 import { toast } from "sonner"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,7 +22,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { usePecasCanonicas, useCreatePecaCanonica } from "@/hooks/usePricingCatalog"
+import {
+  usePecasCanonicas,
+  useCreatePecaCanonica,
+  useUpdatePecaCanonica,
+} from "@/hooks/usePricingCatalog"
 import type { PecaCanonica } from "@paddock/types"
 import type { PecaCanonicoPayload } from "@/hooks/usePricingCatalog"
 
@@ -35,42 +39,87 @@ const TIPO_PECA_LABELS: Record<PecaCanonica["tipo_peca"], string> = {
 }
 
 const TIPO_PECA_COLORS: Record<PecaCanonica["tipo_peca"], string> = {
-  genuina: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  original: "bg-blue-100 text-blue-700 border-blue-200",
-  paralela: "bg-amber-100 text-amber-700 border-amber-200",
+  genuina: "bg-success-500/10 text-success-400 border-success-500/20",
+  original: "bg-info-500/10 text-info-400 border-info-500/20",
+  paralela: "bg-warning-500/10 text-warning-400 border-warning-500/20",
   usada: "bg-white/5 text-white/60 border-white/10",
-  recondicionada: "bg-purple-100 text-purple-700 border-purple-200",
+  recondicionada: "bg-purple-500/10 text-purple-400 border-purple-500/20",
 }
 
 const EMPTY_FORM: PecaCanonicoPayload = {
   codigo: "",
   nome: "",
   tipo_peca: "original",
+  ncm: "",
 }
 
 export default function PecasCanonicoPage() {
   const [search, setSearch] = useState("")
   const { data: pecas = [], isLoading } = usePecasCanonicas(search || undefined)
-  const { mutateAsync: criar, isPending } = useCreatePecaCanonica()
+  const { mutateAsync: criar, isPending: isCriando } = useCreatePecaCanonica()
+  const { mutateAsync: atualizar, isPending: isAtualizando } = useUpdatePecaCanonica()
 
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [editTarget, setEditTarget] = useState<PecaCanonica | null>(null)
   const [form, setForm] = useState<PecaCanonicoPayload>(EMPTY_FORM)
+
+  const isPending = isCriando || isAtualizando
 
   const set = (field: keyof PecaCanonicoPayload, value: string) =>
     setForm((p) => ({ ...p, [field]: value }))
 
+  function openCreate() {
+    setEditTarget(null)
+    setForm(EMPTY_FORM)
+    setSheetOpen(true)
+  }
+
+  function openEdit(peca: PecaCanonica) {
+    setEditTarget(peca)
+    setForm({
+      codigo: peca.codigo,
+      nome: peca.nome,
+      tipo_peca: peca.tipo_peca,
+      ncm: peca.ncm ?? "",
+    })
+    setSheetOpen(true)
+  }
+
   async function handleSave() {
-    if (!form.codigo || !form.nome) {
-      toast.error("Preencha código e nome da peça.")
+    if (!form.nome) {
+      toast.error("Preencha o nome da peça.")
       return
     }
+    if (!editTarget && !form.codigo) {
+      toast.error("Preencha o código da peça.")
+      return
+    }
+
+    // Normalise NCM: remove dots
+    const ncm = (form.ncm ?? "").replace(/\./g, "")
+    if (ncm && ncm.length !== 8) {
+      toast.error("NCM deve ter exatamente 8 dígitos numéricos (ex: 87089990).")
+      return
+    }
+    const payload = { ...form, ncm }
+
     try {
-      await criar({ ...form, is_active: true })
-      toast.success("Peça cadastrada com sucesso.")
+      if (editTarget) {
+        await atualizar({ ...payload, id: editTarget.id })
+        toast.success("Peça atualizada com sucesso.")
+      } else {
+        await criar({ ...payload, is_active: true })
+        toast.success("Peça cadastrada com sucesso.")
+      }
       setSheetOpen(false)
+      setEditTarget(null)
       setForm(EMPTY_FORM)
     } catch {
-      toast.error("Erro ao cadastrar peça. Verifique se o código já existe.")
+      toast.error(
+        editTarget
+          ? "Erro ao atualizar peça."
+          : "Erro ao cadastrar peça. Verifique se o código já existe."
+      )
     }
   }
 
@@ -81,10 +130,10 @@ export default function PecasCanonicoPage() {
         <div>
           <h1 className="text-2xl font-bold text-white">Peças Canônicas</h1>
           <p className="mt-1 text-sm text-white/50">
-            Catálogo de peças automotivas — base do Motor de Orçamentos.
+            Catálogo de peças automotivas — base do Motor de Orçamentos. NCM obrigatório para emissão de NF-e.
           </p>
         </div>
-        <Button onClick={() => setSheetOpen(true)}>
+        <Button onClick={openCreate}>
           <Plus className="h-4 w-4 mr-1" />
           Nova Peça
         </Button>
@@ -103,7 +152,7 @@ export default function PecasCanonicoPage() {
 
       {/* Table */}
       {isLoading ? (
-        <TableSkeleton columns={4} rows={8} />
+        <TableSkeleton columns={5} rows={8} />
       ) : pecas.length === 0 ? (
         <div className="py-12 text-center space-y-3">
           <Package className="mx-auto h-8 w-8 text-white/30" />
@@ -111,7 +160,7 @@ export default function PecasCanonicoPage() {
             {search ? "Nenhuma peça encontrada." : "Nenhuma peça cadastrada."}
           </p>
           {!search && (
-            <Button variant="outline" size="sm" onClick={() => setSheetOpen(true)}>
+            <Button variant="outline" size="sm" onClick={openCreate}>
               <Plus className="h-3.5 w-3.5 mr-1" />
               Cadastrar primeira peça
             </Button>
@@ -122,10 +171,12 @@ export default function PecasCanonicoPage() {
           <Table>
             <TableHeader className="bg-white/[0.03]">
               <TableRow>
-                <TableHead className="w-52">Código</TableHead>
+                <TableHead className="w-48">Código</TableHead>
                 <TableHead>Nome</TableHead>
-                <TableHead className="w-36">Tipo</TableHead>
-                <TableHead className="w-20">Ativo</TableHead>
+                <TableHead className="w-28">Tipo</TableHead>
+                <TableHead className="w-28 font-mono">NCM</TableHead>
+                <TableHead className="w-16">Ativo</TableHead>
+                <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -141,9 +192,25 @@ export default function PecasCanonicoPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="py-2">
-                    <span className={`text-xs ${p.is_active ? "text-emerald-600" : "text-white/40"}`}>
+                    {p.ncm ? (
+                      <span className="font-mono text-xs text-white/70">{p.ncm}</span>
+                    ) : (
+                      <span className="text-xs text-amber-500/70">sem NCM</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="py-2">
+                    <span className={`text-xs ${p.is_active ? "text-success-400" : "text-white/40"}`}>
                       {p.is_active ? "Ativo" : "Inativo"}
                     </span>
+                  </TableCell>
+                  <TableCell className="py-2">
+                    <button
+                      onClick={() => openEdit(p)}
+                      className="p-1 rounded text-white/30 hover:text-white/70 transition-colors"
+                      title="Editar peça"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -152,32 +219,46 @@ export default function PecasCanonicoPage() {
         </div>
       )}
 
-      <p className="text-xs text-white/40">{pecas.length} peça{pecas.length !== 1 ? "s" : ""} carregada{pecas.length !== 1 ? "s" : ""}.</p>
+      <p className="text-xs text-white/40">
+        {pecas.length} peça{pecas.length !== 1 ? "s" : ""} carregada{pecas.length !== 1 ? "s" : ""}.
+        {pecas.filter((p: PecaCanonica) => !p.ncm).length > 0 && (
+          <span className="ml-2 text-amber-500/70">
+            {pecas.filter((p: PecaCanonica) => !p.ncm).length} sem NCM — NCM obrigatório para NF-e.
+          </span>
+        )}
+      </p>
 
-      {/* Sheet de criação */}
+      {/* Sheet criar/editar */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-[400px]">
+        <SheetContent className="w-[420px]">
           <SheetHeader>
-            <SheetTitle>Nova Peça Canônica</SheetTitle>
+            <SheetTitle>{editTarget ? "Editar Peça Canônica" : "Nova Peça Canônica"}</SheetTitle>
           </SheetHeader>
           <div className="mt-6 space-y-4">
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Código *</Label>
+              <Label className="text-xs font-medium">
+                Código {!editTarget && <span className="text-error-400">*</span>}
+              </Label>
               <Input
                 placeholder="Ex: PARACHOQUE-DIANTEIRO"
                 value={form.codigo}
+                disabled={Boolean(editTarget)}
                 onChange={(e) => set("codigo", e.target.value.toUpperCase())}
               />
-              <p className="text-xs text-white/40">Use letras maiúsculas e hifens. Imutável após criação.</p>
+              {!editTarget && (
+                <p className="text-xs text-white/40">Use letras maiúsculas e hifens. Imutável após criação.</p>
+              )}
             </div>
+
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Nome *</Label>
+              <Label className="text-xs font-medium">Nome <span className="text-error-400">*</span></Label>
               <Input
                 placeholder="Ex: Parachoque Dianteiro"
                 value={form.nome}
                 onChange={(e) => set("nome", e.target.value)}
               />
             </div>
+
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Tipo de Peça</Label>
               <select
@@ -190,12 +271,27 @@ export default function PecasCanonicoPage() {
                 ))}
               </select>
             </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium">NCM</Label>
+              <Input
+                placeholder="Ex: 87089990"
+                maxLength={10}
+                className="font-mono"
+                value={form.ncm ?? ""}
+                onChange={(e) => set("ncm", e.target.value)}
+              />
+              <p className="text-xs text-white/40">
+                8 dígitos numéricos. Obrigatório para emissão de NF-e de produto.
+              </p>
+            </div>
+
             <div className="flex gap-2 pt-2">
               <Button variant="outline" className="flex-1" onClick={() => setSheetOpen(false)}>
                 Cancelar
               </Button>
               <Button className="flex-1" onClick={handleSave} disabled={isPending}>
-                {isPending ? "Salvando..." : "Salvar"}
+                {isPending ? "Salvando..." : editTarget ? "Salvar alterações" : "Criar peça"}
               </Button>
             </div>
           </div>
