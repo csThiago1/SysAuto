@@ -41,7 +41,7 @@
 
 Todo `<Table>` do app herda deste componente. Corrigir as classes light aqui propaga dark theme para todas as tabelas automaticamente.
 
-- [ ] **Step 1: Corrigir TableFooter, TableRow, TableHead, TableCaption**
+- [x] **Step 1: Corrigir TableFooter, TableRow, TableHead, TableCaption**
 
 Em `table.tsx`, fazer estas substituições:
 
@@ -69,7 +69,7 @@ old: "mt-4 text-sm text-neutral-500"
 new: "mt-4 text-sm text-white/40"
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add apps/dscar-web/src/components/ui/table.tsx
@@ -84,7 +84,7 @@ git commit -m "fix(design): shadcn Table base — dark theme (neutral→white/op
 - Create: `apps/dscar-web/src/components/ui/data-table.tsx`
 - Modify: `apps/dscar-web/src/components/ui/index.ts`
 
-- [ ] **Step 1: Criar `data-table.tsx`**
+- [x] **Step 1: Criar `data-table.tsx`**
 
 ```tsx
 import { cn } from "@/lib/utils"
@@ -121,14 +121,14 @@ export function DataTable({
 }
 ```
 
-- [ ] **Step 2: Adicionar export no barrel**
+- [x] **Step 2: Adicionar export no barrel**
 
 Em `apps/dscar-web/src/components/ui/index.ts`, adicionar:
 ```typescript
 export { DataTable } from "./data-table"
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/dscar-web/src/components/ui/data-table.tsx apps/dscar-web/src/components/ui/index.ts
@@ -143,7 +143,7 @@ git commit -m "feat(design): DataTable wrapper — dark container for shadcn Tab
 - Create: `apps/dscar-web/src/components/ui/status-pill.tsx`
 - Modify: `apps/dscar-web/src/components/ui/index.ts`
 
-- [ ] **Step 1: Criar `status-pill.tsx`**
+- [x] **Step 1: Criar `status-pill.tsx`**
 
 ```tsx
 import { cn } from "@/lib/utils"
@@ -225,14 +225,14 @@ export function StatusPill({
 }
 ```
 
-- [ ] **Step 2: Adicionar export no barrel**
+- [x] **Step 2: Adicionar export no barrel**
 
 Em `apps/dscar-web/src/components/ui/index.ts`, adicionar:
 ```typescript
 export { StatusPill } from "./status-pill"
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/dscar-web/src/components/ui/status-pill.tsx apps/dscar-web/src/components/ui/index.ts
@@ -246,7 +246,7 @@ git commit -m "feat(design): StatusPill — dark badge genérico (success/error/
 **Files:**
 - Modify: `apps/dscar-web/src/app/(app)/dashboard/_components/StatCard.tsx`
 
-- [ ] **Step 1: Refatorar icon container e tipografia**
+- [x] **Step 1: Refatorar icon container e tipografia**
 
 Substituir o `iconBg` prop para usar `bg-white/[0.06]` em vez de cores sólidas light. O ícone mantém a cor semântica.
 
@@ -274,13 +274,13 @@ old: qualquer classe de trend
 new: "label-mono text-success-400" (positivo) ou "label-mono text-error-400" (negativo)
 ```
 
-- [ ] **Step 2: Atualizar chamadas nos dashboards**
+- [x] **Step 2: Atualizar chamadas nos dashboards**
 
 Em `ManagerDashboard.tsx`, `ConsultantDashboard.tsx`, e `rh/page.tsx`, remover a prop `iconBg` das chamadas ao `StatCard` (já que o background agora é fixo `bg-white/[0.06]`). Manter a prop `iconColor` para a cor do ícone.
 
 Se o StatCard usa `iconBg` como prop, remover a prop do componente e hardcodar `bg-white/[0.06]`.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/(app)/dashboard/_components/StatCard.tsx
@@ -296,7 +296,7 @@ git commit -m "feat(design): StatCard fintech — bg-white/[0.06] icon, label-mo
 **Files:**
 - Modify: `packages/utils/src/form-styles.ts`
 
-- [ ] **Step 1: Atualizar todas as constantes**
+- [x] **Step 1: Atualizar todas as constantes**
 
 ```typescript
 // old
@@ -314,7 +314,7 @@ export const FORM_HINT = "mt-0.5 text-xs text-white/30 font-mono"
 export const FORM_ERROR = "mt-0.5 text-xs text-error-400 font-mono"
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add packages/utils/src/form-styles.ts
@@ -328,7 +328,7 @@ git commit -m "feat(design): FormField tokens — dark fintech (neutral→white/
 **Files:**
 - Modify: `apps/dscar-web/src/components/Sidebar.tsx`
 
-- [ ] **Step 1: Trocar section headers para `section-divider`**
+- [x] **Step 1: Trocar section headers para `section-divider`**
 
 Encontrar os elementos de section header (texto como "CADASTROS", "FINANCEIRO", etc.) que usam:
 ```
@@ -336,7 +336,7 @@ old: "text-xs font-semibold text-white/25 tracking-[1.5px] uppercase px-5 pt-4 p
 new: "section-divider px-5 pt-4 pb-1.5"
 ```
 
-- [ ] **Step 2: Adicionar `font-mono` nos badges de contagem**
+- [x] **Step 2: Adicionar `font-mono` nos badges de contagem**
 
 Nos badges que mostram contagem (ex: OS abertas), adicionar `font-mono`:
 ```
@@ -344,7 +344,7 @@ old: "ml-auto bg-primary-600 text-white text-xs font-bold px-[7px] py-[2px] roun
 new: "ml-auto bg-primary-600 text-white text-xs font-bold font-mono px-[7px] py-[2px] rounded-[10px] leading-4"
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/dscar-web/src/components/Sidebar.tsx
@@ -360,7 +360,7 @@ git commit -m "feat(design): sidebar — section-divider headers + font-mono bad
 - Modify: `apps/dscar-web/src/app/(app)/dashboard/_components/TeamProductivityTable.tsx`
 - Modify: `apps/dscar-web/src/app/(app)/dashboard/_components/RecentOSTable.tsx`
 
-- [ ] **Step 1: OverdueOSList — Dark error theme**
+- [x] **Step 1: OverdueOSList — Dark error theme**
 
 Substituições:
 ```
@@ -374,7 +374,7 @@ Substituições:
 "text-red-600"              → "text-error-400"
 ```
 
-- [ ] **Step 2: TeamProductivityTable — Fix borders**
+- [x] **Step 2: TeamProductivityTable — Fix borders**
 
 Substituições:
 ```
@@ -383,7 +383,7 @@ Substituições:
 "text-success-700"              → "text-success-400"
 ```
 
-- [ ] **Step 3: RecentOSTable — Fix borders + pills**
+- [x] **Step 3: RecentOSTable — Fix borders + pills**
 
 Substituições:
 ```
@@ -392,7 +392,7 @@ Substituições:
 "bg-info-100 text-info-700"     → "bg-info-500/10 text-info-400"
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/(app)/dashboard/_components/
@@ -408,13 +408,13 @@ git commit -m "feat(design): dashboard tables — dark error/border/pill theme"
 
 Este task requer ler cada arquivo, identificar classes proibidas, e substituir. Padrão:
 
-- [ ] **Step 1: Buscar todos os arquivos com classes proibidas**
+- [x] **Step 1: Buscar todos os arquivos com classes proibidas**
 
 ```bash
 cd apps/dscar-web && grep -rn "neutral-\|bg-white[^/]\|emerald-\|indigo-\|divide-neutral\|bg-red-[15]0\|bg-blue-[15]0\|bg-success-[15]0\|bg-warning-[15]0\|bg-info-[15]0" src/app/\(app\)/cadastros/ --include="*.tsx" | head -60
 ```
 
-- [ ] **Step 2: Para cada arquivo encontrado, aplicar as substituições do contrato**
+- [x] **Step 2: Para cada arquivo encontrado, aplicar as substituições do contrato**
 
 Regras (aplicar em todos os matches):
 ```
@@ -453,7 +453,7 @@ bg-info-100                         → bg-info-500/10
 text-info-700                       → text-info-400
 ```
 
-- [ ] **Step 3: Adicionar `PageHeader` + `SectionDivider` onde ausentes**
+- [x] **Step 3: Adicionar `PageHeader` + `SectionDivider` onde ausentes**
 
 Para cada página que ainda usa `<h1>` ou `<div>` inline para títulos, substituir por:
 ```tsx
@@ -464,7 +464,7 @@ import { SectionDivider } from "@/components/ui/section-divider"
 <SectionDivider label="SEÇÃO" />
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/(app)/cadastros/
@@ -478,13 +478,13 @@ git commit -m "feat(design): cadastros — full dark sweep (neutral→white/opac
 **Files:**
 - Modify: All pages in `apps/dscar-web/src/app/(app)/financeiro/`
 
-- [ ] **Step 1: Buscar classes proibidas**
+- [x] **Step 1: Buscar classes proibidas**
 
 ```bash
 cd apps/dscar-web && grep -rn "neutral-\|bg-white[^/]\|emerald-\|indigo-\|bg-red-[15]0\|bg-blue-[15]0\|bg-success-[15]0\|bg-warning-[15]0\|bg-info-[15]0\|text-red-[67]00\|text-success-[67]00\|text-warning-[67]00\|hover:bg-primary-50\|hover:border-primary-200" src/app/\(app\)/financeiro/ --include="*.tsx" | head -60
 ```
 
-- [ ] **Step 2: Aplicar substituições do contrato (mesma tabela Task 8)**
+- [x] **Step 2: Aplicar substituições do contrato (mesma tabela Task 8)**
 
 Atenção especial ao `JournalEntryTable.tsx`:
 - Status badges `bg-red-100 text-red-700 border border-red-200` → importar `StatusPill` e usar `<StatusPill label="Rejeitado" color="error" />`
@@ -500,9 +500,9 @@ Dashboard financeiro:
 - `border-neutral-100` → `border-white/10`
 - `hover:border-primary-200 hover:bg-primary-50` → `hover:border-primary-500/30 hover:bg-primary-500/5`
 
-- [ ] **Step 3: Adicionar `PageHeader` + `SectionDivider` onde ausentes**
+- [x] **Step 3: Adicionar `PageHeader` + `SectionDivider` onde ausentes**
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/(app)/financeiro/
@@ -516,13 +516,13 @@ git commit -m "feat(design): financeiro — dark sweep (StatusPill, neutral→wh
 **Files:**
 - Modify: All pages in `apps/dscar-web/src/app/(app)/rh/`
 
-- [ ] **Step 1: Buscar classes proibidas**
+- [x] **Step 1: Buscar classes proibidas**
 
 ```bash
 cd apps/dscar-web && grep -rn "neutral-\|bg-white[^/]\|emerald-\|indigo-\|bg-red-[15]0\|bg-blue-[15]0\|bg-success-[15]0\|bg-warning-[15]0\|bg-info-[15]0\|bg-primary-[15]0\|text-warning-[678]00" src/app/\(app\)/rh/ --include="*.tsx" | head -60
 ```
 
-- [ ] **Step 2: Aplicar substituições do contrato**
+- [x] **Step 2: Aplicar substituições do contrato**
 
 RH Dashboard (`rh/page.tsx`):
 - `bg-primary-100` → `bg-white/[0.06]`
@@ -539,9 +539,9 @@ EmployeeTable:
 Formulários (admissão, detalhe tabs):
 - Inputs e labels já consomem `FORM_LABEL` etc. de `form-styles.ts` — atualização automática via Task 5
 
-- [ ] **Step 3: Adicionar `PageHeader` + `SectionDivider` onde ausentes**
+- [x] **Step 3: Adicionar `PageHeader` + `SectionDivider` onde ausentes**
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/(app)/rh/
@@ -555,15 +555,15 @@ git commit -m "feat(design): RH — dark sweep (StatCard icon, warning dark, lab
 **Files:**
 - Modify: Pages in `apps/dscar-web/src/app/(app)/configuracao-motor/`, `capacidade/`, `auditoria/`
 
-- [ ] **Step 1: Buscar classes proibidas**
+- [x] **Step 1: Buscar classes proibidas**
 
 ```bash
 cd apps/dscar-web && grep -rn "neutral-\|bg-white[^/]\|emerald-\|bg-red-[15]0\|bg-success-[15]0\|bg-warning-[15]0" src/app/\(app\)/configuracao-motor/ src/app/\(app\)/capacidade/ src/app/\(app\)/auditoria/ --include="*.tsx" | head -40
 ```
 
-- [ ] **Step 2: Aplicar substituições do contrato + PageHeader + SectionDivider**
+- [x] **Step 2: Aplicar substituições do contrato + PageHeader + SectionDivider**
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/(app)/configuracao-motor/ apps/dscar-web/src/app/(app)/capacidade/ apps/dscar-web/src/app/(app)/auditoria/
@@ -577,15 +577,15 @@ git commit -m "feat(design): motor+capacidade+auditoria — dark sweep"
 **Files:**
 - Modify: Pages in `apps/dscar-web/src/app/(app)/estoque/`, `orcamentos/`, `fiscal/`, `benchmark/`, `agenda/`
 
-- [ ] **Step 1: Buscar classes proibidas em todos os módulos restantes**
+- [x] **Step 1: Buscar classes proibidas em todos os módulos restantes**
 
 ```bash
 cd apps/dscar-web && grep -rn "neutral-\|bg-white[^/]\|emerald-\|indigo-\|bg-red-[15]0\|bg-success-[15]0\|bg-warning-[15]0\|bg-info-[15]0\|text-red-[67]00\|text-success-[67]00\|text-warning-[67]00" src/app/\(app\)/estoque/ src/app/\(app\)/orcamentos/ src/app/\(app\)/fiscal/ src/app/\(app\)/benchmark/ src/app/\(app\)/agenda/ --include="*.tsx" | head -60
 ```
 
-- [ ] **Step 2: Aplicar substituições do contrato + PageHeader + SectionDivider**
+- [x] **Step 2: Aplicar substituições do contrato + PageHeader + SectionDivider**
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/(app)/estoque/ apps/dscar-web/src/app/(app)/orcamentos/ apps/dscar-web/src/app/(app)/fiscal/ apps/dscar-web/src/app/(app)/benchmark/ apps/dscar-web/src/app/(app)/agenda/
@@ -600,17 +600,17 @@ git commit -m "feat(design): estoque+orcamentos+fiscal+benchmark+agenda — dark
 - Modify: Pages in `apps/dscar-web/src/app/(app)/service-orders/[id]/`
 - Modify: `apps/dscar-web/src/app/(app)/service-orders/_components/NewOSDrawer.tsx`
 
-- [ ] **Step 1: Buscar classes proibidas no OS detail**
+- [x] **Step 1: Buscar classes proibidas no OS detail**
 
 ```bash
 cd apps/dscar-web && grep -rn "neutral-\|bg-white[^/]\|emerald-\|indigo-\|bg-red-[15]0\|bg-success-[15]0\|bg-warning-[15]0" src/app/\(app\)/service-orders/\[id\]/ src/app/\(app\)/service-orders/_components/ src/app/\(app\)/service-orders/new/ --include="*.tsx" | head -60
 ```
 
-- [ ] **Step 2: Aplicar substituições + SectionDivider nas seções do form**
+- [x] **Step 2: Aplicar substituições + SectionDivider nas seções do form**
 
 Os formulários de OS são compostos por tabs. Cada tab pode ganhar `SectionDivider` nos agrupamentos internos. Labels de form já consomem `form-styles.ts` (atualizado na Task 5).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add apps/dscar-web/src/app/(app)/service-orders/
@@ -624,7 +624,7 @@ git commit -m "feat(design): OS detail+form — dark sweep + SectionDivider"
 **Files:**
 - Verify: All modified files
 
-- [ ] **Step 1: Buscar QUALQUER classe proibida remanescente no app inteiro**
+- [x] **Step 1: Buscar QUALQUER classe proibida remanescente no app inteiro**
 
 ```bash
 cd apps/dscar-web && grep -rn "bg-neutral-50\|bg-neutral-100\|border-neutral-100\|border-neutral-200\|divide-neutral-\|text-neutral-[4-9]00\|bg-emerald-\|bg-indigo-\|bg-red-50\|bg-red-100\|bg-blue-50\|bg-blue-100" src/app/\(app\)/ src/components/ --include="*.tsx" | grep -v "node_modules" | head -30
@@ -632,7 +632,7 @@ cd apps/dscar-web && grep -rn "bg-neutral-50\|bg-neutral-100\|border-neutral-100
 
 Se houver matches, corrigir.
 
-- [ ] **Step 2: Buscar imports legado de `@/lib/design-tokens`**
+- [x] **Step 2: Buscar imports legado de `@/lib/design-tokens`**
 
 ```bash
 cd apps/dscar-web && grep -rn "from.*design-tokens" src/ --include="*.tsx" --include="*.ts" | head -20
@@ -640,7 +640,7 @@ cd apps/dscar-web && grep -rn "from.*design-tokens" src/ --include="*.tsx" --inc
 
 Migrar qualquer import restante para `@paddock/utils`.
 
-- [ ] **Step 3: Rodar typecheck**
+- [x] **Step 3: Rodar typecheck**
 
 ```bash
 cd apps/dscar-web && npx tsc --noEmit 2>&1 | grep -v "next.config\|middleware\|NotificationBell.test\|usePermission.test" | head -30
@@ -648,7 +648,7 @@ cd apps/dscar-web && npx tsc --noEmit 2>&1 | grep -v "next.config\|middleware\|N
 
 Expected: 0 erros novos.
 
-- [ ] **Step 4: Commit final se houver correções**
+- [x] **Step 4: Commit final se houver correções**
 
 ```bash
 git add -A
@@ -663,9 +663,9 @@ git commit -m "fix(design): sweep final — classes proibidas remanescentes + im
 - Modify: `CLAUDE.md`
 - Modify: `docs/superpowers/plans/2026-04-26-design-system-fintech-red-phase2.md`
 
-- [ ] **Step 1: Marcar todas as checkboxes do plano como `[x]`**
+- [x] **Step 1: Marcar todas as checkboxes do plano como `[x]`**
 
-- [ ] **Step 2: Adicionar sprint no CLAUDE.md em "Sprints Entregues"**
+- [x] **Step 2: Adicionar sprint no CLAUDE.md em "Sprints Entregues"**
 
 Adicionar após "Design System Fintech-Red":
 ```markdown
@@ -697,7 +697,7 @@ Migração (Layer 2):
 - Table headers: sempre `label-mono text-white/40`
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add CLAUDE.md docs/superpowers/plans/2026-04-26-design-system-fintech-red-phase2.md

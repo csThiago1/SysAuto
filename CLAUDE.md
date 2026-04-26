@@ -1207,7 +1207,35 @@ Nenhuma sprint ativa no momento.
 
 ## 📦 Sprints Entregues
 
-### Design System Fintech-Red — Abril 2026 ✅
+### Design System Fintech-Red Phase 2 — Abril 2026 ✅
+**Full ERP sweep: 6 foundation components + ~90 arquivos migrados para dark fintech theme**
+
+Foundation (Layer 1):
+- `table.tsx` (shadcn base): dark theme — neutral→white/opacity, label-mono headers
+- `DataTable` wrapper: `bg-white/5 rounded-md border border-white/10 overflow-hidden`
+- `StatusPill`: badge dark genérico (success/error/warning/info/neutral) com dot pulsante
+- `StatCard` refatorado: icon `bg-white/[0.06]`, value `font-mono`, label `label-mono`
+- `form-styles.ts`: tokens dark — `label-mono text-white/50` labels, `text-error-400` errors
+- Sidebar: section headers `section-divider`, badges `font-mono`
+
+Migração (Layer 2):
+- Dashboard: OverdueOSList dark error, TeamProductivity/RecentOS borders, ConsultantDashboard dividers
+- Cadastros: 16 arquivos — PersonTable full migration, catálogo, seguradoras, fichas, corretores, especialistas
+- Financeiro: 12 arquivos — JournalEntry, plano-contas, AP/AR (list/novo/detail), dashboard
+- RH: 17 arquivos — dashboard, colaboradores (6 tabs), ponto, metas, vales, folha
+- Motor+Capacidade+Auditoria: 7 arquivos — impressoras, snapshots, variancias, simulador, heatmap
+- Estoque+Fiscal+Benchmark+Agenda: 18 arquivos — NF-e, documentos, fontes, revisão, calendar views
+- OS Detail+Form: 16 arquivos — ClosingTab, HistoryTab, PartsTab, ServicesTab, CustomerSearch, NewOSDrawer
+
+**Regras estabelecidas:**
+- Cores `neutral-*`, `bg-white` (sólido), `emerald-*`, `indigo-*` proibidas — usar `white/opacity` + tokens semânticos
+- Badges: nunca fundo sólido light — sempre `bg-{color}-500/10 border-{color}-500/20 text-{color}-400`
+- Imports: sempre `@paddock/utils`, nunca `@/lib/design-tokens` (legado)
+- Table headers: sempre `label-mono text-white/40`
+
+---
+
+### Design System Fintech-Red Phase 1 — Abril 2026 ✅
 **Estética fintech-liquidity (terminal dark, mono labels, status dots, section dividers) aplicada ao ERP dscar-web — acento lime substituído por vermelho sutil (#cc4444)**
 
 Layer 1 — Foundation:
