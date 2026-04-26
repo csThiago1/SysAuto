@@ -146,7 +146,7 @@ export function NovoClienteModal({
           {/* CPF + Email em linha */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="nc-cpf">CPF <span className="text-neutral-400 text-xs">(opcional)</span></Label>
+              <Label htmlFor="nc-cpf">CPF <span className="text-white/30 text-xs">(opcional)</span></Label>
               <Input
                 id="nc-cpf"
                 placeholder="00000000000"
@@ -158,7 +158,7 @@ export function NovoClienteModal({
               {errors.cpf && <p className="text-xs text-error-600">{errors.cpf.message}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="nc-email">E-mail <span className="text-neutral-400 text-xs">(opcional)</span></Label>
+              <Label htmlFor="nc-email">E-mail <span className="text-white/30 text-xs">(opcional)</span></Label>
               <Input
                 id="nc-email"
                 type="email"
@@ -171,17 +171,17 @@ export function NovoClienteModal({
           </div>
 
           {/* LGPD */}
-          <div className="rounded-md border border-neutral-100 bg-neutral-50 px-3 py-3">
+          <div className="rounded-md border border-white/10 bg-white/[0.03] px-3 py-3">
             <div className="flex items-start gap-2.5">
               <input
                 id="nc-lgpd"
                 type="checkbox"
-                className="mt-0.5 h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+                className="mt-0.5 h-4 w-4 rounded border-white/20 text-primary-600 focus:ring-primary-500"
                 {...register("lgpd_consent")}
               />
               <Label
                 htmlFor="nc-lgpd"
-                className="text-xs text-neutral-700 leading-relaxed cursor-pointer"
+                className="text-xs text-white/70 leading-relaxed cursor-pointer"
               >
                 Autorizo o armazenamento e uso dos meus dados pessoais conforme a{" "}
                 <strong>LGPD (Lei 13.709/2018)</strong>.{" "}
