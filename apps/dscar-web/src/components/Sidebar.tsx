@@ -506,7 +506,7 @@ export function Sidebar() {
             {collapsed ? (
               <hr className="border-white/[0.08] mx-3 my-2" />
             ) : (
-              <div className="text-xs font-semibold text-white/25 tracking-[1.5px] uppercase px-5 pt-4 pb-1.5">
+              <div className="section-divider px-5 pt-4 pb-1.5">
                 {section.label}
               </div>
             )}
@@ -570,7 +570,7 @@ export function Sidebar() {
                           {item.label}
                         </span>
                         {badge != null && (
-                          <span className="ml-auto bg-primary-600 text-white text-xs font-bold px-[7px] py-[2px] rounded-[10px] leading-4">
+                          <span className="ml-auto bg-primary-600 text-white text-xs font-bold font-mono px-[7px] py-[2px] rounded-[10px] leading-4">
                             {badge}
                           </span>
                         )}
@@ -589,7 +589,7 @@ export function Sidebar() {
 
                     {/* Numeric badge no modo colapsado */}
                     {collapsed && badge != null && (
-                      <span className="absolute top-1 right-1 min-w-[16px] h-4 rounded-full bg-primary-600 text-white text-xs font-bold flex items-center justify-center px-0.5 leading-none">
+                      <span className="absolute top-1 right-1 min-w-[16px] h-4 rounded-full bg-primary-600 text-white text-xs font-bold font-mono flex items-center justify-center px-0.5 leading-none">
                         {badge > 9 ? "9+" : badge}
                       </span>
                     )}
