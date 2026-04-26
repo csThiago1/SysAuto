@@ -16,7 +16,7 @@ export function TeamProductivityTable({ members }: Props) {
 
   return (
     <div className="bg-white/5 rounded-md border border-white/10 shadow-sm overflow-hidden">
-      <div className="px-4 py-3 border-b border-neutral-100">
+      <div className="px-4 py-3 border-b border-white/10">
         <h3 className="text-sm font-semibold text-white/70">Produtividade da Equipe (mês)</h3>
       </div>
       <table className="w-full text-sm">
@@ -27,13 +27,13 @@ export function TeamProductivityTable({ members }: Props) {
             <th className="px-4 py-2.5 text-right">Entregues (mês)</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-neutral-100">
+        <tbody className="divide-y divide-white/5">
           {members.map((m) => (
             <tr key={m.name} className="hover:bg-white/[0.03]">
               <td className="px-4 py-2.5 font-medium text-white/90">{m.name}</td>
               <td className="px-4 py-2.5 text-right text-white/60">{m.open_count}</td>
               <td className="px-4 py-2.5 text-right">
-                <span className="font-semibold text-success-700">{m.delivered_month}</span>
+                <span className="font-semibold text-success-400">{m.delivered_month}</span>
               </td>
             </tr>
           ))}
