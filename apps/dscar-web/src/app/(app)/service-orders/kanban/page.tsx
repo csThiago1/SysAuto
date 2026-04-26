@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { AlertCircle, CheckCircle, LayoutList, Plus, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import { useServiceOrders } from "@/hooks/useServiceOrders";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -33,14 +34,10 @@ export default function KanbanPage(): React.ReactElement {
 
       {/* Header */}
       <div className="flex items-center justify-between shrink-0">
-        <div>
-          <h2 className="text-2xl font-semibold text-white">
-            Kanban — Ordens de Serviço
-          </h2>
-          <p className="text-sm text-white/50 mt-0.5">
-            Arraste os cards para mover entre etapas
-          </p>
-        </div>
+        <PageHeader
+          title="Kanban"
+          description={`${orders.length} ordem${orders.length !== 1 ? "s" : ""} ativa${orders.length !== 1 ? "s" : ""}`}
+        />
         <div className="flex items-center gap-2">
           {/* Toggle: mostrar entregues */}
           <button
@@ -49,7 +46,7 @@ export default function KanbanPage(): React.ReactElement {
             className={cn(
               "flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
               showDelivered
-                ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                ? "bg-success-500/10 border-success-500/30 text-success-400"
                 : "bg-white/[0.03] border-white/10 text-white/60 hover:bg-white/5"
             )}
           >
@@ -63,7 +60,7 @@ export default function KanbanPage(): React.ReactElement {
             className={cn(
               "flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
               showCancelled
-                ? "bg-red-50 border-red-200 text-red-700"
+                ? "bg-error-500/10 border-error-500/30 text-error-400"
                 : "bg-white/[0.03] border-white/10 text-white/60 hover:bg-white/5"
             )}
           >
@@ -86,7 +83,7 @@ export default function KanbanPage(): React.ReactElement {
 
       {/* Error */}
       {isError && (
-        <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="flex items-center gap-2 rounded-md border border-error-500/30 bg-error-500/10 px-4 py-3 text-sm text-error-400">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>
             Erro ao carregar OS:{" "}
