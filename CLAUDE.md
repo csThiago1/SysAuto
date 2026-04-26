@@ -1207,6 +1207,28 @@ Nenhuma sprint ativa no momento.
 
 ## 📦 Sprints Entregues
 
+### Design System Fintech-Red — Abril 2026 ✅
+**Estética fintech-liquidity (terminal dark, mono labels, status dots, section dividers) aplicada ao ERP dscar-web — acento lime substituído por vermelho sutil (#cc4444)**
+
+Layer 1 — Foundation:
+- `tailwind.config.ts`: keyframe + animation `pulse-slow` (4s ease-in-out infinite, opacity 1↔0.4)
+- `globals.css`: utilitários `.label-mono` (10px, mono, tracking 0.14em, uppercase, #cc4444) e `.section-divider` (flex + ::after line bg-white/6%)
+- `card.tsx`: fix dark theme — `bg-white` → `bg-card`, `border-neutral-200` → `border-white/10`, `text-neutral-900` → `text-card-foreground`
+- `page-header.tsx`: fix dark theme — `text-neutral-900` → `text-foreground`, `text-neutral-500` → `text-muted-foreground`
+- `SectionDivider` componente: `<div className="section-divider">{label}</div>` — padrão `LABEL ──────`
+- `StatusBadge` variante `dot`: ponto pulsante (`animate-pulse-slow`) + `label-mono` text, sem pill background
+
+Layer 2 — Páginas:
+- Dashboard: `PageHeader` em todos os branches (loading/consultant/manager/legacy) + `SectionDivider` (VISÃO GERAL / FATURAMENTO / EQUIPE / EM ANDAMENTO) + table headers `.label-mono`
+- OS List: `PageHeader` com contagem dinâmica + `ServiceOrderTable` cabeçalhos `.label-mono text-white/40`
+- Kanban page: `PageHeader` + toggles com tokens `success-*/error-*` (substituindo emerald/red brutos) + error alert dark
+- KanbanColumn: dark theme (`bg-white/[0.02]`, `border-white/5`), label-mono header, drop hover `primary-500/5`, skeleton dark, import migrado de `@/lib/design-tokens` → `@paddock/utils`
+- KanbanCard: dark glass (`bg-white/[0.04]`, `border-white/10`, `backdrop-blur-sm`), `StatusBadge variant="dot"`, textos `text-white/*`, insurer badge `bg-white/5`, urgency com tokens `error-*`
+
+**Referência de design:** `design_system/design-system.html` — página HTML standalone com todos os tokens, componentes e motion patterns extraídos do template fintech-liquidity-73.aura.build
+
+---
+
 ### Ciclo 07 — Cadastros Unificados — Abril 2026 ✅
 **Person limpo + sub-modelos por role + InsurerTenantProfile tenant-aware + Corretores + Especialistas**
 
