@@ -51,7 +51,7 @@ function ImpressoraRow({ impressora }: { impressora: ImpressoraEtiqueta }) {
       <td className="px-4 py-3">
         <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
           impressora.is_active
-            ? "text-emerald-400 bg-emerald-400/10"
+            ? "text-success-400 bg-success-400/10"
             : "text-white/40 bg-white/5"
         }`}>
           {impressora.is_active ? "Ativa" : "Inativa"}
