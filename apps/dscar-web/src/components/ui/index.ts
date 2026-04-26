@@ -45,6 +45,7 @@ export {
   Table, TableBody, TableCaption, TableCell,
   TableFooter, TableHead, TableHeader, TableRow,
 } from "./table";
+export { DataTable } from "./data-table";
 
 /**
  * Componentes de domínio DS Car (não shadcn puro)
