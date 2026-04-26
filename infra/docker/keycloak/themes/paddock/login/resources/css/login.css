@@ -93,8 +93,8 @@ html, body {
   align-items: center;
   justify-content: center;
   padding: 48px 56px;
-  background: rgba(10, 10, 10, 0.80);
-  backdrop-filter: blur(8px);
+  background: rgba(10, 10, 10, 0.45);
+  backdrop-filter: blur(4px);
   border-right: 1px solid rgba(234, 14, 3, 0.12);
   position: relative;
 }
