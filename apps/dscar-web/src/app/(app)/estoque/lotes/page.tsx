@@ -69,7 +69,7 @@ export default function LotesPage() {
                         <div
                           className={`h-full rounded-full transition-all ${
                             lote.saldo_percentual > 50
-                              ? "bg-emerald-500"
+                              ? "bg-success-500"
                               : lote.saldo_percentual > 20
                               ? "bg-yellow-500"
                               : "bg-red-500"

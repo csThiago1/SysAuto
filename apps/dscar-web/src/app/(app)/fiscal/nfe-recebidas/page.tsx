@@ -28,8 +28,8 @@ const MANIFESTO_CONFIG: Record<
   { label: string; icon: React.ElementType; color: string; bg: string }
 > = {
   ciencia: { label: "Ciência", icon: Eye, color: "text-blue-400", bg: "bg-blue-400/10" },
-  confirmada: { label: "Confirmada", icon: CheckCircle2, color: "text-green-400", bg: "bg-green-400/10" },
-  desconhecida: { label: "Desconhecida", icon: HelpCircle, color: "text-amber-400", bg: "bg-amber-400/10" },
+  confirmada: { label: "Confirmada", icon: CheckCircle2, color: "text-success-400", bg: "bg-success-400/10" },
+  desconhecida: { label: "Desconhecida", icon: HelpCircle, color: "text-warning-400", bg: "bg-warning-400/10" },
   nao_realizada: { label: "Não Realizada", icon: XCircle, color: "text-red-400", bg: "bg-red-400/10" },
 }
 
@@ -118,13 +118,13 @@ function NfeRecebidaRow({
               <>
                 <button
                   onClick={() => onManifest(nfe.chave_nfe, "confirmacao_operacao")}
-                  className="text-xs text-green-400/70 hover:text-green-400"
+                  className="text-xs text-success-400/70 hover:text-success-400"
                 >
                   Confirmar
                 </button>
                 <button
                   onClick={() => onManifest(nfe.chave_nfe, "desconhecimento_operacao")}
-                  className="text-xs text-amber-400/70 hover:text-amber-400"
+                  className="text-xs text-warning-400/70 hover:text-warning-400"
                 >
                   Desconhecer
                 </button>

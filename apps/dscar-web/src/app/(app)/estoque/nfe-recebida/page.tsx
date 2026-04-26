@@ -16,7 +16,7 @@ const STATUS_LABELS: Record<NFeEntradaStatus, string> = {
 const STATUS_COLORS: Record<NFeEntradaStatus, string> = {
   importada: "text-yellow-400 bg-yellow-400/10",
   validada: "text-blue-400 bg-blue-400/10",
-  estoque_gerado: "text-emerald-400 bg-emerald-400/10",
+  estoque_gerado: "text-success-400 bg-success-400/10",
 }
 
 export default function NFeRecebidaPage() {

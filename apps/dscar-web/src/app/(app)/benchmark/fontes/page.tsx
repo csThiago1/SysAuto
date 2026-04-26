@@ -167,8 +167,8 @@ export default function BenchmarkFontesPage() {
                       variant="outline"
                       className={
                         f.is_active
-                          ? "border-emerald-500/30 text-emerald-400 bg-emerald-400/10"
-                          : "border-red-500/30 text-red-400 bg-red-400/10"
+                          ? "border-success-500/30 text-success-400 bg-success-400/10"
+                          : "border-error-500/30 text-error-400 bg-error-400/10"
                       }
                     >
                       {f.is_active ? "Ativa" : "Inativa"}

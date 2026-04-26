@@ -83,11 +83,11 @@ function EmitirNfseManualPageInner() {
   if (emitted) {
     return (
       <div className="p-6 max-w-xl space-y-4">
-        <div className="flex items-center gap-3 rounded-xl bg-green-950/40 border border-green-700/30 p-5">
-          <CheckCircle2 className="h-6 w-6 text-green-400 shrink-0" />
+        <div className="flex items-center gap-3 rounded-xl bg-success-950/40 border border-success-700/30 p-5">
+          <CheckCircle2 className="h-6 w-6 text-success-400 shrink-0" />
           <div>
-            <p className="font-semibold text-green-300">NFS-e em processamento</p>
-            <p className="text-xs text-green-500 mt-0.5">
+            <p className="font-semibold text-success-300">NFS-e em processamento</p>
+            <p className="text-xs text-success-500 mt-0.5">
               O documento foi enviado para a Prefeitura de Manaus.
             </p>
           </div>
@@ -102,7 +102,7 @@ function EmitirNfseManualPageInner() {
           )}
           <div className="flex justify-between">
             <span className="text-white/50">Status</span>
-            <span className="text-amber-400 text-xs">Aguardando autorização</span>
+            <span className="text-warning-400 text-xs">Aguardando autorização</span>
           </div>
         </div>
 

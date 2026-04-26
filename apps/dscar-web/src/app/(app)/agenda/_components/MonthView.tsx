@@ -50,8 +50,8 @@ export function MonthView({ currentDate, events, onDayClick }: Props) {
             <div
               key={day.toISOString()}
               className={cn(
-                "border-b border-r border-neutral-100 p-1.5 cursor-pointer hover:bg-white/[0.03] transition-colors min-h-[100px]",
-                !inMonth && "bg-neutral-50/50",
+                "border-b border-r border-white/10 p-1.5 cursor-pointer hover:bg-white/[0.03] transition-colors min-h-[100px]",
+                !inMonth && "bg-white/[0.02]",
               )}
               onClick={() => onDayClick(day)}
             >

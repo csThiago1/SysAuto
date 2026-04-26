@@ -14,7 +14,7 @@ const STATUS_LABELS: Record<UnidadeFisicaStatus, string> = {
 }
 
 const STATUS_COLORS: Record<UnidadeFisicaStatus, string> = {
-  available: "text-emerald-400 bg-emerald-400/10",
+  available: "text-success-400 bg-success-400/10",
   reserved: "text-yellow-400 bg-yellow-400/10",
   consumed: "text-white/40 bg-white/5",
   returned: "text-blue-400 bg-blue-400/10",
