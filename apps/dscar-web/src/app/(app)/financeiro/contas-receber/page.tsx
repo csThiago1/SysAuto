@@ -248,7 +248,7 @@ function RecordReceiptDialog({
           </div>
 
           {recordReceipt.isError && (
-            <p className="text-xs text-red-600 bg-red-50 rounded px-3 py-2">
+            <p className="text-xs text-error-400 bg-error-500/10 rounded px-3 py-2">
               {recordReceipt.error?.message || "Erro ao registrar recebimento."}
             </p>
           )}
@@ -331,7 +331,7 @@ function CancelDialog({
           </div>
 
           {cancelReceivable.isError && (
-            <p className="text-xs text-red-600 bg-red-50 rounded px-3 py-2">
+            <p className="text-xs text-error-400 bg-error-500/10 rounded px-3 py-2">
               {cancelReceivable.error?.message || "Erro ao cancelar título."}
             </p>
           )}
@@ -364,7 +364,7 @@ function CancelDialog({
 
 function TableSkeleton(): React.ReactElement {
   return (
-    <div className="divide-y divide-neutral-100">
+    <div className="divide-y divide-white/5">
       {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} className="px-5 py-3.5 flex items-center gap-4">
           <Skeleton className="h-4 w-32" />
@@ -476,22 +476,22 @@ export default function ContasReceberPage(): React.ReactElement {
           <SummaryCard
             label="Total a Receber"
             value={formatBRL(String(totalOpen))}
-            iconBg="bg-blue-100"
-            icon={<TrendingUp className="h-5 w-5 text-blue-600" />}
+            iconBg="bg-white/[0.06]"
+            icon={<TrendingUp className="h-5 w-5 text-white/70" />}
             isLoading={isAllLoading}
           />
           <SummaryCard
             label="Total Vencido"
             value={formatBRL(String(totalOverdue))}
-            iconBg="bg-red-100"
-            icon={<AlertCircle className="h-5 w-5 text-red-600" />}
+            iconBg="bg-error-500/10"
+            icon={<AlertCircle className="h-5 w-5 text-error-400" />}
             isLoading={isAllLoading}
           />
           <SummaryCard
             label="Recebido no Mês"
             value={formatBRL(String(receivedThisMonth))}
-            iconBg="bg-success-100"
-            icon={<CheckCircle2 className="h-5 w-5 text-success-600" />}
+            iconBg="bg-success-500/10"
+            icon={<CheckCircle2 className="h-5 w-5 text-success-400" />}
             isLoading={isAllLoading}
           />
           <SummaryCard
@@ -556,7 +556,7 @@ export default function ContasReceberPage(): React.ReactElement {
         {/* Table */}
         <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
           {/* Table header */}
-          <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-2.5 bg-white/[0.03] border-b border-neutral-100 text-xs font-semibold text-white/50 uppercase tracking-wide">
+          <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-2.5 bg-white/[0.03] border-b border-white/10 text-xs font-semibold text-white/50 uppercase tracking-wide">
             <span>Cliente</span>
             <span>Descrição</span>
             <span>Origem</span>
@@ -575,7 +575,7 @@ export default function ContasReceberPage(): React.ReactElement {
               Nenhum título encontrado.
             </div>
           ) : (
-            <div className="divide-y divide-neutral-100">
+            <div className="divide-y divide-white/5">
               {documents.map((doc) => (
                 <div
                   key={doc.id}
@@ -598,7 +598,7 @@ export default function ContasReceberPage(): React.ReactElement {
                   <span
                     className={
                       isOverdue(doc.due_date, doc.status)
-                        ? "text-red-600 font-medium"
+                        ? "text-error-400 font-medium"
                         : "text-white/60"
                     }
                   >
@@ -607,7 +607,7 @@ export default function ContasReceberPage(): React.ReactElement {
                   <span className="text-right font-mono text-white">
                     {formatBRL(doc.amount)}
                   </span>
-                  <span className="text-right font-mono text-success-700">
+                  <span className="text-right font-mono text-success-400">
                     {formatBRL(doc.amount_received)}
                   </span>
                   <span className="text-right font-mono text-white font-semibold">
@@ -623,7 +623,7 @@ export default function ContasReceberPage(): React.ReactElement {
                       <button
                         type="button"
                         onClick={() => setReceivingDoc(doc)}
-                        className="rounded-md bg-success-50 border border-success-200 px-2.5 py-1 text-xs font-medium text-success-700 hover:bg-success-100 transition-colors"
+                        className="rounded-md bg-success-500/10 border border-success-500/20 px-2.5 py-1 text-xs font-medium text-success-400 hover:bg-success-500/20 transition-colors"
                       >
                         Receber
                       </button>
@@ -632,7 +632,7 @@ export default function ContasReceberPage(): React.ReactElement {
                       <button
                         type="button"
                         onClick={() => setCancellingDoc(doc)}
-                        className="rounded-md bg-red-50 border border-red-200 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-100 transition-colors"
+                        className="rounded-md bg-error-500/10 border border-error-500/20 px-2.5 py-1 text-xs font-medium text-error-400 hover:bg-error-500/20 transition-colors"
                       >
                         Cancelar
                       </button>

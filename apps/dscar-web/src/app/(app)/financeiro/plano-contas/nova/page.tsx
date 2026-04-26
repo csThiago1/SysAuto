@@ -71,7 +71,7 @@ function FormField({ label, hint, error, children }: FormFieldProps): React.Reac
       <Label className="text-xs font-medium text-white/70">{label}</Label>
       {children}
       {hint && !error && <p className="text-xs text-white/40">{hint}</p>}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-error-400">{error}</p>}
     </div>
   );
 }
@@ -160,7 +160,7 @@ export default function NovaContaPage(): React.ReactElement {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <section className="rounded-md bg-white/5 shadow-card p-5 space-y-4">
-            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
+            <h2 className="text-sm font-semibold text-white border-b border-white/10 pb-2">
               Dados da Conta
             </h2>
 
@@ -176,7 +176,7 @@ export default function NovaContaPage(): React.ReactElement {
                   onChange={(e) => setField("code", e.target.value)}
                   placeholder="ex: 1.1.05.001"
                   autoFocus
-                  className={cn(errors.code && "border-red-300")}
+                  className={cn(errors.code && "border-error-500/20")}
                 />
               </FormField>
 
@@ -186,7 +186,7 @@ export default function NovaContaPage(): React.ReactElement {
                   value={form.name}
                   onChange={(e) => setField("name", e.target.value)}
                   placeholder="Nome da conta"
-                  className={cn(errors.name && "border-red-300")}
+                  className={cn(errors.name && "border-error-500/20")}
                 />
               </FormField>
 
@@ -219,7 +219,7 @@ export default function NovaContaPage(): React.ReactElement {
                   onChange={(e) => setField("account_type", e.target.value)}
                   className={cn(
                     "w-full rounded-md border bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500",
-                    errors.account_type ? "border-red-300" : "border-white/10"
+                    errors.account_type ? "border-error-500/20" : "border-white/10"
                   )}
                 >
                   <option value="">Selecione o tipo...</option>
@@ -238,7 +238,7 @@ export default function NovaContaPage(): React.ReactElement {
                   onChange={(e) => setField("nature", e.target.value)}
                   className={cn(
                     "w-full rounded-md border bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500",
-                    errors.nature ? "border-red-300" : "border-white/10"
+                    errors.nature ? "border-error-500/20" : "border-white/10"
                   )}
                 >
                   <option value="">Selecione a natureza...</option>
@@ -316,7 +316,7 @@ export default function NovaContaPage(): React.ReactElement {
 
           {/* API error */}
           {create.isError && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-md px-4 py-3">
+            <p className="text-sm text-error-400 bg-error-500/10 rounded-md px-4 py-3">
               {create.error?.message || "Erro ao criar conta. Tente novamente."}
             </p>
           )}

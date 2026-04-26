@@ -111,7 +111,7 @@ function FormField({ label, error, children }: FormFieldProps): React.ReactEleme
     <div className="flex flex-col gap-1.5">
       <Label className="text-xs font-medium text-white/70">{label}</Label>
       {children}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-error-400">{error}</p>}
     </div>
   );
 }
@@ -288,7 +288,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Cabecalho */}
           <section className="rounded-md bg-white/5 shadow-card p-5 space-y-4">
-            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
+            <h2 className="text-sm font-semibold text-white border-b border-white/10 pb-2">
               Cabecalho
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -332,7 +332,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
                 Linhas do Lancamento
               </h2>
               {errors.lines && (
-                <p className="text-xs text-red-600 mt-1">{errors.lines}</p>
+                <p className="text-xs text-error-400 mt-1">{errors.lines}</p>
               )}
             </div>
 
@@ -345,7 +345,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
             ) : (
               <>
                 {/* Table header */}
-                <div className="px-5 py-2 bg-white/[0.03] border-y border-neutral-100 grid grid-cols-[1fr_80px_140px_1fr_40px] gap-3 text-xs font-semibold text-white/50 uppercase tracking-wide">
+                <div className="px-5 py-2 bg-white/[0.03] border-y border-white/10 grid grid-cols-[1fr_80px_140px_1fr_40px] gap-3 text-xs font-semibold text-white/50 uppercase tracking-wide">
                   <span>Conta *</span>
                   <span className="text-center">D / C</span>
                   <span>Valor *</span>
@@ -354,7 +354,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
                 </div>
 
                 {/* Lines */}
-                <div className="divide-y divide-neutral-50">
+                <div className="divide-y divide-white/5">
                   {form.lines.map((line, i) => {
                     const lineErr = errors.lineErrors?.[i];
                     return (
@@ -370,7 +370,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
                             className={cn(
                               "w-full rounded-md border bg-white/5 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500",
                               lineErr?.account_id
-                                ? "border-red-300"
+                                ? "border-error-500/20"
                                 : "border-white/10"
                             )}
                           >
@@ -382,7 +382,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
                             ))}
                           </select>
                           {lineErr?.account_id && (
-                            <p className="text-xs text-red-600 mt-0.5">
+                            <p className="text-xs text-error-400 mt-0.5">
                               {lineErr.account_id}
                             </p>
                           )}
@@ -396,8 +396,8 @@ export default function NovoLancamentoPage(): React.ReactElement {
                             className={cn(
                               "rounded px-2.5 py-1.5 text-xs font-bold transition-colors w-14",
                               line.side === "D"
-                                ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                                : "bg-orange-100 text-orange-700 hover:bg-orange-200"
+                                ? "bg-white/[0.06] text-white/70 hover:bg-white/[0.08]"
+                                : "bg-white/[0.06] text-white/70 hover:bg-white/[0.08]"
                             )}
                           >
                             {line.side === "D" ? "Debito" : "Credito"}
@@ -414,11 +414,11 @@ export default function NovoLancamentoPage(): React.ReactElement {
                             onChange={(e) => setLineField(i, "amount", e.target.value)}
                             placeholder="0,00"
                             className={cn(
-                              lineErr?.amount && "border-red-300"
+                              lineErr?.amount && "border-error-500/20"
                             )}
                           />
                           {lineErr?.amount && (
-                            <p className="text-xs text-red-600 mt-0.5">{lineErr.amount}</p>
+                            <p className="text-xs text-error-400 mt-0.5">{lineErr.amount}</p>
                           )}
                         </div>
 
@@ -435,7 +435,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
                             type="button"
                             onClick={() => removeLine(i)}
                             disabled={form.lines.length <= 2}
-                            className="p-1.5 rounded text-white/40 hover:text-red-600 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            className="p-1.5 rounded text-white/40 hover:text-error-400 hover:bg-error-500/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                             title="Remover linha"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -447,7 +447,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
                 </div>
 
                 {/* Footer */}
-                <div className="px-5 py-3 bg-white/[0.03] border-t border-neutral-100 flex items-center justify-between">
+                <div className="px-5 py-3 bg-white/[0.03] border-t border-white/10 flex items-center justify-between">
                   <button
                     type="button"
                     onClick={addLine}
@@ -472,11 +472,11 @@ export default function NovoLancamentoPage(): React.ReactElement {
                     </span>
                     <span className="text-white/40">|</span>
                     {isBalanced ? (
-                      <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-success-100 text-success-700 border border-success-200">
+                      <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-success-500/10 text-success-400 border border-success-500/20">
                         <span>&#10003;</span> Balanceado
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+                      <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-error-500/10 text-error-400 border border-error-500/20">
                         <span>&#10007;</span> Desbalanceado
                       </span>
                     )}
@@ -488,7 +488,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
 
           {/* API error */}
           {create.isError && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-md px-4 py-3">
+            <p className="text-sm text-error-400 bg-error-500/10 rounded-md px-4 py-3">
               {create.error?.message || "Erro ao criar lançamento. Tente novamente."}
             </p>
           )}

@@ -35,20 +35,20 @@ interface StatusBadgeProps {
 function StatusBadge({ isApproved, isReversed }: StatusBadgeProps): React.ReactElement {
   if (isReversed) {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+      <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-error-500/10 text-error-400 border border-error-500/20">
         Estornado
       </span>
     );
   }
   if (isApproved) {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-success-100 text-success-700 border border-success-200">
+      <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-success-500/10 text-success-400 border border-success-500/20">
         <span>&#10003;</span> Aprovado
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-warning-100 text-warning-700 border border-warning-200">
+    <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-warning-500/10 text-warning-400 border border-warning-500/20">
       Pendente
     </span>
   );
@@ -75,7 +75,7 @@ export function JournalEntryTable({ entries }: JournalEntryTableProps): React.Re
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-neutral-100 bg-white/[0.03]">
+          <tr className="border-b border-white/10 bg-white/[0.03]">
             <th className="text-left px-4 py-3 text-xs font-semibold text-white/50 uppercase tracking-wide">
               Número
             </th>
@@ -99,7 +99,7 @@ export function JournalEntryTable({ entries }: JournalEntryTableProps): React.Re
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-neutral-50">
+        <tbody className="divide-y divide-white/5">
           {entries.map((entry) => (
             <tr
               key={entry.id}
@@ -157,7 +157,7 @@ export function JournalEntryTableSkeleton(): React.ReactElement {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-neutral-100 bg-white/[0.03]">
+          <tr className="border-b border-white/10 bg-white/[0.03]">
             {["Número", "Data", "Descrição", "Origem", "Débito", "Crédito", "Status"].map(
               (col) => (
                 <th
@@ -170,7 +170,7 @@ export function JournalEntryTableSkeleton(): React.ReactElement {
             )}
           </tr>
         </thead>
-        <tbody className="divide-y divide-neutral-50">
+        <tbody className="divide-y divide-white/5">
           {Array.from({ length: 8 }).map((_, i) => (
             <tr key={i}>
               <td className="px-4 py-3"><Skeleton className="h-4 w-16" /></td>

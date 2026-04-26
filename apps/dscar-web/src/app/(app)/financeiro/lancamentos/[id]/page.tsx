@@ -159,7 +159,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
             {entry.is_approved && !entry.is_reversed && (
               <button
                 onClick={() => setReverseOpen(true)}
-                className="inline-flex items-center gap-2 rounded-md border border-red-300 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 transition-colors"
+                className="inline-flex items-center gap-2 rounded-md border border-error-500/20 px-3 py-2 text-sm font-medium text-error-400 hover:bg-error-500/10 transition-colors"
               >
                 <RotateCcw className="h-4 w-4" />
                 Estornar
@@ -170,7 +170,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
 
         {/* Info section */}
         <div className="rounded-md bg-white/5 shadow-card p-5">
-          <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2 mb-4">
+          <h2 className="text-sm font-semibold text-white border-b border-white/10 pb-2 mb-4">
             Informacoes
           </h2>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
@@ -219,7 +219,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-y border-neutral-100 bg-white/[0.03]">
+                <tr className="border-y border-white/10 bg-white/[0.03]">
                   <th className="text-left px-4 py-2.5 text-xs font-semibold text-white/50 uppercase tracking-wide">
                     Conta
                   </th>
@@ -237,9 +237,9 @@ export default function LancamentoDetailPage(): React.ReactElement {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-50">
+              <tbody className="divide-y divide-white/5">
                 {entry.lines.map((line) => (
-                  <tr key={line.id} className="hover:bg-neutral-50/50">
+                  <tr key={line.id} className="hover:bg-white/[0.03]">
                     <td className="px-4 py-3">
                       <span className="font-mono text-xs text-white/50">
                         {line.account.code}
@@ -317,7 +317,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
                 autoFocus
               />
               {reverseError && (
-                <p className="text-xs text-red-600">{reverseError}</p>
+                <p className="text-xs text-error-400">{reverseError}</p>
               )}
             </div>
           </div>
