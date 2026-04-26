@@ -114,18 +114,18 @@ export function CustomerPicker({ value, onChange, error }: CustomerPickerProps) 
   if (selected) {
     const primaryContact = selected.primary_contact?.value ?? "";
     return (
-      <div className="flex items-center justify-between rounded-md bg-white border border-neutral-200 p-3 shadow-sm">
+      <div className="flex items-center justify-between rounded-md bg-card border border-white/10 p-3 shadow-sm">
         <div className="flex items-center gap-3">
           <Avatar name={selected.full_name} />
           <div>
-            <p className="text-sm font-medium text-neutral-900">{selected.full_name}</p>
-            <p className="text-xs text-neutral-500">
+            <p className="text-sm font-medium text-white/90">{selected.full_name}</p>
+            <p className="text-xs text-white/50">
               {getDocumentDisplay(selected) ? `${getDocumentDisplay(selected)} · ` : ""}
               {primaryContact}
             </p>
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={handleClear} className="text-neutral-400 hover:text-error-600">
+        <Button variant="ghost" size="sm" onClick={handleClear} className="text-white/30 hover:text-error-600">
           Trocar
         </Button>
       </div>
@@ -135,7 +135,7 @@ export function CustomerPicker({ value, onChange, error }: CustomerPickerProps) 
   return (
     <div className="space-y-3">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30 pointer-events-none" />
         <Input
           ref={inputRef}
           placeholder="Digite o nome, documento ou contato..."
@@ -146,21 +146,21 @@ export function CustomerPicker({ value, onChange, error }: CustomerPickerProps) 
             onChange(0);
           }}
           onFocus={() => setDropdownOpen(true)}
-          className={cn("pl-9 bg-white", error && "border-error-400")}
+          className={cn("pl-9 bg-card", error && "border-error-400")}
           autoComplete="off"
         />
         {isFetching && (
-          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-neutral-400" />
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-white/30" />
         )}
 
         {dropdownOpen && search.length > 0 && !showInline && (
-          <div ref={dropdownRef} className="absolute left-0 top-full z-50 mt-1 w-full rounded-md border border-neutral-200 bg-white shadow-lg max-h-60 overflow-y-auto">
+          <div ref={dropdownRef} className="absolute left-0 top-full z-50 mt-1 w-full rounded-md border border-white/10 bg-card shadow-lg max-h-60 overflow-y-auto">
             {!personsData || personsData.results.length === 0 ? (
               <>
-                <div className="px-4 py-3 text-sm text-neutral-500">Nenhum cliente encontrado</div>
+                <div className="px-4 py-3 text-sm text-white/50">Nenhum cliente encontrado</div>
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-primary-600 hover:bg-primary-50 border-t border-neutral-100 font-medium transition-colors"
+                  className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm text-primary-600 hover:bg-primary-50 border-t border-white/10 font-medium transition-colors"
                   onClick={() => {
                     setInlineName(search);
                     setShowInline(true);
@@ -176,11 +176,11 @@ export function CustomerPicker({ value, onChange, error }: CustomerPickerProps) 
                 <button
                   key={person.id}
                   type="button"
-                  className="flex w-full flex-col px-4 py-3 text-left hover:bg-neutral-50 border-b border-neutral-50 last:border-0 transition-colors"
+                  className="flex w-full flex-col px-4 py-3 text-left hover:bg-white/[0.03] border-b border-white/5 last:border-0 transition-colors"
                   onClick={() => handleSelect(person)}
                 >
-                  <span className="text-sm font-medium text-neutral-900">{person.full_name}</span>
-                  <span className="text-xs text-neutral-500">
+                  <span className="text-sm font-medium text-white/90">{person.full_name}</span>
+                  <span className="text-xs text-white/50">
                     {getDocumentDisplay(person) ? `${getDocumentDisplay(person)} · ` : ""}
                     {person.primary_contact?.value ?? "Sem contato"}
                   </span>
@@ -213,7 +213,7 @@ export function CustomerPicker({ value, onChange, error }: CustomerPickerProps) 
                 value={inlineName}
                 onChange={(e) => { setInlineName(e.target.value); setInlineErrors((p) => ({ ...p, name: "" })); }}
                 placeholder="Nome completo"
-                className={cn("bg-white", inlineErrors.name && "border-error-400")}
+                className={cn("bg-card", inlineErrors.name && "border-error-400")}
               />
               {inlineErrors.name && <p className="text-xs text-error-600">{inlineErrors.name}</p>}
             </div>
@@ -224,7 +224,7 @@ export function CustomerPicker({ value, onChange, error }: CustomerPickerProps) 
                 value={inlinePhone}
                 onValueChange={(val) => { setInlinePhone(val); setInlineErrors((p) => ({ ...p, phone: "" })); }}
                 placeholder="(00) 00000-0000"
-                className={cn("bg-white", inlineErrors.phone && "border-error-400")}
+                className={cn("bg-card", inlineErrors.phone && "border-error-400")}
               />
               {inlineErrors.phone && <p className="text-xs text-error-600">{inlineErrors.phone}</p>}
             </div>
