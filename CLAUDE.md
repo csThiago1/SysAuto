@@ -1226,6 +1226,9 @@ Migração (Layer 2):
 - Motor+Capacidade+Auditoria: 7 arquivos — impressoras, snapshots, variancias, simulador, heatmap
 - Estoque+Fiscal+Benchmark+Agenda: 18 arquivos — NF-e, documentos, fontes, revisão, calendar views
 - OS Detail+Form: 16 arquivos — ClosingTab, HistoryTab, PartsTab, ServicesTab, CustomerSearch, NewOSDrawer
+- Shared components: AppHeader, ErrorBoundary, NotificationBell, modals, breadcrumb, skeleton, badge, avatar, button
+- Features: CreateOSForm, CustomerPicker, CiliaImportPanel, PersonTable (Cadastros component)
+- Keycloak login: neon lines 0.5px + double glow, mono labels #cc4444, painel transparente (0.45 opacity)
 
 **Regras estabelecidas:**
 - Cores `neutral-*`, `bg-white` (sólido), `emerald-*`, `indigo-*` proibidas — usar `white/opacity` + tokens semânticos
