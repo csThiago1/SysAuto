@@ -94,7 +94,7 @@ export function OSDatesTimeline({ os }: { os: any }) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="relative pl-4 border-l-2 border-neutral-100 space-y-6">
+        <div className="relative pl-4 border-l-2 border-white/10 space-y-6">
           {MILESTONES.map((milestone) => {
              const rawVal = os[milestone.key];
              const isFilled = !!rawVal;

@@ -57,7 +57,7 @@ export function ConsultantDashboard({ data }: Props) {
                 <th className="px-4 py-2.5 text-right label-mono text-white/40">Dias na Oficina</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
+            <tbody className="divide-y divide-white/5">
               {data.my_recent_os.map((os) => {
                 const config = SERVICE_ORDER_STATUS_CONFIG[os.status as keyof typeof SERVICE_ORDER_STATUS_CONFIG]
                 return (
