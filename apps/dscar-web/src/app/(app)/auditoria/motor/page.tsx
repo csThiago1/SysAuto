@@ -59,11 +59,11 @@ export default function AuditoriaMotorPage() {
               label: "Status",
               value: health.status === "ok" ? "Operacional" : "Degradado",
               icon: health.status === "ok" ? (
-                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                <CheckCircle2 className="h-4 w-4 text-success-400" />
               ) : (
                 <XCircle className="h-4 w-4 text-red-400" />
               ),
-              color: health.status === "ok" ? "text-emerald-400" : "text-red-400",
+              color: health.status === "ok" ? "text-success-400" : "text-error-400",
             },
             {
               label: "Total de chamadas",
@@ -73,7 +73,7 @@ export default function AuditoriaMotorPage() {
             {
               label: "Taxa de erro",
               value: health.taxa_erro_pct != null ? `${health.taxa_erro_pct.toFixed(1)}%` : "—",
-              color: (health.taxa_erro_pct ?? 0) > 5 ? "text-red-400" : "text-emerald-400",
+              color: (health.taxa_erro_pct ?? 0) > 5 ? "text-error-400" : "text-success-400",
             },
             {
               label: "Tempo médio",
@@ -146,7 +146,7 @@ export default function AuditoriaMotorPage() {
                       {a.sucesso ? (
                         <Badge
                           variant="outline"
-                          className="border-emerald-500/30 text-emerald-400 bg-emerald-400/10 gap-1"
+                          className="border-success-500/30 text-success-400 bg-success-400/10 gap-1"
                         >
                           <CheckCircle2 className="h-3 w-3" />
                           OK

@@ -105,7 +105,7 @@ export default function PontoPage(): React.ReactElement {
               <Skeleton className="h-5 w-48" />
             </div>
           ) : employeeError ? (
-            <p className="text-center text-sm text-red-600">
+            <p className="text-center text-sm text-error-400">
               Seu usuário não possui perfil de colaborador. Peça ao administrador
               para criar.
             </p>
@@ -155,7 +155,7 @@ export default function PontoPage(): React.ReactElement {
 
         {/* Today's entries */}
         <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
-          <div className="px-card-padding py-3 border-b border-neutral-100">
+          <div className="px-card-padding py-3 border-b border-white/10">
             <h3 className="text-sm font-semibold text-white">
               Registros de hoje
             </h3>
@@ -171,7 +171,7 @@ export default function PontoPage(): React.ReactElement {
               Nenhum registro hoje.
             </div>
           ) : (
-            <div className="divide-y divide-neutral-100">
+            <div className="divide-y divide-white/5">
               {summary.entries.map((entry) => (
                 <div
                   key={entry.id}

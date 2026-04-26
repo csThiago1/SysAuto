@@ -72,25 +72,21 @@ export default function RHDashboardPage(): React.ReactElement {
               <StatCard
                 label="Headcount total"
                 value={totalHeadcount}
-                iconBg="bg-primary-100"
                 icon={<Users className="h-5 w-5 text-primary-600" />}
               />
               <StatCard
                 label="Ativos"
                 value={totalActive}
-                iconBg="bg-success-100"
-                icon={<UserCheck className="h-5 w-5 text-success-600" />}
+                icon={<UserCheck className="h-5 w-5 text-success-400" />}
               />
               <StatCard
                 label="Afastados"
                 value={totalLeave}
-                iconBg="bg-warning-100"
-                icon={<UserMinus className="h-5 w-5 text-warning-600" />}
+                icon={<UserMinus className="h-5 w-5 text-warning-400" />}
               />
               <StatCard
                 label="Férias"
                 value={totalVacation}
-                iconBg="bg-white/5"
                 icon={<Palmtree className="h-5 w-5 text-white/50" />}
               />
             </>
@@ -124,13 +120,13 @@ export default function RHDashboardPage(): React.ReactElement {
         </div>
 
         {/* Docs expiry alert placeholder */}
-        <div className="rounded-md border border-warning-200 bg-warning-50 p-4 flex items-start gap-3">
-          <FileWarning className="h-5 w-5 text-warning-600 shrink-0 mt-0.5" />
+        <div className="rounded-md border border-warning-500/20 bg-warning-500/10 p-4 flex items-start gap-3">
+          <FileWarning className="h-5 w-5 text-warning-400 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-warning-800">
+            <p className="text-sm font-semibold text-warning-400">
               Documentos a vencer
             </p>
-            <p className="text-xs text-warning-700 mt-0.5">
+            <p className="text-xs text-warning-400 mt-0.5">
               Confira os documentos dos colaboradores com validade próxima nas
               páginas individuais.
             </p>
@@ -147,24 +143,24 @@ const QUICK_LINKS = [
     label: "Colaboradores",
     description: "Lista e fichas dos colaboradores",
     Icon: Users,
-    iconBg: "bg-primary-100",
-    iconColor: "text-primary-600",
+    iconBg: "bg-white/[0.06]",
+    iconColor: "text-primary-400",
   },
   {
     href: "/rh/ponto",
     label: "Ponto",
     description: "Registro e espelho de ponto",
     Icon: UserCheck,
-    iconBg: "bg-success-100",
-    iconColor: "text-success-600",
+    iconBg: "bg-white/[0.06]",
+    iconColor: "text-success-400",
   },
   {
     href: "/rh/metas",
     label: "Metas",
     description: "Metas individuais e por setor",
     Icon: Users,
-    iconBg: "bg-blue-100",
-    iconColor: "text-blue-600",
+    iconBg: "bg-white/[0.06]",
+    iconColor: "text-info-400",
   },
   {
     href: "/rh/vales",
@@ -179,7 +175,7 @@ const QUICK_LINKS = [
     label: "Folha de Pagamento",
     description: "Contracheques e fechamentos",
     Icon: UserMinus,
-    iconBg: "bg-warning-100",
-    iconColor: "text-warning-600",
+    iconBg: "bg-white/[0.06]",
+    iconColor: "text-warning-400",
   },
 ];

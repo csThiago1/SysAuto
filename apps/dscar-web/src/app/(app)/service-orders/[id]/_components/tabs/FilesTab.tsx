@@ -164,13 +164,13 @@ function PhotoThumb({ photo, orderId, canDelete }: PhotoThumbProps) {
       {canDelete && showDelete && (
         <button
           onClick={() => deleteMutation.mutate(photo.id)}
-          className="absolute top-1.5 right-1.5 bg-white/90 hover:bg-red-50 rounded-full p-1 shadow transition-colors"
+          className="absolute top-1.5 right-1.5 bg-white/10 hover:bg-error-500/10 rounded-full p-1 shadow transition-colors"
           title="Remover foto"
         >
           {deleteMutation.isPending ? (
             <Loader2 className="h-3 w-3 animate-spin text-white/40" />
           ) : (
-            <Trash2 className="h-3 w-3 text-red-500" />
+            <Trash2 className="h-3 w-3 text-error-400" />
           )}
         </button>
       )}
@@ -246,7 +246,7 @@ function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }:
         <div className="p-3 bg-white/5">
           {count === 0 ? (
             <div className="flex flex-col items-center justify-center py-6 gap-2">
-              <Images className="h-8 w-8 text-neutral-200" />
+              <Images className="h-8 w-8 text-white/20" />
               <p className="text-sm text-white/40">Nenhuma foto nesta pasta</p>
               {canUpload && (
                 <Button

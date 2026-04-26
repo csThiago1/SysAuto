@@ -98,7 +98,7 @@ export default function FichasTecnicasPage() {
                   <TableCell className="py-2 text-center">
                     <Badge
                       variant="outline"
-                      className="bg-blue-50 text-blue-700 border-blue-200 text-xs font-mono"
+                      className="bg-info-500/10 text-info-400 border-info-500/20 text-xs font-mono"
                     >
                       v{f.versao}
                     </Badge>

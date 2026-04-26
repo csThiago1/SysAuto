@@ -97,7 +97,7 @@ function ValueCard({
         <p className="text-xs text-white/50 font-medium">{label}</p>
         <p
           className={`text-lg font-bold mt-0.5 ${
-            highlight ? "text-primary-700" : "text-white"
+            highlight ? "text-primary-400" : "text-white"
           }`}
         >
           {value}
@@ -263,7 +263,7 @@ function RecordPaymentDialog({
           </div>
 
           {recordPayment.isError && (
-            <p className="text-xs text-red-600 bg-red-50 rounded px-3 py-2">
+            <p className="text-xs text-error-400 bg-error-500/10 rounded px-3 py-2">
               {recordPayment.error?.message || "Erro ao registrar pagamento."}
             </p>
           )}
@@ -343,7 +343,7 @@ function CancelDialog({
           </div>
 
           {cancelPayable.isError && (
-            <p className="text-xs text-red-600 bg-red-50 rounded px-3 py-2">
+            <p className="text-xs text-error-400 bg-error-500/10 rounded px-3 py-2">
               {cancelPayable.error?.message || "Erro ao cancelar título."}
             </p>
           )}
@@ -395,7 +395,7 @@ export default function ContaPagarDetailPage(): React.ReactElement {
 
   if (isError || doc === undefined) {
     return (
-      <div className="rounded-md bg-red-50 border border-red-200 px-5 py-4 text-sm text-red-700">
+      <div className="rounded-md bg-error-500/10 border border-error-500/20 px-5 py-4 text-sm text-error-400">
         {error?.message ?? "Não foi possível carregar o título."}
       </div>
     );
@@ -480,7 +480,7 @@ export default function ContaPagarDetailPage(): React.ReactElement {
                 <button
                   type="button"
                   onClick={() => setCancelDialogOpen(true)}
-                  className="rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-100 transition-colors"
+                  className="rounded-md border border-error-500/20 bg-error-500/10 px-4 py-2 text-sm font-medium text-error-400 hover:bg-error-500/20 transition-colors"
                 >
                   Cancelar Título
                 </button>
@@ -504,14 +504,14 @@ export default function ContaPagarDetailPage(): React.ReactElement {
           <ValueCard
             label="Valor Original"
             value={formatBRL(doc.amount)}
-            iconBg="bg-blue-100"
-            icon={<DollarSign className="h-4 w-4 text-blue-600" />}
+            iconBg="bg-white/[0.06]"
+            icon={<DollarSign className="h-4 w-4 text-white/70" />}
           />
           <ValueCard
             label="Valor Pago"
             value={formatBRL(doc.amount_paid)}
-            iconBg="bg-success-100"
-            icon={<DollarSign className="h-4 w-4 text-success-600" />}
+            iconBg="bg-success-500/10"
+            icon={<DollarSign className="h-4 w-4 text-success-400" />}
           />
           <ValueCard
             label="Saldo Restante"
@@ -530,7 +530,7 @@ export default function ContaPagarDetailPage(): React.ReactElement {
 
         {/* Payment history */}
         <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-neutral-100">
+          <div className="px-5 py-3.5 border-b border-white/10">
             <h2 className="text-sm font-semibold text-white">
               Histórico de Pagamentos
             </h2>
@@ -543,13 +543,13 @@ export default function ContaPagarDetailPage(): React.ReactElement {
           ) : (
             <>
               {/* Table header */}
-              <div className="hidden md:grid grid-cols-[1fr_1fr_1.5fr_2fr] gap-4 px-5 py-2.5 bg-white/[0.03] border-b border-neutral-100 text-xs font-semibold text-white/50 uppercase tracking-wide">
+              <div className="hidden md:grid grid-cols-[1fr_1fr_1.5fr_2fr] gap-4 px-5 py-2.5 bg-white/[0.03] border-b border-white/10 text-xs font-semibold text-white/50 uppercase tracking-wide">
                 <span>Data</span>
                 <span className="text-right">Valor</span>
                 <span>Forma</span>
                 <span>Observações</span>
               </div>
-              <div className="divide-y divide-neutral-100">
+              <div className="divide-y divide-white/5">
                 {doc.payments.map((payment) => {
                   const methodLabel =
                     paymentMethods.find(([v]) => v === payment.payment_method)?.[1] ??

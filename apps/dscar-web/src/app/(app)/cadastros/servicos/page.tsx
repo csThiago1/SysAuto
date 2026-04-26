@@ -101,7 +101,7 @@ export default function ServicosPage() {
       {/* Vazio */}
       {!isLoading && total === 0 && (
         <div className="py-20 flex flex-col items-center gap-3 text-center">
-          <Tag className="h-10 w-10 text-neutral-200" />
+          <Tag className="h-10 w-10 text-white/10" />
           <p className="font-medium text-white/60">
             {search ? `Nenhum resultado para "${search}"` : "Ainda não há serviços cadastrados"}
           </p>
@@ -143,7 +143,7 @@ export default function ServicosPage() {
 
                 {/* Linhas de serviço */}
                 {isOpen && (
-                  <div className="divide-y divide-neutral-100 border-t border-neutral-100">
+                  <div className="divide-y divide-white/5 border-t border-white/10">
                     {catItems.map(item => (
                       <ServiceRow key={item.id} item={item} onEdit={handleEdit} />
                     ))}

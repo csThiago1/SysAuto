@@ -213,7 +213,7 @@ export default function BenchmarkRevisaoPage() {
                   <Button
                     onClick={handleAceitar}
                     disabled={aceitando}
-                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    className="flex-1 bg-success-600 hover:bg-success-700 text-white"
                     size="sm"
                   >
                     <CheckCheck className="h-3.5 w-3.5 mr-1" />
@@ -223,7 +223,7 @@ export default function BenchmarkRevisaoPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setShowDescarte(true)}
-                    className="border-red-500/40 text-red-400 hover:bg-red-500/10 hover:text-red-400"
+                    className="border-error-500/40 text-error-400 hover:bg-error-500/10 hover:text-error-400"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>

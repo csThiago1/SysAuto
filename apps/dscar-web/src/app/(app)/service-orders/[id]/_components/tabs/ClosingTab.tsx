@@ -66,11 +66,11 @@ function DeliveryConfirmationDialog({ order, onClose, onSuccess }: DeliveryDialo
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-white/5 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
         {/* Header */}
-        <div className="flex items-center gap-2.5 bg-green-50 border-b border-green-200 px-5 py-4">
-          <Truck className="h-5 w-5 text-green-600 shrink-0" />
+        <div className="flex items-center gap-2.5 bg-success-500/10 border-b border-success-500/20 px-5 py-4">
+          <Truck className="h-5 w-5 text-success-400 shrink-0" />
           <div>
-            <p className="font-semibold text-green-800">Registrar Entrega</p>
-            <p className="text-xs text-green-600">OS #{order.number} — {order.plate}</p>
+            <p className="font-semibold text-success-400">Registrar Entrega</p>
+            <p className="text-xs text-success-400/70">OS #{order.number} — {order.plate}</p>
           </div>
         </div>
 
@@ -146,7 +146,7 @@ function DeliveryConfirmationDialog({ order, onClose, onSuccess }: DeliveryDialo
           <Button
             onClick={handleConfirm}
             disabled={!canDeliver || deliverMutation.isPending}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="bg-success-600 hover:bg-success-700 text-white"
           >
             {deliverMutation.isPending ? (
               <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Registrando...</>
@@ -213,12 +213,12 @@ export function ClosingTab({ order }: ClosingTabProps) {
     <div className="space-y-4 max-w-2xl">
       {/* Status banner */}
       {isDelivered && (
-        <div className="flex items-center gap-3 rounded-lg bg-green-50 border border-green-200 p-4">
-          <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+        <div className="flex items-center gap-3 rounded-lg bg-success-500/10 border border-success-500/20 p-4">
+          <CheckCircle2 className="h-5 w-5 text-success-400 shrink-0" />
           <div>
-            <p className="text-sm font-semibold text-green-800">OS Entregue</p>
+            <p className="text-sm font-semibold text-success-400">OS Entregue</p>
             {order.client_delivery_date && (
-              <p className="text-xs text-green-600 mt-0.5">
+              <p className="text-xs text-success-400/70 mt-0.5">
                 {format(new Date(order.client_delivery_date), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
               </p>
             )}
@@ -226,20 +226,20 @@ export function ClosingTab({ order }: ClosingTabProps) {
         </div>
       )}
       {isCancelled && (
-        <div className="flex items-center gap-3 rounded-lg bg-red-50 border border-red-200 p-4">
-          <XCircle className="h-5 w-5 text-red-500 shrink-0" />
-          <p className="text-sm font-semibold text-red-700">OS Cancelada</p>
+        <div className="flex items-center gap-3 rounded-lg bg-error-500/10 border border-error-500/20 p-4">
+          <XCircle className="h-5 w-5 text-error-400 shrink-0" />
+          <p className="text-sm font-semibold text-error-400">OS Cancelada</p>
         </div>
       )}
 
       {/* Deliver CTA — shown when ready */}
       {isReady && (
-        <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-5 py-4">
+        <div className="flex items-center justify-between bg-success-500/10 border border-success-500/20 rounded-xl px-5 py-4">
           <div className="flex items-center gap-2.5">
-            <Truck className="h-5 w-5 text-green-600 shrink-0" />
+            <Truck className="h-5 w-5 text-success-400 shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-green-800">Veículo pronto para entrega</p>
-              <p className="text-xs text-green-600 mt-0.5">
+              <p className="text-sm font-semibold text-success-400">Veículo pronto para entrega</p>
+              <p className="text-xs text-success-400/70 mt-0.5">
                 {order.customer_type === "private"
                   ? "Certifique-se de emitir a nota fiscal antes de entregar."
                   : "Confirme a entrega ao finalizar o atendimento."}
@@ -248,7 +248,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
           </div>
           <Button
             onClick={() => setShowDelivery(true)}
-            className="bg-green-600 hover:bg-green-700 text-white shrink-0"
+            className="bg-success-600 hover:bg-success-700 text-white shrink-0"
           >
             <Truck className="h-4 w-4 mr-1.5" />
             Registrar Entrega
@@ -258,7 +258,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
 
       {/* Financial summary */}
       <div className="bg-white/5 border border-white/10 rounded-xl shadow-sm overflow-hidden">
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-neutral-100 bg-white/[0.03]">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/[0.03]">
           <DollarSign className="h-4 w-4 text-white/50" />
           <h2 className="text-xs font-semibold uppercase tracking-wide text-white/60">
             Resumo Financeiro
@@ -276,7 +276,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
           {discountTotal > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-white/60">Descontos</span>
-              <span className="font-medium text-red-600">− {fmtCurrency(discountTotal)}</span>
+              <span className="font-medium text-error-400">− {fmtCurrency(discountTotal)}</span>
             </div>
           )}
           <div className="border-t border-white/10 pt-3 flex justify-between items-baseline">
@@ -288,7 +288,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
 
       {/* KM section */}
       <div className="bg-white/5 border border-white/10 rounded-xl shadow-sm overflow-hidden">
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-neutral-100 bg-white/[0.03]">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/[0.03]">
           <Car className="h-4 w-4 text-white/50" />
           <h2 className="text-xs font-semibold uppercase tracking-wide text-white/60">
             Quilometragem
@@ -333,16 +333,16 @@ export function ClosingTab({ order }: ClosingTabProps) {
 
       {/* Fiscal */}
       <div className="bg-white/5 border border-white/10 rounded-xl shadow-sm overflow-hidden">
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-neutral-100 bg-white/[0.03]">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/[0.03]">
           <FileText className="h-4 w-4 text-white/50" />
           <h2 className="text-xs font-semibold uppercase tracking-wide text-white/60">Fiscal</h2>
         </div>
         <div className="p-5 space-y-3">
           <div className="flex items-center gap-2">
             <CheckCircle2
-              className={cn("h-5 w-5", order.invoice_issued ? "text-green-500" : "text-white/30")}
+              className={cn("h-5 w-5", order.invoice_issued ? "text-success-400" : "text-white/30")}
             />
-            <span className={cn("text-sm font-medium", order.invoice_issued ? "text-green-700" : "text-white/50")}>
+            <span className={cn("text-sm font-medium", order.invoice_issued ? "text-success-400" : "text-white/50")}>
               {order.invoice_issued ? "Nota fiscal emitida" : "Nota fiscal não emitida"}
             </span>
           </div>
@@ -390,11 +390,12 @@ export function ClosingTab({ order }: ClosingTabProps) {
         />
       )}
 
-      {/* NFS-e emission modal */}
+      {/* Fiscal emission modal (NFS-e / NF-e) */}
       {showNfseModal && (
         <FiscalEmissionModal
           serviceOrderId={order.id}
           orderNumber={order.number}
+          hasParts={partsTotal > 0}
           onClose={() => setShowNfseModal(false)}
           onSuccess={() => {
             setShowNfseModal(false)

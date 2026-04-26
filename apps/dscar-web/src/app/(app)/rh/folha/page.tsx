@@ -183,7 +183,7 @@ export default function FolhaPage(): React.ReactElement {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary-100">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-white/[0.06]">
                       <FileText className="h-5 w-5 text-primary-600" />
                     </div>
                     <div>
@@ -196,11 +196,11 @@ export default function FolhaPage(): React.ReactElement {
                       <p className="text-xs text-white/50">
                         {g.total} contracheque{g.total !== 1 ? "s" : ""}
                         {g.closed === g.total && g.total > 0 ? (
-                          <span className="ml-2 inline-flex items-center gap-0.5 text-success-700">
+                          <span className="ml-2 inline-flex items-center gap-0.5 text-success-400">
                             <Lock className="h-3 w-3" /> Fechados
                           </span>
                         ) : (
-                          <span className="ml-2 text-warning-700">
+                          <span className="ml-2 text-warning-400">
                             {g.closed}/{g.total} fechados
                           </span>
                         )}

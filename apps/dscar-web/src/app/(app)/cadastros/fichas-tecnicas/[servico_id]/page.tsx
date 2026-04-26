@@ -270,7 +270,7 @@ export default function FichaTecnicaDetalhe() {
         <>
           {/* Meta da versão ativa */}
           <div className="flex items-center gap-3 text-sm text-white/50">
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-mono">
+            <Badge variant="outline" className="bg-info-500/10 text-info-400 border-info-500/20 font-mono">
               v{fichaAtiva.versao}
             </Badge>
             <span>
@@ -312,7 +312,7 @@ export default function FichaTecnicaDetalhe() {
                         </TableCell>
                         <TableCell className="py-2 text-center">
                           {mo.afetada_por_tamanho ? (
-                            <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
+                            <Badge className="bg-warning-500/10 text-warning-400 border-warning-500/20 text-xs">
                               Sim
                             </Badge>
                           ) : (
@@ -361,7 +361,7 @@ export default function FichaTecnicaDetalhe() {
                         <TableCell className="py-2 text-sm text-white/60">{ins.unidade}</TableCell>
                         <TableCell className="py-2 text-center">
                           {ins.afetado_por_tamanho ? (
-                            <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
+                            <Badge className="bg-warning-500/10 text-warning-400 border-warning-500/20 text-xs">
                               Sim
                             </Badge>
                           ) : (
@@ -424,7 +424,7 @@ export default function FichaTecnicaDetalhe() {
                       </TableCell>
                       <TableCell className="py-2 text-center">
                         {f.is_active ? (
-                          <Badge className="bg-green-50 text-green-700 border-green-200 text-xs">
+                          <Badge className="bg-success-500/10 text-success-400 border-success-500/20 text-xs">
                             Ativa
                           </Badge>
                         ) : (
@@ -456,7 +456,7 @@ export default function FichaTecnicaDetalhe() {
             {/* Motivo */}
             <div className="space-y-1.5">
               <Label htmlFor="motivo" className="text-sm font-medium">
-                Motivo da nova versão <span className="text-red-500">*</span>
+                Motivo da nova versão <span className="text-error-400">*</span>
               </Label>
               <Textarea
                 id="motivo"
@@ -466,7 +466,7 @@ export default function FichaTecnicaDetalhe() {
                 {...form.register("motivo")}
               />
               {form.formState.errors.motivo && (
-                <p className="text-xs text-red-500">
+                <p className="text-xs text-error-400">
                   {form.formState.errors.motivo.message}
                 </p>
               )}
@@ -495,7 +495,7 @@ export default function FichaTecnicaDetalhe() {
               </div>
               {form.formState.errors.maos_obra &&
                 !Array.isArray(form.formState.errors.maos_obra) && (
-                  <p className="text-xs text-red-500">
+                  <p className="text-xs text-error-400">
                     {(form.formState.errors.maos_obra as { message?: string }).message}
                   </p>
                 )}
@@ -546,7 +546,7 @@ export default function FichaTecnicaDetalhe() {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 text-white/40 hover:text-red-500"
+                        className="h-9 w-9 text-white/40 hover:text-error-400"
                         onClick={() => removeMO(idx)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -630,7 +630,7 @@ export default function FichaTecnicaDetalhe() {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 text-white/40 hover:text-red-500"
+                        className="h-9 w-9 text-white/40 hover:text-error-400"
                         onClick={() => removeIns(idx)}
                       >
                         <Trash2 className="h-4 w-4" />

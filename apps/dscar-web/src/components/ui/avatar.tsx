@@ -40,7 +40,7 @@ export function Avatar({ name, logoUrl, size = "sm", className }: AvatarProps) {
         alt={name}
         className={cn(
           sizeClass,
-          "rounded-full object-contain bg-white border border-neutral-200 shrink-0",
+          "rounded-full object-contain bg-card border border-white/10 shrink-0",
           className
         )}
         onError={() => setImgFailed(true)}
@@ -52,7 +52,7 @@ export function Avatar({ name, logoUrl, size = "sm", className }: AvatarProps) {
     <div
       className={cn(
         sizeClass,
-        "rounded-full bg-surface border border-neutral-200 flex items-center justify-center font-semibold text-neutral-600 shrink-0",
+        "rounded-full bg-surface border border-white/10 flex items-center justify-center font-semibold text-white/60 shrink-0",
         className
       )}
       aria-label={name}

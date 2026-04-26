@@ -11,6 +11,7 @@ import {
   getDaysInShopColor,
   getDaysInShopBorderColor,
 } from "@paddock/utils";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -38,7 +39,7 @@ function UrgencyIndicator({ order }: { order: ServiceOrder }): React.ReactElemen
   const daysOverdue = getDaysOverdue(order);
   if (daysOverdue === null || daysOverdue <= 0) return null;
   return (
-    <span className="flex items-center gap-0.5 text-xs font-semibold text-red-600 bg-red-50 px-1.5 py-0.5 rounded-sm border border-red-200">
+    <span className="flex items-center gap-0.5 text-xs font-semibold text-error-400 bg-error-500/10 px-1.5 py-0.5 rounded-sm border border-error-500/30">
       <AlertTriangle className="h-3 w-3" />
       {daysOverdue}d atraso
     </span>
@@ -62,13 +63,13 @@ const CardContent = React.memo(function CardContent({
 
   // Urgency overrides default border
   const borderCls = isOverdue
-    ? "border-l-4 border-l-red-500"
+    ? "border-l-4 border-l-error-500"
     : (getDaysInShopBorderColor(order.days_in_shop) || statusCfg?.border || "");
 
   return (
     <div
       className={cn(
-        "bg-white rounded-md border border-neutral-200",
+        "bg-white/[0.04] rounded-md border border-white/10 backdrop-blur-sm",
         borderCls,
         className
       )}
@@ -76,34 +77,29 @@ const CardContent = React.memo(function CardContent({
       <div className="p-2.5 space-y-1.5">
         {/* Row 1: OS number + status dot + days badge */}
         <div className="flex items-center justify-between gap-1">
-          <span className="text-xs font-bold text-neutral-700 leading-none">
+          <span className="text-xs font-bold text-white/80 leading-none font-mono">
             #{order.number}
           </span>
           <div className="flex items-center gap-1.5">
             <DaysInShopBadge days={order.days_in_shop} />
-            <span
-              className={cn(
-                "h-2 w-2 rounded-full shrink-0",
-                statusCfg?.dot ?? "bg-neutral-400"
-              )}
-            />
+            <StatusBadge status={order.status as ServiceOrderStatus} variant="dot" />
           </div>
         </div>
 
         {/* Row 2: Plate */}
-        <div className="text-sm font-mono font-semibold tracking-widest text-neutral-900 leading-none">
+        <div className="text-sm font-mono font-semibold tracking-widest text-white/90 leading-none">
           {order.plate}
         </div>
 
         {/* Row 3: Vehicle */}
-        <p className="text-xs text-neutral-500 leading-snug truncate">
+        <p className="text-xs text-white/40 leading-snug truncate">
           {[order.make, order.model, order.year ? String(order.year) : ""]
             .filter(Boolean)
             .join(" · ")}
         </p>
 
         {/* Row 4: Customer */}
-        <p className="text-xs text-neutral-600 truncate font-medium">
+        <p className="text-xs text-white/60 truncate font-medium">
           {order.customer_name}
         </p>
 
@@ -112,7 +108,7 @@ const CardContent = React.memo(function CardContent({
           <div className="flex items-center gap-1 flex-wrap pt-0.5">
             {isOverdue && <UrgencyIndicator order={order} />}
             {!isOverdue && order.insurer_detail && (
-              <div className="flex items-center gap-1 bg-indigo-50 border border-indigo-200 rounded-sm px-1 py-0.5 max-w-full">
+              <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-sm px-1 py-0.5 max-w-full">
                 {order.insurer_detail.logo ? (
                   <img
                     src={order.insurer_detail.logo}
@@ -127,7 +123,7 @@ const CardContent = React.memo(function CardContent({
                     {order.insurer_detail.abbreviation?.charAt(0)}
                   </span>
                 )}
-                <span className="text-xs text-indigo-700 font-medium truncate max-w-[90px]">
+                <span className="text-xs text-white/50 font-medium truncate max-w-[90px]">
                   {order.insurer_detail.display_name ?? order.insurer_detail.name}
                 </span>
               </div>

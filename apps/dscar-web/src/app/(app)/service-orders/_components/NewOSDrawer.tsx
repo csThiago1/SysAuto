@@ -61,6 +61,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
     resolver: zodResolver(newOSSchema),
     defaultValues: {
       customer_type: "private",
+      customer_id: null,
       customer_name: "",
       plate: "",
       make: "",
@@ -157,7 +158,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
 
           {/* Seguradora (condicional) */}
           {customerType === "insurer" && (
-            <div className="rounded-lg border border-dashed border-blue-200 bg-blue-50 p-3 space-y-2">
+            <div className="rounded-lg border border-dashed border-info-500/20 bg-info-500/10 p-3 space-y-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
                 Dados da Seguradora
               </p>
@@ -174,7 +175,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                   )}
                 />
                 {errors.insurer && (
-                  <p className="mt-0.5 text-xs text-red-600">
+                  <p className="mt-0.5 text-xs text-error-400">
                     {errors.insurer.message}
                   </p>
                 )}
@@ -194,12 +195,12 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
           <div>
             <label className={LABEL}>Cliente</label>
             <Controller
-              name="customer"
+              name="customer_id"
               control={control}
               render={({ field }) => (
                 <CustomerSearch
                   value={
-                    field.value
+                    field.value != null
                       ? { id: field.value, name: watch("customer_name") ?? "" }
                       : null
                   }
@@ -248,7 +249,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                 )}
               </div>
               {errors.plate && (
-                <p className="mt-0.5 text-xs text-red-600">
+                <p className="mt-0.5 text-xs text-error-400">
                   {errors.plate.message}
                 </p>
               )}
@@ -264,7 +265,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                   {...register("make")}
                 />
                 {errors.make && (
-                  <p className="mt-0.5 text-xs text-red-600">
+                  <p className="mt-0.5 text-xs text-error-400">
                     {errors.make.message}
                   </p>
                 )}
@@ -277,7 +278,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                   {...register("model")}
                 />
                 {errors.model && (
-                  <p className="mt-0.5 text-xs text-red-600">
+                  <p className="mt-0.5 text-xs text-error-400">
                     {errors.model.message}
                   </p>
                 )}
@@ -336,7 +337,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
           </div>
 
           {serverError && (
-            <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+            <p className="rounded border border-error-500/20 bg-error-500/10 px-3 py-2 text-xs text-error-400">
               {serverError}
             </p>
           )}

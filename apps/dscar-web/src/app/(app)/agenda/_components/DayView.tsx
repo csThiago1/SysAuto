@@ -97,8 +97,8 @@ export function DayView({ currentDate, events }: Props) {
           <>
             {/* Previsões sem hora */}
             {deliveries.length > 0 && (
-              <div className="px-4 py-2 border-b border-neutral-100 bg-emerald-50/50 space-y-1">
-                <p className="text-xs font-semibold uppercase text-emerald-600">Entregas previstas</p>
+              <div className="px-4 py-2 border-b border-white/10 bg-success-500/5 space-y-1">
+                <p className="text-xs font-semibold uppercase text-success-400">Entregas previstas</p>
                 {deliveries.map((e, i) => (
                   <CalendarEventCard key={`${e.os.id}-del-${i}`} event={e} />
                 ))}
@@ -112,7 +112,7 @@ export function DayView({ currentDate, events }: Props) {
                 return (
                   <div
                     key={hour}
-                    className="flex gap-3 px-4 py-2 border-b border-neutral-100 min-h-[52px] cursor-pointer hover:bg-primary-600/5 transition-colors group"
+                    className="flex gap-3 px-4 py-2 border-b border-white/10 min-h-[52px] cursor-pointer hover:bg-primary-600/5 transition-colors group"
                     onClick={() => handleSlotClick(hour)}
                   >
                     <span className="text-xs text-white/40 w-8 shrink-0 pt-0.5">{hour}h</span>

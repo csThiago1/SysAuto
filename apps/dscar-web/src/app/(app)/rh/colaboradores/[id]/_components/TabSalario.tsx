@@ -154,7 +154,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
 
       {/* History */}
       <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
-        <div className="px-card-padding py-3 border-b border-neutral-100">
+        <div className="px-card-padding py-3 border-b border-white/10">
           <h3 className="text-sm font-semibold text-white">
             Histórico de reajustes
           </h3>
@@ -170,7 +170,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
             Nenhum reajuste registrado.
           </div>
         ) : (
-          <div className="divide-y divide-neutral-100">
+          <div className="divide-y divide-white/5">
             {historyItems.map((item, index) => {
               const diff =
                 parseFloat(item.new_salary) - parseFloat(item.previous_salary);
@@ -189,7 +189,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
                         }).format(parseFloat(item.new_salary))}
                       </span>
                       {diff > 0 && (
-                        <span className="text-xs text-success-600 font-medium">
+                        <span className="text-xs text-success-400 font-medium">
                           +{pct.toFixed(1)}%
                         </span>
                       )}

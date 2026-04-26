@@ -92,7 +92,7 @@ export function EntrySection({ form, order }: EntrySectionProps) {
             Documentos Fiscais
           </p>
           {order.invoice_issued && (
-            <div className="flex items-center gap-1.5 text-xs text-emerald-600">
+            <div className="flex items-center gap-1.5 text-xs text-success-400">
               <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
               <span>Nota fiscal emitida</span>
             </div>

@@ -62,7 +62,7 @@ function SnapshotRow({ snap }: { snap: Snapshot }) {
           {ORIGEM_LABELS[snap.origem] ?? snap.origem}
         </Badge>
       </TableCell>
-      <TableCell className="text-sm text-right font-mono text-emerald-400">
+      <TableCell className="text-sm text-right font-mono text-success-400">
         {formatCurrency(snap.preco_final)}
       </TableCell>
       <TableCell className="text-xs text-white/40">

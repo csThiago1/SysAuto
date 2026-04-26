@@ -291,13 +291,13 @@ export default function SimuladorPage() {
               key={idx}
               className={`rounded-lg border p-4 space-y-3 ${
                 r.status === "ok"
-                  ? "border-emerald-500/30 bg-emerald-500/5"
-                  : "border-red-500/30 bg-red-500/5"
+                  ? "border-success-500/30 bg-success-500/5"
+                  : "border-error-500/30 bg-error-500/5"
               }`}
             >
               <div className="flex items-center gap-2">
                 {r.status === "ok" ? (
-                  <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <CheckCircle className="h-4 w-4 text-success-400 shrink-0" />
                 ) : (
                   <XCircle className="h-4 w-4 text-red-400 shrink-0" />
                 )}
@@ -306,7 +306,7 @@ export default function SimuladorPage() {
                   variant="outline"
                   className={`ml-auto text-xs shrink-0 ${
                     r.status === "ok"
-                      ? "border-emerald-500/40 text-emerald-400"
+                      ? "border-success-500/40 text-success-400"
                       : "border-red-500/40 text-red-400"
                   }`}
                 >
@@ -318,7 +318,7 @@ export default function SimuladorPage() {
                 <div className="grid grid-cols-3 gap-3">
                   <div className="rounded-md bg-white/5 p-3">
                     <p className="text-xs text-white/40 mb-1">Preço final</p>
-                    <p className="text-base font-semibold text-emerald-400">
+                    <p className="text-base font-semibold text-success-400">
                       {formatCurrency(r.data.preco_final)}
                     </p>
                   </div>
@@ -336,7 +336,7 @@ export default function SimuladorPage() {
                   </div>
                   {r.data.teto_aplicado && (
                     <div className="col-span-3">
-                      <Badge variant="outline" className="text-xs border-amber-500/40 text-amber-400">
+                      <Badge variant="outline" className="text-xs border-warning-500/40 text-warning-400">
                         Teto de benchmark aplicado
                       </Badge>
                     </div>

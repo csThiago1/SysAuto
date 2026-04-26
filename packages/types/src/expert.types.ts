@@ -1,11 +1,16 @@
 /**
- * @paddock/types — Expert (Perito)
+ * @paddock/types — Expert (Perito / Especialista)
  */
 
 export interface Expert {
   id: string;
   name: string;
-  registration_number: string;
   phone: string;
-  insurer?: string | null; // FK para Insurer
+  email: string;
+  notes?: string;
+  registration_number: string;
+  insurer_ids: string[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }

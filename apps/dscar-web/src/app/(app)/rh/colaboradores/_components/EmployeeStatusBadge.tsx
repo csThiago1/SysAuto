@@ -11,9 +11,9 @@ interface EmployeeStatusBadgeProps {
 }
 
 const VARIANT_CLASSES: Record<string, string> = {
-  success: "bg-success-100 text-success-700 border-success-200",
-  warning: "bg-warning-100 text-warning-700 border-warning-200",
-  destructive: "bg-red-100 text-red-700 border-red-200",
+  success: "bg-success-500/10 text-success-400 border-success-500/20",
+  warning: "bg-warning-500/10 text-warning-400 border-warning-500/20",
+  destructive: "bg-error-500/10 text-error-400 border-error-500/20",
   default: "bg-white/5 text-white/60 border-white/10",
 };
 

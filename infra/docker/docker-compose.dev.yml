@@ -41,7 +41,7 @@ services:
     image: quay.io/keycloak/keycloak:24.0
     container_name: paddock_keycloak
     restart: unless-stopped
-    command: start-dev --import-realm
+    command: start-dev --import-realm --health-enabled=true
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -52,8 +52,10 @@ services:
       KC_DB_SCHEMA: keycloak
       KC_HOSTNAME_STRICT: "false"
       KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+      - ./keycloak/themes/paddock:/opt/keycloak/themes/paddock
     ports:
       - "8080:8080"
     depends_on:

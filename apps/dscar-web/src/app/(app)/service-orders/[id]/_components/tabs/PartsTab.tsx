@@ -232,7 +232,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
                         <button
                           type="button"
                           onClick={() => setConfirmDeleteId(part.id)}
-                          className="p-1.5 rounded text-white/40 hover:text-red-500 hover:bg-red-50"
+                          className="p-1.5 rounded text-white/40 hover:text-error-400 hover:bg-error-500/10"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -253,7 +253,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
             {discountTotal > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-white/60">Desconto</span>
-                <span className="font-medium text-red-600">- {formatCurrency(discountTotal)}</span>
+                <span className="font-medium text-error-400">- {formatCurrency(discountTotal)}</span>
               </div>
             )}
             <div className="border-t border-white/10 pt-2 flex items-center justify-between">

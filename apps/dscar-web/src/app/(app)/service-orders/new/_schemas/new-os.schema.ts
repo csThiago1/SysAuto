@@ -17,8 +17,8 @@ export const newOSSchema = z
       z.enum(["insured", "third"]).optional().nullable()
     ),
 
-    // Cliente
-    customer: z.string().uuid().optional().nullable(),
+    // Cliente (Person FK — inteiro)
+    customer_id: z.number().int().optional().nullable(),
     customer_name: z.string().min(1, "Selecione ou cadastre um cliente"),
 
     // Veículo

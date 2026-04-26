@@ -10,7 +10,7 @@ const badgeVariants = cva(
         default:
           "bg-primary-100 text-primary-800 border border-primary-200",
         secondary:
-          "bg-neutral-100 text-neutral-700 border border-neutral-200",
+          "bg-white/[0.03] text-white/70 border border-white/10",
         success:
           "bg-success-100 text-success-800 border border-success-200",
         warning:
@@ -18,7 +18,7 @@ const badgeVariants = cva(
         destructive:
           "bg-error-100 text-error-800 border border-error-200",
         outline:
-          "border border-neutral-200 text-neutral-700",
+          "border border-white/10 text-white/70",
       },
     },
     defaultVariants: {

@@ -12,7 +12,16 @@ import logging
 
 from rest_framework import serializers
 
-from .models import Person, PersonAddress, PersonContact, PersonDocument, PersonRole
+from .models import (
+    BrokerOffice,
+    BrokerPerson,
+    ClientProfile,
+    Person,
+    PersonAddress,
+    PersonContact,
+    PersonDocument,
+    PersonRole,
+)
 from .utils import sha256_hex
 
 logger = logging.getLogger(__name__)
@@ -147,6 +156,20 @@ class PersonAddressSerializer(serializers.ModelSerializer):
         ]
 
 
+class ClientProfileSerializer(serializers.ModelSerializer):
+    """Serializer do perfil de cliente — dados de consentimento LGPD."""
+
+    class Meta:
+        model = ClientProfile
+        fields = [
+            "lgpd_consent_version",
+            "lgpd_consent_date",
+            "lgpd_consent_ip",
+            "group_sharing_consent",
+        ]
+        read_only_fields = ["lgpd_consent_date", "lgpd_consent_ip"]
+
+
 class PersonRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = PersonRole
@@ -169,7 +192,6 @@ class PersonListSerializer(serializers.ModelSerializer):
             "roles",
             "primary_contact",
             "is_active",
-            "logo_url",
             "created_at",
         ]
         read_only_fields = fields
@@ -184,7 +206,7 @@ class PersonListSerializer(serializers.ModelSerializer):
 
 
 class PersonCreateUpdateSerializer(serializers.ModelSerializer):
-    """Serializer de escrita com sync de roles, contatos e endereços."""
+    """Serializer de escrita com sync de roles, contatos, endereços e documentos."""
 
     roles = serializers.ListField(
         child=serializers.ChoiceField(
@@ -194,6 +216,7 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
     )
     contacts = PersonContactWriteSerializer(many=True, required=False)
     addresses = PersonAddressSerializer(many=True, required=False)
+    documents = PersonDocumentWriteSerializer(many=True, required=False)
 
     class Meta:
         model = Person
@@ -201,22 +224,18 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
             "person_kind",
             "full_name",
             "fantasy_name",
-            "document",
             "secondary_document",
             "municipal_registration",
             "is_simples_nacional",
             "inscription_type",
             "birth_date",
             "gender",
-            "logo_url",
-            "insurer_code",
-            "job_title",
-            "department",
             "is_active",
             "notes",
             "roles",
             "contacts",
             "addresses",
+            "documents",
         ]
 
     def validate_full_name(self, value: str) -> str:
@@ -239,10 +258,6 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
     def _sync_contacts(self, person: Person, contacts_data: list) -> None:
         person.contacts.all().delete()
         for c in contacts_data:
-            # Garante que value_hash é populado
-            value = c.get("value", "")
-            if value and "value_hash" not in c:
-                c["value_hash"] = sha256_hex(value)
             PersonContact.objects.create(person=person, **c)
 
     def _sync_addresses(self, person: Person, addresses_data: list) -> None:
@@ -250,29 +265,52 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
         for a in addresses_data:
             PersonAddress.objects.create(person=person, **a)
 
+    def _sync_documents(self, person: Person, documents_data: list) -> None:
+        if not documents_data:
+            return  # empty list = no change; preserve existing documents
+        person.documents.all().delete()
+        for d in documents_data:
+            PersonDocument.objects.create(person=person, **d)
+
+    def _sync_broker_profile(self, person: Person, roles: list) -> None:
+        """Auto-cria BrokerOffice (PJ) ou BrokerPerson (PF) quando role=BROKER."""
+        if "BROKER" not in roles:
+            return
+        if person.person_kind == "PJ":
+            BrokerOffice.objects.get_or_create(person=person)
+        elif person.person_kind == "PF":
+            BrokerPerson.objects.get_or_create(person=person)
+
     def create(self, validated_data: dict) -> Person:
         roles = validated_data.pop("roles")
         contacts = validated_data.pop("contacts", [])
         addresses = validated_data.pop("addresses", [])
+        documents = validated_data.pop("documents", [])
         person = Person.objects.create(**validated_data)
         self._sync_roles(person, roles)
+        self._sync_broker_profile(person, roles)
         self._sync_contacts(person, contacts)
         self._sync_addresses(person, addresses)
+        self._sync_documents(person, documents)
         return person
 
     def update(self, instance: Person, validated_data: dict) -> Person:
         roles = validated_data.pop("roles", None)
         contacts = validated_data.pop("contacts", None)
         addresses = validated_data.pop("addresses", None)
+        documents = validated_data.pop("documents", None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
         if roles is not None:
             self._sync_roles(instance, roles)
+            self._sync_broker_profile(instance, roles)
         if contacts is not None:
             self._sync_contacts(instance, contacts)
         if addresses is not None:
             self._sync_addresses(instance, addresses)
+        if documents is not None:
+            self._sync_documents(instance, documents)
         return instance
 
 
@@ -283,8 +321,7 @@ class PersonDetailSerializer(serializers.ModelSerializer):
     contacts = PersonContactSerializer(many=True, read_only=True)
     addresses = PersonAddressSerializer(many=True, read_only=True)
     documents = PersonDocumentMaskedSerializer(many=True, read_only=True)
-    job_title_display = serializers.CharField(source="get_job_title_display", read_only=True)
-    department_display = serializers.CharField(source="get_department_display", read_only=True)
+    client_profile = ClientProfileSerializer(read_only=True)
 
     class Meta:
         model = Person
@@ -299,27 +336,20 @@ class PersonDetailSerializer(serializers.ModelSerializer):
             "inscription_type",
             "birth_date",
             "gender",
-            "logo_url",
-            "insurer_code",
-            "job_title",
-            "job_title_display",
-            "department",
-            "department_display",
             "is_active",
             "notes",
-            "roles",
-            "contacts",
-            "addresses",
-            "documents",
-            "legacy_code",
-            "legacy_category",
             "created_at",
             "updated_at",
+            "legacy_code",
+            "legacy_category",
+            "roles",
+            "documents",
+            "contacts",
+            "addresses",
+            "client_profile",
         ]
         read_only_fields = [
             "id",
-            "job_title_display",
-            "department_display",
             "created_at",
             "updated_at",
         ]

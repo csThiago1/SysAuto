@@ -36,9 +36,9 @@ function startOfWeek(d: Date): string {
 }
 
 function utilizacaoColor(u: number): string {
-  if (u < 0.5) return "bg-emerald-500"
-  if (u < 0.8) return "bg-yellow-500"
-  return "bg-red-500"
+  if (u < 0.5) return "bg-success-500"
+  if (u < 0.8) return "bg-warning-500"
+  return "bg-error-500"
 }
 
 function HeatmapWidget({ dias }: { dias: HeatmapDia[] }) {
@@ -70,15 +70,15 @@ function HeatmapWidget({ dias }: { dias: HeatmapDia[] }) {
       </div>
       <div className="flex items-center gap-3 mt-3 text-xs text-white/40">
         <span className="flex items-center gap-1">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
+          <span className="h-2 w-2 rounded-full bg-success-500 inline-block" />
           Livre
         </span>
         <span className="flex items-center gap-1">
-          <span className="h-2 w-2 rounded-full bg-yellow-500 inline-block" />
+          <span className="h-2 w-2 rounded-full bg-warning-500 inline-block" />
           Médio
         </span>
         <span className="flex items-center gap-1">
-          <span className="h-2 w-2 rounded-full bg-red-500 inline-block" />
+          <span className="h-2 w-2 rounded-full bg-error-500 inline-block" />
           Crítico
         </span>
       </div>

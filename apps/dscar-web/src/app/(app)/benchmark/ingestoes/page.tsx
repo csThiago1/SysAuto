@@ -40,7 +40,7 @@ const STATUS_LABELS: Record<BenchmarkIngestaoStatus, string> = {
 const STATUS_BADGE_CLS: Record<BenchmarkIngestaoStatus, string> = {
   recebido: "border-white/20 text-white/50 bg-white/5",
   processando: "border-blue-500/30 text-blue-400 bg-blue-400/10",
-  concluido: "border-emerald-500/30 text-emerald-400 bg-emerald-400/10",
+  concluido: "border-success-500/30 text-success-400 bg-success-400/10",
   erro: "border-red-500/30 text-red-400 bg-red-400/10",
 }
 
@@ -232,7 +232,7 @@ function IngestaoDetail({ ingestaoId, logErro }: { ingestaoId: string; logErro: 
                   </TableCell>
                   <TableCell className="py-1.5 text-xs text-right">
                     {a.alias_match_confianca ? (
-                      <span className={parseFloat(a.alias_match_confianca) >= 0.85 ? "text-emerald-400" : "text-yellow-400"}>
+                      <span className={parseFloat(a.alias_match_confianca) >= 0.85 ? "text-success-400" : "text-yellow-400"}>
                         {(parseFloat(a.alias_match_confianca) * 100).toFixed(0)}%
                       </span>
                     ) : (

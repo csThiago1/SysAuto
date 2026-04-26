@@ -19,8 +19,15 @@
 import React, { useEffect, useState } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { toast } from "sonner";
-import type { Person, PersonRole, CreatePersonPayload, ModalProps } from "@paddock/types";
-import { PERSON_ROLE_LABEL, PERSON_JOB_TITLE_OPTIONS, PERSON_DEPARTMENT_OPTIONS, isValidCPF, isValidCNPJ } from "@paddock/utils";
+import type {
+  Person,
+  PersonRole,
+  PersonKind,
+  CreatePersonPayload,
+  ModalProps,
+  PersonDocumentWrite,
+} from "@paddock/types";
+import { PERSON_ROLE_LABEL } from "@paddock/utils";
 import {
   Dialog,
   DialogContent,
@@ -36,19 +43,52 @@ import {
   SelectTrigger,
   SelectValue,
   PhoneInput,
-  CpfCnpjInput,
 } from "@/components/ui";
 import { useCreatePerson, useUpdatePerson, useCepLookup, usePerson } from "@/hooks";
 import { handleApiFormError } from "@/lib/api";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
-type FormValues = Omit<CreatePersonPayload, "roles"> & { roles: PersonRole[] };
+type FormValues = {
+  person_kind: PersonKind;
+  full_name: string;
+  fantasy_name: string;
+  secondary_document: string;
+  municipal_registration: string;
+  is_simples_nacional: boolean;
+  inscription_type: "CONTRIBUINTE" | "NAO_CONTRIBUINTE" | "ISENTO" | "";
+  birth_date: string;
+  gender: "M" | "F" | "N" | "";
+  is_active: boolean;
+  notes: string;
+  roles: PersonRole[];
+  documents: PersonDocumentWrite[];
+  contacts: Array<{
+    contact_type: "CELULAR" | "COMERCIAL" | "WHATSAPP" | "EMAIL" | "EMAIL_NFE" | "EMAIL_FINANCEIRO" | "SITE";
+    value: string;
+    label?: string;
+    is_primary: boolean;
+  }>;
+  addresses: Array<{
+    address_type: "PRINCIPAL" | "COBRANCA" | "ENTREGA";
+    zip_code: string;
+    street: string;
+    number: string;
+    complement?: string;
+    neighborhood: string;
+    city: string;
+    state: string;
+    municipio_ibge?: string;
+    is_primary: boolean;
+  }>;
+};
 
 /** Props do modal — extende o contrato base ModalProps com campo de domínio */
 interface PersonFormModalProps extends ModalProps {
   /** undefined ou null = criação; Person = edição */
   person?: Person | null;
+  defaultRoles?: PersonRole[];
+  defaultKind?: PersonKind;
 }
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
@@ -67,7 +107,13 @@ const CONTACT_TYPES = [
 
 // ─── Componente ────────────────────────────────────────────────────────────────
 
-export function PersonFormModal({ open, onOpenChange, person }: PersonFormModalProps): React.ReactElement {
+export function PersonFormModal({
+  open,
+  onOpenChange,
+  person,
+  defaultRoles,
+  defaultKind,
+}: PersonFormModalProps): React.ReactElement {
   const isEditing = !!person;
 
   // ── Hooks de dados ────────────────────────────────────────────────────────
@@ -79,18 +125,26 @@ export function PersonFormModal({ open, onOpenChange, person }: PersonFormModalP
 
   // ── Estado de roles (toggle buttons) ─────────────────────────────────────
   const [selectedRoles, setSelectedRoles] = useState<PersonRole[]>(
-    person?.roles.map((r) => r.role) ?? ["CLIENT"]
+    person?.roles.map((r) => r.role) ?? defaultRoles ?? ["CLIENT"]
   );
 
   // ── Formulário ────────────────────────────────────────────────────────────
   const { register, handleSubmit, reset, watch, setValue, control, setError } = useForm<FormValues>({
     defaultValues: {
-      person_kind: "PF", full_name: "", fantasy_name: "", document: "",
-      is_active: true, notes: "", logo_url: "", insurer_code: "",
-      job_title: "", department: "",
-      roles: ["CLIENT"], contacts: [], addresses: [],
+      person_kind: defaultKind ?? "PF",
+      full_name: "",
+      fantasy_name: "",
+      is_active: true,
+      notes: "",
+      roles: defaultRoles ?? ["CLIENT"],
+      documents: [],
+      contacts: [],
+      addresses: [],
     },
   });
+
+  const { fields: documentFields, append: appendDocument, remove: removeDocument } =
+    useFieldArray({ control, name: "documents" });
 
   const { fields: contactFields, append: appendContact, remove: removeContact } =
     useFieldArray({ control, name: "contacts" });
@@ -98,9 +152,7 @@ export function PersonFormModal({ open, onOpenChange, person }: PersonFormModalP
   const { fields: addressFields, append: appendAddress, remove: removeAddress } =
     useFieldArray({ control, name: "addresses" });
 
-  const personKind        = watch("person_kind");
-  const showInsurerFields  = selectedRoles.includes("INSURER");
-  const showEmployeeFields = selectedRoles.includes("EMPLOYEE");
+  const personKind = watch("person_kind");
 
   // ── Carrega dados ao editar ───────────────────────────────────────────────
   useEffect(() => {
@@ -108,22 +160,20 @@ export function PersonFormModal({ open, onOpenChange, person }: PersonFormModalP
     if (isEditing && !personDetail) return;
     const src = personData;
     reset({
-      person_kind: src?.person_kind ?? "PF",
+      person_kind: src?.person_kind ?? defaultKind ?? "PF",
       full_name:   src?.full_name ?? "",
       fantasy_name: src?.fantasy_name ?? "",
-      document:    src?.document ?? "",
       is_active:   src?.is_active ?? true,
       notes:       src?.notes ?? "",
-      logo_url:    src?.logo_url ?? "",
-      insurer_code: src?.insurer_code ?? "",
-      job_title:   src?.job_title ?? "",
-      department:  src?.department ?? "",
-      roles:       src?.roles.map((r) => r.role) ?? ["CLIENT"],
+      roles:       src?.roles.map((r) => r.role) ?? defaultRoles ?? ["CLIENT"],
+      // Ao editar, documentos existentes ficam somente-leitura (exibidos abaixo).
+      // Apenas novos documentos são enviados para não sobrescrever dados mascarados.
+      documents: [],
       contacts:    src?.contacts ?? [],
       addresses:   src?.addresses ?? [],
     });
-    setSelectedRoles(src?.roles.map((r) => r.role) ?? ["CLIENT"]);
-  }, [open, isEditing, personDetail, personData, reset]);
+    setSelectedRoles(src?.roles.map((r) => r.role) ?? defaultRoles ?? ["CLIENT"]);
+  }, [open, isEditing, personDetail, personData, reset, defaultKind, defaultRoles]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -150,7 +200,18 @@ export function PersonFormModal({ open, onOpenChange, person }: PersonFormModalP
   /** onSubmit delega inteiramente ao hook — sem lógica de fetch manual (PADRÃO-4) */
   async function onSubmit(data: FormValues): Promise<void> {
     if (selectedRoles.length === 0) { toast.error("Selecione ao menos uma categoria."); return; }
-    const payload: CreatePersonPayload = { ...data, roles: selectedRoles };
+    const payload = {
+      ...data,
+      roles: selectedRoles,
+      inscription_type: data.inscription_type || undefined,
+      gender: data.gender || undefined,
+      birth_date: data.birth_date || null,
+      documents: (data.documents ?? []).map((doc) => ({
+        ...doc,
+        issued_at: doc.issued_at || null,
+        expires_at: doc.expires_at || null,
+      })),
+    } as CreatePersonPayload;
     try {
       if (isEditing && person) {
         await updatePerson.mutateAsync({ id: person.id, data: payload });
@@ -202,7 +263,7 @@ export function PersonFormModal({ open, onOpenChange, person }: PersonFormModalP
                     className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                       selectedRoles.includes(role)
                         ? "bg-primary text-white border-primary"
-                        : "bg-white text-neutral-600 border-neutral-200 hover:border-neutral-400"
+                        : "bg-white/5 text-white/60 border-white/15 hover:border-white/30"
                     }`}
                   >
                     {PERSON_ROLE_LABEL[role]}
@@ -214,7 +275,7 @@ export function PersonFormModal({ open, onOpenChange, person }: PersonFormModalP
 
           {/* ── Seção 2: Dados Gerais ────────────────────────────────────── */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-neutral-700 border-b pb-1">Dados Gerais</h3>
+            <h3 className="text-sm font-semibold text-white/70 border-b border-white/10 pb-1">Dados Gerais</h3>
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
                 <Label htmlFor="full_name">
@@ -229,19 +290,6 @@ export function PersonFormModal({ open, onOpenChange, person }: PersonFormModalP
                   <Input id="fantasy_name" {...register("fantasy_name")} />
                 </div>
               )}
-              <div>
-                <Label htmlFor="document">{personKind === "PJ" ? "CNPJ" : "CPF"}</Label>
-                <CpfCnpjInput id="document" {...register("document", {
-                  validate: (v) => {
-                    if (!v) return true; // campo não obrigatório
-                    const clean = v.replace(/\D/g, "");
-                    if (personKind === "PF" && clean.length > 0) return isValidCPF(clean) || "CPF inválido";
-                    if (personKind === "PJ" && clean.length > 0) return isValidCNPJ(clean) || "CNPJ inválido";
-                    return true;
-                  },
-                })}
-                  placeholder={personKind === "PJ" ? "00.000.000/0000-00" : "000.000.000-00"} />
-              </div>
               {personKind === "PF" && (
                 <>
                   <div>
@@ -305,10 +353,113 @@ export function PersonFormModal({ open, onOpenChange, person }: PersonFormModalP
             </div>
           </div>
 
-          {/* ── Seção 3: Contatos ────────────────────────────────────────── */}
+          {/* ── Seção 3: Documentos ──────────────────────────────────────── */}
           <div className="space-y-2">
             <div className="flex items-center justify-between border-b pb-1">
-              <h3 className="text-sm font-semibold text-neutral-700">Contatos</h3>
+              <h3 className="text-sm font-semibold text-white/70">Documentos</h3>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  appendDocument({
+                    doc_type: personKind === "PJ" ? "CNPJ" : "CPF",
+                    value: "",
+                    is_primary: documentFields.length === 0,
+                    issued_by: "",
+                    issued_at: null,
+                    expires_at: null,
+                  })
+                }
+              >
+                + Adicionar
+              </Button>
+            </div>
+            {/* Documentos existentes — somente leitura em modo edição */}
+            {isEditing && personData?.documents && personData.documents.length > 0 && (
+              <div className="space-y-1">
+                {personData.documents.map((d) => (
+                  <div key={d.id} className="flex items-center gap-2 px-3 py-1.5 rounded border border-white/10 bg-white/5 text-xs text-white/50">
+                    <span className="font-medium text-white/80">{d.doc_type}</span>
+                    <span>{d.value_masked}</span>
+                    {d.is_primary && <span className="ml-auto text-primary-600">principal</span>}
+                  </div>
+                ))}
+                <p className="text-xs text-white/30">Para alterar documentos existentes, use o painel de detalhe.</p>
+              </div>
+            )}
+            {documentFields.map((field, index) => (
+              <div key={field.id} className="space-y-2 p-3 border border-white/10 rounded-md bg-white/5">
+                <div className="flex items-center justify-between">
+                  <Controller
+                    control={control}
+                    name={`documents.${index}.doc_type`}
+                    render={({ field: f }) => (
+                      <Select value={f.value} onValueChange={f.onChange}>
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {personKind === "PF" ? (
+                            <>
+                              <SelectItem value="CPF">CPF</SelectItem>
+                              <SelectItem value="RG">RG</SelectItem>
+                              <SelectItem value="CNH">CNH</SelectItem>
+                            </>
+                          ) : (
+                            <>
+                              <SelectItem value="CNPJ">CNPJ</SelectItem>
+                              <SelectItem value="IE">Inscrição Estadual</SelectItem>
+                              <SelectItem value="IM">Inscrição Municipal</SelectItem>
+                            </>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 text-white/30 hover:text-red-400"
+                    onClick={() => removeDocument(index)}
+                  >
+                    ✕
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="col-span-2">
+                    <Label className="text-xs">Número *</Label>
+                    <Input
+                      {...register(`documents.${index}.value`, { required: true })}
+                      placeholder={watch(`documents.${index}.doc_type`) === "CPF" ? "000.000.000-00" : ""}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Órgão emissor</Label>
+                    <Input {...register(`documents.${index}.issued_by`)} placeholder="Ex: SSP/AM" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Validade</Label>
+                    <Input type="date" {...register(`documents.${index}.expires_at`)} />
+                  </div>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer text-xs">
+                  <input
+                    type="checkbox"
+                    {...register(`documents.${index}.is_primary`)}
+                    className="accent-primary"
+                  />
+                  Principal
+                </label>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Seção 4: Contatos ────────────────────────────────────────── */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between border-b pb-1">
+              <h3 className="text-sm font-semibold text-white/70">Contatos</h3>
               <Button type="button" variant="ghost" size="sm"
                 onClick={() => appendContact({ contact_type: "CELULAR", value: "", label: "", is_primary: contactFields.length === 0 })}>
                 + Adicionar
@@ -336,7 +487,7 @@ export function PersonFormModal({ open, onOpenChange, person }: PersonFormModalP
                   <Input {...register(`contacts.${index}.value`)} placeholder="Valor" className="flex-1" />
                 )}
                 <Input {...register(`contacts.${index}.label`)} placeholder="Rótulo (opcional)" className="w-28" />
-                <Button type="button" variant="ghost" size="sm" className="h-9 w-9 p-0 text-neutral-400 hover:text-red-500"
+                <Button type="button" variant="ghost" size="sm" className="h-9 w-9 p-0 text-white/30 hover:text-red-400"
                   onClick={() => removeContact(index)}>
                   ✕
                 </Button>
@@ -344,10 +495,10 @@ export function PersonFormModal({ open, onOpenChange, person }: PersonFormModalP
             ))}
           </div>
 
-          {/* ── Seção 4: Endereços ───────────────────────────────────────── */}
+          {/* ── Seção 5: Endereços ───────────────────────────────────────── */}
           <div className="space-y-2">
             <div className="flex items-center justify-between border-b pb-1">
-              <h3 className="text-sm font-semibold text-neutral-700">Endereços</h3>
+              <h3 className="text-sm font-semibold text-white/70">Endereços</h3>
               <Button type="button" variant="ghost" size="sm"
                 onClick={() => appendAddress({
                   address_type: "PRINCIPAL", zip_code: "", street: "",
@@ -359,7 +510,7 @@ export function PersonFormModal({ open, onOpenChange, person }: PersonFormModalP
               </Button>
             </div>
             {addressFields.map((field, index) => (
-              <div key={field.id} className="space-y-2 p-3 border rounded-md bg-neutral-50">
+              <div key={field.id} className="space-y-2 p-3 border border-white/10 rounded-md bg-white/5">
                 <div className="flex items-center justify-between">
                   <Controller
                     control={control}
@@ -375,7 +526,7 @@ export function PersonFormModal({ open, onOpenChange, person }: PersonFormModalP
                       </Select>
                     )}
                   />
-                  <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-neutral-400 hover:text-red-500"
+                  <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-white/30 hover:text-red-400"
                     onClick={() => removeAddress(index)}>✕</Button>
                 </div>
                 <div className="grid grid-cols-4 gap-2">
@@ -419,71 +570,10 @@ export function PersonFormModal({ open, onOpenChange, person }: PersonFormModalP
             ))}
           </div>
 
-          {/* ── Seção 5: Dados de Seguradora (condicional) ───────────────── */}
-          {showInsurerFields && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-neutral-700 border-b pb-1">Dados de Seguradora</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="logo_url">URL do Logo</Label>
-                  <Input id="logo_url" {...register("logo_url")} placeholder="https://..." />
-                </div>
-                <div>
-                  <Label htmlFor="insurer_code">Código Interno</Label>
-                  <Input id="insurer_code" {...register("insurer_code")} />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── Seção 6: Dados de Funcionário (condicional) ──────────────── */}
-          {showEmployeeFields && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-neutral-700 border-b pb-1">Dados do Funcionário</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Cargo</Label>
-                  <Controller
-                    control={control}
-                    name="job_title"
-                    render={({ field: f }) => (
-                      <Select value={f.value ?? ""} onValueChange={f.onChange}>
-                        <SelectTrigger><SelectValue placeholder="Selecione o cargo" /></SelectTrigger>
-                        <SelectContent>
-                          {PERSON_JOB_TITLE_OPTIONS.map(({ value, label }) => (
-                            <SelectItem key={value} value={value}>{label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                </div>
-                <div>
-                  <Label>Setor</Label>
-                  <Controller
-                    control={control}
-                    name="department"
-                    render={({ field: f }) => (
-                      <Select value={f.value ?? ""} onValueChange={f.onChange}>
-                        <SelectTrigger><SelectValue placeholder="Selecione o setor" /></SelectTrigger>
-                        <SelectContent>
-                          {PERSON_DEPARTMENT_OPTIONS.map(({ value, label }) => (
-                            <SelectItem key={value} value={value}>{label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* ── Footer ──────────────────────────────────────────────────── */}
           <div className="space-y-3 border-t pt-4">
             <div>
               <Label htmlFor="notes">Observações</Label>
-              {/* ✅ Usa Textarea do barrel — não mais <textarea> nativo */}
               <Textarea id="notes" {...register("notes")} rows={2} placeholder="Observações internas..." />
             </div>
             <label className="flex items-center gap-2 cursor-pointer">

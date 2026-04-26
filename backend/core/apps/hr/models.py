@@ -109,15 +109,15 @@ class Employee(PaddockBaseModel):
         default="",
         help_text="SHA-256 do CPF — para lookup sem expor dado bruto",
     )
-    rg = EncryptedCharField(_("RG"), max_length=20, blank=True, default="")
+    rg = models.CharField(_("RG"), max_length=20, blank=True, default="")
     rg_issuer = models.CharField(
         _("Órgão emissor RG"), max_length=20, blank=True, default=""
     )
     birth_date = models.DateField(_("Data de nascimento"), null=True, blank=True)
-    mother_name = EncryptedCharField(
+    mother_name = models.CharField(
         _("Nome da mãe"), max_length=200, blank=True, default=""
     )
-    father_name = EncryptedCharField(
+    father_name = models.CharField(
         _("Nome do pai"), max_length=200, blank=True, default=""
     )
     marital_status = models.CharField(
@@ -142,6 +142,13 @@ class Employee(PaddockBaseModel):
     )
     emergency_contact_phone = EncryptedCharField(
         _("Contato emergência — telefone"), max_length=20, blank=True, default=""
+    )
+    emergency_contact_relationship = models.CharField(
+        _("Contato emergência — parentesco"),
+        max_length=50,
+        blank=True,
+        default="",
+        help_text="Ex: Esposa, Pai, Filho",
     )
 
     # ── Endereço ───────────────────────────────────────────────────────────────
@@ -170,6 +177,24 @@ class Employee(PaddockBaseModel):
     # ── Remuneração ────────────────────────────────────────────────────────────
     base_salary = models.DecimalField(
         _("Salário base"), max_digits=10, decimal_places=2, default=0
+    )
+
+    # ── Dados bancários ────────────────────────────────────────────────────────
+    bank_name = models.CharField(
+        _("Banco"), max_length=100, blank=True, default=""
+    )
+    bank_agency = models.CharField(
+        _("Agência"), max_length=20, blank=True, default=""
+    )
+    bank_account = models.CharField(
+        _("Conta"), max_length=30, blank=True, default=""
+    )
+    bank_account_type = models.CharField(
+        _("Tipo de conta"),
+        max_length=15,
+        blank=True,
+        default="",
+        help_text="corrente ou poupanca",
     )
 
     # ── Pagamento — LGPD ──────────────────────────────────────────────────────

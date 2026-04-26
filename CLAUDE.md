@@ -144,6 +144,19 @@ Monit:       Sentry + Grafana
 
 ## ⚠️ Armadilhas Conhecidas — Não Repetir
 
+### Keycloak 24 — Freemarker: usar `url.resourcesPath` não `resourcesPath`
+```freemarker
+<!-- ERRADO — resourcesPath não existe no data model do KC 24 → InvalidReferenceException -->
+<link href="${resourcesPath}/css/login.css">
+<img src="${resourcesPath}/img/logo.png">
+
+<!-- CORRETO — KC 24 expõe via objeto url (UrlBean) -->
+<link href="${url.resourcesPath}/css/login.css">
+<img src="${url.resourcesPath}/img/logo.png">
+<script src="${url.resourcesPath}/js/carousel.js">
+```
+Outros vars KC 24 que continuam funcionando: `${url.loginAction}`, `${login.username!''}`, `${messagesPerField.existsError(...)}`.
+
 ### Django — Roteamento DRF com múltiplos routers no mesmo app
 ```python
 # ERRADO — DefaultRouter registrado em "" captura qualquer segmento como pk
@@ -489,10 +502,12 @@ refactor(customers): extrai lógica LGPD para serviço
   - JWKS URL: `http://keycloak:8080/realms/paddock/protocol/openid-connect/certs`
   - Fallback: retorna `None` (warn) se Keycloak offline — sem crash 500
 - `session.role` extraído de `token.realm_access.roles`
-- **Setup Keycloak:** Antes do primeiro `docker compose up`, criar schema PostgreSQL:
-  ```bash
-  docker exec paddock_postgres psql -U paddock -d paddock_dev -c "CREATE SCHEMA IF NOT EXISTS keycloak;"
-  ```
+- **Setup Keycloak:** Schema PostgreSQL criado automaticamente por `infra/docker/init/01_setup.sql` — **não requer passo manual**
+- **Tema de login:** `infra/docker/keycloak/themes/paddock/` — tema customizado DS Car (split 50/50, neon, carrossel)
+  - `docker-compose.dev.yml`: volume + `--health-enabled=true` + `KC_HEALTH_ENABLED: "true"`
+  - `realm-export.json`: `loginTheme: "paddock"`, `resetPasswordAllowed: false`
+  - Aplicar mudanças de realm: `make dev-reset && make dev` (reimporta do zero)
+- **Client ID no realm:** `paddock-frontend` (não `dscar-web`)
 - **Seed users:**
   - `admin@paddock.solutions / admin123` (ADMIN)
   - `thiago@paddock.solutions / paddock123` (OWNER)
@@ -1191,6 +1206,118 @@ Nenhuma sprint ativa no momento.
 ---
 
 ## 📦 Sprints Entregues
+
+### Design System Fintech-Red Phase 2 — Abril 2026 ✅
+**Full ERP sweep: 6 foundation components + ~90 arquivos migrados para dark fintech theme**
+
+Foundation (Layer 1):
+- `table.tsx` (shadcn base): dark theme — neutral→white/opacity, label-mono headers
+- `DataTable` wrapper: `bg-white/5 rounded-md border border-white/10 overflow-hidden`
+- `StatusPill`: badge dark genérico (success/error/warning/info/neutral) com dot pulsante
+- `StatCard` refatorado: icon `bg-white/[0.06]`, value `font-mono`, label `label-mono`
+- `form-styles.ts`: tokens dark — `label-mono text-white/50` labels, `text-error-400` errors
+- Sidebar: section headers `section-divider`, badges `font-mono`
+
+Migração (Layer 2):
+- Dashboard: OverdueOSList dark error, TeamProductivity/RecentOS borders, ConsultantDashboard dividers
+- Cadastros: 16 arquivos — PersonTable full migration, catálogo, seguradoras, fichas, corretores, especialistas
+- Financeiro: 12 arquivos — JournalEntry, plano-contas, AP/AR (list/novo/detail), dashboard
+- RH: 17 arquivos — dashboard, colaboradores (6 tabs), ponto, metas, vales, folha
+- Motor+Capacidade+Auditoria: 7 arquivos — impressoras, snapshots, variancias, simulador, heatmap
+- Estoque+Fiscal+Benchmark+Agenda: 18 arquivos — NF-e, documentos, fontes, revisão, calendar views
+- OS Detail+Form: 16 arquivos — ClosingTab, HistoryTab, PartsTab, ServicesTab, CustomerSearch, NewOSDrawer
+- Shared components: AppHeader, ErrorBoundary, NotificationBell, modals, breadcrumb, skeleton, badge, avatar, button
+- Features: CreateOSForm, CustomerPicker, CiliaImportPanel, PersonTable (Cadastros component)
+- Keycloak login: neon lines 0.5px + double glow, mono labels #cc4444, painel transparente (0.45 opacity)
+
+**Regras estabelecidas:**
+- Cores `neutral-*`, `bg-white` (sólido), `emerald-*`, `indigo-*` proibidas — usar `white/opacity` + tokens semânticos
+- Badges: nunca fundo sólido light — sempre `bg-{color}-500/10 border-{color}-500/20 text-{color}-400`
+- Imports: sempre `@paddock/utils`, nunca `@/lib/design-tokens` (legado)
+- Table headers: sempre `label-mono text-white/40`
+
+---
+
+### Design System Fintech-Red Phase 1 — Abril 2026 ✅
+**Estética fintech-liquidity (terminal dark, mono labels, status dots, section dividers) aplicada ao ERP dscar-web — acento lime substituído por vermelho sutil (#cc4444)**
+
+Layer 1 — Foundation:
+- `tailwind.config.ts`: keyframe + animation `pulse-slow` (4s ease-in-out infinite, opacity 1↔0.4)
+- `globals.css`: utilitários `.label-mono` (10px, mono, tracking 0.14em, uppercase, #cc4444) e `.section-divider` (flex + ::after line bg-white/6%)
+- `card.tsx`: fix dark theme — `bg-white` → `bg-card`, `border-neutral-200` → `border-white/10`, `text-neutral-900` → `text-card-foreground`
+- `page-header.tsx`: fix dark theme — `text-neutral-900` → `text-foreground`, `text-neutral-500` → `text-muted-foreground`
+- `SectionDivider` componente: `<div className="section-divider">{label}</div>` — padrão `LABEL ──────`
+- `StatusBadge` variante `dot`: ponto pulsante (`animate-pulse-slow`) + `label-mono` text, sem pill background
+
+Layer 2 — Páginas:
+- Dashboard: `PageHeader` em todos os branches (loading/consultant/manager/legacy) + `SectionDivider` (VISÃO GERAL / FATURAMENTO / EQUIPE / EM ANDAMENTO) + table headers `.label-mono`
+- OS List: `PageHeader` com contagem dinâmica + `ServiceOrderTable` cabeçalhos `.label-mono text-white/40`
+- Kanban page: `PageHeader` + toggles com tokens `success-*/error-*` (substituindo emerald/red brutos) + error alert dark
+- KanbanColumn: dark theme (`bg-white/[0.02]`, `border-white/5`), label-mono header, drop hover `primary-500/5`, skeleton dark, import migrado de `@/lib/design-tokens` → `@paddock/utils`
+- KanbanCard: dark glass (`bg-white/[0.04]`, `border-white/10`, `backdrop-blur-sm`), `StatusBadge variant="dot"`, textos `text-white/*`, insurer badge `bg-white/5`, urgency com tokens `error-*`
+
+**Referência de design:** `design_system/design-system.html` — página HTML standalone com todos os tokens, componentes e motion patterns extraídos do template fintech-liquidity-73.aura.build
+
+---
+
+### Ciclo 07 — Cadastros Unificados — Abril 2026 ✅
+**Person limpo + sub-modelos por role + InsurerTenantProfile tenant-aware + Corretores + Especialistas**
+
+Backend:
+- `persons/migrations/0010_person_cleanup`: remove 5 campos deprecated de `Person` (document, logo_url, insurer_code, job_title, department)
+- `persons/migrations/0011_add_submodels`: cria `ClientProfile`, `BrokerOffice`, `BrokerPerson` (OneToOneField → Person)
+- `insurers/migrations/0005`: `InsurerTenantProfile` + `0006`: adiciona `company FK` (tenants.Company) + `unique_together(insurer, company)` — isolamento real por tenant
+- `hr/migrations/0005`: adiciona bank fields + `emergency_contact_relationship`; `0006`: re-encripta `emergency_contact_phone` (LGPD)
+- `EmployeeCreateSerializer.create()`: auto-cria `Person(PF)` + `PersonRole(EMPLOYEE)` na admissão
+- `PersonCreateUpdateSerializer`: suporte a escrita de `documents[]` via `_sync_documents()` (empty list = preserva existentes)
+- `PersonDetailSerializer`: retorna `documents[]` (mascarados) e `client_profile`
+- `PersonViewSet.get_queryset()`: suporte ao filtro `?kind=PF|PJ`
+- `InsurerViewSet`: RBAC — MANAGER+ em write; `_logo_extension()` remove `text/plain` (segurança)
+- `ExpertViewSet`: RBAC — CONSULTANT+ leitura, MANAGER+ escrita
+- Endpoint `GET/PUT /api/v1/insurers/{id}/tenant_profile/` — usa `connection.tenant` para isolamento
+
+Frontend:
+- `packages/types/src/person.types.ts`: remove `document`, adiciona `PersonDocument`, `PersonDocumentWrite`, `ClientProfile`, `InsurerTenantProfile`
+- `packages/types/src/hr.types.ts`: adiciona campos bancários + `emergency_contact_relationship`
+- `PersonFormModal`: seção Documentos com `useFieldArray`; docs existentes read-only (sem pre-fill mascarado)
+- `/cadastros/seguradoras/[id]`: tabs "Dados Gerais" + "Perfil Operacional"
+- `/cadastros/corretores`: split panel escritórios (PJ) + corretores (PF)
+- `/cadastros/especialistas`: lista + dialog peritos externos
+- `useInsurers`: `useInsurerTenantProfile` + `useUpdateInsurerTenantProfile`
+- `useExperts`, `usePersons` (filtro kind) adicionados
+
+**Padrões estabelecidos:**
+- `InsurerTenantProfile` usa `(insurer, company)` unique_together — `get_or_create(insurer=..., company=connection.tenant)`
+- `_sync_documents(person, [])` → return early (preserva docs existentes); lista não-vazia → delete-all + recreate
+- `PersonFormModal` em modo edição: não pre-preenche `value` de documentos com `value_masked` (corrupção de dados)
+- `emergency_contact_phone` SEMPRE EncryptedCharField — telefone de terceiro ainda é PII coberto pelo LGPD
+- `PersonViewSet` aceita `?kind=PF|PJ` como alias de `person_kind`
+
+---
+
+### Ciclo 07 (anterior) — Keycloak Ativação + Tema de Login DS Car — Abril 2026 ✅
+**Keycloak 24 ativo em dev + tema customizado DS Car (split 50/50, neon, carrossel)**
+
+Infra:
+- `infra/docker/docker-compose.dev.yml`: volume do tema + `--health-enabled=true` + `KC_HEALTH_ENABLED`
+- `infra/docker/keycloak/realm-export.json`: `loginTheme: "paddock"`, `resetPasswordAllowed: false`
+- Schema Keycloak criado automaticamente por `infra/docker/init/01_setup.sql` (não requer passo manual)
+
+Tema `infra/docker/keycloak/themes/paddock/login/`:
+- `theme.properties`: `parent=base`, `styles=css/login.css`, `scripts=js/carousel.js`
+- `login.ftl`: template Freemarker — split 50/50, logo DS Car, form OIDC, 4 slides carrossel, 16 neon lines, footer
+- `resources/css/login.css`: dark theme, animações neon (travel-h/travel-v), Montserrat
+- `resources/js/carousel.js`: autoplay 4500ms, dot navigation
+- `resources/img/logo-dscar.png`: copiado de `apps/dscar-web/public/`
+
+**Padrões estabelecidos:**
+- KC 24: usar `${url.resourcesPath}` não `${resourcesPath}` em templates .ftl (ver Armadilhas)
+- Client ID no realm: `paddock-frontend` (não `dscar-web`)
+- Reset de senha self-service: DESATIVADO (`resetPasswordAllowed: false`) — senha temporária via WhatsApp pelo admin
+- Reimportar realm (após mudanças em realm-export.json): `make dev-reset && make dev`
+- Em prod: fluxo de login aponta diretamente para Keycloak (sem tela intermediária Next.js `/login`)
+
+---
 
 ### Ciclo 06C — NFS-e Manaus end-to-end + NF-e Recebidas — Abril 2026 ✅
 **App `apps.fiscal` (extendido) — emissão NFS-e Manaus + manifestação de destinatário**

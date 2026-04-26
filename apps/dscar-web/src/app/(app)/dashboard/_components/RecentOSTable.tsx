@@ -24,7 +24,7 @@ function CustomerTypePill({ type }: { type: CustomerType | null }) {
       className={cn(
         "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
         type === "insurer"
-          ? "bg-info-100 text-info-700"
+          ? "bg-info-500/10 text-info-400"
           : "bg-white/5 text-white/60"
       )}
     >
@@ -55,7 +55,7 @@ export function RecentOSTable({ orders }: RecentOSTableProps): React.ReactElemen
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
         <thead>
-          <tr className="bg-white/[0.03] border-b border-neutral-100">
+          <tr className="bg-white/[0.03] border-b border-white/10">
             {["Nº", "Placa", "Cliente", "Tipo", "Status", "Entrada", "Dias"].map((h) => (
               <th
                 key={h}
@@ -66,7 +66,7 @@ export function RecentOSTable({ orders }: RecentOSTableProps): React.ReactElemen
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-neutral-50">
+        <tbody className="divide-y divide-white/5">
           {orders.map((order) => (
             <tr
               key={order.id}

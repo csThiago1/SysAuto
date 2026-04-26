@@ -87,14 +87,14 @@ export function WeekView({ currentDate, events, onSwitchToDayView }: Props) {
 
         {/* Faixa "dia todo" — previsões sem hora exata */}
         {days.some((d) => allDayEvents(events, d).length > 0) && (
-          <div className="grid border-b border-white/10 bg-emerald-50/60" style={{ gridTemplateColumns: "56px repeat(7, 1fr)" }}>
+          <div className="grid border-b border-white/10 bg-success-500/5" style={{ gridTemplateColumns: "56px repeat(7, 1fr)" }}>
             <div className="text-xs text-white/40 text-right pr-2 pt-1.5 leading-tight">
               dia<br />todo
             </div>
             {days.map((day) => {
               const dayAll = allDayEvents(events, day)
               return (
-                <div key={day.toISOString()} className="border-l border-neutral-100 p-1 space-y-0.5 min-h-[28px]">
+                <div key={day.toISOString()} className="border-l border-white/10 p-1 space-y-0.5 min-h-[28px]">
                   {dayAll.map((e, i) => (
                     <CalendarEventCard key={`${e.os.id}-all-${i}`} event={e} compact />
                   ))}
@@ -106,7 +106,7 @@ export function WeekView({ currentDate, events, onSwitchToDayView }: Props) {
 
         {/* Grade de horas */}
         {HOURS.map((hour) => (
-          <div key={hour} className="grid border-b border-neutral-100" style={{ gridTemplateColumns: "56px repeat(7, 1fr)" }}>
+          <div key={hour} className="grid border-b border-white/10" style={{ gridTemplateColumns: "56px repeat(7, 1fr)" }}>
             <div className="text-xs text-white/40 text-right pr-2 pt-1">{hour}h</div>
             {days.map((day) => {
               const working = isWorkingHour(day, hour)
@@ -115,7 +115,7 @@ export function WeekView({ currentDate, events, onSwitchToDayView }: Props) {
                 <div
                   key={day.toISOString()}
                   className={cn(
-                    "border-l border-neutral-100 min-h-[64px] p-1 relative group overflow-hidden min-w-0",
+                    "border-l border-white/10 min-h-[64px] p-1 relative group overflow-hidden min-w-0",
                     working ? "cursor-pointer hover:bg-primary-600/5 transition-colors" : "bg-white/[0.03]"
                   )}
                   onClick={() => working && handleSlotClick(day, hour)}

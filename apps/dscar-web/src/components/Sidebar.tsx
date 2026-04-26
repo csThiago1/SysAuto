@@ -46,6 +46,8 @@ import {
   BarChart3,
   Database,
   TrendingUp,
+  Handshake,
+  UserSearch,
   type LucideIcon,
 } from "lucide-react";
 import { ROLE_HIERARCHY, type PaddockRole } from "@paddock/types";
@@ -134,9 +136,11 @@ const NAV_SECTIONS: NavSection[] = [
         icon: Users,
         href: "/cadastros",
         children: [
-          { id: "cad-pessoas",     label: "Pessoas",      href: "/cadastros",                 icon: Users },
-          { id: "cad-servicos",    label: "Serviços",     href: "/cadastros/servicos",        icon: Wrench },
-          { id: "cad-seguradoras", label: "Seguradoras",  href: "/cadastros/seguradoras",     icon: Shield },
+          { id: "cad-pessoas",       label: "Pessoas",       href: "/cadastros",                    icon: Users },
+          { id: "cad-servicos",      label: "Serviços",      href: "/cadastros/servicos",         icon: Wrench },
+          { id: "cad-seguradoras",   label: "Seguradoras",   href: "/cadastros/seguradoras",      icon: Shield },
+          { id: "cad-corretores",    label: "Corretores",    href: "/cadastros/corretores",       icon: Handshake },
+          { id: "cad-especialistas", label: "Especialistas", href: "/cadastros/especialistas",    icon: UserSearch },
         ],
       },
     ],
@@ -171,6 +175,7 @@ const NAV_SECTIONS: NavSection[] = [
           { id: "fiscal-documentos", label: "Documentos Emitidos", href: "/fiscal/documentos", icon: FileText },
           { id: "fiscal-nfe-recebidas", label: "NF-e Recebidas", href: "/fiscal/nfe-recebidas", icon: Inbox },
           { id: "fiscal-emitir-nfse", label: "Emitir NFS-e Manual", href: "/fiscal/emitir-nfse", icon: FileText },
+          { id: "fiscal-emitir-nfe", label: "Emitir NF-e Produto", href: "/fiscal/emitir-nfe", icon: Package },
         ],
       },
     ],
@@ -501,7 +506,7 @@ export function Sidebar() {
             {collapsed ? (
               <hr className="border-white/[0.08] mx-3 my-2" />
             ) : (
-              <div className="text-xs font-semibold text-white/25 tracking-[1.5px] uppercase px-5 pt-4 pb-1.5">
+              <div className="section-divider px-5 pt-4 pb-1.5">
                 {section.label}
               </div>
             )}
@@ -565,7 +570,7 @@ export function Sidebar() {
                           {item.label}
                         </span>
                         {badge != null && (
-                          <span className="ml-auto bg-primary-600 text-white text-xs font-bold px-[7px] py-[2px] rounded-[10px] leading-4">
+                          <span className="ml-auto bg-primary-600 text-white text-xs font-bold font-mono px-[7px] py-[2px] rounded-[10px] leading-4">
                             {badge}
                           </span>
                         )}
@@ -584,7 +589,7 @@ export function Sidebar() {
 
                     {/* Numeric badge no modo colapsado */}
                     {collapsed && badge != null && (
-                      <span className="absolute top-1 right-1 min-w-[16px] h-4 rounded-full bg-primary-600 text-white text-xs font-bold flex items-center justify-center px-0.5 leading-none">
+                      <span className="absolute top-1 right-1 min-w-[16px] h-4 rounded-full bg-primary-600 text-white text-xs font-bold font-mono flex items-center justify-center px-0.5 leading-none">
                         {badge > 9 ? "9+" : badge}
                       </span>
                     )}

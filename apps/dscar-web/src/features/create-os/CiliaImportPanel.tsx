@@ -58,7 +58,7 @@ export function CiliaImportPanel({ onImportSuccess }: CiliaImportPanelProps) {
       <Button 
         type="button" 
         variant="outline" 
-        className="w-full justify-center border-dashed border-2 py-6 text-neutral-500 hover:text-primary-600 hover:border-primary-300"
+        className="w-full justify-center border-dashed border-2 py-6 text-white/50 hover:text-primary-600 hover:border-primary-300"
         onClick={() => setIsOpen(true)}
       >
         <CloudDownload className="mr-2 h-5 w-5" />
@@ -81,7 +81,7 @@ export function CiliaImportPanel({ onImportSuccess }: CiliaImportPanelProps) {
             value={sinistro} 
             onChange={e => setSinistro(e.target.value)} 
             placeholder="Ex: 406571903" 
-            className="bg-white"
+            className="bg-card"
           />
         </div>
         <div className="space-y-1.5">
@@ -90,7 +90,7 @@ export function CiliaImportPanel({ onImportSuccess }: CiliaImportPanelProps) {
             value={orcamento} 
             onChange={e => setOrcamento(e.target.value)} 
             placeholder="Ex: 1446508.2" 
-            className="bg-white"
+            className="bg-card"
           />
         </div>
       </div>

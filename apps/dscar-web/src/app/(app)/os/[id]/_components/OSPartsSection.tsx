@@ -116,7 +116,7 @@ export function OSPartsSection({ osId, osStatus }: OSPartsSectionProps): React.R
                 <th className="w-10" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
+            <tbody className="divide-y divide-white/5">
               {parts.map((part) => (
                 <tr key={part.id} className="hover:bg-white/[0.03]">
                   <td className="px-3 py-2.5">
@@ -141,7 +141,7 @@ export function OSPartsSection({ osId, osStatus }: OSPartsSectionProps): React.R
                           "flex h-7 w-7 items-center justify-center rounded text-white/40 transition-colors",
                           isClosed
                             ? "opacity-30 cursor-not-allowed"
-                            : "hover:bg-red-50 hover:text-red-600"
+                            : "hover:bg-error-500/10 hover:text-error-400"
                         )}
                       >
                         <Trash2 className="h-3.5 w-3.5" />

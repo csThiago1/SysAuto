@@ -245,11 +245,16 @@ const config: Config = {
           "0%, 100%": { opacity: "1" },
           "50%":      { opacity: "0.5" },
         },
+        "pulse-slow": {
+          "0%, 100%": { opacity: "1" },
+          "50%":      { opacity: "0.4" },
+        },
       },
       animation: {
         "slide-in-left": "slide-in-left 200ms ease-out",
         "fade-in":       "fade-in 150ms ease-in",
         "pulse-red":     "pulse-red 1.5s ease-in-out infinite",
+        "pulse-slow":    "pulse-slow 4s ease-in-out infinite",
       },
 
       // ─── Grid / Layout ───────────────────────────────────────────────────────

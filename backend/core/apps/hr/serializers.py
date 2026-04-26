@@ -11,6 +11,8 @@ from django.db import transaction
 from rest_framework import serializers
 
 from apps.authentication.models import GlobalUser
+from apps.authentication.permissions import _get_role
+from apps.persons.models import Person, PersonRole
 
 from .models import (
     Allowance,
@@ -98,6 +100,15 @@ class EmployeeDetailSerializer(serializers.ModelSerializer):
         source="get_contract_type_display", read_only=True
     )
     cpf_masked = serializers.SerializerMethodField()
+    rg = serializers.SerializerMethodField()
+    mother_name = serializers.SerializerMethodField()
+    father_name = serializers.SerializerMethodField()
+
+    def _is_manager_or_above(self) -> bool:
+        request = self.context.get("request")
+        if not request:
+            return False
+        return _get_role(request) in ("MANAGER", "ADMIN", "OWNER")
 
     def get_cpf_masked(self, obj: Employee) -> str:
         """Retorna CPF parcialmente mascarado — LGPD: nunca expor em claro."""
@@ -105,6 +116,15 @@ class EmployeeDetailSerializer(serializers.ModelSerializer):
         if cpf and len(cpf) >= 5:
             return f"{cpf[:3]}****{cpf[-2:]}"
         return "***"
+
+    def get_rg(self, obj: Employee) -> str | None:
+        return obj.rg if self._is_manager_or_above() else None
+
+    def get_mother_name(self, obj: Employee) -> str | None:
+        return obj.mother_name if self._is_manager_or_above() else None
+
+    def get_father_name(self, obj: Employee) -> str | None:
+        return obj.father_name if self._is_manager_or_above() else None
 
     class Meta:
         model = Employee
@@ -129,7 +149,16 @@ class EmployeeDetailSerializer(serializers.ModelSerializer):
             "marital_status",
             "education_level",
             "nationality",
+            "rg",
+            "mother_name",
+            "father_name",
             "emergency_contact_name",
+            "emergency_contact_phone",
+            "emergency_contact_relationship",
+            "bank_name",
+            "bank_agency",
+            "bank_account",
+            "bank_account_type",
             "address_street",
             "address_number",
             "address_complement",
@@ -151,6 +180,9 @@ class EmployeeDetailSerializer(serializers.ModelSerializer):
             "id",
             "tenure_days",
             "cpf_masked",
+            "rg",
+            "mother_name",
+            "father_name",
             "is_active",
             "created_at",
             "updated_at",
@@ -245,7 +277,15 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
                 user.pk,
                 "created" if created else "existing",
             )
-            return Employee.objects.create(user=user, **validated_data)
+
+            # Cria Person (PF) com role EMPLOYEE e vincula ao colaborador
+            person = Person.objects.create(
+                person_kind="PF",
+                full_name=name,
+            )
+            PersonRole.objects.create(person=person, role="EMPLOYEE")
+
+            return Employee.objects.create(user=user, person=person, **validated_data)
 
     class Meta:
         model = Employee

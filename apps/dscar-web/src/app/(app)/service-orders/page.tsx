@@ -11,6 +11,7 @@ import {
   TableSkeleton,
   EmptyState,
 } from "@/components/ui"
+import { PageHeader } from "@/components/ui/page-header"
 import { ServiceOrderTable } from "./_components/ServiceOrderTable"
 import { NewOSDrawer } from "./_components/NewOSDrawer"
 
@@ -61,28 +62,28 @@ export default function ServiceOrdersPage() {
     <div className="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
       <NewOSDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Ordens de Serviço</h1>
-          <p className="text-sm text-white/50 mt-1">Gerencie a listagem tabular e aplique filtros para encontrar OS.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/service-orders/kanban"
-            className="rounded-md border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/70 hover:bg-white/[0.03]"
-          >
-            Ver Kanban
-          </Link>
-          <button
-            type="button"
-            onClick={() => setDrawerOpen(true)}
-            className="flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 shadow-sm"
-          >
-            <Plus className="h-4 w-4" />
-            Nova OS
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Ordens de Serviço"
+        description={data ? `${data.count} resultado${data.count !== 1 ? "s" : ""} encontrado${data.count !== 1 ? "s" : ""}` : "Gerencie as Ordens de Serviço"}
+        actions={
+          <div className="flex items-center gap-3">
+            <Link
+              href="/service-orders/kanban"
+              className="rounded-md border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/70 hover:bg-white/[0.03]"
+            >
+              Ver Kanban
+            </Link>
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(true)}
+              className="flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 shadow-sm"
+            >
+              <Plus className="h-4 w-4" />
+              Nova OS
+            </button>
+          </div>
+        }
+      />
 
       {/* Filter Bar */}
       <div className="bg-white/5 p-4 rounded-md border border-white/10 shadow-sm flex flex-col md:flex-row gap-4">

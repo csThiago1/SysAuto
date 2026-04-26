@@ -67,7 +67,7 @@ function FormField({ label, error, children }: FormFieldProps): React.ReactEleme
     <div className="flex flex-col gap-1.5">
       <Label className="text-xs font-medium text-white/70">{label}</Label>
       {children}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-error-400">{error}</p>}
     </div>
   );
 }
@@ -200,12 +200,12 @@ export default function NovoContaReceberPage(): React.ReactElement {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Cliente */}
           <section className="rounded-md bg-white/5 shadow-card p-5 space-y-4">
-            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
+            <h2 className="text-sm font-semibold text-white border-b border-white/10 pb-2">
               Cliente
             </h2>
             <div className="flex flex-col gap-1.5">
               <Label className="text-xs font-medium text-white/70">Cliente *</Label>
-              {errors.customer_id && <p className="text-xs text-red-600">{errors.customer_id}</p>}
+              {errors.customer_id && <p className="text-xs text-error-400">{errors.customer_id}</p>}
               {clienteSelecionado ? (
                 <div className="flex items-center justify-between rounded-md border border-white/10 bg-white/[0.03] px-3 py-2">
                   <div>
@@ -249,7 +249,7 @@ export default function NovoContaReceberPage(): React.ReactElement {
                             setField("customer_id", c.id);
                             setField("customer_name", c.name);
                           }}
-                          className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-white/[0.03] border-b border-neutral-100 last:border-0 transition-colors"
+                          className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-white/[0.03] border-b border-white/10 last:border-0 transition-colors"
                         >
                           <span className="text-sm text-white">{c.name}</span>
                           <span className="text-xs text-white/50">{c.document_masked}</span>
@@ -267,7 +267,7 @@ export default function NovoContaReceberPage(): React.ReactElement {
 
           {/* Documento */}
           <section className="rounded-md bg-white/5 shadow-card p-5 space-y-4">
-            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
+            <h2 className="text-sm font-semibold text-white border-b border-white/10 pb-2">
               Documento
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -332,7 +332,7 @@ export default function NovoContaReceberPage(): React.ReactElement {
 
           {/* Observações */}
           <section className="rounded-md bg-white/5 shadow-card p-5 space-y-4">
-            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
+            <h2 className="text-sm font-semibold text-white border-b border-white/10 pb-2">
               Observações
             </h2>
             <FormField label="Observações" error={errors.notes}>
@@ -348,7 +348,7 @@ export default function NovoContaReceberPage(): React.ReactElement {
 
           {/* API error */}
           {createReceivable.isError && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-md px-4 py-3">
+            <p className="text-sm text-error-400 bg-error-500/10 rounded-md px-4 py-3">
               {createReceivable.error?.message ||
                 "Erro ao criar título. Tente novamente."}
             </p>

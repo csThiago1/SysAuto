@@ -39,25 +39,25 @@ function OrderItem({ item }: { item: OverdueServiceOrder }): React.ReactElement 
       className={cn(
         "block px-3 py-2.5 border-l-4 mb-1 rounded-r hover:opacity-80 transition-opacity",
         isOverdue
-          ? "bg-red-50 border-red-500"
+          ? "bg-error-500/10 border-error-500"
           : isDueToday
           ? "bg-amber-50 border-amber-500"
-          : "bg-neutral-50 border-neutral-300"
+          : "bg-white/[0.03] border-white/20"
       )}
     >
-      <p className="text-xs font-semibold text-neutral-900">
+      <p className="text-xs font-semibold text-white/90">
         OS #{item.number} · {item.plate} · {item.customer_name}
       </p>
-      <p className="text-xs text-neutral-500 mt-0.5">
+      <p className="text-xs text-white/50 mt-0.5">
         {item.status_display} ·{" "}
         {isOverdue ? (
-          <span className="font-bold text-red-600">
+          <span className="font-bold text-error-400">
             Vencida há {item.days_overdue} dia{item.days_overdue !== 1 ? "s" : ""}
           </span>
         ) : isDueToday ? (
           <span className="text-amber-600 font-medium">Entrega hoje</span>
         ) : (
-          <span className="text-neutral-400">Em {Math.abs(item.days_overdue)} dias</span>
+          <span className="text-white/30">Em {Math.abs(item.days_overdue)} dias</span>
         )}
       </p>
     </Link>
@@ -78,7 +78,7 @@ export function NotificationBell(): React.ReactElement {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="relative flex h-9 w-9 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
+          className="relative flex h-9 w-9 items-center justify-center rounded-md text-white/50 hover:bg-white/[0.06] hover:text-white/70 transition-colors"
           aria-label="Notificações de OS"
           aria-haspopup="true"
         >
@@ -92,10 +92,10 @@ export function NotificationBell(): React.ReactElement {
       </PopoverTrigger>
 
       <PopoverContent className="w-80 p-0" align="end" sideOffset={8}>
-        <div className="px-4 py-3 border-b border-neutral-100 flex items-center justify-between">
-          <p className="text-sm font-semibold text-neutral-900">OS Vencidas / Hoje</p>
+        <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+          <p className="text-sm font-semibold text-white/90">OS Vencidas / Hoje</p>
           {alertCount > 0 && (
-            <span className="text-xs font-medium text-red-600">{alertCount}</span>
+            <span className="text-xs font-medium text-error-400">{alertCount}</span>
           )}
         </div>
 
@@ -107,7 +107,7 @@ export function NotificationBell(): React.ReactElement {
           </div>
         ) : isError ? (
           <div className="px-4 py-4 text-center">
-            <p className="text-xs text-red-600 mb-2">Erro ao carregar notificações.</p>
+            <p className="text-xs text-error-400 mb-2">Erro ao carregar notificações.</p>
             <button
               type="button"
               onClick={() => void refetch()}
@@ -119,13 +119,13 @@ export function NotificationBell(): React.ReactElement {
         ) : orders.length === 0 ? (
           <div className="px-4 py-6 text-center flex flex-col items-center gap-2">
             <CheckCircle2 className="h-6 w-6 text-green-500" />
-            <p className="text-sm text-neutral-400">Nenhuma OS vencida ou com entrega hoje.</p>
+            <p className="text-sm text-white/30">Nenhuma OS vencida ou com entrega hoje.</p>
           </div>
         ) : (
           <div className="max-h-72 overflow-y-auto px-3 py-2">
             {overdue.length > 0 && (
               <>
-                <p className="text-xs font-bold text-red-600 uppercase tracking-wide mb-1 px-1">
+                <p className="text-xs font-bold text-error-400 uppercase tracking-wide mb-1 px-1">
                   Atrasadas ({overdue.length})
                 </p>
                 {overdue.slice(0, 10).map((o) => (
@@ -147,7 +147,7 @@ export function NotificationBell(): React.ReactElement {
         )}
 
         {orders.length >= 10 && (
-          <div className="border-t border-neutral-100 px-4 py-2.5">
+          <div className="border-t border-white/10 px-4 py-2.5">
             <Link
               href="/os?overdue=true"
               className="text-xs text-primary-600 hover:underline font-medium"

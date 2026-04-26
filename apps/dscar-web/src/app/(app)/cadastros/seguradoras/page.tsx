@@ -1,7 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Pencil, Trash2, Search, Shield } from "lucide-react"
+import Link from "next/link"
+import type { Route } from "next"
+import { Plus, Pencil, Trash2, Search, Shield, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -180,6 +182,17 @@ export default function SeguradorasPage() {
                         size="icon"
                         variant="ghost"
                         className="h-7 w-7"
+                        asChild
+                        title="Perfil Operacional"
+                      >
+                        <Link href={`/cadastros/seguradoras/${ins.id}` as Route}>
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </Link>
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7"
                         onClick={() => handleEdit(ins)}
                         title="Editar"
                       >
@@ -188,7 +201,7 @@ export default function SeguradorasPage() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-7 w-7 text-red-500 hover:text-red-700"
+                        className="h-7 w-7 text-error-400 hover:text-error-300"
                         disabled={deletingId === ins.id}
                         onClick={() => handleDelete(ins)}
                         title="Remover"

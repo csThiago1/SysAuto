@@ -52,10 +52,10 @@ export default function AgendaPage() {
   const Legend = () => (
     <div className="flex items-center gap-4 text-xs text-white/50 px-1">
       <span className="flex items-center gap-1">
-        <span className="inline-block w-3 h-2 rounded bg-blue-500" /> Entrada agendada
+        <span className="inline-block w-3 h-2 rounded bg-info-500" /> Entrada agendada
       </span>
       <span className="flex items-center gap-1">
-        <span className="inline-block w-3 h-2 rounded bg-emerald-500" /> Previsão de entrega
+        <span className="inline-block w-3 h-2 rounded bg-success-500" /> Previsão de entrega
       </span>
     </div>
   )

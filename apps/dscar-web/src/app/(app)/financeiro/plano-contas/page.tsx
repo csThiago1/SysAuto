@@ -60,7 +60,7 @@ function TreeNode({
       <div
         className={cn(
           "flex items-center gap-2 px-4 py-2 hover:bg-white/[0.03] transition-colors",
-          depth === 0 && "bg-neutral-50/60 font-medium",
+          depth === 0 && "bg-white/[0.03] font-medium",
           node.is_analytical && "italic"
         )}
         style={{ paddingLeft: `${16 + indent}px` }}
@@ -129,7 +129,7 @@ function TreeNode({
           </span>
 
           {!node.is_active && (
-            <span className="inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold bg-red-50 text-red-600 border-red-200">
+            <span className="inline-flex items-center rounded border px-2 py-0.5 text-xs font-semibold bg-error-500/10 text-error-400 border-error-500/20">
               Inativa
             </span>
           )}
@@ -299,7 +299,7 @@ export default function PlanoContasPage(): React.ReactElement {
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-neutral-50">
+            <div className="divide-y divide-white/5">
               {tree.map((node) => (
                 <TreeNode
                   key={node.id}

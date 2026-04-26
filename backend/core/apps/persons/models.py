@@ -111,12 +111,6 @@ class Person(models.Model):
         max_length=200, blank=True, default="", verbose_name="Nome fantasia"
     )
 
-    # Documento principal — DEPRECATED (Ciclo 06A): usar PersonDocument.
-    # Mantido para retrocompatibilidade. Será removido no Ciclo 06B.
-    document = models.CharField(
-        max_length=20, blank=True, default="", db_index=True, verbose_name="CPF / CNPJ (só dígitos)"
-    )
-
     # Dados fiscais
     secondary_document = models.CharField(
         max_length=30, blank=True, default="", verbose_name="RG / IE"
@@ -145,28 +139,6 @@ class Person(models.Model):
         blank=True,
         default="",
         verbose_name="Sexo",
-    )
-
-    # Seguradora
-    logo_url = models.CharField(max_length=500, blank=True, default="", verbose_name="URL do logo")
-    insurer_code = models.CharField(
-        max_length=50, blank=True, default="", verbose_name="Código interno"
-    )
-
-    # Funcionário
-    job_title = models.CharField(
-        max_length=20,
-        choices=CargoPessoa.choices,
-        blank=True,
-        default="",
-        verbose_name="Cargo",
-    )
-    department = models.CharField(
-        max_length=20,
-        choices=SetorPessoa.choices,
-        blank=True,
-        default="",
-        verbose_name="Setor",
     )
 
     # Situação
@@ -327,3 +299,88 @@ class PersonAddress(models.Model):
 
     def __str__(self) -> str:
         return f"{self.street}, {self.number} — {self.city}/{self.state}"
+
+
+class ClientProfile(models.Model):
+    """
+    Perfil de cliente — dados de consentimento LGPD por pessoa.
+    OneToOne: uma pessoa pode ter um único perfil de cliente.
+    """
+
+    person = models.OneToOneField(
+        Person,
+        on_delete=models.CASCADE,
+        related_name="client_profile",
+        verbose_name="Pessoa",
+    )
+    lgpd_consent_version = models.CharField(
+        max_length=10, default="1.0", verbose_name="Versão do consentimento LGPD"
+    )
+    lgpd_consent_date = models.DateTimeField(
+        null=True, blank=True, verbose_name="Data do consentimento LGPD"
+    )
+    lgpd_consent_ip = models.GenericIPAddressField(
+        null=True, blank=True, verbose_name="IP do consentimento LGPD"
+    )
+    group_sharing_consent = models.BooleanField(
+        default=False,
+        verbose_name="Consentimento de compartilhamento no grupo",
+        help_text="Opt-in EXPLÍCITO — verificar antes de cross-sell entre empresas do grupo.",
+    )
+
+    class Meta:
+        verbose_name = "Perfil de Cliente"
+        verbose_name_plural = "Perfis de Cliente"
+
+    def __str__(self) -> str:
+        return f"ClientProfile — {self.person.full_name}"
+
+
+class BrokerOffice(models.Model):
+    """
+    Escritório de corretagem (PJ). Agrupa corretores individuais.
+    person_kind=PJ obrigatório — validado no serializer.
+    """
+
+    person = models.OneToOneField(
+        Person,
+        on_delete=models.CASCADE,
+        related_name="broker_office",
+        verbose_name="Pessoa (PJ)",
+    )
+
+    class Meta:
+        verbose_name = "Escritório de Corretagem"
+        verbose_name_plural = "Escritórios de Corretagem"
+
+    def __str__(self) -> str:
+        return f"Escritório — {self.person.full_name}"
+
+
+class BrokerPerson(models.Model):
+    """
+    Corretor individual (PF). Pode ser vinculado a um BrokerOffice.
+    person_kind=PF obrigatório — validado no serializer.
+    """
+
+    person = models.OneToOneField(
+        Person,
+        on_delete=models.CASCADE,
+        related_name="broker_person",
+        verbose_name="Pessoa (PF)",
+    )
+    office = models.ForeignKey(
+        BrokerOffice,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="members",
+        verbose_name="Escritório de corretagem",
+    )
+
+    class Meta:
+        verbose_name = "Corretor"
+        verbose_name_plural = "Corretores"
+
+    def __str__(self) -> str:
+        return f"Corretor — {self.person.full_name}"

@@ -16,7 +16,7 @@ const RECONCILIACAO_LABELS: Record<StatusReconciliacao, string> = {
 
 const RECONCILIACAO_COLORS: Record<StatusReconciliacao, string> = {
   pendente: "text-yellow-400 bg-yellow-400/10",
-  peca: "text-emerald-400 bg-emerald-400/10",
+  peca: "text-success-400 bg-success-400/10",
   insumo: "text-blue-400 bg-blue-400/10",
   ignorado: "text-white/40 bg-white/5",
 }
@@ -76,7 +76,7 @@ export default function NFeEntradaDetailPage({ params }: { params: { id: string 
         )}
 
         {nfe.estoque_gerado && (
-          <div className="flex items-center gap-2 text-emerald-400 text-sm">
+          <div className="flex items-center gap-2 text-success-400 text-sm">
             <CheckCircle className="h-4 w-4" />
             Estoque gerado
           </div>

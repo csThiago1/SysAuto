@@ -65,7 +65,7 @@ export default function FornecedoresPage() {
                     <AvaliacaoStars value={f.avaliacao} />
                   </TableCell>
                   <TableCell className="py-2">
-                    <span className={`text-xs ${f.is_active ? "text-emerald-600" : "text-white/40"}`}>
+                    <span className={`text-xs ${f.is_active ? "text-success-400" : "text-white/40"}`}>
                       {f.is_active ? "Ativo" : "Inativo"}
                     </span>
                   </TableCell>

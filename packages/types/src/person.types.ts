@@ -23,34 +23,6 @@ export type ContactType =
 
 export type AddressType = "PRINCIPAL" | "COBRANCA" | "ENTREGA";
 
-export type PersonJobTitle =
-  | "receptionist"
-  | "consultant"
-  | "bodyworker"
-  | "painter"
-  | "mechanic"
-  | "polisher"
-  | "washer"
-  | "storekeeper"
-  | "manager"
-  | "financial"
-  | "administrative"
-  | "director";
-
-export type PersonDepartment =
-  | "reception"
-  | "bodywork"
-  | "painting"
-  | "mechanical"
-  | "aesthetics"
-  | "polishing"
-  | "washing"
-  | "inventory"
-  | "financial"
-  | "administrative"
-  | "management"
-  | "direction";
-
 export type Gender = "M" | "F" | "N";
 
 export type InscriptionType =
@@ -83,6 +55,7 @@ export interface PersonAddress {
   neighborhood: string;
   city: string;
   state: string;
+  municipio_ibge?: string;
   is_primary: boolean;
 }
 
@@ -95,6 +68,48 @@ export interface CepData {
   complement: string;
 }
 
+export interface PersonDocument {
+  id: number;
+  doc_type: "CPF" | "CNPJ" | "RG" | "IE" | "IM" | "CNH";
+  value_masked: string;
+  is_primary: boolean;
+  issued_by?: string;
+  issued_at?: string | null;
+  expires_at?: string | null;
+}
+
+export interface PersonDocumentWrite {
+  doc_type: "CPF" | "CNPJ" | "RG" | "IE" | "IM" | "CNH";
+  value: string;
+  is_primary: boolean;
+  issued_by?: string;
+  issued_at?: string | null;
+  expires_at?: string | null;
+}
+
+export interface ClientProfile {
+  lgpd_consent_version: string;
+  lgpd_consent_date: string | null;
+  lgpd_consent_ip: string | null;
+  group_sharing_consent: boolean;
+}
+
+export interface InsurerTenantProfile {
+  contact_sinistro_nome: string;
+  contact_sinistro_phone: string;
+  contact_sinistro_email: string;
+  contact_financeiro_nome: string;
+  contact_financeiro_phone: string;
+  contact_financeiro_email: string;
+  contact_comercial_nome: string;
+  contact_comercial_phone: string;
+  contact_comercial_email: string;
+  portal_url: string;
+  sla_dias_uteis: number | null;
+  observacoes_operacionais: string;
+  updated_at: string;
+}
+
 // ─── Entidade principal ────────────────────────────────────────────────────────
 
 export interface Person {
@@ -102,25 +117,19 @@ export interface Person {
   person_kind: PersonKind;
   full_name: string;
   fantasy_name?: string;
-  document?: string;
   secondary_document?: string;
   municipal_registration?: string;
   is_simples_nacional?: boolean;
   inscription_type?: InscriptionType;
   birth_date?: string;
   gender?: Gender;
-  logo_url?: string;
-  insurer_code?: string;
-  /** Funcionário */
-  job_title?: PersonJobTitle | "";
-  job_title_display?: string;
-  department?: PersonDepartment | "";
-  department_display?: string;
   is_active: boolean;
   notes?: string;
   roles: PersonRoleEntry[];
   contacts: PersonContact[];
   addresses: PersonAddress[];
+  documents: PersonDocument[];
+  client_profile: ClientProfile | null;
   /** Contato primário calculado pelo backend (somente-leitura) */
   primary_contact?: { type: ContactType; value: string } | null;
   created_at: string;
@@ -132,23 +141,18 @@ export interface CreatePersonPayload {
   person_kind: PersonKind;
   full_name: string;
   fantasy_name?: string;
-  document?: string;
   secondary_document?: string;
   municipal_registration?: string;
   is_simples_nacional?: boolean;
   inscription_type?: InscriptionType;
   birth_date?: string;
   gender?: Gender;
-  logo_url?: string;
-  insurer_code?: string;
-  /** Funcionário */
-  job_title?: PersonJobTitle | "";
-  department?: PersonDepartment | "";
   is_active?: boolean;
   notes?: string;
   roles: PersonRole[];
   contacts: Omit<PersonContact, "id">[];
   addresses: Omit<PersonAddress, "id">[];
+  documents?: PersonDocumentWrite[];
 }
 
 export type UpdatePersonPayload = Partial<CreatePersonPayload>;

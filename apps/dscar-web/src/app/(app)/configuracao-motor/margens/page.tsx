@@ -138,7 +138,7 @@ function MargensTab({ empresaId }: { empresaId: string }) {
                   <TableCell className="text-sm text-white/80">
                     {TIPO_OPERACAO_LABELS[m.tipo_operacao]}
                   </TableCell>
-                  <TableCell className="text-sm text-right font-mono text-emerald-400">
+                  <TableCell className="text-sm text-right font-mono text-success-400">
                     {formatMargem(m.margem_percentual)}
                   </TableCell>
                   <TableCell className="text-xs text-white/50">
@@ -364,7 +364,7 @@ function MarkupPecaTab({ empresaId }: { empresaId: string }) {
                       ? (m.peca_canonica_nome ?? m.peca_canonica)
                       : `R$${m.faixa_custo_min} – R$${m.faixa_custo_max}`}
                   </TableCell>
-                  <TableCell className="text-sm text-right font-mono text-emerald-400">
+                  <TableCell className="text-sm text-right font-mono text-success-400">
                     {formatMargem(m.margem_percentual)}
                   </TableCell>
                   <TableCell className="text-xs text-white/50">

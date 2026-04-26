@@ -201,7 +201,7 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
         </div>
       ) : (
         <>
-          <div className="rounded-md bg-white/5 shadow-card divide-y divide-neutral-100">
+          <div className="rounded-md bg-white/5 shadow-card divide-y divide-white/5">
             {deductions.map((d) => (
               <div
                 key={d.id}
@@ -215,7 +215,7 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
                     <span
                       className={
                         d.discount_type === "percentage"
-                          ? "rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700"
+                          ? "rounded-full px-2 py-0.5 text-xs font-medium bg-info-500/10 text-info-400"
                           : "rounded-full px-2 py-0.5 text-xs font-medium bg-white/5 text-white/60"
                       }
                     >
@@ -230,7 +230,7 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
                     })}
                   </p>
                 </div>
-                <span className="text-sm font-semibold text-red-600 shrink-0">
+                <span className="text-sm font-semibold text-error-400 shrink-0">
                   −{" "}
                   {d.discount_type === "percentage" && d.rate !== null
                     ? `${d.rate}% do salário`

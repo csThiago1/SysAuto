@@ -34,6 +34,7 @@ export function CreateOSForm({ onSuccess, onCancel }: CreateOSFormProps) {
     resolver: zodResolver(createOSSchema),
     defaultValues: {
       customer_id: 0,
+      customer_name: "",
       plate: "",
       make: "",
       model: "",
@@ -57,7 +58,7 @@ export function CreateOSForm({ onSuccess, onCancel }: CreateOSFormProps) {
   const onSubmit = (data: CreateOSFormData) => {
     createOS({
        ...data,
-       customer_name: "", // handled in backend ideally or we pass it
+       customer_name: data.customer_name ?? "",
     }, {
       onSuccess: (res) => {
         toast.success(`OS #${res.number} criada com sucesso!`);
@@ -73,7 +74,7 @@ export function CreateOSForm({ onSuccess, onCancel }: CreateOSFormProps) {
     <div className="space-y-6">
       {/* Stepper Header */}
       <div className="flex items-center justify-between relative px-2">
-        <div className="absolute top-1/2 left-0 w-full h-0.5 bg-neutral-100 -z-10 -translate-y-1/2">
+        <div className="absolute top-1/2 left-0 w-full h-0.5 bg-white/[0.03] -z-10 -translate-y-1/2">
           <div 
             className="h-full bg-primary-500 transition-all duration-300" 
             style={{ width: step === 1 ? "0%" : step === 2 ? "50%" : "100%" }}
@@ -88,18 +89,18 @@ export function CreateOSForm({ onSuccess, onCancel }: CreateOSFormProps) {
           const isActive = step === s.num;
           const isDone = step > s.num;
           return (
-            <div key={s.num} className="flex flex-col items-center gap-2 bg-white px-2">
+            <div key={s.num} className="flex flex-col items-center gap-2 bg-card px-2">
               <div className={cn(
                 "flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors",
                 isActive ? "border-primary-600 bg-primary-600 text-white" :
                 isDone ? "border-primary-500 bg-primary-100 text-primary-700" :
-                "border-neutral-200 bg-white text-neutral-400"
+                "border-white/10 bg-card text-white/30"
               )}>
                 {s.num}
               </div>
               <span className={cn(
                 "text-xs font-medium",
-                isActive ? "text-primary-700" : isDone ? "text-primary-600" : "text-neutral-500"
+                isActive ? "text-primary-700" : isDone ? "text-primary-600" : "text-white/50"
               )}>
                 {s.label}
               </span>
@@ -118,16 +119,19 @@ export function CreateOSForm({ onSuccess, onCancel }: CreateOSFormProps) {
                 control={control}
                 name="customer_id"
                 render={({ field }) => (
-                  <CustomerPicker 
-                    value={field.value} 
-                    onChange={field.onChange} 
+                  <CustomerPicker
+                    value={field.value}
+                    onChange={(personId, personName) => {
+                      field.onChange(personId);
+                      setValue("customer_name", personName ?? "");
+                    }}
                     error={errors.customer_id?.message}
                   />
                 )}
               />
             </div>
             
-            <div className="pt-4 border-t border-neutral-100">
+            <div className="pt-4 border-t border-white/10">
               <CiliaImportPanel 
                 onImportSuccess={(data) => {
                   if (data.plate) setValue("plate", data.plate, { shouldValidate: true });
@@ -204,13 +208,13 @@ export function CreateOSForm({ onSuccess, onCancel }: CreateOSFormProps) {
       </form>
 
       {/* Footer Navigation */}
-      <div className="flex justify-between items-center pt-4 border-t border-neutral-100">
+      <div className="flex justify-between items-center pt-4 border-t border-white/10">
         {step > 1 ? (
           <Button variant="outline" type="button" onClick={() => setStep((s) => (s - 1) as 1|2)}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
           </Button>
         ) : (
-          <Button variant="ghost" type="button" onClick={onCancel} className="text-neutral-500">
+          <Button variant="ghost" type="button" onClick={onCancel} className="text-white/50">
             Cancelar
           </Button>
         )}

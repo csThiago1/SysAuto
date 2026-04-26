@@ -45,12 +45,15 @@ export {
   Table, TableBody, TableCaption, TableCell,
   TableFooter, TableHead, TableHeader, TableRow,
 } from "./table";
+export { DataTable } from "./data-table";
 
 /**
  * Componentes de domínio DS Car (não shadcn puro)
  * Tipados com @paddock/types e @paddock/utils
  */
 export { StatusBadge } from "./status-badge";
+export { StatusPill } from "./status-pill";
+export { SectionDivider } from "./section-divider";
 export { RoleBadge } from "./role-badge";
 export { Avatar } from "./avatar";
 export { PageHeader } from "./page-header";

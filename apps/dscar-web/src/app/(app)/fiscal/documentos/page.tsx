@@ -26,14 +26,14 @@ const STATUS_CONFIG: Record<
   pending: {
     label: "Aguardando",
     icon: Clock,
-    color: "text-amber-400",
-    bg: "bg-amber-400/10",
+    color: "text-warning-400",
+    bg: "bg-warning-400/10",
   },
   authorized: {
     label: "Autorizada",
     icon: CheckCircle2,
-    color: "text-green-400",
-    bg: "bg-green-400/10",
+    color: "text-success-400",
+    bg: "bg-success-400/10",
   },
   rejected: {
     label: "Rejeitada",
@@ -222,8 +222,8 @@ export default function FiscalDocumentosPage() {
       {/* KPIs */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Aguardando", value: totais.pending, color: "text-amber-400" },
-          { label: "Autorizadas", value: totais.authorized, color: "text-green-400" },
+          { label: "Aguardando", value: totais.pending, color: "text-warning-400" },
+          { label: "Autorizadas", value: totais.authorized, color: "text-success-400" },
           { label: "Rejeitadas", value: totais.rejected, color: "text-red-400" },
         ].map((kpi) => (
           <div

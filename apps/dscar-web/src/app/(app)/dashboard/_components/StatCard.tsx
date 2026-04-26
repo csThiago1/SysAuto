@@ -9,7 +9,6 @@
 
 import React from "react";
 import { Skeleton } from "@/components/ui";
-import { cn } from "@/lib/utils";
 
 // ─── StatCard ─────────────────────────────────────────────────────────────────
 
@@ -17,7 +16,6 @@ interface StatCardProps {
   label: string;
   value: number | string | React.ReactNode;
   icon: React.ReactNode;
-  iconBg: string;
   sub?: string;
   badge?: React.ReactNode;
 }
@@ -26,7 +24,6 @@ function StatCardComponent({
   label,
   value,
   icon,
-  iconBg,
   sub,
   badge,
 }: StatCardProps): React.ReactElement {
@@ -39,21 +36,16 @@ function StatCardComponent({
     <div className="rounded-md bg-white/5 p-card-padding shadow-card hover:shadow-card-hover transition-shadow duration-normal">
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+          <p className="label-mono text-white/40">
             {label}
           </p>
-          <p className="mt-1 text-3xl font-bold text-white font-plate">
+          <p className="mt-1 text-3xl font-bold text-white font-mono">
             {formattedValue}
           </p>
           {sub && <p className="mt-0.5 text-xs text-white/40">{sub}</p>}
           {badge && <div className="mt-1">{badge}</div>}
         </div>
-        <div
-          className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-md shrink-0",
-            iconBg
-          )}
-        >
+        <div className="flex h-10 w-10 items-center justify-center rounded-md shrink-0 bg-white/[0.06]">
           {icon}
         </div>
       </div>

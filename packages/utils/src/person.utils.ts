@@ -4,7 +4,18 @@
  * Sem import de hooks ou API — só funções puras sobre tipos.
  */
 
-import type { PersonRole, ContactType, AddressType, PersonKind, PersonJobTitle, PersonDepartment } from "@paddock/types";
+import type { PersonRole, ContactType, AddressType, PersonKind } from "@paddock/types";
+
+// Tipos locais (migrados de person.types.ts → agora apenas em hr.types.ts como HRPosition/HRDepartment)
+type PersonJobTitle =
+  | "receptionist" | "consultant" | "bodyworker" | "painter" | "mechanic"
+  | "polisher" | "washer" | "storekeeper" | "manager" | "financial"
+  | "administrative" | "director";
+
+type PersonDepartment =
+  | "reception" | "bodywork" | "painting" | "mechanical" | "aesthetics"
+  | "polishing" | "washing" | "inventory" | "financial" | "administrative"
+  | "management" | "direction";
 
 // ─── Labels ───────────────────────────────────────────────────────────────────
 

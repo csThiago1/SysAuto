@@ -26,9 +26,9 @@ const STATUS_TABS: { id: AllowanceStatus; label: string }[] = [
 ];
 
 const STATUS_CLASSES: Record<string, string> = {
-  success: "bg-success-100 text-success-700",
-  warning: "bg-warning-100 text-warning-700",
-  destructive: "bg-red-100 text-red-700",
+  success: "bg-success-500/10 text-success-400",
+  warning: "bg-warning-500/10 text-warning-400",
+  destructive: "bg-error-500/10 text-error-400",
   default: "bg-white/5 text-white/60",
 };
 
@@ -148,7 +148,7 @@ export default function ValesPage(): React.ReactElement {
                         <button
                           onClick={() => approve.mutate(allowance.id)}
                           disabled={approve.isPending}
-                          className="rounded-md border border-success-300 bg-success-50 px-3 py-1.5 text-xs font-medium text-success-700 hover:bg-success-100 disabled:opacity-50"
+                          className="rounded-md border border-success-500/20 bg-success-500/10 px-3 py-1.5 text-xs font-medium text-success-400 hover:bg-success-500/20 disabled:opacity-50"
                         >
                           Aprovar
                         </button>
@@ -157,7 +157,7 @@ export default function ValesPage(): React.ReactElement {
                         <button
                           onClick={() => pay.mutate({ id: allowance.id })}
                           disabled={pay.isPending}
-                          className="rounded-md border border-primary-300 bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-700 hover:bg-primary-100 disabled:opacity-50"
+                          className="rounded-md border border-primary-500/20 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-400 hover:bg-primary-500/20 disabled:opacity-50"
                         >
                           Marcar pago
                         </button>

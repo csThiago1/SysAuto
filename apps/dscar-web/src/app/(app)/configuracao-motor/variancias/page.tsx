@@ -25,7 +25,7 @@ const formatPct = (v: string) => {
 
 const pctColor = (v: string) => {
   const n = Math.abs(parseFloat(v))
-  if (n < 0.1) return "text-emerald-400"
+  if (n < 0.1) return "text-success-400"
   if (n < 0.2) return "text-yellow-400"
   return "text-red-400"
 }

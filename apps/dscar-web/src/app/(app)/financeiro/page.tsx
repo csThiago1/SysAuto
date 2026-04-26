@@ -79,13 +79,11 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
               <StatCard
                 label="Lançamentos hoje"
                 value={todayEntries?.count ?? 0}
-                iconBg="bg-primary-100"
                 icon={<ReceiptText className="h-5 w-5 text-primary-600" />}
               />
               <StatCard
                 label="Período atual"
                 value={periodLabel}
-                iconBg="bg-blue-100"
                 icon={<Calendar className="h-5 w-5 text-blue-600" />}
                 badge={
                   period?.is_closed ? (
@@ -98,7 +96,6 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
               <StatCard
                 label="Contas a Pagar Vencidas"
                 value={overduePayable?.count ?? 0}
-                iconBg="bg-orange-100"
                 icon={<TrendingDown className="h-5 w-5 text-orange-600" />}
                 badge={
                   (overduePayable?.count ?? 0) > 0 ? (
@@ -112,8 +109,7 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
               <StatCard
                 label="Contas a Receber Vencidas"
                 value={overdueReceivable?.count ?? 0}
-                iconBg="bg-success-100"
-                icon={<TrendingUp className="h-5 w-5 text-success-600" />}
+                icon={<TrendingUp className="h-5 w-5 text-success-400" />}
                 badge={
                   (overdueReceivable?.count ?? 0) > 0 ? (
                     <Badge variant="destructive">
@@ -192,7 +188,7 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
                 <Link
                   key={link.href}
                   href={link.href as Route}
-                  className="flex items-center gap-3 rounded-md border border-neutral-100 p-3 hover:border-primary-200 hover:bg-primary-50 transition-colors group"
+                  className="flex items-center gap-3 rounded-md border border-white/10 p-3 hover:border-primary-500/30 hover:bg-primary-500/5 transition-colors group"
                 >
                   <div
                     className={`flex h-8 w-8 items-center justify-center rounded-md shrink-0 ${link.iconBg}`}
@@ -200,7 +196,7 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
                     <link.Icon className={`h-4 w-4 ${link.iconColor}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-white/90 group-hover:text-primary-700 truncate">
+                    <p className="text-xs font-semibold text-white/90 group-hover:text-primary-400 truncate">
                       {link.label}
                     </p>
                     <p className="text-xs text-white/40 truncate">{link.description}</p>
@@ -224,7 +220,7 @@ const QUICK_LINKS = [
     label: "Novo Lançamento",
     description: "Criar lançamento manual",
     Icon: PlusCircle,
-    iconBg: "bg-primary-100",
+    iconBg: "bg-primary-500/10",
     iconColor: "text-primary-600",
   },
   {
@@ -232,23 +228,23 @@ const QUICK_LINKS = [
     label: "Plano de Contas",
     description: "Estrutura contábil",
     Icon: BookOpen,
-    iconBg: "bg-blue-100",
-    iconColor: "text-blue-600",
+    iconBg: "bg-white/[0.06]",
+    iconColor: "text-white/70",
   },
   {
     href: "/financeiro/contas-pagar",
     label: "Contas a Pagar",
     description: "Títulos e pagamentos",
     Icon: TrendingDown,
-    iconBg: "bg-orange-100",
-    iconColor: "text-orange-600",
+    iconBg: "bg-white/[0.06]",
+    iconColor: "text-white/70",
   },
   {
     href: "/financeiro/contas-receber",
     label: "Contas a Receber",
     description: "Recebimentos e cobranças",
     Icon: TrendingUp,
-    iconBg: "bg-success-100",
-    iconColor: "text-success-600",
+    iconBg: "bg-white/[0.06]",
+    iconColor: "text-success-400",
   },
 ];

@@ -27,7 +27,7 @@ export function TypeBar({ form, customerType }: TypeBarProps) {
   const { data: consultants = [], isLoading: loadingConsultants } = useConsultants()
 
   return (
-    <div className="flex flex-wrap items-end gap-3 rounded-lg border border-neutral-100 bg-white/[0.03] px-3 py-2">
+    <div className="flex flex-wrap items-end gap-3 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
 
       {/* Pill toggle Particular / Seguradora */}
       <div>

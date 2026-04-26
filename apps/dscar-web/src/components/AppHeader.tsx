@@ -43,9 +43,9 @@ export function AppHeader(): React.ReactElement {
   const title = getPageTitle(pathname);
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-neutral-200 bg-white px-6">
+    <header className="flex h-16 items-center justify-between border-b border-white/10 bg-card px-6">
       {/* Page title */}
-      <h1 className="text-lg font-semibold text-neutral-900">{title}</h1>
+      <h1 className="text-lg font-semibold text-white/90">{title}</h1>
 
       {/* Right side */}
       <div className="flex items-center gap-3">
@@ -64,7 +64,7 @@ export function AppHeader(): React.ReactElement {
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-white text-sm font-bold">
               {session.user.name?.charAt(0).toUpperCase() ?? "U"}
             </div>
-            <span className="text-sm font-medium text-neutral-700 hidden sm:block">
+            <span className="text-sm font-medium text-white/70 hidden sm:block">
               {session.user.name}
             </span>
           </div>
@@ -77,7 +77,7 @@ export function AppHeader(): React.ReactElement {
           onClick={() => void signOut({ callbackUrl: "/login" })}
           title="Sair"
         >
-          <LogOut className="h-4 w-4 text-neutral-500" />
+          <LogOut className="h-4 w-4 text-white/50" />
         </Button>
       </div>
     </header>
