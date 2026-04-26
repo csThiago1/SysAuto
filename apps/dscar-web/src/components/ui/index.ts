@@ -51,6 +51,7 @@ export {
  * Tipados com @paddock/types e @paddock/utils
  */
 export { StatusBadge } from "./status-badge";
+export { SectionDivider } from "./section-divider";
 export { RoleBadge } from "./role-badge";
 export { Avatar } from "./avatar";
 export { PageHeader } from "./page-header";

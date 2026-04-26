@@ -2,6 +2,9 @@
  * StatusBadge — Badge de status de OS
  * Usa SERVICE_ORDER_STATUS_CONFIG de @paddock/utils.
  * Fonte de verdade única para cores de status no projeto.
+ *
+ * variant='default' — pill arredondado (padrão)
+ * variant='dot'     — ponto pulsante + label mono, sem background pill
  */
 
 import type { ServiceOrderStatus } from "@paddock/types";
@@ -13,8 +16,10 @@ interface StatusBadgeProps {
   /** Override de label (usa o do config por padrão) */
   label?: string;
   size?: "sm" | "md";
-  /** Mostrar ponto colorido antes do label */
+  /** Mostrar ponto colorido antes do label (apenas variant='default') */
   showDot?: boolean;
+  /** 'dot' = ponto pulsante + mono text, sem pill background */
+  variant?: "default" | "dot";
   className?: string;
 }
 
@@ -23,10 +28,25 @@ export function StatusBadge({
   label,
   size = "md",
   showDot = false,
+  variant = "default",
   className,
 }: StatusBadgeProps) {
   const cfg = SERVICE_ORDER_STATUS_CONFIG[status];
   const displayLabel = label ?? cfg.label;
+
+  if (variant === "dot") {
+    return (
+      <span className={cn("inline-flex items-center gap-1.5", className)}>
+        <span
+          className={cn(
+            "h-1.5 w-1.5 rounded-full shrink-0 animate-pulse-slow",
+            cfg.dot
+          )}
+        />
+        <span className="label-mono">{displayLabel}</span>
+      </span>
+    );
+  }
 
   return (
     <span
