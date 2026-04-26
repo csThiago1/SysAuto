@@ -10,6 +10,8 @@ import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 import { cn } from "@/lib/utils"
 import { useDashboardStats, useServiceOrders } from "@/hooks"
 import { Skeleton, StatusBadge } from "@/components/ui"
+import { PageHeader } from "@/components/ui/page-header"
+import { SectionDivider } from "@/components/ui/section-divider"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { StatCard } from "./_components/StatCard"
 import { RecentOSTable } from "./_components/RecentOSTable"
@@ -50,12 +52,7 @@ export default function DashboardPage(): React.ReactElement {
   if (statsLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-            <p className="mt-0.5 text-sm text-white/50">Carregando...</p>
-          </div>
-        </div>
+        <PageHeader title="Dashboard" description="Carregando..." />
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <StatCard.Skeleton key={i} />)}
         </div>
@@ -67,19 +64,19 @@ export default function DashboardPage(): React.ReactElement {
     return (
       <ErrorBoundary>
         <div className="space-y-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-              <p className="mt-0.5 text-sm text-white/50">Meu painel de atendimento</p>
-            </div>
-            <Link
-              href="/service-orders/new"
-              className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 transition-colors"
-            >
-              <Plus size={16} />
-              Nova OS
-            </Link>
-          </div>
+          <PageHeader
+            title="Dashboard"
+            description="Meu painel de atendimento"
+            actions={
+              <Link
+                href="/service-orders/new"
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 transition-colors"
+              >
+                <Plus size={16} />
+                Nova OS
+              </Link>
+            }
+          />
           <ConsultantDashboard data={stats as ConsultantDashboardStats} />
         </div>
       </ErrorBoundary>
@@ -90,19 +87,19 @@ export default function DashboardPage(): React.ReactElement {
     return (
       <ErrorBoundary>
         <div className="space-y-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-              <p className="mt-0.5 text-sm text-white/50">Visão gerencial</p>
-            </div>
-            <Link
-              href="/service-orders/new"
-              className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 transition-colors"
-            >
-              <Plus size={16} />
-              Nova OS
-            </Link>
-          </div>
+          <PageHeader
+            title="Dashboard"
+            description="Visão gerencial"
+            actions={
+              <Link
+                href="/service-orders/new"
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 transition-colors"
+              >
+                <Plus size={16} />
+                Nova OS
+              </Link>
+            }
+          />
           <ManagerDashboard data={stats as ManagerDashboardStats} />
         </div>
       </ErrorBoundary>
@@ -114,19 +111,21 @@ export default function DashboardPage(): React.ReactElement {
   return (
     <ErrorBoundary>
       <div className="space-y-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-            <p className="mt-0.5 text-sm text-white/50">Visão geral das Ordens de Serviço</p>
-          </div>
-          <Link
-            href="/service-orders/new"
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 transition-colors"
-          >
-            <Plus size={16} />
-            Nova OS
-          </Link>
-        </div>
+        <PageHeader
+          title="Dashboard"
+          description="Visão geral das Ordens de Serviço"
+          actions={
+            <Link
+              href="/service-orders/new"
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 transition-colors"
+            >
+              <Plus size={16} />
+              Nova OS
+            </Link>
+          }
+        />
+
+        <SectionDivider label="VISÃO GERAL" />
 
         <div className={cn(
           "grid gap-4",
@@ -163,8 +162,10 @@ export default function DashboardPage(): React.ReactElement {
           ))}
         </div>
 
+        <SectionDivider label="OS RECENTES" />
+
         <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
-          <div className="flex items-center justify-between px-card-padding py-4 border-b border-neutral-100">
+          <div className="flex items-center justify-between px-card-padding py-4 border-b border-white/5">
             <h2 className="text-base font-semibold text-white">
               Últimas Ordens de Serviço
             </h2>

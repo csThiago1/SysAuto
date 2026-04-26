@@ -7,6 +7,7 @@ import { BillingByTypeChart } from "./BillingByTypeChart"
 import { TeamProductivityTable } from "./TeamProductivityTable"
 import { OverdueOSList } from "./OverdueOSList"
 import type { ManagerDashboardStats } from "@paddock/types"
+import { SectionDivider } from "@/components/ui/section-divider"
 
 interface Props {
   data: ManagerDashboardStats
@@ -15,6 +16,7 @@ interface Props {
 export function ManagerDashboard({ data }: Props) {
   return (
     <div className="space-y-6">
+      <SectionDivider label="VISÃO GERAL" />
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
@@ -47,11 +49,13 @@ export function ManagerDashboard({ data }: Props) {
         />
       </div>
 
+      <SectionDivider label="FATURAMENTO" />
       {/* Billing Chart */}
       <BillingByTypeChart
         data={data.billing_last_6_months}
       />
 
+      <SectionDivider label="EQUIPE" />
       {/* Productivity + Overdue */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <TeamProductivityTable members={data.team_productivity} />
