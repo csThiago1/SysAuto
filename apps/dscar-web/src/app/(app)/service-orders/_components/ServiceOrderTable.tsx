@@ -46,7 +46,7 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
             return (
               <TableRow
                 key={order.id}
-                className="group hover:bg-primary-50/30 cursor-pointer transition-colors"
+                className="group hover:bg-primary-500/5 cursor-pointer transition-colors"
                 onClick={() => router.push(`/service-orders/${order.id}`)}
               >
                 {/* OS Number */}
@@ -74,7 +74,7 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                         )}
                       </div>
                     ) : (
-                      <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-black border border-neutral-700">
+                      <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-black border border-white/10">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src="/dscar-logo.png" alt="DS Car" className="h-6 w-6 object-contain" />
                       </div>
@@ -87,7 +87,7 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                         {order.customer_type === "insurer" ? (
                           order.insurer_detail?.display_name ?? "Seguradora"
                         ) : (
-                          <><span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-0.5"></span>Particular</>
+                          <><span className="w-1.5 h-1.5 rounded-full bg-success-500 mr-0.5"></span>Particular</>
                         )}
                       </span>
                     </div>
@@ -133,7 +133,7 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                 <TableCell className="text-right">
                   <Link 
                     href={`/service-orders/${order.id}`}
-                    className="inline-flex items-center justify-center h-8 w-8 rounded-md text-white/40 hover:text-primary-600 hover:bg-primary-50 transition-colors"
+                    className="inline-flex items-center justify-center h-8 w-8 rounded-md text-white/40 hover:text-primary-600 hover:bg-primary-500/5 transition-colors"
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Link>

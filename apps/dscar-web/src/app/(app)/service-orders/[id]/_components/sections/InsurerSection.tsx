@@ -59,7 +59,7 @@ export function InsurerSection({ form }: InsurerSectionProps) {
                   </select>
                 )}
               />
-              {errors.insurer && <p className="mt-0.5 text-xs text-red-600">{errors.insurer.message}</p>}
+              {errors.insurer && <p className="mt-0.5 text-xs text-error-400">{errors.insurer.message}</p>}
             </div>
 
             <div className="w-36 shrink-0">
@@ -139,7 +139,7 @@ export function InsurerSection({ form }: InsurerSectionProps) {
                 {...register("authorization_date")}
               />
               {errors.authorization_date
-                ? <p className="mt-0.5 text-xs text-red-500">{errors.authorization_date.message}</p>
+                ? <p className="mt-0.5 text-xs text-error-400">{errors.authorization_date.message}</p>
                 : <p className="mt-0.5 text-xs text-amber-600 font-medium">Preencher muda status</p>
               }
             </div>

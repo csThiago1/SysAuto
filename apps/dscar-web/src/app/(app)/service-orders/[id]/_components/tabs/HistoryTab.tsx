@@ -50,15 +50,15 @@ interface ActivityConfig {
 
 const ACTIVITY_CONFIG: Partial<Record<ActivityType, ActivityConfig>> = {
   created: {
-    icon: <PlusCircle className="h-4 w-4 text-green-600" />,
-    ringClass: "ring-green-100",
-    bgClass: "bg-green-50",
+    icon: <PlusCircle className="h-4 w-4 text-success-400" />,
+    ringClass: "ring-success-500/20",
+    bgClass: "bg-success-500/10",
     label: "OS Aberta",
   },
   status_changed: {
-    icon: <GitBranch className="h-4 w-4 text-blue-600" />,
-    ringClass: "ring-blue-100",
-    bgClass: "bg-blue-50",
+    icon: <GitBranch className="h-4 w-4 text-info-400" />,
+    ringClass: "ring-info-500/20",
+    bgClass: "bg-info-500/10",
     label: "Status Alterado",
   },
   updated: {
@@ -93,13 +93,13 @@ const ACTIVITY_CONFIG: Partial<Record<ActivityType, ActivityConfig>> = {
   },
   reminder: {
     icon: <MessageSquare className="h-4 w-4 text-white/60" />,
-    ringClass: "ring-neutral-100",
+    ringClass: "ring-white/10",
     bgClass: "bg-white/[0.03]",
     label: "Observação",
   },
   note_added: {
     icon: <MessageSquare className="h-4 w-4 text-white/60" />,
-    ringClass: "ring-neutral-100",
+    ringClass: "ring-white/10",
     bgClass: "bg-white/[0.03]",
     label: "Nota",
   },
@@ -110,9 +110,9 @@ const ACTIVITY_CONFIG: Partial<Record<ActivityType, ActivityConfig>> = {
     label: "Foto",
   },
   budget_snapshot: {
-    icon: <Receipt className="h-4 w-4 text-indigo-600" />,
-    ringClass: "ring-indigo-100",
-    bgClass: "bg-indigo-50",
+    icon: <Receipt className="h-4 w-4 text-indigo-400" />,
+    ringClass: "ring-indigo-500/20",
+    bgClass: "bg-indigo-500/10",
     label: "Orçamento",
   },
   cilia_import: {
@@ -122,21 +122,21 @@ const ACTIVITY_CONFIG: Partial<Record<ActivityType, ActivityConfig>> = {
     label: "Importação Cilia",
   },
   delivery: {
-    icon: <Truck className="h-4 w-4 text-green-700" />,
-    ringClass: "ring-green-200",
-    bgClass: "bg-green-100",
+    icon: <Truck className="h-4 w-4 text-success-400" />,
+    ringClass: "ring-success-500/20",
+    bgClass: "bg-success-500/10",
     label: "Entrega",
   },
   part_added: {
-    icon: <PackagePlus className="h-4 w-4 text-blue-600" />,
-    ringClass: "ring-blue-100",
-    bgClass: "bg-blue-50",
+    icon: <PackagePlus className="h-4 w-4 text-info-400" />,
+    ringClass: "ring-info-500/20",
+    bgClass: "bg-info-500/10",
     label: "Peça",
   },
   part_removed: {
-    icon: <PackageMinus className="h-4 w-4 text-red-500" />,
-    ringClass: "ring-red-100",
-    bgClass: "bg-red-50",
+    icon: <PackageMinus className="h-4 w-4 text-error-400" />,
+    ringClass: "ring-error-500/20",
+    bgClass: "bg-error-500/10",
     label: "Peça",
   },
   labor_added: {
@@ -146,15 +146,15 @@ const ACTIVITY_CONFIG: Partial<Record<ActivityType, ActivityConfig>> = {
     label: "Serviço",
   },
   labor_removed: {
-    icon: <Wrench className="h-4 w-4 text-red-500" />,
-    ringClass: "ring-red-100",
-    bgClass: "bg-red-50",
+    icon: <Wrench className="h-4 w-4 text-error-400" />,
+    ringClass: "ring-error-500/20",
+    bgClass: "bg-error-500/10",
     label: "Serviço",
   },
   part_updated: {
-    icon: <Package className="h-4 w-4 text-blue-500" />,
-    ringClass: "ring-blue-100",
-    bgClass: "bg-blue-50",
+    icon: <Package className="h-4 w-4 text-info-400" />,
+    ringClass: "ring-info-500/20",
+    bgClass: "bg-info-500/10",
     label: "Peça",
   },
   labor_updated: {
@@ -164,16 +164,16 @@ const ACTIVITY_CONFIG: Partial<Record<ActivityType, ActivityConfig>> = {
     label: "Serviço",
   },
   invoice_issued: {
-    icon: <FileText className="h-4 w-4 text-emerald-600" />,
-    ringClass: "ring-emerald-100",
-    bgClass: "bg-emerald-50",
+    icon: <FileText className="h-4 w-4 text-success-400" />,
+    ringClass: "ring-success-500/20",
+    bgClass: "bg-success-500/10",
     label: "NF Emitida",
   },
 }
 
 const DEFAULT_CONFIG: ActivityConfig = {
   icon: <ClipboardCheck className="h-4 w-4 text-white/50" />,
-  ringClass: "ring-neutral-100",
+  ringClass: "ring-white/10",
   bgClass: "bg-white/[0.03]",
   label: "Atividade",
 }
@@ -207,7 +207,7 @@ function FieldDiff({ log }: { log: ActivityLog }) {
           {change.old_value !== null && (
             <ArrowRight className="h-3 w-3 text-white/40 shrink-0 mt-0.5" />
           )}
-          <span className="text-green-700 font-medium truncate max-w-[120px]">
+          <span className="text-success-400 font-medium truncate max-w-[120px]">
             {String(change.new_value)}
           </span>
         </div>
@@ -245,10 +245,10 @@ function BudgetSnapshotViewer({ snapshot }: { snapshot: BudgetSnapshot }) {
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <div className="mt-2 rounded-lg border border-indigo-200 bg-indigo-50/50 overflow-hidden">
+    <div className="mt-2 rounded-lg border border-indigo-500/20 bg-indigo-500/10 overflow-hidden">
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center justify-between px-3 py-2 text-xs text-indigo-700 hover:bg-indigo-100/50 transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2 text-xs text-indigo-300 hover:bg-indigo-500/15 transition-colors"
       >
         <span className="font-semibold">
           Orçamento v{snapshot.version} — R${" "}
@@ -259,7 +259,7 @@ function BudgetSnapshotViewer({ snapshot }: { snapshot: BudgetSnapshot }) {
 
       {expanded && snapshot.items_snapshot.length > 0 && (
         <div className="px-3 pb-3 space-y-1">
-          <div className="grid grid-cols-[1fr_auto_auto_auto] text-xs text-indigo-400 font-medium border-b border-indigo-200 pb-1 gap-2">
+          <div className="grid grid-cols-[1fr_auto_auto_auto] text-xs text-indigo-300/60 font-medium border-b border-indigo-500/20 pb-1 gap-2">
             <span>Item</span>
             <span className="text-right">Qtd</span>
             <span className="text-right">Unit.</span>
@@ -267,15 +267,15 @@ function BudgetSnapshotViewer({ snapshot }: { snapshot: BudgetSnapshot }) {
           </div>
           {snapshot.items_snapshot.map((item, i) => (
             <div key={i} className="grid grid-cols-[1fr_auto_auto_auto] text-xs gap-2">
-              <span className="truncate text-indigo-900">
-                <span className={cn("inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle", item.type === "part" ? "bg-blue-400" : "bg-orange-400")} />
+              <span className="truncate text-indigo-200">
+                <span className={cn("inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle", item.type === "part" ? "bg-info-400" : "bg-orange-400")} />
                 {item.description}
               </span>
-              <span className="text-right text-indigo-700">{item.quantity}</span>
-              <span className="text-right text-indigo-700">
+              <span className="text-right text-indigo-300">{item.quantity}</span>
+              <span className="text-right text-indigo-300">
                 R$ {item.unit_price.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
               </span>
-              <span className="text-right font-medium text-indigo-900">
+              <span className="text-right font-medium text-indigo-200">
                 R$ {item.total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
               </span>
             </div>
@@ -314,7 +314,7 @@ function ActivityEntry({ log, snapshots }: ActivityEntryProps) {
         {cfg.icon}
       </span>
 
-      <div className="ml-2 rounded-lg border border-neutral-100 bg-white/5 p-3 shadow-sm">
+      <div className="ml-2 rounded-lg border border-white/10 bg-white/5 p-3 shadow-sm">
         {/* Header */}
         <div className="flex items-start justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -343,7 +343,7 @@ function ActivityEntry({ log, snapshots }: ActivityEntryProps) {
           <BudgetSnapshotViewer snapshot={relatedSnapshot} />
         )}
         {log.activity_type === "delivery" && (
-          <div className="mt-1.5 flex items-center gap-1 text-xs text-green-700">
+          <div className="mt-1.5 flex items-center gap-1 text-xs text-success-400">
             <CheckCircle className="h-3 w-3" />
             <span>Entrega registrada com sucesso</span>
           </div>
@@ -452,7 +452,7 @@ export function HistoryTab({ order }: HistoryTabProps) {
           {days.map((day) => (
             <div key={day}>
               <DateGroupLabel date={`${day}T12:00:00`} />
-              <div className="relative pl-6 border-l-2 border-neutral-100 space-y-4">
+              <div className="relative pl-6 border-l-2 border-white/10 space-y-4">
                 {(grouped[day] ?? []).map((log) => (
                   <ActivityEntry key={log.id} log={log} snapshots={snapshots} />
                 ))}

@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Loader2, Search, UserPlus, X, CheckCircle2 } from "lucide-react"
-import { useCustomerSearch, useCustomerCreate } from "../../_hooks/useCustomerSearch"
+import { usePersonSearch, usePersonCreate } from "../../_hooks/useCustomerSearch"
 import { useDebounce } from "@/hooks/useDebounce"
 
 export interface SelectedCustomer {
-  id: string
+  id: number
   name: string
   phone_masked?: string | null
   cpf_masked?: string | null
@@ -36,8 +36,8 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
   const inputRef = useRef<HTMLInputElement>(null)
 
   const debouncedQuery = useDebounce(query, 350)
-  const { data, isFetching, isError } = useCustomerSearch(debouncedQuery)
-  const createMutation = useCustomerCreate()
+  const { data, isFetching, isError } = usePersonSearch(debouncedQuery)
+  const createMutation = usePersonCreate()
   const results = data?.results ?? []
 
   useEffect(() => {
@@ -110,14 +110,14 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
   if (value) {
     return (
       <div className="flex items-center gap-2 flex-wrap">
-        <div className="flex items-center gap-1 rounded-full border border-green-300 bg-green-50 px-2.5 py-1 text-[12px] font-medium text-green-800">
+        <div className="flex items-center gap-1 rounded-full border border-success-500/30 bg-success-500/10 px-2.5 py-1 text-[12px] font-medium text-success-400">
           <CheckCircle2 className="h-3 w-3 shrink-0" />
           <span>{value.name}</span>
           {!disabled && (
             <button
               type="button"
               onClick={handleClear}
-              className="ml-1 rounded-full p-0.5 text-green-600 hover:text-green-900 hover:bg-green-100"
+              className="ml-1 rounded-full p-0.5 text-success-400 hover:text-success-300 hover:bg-success-500/15"
               title="Remover cliente"
             >
               <X className="h-3 w-3" />
@@ -202,7 +202,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
         />
 
         {createError && (
-          <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1">
+          <p className="text-xs text-error-400 bg-error-500/10 border border-error-500/20 rounded px-2 py-1">
             {createError}
           </p>
         )}
@@ -230,7 +230,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
   }
 
   // ── Modo: busca ──────────────────────────────────────────────────
-  const showDropdown = open && debouncedQuery.length >= 3
+  const showDropdown = open && debouncedQuery.length >= 2
   const showEmpty = showDropdown && !isFetching && !isError && results.length === 0
   const showResults = showDropdown && results.length > 0
 
@@ -257,7 +257,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
         <button
           type="button"
           onClick={() => openCreateForm(query)}
-          className="shrink-0 flex items-center gap-1 rounded border border-dashed border-white/15 px-2 py-1 text-xs font-medium text-white/50 hover:border-neutral-400 hover:text-white/70 h-8"
+          className="shrink-0 flex items-center gap-1 rounded border border-dashed border-white/15 px-2 py-1 text-xs font-medium text-white/50 hover:border-white/30 hover:text-white/70 h-8"
         >
           <UserPlus className="h-3 w-3" />
           Novo
@@ -296,7 +296,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
           <button
             type="button"
             onClick={() => openCreateForm(query)}
-            className="flex w-full items-center gap-2 border-t border-neutral-100 px-3 py-2 text-xs font-medium text-primary-600 hover:bg-red-50 transition-colors"
+            className="flex w-full items-center gap-2 border-t border-white/10 px-3 py-2 text-xs font-medium text-primary-600 hover:bg-white/[0.03] transition-colors"
           >
             <UserPlus className="h-3.5 w-3.5" />
             Cadastrar novo cliente
@@ -312,7 +312,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
           <button
             type="button"
             onClick={() => openCreateForm(query)}
-            className="flex w-full items-center justify-center gap-2 border-t border-neutral-100 px-3 py-2 text-sm font-medium text-primary-600 hover:bg-red-50 transition-colors"
+            className="flex w-full items-center justify-center gap-2 border-t border-white/10 px-3 py-2 text-sm font-medium text-primary-600 hover:bg-white/[0.03] transition-colors"
           >
             <UserPlus className="h-4 w-4" />
             Cadastrar &quot;{query}&quot;
@@ -321,8 +321,8 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
       )}
 
       {showDropdown && isError && (
-        <div className="absolute z-20 mt-1 w-full rounded-lg border border-red-200 bg-red-50 px-3 py-2 shadow-lg">
-          <p className="text-xs text-red-600">Erro ao buscar. Tente novamente.</p>
+        <div className="absolute z-20 mt-1 w-full rounded-lg border border-error-500/20 bg-error-500/10 px-3 py-2 shadow-lg">
+          <p className="text-xs text-error-400">Erro ao buscar. Tente novamente.</p>
         </div>
       )}
     </div>

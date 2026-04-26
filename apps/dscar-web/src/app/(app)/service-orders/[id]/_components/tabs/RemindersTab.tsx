@@ -97,7 +97,7 @@ export function RemindersTab({ orderId }: RemindersTabProps) {
 
       {/* Lista de lembretes */}
       <div className="bg-white/5 border border-white/10 rounded-lg shadow-sm overflow-hidden">
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-neutral-100 bg-white/[0.03]">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/[0.03]">
           <Bell className="h-4 w-4 text-white/50" />
           <h2 className="text-xs font-semibold uppercase tracking-wide text-white/60">
             Lembretes
@@ -119,7 +119,7 @@ export function RemindersTab({ orderId }: RemindersTabProps) {
             <p className="text-sm">Nenhum lembrete registrado.</p>
           </div>
         ) : (
-          <ul className="divide-y divide-neutral-100">
+          <ul className="divide-y divide-white/5">
             {reminders.map((r) => (
               <li key={r.id} className="px-5 py-4 flex gap-3">
                 <div className="mt-0.5 h-6 w-6 flex items-center justify-center rounded-full bg-amber-50 ring-2 ring-amber-100 shrink-0">

@@ -63,6 +63,7 @@ const serviceOrderBaseSchema = z.object({
 
   // Cliente e veículo
   customer: z.preprocess(toNullStr, z.string().uuid("Cliente inválido").nullish()),
+  customer_person_id: z.preprocess(toNullNum, z.number().int().nullish()),
   customer_name: z.string().min(1, "Nome do cliente é obrigatório"),
   plate: z.string().min(7, "Placa inválida — mínimo 7 caracteres").max(8, "Placa inválida"),
   make: z.string().optional().default(""),

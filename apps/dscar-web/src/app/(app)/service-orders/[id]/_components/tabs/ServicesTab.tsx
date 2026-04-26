@@ -189,7 +189,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                 {...register("description")}
               />
               {errors.description && (
-                <p className="mt-0.5 text-xs text-red-600">{errors.description.message}</p>
+                <p className="mt-0.5 text-xs text-error-400">{errors.description.message}</p>
               )}
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -205,7 +205,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                   {...register("unit_price")}
                 />
                 {errors.unit_price && (
-                  <p className="mt-0.5 text-xs text-red-600">{errors.unit_price.message}</p>
+                  <p className="mt-0.5 text-xs text-error-400">{errors.unit_price.message}</p>
                 )}
               </div>
             </div>
@@ -341,7 +341,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                               <button
                                 type="button"
                                 onClick={() => void saveEdit(item.id)}
-                                className="text-green-600 hover:text-green-700 transition-colors"
+                                className="text-success-400 hover:text-success-300 transition-colors"
                                 title="Salvar"
                               >
                                 <Check className="h-4 w-4" />
@@ -368,7 +368,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                               <button
                                 type="button"
                                 onClick={() => handleDelete(item.id, item.description)}
-                                className="text-white/30 hover:text-red-500 transition-colors"
+                                className="text-white/30 hover:text-error-400 transition-colors"
                                 title="Remover"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
@@ -393,7 +393,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
             {servicesDiscount > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-white/60">Desconto</span>
-                <span className="font-medium text-red-600">- {formatCurrency(servicesDiscount)}</span>
+                <span className="font-medium text-error-400">- {formatCurrency(servicesDiscount)}</span>
               </div>
             )}
             <div className="border-t border-white/10 pt-2 flex items-center justify-between">

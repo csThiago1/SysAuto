@@ -15,7 +15,7 @@ import { ArrowRight, Loader2, ChevronDown, Save } from "lucide-react"
 import { serviceOrderUpdateSchema, type ServiceOrderUpdateInput } from "../_schemas/service-order.schema"
 import { useServiceOrderUpdate } from "../_hooks/useServiceOrder"
 import { useAutoTransition } from "../_hooks/useAutoTransition"
-import { useCustomerUpdate, type CustomerUpdateInput } from "../_hooks/useCustomerSearch"
+import { useCustomerUpdate, usePersonUpdate, type CustomerUpdateInput, type PersonPatch } from "../_hooks/useCustomerSearch"
 import { useTransitionStatus } from "@/hooks/useServiceOrders"
 import { StatusBadge } from "./shared/StatusBadge"
 import {
@@ -80,6 +80,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabId>("opening")
   const [customerDirtyData, setCustomerDirtyData] = useState<CustomerUpdateInput | null>(null)
+  const [personDirtyData, setPersonDirtyData] = useState<PersonPatch | null>(null)
 
   const form = useForm<ServiceOrderUpdateInput>({
     resolver: zodResolver(serviceOrderUpdateSchema),
@@ -98,6 +99,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       authorization_date: order.authorization_date ?? undefined,
       quotation_date: order.quotation_date ?? new Date().toISOString().split("T")[0],
       customer: order.customer_uuid ?? undefined,   // UUID do UnifiedCustomer para lookup de detalhes
+      customer_person_id: order.customer_person_id ?? undefined,
       customer_name: order.customer_name ?? "",
       plate: order.plate ?? "",
       make: order.make ?? "",
@@ -134,10 +136,11 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   const customerUpdateMutation = useCustomerUpdate(
     form.watch("customer") ?? order.customer_uuid ?? null
   )
+  const personUpdateMutation = usePersonUpdate(order.customer_person_id ?? null)
   const transitionMutation = useTransitionStatus(order.id)
   useAutoTransition({ order })
 
-  const isPending = updateMutation.isPending || customerUpdateMutation.isPending
+  const isPending = updateMutation.isPending || customerUpdateMutation.isPending || personUpdateMutation.isPending
   const nextStatuses = isRepairPhase
     ? []
     : (VALID_TRANSITIONS[order.status as ServiceOrderStatus] ?? [])
@@ -197,6 +200,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
         authorization_date: savedOrder.authorization_date ?? undefined,
         quotation_date: savedOrder.quotation_date ?? new Date().toISOString().split("T")[0],
         customer: savedOrder.customer_uuid ?? undefined,
+        customer_person_id: savedOrder.customer_person_id ?? undefined,
         customer_name: savedOrder.customer_name ?? "",
         plate: savedOrder.plate ?? "",
         make: savedOrder.make ?? "",
@@ -218,6 +222,10 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
         final_survey_date: savedOrder.final_survey_date ?? undefined,
         client_delivery_date: savedOrder.client_delivery_date ?? undefined,
       })
+      if (personDirtyData && order.customer_person_id) {
+        await personUpdateMutation.mutateAsync(personDirtyData)
+        setPersonDirtyData(null)
+      }
       toast.success("OS salva com sucesso!")
       router.refresh()
     } catch {
@@ -241,7 +249,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
                 <button
                   type="button"
                   disabled={transitionMutation.isPending}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-primary-600 px-3 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 disabled:opacity-50 transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-primary-600 px-3 py-2 text-sm font-medium text-primary-600 hover:bg-primary-500/5 disabled:opacity-50 transition-colors"
                 >
                   {transitionMutation.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -337,7 +345,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       <div className="flex-1 overflow-y-auto bg-white/[0.03] px-6">
         <form onSubmit={form.handleSubmit(onSubmit)}>
           {activeTab === "opening" && (
-            <OpeningTab form={form} order={order} onCustomerDataChange={setCustomerDirtyData} />
+            <OpeningTab form={form} order={order} onCustomerDataChange={setCustomerDirtyData} onPersonDataChange={setPersonDirtyData} />
           )}
           {activeTab === "parts" && <PartsTab orderId={order.id} />}
           {activeTab === "services" && <ServicesTab osId={order.id} osStatus={order.status as ServiceOrderStatus} />}
@@ -351,13 +359,13 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
 
       {/* Erros de validação */}
       {Object.keys(form.formState.errors).length > 0 && (
-        <div className="border-t bg-red-50 px-6 py-3">
-          <p className="text-xs font-semibold text-red-700 mb-1">
+        <div className="border-t bg-error-500/10 px-6 py-3">
+          <p className="text-xs font-semibold text-error-400 mb-1">
             Corrija os erros abaixo antes de salvar:
           </p>
           <ul className="space-y-0.5">
             {Object.entries(form.formState.errors).map(([field, err]) => (
-              <li key={field} className="text-xs text-red-600">
+              <li key={field} className="text-xs text-error-400">
                 • <span className="font-medium">{FIELD_LABELS[field] ?? field}:</span>{" "}
                 {err?.message}
               </li>
