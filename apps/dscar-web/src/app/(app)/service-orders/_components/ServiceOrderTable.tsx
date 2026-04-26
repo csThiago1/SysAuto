@@ -31,12 +31,12 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
       <Table>
         <TableHeader>
           <TableRow className="bg-white/[0.03] hover:bg-white/[0.03] border-b border-white/10">
-            <TableHead className="w-[100px] font-semibold text-white/60">OS</TableHead>
-            <TableHead className="min-w-[200px] font-semibold text-white/60">Cliente / Seguradora</TableHead>
-            <TableHead className="min-w-[180px] font-semibold text-white/60">Veículo</TableHead>
-            <TableHead className="w-[140px] font-semibold text-white/60">Datas</TableHead>
-            <TableHead className="w-[180px] font-semibold text-white/60">Status</TableHead>
-            <TableHead className="w-[60px] text-right font-semibold text-white/60"></TableHead>
+            <TableHead className="w-[100px] label-mono text-white/40">OS</TableHead>
+            <TableHead className="min-w-[200px] label-mono text-white/40">CLIENTE / SEGURADORA</TableHead>
+            <TableHead className="min-w-[180px] label-mono text-white/40">VEÍCULO</TableHead>
+            <TableHead className="w-[140px] label-mono text-white/40">DATAS</TableHead>
+            <TableHead className="w-[180px] label-mono text-white/40">STATUS</TableHead>
+            <TableHead className="w-[60px] label-mono text-white/40"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
