@@ -138,13 +138,11 @@ export default function DashboardPage(): React.ReactElement {
           <StatCard
             label="OS em Aberto"
             value={legacyStats?.total_open ?? 0}
-            iconBg="bg-primary-100"
             icon={<ClipboardList className="h-5 w-5 text-primary-600" />}
           />
           <StatCard
             label="Entregas Hoje"
             value={legacyStats?.today_deliveries ?? 0}
-            iconBg="bg-success-100"
             icon={<CheckCircle2 className="h-5 w-5 text-success-600" />}
           />
           {topStatuses.map(({ status, count }) => (
@@ -152,7 +150,6 @@ export default function DashboardPage(): React.ReactElement {
               key={status}
               label={SERVICE_ORDER_STATUS_CONFIG[status].label}
               value={count}
-              iconBg="bg-white/5"
               icon={
                 <span
                   className={`h-2.5 w-2.5 rounded-full ${SERVICE_ORDER_STATUS_CONFIG[status].dot}`}

@@ -72,25 +72,21 @@ export default function RHDashboardPage(): React.ReactElement {
               <StatCard
                 label="Headcount total"
                 value={totalHeadcount}
-                iconBg="bg-primary-100"
                 icon={<Users className="h-5 w-5 text-primary-600" />}
               />
               <StatCard
                 label="Ativos"
                 value={totalActive}
-                iconBg="bg-success-100"
                 icon={<UserCheck className="h-5 w-5 text-success-600" />}
               />
               <StatCard
                 label="Afastados"
                 value={totalLeave}
-                iconBg="bg-warning-100"
                 icon={<UserMinus className="h-5 w-5 text-warning-600" />}
               />
               <StatCard
                 label="Férias"
                 value={totalVacation}
-                iconBg="bg-white/5"
                 icon={<Palmtree className="h-5 w-5 text-white/50" />}
               />
             </>

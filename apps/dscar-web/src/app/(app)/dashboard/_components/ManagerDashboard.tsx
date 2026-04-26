@@ -23,19 +23,16 @@ export function ManagerDashboard({ data }: Props) {
           label="Faturamento Mês"
           value={formatCurrency(data.billing_month, { compact: true })}
           icon={<DollarSign className="h-5 w-5 text-success-600" />}
-          iconBg="bg-success-50"
         />
         <StatCard
           label="Entregas (mês)"
           value={data.delivered_month}
           icon={<Truck className="h-5 w-5 text-info-600" />}
-          iconBg="bg-info-50"
         />
         <StatCard
           label="Ticket Médio"
           value={formatCurrency(data.avg_ticket, { compact: true })}
           icon={<TrendingUp className="h-5 w-5 text-violet-600" />}
-          iconBg="bg-violet-50"
         />
         <StatCard
           label="OS Atrasadas"
@@ -45,7 +42,6 @@ export function ManagerDashboard({ data }: Props) {
               className={`h-5 w-5 ${data.overdue_count > 0 ? "text-red-600" : "text-white/40"}`}
             />
           }
-          iconBg={data.overdue_count > 0 ? "bg-red-50" : "bg-white/[0.03]"}
         />
       </div>
 

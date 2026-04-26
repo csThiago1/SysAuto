@@ -79,13 +79,11 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
               <StatCard
                 label="Lançamentos hoje"
                 value={todayEntries?.count ?? 0}
-                iconBg="bg-primary-100"
                 icon={<ReceiptText className="h-5 w-5 text-primary-600" />}
               />
               <StatCard
                 label="Período atual"
                 value={periodLabel}
-                iconBg="bg-blue-100"
                 icon={<Calendar className="h-5 w-5 text-blue-600" />}
                 badge={
                   period?.is_closed ? (
@@ -98,7 +96,6 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
               <StatCard
                 label="Contas a Pagar Vencidas"
                 value={overduePayable?.count ?? 0}
-                iconBg="bg-orange-100"
                 icon={<TrendingDown className="h-5 w-5 text-orange-600" />}
                 badge={
                   (overduePayable?.count ?? 0) > 0 ? (
@@ -112,7 +109,6 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
               <StatCard
                 label="Contas a Receber Vencidas"
                 value={overdueReceivable?.count ?? 0}
-                iconBg="bg-success-100"
                 icon={<TrendingUp className="h-5 w-5 text-success-600" />}
                 badge={
                   (overdueReceivable?.count ?? 0) > 0 ? (

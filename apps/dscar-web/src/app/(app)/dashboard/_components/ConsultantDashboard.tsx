@@ -21,25 +21,21 @@ export function ConsultantDashboard({ data }: Props) {
           label="Minhas OS Abertas"
           value={data.my_open}
           icon={<ClipboardList className="h-5 w-5 text-info-600" />}
-          iconBg="bg-info-50"
         />
         <StatCard
           label="Entregas Hoje"
           value={data.my_deliveries_today}
           icon={<Truck className="h-5 w-5 text-success-600" />}
-          iconBg="bg-success-50"
         />
         <StatCard
           label="OS Atrasadas"
           value={data.my_overdue}
           icon={<AlertTriangle className={`h-5 w-5 ${data.my_overdue > 0 ? "text-red-600" : "text-white/40"}`} />}
-          iconBg={data.my_overdue > 0 ? "bg-red-50" : "bg-white/[0.03]"}
         />
         <StatCard
           label="Entregues esta Semana"
           value={data.my_completed_week}
           icon={<CheckCircle className="h-5 w-5 text-violet-600" />}
-          iconBg="bg-violet-50"
         />
       </div>
 
