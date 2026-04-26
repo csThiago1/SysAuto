@@ -147,7 +147,7 @@ export function TabBonificacoes({
           Nenhuma bonificação registrada.
         </div>
       ) : (
-        <div className="rounded-md bg-white/5 shadow-card divide-y divide-neutral-100">
+        <div className="rounded-md bg-white/5 shadow-card divide-y divide-white/5">
           {bonuses.map((b) => (
             <div key={b.id} className="flex items-center justify-between px-card-padding py-3">
               <div>
@@ -162,7 +162,7 @@ export function TabBonificacoes({
                   })}
                 </p>
               </div>
-              <span className="text-sm font-semibold text-success-700">
+              <span className="text-sm font-semibold text-success-400">
                 +{" "}
                 {new Intl.NumberFormat("pt-BR", {
                   style: "currency",

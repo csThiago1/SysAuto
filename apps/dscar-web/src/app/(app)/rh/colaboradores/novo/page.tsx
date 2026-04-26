@@ -164,7 +164,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Identificação */}
           <section className="rounded-md bg-white/5 shadow-card p-card-padding space-y-4">
-            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
+            <h2 className="text-sm font-semibold text-white border-b border-white/10 pb-2">
               Identificação
             </h2>
             <div className="grid grid-cols-2 gap-4">
@@ -193,7 +193,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
 
           {/* Dados trabalhistas */}
           <section className="rounded-md bg-white/5 shadow-card p-card-padding space-y-4">
-            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
+            <h2 className="text-sm font-semibold text-white border-b border-white/10 pb-2">
               Dados trabalhistas
             </h2>
             <div className="grid grid-cols-2 gap-4">
@@ -296,7 +296,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
 
           {/* Dados pessoais básicos */}
           <section className="rounded-md bg-white/5 shadow-card p-card-padding space-y-4">
-            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
+            <h2 className="text-sm font-semibold text-white border-b border-white/10 pb-2">
               Dados pessoais (opcional)
             </h2>
             <p className="text-xs text-white/50">
@@ -330,7 +330,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
 
           {/* Endereço */}
           <section className="rounded-md bg-white/5 shadow-card p-card-padding space-y-4">
-            <h2 className="text-sm font-semibold text-white border-b border-neutral-100 pb-2">
+            <h2 className="text-sm font-semibold text-white border-b border-white/10 pb-2">
               Endereço (opcional)
             </h2>
             <div className="grid grid-cols-2 gap-4">
@@ -377,7 +377,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
 
           {/* Erro geral da API */}
           {create.isError && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-md px-4 py-3">
+            <p className="text-sm text-error-400 bg-error-500/10 rounded-md px-4 py-3">
               {create.error?.message || "Erro ao admitir colaborador. Tente novamente."}
             </p>
           )}
@@ -419,7 +419,7 @@ function FormField({ label, error, hint, children }: FormFieldProps): React.Reac
       <Label className="text-xs font-medium text-white/70">{label}</Label>
       {children}
       {hint && <p className="text-xs text-white/40">{hint}</p>}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-error-400">{error}</p>}
     </div>
   );
 }

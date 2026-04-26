@@ -62,7 +62,7 @@ export default function ContrachequesSelfPage(): React.ReactElement {
         {/* No employee profile */}
         {!loadingEmployee && employeeError && (
           <div className="rounded-md bg-white/5 shadow-card p-8 text-center">
-            <p className="text-sm text-red-600">
+            <p className="text-sm text-error-400">
               Seu usuário não possui perfil de colaborador. Peça ao administrador
               para criar.
             </p>
@@ -90,7 +90,7 @@ export default function ContrachequesSelfPage(): React.ReactElement {
                 <div className="flex items-start justify-between gap-4">
                   {/* Month + icon */}
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary-100 shrink-0">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-white/[0.06] shrink-0">
                       <FileText className="h-5 w-5 text-primary-600" />
                     </div>
                     <div>
@@ -105,7 +105,7 @@ export default function ContrachequesSelfPage(): React.ReactElement {
                       <p className="text-xs text-white/50 mt-0.5">
                         {payslip.worked_days} dias trabalhados
                         {payslip.is_closed && (
-                          <span className="ml-2 inline-flex items-center gap-0.5 text-success-700">
+                          <span className="ml-2 inline-flex items-center gap-0.5 text-success-400">
                             <Lock className="h-3 w-3" />
                             Fechado
                           </span>
@@ -144,12 +144,12 @@ export default function ContrachequesSelfPage(): React.ReactElement {
                 </div>
 
                 {/* Breakdown */}
-                <div className="mt-3 grid grid-cols-4 gap-2 border-t border-neutral-100 pt-3">
+                <div className="mt-3 grid grid-cols-4 gap-2 border-t border-white/10 pt-3">
                   {[
                     { label: "Salário base", value: payslip.base_salary, color: "" },
-                    { label: "Bônus", value: payslip.total_bonuses, color: "text-success-700" },
-                    { label: "Vales", value: payslip.total_allowances, color: "text-blue-700" },
-                    { label: "Descontos", value: payslip.total_deductions, color: "text-red-600" },
+                    { label: "Bônus", value: payslip.total_bonuses, color: "text-success-400" },
+                    { label: "Vales", value: payslip.total_allowances, color: "text-info-400" },
+                    { label: "Descontos", value: payslip.total_deductions, color: "text-error-400" },
                   ].map((item) => (
                     <div key={item.label}>
                       <p className="text-xs text-white/40">{item.label}</p>
@@ -164,7 +164,7 @@ export default function ContrachequesSelfPage(): React.ReactElement {
                 {payslip.journal_entry_id && (
                   <div className="mt-3 rounded-md border border-white/10 bg-white/[0.03] p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary-100">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-white/[0.06]">
                         <ReceiptText className="h-4 w-4 text-primary-600" />
                       </div>
                       <div>

@@ -24,7 +24,7 @@ function PayslipRow({ payslip }: { payslip: Payslip }): React.ReactElement {
   const close = useClosePayslip();
 
   return (
-    <tr className="border-b border-neutral-100 last:border-0 hover:bg-white/[0.03] transition-colors">
+    <tr className="border-b border-white/5 last:border-0 hover:bg-white/[0.03] transition-colors">
       <td className="px-4 py-3 text-sm text-white font-medium">
         {payslip.employee_name}
       </td>
@@ -37,7 +37,7 @@ function PayslipRow({ payslip }: { payslip: Payslip }): React.ReactElement {
       <td className="px-4 py-3 text-sm text-white/70 text-right tabular-nums">
         {fmt.format(parseFloat(payslip.total_allowances))}
       </td>
-      <td className="px-4 py-3 text-sm text-red-600 text-right tabular-nums">
+      <td className="px-4 py-3 text-sm text-error-400 text-right tabular-nums">
         -{fmt.format(parseFloat(payslip.total_deductions))}
       </td>
       <td className="px-4 py-3 text-sm font-bold text-white text-right tabular-nums">
@@ -45,7 +45,7 @@ function PayslipRow({ payslip }: { payslip: Payslip }): React.ReactElement {
       </td>
       <td className="px-4 py-3 text-right">
         {payslip.is_closed ? (
-          <span className="inline-flex items-center gap-1 text-xs text-success-700 font-medium">
+          <span className="inline-flex items-center gap-1 text-xs text-success-400 font-medium">
             <Lock className="h-3 w-3" />
             Fechado
           </span>
@@ -134,7 +134,7 @@ export default function FolhaMonthPage({
             <div className="flex items-center gap-2">
               {confirmClose ? (
                 <>
-                  <span className="flex items-center gap-1 text-sm text-warning-700">
+                  <span className="flex items-center gap-1 text-sm text-warning-400">
                     <AlertTriangle className="h-4 w-4" />
                     Fechar folha é irreversível.
                   </span>
@@ -165,7 +165,7 @@ export default function FolhaMonthPage({
           )}
 
           {allClosed && (
-            <span className="flex items-center gap-1.5 text-sm font-medium text-success-700">
+            <span className="flex items-center gap-1.5 text-sm font-medium text-success-400">
               <Lock className="h-4 w-4" />
               Folha fechada
             </span>
@@ -177,10 +177,10 @@ export default function FolhaMonthPage({
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
             {[
               { label: "Salário base", value: totals.base, color: "text-white" },
-              { label: "Bônus", value: totals.bonuses, color: "text-success-700" },
-              { label: "Vales", value: totals.allowances, color: "text-blue-700" },
-              { label: "Descontos", value: totals.deductions, color: "text-red-600" },
-              { label: "Total líquido", value: totals.net, color: "text-primary-700" },
+              { label: "Bônus", value: totals.bonuses, color: "text-success-400" },
+              { label: "Vales", value: totals.allowances, color: "text-info-400" },
+              { label: "Descontos", value: totals.deductions, color: "text-error-400" },
+              { label: "Total líquido", value: totals.net, color: "text-primary-400" },
             ].map((c) => (
               <div
                 key={c.label}
@@ -254,7 +254,7 @@ export default function FolhaMonthPage({
                     <td className="px-4 py-2.5 text-sm font-semibold text-white text-right tabular-nums">
                       {fmt.format(totals.allowances)}
                     </td>
-                    <td className="px-4 py-2.5 text-sm font-semibold text-red-600 text-right tabular-nums">
+                    <td className="px-4 py-2.5 text-sm font-semibold text-error-400 text-right tabular-nums">
                       -{fmt.format(totals.deductions)}
                     </td>
                     <td className="px-4 py-2.5 text-sm font-bold text-primary-700 text-right tabular-nums">

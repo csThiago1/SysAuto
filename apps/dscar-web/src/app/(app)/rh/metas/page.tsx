@@ -17,9 +17,9 @@ import { Skeleton } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 const STATUS_CLASSES: Record<string, string> = {
-  success: "bg-success-100 text-success-700",
-  warning: "bg-warning-100 text-warning-700",
-  destructive: "bg-red-100 text-red-700",
+  success: "bg-success-500/10 text-success-400",
+  warning: "bg-warning-500/10 text-warning-400",
+  destructive: "bg-error-500/10 text-error-400",
   default: "bg-white/5 text-white/60",
 };
 
@@ -130,7 +130,7 @@ export default function MetasPage(): React.ReactElement {
                           {statusCfg.label}
                         </span>
                         {goal.is_recurring && (
-                          <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700">
+                          <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-info-500/10 text-info-400">
                             Recorrente
                           </span>
                         )}
@@ -187,7 +187,7 @@ export default function MetasPage(): React.ReactElement {
                       <button
                         onClick={() => achieve.mutate(goal.id)}
                         disabled={achieve.isPending}
-                        className="shrink-0 rounded-md border border-success-300 bg-success-50 px-3 py-1.5 text-xs font-medium text-success-700 hover:bg-success-100 transition-colors disabled:opacity-50"
+                        className="shrink-0 rounded-md border border-success-500/20 bg-success-500/10 px-3 py-1.5 text-xs font-medium text-success-400 hover:bg-success-500/20 transition-colors disabled:opacity-50"
                       >
                         Marcar atingida
                       </button>

@@ -17,9 +17,9 @@ interface TabValesProps {
 }
 
 const STATUS_CLASSES: Record<string, string> = {
-  success: "bg-success-100 text-success-700",
-  warning: "bg-warning-100 text-warning-700",
-  destructive: "bg-red-100 text-red-700",
+  success: "bg-success-500/10 text-success-400",
+  warning: "bg-warning-500/10 text-warning-400",
+  destructive: "bg-error-500/10 text-error-400",
   default: "bg-white/5 text-white/60",
 };
 
@@ -50,7 +50,7 @@ export function TabVales({ employee }: TabValesProps): React.ReactElement {
           Nenhum vale registrado.
         </div>
       ) : (
-        <div className="rounded-md bg-white/5 shadow-card divide-y divide-neutral-100">
+        <div className="rounded-md bg-white/5 shadow-card divide-y divide-white/5">
           {allowances.map((a) => {
             const statusCfg = ALLOWANCE_STATUS_CONFIG[a.status];
             return (

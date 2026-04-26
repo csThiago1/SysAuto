@@ -64,7 +64,7 @@ export function TabDocumentos({
                   <p className="text-xs text-white/50">
                     {doc.file_name}
                     {doc.expiry_date && (
-                      <span className="ml-2 text-warning-600">
+                      <span className="ml-2 text-warning-400">
                         Validade:{" "}
                         {new Date(doc.expiry_date).toLocaleDateString("pt-BR")}
                       </span>
@@ -73,7 +73,7 @@ export function TabDocumentos({
                 </div>
               </div>
               <button
-                className="p-1.5 text-white/40 hover:text-red-500 transition-colors"
+                className="p-1.5 text-white/40 hover:text-error-400 transition-colors"
                 title="Remover documento (soft delete)"
               >
                 <Trash2 className="h-4 w-4" />

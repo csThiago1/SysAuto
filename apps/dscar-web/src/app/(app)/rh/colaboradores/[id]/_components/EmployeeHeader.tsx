@@ -26,7 +26,7 @@ export function EmployeeHeader({
       <div className="flex items-start justify-between gap-4">
         {/* Avatar + info */}
         <div className="flex items-start gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary-100 shrink-0">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/[0.06] shrink-0">
             <User className="h-7 w-7 text-primary-600" />
           </div>
           <div>
@@ -66,7 +66,7 @@ export function EmployeeHeader({
         {employee.status !== "terminated" && onTerminate && (
           <button
             onClick={onTerminate}
-            className="shrink-0 rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 transition-colors"
+            className="shrink-0 rounded-md border border-error-500/20 bg-error-500/10 px-3 py-1.5 text-xs font-medium text-error-400 hover:bg-error-500/20 transition-colors"
           >
             Desligar
           </button>

@@ -57,7 +57,7 @@ export default function EmployeeDetailPage(): React.ReactElement {
 
   if (error) {
     return (
-      <div className="rounded-md bg-red-50 border border-red-200 p-4 text-sm text-red-700">
+      <div className="rounded-md bg-error-500/10 border border-error-500/20 p-4 text-sm text-error-400">
         Erro ao carregar dados do colaborador.
       </div>
     );
@@ -108,15 +108,15 @@ export default function EmployeeDetailPage(): React.ReactElement {
 
         {/* Confirm terminate banner */}
         {confirmTerminate && (
-          <div className="rounded-md border border-red-300 bg-red-50 p-3 flex items-center justify-between">
-            <p className="text-sm text-red-800">
+          <div className="rounded-md border border-error-500/20 bg-error-500/10 p-3 flex items-center justify-between">
+            <p className="text-sm text-error-400">
               Confirmar desligamento? Esta ação registra a data de hoje como
               desligamento.
             </p>
             <div className="flex gap-2 ml-4">
               <button
                 onClick={() => setConfirmTerminate(false)}
-                className="text-xs text-red-700 hover:underline"
+                className="text-xs text-error-400 hover:underline"
               >
                 Cancelar
               </button>

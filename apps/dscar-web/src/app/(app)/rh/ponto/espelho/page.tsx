@@ -79,7 +79,7 @@ export default function EspelhoPontoPage(): React.ReactElement {
 
         {/* Table */}
         <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
-          <div className="px-card-padding py-3 border-b border-neutral-100 flex items-center justify-between">
+          <div className="px-card-padding py-3 border-b border-white/10 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-white">
               {employees.length} colaboradores ativos
             </h3>
@@ -103,7 +103,7 @@ export default function EspelhoPontoPage(): React.ReactElement {
               Nenhum colaborador encontrado.
             </div>
           ) : (
-            <div className="divide-y divide-neutral-100">
+            <div className="divide-y divide-white/5">
               {employees.map((emp) => (
                 <EspelhoRow
                   key={emp.id}
@@ -151,7 +151,7 @@ function EspelhoRow({
       {isLoading ? (
         <Skeleton className="h-4 w-48" />
       ) : !hasEntries ? (
-        <span className="text-xs text-red-500 font-medium">Sem registros</span>
+        <span className="text-xs text-error-400 font-medium">Sem registros</span>
       ) : (
         <div className="flex items-center gap-4 text-xs text-white/60">
           <span>
@@ -179,9 +179,9 @@ function EspelhoRow({
           <span
             className={`font-semibold ${
               totalMin >= 480
-                ? "text-success-700"
+                ? "text-success-400"
                 : totalMin > 0
-                ? "text-warning-700"
+                ? "text-warning-400"
                 : "text-white/40"
             }`}
           >
