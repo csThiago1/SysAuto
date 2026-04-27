@@ -201,6 +201,10 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
     # Identificação — substituem o campo 'user' no input
     name = serializers.CharField(max_length=200, write_only=True)
     email = serializers.EmailField(write_only=True)
+    phone = serializers.CharField(
+        max_length=20, write_only=True, required=True,
+        help_text="Celular do colaborador (obrigatório)."
+    )
 
     # Campos LGPD: write_only — nunca retornados na resposta
     cpf = serializers.CharField(max_length=11, write_only=True, required=False, allow_blank=True)
@@ -252,38 +256,77 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data: dict) -> "Employee":
-        """Cria ou localiza GlobalUser pelo e-mail e admite o colaborador.
+        """Cria ou localiza GlobalUser pelo e-mail, busca Person existente por CPF,
+        cria PersonDocument + PersonContact, e admite o colaborador."""
+        from apps.persons.models import PersonContact, PersonDocument
+        from apps.persons.utils import sha256_hex
 
-        Usa transaction.atomic() para evitar race condition ao criar GlobalUser
-        concorrentemente (unique constraint em email_hash).
-        """
         name: str = validated_data.pop("name")
         email: str = validated_data.pop("email")
+        phone: str = validated_data.pop("phone")
+        cpf: str = validated_data.pop("cpf", "")
         # email já normalizado por validate_email() — hash consistente
         email_hash = hashlib.sha256(email.encode()).hexdigest()
 
         with transaction.atomic():
+            # 1. GlobalUser get_or_create
             user, created = GlobalUser.objects.get_or_create(
                 email_hash=email_hash,
                 defaults={"name": name, "email": email},
             )
             if not created and user.name != name:
-                # Atualiza o nome se o GlobalUser já existia com nome diferente
                 user.name = name
                 user.save(update_fields=["name", "updated_at"])
 
             logger.info(
                 "Employee onboarding: GlobalUser %s (%s)",
-                user.pk,
-                "created" if created else "existing",
+                user.pk, "created" if created else "existing",
             )
 
-            # Cria Person (PF) com role EMPLOYEE e vincula ao colaborador
-            person = Person.objects.create(
-                person_kind="PF",
-                full_name=name,
-            )
-            PersonRole.objects.create(person=person, role="EMPLOYEE")
+            # 2. Buscar Person existente por CPF (evita duplicata)
+            person = None
+            if cpf:
+                doc = PersonDocument.objects.filter(
+                    doc_type="CPF", value_hash=sha256_hex(cpf)
+                ).select_related("person").first()
+                if doc:
+                    person = doc.person
+
+            if not person:
+                person = Person.objects.create(person_kind="PF", full_name=name)
+
+            # 3. Garantir role EMPLOYEE
+            PersonRole.objects.get_or_create(person=person, role="EMPLOYEE")
+
+            # 4. Criar PersonDocument para CPF (se fornecido e não existir)
+            if cpf and not person.documents.filter(doc_type="CPF").exists():
+                PersonDocument.objects.create(
+                    person=person,
+                    doc_type="CPF",
+                    value=cpf,
+                    value_hash=sha256_hex(cpf),
+                    is_primary=True,
+                )
+
+            # 5. Criar PersonContact para celular (se não existir)
+            if not person.contacts.filter(contact_type="CELULAR").exists():
+                PersonContact.objects.create(
+                    person=person,
+                    contact_type="CELULAR",
+                    value=phone,
+                    value_hash=sha256_hex(phone),
+                    is_primary=True,
+                )
+
+            # 6. Criar PersonContact para email (se não existir)
+            if not person.contacts.filter(contact_type="EMAIL").exists():
+                PersonContact.objects.create(
+                    person=person,
+                    contact_type="EMAIL",
+                    value=email,
+                    value_hash=sha256_hex(email),
+                    is_primary=True,
+                )
 
             return Employee.objects.create(user=user, person=person, **validated_data)
 
@@ -293,6 +336,7 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
             "id",               # read_only — para redirect pós-criação
             "name",             # write_only — GlobalUser.name
             "email",            # write_only — GlobalUser.email (chave de busca)
+            "phone",            # write_only — celular do colaborador
             "department",
             "position",
             "registration_number",
