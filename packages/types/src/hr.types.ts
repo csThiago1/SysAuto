@@ -337,6 +337,8 @@ export interface CreateEmployeePayload {
   name: string;
   /** E-mail corporativo — chave de busca/criação do GlobalUser */
   email: string;
+  /** Celular do colaborador */
+  phone: string;
   department: HRDepartment;
   position: HRPosition;
   registration_number: string;

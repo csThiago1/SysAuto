@@ -14,7 +14,7 @@ import { ChevronLeft } from "lucide-react";
 import { z } from "zod";
 import type { CreateEmployeePayload, HRDepartment, HRPosition, ContractType } from "@paddock/types";
 import { DEPARTMENT_LABELS, POSITION_LABELS, CONTRACT_TYPE_LABELS } from "@paddock/types";
-import { useCreateEmployee } from "@/hooks";
+import { useCreateEmployee, useCepLookup } from "@/hooks";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +40,7 @@ const PAY_FREQUENCIES = ["monthly", "biweekly", "weekly"] as const;
 const admissionSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   email: z.string().email("E-mail inválido"),
+  phone: z.string().min(10, "Celular deve ter pelo menos 10 dígitos"),
   registration_number: z.string().min(1, "Matrícula obrigatória"),
   department: z.enum(HR_DEPARTMENTS, { errorMap: () => ({ message: "Setor obrigatório" }) }),
   position: z.enum(HR_POSITIONS, { errorMap: () => ({ message: "Cargo obrigatório" }) }),
@@ -80,10 +81,12 @@ type FormDraft = Omit<FormData, "department" | "position" | "contract_type" | "p
 export default function NovoColaboradorPage(): React.ReactElement {
   const router = useRouter();
   const create = useCreateEmployee();
+  const cepLookup = useCepLookup();
   const [errors, setErrors] = React.useState<Partial<Record<keyof FormDraft, string>>>({});
   const [form, setForm] = React.useState<FormDraft>({
     name: "",
     email: "",
+    phone: "",
     registration_number: "",
     department: "",
     position: "",
@@ -107,6 +110,22 @@ export default function NovoColaboradorPage(): React.ReactElement {
   const set = <K extends keyof FormDraft>(key: K, value: FormDraft[K]): void => {
     setForm((p) => ({ ...p, [key]: value }));
     setErrors((p) => ({ ...p, [key]: undefined }));
+  };
+
+  const handleCepBlur = async (): Promise<void> => {
+    const cep = form.address_zip?.replace(/\D/g, "");
+    if (cep?.length === 8) {
+      try {
+        const data = await cepLookup.mutateAsync(cep);
+        setForm((p) => ({
+          ...p,
+          address_street: data.street ?? p.address_street,
+          address_neighborhood: data.neighborhood ?? p.address_neighborhood,
+          address_city: data.city ?? p.address_city,
+          address_state: data.state ?? p.address_state,
+        }));
+      } catch { /* silencioso — preenchimento manual */ }
+    }
   };
 
   const handleSubmit = (e: React.FormEvent): void => {
@@ -186,6 +205,14 @@ export default function NovoColaboradorPage(): React.ReactElement {
                   value={form.email}
                   onChange={(e) => set("email", e.target.value)}
                   placeholder="joao@dscar.com.br"
+                />
+              </FormField>
+              <FormField label="Celular *" error={errors.phone}>
+                <Input
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e) => set("phone", e.target.value)}
+                  placeholder="(92) 99999-1234"
                 />
               </FormField>
             </div>
@@ -338,6 +365,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
                 <Input
                   value={form.address_zip ?? ""}
                   onChange={(e) => set("address_zip", e.target.value)}
+                  onBlur={() => { void handleCepBlur(); }}
                   placeholder="69000-000"
                 />
               </FormField>
