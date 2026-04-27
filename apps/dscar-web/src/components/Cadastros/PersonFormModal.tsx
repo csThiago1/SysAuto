@@ -63,6 +63,10 @@ type FormValues = {
   notes: string;
   roles: PersonRole[];
   documents: PersonDocumentWrite[];
+  /** Celular principal — obrigatório quando role inclui CLIENT ou EMPLOYEE */
+  primary_phone: string;
+  /** E-mail principal — obrigatório quando role inclui CLIENT ou EMPLOYEE */
+  primary_email: string;
   contacts: Array<{
     contact_type: "CELULAR" | "COMERCIAL" | "WHATSAPP" | "EMAIL" | "EMAIL_NFE" | "EMAIL_FINANCEIRO" | "SITE";
     value: string;
@@ -138,6 +142,8 @@ export function PersonFormModal({
       notes: "",
       roles: defaultRoles ?? ["CLIENT"],
       documents: [],
+      primary_phone: "",
+      primary_email: "",
       contacts: [],
       addresses: [],
     },
@@ -153,12 +159,33 @@ export function PersonFormModal({
     useFieldArray({ control, name: "addresses" });
 
   const personKind = watch("person_kind");
+  const primaryPhoneValue = watch("primary_phone");
+  const primaryEmailValue = watch("primary_email");
+  const needsContacts = selectedRoles.some((r) => ["CLIENT", "EMPLOYEE"].includes(r));
 
   // ── Carrega dados ao editar ───────────────────────────────────────────────
   useEffect(() => {
     if (!open) return;
     if (isEditing && !personDetail) return;
     const src = personData;
+
+    // Extrai contatos primários para os campos fixos
+    const allContacts: Array<{ contact_type: string; value?: string; value_masked?: string; is_primary?: boolean }> =
+      (src?.contacts ?? []) as Array<{ contact_type: string; value?: string; value_masked?: string; is_primary?: boolean }>;
+
+    const primaryCelular =
+      allContacts.find((c) => c.contact_type === "CELULAR" && c.is_primary) ??
+      allContacts.find((c) => c.contact_type === "CELULAR");
+
+    const primaryEmail =
+      allContacts.find((c) => c.contact_type === "EMAIL" && c.is_primary) ??
+      allContacts.find((c) => c.contact_type === "EMAIL");
+
+    // Contatos adicionais = todos exceto os que viraram campos primários
+    const otherContacts = allContacts.filter(
+      (c) => c !== primaryCelular && c !== primaryEmail
+    );
+
     reset({
       person_kind: src?.person_kind ?? defaultKind ?? "PF",
       full_name:   src?.full_name ?? "",
@@ -169,8 +196,12 @@ export function PersonFormModal({
       // Ao editar, documentos existentes ficam somente-leitura (exibidos abaixo).
       // Apenas novos documentos são enviados para não sobrescrever dados mascarados.
       documents: [],
-      contacts:    src?.contacts ?? [],
-      addresses:   src?.addresses ?? [],
+      // Campos primários pré-populados (valor mascarado em modo edição → read-only)
+      primary_phone: primaryCelular?.value_masked ?? primaryCelular?.value ?? "",
+      primary_email: primaryEmail?.value_masked ?? primaryEmail?.value ?? "",
+      // Contatos adicionais (excluindo os primários já capturados acima)
+      contacts: otherContacts as FormValues["contacts"],
+      addresses: src?.addresses ?? [],
     });
     setSelectedRoles(src?.roles.map((r) => r.role) ?? defaultRoles ?? ["CLIENT"]);
   }, [open, isEditing, personDetail, personData, reset, defaultKind, defaultRoles]);
@@ -200,6 +231,30 @@ export function PersonFormModal({
   /** onSubmit delega inteiramente ao hook — sem lógica de fetch manual (PADRÃO-4) */
   async function onSubmit(data: FormValues): Promise<void> {
     if (selectedRoles.length === 0) { toast.error("Selecione ao menos uma categoria."); return; }
+
+    // Validação de campos primários obrigatórios para CLIENT e EMPLOYEE
+    const needsContacts = selectedRoles.some((r) => ["CLIENT", "EMPLOYEE"].includes(r));
+    if (needsContacts) {
+      if (!data.primary_phone?.trim()) {
+        toast.error("Celular principal é obrigatório para clientes e funcionários.");
+        return;
+      }
+      if (!data.primary_email?.trim()) {
+        toast.error("E-mail principal é obrigatório para clientes e funcionários.");
+        return;
+      }
+    }
+
+    // Combina contatos primários com os contatos adicionais do useFieldArray
+    const primaryContacts: FormValues["contacts"] = [];
+    if (data.primary_phone?.trim()) {
+      primaryContacts.push({ contact_type: "CELULAR", value: data.primary_phone.trim(), is_primary: true });
+    }
+    if (data.primary_email?.trim()) {
+      primaryContacts.push({ contact_type: "EMAIL", value: data.primary_email.trim(), is_primary: true });
+    }
+    const additionalContacts = (data.contacts ?? []).map((c) => ({ ...c, is_primary: false }));
+
     const payload = {
       ...data,
       roles: selectedRoles,
@@ -211,6 +266,7 @@ export function PersonFormModal({
         issued_at: doc.issued_at || null,
         expires_at: doc.expires_at || null,
       })),
+      contacts: [...primaryContacts, ...additionalContacts],
     } as CreatePersonPayload;
     try {
       if (isEditing && person) {
@@ -461,10 +517,47 @@ export function PersonFormModal({
             <div className="flex items-center justify-between border-b pb-1">
               <h3 className="text-sm font-semibold text-white/70">Contatos</h3>
               <Button type="button" variant="ghost" size="sm"
-                onClick={() => appendContact({ contact_type: "CELULAR", value: "", label: "", is_primary: contactFields.length === 0 })}>
+                onClick={() => appendContact({ contact_type: "CELULAR", value: "", label: "", is_primary: false })}>
                 + Adicionar
               </Button>
             </div>
+
+            {/* Campos primários fixos — celular e e-mail obrigatórios */}
+            <div className="grid grid-cols-2 gap-3 p-3 rounded-md border border-white/10 bg-white/[0.03]">
+              <div>
+                <Label className="text-xs text-white/50 uppercase tracking-widest font-mono">
+                  Celular principal{needsContacts ? " *" : ""}
+                </Label>
+                <PhoneInput
+                  {...register("primary_phone")}
+                  placeholder="(92) 99999-1234"
+                  className="mt-1"
+                  readOnly={isEditing && !!primaryPhoneValue}
+                  title={isEditing && !!primaryPhoneValue ? "Para alterar, use o painel de detalhe da pessoa" : undefined}
+                />
+                {isEditing && !!primaryPhoneValue && (
+                  <p className="text-xs text-white/30 mt-0.5">Dado encriptado — edite via painel de detalhe.</p>
+                )}
+              </div>
+              <div>
+                <Label className="text-xs text-white/50 uppercase tracking-widest font-mono">
+                  E-mail principal{needsContacts ? " *" : ""}
+                </Label>
+                <Input
+                  {...register("primary_email")}
+                  type="email"
+                  placeholder="cliente@email.com"
+                  className="mt-1"
+                  readOnly={isEditing && !!primaryEmailValue}
+                  title={isEditing && !!primaryEmailValue ? "Para alterar, use o painel de detalhe da pessoa" : undefined}
+                />
+                {isEditing && !!primaryEmailValue && (
+                  <p className="text-xs text-white/30 mt-0.5">Dado encriptado — edite via painel de detalhe.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Contatos adicionais via useFieldArray */}
             {contactFields.map((field, index) => (
               <div key={field.id} className="flex gap-2 items-start">
                 <Controller
