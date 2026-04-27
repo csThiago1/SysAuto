@@ -8,14 +8,13 @@ import type { ServiceOrder, ServiceOrderStatus } from "@paddock/types"
 import { VALID_TRANSITIONS } from "@paddock/types"
 import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 import { cn } from "@/lib/utils"
-import { apiFetch } from "@/lib/api"
 import { toast } from "sonner"
 import { ArrowRight, Loader2, ChevronDown, Save } from "lucide-react"
 
 import { serviceOrderUpdateSchema, type ServiceOrderUpdateInput } from "../_schemas/service-order.schema"
 import { useServiceOrderUpdate } from "../_hooks/useServiceOrder"
 import { useAutoTransition } from "../_hooks/useAutoTransition"
-import { useCustomerUpdate, usePersonUpdate, type CustomerUpdateInput, type PersonPatch } from "../_hooks/useCustomerSearch"
+import { usePersonUpdate, type PersonPatch } from "../_hooks/useCustomerSearch"
 import { useTransitionStatus } from "@/hooks/useServiceOrders"
 import { StatusBadge } from "./shared/StatusBadge"
 import {
@@ -79,7 +78,6 @@ interface ServiceOrderFormProps {
 export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabId>("opening")
-  const [customerDirtyData, setCustomerDirtyData] = useState<CustomerUpdateInput | null>(null)
   const [personDirtyData, setPersonDirtyData] = useState<PersonPatch | null>(null)
 
   const form = useForm<ServiceOrderUpdateInput>({
@@ -133,14 +131,11 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   const isRepairPhase = REPAIR_PHASE_STATUSES.includes(order.status as ServiceOrderStatus)
 
   const updateMutation = useServiceOrderUpdate(order.id)
-  const customerUpdateMutation = useCustomerUpdate(
-    form.watch("customer") ?? order.customer_uuid ?? null
-  )
   const personUpdateMutation = usePersonUpdate(order.customer_person_id ?? null)
   const transitionMutation = useTransitionStatus(order.id)
   useAutoTransition({ order })
 
-  const isPending = updateMutation.isPending || customerUpdateMutation.isPending || personUpdateMutation.isPending
+  const isPending = updateMutation.isPending || personUpdateMutation.isPending
   const nextStatuses = isRepairPhase
     ? []
     : (VALID_TRANSITIONS[order.status as ServiceOrderStatus] ?? [])
@@ -158,32 +153,6 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   async function onSubmit(data: ServiceOrderUpdateInput) {
     try {
       const savedOrder = await updateMutation.mutateAsync(data)
-      const customerId = data.customer ?? order.customer_uuid
-      if (customerDirtyData && customerId) {
-        await customerUpdateMutation.mutateAsync(customerDirtyData)
-        setCustomerDirtyData(null)
-        // Log customer changes in OS history
-        const CUSTOMER_FIELD_LABELS: Record<string, string> = {
-          name: "Nome", phone: "Telefone", email: "E-mail",
-          birth_date: "Nascimento", zip_code: "CEP", street: "Rua",
-          street_number: "Número", complement: "Complemento",
-          neighborhood: "Bairro", city: "Cidade", state: "UF",
-        }
-        const fieldChanges = Object.entries(customerDirtyData).map(([k, v]) => ({
-          field: k,
-          field_label: CUSTOMER_FIELD_LABELS[k] ?? k,
-          old_value: null,
-          new_value: String(v ?? ""),
-        }))
-        await apiFetch(`/api/proxy/service-orders/${order.id}/history/`, {
-          method: "POST",
-          body: JSON.stringify({
-            activity_type: "customer_updated",
-            message: "Dados do cliente atualizados.",
-            metadata: { field_changes: fieldChanges },
-          }),
-        }).catch(() => {/* non-critical, don't block the save */})
-      }
       // Reset form to saved values so isDirty becomes false
       form.reset({
         consultant_id: savedOrder.consultant ?? undefined,
@@ -345,7 +314,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       <div className="flex-1 overflow-y-auto bg-white/[0.03] px-6">
         <form onSubmit={form.handleSubmit(onSubmit)}>
           {activeTab === "opening" && (
-            <OpeningTab form={form} order={order} onCustomerDataChange={setCustomerDirtyData} onPersonDataChange={setPersonDirtyData} />
+            <OpeningTab form={form} order={order} onPersonDataChange={setPersonDirtyData} />
           )}
           {activeTab === "parts" && <PartsTab orderId={order.id} />}
           {activeTab === "services" && <ServicesTab osId={order.id} osStatus={order.status as ServiceOrderStatus} />}

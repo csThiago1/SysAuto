@@ -5,12 +5,8 @@ import { Controller, type UseFormReturn } from "react-hook-form"
 import { Search, ArrowLeftRight, Loader2, Phone, Mail, Calendar } from "lucide-react"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import {
-  useCustomerDetail,
   usePersonSearch,
   usePersonDetail,
-  type CustomerDetail,
-  type CustomerUpdateInput,
-  type PersonDetail,
   type PersonPatch,
 } from "../../_hooks/useCustomerSearch"
 import { useDebounce } from "@/hooks/useDebounce"
@@ -25,7 +21,6 @@ const INPUT_READONLY =
 
 interface CustomerSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
-  onCustomerDataChange?: (data: CustomerUpdateInput | null) => void
   onPersonDataChange?: (data: PersonPatch | null) => void
 }
 
@@ -366,147 +361,8 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange }: PersonI
   )
 }
 
-// ── Editable customer fields (UnifiedCustomer — legado) ───────────────────────
-interface EditableFieldsProps {
-  detail: CustomerDetail
-  onCustomerDataChange: (data: CustomerUpdateInput | null) => void
-}
-
-function EditableFields({ detail, onCustomerDataChange }: EditableFieldsProps) {
-  const [fields, setFields] = useState<CustomerUpdateInput>({
-    name: detail.name ?? "",
-    phone: detail.phone ?? "",
-    email: detail.email ?? "",
-    birth_date: detail.birth_date ?? "",
-    zip_code: detail.zip_code ?? "",
-    street: detail.street ?? "",
-    street_number: detail.street_number ?? "",
-    complement: detail.complement ?? "",
-    neighborhood: detail.neighborhood ?? "",
-    city: detail.city ?? "",
-    state: detail.state ?? "",
-  })
-
-  useEffect(() => {
-    const next: CustomerUpdateInput = {
-      name: detail.name ?? "",
-      phone: detail.phone ?? "",
-      email: detail.email ?? "",
-      birth_date: detail.birth_date ?? "",
-      zip_code: detail.zip_code ?? "",
-      street: detail.street ?? "",
-      street_number: detail.street_number ?? "",
-      complement: detail.complement ?? "",
-      neighborhood: detail.neighborhood ?? "",
-      city: detail.city ?? "",
-      state: detail.state ?? "",
-    }
-    setFields(next)
-    onCustomerDataChange(null)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detail.id])
-
-  function handleChange(field: keyof CustomerUpdateInput, value: string) {
-    const next = { ...fields, [field]: value }
-    setFields(next)
-    const original: CustomerUpdateInput = {
-      name: detail.name ?? "",
-      phone: detail.phone ?? "",
-      email: detail.email ?? "",
-      birth_date: detail.birth_date ?? "",
-      zip_code: detail.zip_code ?? "",
-      street: detail.street ?? "",
-      street_number: detail.street_number ?? "",
-      complement: detail.complement ?? "",
-      neighborhood: detail.neighborhood ?? "",
-      city: detail.city ?? "",
-      state: detail.state ?? "",
-    }
-    const dirty = (Object.keys(next) as Array<keyof CustomerUpdateInput>).some(
-      (k) => (next[k] ?? "") !== (original[k] ?? "")
-    )
-    if (dirty) {
-      const patch: CustomerUpdateInput = {}
-      for (const k of Object.keys(next) as Array<keyof CustomerUpdateInput>) {
-        if ((next[k] ?? "") !== (original[k] ?? "")) {
-          ;(patch as Record<string, string | undefined>)[k] = next[k]
-        }
-      }
-      onCustomerDataChange(patch)
-    } else {
-      onCustomerDataChange(null)
-    }
-  }
-
-  return (
-    <div className="space-y-2 mt-2">
-      <div>
-        <label className={LABEL}>Nome</label>
-        <input type="text" className={INPUT_EDIT} value={fields.name ?? ""} onChange={(e) => handleChange("name", e.target.value)} placeholder="Nome completo" />
-      </div>
-      <div className="grid grid-cols-4 gap-2">
-        <div>
-          <label className={LABEL}>Telefone</label>
-          <input type="tel" className={INPUT_EDIT} value={fields.phone ?? ""} onChange={(e) => handleChange("phone", e.target.value)} placeholder="(92) 99999-1234" />
-        </div>
-        <div className="col-span-2">
-          <label className={LABEL}>E-mail</label>
-          <input type="email" className={INPUT_EDIT} value={fields.email ?? ""} onChange={(e) => handleChange("email", e.target.value)} placeholder="email@exemplo.com" />
-        </div>
-        <div>
-          <label className={LABEL}>Nascimento</label>
-          <input type="date" className={INPUT_EDIT} value={fields.birth_date ?? ""} onChange={(e) => handleChange("birth_date", e.target.value)} />
-        </div>
-      </div>
-      <div className="grid grid-cols-4 gap-2">
-        <div>
-          <label className={LABEL}>CPF</label>
-          <div className={INPUT_READONLY}>{detail.cpf_masked ?? "—"}</div>
-        </div>
-      </div>
-      <div className="space-y-1.5 pt-1 border-t border-white/10">
-        <p className={`${SECTION_TITLE} pt-1`}>Endereço</p>
-        <div className="grid grid-cols-[72px_1fr_52px] gap-2">
-          <div>
-            <label className={LABEL}>CEP</label>
-            <input type="text" className={INPUT_EDIT} value={fields.zip_code ?? ""} onChange={(e) => handleChange("zip_code", e.target.value)} placeholder="69000-000" maxLength={9} />
-          </div>
-          <div>
-            <label className={LABEL}>Rua / Av.</label>
-            <input type="text" className={INPUT_EDIT} value={fields.street ?? ""} onChange={(e) => handleChange("street", e.target.value)} placeholder="Av. Eduardo Ribeiro" />
-          </div>
-          <div>
-            <label className={LABEL}>Nº</label>
-            <input type="text" className={INPUT_EDIT} value={fields.street_number ?? ""} onChange={(e) => handleChange("street_number", e.target.value)} placeholder="123" />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className={LABEL}>Complemento</label>
-            <input type="text" className={INPUT_EDIT} value={fields.complement ?? ""} onChange={(e) => handleChange("complement", e.target.value)} placeholder="Sala 1" />
-          </div>
-          <div>
-            <label className={LABEL}>Bairro</label>
-            <input type="text" className={INPUT_EDIT} value={fields.neighborhood ?? ""} onChange={(e) => handleChange("neighborhood", e.target.value)} placeholder="Centro" />
-          </div>
-        </div>
-        <div className="grid grid-cols-[1fr_44px] gap-2">
-          <div>
-            <label className={LABEL}>Cidade</label>
-            <input type="text" className={INPUT_EDIT} value={fields.city ?? ""} onChange={(e) => handleChange("city", e.target.value)} placeholder="Manaus" />
-          </div>
-          <div>
-            <label className={LABEL}>UF</label>
-            <input type="text" className={INPUT_EDIT} value={fields.state ?? ""} onChange={(e) => handleChange("state", e.target.value.toUpperCase())} placeholder="AM" maxLength={2} />
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ── Main CustomerSection ──────────────────────────────────────────────────────
-export function CustomerSection({ form, onCustomerDataChange, onPersonDataChange }: CustomerSectionProps) {
+export function CustomerSection({ form, onPersonDataChange }: CustomerSectionProps) {
   const { control, setValue, watch } = form
   const [swapping, setSwapping] = useState(false)
 
@@ -514,17 +370,10 @@ export function CustomerSection({ form, onCustomerDataChange, onPersonDataChange
   const customerPersonId = watch("customer_person_id") ?? null
   const customerName = watch("customer_name")
 
-  const { data: legacyDetail, isLoading: legacyLoading } = useCustomerDetail(customerId)
-
-  function handleCustomerDataChange(data: CustomerUpdateInput | null) {
-    onCustomerDataChange?.(data)
-  }
-
   function handlePersonSelect(newId: number, newName: string) {
     setValue("customer_person_id", newId)
     setValue("customer_name", newName)
     setValue("customer", null as unknown as string)
-    handleCustomerDataChange(null)
     onPersonDataChange?.(null)
     setSwapping(false)
   }
@@ -579,28 +428,17 @@ export function CustomerSection({ form, onCustomerDataChange, onPersonDataChange
         />
       )}
 
-      {/* UUID legado — UnifiedCustomer */}
+      {/* UUID legado — OS antigas com customer_uuid (sem person_id) */}
       {!swapping && customerId && !customerPersonId && (
-        <>
-          {legacyLoading && (
-            <div className="flex items-center gap-2 py-2 text-xs text-white/40">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Carregando dados do cliente...
-            </div>
-          )}
-          {legacyDetail && (
-            <EditableFields
-              detail={legacyDetail}
-              onCustomerDataChange={handleCustomerDataChange}
-            />
-          )}
-          {!legacyLoading && !legacyDetail && customerName && (
-            <div>
-              <label className={LABEL}>Nome</label>
-              <div className={INPUT_READONLY}>{customerName}</div>
-            </div>
-          )}
-        </>
+        <div className="space-y-2 mt-1">
+          <div>
+            <label className={LABEL}>Nome</label>
+            <div className={INPUT_READONLY}>{customerName || "Cliente legado"}</div>
+          </div>
+          <p className="text-xs text-white/40">
+            Cliente vinculado via cadastro legado. Use &quot;Trocar cliente&quot; para vincular a um cadastro Person.
+          </p>
+        </div>
       )}
 
       {/* Sem vínculo nenhum mas tem nome */}
