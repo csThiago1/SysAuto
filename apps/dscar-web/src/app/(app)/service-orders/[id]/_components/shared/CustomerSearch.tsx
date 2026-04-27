@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Loader2, Search, UserPlus, X, CheckCircle2 } from "lucide-react"
+import { z } from "zod"
 import { usePersonSearch, usePersonCreate } from "../../_hooks/useCustomerSearch"
 import { useDebounce } from "@/hooks/useDebounce"
+import { isValidCPF } from "@paddock/utils"
 
 export interface SelectedCustomer {
   id: number
@@ -20,6 +22,14 @@ interface CustomerSearchProps {
 
 const INPUT =
   "flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+
+const inlineCustomerSchema = z.object({
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  phone: z.string().regex(/^\d{10,11}$/, "Celular inválido (10-11 dígitos)"),
+  email: z.string().email("E-mail inválido"),
+  cpf: z.string().refine((v) => !v || isValidCPF(v), "CPF inválido").optional().or(z.literal("")),
+  birth_date: z.string().optional().or(z.literal("")),
+})
 
 export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProps) {
   const [query, setQuery] = useState("")
@@ -79,13 +89,24 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
 
   async function handleCreate() {
     setCreateError(null)
+    const result = inlineCustomerSchema.safeParse({
+      name: newName.trim(),
+      phone: newPhone.trim().replace(/\D/g, ""),
+      email: newEmail.trim(),
+      cpf: newCpf.trim().replace(/\D/g, "") || undefined,
+      birth_date: newBirthDate || undefined,
+    })
+    if (!result.success) {
+      setCreateError(result.error.errors[0]?.message ?? "Dados inválidos")
+      return
+    }
     try {
       const customer = await createMutation.mutateAsync({
-        name: newName.trim(),
-        cpf: newCpf.trim().replace(/\D/g, "") || undefined,
-        phone: newPhone.trim() || undefined,
-        email: newEmail.trim() || undefined,
-        birth_date: newBirthDate || undefined,
+        name: result.data.name,
+        cpf: result.data.cpf || undefined,
+        phone: result.data.phone,
+        email: result.data.email,
+        birth_date: result.data.birth_date || undefined,
       })
       onChange({
         id: customer.id,
@@ -100,11 +121,14 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
     }
   }
 
-  const canCreate =
-    newName.trim().length > 0 &&
-    newCpf.replace(/\D/g, "").length === 11 &&
-    newPhone.replace(/\D/g, "").length >= 10 &&
-    newEmail.trim().includes("@")
+  const parsed = inlineCustomerSchema.safeParse({
+    name: newName.trim(),
+    phone: newPhone.trim().replace(/\D/g, ""),
+    email: newEmail.trim(),
+    cpf: newCpf.trim().replace(/\D/g, "") || undefined,
+    birth_date: newBirthDate || undefined,
+  })
+  const canCreate = parsed.success
 
   // ── Modo: chip (selecionado) ─────────────────────────────────────
   if (value) {
@@ -169,14 +193,14 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
         <div className="grid grid-cols-2 gap-1.5">
           <input
             type="text"
-            placeholder="CPF * (11 dígitos)"
+            placeholder="CPF (opcional)"
             className={INPUT}
             value={newCpf}
             onChange={(e) => setNewCpf(e.target.value.replace(/\D/g, "").slice(0, 11))}
           />
           <input
             type="tel"
-            placeholder="Telefone *"
+            placeholder="Celular * (10-11 dígitos)"
             className={INPUT}
             value={newPhone}
             onChange={(e) => setNewPhone(e.target.value)}
