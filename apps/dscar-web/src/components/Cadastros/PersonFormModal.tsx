@@ -93,7 +93,7 @@ interface PersonFormModalProps extends ModalProps {
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 
-const ALL_ROLES: PersonRole[] = ["CLIENT", "INSURER", "BROKER", "EMPLOYEE", "SUPPLIER"];
+const ALL_ROLES: PersonRole[] = ["CLIENT", "BROKER", "EMPLOYEE", "SUPPLIER"];
 
 const CONTACT_TYPES = [
   { value: "CELULAR", label: "Celular" },

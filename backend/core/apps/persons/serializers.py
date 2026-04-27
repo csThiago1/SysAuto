@@ -210,7 +210,7 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
 
     roles = serializers.ListField(
         child=serializers.ChoiceField(
-            choices=["CLIENT", "INSURER", "BROKER", "EMPLOYEE", "SUPPLIER"]
+            choices=["CLIENT", "BROKER", "EMPLOYEE", "SUPPLIER"]
         ),
         write_only=True,
     )
