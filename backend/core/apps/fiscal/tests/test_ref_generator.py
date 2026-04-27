@@ -9,7 +9,6 @@ import pytest
 from apps.fiscal.services.ref_generator import SEQ_FIELD_BY_TYPE, next_fiscal_ref
 
 
-@pytest.mark.django_db
 def test_next_fiscal_ref_format_nfse(fiscal_config):
     """Ref de NFS-e deve ter formato correto: {cnpj8}-NFSE-{YYYYMMDD}-{seq6}."""
     ref, seq = next_fiscal_ref(fiscal_config, "NFSE")
@@ -19,7 +18,6 @@ def test_next_fiscal_ref_format_nfse(fiscal_config):
     assert ref.startswith("12345678")
 
 
-@pytest.mark.django_db
 def test_next_fiscal_ref_format_nfe(fiscal_config):
     """Ref de NF-e deve ter formato correto: {cnpj8}-NFE-{YYYYMMDD}-{seq6}."""
     ref, seq = next_fiscal_ref(fiscal_config, "NFE")
@@ -28,7 +26,6 @@ def test_next_fiscal_ref_format_nfe(fiscal_config):
     assert re.match(pattern, ref), f"Ref inválida: {ref!r}"
 
 
-@pytest.mark.django_db
 def test_next_fiscal_ref_increments_seq(fiscal_config):
     """Cada chamada deve incrementar o sequenciador."""
     ref1, seq1 = next_fiscal_ref(fiscal_config, "NFSE")
@@ -38,7 +35,6 @@ def test_next_fiscal_ref_increments_seq(fiscal_config):
     assert ref1 != ref2
 
 
-@pytest.mark.django_db
 def test_next_fiscal_ref_independent_counters(fiscal_config):
     """Contadores de NFSE, NFE e NFCE são independentes."""
     _, seq_nfse_1 = next_fiscal_ref(fiscal_config, "NFSE")
@@ -56,7 +52,6 @@ def test_next_fiscal_ref_independent_counters(fiscal_config):
     assert fiscal_config.seq_nfce == 1
 
 
-@pytest.mark.django_db
 def test_next_fiscal_ref_returns_correct_seq(fiscal_config):
     """seq retornado deve ser o valor antes do incremento (base 1)."""
     # seq_nfse começa em 1

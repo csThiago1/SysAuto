@@ -3,15 +3,36 @@ Paddock Solutions — Fiscal — conftest.py
 Ciclo 06B: Fiscal Foundation
 
 Fixtures compartilhadas entre todos os testes do app fiscal.
+Testes que acessam modelos tenant usam a fixture `tenant` para criar o schema.
 """
 
 import uuid
 
 import pytest
+from django.db import connection
+
+
 
 
 @pytest.fixture
-def fiscal_config(db):
+def tenant(transactional_db):
+    """Cria tenant de teste com schema isolado para apps TENANT_APPS.
+
+    Usa transactional_db (não db) porque django-tenants precisa de
+    transações reais para CREATE SCHEMA.
+    """
+    from apps.tenants.models import Company, Domain
+
+    tenant = Company(schema_name="test_fiscal", name="Fiscal Test Tenant")
+    tenant.save()
+    Domain.objects.create(domain="fiscal-test.localhost", tenant=tenant, is_primary=True)
+    connection.set_tenant(tenant)
+    yield tenant
+    connection.set_schema_to_public()
+
+
+@pytest.fixture
+def fiscal_config(tenant):
     """FiscalConfigModel configurado para testes (homologacao)."""
     from apps.fiscal.models import FiscalConfigModel
 
@@ -41,7 +62,7 @@ def fiscal_config(db):
 
 
 @pytest.fixture
-def fiscal_document(db, fiscal_config):
+def fiscal_document(fiscal_config):
     """FiscalDocument (stub) para testes."""
     from apps.fiscal.models import FiscalDocument
 
@@ -59,7 +80,7 @@ def fiscal_document(db, fiscal_config):
 
 
 @pytest.fixture
-def fiscal_event(db, fiscal_document):
+def fiscal_event(fiscal_document):
     """FiscalEvent para testes."""
     from apps.fiscal.models import FiscalEvent
 

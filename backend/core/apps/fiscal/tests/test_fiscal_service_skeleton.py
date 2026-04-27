@@ -90,23 +90,7 @@ def test_raise_for_http_503_raises_server_error():
         FiscalService._raise_for_http(make_response(503))
 
 
-# ─── Métodos stub ─────────────────────────────────────────────────────────────
-
-
-def test_emit_nfse_raises_not_implemented():
-    """emit_nfse deve levantar NotImplementedError (skeleton)."""
-    with pytest.raises(NotImplementedError):
-        FiscalService.emit_nfse(None, None, None)
-
-
-def test_cancel_raises_not_implemented():
-    """cancel deve levantar NotImplementedError (skeleton)."""
-    with pytest.raises(NotImplementedError):
-        FiscalService.cancel(None, "justificativa")
-
-
-@pytest.mark.django_db
-def test_get_config_raises_does_not_exist_when_no_config(db):
+def test_get_config_raises_does_not_exist_when_no_config(tenant):
     """get_config deve levantar DoesNotExist se não houver FiscalConfigModel ativo."""
     from apps.fiscal.models import FiscalConfigModel
 
@@ -114,7 +98,6 @@ def test_get_config_raises_does_not_exist_when_no_config(db):
         FiscalService.get_config()
 
 
-@pytest.mark.django_db
 def test_get_config_returns_active_config(fiscal_config):
     """get_config deve retornar o FiscalConfigModel ativo."""
     config = FiscalService.get_config()

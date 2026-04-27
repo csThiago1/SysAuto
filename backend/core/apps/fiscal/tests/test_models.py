@@ -7,7 +7,6 @@ import uuid
 import pytest
 
 
-@pytest.mark.django_db
 def test_fiscal_config_model_create(fiscal_config):
     """FiscalConfigModel deve ser criado com campos corretos."""
     from apps.fiscal.models import FiscalConfigModel
@@ -20,7 +19,6 @@ def test_fiscal_config_model_create(fiscal_config):
     assert fiscal_config.is_active is True
 
 
-@pytest.mark.django_db
 def test_fiscal_config_model_str(fiscal_config):
     """__str__ deve incluir razão social e CNPJ."""
     s = str(fiscal_config)
@@ -28,7 +26,6 @@ def test_fiscal_config_model_str(fiscal_config):
     assert "12345678000195" in s
 
 
-@pytest.mark.django_db
 def test_fiscal_document_item_create(fiscal_document):
     """FiscalDocumentItem deve ser criado com FK para FiscalDocument."""
     from apps.fiscal.models import FiscalDocumentItem
@@ -49,7 +46,6 @@ def test_fiscal_document_item_create(fiscal_document):
     assert item.descricao == "Serviço de funilaria"
 
 
-@pytest.mark.django_db
 def test_fiscal_event_create(fiscal_document):
     """FiscalEvent deve ser criado com FK para FiscalDocument."""
     from apps.fiscal.models import FiscalEvent
@@ -68,8 +64,7 @@ def test_fiscal_event_create(fiscal_document):
     assert event.http_status == 201
 
 
-@pytest.mark.django_db
-def test_fiscal_event_orphan_allowed(db):
+def test_fiscal_event_orphan_allowed(tenant):
     """FiscalEvent com document=None deve ser permitido (webhook orphan)."""
     from apps.fiscal.models import FiscalEvent
 
@@ -83,7 +78,6 @@ def test_fiscal_event_orphan_allowed(db):
     assert event.document is None
 
 
-@pytest.mark.django_db
 def test_fiscal_config_unique_cnpj(fiscal_config):
     """Dois FiscalConfigModel com o mesmo CNPJ devem violar unique constraint."""
     from django.db import IntegrityError

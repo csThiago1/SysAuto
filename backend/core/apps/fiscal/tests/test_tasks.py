@@ -10,14 +10,13 @@ from httpx import Response
 
 
 @pytest.fixture
-def fiscal_doc_processing(db, fiscal_document):
+def fiscal_doc_processing(fiscal_document):
     """FiscalDocument em status PROCESSING (aguardando polling)."""
     fiscal_document.status = "pending"
     fiscal_document.save(update_fields=["status"])
     return fiscal_document
 
 
-@pytest.mark.django_db
 @respx.mock
 def test_poll_skips_terminal_states(fiscal_document):
     """poll_fiscal_document deve retornar skip se status já é terminal."""
@@ -32,7 +31,6 @@ def test_poll_skips_terminal_states(fiscal_document):
     assert result["status"] == "authorized"
 
 
-@pytest.mark.django_db
 @respx.mock
 def test_poll_returns_error_for_unknown_document():
     """poll_fiscal_document deve retornar erro para documento inexistente."""
@@ -44,7 +42,6 @@ def test_poll_returns_error_for_unknown_document():
     assert result["error"] == "not_found"
 
 
-@pytest.mark.django_db
 @respx.mock
 def test_poll_creates_fiscal_event(fiscal_doc_processing):
     """poll_fiscal_document deve criar FiscalEvent(event_type='CONSULT')."""
@@ -65,7 +62,6 @@ def test_poll_creates_fiscal_event(fiscal_doc_processing):
     assert events.exists()
 
 
-@pytest.mark.django_db
 @respx.mock
 def test_poll_updates_status_to_authorized(fiscal_doc_processing):
     """poll_fiscal_document deve atualizar status para AUTHORIZED."""
@@ -88,7 +84,6 @@ def test_poll_updates_status_to_authorized(fiscal_doc_processing):
     assert fiscal_doc_processing.status == "AUTHORIZED"
 
 
-@pytest.mark.django_db
 @respx.mock
 def test_poll_all_terminal_states_map():
     """_map_focus_status deve mapear todos os status da Focus."""
@@ -102,7 +97,6 @@ def test_poll_all_terminal_states_map():
     assert _map_focus_status("status_desconhecido") is None
 
 
-@pytest.mark.django_db
 @respx.mock
 def test_poll_returns_document_id_and_status(fiscal_doc_processing):
     """poll_fiscal_document deve retornar dict com document_id e status."""
