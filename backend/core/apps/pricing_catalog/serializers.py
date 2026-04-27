@@ -326,7 +326,7 @@ class PecaCanonicoListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PecaCanonica
-        fields = ["id", "codigo", "nome", "tipo_peca", "is_active"]
+        fields = ["id", "codigo", "nome", "tipo_peca", "ncm", "is_active"]
         read_only_fields = ["id"]
 
 
@@ -344,6 +344,7 @@ class PecaCanonicoDetailSerializer(serializers.ModelSerializer):
             "nome",
             "tipo_peca",
             "tipo_peca_display",
+            "ncm",
             "tem_embedding",
             "is_active",
             "created_at",
@@ -361,7 +362,7 @@ class PecaCanonicoCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PecaCanonica
-        fields = ["codigo", "nome", "tipo_peca"]
+        fields = ["codigo", "nome", "tipo_peca", "ncm"]
 
 
 class PecaCanonicoUpdateSerializer(serializers.ModelSerializer):
@@ -372,7 +373,7 @@ class PecaCanonicoUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PecaCanonica
-        fields = ["id", "codigo", "nome", "tipo_peca", "is_active", "created_at", "updated_at"]
+        fields = ["id", "codigo", "nome", "tipo_peca", "ncm", "is_active", "created_at", "updated_at"]
         read_only_fields = ["id", "codigo", "created_at", "updated_at"]
 
 

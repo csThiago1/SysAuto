@@ -213,6 +213,73 @@ class ManualNfseInputSerializer(serializers.Serializer):
         return value
 
 
+# ── NF-e de Produto (Ciclo 07A) ──────────────────────────────────────────────
+
+
+class ManualNfeItemInputSerializer(serializers.Serializer):
+    """Item de NF-e de produto para emissão manual."""
+
+    codigo_produto = serializers.CharField(max_length=60, required=False, default="")
+    descricao = serializers.CharField(min_length=2, max_length=120)
+    ncm = serializers.CharField(min_length=8, max_length=10)
+    unidade = serializers.CharField(max_length=6, default="UN")
+    quantidade = serializers.DecimalField(max_digits=12, decimal_places=4)
+    valor_unitario = serializers.DecimalField(max_digits=14, decimal_places=4)
+    valor_desconto = serializers.DecimalField(
+        max_digits=14, decimal_places=2, default=0, required=False
+    )
+
+    def validate_ncm(self, value: str) -> str:
+        digits = value.replace(".", "").strip()
+        if len(digits) < 8:
+            raise serializers.ValidationError(
+                "NCM deve ter 8 dígitos numéricos. Ex: 87089990."
+            )
+        return digits
+
+
+class ManualNfeInputSerializer(serializers.Serializer):
+    """Payload de emissão manual de NF-e de produto (ADMIN+)."""
+
+    destinatario_id = serializers.IntegerField()
+    itens = ManualNfeItemInputSerializer(many=True, allow_empty=False)
+    forma_pagamento = serializers.ChoiceField(
+        choices=["01", "03", "04", "99"], default="01",
+        help_text="01=dinheiro, 03=crédito, 04=débito, 99=outros.",
+    )
+    observacoes = serializers.CharField(
+        max_length=2000, default="", required=False, allow_blank=True
+    )
+    manual_reason = serializers.CharField(min_length=5, max_length=255)
+    # Override opcional de alíquotas (se não informado, usa defaults do FiscalConfigModel)
+    cst_icms = serializers.CharField(max_length=3, required=False, default="")
+    icms_aliquota = serializers.DecimalField(
+        max_digits=5, decimal_places=2, required=False, allow_null=True, default=None
+    )
+
+    def validate_destinatario_id(self, value: int) -> int:
+        from apps.persons.models import Person, PersonDocument
+
+        try:
+            person = Person.objects.prefetch_related("addresses").get(pk=value)
+        except Person.DoesNotExist:
+            raise serializers.ValidationError(f"Person pk={value} não encontrada.")
+
+        has_doc = PersonDocument.objects.filter(person=person, is_primary=True).exists()
+        if not has_doc:
+            raise serializers.ValidationError(
+                f"Person pk={value} sem documento primário (CPF/CNPJ)."
+            )
+
+        has_address = person.addresses.filter(is_primary=True).exists()
+        if not has_address:
+            raise serializers.ValidationError(
+                f"Person pk={value} sem endereço primário."
+            )
+
+        return value
+
+
 # ── Ciclo 06C: FiscalDocument output serializers ─────────────────────────────
 
 

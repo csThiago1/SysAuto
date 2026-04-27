@@ -75,7 +75,7 @@ export interface FiscalDocument extends FiscalDocumentList {
   items: FiscalDocumentItem[];
 }
 
-// ─── Inputs de emissão manual ────────────────────────────────────────────────
+// ─── Inputs de emissão manual NFS-e ──────────────────────────────────────────
 // Espelha ManualNfseInputSerializer (nomes de campo em português conforme backend)
 
 export interface ManualNfseItem {
@@ -97,4 +97,38 @@ export interface ManualNfseInput {
   /** ISO datetime ou null (null = agora, ≤ 30 dias passado) */
   data_emissao?: string | null;
   observacoes_contribuinte?: string;
+}
+
+// ─── Inputs de emissão NF-e de Produto (07A) ─────────────────────────────────
+// Espelha ManualNfeInputSerializer + ManualNfeItemInputSerializer
+
+export interface ManualNfeItem {
+  codigo_produto?: string;
+  descricao: string;
+  /** NCM 8 dígitos obrigatório. Ex: "87089990" */
+  ncm: string;
+  unidade?: string;
+  quantidade: string;
+  valor_unitario: string;
+  valor_desconto?: string;
+}
+
+export interface ManualNfeInput {
+  /** PK inteiro do Person (destinatário) */
+  destinatario_id: number;
+  itens: ManualNfeItem[];
+  /** 01=dinheiro, 03=crédito, 04=débito, 99=outros */
+  forma_pagamento?: "01" | "03" | "04" | "99";
+  observacoes?: string;
+  manual_reason: string;
+  /** Override opcional de CST ICMS */
+  cst_icms?: string;
+  /** Override opcional de alíquota ICMS */
+  icms_aliquota?: number | null;
+}
+
+export interface NfeEmitFromOsInput {
+  service_order_id: string;
+  /** 01=dinheiro, 03=crédito, 04=débito, 99=outros */
+  forma_pagamento?: "01" | "03" | "04" | "99";
 }

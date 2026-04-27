@@ -306,6 +306,67 @@ class FiscalConfigModel(models.Model):
         choices=[("homologacao", "Homologação"), ("producao", "Produção")],
         default="homologacao",
     )
+    # ── NF-e: endereço do emitente ────────────────────────────────────────────
+    nfe_logradouro = models.CharField(max_length=100, blank=True, default="")
+    nfe_numero = models.CharField(max_length=10, blank=True, default="")
+    nfe_bairro = models.CharField(max_length=60, blank=True, default="")
+    nfe_municipio = models.CharField(max_length=60, blank=True, default="Manaus")
+    nfe_uf = models.CharField(max_length=2, blank=True, default="AM")
+    nfe_cep = models.CharField(
+        max_length=8, blank=True, default="",
+        help_text="CEP sem traço (8 dígitos).",
+    )
+    # ── NF-e: ICMS (Regime Normal) ────────────────────────────────────────────
+    icms_aliquota_intraestadual = models.DecimalField(
+        max_digits=5, decimal_places=2, default=12,
+        help_text="Alíquota ICMS intraestadual (%). Padrão AM: 12%.",
+    )
+    icms_aliquota_interestadual_12 = models.DecimalField(
+        max_digits=5, decimal_places=2, default=12,
+        help_text="Alíquota ICMS interestadual para estados 12% (SP, RJ, MG…).",
+    )
+    icms_aliquota_interestadual_7 = models.DecimalField(
+        max_digits=5, decimal_places=2, default=7,
+        help_text="Alíquota ICMS interestadual para estados 7% (AC, AL, AP, BA, CE…).",
+    )
+    cst_icms_saida = models.CharField(
+        max_length=3, default="00",
+        help_text="CST ICMS padrão para saída. 00=tributação integral.",
+    )
+    icms_modalidade_base_calculo = models.CharField(
+        max_length=1, default="3",
+        help_text="Modalidade base ICMS. 3=valor da operação.",
+    )
+    # ── NF-e: PIS / COFINS ───────────────────────────────────────────────────
+    aliquota_pis = models.DecimalField(
+        max_digits=5, decimal_places=2, default="0.65",
+        help_text="Alíquota PIS (%). Lucro Presumido cumulativo: 0,65%.",
+    )
+    aliquota_cofins = models.DecimalField(
+        max_digits=5, decimal_places=2, default=3,
+        help_text="Alíquota COFINS (%). Lucro Presumido cumulativo: 3%.",
+    )
+    cst_pis_saida = models.CharField(
+        max_length=2, default="01",
+        help_text="CST PIS padrão saída. 01=operação tributável.",
+    )
+    cst_cofins_saida = models.CharField(
+        max_length=2, default="01",
+        help_text="CST COFINS padrão saída. 01=operação tributável.",
+    )
+    # ── NF-e: dados gerais ───────────────────────────────────────────────────
+    nfe_natureza_operacao = models.CharField(
+        max_length=60, default="Venda de mercadoria",
+    )
+    nfe_indicador_consumidor_final = models.CharField(
+        max_length=1, default="1",
+        help_text="1=consumidor final (PF), 0=não (PJ contribuinte).",
+    )
+    nfe_indicador_presenca = models.CharField(
+        max_length=1, default="1",
+        help_text="1=presencial; 9=outros.",
+    )
+
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

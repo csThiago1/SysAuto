@@ -257,6 +257,8 @@ export interface PecaCanonicoPayload {
   codigo: string
   nome: string
   tipo_peca?: 'genuina' | 'original' | 'paralela' | 'usada' | 'recondicionada'
+  /** NCM 8 dígitos para NF-e de produto. Ex: "87089990" */
+  ncm?: string
   is_active?: boolean
 }
 
@@ -266,6 +268,19 @@ export function useCreatePecaCanonica() {
     mutationFn: (data: PecaCanonicoPayload) =>
       apiFetch<PecaCanonica>(`${BASE}/pecas/`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: catalogKeys.pecas() }),
+  })
+}
+
+export function useUpdatePecaCanonica() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...data }: PecaCanonicoPayload & { id: string }) =>
+      apiFetch<PecaCanonica>(`${BASE}/pecas/${id}/`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       }),

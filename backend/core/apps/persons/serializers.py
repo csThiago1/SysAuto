@@ -114,7 +114,7 @@ class PersonContactSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PersonContact
-        fields = ["id", "contact_type", "value_masked", "label", "is_primary"]
+        fields = ["id", "contact_type", "value", "value_masked", "label", "is_primary"]
         read_only_fields = fields
 
     def get_value_masked(self, obj: PersonContact) -> str:

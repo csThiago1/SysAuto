@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>Design System — Futuristic Finance</title>
+
+  <!-- Same CSS as the reference -->
+  <link rel="stylesheet" crossorigin href="refs/fintech-liquidity-73.aura.build/assets/index-oxca_Ml2.css">
+
+  <!-- Same Iconify as the reference -->
+  <script src="refs/cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js" crossorigin="anonymous"></script>
+
+  <!--
+    Minimal helpers: these only wire up animation demos and patterns
+    that the original React app would apply programmatically at runtime.
+    No new visual tokens are introduced — every color, easing, and keyframe
+    referenced here exists in the original CSS file.
+  -->
+  <style>
+    /* Marquee demo: mirrors what React adds at runtime */
+    .ds-marquee-run {
+      animation: marquee-scroll 28s linear infinite;
+      width: max-content;
+    }
+    /* Dots grid: background pattern used by the template's dot sections */
+    .ds-dots-bg {
+      background-image: radial-gradient(circle, rgba(163,230,53,0.12) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    /* Beam spin ring: conic gradient used in the beam-spin demo */
+    .ds-beam-ring {
+      background: conic-gradient(from 0deg, transparent, #a3e635, transparent 30%);
+    }
+    /* Fixed DS nav sits above the gradient-blur overlay */
+    .ds-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+    }
+    /* Offset page scroll to clear fixed nav */
+    :target {
+      scroll-margin-top: 56px;
+    }
+    /* Section demo box: dark container, no inline styles */
+    .ds-demo {
+      background-color: rgba(255,255,255,0.02);
+    }
+  </style>
+</head>
+
+<body class="affiliates-page bg-black text-gray-300 font-sans antialiased min-h-screen w-full overflow-x-hidden">
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- FIXED DESIGN-SYSTEM NAVIGATION                         -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <nav class="ds-nav flex items-center justify-between px-6 py-3 border-b border-white/10 bg-black/95 backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <span class="text-white font-geist font-bold text-xs tracking-widest uppercase">DESIGN SYSTEM</span>
+      <span class="text-white/20 text-xs font-mono">/ fintech-liquidity</span>
+    </div>
+    <div class="flex items-center gap-6">
+      <a href="#hero"       class="text-xs uppercase tracking-widest text-gray-500 hover:text-lime-400 transition-colors font-mono">00 Hero</a>
+      <a href="#typography" class="text-xs uppercase tracking-widest text-gray-500 hover:text-lime-400 transition-colors font-mono">01 Type</a>
+      <a href="#colors"     class="text-xs uppercase tracking-widest text-gray-500 hover:text-lime-400 transition-colors font-mono">02 Colors</a>
+      <a href="#components" class="text-xs uppercase tracking-widest text-gray-500 hover:text-lime-400 transition-colors font-mono">03 Components</a>
+      <a href="#layout"     class="text-xs uppercase tracking-widest text-gray-500 hover:text-lime-400 transition-colors font-mono">04 Layout</a>
+      <a href="#motion"     class="text-xs uppercase tracking-widest text-gray-500 hover:text-lime-400 transition-colors font-mono">05 Motion</a>
+      <a href="#icons"      class="text-xs uppercase tracking-widest text-gray-500 hover:text-lime-400 transition-colors font-mono">06 Icons</a>
+    </div>
+  </nav>
+
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- SECTION 00 · HERO (EXACT CLONE)                        -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <section id="hero" class="relative min-h-screen flex flex-col pt-14">
+
+    <!-- Status bar -->
+    <div class="flex items-center justify-between px-6 py-2 border-b border-white/5 text-xs font-mono text-gray-600">
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-lime-400 animate-pulse-slow"></span>
+          SYS.ONLINE
+        </span>
+        <span>LATENCY: 32MS</span>
+        <span>NODE: VLT.09</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span>03:13:40:52</span>
+        <span class="border border-white/20 px-2 py-0.5 tracking-widest text-white/50">AUTH</span>
+      </div>
+    </div>
+
+    <!-- Page nav (cloned from original) -->
+    <header class="flex items-center justify-between px-6 py-4 border-b border-white/5">
+      <div class="flex items-center gap-8">
+        <div class="flex items-center gap-2">
+          <span class="text-white font-geist font-bold text-lg tracking-wider uppercase">VAULTA</span>
+          <span class="text-gray-700 text-xs font-mono">/ds</span>
+        </div>
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="#typography" class="text-xs uppercase tracking-widest text-gray-500 hover:text-white transition-colors">
+            <span class="text-gray-700 mr-1">01</span>TYPOGRAPHY
+          </a>
+          <a href="#components" class="text-xs uppercase tracking-widest text-gray-500 hover:text-white transition-colors">
+            <span class="text-gray-700 mr-1">02</span>COMPONENTS
+          </a>
+          <a href="#motion" class="text-xs uppercase tracking-widest text-gray-500 hover:text-white transition-colors">
+            <span class="text-gray-700 mr-1">03</span>MOTION
+          </a>
+        </nav>
+      </div>
+      <button class="border border-white/20 text-white text-xs uppercase tracking-widest px-4 py-2 hover:bg-white/5 transition-colors font-mono">
+        CONNECT NODE
+      </button>
+    </header>
+
+    <!-- Hero body -->
+    <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-12 px-6 py-16 max-w-screen-xl mx-auto w-full">
+
+      <!-- Left: headline + body + CTAs -->
+      <div class="flex flex-col justify-center">
+        <div class="flex items-center gap-3 mb-8">
+          <div class="w-2 h-2 rounded-full border border-lime-400"></div>
+          <span class="text-lime-400 text-xs font-mono uppercase tracking-widest">DESIGN SYSTEM V1 EXECUTING</span>
+          <div class="flex-1 h-px bg-white/10"></div>
+        </div>
+
+        <h1 class="col-anim text-white font-geist font-black text-8xl uppercase leading-none tracking-tighter">
+          DESIGN
+        </h1>
+        <h2 class="col-anim delay-1 text-serif-display text-white text-7xl leading-none mt-1">
+          documented.
+        </h2>
+
+        <p class="col-anim delay-2 mt-8 text-gray-400 text-sm leading-relaxed max-w-sm">
+          Tokens, primitives, and motion patterns — extracted and
+          preserved exactly from the original. Every class, animation,
+          and color used faithfully.
+        </p>
+
+        <div class="col-anim delay-3 flex items-center gap-4 mt-10">
+          <a href="#components" class="flex items-center gap-2 border border-white/30 text-white text-xs uppercase tracking-widest px-5 py-3 hover:bg-white/5 transition-colors font-mono">
+            VIEW COMPONENTS ↗
+          </a>
+          <a href="#typography" class="text-xs uppercase tracking-widest text-gray-500 hover:text-white transition-colors font-mono px-5 py-3">
+            BROWSE TOKENS
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: terminal panel -->
+      <div class="flex flex-col justify-center">
+        <div class="border border-white/10 bg-white/[0.015] rounded-sm overflow-hidden">
+
+          <!-- Terminal header bar -->
+          <div class="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/[0.02]">
+            <div class="flex items-center gap-2 text-xs font-mono text-gray-600">
+              <span>TERMINAL_OS_V3.1</span>
+              <span class="text-gray-800">|</span>
+              <span>PID: 88479</span>
+            </div>
+            <div class="w-2 h-2 bg-lime-400 rounded-full animate-pulse-slow"></div>
+          </div>
+
+          <!-- Metrics grid -->
+          <div class="grid grid-cols-2 divide-x divide-white/5">
+
+            <!-- Chart column -->
+            <div class="p-4">
+              <div class="text-gray-600 text-xs font-mono uppercase tracking-widest mb-2">NETWORK THROUGHPUT</div>
+              <div class="text-white font-mono font-bold text-xl text-right mb-3">74,291 TPS</div>
+              <svg viewBox="0 0 200 80" class="w-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#a3e635" stop-opacity="0.25"/>
+                    <stop offset="100%" stop-color="#a3e635" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <polygon
+                  points="0,72 20,62 40,66 60,46 80,56 100,32 120,42 140,22 160,12 180,16 200,6 200,80 0,80"
+                  fill="url(#chartGrad)"
+                />
+                <polyline
+                  points="0,72 20,62 40,66 60,46 80,56 100,32 120,42 140,22 160,12 180,16 200,6"
+                  stroke="#a3e635"
+                  stroke-width="1.5"
+                  stroke-linejoin="round"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <div class="flex justify-between text-gray-700 text-xs font-mono mt-1">
+                <span>00:00</span><span>1 HR.AG</span><span>00:00</span><span>NOW</span>
+              </div>
+            </div>
+
+            <!-- TVL column -->
+            <div class="p-4">
+              <div class="text-gray-600 text-xs font-mono uppercase tracking-widest mb-2">GLOBAL TVL</div>
+              <div class="text-white font-mono font-bold text-2xl mt-4">$8.42B</div>
+              <div class="text-lime-400 text-xs font-mono mt-1">▲ +340M (24h)</div>
+              <div class="mt-5 border-t border-white/5 pt-4">
+                <div class="text-gray-600 text-xs font-mono uppercase tracking-widest mb-1">PRIMARY ASSET</div>
+                <div class="text-white font-mono text-sm tracking-wider">CRE_NY_88</div>
+                <div class="w-full h-px bg-lime-400 mt-1"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Execution log -->
+          <div class="border-t border-white/5 p-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">EXECUTION LOG</span>
+              <span class="text-lime-400 text-xs font-mono animate-pulse-slow">REC...</span>
+            </div>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between text-xs font-mono">
+                <span class="text-gray-600">[0xBF...44]</span>
+                <span class="text-gray-500">SYNTH_MINT</span>
+                <span class="text-gray-300">$456,000.00</span>
+                <span class="text-lime-400">CONFIRMED</span>
+              </div>
+              <div class="flex items-center justify-between text-xs font-mono">
+                <span class="text-gray-600">[0x11...92]</span>
+                <span class="text-gray-500">YIELD_DIST</span>
+                <span class="text-gray-300">$12,000.00</span>
+                <span class="text-lime-400">CONFIRMED</span>
+              </div>
+              <div class="flex items-center justify-between text-xs font-mono">
+                <span class="text-gray-600">[0x4b...39]</span>
+                <span class="text-gray-500">ATOMIC_SWAP</span>
+                <span class="text-gray-300">$3.2k</span>
+                <span class="text-yellow-500">PENDING</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- SECTION 01 · TYPOGRAPHY                                -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <section id="typography" class="px-6 py-24 border-t border-white/5">
+    <div class="max-w-screen-xl mx-auto">
+
+      <div class="flex items-center gap-3 mb-16">
+        <span class="text-lime-400 text-xs font-mono uppercase tracking-widest">01</span>
+        <h2 class="text-white text-xs font-mono uppercase tracking-widest">TYPOGRAPHY</h2>
+        <div class="flex-1 h-px bg-white/5"></div>
+      </div>
+
+      <div class="divide-y divide-white/5">
+
+        <!-- Heading 1: Geist Black -->
+        <div class="grid grid-cols-[200px_1fr_140px] gap-8 py-10 items-center">
+          <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">Heading 1<br><span class="text-gray-700">font-geist font-black</span></span>
+          <h1 class="text-white font-geist font-black text-8xl uppercase leading-none tracking-tighter">LIQUIDITY</h1>
+          <span class="text-gray-600 text-xs font-mono text-right">6rem / 1</span>
+        </div>
+
+        <!-- Heading Serif: Newsreader italic -->
+        <div class="grid grid-cols-[200px_1fr_140px] gap-8 py-10 items-center">
+          <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">Heading Serif<br><span class="text-gray-700">text-serif-display</span></span>
+          <h2 class="text-serif-display text-white text-7xl">engineered.</h2>
+          <span class="text-gray-600 text-xs font-mono text-right">4.5rem / 1</span>
+        </div>
+
+        <!-- Heading 2 -->
+        <div class="grid grid-cols-[200px_1fr_140px] gap-8 py-10 items-center">
+          <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">Heading 2<br><span class="text-gray-700">font-geist font-bold</span></span>
+          <h2 class="text-white font-geist font-bold text-4xl uppercase tracking-tighter">ARCHITECTURE</h2>
+          <span class="text-gray-600 text-xs font-mono text-right">2.25rem / 2.5rem</span>
+        </div>
+
+        <!-- Heading 3 -->
+        <div class="grid grid-cols-[200px_1fr_140px] gap-8 py-10 items-center">
+          <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">Heading 3<br><span class="text-gray-700">font-geist font-semibold</span></span>
+          <h3 class="text-white font-geist font-semibold text-2xl tracking-tight">Network Throughput</h3>
+          <span class="text-gray-600 text-xs font-mono text-right">1.5rem / 2rem</span>
+        </div>
+
+        <!-- Label / Tag -->
+        <div class="grid grid-cols-[200px_1fr_140px] gap-8 py-10 items-center">
+          <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">Label / Tag<br><span class="text-gray-700">font-mono uppercase</span></span>
+          <span class="text-lime-400 text-xs font-mono uppercase tracking-widest">PROTOCOL V3 EXECUTING</span>
+          <span class="text-gray-600 text-xs font-mono text-right">0.75rem / 1rem</span>
+        </div>
+
+        <!-- Body -->
+        <div class="grid grid-cols-[200px_1fr_140px] gap-8 py-10 items-center">
+          <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">Body<br><span class="text-gray-700">text-sm text-gray-400</span></span>
+          <p class="text-gray-400 text-sm leading-relaxed max-w-md">
+            Bypass fragmented wrappers. Synthesize offline assets into programmable
+            primitives. Settle with T+0 precision on sovereign, institution-grade infrastructure.
+          </p>
+          <span class="text-gray-600 text-xs font-mono text-right">0.875rem / 1.25rem</span>
+        </div>
+
+        <!-- Mono terminal -->
+        <div class="grid grid-cols-[200px_1fr_140px] gap-8 py-10 items-center">
+          <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">Mono Terminal<br><span class="text-gray-700">font-mono text-sm</span></span>
+          <span class="font-mono text-gray-400 text-sm">[0xBF...44] SYNTH_MINT  $456,000.00  CONFIRMED</span>
+          <span class="text-gray-600 text-xs font-mono text-right">0.875rem / 1.25rem</span>
+        </div>
+
+        <!-- Caption -->
+        <div class="grid grid-cols-[200px_1fr_140px] gap-8 py-10 items-center">
+          <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">Caption<br><span class="text-gray-700">text-xs text-gray-600</span></span>
+          <span class="text-gray-600 text-xs font-mono">LATENCY: 32MS · NODE: VLT.09 · 03:13:40:52</span>
+          <span class="text-gray-600 text-xs font-mono text-right">0.75rem / 1rem</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- SECTION 02 · COLORS & SURFACES                         -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <section id="colors" class="px-6 py-24 border-t border-white/5">
+    <div class="max-w-screen-xl mx-auto">
+
+      <div class="flex items-center gap-3 mb-16">
+        <span class="text-lime-400 text-xs font-mono uppercase tracking-widest">02</span>
+        <h2 class="text-white text-xs font-mono uppercase tracking-widest">COLORS &amp; SURFACES</h2>
+        <div class="flex-1 h-px bg-white/5"></div>
+      </div>
+
+      <div class="space-y-14">
+
+        <!-- Backgrounds -->
+        <div>
+          <h3 class="text-gray-600 text-xs font-mono uppercase tracking-widest mb-6">BACKGROUNDS</h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="space-y-2">
+              <div class="h-20 bg-black border border-white/10 rounded-sm"></div>
+              <div class="text-xs font-mono text-gray-500">bg-black</div>
+              <div class="text-xs font-mono text-gray-700">#000 · Page background</div>
+            </div>
+            <div class="space-y-2">
+              <div class="h-20 bg-white/[0.02] border border-white/10 rounded-sm"></div>
+              <div class="text-xs font-mono text-gray-500">bg-white/[0.02]</div>
+              <div class="text-xs font-mono text-gray-700">Card / panel surface</div>
+            </div>
+            <div class="space-y-2">
+              <div class="h-20 bg-white/5 border border-white/10 rounded-sm"></div>
+              <div class="text-xs font-mono text-gray-500">bg-white/5</div>
+              <div class="text-xs font-mono text-gray-700">Elevated surface</div>
+            </div>
+            <div class="space-y-2">
+              <div class="h-20 bg-white/10 border border-white/10 rounded-sm"></div>
+              <div class="text-xs font-mono text-gray-500">bg-white/10</div>
+              <div class="text-xs font-mono text-gray-700">Hover / pressed state</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accent: lime -->
+        <div>
+          <h3 class="text-gray-600 text-xs font-mono uppercase tracking-widest mb-6">ACCENT — LIME</h3>
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div class="space-y-2">
+              <div class="h-14 bg-lime-300 rounded-sm"></div>
+              <div class="text-xs font-mono text-gray-500">bg-lime-300</div>
+              <div class="text-xs font-mono text-gray-700">#bef264</div>
+            </div>
+            <div class="space-y-2">
+              <div class="h-14 bg-lime-400 rounded-sm"></div>
+              <div class="text-xs font-mono text-gray-500">bg-lime-400 ← primary</div>
+              <div class="text-xs font-mono text-gray-700">#a3e635</div>
+            </div>
+            <div class="space-y-2">
+              <div class="h-14 bg-lime-500 rounded-sm"></div>
+              <div class="text-xs font-mono text-gray-500">bg-lime-500</div>
+              <div class="text-xs font-mono text-gray-700">#84cc16</div>
+            </div>
+            <div class="space-y-2">
+              <div class="h-14 bg-lime-600 rounded-sm"></div>
+              <div class="text-xs font-mono text-gray-500">bg-lime-600</div>
+              <div class="text-xs font-mono text-gray-700">#65a30d</div>
+            </div>
+            <div class="space-y-2">
+              <div class="h-14 bg-lime-400/10 border border-lime-400/20 rounded-sm"></div>
+              <div class="text-xs font-mono text-gray-500">bg-lime-400/10</div>
+              <div class="text-xs font-mono text-gray-700">Tinted surface / glow</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Text colors -->
+        <div>
+          <h3 class="text-gray-600 text-xs font-mono uppercase tracking-widest mb-6">TEXT</h3>
+          <div class="space-y-4">
+            <div class="flex items-center gap-6">
+              <span class="w-36 text-xs font-mono text-gray-700">text-white</span>
+              <span class="text-white font-geist font-semibold">Primary headings</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="w-36 text-xs font-mono text-gray-700">text-gray-300</span>
+              <span class="text-gray-300">Secondary content / body default</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="w-36 text-xs font-mono text-gray-700">text-gray-400</span>
+              <span class="text-gray-400">Descriptions, paragraph text</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="w-36 text-xs font-mono text-gray-700">text-gray-500</span>
+              <span class="text-gray-500">Nav labels, muted text</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="w-36 text-xs font-mono text-gray-700">text-gray-600</span>
+              <span class="text-gray-600">Timestamps, captions, dim labels</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="w-36 text-xs font-mono text-gray-700">text-lime-400</span>
+              <span class="text-lime-400 font-mono uppercase tracking-widest text-xs">CONFIRMED · Active · Accent</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="w-36 text-xs font-mono text-gray-700">text-yellow-500</span>
+              <span class="text-yellow-500 font-mono uppercase tracking-widest text-xs">PENDING · Warning</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Borders & dividers -->
+        <div>
+          <h3 class="text-gray-600 text-xs font-mono uppercase tracking-widest mb-6">BORDERS &amp; DIVIDERS</h3>
+          <div class="space-y-5">
+            <div class="flex items-center gap-6">
+              <span class="w-36 text-xs font-mono text-gray-700">border-white/5</span>
+              <div class="flex-1 border-t border-white/5"></div>
+              <span class="text-gray-700 text-xs font-mono">Section divider</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="w-36 text-xs font-mono text-gray-700">border-white/10</span>
+              <div class="flex-1 border-t border-white/10"></div>
+              <span class="text-gray-700 text-xs font-mono">Card / panel border</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="w-36 text-xs font-mono text-gray-700">border-white/20</span>
+              <div class="flex-1 border-t border-white/20"></div>
+              <span class="text-gray-700 text-xs font-mono">Interactive element border</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="w-36 text-xs font-mono text-gray-700">border-white/30</span>
+              <div class="flex-1 border-t border-white/30"></div>
+              <span class="text-gray-700 text-xs font-mono">CTA / prominent border</span>
+            </div>
+            <div class="flex items-center gap-6">
+              <span class="w-36 text-xs font-mono text-gray-700">border-lime-400</span>
+              <div class="flex-1 border-t border-lime-400"></div>
+              <span class="text-gray-700 text-xs font-mono">Accent rule / active indicator</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gradients -->
+        <div>
+          <h3 class="text-gray-600 text-xs font-mono uppercase tracking-widest mb-6">GRADIENTS</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="space-y-2">
+              <div class="h-20 bg-gradient-to-b from-lime-400/20 to-transparent rounded-sm border border-white/5"></div>
+              <div class="text-xs font-mono text-gray-500">Accent glow fade</div>
+              <div class="text-xs font-mono text-gray-700">from-lime-400/20 to-transparent</div>
+            </div>
+            <div class="space-y-2">
+              <div class="h-20 bg-gradient-to-b from-white/10 to-transparent rounded-sm border border-white/5"></div>
+              <div class="text-xs font-mono text-gray-500">Surface shimmer</div>
+              <div class="text-xs font-mono text-gray-700">from-white/10 to-transparent</div>
+            </div>
+            <div class="space-y-2">
+              <div class="h-20 bg-gradient-to-br from-lime-400/5 via-transparent to-lime-400/5 rounded-sm border border-white/5"></div>
+              <div class="text-xs font-mono text-gray-500">Iridescent card tint</div>
+              <div class="text-xs font-mono text-gray-700">from-lime-400/5 via-transparent to-lime-400/5</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- SECTION 03 · UI COMPONENTS                             -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <section id="components" class="px-6 py-24 border-t border-white/5">
+    <div class="max-w-screen-xl mx-auto">
+
+      <div class="flex items-center gap-3 mb-16">
+        <span class="text-lime-400 text-xs font-mono uppercase tracking-widest">03</span>
+        <h2 class="text-white text-xs font-mono uppercase tracking-widest">UI COMPONENTS</h2>
+        <div class="flex-1 h-px bg-white/5"></div>
+      </div>
+
+      <div class="space-y-6">
+
+        <!-- button-primary -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5 flex items-center justify-between">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">.button-primary</span>
+            <span class="text-gray-700 text-xs font-mono">Blue gradient · border-blue-600</span>
+          </div>
+          <div class="p-8 flex flex-wrap items-center gap-6 ds-demo">
+            <div class="flex flex-col items-center gap-3">
+              <button class="button-primary">Default</button>
+              <span class="text-gray-700 text-xs font-mono">Default</span>
+            </div>
+            <div class="flex flex-col items-center gap-3">
+              <button class="button-primary" style="--tw-gradient-stops: #2563eb, #1d4ed8">Hover</button>
+              <span class="text-gray-700 text-xs font-mono">Hover</span>
+            </div>
+            <div class="flex flex-col items-center gap-3">
+              <button class="button-primary" disabled>Disabled</button>
+              <span class="text-gray-700 text-xs font-mono">Disabled</span>
+            </div>
+          </div>
+          <div class="px-6 py-3 border-t border-white/5">
+            <code class="text-gray-700 text-xs font-mono">&lt;button class="button-primary"&gt;</code>
+          </div>
+        </div>
+
+        <!-- button-gold -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5 flex items-center justify-between">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">.button-gold</span>
+            <span class="text-gray-700 text-xs font-mono">Amber gradient · border-amber-500</span>
+          </div>
+          <div class="p-8 flex flex-wrap items-center gap-6 ds-demo">
+            <div class="flex flex-col items-center gap-3">
+              <button class="button-gold">Default</button>
+              <span class="text-gray-700 text-xs font-mono">Default</span>
+            </div>
+            <div class="flex flex-col items-center gap-3">
+              <button class="button-gold" disabled>Disabled</button>
+              <span class="text-gray-700 text-xs font-mono">Disabled</span>
+            </div>
+          </div>
+          <div class="px-6 py-3 border-t border-white/5">
+            <code class="text-gray-700 text-xs font-mono">&lt;button class="button-gold"&gt;</code>
+          </div>
+        </div>
+
+        <!-- button-secondary -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5 flex items-center justify-between">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">.button-secondary</span>
+            <span class="text-gray-700 text-xs font-mono">White fill · subtle shadow</span>
+          </div>
+          <div class="p-8 flex flex-wrap items-center gap-6 ds-demo">
+            <div class="flex flex-col items-center gap-3">
+              <button class="button-secondary">Default</button>
+              <span class="text-gray-700 text-xs font-mono">Default</span>
+            </div>
+          </div>
+          <div class="px-6 py-3 border-t border-white/5">
+            <code class="text-gray-700 text-xs font-mono">&lt;button class="button-secondary"&gt;</code>
+          </div>
+        </div>
+
+        <!-- shiny-cta -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5 flex items-center justify-between">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">.shiny-cta</span>
+            <span class="text-gray-700 text-xs font-mono">Spinning conic border + shimmer + breathe · 2.5s + 4s + 4.5s</span>
+          </div>
+          <div class="p-8 flex flex-wrap items-center gap-6 ds-demo">
+            <button class="shiny-cta">
+              <span>DEPLOY CAPITAL</span>
+            </button>
+          </div>
+          <div class="px-6 py-3 border-t border-white/5">
+            <code class="text-gray-700 text-xs font-mono">&lt;button class="shiny-cta"&gt;&lt;span&gt;...&lt;/span&gt;&lt;/button&gt;</code>
+          </div>
+        </div>
+
+        <!-- Terminal / outline CTAs -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5 flex items-center justify-between">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">Terminal CTA Buttons</span>
+            <span class="text-gray-700 text-xs font-mono">border + mono + uppercase · hover:bg-white/5</span>
+          </div>
+          <div class="p-8 flex flex-wrap items-center gap-4 ds-demo">
+            <button class="border border-white/30 text-white text-xs uppercase tracking-widest px-5 py-3 hover:bg-white/5 transition-colors font-mono">
+              DEPLOY CAPITAL ↗
+            </button>
+            <button class="text-xs uppercase tracking-widest text-gray-500 hover:text-white transition-colors font-mono px-5 py-3">
+              VIEW TECH SPECS
+            </button>
+            <button class="border border-white/20 text-white/60 text-xs uppercase tracking-widest px-3 py-1.5 font-mono hover:bg-white/5 transition-colors">
+              CONNECT NODE
+            </button>
+          </div>
+        </div>
+
+        <!-- Status indicators -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">Status Indicators</span>
+          </div>
+          <div class="p-8 flex flex-wrap items-center gap-8 ds-demo">
+            <span class="flex items-center gap-1.5 text-lime-400 text-xs font-mono">
+              <span class="w-1.5 h-1.5 rounded-full bg-lime-400 animate-pulse-slow"></span>
+              SYS.ONLINE
+            </span>
+            <span class="flex items-center gap-1.5 text-yellow-500 text-xs font-mono">
+              <span class="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span>
+              SYNCING
+            </span>
+            <span class="flex items-center gap-1.5 text-gray-600 text-xs font-mono">
+              <span class="w-1.5 h-1.5 rounded-full bg-gray-600"></span>
+              OFFLINE
+            </span>
+            <span class="border border-white/20 px-2 py-0.5 text-xs font-mono text-white/50 uppercase tracking-widest">AUTH</span>
+            <span class="text-lime-400 text-xs font-mono uppercase tracking-widest">CONFIRMED</span>
+            <span class="text-yellow-500 text-xs font-mono uppercase tracking-widest">PENDING</span>
+          </div>
+        </div>
+
+        <!-- Terminal data card -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">Data Card</span>
+          </div>
+          <div class="p-8 ds-demo">
+            <div class="border border-white/10 bg-white/[0.02] rounded-sm p-5 max-w-xs">
+              <div class="text-gray-600 text-xs font-mono uppercase tracking-widest mb-1">NETWORK THROUGHPUT</div>
+              <div class="text-white font-mono font-bold text-3xl">74,291 TPS</div>
+              <div class="text-lime-400 text-xs font-mono mt-1">▲ +12.4% (1h)</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- SECTION 04 · LAYOUT & SPACING                          -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <section id="layout" class="px-6 py-24 border-t border-white/5">
+    <div class="max-w-screen-xl mx-auto">
+
+      <div class="flex items-center gap-3 mb-16">
+        <span class="text-lime-400 text-xs font-mono uppercase tracking-widest">04</span>
+        <h2 class="text-white text-xs font-mono uppercase tracking-widest">LAYOUT &amp; SPACING</h2>
+        <div class="flex-1 h-px bg-white/5"></div>
+      </div>
+
+      <div class="space-y-14">
+
+        <!-- Container -->
+        <div>
+          <h3 class="text-gray-600 text-xs font-mono uppercase tracking-widest mb-4">CONTAINER</h3>
+          <div class="border border-white/10 rounded-sm overflow-hidden">
+            <div class="border border-lime-400/20 mx-6 my-4 px-6 py-4 bg-lime-400/5">
+              <span class="text-lime-400 text-xs font-mono">max-w-screen-xl mx-auto px-6</span>
+            </div>
+          </div>
+          <p class="text-gray-700 text-xs font-mono mt-3">Max-width: 1280px · Horizontal padding: 24px · Auto-centered</p>
+        </div>
+
+        <!-- Pattern 01: Hero 2-col -->
+        <div>
+          <h3 class="text-gray-600 text-xs font-mono uppercase tracking-widest mb-4">LAYOUT PATTERN 01 — HERO 2-COLUMN</h3>
+          <div class="border border-white/10 rounded-sm overflow-hidden">
+            <div class="grid grid-cols-2 gap-px bg-white/5">
+              <div class="ds-demo p-8 min-h-40 flex flex-col justify-center">
+                <div class="text-gray-600 text-xs font-mono mb-2">Left · flex-col justify-center</div>
+                <div class="text-gray-700 text-xs font-mono">Hero text · label · CTAs</div>
+              </div>
+              <div class="ds-demo p-8 min-h-40 flex flex-col justify-center opacity-60">
+                <div class="text-gray-600 text-xs font-mono mb-2">Right · Terminal widget</div>
+                <div class="text-gray-700 text-xs font-mono">border border-white/10 · bg-white/[0.015]</div>
+              </div>
+            </div>
+            <div class="px-4 py-2 border-t border-white/5">
+              <code class="text-gray-700 text-xs font-mono">grid grid-cols-1 lg:grid-cols-2 gap-12 · py-16</code>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pattern 02: Metrics row -->
+        <div>
+          <h3 class="text-gray-600 text-xs font-mono uppercase tracking-widest mb-4">LAYOUT PATTERN 02 — METRICS ROW</h3>
+          <div class="border border-white/10 rounded-sm overflow-hidden">
+            <div class="grid grid-cols-4 divide-x divide-white/5">
+              <div class="p-6">
+                <div class="text-gray-600 text-xs font-mono mb-1">TOTAL TVL</div>
+                <div class="text-white font-mono font-bold text-xl">$8.42B</div>
+              </div>
+              <div class="p-6">
+                <div class="text-gray-600 text-xs font-mono mb-1">THROUGHPUT</div>
+                <div class="text-white font-mono font-bold text-xl">74,291 TPS</div>
+              </div>
+              <div class="p-6">
+                <div class="text-gray-600 text-xs font-mono mb-1">ASSETS</div>
+                <div class="text-white font-mono font-bold text-xl">1,204</div>
+              </div>
+              <div class="p-6">
+                <div class="text-gray-600 text-xs font-mono mb-1">UPTIME</div>
+                <div class="text-lime-400 font-mono font-bold text-xl">99.98%</div>
+              </div>
+            </div>
+            <div class="px-4 py-2 border-t border-white/5">
+              <code class="text-gray-700 text-xs font-mono">grid grid-cols-4 divide-x divide-white/5</code>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pattern 03: Section header -->
+        <div>
+          <h3 class="text-gray-600 text-xs font-mono uppercase tracking-widest mb-4">LAYOUT PATTERN 03 — SECTION HEADER</h3>
+          <div class="border border-white/10 rounded-sm p-6">
+            <div class="flex items-center gap-3">
+              <span class="text-lime-400 text-xs font-mono uppercase tracking-widest">01</span>
+              <span class="text-white text-xs font-mono uppercase tracking-widest">SECTION LABEL</span>
+              <div class="flex-1 h-px bg-white/5"></div>
+            </div>
+          </div>
+          <p class="text-gray-700 text-xs font-mono mt-3">flex items-center gap-3 · divider: flex-1 h-px bg-white/5 · mb-16</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- SECTION 05 · MOTION & INTERACTION                      -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <section id="motion" class="px-6 py-24 border-t border-white/5">
+    <div class="max-w-screen-xl mx-auto">
+
+      <div class="flex items-center gap-3 mb-16">
+        <span class="text-lime-400 text-xs font-mono uppercase tracking-widest">05</span>
+        <h2 class="text-white text-xs font-mono uppercase tracking-widest">MOTION &amp; INTERACTION</h2>
+        <div class="flex-1 h-px bg-white/5"></div>
+      </div>
+
+      <div class="space-y-6">
+
+        <!-- columnReveal / col-anim -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5 flex items-center justify-between">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">columnReveal · .col-anim</span>
+            <span class="text-gray-700 text-xs font-mono">1.4s cubic-bezier(.16,1,.3,1) backwards</span>
+          </div>
+          <div class="p-8 ds-demo overflow-hidden">
+            <div class="col-anim text-white font-geist font-black text-5xl uppercase leading-none">EXECUTE</div>
+          </div>
+          <div class="px-6 py-3 border-t border-white/5">
+            <code class="text-gray-700 text-xs font-mono">clip-path: inset(0 0 100% 0) → inset(0 0 0% 0) + opacity 0→1</code>
+          </div>
+        </div>
+
+        <!-- fadeSlideIn / animate-fade-in -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5 flex items-center justify-between">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">fadeSlideIn · .animate-fade-in</span>
+            <span class="text-gray-700 text-xs font-mono">0.5s ease-out · opacity + blur(8px→0)</span>
+          </div>
+          <div class="p-8 ds-demo">
+            <div class="animate-fade-in text-white font-mono">CONTENT FADES IN</div>
+          </div>
+          <div class="px-6 py-3 border-t border-white/5">
+            <code class="text-gray-700 text-xs font-mono">opacity: 0→1 · filter: blur(8px)→blur(0)</code>
+          </div>
+        </div>
+
+        <!-- float -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5 flex items-center justify-between">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">float</span>
+            <span class="text-gray-700 text-xs font-mono">3–6s ease-in-out infinite · various delays</span>
+          </div>
+          <div class="p-8 ds-demo flex items-center gap-10 h-28">
+            <div class="animate-[float_3s_ease-in-out_infinite] w-8 h-8 border border-lime-400/50 rounded-sm"></div>
+            <div class="animate-[float_4s_ease-in-out_infinite_0.5s] w-6 h-6 border border-lime-400/30 rounded-full"></div>
+            <div class="animate-[float_5s_ease-in-out_infinite_1s] w-4 h-4 bg-lime-400/20 rounded-sm"></div>
+            <div class="animate-[float_6s_ease-in-out_infinite_0.5s] w-10 h-px bg-lime-400/20"></div>
+          </div>
+          <div class="px-6 py-3 border-t border-white/5">
+            <code class="text-gray-700 text-xs font-mono">translateY(0) ↕ translateY(-10px) · .animate-[float_Xs_ease-in-out_infinite_Ys]</code>
+          </div>
+        </div>
+
+        <!-- animate-on-scroll -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5 flex items-center justify-between">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">.animate-on-scroll → .animate-on-scroll.animate</span>
+            <span class="text-gray-700 text-xs font-mono">0.8s cubic-bezier(.16,1,.3,1)</span>
+          </div>
+          <div class="p-8 ds-demo flex items-center gap-12">
+            <div class="flex flex-col items-center gap-3">
+              <div class="animate-on-scroll animate text-white font-mono text-sm px-4 py-2 border border-white/10">VISIBLE</div>
+              <span class="text-gray-700 text-xs font-mono">.animate-on-scroll.animate</span>
+            </div>
+            <div class="flex flex-col items-center gap-3">
+              <div class="animate-on-scroll text-gray-700 font-mono text-sm px-4 py-2 border border-white/5">HIDDEN</div>
+              <span class="text-gray-700 text-xs font-mono">.animate-on-scroll (no .animate)</span>
+            </div>
+          </div>
+          <div class="px-6 py-3 border-t border-white/5">
+            <code class="text-gray-700 text-xs font-mono">Add .animate via IntersectionObserver to trigger: opacity 0→1 · translateY(30px→0)</code>
+          </div>
+        </div>
+
+        <!-- animate-dots-move -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5 flex items-center justify-between">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">.animate-dots-move</span>
+            <span class="text-gray-700 text-xs font-mono">8s linear infinite · background-position 0 0 → 24px 24px</span>
+          </div>
+          <div class="p-8 ds-demo overflow-hidden">
+            <div class="animate-dots-move ds-dots-bg w-full h-16 rounded-sm"></div>
+          </div>
+          <div class="px-6 py-3 border-t border-white/5">
+            <code class="text-gray-700 text-xs font-mono">radial-gradient dot grid · background-size: 24px 24px · animates position</code>
+          </div>
+        </div>
+
+        <!-- beam-spin -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5 flex items-center justify-between">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">.animate-beam-spin</span>
+            <span class="text-gray-700 text-xs font-mono">3s linear infinite · rotate(0→360deg)</span>
+          </div>
+          <div class="p-8 ds-demo flex items-center justify-center">
+            <div class="relative w-16 h-16">
+              <div class="animate-beam-spin absolute inset-0 rounded-full ds-beam-ring"></div>
+              <div class="absolute inset-1 bg-black rounded-full flex items-center justify-center">
+                <div class="w-2 h-2 bg-lime-400 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+          <div class="px-6 py-3 border-t border-white/5">
+            <code class="text-gray-700 text-xs font-mono">conic-gradient ring · transform: rotate(360deg)</code>
+          </div>
+        </div>
+
+        <!-- pulse-slow -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5 flex items-center justify-between">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">.animate-pulse-slow</span>
+            <span class="text-gray-700 text-xs font-mono">4s ease-in-out infinite · opacity 1↔0.4</span>
+          </div>
+          <div class="p-8 ds-demo flex items-center gap-4">
+            <span class="w-1.5 h-1.5 rounded-full bg-lime-400 animate-pulse-slow"></span>
+            <span class="text-lime-400 font-mono text-xs animate-pulse-slow">SYS.ONLINE</span>
+            <span class="text-gray-600 font-mono text-xs ml-6">Used for status dots and live indicators</span>
+          </div>
+        </div>
+
+        <!-- shiny-cta: border-spin + shimmer + breathe -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5 flex items-center justify-between">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">.shiny-cta — border-spin + shimmer + breathe</span>
+            <span class="text-gray-700 text-xs font-mono">2.5s + 4s + 4.5s · all linear infinite</span>
+          </div>
+          <div class="p-8 ds-demo">
+            <button class="shiny-cta"><span>DEPLOY CAPITAL</span></button>
+          </div>
+          <div class="px-6 py-3 border-t border-white/5">
+            <code class="text-gray-700 text-xs font-mono">--gradient-angle: 0→360deg · conic-gradient border · shimmer overlay · breathe glow</code>
+          </div>
+        </div>
+
+        <!-- marquee-scroll -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5 flex items-center justify-between">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">.marquee-container / .marquee-content</span>
+            <span class="text-gray-700 text-xs font-mono">translateX(0→-50%) · faded edges via mask</span>
+          </div>
+          <div class="p-8 ds-demo overflow-hidden">
+            <div class="marquee-container">
+              <div class="marquee-content ds-marquee-run gap-8">
+                <span class="text-gray-600 text-xs font-mono uppercase tracking-widest whitespace-nowrap">PROTOCOL V3</span>
+                <span class="text-white/10 text-xs font-mono">·</span>
+                <span class="text-gray-600 text-xs font-mono uppercase tracking-widest whitespace-nowrap">INSTITUTIONAL GRADE</span>
+                <span class="text-white/10 text-xs font-mono">·</span>
+                <span class="text-gray-600 text-xs font-mono uppercase tracking-widest whitespace-nowrap">T+0 SETTLEMENT</span>
+                <span class="text-white/10 text-xs font-mono">·</span>
+                <span class="text-gray-600 text-xs font-mono uppercase tracking-widest whitespace-nowrap">SOVEREIGN INFRASTRUCTURE</span>
+                <span class="text-white/10 text-xs font-mono">·</span>
+                <span class="text-gray-600 text-xs font-mono uppercase tracking-widest whitespace-nowrap">PROTOCOL V3</span>
+                <span class="text-white/10 text-xs font-mono">·</span>
+                <span class="text-gray-600 text-xs font-mono uppercase tracking-widest whitespace-nowrap">INSTITUTIONAL GRADE</span>
+                <span class="text-white/10 text-xs font-mono">·</span>
+                <span class="text-gray-600 text-xs font-mono uppercase tracking-widest whitespace-nowrap">T+0 SETTLEMENT</span>
+                <span class="text-white/10 text-xs font-mono">·</span>
+                <span class="text-gray-600 text-xs font-mono uppercase tracking-widest whitespace-nowrap">SOVEREIGN INFRASTRUCTURE</span>
+              </div>
+            </div>
+          </div>
+          <div class="px-6 py-3 border-t border-white/5">
+            <code class="text-gray-700 text-xs font-mono">.marquee-container masks edges · .marquee-content pauses on hover · duplicate content for seamless loop</code>
+          </div>
+        </div>
+
+        <!-- Stagger delays -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">STAGGER DELAYS · .delay-1 → .delay-7</span>
+          </div>
+          <div class="p-8 ds-demo flex flex-wrap items-end gap-4">
+            <div class="col-anim delay-1 flex flex-col items-center gap-2">
+              <div class="w-12 h-12 border border-lime-400/40 bg-lime-400/5 flex items-center justify-center text-lime-400 text-xs font-mono">1</div>
+              <span class="text-gray-700 text-xs font-mono">.delay-1</span>
+              <span class="text-gray-700 text-xs font-mono">0.1s</span>
+            </div>
+            <div class="col-anim delay-2 flex flex-col items-center gap-2">
+              <div class="w-12 h-12 border border-lime-400/40 bg-lime-400/5 flex items-center justify-center text-lime-400 text-xs font-mono">2</div>
+              <span class="text-gray-700 text-xs font-mono">.delay-2</span>
+              <span class="text-gray-700 text-xs font-mono">0.2s</span>
+            </div>
+            <div class="col-anim delay-3 flex flex-col items-center gap-2">
+              <div class="w-12 h-12 border border-lime-400/40 bg-lime-400/5 flex items-center justify-center text-lime-400 text-xs font-mono">3</div>
+              <span class="text-gray-700 text-xs font-mono">.delay-3</span>
+              <span class="text-gray-700 text-xs font-mono">0.3s</span>
+            </div>
+            <div class="col-anim delay-4 flex flex-col items-center gap-2">
+              <div class="w-12 h-12 border border-lime-400/40 bg-lime-400/5 flex items-center justify-center text-lime-400 text-xs font-mono">4</div>
+              <span class="text-gray-700 text-xs font-mono">.delay-4</span>
+              <span class="text-gray-700 text-xs font-mono">0.4s</span>
+            </div>
+            <div class="col-anim delay-5 flex flex-col items-center gap-2">
+              <div class="w-12 h-12 border border-lime-400/40 bg-lime-400/5 flex items-center justify-center text-lime-400 text-xs font-mono">5</div>
+              <span class="text-gray-700 text-xs font-mono">.delay-5</span>
+              <span class="text-gray-700 text-xs font-mono">0.5s</span>
+            </div>
+            <div class="col-anim delay-6 flex flex-col items-center gap-2">
+              <div class="w-12 h-12 border border-lime-400/40 bg-lime-400/5 flex items-center justify-center text-lime-400 text-xs font-mono">6</div>
+              <span class="text-gray-700 text-xs font-mono">.delay-6</span>
+              <span class="text-gray-700 text-xs font-mono">0.6s</span>
+            </div>
+            <div class="col-anim delay-7 flex flex-col items-center gap-2">
+              <div class="w-12 h-12 border border-lime-400/40 bg-lime-400/5 flex items-center justify-center text-lime-400 text-xs font-mono">7</div>
+              <span class="text-gray-700 text-xs font-mono">.delay-7</span>
+              <span class="text-gray-700 text-xs font-mono">0.7s</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Easing reference -->
+        <div class="border border-white/5 rounded-sm overflow-hidden">
+          <div class="px-6 py-3 border-b border-white/5">
+            <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">EASING &amp; TIMING REFERENCE</span>
+          </div>
+          <div class="divide-y divide-white/5">
+            <div class="grid grid-cols-3 gap-4 px-6 py-4 text-xs font-mono">
+              <span class="text-gray-500">cubic-bezier(.16,1,.3,1)</span>
+              <span class="text-gray-400">Spring / expo-out</span>
+              <span class="text-gray-700">Primary reveal · animate-on-scroll · col-anim</span>
+            </div>
+            <div class="grid grid-cols-3 gap-4 px-6 py-4 text-xs font-mono">
+              <span class="text-gray-500">cubic-bezier(.25,1,.5,1)</span>
+              <span class="text-gray-400">Ease-out</span>
+              <span class="text-gray-700">shiny-cta hover transitions · 0.8s</span>
+            </div>
+            <div class="grid grid-cols-3 gap-4 px-6 py-4 text-xs font-mono">
+              <span class="text-gray-500">0.3s</span>
+              <span class="text-gray-400">Quick UI response</span>
+              <span class="text-gray-700">hover:, focus:, button active</span>
+            </div>
+            <div class="grid grid-cols-3 gap-4 px-6 py-4 text-xs font-mono">
+              <span class="text-gray-500">0.8s</span>
+              <span class="text-gray-400">Scroll reveal</span>
+              <span class="text-gray-700">animate-on-scroll opacity + translateY</span>
+            </div>
+            <div class="grid grid-cols-3 gap-4 px-6 py-4 text-xs font-mono">
+              <span class="text-gray-500">2.5s linear</span>
+              <span class="text-gray-400">Looping border</span>
+              <span class="text-gray-700">shiny-cta border-spin</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- SECTION 06 · ICONS — Iconify                           -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <section id="icons" class="px-6 py-24 border-t border-white/5">
+    <div class="max-w-screen-xl mx-auto">
+
+      <div class="flex items-center gap-3 mb-16">
+        <span class="text-lime-400 text-xs font-mono uppercase tracking-widest">06</span>
+        <h2 class="text-white text-xs font-mono uppercase tracking-widest">ICONS — Iconify Web Component</h2>
+        <div class="flex-1 h-px bg-white/5"></div>
+      </div>
+
+      <p class="text-gray-600 text-xs font-mono mb-10">
+        Icons use the <code class="text-gray-500">&lt;iconify-icon&gt;</code> web component (CDN: iconify-icon@2.1.0).
+        Color inherits from <code class="text-gray-500">currentColor</code>.
+        Size is controlled via font-size utility classes.
+      </p>
+
+      <!-- Size variants -->
+      <div class="border border-white/5 rounded-sm overflow-hidden mb-6">
+        <div class="px-6 py-3 border-b border-white/5">
+          <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">SIZE VARIANTS — currentColor inheritance</span>
+        </div>
+        <div class="p-8 ds-demo flex items-end gap-10">
+          <div class="flex flex-col items-center gap-3">
+            <iconify-icon icon="lucide:arrow-up-right" class="text-white text-xs"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono">text-xs<br>12px</span>
+          </div>
+          <div class="flex flex-col items-center gap-3">
+            <iconify-icon icon="lucide:arrow-up-right" class="text-white text-sm"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono">text-sm<br>14px</span>
+          </div>
+          <div class="flex flex-col items-center gap-3">
+            <iconify-icon icon="lucide:arrow-up-right" class="text-white text-base"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono">text-base<br>16px</span>
+          </div>
+          <div class="flex flex-col items-center gap-3">
+            <iconify-icon icon="lucide:arrow-up-right" class="text-white text-xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono">text-xl<br>20px</span>
+          </div>
+          <div class="flex flex-col items-center gap-3">
+            <iconify-icon icon="lucide:arrow-up-right" class="text-white text-2xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono">text-2xl<br>24px</span>
+          </div>
+          <div class="flex flex-col items-center gap-3">
+            <iconify-icon icon="lucide:arrow-up-right" class="text-white text-4xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono">text-4xl<br>36px</span>
+          </div>
+        </div>
+        <div class="px-6 py-3 border-t border-white/5">
+          <code class="text-gray-700 text-xs font-mono">&lt;iconify-icon icon="lucide:..." class="text-white text-xl"&gt;&lt;/iconify-icon&gt;</code>
+        </div>
+      </div>
+
+      <!-- Color variants -->
+      <div class="border border-white/5 rounded-sm overflow-hidden mb-6">
+        <div class="px-6 py-3 border-b border-white/5">
+          <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">COLOR INHERITANCE</span>
+        </div>
+        <div class="p-8 ds-demo flex items-center gap-10">
+          <div class="flex flex-col items-center gap-3">
+            <iconify-icon icon="lucide:activity" class="text-white text-2xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono">text-white</span>
+          </div>
+          <div class="flex flex-col items-center gap-3">
+            <iconify-icon icon="lucide:activity" class="text-lime-400 text-2xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono">text-lime-400</span>
+          </div>
+          <div class="flex flex-col items-center gap-3">
+            <iconify-icon icon="lucide:activity" class="text-gray-500 text-2xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono">text-gray-500</span>
+          </div>
+          <div class="flex flex-col items-center gap-3">
+            <iconify-icon icon="lucide:activity" class="text-yellow-500 text-2xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono">text-yellow-500</span>
+          </div>
+          <div class="flex flex-col items-center gap-3">
+            <iconify-icon icon="lucide:activity" class="text-gray-700 text-2xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono">text-gray-700</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Common icons -->
+      <div class="border border-white/5 rounded-sm overflow-hidden">
+        <div class="px-6 py-3 border-b border-white/5">
+          <span class="text-gray-600 text-xs font-mono uppercase tracking-widest">COMMONLY USED — lucide icon set</span>
+        </div>
+        <div class="p-8 ds-demo grid grid-cols-5 md:grid-cols-10 gap-6">
+          <div class="flex flex-col items-center gap-2">
+            <iconify-icon icon="lucide:arrow-up-right" class="text-white text-xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono text-center leading-tight">arrow-up-right</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <iconify-icon icon="lucide:activity" class="text-lime-400 text-xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono text-center leading-tight">activity</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <iconify-icon icon="lucide:shield" class="text-white text-xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono text-center leading-tight">shield</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <iconify-icon icon="lucide:zap" class="text-lime-400 text-xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono text-center leading-tight">zap</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <iconify-icon icon="lucide:lock" class="text-white text-xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono text-center leading-tight">lock</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <iconify-icon icon="lucide:trending-up" class="text-lime-400 text-xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono text-center leading-tight">trending-up</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <iconify-icon icon="lucide:cpu" class="text-white text-xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono text-center leading-tight">cpu</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <iconify-icon icon="lucide:globe" class="text-white text-xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono text-center leading-tight">globe</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <iconify-icon icon="lucide:check-circle" class="text-lime-400 text-xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono text-center leading-tight">check-circle</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <iconify-icon icon="lucide:alert-triangle" class="text-yellow-500 text-xl"></iconify-icon>
+            <span class="text-gray-700 text-xs font-mono text-center leading-tight">alert-triangle</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ─────────────────────────────────────────────────────── -->
+  <!-- FOOTER                                                  -->
+  <!-- ─────────────────────────────────────────────────────── -->
+  <footer class="border-t border-white/5 px-6 py-8 mt-8">
+    <div class="max-w-screen-xl mx-auto flex items-center justify-between">
+      <span class="text-gray-700 text-xs font-mono">DESIGN SYSTEM v1.0 · fintech-liquidity-73 · refs/fintech-liquidity-73.aura.build</span>
+      <span class="text-gray-700 text-xs font-mono">CSS: index-oxca_Ml2.css · Icons: iconify-icon@2.1.0</span>
+    </div>
+  </footer>
+
+</body>
+</html>

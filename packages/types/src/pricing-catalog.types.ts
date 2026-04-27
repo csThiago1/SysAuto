@@ -72,6 +72,8 @@ export interface PecaCanonica {
   codigo: string
   nome: string
   tipo_peca: 'genuina' | 'original' | 'paralela' | 'usada' | 'recondicionada'
+  /** NCM 8 dígitos para NF-e de produto. Ex: "87089990". Vazio se não cadastrado. */
+  ncm: string
   tem_embedding: boolean
   is_active: boolean
 }

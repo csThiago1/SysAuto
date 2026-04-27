@@ -57,3 +57,7 @@ class FiscalInvalidStatus(Exception):
 
 class FiscalValidationError(Exception):
     """Erro de validação de entrada antes de chamar a Focus (ex: manual_reason vazio)."""
+
+
+class NfeBuilderError(FocusNFeError):
+    """Dados insuficientes para montar payload NF-e (NCM ausente, sem endereço, etc.)."""

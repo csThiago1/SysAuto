@@ -284,6 +284,7 @@ export interface ServiceOrder {
   // Cliente
   customer: string | null;        // FK inteiro (legado, ignorar)
   customer_uuid: string | null;   // UUID do UnifiedCustomer — usar este para lookup
+  customer_person_id: number | null; // PK da Person (novo fluxo)
   customer_name: string;
 
   // Veículo

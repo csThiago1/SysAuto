@@ -264,6 +264,13 @@ class PecaCanonica(PaddockBaseModel):
         verbose_name="Embedding semântico",
         help_text="Vetor gerado pelo modelo de embeddings para busca por similaridade.",
     )
+    ncm = models.CharField(
+        max_length=10,
+        blank=True,
+        default="",
+        verbose_name="NCM",
+        help_text="Código NCM/SH (8 dígitos). Ex: 87089990. Obrigatório para emissão de NF-e.",
+    )
     # is_active herdado de PaddockBaseModel
 
     class Meta:

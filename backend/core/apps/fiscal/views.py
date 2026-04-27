@@ -322,6 +322,97 @@ class NfseEmitManualView(APIView):
         return Response(FiscalDocumentSerializer(doc).data, status=status.HTTP_201_CREATED)
 
 
+# ─── 07A: Emissão NF-e de Produto ────────────────────────────────────────────
+
+
+class NfeEmitView(APIView):
+    """Emite NF-e de produto a partir de uma OS.
+
+    Body: {"service_order_id": "uuid", "forma_pagamento": "01"}
+    Retorna: FiscalDocumentSerializer
+    RBAC: CONSULTANT+
+    """
+
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def post(self, request: Request) -> Response:
+        from apps.fiscal.exceptions import (
+            FiscalDocumentAlreadyAuthorized,
+            NfeBuilderError,
+        )
+        from apps.fiscal.services.fiscal_service import FiscalService
+        from apps.service_orders.models import ServiceOrder
+
+        service_order_id = request.data.get("service_order_id")
+        if not service_order_id:
+            return Response(
+                {"detail": "service_order_id obrigatório."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            order = ServiceOrder.objects.get(pk=service_order_id, is_active=True)
+        except ServiceOrder.DoesNotExist:
+            return Response({"detail": "OS não encontrada."}, status=status.HTTP_404_NOT_FOUND)
+
+        forma_pagamento = request.data.get("forma_pagamento", "01")
+
+        try:
+            doc = FiscalService.emit_nfe(order, forma_pagamento=forma_pagamento)
+        except FiscalDocumentAlreadyAuthorized:
+            return Response(
+                {"detail": "OS já possui NF-e autorizada."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        except NfeBuilderError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as exc:
+            from apps.fiscal.exceptions import FocusNFeError, FiscalValidationError
+            if isinstance(exc, (FocusNFeError, FiscalValidationError)):
+                return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.error("NfeEmitView: erro ao emitir NF-e para OS %s: %s", service_order_id, exc)
+            return Response(
+                {"detail": "Erro ao emitir NF-e."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        return Response(FiscalDocumentSerializer(doc).data, status=status.HTTP_201_CREATED)
+
+
+class NfeEmitManualView(APIView):
+    """Emite NF-e de produto manual (ad-hoc, sem OS vinculada).
+
+    RBAC: ADMIN+
+    """
+
+    permission_classes = [IsAuthenticated, IsAdminOrAbove]
+
+    def post(self, request: Request) -> Response:
+        from apps.fiscal.exceptions import FiscalValidationError, NfeBuilderError
+        from apps.fiscal.serializers import ManualNfeInputSerializer
+        from apps.fiscal.services.fiscal_service import FiscalService
+
+        ser = ManualNfeInputSerializer(data=request.data)
+        if not ser.is_valid():
+            return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            doc = FiscalService.emit_manual_nfe(ser.validated_data, user=request.user)
+        except (NfeBuilderError, FiscalValidationError) as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as exc:
+            from apps.fiscal.exceptions import FocusNFeError
+            if isinstance(exc, FocusNFeError):
+                return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.error("NfeEmitManualView: erro ao emitir NF-e manual: %s", exc)
+            return Response(
+                {"detail": "Erro ao emitir NF-e manual."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        return Response(FiscalDocumentSerializer(doc).data, status=status.HTTP_201_CREATED)
+
+
 class FiscalDocumentViewSet(viewsets.ReadOnlyModelViewSet):
     """Lista e detalhe de documentos fiscais.
 

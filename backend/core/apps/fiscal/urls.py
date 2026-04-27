@@ -5,6 +5,8 @@ from apps.fiscal.views import (
     FiscalDocumentViewSet,
     FocusWebhookView,
     NFeEntradaViewSet,
+    NfeEmitManualView,
+    NfeEmitView,
     NfeRecebidaListView,
     NfeRecebidaManifestView,
     NfseEmitManualView,
@@ -21,6 +23,9 @@ urlpatterns = [
     # 06C: Emissão NFS-e
     path("nfse/emit/", NfseEmitView.as_view(), name="nfse-emit"),
     path("nfse/emit-manual/", NfseEmitManualView.as_view(), name="nfse-emit-manual"),
+    # 07A: Emissão NF-e de Produto
+    path("nfe/emit/", NfeEmitView.as_view(), name="nfe-emit"),
+    path("nfe/emit-manual/", NfeEmitManualView.as_view(), name="nfe-emit-manual"),
     # NF-e recebidas (manifestação de destinatário)
     path("nfe-recebidas/", NfeRecebidaListView.as_view(), name="nfe-recebidas-list"),
     path("nfe-recebidas/<str:chave>/manifesto/", NfeRecebidaManifestView.as_view(), name="nfe-recebidas-manifesto"),

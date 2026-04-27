@@ -1,19 +1,23 @@
 /**
  * Paddock Solutions — dscar-web
- * Ciclo 06C: NFS-e Manaus — hooks TanStack Query v5
+ * Ciclo 06C/07A: NFS-e + NF-e de Produto — hooks TanStack Query v5
  *
  * Hooks:
  *   useFiscalDocuments   — lista de documentos fiscais (com filtros)
  *   useFiscalDocument    — detalhe de um documento
  *   useEmitNfse          — emite NFS-e a partir de uma OS (CONSULTANT+)
  *   useEmitManualNfse    — emite NFS-e manual ad-hoc (ADMIN+)
+ *   useEmitNfe           — emite NF-e de produto a partir de uma OS (CONSULTANT+)
+ *   useEmitManualNfe     — emite NF-e de produto manual ad-hoc (ADMIN+)
  *   useCancelFiscalDoc   — cancela documento fiscal (MANAGER+)
  */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   FiscalDocument,
   FiscalDocumentList,
+  ManualNfeInput,
   ManualNfseInput,
+  NfeEmitFromOsInput,
 } from "@paddock/types"
 import { apiFetch } from "@/lib/api"
 
@@ -94,6 +98,41 @@ export function useEmitManualNfse() {
   return useMutation({
     mutationFn: (input: ManualNfseInput) =>
       apiFetch<FiscalDocument>(`${FISCAL}/nfse/emit-manual/`, {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: fiscalKeys.all })
+    },
+  })
+}
+
+// ─── Hooks NF-e de Produto (07A) ─────────────────────────────────────────────
+
+/** Emite NF-e de produto a partir de uma OS (CONSULTANT+). */
+export function useEmitNfe() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ service_order_id, forma_pagamento = "01" }: NfeEmitFromOsInput) =>
+      apiFetch<FiscalDocument>(`${FISCAL}/nfe/emit/`, {
+        method: "POST",
+        body: JSON.stringify({ service_order_id, forma_pagamento }),
+      }),
+    onSuccess: (doc) => {
+      qc.invalidateQueries({ queryKey: fiscalKeys.all })
+      if (doc.service_order_id) {
+        qc.invalidateQueries({ queryKey: ["service-orders", doc.service_order_id] })
+      }
+    },
+  })
+}
+
+/** Emite NF-e de produto manual ad-hoc sem OS vinculada (ADMIN+). */
+export function useEmitManualNfe() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: ManualNfeInput) =>
+      apiFetch<FiscalDocument>(`${FISCAL}/nfe/emit-manual/`, {
         method: "POST",
         body: JSON.stringify(input),
       }),

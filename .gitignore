@@ -74,6 +74,12 @@ test-results/
 *.snap.yml
 .playwright-mcp/
 
+# ─── Media uploads (gerados pelo app, não versionar) ────────────────────────
+backend/core/media/
+
+# ─── UX review screenshots ──────────────────────────────────────────────────
+ux-review/
+
 # ─── Dados operacionais sensíveis (não versionar) ─────────────────────────────
 faturamento_*.csv
 docs/*.xls
