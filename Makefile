@@ -40,8 +40,19 @@ dev-ps: ## Status dos serviços Docker
 dev-logs: ## Logs em tempo real dos serviços Docker
 	$(COMPOSE) logs -f
 
-dev-reset: ## Para e remove volumes (limpa banco)
+dev-reset: ## Para, remove volumes (limpa banco) e recria tenants
 	$(COMPOSE) down -v
+	@echo "⚠️  Banco limpo. Rode 'make dev && make dev-seed' para recriar tenants."
+
+dev-seed: ## Cria tenants (public + dscar) — rodar após dev-reset
+	@echo "🌱  Criando tenants..."
+	@$(COMPOSE) exec -T django python manage.py shell -c "\
+from apps.tenants.models import Company, Domain; \
+pub, _ = Company.objects.get_or_create(schema_name='public', defaults={'name': 'Paddock Solutions', 'slug': 'public'}); \
+Domain.objects.get_or_create(domain='localhost', tenant=pub, defaults={'is_primary': True}); \
+dscar, _ = Company.objects.get_or_create(schema_name='tenant_dscar', defaults={'name': 'DS Car Centro Automotivo', 'slug': 'dscar'}); \
+Domain.objects.get_or_create(domain='dscar.localhost', tenant=dscar, defaults={'is_primary': True}); \
+print('✅  Tenants criados: public + tenant_dscar')"
 
 ## ─ Banco de dados ───────────────────────────────────────────────────────────
 
