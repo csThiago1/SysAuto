@@ -58,15 +58,3 @@ export function isValidPlate(plate: string): boolean {
   return PLATE_OLD_RE.test(p) || PLATE_NEW_RE.test(p);
 }
 
-/** Normaliza placa: remove caracteres extras e converte para maiúsculas */
-export function normalizePlate(plate: string): string {
-  return plate.replace(/[^A-Z0-9]/gi, "").toUpperCase();
-}
-
-// ─── Telefone ────────────────────────────────────────────────────────────────
-
-/** Valida telefone brasileiro (10 ou 11 dígitos) */
-export function isValidPhone(phone: string): boolean {
-  const d = phone.replace(/\D/g, "");
-  return d.length === 10 || d.length === 11;
-}

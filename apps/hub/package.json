@@ -14,7 +14,6 @@
         "@hookform/resolvers": "^3.10.0",
         "@paddock/auth": "*",
         "@paddock/types": "*",
-        "@paddock/ui": "*",
         "@tanstack/react-query": "^5.64.1",
         "next": "^16.2.3",
         "next-auth": "^5.0.0-beta.28",

@@ -127,7 +127,20 @@ class BudgetSnapshotSerializer(serializers.ModelSerializer):
         return "Sistema"
 
 
-class StatusTransitionLogSerializer(serializers.ModelSerializer):
+class _StatusTransitionMixin:
+    """Métodos compartilhados para serializers de StatusTransitionLog."""
+
+    def get_changed_by_name(self, obj: StatusTransitionLog) -> str:
+        return obj.changed_by.get_full_name() or obj.changed_by.email
+
+    def get_from_status_display(self, obj: StatusTransitionLog) -> str:
+        return _get_status_display().get(obj.from_status, obj.from_status)
+
+    def get_to_status_display(self, obj: StatusTransitionLog) -> str:
+        return _get_status_display().get(obj.to_status, obj.to_status)
+
+
+class StatusTransitionLogSerializer(_StatusTransitionMixin, serializers.ModelSerializer):
     """Serializer para log de transições de status."""
 
     changed_by_name = serializers.SerializerMethodField()
@@ -147,17 +160,8 @@ class StatusTransitionLogSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
-    def get_changed_by_name(self, obj: StatusTransitionLog) -> str:
-        return obj.changed_by.get_full_name() or obj.changed_by.email
 
-    def get_from_status_display(self, obj: StatusTransitionLog) -> str:
-        return _get_status_display().get(obj.from_status, obj.from_status)
-
-    def get_to_status_display(self, obj: StatusTransitionLog) -> str:
-        return _get_status_display().get(obj.to_status, obj.to_status)
-
-
-class NotificationFeedSerializer(serializers.ModelSerializer):
+class NotificationFeedSerializer(_StatusTransitionMixin, serializers.ModelSerializer):
     """Item do feed de notificações — transição de status com contexto da OS."""
 
     os_id = serializers.UUIDField(source="service_order.id")
@@ -179,15 +183,6 @@ class NotificationFeedSerializer(serializers.ModelSerializer):
             "to_status", "to_status_display",
             "triggered_by_field", "changed_by_name", "created_at",
         ]
-
-    def get_changed_by_name(self, obj: StatusTransitionLog) -> str:
-        return obj.changed_by.get_full_name() or obj.changed_by.email
-
-    def get_from_status_display(self, obj: StatusTransitionLog) -> str:
-        return _get_status_display().get(obj.from_status, obj.from_status)
-
-    def get_to_status_display(self, obj: StatusTransitionLog) -> str:
-        return _get_status_display().get(obj.to_status, obj.to_status)
 
 
 class ServiceOrderActivityLogSerializer(serializers.ModelSerializer):
@@ -213,7 +208,31 @@ class ServiceOrderActivityLogSerializer(serializers.ModelSerializer):
         return obj.user.get_full_name() or obj.user.email
 
 
-class ServiceOrderPartSerializer(serializers.ModelSerializer):
+class _LineItemValidationMixin:
+    """Validação compartilhada para itens de linha (peças e mão-de-obra)."""
+
+    def validate(self, attrs: dict) -> dict:
+        quantity = attrs.get("quantity")
+        unit_price = attrs.get("unit_price")
+        discount = attrs.get("discount")
+        if quantity is not None and quantity <= 0:
+            raise serializers.ValidationError(
+                {"quantity": "A quantidade deve ser maior que zero."}
+            )
+        if unit_price is not None and unit_price < 0:
+            raise serializers.ValidationError(
+                {"unit_price": "O preço unitário não pode ser negativo."}
+            )
+        if quantity and unit_price and discount is not None:
+            line_total = quantity * unit_price
+            if discount > line_total:
+                raise serializers.ValidationError(
+                    {"discount": "O desconto não pode ser maior que o total da linha."}
+                )
+        return attrs
+
+
+class ServiceOrderPartSerializer(_LineItemValidationMixin, serializers.ModelSerializer):
     """Serializer para itens de peça de uma OS."""
 
     total = serializers.FloatField(read_only=True)
@@ -234,28 +253,8 @@ class ServiceOrderPartSerializer(serializers.ModelSerializer):
             return obj.product.name
         return None
 
-    def validate(self, attrs: dict) -> dict:
-        quantity = attrs.get("quantity")
-        unit_price = attrs.get("unit_price")
-        discount = attrs.get("discount")
-        if quantity is not None and quantity <= 0:
-            raise serializers.ValidationError(
-                {"quantity": "A quantidade deve ser maior que zero."}
-            )
-        if unit_price is not None and unit_price < 0:
-            raise serializers.ValidationError(
-                {"unit_price": "O preço unitário não pode ser negativo."}
-            )
-        if quantity and unit_price and discount is not None:
-            line_total = quantity * unit_price
-            if discount > line_total:
-                raise serializers.ValidationError(
-                    {"discount": "O desconto não pode ser maior que o total da linha."}
-                )
-        return attrs
 
-
-class ServiceOrderLaborSerializer(serializers.ModelSerializer):
+class ServiceOrderLaborSerializer(_LineItemValidationMixin, serializers.ModelSerializer):
     """Serializer para itens de mão-de-obra de uma OS."""
 
     total = serializers.FloatField(read_only=True)
@@ -271,26 +270,6 @@ class ServiceOrderLaborSerializer(serializers.ModelSerializer):
             "created_at", "updated_at",
         ]
         read_only_fields = ["id", "service_catalog_name", "total", "created_at", "updated_at"]
-
-    def validate(self, attrs: dict) -> dict:
-        quantity = attrs.get("quantity")
-        unit_price = attrs.get("unit_price")
-        discount = attrs.get("discount")
-        if quantity is not None and quantity <= 0:
-            raise serializers.ValidationError(
-                {"quantity": "A quantidade deve ser maior que zero."}
-            )
-        if unit_price is not None and unit_price < 0:
-            raise serializers.ValidationError(
-                {"unit_price": "O preço unitário não pode ser negativo."}
-            )
-        if quantity and unit_price and discount is not None:
-            line_total = quantity * unit_price
-            if discount > line_total:
-                raise serializers.ValidationError(
-                    {"discount": "O desconto não pode ser maior que o total da linha."}
-                )
-        return attrs
 
 
 class ServiceCatalogSerializer(serializers.ModelSerializer):
@@ -453,10 +432,24 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
     budget_snapshots = BudgetSnapshotSerializer(many=True, read_only=True)
     days_in_shop = serializers.SerializerMethodField()
     consultant_name = serializers.SerializerMethodField()
+    # Retorna customer_uuid (UnifiedCustomer) em vez do PK inteiro da Person FK.
+    # O frontend espera UUID ou null neste campo — nunca um inteiro.
+    customer = serializers.SerializerMethodField()
+    # Expõe o PK inteiro da Person FK para que o frontend possa renderizar
+    # dados do cliente mesmo quando customer_uuid é nulo (OS do novo fluxo).
+    customer_person_id = serializers.SerializerMethodField()
 
     class Meta:
         model = ServiceOrder
         fields = "__all__"
+
+    def get_customer(self, obj: "ServiceOrder") -> str | None:
+        """Retorna customer_uuid para compatibilidade com frontend (não o PK integer da Person)."""
+        return str(obj.customer_uuid) if obj.customer_uuid else None
+
+    def get_customer_person_id(self, obj: "ServiceOrder") -> int | None:
+        """Retorna o PK inteiro da Person FK (novo fluxo de criação de OS)."""
+        return obj.customer_id  # type: ignore[return-value]
 
     def get_allowed_transitions(self, obj: ServiceOrder) -> list[str]:
         return VALID_TRANSITIONS.get(obj.status, [])
@@ -552,6 +545,13 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
         allow_null=True,
         write_only=True,
     )
+    # customer_person_id recebe PK inteiro de Person — novo fluxo de troca de cliente
+    customer_person_id = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        write_only=True,
+        source="customer_id",
+    )
 
     class Meta:
         model = ServiceOrder
@@ -581,6 +581,11 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
             "customer_name":   {"required": False, "allow_blank": True},
             "plate":           {"required": False, "allow_blank": True},
         }
+
+    def update(self, instance: "ServiceOrder", validated_data: dict) -> "ServiceOrder":
+        # UUID do UnifiedCustomer não pode ser salvo no FK inteiro de Person — descarta.
+        validated_data.pop("customer", None)
+        return super().update(instance, validated_data)
 
     def validate(self, attrs: dict) -> dict:
         """Valida campos de seguradora quando customer_type muda para 'insurer'."""

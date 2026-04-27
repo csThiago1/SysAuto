@@ -13,7 +13,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import { newOSSchema, type NewOSInput } from "../new/_schemas/new-os.schema"
+import { newOSSchema, type NewOSInput } from "./new-os.schema"
 import { useServiceOrderCreate } from "../[id]/_hooks/useServiceOrder"
 import { CustomerSearch } from "../[id]/_components/shared/CustomerSearch"
 import { InsurerSelect } from "../[id]/_components/shared/InsurerSelect"

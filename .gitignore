@@ -68,6 +68,12 @@ yarn-error.log*
 .cache/
 coverage/
 
+# ─── Test artifacts ──────────────────────────────────────────────────────────
+test-results/
+**/test-results/
+*.snap.yml
+.playwright-mcp/
+
 # ─── Dados operacionais sensíveis (não versionar) ─────────────────────────────
 faturamento_*.csv
 docs/*.xls

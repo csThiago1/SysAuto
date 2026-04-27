@@ -33,9 +33,6 @@
       ],
       "@paddock/auth": [
         "../../packages/auth/src"
-      ],
-      "@paddock/ui": [
-        "../../packages/ui/src"
       ]
     },
     "target": "ES2017"

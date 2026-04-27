@@ -7,7 +7,7 @@ const r2Hostname = process.env.R2_PUBLIC_URL?.replace(/^https?:\/\//, "") ?? "";
 
 const nextConfig: NextConfig = {
     output: "standalone",
-    transpilePackages: ["@paddock/ui", "@paddock/types", "@paddock/auth", "@paddock/utils"],
+    transpilePackages: ["@paddock/types", "@paddock/auth", "@paddock/utils"],
     experimental: {
         typedRoutes: true,
         outputFileTracingRoot: path.join(__dirname, "../../"),
