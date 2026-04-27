@@ -248,6 +248,24 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Pelo menos um role é obrigatório.")
         return list(set(value))
 
+    def validate(self, attrs: dict) -> dict:
+        """Valida contatos obrigatórios: CELULAR + EMAIL para CLIENT/EMPLOYEE."""
+        contacts = attrs.get("contacts")
+        roles = attrs.get("roles")
+        # Só valida na criação (roles obrigatório) ou quando ambos contacts+roles são enviados
+        if roles and contacts is not None:
+            if any(r in roles for r in ("CLIENT", "EMPLOYEE")):
+                has_celular = any(c.get("contact_type") == "CELULAR" for c in contacts)
+                has_email = any(c.get("contact_type") == "EMAIL" for c in contacts)
+                errors = []
+                if not has_celular:
+                    errors.append("Pelo menos um contato do tipo CELULAR é obrigatório.")
+                if not has_email:
+                    errors.append("Pelo menos um contato do tipo EMAIL é obrigatório.")
+                if errors:
+                    raise serializers.ValidationError({"contacts": errors})
+        return attrs
+
     def _sync_roles(self, person: Person, roles: list) -> None:
         existing = set(person.roles.values_list("role", flat=True))
         new_roles = set(roles)
