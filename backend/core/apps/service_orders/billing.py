@@ -40,6 +40,43 @@ def _d(val: Any) -> Decimal:
 class BillingService:
     """Faturamento de OS: preview + execução."""
 
+    @staticmethod
+    def _resolve_insurer_person(insurer: Any) -> Any | None:
+        """Busca Person com role INSURER e CNPJ da seguradora.
+
+        Returns:
+            Person com documents+addresses prefetched, ou None.
+        """
+        from apps.persons.models import Person, PersonDocument
+        from apps.persons.utils import sha256_hex
+
+        cnpj = getattr(insurer, "cnpj", "") or ""
+        if not cnpj:
+            return None
+
+        # Busca Person que tenha documento CNPJ com mesmo valor
+        doc = PersonDocument.objects.filter(
+            doc_type="CNPJ",
+            value_hash=sha256_hex(cnpj),
+        ).select_related("person").first()
+
+        if doc:
+            return (
+                Person.objects.prefetch_related("documents", "addresses")
+                .get(pk=doc.person_id)
+            )
+
+        # Fallback: Person com role INSURER e nome similar
+        person = (
+            Person.objects.filter(
+                roles__role="INSURER",
+                full_name__icontains=insurer.name[:20] if insurer.name else "",
+            )
+            .prefetch_related("documents", "addresses")
+            .first()
+        )
+        return person
+
     @classmethod
     def preview(cls, order: Any) -> dict[str, Any]:
         """Calcula breakdown de faturamento sem criar nada."""
@@ -249,9 +286,22 @@ class BillingService:
             )
             receivables.append(receivable)
 
-            # Garante que a OS tem destinatario para o FiscalService
+            # Resolve Person destinatário para o FiscalService
             # _get_person_for_os checa destinatario_id (atributo runtime)
-            if not getattr(order, "destinatario_id", None) and order.customer_id:
+            if recipient_type == "insurer" and order.insurer:
+                # Busca Person com role INSURER que tenha CNPJ da seguradora
+                insurer_person = cls._resolve_insurer_person(order.insurer)
+                if insurer_person:
+                    order.destinatario_id = insurer_person.pk
+                    order.destinatario = insurer_person
+                else:
+                    errors.append(
+                        f"Seguradora '{recv_customer_name}' não tem cadastro "
+                        f"completo (Person com CNPJ e endereço). "
+                        f"Cadastre-a em Cadastros → Pessoas."
+                    )
+                    continue  # Pula emissão fiscal mas mantém o receivable
+            elif order.customer_id:
                 order.destinatario_id = order.customer_id
                 order.destinatario = order.customer
 
