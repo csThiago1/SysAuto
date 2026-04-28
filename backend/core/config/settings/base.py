@@ -71,6 +71,7 @@ TENANT_APPS = [
     "apps.pricing_benchmark",
     "apps.signatures",
     "apps.pdf_engine",
+    "apps.documents",
     "apps.items",
     "apps.authz",
     "apps.vehicles",

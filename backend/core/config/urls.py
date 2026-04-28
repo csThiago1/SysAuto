@@ -39,6 +39,7 @@ urlpatterns = [
     path("api/v1/authz/", include("apps.authz.urls")),
     path("api/v1/vehicles/", include("apps.vehicles.urls")),
     path("api/v1/budgets/", include("apps.budgets.urls")),
+    path("api/v1/documents/", include("apps.documents.urls")),
     # MO-9: Capacidade + Variâncias
     path("api/v1/capacidade/", include("apps.service_orders.urls_capacidade")),
     path("api/v1/pricing/variancias/", include("apps.pricing_tech.urls_variancia")),
