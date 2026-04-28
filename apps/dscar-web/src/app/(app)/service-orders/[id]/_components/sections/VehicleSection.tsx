@@ -17,6 +17,8 @@ export function VehicleSection({ form }: VehicleSectionProps) {
   const [plateQuery, setPlateQuery] = useState("")
   const { data: plateData, isFetching, error } = usePlateLookup(plateQuery)
 
+  const makeLogo = watch("make_logo")
+
   function handlePlateChange(e: React.ChangeEvent<HTMLInputElement>) {
     const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")
     setValue("plate", v)
@@ -29,11 +31,14 @@ export function VehicleSection({ form }: VehicleSectionProps) {
     if (!currentMake && plateData.make) {
       setValue("make", plateData.make)
       setValue("model", plateData.model)
+      if (plateData.make_logo) setValue("make_logo", plateData.make_logo)
+      if (plateData.version) setValue("vehicle_version", plateData.version)
       if (plateData.year) setValue("year", plateData.year)
       if (plateData.chassis) setValue("chassis", plateData.chassis)
+      if (plateData.color) setValue("color", plateData.color)
+      if (plateData.fuel_type) setValue("fuel_type", plateData.fuel_type)
       toast.success("Dados do veículo preenchidos pela placa!")
     }
-  // watch is stable across renders (RHF guarantee) — only run when plateData or isFetching changes
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plateData, isFetching])
 
@@ -43,18 +48,24 @@ export function VehicleSection({ form }: VehicleSectionProps) {
         <span className={FORM_SECTION_TITLE}>Dados do Veículo</span>
       </div>
 
-      {/* Header: slot visual + placa destaque */}
+      {/* Header: logo montadora + placa destaque */}
       <div className="flex items-start gap-3">
-        {/* Slot visual 56×56px — futuro: logo da montadora */}
-        <div className="h-14 w-14 shrink-0 rounded-lg border-2 border-dashed border-white/10 bg-white/[0.03] flex items-center justify-center">
-          <span className="text-2xl">🚗</span>
-        </div>
+        {makeLogo ? (
+          <img
+            src={makeLogo}
+            alt="Logo montadora"
+            className="h-14 w-14 shrink-0 rounded-lg border border-white/10 bg-white/[0.03] object-contain p-1.5"
+          />
+        ) : (
+          <div className="h-14 w-14 shrink-0 rounded-lg border-2 border-dashed border-white/10 bg-white/[0.03] flex items-center justify-center">
+            <span className="text-2xl">🚗</span>
+          </div>
+        )}
 
         {/* Placa destaque */}
         <div className="flex-1">
           <label className={FORM_LABEL}>Placa *</label>
           <div className="flex items-center gap-2">
-            {/* h-9 intentional — placa é campo destaque */}
             <input
               className="flex h-9 w-32 rounded-md border-2 border-input bg-background px-3 py-1 text-base font-bold font-mono tracking-widest shadow-sm focus:outline-none focus:ring-1 focus:ring-ring uppercase"
               type="text"
@@ -116,15 +127,7 @@ export function VehicleSection({ form }: VehicleSectionProps) {
         </div>
         <div>
           <label className={FORM_LABEL}>Combustível</label>
-          <select className={FORM_INPUT} {...register("fuel_type")}>
-            <option value="">Selecionar...</option>
-            <option value="flex">Flex</option>
-            <option value="gasoline">Gasolina</option>
-            <option value="ethanol">Etanol</option>
-            <option value="diesel">Diesel</option>
-            <option value="electric">Elétrico</option>
-            <option value="hybrid">Híbrido</option>
-          </select>
+          <input className={FORM_INPUT} type="text" placeholder="Flex, Gasolina..." {...register("fuel_type")} />
         </div>
       </div>
 
@@ -145,6 +148,9 @@ export function VehicleSection({ form }: VehicleSectionProps) {
           />
         </div>
       </div>
+
+      {/* Hidden field para persistir make_logo */}
+      <input type="hidden" {...register("make_logo")} />
     </div>
   )
 }

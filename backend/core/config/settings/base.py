@@ -339,7 +339,7 @@ FOCUS_NFE_BASE_URL = (
 )
 FOCUS_NFE_TIMEOUT_SECONDS = config("FOCUS_NFE_TIMEOUT_SECONDS", default=60, cast=int)
 FOCUS_NFE_WEBHOOK_SECRET = config("FOCUS_NFE_WEBHOOK_SECRET", default="")
-CNPJ_EMISSOR = config("CNPJ_EMISSOR", default="")
+CNPJ_EMISSOR = config("CNPJ_EMISSOR", default="") or config("DSCAR_CNPJ", default="")
 
 if FOCUS_NFE_AMBIENTE == "producao" and DEBUG:
     from django.core.exceptions import ImproperlyConfigured  # noqa: E402

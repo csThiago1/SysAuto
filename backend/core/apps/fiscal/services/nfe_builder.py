@@ -14,6 +14,8 @@ from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal
 from typing import TYPE_CHECKING
 
+from django.utils import timezone
+
 if TYPE_CHECKING:
     from apps.fiscal.models import FiscalConfigModel
     from apps.persons.models import Person
@@ -125,34 +127,61 @@ class NFeBuilder:
             cofins_aliquota=tax_config.cofins_aliquota,
         )
 
+        is_simples = str(config.regime_tributario) == "1"
+
         payload_items = []
         valor_total_produtos = Decimal("0")
         for i, item in enumerate(items, start=1):
             item_dict = cls._build_item(
-                item, i, resolved_tax, uf_emitente, uf_dest
+                item, i, resolved_tax, uf_emitente, uf_dest,
+                simples_nacional=is_simples,
             )
             payload_items.append(item_dict)
             valor_total_produtos += Decimal(str(item_dict["valor_bruto"]))
 
         valor_total_nf = valor_total_produtos  # sem frete / seguro / outr. desp.
 
+        # Focus NF-e v2 usa campos flat (cnpj_emitente, nome_destinatario, etc.)
+        emitente = cls._get_emitente(config)
         payload: dict = {
             "natureza_operacao": config.nfe_natureza_operacao or "Venda de mercadoria",
-            "data_emissao": None,  # Focus usa data atual quando None
+            "data_emissao": timezone.now().astimezone(
+                timezone.zoneinfo.ZoneInfo("America/Manaus")
+            ).isoformat(),
             "tipo_documento": "1",   # 1=saída
+            "finalidade_emissao": "1",  # 1=normal
             "local_destino": local_destino,
             "consumidor_final": config.nfe_indicador_consumidor_final or "1",
             "presenca_comprador": config.nfe_indicador_presenca or "1",
-            "emitente": cls._get_emitente(config),
-            "destinatario": dest_data,
-            "items": payload_items,
-            "forma_pagamento": [
-                {
-                    "forma_pagamento": forma_pagamento,
-                    "valor_pagamento": float(valor_total_nf),
-                }
-            ],
+            "modalidade_frete": "9",  # 9=sem frete
+            # Emitente (flat)
+            "cnpj_emitente": emitente["cnpj"],
+            "nome_emitente": config.razao_social,
+            "nome_fantasia_emitente": emitente.get("nome_fantasia", ""),
+            "inscricao_estadual_emitente": emitente.get("inscricao_estadual", ""),
+            "logradouro_emitente": emitente["logradouro"],
+            "numero_emitente": emitente.get("numero", "S/N"),
+            "bairro_emitente": emitente.get("bairro", ""),
+            "municipio_emitente": emitente.get("municipio", ""),
+            "uf_emitente": emitente.get("uf", "AM"),
+            "cep_emitente": emitente.get("cep", ""),
+            "regime_tributario_emitente": emitente.get("regime_tributario", "1"),
         }
+
+        # Destinatário (flat)
+        for key, value in dest_data.items():
+            if key == "indicador_ie_destinatario":
+                payload["indicador_inscricao_estadual_destinatario"] = value
+            else:
+                payload[f"{key}_destinatario"] = value
+
+        payload["items"] = payload_items
+        payload["formas_pagamento"] = [
+            {
+                "forma_pagamento": forma_pagamento,
+                "valor_pagamento": str(valor_total_nf),
+            }
+        ]
 
         if observacoes:
             payload["informacoes_adicionais_contribuinte"] = observacoes[:2000]
@@ -272,6 +301,7 @@ class NFeBuilder:
         tax_config: NFeTaxConfig,
         uf_emitente: str,
         uf_dest: str,
+        simples_nacional: bool = False,
     ) -> dict:
         """Monta um item da NF-e com ICMS/PIS/COFINS calculados."""
         if not item.ncm:
@@ -290,15 +320,6 @@ class NFeBuilder:
         base_icms = (valor_bruto - valor_desconto).quantize(
             Decimal("0.01"), rounding=ROUND_HALF_UP
         )
-        icms_valor = (base_icms * tax_config.icms_aliquota / 100).quantize(
-            Decimal("0.01"), rounding=ROUND_HALF_UP
-        )
-        pis_valor = (valor_bruto * tax_config.pis_aliquota / 100).quantize(
-            Decimal("0.01"), rounding=ROUND_HALF_UP
-        )
-        cofins_valor = (valor_bruto * tax_config.cofins_aliquota / 100).quantize(
-            Decimal("0.01"), rounding=ROUND_HALF_UP
-        )
 
         result: dict = {
             "numero_item": str(numero),
@@ -308,25 +329,45 @@ class NFeBuilder:
             "unidade_comercial": item.unidade,
             "quantidade_comercial": float(item.quantidade),
             "valor_unitario_comercial": float(item.valor_unitario),
-            "valor_bruto": float(base_icms),  # valor_bruto já com desconto
-            "ncm": item.ncm.replace(".", ""),
-            # ICMS
-            "icms_situacao_tributaria": tax_config.cst_icms,
-            "icms_modalidade_base_calculo": tax_config.icms_modalidade_base_calculo,
-            "icms_base_calculo": float(base_icms),
-            "icms_aliquota": float(tax_config.icms_aliquota),
-            "icms_valor": float(icms_valor),
-            # PIS
-            "pis_situacao_tributaria": tax_config.cst_pis,
-            "pis_base_calculo": float(valor_bruto),
-            "pis_aliquota_porcentual": float(tax_config.pis_aliquota),
-            "pis_valor": float(pis_valor),
-            # COFINS
-            "cofins_situacao_tributaria": tax_config.cst_cofins,
-            "cofins_base_calculo": float(valor_bruto),
-            "cofins_aliquota_porcentual": float(tax_config.cofins_aliquota),
-            "cofins_valor": float(cofins_valor),
+            "valor_bruto": float(valor_bruto),
+            "unidade_tributavel": item.unidade,
+            "quantidade_tributavel": float(item.quantidade),
+            "valor_unitario_tributavel": float(item.valor_unitario),
+            "codigo_ncm": item.ncm.replace(".", ""),
+            "icms_origem": "0",
         }
+
+        if simples_nacional:
+            # Simples Nacional: CSOSN em vez de CST
+            result["icms_situacao_tributaria"] = "102"  # 102=sem crédito
+            result["pis_situacao_tributaria"] = "07"    # 07=isento
+            result["cofins_situacao_tributaria"] = "07"  # 07=isento
+        else:
+            # Regime Normal: CST + base de cálculo + alíquotas
+            icms_valor = (base_icms * tax_config.icms_aliquota / 100).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+            pis_valor = (valor_bruto * tax_config.pis_aliquota / 100).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+            cofins_valor = (valor_bruto * tax_config.cofins_aliquota / 100).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+            result.update({
+                "icms_situacao_tributaria": tax_config.cst_icms,
+                "icms_modalidade_base_calculo": tax_config.icms_modalidade_base_calculo,
+                "icms_base_calculo": float(base_icms),
+                "icms_aliquota": float(tax_config.icms_aliquota),
+                "icms_valor": float(icms_valor),
+                "pis_situacao_tributaria": tax_config.cst_pis,
+                "pis_base_calculo": float(valor_bruto),
+                "pis_aliquota_porcentual": float(tax_config.pis_aliquota),
+                "pis_valor": float(pis_valor),
+                "cofins_situacao_tributaria": tax_config.cst_cofins,
+                "cofins_base_calculo": float(valor_bruto),
+                "cofins_aliquota_porcentual": float(tax_config.cofins_aliquota),
+                "cofins_valor": float(cofins_valor),
+            })
 
         if valor_desconto > 0:
             result["valor_desconto"] = float(valor_desconto)

@@ -56,6 +56,8 @@ class BudgetViewSet(viewsets.ReadOnlyModelViewSet):
             vehicle_version=ser.validated_data.get("vehicle_version", ""),
             vehicle_engine=ser.validated_data.get("vehicle_engine", ""),
             vehicle_color=ser.validated_data.get("vehicle_color", ""),
+            vehicle_fuel_type=ser.validated_data.get("vehicle_fuel_type", ""),
+            vehicle_make_logo=ser.validated_data.get("vehicle_make_logo", ""),
             vehicle_year=ser.validated_data.get("vehicle_year"),
             created_by=request.user.email,
         )
@@ -117,6 +119,7 @@ class BudgetVersionViewSet(viewsets.ReadOnlyModelViewSet):
             version=version,
             approved_by=ser.validated_data["approved_by"],
             evidence_s3_key=ser.validated_data["evidence_s3_key"],
+            user=request.user,
         )
         version.refresh_from_db()
         from apps.service_orders.serializers import ServiceOrderListSerializer

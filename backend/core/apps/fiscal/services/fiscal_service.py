@@ -74,6 +74,7 @@ class FiscalService:
         service_order: Any,
         config: "FiscalConfigModel | None" = None,
         triggered_by: str = "USER",
+        parts_as_service: bool = True,
     ) -> "FiscalDocument":
         """Emite NFS-e a partir de uma OS.
 
@@ -134,8 +135,13 @@ class FiscalService:
 
         # Construir payload
         service_order.destinatario = person  # injetar para o builder
-        payload = ManausNfseBuilder.build(service_order, config, ref)
-        total_value = (service_order.services_total or 0) + (service_order.parts_total or 0)
+        payload = ManausNfseBuilder.build(
+            service_order, config, ref, parts_as_service=parts_as_service,
+        )
+        if parts_as_service:
+            total_value = (service_order.services_total or 0) + (service_order.parts_total or 0)
+        else:
+            total_value = service_order.services_total or 0
 
         # Criar FiscalDocument ANTES da chamada HTTP (para garantir audit trail)
         doc = FiscalDocument.objects.create(
@@ -723,9 +729,14 @@ class FiscalService:
 
         items = []
         for part in parts:
-            # NCM não está em ServiceOrderPart nem em inventory.Product
-            # O NFeBuilder validará e levantará NfeBuilderError se vazio
+            # NCM: tenta product.ncm → part.ncm → part_number (fallback)
             ncm = ""
+            if part.product_id:
+                ncm = getattr(part.product, "ncm", "") or ""
+            if not ncm:
+                ncm = getattr(part, "ncm", "") or ""
+            if not ncm:
+                ncm = part.part_number or ""
 
             # Unidade vem do Product vinculado, se houver
             unidade = "UN"

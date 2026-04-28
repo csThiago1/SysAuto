@@ -67,6 +67,7 @@ const serviceOrderBaseSchema = z.object({
   customer_name: z.string().min(1, "Nome do cliente é obrigatório"),
   plate: z.string().min(7, "Placa inválida — mínimo 7 caracteres").max(8, "Placa inválida"),
   make: z.string().optional().default(""),
+  make_logo: z.string().optional().default(""),
   model: z.string().optional().default(""),
   vehicle_version: z.string().optional().default(""),
   year: z.preprocess(

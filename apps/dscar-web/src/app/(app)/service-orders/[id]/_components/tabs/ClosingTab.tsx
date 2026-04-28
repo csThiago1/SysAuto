@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label"
 import { apiFetch } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import { useDeliverOS } from "../../_hooks/useOSItems"
+import { BillingModal } from "../BillingModal"
 import { FiscalEmissionModal } from "../FiscalEmissionModal"
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -172,6 +173,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
   const [savingKm, setSavingKm] = useState(false)
   const [showDelivery, setShowDelivery] = useState(false)
   const [showNfseModal, setShowNfseModal] = useState(false)
+  const [showBillingModal, setShowBillingModal] = useState(false)
 
   if (!order) {
     return (
@@ -361,19 +363,18 @@ export function ClosingTab({ order }: ClosingTabProps) {
             </div>
           )}
           {!order.invoice_issued && order.customer_type === "private" && !isCancelled && (
-            <div className="space-y-2">
-              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">
-                OS de cliente particular — nota fiscal obrigatória ao entregar.
-              </p>
-              <Button
-                size="sm"
-                onClick={() => setShowNfseModal(true)}
-                className="bg-primary-600 hover:bg-primary-700 text-white"
-              >
-                <FileText className="h-3.5 w-3.5 mr-1.5" />
-                Emitir NFS-e
-              </Button>
-            </div>
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">
+              OS de cliente particular — nota fiscal obrigatória ao entregar.
+            </p>
+          )}
+          {!order.invoice_issued && (
+            <Button
+              onClick={() => setShowBillingModal(true)}
+              className="gap-1.5 bg-success-600 hover:bg-success-700 text-white"
+            >
+              <DollarSign className="h-4 w-4" />
+              Faturar OS
+            </Button>
           )}
         </div>
       </div>
@@ -403,6 +404,13 @@ export function ClosingTab({ order }: ClosingTabProps) {
           }}
         />
       )}
+
+      {/* Billing modal */}
+      <BillingModal
+        open={showBillingModal}
+        onOpenChange={setShowBillingModal}
+        order={order}
+      />
     </div>
   )
 }

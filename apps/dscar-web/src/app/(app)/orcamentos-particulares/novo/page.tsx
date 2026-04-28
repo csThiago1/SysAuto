@@ -20,6 +20,7 @@ interface PersonResult {
 interface PlateData {
   plate: string
   make: string
+  make_logo: string
   model: string
   version: string
   engine: string
@@ -79,12 +80,14 @@ export default function NovoBudgetPage() {
   const [cor,         setCor]         = useState("")
   const [ano,         setAno]         = useState("")
   const [chassi,      setChassi]      = useState("")
+  const [makeLogo,    setMakeLogo]    = useState("")
 
   const { data: plateData, isFetching: buscandoPlaca, isError: placaNaoEncontrada } =
     usePlateLookup(placa)
 
   useEffect(() => {
     if (!plateData) return
+    if (plateData.make_logo) setMakeLogo(plateData.make_logo)
     if (plateData.make)      setMarca(plateData.make)
     if (plateData.model)     setModelo(plateData.model)
     if (plateData.version)   setVersao(plateData.version)
@@ -123,6 +126,8 @@ export default function NovoBudgetPage() {
         vehicle_version:     versao.trim(),
         vehicle_engine:      motorizacao.trim(),
         vehicle_color:       cor.trim(),
+        vehicle_fuel_type:   combustivel.trim(),
+        vehicle_make_logo:   makeLogo,
         vehicle_year:        anoNum && !isNaN(anoNum) ? anoNum : null,
       })
       toast.success(`Orçamento ${budget.number} criado!`)
@@ -198,7 +203,12 @@ export default function NovoBudgetPage() {
 
         {/* Veículo */}
         <div className="space-y-3 rounded-xl border border-white/10 bg-white/[0.02] p-4">
-          <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Veículo</p>
+          <div className="flex items-center gap-2">
+            {makeLogo && (
+              <img src={makeLogo} alt={marca} className="h-6 w-6 object-contain" />
+            )}
+            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Veículo</p>
+          </div>
 
           {/* Placa + status */}
           <div className="space-y-1.5">

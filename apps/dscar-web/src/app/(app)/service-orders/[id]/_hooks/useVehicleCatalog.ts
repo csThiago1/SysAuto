@@ -18,11 +18,16 @@ export function useVehicleColors() {
 interface PlateData {
   plate: string
   make: string
+  make_logo: string
   model: string
   year: number | null
   chassis: string
   renavam: string
   city: string
+  color: string
+  fuel_type: string
+  version: string
+  engine: string
 }
 
 export function usePlateLookup(plate: string) {

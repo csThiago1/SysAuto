@@ -75,6 +75,48 @@ interface ServiceOrderFormProps {
   order: ServiceOrder
 }
 
+/** Converte ServiceOrder do backend em defaultValues do form — única fonte de verdade. */
+function buildFormDefaults(o: ServiceOrder): ServiceOrderUpdateInput {
+  return {
+    consultant_id: o.consultant ?? undefined,
+    customer_type: o.customer_type ?? undefined,
+    os_type: o.os_type ?? undefined,
+    insurer: o.insurer ?? undefined,
+    insured_type: o.insured_type ?? undefined,
+    casualty_number: o.casualty_number ?? "",
+    deductible_amount: o.deductible_amount ? parseFloat(o.deductible_amount) : undefined,
+    broker_name: o.broker_name ?? "",
+    expert: o.expert ?? undefined,
+    expert_date: o.expert_date ?? undefined,
+    survey_date: o.survey_date ?? undefined,
+    authorization_date: o.authorization_date ?? undefined,
+    quotation_date: o.quotation_date ?? undefined,
+    customer: o.customer_uuid ?? undefined,
+    customer_person_id: o.customer_person_id ?? undefined,
+    customer_name: o.customer_name ?? "",
+    plate: o.plate ?? "",
+    make: o.make ?? "",
+    make_logo: o.make_logo ?? "",
+    model: o.model ?? "",
+    vehicle_version: o.vehicle_version ?? "",
+    year: o.year ?? undefined,
+    color: o.color ?? "",
+    chassis: o.chassis ?? "",
+    fuel_type: o.fuel_type ?? "",
+    fipe_value: o.fipe_value ? parseFloat(o.fipe_value) : undefined,
+    mileage_in: o.mileage_in ?? undefined,
+    vehicle_location: o.vehicle_location ?? "workshop",
+    entry_date: o.entry_date ?? undefined,
+    service_authorization_date: o.service_authorization_date ?? undefined,
+    scheduling_date: o.scheduling_date ?? undefined,
+    repair_days: o.repair_days ?? undefined,
+    estimated_delivery_date: o.estimated_delivery_date ?? undefined,
+    delivery_date: o.delivery_date ?? undefined,
+    final_survey_date: o.final_survey_date ?? undefined,
+    client_delivery_date: o.client_delivery_date ?? undefined,
+  }
+}
+
 export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabId>("opening")
@@ -82,46 +124,14 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
 
   const form = useForm<ServiceOrderUpdateInput>({
     resolver: zodResolver(serviceOrderUpdateSchema),
-    defaultValues: {
-      consultant_id: order.consultant ?? undefined,
-      customer_type: order.customer_type ?? undefined,
-      os_type: order.os_type ?? undefined,
-      insurer: order.insurer ?? undefined,
-      insured_type: order.insured_type ?? undefined,
-      casualty_number: order.casualty_number ?? "",
-      deductible_amount: order.deductible_amount ? parseFloat(order.deductible_amount) : undefined,
-      broker_name: order.broker_name ?? "",
-      expert: order.expert ?? undefined,
-      expert_date: order.expert_date ?? undefined,
-      survey_date: order.survey_date ?? undefined,
-      authorization_date: order.authorization_date ?? undefined,
-      quotation_date: order.quotation_date ?? new Date().toISOString().split("T")[0],
-      customer: order.customer_uuid ?? undefined,   // UUID do UnifiedCustomer para lookup de detalhes
-      customer_person_id: order.customer_person_id ?? undefined,
-      customer_name: order.customer_name ?? "",
-      plate: order.plate ?? "",
-      make: order.make ?? "",
-      model: order.model ?? "",
-      vehicle_version: order.vehicle_version ?? "",
-      year: order.year ?? undefined,
-      color: order.color ?? "",
-      chassis: order.chassis ?? "",
-      fuel_type: order.fuel_type ?? "",
-      fipe_value: order.fipe_value ? parseFloat(order.fipe_value) : undefined,
-      mileage_in: order.mileage_in ?? undefined,
-      vehicle_location: order.vehicle_location ?? "workshop",
-      entry_date: order.entry_date ?? undefined,
-      service_authorization_date: order.service_authorization_date ?? undefined,
-      scheduling_date: order.scheduling_date ?? undefined,
-      repair_days: order.repair_days ?? undefined,
-      estimated_delivery_date: order.estimated_delivery_date ?? undefined,
-      delivery_date: order.delivery_date ?? undefined,
-      final_survey_date: order.final_survey_date ?? undefined,
-      client_delivery_date: order.client_delivery_date ?? undefined,
-    },
+    defaultValues: buildFormDefaults(order),
   })
 
-  const { isDirty } = form.formState
+  const { dirtyFields } = form.formState
+  // isDirty do RHF fica true por causa de z.preprocess no zodResolver
+  // que transforma valores (undefined→null) mesmo sem interação do usuário.
+  // Usar contagem real de dirtyFields como fonte de verdade.
+  const isDirty = Object.keys(dirtyFields).length > 0
 
   // Transições de reparo são gerenciadas exclusivamente pelo mobile
   const REPAIR_PHASE_STATUSES: ServiceOrderStatus[] = [
@@ -154,43 +164,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
     try {
       const savedOrder = await updateMutation.mutateAsync(data)
       // Reset form to saved values so isDirty becomes false
-      form.reset({
-        consultant_id: savedOrder.consultant ?? undefined,
-        customer_type: savedOrder.customer_type ?? undefined,
-        os_type: savedOrder.os_type ?? undefined,
-        insurer: savedOrder.insurer ?? undefined,
-        insured_type: savedOrder.insured_type ?? undefined,
-        casualty_number: savedOrder.casualty_number ?? "",
-        deductible_amount: savedOrder.deductible_amount ? parseFloat(savedOrder.deductible_amount) : undefined,
-        broker_name: savedOrder.broker_name ?? "",
-        expert: savedOrder.expert ?? undefined,
-        expert_date: savedOrder.expert_date ?? undefined,
-        survey_date: savedOrder.survey_date ?? undefined,
-        authorization_date: savedOrder.authorization_date ?? undefined,
-        quotation_date: savedOrder.quotation_date ?? new Date().toISOString().split("T")[0],
-        customer: savedOrder.customer_uuid ?? undefined,
-        customer_person_id: savedOrder.customer_person_id ?? undefined,
-        customer_name: savedOrder.customer_name ?? "",
-        plate: savedOrder.plate ?? "",
-        make: savedOrder.make ?? "",
-        model: savedOrder.model ?? "",
-        vehicle_version: savedOrder.vehicle_version ?? "",
-        year: savedOrder.year ?? undefined,
-        color: savedOrder.color ?? "",
-        chassis: savedOrder.chassis ?? "",
-        fuel_type: savedOrder.fuel_type ?? "",
-        fipe_value: savedOrder.fipe_value ? parseFloat(savedOrder.fipe_value) : undefined,
-        mileage_in: savedOrder.mileage_in ?? undefined,
-        vehicle_location: savedOrder.vehicle_location ?? "workshop",
-        entry_date: savedOrder.entry_date ?? undefined,
-        service_authorization_date: savedOrder.service_authorization_date ?? undefined,
-        scheduling_date: savedOrder.scheduling_date ?? undefined,
-        repair_days: savedOrder.repair_days ?? undefined,
-        estimated_delivery_date: savedOrder.estimated_delivery_date ?? undefined,
-        delivery_date: savedOrder.delivery_date ?? undefined,
-        final_survey_date: savedOrder.final_survey_date ?? undefined,
-        client_delivery_date: savedOrder.client_delivery_date ?? undefined,
-      })
+      form.reset(buildFormDefaults(savedOrder))
       if (personDirtyData && order.customer_person_id) {
         await personUpdateMutation.mutateAsync(personDirtyData)
         setPersonDirtyData(null)

@@ -387,6 +387,45 @@ class ServiceOrderViewSet(
         serializer = ServiceOrderActivityLogSerializer(logs, many=True)
         return Response(serializer.data)
 
+    @action(detail=True, methods=["get"], url_path="billing/preview")
+    def billing_preview(self, request: Request, pk: Optional[str] = None) -> Response:
+        """GET /service-orders/{id}/billing/preview/ — breakdown de faturamento."""
+        order = self.get_object()
+        from apps.service_orders.billing import BillingService
+        preview = BillingService.preview(order)
+        return Response(preview)
+
+    @action(detail=True, methods=["post"], url_path="billing")
+    def billing(self, request: Request, pk: Optional[str] = None) -> Response:
+        """POST /service-orders/{id}/billing/ — fatura OS atomicamente."""
+        order = self.get_object()
+        items = request.data.get("items", [])
+        if not items:
+            return Response(
+                {"detail": "Nenhum item de faturamento informado."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        from apps.service_orders.billing import BillingService
+        try:
+            result = BillingService.bill(
+                order=order, items=items, user=request.user,
+            )
+        except ValueError as e:
+            return Response(
+                {"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST,
+            )
+        from apps.accounts_receivable.serializers import ReceivableDocumentSerializer
+        from apps.fiscal.serializers import FiscalDocumentListSerializer
+        return Response({
+            "receivables": ReceivableDocumentSerializer(
+                result["receivables"], many=True,
+            ).data,
+            "fiscal_documents": FiscalDocumentListSerializer(
+                result["fiscal_documents"], many=True,
+            ).data,
+            "summary": result["summary"],
+        }, status=status.HTTP_201_CREATED)
+
     @extend_schema(summary="Importar orçamento da Cilia para a OS existente")
     @action(detail=True, methods=["post"], url_path="import-cilia")
     def import_cilia(self, request: Request, pk: Optional[str] = None) -> Response:

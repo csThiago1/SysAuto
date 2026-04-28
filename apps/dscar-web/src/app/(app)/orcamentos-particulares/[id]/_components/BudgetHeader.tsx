@@ -73,7 +73,7 @@ export function BudgetHeader({ budget }: Props) {
     try {
       const res = await approve({ versionId: version.id, payload: { approved_by: "gerente" } })
       toast.success(`OS #${res.service_order.number} criada com sucesso!`)
-      router.push(`/os/${res.service_order.id}` as Route)
+      router.push(`/service-orders/${res.service_order.id}` as Route)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao aprovar.")
     }
@@ -137,7 +137,10 @@ export function BudgetHeader({ budget }: Props) {
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-white/40 mt-0.5">
+            <p className="text-sm text-white/40 mt-0.5 flex items-center gap-1.5">
+              {budget.vehicle_make_logo && (
+                <img src={budget.vehicle_make_logo} alt="" className="h-4 w-4 object-contain inline-block" />
+              )}
               {budget.customer_name} · {budget.vehicle_plate} · {budget.vehicle_description}
             </p>
           </div>
@@ -156,7 +159,7 @@ export function BudgetHeader({ budget }: Props) {
 
           {/* OS vinculada */}
           {status === "approved" && budget.service_order && (
-            <Link href={`/os/${budget.service_order}` as Route}>
+            <Link href={`/service-orders/${budget.service_order}` as Route}>
               <Button variant="outline" size="sm" className="gap-1.5 border-success-400/30 text-success-400 hover:bg-success-400/10">
                 <ExternalLink className="h-4 w-4" />
                 Ver OS

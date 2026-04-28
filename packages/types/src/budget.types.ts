@@ -80,6 +80,7 @@ export interface Budget {
   customer_name: string
   vehicle_plate: string
   vehicle_description: string
+  vehicle_make_logo: string
   cloned_from: number | null
   service_order: number | null
   active_version: BudgetVersion | null
@@ -105,6 +106,8 @@ export interface BudgetCreatePayload {
   vehicle_version?: string
   vehicle_engine?: string
   vehicle_color?: string
+  vehicle_fuel_type?: string
+  vehicle_make_logo?: string
   vehicle_year?: number | null
 }
 

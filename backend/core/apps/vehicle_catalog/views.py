@@ -222,6 +222,7 @@ def _normalize_plate_response(plate: str, data: dict) -> dict:  # type: ignore[t
         "fipe_value":      fipe_value,
         "situation":       situation_text,
         "situation_code":  situation_code,
+        "make_logo":       data.get("logo") or "",
     }
 
 
@@ -283,6 +284,7 @@ def plate_lookup(request: Request, plate: str) -> Response:
             "fipe_value":     None,
             "situation":      "",
             "situation_code": 0,
+            "make_logo":      (cached.raw_response or {}).get("logo", ""),
             "cached":         True,
         })
 

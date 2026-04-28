@@ -276,6 +276,19 @@ class ServiceOrderService:
             order.estimated_delivery_date = entry_date + timedelta(days=order.repair_days)
 
         order.save()
+
+        # ── Propagar dados do veículo para outras OSes com a mesma placa ────
+        vehicle_fields = {
+            "make", "make_logo", "model", "year", "color", "chassis",
+            "fuel_type", "vehicle_version",
+        }
+        vehicle_changed = vehicle_fields & set(data.keys())
+        if vehicle_changed and order.plate:
+            update_payload = {f: getattr(order, f) for f in vehicle_fields}
+            ServiceOrder.objects.filter(
+                plate=order.plate, is_active=True,
+            ).exclude(pk=order.pk).update(**update_payload)
+
         return order
 
     @classmethod
@@ -741,29 +754,131 @@ class ServiceOrderService:
 
     @classmethod
     @transaction.atomic
-    def create_from_budget(cls, *, version: Any) -> "ServiceOrder":
+    def create_from_budget(
+        cls, *, version: Any, created_by_user: Any = None,
+    ) -> "ServiceOrder":
         """Cria ServiceOrder particular a partir de uma BudgetVersion aprovada.
+
+        Copia: cliente (FK + nome), dados do veículo e itens (peças/serviços).
 
         Args:
             version: BudgetVersion. budget.customer deve estar acessível via FK.
+            created_by_user: GlobalUser que aprovou — usado para o log de criação.
 
         Returns:
             ServiceOrder recém-criada vinculada ao Budget.
         """
-        from apps.service_orders.models import ServiceOrder
+        from apps.service_orders.models import (
+            ServiceOrder,
+            ServiceOrderActivityLog,
+            ServiceOrderLabor,
+            ServiceOrderPart,
+        )
         from apps.service_orders.events import OSEventLogger
 
         budget = version.budget
         customer = budget.customer
 
+        # Separa vehicle_description em make/model (primeiras 2 palavras)
+        desc_parts = (budget.vehicle_description or "").split()
+        make = desc_parts[0] if desc_parts else ""
+        model_name = desc_parts[1] if len(desc_parts) > 1 else ""
+
         os_instance = ServiceOrder.objects.create(
             number=cls.get_next_number(),
+            customer=customer,
+            customer_uuid=customer.pk if customer else None,
             customer_name=getattr(customer, "full_name", "") or "",
             plate=budget.vehicle_plate,
-            make=budget.vehicle_description,
+            make=make,
+            make_logo=budget.vehicle_make_logo or "",
+            model=model_name,
+            vehicle_version=budget.vehicle_version or "",
+            chassis=budget.vehicle_chassis or "",
+            color=budget.vehicle_color or "",
+            fuel_type=budget.vehicle_fuel_type or "",
+            year=budget.vehicle_year,
             customer_type="private",
             status="reception",
         )
+
+        # ── Copia itens do orçamento aprovado para a OS ─────────────────────
+        from apps.items.models import ItemOperation
+
+        parts_to_create: list[ServiceOrderPart] = []
+        labor_to_create: list[ServiceOrderLabor] = []
+
+        for item in version.items.all():
+            gross = item.quantity * item.unit_price
+            discount = max(gross - item.net_price, 0) if item.net_price < gross else 0
+
+            if item.item_type == "PART":
+                parts_to_create.append(
+                    ServiceOrderPart(
+                        service_order=os_instance,
+                        description=item.description,
+                        part_number=item.external_code or "",
+                        quantity=item.quantity,
+                        unit_price=item.unit_price,
+                        discount=discount,
+                    )
+                )
+            else:
+                # SERVICE, EXTERNAL_SERVICE, FEE → labor_items
+                labor_to_create.append(
+                    ServiceOrderLabor(
+                        service_order=os_instance,
+                        description=item.description,
+                        quantity=item.quantity,
+                        unit_price=item.unit_price,
+                        discount=discount,
+                    )
+                )
+
+            # Cada ItemOperation (mão de obra) do item vira um ServiceOrderLabor
+            for op in ItemOperation.objects.filter(item_budget=item).select_related(
+                "operation_type", "labor_category",
+            ):
+                op_label = str(op.operation_type) if op.operation_type else "Mão de obra"
+                cat_label = str(op.labor_category) if op.labor_category else ""
+                desc = f"{op_label} — {item.description}"
+                if cat_label:
+                    desc = f"{op_label} ({cat_label}) — {item.description}"
+                labor_to_create.append(
+                    ServiceOrderLabor(
+                        service_order=os_instance,
+                        description=desc,
+                        quantity=op.hours or 1,
+                        unit_price=op.hourly_rate or 0,
+                        discount=0,
+                    )
+                )
+
+        if parts_to_create:
+            ServiceOrderPart.objects.bulk_create(parts_to_create)
+        if labor_to_create:
+            ServiceOrderLabor.objects.bulk_create(labor_to_create)
+
+        # Recalcula totais uma única vez (bulk_create não dispara save())
+        os_instance.recalculate_totals()
+
+        # Log de criação no histórico (visível na aba Histórico da OS)
+        if created_by_user:
+            ServiceOrderActivityLog.objects.create(
+                service_order=os_instance,
+                user=created_by_user,
+                activity_type="created",
+                description=(
+                    f"OS criada a partir do orçamento {version.budget.number} "
+                    f"v{version.version_number}"
+                ),
+                metadata={
+                    "budget_number": version.budget.number,
+                    "version_number": version.version_number,
+                    "parts_count": len(parts_to_create),
+                    "labor_count": len(labor_to_create),
+                },
+            )
 
         OSEventLogger.log_event(
             os_instance,

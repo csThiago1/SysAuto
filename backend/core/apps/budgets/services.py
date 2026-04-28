@@ -47,6 +47,8 @@ class BudgetService:
         vehicle_version: str = "",
         vehicle_engine: str = "",
         vehicle_color: str = "",
+        vehicle_fuel_type: str = "",
+        vehicle_make_logo: str = "",
         vehicle_year: int | None = None,
         created_by: str,
     ) -> Budget:
@@ -60,6 +62,8 @@ class BudgetService:
             vehicle_version=vehicle_version,
             vehicle_engine=vehicle_engine,
             vehicle_color=vehicle_color,
+            vehicle_fuel_type=vehicle_fuel_type,
+            vehicle_make_logo=vehicle_make_logo,
             vehicle_year=vehicle_year,
         )
         BudgetVersion.objects.create(
@@ -110,6 +114,7 @@ class BudgetService:
         version: BudgetVersion,
         approved_by: str,
         evidence_s3_key: str = "",
+        user: Any = None,
     ) -> "ServiceOrder":
         """Aprova versão enviada e cria ServiceOrder particular.
 
@@ -136,7 +141,9 @@ class BudgetService:
             status__in=["approved", "rejected", "expired", "superseded"],
         ).update(status="superseded")
 
-        os_instance = ServiceOrderService.create_from_budget(version=version)
+        os_instance = ServiceOrderService.create_from_budget(
+            version=version, created_by_user=user,
+        )
         version.budget.service_order = os_instance
         version.budget.save(update_fields=["service_order"])
         return os_instance

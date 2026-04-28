@@ -373,6 +373,7 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
             "customer_name",
             "plate",
             "make",
+            "make_logo",
             "model",
             "vehicle_version",
             "year",
@@ -571,6 +572,7 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {
             "make":            {"required": False, "allow_blank": True},
+            "make_logo":       {"required": False, "allow_blank": True},
             "model":           {"required": False, "allow_blank": True},
             "vehicle_version": {"required": False, "allow_blank": True},
             "color":           {"required": False, "allow_blank": True},

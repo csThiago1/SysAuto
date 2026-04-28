@@ -70,6 +70,7 @@ class OSPhotoFolder(models.TextChoices):
     FINAL_SURVEY     = "vistoria_final",    "Vistoria Final"
     EXPERTISE        = "pericia",           "Perícia"
     OTHER            = "outros",            "Outros"
+    FINANCEIRO       = "financeiro",        "Financeiro"
 
 
 class ServiceOrder(PaddockBaseModel):
@@ -210,6 +211,7 @@ class ServiceOrder(PaddockBaseModel):
     # ── Dados do veículo ──────────────────────────────────────────────────────
     plate = models.CharField(max_length=10, db_index=True, verbose_name="Placa")
     make = models.CharField(max_length=100, default="", verbose_name="Marca")
+    make_logo = models.URLField(max_length=500, blank=True, default="", verbose_name="Logo da montadora")
     model = models.CharField(max_length=100, default="", verbose_name="Modelo")
     vehicle_version = models.CharField(
         max_length=50, blank=True, default="", verbose_name="Versão"
@@ -620,6 +622,7 @@ class ServiceOrderPart(PaddockBaseModel):
     )
     description = models.CharField(max_length=300, verbose_name="Descrição")
     part_number = models.CharField(max_length=100, blank=True, default="", verbose_name="Código da peça")
+    ncm = models.CharField(max_length=8, blank=True, default="", verbose_name="NCM", help_text="Código NCM 8 dígitos — obrigatório para NF-e")
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1, verbose_name="Quantidade")
     unit_price = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Preço unitário")
     discount = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Desconto")

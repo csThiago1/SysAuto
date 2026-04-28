@@ -290,6 +290,7 @@ export interface ServiceOrder {
   // Veículo
   plate: string;
   make: string;
+  make_logo: string;
   model: string;
   vehicle_version: string;
   year: number | null;

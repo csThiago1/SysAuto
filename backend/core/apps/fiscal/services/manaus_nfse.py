@@ -7,8 +7,11 @@ ManualNfseBuilder : constrói payload a partir de ManualNfseInputSerializer.vali
 """
 
 import logging
+import zoneinfo
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
+
+_TZ_MANAUS = zoneinfo.ZoneInfo("America/Manaus")
 
 from apps.fiscal.exceptions import NfseBuilderError
 
@@ -80,7 +83,7 @@ class ManausNfseBuilder:
         rps = cls._get_rps(ref, config)
 
         return {
-            "data_emissao": datetime.now(tz=timezone.utc).isoformat(),
+            "data_emissao": datetime.now(tz=_TZ_MANAUS).isoformat(),
             "prestador": {
                 "cnpj": config.cnpj,
                 "inscricao_municipal": config.inscricao_municipal,
@@ -310,7 +313,7 @@ class ManualNfseBuilder:
             else:
                 data_emissao = str(data_emissao_raw)
         else:
-            data_emissao = datetime.now(tz=timezone.utc).isoformat()
+            data_emissao = datetime.now(tz=_TZ_MANAUS).isoformat()
 
         return {
             "data_emissao": data_emissao,

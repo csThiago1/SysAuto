@@ -1,9 +1,9 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ExternalLink, CalendarClock, Car, User } from "lucide-react"
+import { ExternalLink, Car, DollarSign, CheckCircle } from "lucide-react"
 import { formatDate } from "@paddock/utils"
 
 import type { ServiceOrder } from "@paddock/types"
@@ -17,26 +17,36 @@ import {
   StatusBadge
 } from "@/components/ui"
 import { cn } from "@/lib/utils"
+import { BillingModal } from "../[id]/_components/BillingModal"
 
 interface ServiceOrderTableProps {
   orders: ServiceOrder[]
 }
 
-
-
 export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
   const router = useRouter()
+  const [billingOrder, setBillingOrder] = useState<ServiceOrder | null>(null)
+
+  const BILLABLE_STATUSES = new Set([
+    "authorized", "repair", "mechanic", "bodywork", "painting",
+    "assembly", "polishing", "washing", "final_survey", "ready",
+  ])
+
   return (
+    <>
     <div className="rounded-md border bg-white/5 overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow className="bg-white/[0.03] hover:bg-white/[0.03] border-b border-white/10">
-            <TableHead className="w-[100px] label-mono text-white/40">OS</TableHead>
-            <TableHead className="min-w-[200px] label-mono text-white/40">CLIENTE / SEGURADORA</TableHead>
-            <TableHead className="min-w-[180px] label-mono text-white/40">VEÍCULO</TableHead>
-            <TableHead className="w-[140px] label-mono text-white/40">DATAS</TableHead>
-            <TableHead className="w-[180px] label-mono text-white/40">STATUS</TableHead>
-            <TableHead className="w-[60px] label-mono text-white/40"></TableHead>
+            <TableHead className="w-[80px] label-mono text-white/40">OS</TableHead>
+            <TableHead className="min-w-[160px] label-mono text-white/40">CLIENTE</TableHead>
+            <TableHead className="w-[140px] label-mono text-white/40">SEGURADORA</TableHead>
+            <TableHead className="w-[100px] label-mono text-white/40">PLACA</TableHead>
+            <TableHead className="min-w-[150px] label-mono text-white/40">VEÍCULO</TableHead>
+            <TableHead className="w-[130px] label-mono text-white/40">DATAS</TableHead>
+            <TableHead className="w-[150px] label-mono text-white/40">STATUS</TableHead>
+            <TableHead className="w-[50px] label-mono text-white/40">$</TableHead>
+            <TableHead className="w-[50px]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -51,74 +61,74 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
               >
                 {/* OS Number */}
                 <TableCell className="font-medium text-white">
-                  <div className="flex items-center gap-1.5">
-                     <span className="text-primary-600 font-bold">#{order.number}</span>
+                  <span className="text-primary-600 font-bold">#{order.number}</span>
+                </TableCell>
+
+                {/* Cliente */}
+                <TableCell>
+                  <span className="text-sm font-medium text-white truncate block max-w-[200px]">
+                    {order.customer_name || "Sem nome"}
+                  </span>
+                </TableCell>
+
+                {/* Seguradora */}
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-6 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-white/5 border border-white/10">
+                      {order.customer_type === "insurer" && order.insurer_detail?.logo ? (
+                        <img src={order.insurer_detail.logo} alt="" className="h-full w-full object-contain p-0.5" />
+                      ) : order.customer_type === "insurer" && order.insurer_detail?.abbreviation ? (
+                        <span
+                          className="h-full w-full flex items-center justify-center text-white text-[9px] font-bold"
+                          style={{ backgroundColor: order.insurer_detail?.brand_color ?? "#6366f1" }}
+                        >
+                          {order.insurer_detail.abbreviation.slice(0, 2)}
+                        </span>
+                      ) : (
+                        <img src="/dscar-logo.png" alt="DS Car" className="h-4 w-4 object-contain" />
+                      )}
+                    </div>
+                    <span className="text-xs text-white/60 truncate max-w-[100px]">
+                      {order.customer_type === "insurer"
+                        ? (order.insurer_detail?.display_name ?? "Seguradora")
+                        : "Particular"}
+                    </span>
                   </div>
                 </TableCell>
 
-                {/* Cliente / Seguradora */}
+                {/* Placa */}
                 <TableCell>
-                  <div className="flex items-center gap-3">
-                    {/* Logo: seguradora ou DS Car */}
-                    {order.customer_type === "insurer" ? (
-                      <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-white/5 border border-white/10">
-                        {order.insurer_detail?.logo ? (
-                          <img src={order.insurer_detail.logo} alt={order.insurer_detail.display_name ?? ""} className="h-full w-full object-contain p-0.5" />
-                        ) : (
-                          <span
-                            className="h-full w-full flex items-center justify-center text-white text-xs font-bold"
-                            style={{ backgroundColor: order.insurer_detail?.brand_color ?? "#6366f1" }}
-                          >
-                            {order.insurer_detail?.abbreviation?.slice(0, 2) ?? "S"}
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-black border border-white/10">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/dscar-logo.png" alt="DS Car" className="h-6 w-6 object-contain" />
-                      </div>
-                    )}
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium text-white truncate max-w-[200px]">
-                        {order.customer_name || "Sem nome"}
-                      </span>
-                      <span className="text-xs text-white/50 font-medium flex items-center gap-1">
-                        {order.customer_type === "insurer" ? (
-                          order.insurer_detail?.display_name ?? "Seguradora"
-                        ) : (
-                          <><span className="w-1.5 h-1.5 rounded-full bg-success-500 mr-0.5"></span>Particular</>
-                        )}
-                      </span>
-                    </div>
-                  </div>
+                  <span className="text-xs font-mono text-white/70 bg-white/5 px-1.5 py-0.5 rounded border border-white/10 uppercase">
+                    {order.plate || "—"}
+                  </span>
                 </TableCell>
 
                 {/* Veículo */}
                 <TableCell>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-white flex items-center gap-1.5">
-                      <Car className="h-3.5 w-3.5 text-white/40" />
+                  <span className="text-sm text-white/80 flex items-center gap-1.5">
+                    {order.make_logo ? (
+                      <img src={order.make_logo} alt={order.make} className="h-4 w-4 object-contain shrink-0" />
+                    ) : (
+                      <Car className="h-3.5 w-3.5 text-white/30 shrink-0" />
+                    )}
+                    <span className="truncate">
                       {order.make} {order.model} {order.year ? `(${order.year})` : ""}
                     </span>
-                    <span className="text-xs font-mono text-white/50 bg-white/5 px-1.5 py-0.5 rounded w-fit mt-0.5 border border-white/10 uppercase">
-                      {order.plate || "SEM PLACA"}
-                    </span>
-                  </div>
+                  </span>
                 </TableCell>
 
                 {/* Datas */}
                 <TableCell>
-                  <div className="flex flex-col gap-1 text-sm">
+                  <div className="flex flex-col gap-0.5 text-xs">
                     <div className="flex items-center justify-between gap-2 text-white/60">
-                      <span className="text-xs text-white/40">Entr:</span>
+                      <span className="text-white/40">Entr:</span>
                       <span>{formatDate(order.entry_date)}</span>
                     </div>
                     <div className={cn(
                       "flex items-center justify-between gap-2 font-medium",
                       isLate ? "text-error-600" : "text-white/70"
                     )}>
-                      <span className={cn("text-xs", isLate ? "text-error-500" : "text-white/40")}>Prev:</span>
+                      <span className={cn(isLate ? "text-error-500" : "text-white/40")}>Prev:</span>
                       <span>{formatDate(order.estimated_delivery_date)}</span>
                     </div>
                   </div>
@@ -129,9 +139,24 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                   <StatusBadge status={order.status} />
                 </TableCell>
 
-                {/* Ações */}
+                {/* Faturamento */}
+                <TableCell>
+                  {!order.invoice_issued && BILLABLE_STATUSES.has(order.status) ? (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setBillingOrder(order) }}
+                      className="inline-flex items-center justify-center h-8 w-8 rounded-md text-success-400 hover:bg-success-500/10 transition-colors"
+                      title="Faturar OS"
+                    >
+                      <DollarSign className="h-4 w-4" />
+                    </button>
+                  ) : order.invoice_issued ? (
+                    <CheckCircle className="h-4 w-4 text-success-400 mx-auto" title="OS faturada" />
+                  ) : null}
+                </TableCell>
+
+                {/* Ação */}
                 <TableCell className="text-right">
-                  <Link 
+                  <Link
                     href={`/service-orders/${order.id}`}
                     className="inline-flex items-center justify-center h-8 w-8 rounded-md text-white/40 hover:text-primary-600 hover:bg-primary-500/5 transition-colors"
                   >
@@ -144,5 +169,14 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
         </TableBody>
       </Table>
     </div>
+
+      {billingOrder && (
+        <BillingModal
+          open={!!billingOrder}
+          onOpenChange={(open) => { if (!open) setBillingOrder(null) }}
+          order={billingOrder}
+        />
+      )}
+    </>
   )
 }

@@ -28,6 +28,8 @@ class Budget(models.Model):
     vehicle_version     = models.CharField(max_length=80,  blank=True, default="", help_text="Versão/trim ex: LT1, EXL")
     vehicle_engine      = models.CharField(max_length=20,  blank=True, default="", help_text="Motorização ex: 1.0T, 2.0")
     vehicle_color       = models.CharField(max_length=40,  blank=True, default="", help_text="Cor do veículo")
+    vehicle_fuel_type   = models.CharField(max_length=30,  blank=True, default="", help_text="Combustível ex: Flex, Gasolina")
+    vehicle_make_logo   = models.URLField(max_length=500,  blank=True, default="", help_text="URL da logo da montadora")
     vehicle_year        = models.IntegerField(null=True, blank=True, help_text="Ano modelo do veículo")
     cloned_from = models.ForeignKey(
         "self",

@@ -176,7 +176,10 @@ export default function OrcamentosParticularesPage() {
                     <TableCell className="font-mono text-white text-sm">{b.number}</TableCell>
                     <TableCell className="text-white/80">{b.customer_name}</TableCell>
                     <TableCell>
-                      <span className="font-mono text-xs bg-white/10 text-white px-2 py-0.5 rounded">
+                      <span className="inline-flex items-center gap-1.5 font-mono text-xs bg-white/10 text-white px-2 py-0.5 rounded">
+                        {b.vehicle_make_logo && (
+                          <img src={b.vehicle_make_logo} alt="" className="h-3.5 w-3.5 object-contain" />
+                        )}
                         {b.vehicle_plate}
                       </span>
                     </TableCell>
