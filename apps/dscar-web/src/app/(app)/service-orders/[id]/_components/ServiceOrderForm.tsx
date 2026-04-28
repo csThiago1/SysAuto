@@ -25,6 +25,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
+import { DocumentsDropdown } from "./DocumentsDropdown"
 import { ClosingTab } from "./tabs/ClosingTab"
 import { FilesTab } from "./tabs/FilesTab"
 import { HistoryTab } from "./tabs/HistoryTab"
@@ -185,6 +186,8 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
           <StatusBadge status={order.status as ServiceOrderStatus} />
         </div>
         <div className="flex items-center gap-3">
+          <DocumentsDropdown order={order} />
+
           {/* Status transition dropdown — hidden for terminal statuses */}
           {nextStatuses.length > 0 && (
             <DropdownMenu>
