@@ -55,8 +55,11 @@ class OSDataLoader:
         from apps.service_orders.models import ServiceOrder
         return (
             ServiceOrder.objects
-            .select_related("insurer", "consultant")
-            .prefetch_related("parts", "labor_items")
+            .select_related("insurer", "consultant", "customer")
+            .prefetch_related(
+                "parts", "labor_items",
+                "customer__documents", "customer__contacts", "customer__addresses",
+            )
             .get(pk=order_id, is_active=True)
         )
 
@@ -96,7 +99,9 @@ class OSDataLoader:
 
     @staticmethod
     def _customer_dict(order: Any) -> dict[str, Any]:
-        return {
+        """Extrai dados do cliente da OS via Person (documents, contacts, addresses)."""
+        person = order.customer
+        result: dict[str, Any] = {
             "name": order.customer_name or "",
             "cpf": "",
             "cnpj": "",
@@ -105,6 +110,46 @@ class OSDataLoader:
             "email": "",
             "address": "",
         }
+
+        if not person:
+            return result
+
+        result["name"] = person.full_name or order.customer_name or ""
+
+        # Documentos (CPF, CNPJ, RG)
+        for doc in person.documents.all():
+            if doc.doc_type == "CPF" and not result["cpf"]:
+                result["cpf"] = doc.value or ""
+            elif doc.doc_type == "CNPJ" and not result["cnpj"]:
+                result["cnpj"] = doc.value or ""
+            elif doc.doc_type == "RG" and not result["rg"]:
+                result["rg"] = doc.value or ""
+
+        # Contatos (telefone, email)
+        for contact in person.contacts.all():
+            if contact.contact_type in ("CELULAR", "TELEFONE") and not result["phone"]:
+                result["phone"] = contact.value or ""
+            elif contact.contact_type == "EMAIL" and not result["email"]:
+                result["email"] = contact.value or ""
+
+        # Endereço principal
+        addr = person.addresses.filter(is_primary=True).first()
+        if not addr:
+            addr = person.addresses.first()
+        if addr:
+            parts = [
+                addr.street,
+                addr.number,
+                addr.neighborhood,
+                addr.city,
+                addr.state,
+            ]
+            addr_str = ", ".join(p for p in parts if p)
+            if addr.zip_code:
+                addr_str += f" — CEP {addr.zip_code}"
+            result["address"] = addr_str
+
+        return result
 
     @staticmethod
     def _vehicle_dict(order: Any) -> dict[str, Any]:
