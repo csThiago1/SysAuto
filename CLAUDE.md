@@ -642,6 +642,58 @@ display_name · logo (resolvida) · logo_url (crua) · uses_cilia · is_active
 # XMLs autorizados: sempre salvar no S3
 ```
 
+### NF-e Builder — Focus v2 formato flat (CRÍTICO)
+```python
+# ERRADO — Focus rejeita com 403 "CNPJ não autorizado"
+payload = {
+    "emitente": {"cnpj": "10362513000104", "logradouro": "..."},
+    "destinatario": {"cpf": "02706640251", "nome": "..."},
+}
+
+# CORRETO — Focus v2 usa campos flat
+payload = {
+    "cnpj_emitente": "10362513000104",
+    "logradouro_emitente": "...",
+    "cpf_destinatario": "02706640251",
+    "nome_destinatario": "...",
+    "indicador_inscricao_estadual_destinatario": "9",
+    "finalidade_emissao": "1",    # obrigatório
+    "modalidade_frete": "9",       # obrigatório (9=sem frete)
+    "formas_pagamento": [...],     # plural, não "forma_pagamento"
+}
+# NCM: usar "codigo_ncm" (não "ncm")
+# valor_bruto = qty × price SEM desconto (SEFAZ rejeita 629 se divergir)
+# data_emissao: SEMPRE timezone America/Manaus (container roda UTC)
+# Regime Normal (3): CST para ICMS
+# Simples Nacional (1): CSOSN 102, PIS/COFINS 07
+```
+
+### FiscalConfigModel — dados devem espelhar cadastro SEFAZ
+```python
+# Razão social EXATAMENTE como cadastrado na SEFAZ:
+# "D S CAR CENTRO AUTOMOTIVO LTDA" (com espaço em "D S")
+# regime_tributario = 3 (Regime Normal — DS Car NÃO é Simples)
+# inscricao_estadual = "042906105"
+# inscricao_municipal = "12529301" (NFS-e Manaus)
+# CNPJ_EMISSOR no settings: fallback DSCAR_CNPJ
+
+# Erros comuns SEFAZ:
+# 481 = regime tributário diverge → corrigir regime_tributario
+# 980 = razão social diverge → copiar exato do cadastro SEFAZ
+# 629 = valor produto diverge → valor_bruto = qty × price sem desconto
+# 212 = data futura → timezone UTC vs Manaus
+```
+
+### Frontend — isDirty com zodResolver + z.preprocess
+```typescript
+// ERRADO — z.preprocess transforma undefined→null, isDirty fica true ao carregar
+const { isDirty } = form.formState
+
+// CORRETO — usar contagem real de campos modificados
+const { dirtyFields } = form.formState
+const isDirty = Object.keys(dirtyFields).length > 0
+```
+
 ---
 
 ## 🖥️ Componentes Frontend Relevantes (dscar-web)
