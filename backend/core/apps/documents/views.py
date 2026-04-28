@@ -95,7 +95,12 @@ class DocumentDownloadView(APIView):
     def get(self, request: Request, doc_id: str) -> HttpResponse:
         try:
             pdf_bytes, filename = DocumentService.download(doc_id)
-            response = HttpResponse(pdf_bytes, content_type="application/pdf")
+            # WeasyPrint fallback retorna HTML quando libs nativas não estão disponíveis
+            is_pdf = pdf_bytes[:4] == b"%PDF"
+            content_type = "application/pdf" if is_pdf else "text/html; charset=utf-8"
+            ext = ".pdf" if is_pdf else ".html"
+            filename = filename.replace(".pdf", ext)
+            response = HttpResponse(pdf_bytes, content_type=content_type)
             response["Content-Disposition"] = f'inline; filename="{filename}"'
             return response
         except DocumentGeneration.DoesNotExist:
