@@ -8,9 +8,23 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-_LOGO_CANDIDATES = [
-    Path(__file__).resolve().parents[4] / "apps" / "dscar-web" / "public" / "dscar-logo.png",
-]
+def _build_candidates() -> list[Path]:
+    """Constrói lista de caminhos candidatos para a logo, seguro em qualquer ambiente."""
+    candidates = []
+    # Local dev: backend/core/apps/pdf_engine/logo.py → parents[4] = grupo-dscar/
+    here = Path(__file__).resolve()
+    try:
+        candidates.append(here.parents[4] / "apps" / "dscar-web" / "public" / "dscar-logo.png")
+    except IndexError:
+        pass
+    # Docker: /app/apps/pdf_engine/logo.py — logo copiada para /app/static/dscar-logo.png
+    candidates.append(Path("/app/static/dscar-logo.png"))
+    # Fallback: junto ao próprio arquivo
+    candidates.append(here.parent / "dscar-logo.png")
+    return candidates
+
+
+_LOGO_CANDIDATES = _build_candidates()
 
 
 @lru_cache(maxsize=1)
