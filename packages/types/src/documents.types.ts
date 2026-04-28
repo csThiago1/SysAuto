@@ -6,11 +6,11 @@
  * with preview and download capabilities.
  */
 
-export type DocumentType = "os_report" | "warranty" | "settlement" | "receipt"
+export type PDFDocumentType = "os_report" | "warranty" | "settlement" | "receipt"
 
 export interface DocumentGeneration {
   id: string
-  document_type: DocumentType
+  document_type: PDFDocumentType
   document_type_display: string
   version: number
   service_order_id: string
@@ -102,13 +102,13 @@ export interface DocumentPartItem {
 }
 
 export interface GenerateDocumentPayload {
-  document_type: DocumentType
+  document_type: PDFDocumentType
   receivable_id?: string | null
   data: DocumentPreviewData
 }
 
 export const DOCUMENT_TYPE_CONFIG: Record<
-  DocumentType,
+  PDFDocumentType,
   { label: string; icon: string }
 > = {
   os_report: { label: "Ordem de Serviço", icon: "FileText" },

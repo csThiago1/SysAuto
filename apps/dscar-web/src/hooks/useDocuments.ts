@@ -14,7 +14,7 @@ import { apiFetch } from "@/lib/api"
 import type {
   DocumentGeneration,
   DocumentPreviewData,
-  DocumentType,
+  PDFDocumentType,
   GenerateDocumentPayload,
 } from "@paddock/types"
 
@@ -25,7 +25,7 @@ const BASE = "/api/proxy/documents"
 const docKeys = {
   all: ["documents"] as const,
   history: (osId: string) => [...docKeys.all, "history", osId] as const,
-  preview: (osId: string, type: DocumentType) =>
+  preview: (osId: string, type: PDFDocumentType) =>
     [...docKeys.all, "preview", osId, type] as const,
 }
 
@@ -56,7 +56,7 @@ export function useDocumentHistory(osId: string) {
  */
 export function useDocumentPreview(
   osId: string,
-  documentType: DocumentType | null,
+  documentType: PDFDocumentType | null,
   receivableId?: string,
 ) {
   const params = receivableId ? `?receivable_id=${receivableId}` : ""

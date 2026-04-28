@@ -13,11 +13,11 @@ import {
 } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import type { ServiceOrder, DocumentType, DocumentGeneration } from "@paddock/types"
+import type { ServiceOrder, PDFDocumentType, DocumentGeneration } from "@paddock/types"
 import { useDocumentHistory } from "@/hooks/useDocuments"
 import { Button } from "@/components/ui/button"
 
-const TYPE_ICONS: Record<DocumentType, typeof FileText> = {
+const TYPE_ICONS: Record<PDFDocumentType, typeof FileText> = {
   os_report: FileText,
   warranty: ShieldCheck,
   settlement: CheckCircle,
@@ -30,7 +30,7 @@ interface Props {
 
 export function DocumentHistorySection({ order }: Props) {
   const { data: history, isLoading } = useDocumentHistory(order.id)
-  const [expandedType, setExpandedType] = useState<DocumentType | null>(null)
+  const [expandedType, setExpandedType] = useState<PDFDocumentType | null>(null)
 
   if (isLoading) {
     return (
@@ -83,7 +83,7 @@ export function DocumentHistorySection({ order }: Props) {
           <div className="space-y-3">
             {Object.entries(grouped).map(([type, versions]) => {
               const latest = versions[0]
-              const Icon = TYPE_ICONS[type as DocumentType] ?? FileText
+              const Icon = TYPE_ICONS[type as PDFDocumentType] ?? FileText
               const isExpanded = expandedType === type
               const hasOlderVersions = versions.length > 1
 
@@ -125,7 +125,7 @@ export function DocumentHistorySection({ order }: Props) {
                           variant="ghost"
                           size="sm"
                           onClick={() =>
-                            setExpandedType(isExpanded ? null : (type as DocumentType))
+                            setExpandedType(isExpanded ? null : (type as PDFDocumentType))
                           }
                           className="h-7 px-2 text-xs text-white/30 hover:text-white"
                         >

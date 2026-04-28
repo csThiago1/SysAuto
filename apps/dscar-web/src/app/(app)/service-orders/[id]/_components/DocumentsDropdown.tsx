@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { FileText, ShieldCheck, CheckCircle, Receipt, ChevronDown } from "lucide-react"
-import type { ServiceOrder, DocumentType } from "@paddock/types"
+import type { ServiceOrder, PDFDocumentType } from "@paddock/types"
 import { useDocumentHistory } from "@/hooks/useDocuments"
 import {
   DropdownMenu,
@@ -15,7 +15,7 @@ import {
 import { DocumentPreviewDrawer } from "./DocumentPreviewDrawer"
 
 const DOC_ITEMS: {
-  type: DocumentType
+  type: PDFDocumentType
   label: string
   icon: typeof FileText
   tooltip: (o: ServiceOrder) => string | null
@@ -60,7 +60,7 @@ interface DocumentsDropdownProps {
 }
 
 export function DocumentsDropdown({ order }: DocumentsDropdownProps) {
-  const [selectedType, setSelectedType] = useState<DocumentType | null>(null)
+  const [selectedType, setSelectedType] = useState<PDFDocumentType | null>(null)
   const { data: history } = useDocumentHistory(order.id)
   const docCount = history?.length ?? 0
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { FileText, Loader2, Plus, Trash2 } from "lucide-react"
 import { toast } from "sonner"
-import type { ServiceOrder, DocumentType, DocumentPreviewData } from "@paddock/types"
+import type { ServiceOrder, PDFDocumentType, DocumentPreviewData } from "@paddock/types"
 import { DOCUMENT_TYPE_CONFIG } from "@paddock/types"
 import { useDocumentPreview, useGenerateDocument } from "@/hooks/useDocuments"
 import { Button } from "@/components/ui/button"
@@ -13,7 +13,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 
 interface Props {
   order: ServiceOrder
-  documentType: DocumentType
+  documentType: PDFDocumentType
   onClose: () => void
 }
 
@@ -34,7 +34,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
     if (!formData) return
     const clone = structuredClone(formData)
     const keys = path.split(".")
-    let obj: Record<string, unknown> = clone as Record<string, unknown>
+    let obj: Record<string, unknown> = clone as unknown as Record<string, unknown>
     for (let i = 0; i < keys.length - 1; i++) {
       obj = obj[keys[i]] as Record<string, unknown>
     }
@@ -45,7 +45,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
   function updateServiceField(index: number, field: string, value: string | number) {
     if (!formData) return
     const clone = structuredClone(formData)
-    ;(clone.services[index] as Record<string, unknown>)[field] = value
+    ;(clone.services[index] as unknown as Record<string, unknown>)[field] = value
     setFormData(clone)
   }
 
