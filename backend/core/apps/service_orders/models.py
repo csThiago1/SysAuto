@@ -542,7 +542,8 @@ class ActivityType(models.TextChoices):
     LABOR_ADDED      = "labor_added",      "Serviço Adicionado"
     LABOR_REMOVED    = "labor_removed",    "Serviço Removido"
     LABOR_UPDATED    = "labor_updated",    "Serviço Editado"
-    INVOICE_ISSUED   = "invoice_issued",   "NF Emitida"
+    INVOICE_ISSUED       = "invoice_issued",       "NF Emitida"
+    DOCUMENT_GENERATED   = "document_generated",   "Documento Gerado"
 
 class ServiceOrderActivityLog(PaddockBaseModel):
     """Log descritivo e minucioso do histórico da OS."""

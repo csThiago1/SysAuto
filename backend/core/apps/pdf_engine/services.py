@@ -75,6 +75,28 @@ class PDFService:
             return html.encode("utf-8")
 
     @classmethod
+    def render_document(cls, document_type: str, context: dict[str, Any]) -> bytes:
+        """Renderiza documento PDF por tipo.
+
+        Args:
+            document_type: um de 'os_report', 'warranty', 'settlement', 'receipt'.
+            context: dict completo de contexto.
+
+        Returns:
+            bytes do PDF (WeasyPrint) ou bytes do HTML (fallback).
+        """
+        template_map = {
+            "os_report": "pdf_engine/os_report.html",
+            "warranty": "pdf_engine/warranty.html",
+            "settlement": "pdf_engine/settlement.html",
+            "receipt": "pdf_engine/receipt.html",
+        }
+        template_name = template_map.get(document_type)
+        if not template_name:
+            raise ValueError(f"Tipo de documento desconhecido: {document_type}")
+        return cls.render_html(template_name, context)
+
+    @classmethod
     def orcamento_pdf_key(cls, numero: str, versao: int) -> str:
         """Gera S3 key para o PDF do orçamento.
 
