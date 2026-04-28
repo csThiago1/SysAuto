@@ -128,9 +128,9 @@ function FiscalDocRow({
       {/* Ações */}
       <td className="py-3 px-4 text-right">
         <div className="flex items-center justify-end gap-2">
-          {doc.caminho_pdf && (
+          {doc.pdf_url && (
             <a
-              href={doc.caminho_pdf}
+              href={`/api/proxy${doc.pdf_url.replace("/api/v1/", "/")}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-primary-600 hover:text-primary-500"
@@ -138,9 +138,9 @@ function FiscalDocRow({
               PDF
             </a>
           )}
-          {doc.caminho_xml && (
+          {doc.xml_url && (
             <a
-              href={doc.caminho_xml}
+              href={`/api/proxy${doc.xml_url.replace("/api/v1/", "/")}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-white/40 hover:text-white/60"

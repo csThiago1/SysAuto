@@ -14,14 +14,91 @@ import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
-import { FileText, Plus, Trash2, Loader2, CheckCircle2 } from "lucide-react"
+import { FileText, Plus, Trash2, Loader2, CheckCircle2, Search, Check, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useEmitManualNfse } from "@/hooks/useFiscal"
+import { usePersons } from "@/hooks/usePersons"
 import { withRoleGuard } from "@/lib/withRoleGuard"
 import type { FiscalDocument } from "@paddock/types"
 import { cn } from "@/lib/utils"
+
+// ─── Person Search ───────────────────────────────────────────────────────────
+
+function PersonSearchField({
+  selectedPerson,
+  onSelect,
+  onClear,
+}: {
+  selectedPerson: { id: string; full_name: string; person_kind: string } | null
+  onSelect: (person: { id: string; full_name: string; person_kind: string }) => void
+  onClear: () => void
+}) {
+  const [query, setQuery] = useState("")
+  const { data, isFetching } = usePersons(
+    query.trim().length >= 2 ? { search: query.trim() } : undefined
+  )
+  const results = data?.results ?? []
+
+  if (selectedPerson) {
+    return (
+      <div className="flex items-center justify-between rounded-lg bg-primary-600/10 border border-primary-600/30 px-4 py-3">
+        <div>
+          <p className="text-sm font-semibold text-white">{selectedPerson.full_name}</p>
+          <p className="text-xs text-white/50 mt-0.5">
+            {selectedPerson.person_kind === "PJ" ? "Pessoa Jurídica" : "Pessoa Física"}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Check className="h-4 w-4 text-success-400" />
+          <button type="button" onClick={onClear} className="p-1 rounded text-white/30 hover:text-white/60">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 pointer-events-none" />
+        <Input
+          className="pl-9"
+          placeholder="Buscar por nome, CPF ou CNPJ..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        {isFetching && (
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-white/30" />
+        )}
+      </div>
+
+      {query.trim().length >= 2 && results.length > 0 && (
+        <div className="rounded-lg border border-white/10 bg-[#1c1c1e] divide-y divide-white/[0.06] max-h-52 overflow-y-auto">
+          {results.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => { onSelect({ id: String(p.id), full_name: p.full_name, person_kind: p.person_kind }); setQuery("") }}
+              className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/[0.05] transition-colors text-left"
+            >
+              <div>
+                <span className="text-sm font-medium text-white">{p.full_name}</span>
+                <span className="ml-2 text-xs text-white/40">{p.person_kind}</span>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {query.trim().length >= 2 && !isFetching && results.length === 0 && (
+        <p className="text-xs text-white/40 px-1">Nenhuma pessoa encontrada.</p>
+      )}
+    </div>
+  )
+}
 
 // ─── Schema (espelha ManualNfseInputSerializer) ───────────────────────────────
 
@@ -33,12 +110,11 @@ const itemSchema = z.object({
 })
 
 const schema = z.object({
-  /** PK inteiro do Person (busca via autocomplete ou input manual) */
-  destinatario_id: z.coerce.number().int().positive("ID do destinatário inválido"),
+  destinatario_id: z.string().min(1, "Selecione um destinatário"),
   data_emissao: z.string().min(10, "Data obrigatória"),
   manual_reason: z.string().min(5, "Justificativa mínima de 5 caracteres"),
   discriminacao: z.string().min(5, "Mínimo 5 caracteres").max(2000, "Máximo 2000 caracteres"),
-  codigo_servico_lc116: z.string().default("14.01"),
+  codigo_servico_lc116: z.string().default("14.12"),
   iss_retido: z.boolean().default(false),
   itens: z.array(itemSchema).min(1, "Ao menos um item obrigatório"),
 })
@@ -51,15 +127,16 @@ function EmitirNfseManualPageInner() {
   const router = useRouter()
   const emitMutation = useEmitManualNfse()
   const [emitted, setEmitted] = useState<FiscalDocument | null>(null)
+  const [selectedPerson, setSelectedPerson] = useState<{ id: string; full_name: string; person_kind: string } | null>(null)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      destinatario_id: undefined,
+      destinatario_id: "",
       data_emissao: new Date().toISOString().split("T")[0],
       manual_reason: "",
       discriminacao: "",
-      codigo_servico_lc116: "14.01",
+      codigo_servico_lc116: "14.12",
       iss_retido: false,
       itens: [{ descricao: "", quantidade: "1.0000", valor_unitario: "", valor_desconto: "0" }],
     },
@@ -135,33 +212,32 @@ function EmitirNfseManualPageInner() {
         </div>
       </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit, () => toast.error("Preencha todos os campos obrigatórios."))} className="space-y-6">
         {/* Destinatário */}
         <div className="rounded-xl bg-white/[0.03] border border-white/10 p-5 space-y-4">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-white/50">
             Destinatário
           </h2>
 
-          <div>
-            <Label className="text-xs text-white/60">
-              ID do Destinatário (Person — número inteiro)
-              <span className="text-red-400 ml-0.5">*</span>
-            </Label>
-            <Input
-              className="mt-1"
-              type="number"
-              placeholder="Ex: 42"
-              {...form.register("destinatario_id", { valueAsNumber: true })}
-            />
-            {form.formState.errors.destinatario_id && (
-              <p className="mt-0.5 text-xs text-red-400">
-                {form.formState.errors.destinatario_id.message}
-              </p>
-            )}
-            <p className="mt-1 text-xs text-white/30">
-              O Person deve ter CPF/CNPJ e endereço com município IBGE cadastrado.
+          <PersonSearchField
+            selectedPerson={selectedPerson}
+            onSelect={(p) => {
+              setSelectedPerson(p)
+              form.setValue("destinatario_id", p.id, { shouldValidate: true })
+            }}
+            onClear={() => {
+              setSelectedPerson(null)
+              form.setValue("destinatario_id", "", { shouldValidate: true })
+            }}
+          />
+          {form.formState.errors.destinatario_id && !selectedPerson && (
+            <p className="mt-0.5 text-xs text-error-400">
+              Selecione um destinatário
             </p>
-          </div>
+          )}
+          <p className="text-xs text-white/30">
+            O destinatário precisa ter CPF/CNPJ e endereço com município IBGE cadastrado.
+          </p>
         </div>
 
         {/* Dados da nota */}
@@ -192,8 +268,9 @@ function EmitirNfseManualPageInner() {
                 className="mt-1 w-full rounded-md border border-white/15 bg-white/[0.05] px-3 py-2 text-sm text-white"
                 {...form.register("codigo_servico_lc116")}
               >
-                <option value="14.01">14.01 — Manutenção/conservação de veículos</option>
-                <option value="14.05">14.05 — Vidraçaria / Restauração de vidros</option>
+                <option value="14.12">14.12 — Funilaria, lanternagem, manutenção veicular</option>
+                <option value="14.01">14.01 — Lubrificação, revisão, conserto geral</option>
+                <option value="14.05">14.05 — Restauração, acabamento</option>
               </select>
             </div>
           </div>

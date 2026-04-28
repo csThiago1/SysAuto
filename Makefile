@@ -5,7 +5,7 @@
 COMPOSE = docker compose -f infra/docker/docker-compose.dev.yml
 BACKEND  = cd backend/core
 
-.PHONY: dev dev-stop dev-ps dev-logs migrate shell \
+.PHONY: dev dev-stop dev-ps dev-logs dev-web dev-kill-ports migrate shell \
         test test-backend test-web lint format typecheck help
 
 ## ─ Desenvolvimento ──────────────────────────────────────────────────────────
@@ -30,6 +30,20 @@ dev-dscar: ## Inicia o app DS Car ERP (Next.js)
 
 dev-store: ## Inicia o app Store (Next.js)
 	cd apps/store-web && npm run dev
+
+dev-web: ## Mata portas ocupadas e sobe todos os apps Next.js via Turborepo
+	@$(MAKE) dev-kill-ports
+	npx turbo run dev
+
+dev-kill-ports: ## Mata processos fantasma nas portas 3000-3002
+	@for port in 3000 3001 3002; do \
+		pid=$$(lsof -ti :$$port 2>/dev/null); \
+		if [ -n "$$pid" ]; then \
+			echo "⚠️  Matando processo $$pid na porta $$port"; \
+			kill $$pid 2>/dev/null || true; \
+		fi; \
+	done
+	@echo "✅  Portas 3000-3002 livres"
 
 dev-stop: ## Para todos os serviços Docker
 	$(COMPOSE) down

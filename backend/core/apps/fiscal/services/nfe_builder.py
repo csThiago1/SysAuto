@@ -10,6 +10,7 @@ Regime: Normal (CST). Sem CSOSN.
 """
 
 import logging
+import zoneinfo
 from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal
 from typing import TYPE_CHECKING
@@ -146,7 +147,7 @@ class NFeBuilder:
         payload: dict = {
             "natureza_operacao": config.nfe_natureza_operacao or "Venda de mercadoria",
             "data_emissao": timezone.now().astimezone(
-                timezone.zoneinfo.ZoneInfo("America/Manaus")
+                zoneinfo.ZoneInfo("America/Manaus")
             ).isoformat(),
             "tipo_documento": "1",   # 1=saída
             "finalidade_emissao": "1",  # 1=normal

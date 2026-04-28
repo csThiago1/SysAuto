@@ -27,20 +27,30 @@ MUNICIPIO_IBGE_MANAUS = "1302603"
 
 # Mapeamento tipo de OS → item LC 116
 # Ref: spec §9.1 — DS Car Manaus
-# Focus Manaus exige 6 dígitos numéricos (XXYYZZ) sem pontos.
+# Focus NFS-e Nacional: 6 dígitos = Item(2) + Subitem(2) + Desdobro(2)
+# Manaus administra o código 14.12 para serviços automotivos
 _LC116_MAP: dict[str, str] = {
-    "vidros": "140500",  # 14.05 → Restauração de vidros
+    "vidros": "141201",
 }
-_LC116_DEFAULT = "140100"  # 14.01 → Manutenção/conservação de veículos
+_LC116_DEFAULT = "141201"  # 14.12.01 — Funilaria/lanternagem/manutenção veicular (Manaus)
+
+# NBS (Nomenclatura Brasileira de Serviços) correspondente
+# 1.2001.31.00 = Serviços de manutenção e reparação de veículos automotores rodoviários
+_NBS_DEFAULT = "120013100"
 
 
 def _normalize_lc116(code: str) -> str:
-    """Converte código LC 116 human-readable para 6 dígitos sem ponto.
+    """Converte código LC 116 para 6 dígitos numéricos (XXYYZZ).
 
-    Ex: '14.01' → '140100', '1401' → '140100', '140100' → '140100'.
+    Focus NFS-e Nacional: 6 dígitos = Item(2) + Subitem(2) + Desdobro(2).
+    Quando desdobro não informado (4 dígitos), assume '01' (primeiro desdobro).
+    Ex: '14.01' → '140101', '14.01.01' → '140101', '1401' → '140101', '140101' → '140101'.
     """
     digits = code.replace(".", "").strip()
-    return digits.ljust(6, "0")[:6]
+    if len(digits) <= 4:
+        # Sem desdobro: assume 01 (primeiro desdobro nacional)
+        digits = digits.ljust(4, "0") + "01"
+    return digits[:6]
 
 _MAX_DISCRIMINACAO_CHARS = 2000
 
@@ -61,38 +71,110 @@ class ManausNfseBuilder:
         service_order: "ServiceOrder",
         config: "FiscalConfigModel",
         ref: str,
-        parts_as_service: bool = True,
+        parts_as_service: bool = False,
     ) -> dict[str, Any]:
-        """Retorna dict pronto para POST Focus /v2/nfse.
+        """Retorna dict pronto para POST Focus /v2/nfsen (NFS-e Nacional — flat).
 
-        Args:
-            service_order: OS com destinatario carregado via destinatario.documents /
-                destinatario.addresses (prefetch feito pelo chamador).
-            config: emissor fiscal ativo.
-            ref: identificador de idempotência (ex: "12345678-NFSE-20260424-000001").
-            parts_as_service: se True, soma parts_total ao valor dos serviços na NFS-e.
-                Decisão contábil §9.4 — default True (peças entram na NFS-e de serviço).
+        Manaus migrou para NFS-e Nacional. Endpoint: /v2/nfsen (não /v2/nfse).
+        Formato: campos flat (cnpj_prestador, cpf_tomador, etc).
         """
+        from decimal import Decimal
+        from apps.persons.models import TipoDocumento
+
         if service_order.destinatario is None:
             raise NfseBuilderError("ServiceOrder sem destinatario vinculado.")
 
         person: "Person" = service_order.destinatario
 
-        tomador = cls._get_tomador(person)
-        servico = cls._get_servico(service_order, config, parts_as_service)
-        rps = cls._get_rps(ref, config)
+        # ── Tomador (destinatário) ──────────────────────────────────────
+        doc = (
+            person.documents.filter(is_primary=True).first()
+            or person.documents.filter(doc_type__in=[TipoDocumento.CPF, TipoDocumento.CNPJ]).first()
+        )
+        if doc is None:
+            raise NfseBuilderError(f"Person pk={person.pk} sem CPF/CNPJ.")
 
-        return {
+        address = person.addresses.filter(is_primary=True).first() or person.addresses.first()
+        if address is None:
+            raise NfseBuilderError(f"Person pk={person.pk} sem endereço.")
+
+        # ── Valores ─────────────────────────────────────────────────────
+        services_total: Decimal = service_order.services_total or Decimal("0")
+        if parts_as_service:
+            services_total += service_order.parts_total or Decimal("0")
+
+        aliquota_iss = config.aliquota_iss_default or Decimal("2.00")
+        valor_iss = (services_total * aliquota_iss / Decimal("100")).quantize(Decimal("0.01"))
+
+        lc116_code = cls._get_lc116_code(
+            service_order.service_type if hasattr(service_order, "service_type") else ""
+        )
+        discriminacao = cls._format_discriminacao(service_order, parts_as_service)
+
+        # ── Simples Nacional ────────────────────────────────────────────
+        # codigo_opcao_simples_nacional: 1=não optante, 2=optante ME/EPP, 3=MEI
+        is_simples = str(config.regime_tributario) == "1"
+        codigo_opcao_sn = "2" if is_simples else "1"
+
+        # Extrair numero sequencial da ref para numero_dps
+        try:
+            numero_dps = int(ref.rsplit("-", 1)[-1])
+        except (ValueError, IndexError):
+            numero_dps = 1
+
+        # ── Payload flat /v2/nfsen ──────────────────────────────────────
+        # serie_dps: usar série 2 para não conflitar com Box Empresa (série 1, números 5000+)
+        payload: dict[str, Any] = {
             "data_emissao": datetime.now(tz=_TZ_MANAUS).isoformat(),
-            "prestador": {
-                "cnpj": config.cnpj,
-                "inscricao_municipal": config.inscricao_municipal,
-                "codigo_municipio": MUNICIPIO_IBGE_MANAUS,
-            },
-            "tomador": tomador,
-            "servico": servico,
-            "rps": rps,
+            "serie_dps": "1",
+            "numero_dps": str(numero_dps),
+            "data_competencia": datetime.now(tz=_TZ_MANAUS).strftime("%Y-%m-%d"),
+            "cnpj_prestador": config.cnpj,
+            "inscricao_municipal_prestador": config.inscricao_municipal,
+            "codigo_municipio_emissora": MUNICIPIO_IBGE_MANAUS,
+            "codigo_municipio_prestacao": MUNICIPIO_IBGE_MANAUS,
+            "codigo_opcao_simples_nacional": codigo_opcao_sn,
+            "regime_especial_tributacao": "0",
+            # Tomador
+            "razao_social_tomador": person.full_name,
+            "logradouro_tomador": address.street or "",
+            "numero_tomador": address.number or "S/N",
+            "bairro_tomador": address.neighborhood or "",
+            "codigo_municipio_tomador": address.municipio_ibge or MUNICIPIO_IBGE_MANAUS,
+            "uf_tomador": address.state or "AM",
+            "cep_tomador": (address.zip_code or "").replace("-", ""),
+            # Serviço
+            "codigo_tributacao_nacional_iss": lc116_code,
+            "codigo_nbs": _NBS_DEFAULT,
+            "descricao_servico": discriminacao[:2000],
+            "valor_servico": float(services_total),
+            "tributacao_iss": 1,       # 1=tributação no município
+            "tipo_retencao_iss": 1,    # 1=não retido
         }
+
+        # Documento do tomador (CPF ou CNPJ)
+        if doc.doc_type == TipoDocumento.CPF:
+            payload["cpf_tomador"] = doc.value
+        else:
+            payload["cnpj_tomador"] = doc.value
+
+        # Complemento (opcional)
+        if address.complement:
+            payload["complemento_tomador"] = address.complement
+
+        # Email do tomador (se disponível)
+        email_contact = person.contacts.filter(contact_type__iexact="email").first()
+        if email_contact:
+            payload["email_tomador"] = email_contact.value
+
+        # Telefone do tomador (se disponível)
+        phone_contact = person.contacts.filter(contact_type__iexact="celular").first()
+        if not phone_contact:
+            phone_contact = person.contacts.filter(contact_type__iexact="telefone").first()
+        if phone_contact:
+            payload["telefone_tomador"] = phone_contact.value.replace("(", "").replace(")", "").replace("-", "").replace(" ", "")
+
+        return payload
 
     @classmethod
     def _get_tomador(cls, person: "Person") -> dict[str, Any]:
@@ -225,7 +307,7 @@ class ManausNfseBuilder:
         # Peças (se forem incluídas na NFS-e)
         if parts_as_service:
             try:
-                for item in service_order.part_items.all():
+                for item in service_order.parts.all():
                     unit = getattr(item, "unit_price", None) or getattr(item, "price", 0)
                     qty = getattr(item, "quantity", 1)
                     name = getattr(item, "part_name", None) or getattr(item, "description", "Peça")
@@ -249,12 +331,9 @@ class ManausNfseBuilder:
 
 
 class ManualNfseBuilder:
-    """Constrói payload NFS-e a partir de ManualNfseInputSerializer.validated_data.
+    """Constrói payload NFS-e Nacional (/v2/nfsen) a partir de ManualNfseInputSerializer.
 
-    Diferente do ManausNfseBuilder: origem é formulário livre, não OS.
-
-    Raises:
-        NfseBuilderError: Person sem documento primário ou sem endereço com municipio_ibge.
+    Formato flat — mesmo padrão do ManausNfseBuilder.
     """
 
     @classmethod
@@ -265,19 +344,23 @@ class ManualNfseBuilder:
         config: "FiscalConfigModel",
         ref: str,
     ) -> dict[str, Any]:
-        """Retorna dict pronto para POST Focus /v2/nfse.
-
-        Args:
-            input_data: validated_data de ManualNfseInputSerializer.
-            person: destinatário já carregado (documents + addresses prefetch pelo chamador).
-            config: emissor fiscal ativo.
-            ref: identificador de idempotência.
-        """
+        """Retorna dict pronto para POST Focus /v2/nfsen (flat)."""
         from decimal import Decimal
+        from apps.persons.models import TipoDocumento
 
-        tomador = ManausNfseBuilder._get_tomador(person)
-        rps = ManausNfseBuilder._get_rps(ref, config)
+        # Documento do tomador
+        doc = (
+            person.documents.filter(is_primary=True).first()
+            or person.documents.filter(doc_type__in=[TipoDocumento.CPF, TipoDocumento.CNPJ]).first()
+        )
+        if doc is None:
+            raise NfseBuilderError(f"Person pk={person.pk} sem CPF/CNPJ.")
 
+        address = person.addresses.filter(is_primary=True).first() or person.addresses.first()
+        if address is None:
+            raise NfseBuilderError(f"Person pk={person.pk} sem endereço.")
+
+        # Valores
         itens = input_data.get("itens", [])
         valor_servicos = sum(
             Decimal(str(i.get("valor_unitario", 0))) * Decimal(str(i.get("quantidade", 1)))
@@ -289,14 +372,8 @@ class ManualNfseBuilder:
         if aliquota_iss is None:
             aliquota_iss = config.aliquota_iss_default
         aliquota_iss = Decimal(str(aliquota_iss))
-        iss_retido: bool = input_data.get("iss_retido", False)
 
-        if iss_retido:
-            valor_iss = (valor_servicos * aliquota_iss / Decimal("100")).quantize(Decimal("0.01"))
-        else:
-            valor_iss = Decimal("0")
-
-        valor_liquido = valor_servicos - valor_iss
+        valor_iss = (valor_servicos * aliquota_iss / Decimal("100")).quantize(Decimal("0.01"))
 
         lc116_code = _normalize_lc116(input_data.get("codigo_servico_lc116", _LC116_DEFAULT))
         discriminacao = input_data.get("discriminacao", "Serviços diversos")
@@ -305,34 +382,69 @@ class ManualNfseBuilder:
             discriminacao = f"{discriminacao} | {observacoes}"
         discriminacao = discriminacao[:_MAX_DISCRIMINACAO_CHARS]
 
-        # data_emissao: None = agora
+        # data_emissao
         data_emissao_raw = input_data.get("data_emissao")
         if data_emissao_raw:
-            if hasattr(data_emissao_raw, "isoformat"):
-                data_emissao = data_emissao_raw.isoformat()
-            else:
-                data_emissao = str(data_emissao_raw)
+            data_emissao = data_emissao_raw.isoformat() if hasattr(data_emissao_raw, "isoformat") else str(data_emissao_raw)
         else:
             data_emissao = datetime.now(tz=_TZ_MANAUS).isoformat()
 
-        return {
+        is_simples = str(config.regime_tributario) == "1"
+        codigo_opcao_sn = "2" if is_simples else "1"
+
+        # Extrair numero sequencial da ref para numero_dps
+        try:
+            numero_dps = int(ref.rsplit("-", 1)[-1])
+        except (ValueError, IndexError):
+            numero_dps = 1
+
+        # Payload flat /v2/nfsen
+        payload: dict[str, Any] = {
             "data_emissao": data_emissao,
-            "prestador": {
-                "cnpj": config.cnpj,
-                "inscricao_municipal": config.inscricao_municipal,
-                "codigo_municipio": MUNICIPIO_IBGE_MANAUS,
-            },
-            "tomador": tomador,
-            "servico": {
-                "valor_servicos": str(valor_servicos.quantize(Decimal("0.01"))),
-                "valor_iss": str(valor_iss),
-                "valor_liquido_nfse": str(valor_liquido.quantize(Decimal("0.01"))),
-                "aliquota": str(aliquota_iss),
-                "iss_retido": iss_retido,
-                "item_lista_servico": lc116_code,
-                "codigo_tributacao_municipio": lc116_code,
-                "discriminacao": discriminacao,
-                "codigo_municipio": MUNICIPIO_IBGE_MANAUS,
-            },
-            "rps": rps,
+            "serie_dps": "1",
+            "numero_dps": str(numero_dps),
+            "data_competencia": datetime.now(tz=_TZ_MANAUS).strftime("%Y-%m-%d"),
+            "cnpj_prestador": config.cnpj,
+            "inscricao_municipal_prestador": config.inscricao_municipal,
+            "codigo_municipio_emissora": MUNICIPIO_IBGE_MANAUS,
+            "codigo_municipio_prestacao": MUNICIPIO_IBGE_MANAUS,
+            "codigo_opcao_simples_nacional": codigo_opcao_sn,
+            "regime_especial_tributacao": "0",
+            # Tomador
+            "razao_social_tomador": person.full_name,
+            "logradouro_tomador": address.street or "",
+            "numero_tomador": address.number or "S/N",
+            "bairro_tomador": address.neighborhood or "",
+            "codigo_municipio_tomador": address.municipio_ibge or MUNICIPIO_IBGE_MANAUS,
+            "uf_tomador": address.state or "AM",
+            "cep_tomador": (address.zip_code or "").replace("-", ""),
+            # Serviço
+            "codigo_tributacao_nacional_iss": lc116_code,
+            "codigo_nbs": _NBS_DEFAULT,
+            "descricao_servico": discriminacao,
+            "valor_servico": float(valor_servicos),
+            "tributacao_iss": 1,
+            "tipo_retencao_iss": 1,
         }
+
+        # Documento do tomador
+        if doc.doc_type == TipoDocumento.CPF:
+            payload["cpf_tomador"] = doc.value
+        else:
+            payload["cnpj_tomador"] = doc.value
+
+        if address.complement:
+            payload["complemento_tomador"] = address.complement
+
+        # Contatos do tomador
+        email_contact = person.contacts.filter(contact_type__iexact="email").first()
+        if email_contact:
+            payload["email_tomador"] = email_contact.value
+
+        phone_contact = person.contacts.filter(contact_type__iexact="celular").first()
+        if not phone_contact:
+            phone_contact = person.contacts.filter(contact_type__iexact="telefone").first()
+        if phone_contact:
+            payload["telefone_tomador"] = phone_contact.value.replace("(", "").replace(")", "").replace("-", "").replace(" ", "")
+
+        return payload

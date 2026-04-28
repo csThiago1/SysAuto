@@ -39,6 +39,10 @@ export interface FiscalDocumentList {
   natureza_rejeicao: string | null;
   /** Total de impostos */
   valor_impostos: string | null;
+  /** URL completa do PDF DANFE (Focus) */
+  pdf_url?: string;
+  /** URL completa do XML autorizado (Focus) */
+  xml_url?: string;
   created_at: string;
 }
 
@@ -86,8 +90,8 @@ export interface ManualNfseItem {
 }
 
 export interface ManualNfseInput {
-  /** PK inteiro do Person (destinatário) */
-  destinatario_id: number;
+  /** PK do Person (destinatário) */
+  destinatario_id: number | string;
   itens: ManualNfseItem[];
   discriminacao: string;
   manual_reason: string;
@@ -114,8 +118,8 @@ export interface ManualNfeItem {
 }
 
 export interface ManualNfeInput {
-  /** PK inteiro do Person (destinatário) */
-  destinatario_id: number;
+  /** PK do Person (destinatário) */
+  destinatario_id: number | string;
   itens: ManualNfeItem[];
   /** 01=dinheiro, 03=crédito, 04=débito, 99=outros */
   forma_pagamento?: "01" | "03" | "04" | "99";

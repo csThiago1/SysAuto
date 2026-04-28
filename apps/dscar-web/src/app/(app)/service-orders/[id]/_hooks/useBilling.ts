@@ -9,7 +9,7 @@ const BASE = "/api/proxy/service-orders"
 export function useBillingPreview(orderId: string) {
   return useQuery<BillingPreview>({
     queryKey: ["billing-preview", orderId],
-    queryFn: () => apiFetch<BillingPreview>(`${BASE}/${orderId}/billing/preview`),
+    queryFn: () => apiFetch<BillingPreview>(`${BASE}/${orderId}/billing/preview/`),
     enabled: !!orderId,
   })
 }
@@ -18,7 +18,7 @@ export function useBillOS(orderId: string) {
   const qc = useQueryClient()
   return useMutation<BillingResult, Error, BillingPayload>({
     mutationFn: (payload) =>
-      apiFetch<BillingResult>(`${BASE}/${orderId}/billing`, {
+      apiFetch<BillingResult>(`${BASE}/${orderId}/billing/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

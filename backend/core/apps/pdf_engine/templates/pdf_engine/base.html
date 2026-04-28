@@ -4,34 +4,179 @@
     <meta charset="UTF-8">
     <title>{% block title %}Documento DS Car{% endblock %}</title>
     <style>
-        @page { size: A4; margin: 2cm; }
-        body { font-family: Arial, sans-serif; font-size: 11px; color: #1f2937; }
-        .header { border-bottom: 3px solid #dc2626; padding-bottom: 1em; margin-bottom: 1.5em; }
-        .header h1 { color: #dc2626; margin: 0; font-size: 20px; }
-        .header p { margin: 0.2em 0; color: #6b7280; font-size: 10px; }
-        .section { margin-bottom: 1.5em; }
-        .section h2 { color: #1f2937; font-size: 13px; margin: 0 0 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
-        table { width: 100%; border-collapse: collapse; margin: 0.5em 0; }
-        th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e5e7eb; }
-        th { background-color: #f9fafb; color: #4b5563; font-size: 10px; text-transform: uppercase; }
-        .totals { margin-top: 1em; border: 1px solid #e5e7eb; padding: 1em; background: #f9fafb; }
-        .totals .total-row { font-weight: bold; font-size: 13px; color: #dc2626; border-top: 2px solid #1f2937; padding-top: 0.5em; margin-top: 0.5em; }
-        .footer { position: fixed; bottom: 1cm; left: 2cm; right: 2cm; border-top: 1px solid #e5e7eb; padding-top: 0.5em; color: #9ca3af; font-size: 9px; text-align: center; }
+        @page {
+            size: A4;
+            margin: 2cm;
+            @bottom-center {
+                content: "Documento gerado pelo ERP Paddock Solutions · DS Car © {% now 'Y' %}";
+                font-size: 8px;
+                color: #9ca3af;
+                font-family: Arial, sans-serif;
+            }
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #1f2937;
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .doc-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 3px solid #dc2626;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+        .doc-header img {
+            height: 48px;
+            width: auto;
+        }
+        .doc-header-info {
+            flex: 1;
+        }
+        .doc-header-info h1 {
+            color: #dc2626;
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .doc-header-info p {
+            margin: 2px 0;
+            color: #6b7280;
+            font-size: 9px;
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 18px;
+        }
+        .section-title {
+            color: #1f2937;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 0 0 8px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .section-number {
+            color: #dc2626;
+            margin-right: 6px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 6px 0;
+        }
+        th, td {
+            text-align: left;
+            padding: 5px 8px;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 10px;
+        }
+        th {
+            background-color: #f9fafb;
+            color: #4b5563;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-weight: 600;
+        }
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        /* Totals */
+        .totals {
+            margin-top: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 12px;
+            background: #f9fafb;
+        }
+        .totals table { margin: 0; }
+        .totals td { border: none; padding: 3px 8px; }
+        .total-row {
+            font-weight: 700;
+            font-size: 13px;
+            color: #dc2626;
+            border-top: 2px solid #1f2937;
+            padding-top: 6px;
+            margin-top: 6px;
+        }
+        .total-row td { padding-top: 8px; }
+
+        /* Utilities */
         .right { text-align: right; }
         .muted { color: #6b7280; }
+        .small { font-size: 9px; }
+        .bold { font-weight: 700; }
+
+        /* Info grid */
+        .info-grid { display: table; width: 100%; margin: 4px 0; }
+        .info-row { display: table-row; }
+        .info-label {
+            display: table-cell;
+            width: 35%;
+            padding: 3px 8px;
+            font-size: 9px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-weight: 600;
+            vertical-align: top;
+        }
+        .info-value {
+            display: table-cell;
+            padding: 3px 8px;
+            font-size: 10px;
+            color: #1f2937;
+        }
+
+        /* Signature block */
+        .signatures { margin-top: 40px; display: flex; gap: 40px; }
+        .sig-col { flex: 1; text-align: center; }
+        .sig-line { border-top: 1px solid #1f2937; margin-top: 60px; padding-top: 6px; }
+        .sig-name { font-size: 10px; font-weight: 600; color: #1f2937; }
+        .sig-detail { font-size: 9px; color: #6b7280; }
+
+        /* Check lists */
+        .check-list { list-style: none; padding: 0; margin: 6px 0; }
+        .check-list li { padding: 3px 0 3px 20px; position: relative; font-size: 10px; }
+        .check-list li::before { position: absolute; left: 0; font-weight: 700; }
+        .check-list.coverage li::before { content: "✔"; color: #16a34a; }
+        .check-list.exclusions li::before { content: "✘"; color: #dc2626; }
+
+        {% block extra_styles %}{% endblock %}
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>DS Car Centro Automotivo</h1>
-        <p>CNPJ: 10.362.513/0001-04 · Av. Samaúma 15, Monte das Oliveiras — Manaus/AM · CEP 69093-132</p>
-        <p>(92) 3345-7864 · dscarcentroautomotivo@gmail.com</p>
+    {% include "pdf_engine/_partials/watermark.html" %}
+
+    <div class="doc-header">
+        {% if logo_base64 %}
+        <img src="{{ logo_base64 }}" alt="DS Car" />
+        {% endif %}
+        <div class="doc-header-info">
+            <h1>{{ company.razao_social|default:"DS Car Centro Automotivo" }}</h1>
+            <p>
+                CNPJ: {{ company.cnpj_formatted|default:"" }}
+                {% if company.ie %} · IE: {{ company.ie }}{% endif %}
+                {% if company.endereco_linha %} · {{ company.endereco_linha }}{% endif %}
+            </p>
+            <p>
+                {% if company.telefone %}{{ company.telefone }} · {% endif %}
+                {% if company.email %}{{ company.email }}{% endif %}
+            </p>
+        </div>
     </div>
 
     {% block content %}{% endblock %}
-
-    <div class="footer">
-        Documento gerado automaticamente pelo ERP Paddock Solutions · DS Car © {% now "Y" %}
-    </div>
 </body>
 </html>

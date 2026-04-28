@@ -3,6 +3,7 @@ from rest_framework.routers import SimpleRouter
 
 from apps.fiscal.views import (
     FiscalDocumentViewSet,
+    FiscalFileProxyView,
     FocusWebhookView,
     NFeEntradaViewSet,
     NfeEmitManualView,
@@ -29,6 +30,8 @@ urlpatterns = [
     # NF-e recebidas (manifestação de destinatário)
     path("nfe-recebidas/", NfeRecebidaListView.as_view(), name="nfe-recebidas-list"),
     path("nfe-recebidas/<str:chave>/manifesto/", NfeRecebidaManifestView.as_view(), name="nfe-recebidas-manifesto"),
+    # Proxy para PDF/XML da Focus (requer auth Focus)
+    path("documents/<str:pk>/file/<str:file_type>/", FiscalFileProxyView.as_view(), name="fiscal-file-proxy"),
     # NF-e de entrada (MO-5) + documentos fiscais (06C)
     path("", include(router.urls)),
 ]

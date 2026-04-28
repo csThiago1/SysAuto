@@ -278,8 +278,11 @@ class NfseEmitView(APIView):
             )
         except Exception as exc:
             from apps.fiscal.exceptions import FocusNFeError, NfseBuilderError, FiscalValidationError
-            if isinstance(exc, (FocusNFeError, NfseBuilderError, FiscalValidationError)):
+            if isinstance(exc, (NfseBuilderError, FiscalValidationError)):
                 return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            if isinstance(exc, FocusNFeError):
+                logger.error("NfseEmitView: erro Focus para OS %s: %s", service_order_id, exc)
+                return Response({"detail": "Erro na comunicação com o serviço fiscal."}, status=status.HTTP_400_BAD_REQUEST)
             logger.error("NfseEmitView: erro ao emitir NFS-e para OS %s: %s", service_order_id, exc)
             return Response(
                 {"detail": "Erro ao emitir NFS-e."},
@@ -312,7 +315,8 @@ class NfseEmitManualView(APIView):
         except Exception as exc:
             from apps.fiscal.exceptions import FocusNFeError
             if isinstance(exc, FocusNFeError):
-                return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+                logger.error("NfseEmitManualView: erro Focus: %s", exc)
+                return Response({"detail": "Erro na comunicação com o serviço fiscal."}, status=status.HTTP_400_BAD_REQUEST)
             logger.error("NfseEmitManualView: erro ao emitir NFS-e manual: %s", exc)
             return Response(
                 {"detail": "Erro ao emitir NFS-e manual."},
@@ -368,8 +372,11 @@ class NfeEmitView(APIView):
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as exc:
             from apps.fiscal.exceptions import FocusNFeError, FiscalValidationError
-            if isinstance(exc, (FocusNFeError, FiscalValidationError)):
+            if isinstance(exc, FiscalValidationError):
                 return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            if isinstance(exc, FocusNFeError):
+                logger.error("NfeEmitView: erro Focus para OS %s: %s", service_order_id, exc)
+                return Response({"detail": "Erro na comunicação com o serviço fiscal."}, status=status.HTTP_400_BAD_REQUEST)
             logger.error("NfeEmitView: erro ao emitir NF-e para OS %s: %s", service_order_id, exc)
             return Response(
                 {"detail": "Erro ao emitir NF-e."},
@@ -401,9 +408,16 @@ class NfeEmitManualView(APIView):
         except (NfeBuilderError, FiscalValidationError) as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as exc:
-            from apps.fiscal.exceptions import FocusNFeError
+            from apps.fiscal.exceptions import FocusNFeError, FocusValidationError as FVE
+            if isinstance(exc, FVE):
+                # Erro de validação Focus (payload inválido) — detalhe útil para o usuário
+                logger.warning("NfeEmitManualView: Focus validação: %s", exc)
+                detail = exc.args[0] if exc.args else {}
+                msg = detail.get("mensagem", str(detail)) if isinstance(detail, dict) else str(detail)
+                return Response({"detail": f"Erro de validação fiscal: {msg}"}, status=status.HTTP_400_BAD_REQUEST)
             if isinstance(exc, FocusNFeError):
-                return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+                logger.error("NfeEmitManualView: erro Focus: %s", exc)
+                return Response({"detail": "Erro na comunicação com o serviço fiscal."}, status=status.HTTP_502_BAD_GATEWAY)
             logger.error("NfeEmitManualView: erro ao emitir NF-e manual: %s", exc)
             return Response(
                 {"detail": "Erro ao emitir NF-e manual."},
@@ -551,3 +565,61 @@ class NfeRecebidaManifestView(APIView):
             resp.data or {"detail": "Erro ao manifestar NF-e."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+class FiscalFileProxyView(APIView):
+    """Proxy autenticado para PDF/XML da Focus NF-e.
+
+    GET /fiscal/documents/{pk}/file/pdf/
+    GET /fiscal/documents/{pk}/file/xml/
+
+    A Focus exige HTTP Basic auth para acessar os arquivos.
+    Este proxy faz o download com o token e retorna ao browser.
+    """
+
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get(self, request: Request, pk: str, file_type: str) -> Response:
+        from django.http import HttpResponse
+        import httpx
+
+        if file_type not in ("pdf", "xml"):
+            return Response({"detail": "file_type deve ser 'pdf' ou 'xml'."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            doc = FiscalDocument.objects.get(pk=pk, is_active=True)
+        except FiscalDocument.DoesNotExist:
+            return Response({"detail": "Documento não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        path = doc.caminho_pdf if file_type == "pdf" else doc.caminho_xml
+        if not path:
+            return Response({"detail": f"Documento sem {file_type.upper()} disponível."}, status=status.HTTP_404_NOT_FOUND)
+
+        base_url = "https://homologacao.focusnfe.com.br"
+        if doc.environment == "producao":
+            base_url = "https://api.focusnfe.com.br"
+
+        token = doc.config.focus_token if doc.config else ""
+        if not token:
+            from django.conf import settings
+            token = settings.FOCUS_NFE_TOKEN
+
+        try:
+            resp = httpx.get(
+                f"{base_url}{path}",
+                auth=(token, ""),
+                timeout=15.0,
+            )
+        except httpx.TimeoutException:
+            return Response({"detail": "Timeout ao baixar arquivo."}, status=status.HTTP_504_GATEWAY_TIMEOUT)
+
+        if resp.status_code != 200:
+            logger.error("FiscalFileProxyView: Focus %s para %s%s", resp.status_code, base_url, path)
+            return Response({"detail": "Arquivo não encontrado na Focus."}, status=status.HTTP_404_NOT_FOUND)
+
+        content_type = "application/pdf" if file_type == "pdf" else "application/xml"
+        filename = path.rsplit("/", 1)[-1] if "/" in path else f"documento.{file_type}"
+
+        http_resp = HttpResponse(resp.content, content_type=content_type)
+        http_resp["Content-Disposition"] = f'inline; filename="{filename}"'
+        return http_resp

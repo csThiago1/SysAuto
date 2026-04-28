@@ -33,6 +33,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useEmitNfe, useEmitManualNfe } from "@/hooks/useFiscal"
 import { useServiceOrders } from "@/hooks/useServiceOrders"
+import { usePersons } from "@/hooks/usePersons"
 import { withRoleGuard } from "@/lib/withRoleGuard"
 import { ApiError } from "@/lib/api"
 import type { FiscalDocument, ServiceOrder } from "@paddock/types"
@@ -119,6 +120,82 @@ function OsSearch({
   )
 }
 
+// ─── Person Search helper ─────────────────────────────────────────────────────
+
+function PersonSearchField({
+  selectedPerson,
+  onSelect,
+  onClear,
+}: {
+  selectedPerson: { id: string; full_name: string; person_kind: string } | null
+  onSelect: (person: { id: string; full_name: string; person_kind: string }) => void
+  onClear: () => void
+}) {
+  const [query, setQuery] = useState("")
+  const { data, isFetching } = usePersons(
+    query.trim().length >= 2 ? { search: query.trim() } : undefined
+  )
+  const results = data?.results ?? []
+
+  if (selectedPerson) {
+    return (
+      <div className="flex items-center justify-between rounded-lg bg-primary-600/10 border border-primary-600/30 px-4 py-3">
+        <div>
+          <p className="text-sm font-semibold text-white">{selectedPerson.full_name}</p>
+          <p className="text-xs text-white/50 mt-0.5">
+            {selectedPerson.person_kind === "PJ" ? "Pessoa Jurídica" : "Pessoa Física"}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Check className="h-4 w-4 text-success-400" />
+          <button type="button" onClick={onClear} className="p-1 rounded text-white/30 hover:text-white/60">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 pointer-events-none" />
+        <Input
+          className="pl-9"
+          placeholder="Buscar por nome, CPF ou CNPJ..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        {isFetching && (
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-white/30" />
+        )}
+      </div>
+
+      {query.trim().length >= 2 && results.length > 0 && (
+        <div className="rounded-lg border border-white/10 bg-[#1c1c1e] divide-y divide-white/[0.06] max-h-52 overflow-y-auto">
+          {results.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => { onSelect({ id: String(p.id), full_name: p.full_name, person_kind: p.person_kind }); setQuery("") }}
+              className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/[0.05] transition-colors text-left"
+            >
+              <div>
+                <span className="text-sm font-medium text-white">{p.full_name}</span>
+                <span className="ml-2 text-xs text-white/40">{p.person_kind}</span>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {query.trim().length >= 2 && !isFetching && results.length === 0 && (
+        <p className="text-xs text-white/40 px-1">Nenhuma pessoa encontrada.</p>
+      )}
+    </div>
+  )
+}
+
 // ─── Schema: emissão manual ───────────────────────────────────────────────────
 
 const nfeItemSchema = z.object({
@@ -137,7 +214,7 @@ const nfeItemSchema = z.object({
 })
 
 const manualSchema = z.object({
-  destinatario_id: z.coerce.number().int().positive("ID do destinatário inválido"),
+  destinatario_id: z.string().min(1, "Selecione um destinatário"),
   itens: z.array(nfeItemSchema).min(1, "Ao menos um item obrigatório"),
   forma_pagamento: z.enum(["01", "03", "04", "99"]).default("01"),
   observacoes: z.string().max(2000).default(""),
@@ -178,13 +255,49 @@ function SuccessCard({
         )}
         <div className="flex justify-between">
           <span className="text-white/50">Status</span>
-          <span className="text-warning-400 text-xs">Aguardando autorização</span>
+          <span className={doc.status === "authorized" ? "text-success-400 text-xs" : "text-warning-400 text-xs"}>
+            {doc.status === "authorized" ? "Autorizada" : "Aguardando autorização"}
+          </span>
         </div>
         <div className="flex justify-between">
           <span className="text-white/50">Tipo</span>
           <span className="text-white/80 text-xs uppercase">{doc.document_type}</span>
         </div>
+        {doc.key && (
+          <div className="flex justify-between">
+            <span className="text-white/50">Chave</span>
+            <span className="font-mono text-white/60 text-[10px]">{doc.key}</span>
+          </div>
+        )}
       </div>
+
+      {/* PDF / XML links — passa pelo proxy Next.js que adiciona auth */}
+      {(doc.pdf_url || doc.xml_url) && (
+        <div className="flex gap-2">
+          {doc.pdf_url && (
+            <a
+              href={`/api/proxy${doc.pdf_url.replace("/api/v1/", "/")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/[0.06] border border-white/10 text-xs text-white/70 hover:text-white hover:bg-white/[0.1] transition-colors"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              Ver DANFE (PDF)
+            </a>
+          )}
+          {doc.xml_url && (
+            <a
+              href={`/api/proxy${doc.xml_url.replace("/api/v1/", "/")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/[0.06] border border-white/10 text-xs text-white/70 hover:text-white hover:bg-white/[0.1] transition-colors"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              XML
+            </a>
+          )}
+        </div>
+      )}
 
       <div className="flex gap-2">
         <Button variant="ghost" onClick={() => router.back()} className="text-white/60">
@@ -321,11 +434,12 @@ function TabFromOs({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
 function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) {
   const emitMutation = useEmitManualNfe()
   const [apiError, setApiError] = useState<string | null>(null)
+  const [selectedPerson, setSelectedPerson] = useState<{ id: string; full_name: string; person_kind: string } | null>(null)
 
   const form = useForm<ManualFormValues>({
     resolver: zodResolver(manualSchema),
     defaultValues: {
-      destinatario_id: undefined,
+      destinatario_id: "",
       itens: [
         {
           codigo_produto: "",
@@ -362,33 +476,32 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+    <form onSubmit={form.handleSubmit(onSubmit, () => toast.error("Preencha todos os campos obrigatórios."))} className="space-y-5">
       {/* Destinatário */}
       <div className="rounded-xl bg-white/[0.03] border border-white/10 p-5 space-y-4">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-white/50">
           Destinatário
         </h2>
 
-        <div>
-          <Label className="text-xs text-white/60">
-            ID do Destinatário (Person — número inteiro){" "}
-            <span className="text-red-400">*</span>
-          </Label>
-          <Input
-            className="mt-1"
-            type="number"
-            placeholder="Ex: 42"
-            {...form.register("destinatario_id", { valueAsNumber: true })}
-          />
-          {form.formState.errors.destinatario_id && (
-            <p className="mt-0.5 text-xs text-red-400">
-              {form.formState.errors.destinatario_id.message}
-            </p>
-          )}
-          <p className="mt-1 text-xs text-white/30">
-            O Person deve ter documento primário (CPF/CNPJ) e endereço primário cadastrado.
+        <PersonSearchField
+          selectedPerson={selectedPerson}
+          onSelect={(p) => {
+            setSelectedPerson(p)
+            form.setValue("destinatario_id", p.id, { shouldValidate: true })
+          }}
+          onClear={() => {
+            setSelectedPerson(null)
+            form.setValue("destinatario_id", "", { shouldValidate: true })
+          }}
+        />
+        {form.formState.errors.destinatario_id && !selectedPerson && (
+          <p className="mt-0.5 text-xs text-error-400">
+            Selecione um destinatário
           </p>
-        </div>
+        )}
+        <p className="text-xs text-white/30">
+          O destinatário precisa ter CPF/CNPJ e endereço cadastrado.
+        </p>
       </div>
 
       {/* Itens */}

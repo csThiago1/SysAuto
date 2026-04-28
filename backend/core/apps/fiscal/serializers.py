@@ -176,7 +176,7 @@ class ManualNfseInputSerializer(serializers.Serializer):
     )
     manual_reason = serializers.CharField(min_length=5, max_length=255)
 
-    def validate_destinatario_id(self, value: int) -> int:
+    def validate_destinatario_id(self, value: object) -> object:
         from apps.persons.models import Person
 
         try:
@@ -257,7 +257,7 @@ class ManualNfeInputSerializer(serializers.Serializer):
         max_digits=5, decimal_places=2, required=False, allow_null=True, default=None
     )
 
-    def validate_destinatario_id(self, value: int) -> int:
+    def validate_destinatario_id(self, value: object) -> object:
         from apps.persons.models import Person, PersonDocument
 
         try:
@@ -265,10 +265,12 @@ class ManualNfeInputSerializer(serializers.Serializer):
         except Person.DoesNotExist:
             raise serializers.ValidationError(f"Person pk={value} não encontrada.")
 
-        has_doc = PersonDocument.objects.filter(person=person, is_primary=True).exists()
+        has_doc = PersonDocument.objects.filter(
+            person=person, is_primary=True, doc_type__in=["CPF", "CNPJ"]
+        ).exists()
         if not has_doc:
             raise serializers.ValidationError(
-                f"Person pk={value} sem documento primário (CPF/CNPJ)."
+                f"Person pk={value} sem CPF ou CNPJ primário."
             )
 
         has_address = person.addresses.filter(is_primary=True).exists()
@@ -289,6 +291,8 @@ class FiscalDocumentListSerializer(serializers.ModelSerializer):
     amount = serializers.DecimalField(source="total_value", max_digits=12, decimal_places=2, read_only=True)
     numero = serializers.CharField(source="number", read_only=True)
     service_order_id = serializers.UUIDField(read_only=True)
+    pdf_url = serializers.SerializerMethodField()
+    xml_url = serializers.SerializerMethodField()
 
     class Meta:
         model = FiscalDocument
@@ -305,6 +309,8 @@ class FiscalDocumentListSerializer(serializers.ModelSerializer):
             "numero",
             "caminho_xml",
             "caminho_pdf",
+            "pdf_url",
+            "xml_url",
             "mensagem_sefaz",
             "natureza_rejeicao",
             "created_at",
@@ -313,9 +319,22 @@ class FiscalDocumentListSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+    def get_pdf_url(self, obj: FiscalDocument) -> str:
+        if not obj.caminho_pdf:
+            return ""
+        return f"/api/v1/fiscal/documents/{obj.pk}/file/pdf/"
+
+    def get_xml_url(self, obj: FiscalDocument) -> str:
+        if not obj.caminho_xml:
+            return ""
+        return f"/api/v1/fiscal/documents/{obj.pk}/file/xml/"
+
 
 class FiscalDocumentSerializer(serializers.ModelSerializer):
     """Serializer completo para detalhe de documento fiscal."""
+
+    pdf_url = serializers.SerializerMethodField()
+    xml_url = serializers.SerializerMethodField()
 
     class Meta:
         model = FiscalDocument
@@ -332,6 +351,8 @@ class FiscalDocumentSerializer(serializers.ModelSerializer):
             "number",
             "caminho_xml",
             "caminho_pdf",
+            "pdf_url",
+            "xml_url",
             "manual_reason",
             "created_at",
             "authorized_at",
@@ -340,3 +361,13 @@ class FiscalDocumentSerializer(serializers.ModelSerializer):
             "natureza_rejeicao",
         ]
         read_only_fields = fields
+
+    def get_pdf_url(self, obj: FiscalDocument) -> str:
+        if not obj.caminho_pdf:
+            return ""
+        return f"/api/v1/fiscal/documents/{obj.pk}/file/pdf/"
+
+    def get_xml_url(self, obj: FiscalDocument) -> str:
+        if not obj.caminho_xml:
+            return ""
+        return f"/api/v1/fiscal/documents/{obj.pk}/file/xml/"

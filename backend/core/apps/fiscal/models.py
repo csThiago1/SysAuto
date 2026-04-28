@@ -50,7 +50,7 @@ class FiscalDocument(PaddockBaseModel):
     # Ambiente SEFAZ
     environment = models.CharField(
         max_length=15,
-        choices=[("homologation", "Homologação"), ("production", "Produção")],
+        choices=[("homologacao", "Homologação"), ("producao", "Produção")],
         blank=True,
         default="homologacao",
     )
@@ -474,6 +474,7 @@ class FiscalEvent(models.Model):
     class TriggeredBy(models.TextChoices):
         USER = "USER", "Usuário (automatizado)"
         USER_MANUAL = "USER_MANUAL", "Usuário (manual ad-hoc)"
+        BILLING = "BILLING", "Faturamento de OS"
         CELERY = "CELERY", "Tarefa Celery"
         WEBHOOK = "WEBHOOK", "Webhook Focus"
 

@@ -64,19 +64,21 @@ class FocusNFeClient:
             headers={"Content-Type": "application/json"},
         )
 
-    # ─── NFS-e ────────────────────────────────────────────────────────────────
+    # ─── NFS-e Nacional (/v2/nfsen) ─────────────────────────────────────────────
+    # Manaus e outros municípios que migraram para o padrão nacional usam /v2/nfsen.
+    # Ref: https://focusnfe.com.br/e/nfse-nacional
 
     def emit_nfse(self, ref: str, payload: dict[str, Any]) -> FocusResponse:
-        """Emite NFS-e. POST /v2/nfse?ref={ref}"""
-        return self._request("POST", f"/v2/nfse?ref={ref}", json=payload)
+        """Emite NFS-e Nacional. POST /v2/nfsen?ref={ref}"""
+        return self._request("POST", f"/v2/nfsen?ref={ref}", json=payload)
 
     def consult_nfse(self, ref: str) -> FocusResponse:
-        """Consulta status de NFS-e. GET /v2/nfse/{ref}"""
-        return self._request("GET", f"/v2/nfse/{ref}")
+        """Consulta status de NFS-e Nacional. GET /v2/nfsen/{ref}"""
+        return self._request("GET", f"/v2/nfsen/{ref}")
 
     def cancel_nfse(self, ref: str, justificativa: str) -> FocusResponse:
-        """Cancela NFS-e. DELETE /v2/nfse/{ref}"""
-        return self._request("DELETE", f"/v2/nfse/{ref}", json={"justificativa": justificativa})
+        """Cancela NFS-e Nacional. DELETE /v2/nfsen/{ref}"""
+        return self._request("DELETE", f"/v2/nfsen/{ref}", json={"justificativa": justificativa})
 
     # ─── NF-e modelo 55 ───────────────────────────────────────────────────────
 

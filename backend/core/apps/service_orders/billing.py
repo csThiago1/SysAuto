@@ -266,8 +266,10 @@ class BillingService:
                 recv_customer_name = order.customer_name or ""
 
             # Determina origin e description
-            has_services = category in ("services", "full", "deductible")
-            origin = "NFSE" if has_services else "NFE"
+            # NFS-e = serviços, NF-e = peças, franquia = só título (sem NF)
+            is_services = category == "services"
+            is_parts = category == "parts"
+            origin = "NFSE" if is_services else ("NFE" if is_parts else "MANUAL")
             description = (
                 f"OS {order.number} — {item.get('label', category)}"
             )
@@ -305,14 +307,18 @@ class BillingService:
                 order.destinatario_id = order.customer_id
                 order.destinatario = order.customer
 
-            # Emite NF (NFS-e para serviços, NF-e para peças)
+            # Emite NF: NFS-e para serviços, NF-e para peças
+            # Franquia (deductible) = só título AR, sem emissão fiscal
+            if not is_services and not is_parts:
+                continue  # pula emissão fiscal para franquia
+
             try:
                 config = FiscalService.get_config()
-                if has_services:
+                if is_services:
                     fiscal_doc = FiscalService.emit_nfse(
                         order, config,
                         triggered_by="BILLING",
-                        parts_as_service=(category == "full"),
+                        parts_as_service=False,
                     )
                 else:
                     fiscal_doc = FiscalService.emit_nfe(
@@ -333,24 +339,35 @@ class BillingService:
                 logger.error(error_msg)
                 errors.append(error_msg)
 
-        # ── Marca OS como faturada ────────────────────────────────────
-        order.invoice_issued = True
-        order.save(update_fields=["invoice_issued"])
+        # ── Marca OS como faturada apenas se teve pelo menos 1 NF emitida ──
+        # Se todas as emissões falharam, não marca como faturada para permitir retry
+        if fiscal_documents:
+            order.invoice_issued = True
+            order.save(update_fields=["invoice_issued"])
+        elif not errors:
+            # Nenhum item gerou emissão fiscal (ex: todos com valor zero)
+            order.invoice_issued = True
+            order.save(update_fields=["invoice_issued"])
 
         # ── Log de atividade ──────────────────────────────────────────
         total_billed = sum(_d(r.amount) for r in receivables)
+        activity_description = (
+            f"OS faturada — {len(receivables)} título(s), "
+            f"R$ {total_billed:,.2f}"
+        )
+        if errors:
+            activity_description += f" | {len(errors)} erro(s) fiscal"
+
         ServiceOrderActivityLog.objects.create(
             service_order=order,
             user=user,
             activity_type="invoice_issued",
-            description=(
-                f"OS faturada — {len(receivables)} título(s), "
-                f"R$ {total_billed:,.2f}"
-            ),
+            description=activity_description,
             metadata={
                 "receivables_count": len(receivables),
                 "fiscal_docs_count": len(fiscal_documents),
                 "total_billed": str(total_billed),
+                "fiscal_errors": errors,
             },
         )
 

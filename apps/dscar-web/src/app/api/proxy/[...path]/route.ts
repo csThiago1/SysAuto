@@ -43,13 +43,26 @@ async function proxyRequest(
       : undefined;
 
   const response = await fetch(backendUrl, { method, headers, body });
-  const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
     // Não logar o body do request — pode conter CPF, email, telefone (LGPD)
     console.error(`[proxy] ${method} ${backendUrl} → ${response.status}`)
   }
 
+  // Passthrough binário para PDF/XML (não parsear como JSON)
+  const contentType = response.headers.get("Content-Type") ?? "";
+  if (contentType.includes("application/pdf") || contentType.includes("application/xml")) {
+    const buf = await response.arrayBuffer();
+    return new NextResponse(buf, {
+      status: response.status,
+      headers: {
+        "Content-Type": contentType,
+        "Content-Disposition": response.headers.get("Content-Disposition") ?? "",
+      },
+    });
+  }
+
+  const data = await response.json().catch(() => ({}));
   return NextResponse.json(data, { status: response.status });
 }
 

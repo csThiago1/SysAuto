@@ -68,15 +68,26 @@ class FiscalService:
         return FiscalConfigModel.objects.get(is_active=True)
 
     @classmethod
+    def _make_client(cls, config: "FiscalConfigModel") -> FocusNFeClient:
+        """Cria FocusNFeClient com token e base_url da config (não das settings)."""
+        base_url = (
+            "https://api.focusnfe.com.br"
+            if config.environment == "producao"
+            else "https://homologacao.focusnfe.com.br"
+        )
+        token = config.focus_token or ""
+        return FocusNFeClient(token=token, base_url=base_url)
+
+    @classmethod
     @transaction.atomic
     def emit_nfse(
         cls,
         service_order: Any,
         config: "FiscalConfigModel | None" = None,
         triggered_by: str = "USER",
-        parts_as_service: bool = True,
+        parts_as_service: bool = False,
     ) -> "FiscalDocument":
-        """Emite NFS-e a partir de uma OS.
+        """Emite NFS-e a partir de uma OS. NFS-e = somente serviços.
 
         Idempotente:
         - Se já existe FiscalDocument(service_order=os, status=authorized) → FiscalDocumentAlreadyAuthorized
@@ -164,7 +175,7 @@ class FiscalService:
         )
 
         # Chamar Focus
-        with FocusNFeClient() as client:
+        with cls._make_client(config) as client:
             resp = client.emit_nfse(ref, payload)
 
         FiscalEvent.objects.create(
@@ -268,7 +279,7 @@ class FiscalService:
             triggered_by=FiscalEvent.TriggeredBy.USER_MANUAL,
         )
 
-        with FocusNFeClient() as client:
+        with cls._make_client(config) as client:
             resp = client.emit_nfse(ref, payload)
 
         FiscalEvent.objects.create(
@@ -315,7 +326,8 @@ class FiscalService:
         """
         from apps.fiscal.models import FiscalEvent
 
-        with FocusNFeClient() as client:
+        config = doc.config or cls.get_config()
+        with cls._make_client(config) as client:
             if doc.document_type == "nfe":
                 resp = client.consult_nfe(doc.ref)
             else:
@@ -382,7 +394,8 @@ class FiscalService:
             triggered_by=FiscalEvent.TriggeredBy.USER,
         )
 
-        with FocusNFeClient() as client:
+        config = doc.config or cls.get_config()
+        with cls._make_client(config) as client:
             if doc.document_type == "nfe":
                 resp = client.cancel_nfe(doc.ref, justificativa)
             else:
@@ -485,7 +498,7 @@ class FiscalService:
             triggered_by=FiscalEvent.TriggeredBy.USER,
         )
 
-        with FocusNFeClient() as client:
+        with cls._make_client(config) as client:
             resp = client.emit_nfe(ref, payload)
 
         FiscalEvent.objects.create(
@@ -605,7 +618,7 @@ class FiscalService:
             triggered_by=FiscalEvent.TriggeredBy.USER_MANUAL,
         )
 
-        with FocusNFeClient() as client:
+        with cls._make_client(config) as client:
             resp = client.emit_nfe(ref, payload)
 
         FiscalEvent.objects.create(
@@ -686,13 +699,45 @@ class FiscalService:
 
     @staticmethod
     def _apply_focus_data(doc: "FiscalDocument", data: dict[str, Any]) -> None:
-        """Aplica campos da resposta Focus ao FiscalDocument (sem salvar)."""
-        doc.key = data.get("chave_nfe", "") or data.get("numero_nfse", "") or ""
+        """Aplica campos da resposta Focus ao FiscalDocument (sem salvar).
+
+        Campos Focus variam entre NF-e e NFS-e:
+          NF-e:  chave_nfe, caminho_danfe, caminho_xml_nota_fiscal, mensagem_sefaz
+          NFS-e: numero_nfse, url_danfse / url, caminho_xml_nota_fiscal, erros[]
+        """
+        # Chave: NF-e usa chave_nfe (pode ter prefixo "NFe"), NFS-e usa numero_nfse
+        chave_raw = data.get("chave_nfe", "") or ""
+        if chave_raw.startswith("NFe"):
+            chave_raw = chave_raw[3:]
+        doc.key = chave_raw[:44] or data.get("numero_nfse", "") or ""
+
         doc.number = data.get("numero_nfse", "") or data.get("numero", "") or ""
+
+        # XML: mesmo campo para ambos
         doc.caminho_xml = data.get("caminho_xml_nota_fiscal", "") or ""
-        doc.caminho_pdf = data.get("caminho_danfe", "") or data.get("caminho_pdf", "") or ""
+
+        # PDF: NF-e usa caminho_danfe, NFS-e usa url_danfse ou url
+        doc.caminho_pdf = (
+            data.get("caminho_danfe", "")
+            or data.get("url_danfse", "")
+            or data.get("url", "")
+            or data.get("caminho_pdf", "")
+            or ""
+        )
+
+        # Mensagem SEFAZ: NF-e usa mensagem_sefaz, NFS-e usa erros[].mensagem
         doc.mensagem_sefaz = data.get("mensagem_sefaz", "") or ""
-        doc.natureza_rejeicao = data.get("natureza_operacao", "") or ""
+        if not doc.mensagem_sefaz:
+            erros = data.get("erros", [])
+            if erros and isinstance(erros, list):
+                doc.mensagem_sefaz = erros[0].get("mensagem", "") if isinstance(erros[0], dict) else str(erros[0])
+
+        # Natureza rejeição: código do erro
+        erros = data.get("erros", [])
+        if erros and isinstance(erros, list) and isinstance(erros[0], dict):
+            doc.natureza_rejeicao = erros[0].get("codigo", "")
+        elif not doc.natureza_rejeicao:
+            doc.natureza_rejeicao = ""
 
         if doc.status == "authorized" and not doc.authorized_at:
             doc.authorized_at = timezone.now()
