@@ -1,0 +1,43 @@
+{# Bloco de dados do cliente — recebe variável 'customer' no contexto #}
+<div class="info-grid">
+    <div class="info-row">
+        <span class="info-label">Nome completo</span>
+        <span class="info-value bold">{{ customer.name|default:"—" }}</span>
+    </div>
+    {% if customer.cpf %}
+    <div class="info-row">
+        <span class="info-label">CPF</span>
+        <span class="info-value">{{ customer.cpf }}</span>
+    </div>
+    {% endif %}
+    {% if customer.cnpj %}
+    <div class="info-row">
+        <span class="info-label">CNPJ</span>
+        <span class="info-value">{{ customer.cnpj }}</span>
+    </div>
+    {% endif %}
+    {% if customer.rg %}
+    <div class="info-row">
+        <span class="info-label">RG</span>
+        <span class="info-value">{{ customer.rg }}</span>
+    </div>
+    {% endif %}
+    {% if customer.phone %}
+    <div class="info-row">
+        <span class="info-label">Telefone</span>
+        <span class="info-value">{{ customer.phone }}</span>
+    </div>
+    {% endif %}
+    {% if customer.email %}
+    <div class="info-row">
+        <span class="info-label">E-mail</span>
+        <span class="info-value">{{ customer.email }}</span>
+    </div>
+    {% endif %}
+    {% if customer.address %}
+    <div class="info-row">
+        <span class="info-label">Endereço</span>
+        <span class="info-value">{{ customer.address }}</span>
+    </div>
+    {% endif %}
+</div>

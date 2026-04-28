@@ -1,0 +1,27 @@
+{# Tabela de peças — recebe variável 'parts' (list of dicts) #}
+{% if parts %}
+<table>
+    <thead>
+        <tr>
+            <th style="width: 30px;">Nº</th>
+            <th>Descrição</th>
+            <th style="width: 80px;">Código</th>
+            <th class="right" style="width: 50px;">Qtd.</th>
+            <th class="right" style="width: 90px;">Valor (R$)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in parts %}
+        <tr>
+            <td>{{ forloop.counter|stringformat:"02d" }}</td>
+            <td>{{ p.description }}</td>
+            <td class="small muted">{{ p.part_number|default:"—" }}</td>
+            <td class="right">{{ p.quantity }}</td>
+            <td class="right bold">R$ {{ p.total|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="muted small">Nenhuma peça registrada.</p>
+{% endif %}

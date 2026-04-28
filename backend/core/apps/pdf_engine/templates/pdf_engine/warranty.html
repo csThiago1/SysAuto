@@ -1,0 +1,82 @@
+{% extends "pdf_engine/base.html" %}
+
+{% block title %}Termo de Garantia — OS #{{ order.number }}{% endblock %}
+
+{% block content %}
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">1.</span>Dados do Cliente</h2>
+        {% include "pdf_engine/_partials/customer_info.html" %}
+    </div>
+
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">2.</span>Dados do Veículo</h2>
+        {% include "pdf_engine/_partials/vehicle_info.html" %}
+    </div>
+
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">3.</span>Serviços Realizados e Prazos de Garantia</h2>
+        {% if services %}
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 30px;">Nº</th>
+                    <th>Descrição do Serviço</th>
+                    <th class="right" style="width: 50px;">Qtd.</th>
+                    <th class="right" style="width: 90px;">Valor (R$)</th>
+                    <th style="width: 60px;">Garantia</th>
+                    <th style="width: 85px;">Válida até</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in services %}
+                <tr>
+                    <td>{{ forloop.counter|stringformat:"02d" }}</td>
+                    <td>{{ s.description }}</td>
+                    <td class="right">{{ s.quantity }}</td>
+                    <td class="right bold">R$ {{ s.total|floatformat:2 }}</td>
+                    <td>{{ s.warranty_months }} meses</td>
+                    <td class="bold">{{ s.warranty_until|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">4.</span>Cobertura da Garantia</h2>
+        <ul class="check-list coverage">
+            {% for item in warranty_coverage %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">5.</span>Exclusões da Garantia</h2>
+        <ul class="check-list exclusions">
+            {% for item in warranty_exclusions %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">6.</span>Como Acionar a Garantia</h2>
+        <p style="font-size: 10px;">
+            Para acionar a garantia, entre em contato via WhatsApp
+            {% if company.telefone %}({{ company.telefone }}){% endif %}
+            ou compareça presencialmente à nossa unidade, apresentando este documento.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">7.</span>Assinaturas</h2>
+        <p style="font-size: 9px; color: #4b5563; margin-bottom: 10px;">
+            Eu, {{ customer.name|default:"" }}, declaro que li e compreendi todos os termos
+            deste documento, que recebi o veículo em perfeito estado de conservação e que
+            efetuo minha assinatura em plena concordância com as condições aqui estabelecidas.
+        </p>
+        {% include "pdf_engine/_partials/signature_block.html" %}
+    </div>
+{% endblock %}

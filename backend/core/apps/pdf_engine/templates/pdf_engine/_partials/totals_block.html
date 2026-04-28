@@ -1,0 +1,23 @@
+{# Bloco de totais — recebe variável 'totals' com keys: parts, services, discount, grand_total #}
+<div class="totals">
+    <table>
+        <tr>
+            <td>Peças</td>
+            <td class="right">R$ {{ totals.parts|floatformat:2 }}</td>
+        </tr>
+        <tr>
+            <td>Serviços / Mão de obra</td>
+            <td class="right">R$ {{ totals.services|floatformat:2 }}</td>
+        </tr>
+        {% if totals.discount and totals.discount != "0.00" %}
+        <tr>
+            <td>Desconto</td>
+            <td class="right" style="color: #dc2626;">− R$ {{ totals.discount|floatformat:2 }}</td>
+        </tr>
+        {% endif %}
+        <tr class="total-row">
+            <td>TOTAL GERAL</td>
+            <td class="right">R$ {{ totals.grand_total|floatformat:2 }}</td>
+        </tr>
+    </table>
+</div>

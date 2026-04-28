@@ -1,0 +1,75 @@
+{% extends "pdf_engine/base.html" %}
+
+{% block title %}Recibo — OS #{{ order.number }}{% endblock %}
+
+{% block content %}
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">1.</span>Dados do Pagador</h2>
+        {% include "pdf_engine/_partials/customer_info.html" %}
+    </div>
+
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">2.</span>Referência</h2>
+        <div class="info-grid">
+            <div class="info-row">
+                <span class="info-label">Ordem de Serviço</span>
+                <span class="info-value bold">#{{ order.number }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Descrição</span>
+                <span class="info-value">{{ receipt.description|default:"Serviços automotivos" }}</span>
+            </div>
+            {% if receipt.receivable_description %}
+            <div class="info-row">
+                <span class="info-label">Título</span>
+                <span class="info-value">{{ receipt.receivable_description }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">3.</span>Valor Recebido</h2>
+        <div class="totals">
+            <table>
+                <tr>
+                    <td>Forma de pagamento</td>
+                    <td class="right bold">{{ payment.method_display|default:payment.method }}</td>
+                </tr>
+                <tr>
+                    <td>Data do pagamento</td>
+                    <td class="right">{{ payment.date|default:"—" }}</td>
+                </tr>
+                <tr class="total-row">
+                    <td>VALOR RECEBIDO</td>
+                    <td class="right">R$ {{ payment.amount|floatformat:2 }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">4.</span>Declaração de Recebimento</h2>
+        <p style="font-size: 10px; text-align: justify; line-height: 1.6;">
+            Declaro que recebi de <strong>{{ customer.name|default:"" }}</strong>
+            a quantia de <strong>R$ {{ payment.amount|floatformat:2 }}</strong>
+            {% if payment.amount_words %}({{ payment.amount_words }}){% endif %}
+            referente aos serviços prestados na OS #{{ order.number }}.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">5.</span>Assinatura</h2>
+        <div style="width: 50%; margin: 0 auto; text-align: center;">
+            <div class="sig-line" style="margin-top: 60px;">
+                <p class="sig-name">{{ company.razao_social|default:"DS Car Centro Automotivo" }}</p>
+                <p class="sig-detail">
+                    {% if company.cnpj_formatted %}CNPJ: {{ company.cnpj_formatted }}{% endif %}
+                </p>
+            </div>
+        </div>
+        {% if location_date %}
+        <p class="muted small" style="text-align: center; margin-top: 20px;">{{ location_date }}</p>
+        {% endif %}
+    </div>
+{% endblock %}

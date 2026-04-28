@@ -1,0 +1,22 @@
+{# Bloco de assinaturas — recebe 'customer' e 'company' no contexto #}
+<div class="signatures">
+    <div class="sig-col">
+        <div class="sig-line">
+            <p class="sig-name">{{ customer.name|default:"Cliente" }}</p>
+            <p class="sig-detail">
+                {% if customer.cpf %}CPF: {{ customer.cpf }} — {% endif %}Cliente
+            </p>
+        </div>
+    </div>
+    <div class="sig-col">
+        <div class="sig-line">
+            <p class="sig-name">{{ company.razao_social|default:"DS Car Centro Automotivo" }}</p>
+            <p class="sig-detail">
+                {% if company.cnpj_formatted %}CNPJ: {{ company.cnpj_formatted }} — {% endif %}Prestadora
+            </p>
+        </div>
+    </div>
+</div>
+{% if location_date %}
+<p class="muted small" style="text-align: center; margin-top: 20px;">{{ location_date }}</p>
+{% endif %}

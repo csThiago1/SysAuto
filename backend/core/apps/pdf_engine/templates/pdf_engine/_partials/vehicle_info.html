@@ -1,0 +1,23 @@
+{# Bloco de dados do veículo — recebe variável 'vehicle' no contexto #}
+<table>
+    <thead>
+        <tr>
+            <th>Marca / Modelo</th>
+            <th>Ano</th>
+            <th>Cor</th>
+            <th>Placa</th>
+            <th>Chassi</th>
+            <th>KM Entrada</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="bold">{{ vehicle.make|default:"" }} {{ vehicle.model|default:"—" }}</td>
+            <td>{{ vehicle.year|default:"—" }}</td>
+            <td>{{ vehicle.color|default:"—" }}</td>
+            <td class="bold">{{ vehicle.plate|default:"—" }}</td>
+            <td style="font-size: 9px;">{{ vehicle.chassis|default:"—" }}</td>
+            <td>{% if vehicle.mileage_in %}{{ vehicle.mileage_in|floatformat:0 }} km{% else %}—{% endif %}</td>
+        </tr>
+    </tbody>
+</table>

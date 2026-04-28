@@ -1,0 +1,25 @@
+{# Tabela de serviços — recebe variável 'services' (list of dicts) #}
+{% if services %}
+<table>
+    <thead>
+        <tr>
+            <th style="width: 30px;">Nº</th>
+            <th>Descrição do Serviço</th>
+            <th class="right" style="width: 50px;">Qtd.</th>
+            <th class="right" style="width: 90px;">Valor (R$)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in services %}
+        <tr>
+            <td>{{ forloop.counter|stringformat:"02d" }}</td>
+            <td>{{ s.description }}</td>
+            <td class="right">{{ s.quantity }}</td>
+            <td class="right bold">R$ {{ s.total|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="muted small">Nenhum serviço registrado.</p>
+{% endif %}
