@@ -16,6 +16,7 @@ class DocumentGenerationSerializer(serializers.ModelSerializer):
     document_type_display = serializers.CharField(source="get_document_type_display", read_only=True)
     generated_by_name = serializers.SerializerMethodField()
     download_url = serializers.SerializerMethodField()
+    generated_at = serializers.DateTimeField(source="created_at", read_only=True)
 
     class Meta:
         model = DocumentGeneration
@@ -32,11 +33,6 @@ class DocumentGenerationSerializer(serializers.ModelSerializer):
 
     def get_download_url(self, obj: DocumentGeneration) -> str:
         return f"/api/v1/documents/{obj.pk}/download/"
-
-    def to_representation(self, instance: DocumentGeneration) -> dict:
-        data = super().to_representation(instance)
-        data["generated_at"] = data["created_at"]
-        return data
 
 
 class DocumentSnapshotSerializer(serializers.ModelSerializer):
