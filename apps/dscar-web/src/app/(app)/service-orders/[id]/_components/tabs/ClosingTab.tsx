@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils"
 import { useDeliverOS } from "../../_hooks/useOSItems"
 import { BillingModal } from "../BillingModal"
 import { FiscalEmissionModal } from "../FiscalEmissionModal"
+import { DocumentHistorySection } from "../DocumentHistorySection"
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -378,6 +379,9 @@ export function ClosingTab({ order }: ClosingTabProps) {
           )}
         </div>
       </div>
+
+      {/* Generated documents */}
+      <DocumentHistorySection order={order} />
 
       {/* Delivery dialog */}
       {showDelivery && (
