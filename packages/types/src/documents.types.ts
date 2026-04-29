@@ -32,8 +32,8 @@ export interface DocumentPreviewData {
     telefone: string
     email: string
   }
-  order: { number: number }
-  customer: {
+  order: { number: number; customer_type_display?: string; entry_date?: string; estimated_delivery_date?: string }
+  customer?: {
     name: string
     cpf: string
     cnpj: string
@@ -53,7 +53,7 @@ export interface DocumentPreviewData {
   }
   services: DocumentServiceItem[]
   parts?: DocumentPartItem[]
-  totals: {
+  totals?: {
     parts: string
     services: string
     discount: string

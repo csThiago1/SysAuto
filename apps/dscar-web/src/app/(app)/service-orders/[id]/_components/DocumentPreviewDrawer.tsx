@@ -113,7 +113,8 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
           </div>
         ) : (
           <div className="mt-6 space-y-6">
-            {/* Cliente */}
+            {/* Cliente (não aparece na OS Report — só em garantia/quitação/recibo) */}
+            {formData.customer && (
             <section>
               <h3 className="label-mono text-white/50 mb-3">Dados do Cliente</h3>
               <div className="space-y-2">
@@ -153,6 +154,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                 </div>
               </div>
             </section>
+            )}
 
             {/* Veículo */}
             <section>
