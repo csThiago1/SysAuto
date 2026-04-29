@@ -1,4 +1,4 @@
-"""Carrega e cacheia logo DS Car como base64 para uso em templates PDF."""
+"""Carrega e cacheia logos DS Car como base64 para uso em templates PDF."""
 from __future__ import annotations
 
 import base64
@@ -8,39 +8,40 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-def _build_candidates() -> list[Path]:
-    """Constrói lista de caminhos candidatos para a logo, seguro em qualquer ambiente."""
-    candidates = []
-    # Local dev: backend/core/apps/pdf_engine/logo.py → parents[4] = grupo-dscar/
-    here = Path(__file__).resolve()
+_HERE = Path(__file__).resolve().parent
+
+
+def _find_logo(filename: str) -> str:
+    """Busca logo por nome em caminhos candidatos e retorna data URI base64."""
+    candidates: list[Path] = []
+    # Local dev: backend/core/apps/pdf_engine/ → parents[4] = grupo-dscar/
     try:
-        candidates.append(here.parents[4] / "apps" / "dscar-web" / "public" / "dscar-logo.png")
+        candidates.append(_HERE.parents[3] / "apps" / "dscar-web" / "public" / filename)
     except IndexError:
         pass
-    # Docker: /app/apps/pdf_engine/logo.py — logo copiada para /app/static/dscar-logo.png
-    candidates.append(Path("/app/static/dscar-logo.png"))
-    # Fallback: junto ao próprio arquivo
-    candidates.append(here.parent / "dscar-logo.png")
-    return candidates
+    # Docker fallback
+    candidates.append(Path(f"/app/static/{filename}"))
+    # Junto ao próprio arquivo
+    candidates.append(_HERE / filename)
 
+    for path in candidates:
+        if path.exists():
+            data = path.read_bytes()
+            b64 = base64.b64encode(data).decode("ascii")
+            logger.info("Logo '%s' carregada de %s (%d bytes)", filename, path, len(data))
+            return f"data:image/png;base64,{b64}"
 
-_LOGO_CANDIDATES = _build_candidates()
+    logger.warning("Logo '%s' não encontrada.", filename)
+    return ""
 
 
 @lru_cache(maxsize=1)
 def get_logo_base64() -> str:
-    """Retorna logo DS Car como data URI base64 (PNG).
+    """Logo branca (para fundo escuro / header com bg preto)."""
+    return _find_logo("dscar-logo.png")
 
-    Returns:
-        String no formato 'data:image/png;base64,...' pronta para uso em img src.
-        Se logo não encontrada, retorna string vazia.
-    """
-    for path in _LOGO_CANDIDATES:
-        if path.exists():
-            data = path.read_bytes()
-            b64 = base64.b64encode(data).decode("ascii")
-            logger.info("Logo PDF carregada de %s (%d bytes)", path, len(data))
-            return f"data:image/png;base64,{b64}"
 
-    logger.warning("Logo DS Car não encontrada em nenhum caminho candidato.")
-    return ""
+@lru_cache(maxsize=1)
+def get_logo_black_base64() -> str:
+    """Logo preta (para marca d'água / fundo branco)."""
+    return _find_logo("dscar-logo-black.png")

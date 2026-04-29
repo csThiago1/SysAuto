@@ -2,78 +2,418 @@
 
 {% block title %}OS #{{ order.number }}{% endblock %}
 
+{% block extra_styles %}
+/* ── Hero OS ──────────────────────────────────────── */
+.os-hero {
+    display: flex;
+    border: 1.5px solid #000;
+    margin-top: 4px;
+    margin-bottom: 16px;
+}
+.os-hero-main {
+    background: #000;
+    color: #fff;
+    padding: 14px 18px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    min-width: 160px;
+}
+.hero-tag {
+    font-size: 8px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: rgba(255,255,255,.5);
+}
+.hero-num {
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-top: 2px;
+}
+.hero-tipo {
+    margin-top: 6px;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: rgba(255,255,255,.8);
+    border-top: 1px solid rgba(255,255,255,.2);
+    padding-top: 6px;
+}
+.os-hero-dates {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    flex: 1;
+}
+.hero-date {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.hero-date-lbl {
+    font-size: 8px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #666;
+    font-weight: 700;
+}
+.hero-date-val {
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    color: #333;
+    line-height: 1;
+}
+.hero-arrow {
+    font-size: 18px;
+    color: #000;
+    font-weight: 400;
+    line-height: 1;
+    padding: 0 4px;
+}
+.hero-date-emph .hero-date-val {
+    font-weight: 700;
+    font-size: 20px;
+    color: #000;
+}
+.hero-date-emph .hero-date-lbl { color: #000; }
+
+/* ── Consultor ────────────────────────────────────── */
+.field-row {
+    border-top: 0.5px solid #e0e0e0;
+    padding: 8px 0;
+}
+.field-lbl {
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #666;
+    font-weight: 600;
+}
+.field-val {
+    font-size: 11px;
+    color: #000;
+    font-weight: 500;
+    margin-top: 3px;
+}
+
+/* ── Grid de dados do veículo ─────────────────────── */
+.veh-grid {
+    display: flex;
+    flex-wrap: wrap;
+    border-top: 0.5px solid #e0e0e0;
+}
+.veh-cell {
+    flex: 1;
+    min-width: 100px;
+    padding: 8px 10px 8px 0;
+    border-bottom: 0.5px solid #e0e0e0;
+    border-right: 0.5px solid #e0e0e0;
+}
+.veh-cell:last-child { border-right: 0; }
+.veh-cell .field-lbl { margin-bottom: 3px; }
+.veh-cell .field-val { font-size: 11px; }
+.veh-cell-wide { min-width: 200px; flex: 2; }
+.veh-cell-full { flex-basis: 100%; border-right: 0; }
+
+/* ── Tabela editorial ─────────────────────────────── */
+.tbl { width: 100%; border-collapse: collapse; font-size: 11px; }
+.tbl thead th {
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #666;
+    font-weight: 600;
+    text-align: left;
+    padding: 7px 8px 7px 0;
+    border-bottom: 1px solid #000;
+}
+.tbl tbody td {
+    padding: 6px 8px 6px 0;
+    border-bottom: 0.5px solid #e0e0e0;
+    vertical-align: middle;
+}
+.tbl .c-num { width: 30px; }
+.tbl .c-qtd { width: 50px; text-align: right; padding-right: 14px; }
+.tbl .c-cod { width: 90px; }
+.tbl .c-chk { width: 64px; text-align: center; padding-right: 0; }
+.tbl thead .c-qtd { text-align: right; padding-right: 14px; }
+.tbl thead .c-chk { text-align: center; padding-right: 0; }
+.tbl tbody tr:nth-child(odd) { background: rgba(0,0,0,.02); }
+.tbl .blank td { color: #ccc; }
+
+.checkbox {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #000;
+    border-radius: 1px;
+    vertical-align: middle;
+}
+.rule-line {
+    display: block;
+    height: 0.5px;
+    background: #ddd;
+    width: 100%;
+}
+
+/* ── Observações ──────────────────────────────────── */
+.obs-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 6px 0 2px;
+}
+.obs-lines .rule-line { height: 0.5px; background: #ccc; }
+.obs-lines .rule-short { width: 60%; }
+
+/* ── Assinaturas OS ───────────────────────────────── */
+.os-sigs {
+    display: flex;
+    gap: 40px;
+    margin-top: 32px;
+    padding-top: 6px;
+}
+.os-sig {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.os-sig-line { width: 100%; height: 1px; background: #000; }
+.os-sig-lbl {
+    font-size: 8.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #666;
+    font-weight: 600;
+}
+
+/* ── Seguradora ───────────────────────────────────── */
+.ins-grid {
+    border-top: 0.5px solid #e0e0e0;
+    display: flex;
+    flex-wrap: wrap;
+}
+.ins-cell {
+    flex: 1;
+    min-width: 140px;
+    padding: 8px 10px 8px 0;
+    border-bottom: 0.5px solid #e0e0e0;
+    border-right: 0.5px solid #e0e0e0;
+}
+.ins-cell:last-child { border-right: 0; }
+
+/* ── Seção contadora (N itens) ────────────────────── */
+.sec-count {
+    font-size: 9px;
+    color: #999;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    float: right;
+    margin-top: 2px;
+}
+{% endblock %}
+
 {% block content %}
-    {# 1. Cabeçalho da OS #}
-    <div class="section">
-        <h2 class="section-title"><span class="section-number">1.</span>Ordem de Serviço</h2>
-        <div class="info-grid">
-            <div class="info-row">
-                <span class="info-label">Nº da OS</span>
-                <span class="info-value bold" style="font-size: 14px;">#{{ order.number }}</span>
+    {# ── Header minimalista: logo esquerda + "Ordem de Serviço Nº X" direita ── #}
+
+    {# ── 1. Hero da OS ────────────────────────────────────────────────────── #}
+    <div class="os-hero">
+        <div class="os-hero-main">
+            <div class="hero-tag">Documento</div>
+            <div class="hero-num">Nº {{ order.number }}</div>
+            <div class="hero-tipo">{{ order.customer_type_display|default:"Particular" }}</div>
+        </div>
+        <div class="os-hero-dates">
+            <div class="hero-date">
+                <div class="hero-date-lbl">Data de Entrada</div>
+                <div class="hero-date-val">{{ order.entry_date|default:"—" }}</div>
             </div>
-            <div class="info-row">
-                <span class="info-label">Tipo</span>
-                <span class="info-value">{{ order.customer_type_display|default:"Particular" }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Data de Entrada</span>
-                <span class="info-value">{{ order.entry_date|default:"—" }}</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Previsão de Entrega</span>
-                <span class="info-value">{{ order.estimated_delivery_date|default:"—" }}</span>
+            <div class="hero-arrow" aria-hidden="true">→</div>
+            <div class="hero-date hero-date-emph">
+                <div class="hero-date-lbl">Previsão de Entrega</div>
+                <div class="hero-date-val">{{ order.estimated_delivery_date|default:"—" }}</div>
             </div>
         </div>
     </div>
 
-    {# 2. Veículo #}
+    {% if order.consultor %}
+    <div class="field-row">
+        <div class="field-lbl">Consultor Responsável</div>
+        <div class="field-val">{{ order.consultor }}</div>
+    </div>
+    {% endif %}
+
+    {# ── 2. Veículo ───────────────────────────────────────────────────────── #}
     <div class="section">
-        <h2 class="section-title"><span class="section-number">2.</span>Dados do Veículo</h2>
-        {% include "pdf_engine/_partials/vehicle_info.html" %}
+        <h2 class="section-title"><span class="section-number">01</span>Dados do Veículo</h2>
+        <div class="veh-grid">
+            <div class="veh-cell veh-cell-wide">
+                <div class="field-lbl">Marca / Modelo</div>
+                <div class="field-val bold">{{ vehicle.make }} {{ vehicle.model }}</div>
+            </div>
+            <div class="veh-cell">
+                <div class="field-lbl">Ano</div>
+                <div class="field-val">{{ vehicle.year|default:"—" }}</div>
+            </div>
+            <div class="veh-cell">
+                <div class="field-lbl">Cor</div>
+                <div class="field-val">{{ vehicle.color|default:"—" }}</div>
+            </div>
+            <div class="veh-cell">
+                <div class="field-lbl">Placa</div>
+                <div class="field-val bold">{{ vehicle.plate|default:"—" }}</div>
+            </div>
+            <div class="veh-cell">
+                <div class="field-lbl">KM Entrada</div>
+                <div class="field-val">{% if vehicle.mileage_in %}{{ vehicle.mileage_in|floatformat:0 }} km{% else %}—{% endif %}</div>
+            </div>
+        </div>
+        <div class="veh-grid">
+            <div class="veh-cell veh-cell-full">
+                <div class="field-lbl">Chassi</div>
+                <div class="field-val" style="font-size: 10px; letter-spacing: 0.02em;">{{ vehicle.chassis|default:"—" }}</div>
+            </div>
+        </div>
     </div>
 
-    {# 3. Seguradora (se houver) #}
+    {# ── 3. Seguradora (se houver) ────────────────────────────────────────── #}
     {% if insurer %}
     <div class="section">
-        <h2 class="section-title"><span class="section-number">3.</span>Seguradora</h2>
-        <div class="info-grid">
-            <div class="info-row">
-                <span class="info-label">Seguradora</span>
-                <span class="info-value bold">{{ insurer.name }}</span>
+        <h2 class="section-title"><span class="section-number">02</span>Seguradora</h2>
+        <div class="ins-grid">
+            <div class="ins-cell" style="flex: 2;">
+                <div class="field-lbl">Seguradora</div>
+                <div class="field-val bold">{{ insurer.name }}</div>
             </div>
             {% if insurer.casualty_number %}
-            <div class="info-row">
-                <span class="info-label">Nº Sinistro</span>
-                <span class="info-value">{{ insurer.casualty_number }}</span>
+            <div class="ins-cell">
+                <div class="field-lbl">Nº Sinistro</div>
+                <div class="field-val">{{ insurer.casualty_number }}</div>
             </div>
             {% endif %}
             {% if insurer.insured_type %}
-            <div class="info-row">
-                <span class="info-label">Tipo</span>
-                <span class="info-value">{{ insurer.insured_type }}</span>
+            <div class="ins-cell">
+                <div class="field-lbl">Tipo</div>
+                <div class="field-val">{{ insurer.insured_type }}</div>
             </div>
             {% endif %}
         </div>
     </div>
     {% endif %}
 
-    {# 4. Serviços #}
+    {# ── 4. Serviços ──────────────────────────────────────────────────────── #}
     <div class="section">
-        <h2 class="section-title"><span class="section-number">{% if insurer %}4{% else %}3{% endif %}.</span>Serviços</h2>
-        {% include "pdf_engine/_partials/services_table.html" %}
+        <h2 class="section-title">
+            <span class="section-number">{% if insurer %}03{% else %}02{% endif %}</span>
+            Serviços a Realizar
+            <span class="sec-count">{{ services|length }} {{ services|length|pluralize:"item,itens" }}</span>
+        </h2>
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th class="c-num">Nº</th>
+                    <th>Descrição do Serviço</th>
+                    <th class="c-qtd">Qtd.</th>
+                    <th class="c-chk">Concluído</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in services %}
+                <tr>
+                    <td class="c-num">{{ forloop.counter|stringformat:"02d" }}</td>
+                    <td>{{ s.description }}</td>
+                    <td class="c-qtd">{{ s.quantity }}</td>
+                    <td class="c-chk"><span class="checkbox"></span></td>
+                </tr>
+                {% endfor %}
+                {# Linhas em branco para preenchimento manual #}
+                {% for i in "1234" %}
+                <tr class="blank">
+                    <td class="c-num">{{ services|length|add:forloop.counter|stringformat:"02d" }}</td>
+                    <td><span class="rule-line"></span></td>
+                    <td class="c-qtd"><span class="rule-line"></span></td>
+                    <td class="c-chk"><span class="checkbox"></span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
-    {# 5. Peças #}
+    {# ── 5. Peças ─────────────────────────────────────────────────────────── #}
     <div class="section">
-        <h2 class="section-title"><span class="section-number">{% if insurer %}5{% else %}4{% endif %}.</span>Peças</h2>
-        {% include "pdf_engine/_partials/parts_table.html" %}
+        <h2 class="section-title">
+            <span class="section-number">{% if insurer %}04{% else %}03{% endif %}</span>
+            Peças a Utilizar
+            <span class="sec-count">{{ parts|length }} {{ parts|length|pluralize:"item,itens" }}</span>
+        </h2>
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th class="c-num">Nº</th>
+                    <th>Descrição</th>
+                    <th class="c-cod">Código</th>
+                    <th class="c-qtd">Qtd.</th>
+                    <th class="c-chk">Aplicada</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in parts %}
+                <tr>
+                    <td class="c-num">{{ forloop.counter|stringformat:"02d" }}</td>
+                    <td>{{ p.description }}</td>
+                    <td class="c-cod" style="font-size: 9px;">{{ p.part_number|default:"—" }}</td>
+                    <td class="c-qtd">{{ p.quantity }}</td>
+                    <td class="c-chk"><span class="checkbox"></span></td>
+                </tr>
+                {% endfor %}
+                {% for i in "1234" %}
+                <tr class="blank">
+                    <td class="c-num">{{ parts|length|add:forloop.counter|stringformat:"02d" }}</td>
+                    <td><span class="rule-line"></span></td>
+                    <td class="c-cod"><span class="rule-line"></span></td>
+                    <td class="c-qtd"><span class="rule-line"></span></td>
+                    <td class="c-chk"><span class="checkbox"></span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
-    {# 6. Observações #}
-    {% if observations %}
+    {# ── 6. Observações ───────────────────────────────────────────────────── #}
     <div class="section">
-        <h2 class="section-title"><span class="section-number">{% if insurer %}6{% else %}5{% endif %}.</span>Observações</h2>
-        <p style="font-size: 10px;">{{ observations }}</p>
+        <h2 class="section-title">
+            <span class="section-number">{% if insurer %}05{% else %}04{% endif %}</span>
+            Observações Técnicas
+        </h2>
+        {% if observations %}
+        <p style="font-size: 10px; padding: 4px 0;">{{ observations }}</p>
+        {% endif %}
+        <div class="obs-lines">
+            <span class="rule-line"></span>
+            <span class="rule-line"></span>
+            <span class="rule-line"></span>
+            <span class="rule-line rule-short"></span>
+        </div>
     </div>
-    {% endif %}
+
+    {# ── Assinaturas ──────────────────────────────────────────────────────── #}
+    <div class="os-sigs">
+        <div class="os-sig">
+            <div class="os-sig-line"></div>
+            <div class="os-sig-lbl">Consultor Responsável</div>
+        </div>
+        <div class="os-sig">
+            <div class="os-sig-line"></div>
+            <div class="os-sig-lbl">Supervisão / Gestor</div>
+        </div>
+    </div>
 {% endblock %}

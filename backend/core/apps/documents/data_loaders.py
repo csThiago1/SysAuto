@@ -15,7 +15,7 @@ from apps.documents.constants import (
     DEFAULT_WARRANTY_EXCLUSIONS,
     WARRANTY_MONTHS_BY_CATEGORY,
 )
-from apps.pdf_engine.logo import get_logo_base64
+from apps.pdf_engine.logo import get_logo_base64, get_logo_black_base64
 
 logger = logging.getLogger(__name__)
 
@@ -222,6 +222,7 @@ class OSDataLoader:
         data: dict[str, Any] = {
             "company": company,
             "logo_base64": get_logo_base64(),
+            "logo_black_base64": get_logo_black_base64(),
             "order": {
                 "number": order.number,
                 "customer_type_display": customer_type_display,
@@ -263,6 +264,7 @@ class OSDataLoader:
         return {
             "company": company,
             "logo_base64": get_logo_base64(),
+            "logo_black_base64": get_logo_black_base64(),
             "order": {"number": order.number},
             "customer": cls._customer_dict(order),
             "vehicle": cls._vehicle_dict(order),
@@ -295,6 +297,7 @@ class OSDataLoader:
         return {
             "company": company,
             "logo_base64": get_logo_base64(),
+            "logo_black_base64": get_logo_black_base64(),
             "order": {"number": order.number},
             "customer": cls._customer_dict(order),
             "vehicle": cls._vehicle_dict(order),
@@ -321,6 +324,7 @@ class OSDataLoader:
         return {
             "company": company,
             "logo_base64": get_logo_base64(),
+            "logo_black_base64": get_logo_black_base64(),
             "order": {"number": order.number},
             "customer": cls._customer_dict(order),
             "receipt": {

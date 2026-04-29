@@ -54,8 +54,9 @@ class DocumentGenerateView(APIView):
         data = serializer.validated_data["data"]
         receivable_id = serializer.validated_data.get("receivable_id")
 
-        from apps.pdf_engine.logo import get_logo_base64
+        from apps.pdf_engine.logo import get_logo_base64, get_logo_black_base64
         data["logo_base64"] = get_logo_base64()
+        data["logo_black_base64"] = get_logo_black_base64()
 
         try:
             doc = DocumentService.generate(

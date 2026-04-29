@@ -1,14 +1,26 @@
-{# Marca d'água com logo DS Car — incluir no base.html #}
-{% if logo_base64 %}
+{# Marca d'água com logo DS Car preta — incluir no base.html #}
+{% if logo_black_base64 %}
 <div style="
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) rotate(-30deg);
-    opacity: 0.06;
+    transform: translate(-50%, -50%) rotate(-6deg);
+    opacity: 0.08;
     z-index: -1;
     pointer-events: none;
 ">
-    <img src="{{ logo_base64 }}" style="width: 400px; height: auto;" />
+    <img src="{{ logo_black_base64 }}" style="width: 420px; height: auto;" />
+</div>
+{% elif logo_base64 %}
+<div style="
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-6deg);
+    opacity: 0.08;
+    z-index: -1;
+    pointer-events: none;
+">
+    <img src="{{ logo_base64 }}" style="width: 420px; height: auto;" />
 </div>
 {% endif %}
