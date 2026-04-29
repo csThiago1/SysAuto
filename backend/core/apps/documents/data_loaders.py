@@ -27,6 +27,13 @@ def _fmt_cnpj(cnpj: str) -> str:
     return cnpj
 
 
+def _fmt_cpf(cpf: str) -> str:
+    c = cpf.replace(".", "").replace("-", "")
+    if len(c) == 11:
+        return f"{c[:3]}.{c[3:6]}.{c[6:9]}-{c[9:]}"
+    return cpf
+
+
 def _format_date_br(d: date | str | None) -> str:
     if d is None:
         return "—"
@@ -119,9 +126,9 @@ class OSDataLoader:
         # Documentos (CPF, CNPJ, RG)
         for doc in person.documents.all():
             if doc.doc_type == "CPF" and not result["cpf"]:
-                result["cpf"] = doc.value or ""
+                result["cpf"] = _fmt_cpf(doc.value or "")
             elif doc.doc_type == "CNPJ" and not result["cnpj"]:
-                result["cnpj"] = doc.value or ""
+                result["cnpj"] = _fmt_cnpj(doc.value or "")
             elif doc.doc_type == "RG" and not result["rg"]:
                 result["rg"] = doc.value or ""
 
@@ -204,17 +211,26 @@ class OSDataLoader:
 
     @classmethod
     def load_os_report(cls, order_id: UUID) -> dict[str, Any]:
+        """OS Report: documento de trabalho interno (sem dados do cliente, sem valores)."""
         order = cls._load_order(order_id)
         company = cls.load_company_info()
+
+        # Tipo de atendimento
+        customer_type_map = {"insurer": "Seguradora", "private": "Particular"}
+        customer_type_display = customer_type_map.get(order.customer_type or "", "Particular")
+
         data: dict[str, Any] = {
             "company": company,
             "logo_base64": get_logo_base64(),
-            "order": {"number": order.number},
-            "customer": cls._customer_dict(order),
+            "order": {
+                "number": order.number,
+                "customer_type_display": customer_type_display,
+                "entry_date": _format_date_br(order.entry_date),
+                "estimated_delivery_date": _format_date_br(order.estimated_delivery_date),
+            },
             "vehicle": cls._vehicle_dict(order),
             "services": cls._services_list(order),
             "parts": cls._parts_list(order),
-            "totals": cls._totals_dict(order),
             "observations": "",
             "location_date": _location_date_str(),
         }
@@ -223,7 +239,6 @@ class OSDataLoader:
                 "name": getattr(order.insurer, "display_name", None) or order.insurer.name or "",
                 "casualty_number": order.casualty_number or "",
                 "insured_type": order.get_insured_type_display() if order.insured_type else "",
-                "deductible_amount": str(order.deductible_amount) if order.deductible_amount else "",
             }
         return data
 
