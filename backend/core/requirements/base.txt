@@ -63,4 +63,4 @@ rapidfuzz==3.12.2       # Fuzzy matching in-memory para AliasMatcher
 drf-nested-routers==0.95.0
 
 # ── PDF Generation ──────────────────────────────────────────────────────────
-weasyprint==62.3
+weasyprint==63.1
