@@ -49,9 +49,13 @@ async function proxyRequest(
     console.error(`[proxy] ${method} ${backendUrl} → ${response.status}`)
   }
 
-  // Passthrough binário para PDF/XML (não parsear como JSON)
+  // Passthrough binário para PDF/XML/HTML (não parsear como JSON)
   const contentType = response.headers.get("Content-Type") ?? "";
-  if (contentType.includes("application/pdf") || contentType.includes("application/xml")) {
+  const isBinaryPassthrough =
+    contentType.includes("application/pdf") ||
+    contentType.includes("application/xml") ||
+    (contentType.includes("text/html") && response.headers.has("Content-Disposition"));
+  if (isBinaryPassthrough) {
     const buf = await response.arrayBuffer();
     return new NextResponse(buf, {
       status: response.status,
