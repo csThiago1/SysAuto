@@ -10,14 +10,14 @@
             @bottom-center {
                 content: "Documento gerado pelo ERP Paddock Solutions · DS Car © {% now 'Y' %}";
                 font-size: 8px;
-                color: #9ca3af;
+                color: #999;
                 font-family: Arial, sans-serif;
             }
         }
         body {
             font-family: Arial, sans-serif;
             font-size: 11px;
-            color: #1f2937;
+            color: #000;
             line-height: 1.5;
         }
 
@@ -26,26 +26,33 @@
             display: flex;
             align-items: center;
             gap: 16px;
-            border-bottom: 3px solid #dc2626;
+            border-bottom: 2px solid #000;
             padding-bottom: 12px;
             margin-bottom: 20px;
         }
-        .doc-header img {
-            height: 48px;
+        .doc-header-logo {
+            background-color: #000;
+            padding: 6px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .doc-header-logo img {
+            height: 42px;
             width: auto;
+            display: block;
         }
         .doc-header-info {
             flex: 1;
         }
         .doc-header-info h1 {
-            color: #dc2626;
+            color: #000;
             margin: 0;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
         }
         .doc-header-info p {
             margin: 2px 0;
-            color: #6b7280;
+            color: #555;
             font-size: 9px;
         }
 
@@ -54,17 +61,17 @@
             margin-bottom: 18px;
         }
         .section-title {
-            color: #1f2937;
-            font-size: 12px;
+            color: #000;
+            font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin: 0 0 8px;
             padding-bottom: 4px;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #ccc;
         }
         .section-number {
-            color: #dc2626;
+            color: #000;
             margin-right: 6px;
         }
 
@@ -77,36 +84,37 @@
         th, td {
             text-align: left;
             padding: 5px 8px;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid #ddd;
             font-size: 10px;
+            color: #000;
         }
         th {
-            background-color: #f9fafb;
-            color: #4b5563;
+            background-color: #f0f0f0;
+            color: #333;
             font-size: 9px;
             text-transform: uppercase;
             letter-spacing: 0.04em;
             font-weight: 600;
         }
         tr:nth-child(even) {
-            background-color: #fafafa;
+            background-color: #f8f8f8;
         }
 
         /* Totals */
         .totals {
             margin-top: 12px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #ccc;
             border-radius: 4px;
             padding: 12px;
-            background: #f9fafb;
+            background: #f5f5f5;
         }
         .totals table { margin: 0; }
         .totals td { border: none; padding: 3px 8px; }
         .total-row {
             font-weight: 700;
             font-size: 13px;
-            color: #dc2626;
-            border-top: 2px solid #1f2937;
+            color: #000;
+            border-top: 2px solid #000;
             padding-top: 6px;
             margin-top: 6px;
         }
@@ -114,7 +122,7 @@
 
         /* Utilities */
         .right { text-align: right; }
-        .muted { color: #6b7280; }
+        .muted { color: #666; }
         .small { font-size: 9px; }
         .bold { font-weight: 700; }
 
@@ -126,7 +134,7 @@
             width: 35%;
             padding: 3px 8px;
             font-size: 9px;
-            color: #6b7280;
+            color: #555;
             text-transform: uppercase;
             letter-spacing: 0.03em;
             font-weight: 600;
@@ -136,22 +144,22 @@
             display: table-cell;
             padding: 3px 8px;
             font-size: 10px;
-            color: #1f2937;
+            color: #000;
         }
 
         /* Signature block */
         .signatures { margin-top: 40px; display: flex; gap: 40px; }
         .sig-col { flex: 1; text-align: center; }
-        .sig-line { border-top: 1px solid #1f2937; margin-top: 60px; padding-top: 6px; }
-        .sig-name { font-size: 10px; font-weight: 600; color: #1f2937; }
-        .sig-detail { font-size: 9px; color: #6b7280; }
+        .sig-line { border-top: 1px solid #000; margin-top: 60px; padding-top: 6px; }
+        .sig-name { font-size: 10px; font-weight: 600; color: #000; }
+        .sig-detail { font-size: 9px; color: #555; }
 
         /* Check lists */
         .check-list { list-style: none; padding: 0; margin: 6px 0; }
-        .check-list li { padding: 3px 0 3px 20px; position: relative; font-size: 10px; }
+        .check-list li { padding: 3px 0 3px 20px; position: relative; font-size: 10px; color: #000; }
         .check-list li::before { position: absolute; left: 0; font-weight: 700; }
-        .check-list.coverage li::before { content: "✔"; color: #16a34a; }
-        .check-list.exclusions li::before { content: "✘"; color: #dc2626; }
+        .check-list.coverage li::before { content: "✔"; color: #000; }
+        .check-list.exclusions li::before { content: "✘"; color: #000; }
 
         {% block extra_styles %}{% endblock %}
     </style>
@@ -161,7 +169,9 @@
 
     <div class="doc-header">
         {% if logo_base64 %}
-        <img src="{{ logo_base64 }}" alt="DS Car" />
+        <div class="doc-header-logo">
+            <img src="{{ logo_base64 }}" alt="DS Car" />
+        </div>
         {% endif %}
         <div class="doc-header-info">
             <h1>{{ company.razao_social|default:"DS Car Centro Automotivo" }}</h1>
