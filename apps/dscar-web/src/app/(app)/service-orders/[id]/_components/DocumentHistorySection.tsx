@@ -56,8 +56,12 @@ export function DocumentHistorySection({ order }: Props) {
     grouped[key].sort((a, b) => b.version - a.version)
   }
 
-  function handleDownload(docId: string) {
-    window.open(`/api/proxy/documents/${docId}/download/`, "_blank")
+  async function handleDownload(docId: string) {
+    const res = await fetch(`/api/proxy/documents/${docId}/download/`)
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    window.open(url, "_blank")
+    setTimeout(() => URL.revokeObjectURL(url), 60_000)
   }
 
   return (

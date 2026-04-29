@@ -73,6 +73,15 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
     setFormData(clone)
   }
 
+  async function openDocument(docId: string) {
+    const res = await fetch(`/api/proxy/documents/${docId}/download/`)
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    window.open(url, "_blank")
+    // Libera memória após um tempo
+    setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  }
+
   async function handleGenerate() {
     if (!formData) return
     try {
@@ -80,7 +89,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
         document_type: documentType,
         data: formData,
       })
-      window.open(`/api/proxy/documents/${result.id}/download/`, "_blank")
+      await openDocument(result.id)
       toast.success(`${config.label} v${result.version} gerado com sucesso!`)
       onClose()
     } catch {
