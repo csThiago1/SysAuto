@@ -94,6 +94,15 @@ from apps.inventory.models_location import (  # noqa: E402, F401
     Prateleira,
     Rua,
 )
+from apps.inventory.models_product import (  # noqa: E402, F401
+    CategoriaInsumo,
+    CategoriaProduto,
+    LadoPeca,
+    PosicaoVeiculo,
+    ProdutoComercialInsumo,
+    ProdutoComercialPeca,
+    TipoPeca,
+)
 
 
 class StockMovement(models.Model):

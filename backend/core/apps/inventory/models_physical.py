@@ -70,6 +70,13 @@ class UnidadeFisica(PaddockBaseModel):
         related_name="unidades_fisicas",
         help_text="Posição no armazém (WMS).",
     )
+    produto_peca = models.ForeignKey(
+        "inventory.ProdutoComercialPeca",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="unidades_fisicas",
+    )
     ordem_servico = models.ForeignKey(
         "service_orders.ServiceOrder",
         null=True, blank=True,
@@ -164,6 +171,13 @@ class LoteInsumo(PaddockBaseModel):
         on_delete=models.SET_NULL,
         related_name="lotes_insumo",
         help_text="Posição no armazém (WMS).",
+    )
+    produto_insumo = models.ForeignKey(
+        "inventory.ProdutoComercialInsumo",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="lotes",
     )
 
     class Meta(PaddockBaseModel.Meta):
