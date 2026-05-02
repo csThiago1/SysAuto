@@ -62,6 +62,14 @@ class UnidadeFisica(PaddockBaseModel):
         max_length=80, blank=True, default="",
         verbose_name="Localização física",
     )
+    nivel = models.ForeignKey(
+        "inventory.Nivel",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="unidades_fisicas",
+        help_text="Posição no armazém (WMS).",
+    )
     ordem_servico = models.ForeignKey(
         "service_orders.ServiceOrder",
         null=True, blank=True,
@@ -148,6 +156,14 @@ class LoteInsumo(PaddockBaseModel):
     localizacao = models.CharField(
         max_length=80, blank=True, default="",
         verbose_name="Localização física",
+    )
+    nivel = models.ForeignKey(
+        "inventory.Nivel",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="lotes_insumo",
+        help_text="Posição no armazém (WMS).",
     )
 
     class Meta(PaddockBaseModel.Meta):
