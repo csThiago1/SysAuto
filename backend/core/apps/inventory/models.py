@@ -88,6 +88,12 @@ from apps.inventory.models_label import (  # noqa: E402, F401
     EtiquetaImpressa,
     ImpressoraEtiqueta,
 )
+from apps.inventory.models_location import (  # noqa: E402, F401
+    Armazem,
+    Nivel,
+    Prateleira,
+    Rua,
+)
 
 
 class StockMovement(models.Model):
