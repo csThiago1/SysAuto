@@ -41,6 +41,15 @@ def _has_min_role(request: Request, min_role: str) -> bool:
     return user_level >= min_level
 
 
+class IsStorekeeperOrAbove(BasePermission):
+    """Permite acesso para STOREKEEPER, CONSULTANT, MANAGER, ADMIN ou OWNER."""
+
+    message = "Você precisa ser pelo menos Almoxarife para acessar este recurso."
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        return bool(request.user and request.user.is_authenticated and _has_min_role(request, "STOREKEEPER"))
+
+
 class IsConsultantOrAbove(BasePermission):
     """Permite acesso apenas para CONSULTANT, MANAGER, ADMIN ou OWNER."""
 
