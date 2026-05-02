@@ -103,6 +103,11 @@ from apps.inventory.models_product import (  # noqa: E402, F401
     ProdutoComercialPeca,
     TipoPeca,
 )
+from apps.inventory.models_movement import MovimentacaoEstoque  # noqa: E402, F401
+from apps.inventory.models_counting import (  # noqa: E402, F401
+    ContagemInventario,
+    ItemContagem,
+)
 
 
 class StockMovement(models.Model):
