@@ -337,6 +337,147 @@ class RejeitarView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class MargemOSView(APIView):
+    """GET /margem-os/{os_id}/ — Análise custo vs cobrado de uma OS. MANAGER+."""
+
+    permission_classes = [IsAuthenticated, IsManagerOrAbove]
+
+    def get(self, request: Request, os_id: str) -> Response:
+        from apps.inventory.models_physical import ConsumoInsumo
+        from apps.service_orders.models import ServiceOrder
+
+        try:
+            os_obj = ServiceOrder.objects.get(pk=os_id, is_active=True)
+        except ServiceOrder.DoesNotExist:
+            return Response(
+                {"erro": "Ordem de serviço não encontrada."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        try:
+            itens = self._build_pecas(os_obj) + self._build_insumos(os_obj)
+
+            custo_total = sum(float(i["custo"]) for i in itens)
+            cobrado_total = sum(float(i["cobrado"]) for i in itens)
+            margem_total_pct = (
+                (cobrado_total - custo_total) / custo_total * 100
+                if custo_total > 0
+                else 0.0
+            )
+
+            return Response({
+                "itens": itens,
+                "resumo": {
+                    "custo_total": f"{custo_total:.2f}",
+                    "cobrado_total": f"{cobrado_total:.2f}",
+                    "margem_total": f"{cobrado_total - custo_total:.2f}",
+                    "margem_total_pct": f"{margem_total_pct:.1f}",
+                },
+            })
+        except Exception as e:
+            logger.error("Erro ao calcular margem da OS %s: %s", os_id, e)
+            return Response(
+                {"erro": "Erro interno ao processar requisição."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    def _build_pecas(self, os_obj: object) -> list[dict]:
+        """Monta itens de peças físicas reservadas/consumidas para a OS."""
+        unidades = UnidadeFisica.objects.filter(
+            ordem_servico=os_obj, is_active=True,
+        ).select_related("peca_canonica", "produto_peca", "nivel")
+
+        pecas_items: list[dict] = []
+        for u in unidades:
+            nome = (
+                u.produto_peca.nome_interno
+                if u.produto_peca
+                else (
+                    u.peca_canonica.nome
+                    if u.peca_canonica
+                    else u.codigo_barras
+                )
+            )
+            sku = u.produto_peca.sku_interno if u.produto_peca else ""
+            custo = float(u.valor_nf)
+
+            # Valor cobrado: OSIntervencao (motor) tem prioridade
+            cobrado = 0.0
+            intervencao = os_obj.intervencoes_motor.filter(
+                unidade_reservada=u, is_active=True,
+            ).first()
+            if intervencao:
+                cobrado = float(intervencao.valor_peca)
+            else:
+                # Fallback: ServiceOrderPart com mesmo part_number/peca_canonica
+                part = os_obj.parts.filter(is_active=True).first()
+                if part:
+                    cobrado = float(
+                        part.quantity * part.unit_price - part.discount
+                    )
+
+            pecas_items.append({
+                "tipo": "peca",
+                "nome": nome,
+                "sku": sku,
+                "codigo_barras": u.codigo_barras,
+                "posicao": u.nivel.endereco_completo if u.nivel else "",
+                "custo": f"{custo:.2f}",
+                "cobrado": f"{cobrado:.2f}",
+                "margem_pct": (
+                    f"{((cobrado - custo) / custo * 100):.1f}"
+                    if custo > 0
+                    else "0.0"
+                ),
+            })
+
+        return pecas_items
+
+    def _build_insumos(self, os_obj: object) -> list[dict]:
+        """Monta itens de insumos consumidos para a OS."""
+        from apps.inventory.models_physical import ConsumoInsumo
+
+        consumos = ConsumoInsumo.objects.filter(
+            ordem_servico=os_obj, is_active=True,
+        ).select_related(
+            "lote__material_canonico",
+            "lote__produto_insumo",
+            "lote__nivel",
+        )
+
+        insumos_items: list[dict] = []
+        for c in consumos:
+            nome = (
+                c.lote.produto_insumo.nome_interno
+                if c.lote.produto_insumo
+                else (
+                    c.lote.material_canonico.nome
+                    if c.lote.material_canonico
+                    else c.lote.codigo_barras
+                )
+            )
+            sku = c.lote.produto_insumo.sku_interno if c.lote.produto_insumo else ""
+            custo = float(c.quantidade_base * c.valor_unitario_na_baixa)
+            cobrado = 0.0  # Custo de insumo embutido no preço do serviço
+
+            insumos_items.append({
+                "tipo": "insumo",
+                "nome": nome,
+                "sku": sku,
+                "codigo_barras": c.lote.codigo_barras,
+                "posicao": c.lote.nivel.endereco_completo if c.lote.nivel else "",
+                "custo": f"{custo:.2f}",
+                "cobrado": f"{cobrado:.2f}",
+                "margem_pct": (
+                    f"{((cobrado - custo) / custo * 100):.1f}"
+                    if custo > 0
+                    else "0.0"
+                ),
+            })
+
+        return insumos_items
+
+
 class DashboardStatsView(APIView):
     """GET — KPIs do dashboard de estoque. CONSULTANT+."""
 

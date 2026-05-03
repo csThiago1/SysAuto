@@ -24,6 +24,7 @@ from apps.inventory.views_movement import (
     DevolucaoView,
     EntradaLoteView,
     EntradaPecaView,
+    MargemOSView,
     MovimentacaoViewSet,
     PerdaView,
     RejeitarView,
@@ -68,6 +69,8 @@ urlpatterns = [
     path("aprovacoes/pendentes/", AprovacoesPendentesView.as_view(), name="aprovacoes-pendentes"),
     path("aprovacoes/<uuid:pk>/aprovar/", AprovarView.as_view(), name="aprovar"),
     path("aprovacoes/<uuid:pk>/rejeitar/", RejeitarView.as_view(), name="rejeitar"),
+    # Margin analysis
+    path("margem-os/<uuid:os_id>/", MargemOSView.as_view(), name="margem-os"),
     # Counting item registration
     path("contagens/<uuid:contagem_id>/itens/<uuid:item_id>/", RegistrarItemView.as_view(), name="registrar-item"),
     # Router (MUST be last — catches remaining paths)
