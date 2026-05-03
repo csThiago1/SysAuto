@@ -20,6 +20,7 @@ from apps.inventory.views_location import (
 from apps.inventory.views_movement import (
     AprovacoesPendentesView,
     AprovarView,
+    DashboardStatsView,
     DevolucaoView,
     EntradaLoteView,
     EntradaPecaView,
@@ -53,6 +54,8 @@ router.register(r"movimentacoes", MovimentacaoViewSet, basename="movimentacao")
 router.register(r"contagens", ContagemViewSet, basename="contagem")
 
 urlpatterns = [
+    # Dashboard
+    path("dashboard-stats/", DashboardStatsView.as_view(), name="dashboard-stats"),
     # Existing
     path("baixar-insumo/", BaixarInsumoView.as_view(), name="baixar-insumo"),
     # Movement

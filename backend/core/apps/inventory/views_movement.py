@@ -9,6 +9,9 @@ RBAC:
 """
 import logging
 
+from decimal import Decimal
+
+from django.db.models import Count, Q, Sum
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -21,6 +24,7 @@ from apps.authentication.permissions import (
     IsStorekeeperOrAbove,
 )
 from apps.inventory.models_movement import MovimentacaoEstoque
+from apps.inventory.models_physical import UnidadeFisica
 from apps.inventory.serializers_movement import (
     DevolucaoInputSerializer,
     EntradaLoteInputSerializer,
@@ -331,3 +335,33 @@ class RejeitarView(APIView):
             )
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class DashboardStatsView(APIView):
+    """GET — KPIs do dashboard de estoque. CONSULTANT+."""
+
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get(self, request: Request) -> Response:
+        unidades_qs = UnidadeFisica.objects.filter(is_active=True)
+
+        disponiveis = unidades_qs.filter(status="available")
+        agg = disponiveis.aggregate(
+            pecas_disponiveis=Count("id"),
+            valor_em_estoque=Sum("valor_nf"),
+        )
+
+        reservadas_os = unidades_qs.filter(status="reserved").count()
+
+        aprovacoes_pendentes = MovimentacaoEstoque.objects.filter(
+            is_active=True,
+            tipo__in=["saida_perda", "ajuste_inventario"],
+            aprovado_por__isnull=True,
+        ).count()
+
+        return Response({
+            "pecas_disponiveis": agg["pecas_disponiveis"] or 0,
+            "valor_em_estoque": str(agg["valor_em_estoque"] or Decimal("0.00")),
+            "reservadas_os": reservadas_os,
+            "aprovacoes_pendentes": aprovacoes_pendentes,
+        })
