@@ -33,8 +33,11 @@ class UnidadeFisica(PaddockBaseModel):
 
     peca_canonica = models.ForeignKey(
         "pricing_catalog.PecaCanonica",
+        null=True,
+        blank=True,
         on_delete=models.PROTECT,
         related_name="unidades",
+        help_text="Nullable para peças sem catálogo canônico (avulsas, recondicionadas).",
     )
     codigo_fornecedor = models.ForeignKey(
         "pricing_catalog.CodigoFornecedorPeca",
@@ -124,8 +127,11 @@ class LoteInsumo(PaddockBaseModel):
 
     material_canonico = models.ForeignKey(
         "pricing_catalog.MaterialCanonico",
+        null=True,
+        blank=True,
         on_delete=models.PROTECT,
         related_name="lotes",
+        help_text="Nullable para insumos sem catálogo canônico.",
     )
     nfe_entrada = models.ForeignKey(
         "fiscal.NFeEntrada",
