@@ -103,7 +103,7 @@ export default function MovimentacoesPage() {
       <div className="flex items-center gap-3">
         <ArrowLeftRight className="h-5 w-5 text-primary-500" />
         <div>
-          <h1 className="text-lg font-semibold text-white">Movimentacoes</h1>
+          <h1 className="text-lg font-semibold text-white">Movimentações</h1>
           <p className="text-xs text-white/40 mt-0.5">
             {movimentacoes.length} registro{movimentacoes.length !== 1 ? "s" : ""}
           </p>

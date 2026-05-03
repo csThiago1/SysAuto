@@ -75,7 +75,7 @@ test.describe("WMS Estoque", () => {
 
   test("categorias carrega com tabs", async ({ page }) => {
     await page.goto("/estoque/categorias")
-    await expect(page.locator("text=Tipos de Peça")).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole("button", { name: "Tipos de Peça" })).toBeVisible({ timeout: 10_000 })
   })
 
   test("entrada manual carrega formulário", async ({ page }) => {
