@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { PackagePlus } from "lucide-react"
 import { toast } from "sonner"
 import { PosicaoSelector } from "@/components/inventory/PosicaoSelector"
@@ -8,6 +8,8 @@ import {
   useEntradaPeca,
   useEntradaLote,
 } from "@/hooks/useInventoryMovement"
+import { useProdutosPeca, useProdutosInsumo } from "@/hooks/useInventoryProduct"
+import type { ProdutoComercialPeca, ProdutoComercialInsumo } from "@paddock/types"
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
@@ -23,8 +25,8 @@ const INPUT_CLS =
 /* ------------------------------------------------------------------ */
 
 interface PecaForm {
-  peca_canonica_id: string
   produto_peca_id: string
+  peca_canonica_id: string
   numero_serie: string
   valor_nf: string
   nivel_id: string | null
@@ -32,8 +34,8 @@ interface PecaForm {
 }
 
 const PECA_INITIAL: PecaForm = {
-  peca_canonica_id: "",
   produto_peca_id: "",
+  peca_canonica_id: "",
   numero_serie: "",
   valor_nf: "",
   nivel_id: null,
@@ -45,8 +47,8 @@ const PECA_INITIAL: PecaForm = {
 /* ------------------------------------------------------------------ */
 
 interface LoteForm {
-  material_canonico_id: string
   produto_insumo_id: string
+  material_canonico_id: string
   quantidade_compra: string
   unidade_compra: string
   fator_conversao: string
@@ -57,8 +59,8 @@ interface LoteForm {
 }
 
 const LOTE_INITIAL: LoteForm = {
-  material_canonico_id: "",
   produto_insumo_id: "",
+  material_canonico_id: "",
   quantidade_compra: "",
   unidade_compra: "UN",
   fator_conversao: "1",
@@ -77,21 +79,92 @@ export default function EntradaManualPage() {
   const [peca, setPeca] = useState<PecaForm>(PECA_INITIAL)
   const [lote, setLote] = useState<LoteForm>(LOTE_INITIAL)
 
+  /* ---- Search state ---------------------------------------------- */
+  const [pecaSearch, setPecaSearch] = useState("")
+  const [insumoSearch, setInsumoSearch] = useState("")
+  const [pecaDropdownOpen, setPecaDropdownOpen] = useState(false)
+  const [insumoDropdownOpen, setInsumoDropdownOpen] = useState(false)
+
+  const pecaDropdownRef = useRef<HTMLDivElement>(null)
+  const insumoDropdownRef = useRef<HTMLDivElement>(null)
+
+  /* ---- Product queries ------------------------------------------- */
+  const { data: produtosPeca = [] } = useProdutosPeca(
+    pecaSearch.length >= 2 ? { busca: pecaSearch } : undefined
+  )
+  const { data: produtosInsumo = [] } = useProdutosInsumo(
+    insumoSearch.length >= 2 ? { busca: insumoSearch } : undefined
+  )
+
+  /* ---- Mutations ------------------------------------------------- */
   const entradaPeca = useEntradaPeca()
   const entradaLote = useEntradaLote()
-
   const submitting = entradaPeca.isPending || entradaLote.isPending
 
-  /* ---- Peca submit ------------------------------------------------ */
+  /* ---- Close dropdown on outside click --------------------------- */
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (pecaDropdownRef.current && !pecaDropdownRef.current.contains(e.target as Node)) {
+        setPecaDropdownOpen(false)
+      }
+      if (insumoDropdownRef.current && !insumoDropdownRef.current.contains(e.target as Node)) {
+        setInsumoDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [])
+
+  /* ---- Product selection handlers -------------------------------- */
+
+  function handleSelectProdutoPeca(produto: ProdutoComercialPeca) {
+    setPeca({
+      ...peca,
+      produto_peca_id: produto.id,
+      peca_canonica_id: produto.peca_canonica || "",
+    })
+    setPecaSearch(produto.nome_interno)
+    setPecaDropdownOpen(false)
+  }
+
+  function handleSelectProdutoInsumo(produto: ProdutoComercialInsumo) {
+    setLote({
+      ...lote,
+      produto_insumo_id: produto.id,
+      material_canonico_id: produto.material_canonico || "",
+      unidade_compra: produto.unidade_base || lote.unidade_compra,
+    })
+    setInsumoSearch(produto.nome_interno)
+    setInsumoDropdownOpen(false)
+  }
+
+  function clearPecaSelection() {
+    setPeca({ ...peca, produto_peca_id: "", peca_canonica_id: "" })
+    setPecaSearch("")
+    setPecaDropdownOpen(false)
+  }
+
+  function clearInsumoSelection() {
+    setLote({ ...lote, produto_insumo_id: "", material_canonico_id: "" })
+    setInsumoSearch("")
+    setInsumoDropdownOpen(false)
+  }
+
+  /* ---- Peca submit ---------------------------------------------- */
 
   async function handleSubmitPeca() {
-    if (!peca.peca_canonica_id || !peca.valor_nf || !peca.nivel_id || peca.motivo.length < 5) {
+    if (
+      (!peca.produto_peca_id && !peca.peca_canonica_id) ||
+      !peca.valor_nf ||
+      !peca.nivel_id ||
+      peca.motivo.length < 5
+    ) {
       toast.error("Preencha todos os campos obrigatórios (motivo mín. 5 caracteres).")
       return
     }
     try {
       await entradaPeca.mutateAsync({
-        peca_canonica_id: peca.peca_canonica_id,
+        peca_canonica_id: peca.peca_canonica_id || undefined,
         valor_nf: peca.valor_nf,
         nivel_id: peca.nivel_id,
         motivo: peca.motivo,
@@ -100,16 +173,17 @@ export default function EntradaManualPage() {
       })
       toast.success("Peça registrada com sucesso.")
       setPeca(PECA_INITIAL)
+      setPecaSearch("")
     } catch {
       toast.error("Erro ao registrar entrada de peça. Tente novamente.")
     }
   }
 
-  /* ---- Lote submit ------------------------------------------------ */
+  /* ---- Lote submit ---------------------------------------------- */
 
   async function handleSubmitLote() {
     if (
-      !lote.material_canonico_id ||
+      (!lote.produto_insumo_id && !lote.material_canonico_id) ||
       !lote.quantidade_compra ||
       !lote.fator_conversao ||
       !lote.valor_total_nf ||
@@ -121,7 +195,7 @@ export default function EntradaManualPage() {
     }
     try {
       await entradaLote.mutateAsync({
-        material_canonico_id: lote.material_canonico_id,
+        material_canonico_id: lote.material_canonico_id || undefined,
         quantidade_compra: lote.quantidade_compra,
         unidade_compra: lote.unidade_compra,
         fator_conversao: lote.fator_conversao,
@@ -133,12 +207,13 @@ export default function EntradaManualPage() {
       })
       toast.success("Lote registrado com sucesso.")
       setLote(LOTE_INITIAL)
+      setInsumoSearch("")
     } catch {
       toast.error("Erro ao registrar entrada de lote. Tente novamente.")
     }
   }
 
-  /* ---- Render ----------------------------------------------------- */
+  /* ---- Render --------------------------------------------------- */
 
   return (
     <div className="space-y-6 p-6">
@@ -151,7 +226,7 @@ export default function EntradaManualPage() {
           <div>
             <h1 className="text-lg font-semibold text-white">Entrada Manual</h1>
             <p className="text-sm text-white/50">
-              Cadastrar peca ou lote sem NF-e
+              Cadastrar peça ou lote sem NF-e
             </p>
           </div>
         </div>
@@ -168,7 +243,7 @@ export default function EntradaManualPage() {
               : "bg-white/5 text-white/60 hover:text-white/80"
           }`}
         >
-          Peca
+          Peça
         </button>
         <button
           type="button"
@@ -183,37 +258,81 @@ export default function EntradaManualPage() {
         </button>
       </div>
 
-      {/* ---- Peca Form --------------------------------------------- */}
+      {/* ---- Peça Form ------------------------------------------- */}
       {tab === "peca" && (
         <div className="space-y-6">
           {/* IDENTIDADE */}
           <div className="bg-white/5 border border-white/10 rounded-lg p-5 space-y-4">
             <div className="section-divider">IDENTIDADE</div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
-                  ID PECA CANONICA *
-                </label>
-                <input
-                  type="text"
-                  value={peca.peca_canonica_id}
-                  onChange={(e) => setPeca({ ...peca, peca_canonica_id: e.target.value })}
-                  placeholder="UUID"
-                  className={INPUT_CLS}
-                />
+              {/* Product search select */}
+              <div className="md:col-span-2" ref={pecaDropdownRef}>
+                <label className="label-mono text-white/50 mb-0.5 block">PRODUTO *</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={pecaSearch}
+                    onChange={(e) => {
+                      setPecaSearch(e.target.value)
+                      setPecaDropdownOpen(true)
+                      if (!e.target.value) {
+                        clearPecaSelection()
+                      }
+                    }}
+                    onFocus={() => {
+                      if (pecaSearch.length >= 2 && !peca.produto_peca_id) {
+                        setPecaDropdownOpen(true)
+                      }
+                    }}
+                    placeholder="Buscar por nome ou SKU..."
+                    className={INPUT_CLS}
+                  />
+                  {pecaDropdownOpen &&
+                    pecaSearch.length >= 2 &&
+                    produtosPeca.length > 0 &&
+                    !peca.produto_peca_id && (
+                      <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-md border border-white/10 bg-[#1a1a1a] shadow-lg">
+                        {produtosPeca.map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => handleSelectProdutoPeca(p)}
+                            className="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 transition-colors flex justify-between items-center"
+                          >
+                            <span>{p.nome_interno}</span>
+                            <span className="font-mono text-xs text-white/40">
+                              {p.sku_interno}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                </div>
+                {peca.produto_peca_id && (
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="text-xs text-success-400">Selecionado</span>
+                    <span className="font-mono text-xs text-white/40">
+                      {peca.produto_peca_id.slice(0, 8)}...
+                    </span>
+                    <button
+                      type="button"
+                      onClick={clearPecaSelection}
+                      className="text-xs text-error-400 hover:text-error-300"
+                    >
+                      Limpar
+                    </button>
+                  </div>
+                )}
+                {pecaSearch.length >= 2 &&
+                  produtosPeca.length === 0 &&
+                  !peca.produto_peca_id && (
+                    <p className="mt-1 text-xs text-white/30">
+                      Nenhum produto encontrado.
+                    </p>
+                  )}
               </div>
-              <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
-                  ID PRODUTO COMERCIAL (OPCIONAL)
-                </label>
-                <input
-                  type="text"
-                  value={peca.produto_peca_id}
-                  onChange={(e) => setPeca({ ...peca, produto_peca_id: e.target.value })}
-                  placeholder="UUID"
-                  className={INPUT_CLS}
-                />
-              </div>
+
+              {/* Serial number */}
               <div>
                 <label className="label-mono text-white/50 mb-0.5 block">
                   NUMERO DE SERIE (OPCIONAL)
@@ -253,9 +372,9 @@ export default function EntradaManualPage() {
             </div>
           </div>
 
-          {/* LOCALIZACAO */}
+          {/* LOCALIZAÇÃO */}
           <div className="bg-white/5 border border-white/10 rounded-lg p-5 space-y-4">
-            <div className="section-divider">LOCALIZACAO</div>
+            <div className="section-divider">LOCALIZAÇÃO</div>
             <PosicaoSelector
               value={peca.nivel_id}
               onChange={(nivelId) => setPeca({ ...peca, nivel_id: nivelId })}
@@ -291,36 +410,78 @@ export default function EntradaManualPage() {
         </div>
       )}
 
-      {/* ---- Lote Form --------------------------------------------- */}
+      {/* ---- Lote Form ------------------------------------------- */}
       {tab === "lote" && (
         <div className="space-y-6">
           {/* IDENTIDADE */}
           <div className="bg-white/5 border border-white/10 rounded-lg p-5 space-y-4">
             <div className="section-divider">IDENTIDADE</div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
-                  ID MATERIAL CANONICO *
-                </label>
-                <input
-                  type="text"
-                  value={lote.material_canonico_id}
-                  onChange={(e) => setLote({ ...lote, material_canonico_id: e.target.value })}
-                  placeholder="UUID"
-                  className={INPUT_CLS}
-                />
-              </div>
-              <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
-                  ID PRODUTO INSUMO (OPCIONAL)
-                </label>
-                <input
-                  type="text"
-                  value={lote.produto_insumo_id}
-                  onChange={(e) => setLote({ ...lote, produto_insumo_id: e.target.value })}
-                  placeholder="UUID"
-                  className={INPUT_CLS}
-                />
+              {/* Product search select */}
+              <div className="md:col-span-2" ref={insumoDropdownRef}>
+                <label className="label-mono text-white/50 mb-0.5 block">PRODUTO *</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={insumoSearch}
+                    onChange={(e) => {
+                      setInsumoSearch(e.target.value)
+                      setInsumoDropdownOpen(true)
+                      if (!e.target.value) {
+                        clearInsumoSelection()
+                      }
+                    }}
+                    onFocus={() => {
+                      if (insumoSearch.length >= 2 && !lote.produto_insumo_id) {
+                        setInsumoDropdownOpen(true)
+                      }
+                    }}
+                    placeholder="Buscar por nome ou SKU..."
+                    className={INPUT_CLS}
+                  />
+                  {insumoDropdownOpen &&
+                    insumoSearch.length >= 2 &&
+                    produtosInsumo.length > 0 &&
+                    !lote.produto_insumo_id && (
+                      <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-md border border-white/10 bg-[#1a1a1a] shadow-lg">
+                        {produtosInsumo.map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => handleSelectProdutoInsumo(p)}
+                            className="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 transition-colors flex justify-between items-center"
+                          >
+                            <span>{p.nome_interno}</span>
+                            <span className="font-mono text-xs text-white/40">
+                              {p.sku_interno}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                </div>
+                {lote.produto_insumo_id && (
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="text-xs text-success-400">Selecionado</span>
+                    <span className="font-mono text-xs text-white/40">
+                      {lote.produto_insumo_id.slice(0, 8)}...
+                    </span>
+                    <button
+                      type="button"
+                      onClick={clearInsumoSelection}
+                      className="text-xs text-error-400 hover:text-error-300"
+                    >
+                      Limpar
+                    </button>
+                  </div>
+                )}
+                {insumoSearch.length >= 2 &&
+                  produtosInsumo.length === 0 &&
+                  !lote.produto_insumo_id && (
+                    <p className="mt-1 text-xs text-white/30">
+                      Nenhum produto encontrado.
+                    </p>
+                  )}
               </div>
             </div>
           </div>
@@ -361,7 +522,7 @@ export default function EntradaManualPage() {
               </div>
               <div>
                 <label className="label-mono text-white/50 mb-0.5 block">
-                  FATOR DE CONVERSAO *
+                  FATOR DE CONVERSÃO *
                 </label>
                 <input
                   type="number"
@@ -406,9 +567,9 @@ export default function EntradaManualPage() {
             </div>
           </div>
 
-          {/* LOCALIZACAO */}
+          {/* LOCALIZAÇÃO */}
           <div className="bg-white/5 border border-white/10 rounded-lg p-5 space-y-4">
-            <div className="section-divider">LOCALIZACAO</div>
+            <div className="section-divider">LOCALIZAÇÃO</div>
             <PosicaoSelector
               value={lote.nivel_id}
               onChange={(nivelId) => setLote({ ...lote, nivel_id: nivelId })}
