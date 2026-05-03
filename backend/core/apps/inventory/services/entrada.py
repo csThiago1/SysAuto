@@ -23,7 +23,7 @@ class EntradaEstoqueService:
     @transaction.atomic
     def entrada_manual_peca(
         *,
-        peca_canonica_id: UUID,
+        peca_canonica_id: UUID | None,
         valor_nf: Decimal,
         nivel_id: UUID,
         user_id: UUID,
@@ -65,7 +65,7 @@ class EntradaEstoqueService:
     @transaction.atomic
     def entrada_manual_lote(
         *,
-        material_canonico_id: UUID,
+        material_canonico_id: UUID | None,
         quantidade_compra: Decimal,
         unidade_compra: str,
         fator_conversao: Decimal,

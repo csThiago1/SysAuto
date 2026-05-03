@@ -46,20 +46,27 @@ class MovimentacaoEstoqueSerializer(serializers.ModelSerializer):
 
 
 class EntradaPecaInputSerializer(serializers.Serializer):
-    """Input para entrada manual de peca."""
+    """Input para entrada manual de peca. produto_peca_id OU peca_canonica_id obrigatório."""
 
-    peca_canonica_id = serializers.UUIDField()
+    peca_canonica_id = serializers.UUIDField(required=False, allow_null=True)
     valor_nf = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=0.01)
     nivel_id = serializers.UUIDField()
     motivo = serializers.CharField(max_length=500)
     produto_peca_id = serializers.UUIDField(required=False, allow_null=True)
     numero_serie = serializers.CharField(max_length=80, required=False, default="")
 
+    def validate(self, attrs: dict) -> dict:
+        if not attrs.get("produto_peca_id") and not attrs.get("peca_canonica_id"):
+            raise serializers.ValidationError(
+                "Informe produto_peca_id ou peca_canonica_id."
+            )
+        return attrs
+
 
 class EntradaLoteInputSerializer(serializers.Serializer):
-    """Input para entrada manual de lote de insumo."""
+    """Input para entrada manual de lote. produto_insumo_id OU material_canonico_id obrigatório."""
 
-    material_canonico_id = serializers.UUIDField()
+    material_canonico_id = serializers.UUIDField(required=False, allow_null=True)
     quantidade_compra = serializers.DecimalField(
         max_digits=10, decimal_places=3, min_value=0.001,
     )
@@ -74,6 +81,13 @@ class EntradaLoteInputSerializer(serializers.Serializer):
     motivo = serializers.CharField(max_length=500)
     produto_insumo_id = serializers.UUIDField(required=False, allow_null=True)
     validade = serializers.DateField(required=False, allow_null=True)
+
+    def validate(self, attrs: dict) -> dict:
+        if not attrs.get("produto_insumo_id") and not attrs.get("material_canonico_id"):
+            raise serializers.ValidationError(
+                "Informe produto_insumo_id ou material_canonico_id."
+            )
+        return attrs
 
 
 class DevolucaoInputSerializer(serializers.Serializer):

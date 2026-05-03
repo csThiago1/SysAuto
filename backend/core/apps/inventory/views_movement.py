@@ -52,20 +52,35 @@ class EntradaPecaView(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
+        # Resolver peca_canonica_id a partir do produto se não informado
+        peca_canonica_id = data.get("peca_canonica_id")
+        produto_peca_id = data.get("produto_peca_id")
+
+        if not peca_canonica_id and produto_peca_id:
+            from apps.inventory.models_product import ProdutoComercialPeca
+            try:
+                produto = ProdutoComercialPeca.objects.get(pk=produto_peca_id, is_active=True)
+                peca_canonica_id = produto.peca_canonica_id
+            except ProdutoComercialPeca.DoesNotExist:
+                return Response(
+                    {"erro": "Produto comercial não encontrado."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         try:
             unidade = EntradaEstoqueService.entrada_manual_peca(
-                peca_canonica_id=data["peca_canonica_id"],
+                peca_canonica_id=peca_canonica_id,
                 valor_nf=data["valor_nf"],
                 nivel_id=data["nivel_id"],
                 user_id=request.user.id,
                 motivo=data["motivo"],
-                produto_peca_id=data.get("produto_peca_id"),
+                produto_peca_id=produto_peca_id,
                 numero_serie=data.get("numero_serie", ""),
             )
         except Exception as e:
             logger.error("Erro na entrada manual de peca: %s", e)
             return Response(
-                {"erro": "Erro ao registrar entrada de peca."},
+                {"erro": "Erro ao registrar entrada de peça."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -85,9 +100,24 @@ class EntradaLoteView(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
+        # Resolver material_canonico_id a partir do produto se não informado
+        material_canonico_id = data.get("material_canonico_id")
+        produto_insumo_id = data.get("produto_insumo_id")
+
+        if not material_canonico_id and produto_insumo_id:
+            from apps.inventory.models_product import ProdutoComercialInsumo
+            try:
+                produto = ProdutoComercialInsumo.objects.get(pk=produto_insumo_id, is_active=True)
+                material_canonico_id = produto.material_canonico_id
+            except ProdutoComercialInsumo.DoesNotExist:
+                return Response(
+                    {"erro": "Produto comercial insumo não encontrado."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         try:
             lote = EntradaEstoqueService.entrada_manual_lote(
-                material_canonico_id=data["material_canonico_id"],
+                material_canonico_id=material_canonico_id,
                 quantidade_compra=data["quantidade_compra"],
                 unidade_compra=data["unidade_compra"],
                 fator_conversao=data["fator_conversao"],
@@ -95,7 +125,7 @@ class EntradaLoteView(APIView):
                 nivel_id=data["nivel_id"],
                 user_id=request.user.id,
                 motivo=data["motivo"],
-                produto_insumo_id=data.get("produto_insumo_id"),
+                produto_insumo_id=produto_insumo_id,
                 validade=data.get("validade"),
             )
         except Exception as e:
