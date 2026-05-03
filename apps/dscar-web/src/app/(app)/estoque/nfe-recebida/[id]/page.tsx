@@ -1,11 +1,10 @@
 "use client"
 
-import { useState } from "react"
 import { ArrowLeft, CheckCircle, AlertCircle, Package, Layers } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { useNFeEntrada, useGerarEstoque, useReconciliarItem } from "@/hooks/useInventory"
-import type { NFeEntradaItem, ReconciliarItemInput, StatusReconciliacao } from "@paddock/types"
+import type { NFeEntradaItem, StatusReconciliacao } from "@paddock/types"
 
 const RECONCILIACAO_LABELS: Record<StatusReconciliacao, string> = {
   pendente: "Pendente",
@@ -19,6 +18,43 @@ const RECONCILIACAO_COLORS: Record<StatusReconciliacao, string> = {
   peca: "text-success-400 bg-success-400/10",
   insumo: "text-blue-400 bg-blue-400/10",
   ignorado: "text-white/40 bg-white/5",
+}
+
+function ReconciliacaoSelect({
+  nfeId,
+  item,
+  disabled,
+}: {
+  nfeId: string
+  item: NFeEntradaItem
+  disabled: boolean
+}) {
+  const reconciliarMutation = useReconciliarItem(nfeId, item.id)
+
+  async function handleReconciliar(tipo: string) {
+    try {
+      await reconciliarMutation.mutateAsync({
+        status_reconciliacao: tipo as StatusReconciliacao,
+      })
+      toast.success("Item reconciliado.")
+    } catch {
+      toast.error("Erro ao reconciliar item.")
+    }
+  }
+
+  return (
+    <select
+      value={item.status_reconciliacao}
+      onChange={(e) => handleReconciliar(e.target.value)}
+      disabled={disabled || reconciliarMutation.isPending}
+      className={`text-xs bg-white/5 border border-white/10 text-white rounded px-2 py-1 disabled:opacity-50 ${RECONCILIACAO_COLORS[item.status_reconciliacao]}`}
+    >
+      <option value="pendente" className="bg-[#1c1c1e] text-white">Pendente</option>
+      <option value="peca" className="bg-[#1c1c1e] text-white">Peça</option>
+      <option value="insumo" className="bg-[#1c1c1e] text-white">Insumo</option>
+      <option value="ignorado" className="bg-[#1c1c1e] text-white">Ignorado</option>
+    </select>
+  )
 }
 
 export default function NFeEntradaDetailPage({ params }: { params: { id: string } }) {
@@ -142,9 +178,11 @@ export default function NFeEntradaDetailPage({ params }: { params: { id: string 
                     })}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${RECONCILIACAO_COLORS[item.status_reconciliacao]}`}>
-                      {RECONCILIACAO_LABELS[item.status_reconciliacao]}
-                    </span>
+                    <ReconciliacaoSelect
+                      nfeId={params.id}
+                      item={item}
+                      disabled={nfe.estoque_gerado}
+                    />
                   </td>
                   <td className="px-4 py-3 text-white/60 text-xs">
                     {item.peca_nome && (
