@@ -14,36 +14,30 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import type { Route } from "next"
+import { useQuery } from "@tanstack/react-query"
+import { apiFetch } from "@/lib/api"
 
 /* ------------------------------------------------------------------ */
-/*  KPI placeholder — TODO: replace with real data from               */
-/*  useInventory hooks or /api/v1/inventory/kpis/                     */
+/*  Dashboard stats                                                    */
 /* ------------------------------------------------------------------ */
 
-const KPIS = [
-  {
-    label: "PEÇAS DISPONÍVEIS",
-    value: "—",
-    sub: "em 3 armazéns",
-  },
-  {
-    label: "VALOR EM ESTOQUE",
-    value: "—",
-    sub: "custo NF",
-  },
-  {
-    label: "RESERVADAS P/ OS",
-    value: "—",
-    sub: "aguardando consumo",
-    // TODO: text-yellow-400 when value > 0
-  },
-  {
-    label: "APROVAÇÕES PENDENTES",
-    value: "—",
-    sub: "perdas aguardando",
-    // TODO: text-error-400 when value > 0
-  },
-] as const
+interface DashboardStats {
+  pecas_disponiveis: number
+  valor_em_estoque: string
+  reservadas_os: number
+  aprovacoes_pendentes: number
+}
+
+function formatCompactCurrency(value: string): string {
+  const num = parseFloat(value)
+  if (isNaN(num)) return "—"
+  return num.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    notation: "compact",
+    maximumFractionDigits: 1,
+  })
+}
 
 /* ------------------------------------------------------------------ */
 /*  Navigation cards                                                   */
@@ -111,6 +105,15 @@ const SUB_MODULOS = [
 /* ------------------------------------------------------------------ */
 
 export default function EstoquePage() {
+  const { data: stats } = useQuery({
+    queryKey: ["inventory", "dashboard-stats"],
+    queryFn: () =>
+      apiFetch<DashboardStats>("/api/proxy/inventory/dashboard-stats/"),
+  })
+
+  const reservadas = stats?.reservadas_os ?? 0
+  const pendentes = stats?.aprovacoes_pendentes ?? 0
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -126,18 +129,49 @@ export default function EstoquePage() {
 
       {/* 4 KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {KPIS.map((kpi) => (
-          <div
-            key={kpi.label}
-            className="bg-white/5 border border-white/10 rounded-lg p-5"
-          >
-            <div className="label-mono mb-2">{kpi.label}</div>
-            <div className="text-3xl font-bold text-white font-mono">
-              {kpi.value}
-            </div>
-            <div className="text-xs text-white/40 mt-1">{kpi.sub}</div>
+        {/* Peças Disponíveis */}
+        <div className="bg-white/5 border border-white/10 rounded-lg p-5">
+          <div className="label-mono mb-2">PEÇAS DISPONÍVEIS</div>
+          <div className="text-3xl font-bold text-white font-mono">
+            {stats?.pecas_disponiveis ?? "—"}
           </div>
-        ))}
+          <div className="text-xs text-white/40 mt-1">em estoque</div>
+        </div>
+
+        {/* Valor em Estoque */}
+        <div className="bg-white/5 border border-white/10 rounded-lg p-5">
+          <div className="label-mono mb-2">VALOR EM ESTOQUE</div>
+          <div className="text-3xl font-bold text-white font-mono">
+            {stats ? formatCompactCurrency(stats.valor_em_estoque) : "—"}
+          </div>
+          <div className="text-xs text-white/40 mt-1">custo NF</div>
+        </div>
+
+        {/* Reservadas p/ OS */}
+        <div className="bg-white/5 border border-white/10 rounded-lg p-5">
+          <div className="label-mono mb-2">RESERVADAS P/ OS</div>
+          <div
+            className={`text-3xl font-bold font-mono ${
+              reservadas > 0 ? "text-yellow-400" : "text-white"
+            }`}
+          >
+            {stats ? reservadas : "—"}
+          </div>
+          <div className="text-xs text-white/40 mt-1">aguardando consumo</div>
+        </div>
+
+        {/* Aprovações Pendentes */}
+        <div className="bg-white/5 border border-white/10 rounded-lg p-5">
+          <div className="label-mono mb-2">APROVAÇÕES PENDENTES</div>
+          <div
+            className={`text-3xl font-bold font-mono ${
+              pendentes > 0 ? "text-error-400" : "text-white"
+            }`}
+          >
+            {stats ? pendentes : "—"}
+          </div>
+          <div className="text-xs text-white/40 mt-1">perdas aguardando</div>
+        </div>
       </div>
 
       {/* Section divider */}
