@@ -121,7 +121,9 @@ class NFeEntradaViewSet(viewsets.ModelViewSet):
         """
         nfe = self.get_object()
         try:
-            resultado = NFeIngestaoService.criar_registros_estoque(str(nfe.pk))
+            resultado = NFeIngestaoService.criar_registros_estoque(
+                str(nfe.pk), realizado_por_id=str(request.user.pk)
+            )
         except EstoqueJaGerado:
             return Response(
                 {"detail": "Estoque já gerado para esta NF-e."},

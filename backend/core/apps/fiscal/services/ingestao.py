@@ -25,12 +25,19 @@ class NFeIngestaoService:
     """Cria registros de estoque físico a partir de uma NF-e de entrada validada."""
 
     @staticmethod
-    def criar_registros_estoque(nfe_id: str) -> dict:
+    def criar_registros_estoque(
+        nfe_id: str, realizado_por_id: str | None = None
+    ) -> dict:
         """
         Processa todos os itens da NF-e e cria UnidadeFisica / LoteInsumo.
 
+        Para cada registro criado, gera um MovimentacaoEstoque(ENTRADA_NF)
+        como audit trail — requer ``realizado_por_id`` (WMS-3).
+
         Args:
             nfe_id: UUID da NFeEntrada.
+            realizado_por_id: UUID do GlobalUser que disparou a ação.
+                Se omitido, MovimentacaoEstoque NÃO é criada (warning no log).
 
         Returns:
             dict com unidades_criadas, lotes_criados, pendentes_reconciliacao.
@@ -41,6 +48,14 @@ class NFeIngestaoService:
         # Importações tardias para evitar circular import
         from apps.fiscal.models import NFeEntrada
         from apps.inventory.models import LoteInsumo, UnidadeFisica
+        from apps.inventory.models_movement import MovimentacaoEstoque
+
+        if not realizado_por_id:
+            logger.warning(
+                "criar_registros_estoque chamado sem realizado_por_id — "
+                "MovimentacaoEstoque não será criada para NF-e %s.",
+                nfe_id,
+            )
 
         with transaction.atomic():
             nfe = NFeEntrada.objects.select_for_update().get(pk=nfe_id)
@@ -71,6 +86,15 @@ class NFeIngestaoService:
                             status="available",
                         )
                         unidades.append(u.pk)
+                        if realizado_por_id:
+                            MovimentacaoEstoque(
+                                tipo=MovimentacaoEstoque.Tipo.ENTRADA_NF,
+                                unidade_fisica=u,
+                                quantidade=1,
+                                nivel_destino=u.nivel,
+                                nfe_entrada=nfe,
+                                realizado_por_id=realizado_por_id,
+                            ).save()
 
                 elif item.material_canonico_id:
                     # Insumo: um lote com quantidade_base = quantidade × fator_conversao
@@ -89,6 +113,15 @@ class NFeIngestaoService:
                         valor_unitario_base=Decimal("0"),  # placeholder, save() recalcula
                     )
                     lotes.append(l.pk)
+                    if realizado_por_id:
+                        MovimentacaoEstoque(
+                            tipo=MovimentacaoEstoque.Tipo.ENTRADA_NF,
+                            lote_insumo=l,
+                            quantidade=quantidade_base,
+                            nivel_destino=l.nivel,
+                            nfe_entrada=nfe,
+                            realizado_por_id=realizado_por_id,
+                        ).save()
 
                 else:
                     pendentes.append(str(item.pk))
