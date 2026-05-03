@@ -34,6 +34,7 @@ import { OpeningTab } from "./tabs/OpeningTab"
 import { PartsTab } from "./tabs/PartsTab"
 import { RemindersTab } from "./tabs/RemindersTab"
 import { ServicesTab } from "./tabs/ServicesTab"
+import { EstoqueTab } from "@/components/os/EstoqueTab"
 
 const FIELD_LABELS: Record<string, string> = {
   customer_name: "Nome do cliente",
@@ -67,6 +68,7 @@ const TABS = [
   { id: "reminders", label: "Lembretes" },
   { id: "history", label: "Histórico" },
   { id: "closing", label: "Fechamento" },
+  { id: "estoque", label: "Estoque" },
   { id: "files", label: "Arquivos" },
 ] as const
 
@@ -299,6 +301,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
           {activeTab === "reminders" && <RemindersTab orderId={order.id} />}
           {activeTab === "history" && <HistoryTab order={order} />}
           {activeTab === "closing" && <ClosingTab order={order} />}
+          {activeTab === "estoque" && <EstoqueTab osId={order.id} />}
           {activeTab === "files" && <FilesTab order={order} />}
         </form>
       </div>
