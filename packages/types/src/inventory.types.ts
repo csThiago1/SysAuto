@@ -17,6 +17,8 @@ export interface UnidadeFisica {
   numero_serie: string
   ordem_servico_id: string | null
   consumida_em: string | null
+  nivel: string | null
+  produto_peca: string | null
   created_at: string
 }
 
@@ -54,6 +56,8 @@ export interface LoteInsumo {
   valor_unitario_base: string
   validade: string | null
   localizacao: string
+  nivel: string | null
+  produto_insumo: string | null
   nfe_entrada_id: string | null
   created_at: string
 }
