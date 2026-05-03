@@ -7,10 +7,11 @@
  * Visivel apenas para MANAGER+.
  */
 
-import { useMemo } from "react"
 import { Package } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
 import { formatCurrency } from "@paddock/utils"
 
+import { apiFetch } from "@/lib/api"
 import { PermissionGate } from "@/components/PermissionGate"
 import { BarcodeScanInput } from "@/components/inventory/BarcodeScanInput"
 import { MargemBadge } from "@/components/inventory/MargemBadge"
@@ -23,14 +24,25 @@ interface EstoqueTabProps {
   osId: string
 }
 
-/** Row in the margin table — aggregated from movimentacoes + OS parts data */
-interface MargemRow {
-  id: string
-  descricao: string
+interface MargemItem {
+  tipo: "peca" | "insumo"
+  nome: string
   sku: string
+  codigo_barras: string
   posicao: string
-  custo: number
-  cobrado: number
+  custo: string
+  cobrado: string
+  margem_pct: string
+}
+
+interface MargemOSResponse {
+  itens: MargemItem[]
+  resumo: {
+    custo_total: string
+    cobrado_total: string
+    margem_total: string
+    margem_total_pct: string
+  }
 }
 
 // ─── Summary Card ───────────────────────────────────────────────────────────
@@ -73,34 +85,23 @@ function SummaryCard({
 // ─── Main Component ─────────────────────────────────────────────────────────
 
 export function EstoqueTab({ osId }: EstoqueTabProps) {
-  const { data: movimentacoes = [], isLoading } = useMovimentacoes({
+  // Margin data from dedicated endpoint
+  const { data: margem, isLoading: margemLoading } = useQuery({
+    queryKey: ["inventory", "margem-os", osId],
+    queryFn: () =>
+      apiFetch<MargemOSResponse>(`/api/proxy/inventory/margem-os/${osId}/`),
+    enabled: !!osId,
+  })
+
+  // Movimentacoes for the timeline (kept separate)
+  const { data: movimentacoes = [], isLoading: movLoading } = useMovimentacoes({
     ordem_servico: osId,
   })
 
-  // Build margin rows from movimentacoes linked to this OS.
-  // For now we use movimentacoes data as a placeholder structure.
-  // When the dedicated cost endpoint is available, this will be replaced.
-  const margemRows: MargemRow[] = useMemo(() => {
-    return movimentacoes
-      .filter((m) => m.tipo === "saida_os")
-      .map((m) => ({
-        id: m.id,
-        descricao: m.unidade_barcode || m.lote_barcode || "Item",
-        sku: m.unidade_barcode || m.lote_barcode || "-",
-        posicao: m.nivel_destino_endereco || m.nivel_origem_endereco || "-",
-        custo: 0, // TODO: resolve from UnidadeFisica.valor_nf / ConsumoInsumo.valor_unitario_na_baixa
-        cobrado: 0, // TODO: resolve from ServiceOrderPart.sale_price / OSIntervencao.valor_peca
-      }))
-  }, [movimentacoes])
-
-  const custoTotal = margemRows.reduce((sum, r) => sum + r.custo, 0)
-  const cobradoTotal = margemRows.reduce((sum, r) => sum + r.cobrado, 0)
-  const margemTotal =
-    custoTotal > 0
-      ? ((cobradoTotal - custoTotal) / custoTotal) * 100
-      : 0
+  const resumo = margem?.resumo
+  const margemPct = resumo ? parseFloat(resumo.margem_total_pct) : 0
   const margemVariant =
-    margemTotal > 0 ? "success" : margemTotal < 0 ? "error" : "neutral"
+    margemPct > 0 ? "success" : margemPct < 0 ? "error" : "neutral"
 
   function handleScan(code: string) {
     // TODO: link scanned barcode to this OS (bipar peca/insumo para a OS)
@@ -124,15 +125,27 @@ export function EstoqueTab({ osId }: EstoqueTabProps) {
         <div className="grid grid-cols-3 gap-3">
           <SummaryCard
             label="CUSTO TOTAL"
-            value={formatCurrency(custoTotal)}
+            value={
+              resumo
+                ? formatCurrency(parseFloat(resumo.custo_total))
+                : formatCurrency(0)
+            }
           />
           <SummaryCard
             label="VALOR COBRADO"
-            value={formatCurrency(cobradoTotal)}
+            value={
+              resumo
+                ? formatCurrency(parseFloat(resumo.cobrado_total))
+                : formatCurrency(0)
+            }
           />
           <SummaryCard
             label="MARGEM TOTAL"
-            value={`${margemTotal > 0 ? "+" : ""}${margemTotal.toFixed(1)}%`}
+            value={
+              resumo
+                ? `${margemPct > 0 ? "+" : ""}${margemPct.toFixed(1)}%`
+                : "0.0%"
+            }
             variant={margemVariant}
           />
         </div>
@@ -142,7 +155,11 @@ export function EstoqueTab({ osId }: EstoqueTabProps) {
           <p className="label-mono text-white/40 mb-2">
             PECAS E INSUMOS CONSUMIDOS
           </p>
-          {margemRows.length === 0 ? (
+          {margemLoading ? (
+            <div className="flex items-center justify-center py-10 text-white/30">
+              <p className="text-sm">Carregando...</p>
+            </div>
+          ) : !margem?.itens.length ? (
             <div className="flex flex-col items-center justify-center py-10 text-white/30">
               <Package className="h-8 w-8 mb-2 opacity-40" />
               <p className="text-sm">
@@ -175,24 +192,31 @@ export function EstoqueTab({ osId }: EstoqueTabProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {margemRows.map((row) => (
+                  {margem.itens.map((item, i) => (
                     <tr
-                      key={row.id}
+                      key={i}
                       className="border-b border-white/5 last:border-0"
                     >
-                      <td className="px-3 py-2 text-white">{row.descricao}</td>
-                      <td className="px-3 py-2 font-mono text-xs text-white/60">
-                        {row.sku}
+                      <td className="px-3 py-2 text-white text-sm">
+                        {item.nome}
                       </td>
-                      <td className="px-3 py-2 text-white/60">{row.posicao}</td>
-                      <td className="px-3 py-2 text-right font-mono text-xs text-white/60">
-                        {formatCurrency(row.custo)}
+                      <td className="px-3 py-2 font-mono text-xs text-white/50">
+                        {item.sku || "\u2014"}
                       </td>
-                      <td className="px-3 py-2 text-right font-mono text-xs text-white">
-                        {formatCurrency(row.cobrado)}
+                      <td className="px-3 py-2 font-mono text-xs text-primary-400">
+                        {item.posicao || "\u2014"}
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono text-sm text-white/80">
+                        R$ {parseFloat(item.custo).toFixed(2)}
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono text-sm text-white/80">
+                        R$ {parseFloat(item.cobrado).toFixed(2)}
                       </td>
                       <td className="px-3 py-2 text-right">
-                        <MargemBadge custo={row.custo} cobrado={row.cobrado} />
+                        <MargemBadge
+                          custo={parseFloat(item.custo)}
+                          cobrado={parseFloat(item.cobrado)}
+                        />
                       </td>
                     </tr>
                   ))}
@@ -209,7 +233,7 @@ export function EstoqueTab({ osId }: EstoqueTabProps) {
           </p>
           <MovimentacaoTimeline
             movimentacoes={movimentacoes}
-            loading={isLoading}
+            loading={movLoading}
           />
         </div>
       </div>
