@@ -81,6 +81,25 @@ class ReservaUnidadeService:
                 u.ordem_servico_id = ordem_servico_id
                 u.save(update_fields=["status", "ordem_servico_id"])
 
+            # Audit trail: MovimentacaoEstoque por unidade reservada
+            if user_id:
+                from apps.inventory.models_movement import MovimentacaoEstoque
+
+                for u in disponiveis:
+                    MovimentacaoEstoque(
+                        tipo=MovimentacaoEstoque.Tipo.SAIDA_OS,
+                        unidade_fisica=u,
+                        quantidade=1,
+                        nivel_origem=u.nivel,
+                        ordem_servico_id=ordem_servico_id,
+                        realizado_por_id=user_id,
+                    ).save()
+            else:
+                logger.warning(
+                    "Reserva sem user_id — MovimentacaoEstoque não criada: peca=%s os=%s",
+                    peca_canonica_id, ordem_servico_id,
+                )
+
         return disponiveis
 
     @staticmethod
@@ -179,6 +198,25 @@ class BaixaInsumoService:
                 raise ReservaIndisponivel(
                     f"Material {material_canonico_id}: pedido {quantidade_base}, "
                     f"insuficiente — faltam {restante} em unidade_base."
+                )
+
+            # Audit trail: MovimentacaoEstoque por consumo criado
+            if user_id:
+                from apps.inventory.models_movement import MovimentacaoEstoque
+
+                for c in consumos:
+                    MovimentacaoEstoque(
+                        tipo=MovimentacaoEstoque.Tipo.SAIDA_OS,
+                        lote_insumo=c.lote,
+                        quantidade=c.quantidade_base,
+                        nivel_origem=c.lote.nivel,
+                        ordem_servico_id=ordem_servico_id,
+                        realizado_por_id=user_id,
+                    ).save()
+            else:
+                logger.warning(
+                    "Baixa sem user_id — MovimentacaoEstoque não criada: material=%s os=%s",
+                    material_canonico_id, ordem_servico_id,
                 )
 
         return consumos
