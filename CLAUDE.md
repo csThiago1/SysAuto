@@ -49,7 +49,7 @@ grupo-dscar/
 │   │   │   ├── persons/              ← Modelo unificado Person (PF/PJ, SetorPessoa/CargoPessoa)
 │   │   │   ├── customers/            ← Cliente unificado + LGPD
 │   │   │   ├── service_orders/       ← OS, Kanban, Checklist (DS Car)
-│   │   │   ├── inventory/            ← Estoque por tenant
+│   │   │   ├── inventory/            ← WMS: localização, produto comercial, movimentação, contagem (TENANT_APP)
 │   │   │   ├── fiscal/               ← NF-e, NFS-e, NFC-e (nfelib)
 │   │   │   ├── crm/                  ← CRM + WhatsApp (Evolution API)
 │   │   │   ├── store/                ← PDV + E-commerce
@@ -1258,6 +1258,44 @@ Nenhuma sprint ativa no momento.
 ---
 
 ## 📦 Sprints Entregues
+
+### WMS Estoque Físico Completo — Maio 2026 ✅
+**Módulo completo de gestão de estoque: localização física, produto comercial, movimentação auditável, contagem de inventário, análise de margem na OS**
+
+Backend (app `apps.inventory` expandido):
+- **Localização**: `Armazem` → `Rua` → `Prateleira` → `Nivel` (4 models hierárquicos, FK CASCADE, `endereco_completo` computed WMS-4)
+- **Produto Comercial**: `ProdutoComercialPeca` + `ProdutoComercialInsumo` (separados WMS-5), `TipoPeca` (20 seeds), `CategoriaProduto`, `CategoriaInsumo` com margem padrão
+- **Movimentação**: `MovimentacaoEstoque` imutável (WMS-1), 7 tipos (entrada NF/manual/devolução, saída OS/perda, transferência, ajuste), `realizado_por` obrigatório (WMS-3), evidência + aprovação MANAGER+ para perdas/ajustes (WMS-2)
+- **Contagem**: `ContagemInventario` (cíclica por rua / total por armazém) + `ItemContagem` com divergência computed
+- **6 Services**: `LocalizacaoService`, `EntradaEstoqueService`, `SaidaEstoqueService`, `AprovacaoEstoqueService`, `ContagemService`, `MovimentacaoService`
+- **Integração**: `ReservaUnidadeService` e `BaixaInsumoService` adaptados para gerar `MovimentacaoEstoque(SAIDA_OS)`; `NFeIngestaoService` gera `MovimentacaoEstoque(ENTRADA_NF)`
+- **Endpoints**: ~36 endpoints REST (CRUD localização + produto + movimentação + aprovação + contagem + dashboard-stats + margem-os)
+- **Permission**: `IsStorekeeperOrAbove` (nível 1+) adicionada
+- **Seeds**: `setup_estoque_base` — 4 armazéns + 20 tipos de peça
+
+Frontend (dscar-web):
+- **Types**: 3 arquivos (`inventory-location.types.ts`, `inventory-product.types.ts`, `inventory-movement.types.ts`)
+- **Hooks**: 50 hooks TanStack Query v5 em 4 arquivos
+- **Sidebar**: seção ESTOQUE expandida com 12 itens + badge aprovações
+- **15 páginas**: dashboard KPIs, armazéns (lista + detalhe árvore), produtos peças/insumos (CRUD Sheet), categorias (3 tabs), unidades (reescrita com ações), lotes (reescrita FIFO), entrada manual, movimentações (filtros), aprovações (MANAGER+), contagens (lista + detalhe), NF-e reconciliação interativa
+- **8 componentes**: `PosicaoSelector` (4 selects cascata), `ArmazemTree` (árvore colapsável), `BarcodeScanInput`, `MovimentacaoTimeline`, `MargemBadge` (success/error tokens), `ProdutoPecaDialog`, `ProdutoInsumoDialog`, `EvidenciaUpload`
+- **Integração OS**: aba "Estoque" no detalhe da OS com margem real (custo NF vs cobrado) + timeline de movimentações + bipagem inline
+
+Testes:
+- 75 testes backend (22 services WMS + 53 existentes)
+- 8 smoke tests E2E Playwright
+
+**Spec**: `docs/superpowers/specs/2026-05-02-wms-estoque-fisico-design.md`
+**Plano**: `docs/superpowers/plans/2026-05-02-wms-estoque-fisico.md`
+
+**Padrões WMS estabelecidos:**
+- WMS-1: `MovimentacaoEstoque` é IMUTÁVEL — `save()` bloqueia update (exceto aprovação)
+- WMS-2: Perdas e ajustes SEMPRE requerem aprovação MANAGER+ + evidência (foto)
+- WMS-3: Toda movimentação tem `realizado_por` — NUNCA nullable
+- WMS-4: `endereco_completo` é computed (property), não stored — evita desync
+- WMS-5: Peças e insumos são models SEPARADOS — nunca misturar (`ProdutoComercialPeca` ≠ `ProdutoComercialInsumo`)
+
+---
 
 ### Design System Fintech-Red Phase 2 — Abril 2026 ✅
 **Full ERP sweep: 6 foundation components + ~90 arquivos migrados para dark fintech theme**
