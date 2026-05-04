@@ -1,14 +1,18 @@
 "use client"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { Loader2, Plus, Pencil, Trash2, Package } from "lucide-react"
+import { Loader2, MoreVertical, Package, Warehouse, ShoppingCart, Shield } from "lucide-react"
 import { toast } from "sonner"
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import {
+  useOSParts,
+  useDeleteOSPart,
+  useAddPartEstoque,
+  useAddPartCompra,
+  useAddPartSeguradora,
+} from "@/hooks/useServiceOrders"
+import { usePermission } from "@/hooks/usePermission"
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog"
 import {
   Table,
   TableBody,
@@ -18,257 +22,370 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {
-  useOSParts,
-  useAddPart,
-  useUpdatePart,
-  useDeletePart,
-} from "../../_hooks/useOSItems"
-import type { ServiceOrderPart, CreatePartPayload } from "@paddock/types"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { TipoQualidadeBadge } from "@/components/purchasing/TipoQualidadeBadge"
+import { OrigemBadge } from "@/components/purchasing/OrigemBadge"
+import { StatusPecaBadge } from "@/components/purchasing/StatusPecaBadge"
+import { MargemBadge } from "@/components/inventory/MargemBadge"
+import { EstoqueBuscaModal } from "@/components/purchasing/EstoqueBuscaModal"
+import { CompraFormModal } from "@/components/purchasing/CompraFormModal"
+import { SeguradoraFormModal } from "@/components/purchasing/SeguradoraFormModal"
 import { formatCurrency } from "@paddock/utils"
+import type { ServiceOrderPart } from "@paddock/types"
+
+// ─── Props ──────────────────────────────────────────────────────────────────────
 
 interface PartsTabProps {
-  orderId?: string
+  orderId: string
 }
 
-type FormValues = {
-  description: string
-  part_number: string
-  quantity: string
-  unit_price: string
-  discount: string
-}
+// ─── Component ──────────────────────────────────────────────────────────────────
 
 export function PartsTab({ orderId }: PartsTabProps) {
-  const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [showDiscount, setShowDiscount] = useState(false)
+  const [estoqueOpen, setEstoqueOpen] = useState(false)
+  const [compraOpen, setCompraOpen] = useState(false)
+  const [seguradoraOpen, setSeguradoraOpen] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
+  const isManager = usePermission("MANAGER")
+
   const { data: parts, isLoading } = useOSParts(orderId)
-  const addPart = useAddPart(orderId ?? "")
-  const updatePart = useUpdatePart(orderId ?? "")
-  const deletePart = useDeletePart(orderId ?? "")
+  const deletePart = useDeleteOSPart(orderId)
+  const addPartEstoque = useAddPartEstoque(orderId)
+  const addPartCompra = useAddPartCompra(orderId)
+  const addPartSeguradora = useAddPartSeguradora(orderId)
 
-  const { register, handleSubmit, reset, setValue } = useForm<FormValues>({
-    defaultValues: { description: "", part_number: "", quantity: "1", unit_price: "", discount: "0" },
-  })
+  // ─── Derived data ───────────────────────────────────────────────────────────
 
-  function startEdit(part: ServiceOrderPart) {
-    setEditingId(part.id)
-    setShowForm(true)
-    setValue("description", part.description)
-    setValue("part_number", part.part_number)
-    setValue("quantity", part.quantity)
-    setValue("unit_price", part.unit_price)
-    setValue("discount", part.discount)
-    setShowDiscount(parseFloat(part.discount) > 0)
-  }
+  const partsList = parts ?? []
+  const pendingCount = partsList.filter(
+    (p) => p.status_peca !== "recebida" && p.status_peca !== "instalada"
+  ).length
 
-  function cancelForm() {
-    setShowForm(false)
-    setEditingId(null)
-    setShowDiscount(false)
-    reset()
-  }
+  const custoTotal = partsList.reduce((acc, p) => {
+    return acc + (p.custo_real ? parseFloat(p.custo_real) * parseFloat(p.quantity) : 0)
+  }, 0)
 
-  function handleDiscountToggle(checked: boolean) {
-    setShowDiscount(checked)
-    if (!checked) setValue("discount", "0")
-  }
+  const valorCobrado = partsList.reduce(
+    (acc, p) => acc + parseFloat(p.unit_price) * parseFloat(p.quantity),
+    0
+  )
 
-  async function onSubmit(values: FormValues) {
-    if (!orderId) return
-    const payload: CreatePartPayload = {
-      description: values.description.trim(),
-      part_number: values.part_number.trim(),
-      quantity: parseFloat(values.quantity) || 1,
-      unit_price: parseFloat(values.unit_price) || 0,
-      discount: parseFloat(values.discount) || 0,
-    }
+  const margemPct =
+    custoTotal > 0 ? ((valorCobrado - custoTotal) / custoTotal) * 100 : 0
+
+  // ─── Handlers ───────────────────────────────────────────────────────────────
+
+  async function handleEstoqueSelect(data: {
+    unidade_fisica_id: string
+    tipo_qualidade: string
+    unit_price: string
+    description: string
+  }) {
     try {
-      if (editingId) {
-        await updatePart.mutateAsync({ id: editingId, data: payload })
-      } else {
-        await addPart.mutateAsync(payload)
-      }
-      cancelForm()
+      await addPartEstoque.mutateAsync(data)
+      toast.success("Peca adicionada do estoque.")
+      setEstoqueOpen(false)
     } catch {
-      toast.error("Erro ao salvar peça. Tente novamente.")
+      toast.error("Erro ao adicionar peca do estoque.")
+    }
+  }
+
+  async function handleCompraSubmit(data: {
+    description: string
+    part_number: string
+    tipo_qualidade: string
+    unit_price: string
+    quantity: string
+    observacoes: string
+  }) {
+    try {
+      await addPartCompra.mutateAsync(data)
+      toast.success("Peca adicionada para compra.")
+      setCompraOpen(false)
+    } catch {
+      toast.error("Erro ao adicionar peca para compra.")
+    }
+  }
+
+  async function handleSeguradoraSubmit(data: {
+    description: string
+    tipo_qualidade: string
+    unit_price: string
+    quantity: string
+  }) {
+    try {
+      await addPartSeguradora.mutateAsync(data)
+      toast.success("Peca da seguradora adicionada.")
+      setSeguradoraOpen(false)
+    } catch {
+      toast.error("Erro ao adicionar peca da seguradora.")
     }
   }
 
   async function handleDelete(partId: string) {
     try {
       await deletePart.mutateAsync(partId)
-      toast.success("Peça removida.")
+      toast.success("Peca removida.")
     } catch {
-      toast.error("Erro ao remover peça.")
+      toast.error("Erro ao remover peca.")
     }
   }
 
-  const isPending = addPart.isPending || updatePart.isPending
-
-  // Totals
-  const partsTotal = (parts ?? []).reduce((acc, p) => acc + p.total, 0)
-  const discountTotal = (parts ?? []).reduce((acc, p) => acc + parseFloat(p.discount), 0)
+  // ─── Empty state ────────────────────────────────────────────────────────────
 
   if (!orderId) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-white/40">
         <Package className="h-10 w-10 mb-3 opacity-40" />
-        <p className="text-sm">Salve a OS antes de adicionar peças.</p>
+        <p className="text-sm">Salve a OS antes de adicionar pecas.</p>
       </div>
     )
   }
 
+  // ─── Render ─────────────────────────────────────────────────────────────────
+
   return (
-    <div className="py-6 space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-white">Peças</h2>
-        {!showForm && (
-          <Button size="sm" onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4 mr-1" /> Adicionar Peça
-          </Button>
+    <div className="py-6 space-y-5">
+      {/* Origin buttons */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => setEstoqueOpen(true)}
+          className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors bg-success-500/10 border-success-500/20 text-success-400 hover:bg-success-500/20"
+        >
+          <Warehouse className="h-4 w-4" />
+          Do Estoque
+        </button>
+        <button
+          type="button"
+          onClick={() => setCompraOpen(true)}
+          className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors bg-info-500/10 border-info-500/20 text-info-400 hover:bg-info-500/20"
+        >
+          <ShoppingCart className="h-4 w-4" />
+          Comprar
+        </button>
+        <button
+          type="button"
+          onClick={() => setSeguradoraOpen(true)}
+          className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"
+        >
+          <Shield className="h-4 w-4" />
+          Seguradora Fornece
+        </button>
+      </div>
+
+      {/* Section divider */}
+      <div className="section-divider">
+        PECAS DA OS ({partsList.length})
+        {pendingCount > 0 && (
+          <span className="ml-2 text-warning-400">
+            {pendingCount} pendente{pendingCount > 1 ? "s" : ""}
+          </span>
         )}
       </div>
 
-      {/* Inline form */}
-      {showForm && (
-        <div className="bg-white/5 border border-white/10 rounded-lg p-4 shadow-sm space-y-3">
-          <h3 className="text-sm font-medium text-white/70">
-            {editingId ? "Editar Peça" : "Nova Peça"}
-          </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2">
-              <Label className="text-xs">Descrição *</Label>
-              <Input {...register("description", { required: true })} placeholder="Ex: Para-choque dianteiro" />
-            </div>
-            <div>
-              <Label className="text-xs">Código da Peça</Label>
-              <Input {...register("part_number")} placeholder="Ex: PC-12345" />
-            </div>
-            <div>
-              <Label className="text-xs">Quantidade *</Label>
-              <Input {...register("quantity", { required: true })} type="number" min="0.01" step="0.01" />
-            </div>
-            <div>
-              <Label className="text-xs">Preço Unitário (R$) *</Label>
-              <Input {...register("unit_price", { required: true })} type="number" min="0" step="0.01" placeholder="0,00" />
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="parts-show-discount"
-                  checked={showDiscount}
-                  onChange={(e) => handleDiscountToggle(e.target.checked)}
-                  className="h-4 w-4 rounded border-white/15 text-primary-600 cursor-pointer"
-                />
-                <label htmlFor="parts-show-discount" className="text-xs font-medium text-white/70 cursor-pointer">
-                  Aplicar desconto
-                </label>
-              </div>
-              {showDiscount && (
-                <>
-                  <Label className="text-xs">Desconto (R$)</Label>
-                  <Input {...register("discount")} type="number" min="0" step="0.01" placeholder="0,00" />
-                </>
-              )}
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="outline" size="sm" onClick={cancelForm}>Cancelar</Button>
-            <Button type="button" size="sm" disabled={isPending} onClick={() => handleSubmit(onSubmit)()}>
-              {isPending && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
-              {editingId ? "Salvar" : "Adicionar"}
-            </Button>
-          </div>
-        </div>
-      )}
-
       {/* Table */}
       {isLoading ? (
-        <div className="flex justify-center py-8"><Loader2 className="animate-spin text-white/40 h-5 w-5" /></div>
-      ) : !parts || parts.length === 0 ? (
+        <div className="flex justify-center py-8">
+          <Loader2 className="animate-spin text-white/40 h-5 w-5" />
+        </div>
+      ) : partsList.length === 0 ? (
         <div className="bg-white/5 border border-white/10 rounded-lg p-8 text-center text-white/40 text-sm">
-          Nenhuma peça adicionada.
+          Nenhuma peca adicionada. Use os botoes acima para adicionar.
         </div>
       ) : (
-        <>
-          <div className="rounded-md border border-white/10 overflow-hidden">
-            <Table>
-              <TableHeader className="bg-white/[0.03]">
-                <TableRow>
-                  <TableHead>Descrição</TableHead>
-                  <TableHead className="hidden sm:table-cell">Código</TableHead>
-                  <TableHead className="text-right">Qtd</TableHead>
-                  <TableHead className="text-right">Unit.</TableHead>
-                  <TableHead className="text-right hidden md:table-cell">Desconto</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="w-20" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {parts.map((part) => (
-                  <TableRow key={part.id}>
-                    <TableCell className="text-white font-medium">{part.description}</TableCell>
-                    <TableCell className="text-white/50 hidden sm:table-cell">{part.part_number || "—"}</TableCell>
-                    <TableCell className="text-right text-white/70">{part.quantity}</TableCell>
-                    <TableCell className="text-right text-white/70">{formatCurrency(part.unit_price)}</TableCell>
-                    <TableCell className="text-right text-white/50 hidden md:table-cell">
-                      {parseFloat(part.discount) > 0 ? formatCurrency(part.discount) : "—"}
-                    </TableCell>
-                    <TableCell className="text-right font-semibold text-white">{formatCurrency(part.total)}</TableCell>
+        <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+          <Table>
+            <TableHeader className="bg-white/[0.03]">
+              <TableRow>
+                <TableHead className="label-mono text-white/40">Peca</TableHead>
+                <TableHead className="label-mono text-white/40">Tipo</TableHead>
+                <TableHead className="label-mono text-white/40">Origem</TableHead>
+                <TableHead className="label-mono text-white/40">Status</TableHead>
+                {isManager && (
+                  <TableHead className="label-mono text-white/40 text-right">Custo</TableHead>
+                )}
+                <TableHead className="label-mono text-white/40 text-right">Cobrado</TableHead>
+                {isManager && (
+                  <TableHead className="label-mono text-white/40 text-right">Margem</TableHead>
+                )}
+                <TableHead className="w-10" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {partsList.map((part) => {
+                const cobrado = parseFloat(part.unit_price) * parseFloat(part.quantity)
+                const custoReal = part.custo_real ? parseFloat(part.custo_real) : null
+                const hasMargem = custoReal !== null && cobrado > 0
+
+                return (
+                  <TableRow
+                    key={part.id}
+                    className="border-b border-white/5 hover:bg-white/[0.03]"
+                  >
+                    {/* Peca name + SKU */}
                     <TableCell>
-                      <div className="flex items-center justify-end gap-1">
-                        <button
-                          type="button"
-                          onClick={() => startEdit(part)}
-                          className="p-1.5 rounded text-white/40 hover:text-primary hover:bg-white/5"
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setConfirmDeleteId(part.id)}
-                          className="p-1.5 rounded text-white/40 hover:text-error-400 hover:bg-error-500/10"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                      <div>
+                        <span className="text-white font-medium text-sm">
+                          {part.description}
+                        </span>
+                        {part.part_number && (
+                          <span className="block text-xs text-white/40 font-mono mt-0.5">
+                            {part.part_number}
+                          </span>
+                        )}
                       </div>
                     </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
 
-          {/* Totals panel */}
-          <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4 space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-white/60">Subtotal</span>
-              <span className="font-medium">{formatCurrency((parts ?? []).reduce((acc, p) => acc + parseFloat(p.unit_price) * parseFloat(p.quantity), 0))}</span>
-            </div>
-            {discountTotal > 0 && (
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-white/60">Desconto</span>
-                <span className="font-medium text-error-400">- {formatCurrency(discountTotal)}</span>
-              </div>
-            )}
-            <div className="border-t border-white/10 pt-2 flex items-center justify-between">
-              <span className="text-sm font-semibold text-white/90">Total Peças</span>
-              <span className="text-base font-bold text-white">{formatCurrency(partsTotal)}</span>
-            </div>
-          </div>
-        </>
+                    {/* Tipo qualidade */}
+                    <TableCell>
+                      <TipoQualidadeBadge tipo={part.tipo_qualidade} />
+                    </TableCell>
+
+                    {/* Origem */}
+                    <TableCell>
+                      <OrigemBadge origem={part.origem} />
+                    </TableCell>
+
+                    {/* Status */}
+                    <TableCell>
+                      <StatusPecaBadge status={part.status_peca} />
+                    </TableCell>
+
+                    {/* Custo (MANAGER+) */}
+                    {isManager && (
+                      <TableCell className="text-right font-mono text-sm text-white/60">
+                        {custoReal !== null ? formatCurrency(custoReal) : "\u2014"}
+                      </TableCell>
+                    )}
+
+                    {/* Cobrado */}
+                    <TableCell className="text-right font-mono text-sm text-white">
+                      {formatCurrency(cobrado)}
+                    </TableCell>
+
+                    {/* Margem (MANAGER+) */}
+                    {isManager && (
+                      <TableCell className="text-right">
+                        {hasMargem ? (
+                          <MargemBadge custo={custoReal!} cobrado={cobrado} />
+                        ) : (
+                          <span className="text-white/30">\u2014</span>
+                        )}
+                      </TableCell>
+                    )}
+
+                    {/* Actions */}
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className="p-1.5 rounded text-white/40 hover:text-white hover:bg-white/5"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            className="text-error-400 focus:text-error-400"
+                            onClick={() => setConfirmDeleteId(part.id)}
+                          >
+                            Remover
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </div>
       )}
 
+      {/* Summary cards */}
+      {partsList.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {/* Custo Total - MANAGER+ only */}
+          {isManager && (
+            <div className="bg-white/[0.03] border border-white/[0.08] rounded-lg p-3">
+              <span className="label-mono">Custo Total</span>
+              <p className="text-xl font-bold font-mono text-white mt-1">
+                {formatCurrency(custoTotal)}
+              </p>
+            </div>
+          )}
+
+          {/* Valor Cobrado */}
+          <div className="bg-white/[0.03] border border-white/[0.08] rounded-lg p-3">
+            <span className="label-mono">Valor Cobrado</span>
+            <p className="text-xl font-bold font-mono text-white mt-1">
+              {formatCurrency(valorCobrado)}
+            </p>
+          </div>
+
+          {/* Margem - MANAGER+ only */}
+          {isManager && (
+            <div className="bg-white/[0.03] border border-white/[0.08] rounded-lg p-3">
+              <span className="label-mono">Margem</span>
+              <p className={`text-xl font-bold font-mono mt-1 ${
+                margemPct > 0
+                  ? "text-success-400"
+                  : margemPct < 0
+                  ? "text-error-400"
+                  : "text-white"
+              }`}>
+                {margemPct.toFixed(1)}%
+              </p>
+            </div>
+          )}
+
+          {/* Pendentes */}
+          <div className={`bg-white/[0.03] border rounded-lg p-3 ${
+            pendingCount > 0 ? "border-warning-500/20" : "border-white/[0.08]"
+          }`}>
+            <span className="label-mono">Pendentes</span>
+            <p className={`text-xl font-bold font-mono mt-1 ${
+              pendingCount > 0 ? "text-warning-400" : "text-white"
+            }`}>
+              {pendingCount}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Modals */}
+      <EstoqueBuscaModal
+        open={estoqueOpen}
+        onClose={() => setEstoqueOpen(false)}
+        osId={orderId}
+        onSelect={handleEstoqueSelect}
+      />
+      <CompraFormModal
+        open={compraOpen}
+        onClose={() => setCompraOpen(false)}
+        onSubmit={handleCompraSubmit}
+      />
+      <SeguradoraFormModal
+        open={seguradoraOpen}
+        onClose={() => setSeguradoraOpen(false)}
+        onSubmit={handleSeguradoraSubmit}
+      />
+
+      {/* Confirm delete */}
       <ConfirmDialog
         open={confirmDeleteId !== null}
-        onOpenChange={(open) => { if (!open) setConfirmDeleteId(null) }}
-        title="Remover peça"
-        description="Tem certeza que deseja remover esta peça da OS?"
+        onOpenChange={(open) => {
+          if (!open) setConfirmDeleteId(null)
+        }}
+        title="Remover peca"
+        description="Tem certeza que deseja remover esta peca da OS? Se veio do estoque, a unidade sera liberada automaticamente."
         confirmLabel="Remover"
         variant="destructive"
         onConfirm={() => {
