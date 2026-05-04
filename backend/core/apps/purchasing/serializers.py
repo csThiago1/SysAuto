@@ -138,14 +138,14 @@ class AdicionarItemOCInputSerializer(serializers.Serializer):
     fornecedor_id = serializers.UUIDField(required=False, allow_null=True)
     fornecedor_nome = serializers.CharField(max_length=150)
     fornecedor_cnpj = serializers.CharField(
-        max_length=20, required=False, default="",
+        max_length=20, required=False, default="", allow_blank=True,
     )
     fornecedor_contato = serializers.CharField(
-        max_length=100, required=False, default="",
+        max_length=100, required=False, default="", allow_blank=True,
     )
     descricao = serializers.CharField(max_length=300)
     codigo_referencia = serializers.CharField(
-        max_length=100, required=False, default="",
+        max_length=100, required=False, default="", allow_blank=True,
     )
     tipo_qualidade = serializers.ChoiceField(
         choices=ItemOrdemCompra.TipoQualidade.choices,
@@ -153,9 +153,9 @@ class AdicionarItemOCInputSerializer(serializers.Serializer):
     quantidade = serializers.DecimalField(max_digits=10, decimal_places=2)
     valor_unitario = serializers.DecimalField(max_digits=12, decimal_places=2)
     prazo_entrega = serializers.CharField(
-        max_length=100, required=False, default="",
+        max_length=100, required=False, default="", allow_blank=True,
     )
-    observacoes = serializers.CharField(required=False, default="")
+    observacoes = serializers.CharField(required=False, default="", allow_blank=True)
 
 
 class DashboardComprasSerializer(serializers.Serializer):
