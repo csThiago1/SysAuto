@@ -54,6 +54,7 @@ TENANT_APPS = [
     "apps.service_orders",
     "apps.experts",
     "apps.inventory",
+    "apps.purchasing",
     "apps.fiscal",
     "apps.crm",
     "apps.store",

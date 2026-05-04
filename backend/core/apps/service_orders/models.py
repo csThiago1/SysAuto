@@ -674,6 +674,14 @@ class ServiceOrderPart(PaddockBaseModel):
         on_delete=models.SET_NULL,
         related_name="os_parts_wms",
     )
+    pedido_compra = models.ForeignKey(
+        "purchasing.PedidoCompra",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="os_parts",
+        help_text="Pedido de compra quando origem=compra.",
+    )
     custo_real = models.DecimalField(
         max_digits=12,
         decimal_places=2,
