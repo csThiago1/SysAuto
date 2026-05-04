@@ -12,7 +12,14 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { captureRef } from 'react-native-view-shot';
+// react-native-view-shot requires native module (dev client only, not Expo Go)
+let captureRef: typeof import('react-native-view-shot').captureRef | null = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  captureRef = require('react-native-view-shot').captureRef;
+} catch {
+  // RNViewShot not available in Expo Go
+}
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Crypto from 'expo-crypto';
@@ -232,7 +239,7 @@ export default function PhotoEditorScreen(): React.ReactElement {
   // ── Save handler ─────────────────────────────────────────────────────────────
 
   const handleSave = useCallback(async (): Promise<void> => {
-    if (!photoId || !viewShotRef.current || isSaving) return;
+    if (!photoId || !viewShotRef.current || isSaving || !captureRef) return;
     setIsSaving(true);
 
     try {

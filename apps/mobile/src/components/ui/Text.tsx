@@ -1,8 +1,8 @@
 import React from 'react';
-import { Text as RNText, TextProps as RNTextProps, StyleSheet } from 'react-native';
+import { Text as RNText, TextProps as RNTextProps, StyleSheet, Platform } from 'react-native';
 import { Colors } from '@/constants/theme';
 
-type TextVariant = 'heading1' | 'heading2' | 'heading3' | 'body' | 'bodySmall' | 'caption' | 'label';
+type TextVariant = 'heading1' | 'heading2' | 'heading3' | 'body' | 'bodySmall' | 'caption' | 'label' | 'mono';
 
 interface TextProps extends RNTextProps {
   variant?: TextVariant;
@@ -62,5 +62,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     lineHeight: 20,
+  },
+  mono: {
+    fontSize: 14,
+    fontWeight: '500',
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    letterSpacing: 0.5,
+    color: Colors.textSecondary,
   },
 });

@@ -5,16 +5,21 @@ import { Platform } from 'react-native';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth.store';
 
-// Configure foreground notification behaviour once at module level
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// Configure foreground notification behaviour once at module level.
+// Wrapped in try-catch because Expo Go doesn't include the native module.
+try {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+} catch {
+  // ExpoPushTokenManager not available (Expo Go) — push disabled
+}
 
 interface PushTokenResponse {
   detail: string;
@@ -33,17 +38,20 @@ export function usePushNotifications(): void {
   useEffect(() => {
     if (authToken == null) return;
 
-    void registerForPushNotifications();
+    try {
+      void registerForPushNotifications();
 
-    // Listener para notificações recebidas em foreground
-    listenerRef.current = Notifications.addNotificationReceivedListener((notification: Notifications.Notification) => {
-      // Notificação recebida enquanto o app está aberto — já exibida pelo handler acima
-      const { title, body } = notification.request.content;
-      if (__DEV__) {
-        // eslint-disable-next-line no-console
-        console.log('[PushNotifications] foreground:', { title, body });
-      }
-    });
+      // Listener para notificações recebidas em foreground
+      listenerRef.current = Notifications.addNotificationReceivedListener((notification: Notifications.Notification) => {
+        const { title, body } = notification.request.content;
+        if (__DEV__) {
+          // eslint-disable-next-line no-console
+          console.log('[PushNotifications] foreground:', { title, body });
+        }
+      });
+    } catch {
+      // Native module not available (Expo Go) — skip
+    }
 
     return () => {
       listenerRef.current?.remove();
