@@ -53,6 +53,8 @@ import {
   TrendingUp,
   Handshake,
   UserSearch,
+  ShoppingCart,
+  FileCheck,
   type LucideIcon,
 } from "lucide-react";
 import { ROLE_HIERARCHY, type PaddockRole } from "@paddock/types";
@@ -225,6 +227,21 @@ const NAV_SECTIONS: NavSection[] = [
           { id: "est-contagens",    label: "Contagens",         href: "/estoque/contagens",          icon: ClipboardList },
           { id: "est-nfe",          label: "NF-e de Entrada",   href: "/estoque/nfe-recebida",       icon: FileText },
           { id: "est-categorias",   label: "Categorias",        href: "/estoque/categorias",         icon: Tag },
+        ],
+      },
+    ],
+  },
+  {
+    label: "COMPRAS",
+    items: [
+      {
+        id: "compras",
+        label: "Compras",
+        icon: ShoppingCart,
+        href: "/compras",
+        children: [
+          { id: "cmp-pedidos", label: "Pedidos de Compra", href: "/compras", icon: ShoppingCart },
+          { id: "cmp-ordens", label: "Ordens de Compra", href: "/compras/ordens", icon: FileCheck },
         ],
       },
     ],
