@@ -35,3 +35,4 @@ export * from "./capacidade.types";
 export * from "./budget.types";
 export * from "./fiscal.types";
 export * from "./documents.types";
+export * from "./purchasing.types";

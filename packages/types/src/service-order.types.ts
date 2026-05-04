@@ -125,6 +125,15 @@ export interface ServiceOrderPart {
   unit_price: string;
   discount: string;
   total: number;
+  origem: "estoque" | "compra" | "seguradora" | "manual";
+  origem_display: string;
+  tipo_qualidade: string;
+  tipo_qualidade_display: string;
+  status_peca: string;
+  status_peca_display: string;
+  custo_real: string | null;
+  unidade_fisica_id: string | null;
+  pedido_compra: string | null;
   created_at: string;
   updated_at: string;
 }
