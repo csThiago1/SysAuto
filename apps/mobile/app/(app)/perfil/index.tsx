@@ -5,6 +5,8 @@ import { Colors, Spacing } from '@/constants/theme';
 import { Text } from '@/components/ui/Text';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { InfoRow } from '@/components/ui/InfoRow';
+import { SectionDivider } from '@/components/ui/SectionDivider';
 import { useAuth } from '@/hooks/useAuth';
 
 const ROLE_LABELS: Record<string, string> = {
@@ -45,35 +47,24 @@ export default function PerfilScreen() {
         </View>
 
         {/* Informacoes */}
+        <SectionDivider label="DADOS PESSOAIS" />
         <Card style={styles.infoCard}>
-          <View style={styles.infoRow}>
-            <Text variant="label" color={Colors.textTertiary}>
-              Função
-            </Text>
-            <Text variant="body">
-              {user?.role ? (ROLE_LABELS[user.role] ?? user.role) : '—'}
-            </Text>
-          </View>
-
-          <View style={styles.divider} />
-
-          <View style={styles.infoRow}>
-            <Text variant="label" color={Colors.textTertiary}>
-              Empresa
-            </Text>
-            <Text variant="body">DS Car</Text>
-          </View>
-
-          <View style={styles.divider} />
-
-          <View style={styles.infoRow}>
-            <Text variant="label" color={Colors.textTertiary}>
-              Ambiente
-            </Text>
-            <Text variant="body" color={__DEV__ ? Colors.warning : Colors.success}>
-              {__DEV__ ? 'Desenvolvimento' : 'Produção'}
-            </Text>
-          </View>
+          <InfoRow
+            label="Função"
+            value={user?.role ? (ROLE_LABELS[user.role] ?? user.role) : '—'}
+            icon="person-outline"
+          />
+          <InfoRow
+            label="Empresa"
+            value="DS Car"
+            icon="business-outline"
+          />
+          <InfoRow
+            label="Ambiente"
+            value={__DEV__ ? 'Desenvolvimento' : 'Produção'}
+            icon="globe-outline"
+            noDivider
+          />
         </Card>
 
         <View style={styles.actions}>
@@ -122,16 +113,6 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     gap: 0,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: Spacing.md,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: Colors.inputBg,
   },
   actions: {
     marginTop: Spacing.sm,
