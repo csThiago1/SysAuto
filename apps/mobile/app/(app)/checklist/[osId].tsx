@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, Radii, Spacing } from '@/constants/theme';
+import { Colors, Radii, Spacing, Typography } from '@/constants/theme';
 
 import { Text } from '@/components/ui/Text';
 import { PhotoSlotGrid } from '@/components/checklist/PhotoSlotGrid';
@@ -335,6 +335,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   tabLabelActive: {
+    ...Typography.labelMono,
     color: Colors.brand,
     fontWeight: '700',
   },
