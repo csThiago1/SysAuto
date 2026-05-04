@@ -7,36 +7,14 @@ import { ServiceOrder } from '@/db/models/ServiceOrder';
 import { Text } from '@/components/ui/Text';
 import { OSStatusBadge } from './OSStatusBadge';
 import type { InsurerOption } from '@/hooks/useInsurers';
-import { Colors, Radii, Shadow, Spacing } from '@/constants/theme';
+import { OS_STATUS_MAP, Colors, Radii, Shadow, Spacing, type OSStatus } from '@/constants/theme';
+import { MonoLabel } from '@/components/ui/MonoLabel';
 
 interface OSCardProps {
   order: ServiceOrder;
   insurer?: InsurerOption;
 }
 
-const STATUS_BORDER_COLOR: Record<string, string> = {
-  reception:      '#3b82f6',
-  initial_survey: '#6d28d9',
-  budget:         '#f59e0b',
-  waiting_auth:   '#ea580c',
-  authorized:     '#059669',
-  waiting_parts:  '#64748b',
-  repair:         '#0e7490',
-  mechanic:       '#0369a1',
-  bodywork:       '#d97706',
-  painting:       '#7c3aed',
-  assembly:       '#d97706',
-  polishing:      '#0e7490',
-  washing:        '#0891b2',
-  final_survey:   '#6d28d9',
-  ready:          '#16a34a',
-  delivered:      '#94a3b8',
-  cancelled:      '#ef4444',
-};
-
-function getLeftBorderColor(status: string): string {
-  return STATUS_BORDER_COLOR[status] ?? '#94a3b8';
-}
 
 function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
   const router = useRouter();
@@ -47,7 +25,7 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
 
   const plateLine = order.vehiclePlate ? order.vehiclePlate.toUpperCase() : '—';
   const vehicleLine = [order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ');
-  const borderColor = getLeftBorderColor(order.status);
+  const borderColor = OS_STATUS_MAP[order.status as OSStatus]?.color ?? '#94a3b8';
 
   return (
     <TouchableOpacity
@@ -82,9 +60,9 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
 
           {/* Right: OS number on top, insurer avatar below */}
           <View style={styles.rightCol}>
-            <Text variant="label" style={styles.osNumber}>
-              OS #{order.number}
-            </Text>
+            <MonoLabel variant="accent" size="sm">
+              {`OS #${order.number}`}
+            </MonoLabel>
             {insurer != null && (
               insurer.logoUrl ? (
                 // Wrapper externo carrega a sombra (overflow visible).
@@ -173,11 +151,6 @@ const styles = StyleSheet.create({
   },
   badgeRow: {
     marginTop: 2,
-  },
-  osNumber: {
-    color: Colors.textSecondary,
-    fontSize: 11,
-    fontWeight: '600',
   },
   plateBadge: {
     alignSelf: 'flex-start',
