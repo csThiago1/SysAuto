@@ -13,6 +13,8 @@ import { useServiceOrdersList } from '@/hooks/useServiceOrders';
 import { ServiceOrder } from '@/db/models/ServiceOrder';
 import { OSCard } from '@/components/os/OSCard';
 import { Text } from '@/components/ui/Text';
+import { SemanticBadge } from '@/components/ui/SemanticBadge';
+import { SectionDivider } from '@/components/ui/SectionDivider';
 
 // ─── MMKV storage (module-level — never recreated on render) ─────────────────
 // MMKV requer JSI nativo — não disponível no Expo Go. Fallback in-memory.
@@ -178,11 +180,8 @@ export default function BuscaScreen(): React.JSX.Element {
   // ── Offline badge ──────────────────────────────────────────────────────────
 
   const offlineBadge = isOffline ? (
-    <View style={styles.offlineBadge}>
-      <Text variant="caption" color="#92400e">
-        Offline — resultados locais
-      </Text>
-
+    <View style={{ paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm }}>
+      <SemanticBadge variant="warning" label="Offline — resultados locais" icon="cloud-offline-outline" />
     </View>
   ) : null;
 
@@ -239,9 +238,7 @@ export default function BuscaScreen(): React.JSX.Element {
         <View style={styles.historyContainer}>
           {history.length > 0 ? (
             <>
-              <Text variant="label" color={Colors.textSecondary} style={styles.sectionTitle}>
-                Buscas recentes
-              </Text>
+              <SectionDivider label="RECENTES" />
               <FlatList
                 data={history}
                 keyExtractor={historyKeyExtractor}
@@ -317,24 +314,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // Offline badge
-  offlineBadge: {
-    marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.sm,
-    backgroundColor: '#fef3c7',
-    borderRadius: Radii.sm,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 6,
-    alignSelf: 'flex-start',
-  },
   // History
   historyContainer: {
     flex: 1,
-  },
-  sectionTitle: {
-    marginHorizontal: Spacing.lg,
-    marginTop: Spacing.sm,
-    marginBottom: 4,
   },
   historyList: {
     paddingHorizontal: Spacing.lg,
