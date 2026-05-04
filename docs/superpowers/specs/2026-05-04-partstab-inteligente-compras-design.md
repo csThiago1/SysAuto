@@ -4,6 +4,12 @@
 **Módulo:** `apps.service_orders` (PartsTab reescrita) + `apps.purchasing` (novo app)
 **Escopo:** Redesign da aba Peças da OS com integração ao estoque, pedido de compra automático, ordem de compra com aprovação financeira, tipagem de peça, e análise de margem inline.
 
+**Regras de negócio críticas:**
+- Faturamento SEMPRE no preço do orçamento — nunca no custo real
+- Margem (custo vs cobrado) é informação interna (MANAGER+ apenas)
+- Sem frete na OC — valor é só peça
+- Peças de seguradora vêm da importação do orçamento (Cilia/XML) — modal manual só para complementos
+
 ---
 
 ## 1. Contexto e Problema
@@ -35,7 +41,9 @@ Consultor solicita na OS → Pedido de Compra criado → Compras cota → Monta 
 
 **Fluxo C — Seguradora fornece:**
 ```
-Consultor registra na OS → Status "Aguardando Recebimento" → Peça chega → Entrada no estoque → Vincula → Bloqueada
+Orçamento importado (Cilia/XML) → Peças de fornecimento já entram na OS automaticamente
+→ Status "Aguardando Recebimento" → Peça chega → Entrada no estoque → Vincula → Bloqueada
+Complemento: consultor pode adicionar manualmente peças de seguradora que não vieram no orçamento original
 ```
 
 **Fluxo D — Misto numa mesma OS:**
@@ -150,8 +158,10 @@ Item individual na OC — vincula peça + fornecedor.
 | `quantidade` | DecimalField | |
 | `valor_unitario` | DecimalField | Preço negociado com fornecedor |
 | `valor_total` | DecimalField | qty × unit (computed no save) |
-| `prazo_entrega` | CharField(100, blank) | "3 dias úteis" |
+| `prazo_entrega` | CharField(100, blank) | "3 dias úteis" (informativo) |
 | `observacoes` | TextField(blank) | |
+
+**Nota:** Sem campo de frete — valor é exclusivamente da peça.
 
 **Indexes:** `[ordem_compra]`, `[fornecedor]`
 
@@ -268,7 +278,7 @@ Substitui completamente a aba Peças da OS.
 **Modais:**
 - "Do Estoque" → busca com filtros (nome/SKU/tipo/categoria) + disponibilidade + posição + selecionar → bloqueia
 - "Comprar" → formulário: descrição, código, tipo_qualidade, valor cobrado, quantidade, observações → gera pedido
-- "Seguradora Fornece" → formulário mínimo: descrição, tipo_qualidade, valor cobrado → registra
+- "Seguradora Fornece" → só para complementos manuais (peças que não vieram na importação). Formulário mínimo: descrição, tipo_qualidade, valor cobrado. Peças importadas entram automaticamente com dados do orçamento.
 
 ### 7.2 — Página /compras (Painel do Setor de Compras)
 
@@ -382,6 +392,9 @@ Cores específicas deste módulo:
 | PC-6 | custo_real só é preenchido quando peça física chega — nunca antes |
 | PC-7 | Fornecedor pode ser ad-hoc (campos desnormalizados) ou cadastrado (FK Fornecedor) |
 | PC-8 | tipo_qualidade é obrigatório em toda peça — na OS e na OC |
+| PC-9 | Faturamento SEMPRE no preço do orçamento — NUNCA no custo real |
+| PC-10 | Sem frete na OC — valor é exclusivamente da peça |
+| PC-11 | Peças de seguradora entram via importação (Cilia/XML) — modal manual só para complementos |
 
 ---
 
