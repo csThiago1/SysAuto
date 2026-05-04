@@ -11,7 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Colors, Radii, Spacing } from '@/constants/theme';
+import { Colors, Radii, Spacing, SemanticColors } from '@/constants/theme';
 import {
   useCalendar,
   buildAgendaEventsMap,
@@ -240,6 +240,7 @@ function EventCard({
 }): React.JSX.Element {
   const isEntry = event.type === 'entry';
   const color = isEntry ? Colors.info : Colors.success;
+  const semantic = isEntry ? SemanticColors.info : SemanticColors.success;
   const label = isEntry ? 'Entrada' : 'Entrega';
   const vehicle =
     [event.os.make, event.os.model].filter(Boolean).join(' ') || event.os.plate;
@@ -250,7 +251,7 @@ function EventCard({
       <View style={styles.eventContent}>
         <View style={styles.eventTopRow}>
           <Text style={styles.eventOS}>OS #{event.os.number}</Text>
-          <View style={[styles.typeBadge, { backgroundColor: `${color}22` }]}>
+          <View style={[styles.typeBadge, { backgroundColor: semantic.bg }]}>
             <Text style={[styles.typeBadgeText, { color }]}>{label}</Text>
           </View>
           {event.timeStr && (
