@@ -7,6 +7,10 @@ import type {
   ServiceOrderLabor,
   ServiceOrderLaborPayload,
   AnyDashboardStats,
+  PartEstoqueInput,
+  PartCompraInput,
+  PartSeguradoraInput,
+  PecaEstoqueResult,
 } from "@paddock/types";
 import { apiFetch } from "@/lib/api";
 
@@ -111,6 +115,69 @@ export function useDeleteOSPart(osId: string) {
     },
   });
 }
+
+// ─── 3 Origin Hooks (Estoque / Compra / Seguradora) ─────────────────────────
+
+export function useAddPartEstoque(osId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: PartEstoqueInput) =>
+      apiFetch(`${API}/service-orders/${osId}/parts/estoque/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["service-order", osId, "parts"] });
+      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
+    },
+  });
+}
+
+export function useAddPartCompra(osId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: PartCompraInput) =>
+      apiFetch(`${API}/service-orders/${osId}/parts/compra/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["service-order", osId, "parts"] });
+      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
+    },
+  });
+}
+
+export function useAddPartSeguradora(osId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: PartSeguradoraInput) =>
+      apiFetch(`${API}/service-orders/${osId}/parts/seguradora/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["service-order", osId, "parts"] });
+      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
+    },
+  });
+}
+
+// ─── Buscar Pecas no Estoque ─────────────────────────────────────────────────
+
+export function useBuscarPecas(params?: Record<string, string>) {
+  const search = params ? "?" + new URLSearchParams(params).toString() : ""
+  return useQuery<PecaEstoqueResult[]>({
+    queryKey: ["inventory", "buscar-pecas", params],
+    queryFn: () => apiFetch<PecaEstoqueResult[]>(`/api/proxy/inventory/buscar-pecas/${search}`),
+    enabled: !!params?.busca && params.busca.length >= 2,
+  })
+}
+
+// ─── OS Labor ────────────────────────────────────────────────────────────────
 
 export function useOSLabor(osId: string) {
   return useQuery<ServiceOrderLabor[]>({
