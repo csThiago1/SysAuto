@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { Colors, Radii, Spacing } from '@/constants/theme';
+import { Colors, Radii, Spacing, SemanticColors } from '@/constants/theme';
 import {
   useNotificationFeed,
   type NotificationFeedItem,
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: `${Colors.warning}1a`,
+    backgroundColor: SemanticColors.warning.bg,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: Radii.full,
