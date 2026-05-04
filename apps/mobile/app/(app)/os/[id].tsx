@@ -15,7 +15,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
 import { Card } from '@/components/ui/Card';
-import { Colors, Radii, Spacing, Shadow } from '@/constants/theme';
+import { Colors, Radii, Spacing, Shadow, SemanticColors } from '@/constants/theme';
+import { SectionDivider } from '@/components/ui/SectionDivider';
 import { Button } from '@/components/ui/Button';
 import { OSDetailHeader } from '@/components/os/OSDetailHeader';
 import { getStatusLabel, getStatusColor, getStatusBackgroundColor } from '@/components/os/OSStatusBadge';
@@ -402,8 +403,9 @@ interface VistoriaCTACardProps {
 function VistoriaCTACard({ type, osId }: VistoriaCTACardProps): React.JSX.Element {
   const router = useRouter();
   const isEntrada = type === 'entrada';
-  const bg = isEntrada ? 'rgba(59, 130, 246, 0.10)' : 'rgba(22, 163, 74, 0.10)';
-  const borderColor = isEntrada ? 'rgba(59, 130, 246, 0.28)' : 'rgba(22, 163, 74, 0.28)';
+  const semantic = isEntrada ? SemanticColors.info : SemanticColors.success;
+  const bg = semantic.bg;
+  const borderColor = semantic.border;
   const color = isEntrada ? Colors.info : Colors.success;
   const icon: React.ComponentProps<typeof Ionicons>['name'] = isEntrada ? 'search-outline' : 'checkmark-done-outline';
   const title = isEntrada ? 'Iniciar Vistoria de Entrada' : 'Iniciar Vistoria de Saída';
@@ -760,7 +762,7 @@ export default function OSDetailScreen(): React.JSX.Element {
         )}
 
         {/* ── Secao 1: Dados Gerais ─────────────────────────────────────── */}
-        <SectionHeader title="Dados Gerais" />
+        <SectionDivider label="DADOS GERAIS" />
         <Card style={styles.card}>
           <InfoRow label="Cliente" value={order.customer_name} />
           <InfoRow
@@ -820,7 +822,7 @@ export default function OSDetailScreen(): React.JSX.Element {
         {/* ── Secao 3: Outras Fotos ──────────────────────────────────────── */}
         {photoGroups.length > 0 && (
           <>
-            <SectionHeader title="Fotos" />
+            <SectionDivider label="FOTOS" />
             <Card style={styles.card} padded={false}>
               {photoGroups.map(([folder, photos]) => (
                 <PhotoGroup
@@ -837,7 +839,7 @@ export default function OSDetailScreen(): React.JSX.Element {
         {/* ── Secao 4: Peças e Serviços ─────────────────────────────────── */}
         {hasItems && (
           <>
-            <SectionHeader title="Peças e Serviços" />
+            <SectionDivider label="PEÇAS E SERVIÇOS" />
             <Card style={styles.card}>
               {hasParts && (
                 <>
@@ -885,7 +887,7 @@ export default function OSDetailScreen(): React.JSX.Element {
         {/* ── Secao 5: Historico ────────────────────────────────────────── */}
         {hasHistory && (
           <>
-            <SectionHeader title="Histórico de Status" />
+            <SectionDivider label="HISTÓRICO" />
             <Card style={styles.card}>
               {order.transition_logs!.map((log) => (
                 <TransitionLogItem key={log.id} log={log} />
@@ -1191,13 +1193,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   progressChipOk: {
-    backgroundColor: 'rgba(22,163,74,0.15)',
+    backgroundColor: SemanticColors.success.bg,
   },
   progressChipAttention: {
-    backgroundColor: 'rgba(245,158,11,0.15)',
+    backgroundColor: SemanticColors.warning.bg,
   },
   progressChipCritical: {
-    backgroundColor: 'rgba(239,68,68,0.15)',
+    backgroundColor: SemanticColors.error.bg,
   },
   // Vistoria CTA card
   vstCardWrapper: {
