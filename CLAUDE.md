@@ -1259,6 +1259,45 @@ Nenhuma sprint ativa no momento.
 
 ## 📦 Sprints Entregues
 
+### PartsTab Inteligente + Módulo de Compras — Maio 2026 ✅
+**Redesign da aba Peças da OS com integração ao estoque + fluxo completo de compras com aprovação financeira**
+
+Backend (app `apps.purchasing` TENANT_APP + extensão `apps.service_orders`):
+- **ServiceOrderPart expandido**: campos `origem` (estoque/compra/seguradora/manual), `tipo_qualidade` (genuína/reposição/similar/usada), `status_peca` (8 estados), `unidade_fisica` FK, `pedido_compra` FK, `custo_real`
+- **PedidoCompra**: solicitação individual (1 peça, 1 OS), status solicitado→em_cotacao→oc_pendente→aprovado→comprado→recebido
+- **OrdemCompra**: documento agrupador por OS (PC-4: uma OC por OS), múltiplos fornecedores, número OC-{year}-{seq:04d}, aprovação atômica MANAGER+ (PC-5)
+- **ItemOrdemCompra**: item na OC, fornecedor ad-hoc ou cadastrado (PC-7), sem frete (PC-10)
+- **Services**: `PedidoCompraService` (solicitar, iniciar_cotacao, cancelar) + `OrdemCompraService` (criar, adicionar_item, remover_item, enviar, aprovar, rejeitar, registrar_recebimento)
+- **Endpoints**: 3 origens na OS (parts/estoque/, parts/compra/, parts/seguradora/), buscar-pecas/, CRUD pedidos+OC+itens, dashboard-stats
+- **13 testes**: models + services (PC-1/2/3/4/5/6 validados)
+
+Frontend (dscar-web):
+- **PartsTab reescrita**: 3 botões de origem, tabela com tipo/origem/status/custo/margem, 4 cards resumo
+- **3 modais**: EstoqueBuscaModal (busca+bloqueio), CompraFormModal (gera pedido), SeguradoraFormModal (complemento PC-11)
+- **3 badges**: TipoQualidadeBadge, OrigemBadge, StatusPecaBadge
+- **Painel /compras**: KPIs (solicitados/cotação/aprovação/aprovadas) + tabela pedidos pendentes
+- **Detalhe OC**: itens agrupados por fornecedor, total, aprovação MANAGER+
+- **Sidebar**: seção COMPRAS (Pedidos + Ordens de Compra)
+- **17 hooks** TanStack Query (usePurchasing + useServiceOrders expandido)
+
+**Spec**: `docs/superpowers/specs/2026-05-04-partstab-inteligente-compras-design.md`
+**Plano**: `docs/superpowers/plans/2026-05-04-partstab-inteligente-compras.md`
+
+**Padrões estabelecidos:**
+- PC-1: `origem` imutável após criação — PATCH rejeita alteração
+- PC-2: Bloqueio de estoque imediato ao adicionar do estoque
+- PC-3: Remover peça SEMPRE libera estoque se bloqueada
+- PC-4: Uma OC por OS (múltiplos fornecedores dentro)
+- PC-5: Aprovação da OC é atômica — tudo ou nada
+- PC-6: `custo_real` só preenchido quando peça física chega — nunca na aprovação
+- PC-7: Fornecedor pode ser ad-hoc (campos desnormalizados) ou cadastrado (FK)
+- PC-8: `tipo_qualidade` obrigatório em toda peça
+- PC-9: Faturamento SEMPRE no preço do orçamento — NUNCA no custo real
+- PC-10: Sem frete na OC — valor é só peça
+- PC-11: Peças seguradora entram via importação — modal manual só para complementos
+
+---
+
 ### WMS Estoque Físico Completo — Maio 2026 ✅
 **Módulo completo de gestão de estoque: localização física, produto comercial, movimentação auditável, contagem de inventário, análise de margem na OS**
 
