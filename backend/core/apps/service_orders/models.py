@@ -628,6 +628,60 @@ class ServiceOrderPart(PaddockBaseModel):
     unit_price = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Preço unitário")
     discount = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Desconto")
 
+    # --- Campos WMS / Compras ---
+    class Origem(models.TextChoices):
+        ESTOQUE = "estoque", "Estoque"
+        COMPRA = "compra", "Compra"
+        SEGURADORA = "seguradora", "Seguradora"
+        MANUAL = "manual", "Manual"
+
+    class TipoQualidade(models.TextChoices):
+        GENUINA = "genuina", "Genuína"
+        REPOSICAO = "reposicao", "Reposição Original"
+        SIMILAR = "similar", "Similar/Paralela"
+        USADA = "usada", "Usada/Recondicionada"
+
+    class StatusPeca(models.TextChoices):
+        BLOQUEADA = "bloqueada", "Bloqueada no estoque"
+        AGUARDANDO_COTACAO = "aguardando_cotacao", "Aguardando Cotação"
+        EM_COTACAO = "em_cotacao", "Em Cotação"
+        AGUARDANDO_APROVACAO = "aguardando_aprovacao", "Aguardando Aprovação"
+        COMPRADA = "comprada", "Comprada — Aguardando Entrega"
+        RECEBIDA = "recebida", "Recebida e Bloqueada"
+        AGUARDANDO_SEGURADORA = "aguardando_seguradora", "Aguardando Seguradora"
+        MANUAL = "manual", "Adicionada manualmente"
+
+    origem = models.CharField(
+        max_length=15,
+        choices=Origem.choices,
+        default=Origem.MANUAL,
+    )
+    tipo_qualidade = models.CharField(
+        max_length=15,
+        choices=TipoQualidade.choices,
+        blank=True,
+        default="",
+    )
+    status_peca = models.CharField(
+        max_length=25,
+        choices=StatusPeca.choices,
+        default=StatusPeca.MANUAL,
+    )
+    unidade_fisica = models.ForeignKey(
+        "inventory.UnidadeFisica",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="os_parts_wms",
+    )
+    custo_real = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Custo real (valor_nf). PC-6: só preenchido quando peça chega.",
+    )
+
     class Meta:
         db_table = "service_orders_part"
         ordering = ["created_at"]
