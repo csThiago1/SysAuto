@@ -12,7 +12,7 @@ import { Text } from '@/components/ui/Text';
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { useVehicleByPlate } from '@/hooks/useVehicleByPlate';
 import { useNewOSStore } from '@/stores/new-os.store';
-import { Colors, Radii } from '@/constants/theme';
+import { Colors, Radii, SemanticColors } from '@/constants/theme';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -78,7 +78,7 @@ export function Step1Vehicle({ onNext }: Step1VehicleProps): React.JSX.Element {
       {/* Offline banner */}
       {!isOnline && (
         <View style={styles.offlineBanner}>
-          <Text variant="bodySmall" color="#92400e">
+          <Text variant="bodySmall" color={SemanticColors.warning.color}>
             Modo offline — preencha manualmente
           </Text>
         </View>
@@ -215,11 +215,11 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   offlineBanner: {
-    backgroundColor: '#fef3c7',
+    backgroundColor: SemanticColors.warning.bg,
     borderRadius: 8,
     padding: 10,
     borderWidth: 1,
-    borderColor: '#fbbf24',
+    borderColor: SemanticColors.warning.border,
   },
   input: {
     backgroundColor: Colors.inputBg,
