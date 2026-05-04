@@ -12,7 +12,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Colors, Radii, Spacing } from '@/constants/theme';
+import { Colors, Radii, Spacing, SemanticColors } from '@/constants/theme';
+import { SectionDivider } from '@/components/ui/SectionDivider';
 import { Text } from '@/components/ui/Text';
 import { PhotoSlotGrid } from '@/components/checklist/PhotoSlotGrid';
 import { ItemChecklistGrid } from '@/components/checklist/ItemChecklistGrid';
@@ -228,6 +229,7 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
 
         {activeTab === 'obs' && (
           <View style={styles.obsContainer}>
+            <SectionDivider label="OBSERVAÇÕES" />
             <Text variant="label" color={Colors.textSecondary} style={styles.obsLabel}>
               Observações Gerais da Vistoria
             </Text>
@@ -354,7 +356,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   vistoriaBadge: {
-    backgroundColor: 'rgba(59, 130, 246, 0.15)',
+    backgroundColor: SemanticColors.info.bg,
+    borderWidth: 1,
+    borderColor: SemanticColors.info.border,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 20,
@@ -362,7 +366,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   vistoriaBadgeText: {
-    color: '#60a5fa',
+    color: SemanticColors.info.color,
     fontWeight: '700',
   },
 
