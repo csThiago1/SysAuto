@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Colors, Radii, Spacing } from '@/constants/theme';
+import { Colors, Radii, Spacing, SemanticColors } from '@/constants/theme';
 
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { useCreateServiceOrder, type CreateOSPayload } from '@/hooks/useCreateServiceOrder';
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
-    backgroundColor: 'rgba(245,158,11,0.15)',
+    backgroundColor: SemanticColors.warning.bg,
   },
   stepContainer: {
     flex: 1,
