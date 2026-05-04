@@ -237,21 +237,69 @@ class ServiceOrderPartSerializer(_LineItemValidationMixin, serializers.ModelSeri
 
     total = serializers.FloatField(read_only=True)
     product_name = serializers.SerializerMethodField()
+    origem = serializers.CharField(read_only=True)
+    origem_display = serializers.CharField(source="get_origem_display", read_only=True)
+    tipo_qualidade = serializers.CharField(read_only=True)
+    tipo_qualidade_display = serializers.CharField(source="get_tipo_qualidade_display", read_only=True)
+    status_peca = serializers.CharField(read_only=True)
+    status_peca_display = serializers.CharField(source="get_status_peca_display", read_only=True)
+    custo_real = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True, allow_null=True)
+    unidade_fisica_id = serializers.UUIDField(source="unidade_fisica.id", read_only=True, allow_null=True, default=None)
 
     class Meta:
         model = ServiceOrderPart
         fields = [
             "id", "product", "product_name", "description", "part_number",
             "quantity", "unit_price", "discount", "total",
+            "origem", "origem_display",
+            "tipo_qualidade", "tipo_qualidade_display",
+            "status_peca", "status_peca_display",
+            "custo_real", "unidade_fisica_id",
             "created_at", "updated_at",
         ]
-        read_only_fields = ["id", "product_name", "total", "created_at", "updated_at"]
+        read_only_fields = [
+            "id", "product_name", "total",
+            "origem", "origem_display",
+            "tipo_qualidade", "tipo_qualidade_display",
+            "status_peca", "status_peca_display",
+            "custo_real", "unidade_fisica_id",
+            "created_at", "updated_at",
+        ]
 
     def get_product_name(self, obj: ServiceOrderPart) -> str | None:
         """Retorna o nome do produto vinculado, se houver."""
         if obj.product:
             return obj.product.name
         return None
+
+
+class PartEstoqueInputSerializer(serializers.Serializer):
+    """Input para adicionar peça do estoque à OS."""
+
+    unidade_fisica_id = serializers.UUIDField()
+    tipo_qualidade = serializers.ChoiceField(choices=["genuina", "reposicao", "similar", "usada"])
+    unit_price = serializers.DecimalField(max_digits=12, decimal_places=2, help_text="Valor cobrado ao cliente — PC-9")
+    description = serializers.CharField(max_length=300, required=False, default="")
+
+
+class PartCompraInputSerializer(serializers.Serializer):
+    """Input para solicitar compra de peça para OS."""
+
+    description = serializers.CharField(max_length=300)
+    part_number = serializers.CharField(max_length=100, required=False, default="")
+    tipo_qualidade = serializers.ChoiceField(choices=["genuina", "reposicao", "similar", "usada"])
+    unit_price = serializers.DecimalField(max_digits=12, decimal_places=2, help_text="Valor cobrado — PC-9")
+    quantity = serializers.DecimalField(max_digits=10, decimal_places=2, default=1)
+    observacoes = serializers.CharField(max_length=500, required=False, default="")
+
+
+class PartSeguradoraInputSerializer(serializers.Serializer):
+    """Input para registrar peça de seguradora na OS."""
+
+    description = serializers.CharField(max_length=300)
+    tipo_qualidade = serializers.ChoiceField(choices=["genuina", "reposicao", "similar", "usada"])
+    unit_price = serializers.DecimalField(max_digits=12, decimal_places=2, help_text="Valor cobrado — PC-9")
+    quantity = serializers.DecimalField(max_digits=10, decimal_places=2, default=1)
 
 
 class ServiceOrderLaborSerializer(_LineItemValidationMixin, serializers.ModelSerializer):

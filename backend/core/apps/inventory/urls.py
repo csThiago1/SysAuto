@@ -20,6 +20,7 @@ from apps.inventory.views_location import (
 from apps.inventory.views_movement import (
     AprovacoesPendentesView,
     AprovarView,
+    BuscarPecasView,
     DashboardStatsView,
     DevolucaoView,
     EntradaLoteView,
@@ -69,6 +70,8 @@ urlpatterns = [
     path("aprovacoes/pendentes/", AprovacoesPendentesView.as_view(), name="aprovacoes-pendentes"),
     path("aprovacoes/<uuid:pk>/aprovar/", AprovarView.as_view(), name="aprovar"),
     path("aprovacoes/<uuid:pk>/rejeitar/", RejeitarView.as_view(), name="rejeitar"),
+    # Search
+    path("buscar-pecas/", BuscarPecasView.as_view(), name="buscar-pecas"),
     # Margin analysis
     path("margem-os/<uuid:os_id>/", MargemOSView.as_view(), name="margem-os"),
     # Counting item registration

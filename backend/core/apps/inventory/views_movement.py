@@ -11,6 +11,7 @@ import logging
 
 from decimal import Decimal
 
+from django.db import models as db_models
 from django.db.models import Count, Q, Sum
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -536,3 +537,56 @@ class DashboardStatsView(APIView):
             "reservadas_os": reservadas_os,
             "aprovacoes_pendentes": aprovacoes_pendentes,
         })
+
+
+class BuscarPecasView(APIView):
+    """GET /api/v1/inventory/buscar-pecas/ — busca produtos com estoque disponível."""
+
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get(self, request: Request) -> Response:
+        from apps.inventory.models_product import ProdutoComercialPeca
+
+        busca = request.query_params.get("busca", "")
+        tipo_peca = request.query_params.get("tipo_peca", "")
+        categoria = request.query_params.get("categoria", "")
+
+        qs = ProdutoComercialPeca.objects.filter(is_active=True)
+        if busca:
+            qs = qs.filter(
+                db_models.Q(nome_interno__icontains=busca)
+                | db_models.Q(sku_interno__icontains=busca)
+                | db_models.Q(codigo_fabricante__icontains=busca)
+            )
+        if tipo_peca:
+            qs = qs.filter(tipo_peca_id=tipo_peca)
+        if categoria:
+            qs = qs.filter(categoria_id=categoria)
+
+        results = []
+        for prod in qs[:50]:
+            disponivel = UnidadeFisica.objects.filter(
+                produto_peca=prod, is_active=True, status="available",
+            ).count()
+            posicao = ""
+            first_unit = UnidadeFisica.objects.filter(
+                produto_peca=prod, is_active=True, status="available",
+            ).select_related("nivel__prateleira__rua__armazem").first()
+            if first_unit and first_unit.nivel:
+                posicao = first_unit.nivel.endereco_completo
+
+            results.append({
+                "id": str(prod.id),
+                "sku_interno": prod.sku_interno,
+                "nome_interno": prod.nome_interno,
+                "codigo_fabricante": prod.codigo_fabricante,
+                "tipo_peca_nome": prod.tipo_peca.nome if prod.tipo_peca else "",
+                "categoria_nome": prod.categoria.nome if prod.categoria else "",
+                "posicao_veiculo": prod.posicao_veiculo,
+                "lado": prod.lado,
+                "estoque_disponivel": disponivel,
+                "posicao": posicao,
+                "preco_venda_sugerido": str(prod.preco_venda_sugerido) if prod.preco_venda_sugerido else None,
+            })
+
+        return Response(results)

@@ -37,6 +37,9 @@ from .serializers import (
     ChecklistItemBulkSerializer,
     ChecklistItemSerializer,
     DeliverOSSerializer,
+    PartCompraInputSerializer,
+    PartEstoqueInputSerializer,
+    PartSeguradoraInputSerializer,
     ServiceCatalogListSerializer,
     ServiceCatalogSerializer,
     ServiceOrderActivityLogSerializer,
@@ -552,6 +555,15 @@ class ServiceOrderViewSet(
             return Response({"detail": "Peça não encontrada."}, status=status.HTTP_404_NOT_FOUND)
 
         if request.method == "DELETE":
+            # PC-3: liberar estoque se bloqueada
+            if part.unidade_fisica_id:
+                try:
+                    from apps.inventory.services.reserva import ReservaUnidadeService
+
+                    ReservaUnidadeService.liberar(str(part.unidade_fisica_id))
+                except Exception:
+                    logger.warning("Não foi possível liberar unidade %s", part.unidade_fisica_id)
+
             desc = part.description
             part.delete()
             ServiceOrderActivityLog.objects.create(
@@ -561,6 +573,13 @@ class ServiceOrderViewSet(
                 description=f"Peça '{desc}' removida da OS",
             )
             return Response(status=status.HTTP_204_NO_CONTENT)
+
+        # PC-1: origem não pode ser alterada após criação
+        if "origem" in request.data:
+            return Response(
+                {"erro": "Campo 'origem' não pode ser alterado (PC-1)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if service_order.status in (
             ServiceOrderStatus.READY,
@@ -586,6 +605,121 @@ class ServiceOrderViewSet(
                 metadata={"field_changes": changes},
             )
         return Response(serializer.data)
+
+    @extend_schema(summary="Adicionar peça do estoque à OS")
+    @action(detail=True, methods=["post"], url_path="parts/estoque")
+    def parts_estoque(self, request: Request, pk: Optional[str] = None) -> Response:
+        """Adicionar peça do estoque — bloqueia imediatamente (PC-2)."""
+        os = self.get_object()
+        serializer = PartEstoqueInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        d = serializer.validated_data
+
+        try:
+            from apps.inventory.models_physical import UnidadeFisica
+            from apps.inventory.services.reserva import ReservaUnidadeService
+
+            unidade = UnidadeFisica.objects.get(
+                pk=d["unidade_fisica_id"], is_active=True, status="available",
+            )
+
+            # Reservar (bloquear) — PC-2
+            ReservaUnidadeService.reservar(
+                peca_canonica_id=str(unidade.peca_canonica_id) if unidade.peca_canonica_id else None,
+                quantidade=1,
+                ordem_servico_id=str(os.id),
+                user_id=request.user.id,
+            )
+
+            # Criar part
+            description = d.get("description") or (
+                unidade.produto_peca.nome_interno
+                if unidade.produto_peca
+                else f"Peça {unidade.codigo_barras}"
+            )
+            part = ServiceOrderPart.objects.create(
+                service_order=os,
+                description=description,
+                unit_price=d["unit_price"],
+                quantity=1,
+                origem="estoque",
+                tipo_qualidade=d["tipo_qualidade"],
+                status_peca="bloqueada",
+                unidade_fisica=unidade,
+                custo_real=unidade.valor_nf,
+                created_by=request.user,
+            )
+            return Response(ServiceOrderPartSerializer(part).data, status=status.HTTP_201_CREATED)
+        except UnidadeFisica.DoesNotExist:
+            return Response({"erro": "Peça não encontrada ou indisponível."}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error("Erro ao adicionar peça do estoque: %s", e)
+            return Response({"erro": "Erro ao adicionar peça do estoque."}, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(summary="Solicitar compra de peça para OS")
+    @action(detail=True, methods=["post"], url_path="parts/compra")
+    def parts_compra(self, request: Request, pk: Optional[str] = None) -> Response:
+        """Solicitar compra — gera PedidoCompra automaticamente."""
+        os = self.get_object()
+        serializer = PartCompraInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        d = serializer.validated_data
+
+        try:
+            part = ServiceOrderPart.objects.create(
+                service_order=os,
+                description=d["description"],
+                part_number=d.get("part_number", ""),
+                unit_price=d["unit_price"],
+                quantity=d.get("quantity", 1),
+                origem="compra",
+                tipo_qualidade=d["tipo_qualidade"],
+                status_peca="aguardando_cotacao",
+                created_by=request.user,
+            )
+            # Gerar pedido de compra
+            from apps.purchasing.services import PedidoCompraService
+
+            PedidoCompraService.solicitar(
+                service_order_part_id=part.id,
+                descricao=d["description"],
+                codigo_referencia=d.get("part_number", ""),
+                tipo_qualidade=d["tipo_qualidade"],
+                quantidade=d.get("quantity", 1),
+                valor_cobrado_cliente=d["unit_price"],
+                observacoes=d.get("observacoes", ""),
+                user_id=request.user.id,
+            )
+            part.refresh_from_db()
+            return Response(ServiceOrderPartSerializer(part).data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            logger.error("Erro ao solicitar compra: %s", e)
+            return Response({"erro": "Erro ao solicitar compra."}, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(summary="Registrar peça de seguradora na OS")
+    @action(detail=True, methods=["post"], url_path="parts/seguradora")
+    def parts_seguradora(self, request: Request, pk: Optional[str] = None) -> Response:
+        """Registrar peça de seguradora (complemento manual — PC-11)."""
+        os = self.get_object()
+        serializer = PartSeguradoraInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        d = serializer.validated_data
+
+        try:
+            part = ServiceOrderPart.objects.create(
+                service_order=os,
+                description=d["description"],
+                unit_price=d["unit_price"],
+                quantity=d.get("quantity", 1),
+                origem="seguradora",
+                tipo_qualidade=d["tipo_qualidade"],
+                status_peca="aguardando_seguradora",
+                created_by=request.user,
+            )
+            return Response(ServiceOrderPartSerializer(part).data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            logger.error("Erro ao registrar peça seguradora: %s", e)
+            return Response({"erro": "Erro ao registrar peça."}, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(summary="Listar/adicionar serviços da OS")
     @action(detail=True, methods=["get", "post"], url_path="labor")
