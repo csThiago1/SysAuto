@@ -27,6 +27,7 @@ import {
   getStatusLabel,
 } from '@/components/os/OSStatusBadge';
 import { Text } from '@/components/ui/Text';
+import { MonoLabel } from '@/components/ui/MonoLabel';
 import { Colors, Radii, Spacing, Shadow } from '@/constants/theme';
 
 
@@ -338,6 +339,13 @@ export default function OSListScreen(): React.JSX.Element {
         </View>
       )}
 
+      {/* Result count */}
+      {!isLoading && orders.length > 0 && (
+        <View style={styles.countBar}>
+          <MonoLabel size="sm">{`${orders.length} OS`}</MonoLabel>
+        </View>
+      )}
+
       {/* Order list */}
       <FlatList<ServiceOrder>
         style={styles.list}
@@ -459,6 +467,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.brand,
     borderWidth: 1.5,
     borderColor: '#fff1f1',
+  },
+
+  // Count bar
+  countBar: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: 4,
   },
 
   // Active filter label bar
