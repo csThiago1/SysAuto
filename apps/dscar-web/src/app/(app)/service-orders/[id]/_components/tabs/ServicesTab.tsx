@@ -292,6 +292,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
               <TableHeader className="bg-white/[0.03]">
                 <TableRow>
                   <TableHead>Descrição</TableHead>
+                  <TableHead>Serviço</TableHead>
                   <TableHead className="text-center">Pagador</TableHead>
                   <TableHead className="text-right">Qtd.</TableHead>
                   <TableHead className="text-right">Unit.</TableHead>
@@ -306,12 +307,31 @@ export function ServicesTab({ osId, osStatus }: Props) {
                   return (
                     <TableRow key={item.id}>
                       <TableCell className="py-2.5 px-3">
-                        <span className="font-medium text-white/90">{item.description}</span>
-                        {item.service_catalog_name && item.service_catalog_name !== item.description && (
-                          <span className="ml-1 text-xs text-white/40">
-                            ({item.service_catalog_name})
-                          </span>
-                        )}
+                        {(() => {
+                          // Parse "[Tipo] Descrição" format from imported services
+                          const match = item.description.match(/^\[(.+?)\]\s*(.+)$/)
+                          const desc = match ? match[2] : item.description
+                          return (
+                            <>
+                              <span className="font-medium text-white/90">{desc}</span>
+                              {item.service_catalog_name && item.service_catalog_name !== item.description && (
+                                <span className="ml-1 text-xs text-white/40">
+                                  ({item.service_catalog_name})
+                                </span>
+                              )}
+                            </>
+                          )
+                        })()}
+                      </TableCell>
+                      <TableCell className="py-2.5 px-3">
+                        {(() => {
+                          const match = item.description.match(/^\[(.+?)\]/)
+                          const svcType = match ? match[1] : ""
+                          if (!svcType) return <span className="text-white/30">—</span>
+                          return (
+                            <span className="text-xs text-white/60">{svcType}</span>
+                          )
+                        })()}
                       </TableCell>
                       <TableCell className="py-2.5 px-3 text-center">
                         <span

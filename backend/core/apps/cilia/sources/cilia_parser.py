@@ -174,19 +174,26 @@ class CiliaParser:
 
         return pb
 
+    # ── Mapeamento operação → label em português ────────────────────────
+    OP_LABELS: dict[str, str] = {
+        "R_I": "Remoção e Instalação",
+        "PINTURA": "Pintura",
+        "RECUPERACAO": "Reparação",
+    }
+
     # ------------------------------------------------------------------ helpers
     @classmethod
     def _parse_budgeting(
         cls, entry: dict[str, Any], hourly_rates: dict[str, str],
     ) -> list[ParsedItemDTO]:
-        """Converte um `budgetings[]` em 0-2 ParsedItemDTOs.
+        """Converte um `budgetings[]` em N ParsedItemDTOs.
 
         Lógica do centro automotivo:
-        - exchange_used=True → gera 1 item PART (peça para troca) com preço da peça
-        - Horas de MO > 0 (R&I, pintura, reparação) → gera 1 item SERVICE com
-          valor calculado = Σ(horas × tarifa) aplicando desconto global se houver
-        - Itens sem troca e sem horas (ex: BUCHAS E PRESILHAS) → gera 1 item
-          SERVICE com selling_cost como valor fixo
+        - exchange_used=True → 1 item PART com preço da peça (desconto aplicado)
+        - Cada operação com horas > 0 (R&I, pintura, reparação) → 1 item SERVICE
+          separado, com horas × tarifa. Descrição = nome da peça, external_code
+          prefixado com tipo de operação para exibir em coluna separada.
+        - Itens sem troca e sem horas → 1 item SERVICE com selling_cost fixo
         """
         items: list[ParsedItemDTO] = []
 
@@ -229,52 +236,40 @@ class CiliaParser:
                 flag_inclusao_manual=is_manual,
             ))
 
-        # ── 2. SERVIÇO (mão de obra) ─────────────────────────────────────
-        ri_hours = cls._dec(entry.get("remove_install_hours", 0))
-        paint_hours = cls._dec(entry.get("paint_hours", 0))
-        repair_hours = cls._dec(entry.get("repair_hours", 0))
-
+        # ── 2. SERVIÇOS (uma linha por operação) ─────────────────────────
         # Tarifas
         workforce_rate = cls._dec(hourly_rates.get("FUNILARIA", "0"))
         paint_rate = cls._dec(hourly_rates.get("PINTURA", "0"))
         repair_rate = cls._dec(hourly_rates.get("REPARACAO", "0"))
 
-        labor_cost = (
-            ri_hours * workforce_rate
-            + paint_hours * paint_rate
-            + repair_hours * repair_rate
-        )
+        operations = [
+            ("R_I", cls._dec(entry.get("remove_install_hours", 0)), workforce_rate),
+            ("PINTURA", cls._dec(entry.get("paint_hours", 0)), paint_rate),
+            ("RECUPERACAO", cls._dec(entry.get("repair_hours", 0)), repair_rate),
+        ]
 
-        if labor_cost > 0:
-            # Montar descrição do serviço com detalhamento das horas
-            parts_desc: list[str] = []
-            if ri_hours > 0:
-                parts_desc.append(f"R&I {ri_hours}h")
-            if paint_hours > 0:
-                parts_desc.append(f"Pintura {paint_hours}h")
-            if repair_hours > 0:
-                parts_desc.append(f"Reparação {repair_hours}h")
-            service_desc = f"{description} ({', '.join(parts_desc)})"
+        for op_type, hours, rate in operations:
+            if hours > 0:
+                op_label = cls.OP_LABELS.get(op_type, op_type)
+                items.append(ParsedItemDTO(
+                    bucket=bucket,
+                    payer_block="SEGURADORA",
+                    impact_area=impact_area,
+                    item_type="SERVICE",
+                    description=description,
+                    external_code=f"{op_type}:{external_code}",
+                    part_type=op_label,  # reutilizamos part_type p/ guardar o tipo de serviço
+                    supplier=supplier,
+                    quantity=hours,
+                    unit_price=rate,
+                    discount_pct=Decimal("0"),
+                    net_price=hours * rate,
+                    flag_inclusao_manual=is_manual,
+                ))
 
-            total_hours = ri_hours + paint_hours + repair_hours
-
-            items.append(ParsedItemDTO(
-                bucket=bucket,
-                payer_block="SEGURADORA",
-                impact_area=impact_area,
-                item_type="SERVICE",
-                description=service_desc,
-                external_code=external_code,
-                part_type="",
-                supplier=supplier,
-                quantity=total_hours,
-                unit_price=labor_cost / total_hours if total_hours else Decimal("0"),
-                discount_pct=Decimal("0"),
-                net_price=labor_cost,
-                flag_inclusao_manual=is_manual,
-            ))
-        elif not entry.get("exchange_used"):
-            # Item sem troca e sem horas — serviço com valor fixo (ex: BUCHAS, ATIVIDADE ACESSÓRIA)
+        # ── 3. Serviço com valor fixo (sem horas, sem troca) ─────────────
+        has_labor = any(h > 0 for _, h, _ in operations)
+        if not entry.get("exchange_used") and not has_labor:
             selling_cost = cls._dec(entry.get("selling_cost", 0))
             if selling_cost > 0:
                 items.append(ParsedItemDTO(
@@ -284,7 +279,7 @@ class CiliaParser:
                     item_type="SERVICE",
                     description=description,
                     external_code=external_code,
-                    part_type="",
+                    part_type="Serviço",
                     supplier=supplier,
                     quantity=Decimal("1"),
                     unit_price=selling_cost,

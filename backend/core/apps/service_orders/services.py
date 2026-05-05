@@ -716,9 +716,11 @@ class ServiceOrderService:
                     tipo_qualidade=cls._map_part_type(item.part_type),
                 )
             elif item.item_type in ("SERVICE", "EXTERNAL_SERVICE"):
+                # part_type guarda o tipo de serviço (Remoção e Instalação, Pintura, Reparação, Serviço)
+                svc_type = item.part_type or "Serviço"
                 ServiceOrderLabor.objects.create(
                     service_order=service_order,
-                    description=item.description,
+                    description=f"[{svc_type}] {item.description}",
                     quantity=item.quantity,
                     unit_price=item.unit_price,
                     discount=item.unit_price * item.quantity - item.net_price,
