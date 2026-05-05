@@ -1095,9 +1095,15 @@ class ServiceOrderViewSet(
 
     @action(detail=True, methods=["post"], url_path="import-budget")
     def import_budget(self, request: Request, pk: Optional[str] = None) -> Response:
-        """Importa orçamento via Cilia (webservice), Soma (XML) ou Audatex (HTML)."""
+        """Importa orçamento via Cilia (webservice), Soma (XML) ou Audatex (HTML).
+
+        Para Cilia: faz fetch → parse → cria versão diretamente na OS atual.
+        Para Soma/Audatex: TODO — upload de arquivo.
+        """
+        import logging
         order = self.get_object()
         source = request.data.get("source", "cilia")
+        logger = logging.getLogger(__name__)
 
         if source == "cilia":
             casualty_number = request.data.get("casualty_number", order.casualty_number)
@@ -1110,37 +1116,98 @@ class ServiceOrderViewSet(
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            from apps.cilia.dtos import ImportService
-            attempt = ImportService.fetch_cilia_budget(
-                casualty_number=casualty_number,
-                budget_number=budget_number,
-                version_number=version_number,
-                trigger="user_requested",
-                created_by=request.user.email or "user",
-            )
+            # 1. Fetch do Cilia (client → parse)
+            from apps.cilia.client import CiliaClient, CiliaError
+            from apps.cilia.sources.cilia_parser import CiliaParser
 
-            if not attempt.parsed_ok:
+            client = CiliaClient()
+            try:
+                response = client.get_budget(
+                    casualty_number=casualty_number,
+                    budget_number=budget_number,
+                    version_number=version_number,
+                )
+            except CiliaError as exc:
                 return Response(
-                    {"error": attempt.error_message, "error_type": attempt.error_type},
+                    {"error": str(exc), "error_type": "NetworkError"},
                     status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 )
 
-            version = attempt.version_created
-            versions = order.versions.order_by("-version_number")
-            if versions.count() > 1:
-                current = versions.exclude(pk=version.pk).first()
+            if response.status_code != 200:
+                return Response(
+                    {"error": f"Cilia retornou HTTP {response.status_code}", "error_type": f"HTTP{response.status_code}"},
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
+
+            # 2. Parse
+            try:
+                parsed = CiliaParser.parse(response.data)
+            except Exception as exc:
+                logger.exception("Cilia parse error")
+                return Response(
+                    {"error": f"Erro ao processar orçamento: {exc}", "error_type": "ParseError"},
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
+
+            # 3. Atualizar dados da OS com informações do Cilia (se vazios)
+            if not order.casualty_number and parsed.casualty_number:
+                order.casualty_number = parsed.casualty_number
+            if not order.plate and parsed.vehicle_plate:
+                order.plate = parsed.vehicle_plate
+            if parsed.franchise_amount:
+                order.deductible_amount = parsed.franchise_amount
+            order.save()
+
+            # 4. Criar versão via ImportAttempt + ServiceOrderService
+            from apps.cilia.models import ImportAttempt
+
+            attempt = ImportAttempt.objects.create(
+                source="cilia",
+                trigger="user_requested",
+                created_by=request.user.email or "user",
+                casualty_number=casualty_number,
+                budget_number=str(budget_number),
+                version_number=version_number,
+                http_status=response.status_code,
+                duration_ms=response.duration_ms,
+                raw_payload=response.data,
+                raw_hash=parsed.raw_hash,
+                parsed_ok=True,
+                service_order=order,
+            )
+
+            # Dedup: se já existe versão com mesmo hash, não criar nova
+            existing_version = order.versions.filter(content_hash=parsed.raw_hash).first()
+            if existing_version:
+                return Response({
+                    "action": "applied",
+                    "version": VersionDetailSerializer(existing_version).data,
+                    "message": "Versão já importada (mesmo conteúdo).",
+                })
+
+            version = ServiceOrderService.create_new_version_from_import(
+                service_order=order,
+                parsed_budget=parsed,
+                import_attempt=attempt,
+            )
+            ServiceOrderService.recalculate_version_totals(version)
+
+            # 5. Se já existia versão anterior, retornar diff
+            previous = order.versions.exclude(pk=version.pk).order_by("-version_number").first()
+            if previous:
                 diff = ServiceOrderService.compute_version_diff(
-                    current_version=current,
+                    current_version=previous,
                     new_version=version,
                     service_order=order,
                 )
                 return Response({
                     "action": "diff",
-                    "current_version": VersionDetailSerializer(current).data,
+                    "current_version": VersionDetailSerializer(previous).data,
                     "new_version": VersionDetailSerializer(version).data,
                     **diff,
                 })
 
+            # Primeira importação — aplicar direto
             ServiceOrderService.apply_version_override(
                 service_order=order, new_version=version,
                 applied_by=request.user.email or "user",
@@ -1151,31 +1218,10 @@ class ServiceOrderViewSet(
             }, status=status.HTTP_201_CREATED)
 
         elif source in ("soma", "audatex"):
-            uploaded_file = request.FILES.get("file")
-            if not uploaded_file:
-                return Response(
-                    {"error": "Arquivo é obrigatório para importação XML/HTML."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            from apps.cilia.dtos import ImportService
-            attempt = ImportService.import_xml_ifx(
-                file_content=uploaded_file.read().decode("utf-8"),
-                source=f"xml_{source}" if source == "soma" else source,
-                service_order=order,
-                created_by=request.user.email or "user",
+            return Response(
+                {"error": "Importação Soma/Audatex será implementada em breve."},
+                status=status.HTTP_501_NOT_IMPLEMENTED,
             )
-
-            if not attempt.parsed_ok:
-                return Response(
-                    {"error": attempt.error_message},
-                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                )
-
-            return Response({
-                "action": "applied",
-                "version": VersionDetailSerializer(attempt.version_created).data,
-            }, status=status.HTTP_201_CREATED)
 
         return Response(
             {"error": f"Fonte '{source}' não suportada."},
