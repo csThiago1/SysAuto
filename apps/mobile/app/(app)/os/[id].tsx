@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
   Image,
   Modal,
   ScrollView,
@@ -11,14 +10,18 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
 import { Card } from '@/components/ui/Card';
-import { Colors, Radii, Spacing, Shadow, SemanticColors } from '@/constants/theme';
+import { Colors, Radii, Spacing, SemanticColors } from '@/constants/theme';
 import { SectionDivider } from '@/components/ui/SectionDivider';
 import { Button } from '@/components/ui/Button';
-import { OSDetailHeader } from '@/components/os/OSDetailHeader';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { InfoRow } from '@/components/ui/InfoRow';
+import { MonoLabel } from '@/components/ui/MonoLabel';
+import { StatusDot } from '@/components/ui/StatusDot';
 import { getStatusLabel, getStatusColor, getStatusBackgroundColor } from '@/components/os/OSStatusBadge';
 import { useServiceOrder } from '@/hooks/useServiceOrders';
 import { useUpdateOSStatus } from '@/hooks/useUpdateOSStatus';
@@ -28,6 +31,7 @@ import { useChecklistItemsStore } from '@/stores/checklist-items.store';
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { VALID_TRANSITIONS } from '@paddock/types';
 import type { ServiceOrderStatus } from '@paddock/types';
+import type { OSStatus } from '@/constants/theme';
 
 // ─── Extended detail type (superset of what the hook returns) ─────────────────
 
@@ -79,6 +83,8 @@ interface ServiceOrderDetail {
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
+
+const TAB_NAMES = ['Geral', 'Peças', 'Serviços', 'Fotos', 'Histórico'];
 
 const FOLDER_LABELS: Record<string, string> = {
   checklist_entrada: 'Checklist de Entrada',
@@ -227,38 +233,6 @@ function LoadingSkeleton(): React.JSX.Element {
       <SkeletonBlock height={80} />
       <SkeletonBlock height={140} />
       <SkeletonBlock height={100} />
-    </View>
-  );
-}
-
-interface SectionHeaderProps {
-  title: string;
-}
-
-function SectionHeader({ title }: SectionHeaderProps): React.JSX.Element {
-  return (
-    <View style={styles.sectionHeader}>
-      <Text variant="label" color={Colors.textSecondary}>
-        {title}
-      </Text>
-    </View>
-  );
-}
-
-interface InfoRowProps {
-  label: string;
-  value: string;
-}
-
-function InfoRow({ label, value }: InfoRowProps): React.JSX.Element {
-  return (
-    <View style={styles.infoRow}>
-      <Text variant="bodySmall" color={Colors.textTertiary} style={styles.infoLabel}>
-        {label}
-      </Text>
-      <Text variant="bodySmall" color={Colors.textPrimary} style={styles.infoValue}>
-        {value}
-      </Text>
     </View>
   );
 }
@@ -594,8 +568,10 @@ const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
 export default function OSDetailScreen(): React.JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const [statusModalVisible, setStatusModalVisible] = React.useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<number>(0);
 
   // The hook returns ServiceOrderDetailAPI; we cast to ServiceOrderDetail because
   // the real API endpoint serializes photos/parts/labor_items/transition_logs.
@@ -692,207 +668,275 @@ export default function OSDetailScreen(): React.JSX.Element {
 
   const hasParts = order.parts != null && order.parts.length > 0;
   const hasLaborItems = order.labor_items != null && order.labor_items.length > 0;
-  const hasItems = hasParts || hasLaborItems;
   const hasHistory = order.transition_logs != null && order.transition_logs.length > 0;
+
+  const vehicleLine = [order.make, order.model, order.year ? String(order.year) : undefined]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']}>
-      {/* Cabecalho fixo */}
-      <OSDetailHeader
-        number={order.number}
-        status={order.status}
-        plate={order.plate}
-        make={order.make}
-        model={order.model}
-        year={order.year}
-        color={order.color}
-        onBack={handleBack}
-      />
-
-      {/* ── Botões de ação ──────────────────────────────────────────────── */}
-      <View style={styles.actionRow}>
-        {/* Avançar Status — só aparece se há transições válidas */}
-        {(VALID_TRANSITIONS[order.status as ServiceOrderStatus] ?? []).length > 0 && (
-          <TouchableOpacity
-            style={[styles.actionBtn, styles.actionBtnSecondary]}
-            onPress={() => setStatusModalVisible(true)}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="swap-horizontal-outline" size={16} color={Colors.brand} />
-            <Text variant="label" color={Colors.brand}>
-              Avançar Status
-            </Text>
+      {/* ── Compact Header ─────────────────────────────────────────────────── */}
+      <LinearGradient
+        colors={['#1c1c1e', '#141414']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={[styles.header, { paddingTop: insets.top + 8 }]}
+      >
+        {/* Top row: back + OS number */}
+        <View style={styles.headerTopRow}>
+          <TouchableOpacity onPress={handleBack} style={styles.headerBackBtn} activeOpacity={0.7}>
+            <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
           </TouchableOpacity>
-        )}
+          <MonoLabel variant="accent">{`OS #${order.number}`}</MonoLabel>
+        </View>
+        {/* Body row: plate + vehicle + status */}
+        <View style={styles.headerBodyRow}>
+          <View style={styles.headerPlateBadge}>
+            <Text style={styles.headerPlateText}>{order.plate.toUpperCase()}</Text>
+          </View>
+          <View style={styles.headerVehicleInfo}>
+            <Text variant="bodySmall" color={Colors.textSecondary} numberOfLines={1}>
+              {vehicleLine}
+            </Text>
+            <View style={styles.headerStatusRow}>
+              <StatusDot status={order.status as OSStatus} size={8} pulse />
+              <View style={[styles.headerStatusBadge, { backgroundColor: getStatusBackgroundColor(order.status) }]}>
+                <Text variant="caption" style={{ color: getStatusColor(order.status), fontWeight: '600' }}>
+                  {getStatusLabel(order.status)}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </LinearGradient>
 
-        {/* Checklist Fotográfico */}
-        <TouchableOpacity
-          style={[styles.actionBtn, styles.actionBtnPrimary, (VALID_TRANSITIONS[order.status as ServiceOrderStatus] ?? []).length > 0 && styles.actionBtnFlex]}
-          onPress={handleChecklist}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="camera-outline" size={16} color={Colors.textPrimary} />
-          <Text variant="label" color={Colors.textPrimary}>
-            Checklist
-          </Text>
-        </TouchableOpacity>
-      </View>
-      <ChecklistProgressRow
-        photoCount={photoCount}
-        ok={itemsOk}
-        attention={itemsAttention}
-        critical={itemsCritical}
+      {/* ── Segmented Control ──────────────────────────────────────────────── */}
+      <SegmentedControl
+        tabs={TAB_NAMES}
+        activeIndex={activeTab}
+        onTabChange={setActiveTab}
       />
 
+      {/* ── Tab Content ────────────────────────────────────────────────────── */}
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Vistoria CTAs ─────────────────────────────────────────────── */}
-        {order.status === 'initial_survey' && (
-          <View style={styles.vstCardWrapper}>
-            <VistoriaCTACard type="entrada" osId={osId} />
-          </View>
-        )}
-        {order.status === 'final_survey' && (
-          <View style={styles.vstCardWrapper}>
-            <VistoriaCTACard type="saida" osId={osId} />
-          </View>
-        )}
-
-        {/* ── Secao 1: Dados Gerais ─────────────────────────────────────── */}
-        <SectionDivider label="DADOS GERAIS" />
-        <Card style={styles.card}>
-          <InfoRow label="Cliente" value={order.customer_name} />
-          <InfoRow
-            label="Tipo de cliente"
-            value={CUSTOMER_TYPE_LABELS[order.customer_type] ?? order.customer_type}
-          />
-          <InfoRow
-            label="Tipo de OS"
-            value={OS_TYPE_LABELS[order.os_type] ?? order.os_type}
-          />
-          {order.consultant != null && (
-            <InfoRow label="Consultor" value={order.consultant.full_name} />
-          )}
-          <InfoRow label="Abertura" value={formatDateTime(order.opened_at)} />
-
-          <View style={styles.divider} />
-
-          <View style={styles.totalsRow}>
-            <View style={styles.totalItem}>
-              <Text variant="caption" color={Colors.textTertiary}>
-                Peças
-              </Text>
-              <Text variant="bodySmall" color={Colors.textSecondary}>
-                {formatCurrency(order.parts_total)}
-              </Text>
-            </View>
-            <View style={styles.totalItem}>
-              <Text variant="caption" color={Colors.textTertiary}>
-                Serviços
-              </Text>
-              <Text variant="bodySmall" color={Colors.textSecondary}>
-                {formatCurrency(order.services_total)}
-              </Text>
-            </View>
-            <View style={styles.totalItem}>
-              <Text variant="caption" color={Colors.textTertiary}>
-                Total
-              </Text>
-              <Text variant="label" color={Colors.textPrimary} style={styles.grandTotal}>
-                {grandTotal.toLocaleString('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL',
-                })}
-              </Text>
-            </View>
-          </View>
-        </Card>
-
-        {/* ── Secao 2: Fotos de Acompanhamento ─────────────────────────── */}
-        <AcompanhamentoSection
-          osId={osId}
-          onAddPhoto={handleAddAcompanhamento}
-          onPhotoPress={handlePhotoPress}
-          remotePhotos={acompanhamentoRemote}
-        />
-
-        {/* ── Secao 3: Outras Fotos ──────────────────────────────────────── */}
-        {photoGroups.length > 0 && (
+        {/* ── Tab Geral ──────────────────────────────────────────────────── */}
+        {activeTab === 0 && (
           <>
-            <SectionDivider label="FOTOS" />
-            <Card style={styles.card} padded={false}>
-              {photoGroups.map(([folder, photos]) => (
-                <PhotoGroup
-                  key={folder}
-                  folder={folder}
-                  photos={photos}
-                  onPhotoPress={handlePhotoPress}
-                />
-              ))}
+            {/* Action buttons */}
+            <View style={styles.actionRow}>
+              {(VALID_TRANSITIONS[order.status as ServiceOrderStatus] ?? []).length > 0 && (
+                <TouchableOpacity
+                  style={[styles.actionBtn, styles.actionBtnSecondary]}
+                  onPress={() => setStatusModalVisible(true)}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="swap-horizontal-outline" size={16} color={Colors.brand} />
+                  <Text variant="label" color={Colors.brand}>
+                    Avançar Status
+                  </Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={[styles.actionBtn, styles.actionBtnPrimary, (VALID_TRANSITIONS[order.status as ServiceOrderStatus] ?? []).length > 0 && styles.actionBtnFlex]}
+                onPress={handleChecklist}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="camera-outline" size={16} color={Colors.textPrimary} />
+                <Text variant="label" color={Colors.textPrimary}>
+                  Checklist
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <ChecklistProgressRow
+              photoCount={photoCount}
+              ok={itemsOk}
+              attention={itemsAttention}
+              critical={itemsCritical}
+            />
+
+            {/* Vistoria CTAs */}
+            {order.status === 'initial_survey' && (
+              <View style={styles.vstCardWrapper}>
+                <VistoriaCTACard type="entrada" osId={osId} />
+              </View>
+            )}
+            {order.status === 'final_survey' && (
+              <View style={styles.vstCardWrapper}>
+                <VistoriaCTACard type="saida" osId={osId} />
+              </View>
+            )}
+
+            {/* Dados Gerais */}
+            <SectionDivider label="DADOS GERAIS" />
+            <Card style={styles.card}>
+              <InfoRow label="CLIENTE" value={order.customer_name} noDivider={false} />
+              <InfoRow
+                label="TIPO CLIENTE"
+                value={CUSTOMER_TYPE_LABELS[order.customer_type] ?? order.customer_type}
+                noDivider={false}
+              />
+              <InfoRow
+                label="TIPO OS"
+                value={OS_TYPE_LABELS[order.os_type] ?? order.os_type}
+                noDivider={false}
+              />
+              {order.consultant != null && (
+                <InfoRow label="CONSULTOR" value={order.consultant.full_name} noDivider={false} />
+              )}
+              <InfoRow label="ABERTURA" value={formatDateTime(order.opened_at)} noDivider />
+            </Card>
+
+            {/* Totais */}
+            <SectionDivider label="TOTAIS" />
+            <Card style={styles.card}>
+              <View style={styles.totalsRow}>
+                <View style={styles.totalItem}>
+                  <Text variant="caption" color={Colors.textTertiary}>
+                    Peças
+                  </Text>
+                  <Text variant="bodySmall" color={Colors.textSecondary}>
+                    {formatCurrency(order.parts_total)}
+                  </Text>
+                </View>
+                <View style={styles.totalItem}>
+                  <Text variant="caption" color={Colors.textTertiary}>
+                    Serviços
+                  </Text>
+                  <Text variant="bodySmall" color={Colors.textSecondary}>
+                    {formatCurrency(order.services_total)}
+                  </Text>
+                </View>
+                <View style={styles.totalItem}>
+                  <Text variant="caption" color={Colors.textTertiary}>
+                    Total
+                  </Text>
+                  <MonoLabel variant="accent">
+                    {grandTotal.toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL',
+                    })}
+                  </MonoLabel>
+                </View>
+              </View>
             </Card>
           </>
         )}
 
-        {/* ── Secao 4: Peças e Serviços ─────────────────────────────────── */}
-        {hasItems && (
+        {/* ── Tab Peças ──────────────────────────────────────────────────── */}
+        {activeTab === 1 && (
           <>
-            <SectionDivider label="PEÇAS E SERVIÇOS" />
-            <Card style={styles.card}>
-              {hasParts && (
-                <>
-                  <Text variant="label" color={Colors.textTertiary} style={styles.subsectionTitle}>
-                    Peças
-                  </Text>
+            {hasParts ? (
+              <>
+                <Card style={styles.card}>
                   {order.parts!.map((item) => (
                     <LineItemRow key={item.id} item={item} />
                   ))}
-                  <View style={styles.subtotalRow}>
-                    <Text variant="bodySmall" color={Colors.textTertiary}>
-                      Subtotal peças
-                    </Text>
-                    <Text variant="label" color={Colors.textSecondary}>
-                      {formatCurrency(order.parts_total)}
-                    </Text>
+                </Card>
+                <SectionDivider label="TOTAL PEÇAS" />
+                <Card style={styles.card}>
+                  <View style={styles.subtotalRowCenter}>
+                    <MonoLabel variant="accent">{formatCurrency(order.parts_total)}</MonoLabel>
                   </View>
-                </>
-              )}
-
-              {hasParts && hasLaborItems && <View style={styles.divider} />}
-
-              {hasLaborItems && (
-                <>
-                  <Text variant="label" color={Colors.textTertiary} style={styles.subsectionTitle}>
-                    Serviços
-                  </Text>
-                  {order.labor_items!.map((item) => (
-                    <LineItemRow key={item.id} item={item} />
-                  ))}
-                  <View style={styles.subtotalRow}>
-                    <Text variant="bodySmall" color={Colors.textTertiary}>
-                      Subtotal serviços
-                    </Text>
-                    <Text variant="label" color={Colors.textSecondary}>
-                      {formatCurrency(order.services_total)}
-                    </Text>
-                  </View>
-                </>
-              )}
-            </Card>
+                </Card>
+              </>
+            ) : (
+              <View style={styles.tabEmpty}>
+                <Ionicons name="cube-outline" size={40} color={Colors.skeleton} />
+                <Text variant="bodySmall" color={Colors.textSecondary}>
+                  Nenhuma peça adicionada
+                </Text>
+              </View>
+            )}
           </>
         )}
 
-        {/* ── Secao 5: Historico ────────────────────────────────────────── */}
-        {hasHistory && (
+        {/* ── Tab Serviços ───────────────────────────────────────────────── */}
+        {activeTab === 2 && (
           <>
-            <SectionDivider label="HISTÓRICO" />
-            <Card style={styles.card}>
-              {order.transition_logs!.map((log) => (
-                <TransitionLogItem key={log.id} log={log} />
-              ))}
-            </Card>
+            {hasLaborItems ? (
+              <>
+                <Card style={styles.card}>
+                  {order.labor_items!.map((item) => (
+                    <LineItemRow key={item.id} item={item} />
+                  ))}
+                </Card>
+                <SectionDivider label="TOTAL SERVIÇOS" />
+                <Card style={styles.card}>
+                  <View style={styles.subtotalRowCenter}>
+                    <MonoLabel variant="accent">{formatCurrency(order.services_total)}</MonoLabel>
+                  </View>
+                </Card>
+              </>
+            ) : (
+              <View style={styles.tabEmpty}>
+                <Ionicons name="construct-outline" size={40} color={Colors.skeleton} />
+                <Text variant="bodySmall" color={Colors.textSecondary}>
+                  Nenhum serviço adicionado
+                </Text>
+              </View>
+            )}
+          </>
+        )}
+
+        {/* ── Tab Fotos ──────────────────────────────────────────────────── */}
+        {activeTab === 3 && (
+          <>
+            <AcompanhamentoSection
+              osId={osId}
+              onAddPhoto={handleAddAcompanhamento}
+              onPhotoPress={handlePhotoPress}
+              remotePhotos={acompanhamentoRemote}
+            />
+
+            {photoGroups.length > 0 && (
+              <>
+                <SectionDivider label="OUTRAS FOTOS" />
+                <Card style={styles.card} padded={false}>
+                  {photoGroups.map(([folder, photos]) => (
+                    <PhotoGroup
+                      key={folder}
+                      folder={folder}
+                      photos={photos}
+                      onPhotoPress={handlePhotoPress}
+                    />
+                  ))}
+                </Card>
+              </>
+            )}
+
+            {acompanhamentoRemote.length === 0 && photoGroups.length === 0 && (
+              <View style={styles.tabEmpty}>
+                <Ionicons name="images-outline" size={40} color={Colors.skeleton} />
+                <Text variant="bodySmall" color={Colors.textSecondary}>
+                  Nenhuma foto registrada
+                </Text>
+              </View>
+            )}
+          </>
+        )}
+
+        {/* ── Tab Histórico ──────────────────────────────────────────────── */}
+        {activeTab === 4 && (
+          <>
+            {hasHistory ? (
+              <Card style={styles.card}>
+                {order.transition_logs!.map((log) => (
+                  <TransitionLogItem key={log.id} log={log} />
+                ))}
+              </Card>
+            ) : (
+              <View style={styles.tabEmpty}>
+                <Ionicons name="time-outline" size={40} color={Colors.skeleton} />
+                <Text variant="bodySmall" color={Colors.textSecondary}>
+                  Nenhuma transição registrada
+                </Text>
+              </View>
+            )}
           </>
         )}
 
@@ -940,6 +984,56 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.bg,
   },
+  // Header
+  header: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderSubtle,
+  },
+  headerTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerBackBtn: {
+    padding: 4,
+    marginLeft: -4,
+  },
+  headerBodyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 8,
+  },
+  headerPlateBadge: {
+    backgroundColor: Colors.inputBg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: Radii.sm,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  headerPlateText: {
+    fontWeight: '800',
+    letterSpacing: 2,
+    fontSize: 16,
+    color: Colors.textPrimary,
+  },
+  headerVehicleInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  headerStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  headerStatusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
   // Skeleton
   skeletonContainer: {
     padding: Spacing.lg,
@@ -970,32 +1064,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingTop: 8,
-  },
-  // Section header
-  sectionHeader: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 6,
+    paddingTop: 4,
   },
   // Card
   card: {
     marginHorizontal: 16,
     gap: 10,
-  },
-  // Info rows
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 8,
-  },
-  infoLabel: {
-    flex: 1,
-  },
-  infoValue: {
-    flex: 2,
-    textAlign: 'right',
   },
   // Divider
   divider: {
@@ -1012,8 +1086,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 2,
   },
-  grandTotal: {
-    fontWeight: '700',
+  // Tab empty
+  tabEmpty: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    gap: 12,
+  },
+  subtotalRowCenter: {
+    alignItems: 'center',
+    paddingVertical: 4,
   },
   // Photo groups
   photoGroup: {
@@ -1043,9 +1125,6 @@ const styles = StyleSheet.create({
     maxWidth: 120,
   },
   // Line items
-  subsectionTitle: {
-    marginBottom: 4,
-  },
   lineItemRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1061,14 +1140,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     minWidth: 80,
     textAlign: 'right',
-  },
-  subtotalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: Spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderSubtle,
-    marginTop: 4,
   },
   // Transition log
   logItem: {
@@ -1319,7 +1390,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.85)',
     alignItems: 'center',
-    justifyContent: 'center', // sem token — overlay muito escuro específico para preview de foto
+    justifyContent: 'center',
   },
   previewImage: {
     width: '100%',
