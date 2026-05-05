@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Constants from 'expo-constants';
 import { Colors, Shadow, Spacing } from '@/constants/theme';
 import { Text } from '@/components/ui/Text';
 import { Button } from '@/components/ui/Button';
@@ -58,18 +59,29 @@ export default function PerfilScreen() {
             label="EMPRESA"
             value="DS Car"
             icon="business-outline"
+            noDivider
+          />
+        </Card>
+
+        {/* Sobre o app */}
+        <SectionDivider label="SOBRE O APP" />
+        <Card style={styles.infoCard}>
+          <InfoRow
+            label="VERSÃO"
+            value={Constants.expoConfig?.version ?? '1.0.0'}
+            icon="information-circle-outline"
           />
           <InfoRow
             label="AMBIENTE"
             value={__DEV__ ? 'Desenvolvimento' : 'Produção'}
-            icon="globe-outline"
+            icon="server-outline"
             noDivider
           />
         </Card>
 
         <View style={styles.actions}>
           <Button
-            variant="secondary"
+            variant="danger"
             label="Sair da conta"
             onPress={handleLogout}
             fullWidth

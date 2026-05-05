@@ -8,11 +8,12 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Text } from '@/components/ui/Text';
+import { StatusDot } from '@/components/ui/StatusDot';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { Colors, Radii, Spacing, SemanticColors } from '@/constants/theme';
+import { Colors, Radii, Spacing, SemanticColors, type OSStatus } from '@/constants/theme';
 import {
   useNotificationFeed,
   type NotificationFeedItem,
@@ -74,6 +75,7 @@ function NotificationItem({
         <View style={styles.statusRow}>
           <Text style={styles.fromStatus}>{item.from_status_display}</Text>
           <Ionicons name="arrow-forward" size={12} color={Colors.textTertiary} />
+          <StatusDot status={item.to_status as OSStatus} size={8} />
           <Text style={[styles.toStatus, { color }]}>{item.to_status_display}</Text>
         </View>
 
@@ -160,7 +162,7 @@ export default function NotificacoesScreen(): React.JSX.Element {
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Ionicons name="notifications-outline" size={48} color={Colors.textTertiary} />
+              <Ionicons name="notifications-off-outline" size={48} color={Colors.textTertiary} />
               <Text style={styles.emptyTitle}>Nenhum alerta</Text>
               <Text style={styles.emptySubtitle}>
                 As mudanças de status das OS aparecerão aqui.
@@ -246,7 +248,7 @@ const styles = StyleSheet.create({
   item: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.surfaceLight,
     borderRadius: Radii.md,
     overflow: 'hidden',
     borderWidth: 1,

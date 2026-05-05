@@ -209,10 +209,10 @@ export default function AgendaScreen(): React.JSX.Element {
             <View style={styles.emptyEvents}>
               <Ionicons
                 name="calendar-outline"
-                size={36}
+                size={48}
                 color={Colors.textTertiary}
               />
-              <Text style={styles.emptyEventsText}>Nenhum evento neste dia</Text>
+              <Text variant="bodySmall" color={Colors.textTertiary}>Nenhum agendamento para este dia</Text>
             </View>
           ) : (
             selectedEvents.map((event, i) => (
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
   eventCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.surfaceLight,
     borderRadius: Radii.md,
     marginBottom: Spacing.sm,
     overflow: 'hidden',
