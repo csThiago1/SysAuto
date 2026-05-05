@@ -124,7 +124,7 @@ function TabItem({ config, isActive, onPress }: TabItemProps): React.JSX.Element
     );
   }
 
-  const iconColor = isActive ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.28)';
+  const iconColor = isActive ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.45)';
   const iconName = isActive ? config.iconActive : config.iconInactive;
 
   return (
@@ -222,6 +222,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: 20,
     elevation: 12,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderTopColor: Colors.borderGlintTop,
   },
   tabItem: {
     flex: 1,

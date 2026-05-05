@@ -15,7 +15,7 @@ import { OSStatusBadge } from '@/components/os/OSStatusBadge';
 import { useServiceOrdersList } from '@/hooks/useServiceOrders';
 import { usePhotoStore } from '@/stores/photo.store';
 import type { ServiceOrder } from '@/db/models/ServiceOrder';
-import { Colors, Radii, Spacing } from '@/constants/theme';
+import { Colors, Radii, Spacing, Typography } from '@/constants/theme';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -52,7 +52,7 @@ function ChecklistCard({ order, onPress }: ChecklistCardProps): React.JSX.Elemen
       <Card style={styles.card}>
         {/* Row 1: plate + status badge */}
         <View style={styles.row}>
-          <Text variant="heading3" style={styles.plate}>
+          <Text style={[styles.plate, { ...Typography.plate, fontSize: 18 }]}>
             {order.vehiclePlate}
           </Text>
           <OSStatusBadge status={order.status} />

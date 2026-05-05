@@ -11,7 +11,7 @@ export function OSStatusBadge({ status }: OSStatusBadgeProps): React.JSX.Element
   const config = OS_STATUS_MAP[status as OSStatus];
   if (!config) {
     return (
-      <View style={[styles.badge, { backgroundColor: Colors.bg }]}>
+      <View style={[styles.badge, { backgroundColor: Colors.bg, borderColor: 'transparent' }]}>
         <Text variant="caption" style={[styles.label, { color: Colors.textPrimary }]}>
           Desconhecido
         </Text>
@@ -19,8 +19,10 @@ export function OSStatusBadge({ status }: OSStatusBadgeProps): React.JSX.Element
     );
   }
 
+  const borderColor = `${config.color}33`;
+
   return (
-    <View style={[styles.badge, { backgroundColor: config.bg }]}>
+    <View style={[styles.badge, { backgroundColor: config.bg, borderColor }]}>
       <Text variant="caption" style={[styles.label, { color: config.color }]}>
         {config.label}
       </Text>
@@ -49,6 +51,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 20,
     alignSelf: 'flex-start',
+    borderWidth: 1,
   },
   label: {
     fontWeight: '600',

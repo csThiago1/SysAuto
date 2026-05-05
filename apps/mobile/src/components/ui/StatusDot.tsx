@@ -8,7 +8,7 @@ interface StatusDotProps {
   pulse?: boolean;
 }
 
-export function StatusDot({ status, size = 8, pulse = false }: StatusDotProps): React.JSX.Element {
+export function StatusDot({ status, size = 8, pulse = false }: StatusDotProps): React.JSX.Element | null {
   const config = OS_STATUS_MAP[status];
   const opacity = useRef(new Animated.Value(1)).current;
 
@@ -35,7 +35,7 @@ export function StatusDot({ status, size = 8, pulse = false }: StatusDotProps): 
     return () => animation.stop();
   }, [pulse, opacity]);
 
-  if (!config) return <View />;
+  if (!config) return null;
 
   return (
     <Animated.View

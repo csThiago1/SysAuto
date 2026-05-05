@@ -1,13 +1,13 @@
 import React, { useCallback } from 'react';
 import {
   View,
-  Text,
   FlatList,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -134,7 +134,7 @@ export default function NotificacoesScreen(): React.JSX.Element {
 
       {/* Legenda */}
       <View style={styles.legend}>
-        <Text style={styles.legendText}>Transições de status das OS do tenant</Text>
+        <Text style={styles.legendText}>Atualizações de status das ordens de serviço</Text>
       </View>
 
       {isLoading && !data ? (

@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.04)',
+    borderBottomColor: Colors.divider,
   },
   labelRow: {
     flexDirection: 'row',

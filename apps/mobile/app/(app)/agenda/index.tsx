@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
   ActivityIndicator,
 } from 'react-native';
+import { Text } from '@/components/ui/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -382,9 +382,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.brand,
   },
   selectedCircle: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.brandTint,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.brand,
   },
   dayText: {
     fontSize: 14,

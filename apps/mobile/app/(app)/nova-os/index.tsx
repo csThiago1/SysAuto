@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Colors, Radii, Spacing, SemanticColors } from '@/constants/theme';
+import { Colors, Radii, Spacing, SemanticColors, Typography } from '@/constants/theme';
 
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { useCreateServiceOrder, type CreateOSPayload } from '@/hooks/useCreateServiceOrder';
@@ -14,6 +14,10 @@ import { Step2Customer } from '@/components/nova-os/Step2Customer';
 import { Step3OSType } from '@/components/nova-os/Step3OSType';
 import { Step4Review } from '@/components/nova-os/Step4Review';
 import { Text } from '@/components/ui/Text';
+
+// ─── Step names ───────────────────────────────────────────────────────────────
+
+const STEP_NAMES = ['Veículo', 'Cliente', 'Tipo da OS', 'Revisão'];
 
 // ─── ProgressBar ──────────────────────────────────────────────────────────────
 
@@ -106,6 +110,7 @@ export default function NovaOSScreen(): React.JSX.Element {
           <View style={styles.headerSpacer} />
         </View>
         <ProgressBar step={activeStep} total={4} />
+        <Text style={styles.stepName}>{STEP_NAMES[activeStep]}</Text>
       </LinearGradient>
 
       {/* Offline banner */}
@@ -185,10 +190,15 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 3,
     borderRadius: 2,
-    backgroundColor: Colors.cardTop,
+    backgroundColor: Colors.borderSubtle,
   },
   progressSegmentActive: {
     backgroundColor: Colors.brand,
+  },
+  stepName: {
+    textAlign: 'center',
+    ...Typography.labelMono,
+    marginTop: 6,
   },
   offlineBanner: {
     flexDirection: 'row',

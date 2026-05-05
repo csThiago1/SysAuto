@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: Colors.brand,
     borderWidth: 1.5,
-    borderColor: '#fff1f1',
+    borderColor: Colors.bg,
   },
 
   // Count bar
