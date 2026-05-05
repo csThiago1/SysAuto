@@ -150,6 +150,7 @@ export const Typography = {
     color: '#cc4444',
   },
   mono: {
+    fontSize: 14,
     fontFamily: MONO_FAMILY,
     letterSpacing: 0.5,
   },

@@ -50,17 +50,17 @@ export default function PerfilScreen() {
         <SectionDivider label="DADOS PESSOAIS" />
         <Card style={styles.infoCard}>
           <InfoRow
-            label="Função"
+            label="FUNÇÃO"
             value={user?.role ? (ROLE_LABELS[user.role] ?? user.role) : '—'}
             icon="person-outline"
           />
           <InfoRow
-            label="Empresa"
+            label="EMPRESA"
             value="DS Car"
             icon="business-outline"
           />
           <InfoRow
-            label="Ambiente"
+            label="AMBIENTE"
             value={__DEV__ ? 'Desenvolvimento' : 'Produção'}
             icon="globe-outline"
             noDivider

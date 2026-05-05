@@ -202,7 +202,6 @@ const styles = StyleSheet.create({
     height: 48,
   },
   insurerAbbr: {
-    color: Colors.textPrimary,
     fontWeight: '700',
     fontSize: 14,
   },

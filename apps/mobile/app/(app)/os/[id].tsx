@@ -291,9 +291,7 @@ function LineItemRow({ item }: LineItemRowProps): React.JSX.Element {
           {item.quantity}x {formatCurrency(item.unit_price)}
         </Text>
       </View>
-      <Text variant="bodySmall" color={Colors.textSecondary} style={styles.lineItemTotal}>
-        {formatCurrency(item.total)}
-      </Text>
+      <MonoLabel variant="accent">{formatCurrency(item.total)}</MonoLabel>
     </View>
   );
 }
@@ -347,8 +345,8 @@ function ChecklistProgressRow({ photoCount, ok, attention, critical }: Checklist
       )}
       {ok > 0 && (
         <View style={[styles.progressChip, styles.progressChipOk]}>
-          <Ionicons name="checkmark-circle" size={12} color={Colors.success} />
-          <Text variant="caption" style={{ color: Colors.success }}>{ok} OK</Text>
+          <Ionicons name="checkmark-circle" size={12} color={SemanticColors.success.color} />
+          <Text variant="caption" style={{ color: SemanticColors.success.color }}>{ok} OK</Text>
         </View>
       )}
       {attention > 0 && (
@@ -359,8 +357,8 @@ function ChecklistProgressRow({ photoCount, ok, attention, critical }: Checklist
       )}
       {critical > 0 && (
         <View style={[styles.progressChip, styles.progressChipCritical]}>
-          <Ionicons name="alert-circle" size={12} color={Colors.error} />
-          <Text variant="caption" style={{ color: Colors.error }}>{critical} Crítico</Text>
+          <Ionicons name="alert-circle" size={12} color={SemanticColors.error.color} />
+          <Text variant="caption" style={{ color: SemanticColors.error.color }}>{critical} Crítico</Text>
         </View>
       )}
     </View>
@@ -799,17 +797,13 @@ export default function OSDetailScreen(): React.JSX.Element {
                   <Text variant="caption" color={Colors.textTertiary}>
                     Peças
                   </Text>
-                  <Text variant="bodySmall" color={Colors.textSecondary}>
-                    {formatCurrency(order.parts_total)}
-                  </Text>
+                  <MonoLabel>{formatCurrency(order.parts_total)}</MonoLabel>
                 </View>
                 <View style={styles.totalItem}>
                   <Text variant="caption" color={Colors.textTertiary}>
                     Serviços
                   </Text>
-                  <Text variant="bodySmall" color={Colors.textSecondary}>
-                    {formatCurrency(order.services_total)}
-                  </Text>
+                  <MonoLabel>{formatCurrency(order.services_total)}</MonoLabel>
                 </View>
                 <View style={styles.totalItem}>
                   <Text variant="caption" color={Colors.textTertiary}>

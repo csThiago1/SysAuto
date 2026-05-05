@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     color: Colors.brand,
   },
   labelGhost: {
-    color: Colors.textTertiary,
+    color: Colors.textSecondary,
   },
   labelDanger: {
     color: '#ffffff',

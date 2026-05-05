@@ -11,7 +11,7 @@ import { Text } from '@/components/ui/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Colors, Radii, Spacing, SemanticColors } from '@/constants/theme';
+import { Colors, Radii, Spacing, SemanticColors, Typography } from '@/constants/theme';
 import {
   useCalendar,
   buildAgendaEventsMap,
@@ -349,10 +349,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dayHeaderText: {
-    fontSize: 11,
-    fontWeight: '600',
+    ...Typography.labelMono,
     color: Colors.textTertiary,
-    textTransform: 'uppercase',
   },
 
   // Grid

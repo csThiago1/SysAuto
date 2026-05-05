@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Dimensions, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Typography, Colors } from '@/constants/theme';
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
@@ -32,8 +33,8 @@ const DEFAULT_LINES: LineConfig[] = [
 
 const LINE_LENGTH = 140;
 const LINE_THICKNESS = 0.5;
-const NEON_COLOR = '#cc4444';
-const NEON_BRIGHT = '#ff4444';
+const NEON_COLOR = Typography.labelMono.color; // '#cc4444'
+const NEON_BRIGHT = Colors.brand; // '#e31b1b' — vermelho vivo da marca
 
 // ── Single animated line ─────────────────────────────────────────────────────
 

@@ -278,6 +278,7 @@ export default function OSListScreen(): React.JSX.Element {
 
   const ListEmpty = (
     <View style={styles.emptyContainer}>
+      <Ionicons name="car-outline" size={48} color={Colors.textTertiary} />
       <Text variant="body" color={Colors.textTertiary} style={styles.emptyText}>
         {hasActiveFilter ? 'Nenhuma OS encontrada para esta busca' : 'Nenhuma OS disponível'}
       </Text>

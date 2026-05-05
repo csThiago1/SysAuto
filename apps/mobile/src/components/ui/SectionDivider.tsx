@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
   },
   line: {
     flex: 1,
-    height: StyleSheet.hairlineWidth,
+    height: Math.max(StyleSheet.hairlineWidth, 0.5),
     backgroundColor: 'rgba(255,255,255,0.06)',
   },
 });
