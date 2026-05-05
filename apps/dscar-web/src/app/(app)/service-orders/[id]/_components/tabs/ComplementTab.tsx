@@ -6,6 +6,9 @@ import { toast } from "sonner"
 import { Loader2, Plus, Pencil, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
 import type { ServiceOrderPart, ServiceOrderLabor } from "@paddock/types"
 
 interface Props {
@@ -95,20 +98,20 @@ export function ComplementTab({ orderId }: Props) {
 
       {/* Add buttons */}
       <div className="flex gap-2">
-        <button
-          type="button"
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => setShowAddPart(!showAddPart)}
-          className="inline-flex items-center gap-1.5 rounded-md border border-warning-500/40 bg-warning-500/10 px-3 py-2 text-xs font-medium text-warning-400 hover:bg-warning-500/20"
         >
           <Plus className="h-3.5 w-3.5" /> Adicionar Peça
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => setShowAddService(!showAddService)}
-          className="inline-flex items-center gap-1.5 rounded-md border border-warning-500/40 bg-warning-500/10 px-3 py-2 text-xs font-medium text-warning-400 hover:bg-warning-500/20"
         >
           <Plus className="h-3.5 w-3.5" /> Adicionar Serviço
-        </button>
+        </Button>
       </div>
 
       {/* Inline add forms */}
@@ -215,15 +218,13 @@ export function ComplementTab({ orderId }: Props) {
           </div>
         </div>
         {totalPending > 0 && (
-          <button
-            type="button"
+          <Button
             disabled={billMutation.isPending}
             onClick={() => billMutation.mutate()}
-            className="inline-flex items-center gap-2 rounded-md bg-warning-600 px-4 py-2.5 text-sm font-bold text-surface-900 hover:bg-warning-500 disabled:opacity-50"
           >
             {billMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
             Faturar Itens Pendentes
-          </button>
+          </Button>
         )}
       </div>
     </div>
@@ -270,49 +271,28 @@ function ComplementAddForm({
 
   return (
     <div className="flex items-end gap-3 rounded-lg border border-warning-500/20 bg-warning-500/5 p-3">
-      <div className="flex-1">
-        <label className="mb-1 block text-xs text-white/50">Descrição</label>
-        <input
-          type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full rounded border border-white/10 bg-surface-800 px-2 py-1.5 text-sm text-white"
-        />
+      <div className="flex-1 space-y-1.5">
+        <Label htmlFor="comp-desc">Descrição</Label>
+        <Input id="comp-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
       </div>
-      <div className="w-20">
-        <label className="mb-1 block text-xs text-white/50">Qtd</label>
-        <input
-          type="number"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-          className="w-full rounded border border-white/10 bg-surface-800 px-2 py-1.5 text-sm text-white"
-        />
+      <div className="w-20 space-y-1.5">
+        <Label htmlFor="comp-qty">Qtd</Label>
+        <Input id="comp-qty" type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
       </div>
-      <div className="w-28">
-        <label className="mb-1 block text-xs text-white/50">Valor Unit.</label>
-        <input
-          type="number"
-          step="0.01"
-          value={unitPrice}
-          onChange={(e) => setUnitPrice(e.target.value)}
-          className="w-full rounded border border-white/10 bg-surface-800 px-2 py-1.5 text-sm text-white"
-        />
+      <div className="w-28 space-y-1.5">
+        <Label htmlFor="comp-price">Valor Unit.</Label>
+        <Input id="comp-price" type="number" step="0.01" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} />
       </div>
-      <button
-        type="button"
+      <Button
+        size="sm"
         disabled={addMutation.isPending || !description || !unitPrice}
         onClick={() => addMutation.mutate()}
-        className="rounded bg-warning-600 px-3 py-1.5 text-xs font-semibold text-surface-900 disabled:opacity-50"
       >
         {addMutation.isPending ? "..." : "Adicionar"}
-      </button>
-      <button
-        type="button"
-        onClick={onClose}
-        className="rounded border border-white/15 px-3 py-1.5 text-xs text-white/60"
-      >
+      </Button>
+      <Button variant="outline" size="sm" onClick={onClose}>
         Cancelar
-      </button>
+      </Button>
     </div>
   )
 }
