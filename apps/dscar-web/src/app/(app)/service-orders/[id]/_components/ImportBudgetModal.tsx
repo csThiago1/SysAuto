@@ -6,6 +6,9 @@ import { toast } from "sonner"
 import { Loader2, Upload, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
 import type { ImportBudgetResponse, ServiceOrder } from "@paddock/types"
 import { ImportDiffView } from "./ImportDiffView"
 
@@ -122,44 +125,38 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
 
         {source === "cilia" && (
           <div className="space-y-4">
-            <div>
-              <label className="mb-1 block text-xs text-white/50">Nº Sinistro</label>
-              <input type="text" value={casualtyNumber} onChange={(e) => setCasualtyNumber(e.target.value)}
-                className="w-full rounded-md border border-white/10 bg-surface-800 px-3 py-2 text-sm text-white" />
+            <div className="space-y-1.5">
+              <Label htmlFor="casualty">Nº Sinistro</Label>
+              <Input id="casualty" value={casualtyNumber} onChange={(e) => setCasualtyNumber(e.target.value)} />
             </div>
-            <div>
-              <label className="mb-1 block text-xs text-white/50">Nº Orçamento</label>
-              <input type="text" value={budgetNumber} onChange={(e) => setBudgetNumber(e.target.value)}
-                className="w-full rounded-md border border-white/10 bg-surface-800 px-3 py-2 text-sm text-white" />
+            <div className="space-y-1.5">
+              <Label htmlFor="budget">Nº Orçamento</Label>
+              <Input id="budget" value={budgetNumber} onChange={(e) => setBudgetNumber(e.target.value)} />
             </div>
-            <div>
-              <label className="mb-1 block text-xs text-white/50">
-                Versão <span className="text-white/30">(vazio = mais recente)</span>
-              </label>
-              <input type="text" value={versionNumber} onChange={(e) => setVersionNumber(e.target.value)}
-                placeholder="Ex: 3" className="w-full rounded-md border border-white/10 bg-surface-800 px-3 py-2 text-sm text-white" />
+            <div className="space-y-1.5">
+              <Label htmlFor="version">
+                Versão <span className="text-muted-foreground">(vazio = mais recente)</span>
+              </Label>
+              <Input id="version" value={versionNumber} onChange={(e) => setVersionNumber(e.target.value)} placeholder="Ex: 3" />
             </div>
           </div>
         )}
 
         {source !== "cilia" && (
-          <div>
-            <label className="mb-1 block text-xs text-white/50">Arquivo {source === "soma" ? "XML" : "HTML"}</label>
-            <input type="file" accept={source === "soma" ? ".xml" : ".html,.htm"}
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              className="w-full rounded-md border border-white/10 bg-surface-800 px-3 py-2 text-sm text-white file:mr-2 file:rounded file:border-0 file:bg-white/10 file:px-3 file:py-1 file:text-xs file:text-white" />
+          <div className="space-y-1.5">
+            <Label>Arquivo {source === "soma" ? "XML" : "HTML"}</Label>
+            <Input type="file" accept={source === "soma" ? ".xml" : ".html,.htm"}
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
           </div>
         )}
 
         <div className="mt-6 flex justify-end gap-2">
-          <button type="button" onClick={onClose}
-            className="rounded-md border border-white/15 px-4 py-2 text-sm text-white/70 hover:bg-white/5">Cancelar</button>
-          <button type="button" disabled={importMutation.isPending} onClick={() => importMutation.mutate()}
-            className="inline-flex items-center gap-2 rounded-md bg-info-600 px-4 py-2 text-sm font-semibold text-white hover:bg-info-700 disabled:opacity-50">
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button disabled={importMutation.isPending} onClick={() => importMutation.mutate()}>
             {importMutation.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Consultando...</>
               : source === "cilia" ? <><Search className="h-4 w-4" /> Consultar</>
               : <><Upload className="h-4 w-4" /> Importar</>}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
