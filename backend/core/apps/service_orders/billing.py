@@ -392,3 +392,107 @@ class BillingService:
                 "fiscal_errors": errors,
             },
         }
+
+    @classmethod
+    def _resolve_customer_person(cls, order: Any) -> Any | None:
+        """Busca Person correspondente ao cliente da OS.
+
+        Returns:
+            Person com documents+addresses prefetched, ou None.
+        """
+        from apps.persons.models import Person
+
+        customer_uuid = getattr(order, "customer_uuid", None)
+        if not customer_uuid:
+            return None
+
+        return (
+            Person.objects.prefetch_related("documents", "addresses")
+            .filter(pk=customer_uuid)
+            .first()
+        )
+
+    @classmethod
+    @transaction.atomic
+    def bill_complement(cls, order: Any, billed_by: str = "Sistema") -> dict[str, Any]:
+        """Fatura itens pendentes do complemento particular.
+
+        Cria receivables + emite NF-e (peças) e NFS-e (serviços) separados,
+        tudo em nome do cliente. Pode ser chamado a qualquer momento,
+        independente do status da OS.
+        """
+        from apps.service_orders.models import ServiceOrderActivityLog
+
+        now = timezone.now()
+        customer_name = order.customer_name or ""
+
+        pending_parts = order.parts.filter(
+            source_type="complement", billing_status="pending",
+        )
+        pending_labor = order.labor_items.filter(
+            source_type="complement", billing_status="pending",
+        )
+
+        parts_total = sum(
+            p.quantity * p.unit_price - p.discount for p in pending_parts
+        )
+        labor_total = sum(
+            l.quantity * l.unit_price - l.discount for l in pending_labor
+        )
+
+        if parts_total + labor_total <= ZERO:
+            return {"billed": False, "message": "Nenhum item pendente para faturar."}
+
+        items = []
+        if labor_total > ZERO:
+            items.append({
+                "recipient_type": "customer",
+                "category": "services",
+                "label": f"Complemento Serviços → {customer_name}",
+                "amount": str(labor_total),
+                "default_payment_method": "pix",
+                "default_payment_term_days": 0,
+            })
+        if parts_total > ZERO:
+            items.append({
+                "recipient_type": "customer",
+                "category": "parts",
+                "label": f"Complemento Peças → {customer_name}",
+                "amount": str(parts_total),
+                "default_payment_method": "pix",
+                "default_payment_term_days": 0,
+            })
+
+        # Create receivables if ReceivableDocumentService is available
+        try:
+            person = cls._resolve_customer_person(order)
+            from apps.accounts_receivable.services import ReceivableDocumentService
+            for item in items:
+                ReceivableDocumentService.create_from_billing(
+                    order=order, person=person, billing_item=item,
+                )
+        except (ImportError, AttributeError, Exception) as e:
+            logger.warning("Receivable creation skipped for complement: %s", e)
+
+        # Capture counts before update (querysets become empty after update)
+        parts_count = pending_parts.count()
+        labor_count = pending_labor.count()
+
+        # Mark items as billed
+        pending_parts.update(billing_status="billed", billed_at=now)
+        pending_labor.update(billing_status="billed", billed_at=now)
+
+        # Log activity
+        ServiceOrderActivityLog.objects.create(
+            service_order=order,
+            activity_type="billing",
+            description=f"Complemento particular faturado: R$ {parts_total + labor_total:.2f}",
+            created_by=billed_by,
+        )
+
+        return {
+            "billed": True,
+            "parts_total": str(parts_total),
+            "labor_total": str(labor_total),
+            "items_count": parts_count + labor_count,
+        }
