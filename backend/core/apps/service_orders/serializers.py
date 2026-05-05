@@ -245,6 +245,9 @@ class ServiceOrderPartSerializer(_LineItemValidationMixin, serializers.ModelSeri
     status_peca_display = serializers.CharField(source="get_status_peca_display", read_only=True)
     custo_real = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True, allow_null=True)
     unidade_fisica_id = serializers.UUIDField(source="unidade_fisica.id", read_only=True, allow_null=True, default=None)
+    payer_display = serializers.CharField(source="get_payer_display", read_only=True)
+    source_type_display = serializers.CharField(source="get_source_type_display", read_only=True)
+    billing_status_display = serializers.CharField(source="get_billing_status_display", read_only=True)
 
     class Meta:
         model = ServiceOrderPart
@@ -255,6 +258,8 @@ class ServiceOrderPartSerializer(_LineItemValidationMixin, serializers.ModelSeri
             "tipo_qualidade", "tipo_qualidade_display",
             "status_peca", "status_peca_display",
             "custo_real", "unidade_fisica_id",
+            "payer", "source_type", "billing_status", "billed_at",
+            "payer_display", "source_type_display", "billing_status_display",
             "created_at", "updated_at",
         ]
         read_only_fields = [
@@ -263,6 +268,7 @@ class ServiceOrderPartSerializer(_LineItemValidationMixin, serializers.ModelSeri
             "tipo_qualidade", "tipo_qualidade_display",
             "status_peca", "status_peca_display",
             "custo_real", "unidade_fisica_id",
+            "payer_display", "source_type_display", "billing_status_display",
             "created_at", "updated_at",
         ]
 
@@ -309,15 +315,24 @@ class ServiceOrderLaborSerializer(_LineItemValidationMixin, serializers.ModelSer
     service_catalog_name = serializers.CharField(
         source="service_catalog.name", read_only=True, allow_null=True
     )
+    payer_display = serializers.CharField(source="get_payer_display", read_only=True)
+    source_type_display = serializers.CharField(source="get_source_type_display", read_only=True)
+    billing_status_display = serializers.CharField(source="get_billing_status_display", read_only=True)
 
     class Meta:
         model = ServiceOrderLabor
         fields = [
             "id", "service_catalog", "service_catalog_name",
             "description", "quantity", "unit_price", "discount", "total",
+            "payer", "source_type", "billing_status", "billed_at",
+            "payer_display", "source_type_display", "billing_status_display",
             "created_at", "updated_at",
         ]
-        read_only_fields = ["id", "service_catalog_name", "total", "created_at", "updated_at"]
+        read_only_fields = [
+            "id", "service_catalog_name", "total",
+            "payer_display", "source_type_display", "billing_status_display",
+            "created_at", "updated_at",
+        ]
 
 
 class ServiceCatalogSerializer(serializers.ModelSerializer):
@@ -916,3 +931,109 @@ class ServiceOrderParecerSerializer(serializers.ModelSerializer):
             "created_at_external", "created_at",
         ]
         read_only_fields = ["id", "created_at"]
+
+
+# ── Versões: detalhe, diff e complemento ─────────────────────────────────────
+
+class VersionItemCompactSerializer(serializers.ModelSerializer):
+    """Serializer compacto de itens de versão para exibição em detalhe e diff."""
+
+    class Meta:
+        model = ServiceOrderVersionItem
+        fields = [
+            "id", "bucket", "payer_block", "item_type", "description",
+            "external_code", "part_type", "quantity", "unit_price",
+            "discount_pct", "net_price", "flag_inclusao_manual",
+        ]
+
+
+class VersionDetailSerializer(serializers.ModelSerializer):
+    """Serializer completo de uma versão de OS, incluindo itens compactos."""
+
+    items = VersionItemCompactSerializer(many=True, read_only=True)
+    source_display = serializers.CharField(source="get_source_display", read_only=True)
+    status_display = serializers.CharField(source="get_status_display", read_only=True)
+
+    class Meta:
+        model = ServiceOrderVersion
+        fields = [
+            "id", "version_number", "external_version", "source", "source_display",
+            "status", "status_display", "subtotal", "discount_total", "net_total",
+            "labor_total", "parts_total", "total_seguradora",
+            "total_complemento_particular", "total_franquia",
+            "created_at", "approved_at", "items",
+        ]
+
+
+class VersionDiffItemSerializer(serializers.Serializer):
+    """Representa um item na comparação entre duas versões."""
+
+    description = serializers.CharField()
+    item_type = serializers.CharField()
+    old_value = serializers.DecimalField(max_digits=12, decimal_places=2, allow_null=True)
+    new_value = serializers.DecimalField(max_digits=12, decimal_places=2, allow_null=True)
+    change_type = serializers.ChoiceField(choices=["added", "removed", "changed", "unchanged"])
+    is_executed = serializers.BooleanField(default=False)
+
+
+class VersionDiffSerializer(serializers.Serializer):
+    """Resultado da comparação entre a versão atual e uma nova versão."""
+
+    current_version = VersionDetailSerializer()
+    new_version = VersionDetailSerializer()
+    diff_items = VersionDiffItemSerializer(many=True)
+    totals_diff = serializers.DictField()
+
+
+# ── Complemento: criação de peças e mão-de-obra particular ───────────────────
+
+class ComplementPartCreateSerializer(serializers.ModelSerializer):
+    """Cria peça de complemento (particular) vinculada à OS."""
+
+    class Meta:
+        model = ServiceOrderPart
+        fields = [
+            "description", "part_number", "ncm", "quantity", "unit_price",
+            "discount", "tipo_qualidade",
+        ]
+
+    def create(self, validated_data: dict) -> ServiceOrderPart:
+        """Força payer=customer e source_type=complement ao criar."""
+        validated_data["payer"] = "customer"
+        validated_data["source_type"] = "complement"
+        return super().create(validated_data)
+
+
+class ComplementLaborCreateSerializer(serializers.ModelSerializer):
+    """Cria mão-de-obra de complemento (particular) vinculada à OS."""
+
+    class Meta:
+        model = ServiceOrderLabor
+        fields = ["description", "quantity", "unit_price", "discount", "service_catalog"]
+
+    def create(self, validated_data: dict) -> ServiceOrderLabor:
+        """Força payer=customer e source_type=complement ao criar."""
+        validated_data["payer"] = "customer"
+        validated_data["source_type"] = "complement"
+        return super().create(validated_data)
+
+
+# ── Resumo financeiro da OS ───────────────────────────────────────────────────
+
+class FinancialSummarySerializer(serializers.Serializer):
+    """Resumo financeiro completo da OS, desagregado por origem e pagador."""
+
+    insurer_parts = serializers.DecimalField(max_digits=14, decimal_places=2)
+    insurer_labor = serializers.DecimalField(max_digits=14, decimal_places=2)
+    insurer_subtotal = serializers.DecimalField(max_digits=14, decimal_places=2)
+    deductible = serializers.DecimalField(max_digits=14, decimal_places=2)
+    insurer_net = serializers.DecimalField(max_digits=14, decimal_places=2)
+    complement_parts = serializers.DecimalField(max_digits=14, decimal_places=2)
+    complement_labor = serializers.DecimalField(max_digits=14, decimal_places=2)
+    complement_subtotal = serializers.DecimalField(max_digits=14, decimal_places=2)
+    complement_billed = serializers.DecimalField(max_digits=14, decimal_places=2)
+    complement_pending = serializers.DecimalField(max_digits=14, decimal_places=2)
+    customer_owes = serializers.DecimalField(max_digits=14, decimal_places=2)
+    insurer_owes = serializers.DecimalField(max_digits=14, decimal_places=2)
+    grand_total = serializers.DecimalField(max_digits=14, decimal_places=2)
+    active_version = VersionDetailSerializer(allow_null=True)
