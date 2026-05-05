@@ -1,6 +1,7 @@
-import React, { useCallback } from 'react';
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { Animated, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 
 import { ServiceOrder } from '@/db/models/ServiceOrder';
@@ -19,7 +20,26 @@ interface OSCardProps {
 function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
   const router = useRouter();
 
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(12)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
+
   const handlePress = useCallback((): void => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push(`/(app)/os/${order.remoteId}`);
   }, [router, order.remoteId]);
 
@@ -28,12 +48,13 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
   const borderColor = OS_STATUS_MAP[order.status as OSStatus]?.color ?? '#94a3b8';
 
   return (
-    <TouchableOpacity
-      onPress={handlePress}
-      activeOpacity={0.75}
-      style={styles.touchable}
-    >
-      <LinearGradient
+    <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+      <TouchableOpacity
+        onPress={handlePress}
+        activeOpacity={0.75}
+        style={styles.touchable}
+      >
+        <LinearGradient
         colors={[Colors.cardTop, Colors.cardBottom]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -86,8 +107,9 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
             )}
           </View>
         </View>
-      </LinearGradient>
-    </TouchableOpacity>
+        </LinearGradient>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
