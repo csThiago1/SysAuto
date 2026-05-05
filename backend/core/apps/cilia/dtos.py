@@ -163,7 +163,7 @@ class ImportService:
             service_order e version_created preenchidos.
         """
         from .models import ImportAttempt
-        from .sources.cilia_client import CiliaClient, CiliaError
+        from .client import CiliaClient, CiliaError
         from .sources.cilia_parser import CiliaParser
 
         client = client or CiliaClient()
