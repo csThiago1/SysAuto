@@ -36,7 +36,10 @@ from .serializers import (
     BudgetSnapshotSerializer,
     ChecklistItemBulkSerializer,
     ChecklistItemSerializer,
+    ComplementLaborCreateSerializer,
+    ComplementPartCreateSerializer,
     DeliverOSSerializer,
+    FinancialSummarySerializer,
     PartCompraInputSerializer,
     PartEstoqueInputSerializer,
     PartSeguradoraInputSerializer,
@@ -58,7 +61,9 @@ from .serializers import (
     StatusTransitionLogSerializer,
     NotificationFeedSerializer,
     UploadPhotoSerializer,
+    VersionDetailSerializer,
 )
+from .billing import BillingService
 from .services import ServiceOrderDeliveryService, ServiceOrderService
 
 logger = logging.getLogger(__name__)
@@ -1087,6 +1092,217 @@ class ServiceOrderViewSet(
                 ServiceOrderEventSerializer(page, many=True).data
             )
         return Response(ServiceOrderEventSerializer(qs, many=True).data)
+
+    @action(detail=True, methods=["post"], url_path="import-budget")
+    def import_budget(self, request: Request, pk: Optional[str] = None) -> Response:
+        """Importa orçamento via Cilia (webservice), Soma (XML) ou Audatex (HTML)."""
+        order = self.get_object()
+        source = request.data.get("source", "cilia")
+
+        if source == "cilia":
+            casualty_number = request.data.get("casualty_number", order.casualty_number)
+            budget_number = request.data.get("budget_number")
+            version_number = request.data.get("version_number")
+
+            if not casualty_number or not budget_number:
+                return Response(
+                    {"error": "casualty_number e budget_number são obrigatórios."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            from apps.cilia.dtos import ImportService
+            attempt = ImportService.fetch_cilia_budget(
+                casualty_number=casualty_number,
+                budget_number=budget_number,
+                version_number=version_number,
+                trigger="user_requested",
+                created_by=request.user.email or "user",
+            )
+
+            if not attempt.parsed_ok:
+                return Response(
+                    {"error": attempt.error_message, "error_type": attempt.error_type},
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
+
+            version = attempt.version_created
+            versions = order.versions.order_by("-version_number")
+            if versions.count() > 1:
+                current = versions.exclude(pk=version.pk).first()
+                diff = ServiceOrderService.compute_version_diff(
+                    current_version=current,
+                    new_version=version,
+                    service_order=order,
+                )
+                return Response({
+                    "action": "diff",
+                    "current_version": VersionDetailSerializer(current).data,
+                    "new_version": VersionDetailSerializer(version).data,
+                    **diff,
+                })
+
+            ServiceOrderService.apply_version_override(
+                service_order=order, new_version=version,
+                applied_by=request.user.email or "user",
+            )
+            return Response({
+                "action": "applied",
+                "version": VersionDetailSerializer(version).data,
+            }, status=status.HTTP_201_CREATED)
+
+        elif source in ("soma", "audatex"):
+            uploaded_file = request.FILES.get("file")
+            if not uploaded_file:
+                return Response(
+                    {"error": "Arquivo é obrigatório para importação XML/HTML."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            from apps.cilia.dtos import ImportService
+            attempt = ImportService.import_xml_ifx(
+                file_content=uploaded_file.read().decode("utf-8"),
+                source=f"xml_{source}" if source == "soma" else source,
+                service_order=order,
+                created_by=request.user.email or "user",
+            )
+
+            if not attempt.parsed_ok:
+                return Response(
+                    {"error": attempt.error_message},
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
+
+            return Response({
+                "action": "applied",
+                "version": VersionDetailSerializer(attempt.version_created).data,
+            }, status=status.HTTP_201_CREATED)
+
+        return Response(
+            {"error": f"Fonte '{source}' não suportada."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    @action(detail=True, methods=["post"], url_path="versions/(?P<version_pk>[^/.]+)/apply")
+    def apply_version(self, request: Request, pk: Optional[str] = None, version_pk: Optional[str] = None) -> Response:
+        """Aplica override de uma versão sobre a OS."""
+        from django.shortcuts import get_object_or_404
+        order = self.get_object()
+        version = get_object_or_404(order.versions, pk=version_pk)
+        ServiceOrderService.apply_version_override(
+            service_order=order,
+            new_version=version,
+            applied_by=request.user.email or "user",
+        )
+        return Response({"status": "applied"})
+
+    @action(detail=True, methods=["get"], url_path="versions/(?P<version_pk>[^/.]+)/diff")
+    def version_diff(self, request: Request, pk: Optional[str] = None, version_pk: Optional[str] = None) -> Response:
+        """Retorna diff entre versão ativa e versão especificada."""
+        from django.shortcuts import get_object_or_404
+        order = self.get_object()
+        new_version = get_object_or_404(order.versions, pk=version_pk)
+        current = order.versions.exclude(pk=new_version.pk).order_by("-version_number").first()
+        if not current:
+            return Response({"error": "Sem versão anterior para comparar."}, status=400)
+        diff = ServiceOrderService.compute_version_diff(
+            current_version=current, new_version=new_version, service_order=order,
+        )
+        return Response({
+            "current_version": VersionDetailSerializer(current).data,
+            "new_version": VersionDetailSerializer(new_version).data,
+            **diff,
+        })
+
+    @action(detail=True, methods=["get", "post"], url_path="complement/parts")
+    def complement_parts(self, request: Request, pk: Optional[str] = None) -> Response:
+        """Lista ou adiciona peças do complemento particular."""
+        order = self.get_object()
+        if request.method == "GET":
+            parts = order.parts.filter(source_type="complement")
+            return Response(ServiceOrderPartSerializer(parts, many=True).data)
+
+        serializer = ComplementPartCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        part = serializer.save(service_order=order)
+
+        from apps.service_orders.events import OSEventLogger
+        OSEventLogger.log_event(
+            order, "COMPLEMENT_ADDED",
+            actor=request.user.email or "user",
+            payload={"item_type": "part", "description": part.description},
+            swallow_errors=True,
+        )
+        return Response(ServiceOrderPartSerializer(part).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["get", "post"], url_path="complement/services")
+    def complement_services(self, request: Request, pk: Optional[str] = None) -> Response:
+        """Lista ou adiciona serviços do complemento particular."""
+        order = self.get_object()
+        if request.method == "GET":
+            labor = order.labor_items.filter(source_type="complement")
+            return Response(ServiceOrderLaborSerializer(labor, many=True).data)
+
+        serializer = ComplementLaborCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        labor = serializer.save(service_order=order)
+
+        from apps.service_orders.events import OSEventLogger
+        OSEventLogger.log_event(
+            order, "COMPLEMENT_ADDED",
+            actor=request.user.email or "user",
+            payload={"item_type": "service", "description": labor.description},
+            swallow_errors=True,
+        )
+        return Response(ServiceOrderLaborSerializer(labor).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["patch", "delete"], url_path="complement/(?P<item_pk>[^/.]+)")
+    def complement_item(self, request: Request, pk: Optional[str] = None, item_pk: Optional[str] = None) -> Response:
+        """Edita ou remove item do complemento."""
+        order = self.get_object()
+
+        part = order.parts.filter(pk=item_pk, source_type="complement").first()
+        if part:
+            if part.billing_status == "billed":
+                return Response({"error": "Item já faturado."}, status=400)
+            if request.method == "DELETE":
+                part.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            for field, value in request.data.items():
+                if hasattr(part, field) and field not in ("id", "pk", "payer", "source_type"):
+                    setattr(part, field, value)
+            part.save()
+            return Response(ServiceOrderPartSerializer(part).data)
+
+        labor = order.labor_items.filter(pk=item_pk, source_type="complement").first()
+        if labor:
+            if labor.billing_status == "billed":
+                return Response({"error": "Item já faturado."}, status=400)
+            if request.method == "DELETE":
+                labor.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            for field, value in request.data.items():
+                if hasattr(labor, field) and field not in ("id", "pk", "payer", "source_type"):
+                    setattr(labor, field, value)
+            labor.save()
+            return Response(ServiceOrderLaborSerializer(labor).data)
+
+        return Response({"error": "Item não encontrado."}, status=404)
+
+    @action(detail=True, methods=["post"], url_path="complement/bill")
+    def complement_bill(self, request: Request, pk: Optional[str] = None) -> Response:
+        """Fatura itens pendentes do complemento particular."""
+        order = self.get_object()
+        result = BillingService.bill_complement(
+            order, billed_by=request.user.email or "user",
+        )
+        return Response(result)
+
+    @action(detail=True, methods=["get"], url_path="financial-summary")
+    def financial_summary(self, request: Request, pk: Optional[str] = None) -> Response:
+        """Resumo financeiro consolidado (seguradora + complemento)."""
+        order = self.get_object()
+        summary = ServiceOrderService.financial_summary(order)
+        return Response(FinancialSummarySerializer(summary).data)
 
 
 # ── Versioning ViewSets ──────────────────────────────────────────────────────
