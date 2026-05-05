@@ -15,7 +15,7 @@ import { Colors, SemanticColors, Typography } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const dscarLogo = require('@/../../assets/dscar-logo.png') as number;
+const dscarLogo = require('../../assets/dscar-logo.png') as number;
 
 export default function LoginScreen() {
   const { loginDev } = useAuth();
@@ -59,6 +59,9 @@ export default function LoginScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.content}>
+          {/* Spacer top */}
+          <View style={styles.spacer} />
+
           {/* Logo */}
           <Image
             source={dscarLogo}
@@ -84,7 +87,7 @@ export default function LoginScreen() {
               value={email}
               onChangeText={setEmail}
               placeholder="seu@email.com"
-              placeholderTextColor="#333"
+              placeholderTextColor={Colors.textTertiary}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -103,7 +106,7 @@ export default function LoginScreen() {
               value={password}
               onChangeText={setPassword}
               placeholder="••••••••"
-              placeholderTextColor="#333"
+              placeholderTextColor={Colors.textTertiary}
               secureTextEntry
               autoCapitalize="none"
               autoCorrect={false}
@@ -145,6 +148,9 @@ export default function LoginScreen() {
             <Text style={styles.devHint}>DEV: qualquer email + paddock123</Text>
           )}
 
+          {/* Spacer bottom */}
+          <View style={styles.spacer} />
+
           {/* Footer */}
           <Text style={styles.powered}>PADDOCK SOLUTIONS</Text>
         </View>
@@ -163,10 +169,12 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 28,
     paddingVertical: 40,
+  },
+  spacer: {
+    flex: 1,
   },
 
   // Logo
@@ -276,6 +284,6 @@ const styles = StyleSheet.create({
   powered: {
     ...Typography.labelMono,
     color: 'rgba(255,255,255,0.15)',
-    marginTop: 'auto',
+    marginTop: 16,
   },
 });

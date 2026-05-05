@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Radii, Spacing } from '@/constants/theme';
 import { useServiceOrdersList } from '@/hooks/useServiceOrders';
@@ -165,12 +166,10 @@ export default function BuscaScreen(): React.JSX.Element {
         <TouchableOpacity
           style={styles.historyRemoveBtn}
           onPress={() => handleHistoryItemRemove(item)}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           activeOpacity={0.6}
         >
-          <Text variant="caption" color={Colors.textSecondary}>
-            x
-          </Text>
+          <Ionicons name="close-circle" size={18} color={Colors.textTertiary} />
         </TouchableOpacity>
       </View>
     ),
@@ -213,20 +212,18 @@ export default function BuscaScreen(): React.JSX.Element {
           autoFocus
           returnKeyType="search"
           clearButtonMode="never"
-          autoCapitalize="characters"
+          autoCapitalize="none"
           autoCorrect={false}
           spellCheck={false}
         />
         {inputValue.length > 0 && (
           <TouchableOpacity
             onPress={handleClearInput}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             style={styles.clearBtn}
             activeOpacity={0.6}
           >
-            <Text variant="caption" color={Colors.textTertiary}>
-              X
-            </Text>
+            <Ionicons name="close-circle" size={18} color={Colors.textTertiary} />
           </TouchableOpacity>
         )}
       </View>

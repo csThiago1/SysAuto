@@ -139,7 +139,7 @@ export default function ChecklistDetailScreen(): React.ReactElement {
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="chevron-back" size={22} color={Colors.bg} />
+          <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
           <Text variant="label" style={styles.backLabel}>
             {order != null ? `OS #${order.number}` : 'OS'}
           </Text>
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     minWidth: 64,
   },
   backLabel: {
-    color: Colors.bg,
+    color: Colors.textPrimary,
   },
   headerCenter: {
     flex: 1,
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   headerTitle: {
-    color: Colors.bg,
+    color: Colors.textPrimary,
     textAlign: 'center',
   },
   headerSubtitle: {

@@ -46,7 +46,7 @@ export function OSDetailHeader({
 
       {/* Back + OS number + status badge */}
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={onBack} style={styles.backBtn} activeOpacity={0.7}>
+        <TouchableOpacity onPress={onBack} style={styles.backBtn} activeOpacity={0.7} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <Ionicons name="chevron-back" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text variant="label" color={Colors.textSecondary} style={styles.osNumber}>
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   },
   backBtn: {
     marginLeft: -Spacing.xs,
-    padding: Spacing.xs,
+    padding: Spacing.md,
   },
   osNumber: {
     flex: 1,
