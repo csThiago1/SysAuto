@@ -289,7 +289,8 @@ class ImportService:
         """
         from apps.items.services import NumberAllocator
         from apps.persons.models import Person
-        from apps.service_orders.models import Insurer, ServiceOrder
+        from apps.insurers.models import Insurer
+        from apps.service_orders.models import ServiceOrder
         from apps.service_orders.services import ServiceOrderService
 
         insurer = Insurer.objects.filter(code=parsed.insurer_code).first()
