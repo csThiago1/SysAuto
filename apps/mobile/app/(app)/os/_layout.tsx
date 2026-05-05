@@ -6,6 +6,7 @@ export default function OSLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
+        animation: 'slide_from_right',
       }}
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />

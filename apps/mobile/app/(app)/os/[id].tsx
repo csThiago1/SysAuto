@@ -1,6 +1,7 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
   Image,
   Modal,
   ScrollView,
@@ -23,6 +24,7 @@ import { InfoRow } from '@/components/ui/InfoRow';
 import { MonoLabel } from '@/components/ui/MonoLabel';
 import { StatusDot } from '@/components/ui/StatusDot';
 import { getStatusLabel, getStatusColor, getStatusBackgroundColor } from '@/components/os/OSStatusBadge';
+import { ShimmerBlock } from '@/components/ui/ShimmerBlock';
 import { useServiceOrder } from '@/hooks/useServiceOrders';
 import { useUpdateOSStatus } from '@/hooks/useUpdateOSStatus';
 import { useShallow } from 'zustand/react/shallow';
@@ -223,16 +225,12 @@ function StatusUpdateModal({
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function SkeletonBlock({ height }: { height: number }): React.JSX.Element {
-  return <View style={[styles.skeleton, { height }]} />;
-}
-
 function LoadingSkeleton(): React.JSX.Element {
   return (
     <View style={styles.skeletonContainer}>
-      <SkeletonBlock height={80} />
-      <SkeletonBlock height={140} />
-      <SkeletonBlock height={100} />
+      <ShimmerBlock height={80} />
+      <ShimmerBlock height={140} />
+      <ShimmerBlock height={100} />
     </View>
   );
 }
@@ -570,6 +568,22 @@ export default function OSDetailScreen(): React.JSX.Element {
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const [statusModalVisible, setStatusModalVisible] = React.useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<number>(0);
+  const tabOpacity = useRef(new Animated.Value(1)).current;
+
+  const handleTabChange = useCallback((index: number) => {
+    Animated.timing(tabOpacity, {
+      toValue: 0,
+      duration: 100,
+      useNativeDriver: true,
+    }).start(() => {
+      setActiveTab(index);
+      Animated.timing(tabOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    });
+  }, [tabOpacity]);
 
   // The hook returns ServiceOrderDetailAPI; we cast to ServiceOrderDetail because
   // the real API endpoint serializes photos/parts/labor_items/transition_logs.
@@ -713,10 +727,11 @@ export default function OSDetailScreen(): React.JSX.Element {
       <SegmentedControl
         tabs={TAB_NAMES}
         activeIndex={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChange}
       />
 
       {/* ── Tab Content ────────────────────────────────────────────────────── */}
+      <Animated.View style={{ flex: 1, opacity: tabOpacity }}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -936,6 +951,7 @@ export default function OSDetailScreen(): React.JSX.Element {
 
         <View style={styles.bottomPadding} />
       </ScrollView>
+      </Animated.View>
 
       {/* ── Modal de avanço de status ─────────────────────────────────── */}
       <StatusUpdateModal
