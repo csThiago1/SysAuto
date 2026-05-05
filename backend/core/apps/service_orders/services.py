@@ -602,6 +602,211 @@ class ServiceOrderService:
         ])
 
     @classmethod
+    def compute_version_diff(
+        cls,
+        *,
+        current_version: "ServiceOrderVersion",
+        new_version: "ServiceOrderVersion",
+        service_order: "ServiceOrder",
+    ) -> dict:
+        """Computa diff entre duas versões, marcando itens executados."""
+        current_items = {
+            i.external_code or i.description: i
+            for i in current_version.items.all()
+        }
+        new_items = {
+            i.external_code or i.description: i
+            for i in new_version.items.all()
+        }
+
+        executed_descriptions = set()
+        executed_parts = service_order.parts.filter(
+            source_type="import",
+            status_peca__in=["bloqueada", "recebida", "comprada"],
+        ).values_list("description", flat=True)
+        executed_descriptions.update(executed_parts)
+
+        all_keys = set(current_items) | set(new_items)
+        diff_items = []
+
+        for key in sorted(all_keys):
+            old = current_items.get(key)
+            new = new_items.get(key)
+            is_executed = key in executed_descriptions
+
+            if old and not new:
+                diff_items.append({
+                    "description": old.description,
+                    "item_type": old.item_type,
+                    "old_value": old.net_price,
+                    "new_value": None,
+                    "change_type": "removed",
+                    "is_executed": is_executed,
+                })
+            elif new and not old:
+                diff_items.append({
+                    "description": new.description,
+                    "item_type": new.item_type,
+                    "old_value": None,
+                    "new_value": new.net_price,
+                    "change_type": "added",
+                    "is_executed": False,
+                })
+            elif old and new:
+                changed = old.net_price != new.net_price or old.quantity != new.quantity
+                diff_items.append({
+                    "description": new.description,
+                    "item_type": new.item_type,
+                    "old_value": old.net_price,
+                    "new_value": new.net_price,
+                    "change_type": "changed" if changed else "unchanged",
+                    "is_executed": is_executed,
+                })
+
+        old_total = current_version.net_total or Decimal("0")
+        new_total = new_version.net_total or Decimal("0")
+        totals_diff = {
+            "old_total": str(old_total),
+            "new_total": str(new_total),
+            "difference": str(new_total - old_total),
+        }
+
+        return {"diff_items": diff_items, "totals_diff": totals_diff}
+
+    @classmethod
+    @transaction.atomic
+    def apply_version_override(
+        cls,
+        *,
+        service_order: "ServiceOrder",
+        new_version: "ServiceOrderVersion",
+        applied_by: str = "Sistema",
+    ) -> "ServiceOrderVersion":
+        """Aplica override da nova versão, preservando itens executados e complemento."""
+        from apps.service_orders.events import OSEventLogger
+        from apps.service_orders.models import ServiceOrderPart, ServiceOrderLabor
+
+        service_order.versions.exclude(pk=new_version.pk).exclude(
+            status__in=["approved", "rejected", "autorizado", "negado", "superseded"],
+        ).update(status="superseded")
+
+        cls.recalculate_version_totals(new_version)
+
+        service_order.parts.filter(
+            source_type="import",
+            status_peca="manual",
+        ).delete()
+        service_order.labor_items.filter(
+            source_type="import",
+        ).exclude(
+            billing_status="billed",
+        ).delete()
+
+        for item in new_version.items.all():
+            if item.item_type == "PART":
+                ServiceOrderPart.objects.create(
+                    service_order=service_order,
+                    description=item.description,
+                    part_number=item.external_code,
+                    quantity=item.quantity,
+                    unit_price=item.unit_price,
+                    discount=item.unit_price * item.quantity - item.net_price,
+                    payer="insurer",
+                    source_type="import",
+                    origem="seguradora",
+                    tipo_qualidade=cls._map_part_type(item.part_type),
+                )
+            elif item.item_type in ("SERVICE", "EXTERNAL_SERVICE"):
+                ServiceOrderLabor.objects.create(
+                    service_order=service_order,
+                    description=item.description,
+                    quantity=item.quantity,
+                    unit_price=item.unit_price,
+                    discount=item.unit_price * item.quantity - item.net_price,
+                    payer="insurer",
+                    source_type="import",
+                )
+
+        OSEventLogger.log_event(
+            service_order, "VERSION_APPROVED",
+            actor=applied_by,
+            payload={
+                "version_number": new_version.version_number,
+                "action": "override",
+            },
+            swallow_errors=True,
+        )
+
+        service_order.recalculate_totals()
+        return new_version
+
+    @staticmethod
+    def _map_part_type(cilia_type: str) -> str:
+        mapping = {
+            "GENUINA": "genuina",
+            "ORIGINAL": "genuina",
+            "OUTRAS_FONTES": "reposicao",
+            "VERDE": "usada",
+        }
+        return mapping.get(cilia_type, "")
+
+    @classmethod
+    def financial_summary(cls, service_order: "ServiceOrder") -> dict:
+        """Calcula resumo financeiro: seguradora + complemento."""
+        from decimal import Decimal as D
+
+        parts_insurer = D("0")
+        labor_insurer = D("0")
+        parts_complement = D("0")
+        labor_complement = D("0")
+        complement_billed = D("0")
+
+        for part in service_order.parts.filter(is_active=True):
+            amount = D(str(part.quantity)) * D(str(part.unit_price)) - D(str(part.discount))
+            if part.source_type == "complement":
+                parts_complement += amount
+                if part.billing_status == "billed":
+                    complement_billed += amount
+            else:
+                parts_insurer += amount
+
+        for labor in service_order.labor_items.filter(is_active=True):
+            amount = D(str(labor.quantity)) * D(str(labor.unit_price)) - D(str(labor.discount))
+            if labor.source_type == "complement":
+                labor_complement += amount
+                if labor.billing_status == "billed":
+                    complement_billed += amount
+            else:
+                labor_insurer += amount
+
+        insurer_subtotal = parts_insurer + labor_insurer
+        deductible = min(D(str(service_order.deductible_amount or 0)), insurer_subtotal)
+        insurer_net = insurer_subtotal - deductible
+        complement_subtotal = parts_complement + labor_complement
+        complement_pending = complement_subtotal - complement_billed
+        customer_owes = deductible + complement_pending
+        grand_total = insurer_subtotal + complement_subtotal
+
+        active_version = service_order.versions.order_by("-version_number").first()
+
+        return {
+            "insurer_parts": parts_insurer,
+            "insurer_labor": labor_insurer,
+            "insurer_subtotal": insurer_subtotal,
+            "deductible": deductible,
+            "insurer_net": insurer_net,
+            "complement_parts": parts_complement,
+            "complement_labor": labor_complement,
+            "complement_subtotal": complement_subtotal,
+            "complement_billed": complement_billed,
+            "complement_pending": complement_pending,
+            "customer_owes": customer_owes,
+            "insurer_owes": insurer_net,
+            "grand_total": grand_total,
+            "active_version": active_version,
+        }
+
+    @classmethod
     @transaction.atomic
     def create_budget_snapshot(
         cls,
