@@ -49,7 +49,7 @@ export function ComplementTab({ orderId }: Props) {
 
   const deleteMutation = useMutation({
     mutationFn: (itemId: string) => apiFetch(
-      `/api/proxy/service-orders/${orderId}/complement/${itemId}/`,
+      `/api/proxy/service-orders/${orderId}/complement/items/${itemId}/`,
       { method: "DELETE" },
     ),
     onSuccess: () => {

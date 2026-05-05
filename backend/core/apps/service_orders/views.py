@@ -1301,7 +1301,7 @@ class ServiceOrderViewSet(
         )
         return Response(ServiceOrderLaborSerializer(labor).data, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=["patch", "delete"], url_path="complement/(?P<item_pk>[^/.]+)")
+    @action(detail=True, methods=["patch", "delete"], url_path="complement/items/(?P<item_pk>[^/.]+)")
     def complement_item(self, request: Request, pk: Optional[str] = None, item_pk: Optional[str] = None) -> Response:
         """Edita ou remove item do complemento."""
         order = self.get_object()
