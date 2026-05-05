@@ -1,6 +1,7 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
   Platform,
   ScrollView,
   StyleSheet,
@@ -61,6 +62,8 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
   const [observacoes, setObservacoes] = useState<string>('');
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
+  const tabOpacity = useRef(new Animated.Value(1)).current;
+
   const pendingPhotoCount = usePhotoStore(
     (s) => s.queue.filter((p) => p.osId === (osId ?? '') && p.folder === FOLDER && p.uploadStatus === 'pending').length,
   );
@@ -74,6 +77,21 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
   const nextStatuses = currentStatus != null ? (VALID_TRANSITIONS[currentStatus] ?? []) : [];
 
   // ── Handlers ────────────────────────────────────────────────────────────────
+
+  const handleTabChange = useCallback((key: string): void => {
+    Animated.timing(tabOpacity, {
+      toValue: 0,
+      duration: 100,
+      useNativeDriver: true,
+    }).start(() => {
+      setActiveTab(key);
+      Animated.timing(tabOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    });
+  }, [tabOpacity]);
 
   const handleBack = useCallback((): void => {
     router.replace(`/(app)/os/${osId ?? ''}`);
@@ -188,7 +206,7 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
             <TouchableOpacity
               key={tab.key}
               style={styles.tab}
-              onPress={() => setActiveTab(tab.key)}
+              onPress={() => handleTabChange(tab.key)}
               activeOpacity={0.7}
             >
               <Text
@@ -213,38 +231,46 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {activeTab === 'fotos' && (
-          <PhotoSlotGrid
-            osId={osId ?? ''}
-            folder={FOLDER}
-            checklistType={CHECKLIST_TYPE}
-            onSlotPress={handleSlotPress}
-            onPhotoPress={handlePhotoPress}
-          />
-        )}
+        <Animated.View style={{ opacity: tabOpacity }}>
+          {activeTab === 'fotos' && (
+            <View>
+              <SectionDivider label="FOTOS" />
+              <PhotoSlotGrid
+                osId={osId ?? ''}
+                folder={FOLDER}
+                checklistType={CHECKLIST_TYPE}
+                onSlotPress={handleSlotPress}
+                onPhotoPress={handlePhotoPress}
+              />
+            </View>
+          )}
 
-        {activeTab === 'itens' && (
-          <ItemChecklistGrid osId={osId ?? ''} checklistType={CHECKLIST_TYPE} />
-        )}
+          {activeTab === 'itens' && (
+            <View>
+              <SectionDivider label="CHECKLIST" />
+              <ItemChecklistGrid osId={osId ?? ''} checklistType={CHECKLIST_TYPE} />
+            </View>
+          )}
 
-        {activeTab === 'obs' && (
-          <View style={styles.obsContainer}>
-            <SectionDivider label="OBSERVAÇÕES" />
-            <Text variant="label" color={Colors.textSecondary} style={styles.obsLabel}>
-              Observações Gerais da Vistoria
-            </Text>
-            <TextInput
-              style={styles.obsInput}
-              value={observacoes}
-              onChangeText={setObservacoes}
-              placeholder="Descreva o estado geral do veículo, avarias preexistentes, itens de atenção..."
-              placeholderTextColor={Colors.textSecondary}
-              multiline
-              numberOfLines={8}
-              textAlignVertical="top"
-            />
-          </View>
-        )}
+          {activeTab === 'obs' && (
+            <View style={styles.obsContainer}>
+              <SectionDivider label="OBSERVAÇÕES" />
+              <Text variant="label" color={Colors.textSecondary} style={styles.obsLabel}>
+                Observações Gerais da Vistoria
+              </Text>
+              <TextInput
+                style={styles.obsInput}
+                value={observacoes}
+                onChangeText={setObservacoes}
+                placeholder="Descreva o estado geral do veículo, avarias preexistentes, itens de atenção..."
+                placeholderTextColor={Colors.textSecondary}
+                multiline
+                numberOfLines={8}
+                textAlignVertical="top"
+              />
+            </View>
+          )}
+        </Animated.View>
       </ScrollView>
 
       {/* ── Floating upload button ── */}
@@ -423,10 +449,16 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   obsInput: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.surfaceLight,
     borderRadius: Radii.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderLeftWidth: 1,
+    borderTopColor: Colors.borderGlintTop,
+    borderRightColor: Colors.borderGlintSide,
+    borderBottomColor: Colors.borderGlintBottom,
+    borderLeftColor: Colors.borderGlintSide,
     paddingHorizontal: 14,
     paddingVertical: Spacing.md,
     fontSize: 14,

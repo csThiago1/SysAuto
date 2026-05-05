@@ -1,6 +1,7 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
   Image,
   Platform,
   ScrollView,
@@ -202,6 +203,8 @@ export default function VistoriaSaidaScreen(): React.JSX.Element {
   const [beforePhotos, setBeforePhotos] = useState<RemotePhoto[]>([]);
   const [beforeLoaded, setBeforeLoaded] = useState<boolean>(false);
 
+  const tabOpacity = useRef(new Animated.Value(1)).current;
+
   const currentStatus = order?.status as ServiceOrderStatus | undefined;
   const nextStatuses = currentStatus != null ? (VALID_TRANSITIONS[currentStatus] ?? []) : [];
 
@@ -255,6 +258,21 @@ export default function VistoriaSaidaScreen(): React.JSX.Element {
   }, [afterPhotos]);
 
   // ── Handlers ────────────────────────────────────────────────────────────────
+
+  const handleTabChange = useCallback((key: string): void => {
+    Animated.timing(tabOpacity, {
+      toValue: 0,
+      duration: 100,
+      useNativeDriver: true,
+    }).start(() => {
+      setActiveTab(key);
+      Animated.timing(tabOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    });
+  }, [tabOpacity]);
 
   const handleBack = useCallback((): void => {
     router.replace(`/(app)/os/${osId ?? ''}`);
@@ -366,7 +384,7 @@ export default function VistoriaSaidaScreen(): React.JSX.Element {
             <TouchableOpacity
               key={tab.key}
               style={styles.tab}
-              onPress={() => setActiveTab(tab.key)}
+              onPress={() => handleTabChange(tab.key)}
               activeOpacity={0.7}
             >
               <Text
@@ -391,8 +409,10 @@ export default function VistoriaSaidaScreen(): React.JSX.Element {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
+        <Animated.View style={{ opacity: tabOpacity }}>
         {activeTab === 'comparativo' && (
           <View style={styles.comparativoContainer}>
+            <SectionDivider label="COMPARATIVO" />
             <Text variant="bodySmall" color={Colors.textTertiary} style={styles.comparativoHint}>
               Fotografe o veículo nos mesmos ângulos da vistoria de entrada para comparação.
             </Text>
@@ -445,6 +465,7 @@ export default function VistoriaSaidaScreen(): React.JSX.Element {
             />
           </View>
         )}
+        </Animated.View>
       </ScrollView>
 
       {/* ── Floating upload button ── */}
@@ -624,12 +645,18 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   compSlot: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.surfaceLight,
     borderRadius: Radii.md,
     padding: Spacing.md,
     gap: Spacing.sm,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderLeftWidth: 1,
+    borderTopColor: Colors.borderGlintTop,
+    borderRightColor: Colors.borderGlintSide,
+    borderBottomColor: Colors.borderGlintBottom,
+    borderLeftColor: Colors.borderGlintSide,
   },
   compSlotLabel: {
     fontWeight: '600',
@@ -697,10 +724,16 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   repairList: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.surfaceLight,
     borderRadius: Radii.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderLeftWidth: 1,
+    borderTopColor: Colors.borderGlintTop,
+    borderRightColor: Colors.borderGlintSide,
+    borderBottomColor: Colors.borderGlintBottom,
+    borderLeftColor: Colors.borderGlintSide,
     overflow: 'hidden',
   },
   repairRow: {
@@ -745,10 +778,16 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   obsInput: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.surfaceLight,
     borderRadius: Radii.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderLeftWidth: 1,
+    borderTopColor: Colors.borderGlintTop,
+    borderRightColor: Colors.borderGlintSide,
+    borderBottomColor: Colors.borderGlintBottom,
+    borderLeftColor: Colors.borderGlintSide,
     paddingHorizontal: 14,
     paddingVertical: Spacing.md,
     fontSize: 14,
