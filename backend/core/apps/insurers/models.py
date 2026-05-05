@@ -136,6 +136,20 @@ class InsurerTenantProfile(models.Model):
         blank=True, default="", verbose_name="Observações operacionais"
     )
 
+    class ImportTool(models.TextChoices):
+        CILIA = "cilia", "Cilia (Webservice)"
+        SOMA = "soma", "Soma (XML)"
+        AUDATEX = "audatex", "Audatex (HTML)"
+        MANUAL = "manual", "Manual"
+
+    import_tool = models.CharField(
+        max_length=20,
+        choices=ImportTool.choices,
+        default=ImportTool.MANUAL,
+        verbose_name="Ferramenta de importação",
+        help_text="Ferramenta usada para importar orçamentos desta seguradora.",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

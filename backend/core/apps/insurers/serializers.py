@@ -73,6 +73,7 @@ class InsurerTenantProfileSerializer(serializers.ModelSerializer):
             "portal_url",
             "sla_dias_uteis",
             "observacoes_operacionais",
+            "import_tool",
             "updated_at",
         ]
         read_only_fields = ["updated_at"]
