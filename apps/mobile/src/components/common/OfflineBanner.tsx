@@ -1,35 +1,36 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
+import { SemanticColors, Spacing } from '@/constants/theme';
 import { useConnectivity } from '@/hooks/useConnectivity';
 
-export function OfflineBanner() {
+export function OfflineBanner(): React.JSX.Element | null {
   const isOnline = useConnectivity();
-  const insets = useSafeAreaInsets();
-
   if (isOnline) return null;
 
   return (
-    <View style={[styles.banner, { paddingTop: insets.top > 0 ? insets.top : 8 }]}>
-      <Text variant="label" style={styles.text}>
-        Sem conexão — modo offline
-      </Text>
+    <View style={styles.banner}>
+      <Ionicons name="cloud-offline-outline" size={14} color={SemanticColors.warning.color} />
+      <Text style={styles.text}>Sem conexão — dados podem estar desatualizados</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   banner: {
-    backgroundColor: '#ef4444',
-    paddingBottom: 8,
-    paddingHorizontal: 16,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 999,
+    gap: 6,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: 6,
+    backgroundColor: SemanticColors.warning.bg,
+    borderBottomWidth: 1,
+    borderBottomColor: SemanticColors.warning.border,
   },
   text: {
-    color: '#ffffff',
-    textAlign: 'center',
+    fontSize: 11,
+    fontWeight: '500',
+    color: SemanticColors.warning.color,
   },
 });
