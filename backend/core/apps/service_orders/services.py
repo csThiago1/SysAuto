@@ -558,7 +558,7 @@ class ServiceOrderService:
         """
         from decimal import Decimal as D
 
-        items = version.items.all().prefetch_related("operations")
+        items = version.items.all()
 
         labor = D("0")
         parts = D("0")
@@ -576,10 +576,9 @@ class ServiceOrderService:
 
             if item.item_type == "PART":
                 parts += item_net
+            else:
+                labor += item_net
             subtotal += item_net
-
-            for op in item.operations.all():
-                labor += op.labor_cost
 
             if item.payer_block == "SEGURADORA":
                 total_seguradora += item_net
