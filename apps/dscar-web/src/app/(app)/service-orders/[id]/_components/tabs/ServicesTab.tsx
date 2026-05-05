@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -50,6 +51,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
   const [catalogSearch, setCatalogSearch] = useState("")
   const [showCatalog, setShowCatalog] = useState(false)
   const [showDiscount, setShowDiscount] = useState(false)
+  const [sourceFilter, setSourceFilter] = useState<string>("all")
 
   // Inline edit state
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -135,6 +137,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
   }
 
   const items           = laborData ?? []
+  const filteredItems   = sourceFilter === "all" ? items : items.filter((i) => i.source_type === sourceFilter)
   const servicesSubtotal = items.reduce((sum, i) => sum + Number(i.unit_price) * Number(i.quantity), 0)
   const servicesDiscount = items.reduce((sum, i) => sum + Number(i.discount), 0)
   const servicesTotal    = items.reduce((sum, i) => sum + i.total, 0)
@@ -245,6 +248,38 @@ export function ServicesTab({ osId, osStatus }: Props) {
         </div>
       )}
 
+      {/* Filter chips */}
+      {items.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {[
+            { id: "all", label: "Todos", count: items.length, color: "" },
+            { id: "import", label: "Seguradora", count: items.filter((i) => i.source_type === "import").length, color: "info" },
+            { id: "complement", label: "Particular", count: items.filter((i) => i.source_type === "complement").length, color: "warning" },
+            { id: "manual", label: "Manual", count: items.filter((i) => i.source_type === "manual").length, color: "" },
+          ]
+            .filter((f) => f.id === "all" || f.count > 0)
+            .map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setSourceFilter(f.id)}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-medium transition",
+                  sourceFilter === f.id
+                    ? f.color === "info"
+                      ? "bg-info-500/15 text-info-500"
+                      : f.color === "warning"
+                      ? "bg-warning-500/15 text-warning-500"
+                      : "bg-white/15 text-white"
+                    : "bg-white/5 text-white/50 hover:bg-white/10"
+                )}
+              >
+                {f.label} ({f.count})
+              </button>
+            ))}
+        </div>
+      )}
+
       {/* Tabela de serviços */}
       {isLoading ? (
         <p className="text-sm text-white/40">Carregando serviços...</p>
@@ -257,6 +292,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
               <TableHeader className="bg-white/[0.03]">
                 <TableRow>
                   <TableHead>Descrição</TableHead>
+                  <TableHead className="text-center">Pagador</TableHead>
                   <TableHead className="text-right">Qtd.</TableHead>
                   <TableHead className="text-right">Unit.</TableHead>
                   <TableHead className="text-right">Desconto</TableHead>
@@ -265,7 +301,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                 </TableRow>
               </TableHeader>
               <TableBody className="bg-white/5">
-                {items.map((item) => {
+                {filteredItems.map((item) => {
                   const isEditing = editingId === item.id
                   return (
                     <TableRow key={item.id}>
@@ -276,6 +312,25 @@ export function ServicesTab({ osId, osStatus }: Props) {
                             ({item.service_catalog_name})
                           </span>
                         )}
+                      </TableCell>
+                      <TableCell className="py-2.5 px-3 text-center">
+                        <span
+                          className={cn(
+                            "rounded px-2 py-0.5 text-[11px]",
+                            item.source_type === "import"
+                              ? "bg-info-500/10 text-info-500"
+                              : item.source_type === "complement"
+                              ? "bg-warning-500/10 text-warning-500"
+                              : "bg-white/10 text-white/50"
+                          )}
+                        >
+                          {item.source_type_display ||
+                            (item.source_type === "import"
+                              ? "Seguradora"
+                              : item.source_type === "complement"
+                              ? "Particular"
+                              : "Manual")}
+                        </span>
                       </TableCell>
                       <TableCell className="py-2.5 px-3 text-right text-white/60">
                         {isEditing ? (

@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Loader2, MoreVertical, Package, Warehouse, ShoppingCart, Shield } from "lucide-react"
 import { toast } from "sonner"
+import { cn } from "@/lib/utils"
 
 import {
   useOSParts,
@@ -50,6 +51,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
   const [compraOpen, setCompraOpen] = useState(false)
   const [seguradoraOpen, setSeguradoraOpen] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [sourceFilter, setSourceFilter] = useState<string>("all")
 
   const isManager = usePermission("MANAGER")
 
@@ -62,6 +64,8 @@ export function PartsTab({ orderId }: PartsTabProps) {
   // ─── Derived data ───────────────────────────────────────────────────────────
 
   const partsList = parts ?? []
+  const filteredParts = sourceFilter === "all" ? partsList : partsList.filter((p) => p.source_type === sourceFilter)
+
   const pendingCount = partsList.filter(
     (p) => p.status_peca !== "recebida" && p.status_peca !== "instalada"
   ).length
@@ -189,6 +193,38 @@ export function PartsTab({ orderId }: PartsTabProps) {
         )}
       </div>
 
+      {/* Filter chips */}
+      {partsList.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {[
+            { id: "all", label: "Todas", count: partsList.length, color: "" },
+            { id: "import", label: "Seguradora", count: partsList.filter((p) => p.source_type === "import").length, color: "info" },
+            { id: "complement", label: "Particular", count: partsList.filter((p) => p.source_type === "complement").length, color: "warning" },
+            { id: "manual", label: "Manual", count: partsList.filter((p) => p.source_type === "manual").length, color: "" },
+          ]
+            .filter((f) => f.id === "all" || f.count > 0)
+            .map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setSourceFilter(f.id)}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-medium transition",
+                  sourceFilter === f.id
+                    ? f.color === "info"
+                      ? "bg-info-500/15 text-info-500"
+                      : f.color === "warning"
+                      ? "bg-warning-500/15 text-warning-500"
+                      : "bg-white/15 text-white"
+                    : "bg-white/5 text-white/50 hover:bg-white/10"
+                )}
+              >
+                {f.label} ({f.count})
+              </button>
+            ))}
+        </div>
+      )}
+
       {/* Table */}
       {isLoading ? (
         <div className="flex justify-center py-8">
@@ -207,6 +243,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
                 <TableHead className="label-mono text-white/40">Tipo</TableHead>
                 <TableHead className="label-mono text-white/40">Origem</TableHead>
                 <TableHead className="label-mono text-white/40">Status</TableHead>
+                <TableHead className="label-mono text-white/40 text-center">Pagador</TableHead>
                 {isManager && (
                   <TableHead className="label-mono text-white/40 text-right">Custo</TableHead>
                 )}
@@ -218,7 +255,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {partsList.map((part) => {
+              {filteredParts.map((part) => {
                 const cobrado = parseFloat(part.unit_price) * parseFloat(part.quantity)
                 const custoReal = part.custo_real ? parseFloat(part.custo_real) : null
                 const hasMargem = custoReal !== null && cobrado > 0
@@ -255,6 +292,27 @@ export function PartsTab({ orderId }: PartsTabProps) {
                     {/* Status */}
                     <TableCell>
                       <StatusPecaBadge status={part.status_peca} />
+                    </TableCell>
+
+                    {/* Pagador */}
+                    <TableCell className="px-3 py-2.5 text-center">
+                      <span
+                        className={cn(
+                          "rounded px-2 py-0.5 text-[11px]",
+                          part.source_type === "import"
+                            ? "bg-info-500/10 text-info-500"
+                            : part.source_type === "complement"
+                            ? "bg-warning-500/10 text-warning-500"
+                            : "bg-white/10 text-white/50"
+                        )}
+                      >
+                        {part.source_type_display ||
+                          (part.source_type === "import"
+                            ? "Seguradora"
+                            : part.source_type === "complement"
+                            ? "Particular"
+                            : "Manual")}
+                      </span>
                     </TableCell>
 
                     {/* Custo (MANAGER+) */}

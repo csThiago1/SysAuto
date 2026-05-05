@@ -71,6 +71,8 @@ export interface ServiceLaborItem {
   unit_price: string
   discount: string
   total: number
+  source_type: string
+  source_type_display: string
   created_at: string
 }
 
