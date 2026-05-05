@@ -690,6 +690,42 @@ class ServiceOrderPart(PaddockBaseModel):
         help_text="Custo real (valor_nf). PC-6: só preenchido quando peça chega.",
     )
 
+    # --- Pagador / Origem / Faturamento ---
+    class Payer(models.TextChoices):
+        INSURER = "insurer", "Seguradora"
+        CUSTOMER = "customer", "Cliente/Particular"
+
+    class SourceType(models.TextChoices):
+        IMPORT = "import", "Importado"
+        COMPLEMENT = "complement", "Complemento Particular"
+        MANUAL = "manual", "Manual"
+
+    class BillingStatus(models.TextChoices):
+        PENDING = "pending", "Pendente"
+        BILLED = "billed", "Faturado"
+
+    payer = models.CharField(
+        max_length=20,
+        choices=Payer.choices,
+        default=Payer.INSURER,
+        verbose_name="Pagador",
+    )
+    source_type = models.CharField(
+        max_length=20,
+        choices=SourceType.choices,
+        default=SourceType.MANUAL,
+        verbose_name="Origem do item",
+    )
+    billing_status = models.CharField(
+        max_length=20,
+        choices=BillingStatus.choices,
+        default=BillingStatus.PENDING,
+        verbose_name="Status de faturamento",
+    )
+    billed_at = models.DateTimeField(
+        null=True, blank=True, verbose_name="Data do faturamento",
+    )
+
     class Meta:
         db_table = "service_orders_part"
         ordering = ["created_at"]
@@ -825,6 +861,42 @@ class ServiceOrderLabor(PaddockBaseModel):
         max_digits=12, decimal_places=2, verbose_name="Valor unitário / Hora"
     )
     discount = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Desconto")
+
+    # --- Pagador / Origem / Faturamento ---
+    class Payer(models.TextChoices):
+        INSURER = "insurer", "Seguradora"
+        CUSTOMER = "customer", "Cliente/Particular"
+
+    class SourceType(models.TextChoices):
+        IMPORT = "import", "Importado"
+        COMPLEMENT = "complement", "Complemento Particular"
+        MANUAL = "manual", "Manual"
+
+    class BillingStatus(models.TextChoices):
+        PENDING = "pending", "Pendente"
+        BILLED = "billed", "Faturado"
+
+    payer = models.CharField(
+        max_length=20,
+        choices=Payer.choices,
+        default=Payer.INSURER,
+        verbose_name="Pagador",
+    )
+    source_type = models.CharField(
+        max_length=20,
+        choices=SourceType.choices,
+        default=SourceType.MANUAL,
+        verbose_name="Origem do item",
+    )
+    billing_status = models.CharField(
+        max_length=20,
+        choices=BillingStatus.choices,
+        default=BillingStatus.PENDING,
+        verbose_name="Status de faturamento",
+    )
+    billed_at = models.DateTimeField(
+        null=True, blank=True, verbose_name="Data do faturamento",
+    )
 
     class Meta:
         db_table = "service_orders_labor"
