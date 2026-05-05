@@ -154,8 +154,12 @@ export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.J
     [state.routes],
   );
 
-  const activeRouteName = state.routes[state.index]?.name;
-  const isHiddenRoute = activeRouteName !== undefined && HIDDEN_ROUTES.has(activeRouteName);
+  const rawActiveRoute = state.routes[state.index]?.name;
+  // 'os' is a nested Stack (detail screens) that belongs to the 'index' tab (OS list).
+  // When user navigates to /(app)/os/*, the active route name is 'os' but the tab
+  // that should be highlighted is 'index'.
+  const activeRouteName = rawActiveRoute === 'os' ? 'index' : rawActiveRoute;
+  const isHiddenRoute = rawActiveRoute !== undefined && HIDDEN_ROUTES.has(rawActiveRoute);
 
   const handleTabPress = useCallback(
     (routeName: string, routeKey: string, isFocused: boolean): void => {
@@ -184,7 +188,7 @@ export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.J
         {visibleRoutes.map((route) => {
           const config = TAB_CONFIG.find((c) => c.routeName === route.name);
           if (!config) return null;
-          const isActive = state.routes[state.index]?.name === route.name;
+          const isActive = activeRouteName === route.name;
           return (
             <TabItem
               key={route.key}
