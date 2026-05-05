@@ -244,10 +244,13 @@ export function PartsTab({ orderId }: PartsTabProps) {
                 <TableHead className="label-mono text-white/40">Origem</TableHead>
                 <TableHead className="label-mono text-white/40">Status</TableHead>
                 <TableHead className="label-mono text-white/40 text-center">Pagador</TableHead>
+                <TableHead className="label-mono text-white/40 text-right">Qtd</TableHead>
+                <TableHead className="label-mono text-white/40 text-right">Unit.</TableHead>
+                <TableHead className="label-mono text-white/40 text-right">Desconto</TableHead>
+                <TableHead className="label-mono text-white/40 text-right">Líquido</TableHead>
                 {isManager && (
                   <TableHead className="label-mono text-white/40 text-right">Custo</TableHead>
                 )}
-                <TableHead className="label-mono text-white/40 text-right">Cobrado</TableHead>
                 {isManager && (
                   <TableHead className="label-mono text-white/40 text-right">Margem</TableHead>
                 )}
@@ -256,7 +259,9 @@ export function PartsTab({ orderId }: PartsTabProps) {
             </TableHeader>
             <TableBody>
               {filteredParts.map((part) => {
-                const cobrado = parseFloat(part.unit_price) * parseFloat(part.quantity)
+                const bruto = parseFloat(part.unit_price) * parseFloat(part.quantity)
+                const desconto = parseFloat(part.discount)
+                const cobrado = bruto - desconto
                 const custoReal = part.custo_real ? parseFloat(part.custo_real) : null
                 const hasMargem = custoReal !== null && cobrado > 0
 
@@ -315,17 +320,34 @@ export function PartsTab({ orderId }: PartsTabProps) {
                       </span>
                     </TableCell>
 
+                    {/* Qtd */}
+                    <TableCell className="text-right font-mono text-sm text-white/60">
+                      {part.quantity}
+                    </TableCell>
+
+                    {/* Unit. */}
+                    <TableCell className="text-right font-mono text-sm text-white/60">
+                      {formatCurrency(parseFloat(part.unit_price))}
+                    </TableCell>
+
+                    {/* Desconto */}
+                    <TableCell className="text-right font-mono text-sm text-white/60">
+                      {parseFloat(part.discount) > 0
+                        ? formatCurrency(parseFloat(part.discount))
+                        : "\u2014"}
+                    </TableCell>
+
+                    {/* Líquido */}
+                    <TableCell className="text-right font-mono text-sm text-white font-semibold">
+                      {formatCurrency(cobrado - parseFloat(part.discount))}
+                    </TableCell>
+
                     {/* Custo (MANAGER+) */}
                     {isManager && (
                       <TableCell className="text-right font-mono text-sm text-white/60">
                         {custoReal !== null ? formatCurrency(custoReal) : "\u2014"}
                       </TableCell>
                     )}
-
-                    {/* Cobrado */}
-                    <TableCell className="text-right font-mono text-sm text-white">
-                      {formatCurrency(cobrado)}
-                    </TableCell>
 
                     {/* Margem (MANAGER+) */}
                     {isManager && (
