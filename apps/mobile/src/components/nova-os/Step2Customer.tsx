@@ -111,7 +111,7 @@ export function Step2Customer({ onNext, onBack }: Step2CustomerProps): React.JSX
   if (isSelected && customer !== null) {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text variant="bodySmall" color={Colors.textTertiary}>
+        <Text style={[Typography.labelMono, { color: Colors.textTertiary }]}>
           Passo 2 de 4
         </Text>
         <Text variant="heading3" style={styles.title}>
@@ -164,7 +164,7 @@ export function Step2Customer({ onNext, onBack }: Step2CustomerProps): React.JSX
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <Text variant="bodySmall" color={Colors.textTertiary}>
+        <Text style={[Typography.labelMono, { color: Colors.textTertiary }]}>
           Passo 2 de 4
         </Text>
         <Text variant="heading3" style={styles.title}>
@@ -268,7 +268,7 @@ export function Step2Customer({ onNext, onBack }: Step2CustomerProps): React.JSX
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <Text variant="bodySmall" color={Colors.textTertiary}>
+      <Text style={[Typography.labelMono, { color: Colors.textTertiary }]}>
         Passo 2 de 4
       </Text>
       <Text variant="heading3" style={styles.title}>
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   customerName: {
-    fontWeight: '600',
+    fontWeight: '700',
   },
   swapLink: {
     marginTop: 8,

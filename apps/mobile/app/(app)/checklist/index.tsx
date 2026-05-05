@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   plate: {
-    letterSpacing: 1,
+    letterSpacing: 3,
     flexShrink: 1,
   },
   vehicleInfo: {

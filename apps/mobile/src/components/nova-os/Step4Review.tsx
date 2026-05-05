@@ -72,7 +72,7 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
       contentContainerStyle={styles.content}
     >
       {/* Step label */}
-      <Text variant="bodySmall" color={Colors.textTertiary}>
+      <Text style={[Typography.labelMono, { color: Colors.textTertiary }]}>
         Passo 4 de 4
       </Text>
 
@@ -143,12 +143,12 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
           </Text>
         )}
         {claimNumber.length > 0 && (
-          <Text variant="bodySmall" color={Colors.textTertiary}>
+          <Text variant="bodySmall" color={Colors.textPrimary}>
             Sinistro: {claimNumber}
           </Text>
         )}
         {customerType === 'insurer' && deductible.length > 0 ? (
-          <Text variant="bodySmall" color={Colors.textTertiary}>Franquia: R$ {deductible}</Text>
+          <Text variant="bodySmall" style={{ color: Colors.textPrimary, fontWeight: '600' }}>Franquia: R$ {deductible}</Text>
         ) : null}
       </View>
 
@@ -234,11 +234,12 @@ const styles = StyleSheet.create({
   plateText: {
     fontSize: 18,
     fontWeight: '700',
-    letterSpacing: 1,
+    letterSpacing: 3,
     color: Colors.textPrimary,
   },
   customerName: {
-    fontWeight: '600',
+    fontWeight: '700',
+    fontSize: 17,
   },
   badge: {
     alignSelf: 'flex-start',

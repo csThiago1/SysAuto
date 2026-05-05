@@ -163,8 +163,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: Colors.textPrimary,
-    fontSize: 17,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     flex: 1,
     textAlign: 'center',
   },
@@ -197,7 +197,9 @@ const styles = StyleSheet.create({
   },
   stepName: {
     textAlign: 'center',
-    ...Typography.labelMono,
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.textPrimary,
     marginTop: 6,
   },
   offlineBanner: {

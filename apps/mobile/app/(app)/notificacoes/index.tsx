@@ -201,8 +201,8 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   legendText: {
-    fontSize: 12,
-    color: Colors.textTertiary,
+    fontSize: 13,
+    color: Colors.textSecondary,
   },
 
   // Loading
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   itemOS: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
     color: Colors.textPrimary,
   },
@@ -308,14 +308,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   itemVehicle: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.textPrimary,
     marginTop: 2,
   },
   itemCustomer: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.textPrimary,
   },
   itemAgent: {
     fontSize: 11,

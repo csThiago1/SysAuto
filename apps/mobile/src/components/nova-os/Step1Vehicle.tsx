@@ -85,7 +85,7 @@ export function Step1Vehicle({ onNext }: Step1VehicleProps): React.JSX.Element {
       )}
 
       {/* Step label */}
-      <Text variant="bodySmall" color={Colors.textTertiary}>
+      <Text style={[Typography.labelMono, { color: Colors.textTertiary }]}>
         Passo 1 de 4
       </Text>
 
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   vehicleName: {
-    fontWeight: '600',
+    fontWeight: '700',
   },
   manualLink: {
     marginTop: 8,

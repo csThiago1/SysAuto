@@ -70,7 +70,7 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
             <View style={styles.plateBadge}>
               <Text style={styles.plate}>{plateLine}</Text>
             </View>
-            <Text variant="bodySmall" color={Colors.textSecondary} numberOfLines={1}>
+            <Text variant="bodySmall" color={Colors.textPrimary} numberOfLines={1}>
               {order.customerName}
               {vehicleLine.length > 0 ? ` · ${vehicleLine}` : ''}
             </Text>

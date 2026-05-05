@@ -76,7 +76,7 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
       keyboardShouldPersistTaps="handled"
     >
       {/* Step label */}
-      <Text variant="bodySmall" color={Colors.textTertiary}>
+      <Text style={[Typography.labelMono, { color: Colors.textTertiary }]}>
         Passo 3 de 4
       </Text>
 
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
   },
   typeChipText: {
-    fontWeight: '500',
+    fontWeight: '700',
   },
   insurerSection: {
     gap: 12,

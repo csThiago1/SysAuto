@@ -154,7 +154,7 @@ export default function ChecklistDetailScreen(): React.ReactElement {
                 {headerTitle}
               </Text>
               {headerSubtitle != null && (
-                <Text variant="caption" style={styles.headerSubtitle} numberOfLines={1}>
+                <Text variant="bodySmall" style={styles.headerSubtitle} numberOfLines={1}>
                   {headerSubtitle}
                 </Text>
               )}
@@ -292,9 +292,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: Colors.textPrimary,
     textAlign: 'center',
+    fontSize: 15,
+    fontWeight: '700',
   },
   headerSubtitle: {
-    color: Colors.textTertiary,
+    color: Colors.textSecondary,
     textAlign: 'center',
   },
   headerRight: {
@@ -331,8 +333,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tabLabel: {
-    color: Colors.textTertiary,
-    fontWeight: '400',
+    color: Colors.textSecondary,
+    fontWeight: '500',
   },
   tabLabelActive: {
     ...Typography.labelMono,

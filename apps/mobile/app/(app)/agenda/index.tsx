@@ -311,8 +311,8 @@ const styles = StyleSheet.create({
     padding: Spacing.sm,
   },
   monthLabel: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: Colors.textPrimary,
   },
 
@@ -414,8 +414,8 @@ const styles = StyleSheet.create({
     marginTop: Spacing.lg,
   },
   eventsSectionTitle: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
     color: Colors.textPrimary,
     marginBottom: Spacing.md,
   },
@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   eventOS: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
     color: Colors.textPrimary,
   },

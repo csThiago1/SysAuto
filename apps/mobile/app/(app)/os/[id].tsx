@@ -246,7 +246,7 @@ function PhotoGroup({ folder, photos, onPhotoPress }: PhotoGroupProps): React.JS
 
   return (
     <View style={styles.photoGroup}>
-      <Text variant="bodySmall" color={Colors.textSecondary} style={styles.photoGroupTitle}>
+      <Text variant="bodySmall" style={styles.photoGroupTitle}>
         {label}
       </Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.photoScroll}>
@@ -285,7 +285,7 @@ function LineItemRow({ item }: LineItemRowProps): React.JSX.Element {
         <Text variant="bodySmall" color={Colors.textPrimary} numberOfLines={2}>
           {item.description}
         </Text>
-        <Text variant="caption" color={Colors.textSecondary}>
+        <Text variant="bodySmall" color={Colors.textPrimary}>
           {item.quantity}x {formatCurrency(item.unit_price)}
         </Text>
       </View>
@@ -458,7 +458,7 @@ const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
   return (
     <View>
       <View style={styles.acompSectionHeader}>
-        <Text variant="label" color={Colors.textSecondary}>
+        <Text variant="label" color={Colors.textPrimary}>
           Fotos de Acompanhamento
         </Text>
         <TouchableOpacity
@@ -787,7 +787,7 @@ export default function OSDetailScreen(): React.JSX.Element {
             {/* Dados Gerais */}
             <SectionDivider label="DADOS GERAIS" />
             <Card style={styles.card}>
-              <InfoRow label="CLIENTE" value={order.customer_name} noDivider={false} />
+              <InfoRow label="CLIENTE" value={<Text variant="bodySmall" style={{ fontWeight: '700', color: Colors.textPrimary }}>{order.customer_name}</Text>} noDivider={false} />
               <InfoRow
                 label="TIPO CLIENTE"
                 value={CUSTOMER_TYPE_LABELS[order.customer_type] ?? order.customer_type}
@@ -812,13 +812,13 @@ export default function OSDetailScreen(): React.JSX.Element {
                   <Text variant="caption" color={Colors.textTertiary}>
                     Peças
                   </Text>
-                  <MonoLabel>{formatCurrency(order.parts_total)}</MonoLabel>
+                  <MonoLabel variant="accent">{formatCurrency(order.parts_total)}</MonoLabel>
                 </View>
                 <View style={styles.totalItem}>
                   <Text variant="caption" color={Colors.textTertiary}>
                     Serviços
                   </Text>
-                  <MonoLabel>{formatCurrency(order.services_total)}</MonoLabel>
+                  <MonoLabel variant="accent">{formatCurrency(order.services_total)}</MonoLabel>
                 </View>
                 <View style={styles.totalItem}>
                   <Text variant="caption" color={Colors.textTertiary}>
@@ -1113,9 +1113,10 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   photoGroupTitle: {
-    fontWeight: '600',
+    fontWeight: '700',
     paddingHorizontal: 16,
     marginBottom: 8,
+    color: Colors.textPrimary,
   },
   photoScroll: {
     paddingLeft: 16,
