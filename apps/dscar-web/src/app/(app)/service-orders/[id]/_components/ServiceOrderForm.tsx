@@ -35,6 +35,10 @@ import { PartsTab } from "./tabs/PartsTab"
 import { RemindersTab } from "./tabs/RemindersTab"
 import { ServicesTab } from "./tabs/ServicesTab"
 import { EstoqueTab } from "@/components/os/EstoqueTab"
+import { InsurerBudgetTab } from "./tabs/InsurerBudgetTab"
+import { ComplementTab } from "./tabs/ComplementTab"
+import { ImportBudgetModal } from "./ImportBudgetModal"
+import { FinancialSummaryCard } from "./FinancialSummaryCard"
 
 const FIELD_LABELS: Record<string, string> = {
   customer_name: "Nome do cliente",
@@ -60,19 +64,7 @@ const FIELD_LABELS: Record<string, string> = {
   chassis: "Chassi",
 }
 
-const TABS = [
-  { id: "opening", label: "Abertura" },
-  { id: "parts", label: "Peças" },
-  { id: "services", label: "Serviços" },
-  { id: "notes", label: "Observações" },
-  { id: "reminders", label: "Lembretes" },
-  { id: "history", label: "Histórico" },
-  { id: "closing", label: "Fechamento" },
-  { id: "estoque", label: "Estoque" },
-  { id: "files", label: "Arquivos" },
-] as const
-
-type TabId = (typeof TABS)[number]["id"]
+type TabId = "opening" | "parts" | "services" | "insurer_budget" | "complement" | "notes" | "reminders" | "history" | "closing" | "estoque" | "files"
 
 interface ServiceOrderFormProps {
   order: ServiceOrder
@@ -124,6 +116,23 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabId>("opening")
   const [personDirtyData, setPersonDirtyData] = useState<PersonPatch | null>(null)
+  const [importModalOpen, setImportModalOpen] = useState(false)
+
+  const isInsurer = order.customer_type === "insurer"
+
+  const TABS = [
+    { id: "opening" as const, label: "Abertura" },
+    { id: "parts" as const, label: "Peças" },
+    { id: "services" as const, label: "Serviços" },
+    ...(isInsurer ? [{ id: "insurer_budget" as const, label: "Orçamento Seguradora" }] : []),
+    ...(isInsurer ? [{ id: "complement" as const, label: "Complemento Particular" }] : []),
+    { id: "notes" as const, label: "Observações" },
+    { id: "reminders" as const, label: "Lembretes" },
+    { id: "history" as const, label: "Histórico" },
+    { id: "closing" as const, label: "Fechamento" },
+    { id: "estoque" as const, label: "Estoque" },
+    { id: "files" as const, label: "Arquivos" },
+  ]
 
   const form = useForm<ServiceOrderUpdateInput>({
     resolver: zodResolver(serviceOrderUpdateSchema),
@@ -234,6 +243,15 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
               Alterações não salvas
             </span>
           )}
+          {isInsurer && (
+            <button
+              type="button"
+              onClick={() => setImportModalOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-md bg-info-600 px-4 py-2 text-sm font-medium text-white hover:bg-info-700"
+            >
+              ⬇ Importar Orçamento
+            </button>
+          )}
           <button
             type="button"
             onClick={() => router.back()}
@@ -275,11 +293,13 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
             <button
               key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => setActiveTab(tab.id as TabId)}
               className={cn(
                 "shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors",
                 activeTab === tab.id
-                  ? "border-primary-600 text-primary-600"
+                  ? tab.id === "complement"
+                    ? "border-warning-500 text-warning-500"
+                    : "border-primary-600 text-primary-600"
                   : "border-transparent text-white/60 hover:border-white/15 hover:text-white/90"
               )}
             >
@@ -301,10 +321,23 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
           {activeTab === "reminders" && <RemindersTab orderId={order.id} />}
           {activeTab === "history" && <HistoryTab order={order} />}
           {activeTab === "closing" && <ClosingTab order={order} />}
+          {activeTab === "insurer_budget" && (
+            <InsurerBudgetTab order={order} onOpenImport={() => setImportModalOpen(true)} />
+          )}
+          {activeTab === "complement" && <ComplementTab orderId={order.id} />}
           {activeTab === "estoque" && <EstoqueTab osId={order.id} />}
           {activeTab === "files" && <FilesTab order={order} />}
         </form>
       </div>
+
+      {/* Import Budget Modal */}
+      {isInsurer && (
+        <ImportBudgetModal
+          order={order}
+          open={importModalOpen}
+          onClose={() => setImportModalOpen(false)}
+        />
+      )}
 
       {/* Erros de validação */}
       {Object.keys(form.formState.errors).length > 0 && (
