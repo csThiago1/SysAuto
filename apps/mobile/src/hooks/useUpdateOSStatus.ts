@@ -22,7 +22,7 @@ export function useUpdateOSStatus(osId: string): {
     setIsUpdating(true);
     setError(null);
     try {
-      await api.patch(`/service-orders/${osId}/`, { status: newStatus });
+      await api.post(`/service-orders/${osId}/transition/`, { new_status: newStatus });
 
       // Atualiza WatermelonDB para que a lista reaja imediatamente (sem aguardar sync)
       const collection = database.get<ServiceOrder>('service_orders');
