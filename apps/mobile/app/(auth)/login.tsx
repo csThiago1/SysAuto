@@ -1,24 +1,32 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   StyleSheet,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '@/components/ui/Text';
-import { Button } from '@/components/ui/Button';
+import { NeonLines } from '@/components/ui/NeonLines';
+import { Colors, SemanticColors, Typography } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const dscarLogo = require('@/../../assets/dscar-logo.png') as number;
 
 export default function LoginScreen() {
   const { loginDev } = useAuth();
+  const passwordRef = useRef<TextInput>(null);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
 
   async function handleLogin() {
     if (!email.trim() || !password.trim()) {
@@ -32,192 +40,242 @@ export default function LoginScreen() {
     try {
       const success = await loginDev(email.trim().toLowerCase(), password);
       if (!success) {
-        setError('Credenciais invalidas. Tente novamente.');
+        setError('Credenciais inválidas. Tente novamente.');
       }
-      // Em caso de sucesso, o AuthGuard redireciona automaticamente
     } catch {
-      setError('Erro inesperado. Verifique sua conexao.');
+      setError('Erro inesperado. Verifique sua conexão.');
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <View style={styles.screen}>
+      {/* Listras neon animadas */}
+      <NeonLines />
+
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Logo placeholder */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logoBadge}>
-              <Text variant="heading1" color="#ffffff" style={styles.logoText}>
-                DS
-              </Text>
-            </View>
-            <Text variant="heading2" style={styles.logoTitle}>
-              DS Car
-            </Text>
-            <Text variant="bodySmall" color="#6b7280" style={styles.logoSubtitle}>
-              Gestao de Ordens de Servico
-            </Text>
-          </View>
+        <View style={styles.content}>
+          {/* Logo */}
+          <Image
+            source={dscarLogo}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <LinearGradient
+            colors={['transparent', '#ea0e03', 'transparent']}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={styles.logoDivider}
+          />
 
-          {/* Formulario */}
+          {/* Títulos */}
+          <Text style={styles.welcome}>Bem-vindo de volta</Text>
+          <Text style={styles.welcomeSub}>ACESSE SUA CONTA PARA CONTINUAR</Text>
+
+          {/* Formulário */}
           <View style={styles.form}>
-            <View style={styles.fieldContainer}>
-              <Text variant="label" style={styles.fieldLabel}>
-                Email
-              </Text>
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="seu@email.com"
-                placeholderTextColor="#9ca3af"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="email"
-                returnKeyType="next"
-                editable={!loading}
-              />
-            </View>
+            <Text style={styles.label}>E-MAIL</Text>
+            <TextInput
+              style={[styles.input, emailFocused && styles.inputFocused]}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="seu@email.com"
+              placeholderTextColor="#333"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="email"
+              returnKeyType="next"
+              editable={!loading}
+              onFocus={() => setEmailFocused(true)}
+              onBlur={() => setEmailFocused(false)}
+              onSubmitEditing={() => passwordRef.current?.focus()}
+            />
 
-            <View style={styles.fieldContainer}>
-              <Text variant="label" style={styles.fieldLabel}>
-                Senha
-              </Text>
-              <TextInput
-                style={styles.input}
-                value={password}
-                onChangeText={setPassword}
-                placeholder="••••••••"
-                placeholderTextColor="#9ca3af"
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="password"
-                returnKeyType="done"
-                onSubmitEditing={handleLogin}
-                editable={!loading}
-              />
-            </View>
+            <Text style={styles.label}>SENHA</Text>
+            <TextInput
+              ref={passwordRef}
+              style={[styles.input, passwordFocused && styles.inputFocused]}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="••••••••"
+              placeholderTextColor="#333"
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="password"
+              returnKeyType="done"
+              editable={!loading}
+              onFocus={() => setPasswordFocused(true)}
+              onBlur={() => setPasswordFocused(false)}
+              onSubmitEditing={handleLogin}
+            />
 
             {error !== null && (
-              <View style={styles.errorContainer}>
-                <Text variant="bodySmall" color="#ef4444">
-                  {error}
-                </Text>
+              <View style={styles.errorBox}>
+                <Text style={styles.errorText}>{error}</Text>
               </View>
             )}
 
-            <Button
-              variant="primary"
-              label="Entrar"
-              loading={loading}
-              fullWidth
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
               onPress={handleLogin}
-              style={styles.loginButton}
-            />
+              activeOpacity={0.85}
+              disabled={loading}
+            >
+              <LinearGradient
+                colors={['#ea0e03', '#c50b02']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.buttonGradient}
+              >
+                <Text style={styles.buttonText}>
+                  {loading ? 'ENTRANDO...' : 'ENTRAR'}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
 
-          {/* Hint dev */}
+          {/* Dev hint */}
           {__DEV__ && (
-            <View style={styles.devHint}>
-              <Text variant="caption" color="#9ca3af" style={styles.devHintText}>
-                DEV: qualquer email + paddock123
-              </Text>
-            </View>
+            <Text style={styles.devHint}>DEV: qualquer email + paddock123</Text>
           )}
-        </ScrollView>
+
+          {/* Footer */}
+          <Text style={styles.powered}>PADDOCK SOLUTIONS</Text>
+        </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: {
+  screen: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#0a0a0a',
   },
   flex: {
     flex: 1,
   },
-  scroll: {
-    flexGrow: 1,
+  content: {
+    flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    alignItems: 'center',
+    paddingHorizontal: 28,
     paddingVertical: 40,
   },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: 48,
+
+  // Logo
+  logo: {
+    width: 180,
+    height: 70,
+    tintColor: '#ffffff',
+    marginBottom: 8,
   },
-  logoBadge: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    backgroundColor: '#e31b1b',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-    shadowColor: '#e31b1b',
+  logoDivider: {
+    width: 40,
+    height: 2,
+    borderRadius: 1,
+    marginBottom: 20,
+  },
+
+  // Títulos
+  welcome: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.85)',
+    marginBottom: 4,
+  },
+  welcomeSub: {
+    ...Typography.labelMono,
+    color: 'rgba(255,255,255,0.25)',
+    marginBottom: 24,
+  },
+
+  // Form
+  form: {
+    width: '100%',
+    gap: 10,
+  },
+  label: {
+    ...Typography.labelMono,
+    marginTop: 4,
+  },
+  input: {
+    width: '100%',
+    height: 46,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1,
+    borderColor: '#222',
+    borderRadius: 9,
+    paddingHorizontal: 14,
+    fontSize: 15,
+    color: '#ffffff',
+  },
+  inputFocused: {
+    borderColor: '#ea0e03',
+    backgroundColor: 'rgba(234,14,3,0.04)',
+    shadowColor: '#ea0e03',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+
+  // Error
+  errorBox: {
+    backgroundColor: SemanticColors.error.bg,
+    borderWidth: 1,
+    borderColor: SemanticColors.error.border,
+    borderRadius: 8,
+    padding: 12,
+  },
+  errorText: {
+    color: SemanticColors.error.color,
+    fontSize: 13,
+  },
+
+  // Button
+  button: {
+    width: '100%',
+    height: 48,
+    borderRadius: 9,
+    overflow: 'hidden',
+    marginTop: 8,
+    shadowColor: '#ea0e03',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
     shadowRadius: 12,
     elevation: 6,
   },
-  logoText: {
-    color: '#ffffff',
+  buttonDisabled: {
+    opacity: 0.7,
   },
-  logoTitle: {
-    marginBottom: 4,
-    color: '#111111',
-  },
-  logoSubtitle: {
-    textAlign: 'center',
-  },
-  form: {
-    gap: 16,
-  },
-  fieldContainer: {
-    gap: 6,
-  },
-  fieldLabel: {
-    color: '#374151',
-  },
-  input: {
-    backgroundColor: '#ffffff',
-    borderWidth: 1.5,
-    borderColor: '#e5e7eb',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: '#1a1a1a',
-    minHeight: 52,
-  },
-  errorContainer: {
-    backgroundColor: '#fef2f2',
-    borderRadius: 8,
-    padding: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: '#ef4444',
-  },
-  loginButton: {
-    marginTop: 8,
-  },
-  devHint: {
-    marginTop: 32,
+  buttonGradient: {
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  devHintText: {
+  buttonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+  },
+
+  // Footer
+  devHint: {
+    marginTop: 24,
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.1)',
     fontStyle: 'italic',
+  },
+  powered: {
+    ...Typography.labelMono,
+    color: 'rgba(255,255,255,0.15)',
+    marginTop: 'auto',
   },
 });
