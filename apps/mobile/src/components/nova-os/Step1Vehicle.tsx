@@ -12,7 +12,7 @@ import { Text } from '@/components/ui/Text';
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { useVehicleByPlate } from '@/hooks/useVehicleByPlate';
 import { useNewOSStore } from '@/stores/new-os.store';
-import { Colors, Radii, SemanticColors } from '@/constants/theme';
+import { Colors, Radii, SemanticColors, Typography } from '@/constants/theme';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -131,8 +131,8 @@ export function Step1Vehicle({ onNext }: Step1VehicleProps): React.JSX.Element {
       {/* Vehicle info card (API result) */}
       {plateSource === 'api' && vehicleInfo !== null && (
         <View style={styles.vehicleCard}>
-          <Text variant="label" color="#15803d">
-            Dados encontrados automaticamente
+          <Text style={Typography.labelMono}>
+            Dados encontrados
           </Text>
           <Text variant="body" style={styles.vehicleName}>
             {vehicleInfo.brand} {vehicleInfo.model}
@@ -247,9 +247,13 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   vehicleCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.surfaceLight,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderTopColor: Colors.borderGlintTop,
+    borderRightColor: Colors.borderGlintSide,
+    borderBottomColor: Colors.borderGlintBottom,
+    borderLeftColor: Colors.brand,
+    borderLeftWidth: 3,
     borderRadius: Radii.md,
     padding: 14,
     gap: 4,

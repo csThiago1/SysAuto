@@ -9,7 +9,7 @@ import {
 
 import { Text } from '@/components/ui/Text';
 import { useNewOSStore, type CustomerType, type OSType } from '@/stores/new-os.store';
-import { Colors, Radii } from '@/constants/theme';
+import { Colors, Radii, Typography } from '@/constants/theme';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -83,7 +83,7 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
 
       {/* Vehicle card */}
       <View style={styles.summaryCard}>
-        <Text variant="label" color={Colors.textTertiary}>
+        <Text style={Typography.labelMono}>
           VEÍCULO
         </Text>
         <Text style={styles.plateText}>
@@ -107,7 +107,7 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
 
       {/* Customer card */}
       <View style={styles.summaryCard}>
-        <Text variant="label" color={Colors.textTertiary}>
+        <Text style={Typography.labelMono}>
           CLIENTE
         </Text>
         <Text variant="body" color={Colors.textPrimary} style={styles.customerName}>
@@ -125,7 +125,7 @@ export function Step4Review({ onConfirm, onBack, isCreating, error }: Step4Revie
 
       {/* Service card */}
       <View style={styles.summaryCard}>
-        <Text variant="label" color={Colors.textTertiary}>
+        <Text style={Typography.labelMono}>
           SERVIÇO
         </Text>
         <Text variant="body" color={Colors.textPrimary}>
@@ -219,10 +219,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   summaryCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.surfaceLight,
     borderRadius: Radii.md,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderTopColor: Colors.borderGlintTop,
+    borderRightColor: Colors.borderGlintSide,
+    borderBottomColor: Colors.borderGlintBottom,
+    borderLeftColor: Colors.brand,
+    borderLeftWidth: 3,
     padding: 16,
     marginBottom: 12,
     gap: 4,

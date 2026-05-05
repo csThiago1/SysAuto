@@ -12,7 +12,7 @@ import { Text } from '@/components/ui/Text';
 import { useCustomerSearch, type CustomerSearchResult } from '@/hooks/useCustomerSearch';
 import { useCustomerCreate } from '@/hooks/useCustomerCreate';
 import { useNewOSStore } from '@/stores/new-os.store';
-import { Colors, Radii } from '@/constants/theme';
+import { Colors, Radii, Typography } from '@/constants/theme';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -119,7 +119,7 @@ export function Step2Customer({ onNext, onBack }: Step2CustomerProps): React.JSX
         </Text>
 
         <View style={styles.customerCard}>
-          <Text variant="label" color="#15803d">
+          <Text style={Typography.labelMono}>
             Cliente selecionado
           </Text>
           <Text variant="body" style={styles.customerName}>
@@ -377,13 +377,17 @@ const styles = StyleSheet.create({
   resultsList: {
     borderRadius: Radii.md,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderTopColor: Colors.borderGlintTop,
+    borderRightColor: Colors.borderGlintSide,
+    borderBottomColor: Colors.borderGlintBottom,
+    borderLeftColor: Colors.borderGlintSide,
+    backgroundColor: Colors.surfaceLight,
     overflow: 'hidden',
   },
   resultRow: {
     padding: 14,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.bg,
+    borderBottomColor: Colors.divider,
     gap: 2,
   },
   newClientLink: {
@@ -391,9 +395,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   customerCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.surfaceLight,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderTopColor: Colors.borderGlintTop,
+    borderRightColor: Colors.borderGlintSide,
+    borderBottomColor: Colors.borderGlintBottom,
+    borderLeftColor: Colors.brand,
+    borderLeftWidth: 3,
     borderRadius: Radii.md,
     padding: 14,
     gap: 4,

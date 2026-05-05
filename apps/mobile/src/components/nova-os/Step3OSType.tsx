@@ -11,7 +11,7 @@ import {
 import { Text } from '@/components/ui/Text';
 import { useInsurers, type InsurerOption } from '@/hooks/useInsurers';
 import { useNewOSStore, type CustomerType, type OSType } from '@/stores/new-os.store';
-import { Colors, Radii } from '@/constants/theme';
+import { Colors, Radii, Typography } from '@/constants/theme';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -86,7 +86,7 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
       </Text>
 
       {/* Customer type label */}
-      <Text variant="label" color={Colors.textPrimary}>
+      <Text style={Typography.labelMono}>
         Tipo de Cliente
       </Text>
 
@@ -113,7 +113,7 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
       </View>
 
       {/* OS type label */}
-      <Text variant="label" color={Colors.textPrimary} style={styles.serviceLabel}>
+      <Text style={[Typography.labelMono, styles.serviceLabel]}>
         Tipo de Serviço
       </Text>
 
@@ -191,7 +191,7 @@ export function Step3OSType({ onNext, onBack }: Step3OSTypeProps): React.JSX.Ele
           {/* insured_type toggle */}
           {selectedInsurer !== null && (
             <>
-              <Text variant="label" color={Colors.textPrimary}>Tipo de segurado</Text>
+              <Text style={Typography.labelMono}>Tipo de segurado</Text>
               <View style={styles.toggleRow}>
                 {INSURED_TYPES.map((it) => {
                   const isActive = insuredType === it.key;
@@ -338,7 +338,11 @@ const styles = StyleSheet.create({
   insurerList: {
     borderRadius: Radii.md,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderTopColor: Colors.borderGlintTop,
+    borderRightColor: Colors.borderGlintSide,
+    borderBottomColor: Colors.borderGlintBottom,
+    borderLeftColor: Colors.borderGlintSide,
+    backgroundColor: Colors.surfaceLight,
     overflow: 'hidden',
   },
   insurerRow: {
@@ -348,17 +352,21 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.bg,
+    borderBottomColor: Colors.divider,
   },
   selectedInsurerCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: Colors.bg,
+    backgroundColor: Colors.surfaceLight,
     borderRadius: Radii.md,
     padding: 14,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderTopColor: Colors.borderGlintTop,
+    borderRightColor: Colors.borderGlintSide,
+    borderBottomColor: Colors.borderGlintBottom,
+    borderLeftColor: Colors.brand,
+    borderLeftWidth: 3,
   },
   selectedInsurerName: {
     flex: 1,
