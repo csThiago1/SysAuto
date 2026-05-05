@@ -30,6 +30,11 @@ export type InsuredType     = "insured" | "third";
 export type VehicleLocation = "in_transit" | "workshop";
 export type FuelType        = "flex" | "gasoline" | "ethanol" | "diesel" | "electric" | "hybrid" | string;
 
+// ── Complemento Particular ───────────────────────────────────────
+export type PayerType       = "insurer" | "customer";
+export type SourceType      = "import" | "complement" | "manual";
+export type BillingStatusType = "pending" | "billed";
+
 // ─── Pastas de fotos ───────────────────────────────────────────────────────────
 
 export type OSPhotoFolder =
@@ -136,6 +141,13 @@ export interface ServiceOrderPart {
   pedido_compra: string | null;
   created_at: string;
   updated_at: string;
+  payer: PayerType;
+  payer_display: string;
+  source_type: SourceType;
+  source_type_display: string;
+  billing_status: BillingStatusType;
+  billing_status_display: string;
+  billed_at: string | null;
 }
 
 export interface ServiceOrderLabor {
@@ -147,6 +159,13 @@ export interface ServiceOrderLabor {
   total: number;
   created_at: string;
   updated_at: string;
+  payer: PayerType;
+  payer_display: string;
+  source_type: SourceType;
+  source_type_display: string;
+  billing_status: BillingStatusType;
+  billing_status_display: string;
+  billed_at: string | null;
 }
 
 // ─── Budget Snapshots ─────────────────────────────────────────────────────────
@@ -349,4 +368,89 @@ export interface ServiceOrder {
   opened_at: string;
   created_at: string;
   updated_at: string;
+}
+
+// ── Versões / Import ─────────────────────────────────────────────
+export interface ServiceOrderVersionItem {
+  id: string;
+  bucket: string;
+  payer_block: string;
+  item_type: "PART" | "SERVICE" | "EXTERNAL_SERVICE" | "FEE";
+  description: string;
+  external_code: string;
+  part_type: string;
+  quantity: number;
+  unit_price: number;
+  discount_pct: number;
+  net_price: number;
+  flag_inclusao_manual: boolean;
+}
+
+export interface ServiceOrderVersion {
+  id: string;
+  version_number: number;
+  external_version: string;
+  source: string;
+  source_display: string;
+  status: string;
+  status_display: string;
+  subtotal: string;
+  discount_total: string;
+  net_total: string;
+  labor_total: string;
+  parts_total: string;
+  total_seguradora: string;
+  total_complemento_particular: string;
+  total_franquia: string;
+  created_at: string;
+  approved_at: string | null;
+  items: ServiceOrderVersionItem[];
+}
+
+export interface VersionDiffItem {
+  description: string;
+  item_type: string;
+  old_value: string | null;
+  new_value: string | null;
+  change_type: "added" | "removed" | "changed" | "unchanged";
+  is_executed: boolean;
+}
+
+export interface VersionDiffResponse {
+  action: "diff";
+  current_version: ServiceOrderVersion;
+  new_version: ServiceOrderVersion;
+  diff_items: VersionDiffItem[];
+  totals_diff: {
+    old_total: string;
+    new_total: string;
+    difference: string;
+  };
+}
+
+export interface ImportBudgetResponse {
+  action: "applied" | "diff";
+  version?: ServiceOrderVersion;
+  current_version?: ServiceOrderVersion;
+  new_version?: ServiceOrderVersion;
+  diff_items?: VersionDiffItem[];
+  totals_diff?: { old_total: string; new_total: string; difference: string };
+}
+
+// ── Resumo Financeiro ────────────────────────────────────────────
+export interface FinancialSummary {
+  insurer_parts: string;
+  insurer_labor: string;
+  insurer_subtotal: string;
+  deductible: string;
+  insurer_net: string;
+  complement_parts: string;
+  complement_labor: string;
+  complement_subtotal: string;
+  complement_billed: string;
+  complement_pending: string;
+  customer_owes: string;
+  insurer_owes: string;
+  grand_total: string;
+  active_version: ServiceOrderVersion | null;
 }
