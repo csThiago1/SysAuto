@@ -686,7 +686,7 @@ export default function OSDetailScreen(): React.JSX.Element {
           <TouchableOpacity onPress={handleBack} style={styles.headerBackBtn} activeOpacity={0.7} hitSlop={{ top: 11, bottom: 11, left: 11, right: 11 }}>
             <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
           </TouchableOpacity>
-          <MonoLabel variant="accent">{`OS #${order.number}`}</MonoLabel>
+          <MonoLabel variant="accent" size="md">{`OS #${order.number}`}</MonoLabel>
         </View>
         {/* Body row: plate + vehicle + status */}
         <View style={styles.headerBodyRow}>

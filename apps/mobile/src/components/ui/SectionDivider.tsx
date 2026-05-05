@@ -23,6 +23,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   label: {
     ...Typography.labelMono,
