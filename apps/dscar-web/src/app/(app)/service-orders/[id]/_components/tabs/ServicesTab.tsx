@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Plus, Search } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -45,6 +46,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
   const [showCatalog, setShowCatalog] = useState(false)
   const [showDiscount, setShowDiscount] = useState(false)
   const [sourceFilter, setSourceFilter] = useState<string>("all")
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; desc: string } | null>(null)
 
   // Inline edit state
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -90,14 +92,19 @@ export function ServicesTab({ osId, osStatus }: Props) {
     }
   }
 
-  async function handleDelete(laborId: string, desc: string) {
-    if (!confirm(`Remover "${desc}"?`)) return
+  function handleDelete(laborId: string, desc: string) {
+    setDeleteTarget({ id: laborId, desc })
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget) return
     try {
-      await deleteMutation.mutateAsync(laborId)
+      await deleteMutation.mutateAsync(deleteTarget.id)
       toast.success("Serviço removido.")
     } catch {
       toast.error("Erro ao remover serviço.")
     }
+    setDeleteTarget(null)
   }
 
   function startEdit(item: ServiceItem) {
@@ -275,7 +282,11 @@ export function ServicesTab({ osId, osStatus }: Props) {
 
       {/* Tabela de serviços */}
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Carregando serviços...</p>
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-12 rounded-md bg-muted animate-pulse" />
+          ))}
+        </div>
       ) : items.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted-foreground">Nenhum serviço adicionado.</p>
       ) : (
@@ -313,6 +324,15 @@ export function ServicesTab({ osId, osStatus }: Props) {
           </div>
         </>
       )}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}
+        title="Remover Serviço"
+        description={`Tem certeza que deseja remover "${deleteTarget?.desc}"?`}
+        confirmLabel="Remover"
+        variant="destructive"
+        onConfirm={confirmDelete}
+      />
     </div>
   )
 }

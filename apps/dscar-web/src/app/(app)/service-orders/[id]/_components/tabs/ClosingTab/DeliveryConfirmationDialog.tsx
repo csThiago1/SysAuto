@@ -7,6 +7,13 @@ import type { ServiceOrder } from "@paddock/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { useDeliverOS } from "../../../_hooks/useOSItems"
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -47,18 +54,20 @@ export function DeliveryConfirmationDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-muted/50 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+    <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="max-w-md p-0 overflow-hidden">
         {/* Header */}
-        <div className="flex items-center gap-2.5 bg-success-500/10 border-b border-success-500/20 px-5 py-4">
-          <Truck className="h-5 w-5 text-success-400 shrink-0" />
-          <div>
-            <p className="font-semibold text-success-400">Registrar Entrega</p>
-            <p className="text-xs text-success-400/70">
-              OS #{order.number} — {order.plate}
-            </p>
+        <DialogHeader className="bg-success-500/10 border-b border-success-500/20 px-5 py-4">
+          <div className="flex items-center gap-2.5">
+            <Truck className="h-5 w-5 text-success-400 shrink-0" />
+            <div>
+              <DialogTitle className="text-success-400">Registrar Entrega</DialogTitle>
+              <p className="text-xs text-success-400/70">
+                OS #{order.number} — {order.plate}
+              </p>
+            </div>
           </div>
-        </div>
+        </DialogHeader>
 
         {/* Body */}
         <div className="p-5 space-y-4">
@@ -135,7 +144,7 @@ export function DeliveryConfirmationDialog({
         </div>
 
         {/* Footer */}
-        <div className="flex gap-2 justify-end px-5 pb-5">
+        <DialogFooter className="px-5 pb-5">
           <Button variant="ghost" onClick={onClose}>
             Cancelar
           </Button>
@@ -154,8 +163,8 @@ export function DeliveryConfirmationDialog({
               </>
             )}
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

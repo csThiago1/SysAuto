@@ -26,6 +26,11 @@ export function withRoleGuard<P extends object>(
       }
     }, [status, allowed, router]);
 
+    if (status === "loading") {
+      return React.createElement("div", {
+        className: "flex-1 animate-pulse bg-muted/30 rounded-lg m-6 min-h-[200px]"
+      });
+    }
     if (status !== "authenticated" || !allowed) return null;
     return React.createElement(Component, props);
   }

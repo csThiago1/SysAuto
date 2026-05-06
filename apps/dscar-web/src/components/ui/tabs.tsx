@@ -61,9 +61,48 @@ interface TabsListProps {
 }
 
 function TabsList({ className, children }: TabsListProps) {
+  const handleKeyDown = React.useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      const list = e.currentTarget
+      const tabs = Array.from(
+        list.querySelectorAll<HTMLButtonElement>('[role="tab"]:not([disabled])')
+      )
+      if (tabs.length === 0) return
+
+      const current = document.activeElement as HTMLElement
+      const idx = tabs.indexOf(current as HTMLButtonElement)
+      if (idx === -1) return
+
+      let next: HTMLButtonElement | undefined
+      switch (e.key) {
+        case "ArrowRight":
+          next = tabs[(idx + 1) % tabs.length]
+          break
+        case "ArrowLeft":
+          next = tabs[(idx - 1 + tabs.length) % tabs.length]
+          break
+        case "Home":
+          next = tabs[0]
+          break
+        case "End":
+          next = tabs[tabs.length - 1]
+          break
+        default:
+          return
+      }
+      if (next) {
+        e.preventDefault()
+        next.focus()
+        next.click()
+      }
+    },
+    []
+  )
+
   return (
     <div
       role="tablist"
+      onKeyDown={handleKeyDown}
       className={cn(
         "inline-flex items-center rounded-lg p-1 gap-1",
         className
@@ -91,6 +130,7 @@ function TabsTrigger({ value, className, children, disabled }: TabsTriggerProps)
     <button
       role="tab"
       type="button"
+      tabIndex={isActive ? 0 : -1}
       aria-selected={isActive}
       disabled={disabled}
       onClick={() => ctx.onValueChange(value)}

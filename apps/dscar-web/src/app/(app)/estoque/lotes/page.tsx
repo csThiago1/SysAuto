@@ -5,6 +5,13 @@ import { Layers, Printer, ArrowRightLeft, ArrowDownToLine } from "lucide-react"
 import { useLotes, useBaixarInsumo } from "@/hooks/useInventory"
 import { useTransferir } from "@/hooks/useInventoryMovement"
 import { PosicaoSelector } from "@/components/inventory/PosicaoSelector"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import type { LoteInsumo } from "@paddock/types"
 import { toast } from "sonner"
 
@@ -91,9 +98,11 @@ function BaixarModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-lg border border-border bg-[#1a1a1c] p-6 space-y-4">
-        <h3 className="text-sm font-semibold text-foreground">Baixar Insumo</h3>
+    <Dialog open onOpenChange={(v) => { if (!v) onClose() }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Baixar Insumo</DialogTitle>
+        </DialogHeader>
         <p className="text-xs text-muted-foreground">
           {lote.material_nome}{" "}
           <span className="font-mono text-foreground/60">
@@ -128,7 +137,7 @@ function BaixarModal({
             className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
-        <div className="flex justify-end gap-2">
+        <DialogFooter>
           <button
             type="button"
             onClick={onClose}
@@ -144,9 +153,9 @@ function BaixarModal({
           >
             {baixar.isPending ? "Baixando..." : "Baixar"}
           </button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -180,9 +189,11 @@ function TransferirLoteModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-2xl rounded-lg border border-border bg-[#1a1a1c] p-6 space-y-4">
-        <h3 className="text-sm font-semibold text-foreground">Transferir Lote</h3>
+    <Dialog open onOpenChange={(v) => { if (!v) onClose() }}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Transferir Lote</DialogTitle>
+        </DialogHeader>
         <p className="text-xs text-muted-foreground">
           {lote.material_nome}{" "}
           <span className="font-mono text-foreground/60">{lote.codigo_barras}</span>
@@ -194,7 +205,7 @@ function TransferirLoteModal({
           </label>
           <PosicaoSelector value={nivelId} onChange={setNivelId} />
         </div>
-        <div className="flex justify-end gap-2">
+        <DialogFooter>
           <button
             type="button"
             onClick={onClose}
@@ -210,9 +221,9 @@ function TransferirLoteModal({
           >
             {transferir.isPending ? "Transferindo..." : "Transferir"}
           </button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 

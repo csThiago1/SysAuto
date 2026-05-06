@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { ArrowRight, Loader2, ChevronDown, Save } from "lucide-react"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 
 import { serviceOrderUpdateSchema, type ServiceOrderUpdateInput } from "../_schemas/service-order.schema"
 import { buildFormDefaults, FIELD_LABELS } from "../_utils/form-defaults"
@@ -50,6 +51,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   const [activeTab, setActiveTab] = useState<TabId>("opening")
   const [personDirtyData, setPersonDirtyData] = useState<PersonPatch | null>(null)
   const [importModalOpen, setImportModalOpen] = useState(false)
+  const [showBackConfirm, setShowBackConfirm] = useState(false)
 
   const TABS: { id: TabId; label: string }[] = [
     { id: "opening", label: "Abertura" },
@@ -97,9 +99,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
 
   const handleBack = useCallback(() => {
     if (isDirty) {
-      if (window.confirm("Existem alterações não salvas. Deseja sair mesmo assim?")) {
-        router.back()
-      }
+      setShowBackConfirm(true)
     } else {
       router.back()
     }
@@ -149,12 +149,12 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b bg-muted/50 px-6 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-muted/50 px-6 py-4">
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-bold text-foreground">OS #{order.number}</h1>
           <StatusBadge status={order.status as ServiceOrderStatus} />
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <DocumentsDropdown order={order} />
 
           {/* Status transition dropdown — hidden for terminal statuses */}
@@ -244,11 +244,34 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
 
       {/* Tabs */}
       <div className="border-b bg-muted/50">
-        <nav className="flex overflow-x-auto px-6" aria-label="Abas da OS">
+        <nav
+          className="flex overflow-x-auto px-6"
+          role="tablist"
+          aria-label="Abas da OS"
+          onKeyDown={(e) => {
+            const tabs = Array.from(
+              e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+            )
+            const idx = tabs.indexOf(document.activeElement as HTMLButtonElement)
+            if (idx === -1) return
+            let next: HTMLButtonElement | undefined
+            switch (e.key) {
+              case "ArrowRight": next = tabs[(idx + 1) % tabs.length]; break
+              case "ArrowLeft": next = tabs[(idx - 1 + tabs.length) % tabs.length]; break
+              case "Home": next = tabs[0]; break
+              case "End": next = tabs[tabs.length - 1]; break
+              default: return
+            }
+            if (next) { e.preventDefault(); next.focus(); next.click() }
+          }}
+        >
           {TABS.map((tab) => (
             <button
               key={tab.id}
               type="button"
+              role="tab"
+              tabIndex={activeTab === tab.id ? 0 : -1}
+              aria-selected={activeTab === tab.id}
               onClick={() => setActiveTab(tab.id as TabId)}
               className={cn(
                 "shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors",
@@ -279,6 +302,18 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
           {activeTab === "files" && <FilesTab order={order} />}
         </form>
       </div>
+
+      {/* Confirm back with unsaved changes */}
+      <ConfirmDialog
+        open={showBackConfirm}
+        onOpenChange={setShowBackConfirm}
+        title="Alterações não salvas"
+        description="Existem alterações não salvas. Deseja sair mesmo assim?"
+        confirmLabel="Sair sem salvar"
+        cancelLabel="Continuar editando"
+        variant="destructive"
+        onConfirm={() => router.back()}
+      />
 
       {/* Import Budget Modal */}
       <ImportBudgetModal

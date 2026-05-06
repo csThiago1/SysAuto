@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ExternalLink, Car, DollarSign, CheckCircle } from "lucide-react"
+import { ExternalLink, Car, DollarSign, CheckCircle, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react"
 import { formatDate } from "@paddock/utils"
 
 import type { ServiceOrder } from "@paddock/types"
@@ -21,11 +21,28 @@ import { BillingModal } from "../[id]/_components/BillingModal"
 
 interface ServiceOrderTableProps {
   orders: ServiceOrder[]
+  ordering?: string
+  onOrderingChange?: (ordering: string) => void
 }
 
-export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
+function SortIcon({ field, ordering }: { field: string; ordering?: string }) {
+  if (ordering === field) return <ArrowUp className="h-3 w-3 ml-1 inline-block" />
+  if (ordering === `-${field}`) return <ArrowDown className="h-3 w-3 ml-1 inline-block" />
+  return <ArrowUpDown className="h-3 w-3 ml-1 inline-block opacity-0 group-hover/th:opacity-50" />
+}
+
+export function ServiceOrderTable({ orders, ordering, onOrderingChange }: ServiceOrderTableProps) {
   const router = useRouter()
   const [billingOrder, setBillingOrder] = useState<ServiceOrder | null>(null)
+
+  const toggleSort = (field: string) => {
+    if (!onOrderingChange) return
+    if (ordering === field) onOrderingChange(`-${field}`)
+    else if (ordering === `-${field}`) onOrderingChange("")
+    else onOrderingChange(field)
+  }
+
+  const sortableClass = onOrderingChange ? "cursor-pointer select-none group/th hover:text-foreground transition-colors" : ""
 
   const BILLABLE_STATUSES = new Set([
     "authorized", "repair", "mechanic", "bodywork", "painting",
@@ -38,13 +55,23 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/30 hover:bg-muted/30 border-b border-border">
-            <TableHead className="w-[80px] label-mono text-muted-foreground">OS</TableHead>
-            <TableHead className="min-w-[160px] label-mono text-muted-foreground">CLIENTE</TableHead>
+            <TableHead className={cn("w-[80px] label-mono text-muted-foreground", sortableClass)} onClick={() => toggleSort("number")}>
+              OS<SortIcon field="number" ordering={ordering} />
+            </TableHead>
+            <TableHead className={cn("min-w-[160px] label-mono text-muted-foreground", sortableClass)} onClick={() => toggleSort("customer_name")}>
+              CLIENTE<SortIcon field="customer_name" ordering={ordering} />
+            </TableHead>
             <TableHead className="w-[140px] label-mono text-muted-foreground">SEGURADORA</TableHead>
-            <TableHead className="w-[100px] label-mono text-muted-foreground">PLACA</TableHead>
+            <TableHead className={cn("w-[100px] label-mono text-muted-foreground", sortableClass)} onClick={() => toggleSort("plate")}>
+              PLACA<SortIcon field="plate" ordering={ordering} />
+            </TableHead>
             <TableHead className="min-w-[150px] label-mono text-muted-foreground">VEÍCULO</TableHead>
-            <TableHead className="w-[130px] label-mono text-muted-foreground">DATAS</TableHead>
-            <TableHead className="w-[150px] label-mono text-muted-foreground">STATUS</TableHead>
+            <TableHead className={cn("w-[130px] label-mono text-muted-foreground", sortableClass)} onClick={() => toggleSort("entry_date")}>
+              DATAS<SortIcon field="entry_date" ordering={ordering} />
+            </TableHead>
+            <TableHead className={cn("w-[150px] label-mono text-muted-foreground", sortableClass)} onClick={() => toggleSort("status")}>
+              STATUS<SortIcon field="status" ordering={ordering} />
+            </TableHead>
             <TableHead className="w-[50px] label-mono text-muted-foreground">$</TableHead>
             <TableHead className="w-[50px]"></TableHead>
           </TableRow>
@@ -76,7 +103,7 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                   <div className="flex items-center gap-2">
                     <div className="h-6 w-6 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-muted/50 border border-border">
                       {order.customer_type === "insurer" && order.insurer_detail?.logo ? (
-                        <img src={order.insurer_detail.logo} alt="" className="h-full w-full object-contain p-0.5" />
+                        <img src={order.insurer_detail.logo} alt={order.insurer_detail?.display_name ?? ""} className="h-full w-full object-contain p-0.5" />
                       ) : order.customer_type === "insurer" && order.insurer_detail?.abbreviation ? (
                         <span
                           className="h-full w-full flex items-center justify-center text-foreground text-[9px] font-bold"
@@ -145,7 +172,7 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                     <button
                       onClick={(e) => { e.stopPropagation(); setBillingOrder(order) }}
                       className="inline-flex items-center justify-center h-8 w-8 rounded-md text-success-400 hover:bg-success-500/10 transition-colors"
-                      title="Faturar OS"
+                      aria-label="Faturar OS"
                     >
                       <DollarSign className="h-4 w-4" />
                     </button>

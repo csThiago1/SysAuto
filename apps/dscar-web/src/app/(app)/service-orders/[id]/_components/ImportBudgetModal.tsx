@@ -9,6 +9,13 @@ import { apiFetch } from "@/lib/api"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import type { ImportBudgetResponse, ServiceOrder } from "@paddock/types"
 import { ImportDiffView } from "./ImportDiffView"
 
@@ -84,81 +91,81 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
     onError: () => toast.error("Erro ao aplicar versão. Tente novamente."),
   })
 
-  if (!open) return null
-
-  if (diffResult?.action === "diff") {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-        <div className="max-h-[85vh] w-full max-w-4xl overflow-y-auto rounded-xl border border-border bg-surface-900 shadow-2xl">
-          <ImportDiffView
-            diffResult={diffResult}
-            onApply={() => diffResult.new_version && applyMutation.mutate(diffResult.new_version.id)}
-            onCancel={() => { setDiffResult(null); onClose() }}
-            isApplying={applyMutation.isPending}
-          />
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-lg rounded-xl border border-border bg-surface-900 p-6 shadow-2xl">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">Importar Orçamento</h2>
+    <>
+      <Dialog open={!!diffResult && diffResult.action === "diff"} onOpenChange={(v) => { if (!v) setDiffResult(null) }}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto p-0">
+          {diffResult?.action === "diff" && (
+            <ImportDiffView
+              diffResult={diffResult}
+              onApply={() => diffResult.new_version && applyMutation.mutate(diffResult.new_version.id)}
+              onCancel={() => { setDiffResult(null); onClose() }}
+              isApplying={applyMutation.isPending}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
-        <div className="mb-5">
-          <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Fonte de Importação
-          </label>
-          <div className="flex gap-2">
-            {SOURCES.map((s) => (
-              <button key={s.id} type="button" onClick={() => setSource(s.id)}
-                className={cn("flex-1 rounded-lg border p-3 text-center transition",
-                  source === s.id ? "border-info-500 bg-info-500/10" : "border-border bg-muted/50 hover:bg-muted",
-                )}>
-                <div className={cn("text-sm font-semibold", source === s.id ? "text-info-500" : "text-foreground/60")}>{s.label}</div>
-                <div className="text-[11px] text-muted-foreground">{s.sub}</div>
-              </button>
-            ))}
-          </div>
-        </div>
+      <Dialog open={open && !diffResult} onOpenChange={(v) => { if (!v) onClose() }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Importar Orçamento</DialogTitle>
+          </DialogHeader>
 
-        {source === "cilia" && (
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="casualty">Nº Sinistro</Label>
-              <Input id="casualty" value={casualtyNumber} onChange={(e) => setCasualtyNumber(e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="budget">Nº Orçamento</Label>
-              <Input id="budget" value={budgetNumber} onChange={(e) => setBudgetNumber(e.target.value)} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="version">
-                Versão <span className="text-muted-foreground">(vazio = mais recente)</span>
-              </Label>
-              <Input id="version" value={versionNumber} onChange={(e) => setVersionNumber(e.target.value)} placeholder="Ex: 3" />
+          <div className="mb-5">
+            <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Fonte de Importação
+            </label>
+            <div className="flex gap-2">
+              {SOURCES.map((s) => (
+                <button key={s.id} type="button" onClick={() => setSource(s.id)}
+                  className={cn("flex-1 rounded-lg border p-3 text-center transition",
+                    source === s.id ? "border-info-500 bg-info-500/10" : "border-border bg-muted/50 hover:bg-muted",
+                  )}>
+                  <div className={cn("text-sm font-semibold", source === s.id ? "text-info-500" : "text-foreground/60")}>{s.label}</div>
+                  <div className="text-[11px] text-muted-foreground">{s.sub}</div>
+                </button>
+              ))}
             </div>
           </div>
-        )}
 
-        {source !== "cilia" && (
-          <div className="space-y-1.5">
-            <Label>Arquivo {source === "soma" ? "XML" : "HTML"}</Label>
-            <Input type="file" accept={source === "soma" ? ".xml" : ".html,.htm"}
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-          </div>
-        )}
+          {source === "cilia" && (
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="casualty">Nº Sinistro</Label>
+                <Input id="casualty" value={casualtyNumber} onChange={(e) => setCasualtyNumber(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="budget">Nº Orçamento</Label>
+                <Input id="budget" value={budgetNumber} onChange={(e) => setBudgetNumber(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="version">
+                  Versão <span className="text-muted-foreground">(vazio = mais recente)</span>
+                </Label>
+                <Input id="version" value={versionNumber} onChange={(e) => setVersionNumber(e.target.value)} placeholder="Ex: 3" />
+              </div>
+            </div>
+          )}
 
-        <div className="mt-6 flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button disabled={importMutation.isPending} onClick={() => importMutation.mutate()}>
-            {importMutation.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Consultando...</>
-              : source === "cilia" ? <><Search className="h-4 w-4" /> Consultar</>
-              : <><Upload className="h-4 w-4" /> Importar</>}
-          </Button>
-        </div>
-      </div>
-    </div>
+          {source !== "cilia" && (
+            <div className="space-y-1.5">
+              <Label>Arquivo {source === "soma" ? "XML" : "HTML"}</Label>
+              <Input type="file" accept={source === "soma" ? ".xml" : ".html,.htm"}
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+            </div>
+          )}
+
+          <DialogFooter className="mt-6">
+            <Button variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button disabled={importMutation.isPending} onClick={() => importMutation.mutate()}>
+              {importMutation.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Consultando...</>
+                : source === "cilia" ? <><Search className="h-4 w-4" /> Consultar</>
+                : <><Upload className="h-4 w-4" /> Importar</>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

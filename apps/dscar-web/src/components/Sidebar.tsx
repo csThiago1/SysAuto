@@ -62,16 +62,16 @@ import { NotificationBell } from "@/components/header/NotificationBell";
 import { ThemeToggle } from "./ThemeToggle";
 import { useOverdueOrders } from "@/hooks/useOverdueOrders";
 
-// ─── Types ───────────────────────────────────────────────────────────
+// ─── Types (exported for MobileSidebar) ──────────────────────────────
 
-interface NavChild {
+export interface NavChild {
   id: string;
   label: string;
   href: string;
   icon: LucideIcon;
 }
 
-interface NavItem {
+export interface NavItem {
   id: string;
   label: string;
   icon: LucideIcon;
@@ -81,7 +81,7 @@ interface NavItem {
   children?: NavChild[];
 }
 
-interface NavSection {
+export interface NavSection {
   label: string;
   items: NavItem[];
   /** Papel mínimo para ver esta seção (undefined = todos) */
@@ -90,7 +90,7 @@ interface NavSection {
 
 // ─── Role labels ─────────────────────────────────────────────────────
 
-const ROLE_LABELS: Record<string, string> = {
+export const ROLE_LABELS: Record<string, string> = {
   OWNER:       "Proprietário",
   ADMIN:       "Administrador",
   MANAGER:     "Gerente",
@@ -100,7 +100,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 // ─── Route Config ────────────────────────────────────────────────────
 
-const NAV_SECTIONS: NavSection[] = [
+export const NAV_SECTIONS: NavSection[] = [
   {
     label: "GERAL",
     items: [
@@ -320,17 +320,17 @@ const NAV_SECTIONS: NavSection[] = [
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
-function isActiveRoute(pathname: string, href: string): boolean {
+export function isActiveRoute(pathname: string, href: string): boolean {
   if (href === "/dashboard") return pathname === "/" || pathname === "/dashboard";
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-function isGroupActive(pathname: string, item: NavItem): boolean {
+export function isGroupActive(pathname: string, item: NavItem): boolean {
   if (item.href && isActiveRoute(pathname, item.href)) return true;
   return item.children?.some((c) => isActiveRoute(pathname, c.href)) ?? false;
 }
 
-function getInitials(name: string | null | undefined): string {
+export function getInitials(name: string | null | undefined): string {
   if (!name) return "U";
   return name
     .split(" ")
@@ -470,9 +470,10 @@ export function Sidebar() {
     <aside
       ref={sidebarRef}
       className={[
-        "relative flex flex-col h-screen bg-card shadow-lg",
+        "relative flex-col h-screen bg-card shadow-lg",
         "transition-[width] duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
         "flex-shrink-0 overflow-hidden",
+        "hidden md:flex",
         collapsed ? "w-[72px]" : "w-[260px]",
       ].join(" ")}
     >
@@ -495,7 +496,7 @@ export function Sidebar() {
               className="w-7 h-7 rounded-md border border-border bg-muted/50 text-muted-foreground
                          flex items-center justify-center hover:bg-muted hover:text-foreground
                          transition-all duration-150 flex-shrink-0"
-              title="Recolher sidebar"
+              aria-label="Recolher sidebar"
             >
               <ChevronLeft size={18} />
             </button>
@@ -509,17 +510,23 @@ export function Sidebar() {
         </div>
       )}
 
-      {/* ── Search placeholder (command palette — TODO) ── */}
+      {/* ── Search / Command Palette trigger ── */}
       {!collapsed && (
-        <div
-          className="flex items-center rounded-lg border border-border bg-muted/50 mx-4 my-3 px-3 py-2 gap-2 opacity-50"
-          aria-hidden="true"
+        <button
+          type="button"
+          onClick={() => {
+            document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))
+          }}
+          className="flex items-center rounded-lg border border-border bg-muted/50 mx-4 my-3 px-3 py-2 gap-2 hover:bg-muted transition-colors text-left"
         >
           <Search size={18} className="text-muted-foreground flex-shrink-0" />
-          <span className="text-[13px] text-muted-foreground font-normal">
-            Buscar... (em breve)
+          <span className="text-[13px] text-muted-foreground font-normal flex-1">
+            Buscar...
           </span>
-        </div>
+          <kbd className="text-[10px] text-muted-foreground/70 font-mono bg-muted border border-border rounded px-1.5 py-0.5">
+            ⌘K
+          </kbd>
+        </button>
       )}
 
       {/* ── Navigation ── */}

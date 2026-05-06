@@ -1,5 +1,7 @@
 import React from "react";
 import { Sidebar } from "@/components/Sidebar";
+import { MobileSidebar } from "@/components/MobileSidebar";
+import { CommandPalette } from "@/components/CommandPalette";
 
 export default function AppLayout({
   children,
@@ -15,7 +17,11 @@ export default function AppLayout({
         Ir para o conteúdo principal
       </a>
       <Sidebar />
-      <main id="main-content" className="flex-1 overflow-auto bg-background px-6 pt-4 pb-6">{children}</main>
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <MobileSidebar />
+        <main id="main-content" className="flex-1 overflow-auto bg-background px-6 pt-4 pb-6">{children}</main>
+      </div>
+      <CommandPalette />
     </div>
   );
 }

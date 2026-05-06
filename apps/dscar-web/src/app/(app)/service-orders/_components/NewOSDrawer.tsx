@@ -122,7 +122,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-[420px] sm:max-w-[420px] overflow-y-auto"
+        className="w-full max-w-[420px] overflow-y-auto"
       >
         <SheetHeader className="mb-4">
           <SheetTitle>Nova Ordem de Serviço</SheetTitle>

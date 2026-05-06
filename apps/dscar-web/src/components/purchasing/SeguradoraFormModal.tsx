@@ -2,6 +2,13 @@
 
 import { useState } from "react"
 import type { TipoQualidade } from "@paddock/types"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 
 interface SeguradoraFormModalProps {
   open: boolean
@@ -51,28 +58,19 @@ export function SeguradoraFormModal({ open, onClose, onSubmit }: SeguradoraFormM
     onClose()
   }
 
-  if (!open) return null
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-      onClick={handleClose}
-    >
-      <div
-        className="w-full max-w-lg rounded-lg border border-border bg-background p-6 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <h2 className="text-lg font-semibold text-foreground">
-          Peca de Fornecimento da Seguradora
-        </h2>
-        <p className="mt-1 text-sm text-foreground/60">
+    <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose() }}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Peca de Fornecimento da Seguradora</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-foreground/60">
           Registre a peca que a seguradora vai fornecer. Status ficara como
           &ldquo;Aguardando Recebimento&rdquo;.
         </p>
 
         {/* Fields */}
-        <div className="mt-5 space-y-4">
+        <div className="space-y-4">
           {/* Descricao */}
           <div>
             <label className="label-mono text-muted-foreground mb-0.5 block">
@@ -141,8 +139,7 @@ export function SeguradoraFormModal({ open, onClose, onSubmit }: SeguradoraFormM
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="mt-6 flex justify-end gap-2">
+        <DialogFooter>
           <button
             type="button"
             onClick={handleClose}
@@ -158,8 +155,8 @@ export function SeguradoraFormModal({ open, onClose, onSubmit }: SeguradoraFormM
           >
             Registrar
           </button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -6,6 +6,13 @@ import type { OrdemCompra, StatusOrdemCompra } from "@paddock/types"
 import { useState } from "react"
 import Link from "next/link"
 import { toast } from "sonner"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 
 // ─── Status badge config ────────────────────────────────────────────────────────
 
@@ -75,8 +82,6 @@ function NovaOCDialog({
   const [osId, setOsId] = useState("")
   const criarOC = useCriarOC()
 
-  if (!open) return null
-
   async function handleCreate() {
     if (!osId.trim()) {
       toast.error("Informe o ID da OS.")
@@ -93,17 +98,11 @@ function NovaOCDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-        onKeyDown={(e) => e.key === "Escape" && onClose()}
-        role="button"
-        tabIndex={0}
-        aria-label="Fechar"
-      />
-      <div className="relative bg-card border border-border rounded-lg p-6 w-full max-w-md space-y-4">
-        <h2 className="text-lg font-semibold text-foreground">Nova Ordem de Compra</h2>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose() }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Nova Ordem de Compra</DialogTitle>
+        </DialogHeader>
         <p className="text-sm text-muted-foreground">
           Informe o ID da OS para criar uma nova OC vinculada.
         </p>
@@ -114,7 +113,7 @@ function NovaOCDialog({
           onChange={(e) => setOsId(e.target.value)}
           className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-border"
         />
-        <div className="flex justify-end gap-2">
+        <DialogFooter>
           <button
             type="button"
             onClick={onClose}
@@ -130,9 +129,9 @@ function NovaOCDialog({
           >
             {criarOC.isPending ? "Criando..." : "Criar OC"}
           </button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 

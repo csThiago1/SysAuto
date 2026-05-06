@@ -22,11 +22,15 @@ import {
   CheckCircle2,
   FileText,
   Loader2,
-  X,
   AlertTriangle,
   Package,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { useEmitNfse, useEmitNfe } from "@/hooks/useFiscal"
 import type { FiscalDocument } from "@paddock/types"
 import { cn } from "@/lib/utils"
@@ -103,10 +107,10 @@ export function FiscalEmissionModal({
   })()
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+    <Dialog open onOpenChange={(v) => { if (!v) onClose() }}>
+      <DialogContent className="max-w-md p-0 overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+        <div className="flex items-center px-5 py-4 border-b border-border">
           <div className="flex items-center gap-2.5">
             <FileText className="h-5 w-5 text-primary shrink-0" />
             <div>
@@ -114,13 +118,6 @@ export function FiscalEmissionModal({
               <p className="text-xs text-muted-foreground">OS #{orderNumber}</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md p-1 text-muted-foreground hover:text-foreground/70 transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
         </div>
 
         {/* Body */}
@@ -251,7 +248,7 @@ export function FiscalEmissionModal({
         </div>
 
         {/* Footer */}
-        <div className="flex gap-2 justify-end px-5 pb-5">
+        <DialogFooter className="px-5 pb-5">
           <Button variant="ghost" onClick={onClose} className="text-foreground/60">
             {emitted ? "Fechar" : "Cancelar"}
           </Button>
@@ -278,8 +275,8 @@ export function FiscalEmissionModal({
               )}
             </Button>
           )}
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

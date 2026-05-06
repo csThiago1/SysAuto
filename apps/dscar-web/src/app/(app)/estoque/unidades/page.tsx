@@ -11,8 +11,16 @@ import { useUnidades, useReservarUnidade, useBipagem } from "@/hooks/useInventor
 import { useTransferir } from "@/hooks/useInventoryMovement"
 import { BarcodeScanInput } from "@/components/inventory/BarcodeScanInput"
 import { PosicaoSelector } from "@/components/inventory/PosicaoSelector"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import type { UnidadeFisicaStatus, UnidadeFisica } from "@paddock/types"
 import { toast } from "sonner"
+
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
@@ -62,11 +70,11 @@ function ReservarModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-lg border border-border bg-[#1a1a1c] p-6 space-y-4">
-        <h3 className="text-sm font-semibold text-foreground">
-          Reservar Unidade
-        </h3>
+    <Dialog open onOpenChange={(v) => { if (!v) onClose() }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Reservar Unidade</DialogTitle>
+        </DialogHeader>
         <p className="text-xs text-muted-foreground">
           Barcode: <span className="font-mono text-foreground/60">{unidade.codigo_barras}</span>
         </p>
@@ -83,7 +91,7 @@ function ReservarModal({
             autoFocus
           />
         </div>
-        <div className="flex justify-end gap-2">
+        <DialogFooter>
           <button
             type="button"
             onClick={onClose}
@@ -99,9 +107,9 @@ function ReservarModal({
           >
             {reservar.isPending ? "Reservando..." : "Reservar"}
           </button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -135,11 +143,11 @@ function TransferirModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-2xl rounded-lg border border-border bg-[#1a1a1c] p-6 space-y-4">
-        <h3 className="text-sm font-semibold text-foreground">
-          Transferir Unidade
-        </h3>
+    <Dialog open onOpenChange={(v) => { if (!v) onClose() }}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Transferir Unidade</DialogTitle>
+        </DialogHeader>
         <p className="text-xs text-muted-foreground">
           Barcode: <span className="font-mono text-foreground/60">{unidade.codigo_barras}</span>
           {" "}| Atual: <span className="text-foreground/60">{unidade.nivel || unidade.localizacao || "Sem posicao"}</span>
@@ -150,7 +158,7 @@ function TransferirModal({
           </label>
           <PosicaoSelector value={nivelId} onChange={setNivelId} />
         </div>
-        <div className="flex justify-end gap-2">
+        <DialogFooter>
           <button
             type="button"
             onClick={onClose}
@@ -166,9 +174,9 @@ function TransferirModal({
           >
             {transferir.isPending ? "Transferindo..." : "Transferir"}
           </button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -351,6 +359,7 @@ export default function UnidadesPage() {
           onClose={() => setTransferirUnidade(null)}
         />
       )}
+
     </div>
   )
 }

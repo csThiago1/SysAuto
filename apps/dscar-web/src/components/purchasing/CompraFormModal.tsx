@@ -2,6 +2,13 @@
 
 import { useState } from "react"
 import type { TipoQualidade } from "@paddock/types"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 
 interface CompraFormModalProps {
   open: boolean
@@ -59,27 +66,18 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
     onClose()
   }
 
-  if (!open) return null
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-      onClick={handleClose}
-    >
-      <div
-        className="w-full max-w-lg rounded-lg border border-border bg-background p-6 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <h2 className="text-lg font-semibold text-foreground">
-          Solicitar Compra de Peca
-        </h2>
-        <p className="mt-1 text-sm text-foreground/60">
+    <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose() }}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Solicitar Compra de Peca</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-foreground/60">
           Um pedido de compra sera criado automaticamente para o setor de compras.
         </p>
 
         {/* Fields */}
-        <div className="mt-5 space-y-4">
+        <div className="space-y-4">
           {/* Descricao */}
           <div>
             <label className="label-mono text-muted-foreground mb-0.5 block">
@@ -176,8 +174,7 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="mt-6 flex justify-end gap-2">
+        <DialogFooter>
           <button
             type="button"
             onClick={handleClose}
@@ -193,8 +190,8 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
           >
             Solicitar Compra
           </button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

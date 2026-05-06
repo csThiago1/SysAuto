@@ -112,7 +112,7 @@ const CardContent = React.memo(function CardContent({
                 {order.insurer_detail.logo ? (
                   <img
                     src={order.insurer_detail.logo}
-                    alt=""
+                    alt={order.insurer_detail?.display_name ?? ""}
                     className="h-3.5 w-3.5 object-contain shrink-0"
                   />
                 ) : (

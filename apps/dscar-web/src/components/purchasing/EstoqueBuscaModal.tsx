@@ -3,6 +3,12 @@
 import { useState } from "react"
 import { useBuscarPecas } from "@/hooks/useServiceOrders"
 import type { PecaEstoqueResult, TipoQualidade } from "@paddock/types"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 interface EstoqueBuscaModalProps {
   open: boolean
@@ -74,20 +80,13 @@ export function EstoqueBuscaModal({ open, onClose, onSelect }: EstoqueBuscaModal
     onClose()
   }
 
-  if (!open) return null
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-      onClick={handleClose}
-    >
-      <div
-        className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-lg border border-border bg-background p-6 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <h2 className="text-lg font-semibold text-foreground">Buscar no Estoque</h2>
-        <p className="mt-1 text-sm text-foreground/60">
+    <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose() }}>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Buscar no Estoque</DialogTitle>
+        </DialogHeader>
+        <p className="text-sm text-foreground/60">
           Encontre a peca no estoque e bloqueie para esta OS.
         </p>
 
@@ -282,7 +281,7 @@ export function EstoqueBuscaModal({ open, onClose, onSelect }: EstoqueBuscaModal
             </button>
           </div>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

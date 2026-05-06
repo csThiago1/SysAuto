@@ -178,7 +178,7 @@ export default function OrcamentosParticularesPage() {
                     <TableCell>
                       <span className="inline-flex items-center gap-1.5 font-mono text-xs bg-muted text-foreground px-2 py-0.5 rounded">
                         {b.vehicle_make_logo && (
-                          <img src={b.vehicle_make_logo} alt="" className="h-3.5 w-3.5 object-contain" />
+                          <img src={b.vehicle_make_logo} alt={b.vehicle_make ?? ""} className="h-3.5 w-3.5 object-contain" />
                         )}
                         {b.vehicle_plate}
                       </span>

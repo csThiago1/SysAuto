@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
-import { Search, FilterX, Plus, ChevronLeft, ChevronRight } from "lucide-react"
+import { Search, FilterX, Plus, ChevronLeft, ChevronRight, X } from "lucide-react"
+import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 
 import { useServiceOrders, useDebounce, usePersons } from "@/hooks"
 import {
@@ -24,6 +25,7 @@ export default function ServiceOrdersPage() {
   const [status, setStatus] = useState<string>("ALL")
   const [customerType, setCustomerType] = useState<string>("ALL")
   const [insurerId, setInsurerId] = useState<string>("ALL")
+  const [ordering, setOrdering] = useState<string>("-number")
   const [page, setPage] = useState(1)
 
   const debouncedSearch = useDebounce(search, 300)
@@ -37,13 +39,14 @@ export default function ServiceOrdersPage() {
   if (status !== "ALL") filters.status = status
   if (customerType !== "ALL") filters.customer_type = customerType
   if (insurerId !== "ALL") filters.insurer = insurerId
+  if (ordering) filters.ordering = ordering
 
   const { data, isLoading, isError } = useServiceOrders(filters, page, PAGE_SIZE)
 
   // Reset to page 1 whenever filters change
   useEffect(() => {
     setPage(1)
-  }, [debouncedSearch, status, customerType, insurerId])
+  }, [debouncedSearch, status, customerType, insurerId, ordering])
 
   const clearFilters = () => {
     setSearch("")
@@ -154,6 +157,44 @@ export default function ServiceOrdersPage() {
         </div>
       </div>
 
+      {/* Active filter chips */}
+      {hasFilters && (
+        <div className="flex flex-wrap items-center gap-2">
+          {search && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-3 py-1 text-xs font-medium text-foreground/80">
+              Busca: &quot;{search}&quot;
+              <button type="button" onClick={() => setSearch("")} className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors" aria-label="Remover filtro de busca">
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          )}
+          {status !== "ALL" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-3 py-1 text-xs font-medium text-foreground/80">
+              Status: {SERVICE_ORDER_STATUS_CONFIG[status as keyof typeof SERVICE_ORDER_STATUS_CONFIG]?.label ?? status}
+              <button type="button" onClick={() => setStatus("ALL")} className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors" aria-label="Remover filtro de status">
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          )}
+          {insurerId !== "ALL" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-3 py-1 text-xs font-medium text-foreground/80">
+              Seguradora: {insurersData?.results.find((i) => String(i.id) === insurerId)?.fantasy_name ?? insurerId}
+              <button type="button" onClick={() => setInsurerId("ALL")} className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors" aria-label="Remover filtro de seguradora">
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          )}
+          {customerType !== "ALL" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-3 py-1 text-xs font-medium text-foreground/80">
+              Tipo: {customerType === "insurer" ? "Seguradora" : "Particular"}
+              <button type="button" onClick={() => setCustomerType("ALL")} className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors" aria-label="Remover filtro de tipo">
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Content */}
       <div className="flex-1">
          {isLoading && <TableSkeleton columns={6} rows={8} />}
@@ -176,7 +217,7 @@ export default function ServiceOrdersPage() {
                />
              ) : (
                <>
-                 <ServiceOrderTable orders={data.results} />
+                 <ServiceOrderTable orders={data.results} ordering={ordering} onOrderingChange={setOrdering} />
 
                  {/* Pagination */}
                  {data.count > 0 && (

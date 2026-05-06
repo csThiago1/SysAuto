@@ -9,6 +9,13 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { useOSPhotos, useSoftDeletePhoto, useUploadPhoto } from "../../_hooks/useOSItems"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -50,20 +57,17 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-muted/50 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+    <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="max-w-md p-0 overflow-hidden">
         {/* Header */}
-        <div className={cn("flex items-center justify-between px-4 py-3 border-b", folderCfg.bgColor, folderCfg.borderColor)}>
+        <DialogHeader className={cn("px-4 py-3 border-b", folderCfg.bgColor, folderCfg.borderColor)}>
           <div className="flex items-center gap-2">
             <Camera className={cn("h-4 w-4", folderCfg.color)} />
-            <span className={cn("text-sm font-semibold", folderCfg.color)}>
+            <DialogTitle className={cn("text-sm", folderCfg.color)}>
               Adicionar foto — {folderCfg.label}
-            </span>
+            </DialogTitle>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground/60">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+        </DialogHeader>
 
         {/* Body */}
         <div className="p-4 space-y-3">
@@ -112,7 +116,7 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex gap-2 justify-end px-4 pb-4">
+        <DialogFooter className="px-4 pb-4">
           <Button variant="ghost" onClick={onClose}>Cancelar</Button>
           <Button
             onClick={handleSubmit}
@@ -124,9 +128,9 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
               <><Upload className="h-4 w-4 mr-1.5" /> Enviar</>
             )}
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -165,7 +169,7 @@ function PhotoThumb({ photo, orderId, canDelete }: PhotoThumbProps) {
         <button
           onClick={() => deleteMutation.mutate(photo.id)}
           className="absolute top-1.5 right-1.5 bg-muted hover:bg-error-500/10 rounded-full p-1 shadow transition-colors"
-          title="Remover foto"
+          aria-label="Remover foto"
         >
           {deleteMutation.isPending ? (
             <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
