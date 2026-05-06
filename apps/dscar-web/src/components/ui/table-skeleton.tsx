@@ -12,7 +12,7 @@ interface TableSkeletonProps {
  */
 export function TableSkeleton({ columns, rows = 5 }: TableSkeletonProps) {
   return (
-    <div className="rounded-md border bg-white">
+    <div className="rounded-md border bg-card">
       <Table>
         <TableHeader>
           <TableRow>

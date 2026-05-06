@@ -26,10 +26,10 @@ const COLOR_MAP = {
     dot: "bg-info-400",
   },
   neutral: {
-    bg: "bg-white/5",
-    border: "border-white/10",
-    text: "text-white/50",
-    dot: "bg-white/50",
+    bg: "bg-muted/50",
+    border: "border-border",
+    text: "text-muted-foreground",
+    dot: "bg-muted-foreground",
   },
 } as const
 

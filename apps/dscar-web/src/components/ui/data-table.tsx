@@ -16,12 +16,12 @@ export function DataTable({
   return (
     <div
       className={cn(
-        "rounded-md border border-white/10 bg-white/5 overflow-hidden",
+        "rounded-md border border-border bg-muted/50 overflow-hidden",
         className
       )}
     >
       {isEmpty ? (
-        <div className="flex items-center justify-center py-12 text-sm text-white/30">
+        <div className="flex items-center justify-center py-12 text-sm text-muted-foreground/50">
           {emptyMessage}
         </div>
       ) : (

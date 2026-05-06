@@ -39,7 +39,7 @@ function SelectTrigger({ className, children, ...props }: React.ButtonHTMLAttrib
     <button
       type="button"
       className={cn(
-        "flex h-9 w-full items-center justify-between rounded border border-white/10 bg-white/5 px-3 py-2 text-sm text-white",
+        "flex h-9 w-full items-center justify-between rounded border border-border bg-muted/50 px-3 py-2 text-sm text-foreground",
         "focus:outline-none focus:ring-1 focus:ring-primary-500",
         "disabled:cursor-not-allowed disabled:opacity-50",
         className
@@ -48,14 +48,14 @@ function SelectTrigger({ className, children, ...props }: React.ButtonHTMLAttrib
       {...props}
     >
       {children}
-      <ChevronDown className={cn("h-4 w-4 text-white/40 transition-transform", open && "rotate-180")} />
+      <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")} />
     </button>
   );
 }
 
 function SelectValue({ placeholder }: { placeholder?: string }): React.ReactElement {
   const { value } = React.useContext(SelectContext);
-  return <span className={value ? "text-white" : "text-white/30"}>{value || placeholder}</span>;
+  return <span className={value ? "text-foreground" : "text-muted-foreground/50"}>{value || placeholder}</span>;
 }
 
 function SelectContent({ className, children }: React.HTMLAttributes<HTMLDivElement>): React.ReactElement | null {
@@ -66,7 +66,7 @@ function SelectContent({ className, children }: React.HTMLAttributes<HTMLDivElem
       <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
       <div
         className={cn(
-          "absolute left-0 top-full z-50 mt-1 w-full rounded-md border border-white/10 bg-[#1c1c1e] shadow-lg",
+          "absolute left-0 top-full z-50 mt-1 w-full rounded-md border border-border bg-popover shadow-lg",
           "animate-fade-in overflow-hidden",
           className
         )}
@@ -91,8 +91,8 @@ function SelectItem({
   return (
     <div
       className={cn(
-        "relative flex cursor-pointer select-none items-center gap-2 px-3 py-2 text-sm text-white/80",
-        "hover:bg-white/5 transition-colors",
+        "relative flex cursor-pointer select-none items-center gap-2 px-3 py-2 text-sm text-foreground/80",
+        "hover:bg-muted/50 transition-colors",
         isSelected && "bg-primary-500/10 text-primary-400",
         className
       )}
