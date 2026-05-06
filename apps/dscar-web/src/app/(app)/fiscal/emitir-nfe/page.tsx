@@ -531,7 +531,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
         </div>
 
         {form.formState.errors.itens?.message && (
-          <p className="text-xs text-red-400">{form.formState.errors.itens.message}</p>
+          <p className="text-xs text-error-400">{form.formState.errors.itens.message}</p>
         )}
 
         <div className="space-y-4">
@@ -546,7 +546,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
                   type="button"
                   onClick={() => remove(index)}
                   disabled={fields.length === 1}
-                  className="p-1 rounded text-muted-foreground hover:text-red-400 disabled:opacity-20 transition-colors"
+                  className="p-1 rounded text-muted-foreground hover:text-error-400 disabled:opacity-20 transition-colors"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
@@ -556,7 +556,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
               <div className="grid grid-cols-3 gap-2">
                 <div className="col-span-2">
                   <Label className="text-xs text-muted-foreground">
-                    Descrição <span className="text-red-400">*</span>
+                    Descrição <span className="text-error-400">*</span>
                   </Label>
                   <Input
                     className="mt-0.5 text-xs"
@@ -564,7 +564,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
                     {...form.register(`itens.${index}.descricao`)}
                   />
                   {form.formState.errors.itens?.[index]?.descricao && (
-                    <p className="mt-0.5 text-xs text-red-400">
+                    <p className="mt-0.5 text-xs text-error-400">
                       {form.formState.errors.itens[index]?.descricao?.message}
                     </p>
                   )}
@@ -583,7 +583,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
               <div className="grid grid-cols-5 gap-2">
                 <div className="col-span-2">
                   <Label className="text-xs text-muted-foreground">
-                    NCM <span className="text-red-400">*</span>
+                    NCM <span className="text-error-400">*</span>
                   </Label>
                   <Input
                     className="mt-0.5 text-xs font-mono"
@@ -592,7 +592,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
                     {...form.register(`itens.${index}.ncm`)}
                   />
                   {form.formState.errors.itens?.[index]?.ncm && (
-                    <p className="mt-0.5 text-xs text-red-400">
+                    <p className="mt-0.5 text-xs text-error-400">
                       {form.formState.errors.itens[index]?.ncm?.message}
                     </p>
                   )}
@@ -614,7 +614,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
                     {...form.register(`itens.${index}.quantidade`)}
                   />
                   {form.formState.errors.itens?.[index]?.quantidade && (
-                    <p className="mt-0.5 text-xs text-red-400">!</p>
+                    <p className="mt-0.5 text-xs text-error-400">!</p>
                   )}
                 </div>
                 <div>
@@ -625,7 +625,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
                     {...form.register(`itens.${index}.valor_unitario`)}
                   />
                   {form.formState.errors.itens?.[index]?.valor_unitario && (
-                    <p className="mt-0.5 text-xs text-red-400">!</p>
+                    <p className="mt-0.5 text-xs text-error-400">!</p>
                   )}
                 </div>
               </div>
@@ -669,7 +669,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
 
         <div>
           <Label className="text-xs text-foreground/60">
-            Justificativa de Emissão Manual <span className="text-red-400">*</span>
+            Justificativa de Emissão Manual <span className="text-error-400">*</span>
           </Label>
           <Input
             className="mt-1"
@@ -677,7 +677,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
             {...form.register("manual_reason")}
           />
           {form.formState.errors.manual_reason && (
-            <p className="mt-0.5 text-xs text-red-400">
+            <p className="mt-0.5 text-xs text-error-400">
               {form.formState.errors.manual_reason.message}
             </p>
           )}
@@ -687,8 +687,8 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
       {/* Inline error */}
       {apiError && (
         <div className="flex items-start gap-2 rounded-lg bg-red-950/50 border border-red-700/40 px-3 py-2.5">
-          <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
-          <p className="text-xs text-red-300">{apiError}</p>
+          <AlertTriangle className="h-4 w-4 text-error-400 mt-0.5 shrink-0" />
+          <p className="text-xs text-error-400">{apiError}</p>
         </div>
       )}
 

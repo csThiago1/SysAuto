@@ -149,7 +149,7 @@ function MargensTab({ empresaId }: { empresaId: string }) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 text-muted-foreground hover:text-red-400"
+                      className="h-7 w-7 text-muted-foreground hover:text-error-400"
                       onClick={() => handleDelete(m.id)}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -375,7 +375,7 @@ function MarkupPecaTab({ empresaId }: { empresaId: string }) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 text-muted-foreground hover:text-red-400"
+                      className="h-7 w-7 text-muted-foreground hover:text-error-400"
                       onClick={() => handleDelete(m.id)}
                     >
                       <Trash2 className="h-3.5 w-3.5" />

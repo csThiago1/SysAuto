@@ -98,7 +98,7 @@ export default function LoginPage(): React.ReactElement {
               </div>
 
               {error && (
-                <p className="text-sm text-red-600">{error}</p>
+                <p className="text-sm text-error-600">{error}</p>
               )}
 
               <Button

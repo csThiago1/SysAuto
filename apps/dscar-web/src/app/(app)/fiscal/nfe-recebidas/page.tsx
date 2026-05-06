@@ -30,7 +30,7 @@ const MANIFESTO_CONFIG: Record<
   ciencia: { label: "Ciência", icon: Eye, color: "text-blue-400", bg: "bg-blue-400/10" },
   confirmada: { label: "Confirmada", icon: CheckCircle2, color: "text-success-400", bg: "bg-success-400/10" },
   desconhecida: { label: "Desconhecida", icon: HelpCircle, color: "text-warning-400", bg: "bg-warning-400/10" },
-  nao_realizada: { label: "Não Realizada", icon: XCircle, color: "text-red-400", bg: "bg-red-400/10" },
+  nao_realizada: { label: "Não Realizada", icon: XCircle, color: "text-error-400", bg: "bg-red-400/10" },
 }
 
 // ─── Row ──────────────────────────────────────────────────────────────────────

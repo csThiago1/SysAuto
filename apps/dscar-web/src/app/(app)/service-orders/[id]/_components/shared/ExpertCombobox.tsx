@@ -71,7 +71,7 @@ export function ExpertCombobox({ value, onChange, insurerId, disabled }: ExpertC
         <button
           type="button"
           onClick={() => setShowCreate(!showCreate)}
-          className="shrink-0 rounded-md border border-dashed border-border px-2.5 py-1 text-xs text-foreground/60 hover:border-gray-400 hover:bg-muted/30"
+          className="shrink-0 rounded-md border border-dashed border-border px-2.5 py-1 text-xs text-foreground/60 hover:border-border hover:bg-muted/30"
           title="Cadastrar novo perito"
         >
           + Novo

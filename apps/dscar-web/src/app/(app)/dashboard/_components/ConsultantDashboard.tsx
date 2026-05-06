@@ -30,7 +30,7 @@ export function ConsultantDashboard({ data }: Props) {
         <StatCard
           label="OS Atrasadas"
           value={data.my_overdue}
-          icon={<AlertTriangle className={`h-5 w-5 ${data.my_overdue > 0 ? "text-red-600" : "text-muted-foreground"}`} />}
+          icon={<AlertTriangle className={`h-5 w-5 ${data.my_overdue > 0 ? "text-error-600" : "text-muted-foreground"}`} />}
         />
         <StatCard
           label="Entregues esta Semana"
@@ -74,7 +74,7 @@ export function ConsultantDashboard({ data }: Props) {
                       </span>
                     </td>
                     <td className="px-4 py-2.5 text-right">
-                      <span className={os.days_in_shop > 14 ? "text-red-600 font-semibold" : "text-foreground/60"}>
+                      <span className={os.days_in_shop > 14 ? "text-error-600 font-semibold" : "text-foreground/60"}>
                         {os.days_in_shop}d
                       </span>
                     </td>

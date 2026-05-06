@@ -38,7 +38,7 @@ const STATUS_CONFIG: Record<
   rejected: {
     label: "Rejeitada",
     icon: AlertCircle,
-    color: "text-red-400",
+    color: "text-error-400",
     bg: "bg-red-400/10",
   },
   cancelled: {
@@ -151,7 +151,7 @@ function FiscalDocRow({
           {canCancel && doc.status === "authorized" && (
             <button
               onClick={() => onCancel(doc.id)}
-              className="text-xs text-red-400/70 hover:text-red-400"
+              className="text-xs text-error-400/70 hover:text-error-400"
             >
               Cancelar
             </button>
@@ -224,7 +224,7 @@ export default function FiscalDocumentosPage() {
         {[
           { label: "Aguardando", value: totais.pending, color: "text-warning-400" },
           { label: "Autorizadas", value: totais.authorized, color: "text-success-400" },
-          { label: "Rejeitadas", value: totais.rejected, color: "text-red-400" },
+          { label: "Rejeitadas", value: totais.rejected, color: "text-error-400" },
         ].map((kpi) => (
           <div
             key={kpi.label}

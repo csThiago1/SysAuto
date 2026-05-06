@@ -39,7 +39,7 @@ function FieldDiff({ log }: { log: ActivityLog }) {
         <div key={i} className="flex items-start gap-1.5 text-xs">
           <span className="text-muted-foreground shrink-0 mt-0.5">{change.field_label}:</span>
           {change.old_value !== null && (
-            <span className="line-through text-red-400 truncate max-w-[120px]">
+            <span className="line-through text-error-400 truncate max-w-[120px]">
               {String(change.old_value)}
             </span>
           )}

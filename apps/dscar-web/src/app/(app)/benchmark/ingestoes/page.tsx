@@ -41,7 +41,7 @@ const STATUS_BADGE_CLS: Record<BenchmarkIngestaoStatus, string> = {
   recebido: "border-border text-muted-foreground bg-muted/50",
   processando: "border-blue-500/30 text-blue-400 bg-blue-400/10",
   concluido: "border-success-500/30 text-success-400 bg-success-400/10",
-  erro: "border-red-500/30 text-red-400 bg-red-400/10",
+  erro: "border-error-500/30 text-error-400 bg-red-400/10",
 }
 
 export default function BenchmarkIngestoesPage() {
@@ -204,7 +204,7 @@ function IngestaoDetail({ ingestaoId, logErro }: { ingestaoId: string; logErro: 
   return (
     <div className="border-t border-border px-4 py-3 space-y-3">
       {logErro && (
-        <div className="text-xs text-red-400 bg-red-400/10 rounded px-3 py-2 font-mono">
+        <div className="text-xs text-error-400 bg-red-400/10 rounded px-3 py-2 font-mono">
           {logErro.slice(0, 500)}
         </div>
       )}

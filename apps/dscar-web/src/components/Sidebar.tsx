@@ -349,7 +349,7 @@ function DSCarLogoInline({ collapsed }: { collapsed: boolean }) {
       <img
         src="/dscar-logo.png"
         alt="DS Car"
-        className="h-9 w-9 object-contain"
+        className="h-9 w-9 object-contain logo-themed"
         draggable={false}
       />
     );
@@ -360,7 +360,7 @@ function DSCarLogoInline({ collapsed }: { collapsed: boolean }) {
       <img
         src="/dscar-logo.png"
         alt="DS Car"
-        className="h-12 w-auto object-contain flex-shrink-0"
+        className="h-12 w-auto object-contain flex-shrink-0 logo-themed"
         draggable={false}
       />
       <div className="flex flex-col leading-none">

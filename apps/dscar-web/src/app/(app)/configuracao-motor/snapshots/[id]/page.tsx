@@ -40,7 +40,7 @@ export default function SnapshotDetailPage() {
 
   if (!snap) {
     return (
-      <div className="p-6 text-xs text-red-400">Snapshot não encontrado.</div>
+      <div className="p-6 text-xs text-error-400">Snapshot não encontrado.</div>
     )
   }
 

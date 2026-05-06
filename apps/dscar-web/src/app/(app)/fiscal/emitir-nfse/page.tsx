@@ -249,7 +249,7 @@ function EmitirNfseManualPageInner() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label className="text-xs text-foreground/60">
-                Data de Emissão <span className="text-red-400">*</span>
+                Data de Emissão <span className="text-error-400">*</span>
               </Label>
               <Input
                 type="date"
@@ -257,7 +257,7 @@ function EmitirNfseManualPageInner() {
                 {...form.register("data_emissao")}
               />
               {form.formState.errors.data_emissao && (
-                <p className="mt-0.5 text-xs text-red-400">
+                <p className="mt-0.5 text-xs text-error-400">
                   {form.formState.errors.data_emissao.message}
                 </p>
               )}
@@ -277,7 +277,7 @@ function EmitirNfseManualPageInner() {
 
           <div>
             <Label className="text-xs text-foreground/60">
-              Discriminação dos Serviços <span className="text-red-400">*</span>
+              Discriminação dos Serviços <span className="text-error-400">*</span>
             </Label>
             <textarea
               rows={3}
@@ -287,7 +287,7 @@ function EmitirNfseManualPageInner() {
               {...form.register("discriminacao")}
             />
             {form.formState.errors.discriminacao && (
-              <p className="mt-0.5 text-xs text-red-400">
+              <p className="mt-0.5 text-xs text-error-400">
                 {form.formState.errors.discriminacao.message}
               </p>
             )}
@@ -295,7 +295,7 @@ function EmitirNfseManualPageInner() {
 
           <div>
             <Label className="text-xs text-foreground/60">
-              Justificativa de Emissão Manual <span className="text-red-400">*</span>
+              Justificativa de Emissão Manual <span className="text-error-400">*</span>
             </Label>
             <Input
               className="mt-1"
@@ -303,7 +303,7 @@ function EmitirNfseManualPageInner() {
               {...form.register("manual_reason")}
             />
             {form.formState.errors.manual_reason && (
-              <p className="mt-0.5 text-xs text-red-400">
+              <p className="mt-0.5 text-xs text-error-400">
                 {form.formState.errors.manual_reason.message}
               </p>
             )}
@@ -339,7 +339,7 @@ function EmitirNfseManualPageInner() {
           </div>
 
           {form.formState.errors.itens?.message && (
-            <p className="text-xs text-red-400">{form.formState.errors.itens.message}</p>
+            <p className="text-xs text-error-400">{form.formState.errors.itens.message}</p>
           )}
 
           <div className="space-y-3">
@@ -356,7 +356,7 @@ function EmitirNfseManualPageInner() {
                     {...form.register(`itens.${index}.descricao`)}
                   />
                   {form.formState.errors.itens?.[index]?.descricao && (
-                    <p className="mt-0.5 text-xs text-red-400">
+                    <p className="mt-0.5 text-xs text-error-400">
                       {form.formState.errors.itens[index]?.descricao?.message}
                     </p>
                   )}
@@ -385,7 +385,7 @@ function EmitirNfseManualPageInner() {
                     {...form.register(`itens.${index}.valor_unitario`)}
                   />
                   {form.formState.errors.itens?.[index]?.valor_unitario && (
-                    <p className="mt-0.5 text-xs text-red-400">
+                    <p className="mt-0.5 text-xs text-error-400">
                       {form.formState.errors.itens[index]?.valor_unitario?.message}
                     </p>
                   )}
@@ -397,7 +397,7 @@ function EmitirNfseManualPageInner() {
                     type="button"
                     onClick={() => remove(index)}
                     disabled={fields.length === 1}
-                    className="p-1.5 rounded text-muted-foreground hover:text-red-400 disabled:opacity-20 transition-colors"
+                    className="p-1.5 rounded text-muted-foreground hover:text-error-400 disabled:opacity-20 transition-colors"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>

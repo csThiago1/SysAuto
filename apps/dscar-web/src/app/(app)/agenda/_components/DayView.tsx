@@ -139,9 +139,9 @@ export function DayView({ currentDate, events }: Props) {
                   style={{ top: `${currentTimeTop}px` }}
                 >
                   {/* Bolinha vermelha alinhada à coluna de horários */}
-                  <div className="absolute left-8 -translate-x-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-red-500" />
+                  <div className="absolute left-8 -translate-x-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-error-500" />
                   {/* Linha vermelha */}
-                  <div className="ml-8 h-px bg-red-500 opacity-75" />
+                  <div className="ml-8 h-px bg-error-500 opacity-75" />
                 </div>
               )}
             </div>

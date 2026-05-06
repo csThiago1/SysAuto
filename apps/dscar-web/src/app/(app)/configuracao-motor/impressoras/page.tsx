@@ -70,7 +70,7 @@ function ImpressoraRow({ impressora }: { impressora: ImpressoraEtiqueta }) {
           <button
             onClick={handleDelete}
             disabled={deleteMutation.isPending}
-            className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1 text-xs text-error-400 hover:text-error-400 disabled:opacity-50 transition-colors"
           >
             <Trash2 className="h-3 w-3" />
             Remover

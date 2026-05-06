@@ -156,8 +156,8 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
           {/* Error */}
           {previewError && (
             <div className="flex items-start gap-2 rounded-lg bg-red-950/50 border border-red-700/40 px-3 py-2.5">
-              <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
-              <p className="text-xs text-red-300">
+              <AlertTriangle className="h-4 w-4 text-error-400 mt-0.5 shrink-0" />
+              <p className="text-xs text-error-400">
                 Erro ao carregar preview de faturamento.
               </p>
             </div>
@@ -381,7 +381,7 @@ function SummaryRow({
           bold
             ? "text-foreground font-semibold"
             : negative
-              ? "text-red-400/80"
+              ? "text-error-400/80"
               : "text-foreground/70"
         }`}
       >

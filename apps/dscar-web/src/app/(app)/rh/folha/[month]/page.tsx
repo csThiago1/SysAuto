@@ -147,7 +147,7 @@ export default function FolhaMonthPage({
                   <button
                     onClick={handleCloseAll}
                     disabled={closeAll.isPending}
-                    className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-red-700 disabled:opacity-50"
+                    className="rounded-md bg-error-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-red-700 disabled:opacity-50"
                   >
                     {closeAll.isPending ? "Fechando..." : "Confirmar fechamento"}
                   </button>

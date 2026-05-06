@@ -64,7 +64,7 @@ function ServicoSearchRow({
           </button>
         </div>
         {showRemove && (
-          <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-red-400" onClick={onRemove}>
+          <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-error-400" onClick={onRemove}>
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
         )}
@@ -85,7 +85,7 @@ function ServicoSearchRow({
           />
         </div>
         {showRemove && (
-          <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-red-400" onClick={onRemove}>
+          <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-error-400" onClick={onRemove}>
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
         )}
@@ -299,7 +299,7 @@ export default function SimuladorPage() {
                 {r.status === "ok" ? (
                   <CheckCircle className="h-4 w-4 text-success-400 shrink-0" />
                 ) : (
-                  <XCircle className="h-4 w-4 text-red-400 shrink-0" />
+                  <XCircle className="h-4 w-4 text-error-400 shrink-0" />
                 )}
                 <span className="text-sm font-medium text-foreground">{r.servico_nome}</span>
                 <Badge
@@ -307,7 +307,7 @@ export default function SimuladorPage() {
                   className={`ml-auto text-xs shrink-0 ${
                     r.status === "ok"
                       ? "border-success-500/40 text-success-400"
-                      : "border-red-500/40 text-red-400"
+                      : "border-error-500/40 text-error-400"
                   }`}
                 >
                   {r.status === "ok" ? "OK" : "Erro"}
@@ -345,7 +345,7 @@ export default function SimuladorPage() {
               )}
 
               {r.status === "erro" && (
-                <p className="text-xs text-red-400">{r.erro}</p>
+                <p className="text-xs text-error-400">{r.erro}</p>
               )}
             </div>
           ))}

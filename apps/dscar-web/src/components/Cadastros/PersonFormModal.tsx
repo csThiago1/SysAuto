@@ -477,7 +477,7 @@ export function PersonFormModal({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 text-muted-foreground hover:text-red-400"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-error-400"
                     onClick={() => removeDocument(index)}
                   >
                     ✕
@@ -580,7 +580,7 @@ export function PersonFormModal({
                   <Input {...register(`contacts.${index}.value`)} placeholder="Valor" className="flex-1" />
                 )}
                 <Input {...register(`contacts.${index}.label`)} placeholder="Rótulo (opcional)" className="w-28" />
-                <Button type="button" variant="ghost" size="sm" className="h-9 w-9 p-0 text-muted-foreground hover:text-red-400"
+                <Button type="button" variant="ghost" size="sm" className="h-9 w-9 p-0 text-muted-foreground hover:text-error-400"
                   onClick={() => removeContact(index)}>
                   ✕
                 </Button>
@@ -619,7 +619,7 @@ export function PersonFormModal({
                       </Select>
                     )}
                   />
-                  <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-red-400"
+                  <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-error-400"
                     onClick={() => removeAddress(index)}>✕</Button>
                 </div>
                 <div className="grid grid-cols-4 gap-2">

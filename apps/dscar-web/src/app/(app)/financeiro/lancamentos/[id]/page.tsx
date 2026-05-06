@@ -337,7 +337,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
               type="button"
               onClick={handleReverse}
               disabled={reverse.isPending}
-              className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-red-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-error-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-red-700 disabled:opacity-50 transition-colors"
             >
               {reverse.isPending ? "Estornando..." : "Confirmar Estorno"}
             </button>

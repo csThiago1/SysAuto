@@ -27,7 +27,7 @@ const pctColor = (v: string) => {
   const n = Math.abs(parseFloat(v))
   if (n < 0.1) return "text-success-400"
   if (n < 0.2) return "text-yellow-400"
-  return "text-red-400"
+  return "text-error-400"
 }
 
 export default function VarianciasPage() {

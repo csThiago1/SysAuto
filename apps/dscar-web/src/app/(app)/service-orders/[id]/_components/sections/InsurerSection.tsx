@@ -134,7 +134,7 @@ export function InsurerSection({ form }: InsurerSectionProps) {
             <div>
               <label className={LABEL}>Autorização</label>
               <input
-                className={errors.authorization_date ? `${INPUT} !border-red-500` : INPUT}
+                className={errors.authorization_date ? `${INPUT} !border-error-500` : INPUT}
                 type="datetime-local"
                 {...register("authorization_date")}
               />

@@ -123,7 +123,7 @@ export default function EmployeeDetailPage(): React.ReactElement {
               <button
                 onClick={handleTerminate}
                 disabled={terminate.isPending}
-                className="rounded bg-red-600 px-2.5 py-1 text-xs font-medium text-foreground hover:bg-red-700 disabled:opacity-50"
+                className="rounded bg-error-600 px-2.5 py-1 text-xs font-medium text-foreground hover:bg-red-700 disabled:opacity-50"
               >
                 {terminate.isPending ? "..." : "Confirmar"}
               </button>

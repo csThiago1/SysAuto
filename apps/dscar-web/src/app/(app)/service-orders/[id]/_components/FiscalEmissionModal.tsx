@@ -218,8 +218,8 @@ export function FiscalEmissionModal({
 
               {errorMessage && (
                 <div className="flex items-start gap-2 rounded-lg bg-red-950/50 border border-red-700/40 px-3 py-2.5">
-                  <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
-                  <p className="text-xs text-red-300">{errorMessage}</p>
+                  <AlertTriangle className="h-4 w-4 text-error-400 mt-0.5 shrink-0" />
+                  <p className="text-xs text-error-400">{errorMessage}</p>
                 </div>
               )}
             </>

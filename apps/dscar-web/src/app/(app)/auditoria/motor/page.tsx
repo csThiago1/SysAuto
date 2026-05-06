@@ -61,7 +61,7 @@ export default function AuditoriaMotorPage() {
               icon: health.status === "ok" ? (
                 <CheckCircle2 className="h-4 w-4 text-success-400" />
               ) : (
-                <XCircle className="h-4 w-4 text-red-400" />
+                <XCircle className="h-4 w-4 text-error-400" />
               ),
               color: health.status === "ok" ? "text-success-400" : "text-error-400",
             },
@@ -154,7 +154,7 @@ export default function AuditoriaMotorPage() {
                       ) : (
                         <Badge
                           variant="outline"
-                          className="border-red-500/30 text-red-400 bg-red-400/10 gap-1"
+                          className="border-error-500/30 text-error-400 bg-red-400/10 gap-1"
                         >
                           <XCircle className="h-3 w-3" />
                           Erro
@@ -168,7 +168,7 @@ export default function AuditoriaMotorPage() {
                     <TableCell className="text-muted-foreground text-xs">
                       {new Date(a.created_at).toLocaleString("pt-BR")}
                     </TableCell>
-                    <TableCell className="text-red-400 text-xs max-w-xs truncate">
+                    <TableCell className="text-error-400 text-xs max-w-xs truncate">
                       {a.erro_msg || "—"}
                     </TableCell>
                   </TableRow>

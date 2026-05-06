@@ -88,6 +88,15 @@
   --sidebar-border:      11 18% 78%;
 }
 
+/* ─── Logo themed — inverte para dark no tema claro ────────────────────────── */
+.logo-themed {
+  filter: none;
+  transition: filter 0.2s;
+}
+.light .logo-themed {
+  filter: brightness(0) saturate(100%);
+}
+
 /* ─── Base ──────────────────────────────────────────────────────────────────── */
 @layer base {
   * {
