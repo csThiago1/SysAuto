@@ -57,8 +57,13 @@ export function ClosingTab({ order }: ClosingTabProps) {
   const grandTotal = partsTotal + servicesTotal - discountTotal
   const deductible = Number(order.deductible_amount ?? 0)
   const isInsurer = order.customer_type === "insurer"
-  const insurerPays = isInsurer ? Math.max(grandTotal - deductible, 0) : 0
-  const customerPays = isInsurer ? Math.min(deductible, grandTotal) : grandTotal
+  // Franquia: primeiro desconta dos serviços, restante das peças
+  const franquiaServicos = isInsurer ? Math.min(deductible, servicesTotal) : 0
+  const franquiaPecas = isInsurer ? Math.min(deductible - franquiaServicos, partsTotal) : 0
+  const customerPays = franquiaServicos + franquiaPecas
+  const insurerServicos = servicesTotal - franquiaServicos
+  const insurerPecas = partsTotal - franquiaPecas
+  const insurerPays = insurerServicos + insurerPecas
 
   const isDelivered = order.status === "delivered"
   const isCancelled = order.status === "cancelled"
@@ -158,18 +163,46 @@ export function ClosingTab({ order }: ClosingTabProps) {
             <span className="text-xl font-bold text-foreground">{formatCurrency(grandTotal)}</span>
           </div>
           {isInsurer && deductible > 0 && (
-            <>
-              <div className="border-t border-border pt-3 mt-1 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-foreground/60">Franquia (cliente paga)</span>
-                  <span className="font-semibold text-warning-500">{formatCurrency(customerPays)}</span>
+            <div className="border-t border-border pt-3 mt-1 space-y-3">
+              {/* Cliente paga (franquia) */}
+              <div>
+                <div className="flex justify-between text-sm font-semibold mb-1">
+                  <span className="text-warning-500">Cliente paga (franquia)</span>
+                  <span className="text-warning-500">{formatCurrency(customerPays)}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-foreground/60">Seguradora paga</span>
-                  <span className="font-semibold text-info-500">{formatCurrency(insurerPays)}</span>
-                </div>
+                {franquiaServicos > 0 && (
+                  <div className="flex justify-between text-xs pl-4">
+                    <span className="text-foreground/40">Serviços absorvidos pela franquia</span>
+                    <span className="text-foreground/50">{formatCurrency(franquiaServicos)}</span>
+                  </div>
+                )}
+                {franquiaPecas > 0 && (
+                  <div className="flex justify-between text-xs pl-4">
+                    <span className="text-foreground/40">Peças absorvidas pela franquia</span>
+                    <span className="text-foreground/50">{formatCurrency(franquiaPecas)}</span>
+                  </div>
+                )}
               </div>
-            </>
+              {/* Seguradora paga */}
+              <div>
+                <div className="flex justify-between text-sm font-semibold mb-1">
+                  <span className="text-info-500">Seguradora paga</span>
+                  <span className="text-info-500">{formatCurrency(insurerPays)}</span>
+                </div>
+                {insurerServicos > 0 && (
+                  <div className="flex justify-between text-xs pl-4">
+                    <span className="text-foreground/40">Serviços</span>
+                    <span className="text-foreground/50">{formatCurrency(insurerServicos)}</span>
+                  </div>
+                )}
+                {insurerPecas > 0 && (
+                  <div className="flex justify-between text-xs pl-4">
+                    <span className="text-foreground/40">Peças</span>
+                    <span className="text-foreground/50">{formatCurrency(insurerPecas)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </div>
       </div>
