@@ -18,6 +18,7 @@ function BadgeCount({ count }: { count: number }): React.ReactElement | null {
   const label = count > 99 ? "99+" : String(count);
   return (
     <span
+      aria-label={`${count} notificações`}
       className={cn(
         "absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center",
         "rounded-full bg-error-600 px-0.5 text-xs font-bold leading-none text-white",
