@@ -703,17 +703,21 @@ class ServiceOrderService:
 
         for item in new_version.items.all():
             if item.item_type == "PART":
+                # Peça fornecida pela seguradora → unit_price=0 (não cobramos/compramos)
+                # Peça fornecida pela oficina → unit_price do orçamento
+                is_insurer_supplied = item.supplier == "SEGURADORA"
                 ServiceOrderPart.objects.create(
                     service_order=service_order,
                     description=item.description,
                     part_number=item.external_code,
                     quantity=item.quantity,
-                    unit_price=item.unit_price,
-                    discount=item.unit_price * item.quantity - item.net_price,
+                    unit_price=Decimal("0") if is_insurer_supplied else item.unit_price,
+                    discount=Decimal("0") if is_insurer_supplied else (item.unit_price * item.quantity - item.net_price),
                     payer="insurer",
                     source_type="import",
-                    origem="seguradora",
+                    origem="seguradora" if is_insurer_supplied else "compra",
                     tipo_qualidade=cls._map_part_type(item.part_type),
+                    status_peca="aguardando_seguradora" if is_insurer_supplied else "manual",
                 )
             elif item.item_type in ("SERVICE", "EXTERNAL_SERVICE"):
                 # part_type guarda o tipo de serviço (Remoção e Instalação, Pintura, Reparação, Serviço)
