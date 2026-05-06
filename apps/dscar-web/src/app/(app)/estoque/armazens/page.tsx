@@ -58,8 +58,8 @@ export default function ArmazensPage() {
         <div className="flex items-center gap-3">
           <Warehouse className="h-5 w-5 text-primary-500" />
           <div>
-            <h1 className="text-lg font-semibold text-white">Armazéns</h1>
-            <p className="text-xs text-white/40 mt-0.5">
+            <h1 className="text-lg font-semibold text-foreground">Armazéns</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
               {armazens.length} armazé{armazens.length !== 1 ? "ns" : "m"}
             </p>
           </div>
@@ -68,7 +68,7 @@ export default function ArmazensPage() {
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
+          className="flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Novo Armazém
@@ -77,32 +77,32 @@ export default function ArmazensPage() {
 
       {/* Inline create form */}
       {showForm && (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
+        <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="label-mono text-white/50 mb-0.5 block">NOME</label>
+              <label className="label-mono text-muted-foreground mb-0.5 block">NOME</label>
               <input
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="Galpão Principal"
-                className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
             <div>
-              <label className="label-mono text-white/50 mb-0.5 block">CÓDIGO</label>
+              <label className="label-mono text-muted-foreground mb-0.5 block">CÓDIGO</label>
               <input
                 value={codigo}
                 onChange={(e) => setCodigo(e.target.value)}
                 placeholder="G1"
-                className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
             <div>
-              <label className="label-mono text-white/50 mb-0.5 block">TIPO</label>
+              <label className="label-mono text-muted-foreground mb-0.5 block">TIPO</label>
               <select
                 value={tipo}
                 onChange={(e) => setTipo(e.target.value as ArmazemTipo)}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
               >
                 <option value="galpao">Galpão</option>
                 <option value="patio">Pátio</option>
@@ -113,7 +113,7 @@ export default function ArmazensPage() {
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-white/60 hover:text-white transition-colors"
+              className="rounded-md border border-border px-3 py-1.5 text-sm text-foreground/60 hover:text-foreground transition-colors"
             >
               Cancelar
             </button>
@@ -121,7 +121,7 @@ export default function ArmazensPage() {
               type="button"
               onClick={handleCreate}
               disabled={createMut.isPending}
-              className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
             >
               {createMut.isPending ? "Criando..." : "Criar"}
             </button>
@@ -131,9 +131,9 @@ export default function ArmazensPage() {
 
       {/* Cards grid */}
       {isLoading ? (
-        <div className="text-white/40 text-sm">Carregando...</div>
+        <div className="text-muted-foreground text-sm">Carregando...</div>
       ) : armazens.length === 0 ? (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
+        <div className="rounded-lg border border-border bg-muted/50 p-8 text-center text-muted-foreground text-sm">
           Nenhum armazém cadastrado.
         </div>
       ) : (
@@ -144,12 +144,12 @@ export default function ArmazensPage() {
               <Link
                 key={a.id}
                 href={`/estoque/armazens/${a.id}` as Route}
-                className="group rounded-lg border border-white/10 bg-white/5 p-5 hover:bg-white/10 hover:border-white/20 transition-all space-y-3"
+                className="group rounded-lg border border-border bg-muted/50 p-5 hover:bg-muted hover:border-border transition-all space-y-3"
               >
                 <div className="flex items-start justify-between">
                   <div>
                     <span className="label-mono">{a.codigo}</span>
-                    <h2 className="text-sm font-semibold text-white mt-1">
+                    <h2 className="text-sm font-semibold text-foreground mt-1">
                       {a.nome}
                     </h2>
                   </div>
@@ -159,7 +159,7 @@ export default function ArmazensPage() {
                     {badge.label}
                   </span>
                 </div>
-                <div className="text-xs text-white/40">
+                <div className="text-xs text-muted-foreground">
                   {a.total_ruas} rua{a.total_ruas !== 1 ? "s" : ""}
                 </div>
               </Link>

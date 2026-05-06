@@ -33,17 +33,17 @@ export function ServiceRow({ item, onEdit }: Props) {
 
   return (
     <>
-      <div className="flex items-center gap-3 px-4 py-3 group hover:bg-white/[0.03] transition-colors">
+      <div className="flex items-center gap-3 px-4 py-3 group hover:bg-muted/30 transition-colors">
         {/* Nome + descrição */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-white/90 truncate">{item.name}</p>
+          <p className="text-sm font-medium text-foreground/90 truncate">{item.name}</p>
           {item.description && (
-            <p className="text-xs text-white/40 truncate mt-0.5">{item.description}</p>
+            <p className="text-xs text-muted-foreground truncate mt-0.5">{item.description}</p>
           )}
         </div>
 
         {/* Preço */}
-        <span className="text-sm font-mono text-white/70 tabular-nums shrink-0">
+        <span className="text-sm font-mono text-foreground/70 tabular-nums shrink-0">
           {price}
         </span>
 
@@ -52,7 +52,7 @@ export function ServiceRow({ item, onEdit }: Props) {
           <Button
             size="icon"
             variant="ghost"
-            className="h-7 w-7 text-white/50 hover:text-white/90"
+            className="h-7 w-7 text-muted-foreground hover:text-foreground/90"
             onClick={() => onEdit(item)}
           >
             <Pencil className="h-3.5 w-3.5" />
@@ -60,7 +60,7 @@ export function ServiceRow({ item, onEdit }: Props) {
           <Button
             size="icon"
             variant="ghost"
-            className="h-7 w-7 text-white/40 hover:text-error-400"
+            className="h-7 w-7 text-muted-foreground hover:text-error-400"
             onClick={() => setConfirmOpen(true)}
             disabled={deleteMutation.isPending}
           >

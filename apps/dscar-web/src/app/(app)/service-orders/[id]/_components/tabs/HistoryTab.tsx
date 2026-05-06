@@ -37,14 +37,14 @@ function FieldDiff({ log }: { log: ActivityLog }) {
     <div className="mt-2 space-y-1">
       {changes.map((change, i) => (
         <div key={i} className="flex items-start gap-1.5 text-xs">
-          <span className="text-white/50 shrink-0 mt-0.5">{change.field_label}:</span>
+          <span className="text-muted-foreground shrink-0 mt-0.5">{change.field_label}:</span>
           {change.old_value !== null && (
             <span className="line-through text-red-400 truncate max-w-[120px]">
               {String(change.old_value)}
             </span>
           )}
           {change.old_value !== null && (
-            <ArrowRight className="h-3 w-3 text-white/40 shrink-0 mt-0.5" />
+            <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
           )}
           <span className="text-success-400 font-medium truncate max-w-[120px]">
             {String(change.new_value)}
@@ -67,11 +67,11 @@ function StatusChangeDisplay({ log }: { log: ActivityLog }) {
 
   return (
     <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
-      <span className={cn("text-xs px-2 py-0.5 rounded-full border", fromCfg?.badge ?? "bg-white/5 text-white/50 border-white/10")}>
+      <span className={cn("text-xs px-2 py-0.5 rounded-full border", fromCfg?.badge ?? "bg-muted/50 text-muted-foreground border-border")}>
         {fromCfg?.label ?? from}
       </span>
-      <ArrowRight className="h-3 w-3 text-white/40" />
-      <span className={cn("text-xs px-2 py-0.5 rounded-full border", toCfg?.badge ?? "bg-white/5 text-white/50 border-white/10")}>
+      <ArrowRight className="h-3 w-3 text-muted-foreground" />
+      <span className={cn("text-xs px-2 py-0.5 rounded-full border", toCfg?.badge ?? "bg-muted/50 text-muted-foreground border-border")}>
         {toCfg?.label ?? to}
       </span>
     </div>
@@ -153,11 +153,11 @@ function ActivityEntry({ log, snapshots }: ActivityEntryProps) {
         {cfg.icon}
       </span>
 
-      <div className="ml-2 rounded-lg border border-white/10 bg-white/5 p-3 shadow-sm">
+      <div className="ml-2 rounded-lg border border-border bg-muted/50 p-3 shadow-sm">
         {/* Header */}
         <div className="flex items-start justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="font-semibold text-sm text-white/90">{log.user_name}</span>
+            <span className="font-semibold text-sm text-foreground/90">{log.user_name}</span>
             <Badge
               variant="secondary"
               className={cn("text-xs py-0 px-1.5", cfg.bgClass)}
@@ -165,14 +165,14 @@ function ActivityEntry({ log, snapshots }: ActivityEntryProps) {
               {cfg.label}
             </Badge>
           </div>
-          <span className="text-white/40 text-xs shrink-0">
+          <span className="text-muted-foreground text-xs shrink-0">
             {format(parseISO(log.created_at), "HH:mm")}
           </span>
         </div>
 
         {/* Description — only show for non-field-diff types */}
         {!FIELD_DIFF_TYPES.has(log.activity_type) && (
-          <p className="text-sm text-white/60 mt-1 leading-snug">{log.description}</p>
+          <p className="text-sm text-foreground/60 mt-1 leading-snug">{log.description}</p>
         )}
 
         {/* Rich extras */}
@@ -201,11 +201,11 @@ function DateGroupLabel({ date }: { date: string }) {
   else if (isYesterday(d)) label = "Ontem"
   return (
     <div className="flex items-center gap-2 my-4">
-      <div className="h-px flex-1 bg-white/10" />
-      <span className="text-xs font-semibold text-white/40 uppercase tracking-wide px-2">
+      <div className="h-px flex-1 bg-muted" />
+      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-2">
         {label}
       </span>
-      <div className="h-px flex-1 bg-white/10" />
+      <div className="h-px flex-1 bg-muted" />
     </div>
   )
 }
@@ -253,9 +253,9 @@ export function HistoryTab({ order }: HistoryTabProps) {
   return (
     <div className="space-y-4 max-w-2xl">
       {/* Add note */}
-      <div className="bg-white/5 p-4 rounded-xl border border-white/10 shadow-sm space-y-3">
-        <label htmlFor="history-note" className="text-sm font-semibold text-white/70 flex items-center gap-1.5">
-          <MessageSquare className="h-4 w-4 text-white/40" />
+      <div className="bg-muted/50 p-4 rounded-xl border border-border shadow-sm space-y-3">
+        <label htmlFor="history-note" className="text-sm font-semibold text-foreground/70 flex items-center gap-1.5">
+          <MessageSquare className="h-4 w-4 text-muted-foreground" />
           Adicionar observação
         </label>
         <Textarea
@@ -280,10 +280,10 @@ export function HistoryTab({ order }: HistoryTabProps) {
       {/* Timeline */}
       {isLoading ? (
         <div className="flex justify-center py-10">
-          <Loader2 className="h-5 w-5 animate-spin text-white/40" />
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : logs.length === 0 ? (
-        <div className="text-center py-10 text-white/40 text-sm">
+        <div className="text-center py-10 text-muted-foreground text-sm">
           Nenhum registro ainda.
         </div>
       ) : (
@@ -291,7 +291,7 @@ export function HistoryTab({ order }: HistoryTabProps) {
           {days.map((day) => (
             <div key={day}>
               <DateGroupLabel date={`${day}T12:00:00`} />
-              <div className="relative pl-6 border-l-2 border-white/10 space-y-4">
+              <div className="relative pl-6 border-l-2 border-border space-y-4">
                 {(grouped[day] ?? []).map((log) => (
                   <ActivityEntry key={log.id} log={log} snapshots={snapshots} />
                 ))}

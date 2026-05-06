@@ -80,7 +80,7 @@ export function DayView({ currentDate, events }: Props) {
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden">
-      <div className={cn("py-3 text-center border-b border-white/10", showingToday && "text-primary-600")}>
+      <div className={cn("py-3 text-center border-b border-border", showingToday && "text-primary-600")}>
         <p className="text-sm font-semibold">{format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR })}</p>
       </div>
 
@@ -88,7 +88,7 @@ export function DayView({ currentDate, events }: Props) {
       <div className="flex-1 min-h-0 overflow-y-auto">
         {/* Dia fechado */}
         {isClosed && (
-          <div className="flex items-center justify-center py-20 text-white/40 text-sm">
+          <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">
             Não há expediente aos domingos.
           </div>
         )}
@@ -97,7 +97,7 @@ export function DayView({ currentDate, events }: Props) {
           <>
             {/* Previsões sem hora */}
             {deliveries.length > 0 && (
-              <div className="px-4 py-2 border-b border-white/10 bg-success-500/5 space-y-1">
+              <div className="px-4 py-2 border-b border-border bg-success-500/5 space-y-1">
                 <p className="text-xs font-semibold uppercase text-success-400">Entregas previstas</p>
                 {deliveries.map((e, i) => (
                   <CalendarEventCard key={`${e.os.id}-del-${i}`} event={e} />
@@ -112,10 +112,10 @@ export function DayView({ currentDate, events }: Props) {
                 return (
                   <div
                     key={hour}
-                    className="flex gap-3 px-4 py-2 border-b border-white/10 min-h-[52px] cursor-pointer hover:bg-primary-600/5 transition-colors group"
+                    className="flex gap-3 px-4 py-2 border-b border-border min-h-[52px] cursor-pointer hover:bg-primary-600/5 transition-colors group"
                     onClick={() => handleSlotClick(hour)}
                   >
-                    <span className="text-xs text-white/40 w-8 shrink-0 pt-0.5">{hour}h</span>
+                    <span className="text-xs text-muted-foreground w-8 shrink-0 pt-0.5">{hour}h</span>
                     <div className="flex-1 min-w-0 space-y-1 relative">
                       {hourEvents.map((e, i) => (
                         <div key={`${e.os.id}-ent-${i}`} onClick={(ev) => ev.stopPropagation()}>

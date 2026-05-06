@@ -53,18 +53,18 @@ function ServicoSearchRow({
   if (value) {
     return (
       <div className="flex items-center gap-2">
-        <div className="flex-1 flex items-center justify-between bg-white/5 border border-white/10 rounded-md px-3 py-2">
-          <span className="text-sm text-white">{value.nome}</span>
+        <div className="flex-1 flex items-center justify-between bg-muted/50 border border-border rounded-md px-3 py-2">
+          <span className="text-sm text-foreground">{value.nome}</span>
           <button
             type="button"
             onClick={() => onChange(null)}
-            className="text-white/30 hover:text-white/60 ml-2"
+            className="text-muted-foreground hover:text-foreground/60 ml-2"
           >
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
         {showRemove && (
-          <Button variant="ghost" size="icon" className="h-9 w-9 text-white/30 hover:text-red-400" onClick={onRemove}>
+          <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-red-400" onClick={onRemove}>
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
         )}
@@ -76,39 +76,39 @@ function ServicoSearchRow({
     <div className="space-y-1">
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/30" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
-            className="bg-white/5 border-white/10 text-white placeholder:text-white/20 pl-8"
+            className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50 pl-8"
             placeholder="Buscar serviço (ex: funilaria, pintura, alinhamento…)"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         {showRemove && (
-          <Button variant="ghost" size="icon" className="h-9 w-9 text-white/30 hover:text-red-400" onClick={onRemove}>
+          <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-red-400" onClick={onRemove}>
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
         )}
       </div>
       {servicos.length > 0 && (
-        <div className="rounded-md border border-white/10 overflow-hidden max-h-44 overflow-y-auto ml-0">
+        <div className="rounded-md border border-border overflow-hidden max-h-44 overflow-y-auto ml-0">
           {servicos.slice(0, 8).map((s) => (
             <button
               key={s.id}
               type="button"
               onClick={() => { onChange({ id: s.id, nome: s.nome }); setSearch("") }}
-              className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-white/5 border-b border-white/5 last:border-0 transition-colors"
+              className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-muted/50 border-b border-white/5 last:border-0 transition-colors"
             >
-              <span className="text-sm text-white">{s.nome}</span>
+              <span className="text-sm text-foreground">{s.nome}</span>
               {s.categoria_nome && (
-                <span className="text-xs text-white/30 ml-2 shrink-0">{s.categoria_nome}</span>
+                <span className="text-xs text-muted-foreground ml-2 shrink-0">{s.categoria_nome}</span>
               )}
             </button>
           ))}
         </div>
       )}
       {search.length >= 2 && servicos.length === 0 && (
-        <p className="text-xs text-white/30 px-1">Nenhum serviço encontrado.</p>
+        <p className="text-xs text-muted-foreground px-1">Nenhum serviço encontrado.</p>
       )}
     </div>
   )
@@ -200,39 +200,39 @@ export default function SimuladorPage() {
       <div className="flex items-center gap-3">
         <FlaskConical className="h-5 w-5 text-primary-500" />
         <div>
-          <h1 className="text-lg font-semibold text-white">Simulador</h1>
-          <p className="text-xs text-white/40 mt-0.5">
+          <h1 className="text-lg font-semibold text-foreground">Simulador</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Calcule o preço de serviços com base no veículo do cliente.
           </p>
         </div>
       </div>
 
       {/* Dados do veículo */}
-      <section className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-4">
-        <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Veículo</p>
+      <section className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Veículo</p>
         <div className="grid grid-cols-3 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Marca *</Label>
+            <Label className="text-foreground/70 text-xs">Marca *</Label>
             <Input
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
+              className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50"
               placeholder="Ex: Toyota"
               value={marca}
               onChange={(e) => setMarca(e.target.value)}
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Modelo *</Label>
+            <Label className="text-foreground/70 text-xs">Modelo *</Label>
             <Input
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
+              className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50"
               placeholder="Ex: Corolla"
               value={modelo}
               onChange={(e) => setModelo(e.target.value)}
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Ano *</Label>
+            <Label className="text-foreground/70 text-xs">Ano *</Label>
             <Input
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
+              className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50"
               placeholder="Ex: 2022"
               value={ano}
               onChange={(e) => setAno(e.target.value)}
@@ -240,9 +240,9 @@ export default function SimuladorPage() {
           </div>
         </div>
         <div className="space-y-1.5 max-w-xs">
-          <Label className="text-white/70 text-xs">Tipo de pintura</Label>
+          <Label className="text-foreground/70 text-xs">Tipo de pintura</Label>
           <Select value={tipoPinturaCodigo} onValueChange={setTipoPinturaCodigo}>
-            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+            <SelectTrigger className="bg-muted/50 border-border text-foreground">
               <SelectValue placeholder="Selecione (opcional)" />
             </SelectTrigger>
             <SelectContent>
@@ -258,7 +258,7 @@ export default function SimuladorPage() {
       {/* Serviços */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Serviços a calcular
           </p>
           <Button size="sm" variant="outline" onClick={addServico}>
@@ -285,7 +285,7 @@ export default function SimuladorPage() {
       {/* Resultados */}
       {resultados.length > 0 && (
         <section className="space-y-3">
-          <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Resultados</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Resultados</p>
           {resultados.map((r, idx) => (
             <div
               key={idx}
@@ -301,7 +301,7 @@ export default function SimuladorPage() {
                 ) : (
                   <XCircle className="h-4 w-4 text-red-400 shrink-0" />
                 )}
-                <span className="text-sm font-medium text-white">{r.servico_nome}</span>
+                <span className="text-sm font-medium text-foreground">{r.servico_nome}</span>
                 <Badge
                   variant="outline"
                   className={`ml-auto text-xs shrink-0 ${
@@ -316,21 +316,21 @@ export default function SimuladorPage() {
 
               {r.status === "ok" && r.data && (
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="rounded-md bg-white/5 p-3">
-                    <p className="text-xs text-white/40 mb-1">Preço final</p>
+                  <div className="rounded-md bg-muted/50 p-3">
+                    <p className="text-xs text-muted-foreground mb-1">Preço final</p>
                     <p className="text-base font-semibold text-success-400">
                       {formatCurrency(r.data.preco_final)}
                     </p>
                   </div>
-                  <div className="rounded-md bg-white/5 p-3">
-                    <p className="text-xs text-white/40 mb-1">Custo base</p>
-                    <p className="text-base font-semibold text-white/70">
+                  <div className="rounded-md bg-muted/50 p-3">
+                    <p className="text-xs text-muted-foreground mb-1">Custo base</p>
+                    <p className="text-base font-semibold text-foreground/70">
                       {formatCurrency(r.data.custo_total_base)}
                     </p>
                   </div>
-                  <div className="rounded-md bg-white/5 p-3">
-                    <p className="text-xs text-white/40 mb-1">Margem</p>
-                    <p className="text-base font-semibold text-white/70">
+                  <div className="rounded-md bg-muted/50 p-3">
+                    <p className="text-xs text-muted-foreground mb-1">Margem</p>
+                    <p className="text-base font-semibold text-foreground/70">
                       {formatMargem(r.data.margem_ajustada)}
                     </p>
                   </div>

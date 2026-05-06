@@ -49,9 +49,9 @@ const STATUS_CONFIG: Record<
   },
   cancelado: {
     label: "Cancelado",
-    bg: "bg-white/5",
-    text: "text-white/40",
-    border: "border-white/10",
+    bg: "bg-muted/50",
+    text: "text-muted-foreground",
+    border: "border-border",
   },
 }
 
@@ -59,7 +59,7 @@ const TIPO_QUALIDADE_CONFIG: Record<string, { label: string; color: string }> = 
   genuina:    { label: "Genuina",    color: "text-success-400" },
   reposicao:  { label: "Reposicao",  color: "text-info-400" },
   similar:    { label: "Similar",    color: "text-warning-400" },
-  usada:      { label: "Usada",      color: "text-white/40" },
+  usada:      { label: "Usada",      color: "text-muted-foreground" },
 }
 
 function StatusBadge({ status }: { status: StatusPedidoCompra }) {
@@ -167,7 +167,7 @@ function ActionButton({
       </button>
     )
   }
-  return <span className="text-xs text-white/20">--</span>
+  return <span className="text-xs text-muted-foreground/50">--</span>
 }
 
 // ─── Page ───────────────────────────────────────────────────────────────────────
@@ -192,12 +192,12 @@ export default function ComprasPage() {
     <div className="p-6 space-y-6">
       {/* ── Header ── */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center">
-          <ShoppingCart size={20} className="text-white/60" />
+        <div className="w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center">
+          <ShoppingCart size={20} className="text-foreground/60" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-white">Compras</h1>
-          <p className="text-sm text-white/40">
+          <h1 className="text-xl font-semibold text-foreground">Compras</h1>
+          <p className="text-sm text-muted-foreground">
             Pedidos de compra e ordens de compra
           </p>
         </div>
@@ -209,7 +209,7 @@ export default function ComprasPage() {
           {[...Array(4)].map((_, i) => (
             <div
               key={i}
-              className="bg-white/5 border border-white/10 rounded-lg p-4 animate-pulse h-20"
+              className="bg-muted/50 border border-border rounded-lg p-4 animate-pulse h-20"
             />
           ))}
         </div>
@@ -226,17 +226,17 @@ export default function ComprasPage() {
       <div className="section-divider">PEDIDOS PENDENTES</div>
 
       {/* ── Table ── */}
-      <div className="bg-white/5 rounded-md border border-white/10 overflow-hidden">
+      <div className="bg-muted/50 rounded-md border border-border overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-white/10">
-              <th className="label-mono text-white/40 text-left px-4 py-3">OS</th>
-              <th className="label-mono text-white/40 text-left px-4 py-3">Peca</th>
-              <th className="label-mono text-white/40 text-left px-4 py-3">Tipo</th>
-              <th className="label-mono text-white/40 text-left px-4 py-3">Veiculo</th>
-              <th className="label-mono text-white/40 text-left px-4 py-3">Status</th>
-              <th className="label-mono text-white/40 text-left px-4 py-3">Data</th>
-              <th className="label-mono text-white/40 text-left px-4 py-3">Acoes</th>
+            <tr className="border-b border-border">
+              <th className="label-mono text-muted-foreground text-left px-4 py-3">OS</th>
+              <th className="label-mono text-muted-foreground text-left px-4 py-3">Peca</th>
+              <th className="label-mono text-muted-foreground text-left px-4 py-3">Tipo</th>
+              <th className="label-mono text-muted-foreground text-left px-4 py-3">Veiculo</th>
+              <th className="label-mono text-muted-foreground text-left px-4 py-3">Status</th>
+              <th className="label-mono text-muted-foreground text-left px-4 py-3">Data</th>
+              <th className="label-mono text-muted-foreground text-left px-4 py-3">Acoes</th>
             </tr>
           </thead>
           <tbody>
@@ -245,14 +245,14 @@ export default function ComprasPage() {
                 <tr key={i} className="border-b border-white/5">
                   {[...Array(7)].map((__, j) => (
                     <td key={j} className="px-4 py-3">
-                      <div className="h-4 bg-white/5 rounded animate-pulse w-20" />
+                      <div className="h-4 bg-muted/50 rounded animate-pulse w-20" />
                     </td>
                   ))}
                 </tr>
               ))
             ) : !pedidos?.length ? (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-white/30 text-sm">
+                <td colSpan={7} className="px-4 py-10 text-center text-muted-foreground text-sm">
                   Nenhum pedido pendente
                 </td>
               </tr>
@@ -270,9 +270,9 @@ export default function ComprasPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-sm text-white/70">{p.descricao}</span>
+                    <span className="text-sm text-foreground/70">{p.descricao}</span>
                     {p.codigo_referencia && (
-                      <span className="ml-1.5 text-xs text-white/30 font-mono">
+                      <span className="ml-1.5 text-xs text-muted-foreground font-mono">
                         {p.codigo_referencia}
                       </span>
                     )}
@@ -281,13 +281,13 @@ export default function ComprasPage() {
                     <TipoQualidadeBadge tipo={p.tipo_qualidade} />
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-sm text-white/50">{p.veiculo || "--"}</span>
+                    <span className="text-sm text-muted-foreground">{p.veiculo || "--"}</span>
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={p.status} />
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-xs text-white/40 font-mono">
+                    <span className="text-xs text-muted-foreground font-mono">
                       {new Date(p.created_at).toLocaleDateString("pt-BR")}
                     </span>
                   </td>

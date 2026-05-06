@@ -74,7 +74,7 @@ export function BarcodeScanInput({
 
   return (
     <div className={`relative ${className}`}>
-      <Barcode className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+      <Barcode className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       <input
         ref={inputRef}
         type="text"
@@ -83,7 +83,7 @@ export function BarcodeScanInput({
         onKeyDown={handleKeyDown}
         disabled={disabled}
         placeholder={placeholder}
-        className="w-full bg-white/5 border border-white/10 text-white rounded-md pl-10 pr-4 py-2 text-sm font-mono placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full bg-muted/50 border border-border text-foreground rounded-md pl-10 pr-4 py-2 text-sm font-mono placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-40 disabled:cursor-not-allowed"
       />
     </div>
   )

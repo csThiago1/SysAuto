@@ -109,17 +109,17 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
 
         {isLoading || !formData ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-6 w-6 animate-spin text-white/40" />
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : (
           <div className="mt-6 space-y-6">
             {/* Cliente (não aparece na OS Report — só em garantia/quitação/recibo) */}
             {formData.customer && (
             <section>
-              <h3 className="label-mono text-white/50 mb-3">Dados do Cliente</h3>
+              <h3 className="label-mono text-muted-foreground mb-3">Dados do Cliente</h3>
               <div className="space-y-2">
                 <div>
-                  <Label className="text-xs text-white/40">Nome</Label>
+                  <Label className="text-xs text-muted-foreground">Nome</Label>
                   <Input
                     value={formData.customer.name}
                     onChange={(e) => updateField("customer.name", e.target.value)}
@@ -128,7 +128,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label className="text-xs text-white/40">CPF</Label>
+                    <Label className="text-xs text-muted-foreground">CPF</Label>
                     <Input
                       value={formData.customer.cpf}
                       onChange={(e) => updateField("customer.cpf", e.target.value)}
@@ -136,7 +136,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                     />
                   </div>
                   <div>
-                    <Label className="text-xs text-white/40">Telefone</Label>
+                    <Label className="text-xs text-muted-foreground">Telefone</Label>
                     <Input
                       value={formData.customer.phone}
                       onChange={(e) => updateField("customer.phone", e.target.value)}
@@ -145,7 +145,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                   </div>
                 </div>
                 <div>
-                  <Label className="text-xs text-white/40">Endereço</Label>
+                  <Label className="text-xs text-muted-foreground">Endereço</Label>
                   <Input
                     value={formData.customer.address}
                     onChange={(e) => updateField("customer.address", e.target.value)}
@@ -158,10 +158,10 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
 
             {/* Veículo */}
             <section>
-              <h3 className="label-mono text-white/50 mb-3">Dados do Veículo</h3>
+              <h3 className="label-mono text-muted-foreground mb-3">Dados do Veículo</h3>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label className="text-xs text-white/40">Placa</Label>
+                  <Label className="text-xs text-muted-foreground">Placa</Label>
                   <Input
                     value={formData.vehicle.plate}
                     onChange={(e) => updateField("vehicle.plate", e.target.value)}
@@ -169,7 +169,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-white/40">Modelo</Label>
+                  <Label className="text-xs text-muted-foreground">Modelo</Label>
                   <Input
                     value={`${formData.vehicle.make} ${formData.vehicle.model}`}
                     onChange={(e) => updateField("vehicle.model", e.target.value)}
@@ -177,7 +177,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-white/40">Ano</Label>
+                  <Label className="text-xs text-muted-foreground">Ano</Label>
                   <Input
                     value={formData.vehicle.year}
                     onChange={(e) => updateField("vehicle.year", e.target.value)}
@@ -185,7 +185,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-white/40">Cor</Label>
+                  <Label className="text-xs text-muted-foreground">Cor</Label>
                   <Input
                     value={formData.vehicle.color}
                     onChange={(e) => updateField("vehicle.color", e.target.value)}
@@ -197,12 +197,12 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
 
             {/* Serviços */}
             <section>
-              <h3 className="label-mono text-white/50 mb-3">Serviços</h3>
+              <h3 className="label-mono text-muted-foreground mb-3">Serviços</h3>
               <div className="space-y-2">
                 {formData.services.map((svc, i) => (
-                  <div key={i} className="bg-white/[0.03] rounded-lg p-3 space-y-2">
+                  <div key={i} className="bg-muted/30 rounded-lg p-3 space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono text-white/30 w-6">{String(i + 1).padStart(2, "0")}</span>
+                      <span className="text-xs font-mono text-muted-foreground w-6">{String(i + 1).padStart(2, "0")}</span>
                       <Input
                         value={svc.description}
                         onChange={(e) => updateServiceField(i, "description", e.target.value)}
@@ -217,11 +217,11 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                     </div>
                     {documentType === "warranty" && svc.warranty_months !== undefined && (
                       <div className="flex items-center gap-2 ml-8">
-                        <Label className="text-xs text-white/40 shrink-0">Garantia:</Label>
+                        <Label className="text-xs text-muted-foreground shrink-0">Garantia:</Label>
                         <select
                           value={svc.warranty_months}
                           onChange={(e) => updateServiceField(i, "warranty_months", parseInt(e.target.value))}
-                          className="h-7 text-xs bg-white/5 border border-white/10 rounded px-2 text-white"
+                          className="h-7 text-xs bg-muted/50 border border-border rounded px-2 text-foreground"
                         >
                           <option value={0}>Sem garantia</option>
                           <option value={3}>3 meses</option>
@@ -229,7 +229,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                           <option value={12}>12 meses</option>
                         </select>
                         {svc.warranty_until && (
-                          <span className="text-xs text-white/40">até {svc.warranty_until}</span>
+                          <span className="text-xs text-muted-foreground">até {svc.warranty_until}</span>
                         )}
                       </div>
                     )}
@@ -241,7 +241,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
             {/* Cobertura (só garantia) */}
             {documentType === "warranty" && formData.warranty_coverage && (
               <section>
-                <h3 className="label-mono text-white/50 mb-3">Cobertura da Garantia</h3>
+                <h3 className="label-mono text-muted-foreground mb-3">Cobertura da Garantia</h3>
                 <div className="space-y-2">
                   {formData.warranty_coverage.map((item, i) => (
                     <div key={i} className="flex items-start gap-2">
@@ -254,7 +254,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                       <button
                         type="button"
                         onClick={() => removeListItem("warranty_coverage", i)}
-                        className="text-white/30 hover:text-error-400 mt-1"
+                        className="text-muted-foreground hover:text-error-400 mt-1"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -265,7 +265,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                     variant="ghost"
                     size="sm"
                     onClick={() => addListItem("warranty_coverage")}
-                    className="text-xs text-white/40"
+                    className="text-xs text-muted-foreground"
                   >
                     <Plus className="h-3 w-3 mr-1" /> Adicionar
                   </Button>
@@ -275,7 +275,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
 
             {documentType === "warranty" && formData.warranty_exclusions && (
               <section>
-                <h3 className="label-mono text-white/50 mb-3">Exclusões da Garantia</h3>
+                <h3 className="label-mono text-muted-foreground mb-3">Exclusões da Garantia</h3>
                 <div className="space-y-2">
                   {formData.warranty_exclusions.map((item, i) => (
                     <div key={i} className="flex items-start gap-2">
@@ -288,7 +288,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                       <button
                         type="button"
                         onClick={() => removeListItem("warranty_exclusions", i)}
-                        className="text-white/30 hover:text-error-400 mt-1"
+                        className="text-muted-foreground hover:text-error-400 mt-1"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -299,7 +299,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                     variant="ghost"
                     size="sm"
                     onClick={() => addListItem("warranty_exclusions")}
-                    className="text-xs text-white/40"
+                    className="text-xs text-muted-foreground"
                   >
                     <Plus className="h-3 w-3 mr-1" /> Adicionar
                   </Button>
@@ -309,25 +309,25 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
 
             {/* Observações */}
             <section>
-              <h3 className="label-mono text-white/50 mb-3">Observações</h3>
+              <h3 className="label-mono text-muted-foreground mb-3">Observações</h3>
               <textarea
                 value={formData.observations}
                 onChange={(e) => updateField("observations", e.target.value)}
                 rows={3}
-                className="w-full rounded-md bg-white/5 border border-white/10 px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full rounded-md bg-muted/50 border border-border px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary-500"
                 placeholder="Observações adicionais (opcional)"
               />
             </section>
 
             {/* Footer */}
-            <div className="flex gap-2 justify-end border-t border-white/10 pt-4">
+            <div className="flex gap-2 justify-end border-t border-border pt-4">
               <Button variant="ghost" onClick={onClose}>
                 Cancelar
               </Button>
               <Button
                 onClick={handleGenerate}
                 disabled={generateMutation.isPending}
-                className="bg-primary-600 hover:bg-primary-700 text-white"
+                className="bg-primary-600 hover:bg-primary-700 text-foreground"
               >
                 {generateMutation.isPending ? (
                   <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Gerando...</>

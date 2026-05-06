@@ -28,10 +28,10 @@ function InfoRow({
 }): React.ReactElement {
   return (
     <div className="flex flex-col gap-0.5">
-      <dt className="text-xs font-medium text-white/50 uppercase tracking-wide">
+      <dt className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
         {label}
       </dt>
-      <dd className="text-sm text-white">{value || "—"}</dd>
+      <dd className="text-sm text-foreground">{value || "—"}</dd>
     </div>
   );
 }
@@ -63,9 +63,9 @@ export function TabDadosPessoais({
   return (
     <div className="space-y-6">
       {/* Dados pessoais */}
-      <section className="rounded-md bg-white/5 shadow-card p-card-padding">
+      <section className="rounded-md bg-muted/50 shadow-card p-card-padding">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold text-white">
+          <h3 className="text-base font-semibold text-foreground">
             Dados pessoais
           </h3>
           {!editing ? (
@@ -79,7 +79,7 @@ export function TabDadosPessoais({
             <div className="flex gap-2">
               <button
                 onClick={() => setEditing(false)}
-                className="text-xs text-white/50 hover:underline"
+                className="text-xs text-muted-foreground hover:underline"
                 disabled={update.isPending}
               >
                 Cancelar
@@ -108,11 +108,11 @@ export function TabDadosPessoais({
           {editing ? (
             <>
               <div className="flex flex-col gap-0.5">
-                <label className="text-xs font-medium text-white/50 uppercase tracking-wide">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Estado civil
                 </label>
                 <input
-                  className="rounded border border-white/10 px-2 py-1 text-sm"
+                  className="rounded border border-border px-2 py-1 text-sm"
                   value={form.marital_status ?? ""}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, marital_status: e.target.value }))
@@ -120,11 +120,11 @@ export function TabDadosPessoais({
                 />
               </div>
               <div className="flex flex-col gap-0.5">
-                <label className="text-xs font-medium text-white/50 uppercase tracking-wide">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Escolaridade
                 </label>
                 <input
-                  className="rounded border border-white/10 px-2 py-1 text-sm"
+                  className="rounded border border-border px-2 py-1 text-sm"
                   value={form.education_level ?? ""}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, education_level: e.target.value }))
@@ -132,11 +132,11 @@ export function TabDadosPessoais({
                 />
               </div>
               <div className="flex flex-col gap-0.5">
-                <label className="text-xs font-medium text-white/50 uppercase tracking-wide">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Nacionalidade
                 </label>
                 <input
-                  className="rounded border border-white/10 px-2 py-1 text-sm"
+                  className="rounded border border-border px-2 py-1 text-sm"
                   value={form.nationality ?? ""}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, nationality: e.target.value }))
@@ -144,11 +144,11 @@ export function TabDadosPessoais({
                 />
               </div>
               <div className="flex flex-col gap-0.5">
-                <label className="text-xs font-medium text-white/50 uppercase tracking-wide">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Periodicidade de pagamento
                 </label>
                 <select
-                  className="rounded border border-white/10 px-2 py-1 text-sm"
+                  className="rounded border border-border px-2 py-1 text-sm"
                   value={form.pay_frequency ?? "monthly"}
                   onChange={(e) =>
                     setForm((p) => ({
@@ -178,8 +178,8 @@ export function TabDadosPessoais({
       </section>
 
       {/* Endereço */}
-      <section className="rounded-md bg-white/5 shadow-card p-card-padding">
-        <h3 className="text-base font-semibold text-white mb-4">
+      <section className="rounded-md bg-muted/50 shadow-card p-card-padding">
+        <h3 className="text-base font-semibold text-foreground mb-4">
           Endereço
         </h3>
         {editing ? (
@@ -196,11 +196,11 @@ export function TabDadosPessoais({
               ] as [keyof UpdateEmployeePayload, string][]
             ).map(([field, label]) => (
               <div key={field} className="flex flex-col gap-0.5">
-                <label className="text-xs font-medium text-white/50 uppercase tracking-wide">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   {label}
                 </label>
                 <input
-                  className="rounded border border-white/10 px-2 py-1 text-sm"
+                  className="rounded border border-border px-2 py-1 text-sm"
                   value={(form[field] as string) ?? ""}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, [field]: e.target.value }))
@@ -223,17 +223,17 @@ export function TabDadosPessoais({
       </section>
 
       {/* Contato emergência */}
-      <section className="rounded-md bg-white/5 shadow-card p-card-padding">
-        <h3 className="text-base font-semibold text-white mb-4">
+      <section className="rounded-md bg-muted/50 shadow-card p-card-padding">
+        <h3 className="text-base font-semibold text-foreground mb-4">
           Contato de emergência
         </h3>
         {editing ? (
           <div className="flex flex-col gap-0.5">
-            <label className="text-xs font-medium text-white/50 uppercase tracking-wide">
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Nome
             </label>
             <input
-              className="rounded border border-white/10 px-2 py-1 text-sm w-64"
+              className="rounded border border-border px-2 py-1 text-sm w-64"
               value={form.emergency_contact_name ?? ""}
               onChange={(e) =>
                 setForm((p) => ({

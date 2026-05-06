@@ -45,27 +45,27 @@ function SnapshotRow({ snap }: { snap: Snapshot }) {
   }
 
   return (
-    <TableRow className="border-white/10 hover:bg-white/5 cursor-pointer">
-      <TableCell className="text-xs font-mono text-white/50">
+    <TableRow className="border-border hover:bg-muted/50 cursor-pointer">
+      <TableCell className="text-xs font-mono text-muted-foreground">
         {snap.id.slice(0, 8)}…
       </TableCell>
-      <TableCell className="text-sm text-white/80">
+      <TableCell className="text-sm text-foreground/80">
         {ctx.veiculo
           ? `${ctx.veiculo.marca} ${ctx.veiculo.modelo} ${ctx.veiculo.ano}`
           : "—"}
       </TableCell>
-      <TableCell className="text-xs text-white/60">
+      <TableCell className="text-xs text-foreground/60">
         {ctx.segmento_codigo ?? "—"}
       </TableCell>
       <TableCell>
-        <Badge variant="outline" className="text-xs border-white/20 text-white/60">
+        <Badge variant="outline" className="text-xs border-border text-foreground/60">
           {ORIGEM_LABELS[snap.origem] ?? snap.origem}
         </Badge>
       </TableCell>
       <TableCell className="text-sm text-right font-mono text-success-400">
         {formatCurrency(snap.preco_final)}
       </TableCell>
-      <TableCell className="text-xs text-white/40">
+      <TableCell className="text-xs text-muted-foreground">
         {new Date(snap.calculado_em).toLocaleString("pt-BR", {
           day: "2-digit",
           month: "2-digit",
@@ -76,7 +76,7 @@ function SnapshotRow({ snap }: { snap: Snapshot }) {
       </TableCell>
       <TableCell>
         <Link href={`/configuracao-motor/snapshots/${snap.id}` as Route}>
-          <ChevronRight className="h-4 w-4 text-white/30 hover:text-white/70 transition-colors" />
+          <ChevronRight className="h-4 w-4 text-muted-foreground hover:text-foreground/70 transition-colors" />
         </Link>
       </TableCell>
     </TableRow>
@@ -110,8 +110,8 @@ export default function SnapshotsPage() {
       <div className="flex items-center gap-3">
         <Layers className="h-5 w-5 text-primary-500" />
         <div>
-          <h1 className="text-lg font-semibold text-white">Snapshots de Custo</h1>
-          <p className="text-xs text-white/40 mt-0.5">
+          <h1 className="text-lg font-semibold text-foreground">Snapshots de Custo</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Histórico imutável de cálculos de preço para auditoria.
           </p>
         </div>
@@ -119,16 +119,16 @@ export default function SnapshotsPage() {
 
       <div className="flex gap-3">
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-white/30" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-white/30 text-sm"
+            className="pl-9 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground text-sm"
             placeholder="Buscar por veículo ou ID…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <Select value={origem} onValueChange={setOrigem}>
-          <SelectTrigger className="w-44 bg-white/5 border-white/10 text-white text-sm">
+          <SelectTrigger className="w-44 bg-muted/50 border-border text-foreground text-sm">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -141,25 +141,25 @@ export default function SnapshotsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-xs text-white/40 py-12 text-center">Carregando snapshots…</p>
+        <p className="text-xs text-muted-foreground py-12 text-center">Carregando snapshots…</p>
       ) : (
-        <div className="rounded-lg border border-white/10 overflow-hidden">
+        <div className="rounded-lg border border-border overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="text-white/60 text-xs">ID</TableHead>
-                <TableHead className="text-white/60 text-xs">Veículo</TableHead>
-                <TableHead className="text-white/60 text-xs">Segmento</TableHead>
-                <TableHead className="text-white/60 text-xs">Origem</TableHead>
-                <TableHead className="text-white/60 text-xs text-right">Preço Final</TableHead>
-                <TableHead className="text-white/60 text-xs">Calculado em</TableHead>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="text-foreground/60 text-xs">ID</TableHead>
+                <TableHead className="text-foreground/60 text-xs">Veículo</TableHead>
+                <TableHead className="text-foreground/60 text-xs">Segmento</TableHead>
+                <TableHead className="text-foreground/60 text-xs">Origem</TableHead>
+                <TableHead className="text-foreground/60 text-xs text-right">Preço Final</TableHead>
+                <TableHead className="text-foreground/60 text-xs">Calculado em</TableHead>
                 <TableHead className="w-8" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-white/30 text-xs py-12">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground text-xs py-12">
                     Nenhum snapshot encontrado.
                   </TableCell>
                 </TableRow>

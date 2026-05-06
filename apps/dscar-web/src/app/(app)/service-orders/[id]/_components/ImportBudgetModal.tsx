@@ -89,7 +89,7 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
   if (diffResult?.action === "diff") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-        <div className="max-h-[85vh] w-full max-w-4xl overflow-y-auto rounded-xl border border-white/10 bg-surface-900 shadow-2xl">
+        <div className="max-h-[85vh] w-full max-w-4xl overflow-y-auto rounded-xl border border-border bg-surface-900 shadow-2xl">
           <ImportDiffView
             diffResult={diffResult}
             onApply={() => diffResult.new_version && applyMutation.mutate(diffResult.new_version.id)}
@@ -103,8 +103,8 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-full max-w-lg rounded-xl border border-white/10 bg-surface-900 p-6 shadow-2xl">
-        <h2 className="mb-4 text-lg font-semibold text-white">Importar Orçamento</h2>
+      <div className="w-full max-w-lg rounded-xl border border-border bg-surface-900 p-6 shadow-2xl">
+        <h2 className="mb-4 text-lg font-semibold text-foreground">Importar Orçamento</h2>
 
         <div className="mb-5">
           <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -114,7 +114,7 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
             {SOURCES.map((s) => (
               <button key={s.id} type="button" onClick={() => setSource(s.id)}
                 className={cn("flex-1 rounded-lg border p-3 text-center transition",
-                  source === s.id ? "border-info-500 bg-info-500/10" : "border-white/10 bg-white/5 hover:bg-white/10",
+                  source === s.id ? "border-info-500 bg-info-500/10" : "border-border bg-muted/50 hover:bg-muted",
                 )}>
                 <div className={cn("text-sm font-semibold", source === s.id ? "text-info-500" : "text-foreground/60")}>{s.label}</div>
                 <div className="text-[11px] text-muted-foreground">{s.sub}</div>

@@ -41,18 +41,18 @@ function ImpressoraRow({ impressora }: { impressora: ImpressoraEtiqueta }) {
   }
 
   return (
-    <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-      <td className="px-4 py-3 text-white font-medium">{impressora.nome}</td>
-      <td className="px-4 py-3 text-white/60">{impressora.modelo_display}</td>
-      <td className="px-4 py-3 text-white/60 font-mono text-xs">{impressora.endpoint}</td>
-      <td className="px-4 py-3 text-white/60 text-xs">
+    <tr className="border-b border-white/5 hover:bg-muted/50 transition-colors">
+      <td className="px-4 py-3 text-foreground font-medium">{impressora.nome}</td>
+      <td className="px-4 py-3 text-foreground/60">{impressora.modelo_display}</td>
+      <td className="px-4 py-3 text-foreground/60 font-mono text-xs">{impressora.endpoint}</td>
+      <td className="px-4 py-3 text-foreground/60 text-xs">
         {impressora.largura_mm} × {impressora.altura_mm} mm
       </td>
       <td className="px-4 py-3">
         <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
           impressora.is_active
             ? "text-success-400 bg-success-400/10"
-            : "text-white/40 bg-white/5"
+            : "text-muted-foreground bg-muted/50"
         }`}>
           {impressora.is_active ? "Ativa" : "Inativa"}
         </span>
@@ -112,8 +112,8 @@ export default function ImpressorasPage() {
         <div className="flex items-center gap-3">
           <Printer className="h-5 w-5 text-primary-500" />
           <div>
-            <h1 className="text-lg font-semibold text-white">Impressoras de Etiqueta</h1>
-            <p className="text-xs text-white/40 mt-0.5">
+            <h1 className="text-lg font-semibold text-foreground">Impressoras de Etiqueta</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
               {impressoras.length} impressora{impressoras.length !== 1 ? "s" : ""} cadastrada{impressoras.length !== 1 ? "s" : ""}
             </p>
           </div>
@@ -121,7 +121,7 @@ export default function ImpressorasPage() {
 
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 text-sm bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md transition-colors"
+          className="flex items-center gap-2 text-sm bg-primary-600 hover:bg-primary-700 text-foreground px-4 py-2 rounded-md transition-colors"
         >
           <Plus className="h-4 w-4" />
           Nova Impressora
@@ -129,25 +129,25 @@ export default function ImpressorasPage() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleCreate} className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-4">
-          <h2 className="text-sm font-semibold text-white">Nova Impressora</h2>
+        <form onSubmit={handleCreate} className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
+          <h2 className="text-sm font-semibold text-foreground">Nova Impressora</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs text-white/50">Nome</label>
+              <label className="text-xs text-muted-foreground">Nome</label>
               <input
                 required
                 value={form.nome}
                 onChange={(e) => setForm({ ...form, nome: e.target.value })}
                 placeholder="Ex: Zebra GK420d"
-                className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-white/50">Modelo</label>
+              <label className="text-xs text-muted-foreground">Modelo</label>
               <select
                 value={form.modelo}
                 onChange={(e) => setForm({ ...form, modelo: e.target.value as ModeloImpressora })}
-                className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
               >
                 {MODELOS.map((m) => (
                   <option key={m.value} value={m.value}>{m.label}</option>
@@ -155,31 +155,31 @@ export default function ImpressorasPage() {
               </select>
             </div>
             <div className="sm:col-span-2 space-y-1">
-              <label className="text-xs text-white/50">Endpoint (URL ou IP:porta)</label>
+              <label className="text-xs text-muted-foreground">Endpoint (URL ou IP:porta)</label>
               <input
                 required
                 value={form.endpoint}
                 onChange={(e) => setForm({ ...form, endpoint: e.target.value })}
                 placeholder="Ex: http://192.168.1.100:9100"
-                className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-white/50">Largura (mm)</label>
+              <label className="text-xs text-muted-foreground">Largura (mm)</label>
               <input
                 type="number"
                 value={form.largura_mm}
                 onChange={(e) => setForm({ ...form, largura_mm: parseInt(e.target.value) })}
-                className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-white/50">Altura (mm)</label>
+              <label className="text-xs text-muted-foreground">Altura (mm)</label>
               <input
                 type="number"
                 value={form.altura_mm}
                 onChange={(e) => setForm({ ...form, altura_mm: parseInt(e.target.value) })}
-                className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
           </div>
@@ -187,14 +187,14 @@ export default function ImpressorasPage() {
             <button
               type="submit"
               disabled={createMutation.isPending}
-              className="text-sm bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white px-4 py-2 rounded-md transition-colors"
+              className="text-sm bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-foreground px-4 py-2 rounded-md transition-colors"
             >
               {createMutation.isPending ? "Salvando..." : "Salvar"}
             </button>
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="text-sm text-white/50 hover:text-white transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Cancelar
             </button>
@@ -203,16 +203,16 @@ export default function ImpressorasPage() {
       )}
 
       {isLoading ? (
-        <div className="text-white/40 text-sm">Carregando...</div>
+        <div className="text-muted-foreground text-sm">Carregando...</div>
       ) : impressoras.length === 0 && !showForm ? (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
+        <div className="rounded-lg border border-border bg-muted/50 p-8 text-center text-muted-foreground text-sm">
           Nenhuma impressora cadastrada.
         </div>
       ) : (
-        <div className="rounded-lg border border-white/10 overflow-hidden">
+        <div className="rounded-lg border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/5 text-white/50 text-xs">
+              <tr className="border-b border-border bg-muted/50 text-muted-foreground text-xs">
                 <th className="px-4 py-3 text-left">Nome</th>
                 <th className="px-4 py-3 text-left">Modelo</th>
                 <th className="px-4 py-3 text-left">Endpoint</th>

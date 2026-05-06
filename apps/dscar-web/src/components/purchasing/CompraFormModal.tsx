@@ -67,14 +67,14 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
       onClick={handleClose}
     >
       <div
-        className="w-full max-w-lg rounded-lg border border-white/10 bg-[#0f0f0f] p-6 shadow-2xl"
+        className="w-full max-w-lg rounded-lg border border-border bg-background p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <h2 className="text-lg font-semibold text-white">
+        <h2 className="text-lg font-semibold text-foreground">
           Solicitar Compra de Peca
         </h2>
-        <p className="mt-1 text-sm text-white/60">
+        <p className="mt-1 text-sm text-foreground/60">
           Um pedido de compra sera criado automaticamente para o setor de compras.
         </p>
 
@@ -82,7 +82,7 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
         <div className="mt-5 space-y-4">
           {/* Descricao */}
           <div>
-            <label className="label-mono text-white/50 mb-0.5 block">
+            <label className="label-mono text-muted-foreground mb-0.5 block">
               Descricao *
             </label>
             <input
@@ -90,13 +90,13 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Ex: Parachoque dianteiro, Farol esquerdo..."
-              className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm placeholder:text-white/30 focus:outline-none focus:border-white/20"
+              className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-border"
             />
           </div>
 
           {/* Codigo / Referencia */}
           <div>
-            <label className="label-mono text-white/50 mb-0.5 block">
+            <label className="label-mono text-muted-foreground mb-0.5 block">
               Codigo / Referencia
             </label>
             <input
@@ -104,14 +104,14 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
               value={partNumber}
               onChange={(e) => setPartNumber(e.target.value)}
               placeholder="Ex: 5C6807221GRU, TYC-20-9646"
-              className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm placeholder:text-white/30 focus:outline-none focus:border-white/20"
+              className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-border"
             />
           </div>
 
           {/* Tipo de peca + Valor cobrado */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label-mono text-white/50 mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-0.5 block">
                 Tipo de peca *
               </label>
               <select
@@ -119,7 +119,7 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
                 onChange={(e) =>
                   setTipoQualidade(e.target.value as TipoQualidade)
                 }
-                className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm focus:outline-none"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none"
               >
                 {TIPO_QUALIDADE_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -129,11 +129,11 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
               </select>
             </div>
             <div>
-              <label className="label-mono text-white/50 mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-0.5 block">
                 Valor cobrado ao cliente *
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/30">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                   R$
                 </span>
                 <input
@@ -141,7 +141,7 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
                   value={unitPrice}
                   onChange={(e) => setUnitPrice(e.target.value)}
                   placeholder="0,00"
-                  className="w-full bg-white/5 border border-white/10 text-white rounded-md pl-9 pr-3 py-2 text-sm placeholder:text-white/30 focus:outline-none focus:border-white/20"
+                  className="w-full bg-muted/50 border border-border text-foreground rounded-md pl-9 pr-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-border"
                 />
               </div>
             </div>
@@ -149,7 +149,7 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
 
           {/* Quantidade */}
           <div className="w-24">
-            <label className="label-mono text-white/50 mb-0.5 block">
+            <label className="label-mono text-muted-foreground mb-0.5 block">
               Quantidade
             </label>
             <input
@@ -157,13 +157,13 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
               min="1"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:border-white/20"
+              className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:border-border"
             />
           </div>
 
           {/* Observacoes */}
           <div>
-            <label className="label-mono text-white/50 mb-0.5 block">
+            <label className="label-mono text-muted-foreground mb-0.5 block">
               Observacoes para compras
             </label>
             <textarea
@@ -171,7 +171,7 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
               onChange={(e) => setObservacoes(e.target.value)}
               rows={3}
               placeholder="Informacoes adicionais para o setor de compras..."
-              className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm placeholder:text-white/30 focus:outline-none focus:border-white/20 resize-none"
+              className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-border resize-none"
             />
           </div>
         </div>
@@ -181,7 +181,7 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
           <button
             type="button"
             onClick={handleClose}
-            className="rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+            className="rounded-md border border-border bg-muted/50 px-4 py-2 text-sm text-foreground/60 hover:text-foreground hover:bg-muted transition-colors"
           >
             Cancelar
           </button>
@@ -189,7 +189,7 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
             type="button"
             onClick={handleSubmit}
             disabled={!description || !unitPrice}
-            className="rounded-md bg-info-500 hover:bg-info-600 px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="rounded-md bg-info-500 hover:bg-info-600 px-4 py-2 text-sm font-medium text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Solicitar Compra
           </button>

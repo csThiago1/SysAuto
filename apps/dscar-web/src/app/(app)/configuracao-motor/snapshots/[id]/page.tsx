@@ -21,8 +21,8 @@ function formatMargem(val: string | null | undefined) {
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between py-2 border-b border-white/5">
-      <span className="text-xs text-white/50">{label}</span>
-      <span className="text-sm text-white font-mono">{value}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-sm text-foreground font-mono">{value}</span>
     </div>
   )
 }
@@ -34,7 +34,7 @@ export default function SnapshotDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 text-xs text-white/40">Carregando snapshot…</div>
+      <div className="p-6 text-xs text-muted-foreground">Carregando snapshot…</div>
     )
   }
 
@@ -60,25 +60,25 @@ export default function SnapshotDetailPage() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-white/50"
+          className="h-8 w-8 text-muted-foreground"
           onClick={() => router.back()}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex items-center gap-2">
           <Layers className="h-4 w-4 text-primary-500" />
-          <h1 className="text-base font-semibold text-white">Snapshot de Custo</h1>
-          <Lock className="h-3.5 w-3.5 text-white/30" />
+          <h1 className="text-base font-semibold text-foreground">Snapshot de Custo</h1>
+          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
-        <Badge variant="outline" className="text-xs border-white/20 text-white/60 ml-auto">
+        <Badge variant="outline" className="text-xs border-border text-foreground/60 ml-auto">
           {snap.origem}
         </Badge>
       </div>
 
       {/* Veículo / contexto */}
       <section className="space-y-1">
-        <p className="text-xs font-medium text-white/40 uppercase tracking-wider">Contexto</p>
-        <div className="rounded-lg border border-white/10 px-4 py-1">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Contexto</p>
+        <div className="rounded-lg border border-border px-4 py-1">
           <InfoRow label="ID" value={snap.id} />
           {ctx.veiculo && (
             <InfoRow
@@ -101,8 +101,8 @@ export default function SnapshotDetailPage() {
 
       {/* Preços */}
       <section className="space-y-1">
-        <p className="text-xs font-medium text-white/40 uppercase tracking-wider">Preço</p>
-        <div className="rounded-lg border border-white/10 px-4 py-1">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Preço</p>
+        <div className="rounded-lg border border-border px-4 py-1">
           {"preco_calculado" in snap && (
             <InfoRow label="Preço calculado" value={formatCurrency((snap as { preco_calculado?: string }).preco_calculado)} />
           )}
@@ -119,8 +119,8 @@ export default function SnapshotDetailPage() {
       {/* Margens */}
       {"margem_base" in snap && (
         <section className="space-y-1">
-          <p className="text-xs font-medium text-white/40 uppercase tracking-wider">Margens</p>
-          <div className="rounded-lg border border-white/10 px-4 py-1">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Margens</p>
+          <div className="rounded-lg border border-border px-4 py-1">
             <InfoRow label="Margem base" value={formatMargem((snap as { margem_base?: string }).margem_base)} />
             <InfoRow
               label="Fator responsabilidade"
@@ -134,10 +134,10 @@ export default function SnapshotDetailPage() {
       {/* Custos detalhados (ADMIN+) */}
       {hasFullData && (
         <section className="space-y-1">
-          <p className="text-xs font-medium text-white/40 uppercase tracking-wider">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             Custos (ADMIN)
           </p>
-          <div className="rounded-lg border border-white/10 px-4 py-1">
+          <div className="rounded-lg border border-border px-4 py-1">
             <InfoRow label="Mão de obra" value={formatCurrency((snap as { custo_mo?: string }).custo_mo)} />
             <InfoRow label="Insumos" value={formatCurrency((snap as { custo_insumos?: string }).custo_insumos)} />
             <InfoRow label="Rateio" value={formatCurrency((snap as { rateio?: string }).rateio)} />
@@ -150,10 +150,10 @@ export default function SnapshotDetailPage() {
       {/* Decomposição */}
       {"decomposicao" in snap && (
         <section className="space-y-1">
-          <p className="text-xs font-medium text-white/40 uppercase tracking-wider">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             Decomposição (JSON)
           </p>
-          <pre className="rounded-lg border border-white/10 bg-white/5 p-4 text-xs text-white/60 overflow-auto max-h-64">
+          <pre className="rounded-lg border border-border bg-muted/50 p-4 text-xs text-foreground/60 overflow-auto max-h-64">
             {JSON.stringify((snap as { decomposicao?: unknown }).decomposicao, null, 2)}
           </pre>
         </section>

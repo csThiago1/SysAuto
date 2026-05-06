@@ -31,9 +31,9 @@ export function MonthView({ currentDate, events, onDayClick }: Props) {
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       {/* Cabeçalho dias da semana */}
-      <div className="grid grid-cols-7 border-b border-white/10">
+      <div className="grid grid-cols-7 border-b border-border">
         {WEEKDAYS.map((d) => (
-          <div key={d} className="py-2 text-center text-xs font-semibold uppercase text-white/40">
+          <div key={d} className="py-2 text-center text-xs font-semibold uppercase text-muted-foreground">
             {d}
           </div>
         ))}
@@ -50,14 +50,14 @@ export function MonthView({ currentDate, events, onDayClick }: Props) {
             <div
               key={day.toISOString()}
               className={cn(
-                "border-b border-r border-white/10 p-1.5 cursor-pointer hover:bg-white/[0.03] transition-colors min-h-[100px]",
+                "border-b border-r border-border p-1.5 cursor-pointer hover:bg-muted/30 transition-colors min-h-[100px]",
                 !inMonth && "bg-white/[0.02]",
               )}
               onClick={() => onDayClick(day)}
             >
               <div className={cn(
                 "text-xs font-medium mb-1 w-6 h-6 flex items-center justify-center rounded-full",
-                today ? "bg-primary-600 text-white" : inMonth ? "text-white/70" : "text-white/30",
+                today ? "bg-primary-600 text-foreground" : inMonth ? "text-foreground/70" : "text-muted-foreground",
               )}>
                 {format(day, "d")}
               </div>
@@ -67,7 +67,7 @@ export function MonthView({ currentDate, events, onDayClick }: Props) {
                   <CalendarEventCard key={`${event.os.id}-${event.type}-${i}`} event={event} compact />
                 ))}
                 {dayEvents.length > 3 && (
-                  <p className="text-xs text-white/40 pl-1">+{dayEvents.length - 3} mais</p>
+                  <p className="text-xs text-muted-foreground pl-1">+{dayEvents.length - 3} mais</p>
                 )}
               </div>
             </div>

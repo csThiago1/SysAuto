@@ -38,13 +38,13 @@ const STATUS_LABELS: Record<BudgetVersionStatus, string> = {
 }
 
 const STATUS_COLORS: Record<BudgetVersionStatus, string> = {
-  draft:      "text-white/50 bg-white/10",
+  draft:      "text-muted-foreground bg-muted",
   sent:       "text-info-400 bg-info-400/10",
   approved:   "text-success-400 bg-success-400/10",
   rejected:   "text-error-400 bg-error-400/10",
   expired:    "text-warning-400 bg-warning-400/10",
   revision:   "text-warning-400 bg-warning-400/10",
-  superseded: "text-white/30 bg-white/5",
+  superseded: "text-muted-foreground bg-muted/50",
 }
 
 const formatBRL = (v: string | number) =>
@@ -85,8 +85,8 @@ export default function OrcamentosParticularesPage() {
         <div className="flex items-center gap-3">
           <ReceiptText className="h-5 w-5 text-primary-500" />
           <div>
-            <h1 className="text-lg font-semibold text-white">Orçamentos Particulares</h1>
-            <p className="text-xs text-white/40 mt-0.5">
+            <h1 className="text-lg font-semibold text-foreground">Orçamentos Particulares</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
               {total} orçamento{total !== 1 ? "s" : ""}
             </p>
           </div>
@@ -102,16 +102,16 @@ export default function OrcamentosParticularesPage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: "Total",     value: total,     color: "text-white" },
-          { label: "Rascunhos", value: rascunhos, color: "text-white/60" },
+          { label: "Total",     value: total,     color: "text-foreground" },
+          { label: "Rascunhos", value: rascunhos, color: "text-foreground/60" },
           { label: "Enviados",  value: enviados,  color: "text-info-400" },
           { label: "Aprovados", value: aprovados, color: "text-success-400" },
         ].map((card) => (
           <div
             key={card.label}
-            className="rounded-xl bg-white/5 border border-white/10 p-4"
+            className="rounded-xl bg-muted/50 border border-border p-4"
           >
-            <p className="text-xs text-white/40">{card.label}</p>
+            <p className="text-xs text-muted-foreground">{card.label}</p>
             <p className={`text-2xl font-bold mt-1 ${card.color}`}>{card.value}</p>
           </div>
         ))}
@@ -120,16 +120,16 @@ export default function OrcamentosParticularesPage() {
       {/* Filtros */}
       <div className="flex gap-3">
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Número, placa, cliente..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-white/30"
+            className="pl-9 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-44 bg-white/5 border-white/10 text-white">
+          <SelectTrigger className="w-44 bg-muted/50 border-border text-foreground">
             <SelectValue placeholder="Todos os status" />
           </SelectTrigger>
           <SelectContent>
@@ -147,22 +147,22 @@ export default function OrcamentosParticularesPage() {
       {isLoading ? (
         <TableSkeleton columns={6} />
       ) : (
-        <div className="rounded-xl border border-white/10 overflow-hidden">
+        <div className="rounded-xl border border-border overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="text-white/50">Número</TableHead>
-                <TableHead className="text-white/50">Cliente</TableHead>
-                <TableHead className="text-white/50">Placa</TableHead>
-                <TableHead className="text-white/50">Versão</TableHead>
-                <TableHead className="text-white/50">Valor Líquido</TableHead>
-                <TableHead className="text-white/50">Data</TableHead>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="text-muted-foreground">Número</TableHead>
+                <TableHead className="text-muted-foreground">Cliente</TableHead>
+                <TableHead className="text-muted-foreground">Placa</TableHead>
+                <TableHead className="text-muted-foreground">Versão</TableHead>
+                <TableHead className="text-muted-foreground">Valor Líquido</TableHead>
+                <TableHead className="text-muted-foreground">Data</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-white/30 py-12">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
                     Nenhum orçamento encontrado
                   </TableCell>
                 </TableRow>
@@ -170,13 +170,13 @@ export default function OrcamentosParticularesPage() {
                 filtered.map((b) => (
                   <TableRow
                     key={b.id}
-                    className="border-white/5 hover:bg-white/5 cursor-pointer"
+                    className="border-white/5 hover:bg-muted/50 cursor-pointer"
                     onClick={() => router.push(`/orcamentos-particulares/${b.id}` as Route)}
                   >
-                    <TableCell className="font-mono text-white text-sm">{b.number}</TableCell>
-                    <TableCell className="text-white/80">{b.customer_name}</TableCell>
+                    <TableCell className="font-mono text-foreground text-sm">{b.number}</TableCell>
+                    <TableCell className="text-foreground/80">{b.customer_name}</TableCell>
                     <TableCell>
-                      <span className="inline-flex items-center gap-1.5 font-mono text-xs bg-white/10 text-white px-2 py-0.5 rounded">
+                      <span className="inline-flex items-center gap-1.5 font-mono text-xs bg-muted text-foreground px-2 py-0.5 rounded">
                         {b.vehicle_make_logo && (
                           <img src={b.vehicle_make_logo} alt="" className="h-3.5 w-3.5 object-contain" />
                         )}
@@ -192,15 +192,15 @@ export default function OrcamentosParticularesPage() {
                           {STATUS_LABELS[b.active_version.status]}
                         </Badge>
                       ) : (
-                        <span className="text-white/20">—</span>
+                        <span className="text-muted-foreground/50">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-white/80 font-medium">
+                    <TableCell className="text-foreground/80 font-medium">
                       {b.active_version
                         ? formatBRL(b.active_version.net_total)
                         : "—"}
                     </TableCell>
-                    <TableCell className="text-white/40 text-sm">
+                    <TableCell className="text-muted-foreground text-sm">
                       {formatDate(b.created_at)}
                     </TableCell>
                   </TableRow>

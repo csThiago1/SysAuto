@@ -13,7 +13,7 @@ import {
 import { ProdutoPecaDialog } from "@/components/inventory/ProdutoPecaDialog"
 
 const INPUT_CLS =
-  "bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-primary-500"
+  "bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
 
 export default function ProdutosPecasPage() {
   const [search, setSearch] = useState("")
@@ -63,10 +63,10 @@ export default function ProdutosPecasPage() {
         <div className="flex items-center gap-3">
           <Package className="h-5 w-5 text-primary-500" />
           <div>
-            <h1 className="text-lg font-semibold text-white">
+            <h1 className="text-lg font-semibold text-foreground">
               Produtos — Peças
             </h1>
-            <p className="text-xs text-white/40 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               {produtos.length} produto{produtos.length !== 1 ? "s" : ""}
             </p>
           </div>
@@ -75,7 +75,7 @@ export default function ProdutosPecasPage() {
         <button
           type="button"
           onClick={handleNew}
-          className="flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
+          className="flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Nova Peca
@@ -85,7 +85,7 @@ export default function ProdutosPecasPage() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -121,38 +121,38 @@ export default function ProdutosPecasPage() {
 
       {/* Table */}
       {isLoading ? (
-        <div className="text-white/40 text-sm">Carregando...</div>
+        <div className="text-muted-foreground text-sm">Carregando...</div>
       ) : produtos.length === 0 ? (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
+        <div className="rounded-lg border border-border bg-muted/50 p-8 text-center text-muted-foreground text-sm">
           Nenhuma peca encontrada.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+        <div className="overflow-hidden rounded-md border border-border bg-muted/50">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-white/[0.03]">
-                <th className="label-mono text-white/40 text-left px-4 py-2.5">
+              <tr className="bg-muted/30">
+                <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
                   SKU
                 </th>
-                <th className="label-mono text-white/40 text-left px-4 py-2.5">
+                <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
                   NOME
                 </th>
-                <th className="label-mono text-white/40 text-left px-4 py-2.5">
+                <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
                   TIPO
                 </th>
-                <th className="label-mono text-white/40 text-left px-4 py-2.5">
+                <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
                   POSICAO
                 </th>
-                <th className="label-mono text-white/40 text-left px-4 py-2.5">
+                <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
                   LADO
                 </th>
-                <th className="label-mono text-white/40 text-left px-4 py-2.5">
+                <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
                   CATEGORIA
                 </th>
-                <th className="label-mono text-white/40 text-right px-4 py-2.5">
+                <th className="label-mono text-muted-foreground text-right px-4 py-2.5">
                   MARGEM %
                 </th>
-                <th className="label-mono text-white/40 text-right px-4 py-2.5">
+                <th className="label-mono text-muted-foreground text-right px-4 py-2.5">
                   ACOES
                 </th>
               </tr>
@@ -162,27 +162,27 @@ export default function ProdutosPecasPage() {
                 <tr
                   key={p.id}
                   onClick={() => handleEdit(p)}
-                  className="border-b border-white/5 hover:bg-white/[0.03] transition-colors cursor-pointer"
+                  className="border-b border-white/5 hover:bg-muted/30 transition-colors cursor-pointer"
                 >
-                  <td className="px-4 py-2.5 font-mono text-xs text-white/60">
+                  <td className="px-4 py-2.5 font-mono text-xs text-foreground/60">
                     {p.sku_interno}
                   </td>
-                  <td className="px-4 py-2.5 text-white/90">
+                  <td className="px-4 py-2.5 text-foreground/90">
                     {p.nome_interno}
                   </td>
-                  <td className="px-4 py-2.5 text-white/60">
+                  <td className="px-4 py-2.5 text-foreground/60">
                     {p.tipo_peca_nome || "--"}
                   </td>
-                  <td className="px-4 py-2.5 text-white/60">
+                  <td className="px-4 py-2.5 text-foreground/60">
                     {p.posicao_veiculo_display}
                   </td>
-                  <td className="px-4 py-2.5 text-white/60">
+                  <td className="px-4 py-2.5 text-foreground/60">
                     {p.lado_display}
                   </td>
-                  <td className="px-4 py-2.5 text-white/60">
+                  <td className="px-4 py-2.5 text-foreground/60">
                     {p.categoria_nome || "--"}
                   </td>
-                  <td className="px-4 py-2.5 text-right font-mono text-xs text-white/60">
+                  <td className="px-4 py-2.5 text-right font-mono text-xs text-foreground/60">
                     {p.margem_padrao_pct
                       ? `${p.margem_padrao_pct}%`
                       : "--"}
@@ -195,7 +195,7 @@ export default function ProdutosPecasPage() {
                           e.stopPropagation()
                           handleEdit(p)
                         }}
-                        className="rounded p-1 text-white/30 hover:text-white hover:bg-white/10 transition-colors"
+                        className="rounded p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                         title="Editar"
                       >
                         <Pencil className="h-3.5 w-3.5" />
@@ -206,7 +206,7 @@ export default function ProdutosPecasPage() {
                           e.stopPropagation()
                           handleDelete(p)
                         }}
-                        className="rounded p-1 text-white/30 hover:text-error-400 hover:bg-error-500/10 transition-colors"
+                        className="rounded p-1 text-muted-foreground hover:text-error-400 hover:bg-error-500/10 transition-colors"
                         title="Remover"
                       >
                         <Trash2 className="h-3.5 w-3.5" />

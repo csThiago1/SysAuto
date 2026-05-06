@@ -35,7 +35,7 @@ export function NotesTab({ orderId, initialNotes = "" }: NotesTabProps) {
 
   if (!orderId) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-white/40">
+      <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
         <p className="text-sm">Salve a OS antes de adicionar observações.</p>
       </div>
     )
@@ -44,7 +44,7 @@ export function NotesTab({ orderId, initialNotes = "" }: NotesTabProps) {
   return (
     <div className="py-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-white">Observações Gerais</h2>
+        <h2 className="text-base font-semibold text-foreground">Observações Gerais</h2>
         <Button
           size="sm"
           disabled={!isDirty || updateNotes.isPending}
@@ -59,13 +59,13 @@ export function NotesTab({ orderId, initialNotes = "" }: NotesTabProps) {
         </Button>
       </div>
 
-      <div className="bg-white/5 border border-white/10 rounded-lg shadow-sm p-4">
+      <div className="bg-muted/50 border border-border rounded-lg shadow-sm p-4">
         <Textarea
           value={notes}
           onChange={(e) => handleChange(e.target.value)}
           rows={12}
           placeholder="Adicione observações gerais sobre a OS, orientações ao cliente, informações adicionais..."
-          className="resize-none border-0 p-0 text-sm text-white/70 placeholder:text-white/40 focus-visible:ring-0"
+          className="resize-none border-0 p-0 text-sm text-foreground/70 placeholder:text-muted-foreground focus-visible:ring-0"
         />
       </div>
 

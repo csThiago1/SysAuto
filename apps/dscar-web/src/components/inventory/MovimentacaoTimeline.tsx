@@ -62,12 +62,12 @@ export default function MovimentacaoTimeline({
 }: MovimentacaoTimelineProps) {
   if (loading) {
     return (
-      <div className="border-l-2 border-white/10 ml-2 pl-4 space-y-4">
+      <div className="border-l-2 border-border ml-2 pl-4 space-y-4">
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="relative animate-pulse">
-            <div className="absolute -left-[22px] top-1 w-2.5 h-2.5 rounded-full bg-white/10" />
-            <div className="h-4 w-48 bg-white/5 rounded" />
-            <div className="h-3 w-32 bg-white/5 rounded mt-2" />
+            <div className="absolute -left-[22px] top-1 w-2.5 h-2.5 rounded-full bg-muted" />
+            <div className="h-4 w-48 bg-muted/50 rounded" />
+            <div className="h-3 w-32 bg-muted/50 rounded mt-2" />
           </div>
         ))}
       </div>
@@ -76,34 +76,34 @@ export default function MovimentacaoTimeline({
 
   if (movimentacoes.length === 0) {
     return (
-      <div className="text-sm text-white/30 py-4">
+      <div className="text-sm text-muted-foreground py-4">
         Nenhuma movimentacao registrada.
       </div>
     )
   }
 
   return (
-    <div className="border-l-2 border-white/10 ml-2 pl-4 space-y-4">
+    <div className="border-l-2 border-border ml-2 pl-4 space-y-4">
       {movimentacoes.map((mov) => {
-        const dotColor = DOT_COLORS[mov.tipo] ?? "bg-white/40"
+        const dotColor = DOT_COLORS[mov.tipo] ?? "bg-muted-foreground"
         return (
           <div key={mov.id} className="relative">
             <div
               className={`absolute -left-[22px] top-1 w-2.5 h-2.5 rounded-full ${dotColor}`}
             />
-            <div className="text-sm text-white">
-              <span className="font-mono text-xs text-white/60">
+            <div className="text-sm text-foreground">
+              <span className="font-mono text-xs text-foreground/60">
                 {itemLabel(mov)}
               </span>
-              <span className="mx-1.5 text-white/20">&middot;</span>
+              <span className="mx-1.5 text-muted-foreground/50">&middot;</span>
               <span>{actionDescription(mov)}</span>
             </div>
             {mov.motivo && (
-              <div className="text-xs text-white/40 mt-0.5 line-clamp-2">
+              <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                 {mov.motivo}
               </div>
             )}
-            <div className="text-xs text-white/30 mt-1">
+            <div className="text-xs text-muted-foreground mt-1">
               por {mov.realizado_por_nome || "Sistema"} &middot;{" "}
               {formatDate(mov.created_at)}
             </div>

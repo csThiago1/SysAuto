@@ -74,14 +74,14 @@ export default function EspecialistasPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-white">Especialistas / Peritos</h1>
+        <h1 className="text-2xl font-semibold text-foreground">Especialistas / Peritos</h1>
         <Button onClick={openNew} className="gap-2">
           <Plus className="h-4 w-4" /> Novo Especialista
         </Button>
       </div>
 
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           className="pl-9"
           placeholder="Buscar por nome..."
@@ -95,7 +95,7 @@ export default function EspecialistasPage() {
           {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full" />)}
         </div>
       ) : expertList.length === 0 ? (
-        <p className="text-sm text-white/40 py-8 text-center">
+        <p className="text-sm text-muted-foreground py-8 text-center">
           Nenhum especialista cadastrado.
         </p>
       ) : (
@@ -103,13 +103,13 @@ export default function EspecialistasPage() {
           {expertList.map((expert) => (
             <Card
               key={expert.id}
-              className="cursor-pointer hover:border-white/20 transition-colors"
+              className="cursor-pointer hover:border-border transition-colors"
               onClick={() => openEdit(expert)}
             >
               <CardContent className="flex items-center justify-between py-3 px-4">
                 <div>
-                  <p className="text-sm font-medium text-white">{expert.name}</p>
-                  <p className="text-xs text-white/40">
+                  <p className="text-sm font-medium text-foreground">{expert.name}</p>
+                  <p className="text-xs text-muted-foreground">
                     {expert.phone || "Sem telefone"} · {expert.email || "Sem e-mail"}
                   </p>
                 </div>
@@ -117,7 +117,7 @@ export default function EspecialistasPage() {
                   className={`text-xs px-2 py-0.5 rounded-full ${
                     expert.is_active
                       ? "bg-success-900/40 text-success-400"
-                      : "bg-white/5 text-white/30"
+                      : "bg-muted/50 text-muted-foreground"
                   }`}
                 >
                   {expert.is_active ? "Ativo" : "Inativo"}
@@ -146,7 +146,7 @@ export default function EspecialistasPage() {
               <Label>E-mail</Label>
               <Input type="email" {...register("email")} placeholder="perito@email.com" />
             </div>
-            <label className="flex items-center gap-2 cursor-pointer text-sm text-white">
+            <label className="flex items-center gap-2 cursor-pointer text-sm text-foreground">
               <input type="checkbox" {...register("is_active")} className="accent-primary" />
               Ativo
             </label>

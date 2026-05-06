@@ -28,7 +28,7 @@ export function EmployeeTable({
 }: EmployeeTableProps): React.ReactElement {
   if (employees.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-white/50">
+      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
         <p className="text-sm">Nenhum colaborador encontrado.</p>
       </div>
     );
@@ -49,33 +49,33 @@ export function EmployeeTable({
       </TableHeader>
       <TableBody>
         {employees.map((emp) => (
-          <TableRow key={emp.id} className="cursor-pointer hover:bg-white/[0.03]">
+          <TableRow key={emp.id} className="cursor-pointer hover:bg-muted/30">
             <TableCell>
               <Link
                 href={`/rh/colaboradores/${emp.id}` as Route}
                 className="flex flex-col hover:text-primary-600 transition-colors"
               >
-                <span className="font-medium text-white">
+                <span className="font-medium text-foreground">
                   {emp.user.name}
                 </span>
               </Link>
             </TableCell>
-            <TableCell className="font-mono text-sm text-white/60">
+            <TableCell className="font-mono text-sm text-foreground/60">
               {emp.registration_number}
             </TableCell>
-            <TableCell className="text-sm text-white/60">
+            <TableCell className="text-sm text-foreground/60">
               {emp.department_display}
             </TableCell>
-            <TableCell className="text-sm text-white/60">
+            <TableCell className="text-sm text-foreground/60">
               {emp.position_display}
             </TableCell>
-            <TableCell className="text-sm text-white/60">
+            <TableCell className="text-sm text-foreground/60">
               {emp.contract_type_display}
             </TableCell>
             <TableCell>
               <EmployeeStatusBadge status={emp.status} />
             </TableCell>
-            <TableCell className="text-sm text-white/50">
+            <TableCell className="text-sm text-muted-foreground">
               {new Date(emp.hire_date).toLocaleDateString("pt-BR")}
             </TableCell>
           </TableRow>

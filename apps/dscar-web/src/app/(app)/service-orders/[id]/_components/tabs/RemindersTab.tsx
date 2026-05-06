@@ -51,7 +51,7 @@ export function RemindersTab({ orderId }: RemindersTabProps) {
 
   if (!orderId) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-white/40">
+      <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
         <Bell className="h-8 w-8 mb-2 opacity-30" />
         <p className="text-sm">Salve a OS para adicionar lembretes.</p>
       </div>
@@ -62,8 +62,8 @@ export function RemindersTab({ orderId }: RemindersTabProps) {
     <div className="py-6 space-y-5 max-w-2xl mx-auto">
 
       {/* Formulário de novo lembrete */}
-      <div className="bg-white/5 border border-white/10 rounded-lg shadow-sm p-4 space-y-3">
-        <label htmlFor="reminder-text" className="text-sm font-semibold text-white/70">
+      <div className="bg-muted/50 border border-border rounded-lg shadow-sm p-4 space-y-3">
+        <label htmlFor="reminder-text" className="text-sm font-semibold text-foreground/70">
           Novo lembrete
         </label>
         <Textarea
@@ -79,7 +79,7 @@ export function RemindersTab({ orderId }: RemindersTabProps) {
           }}
         />
         <div className="flex items-center justify-between">
-          <span className="text-xs text-white/40">Ctrl+Enter para salvar</span>
+          <span className="text-xs text-muted-foreground">Ctrl+Enter para salvar</span>
           <Button
             size="sm"
             disabled={!text.trim() || mutation.isPending}
@@ -96,13 +96,13 @@ export function RemindersTab({ orderId }: RemindersTabProps) {
       </div>
 
       {/* Lista de lembretes */}
-      <div className="bg-white/5 border border-white/10 rounded-lg shadow-sm overflow-hidden">
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/[0.03]">
-          <Bell className="h-4 w-4 text-white/50" />
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-white/60">
+      <div className="bg-muted/50 border border-border rounded-lg shadow-sm overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
+          <Bell className="h-4 w-4 text-muted-foreground" />
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
             Lembretes
             {reminders.length > 0 && (
-              <span className="ml-2 rounded-full bg-white/10 px-1.5 py-0.5 text-xs font-medium text-white/70">
+              <span className="ml-2 rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium text-foreground/70">
                 {reminders.length}
               </span>
             )}
@@ -111,10 +111,10 @@ export function RemindersTab({ orderId }: RemindersTabProps) {
 
         {isLoading ? (
           <div className="flex justify-center py-10">
-            <Loader2 className="h-5 w-5 animate-spin text-white/40" />
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         ) : reminders.length === 0 ? (
-          <div className="py-10 text-center text-white/40">
+          <div className="py-10 text-center text-muted-foreground">
             <Bell className="h-8 w-8 mx-auto mb-2 opacity-30" />
             <p className="text-sm">Nenhum lembrete registrado.</p>
           </div>
@@ -126,8 +126,8 @@ export function RemindersTab({ orderId }: RemindersTabProps) {
                   <Bell className="h-3.5 w-3.5 text-amber-500" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-white/90 whitespace-pre-wrap">{r.description}</p>
-                  <p className="mt-1 text-xs text-white/40">
+                  <p className="text-sm text-foreground/90 whitespace-pre-wrap">{r.description}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {r.user_name} ·{" "}
                     {format(new Date(r.created_at), "dd 'de' MMM 'às' HH:mm", { locale: ptBR })}
                   </p>

@@ -75,7 +75,7 @@ export default function AprovacoesPage() {
       <div className="flex items-center gap-3">
         <CheckCircle2 className="h-5 w-5 text-primary-500" />
         <div className="flex items-center gap-2">
-          <h1 className="text-lg font-semibold text-white">
+          <h1 className="text-lg font-semibold text-foreground">
             Aprovacoes Pendentes
           </h1>
           {count > 0 && (
@@ -88,38 +88,38 @@ export default function AprovacoesPage() {
 
       {/* Content */}
       {isLoading ? (
-        <div className="text-white/40 text-sm">Carregando...</div>
+        <div className="text-muted-foreground text-sm">Carregando...</div>
       ) : count === 0 ? (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-12 text-center space-y-3">
+        <div className="rounded-lg border border-border bg-muted/50 p-12 text-center space-y-3">
           <CheckCircle2 className="h-10 w-10 text-white/10 mx-auto" />
-          <p className="text-sm text-white/40">
+          <p className="text-sm text-muted-foreground">
             Nenhuma aprovacao pendente.
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+        <div className="overflow-hidden rounded-md border border-border bg-muted/50">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-white/[0.03]">
-                <th className="label-mono text-white/40 text-left px-3 py-2">
+              <tr className="bg-muted/30">
+                <th className="label-mono text-muted-foreground text-left px-3 py-2">
                   DATA
                 </th>
-                <th className="label-mono text-white/40 text-left px-3 py-2">
+                <th className="label-mono text-muted-foreground text-left px-3 py-2">
                   TIPO
                 </th>
-                <th className="label-mono text-white/40 text-left px-3 py-2">
+                <th className="label-mono text-muted-foreground text-left px-3 py-2">
                   ITEM
                 </th>
-                <th className="label-mono text-white/40 text-left px-3 py-2">
+                <th className="label-mono text-muted-foreground text-left px-3 py-2">
                   MOTIVO
                 </th>
-                <th className="label-mono text-white/40 text-left px-3 py-2">
+                <th className="label-mono text-muted-foreground text-left px-3 py-2">
                   EVIDENCIA
                 </th>
-                <th className="label-mono text-white/40 text-left px-3 py-2">
+                <th className="label-mono text-muted-foreground text-left px-3 py-2">
                   SOLICITADO POR
                 </th>
-                <th className="label-mono text-white/40 text-right px-3 py-2">
+                <th className="label-mono text-muted-foreground text-right px-3 py-2">
                   ACOES
                 </th>
               </tr>
@@ -172,7 +172,7 @@ function ApprovalRow({
 
   const cfg = TIPO_CONFIG[mov.tipo] ?? {
     label: mov.tipo_display,
-    className: "bg-white/10 text-white/60",
+    className: "bg-muted text-foreground/60",
   }
   const barcode = mov.unidade_barcode || mov.lote_barcode || "—"
 
@@ -201,8 +201,8 @@ function ApprovalRow({
 
   return (
     <>
-      <tr className="border-b border-white/5 hover:bg-white/[0.03] transition-colors">
-        <td className="px-3 py-2 text-white/70 whitespace-nowrap text-xs">
+      <tr className="border-b border-white/5 hover:bg-muted/30 transition-colors">
+        <td className="px-3 py-2 text-foreground/70 whitespace-nowrap text-xs">
           {formatDateShort(mov.created_at)}
         </td>
         <td className="px-3 py-2">
@@ -212,10 +212,10 @@ function ApprovalRow({
             {cfg.label}
           </span>
         </td>
-        <td className="px-3 py-2 font-mono text-xs text-white/60">
+        <td className="px-3 py-2 font-mono text-xs text-foreground/60">
           {barcode}
         </td>
-        <td className="px-3 py-2 text-white/50 text-xs max-w-[200px] truncate">
+        <td className="px-3 py-2 text-muted-foreground text-xs max-w-[200px] truncate">
           {mov.motivo || "—"}
         </td>
         <td className="px-3 py-2">
@@ -224,13 +224,13 @@ function ApprovalRow({
             <img
               src={mov.evidencia}
               alt="Evidencia"
-              className="h-8 w-8 rounded object-cover border border-white/10"
+              className="h-8 w-8 rounded object-cover border border-border"
             />
           ) : (
-            <span className="text-white/20 text-xs">—</span>
+            <span className="text-muted-foreground/50 text-xs">—</span>
           )}
         </td>
-        <td className="px-3 py-2 text-white/50 text-xs">
+        <td className="px-3 py-2 text-muted-foreground text-xs">
           {mov.realizado_por_nome || "—"}
         </td>
         <td className="px-3 py-2 text-right">
@@ -247,7 +247,7 @@ function ApprovalRow({
               type="button"
               onClick={onOpenReject}
               disabled={rejeitarMut.isPending}
-              className="rounded-md border border-white/10 text-white/50 px-3 py-1 text-xs hover:text-white hover:border-white/20 disabled:opacity-50 transition-colors"
+              className="rounded-md border border-border text-muted-foreground px-3 py-1 text-xs hover:text-foreground hover:border-border disabled:opacity-50 transition-colors"
             >
               Rejeitar
             </button>
@@ -259,7 +259,7 @@ function ApprovalRow({
           <td colSpan={7} className="px-4 py-3">
             <div className="flex items-end gap-3 max-w-lg">
               <div className="flex-1">
-                <label className="label-mono text-white/50 mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-0.5 block">
                   MOTIVO DA REJEICAO
                 </label>
                 <input
@@ -267,7 +267,7 @@ function ApprovalRow({
                   value={rejectMotivo}
                   onChange={(e) => onRejectMotivoChange(e.target.value)}
                   placeholder="Descreva o motivo..."
-                  className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   autoFocus
                 />
               </div>
@@ -282,7 +282,7 @@ function ApprovalRow({
               <button
                 type="button"
                 onClick={onCancelReject}
-                className="rounded-md border border-white/10 text-white/40 px-3 py-2 text-xs hover:text-white transition-colors"
+                className="rounded-md border border-border text-muted-foreground px-3 py-2 text-xs hover:text-foreground transition-colors"
               >
                 Cancelar
               </button>

@@ -36,13 +36,13 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
   return (
     <div className="space-y-5">
       {/* Current salary */}
-      <div className="rounded-md bg-white/5 shadow-card p-card-padding">
+      <div className="rounded-md bg-muted/50 shadow-card p-card-padding">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-white/50 uppercase tracking-wide">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Salário base atual
             </p>
-            <p className="mt-1 text-2xl font-bold text-white font-plate">
+            <p className="mt-1 text-2xl font-bold text-foreground font-plate">
               {new Intl.NumberFormat("pt-BR", {
                 style: "currency",
                 currency: "BRL",
@@ -51,7 +51,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
           </div>
           <button
             onClick={() => setShowForm((p) => !p)}
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-700 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary-700 transition-colors"
           >
             <TrendingUp className="h-3.5 w-3.5" />
             Novo reajuste
@@ -63,21 +63,21 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="rounded-md bg-white/5 shadow-card p-card-padding space-y-4"
+          className="rounded-md bg-muted/50 shadow-card p-card-padding space-y-4"
         >
-          <h3 className="text-sm font-semibold text-white">
+          <h3 className="text-sm font-semibold text-foreground">
             Registrar reajuste
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/50">
+              <label className="text-xs text-muted-foreground">
                 Salário anterior (R$)
               </label>
               <input
                 type="number"
                 step="0.01"
                 required
-                className="rounded border border-white/10 px-2 py-1.5 text-sm"
+                className="rounded border border-border px-2 py-1.5 text-sm"
                 value={form.previous_salary}
                 onChange={(e) =>
                   setForm((p) => ({
@@ -88,7 +88,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/50">
+              <label className="text-xs text-muted-foreground">
                 Novo salário (R$)
               </label>
               <input
@@ -96,7 +96,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
                 step="0.01"
                 required
                 min="0.01"
-                className="rounded border border-white/10 px-2 py-1.5 text-sm"
+                className="rounded border border-border px-2 py-1.5 text-sm"
                 value={form.new_salary || ""}
                 onChange={(e) =>
                   setForm((p) => ({
@@ -107,13 +107,13 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/50">
+              <label className="text-xs text-muted-foreground">
                 Data de vigência
               </label>
               <input
                 type="date"
                 required
-                className="rounded border border-white/10 px-2 py-1.5 text-sm"
+                className="rounded border border-border px-2 py-1.5 text-sm"
                 value={form.effective_date}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, effective_date: e.target.value }))
@@ -121,11 +121,11 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/50">Motivo</label>
+              <label className="text-xs text-muted-foreground">Motivo</label>
               <input
                 type="text"
                 placeholder="Promoção, dissídio, mérito..."
-                className="rounded border border-white/10 px-2 py-1.5 text-sm"
+                className="rounded border border-border px-2 py-1.5 text-sm"
                 value={form.reason ?? ""}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, reason: e.target.value }))
@@ -137,14 +137,14 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="text-xs text-white/50 hover:underline"
+              className="text-xs text-muted-foreground hover:underline"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={create.isPending}
-              className="rounded-md bg-primary-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+              className="rounded-md bg-primary-600 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary-700 disabled:opacity-50"
             >
               {create.isPending ? "Salvando..." : "Confirmar reajuste"}
             </button>
@@ -153,9 +153,9 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
       )}
 
       {/* History */}
-      <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
-        <div className="px-card-padding py-3 border-b border-white/10">
-          <h3 className="text-sm font-semibold text-white">
+      <div className="rounded-md bg-muted/50 shadow-card overflow-hidden">
+        <div className="px-card-padding py-3 border-b border-border">
+          <h3 className="text-sm font-semibold text-foreground">
             Histórico de reajustes
           </h3>
         </div>
@@ -166,7 +166,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
             ))}
           </div>
         ) : historyItems.length === 0 ? (
-          <div className="px-card-padding py-8 text-center text-sm text-white/50">
+          <div className="px-card-padding py-8 text-center text-sm text-muted-foreground">
             Nenhum reajuste registrado.
           </div>
         ) : (
@@ -182,7 +182,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
                 <div key={item.id} className="px-card-padding py-3 flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-white">
+                      <span className="text-sm font-medium text-foreground">
                         {new Intl.NumberFormat("pt-BR", {
                           style: "currency",
                           currency: "BRL",
@@ -194,7 +194,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-white/50 mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       Anterior:{" "}
                       {new Intl.NumberFormat("pt-BR", {
                         style: "currency",
@@ -203,12 +203,12 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
                       {item.reason && ` · ${item.reason}`}
                     </p>
                     {item.authorized_by_name && (
-                      <p className="text-xs text-white/40 mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         Autorizado por {item.authorized_by_name}
                       </p>
                     )}
                   </div>
-                  <span className="text-xs text-white/40 shrink-0">
+                  <span className="text-xs text-muted-foreground shrink-0">
                     {new Date(item.effective_date).toLocaleDateString("pt-BR")}
                   </span>
                 </div>

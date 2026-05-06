@@ -122,13 +122,13 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2.5 text-white">
+          <DialogTitle className="flex items-center gap-2.5 text-foreground">
             <DollarSign className="h-5 w-5 text-success-400 shrink-0" />
             <div className="min-w-0">
               <p className="text-sm font-semibold truncate">
                 Faturamento — OS #{order.number}
               </p>
-              <p className="text-xs text-white/50 font-normal truncate">
+              <p className="text-xs text-muted-foreground font-normal truncate">
                 {order.make_logo && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -147,7 +147,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
         <div className="mt-4 space-y-5">
           {/* Loading */}
           {isLoading && (
-            <div className="flex items-center justify-center py-10 text-white/40">
+            <div className="flex items-center justify-center py-10 text-muted-foreground">
               <Loader2 className="h-5 w-5 animate-spin mr-2" />
               Carregando preview...
             </div>
@@ -168,8 +168,8 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
             <>
               {/* RESUMO */}
               <div>
-                <p className="label-mono text-white/40 mb-2">RESUMO</p>
-                <div className="rounded-lg bg-white/[0.03] border border-white/10 p-3 space-y-1.5">
+                <p className="label-mono text-muted-foreground mb-2">RESUMO</p>
+                <div className="rounded-lg bg-muted/30 border border-border p-3 space-y-1.5">
                   <SummaryRow label="Pecas" value={preview.parts_total} />
                   <SummaryRow label="Servicos" value={preview.services_total} />
                   <SummaryRow
@@ -177,7 +177,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
                     value={preview.discount_total}
                     negative
                   />
-                  <div className="border-t border-white/10 my-1.5" />
+                  <div className="border-t border-border my-1.5" />
                   <SummaryRow
                     label="Total"
                     value={preview.grand_total}
@@ -194,7 +194,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
 
               {/* TITULOS A GERAR */}
               <div>
-                <p className="label-mono text-white/40 mb-2">
+                <p className="label-mono text-muted-foreground mb-2">
                   TITULOS A GERAR
                 </p>
                 <div className="space-y-2">
@@ -206,25 +206,25 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
                     return (
                       <div
                         key={`${item.recipient_type}-${item.category}`}
-                        className={`rounded-lg bg-white/[0.03] border border-white/10 p-3 space-y-2.5 ${
+                        className={`rounded-lg bg-muted/30 border border-border p-3 space-y-2.5 ${
                           isZero ? "opacity-50" : ""
                         }`}
                       >
                         {/* Item header */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 min-w-0">
-                            <FileText className="h-3.5 w-3.5 text-white/30 shrink-0" />
-                            <span className="text-sm text-white/80 truncate">
+                            <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            <span className="text-sm text-foreground/80 truncate">
                               {item.label}
                             </span>
                           </div>
-                          <span className="font-mono text-sm text-white/90 shrink-0 ml-2">
+                          <span className="font-mono text-sm text-foreground/90 shrink-0 ml-2">
                             {formatBRL(item.amount)}
                           </span>
                         </div>
 
                         {isZero ? (
-                          <p className="text-xs text-white/30 flex items-center gap-1.5">
+                          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                             <AlertTriangle className="h-3 w-3" />
                             Valor zerado — nao sera gerado titulo
                           </p>
@@ -233,7 +233,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
                             <div className="flex gap-2">
                               {/* Payment method */}
                               <div className="flex-1 min-w-0">
-                                <label className="label-mono text-white/40 text-[9px] mb-1 block">
+                                <label className="label-mono text-muted-foreground text-[9px] mb-1 block">
                                   FORMA PGTO
                                 </label>
                                 <select
@@ -245,7 +245,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
                                       e.target.value as PaymentMethod
                                     )
                                   }
-                                  className="w-full h-8 rounded border border-white/10 bg-white/[0.04] text-xs text-white/80 px-2 focus:outline-none focus:border-white/20 transition-colors"
+                                  className="w-full h-8 rounded border border-border bg-muted/30 text-xs text-foreground/80 px-2 focus:outline-none focus:border-border transition-colors"
                                 >
                                   {(
                                     Object.entries(PAYMENT_METHOD_LABELS) as [
@@ -262,7 +262,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
 
                               {/* Payment term */}
                               <div className="flex-1 min-w-0">
-                                <label className="label-mono text-white/40 text-[9px] mb-1 block">
+                                <label className="label-mono text-muted-foreground text-[9px] mb-1 block">
                                   PRAZO
                                 </label>
                                 <select
@@ -274,7 +274,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
                                       parseInt(e.target.value, 10)
                                     )
                                   }
-                                  className="w-full h-8 rounded border border-white/10 bg-white/[0.04] text-xs text-white/80 px-2 focus:outline-none focus:border-white/20 transition-colors"
+                                  className="w-full h-8 rounded border border-border bg-muted/30 text-xs text-foreground/80 px-2 focus:outline-none focus:border-border transition-colors"
                                 >
                                   {PAYMENT_TERMS.map((term) => (
                                     <option key={term.days} value={term.days}>
@@ -288,7 +288,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
                         )}
 
                         {item.note && (
-                          <p className="text-xs text-white/40 italic">
+                          <p className="text-xs text-muted-foreground italic">
                             {item.note}
                           </p>
                         )}
@@ -299,7 +299,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
               </div>
 
               {/* Footer info */}
-              <p className="text-xs text-white/30 flex items-start gap-1.5">
+              <p className="text-xs text-muted-foreground flex items-start gap-1.5">
                 <FileText className="h-3.5 w-3.5 shrink-0 mt-0.5" />
                 Notas fiscais serao emitidas automaticamente apos a confirmacao
                 do faturamento.
@@ -321,11 +321,11 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
 
         {/* Actions */}
         {preview && (
-          <div className="flex gap-2 justify-end mt-5 pt-4 border-t border-white/10">
+          <div className="flex gap-2 justify-end mt-5 pt-4 border-t border-border">
             <Button
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="text-white/60"
+              className="text-foreground/60"
             >
               Cancelar
             </Button>
@@ -334,7 +334,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
               disabled={
                 billMutation.isPending || !preview.can_bill
               }
-              className="bg-success-600 hover:bg-success-700 text-white"
+              className="bg-success-600 hover:bg-success-700 text-foreground"
             >
               {billMutation.isPending ? (
                 <>
@@ -373,16 +373,16 @@ function SummaryRow({
 
   return (
     <div className="flex items-center justify-between">
-      <span className={`text-xs ${bold ? "text-white/80 font-medium" : "text-white/50"}`}>
+      <span className={`text-xs ${bold ? "text-foreground/80 font-medium" : "text-muted-foreground"}`}>
         {label}
       </span>
       <span
         className={`font-mono text-xs ${
           bold
-            ? "text-white font-semibold"
+            ? "text-foreground font-semibold"
             : negative
               ? "text-red-400/80"
-              : "text-white/70"
+              : "text-foreground/70"
         }`}
       >
         {displayValue}

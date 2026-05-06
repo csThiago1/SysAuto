@@ -13,11 +13,11 @@ const STATUSES: Record<string, { label: string; dotColor: string; textColor: str
   aguardando_aprovacao: { label: "Aguardando Aprovação", dotColor: "bg-purple-400", textColor: "text-purple-400" },
   comprada: { label: "Comprada — Aguardando Entrega", dotColor: "bg-info-400", textColor: "text-info-400" },
   aguardando_seguradora: { label: "Aguardando Seguradora", dotColor: "bg-purple-400", textColor: "text-purple-400" },
-  manual: { label: "Manual", dotColor: "bg-white/40", textColor: "text-white/40" },
+  manual: { label: "Manual", dotColor: "bg-white/40", textColor: "text-muted-foreground" },
 }
 
 export function StatusPecaBadge({ status, className = "" }: StatusPecaBadgeProps) {
-  const config = STATUSES[status] ?? { label: status, dotColor: "bg-white/40", textColor: "text-white/40" }
+  const config = STATUSES[status] ?? { label: status, dotColor: "bg-white/40", textColor: "text-muted-foreground" }
   return (
     <span className={`inline-flex items-center gap-1.5 text-xs ${config.textColor} ${className}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor}`} />

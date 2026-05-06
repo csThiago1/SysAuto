@@ -209,7 +209,7 @@ export default function FichaTecnicaDetalhe() {
           <ArrowLeft className="h-4 w-4 mr-1" />
           Voltar
         </Button>
-        <div className="py-12 text-center text-sm text-white/40">
+        <div className="py-12 text-center text-sm text-muted-foreground">
           Nenhuma ficha técnica encontrada para este serviço.
         </div>
       </div>
@@ -230,8 +230,8 @@ export default function FichaTecnicaDetalhe() {
         </Button>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white">{servicoNome}</h1>
-            <p className="mt-1 text-xs font-mono text-white/40">{servicoCodigo}</p>
+            <h1 className="text-2xl font-bold text-foreground">{servicoNome}</h1>
+            <p className="mt-1 text-xs font-mono text-muted-foreground">{servicoCodigo}</p>
           </div>
           {fichaAtiva && (
             <Button onClick={openDialog} size="sm">
@@ -245,7 +245,7 @@ export default function FichaTecnicaDetalhe() {
       {/* Seletor de variação por tipo de pintura */}
       {variacoes.length > 0 && (
         <div className="flex items-center gap-3">
-          <Label className="text-sm text-white/60 shrink-0">Variação por tipo de pintura:</Label>
+          <Label className="text-sm text-foreground/60 shrink-0">Variação por tipo de pintura:</Label>
           <Select
             value={tipoPinturaFiltro}
             onValueChange={setTipoPinturaFiltro}
@@ -269,7 +269,7 @@ export default function FichaTecnicaDetalhe() {
       {fichaAtiva ? (
         <>
           {/* Meta da versão ativa */}
-          <div className="flex items-center gap-3 text-sm text-white/50">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <Badge variant="outline" className="bg-info-500/10 text-info-400 border-info-500/20 font-mono">
               v{fichaAtiva.versao}
             </Badge>
@@ -278,7 +278,7 @@ export default function FichaTecnicaDetalhe() {
               {fichaAtiva.criada_por_email && ` por ${fichaAtiva.criada_por_email}`}
             </span>
             {fichaAtiva.motivo_nova_versao && (
-              <span className="text-white/40 italic truncate max-w-xs">
+              <span className="text-muted-foreground italic truncate max-w-xs">
                 — {fichaAtiva.motivo_nova_versao}
               </span>
             )}
@@ -286,13 +286,13 @@ export default function FichaTecnicaDetalhe() {
 
           {/* Mão de obra */}
           <section>
-            <h2 className="text-sm font-semibold text-white/70 mb-2">Mão de Obra</h2>
+            <h2 className="text-sm font-semibold text-foreground/70 mb-2">Mão de Obra</h2>
             {!fichaAtiva.maos_obra || fichaAtiva.maos_obra.length === 0 ? (
-              <p className="text-sm text-white/40">Nenhuma mão de obra cadastrada.</p>
+              <p className="text-sm text-muted-foreground">Nenhuma mão de obra cadastrada.</p>
             ) : (
-              <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+              <div className="overflow-hidden rounded-md border border-border bg-muted/50">
                 <Table>
-                  <TableHeader className="bg-white/[0.03]">
+                  <TableHeader className="bg-muted/30">
                     <TableRow>
                       <TableHead>Categoria</TableHead>
                       <TableHead className="w-28 text-right">Horas</TableHead>
@@ -304,10 +304,10 @@ export default function FichaTecnicaDetalhe() {
                     {fichaAtiva.maos_obra.map((mo: FichaTecnicaMaoObraItem) => (
                       <TableRow key={mo.id}>
                         <TableCell className="py-2">
-                          <div className="font-medium text-white/90">{mo.categoria_nome}</div>
-                          <div className="text-xs text-white/40 font-mono">{mo.categoria_codigo}</div>
+                          <div className="font-medium text-foreground/90">{mo.categoria_nome}</div>
+                          <div className="text-xs text-muted-foreground font-mono">{mo.categoria_codigo}</div>
                         </TableCell>
-                        <TableCell className="py-2 text-right font-mono text-white/70">
+                        <TableCell className="py-2 text-right font-mono text-foreground/70">
                           {mo.horas}h
                         </TableCell>
                         <TableCell className="py-2 text-center">
@@ -316,12 +316,12 @@ export default function FichaTecnicaDetalhe() {
                               Sim
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-xs text-white/40">
+                            <Badge variant="outline" className="text-xs text-muted-foreground">
                               Não
                             </Badge>
                           )}
                         </TableCell>
-                        <TableCell className="py-2 text-sm text-white/50">
+                        <TableCell className="py-2 text-sm text-muted-foreground">
                           {mo.observacao || "—"}
                         </TableCell>
                       </TableRow>
@@ -334,13 +334,13 @@ export default function FichaTecnicaDetalhe() {
 
           {/* Insumos */}
           <section>
-            <h2 className="text-sm font-semibold text-white/70 mb-2">Insumos</h2>
+            <h2 className="text-sm font-semibold text-foreground/70 mb-2">Insumos</h2>
             {!fichaAtiva.insumos || fichaAtiva.insumos.length === 0 ? (
-              <p className="text-sm text-white/40">Nenhum insumo cadastrado.</p>
+              <p className="text-sm text-muted-foreground">Nenhum insumo cadastrado.</p>
             ) : (
-              <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+              <div className="overflow-hidden rounded-md border border-border bg-muted/50">
                 <Table>
-                  <TableHeader className="bg-white/[0.03]">
+                  <TableHeader className="bg-muted/30">
                     <TableRow>
                       <TableHead>Material</TableHead>
                       <TableHead className="w-28 text-right">Qtde</TableHead>
@@ -352,20 +352,20 @@ export default function FichaTecnicaDetalhe() {
                     {fichaAtiva.insumos.map((ins: FichaTecnicaInsumoItem) => (
                       <TableRow key={ins.id}>
                         <TableCell className="py-2">
-                          <div className="font-medium text-white/90">{ins.material_nome}</div>
-                          <div className="text-xs text-white/40 font-mono">{ins.material_codigo}</div>
+                          <div className="font-medium text-foreground/90">{ins.material_nome}</div>
+                          <div className="text-xs text-muted-foreground font-mono">{ins.material_codigo}</div>
                         </TableCell>
-                        <TableCell className="py-2 text-right font-mono text-white/70">
+                        <TableCell className="py-2 text-right font-mono text-foreground/70">
                           {ins.quantidade}
                         </TableCell>
-                        <TableCell className="py-2 text-sm text-white/60">{ins.unidade}</TableCell>
+                        <TableCell className="py-2 text-sm text-foreground/60">{ins.unidade}</TableCell>
                         <TableCell className="py-2 text-center">
                           {ins.afetado_por_tamanho ? (
                             <Badge className="bg-warning-500/10 text-warning-400 border-warning-500/20 text-xs">
                               Sim
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-xs text-white/40">
+                            <Badge variant="outline" className="text-xs text-muted-foreground">
                               Não
                             </Badge>
                           )}
@@ -379,7 +379,7 @@ export default function FichaTecnicaDetalhe() {
           </section>
         </>
       ) : (
-        <p className="text-sm text-white/40 py-6">
+        <p className="text-sm text-muted-foreground py-6">
           Nenhuma ficha ativa para a variação selecionada.
         </p>
       )}
@@ -387,13 +387,13 @@ export default function FichaTecnicaDetalhe() {
       {/* Histórico de versões */}
       {fichas.length > 1 && (
         <section>
-          <h2 className="text-sm font-semibold text-white/70 mb-2 flex items-center gap-2">
-            <ChevronDown className="h-4 w-4 text-white/40" />
+          <h2 className="text-sm font-semibold text-foreground/70 mb-2 flex items-center gap-2">
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
             Histórico de versões ({fichas.length})
           </h2>
-          <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+          <div className="overflow-hidden rounded-md border border-border bg-muted/50">
             <Table>
-              <TableHeader className="bg-white/[0.03]">
+              <TableHeader className="bg-muted/30">
                 <TableRow>
                   <TableHead className="w-20">Versão</TableHead>
                   <TableHead className="w-40">Tipo Pintura</TableHead>
@@ -413,13 +413,13 @@ export default function FichaTecnicaDetalhe() {
                           v{f.versao}
                         </Badge>
                       </TableCell>
-                      <TableCell className="py-2 text-sm text-white/60">
+                      <TableCell className="py-2 text-sm text-foreground/60">
                         {f.tipo_pintura_nome ?? "Genérica"}
                       </TableCell>
-                      <TableCell className="py-2 text-sm text-white/50">
+                      <TableCell className="py-2 text-sm text-muted-foreground">
                         {formatDateTime(f.criada_em)}
                       </TableCell>
-                      <TableCell className="py-2 text-sm text-white/60 truncate max-w-xs">
+                      <TableCell className="py-2 text-sm text-foreground/60 truncate max-w-xs">
                         {f.motivo_nova_versao || "—"}
                       </TableCell>
                       <TableCell className="py-2 text-center">
@@ -428,7 +428,7 @@ export default function FichaTecnicaDetalhe() {
                             Ativa
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-xs text-white/40">
+                          <Badge variant="outline" className="text-xs text-muted-foreground">
                             Inativa
                           </Badge>
                         )}
@@ -500,7 +500,7 @@ export default function FichaTecnicaDetalhe() {
                   </p>
                 )}
               {camposMO.length === 0 ? (
-                <p className="text-sm text-white/40">Nenhuma mão de obra adicionada.</p>
+                <p className="text-sm text-muted-foreground">Nenhuma mão de obra adicionada.</p>
               ) : (
                 <div className="flex flex-col gap-2">
                   {camposMO.map((field, idx) => (
@@ -528,7 +528,7 @@ export default function FichaTecnicaDetalhe() {
                         className="h-9"
                         {...form.register(`maos_obra.${idx}.horas`)}
                       />
-                      <label className="flex items-center gap-1.5 text-xs text-white/50 whitespace-nowrap cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap cursor-pointer">
                         <input
                           type="checkbox"
                           className="rounded"
@@ -546,7 +546,7 @@ export default function FichaTecnicaDetalhe() {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 text-white/40 hover:text-error-400"
+                        className="h-9 w-9 text-muted-foreground hover:text-error-400"
                         onClick={() => removeMO(idx)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -580,7 +580,7 @@ export default function FichaTecnicaDetalhe() {
                 </Button>
               </div>
               {camposIns.length === 0 ? (
-                <p className="text-sm text-white/40">Nenhum insumo adicionado.</p>
+                <p className="text-sm text-muted-foreground">Nenhum insumo adicionado.</p>
               ) : (
                 <div className="flex flex-col gap-2">
                   {camposIns.map((field, idx) => (
@@ -612,7 +612,7 @@ export default function FichaTecnicaDetalhe() {
                         className="h-9"
                         {...form.register(`insumos.${idx}.unidade`)}
                       />
-                      <label className="flex items-center gap-1.5 text-xs text-white/50 whitespace-nowrap cursor-pointer">
+                      <label className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap cursor-pointer">
                         <input
                           type="checkbox"
                           className="rounded"
@@ -630,7 +630,7 @@ export default function FichaTecnicaDetalhe() {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 text-white/40 hover:text-error-400"
+                        className="h-9 w-9 text-muted-foreground hover:text-error-400"
                         onClick={() => removeIns(idx)}
                       >
                         <Trash2 className="h-4 w-4" />

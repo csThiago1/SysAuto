@@ -32,8 +32,8 @@ export default function NFeRecebidaPage() {
         <div className="flex items-center gap-3">
           <FileText className="h-5 w-5 text-primary-500" />
           <div>
-            <h1 className="text-lg font-semibold text-white">NF-e de Entrada</h1>
-            <p className="text-xs text-white/40 mt-0.5">
+            <h1 className="text-lg font-semibold text-foreground">NF-e de Entrada</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
               {notas.length} nota{notas.length !== 1 ? "s" : ""}
             </p>
           </div>
@@ -43,7 +43,7 @@ export default function NFeRecebidaPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary-500"
           >
             <option value="">Todos os status</option>
             {Object.entries(STATUS_LABELS).map(([k, v]) => (
@@ -54,16 +54,16 @@ export default function NFeRecebidaPage() {
       </div>
 
       {isLoading ? (
-        <div className="text-white/40 text-sm">Carregando...</div>
+        <div className="text-muted-foreground text-sm">Carregando...</div>
       ) : notas.length === 0 ? (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
+        <div className="rounded-lg border border-border bg-muted/50 p-8 text-center text-muted-foreground text-sm">
           Nenhuma NF-e encontrada.
         </div>
       ) : (
-        <div className="rounded-lg border border-white/10 overflow-hidden">
+        <div className="rounded-lg border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/5 text-white/50 text-xs">
+              <tr className="border-b border-border bg-muted/50 text-muted-foreground text-xs">
                 <th className="px-4 py-3 text-left">Número</th>
                 <th className="px-4 py-3 text-left">Emitente</th>
                 <th className="px-4 py-3 text-left">Data Emissão</th>
@@ -76,25 +76,25 @@ export default function NFeRecebidaPage() {
               {notas.map((nfe) => (
                 <tr
                   key={nfe.id}
-                  className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+                  className="border-b border-white/5 hover:bg-muted/50 transition-colors cursor-pointer"
                   onClick={() => window.location.href = `/estoque/nfe-recebida/${nfe.id}`}
                 >
-                  <td className="px-4 py-3 text-white font-medium">
+                  <td className="px-4 py-3 text-foreground font-medium">
                     {nfe.numero || "—"}{nfe.serie ? ` / ${nfe.serie}` : ""}
                   </td>
-                  <td className="px-4 py-3 text-white/80">{nfe.emitente_nome || "—"}</td>
-                  <td className="px-4 py-3 text-white/60">
+                  <td className="px-4 py-3 text-foreground/80">{nfe.emitente_nome || "—"}</td>
+                  <td className="px-4 py-3 text-foreground/60">
                     {nfe.data_emissao
                       ? new Date(nfe.data_emissao).toLocaleDateString("pt-BR")
                       : "—"}
                   </td>
-                  <td className="px-4 py-3 text-right text-white/80">
+                  <td className="px-4 py-3 text-right text-foreground/80">
                     {parseFloat(nfe.valor_total).toLocaleString("pt-BR", {
                       style: "currency",
                       currency: "BRL",
                     })}
                   </td>
-                  <td className="px-4 py-3 text-right text-white/60">{nfe.total_itens}</td>
+                  <td className="px-4 py-3 text-right text-foreground/60">{nfe.total_itens}</td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[nfe.status as NFeEntradaStatus]}`}>
                       {STATUS_LABELS[nfe.status as NFeEntradaStatus]}

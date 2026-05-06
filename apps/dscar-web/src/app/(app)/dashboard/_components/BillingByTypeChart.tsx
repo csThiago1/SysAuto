@@ -20,8 +20,8 @@ export function BillingByTypeChart({ data }: Props) {
   }))
 
   return (
-    <div className="bg-white/5 rounded-md border border-white/10 shadow-sm p-4">
-      <h3 className="text-sm font-semibold text-white/70 mb-4">
+    <div className="bg-muted/50 rounded-md border border-border shadow-sm p-4">
+      <h3 className="text-sm font-semibold text-foreground/70 mb-4">
         Faturamento — Últimos 6 Meses
       </h3>
       <ResponsiveContainer width="100%" height={200}>

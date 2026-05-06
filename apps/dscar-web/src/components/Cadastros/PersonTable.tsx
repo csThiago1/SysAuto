@@ -49,7 +49,7 @@ function ActivePill({ active }: { active: boolean }) {
       className={
         active
           ? "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-success-500/10 text-success-400"
-          : "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-white/[0.03] text-white/50"
+          : "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-muted/30 text-muted-foreground"
       }
     >
       {active ? "Ativo" : "Inativo"}
@@ -63,10 +63,10 @@ export function PersonTable({ persons, onEdit, isLoading = false }: PersonTableP
   if (isLoading) return <PersonTableSkeleton />;
 
   return (
-    <div className="rounded-md border border-white/10 bg-card shadow-card overflow-hidden">
+    <div className="rounded-md border border-border bg-card shadow-card overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="bg-white/[0.03]">
+          <TableRow className="bg-muted/30">
             <TableHead>Nome</TableHead>
             <TableHead>Categorias</TableHead>
             <TableHead>Contato</TableHead>
@@ -84,15 +84,15 @@ export function PersonTable({ persons, onEdit, isLoading = false }: PersonTableP
             </TableRow>
           ) : (
             persons.map((p) => (
-              <TableRow key={p.id} className="hover:bg-white/[0.03]">
+              <TableRow key={p.id} className="hover:bg-muted/30">
                 {/* Avatar + nome */}
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar name={p.full_name} size="sm" />
                     <div>
-                      <p className="font-medium text-white/90 leading-tight">{p.full_name}</p>
+                      <p className="font-medium text-foreground/90 leading-tight">{p.full_name}</p>
                       {p.fantasy_name && (
-                        <p className="text-xs text-white/50 leading-tight">{p.fantasy_name}</p>
+                        <p className="text-xs text-muted-foreground leading-tight">{p.fantasy_name}</p>
                       )}
                     </div>
                   </div>
@@ -108,16 +108,16 @@ export function PersonTable({ persons, onEdit, isLoading = false }: PersonTableP
                 </TableCell>
 
                 {/* Contato principal */}
-                <TableCell className="text-sm text-white/60">
+                <TableCell className="text-sm text-foreground/60">
                   {p.primary_contact ? (
                     <span>
-                      <span className="text-white/30 text-xs mr-1">
+                      <span className="text-muted-foreground text-xs mr-1">
                         {CONTACT_TYPE_LABEL[p.primary_contact.type]}
                       </span>
                       {p.primary_contact.value}
                     </span>
                   ) : (
-                    <span className="text-white/20">—</span>
+                    <span className="text-muted-foreground/50">—</span>
                   )}
                 </TableCell>
 

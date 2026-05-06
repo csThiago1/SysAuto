@@ -120,8 +120,8 @@ export default function EstoquePage() {
       <div className="flex items-center gap-3">
         <LayoutDashboard className="h-5 w-5 text-primary-500" />
         <div>
-          <h1 className="text-lg font-semibold text-white">Estoque Físico</h1>
-          <p className="text-xs text-white/40 mt-0.5">
+          <h1 className="text-lg font-semibold text-foreground">Estoque Físico</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Controle de armazéns, peças, insumos e movimentações.
           </p>
         </div>
@@ -130,47 +130,47 @@ export default function EstoquePage() {
       {/* 4 KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Peças Disponíveis */}
-        <div className="bg-white/5 border border-white/10 rounded-lg p-5">
+        <div className="bg-muted/50 border border-border rounded-lg p-5">
           <div className="label-mono mb-2">PEÇAS DISPONÍVEIS</div>
-          <div className="text-3xl font-bold text-white font-mono">
+          <div className="text-3xl font-bold text-foreground font-mono">
             {stats?.pecas_disponiveis ?? "—"}
           </div>
-          <div className="text-xs text-white/40 mt-1">em estoque</div>
+          <div className="text-xs text-muted-foreground mt-1">em estoque</div>
         </div>
 
         {/* Valor em Estoque */}
-        <div className="bg-white/5 border border-white/10 rounded-lg p-5">
+        <div className="bg-muted/50 border border-border rounded-lg p-5">
           <div className="label-mono mb-2">VALOR EM ESTOQUE</div>
-          <div className="text-3xl font-bold text-white font-mono">
+          <div className="text-3xl font-bold text-foreground font-mono">
             {stats ? formatCompactCurrency(stats.valor_em_estoque) : "—"}
           </div>
-          <div className="text-xs text-white/40 mt-1">custo NF</div>
+          <div className="text-xs text-muted-foreground mt-1">custo NF</div>
         </div>
 
         {/* Reservadas p/ OS */}
-        <div className="bg-white/5 border border-white/10 rounded-lg p-5">
+        <div className="bg-muted/50 border border-border rounded-lg p-5">
           <div className="label-mono mb-2">RESERVADAS P/ OS</div>
           <div
             className={`text-3xl font-bold font-mono ${
-              reservadas > 0 ? "text-yellow-400" : "text-white"
+              reservadas > 0 ? "text-yellow-400" : "text-foreground"
             }`}
           >
             {stats ? reservadas : "—"}
           </div>
-          <div className="text-xs text-white/40 mt-1">aguardando consumo</div>
+          <div className="text-xs text-muted-foreground mt-1">aguardando consumo</div>
         </div>
 
         {/* Aprovações Pendentes */}
-        <div className="bg-white/5 border border-white/10 rounded-lg p-5">
+        <div className="bg-muted/50 border border-border rounded-lg p-5">
           <div className="label-mono mb-2">APROVAÇÕES PENDENTES</div>
           <div
             className={`text-3xl font-bold font-mono ${
-              pendentes > 0 ? "text-error-400" : "text-white"
+              pendentes > 0 ? "text-error-400" : "text-foreground"
             }`}
           >
             {stats ? pendentes : "—"}
           </div>
-          <div className="text-xs text-white/40 mt-1">perdas aguardando</div>
+          <div className="text-xs text-muted-foreground mt-1">perdas aguardando</div>
         </div>
       </div>
 
@@ -183,12 +183,12 @@ export default function EstoquePage() {
           <Link
             key={mod.href}
             href={mod.href as Route}
-            className="group rounded-lg border border-white/10 bg-white/5 p-5 hover:bg-white/10 hover:border-white/20 transition-all space-y-2"
+            className="group rounded-lg border border-border bg-muted/50 p-5 hover:bg-muted hover:border-border transition-all space-y-2"
           >
             <mod.icon className="h-5 w-5 text-primary-500 group-hover:text-primary-400 transition-colors" />
             <div>
-              <h2 className="text-sm font-semibold text-white">{mod.title}</h2>
-              <p className="text-xs text-white/50 mt-0.5">{mod.description}</p>
+              <h2 className="text-sm font-semibold text-foreground">{mod.title}</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">{mod.description}</p>
             </div>
           </Link>
         ))}

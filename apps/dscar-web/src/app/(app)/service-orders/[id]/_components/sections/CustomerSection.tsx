@@ -12,12 +12,12 @@ import {
 import { useDebounce } from "@/hooks/useDebounce"
 import { useCepLookup } from "@/hooks"
 
-const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-white/50"
-const LABEL = "block text-xs font-bold uppercase tracking-wide text-white/40 mb-0.5"
+const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-muted-foreground"
+const LABEL = "block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-0.5"
 const INPUT_EDIT =
   "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
 const INPUT_READONLY =
-  "flex h-8 w-full rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1 text-sm text-white/50 cursor-default select-all"
+  "flex h-8 w-full rounded-md border border-border bg-muted/30 px-2.5 py-1 text-sm text-muted-foreground cursor-default select-all"
 
 interface CustomerSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
@@ -52,7 +52,7 @@ function PersonInlineSearch({ onSelect, onCancel }: PersonInlineSearchProps) {
     <div ref={containerRef} className="relative">
       <div className="relative flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-white/40 pointer-events-none" />
+          <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
           <input
             type="text"
             autoFocus
@@ -64,32 +64,32 @@ function PersonInlineSearch({ onSelect, onCancel }: PersonInlineSearchProps) {
             autoComplete="off"
           />
           {isFetching && (
-            <Loader2 className="absolute right-2.5 top-2 h-3.5 w-3.5 animate-spin text-white/40" />
+            <Loader2 className="absolute right-2.5 top-2 h-3.5 w-3.5 animate-spin text-muted-foreground" />
           )}
         </div>
         <button
           type="button"
           onClick={onCancel}
-          className="shrink-0 rounded border border-white/15 px-2.5 py-1 text-xs font-medium text-white/50 hover:bg-white/5 h-8"
+          className="shrink-0 rounded border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-muted/50 h-8"
         >
           Cancelar
         </button>
       </div>
 
       {open && debouncedQuery.length >= 2 && results.length > 0 && (
-        <div className="absolute z-20 mt-1 w-full rounded-lg border border-white/10 bg-white/5 shadow-lg overflow-hidden">
+        <div className="absolute z-20 mt-1 w-full rounded-lg border border-border bg-muted/50 shadow-lg overflow-hidden">
           <ul>
             {results.map((p) => (
               <li key={p.id}>
                 <button
                   type="button"
-                  className="flex w-full items-start gap-3 px-3 py-2 text-left hover:bg-white/[0.03] transition-colors"
+                  className="flex w-full items-start gap-3 px-3 py-2 text-left hover:bg-muted/30 transition-colors"
                   onClick={() => onSelect(p.id, p.name)}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">{p.name}</p>
+                    <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
                     {p.phone_masked && (
-                      <p className="text-xs text-white/50 mt-0.5">{p.phone_masked}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{p.phone_masked}</p>
                     )}
                   </div>
                 </button>
@@ -100,8 +100,8 @@ function PersonInlineSearch({ onSelect, onCancel }: PersonInlineSearchProps) {
       )}
 
       {open && debouncedQuery.length >= 2 && !isFetching && results.length === 0 && (
-        <div className="absolute z-20 mt-1 w-full rounded-lg border border-white/10 bg-white/5 shadow-lg px-3 py-2">
-          <p className="text-xs text-white/40">Nenhum cliente encontrado.</p>
+        <div className="absolute z-20 mt-1 w-full rounded-lg border border-border bg-muted/50 shadow-lg px-3 py-2">
+          <p className="text-xs text-muted-foreground">Nenhum cliente encontrado.</p>
         </div>
       )}
     </div>
@@ -213,7 +213,7 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange }: PersonI
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 py-2 text-xs text-white/40">
+      <div className="flex items-center gap-2 py-2 text-xs text-muted-foreground">
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
         Carregando dados do cliente...
       </div>
@@ -270,7 +270,7 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange }: PersonI
       )}
 
       {/* Endereço — editável */}
-      <div className="space-y-1.5 pt-1 border-t border-white/10">
+      <div className="space-y-1.5 pt-1 border-t border-border">
         <p className={`${SECTION_TITLE} pt-1`}>Endereço</p>
         <div className="grid grid-cols-[112px_1fr_56px] gap-2">
           <div>
@@ -286,7 +286,7 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange }: PersonI
                 maxLength={9}
               />
               {cepLookup.isPending && (
-                <Loader2 className="absolute right-2 top-2 h-3.5 w-3.5 animate-spin text-white/40" />
+                <Loader2 className="absolute right-2 top-2 h-3.5 w-3.5 animate-spin text-muted-foreground" />
               )}
             </div>
           </div>
@@ -389,7 +389,7 @@ export function CustomerSection({ form, onPersonDataChange }: CustomerSectionPro
           <button
             type="button"
             onClick={() => setSwapping(true)}
-            className="flex items-center gap-1 text-xs font-medium text-white/40 hover:text-white/60"
+            className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground/60"
           >
             <ArrowLeftRight className="h-3 w-3" />
             Trocar cliente
@@ -435,7 +435,7 @@ export function CustomerSection({ form, onPersonDataChange }: CustomerSectionPro
             <label className={LABEL}>Nome</label>
             <div className={INPUT_READONLY}>{customerName || "Cliente legado"}</div>
           </div>
-          <p className="text-xs text-white/40">
+          <p className="text-xs text-muted-foreground">
             Cliente vinculado via cadastro legado. Use &quot;Trocar cliente&quot; para vincular a um cadastro Person.
           </p>
         </div>
@@ -443,7 +443,7 @@ export function CustomerSection({ form, onPersonDataChange }: CustomerSectionPro
 
       {/* Sem vínculo nenhum mas tem nome */}
       {!swapping && !hasCustomer && customerName && (
-        <p className="text-xs text-white/40 mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           Cliente &quot;{customerName}&quot; sem vínculo — busque acima para vincular.
         </p>
       )}

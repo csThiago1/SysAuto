@@ -36,10 +36,10 @@ export function FinancialSummaryCard({ orderId, customerType }: Props) {
           )}
         </div>
         <div className="space-y-1 text-xs">
-          <div className="flex justify-between"><span className="text-white/50">Peças</span><span className="text-white">{fmt(summary.insurer_parts)}</span></div>
-          <div className="flex justify-between"><span className="text-white/50">Mão de obra</span><span className="text-white">{fmt(summary.insurer_labor)}</span></div>
-          <div className="mt-2 flex justify-between border-t border-white/10 pt-2">
-            <span className="font-semibold text-white">Subtotal</span>
+          <div className="flex justify-between"><span className="text-muted-foreground">Peças</span><span className="text-foreground">{fmt(summary.insurer_parts)}</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">Mão de obra</span><span className="text-foreground">{fmt(summary.insurer_labor)}</span></div>
+          <div className="mt-2 flex justify-between border-t border-border pt-2">
+            <span className="font-semibold text-foreground">Subtotal</span>
             <span className="font-bold text-info-500">{fmt(summary.insurer_subtotal)}</span>
           </div>
           <div className="flex justify-between"><span className="text-warning-500">Franquia</span><span className="text-warning-500">- {fmt(summary.deductible)}</span></div>
@@ -51,10 +51,10 @@ export function FinancialSummaryCard({ orderId, customerType }: Props) {
         <div className="rounded-lg border border-warning-500/20 p-4">
           <div className="mb-3 text-sm font-semibold text-warning-500">Complemento Particular</div>
           <div className="space-y-1 text-xs">
-            <div className="flex justify-between"><span className="text-white/50">Serviços</span><span className="text-white">{fmt(summary.complement_labor)}</span></div>
-            <div className="flex justify-between"><span className="text-white/50">Peças</span><span className="text-white">{fmt(summary.complement_parts)}</span></div>
-            <div className="mt-2 flex justify-between border-t border-white/10 pt-2">
-              <span className="font-semibold text-white">Subtotal</span>
+            <div className="flex justify-between"><span className="text-muted-foreground">Serviços</span><span className="text-foreground">{fmt(summary.complement_labor)}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Peças</span><span className="text-foreground">{fmt(summary.complement_parts)}</span></div>
+            <div className="mt-2 flex justify-between border-t border-border pt-2">
+              <span className="font-semibold text-foreground">Subtotal</span>
               <span className="font-bold text-warning-500">{fmt(summary.complement_subtotal)}</span>
             </div>
             <div className="flex justify-between"><span className="text-success-500">Já faturado</span><span className="text-success-500">{fmt(summary.complement_billed)}</span></div>
@@ -63,12 +63,12 @@ export function FinancialSummaryCard({ orderId, customerType }: Props) {
       )}
 
       {/* Totais */}
-      <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-xs">
-        <div className="flex justify-between"><span className="text-white/50">Cliente deve</span><span className="font-bold text-error-500">{fmt(summary.customer_owes)}</span></div>
-        <div className="flex justify-between"><span className="text-white/50">Seguradora deve</span><span className="font-bold text-info-500">{fmt(summary.insurer_owes)}</span></div>
-        <div className="mt-2 flex justify-between border-t border-white/10 pt-2">
-          <span className="font-bold text-white">Total geral</span>
-          <span className="text-base font-bold text-white">{fmt(summary.grand_total)}</span>
+      <div className="rounded-lg border border-border bg-muted/50 p-4 text-xs">
+        <div className="flex justify-between"><span className="text-muted-foreground">Cliente deve</span><span className="font-bold text-error-500">{fmt(summary.customer_owes)}</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Seguradora deve</span><span className="font-bold text-info-500">{fmt(summary.insurer_owes)}</span></div>
+        <div className="mt-2 flex justify-between border-t border-border pt-2">
+          <span className="font-bold text-foreground">Total geral</span>
+          <span className="text-base font-bold text-foreground">{fmt(summary.grand_total)}</span>
         </div>
       </div>
     </div>

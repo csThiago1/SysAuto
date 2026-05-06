@@ -42,13 +42,13 @@ const STATUS_LABELS: Record<StatusOrcamento, string> = {
 }
 
 const STATUS_COLORS: Record<StatusOrcamento, string> = {
-  rascunho:      "text-white/50 bg-white/10",
+  rascunho:      "text-muted-foreground bg-muted",
   enviado:       "text-info-400 bg-info-400/10",
   aprovado:      "text-success-400 bg-success-400/10",
   aprovado_parc: "text-warning-400 bg-warning-400/10",
   recusado:      "text-error-400 bg-error-400/10",
   expirado:      "text-warning-400 bg-warning-400/10",
-  convertido_os: "text-white/60 bg-white/10",
+  convertido_os: "text-foreground/60 bg-muted",
 }
 
 const ACAO_LABELS: Record<Acao, string> = {
@@ -111,7 +111,7 @@ function AddIntervencaoForm({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-dashed border-white/15 text-white/40 hover:text-white/70 hover:border-white/30 transition-colors text-sm w-full"
+        className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-dashed border-border text-muted-foreground hover:text-foreground/70 hover:border-white/30 transition-colors text-sm w-full"
       >
         <Plus className="h-4 w-4" />
         <Package className="h-4 w-4" />
@@ -121,15 +121,15 @@ function AddIntervencaoForm({
   }
 
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-4">
-      <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Nova Peça / Intervenção</p>
+    <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nova Peça / Intervenção</p>
 
       <div className="grid grid-cols-2 gap-3">
         {/* Área */}
         <div className="space-y-1.5">
-          <Label className="text-white/70 text-xs">Área do veículo</Label>
+          <Label className="text-foreground/70 text-xs">Área do veículo</Label>
           <Select value={areaId} onValueChange={setAreaId}>
-            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+            <SelectTrigger className="bg-muted/50 border-border text-foreground">
               <SelectValue placeholder="Selecione a área" />
             </SelectTrigger>
             <SelectContent>
@@ -142,9 +142,9 @@ function AddIntervencaoForm({
 
         {/* Ação */}
         <div className="space-y-1.5">
-          <Label className="text-white/70 text-xs">O que será feito</Label>
+          <Label className="text-foreground/70 text-xs">O que será feito</Label>
           <Select value={acao} onValueChange={(v) => setAcao(v as Acao)}>
-            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+            <SelectTrigger className="bg-muted/50 border-border text-foreground">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -158,14 +158,14 @@ function AddIntervencaoForm({
 
       {/* Busca de peça */}
       <div className="space-y-1.5">
-        <Label className="text-white/70 text-xs">Peça</Label>
+        <Label className="text-foreground/70 text-xs">Peça</Label>
         {pecaSelecionada ? (
-          <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-md px-3 py-2">
-            <span className="text-sm text-white">{pecaSelecionada.nome}</span>
+          <div className="flex items-center justify-between bg-muted/50 border border-border rounded-md px-3 py-2">
+            <span className="text-sm text-foreground">{pecaSelecionada.nome}</span>
             <button
               type="button"
               onClick={() => { setPecaSelecionada(null); setPecaSearch("") }}
-              className="text-white/30 hover:text-white/70 text-xs"
+              className="text-muted-foreground hover:text-foreground/70 text-xs"
             >
               trocar
             </button>
@@ -173,22 +173,22 @@ function AddIntervencaoForm({
         ) : (
           <div className="space-y-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/30" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/20 pl-8"
+                className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50 pl-8"
                 placeholder="Buscar peça (ex: parachoque, porta...)"
                 value={pecaSearch}
                 onChange={(e) => setPecaSearch(e.target.value)}
               />
             </div>
             {pecas.length > 0 && (
-              <div className="rounded-md border border-white/10 overflow-hidden max-h-40 overflow-y-auto">
+              <div className="rounded-md border border-border overflow-hidden max-h-40 overflow-y-auto">
                 {pecas.slice(0, 8).map((p) => (
                   <button
                     key={p.id}
                     type="button"
                     onClick={() => { setPecaSelecionada({ id: p.id, nome: p.nome }); setPecaSearch("") }}
-                    className="w-full px-3 py-2 text-left text-sm text-white hover:bg-white/5 border-b border-white/5 last:border-0 transition-colors"
+                    className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted/50 border-b border-white/5 last:border-0 transition-colors"
                   >
                     {p.nome}
                   </button>
@@ -202,9 +202,9 @@ function AddIntervencaoForm({
       <div className="grid grid-cols-2 gap-3">
         {/* Fornecimento */}
         <div className="space-y-1.5">
-          <Label className="text-white/70 text-xs">Quem fornece a peça</Label>
+          <Label className="text-foreground/70 text-xs">Quem fornece a peça</Label>
           <Select value={fornecimento} onValueChange={(v) => setFornecimento(v as Fornecimento)}>
-            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+            <SelectTrigger className="bg-muted/50 border-border text-foreground">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -217,11 +217,11 @@ function AddIntervencaoForm({
 
         {/* Quantidade */}
         <div className="space-y-1.5">
-          <Label className="text-white/70 text-xs">Quantidade</Label>
+          <Label className="text-foreground/70 text-xs">Quantidade</Label>
           <Input
             type="number"
             min="1"
-            className="bg-white/5 border-white/10 text-white"
+            className="bg-muted/50 border-border text-foreground"
             value={quantidade}
             onChange={(e) => setQuantidade(e.target.value)}
           />
@@ -277,7 +277,7 @@ function AddItemAdicionalForm({ orcamentoId }: { orcamentoId: string }) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-dashed border-white/15 text-white/40 hover:text-white/70 hover:border-white/30 transition-colors text-sm w-full"
+        className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-dashed border-border text-muted-foreground hover:text-foreground/70 hover:border-white/30 transition-colors text-sm w-full"
       >
         <Plus className="h-4 w-4" />
         <Wrench className="h-4 w-4" />
@@ -287,18 +287,18 @@ function AddItemAdicionalForm({ orcamentoId }: { orcamentoId: string }) {
   }
 
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-4">
-      <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Novo Serviço</p>
+    <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Novo Serviço</p>
 
       <div className="space-y-1.5">
-        <Label className="text-white/70 text-xs">Serviço</Label>
+        <Label className="text-foreground/70 text-xs">Serviço</Label>
         {selecionado ? (
-          <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-md px-3 py-2">
-            <span className="text-sm text-white">{selecionado.name}</span>
+          <div className="flex items-center justify-between bg-muted/50 border border-border rounded-md px-3 py-2">
+            <span className="text-sm text-foreground">{selecionado.name}</span>
             <button
               type="button"
               onClick={() => { setSelecionado(null); setSearch("") }}
-              className="text-white/30 hover:text-white/70 text-xs"
+              className="text-muted-foreground hover:text-foreground/70 text-xs"
             >
               trocar
             </button>
@@ -306,26 +306,26 @@ function AddItemAdicionalForm({ orcamentoId }: { orcamentoId: string }) {
         ) : (
           <div className="space-y-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/30" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/20 pl-8"
+                className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50 pl-8"
                 placeholder="Buscar serviço (ex: alinhamento, funilaria...)"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
             {servicos.length > 0 && (
-              <div className="rounded-md border border-white/10 overflow-hidden max-h-40 overflow-y-auto">
+              <div className="rounded-md border border-border overflow-hidden max-h-40 overflow-y-auto">
                 {servicos.slice(0, 8).map((s) => (
                   <button
                     key={s.id}
                     type="button"
                     onClick={() => { setSelecionado({ id: s.id, name: s.name }); setSearch("") }}
-                    className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-white/5 border-b border-white/5 last:border-0 transition-colors"
+                    className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-muted/50 border-b border-white/5 last:border-0 transition-colors"
                   >
-                    <span className="text-sm text-white">{s.name}</span>
+                    <span className="text-sm text-foreground">{s.name}</span>
                     {s.suggested_price && (
-                      <span className="text-xs text-white/40">{formatBRL(s.suggested_price)}</span>
+                      <span className="text-xs text-muted-foreground">{formatBRL(s.suggested_price)}</span>
                     )}
                   </button>
                 ))}
@@ -336,11 +336,11 @@ function AddItemAdicionalForm({ orcamentoId }: { orcamentoId: string }) {
       </div>
 
       <div className="space-y-1.5 w-32">
-        <Label className="text-white/70 text-xs">Quantidade</Label>
+        <Label className="text-foreground/70 text-xs">Quantidade</Label>
         <Input
           type="number"
           min="1"
-          className="bg-white/5 border-white/10 text-white"
+          className="bg-muted/50 border-border text-foreground"
           value={quantidade}
           onChange={(e) => setQuantidade(e.target.value)}
         />
@@ -370,7 +370,7 @@ export default function OrcamentoDetailPage() {
   const { mutateAsync: aprovar,    isPending: aprovando } = useAprovarOrcamento(id)
   const { mutateAsync: novaVersao, isPending: clonando }  = useNovaVersaoOrcamento(id)
 
-  if (isLoading) return <div className="p-6 text-white/40 text-sm">Carregando orçamento...</div>
+  if (isLoading) return <div className="p-6 text-muted-foreground text-sm">Carregando orçamento...</div>
   if (error || !orc) return <div className="p-6 text-error-400 text-sm">Orçamento não encontrado.</div>
 
   const isRascunho = orc.status === "rascunho"
@@ -422,19 +422,19 @@ export default function OrcamentoDetailPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
-          <Link href={"/orcamentos" as Route} className="text-white/40 hover:text-white/70 transition-colors shrink-0">
+          <Link href={"/orcamentos" as Route} className="text-muted-foreground hover:text-foreground/70 transition-colors shrink-0">
             <ChevronLeft className="h-4 w-4" />
           </Link>
           <FileText className="h-5 w-5 text-primary-500 shrink-0" />
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-lg font-semibold text-white">{orc.numero}</h1>
-              <span className="text-white/40 text-sm">v{orc.versao}</span>
+              <h1 className="text-lg font-semibold text-foreground">{orc.numero}</h1>
+              <span className="text-muted-foreground text-sm">v{orc.versao}</span>
               <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[orc.status]}`}>
                 {STATUS_LABELS[orc.status]}
               </span>
             </div>
-            <p className="text-xs text-white/40 mt-0.5 truncate">
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">
               {orc.customer_nome} · {orc.veiculo_marca} {orc.veiculo_modelo} {orc.veiculo_ano}
               {orc.veiculo_placa && ` · ${orc.veiculo_placa}`}
             </p>
@@ -467,7 +467,7 @@ export default function OrcamentoDetailPage() {
           )}
           {canAprovar && (
             <Button size="sm" onClick={handleAprovar} disabled={aprovando}
-              className="bg-success-600 hover:bg-success-700 text-white"
+              className="bg-success-600 hover:bg-success-700 text-foreground"
             >
               <CheckCircle className="h-3.5 w-3.5 mr-1" />
               {aprovando ? "Aprovando..." : "Aprovar → OS"}
@@ -478,16 +478,16 @@ export default function OrcamentoDetailPage() {
 
       {/* Totais */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-          <p className="text-xs text-white/40">Subtotal</p>
-          <p className="text-lg font-semibold text-white mt-1">{formatBRL(orc.subtotal)}</p>
+        <div className="rounded-lg border border-border bg-muted/50 p-4">
+          <p className="text-xs text-muted-foreground">Subtotal</p>
+          <p className="text-lg font-semibold text-foreground mt-1">{formatBRL(orc.subtotal)}</p>
         </div>
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-          <p className="text-xs text-white/40">Desconto</p>
+        <div className="rounded-lg border border-border bg-muted/50 p-4">
+          <p className="text-xs text-muted-foreground">Desconto</p>
           <p className="text-lg font-semibold text-error-400 mt-1">-{formatBRL(orc.desconto)}</p>
         </div>
         <div className="rounded-lg border border-primary-500/20 bg-primary-500/5 p-4">
-          <p className="text-xs text-white/40">Total</p>
+          <p className="text-xs text-muted-foreground">Total</p>
           <p className="text-lg font-semibold text-primary-400 mt-1">{formatBRL(orc.total)}</p>
         </div>
       </div>
@@ -496,15 +496,15 @@ export default function OrcamentoDetailPage() {
       {orc.areas.map((area) => {
         const ivs = orc.intervencoes.filter((iv) => iv.area_impacto === area.id)
         return (
-          <div key={area.id} className="rounded-lg border border-white/10 overflow-hidden">
-            <div className="px-4 py-2.5 bg-white/5 border-b border-white/10 flex items-center justify-between">
-              <span className="text-sm font-medium text-white">{area.titulo}</span>
-              <span className="text-xs text-white/40">{ivs.length} item{ivs.length !== 1 ? "s" : ""}</span>
+          <div key={area.id} className="rounded-lg border border-border overflow-hidden">
+            <div className="px-4 py-2.5 bg-muted/50 border-b border-border flex items-center justify-between">
+              <span className="text-sm font-medium text-foreground">{area.titulo}</span>
+              <span className="text-xs text-muted-foreground">{ivs.length} item{ivs.length !== 1 ? "s" : ""}</span>
             </div>
             {ivs.length > 0 ? (
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-white/10 text-white/40">
+                  <tr className="border-b border-border text-muted-foreground">
                     <th className="px-4 py-2 text-left">Peça</th>
                     <th className="px-4 py-2 text-left">Ação</th>
                     <th className="px-4 py-2 text-left">Fornecimento</th>
@@ -518,20 +518,20 @@ export default function OrcamentoDetailPage() {
                 <tbody>
                   {ivs.map((iv) => (
                     <tr key={iv.id} className="border-b border-white/5">
-                      <td className="px-4 py-2.5 text-white/80">{iv.peca_nome || iv.peca_canonica}</td>
-                      <td className="px-4 py-2.5 text-white/60">{ACAO_LABELS[iv.acao as Acao] ?? iv.acao}</td>
-                      <td className="px-4 py-2.5 text-white/50 capitalize">{iv.fornecimento}</td>
-                      <td className="px-4 py-2.5 text-right text-white/60">{parseFloat(iv.horas_mao_obra).toFixed(1)}h</td>
-                      <td className="px-4 py-2.5 text-right text-white/60">{formatBRL(iv.valor_peca)}</td>
-                      <td className="px-4 py-2.5 text-right text-white/60">{formatBRL(iv.valor_mao_obra)}</td>
-                      <td className="px-4 py-2.5 text-right text-white/60">{formatBRL(iv.valor_insumos)}</td>
-                      <td className="px-4 py-2.5 text-right text-white font-medium">{formatBRL(iv.preco_total)}</td>
+                      <td className="px-4 py-2.5 text-foreground/80">{iv.peca_nome || iv.peca_canonica}</td>
+                      <td className="px-4 py-2.5 text-foreground/60">{ACAO_LABELS[iv.acao as Acao] ?? iv.acao}</td>
+                      <td className="px-4 py-2.5 text-muted-foreground capitalize">{iv.fornecimento}</td>
+                      <td className="px-4 py-2.5 text-right text-foreground/60">{parseFloat(iv.horas_mao_obra).toFixed(1)}h</td>
+                      <td className="px-4 py-2.5 text-right text-foreground/60">{formatBRL(iv.valor_peca)}</td>
+                      <td className="px-4 py-2.5 text-right text-foreground/60">{formatBRL(iv.valor_mao_obra)}</td>
+                      <td className="px-4 py-2.5 text-right text-foreground/60">{formatBRL(iv.valor_insumos)}</td>
+                      <td className="px-4 py-2.5 text-right text-foreground font-medium">{formatBRL(iv.preco_total)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             ) : (
-              <p className="px-4 py-3 text-xs text-white/30 italic">Nenhuma peça nesta área.</p>
+              <p className="px-4 py-3 text-xs text-muted-foreground italic">Nenhuma peça nesta área.</p>
             )}
           </div>
         )
@@ -539,13 +539,13 @@ export default function OrcamentoDetailPage() {
 
       {/* Itens adicionais (serviços) */}
       {orc.itens_adicionais.length > 0 && (
-        <div className="rounded-lg border border-white/10 overflow-hidden">
-          <div className="px-4 py-2.5 bg-white/5 border-b border-white/10">
-            <span className="text-sm font-medium text-white">Serviços Adicionais</span>
+        <div className="rounded-lg border border-border overflow-hidden">
+          <div className="px-4 py-2.5 bg-muted/50 border-b border-border">
+            <span className="text-sm font-medium text-foreground">Serviços Adicionais</span>
           </div>
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-white/10 text-white/40">
+              <tr className="border-b border-border text-muted-foreground">
                 <th className="px-4 py-2 text-left">Serviço</th>
                 <th className="px-4 py-2 text-right">Qtd</th>
                 <th className="px-4 py-2 text-right">Unitário</th>
@@ -555,10 +555,10 @@ export default function OrcamentoDetailPage() {
             <tbody>
               {orc.itens_adicionais.map((item) => (
                 <tr key={item.id} className="border-b border-white/5">
-                  <td className="px-4 py-2.5 text-white/80">{item.servico_nome || item.service_catalog}</td>
-                  <td className="px-4 py-2.5 text-right text-white/60">{item.quantidade}</td>
-                  <td className="px-4 py-2.5 text-right text-white/60">{formatBRL(item.preco_unitario)}</td>
-                  <td className="px-4 py-2.5 text-right text-white font-medium">{formatBRL(item.preco_total)}</td>
+                  <td className="px-4 py-2.5 text-foreground/80">{item.servico_nome || item.service_catalog}</td>
+                  <td className="px-4 py-2.5 text-right text-foreground/60">{item.quantidade}</td>
+                  <td className="px-4 py-2.5 text-right text-foreground/60">{formatBRL(item.preco_unitario)}</td>
+                  <td className="px-4 py-2.5 text-right text-foreground font-medium">{formatBRL(item.preco_total)}</td>
                 </tr>
               ))}
             </tbody>
@@ -568,15 +568,15 @@ export default function OrcamentoDetailPage() {
 
       {/* Estado vazio */}
       {orc.intervencoes.length === 0 && orc.itens_adicionais.length === 0 && !isRascunho && (
-        <div className="rounded-lg border border-dashed border-white/10 p-8 text-center">
-          <p className="text-sm text-white/40">Nenhuma peça ou serviço adicionado.</p>
+        <div className="rounded-lg border border-dashed border-border p-8 text-center">
+          <p className="text-sm text-muted-foreground">Nenhuma peça ou serviço adicionado.</p>
         </div>
       )}
 
       {/* Formulários de adição — só em rascunho */}
       {isRascunho && (
         <div className="space-y-3 pt-2">
-          <p className="text-xs font-semibold text-white/30 uppercase tracking-wider">Adicionar itens ao orçamento</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Adicionar itens ao orçamento</p>
           <AddIntervencaoForm orcamentoId={id} areas={orc.areas} />
           <AddItemAdicionalForm orcamentoId={id} />
         </div>

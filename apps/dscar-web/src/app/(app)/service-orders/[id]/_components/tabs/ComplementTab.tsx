@@ -151,7 +151,7 @@ export function ComplementTab({ orderId }: Props) {
                 const isBilled = item.billing_status === "billed"
                 return (
                   <tr key={item.id} className="border-t border-white/5">
-                    <td className="px-3 py-2.5 text-white">{item.description}</td>
+                    <td className="px-3 py-2.5 text-foreground">{item.description}</td>
                     <td className="px-3 py-2.5 text-center">
                       <span className={cn(
                         "rounded px-2 py-0.5 text-[11px]",
@@ -162,9 +162,9 @@ export function ComplementTab({ orderId }: Props) {
                         {item.kind === "part" ? "Peça" : "Serviço"}
                       </span>
                     </td>
-                    <td className="px-3 py-2.5 text-center text-white">{item.quantity}</td>
-                    <td className="px-3 py-2.5 text-right text-white">{formatCurrency(item.unit_price)}</td>
-                    <td className="px-3 py-2.5 text-right font-semibold text-white">{formatCurrency(total)}</td>
+                    <td className="px-3 py-2.5 text-center text-foreground">{item.quantity}</td>
+                    <td className="px-3 py-2.5 text-right text-foreground">{formatCurrency(item.unit_price)}</td>
+                    <td className="px-3 py-2.5 text-right font-semibold text-foreground">{formatCurrency(total)}</td>
                     <td className="px-3 py-2.5 text-center">
                       <span className={cn(
                         "rounded px-2 py-0.5 text-[11px]",

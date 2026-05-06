@@ -64,25 +64,25 @@ function NfeRecebidaRow({
     cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")
 
   return (
-    <tr className="border-b border-white/[0.06] hover:bg-white/[0.03] transition-colors">
+    <tr className="border-b border-border hover:bg-muted/30 transition-colors">
       {/* Emitente */}
       <td className="py-3 px-4">
-        <p className="text-xs text-white/80 font-medium">{nfe.nome_emitente || "—"}</p>
-        <p className="text-xs text-white/30 font-mono mt-0.5">{cnpjFmt(nfe.documento_emitente)}</p>
+        <p className="text-xs text-foreground/80 font-medium">{nfe.nome_emitente || "—"}</p>
+        <p className="text-xs text-muted-foreground font-mono mt-0.5">{cnpjFmt(nfe.documento_emitente)}</p>
       </td>
 
       {/* Chave (truncada) */}
-      <td className="py-3 px-4 text-xs font-mono text-white/30 max-w-[140px] truncate" title={nfe.chave_nfe}>
+      <td className="py-3 px-4 text-xs font-mono text-muted-foreground max-w-[140px] truncate" title={nfe.chave_nfe}>
         {nfe.chave_nfe.slice(0, 10)}…{nfe.chave_nfe.slice(-6)}
       </td>
 
       {/* Valor */}
-      <td className="py-3 px-4 text-xs text-white/80 text-right tabular-nums">
+      <td className="py-3 px-4 text-xs text-foreground/80 text-right tabular-nums">
         {valorFmt}
       </td>
 
       {/* Emissão */}
-      <td className="py-3 px-4 text-xs text-white/40">{dateFmt}</td>
+      <td className="py-3 px-4 text-xs text-muted-foreground">{dateFmt}</td>
 
       {/* Manifesto */}
       <td className="py-3 px-4">
@@ -98,7 +98,7 @@ function NfeRecebidaRow({
             {cfg.label}
           </span>
         ) : (
-          <span className="text-xs text-white/20">Não manifestada</span>
+          <span className="text-xs text-muted-foreground/50">Não manifestada</span>
         )}
       </td>
 
@@ -178,8 +178,8 @@ export default function NfeRecebidasPage() {
         <div className="flex items-center gap-3">
           <Inbox className="h-6 w-6 text-primary-600" />
           <div>
-            <h1 className="text-xl font-bold text-white">NF-e Recebidas</h1>
-            <p className="text-xs text-white/50 mt-0.5">
+            <h1 className="text-xl font-bold text-foreground">NF-e Recebidas</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
               NF-e emitidas por fornecedores com o CNPJ da empresa como tomador
             </p>
           </div>
@@ -188,7 +188,7 @@ export default function NfeRecebidasPage() {
           variant="ghost"
           size="sm"
           onClick={() => refetch()}
-          className="text-white/50 hover:text-white"
+          className="text-muted-foreground hover:text-foreground"
         >
           <RefreshCw className="h-4 w-4 mr-1.5" />
           Atualizar
@@ -202,15 +202,15 @@ export default function NfeRecebidasPage() {
       </div>
 
       {/* Tabela */}
-      <div className="rounded-xl bg-white/[0.03] border border-white/[0.07] overflow-hidden">
+      <div className="rounded-xl bg-muted/30 border border-white/[0.07] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-white/[0.06]">
+            <tr className="border-b border-border">
               {["Emitente", "Chave", "Valor", "Emissão", "Manifesto", ""].map((h) => (
                 <th
                   key={h}
                   className={cn(
-                    "py-2.5 px-4 text-xs font-semibold text-white/30 text-left",
+                    "py-2.5 px-4 text-xs font-semibold text-muted-foreground text-left",
                     h === "Valor" && "text-right"
                   )}
                 >
@@ -222,18 +222,18 @@ export default function NfeRecebidasPage() {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-xs text-white/30">
+                <td colSpan={6} className="py-12 text-center text-xs text-muted-foreground">
                   Consultando Focus NF-e...
                 </td>
               </tr>
             ) : nfes.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-xs text-white/30">
+                <td colSpan={6} className="py-12 text-center text-xs text-muted-foreground">
                   Nenhuma NF-e recebida encontrada.{" "}
                   {pagina > 1 && (
                     <button
                       onClick={() => setPagina(1)}
-                      className="underline hover:text-white/50"
+                      className="underline hover:text-muted-foreground"
                     >
                       Voltar à primeira página
                     </button>
@@ -255,13 +255,13 @@ export default function NfeRecebidasPage() {
       </div>
 
       {/* Paginação */}
-      <div className="flex items-center justify-between text-xs text-white/30">
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{nfes.length} NF-e nesta página</span>
         <div className="flex gap-2">
           <button
             disabled={pagina === 1}
             onClick={() => setPagina((p) => p - 1)}
-            className="px-3 py-1 rounded border border-white/10 disabled:opacity-30 hover:border-white/20"
+            className="px-3 py-1 rounded border border-border disabled:opacity-30 hover:border-border"
           >
             ← Anterior
           </button>
@@ -269,7 +269,7 @@ export default function NfeRecebidasPage() {
           <button
             disabled={nfes.length < 50}
             onClick={() => setPagina((p) => p + 1)}
-            className="px-3 py-1 rounded border border-white/10 disabled:opacity-30 hover:border-white/20"
+            className="px-3 py-1 rounded border border-border disabled:opacity-30 hover:border-border"
           >
             Próxima →
           </button>

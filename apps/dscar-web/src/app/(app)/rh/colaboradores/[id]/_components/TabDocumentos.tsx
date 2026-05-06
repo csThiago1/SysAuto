@@ -35,17 +35,17 @@ export function TabDocumentos({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold text-white">
+        <h3 className="text-base font-semibold text-foreground">
           Documentos ({documents.length})
         </h3>
-        <button className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-700 transition-colors">
+        <button className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary-700 transition-colors">
           + Enviar documento
         </button>
       </div>
 
       {documents.length === 0 ? (
-        <div className="rounded-md bg-white/5 shadow-card p-8 flex flex-col items-center justify-center text-white/50">
-          <FileText className="h-8 w-8 mb-2 text-white/30" />
+        <div className="rounded-md bg-muted/50 shadow-card p-8 flex flex-col items-center justify-center text-muted-foreground">
+          <FileText className="h-8 w-8 mb-2 text-muted-foreground" />
           <p className="text-sm">Nenhum documento enviado.</p>
         </div>
       ) : (
@@ -53,15 +53,15 @@ export function TabDocumentos({
           {documents.map((doc) => (
             <div
               key={doc.id}
-              className="flex items-center justify-between rounded-md bg-white/5 shadow-card p-4"
+              className="flex items-center justify-between rounded-md bg-muted/50 shadow-card p-4"
             >
               <div className="flex items-center gap-3">
-                <FileText className="h-5 w-5 text-white/40 shrink-0" />
+                <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-white">
+                  <p className="text-sm font-medium text-foreground">
                     {doc.document_type_display}
                   </p>
-                  <p className="text-xs text-white/50">
+                  <p className="text-xs text-muted-foreground">
                     {doc.file_name}
                     {doc.expiry_date && (
                       <span className="ml-2 text-warning-400">
@@ -73,7 +73,7 @@ export function TabDocumentos({
                 </div>
               </div>
               <button
-                className="p-1.5 text-white/40 hover:text-error-400 transition-colors"
+                className="p-1.5 text-muted-foreground hover:text-error-400 transition-colors"
                 title="Remover documento (soft delete)"
               >
                 <Trash2 className="h-4 w-4" />

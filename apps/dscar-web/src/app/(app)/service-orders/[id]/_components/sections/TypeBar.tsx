@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import { useConsultants } from "../../_hooks/useStaff"
 
-const LABEL = "block text-xs font-bold uppercase tracking-wide text-white/40 mb-0.5"
+const LABEL = "block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-0.5"
 const SELECT =
   "flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 
@@ -27,7 +27,7 @@ export function TypeBar({ form, customerType }: TypeBarProps) {
   const { data: consultants = [], isLoading: loadingConsultants } = useConsultants()
 
   return (
-    <div className="flex flex-wrap items-end gap-3 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2">
+    <div className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-muted/30 px-3 py-2">
 
       {/* Pill toggle Particular / Seguradora */}
       <div>
@@ -36,7 +36,7 @@ export function TypeBar({ form, customerType }: TypeBarProps) {
           name="customer_type"
           control={control}
           render={({ field }) => (
-            <div className="flex rounded-lg border border-white/10 bg-white/5 p-0.5">
+            <div className="flex rounded-lg border border-border bg-muted/50 p-0.5">
               {(["private", "insurer"] as const).map((type) => (
                 <button
                   key={type}
@@ -44,8 +44,8 @@ export function TypeBar({ form, customerType }: TypeBarProps) {
                   onClick={() => field.onChange(type)}
                   className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
                     field.value === type
-                      ? "bg-primary-600 text-white shadow-sm"
-                      : "text-white/50 hover:text-white/70"
+                      ? "bg-primary-600 text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground/70"
                   }`}
                 >
                   {type === "private" ? "Particular" : "Seguradora"}
@@ -72,7 +72,7 @@ export function TypeBar({ form, customerType }: TypeBarProps) {
         <label className={LABEL}>
           Consultor
           {loadingConsultants && (
-            <Loader2 className="inline ml-1 h-2.5 w-2.5 animate-spin text-white/40" />
+            <Loader2 className="inline ml-1 h-2.5 w-2.5 animate-spin text-muted-foreground" />
           )}
         </label>
         <Controller

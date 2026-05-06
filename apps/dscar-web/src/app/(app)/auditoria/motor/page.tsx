@@ -44,8 +44,8 @@ export default function AuditoriaMotorPage() {
       <div className="flex items-center gap-3">
         <Shield className="h-5 w-5 text-primary-500" />
         <div>
-          <h1 className="text-lg font-semibold text-white">Auditoria do Motor</h1>
-          <p className="text-xs text-white/40 mt-0.5">
+          <h1 className="text-lg font-semibold text-foreground">Auditoria do Motor</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Log imutável de todas as chamadas ao motor de precificação.
           </p>
         </div>
@@ -68,7 +68,7 @@ export default function AuditoriaMotorPage() {
             {
               label: "Total de chamadas",
               value: health.total_chamadas?.toLocaleString("pt-BR") ?? "—",
-              color: "text-white",
+              color: "text-foreground",
             },
             {
               label: "Taxa de erro",
@@ -78,13 +78,13 @@ export default function AuditoriaMotorPage() {
             {
               label: "Tempo médio",
               value: health.tempo_medio_ms != null ? `${health.tempo_medio_ms}ms` : "—",
-              color: "text-white",
+              color: "text-foreground",
             },
           ].map((kpi) => (
-            <div key={kpi.label} className="rounded-lg border border-white/10 bg-white/5 p-4">
+            <div key={kpi.label} className="rounded-lg border border-border bg-muted/50 p-4">
               <div className="flex items-center gap-2">
                 {"icon" in kpi && kpi.icon}
-                <p className="text-xs text-white/40">{kpi.label}</p>
+                <p className="text-xs text-muted-foreground">{kpi.label}</p>
               </div>
               <p className={`text-lg font-semibold mt-1 ${kpi.color}`}>{kpi.value}</p>
             </div>
@@ -98,7 +98,7 @@ export default function AuditoriaMotorPage() {
           value={operacao}
           onValueChange={(v) => setOperacao(v as AuditoriaOperacao | "all")}
         >
-          <SelectTrigger className="w-48 bg-white/5 border-white/10 text-white text-sm">
+          <SelectTrigger className="w-48 bg-muted/50 border-border text-foreground text-sm">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -108,7 +108,7 @@ export default function AuditoriaMotorPage() {
           </SelectContent>
         </Select>
 
-        <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-foreground/60 cursor-pointer">
           <input
             type="checkbox"
             checked={somenteErros}
@@ -121,27 +121,27 @@ export default function AuditoriaMotorPage() {
 
       {/* Tabela */}
       {isLoading ? (
-        <p className="text-xs text-white/40 py-8 text-center">Carregando...</p>
+        <p className="text-xs text-muted-foreground py-8 text-center">Carregando...</p>
       ) : auditorias.length === 0 ? (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
+        <div className="rounded-lg border border-border bg-muted/50 p-8 text-center text-muted-foreground text-sm">
           Nenhuma auditoria encontrada.
         </div>
       ) : (
-        <div className="rounded-lg border border-white/10 overflow-hidden">
+        <div className="rounded-lg border border-border overflow-hidden">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-white/10 hover:bg-transparent">
-                  <TableHead className="text-white/60 text-xs">Status</TableHead>
-                  <TableHead className="text-white/60 text-xs">Operação</TableHead>
-                  <TableHead className="text-white/60 text-xs text-right">Tempo</TableHead>
-                  <TableHead className="text-white/60 text-xs">Data</TableHead>
-                  <TableHead className="text-white/60 text-xs">Erro</TableHead>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-foreground/60 text-xs">Status</TableHead>
+                  <TableHead className="text-foreground/60 text-xs">Operação</TableHead>
+                  <TableHead className="text-foreground/60 text-xs text-right">Tempo</TableHead>
+                  <TableHead className="text-foreground/60 text-xs">Data</TableHead>
+                  <TableHead className="text-foreground/60 text-xs">Erro</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {auditorias.map((a) => (
-                  <TableRow key={a.id} className="border-white/10">
+                  <TableRow key={a.id} className="border-border">
                     <TableCell>
                       {a.sucesso ? (
                         <Badge
@@ -161,11 +161,11 @@ export default function AuditoriaMotorPage() {
                         </Badge>
                       )}
                     </TableCell>
-                    <TableCell className="text-white/80 text-xs font-mono">{a.operacao}</TableCell>
-                    <TableCell className="text-right text-white/60 text-xs">
+                    <TableCell className="text-foreground/80 text-xs font-mono">{a.operacao}</TableCell>
+                    <TableCell className="text-right text-foreground/60 text-xs">
                       {a.tempo_ms}ms
                     </TableCell>
-                    <TableCell className="text-white/50 text-xs">
+                    <TableCell className="text-muted-foreground text-xs">
                       {new Date(a.created_at).toLocaleString("pt-BR")}
                     </TableCell>
                     <TableCell className="text-red-400 text-xs max-w-xs truncate">
@@ -176,7 +176,7 @@ export default function AuditoriaMotorPage() {
               </TableBody>
             </Table>
           </div>
-          <div className="px-4 py-2 border-t border-white/5 text-xs text-white/30">
+          <div className="px-4 py-2 border-t border-white/5 text-xs text-muted-foreground">
             Mostrando até 500 registros mais recentes.
           </div>
         </div>

@@ -128,7 +128,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       {/* Header */}
       <div className="flex items-center justify-between border-b bg-muted/50 px-6 py-4">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-white">OS #{order.number}</h1>
+          <h1 className="text-xl font-bold text-foreground">OS #{order.number}</h1>
           <StatusBadge status={order.status as ServiceOrderStatus} />
         </div>
         <div className="flex items-center gap-3">
@@ -182,7 +182,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
             <button
               type="button"
               onClick={() => setImportModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-md bg-info-600 px-4 py-2 text-sm font-medium text-white hover:bg-info-700"
+              className="inline-flex items-center gap-1.5 rounded-md bg-info-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-info-700"
             >
               ⬇ Importar Orçamento
             </button>
@@ -201,7 +201,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
             className={cn(
               "inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-medium transition-all",
               isDirty
-                ? "bg-primary-600 text-white shadow-md hover:bg-primary-700"
+                ? "bg-primary-600 text-foreground shadow-md hover:bg-primary-700"
                 : "cursor-not-allowed bg-muted text-muted-foreground",
               isPending && "opacity-50"
             )}

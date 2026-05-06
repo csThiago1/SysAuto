@@ -20,12 +20,12 @@ const TIPOS: Record<string, { label: string; className: string }> = {
   },
   usada: {
     label: "Usada",
-    className: "bg-white/5 text-white/40 border border-white/10",
+    className: "bg-muted/50 text-muted-foreground border border-border",
   },
 }
 
 export function TipoQualidadeBadge({ tipo, className = "" }: TipoQualidadeBadgeProps) {
-  const config = TIPOS[tipo] ?? { label: tipo, className: "bg-white/5 text-white/40 border border-white/10" }
+  const config = TIPOS[tipo] ?? { label: tipo, className: "bg-muted/50 text-muted-foreground border border-border" }
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${config.className} ${className}`}>
       {config.label}

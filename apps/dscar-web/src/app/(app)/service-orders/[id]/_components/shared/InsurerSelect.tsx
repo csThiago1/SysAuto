@@ -13,21 +13,21 @@ interface InsurerSelectProps {
 export function InsurerLogo({ insurer }: { insurer: Insurer | null }) {
   if (!insurer) {
     return (
-      <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-white/10 bg-white/[0.03] text-white/30 text-2xl font-bold select-none">
+      <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/30 text-muted-foreground text-2xl font-bold select-none">
         ?
       </div>
     )
   }
   if (insurer.logo) {
     return (
-      <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 shadow-sm overflow-hidden">
+      <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border border-border bg-muted/50 shadow-sm overflow-hidden">
         <img src={insurer.logo} alt={insurer.display_name} className="h-16 w-16 object-contain" />
       </div>
     )
   }
   return (
     <div
-      className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl text-white text-xl font-bold shadow-sm select-none"
+      className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl text-foreground text-xl font-bold shadow-sm select-none"
       style={{ backgroundColor: insurer.brand_color ?? "#6b7280" }}
     >
       {insurer.abbreviation || insurer.display_name?.charAt(0) || "?"}

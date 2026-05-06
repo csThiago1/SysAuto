@@ -29,7 +29,7 @@ const STATUS_LABELS: Record<UnidadeFisicaStatus, string> = {
 const STATUS_COLORS: Record<UnidadeFisicaStatus, string> = {
   available: "bg-success-500/10 text-success-400",
   reserved: "bg-warning-500/10 text-warning-400",
-  consumed: "bg-white/5 text-white/40",
+  consumed: "bg-muted/50 text-muted-foreground",
   returned: "bg-info-500/10 text-info-400",
   lost: "bg-error-500/10 text-error-400",
 }
@@ -63,15 +63,15 @@ function ReservarModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-lg border border-white/10 bg-[#1a1a1c] p-6 space-y-4">
-        <h3 className="text-sm font-semibold text-white">
+      <div className="w-full max-w-md rounded-lg border border-border bg-[#1a1a1c] p-6 space-y-4">
+        <h3 className="text-sm font-semibold text-foreground">
           Reservar Unidade
         </h3>
-        <p className="text-xs text-white/40">
-          Barcode: <span className="font-mono text-white/60">{unidade.codigo_barras}</span>
+        <p className="text-xs text-muted-foreground">
+          Barcode: <span className="font-mono text-foreground/60">{unidade.codigo_barras}</span>
         </p>
         <div>
-          <label className="label-mono text-white/50 mb-1 block">
+          <label className="label-mono text-muted-foreground mb-1 block">
             ID DA ORDEM DE SERVICO
           </label>
           <input
@@ -79,7 +79,7 @@ function ReservarModal({
             value={osId}
             onChange={(e) => setOsId(e.target.value)}
             placeholder="UUID da OS..."
-            className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm font-mono placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
             autoFocus
           />
         </div>
@@ -87,7 +87,7 @@ function ReservarModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1.5 text-xs text-white/60 hover:text-white transition-colors"
+            className="px-3 py-1.5 text-xs text-foreground/60 hover:text-foreground transition-colors"
           >
             Cancelar
           </button>
@@ -95,7 +95,7 @@ function ReservarModal({
             type="button"
             onClick={handleSubmit}
             disabled={!osId.trim() || reservar.isPending}
-            className="px-4 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-1.5 text-xs font-medium text-foreground bg-primary-600 hover:bg-primary-700 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {reservar.isPending ? "Reservando..." : "Reservar"}
           </button>
@@ -136,16 +136,16 @@ function TransferirModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-2xl rounded-lg border border-white/10 bg-[#1a1a1c] p-6 space-y-4">
-        <h3 className="text-sm font-semibold text-white">
+      <div className="w-full max-w-2xl rounded-lg border border-border bg-[#1a1a1c] p-6 space-y-4">
+        <h3 className="text-sm font-semibold text-foreground">
           Transferir Unidade
         </h3>
-        <p className="text-xs text-white/40">
-          Barcode: <span className="font-mono text-white/60">{unidade.codigo_barras}</span>
-          {" "}| Atual: <span className="text-white/60">{unidade.nivel || unidade.localizacao || "Sem posicao"}</span>
+        <p className="text-xs text-muted-foreground">
+          Barcode: <span className="font-mono text-foreground/60">{unidade.codigo_barras}</span>
+          {" "}| Atual: <span className="text-foreground/60">{unidade.nivel || unidade.localizacao || "Sem posicao"}</span>
         </p>
         <div>
-          <label className="label-mono text-white/50 mb-1 block">
+          <label className="label-mono text-muted-foreground mb-1 block">
             DESTINO
           </label>
           <PosicaoSelector value={nivelId} onChange={setNivelId} />
@@ -154,7 +154,7 @@ function TransferirModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1.5 text-xs text-white/60 hover:text-white transition-colors"
+            className="px-3 py-1.5 text-xs text-foreground/60 hover:text-foreground transition-colors"
           >
             Cancelar
           </button>
@@ -162,7 +162,7 @@ function TransferirModal({
             type="button"
             onClick={handleSubmit}
             disabled={!nivelId || transferir.isPending}
-            className="px-4 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-1.5 text-xs font-medium text-foreground bg-primary-600 hover:bg-primary-700 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {transferir.isPending ? "Transferindo..." : "Transferir"}
           </button>
@@ -217,8 +217,8 @@ export default function UnidadesPage() {
         <div className="flex items-center gap-3">
           <Package className="h-5 w-5 text-primary-500" />
           <div>
-            <h1 className="text-lg font-semibold text-white">Unidades Fisicas</h1>
-            <p className="text-xs text-white/40 mt-0.5">
+            <h1 className="text-lg font-semibold text-foreground">Unidades Fisicas</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
               {unidades.length} unidade{unidades.length !== 1 ? "s" : ""}
             </p>
           </div>
@@ -227,7 +227,7 @@ export default function UnidadesPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary-500"
+          className="text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary-500"
         >
           <option value="">Todos os status</option>
           {Object.entries(STATUS_LABELS).map(([k, v]) => (
@@ -245,41 +245,41 @@ export default function UnidadesPage() {
 
       {/* Table */}
       {isLoading ? (
-        <div className="text-white/40 text-sm">Carregando...</div>
+        <div className="text-muted-foreground text-sm">Carregando...</div>
       ) : unidades.length === 0 ? (
-        <div className="overflow-hidden rounded-md border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
+        <div className="overflow-hidden rounded-md border border-border bg-muted/50 p-8 text-center text-muted-foreground text-sm">
           Nenhuma unidade encontrada.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+        <div className="overflow-hidden rounded-md border border-border bg-muted/50">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/[0.03]">
-                <th className="px-4 py-3 text-left label-mono text-white/40">BARCODE</th>
-                <th className="px-4 py-3 text-left label-mono text-white/40">PECA</th>
-                <th className="px-4 py-3 text-left label-mono text-white/40">PRODUTO</th>
-                <th className="px-4 py-3 text-left label-mono text-white/40">POSICAO</th>
-                <th className="px-4 py-3 text-left label-mono text-white/40">STATUS</th>
-                <th className="px-4 py-3 text-left label-mono text-white/40">DATA</th>
-                <th className="px-4 py-3 text-right label-mono text-white/40">ACOES</th>
+              <tr className="border-b border-border bg-muted/30">
+                <th className="px-4 py-3 text-left label-mono text-muted-foreground">BARCODE</th>
+                <th className="px-4 py-3 text-left label-mono text-muted-foreground">PECA</th>
+                <th className="px-4 py-3 text-left label-mono text-muted-foreground">PRODUTO</th>
+                <th className="px-4 py-3 text-left label-mono text-muted-foreground">POSICAO</th>
+                <th className="px-4 py-3 text-left label-mono text-muted-foreground">STATUS</th>
+                <th className="px-4 py-3 text-left label-mono text-muted-foreground">DATA</th>
+                <th className="px-4 py-3 text-right label-mono text-muted-foreground">ACOES</th>
               </tr>
             </thead>
             <tbody>
               {unidades.map((u) => (
                 <tr
                   key={u.id}
-                  className="border-b border-white/5 hover:bg-white/[0.03] transition-colors"
+                  className="border-b border-white/5 hover:bg-muted/30 transition-colors"
                 >
-                  <td className="px-4 py-3 font-mono text-xs text-white/60">
+                  <td className="px-4 py-3 font-mono text-xs text-foreground/60">
                     {u.codigo_barras}
                   </td>
-                  <td className="px-4 py-3 text-white text-sm">
+                  <td className="px-4 py-3 text-foreground text-sm">
                     {u.peca_nome}
                   </td>
-                  <td className="px-4 py-3 text-white/60 text-sm">
+                  <td className="px-4 py-3 text-foreground/60 text-sm">
                     {u.produto_peca || "\u2014"}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-white/60">
+                  <td className="px-4 py-3 font-mono text-xs text-foreground/60">
                     {u.nivel || u.localizacao || "\u2014"}
                   </td>
                   <td className="px-4 py-3">
@@ -289,7 +289,7 @@ export default function UnidadesPage() {
                       {STATUS_LABELS[u.status as UnidadeFisicaStatus]}
                     </span>
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-white/40">
+                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                     {new Date(u.created_at).toLocaleDateString("pt-BR")}
                   </td>
                   <td className="px-4 py-3">
@@ -299,7 +299,7 @@ export default function UnidadesPage() {
                           type="button"
                           onClick={() => setReservarUnidade(u)}
                           title="Reservar"
-                          className="p-1.5 rounded hover:bg-white/[0.06] text-success-400 transition-colors"
+                          className="p-1.5 rounded hover:bg-muted/50 text-success-400 transition-colors"
                         >
                           <ShieldCheck className="h-3.5 w-3.5" />
                         </button>
@@ -308,7 +308,7 @@ export default function UnidadesPage() {
                         type="button"
                         onClick={() => setTransferirUnidade(u)}
                         title="Transferir"
-                        className="p-1.5 rounded hover:bg-white/[0.06] text-white/40 hover:text-white transition-colors"
+                        className="p-1.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
                       >
                         <ArrowRightLeft className="h-3.5 w-3.5" />
                       </button>
@@ -316,7 +316,7 @@ export default function UnidadesPage() {
                         type="button"
                         onClick={() => handlePrintLabel(u)}
                         title="Imprimir Etiqueta"
-                        className="p-1.5 rounded hover:bg-white/[0.06] text-white/40 hover:text-white transition-colors"
+                        className="p-1.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
                       >
                         <Printer className="h-3.5 w-3.5" />
                       </button>
@@ -332,7 +332,7 @@ export default function UnidadesPage() {
       {/* Pagination info */}
       {!isLoading && unidades.length > 0 && (
         <div className="flex justify-end">
-          <p className="text-xs text-white/30 font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             {unidades.length} registro{unidades.length !== 1 ? "s" : ""}
           </p>
         </div>

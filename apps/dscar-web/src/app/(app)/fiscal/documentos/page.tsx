@@ -44,8 +44,8 @@ const STATUS_CONFIG: Record<
   cancelled: {
     label: "Cancelada",
     icon: XCircle,
-    color: "text-white/30",
-    bg: "bg-white/5",
+    color: "text-muted-foreground",
+    bg: "bg-muted/50",
   },
 }
 
@@ -82,24 +82,24 @@ function FiscalDocRow({
   })
 
   return (
-    <tr className="border-b border-white/[0.06] hover:bg-white/[0.03] transition-colors">
+    <tr className="border-b border-border hover:bg-muted/30 transition-colors">
       {/* Tipo */}
-      <td className="py-3 px-4 text-xs font-mono text-white/70">
+      <td className="py-3 px-4 text-xs font-mono text-foreground/70">
         {DOC_TYPE_LABELS[doc.document_type] ?? doc.document_type.toUpperCase()}
       </td>
 
       {/* Ref */}
-      <td className="py-3 px-4 text-xs font-mono text-white/50 max-w-[180px] truncate">
+      <td className="py-3 px-4 text-xs font-mono text-muted-foreground max-w-[180px] truncate">
         {doc.ref ?? "—"}
       </td>
 
       {/* Número */}
-      <td className="py-3 px-4 text-xs text-white/70">
+      <td className="py-3 px-4 text-xs text-foreground/70">
         {doc.numero ?? "—"}
       </td>
 
       {/* Valor */}
-      <td className="py-3 px-4 text-xs text-white/80 text-right tabular-nums">
+      <td className="py-3 px-4 text-xs text-foreground/80 text-right tabular-nums">
         {valorFmt}
       </td>
 
@@ -118,12 +118,12 @@ function FiscalDocRow({
       </td>
 
       {/* Ambiente */}
-      <td className="py-3 px-4 text-xs text-white/40">
+      <td className="py-3 px-4 text-xs text-muted-foreground">
         {doc.environment === "homologacao" ? "Homolog." : "Produção"}
       </td>
 
       {/* Data */}
-      <td className="py-3 px-4 text-xs text-white/40">{dateFmt}</td>
+      <td className="py-3 px-4 text-xs text-muted-foreground">{dateFmt}</td>
 
       {/* Ações */}
       <td className="py-3 px-4 text-right">
@@ -143,7 +143,7 @@ function FiscalDocRow({
               href={`/api/proxy${doc.xml_url.replace("/api/v1/", "/")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-white/40 hover:text-white/60"
+              className="text-xs text-muted-foreground hover:text-foreground/60"
             >
               XML
             </a>
@@ -204,15 +204,15 @@ export default function FiscalDocumentosPage() {
         <div className="flex items-center gap-3">
           <FileText className="h-6 w-6 text-primary-600" />
           <div>
-            <h1 className="text-xl font-bold text-white">Documentos Fiscais</h1>
-            <p className="text-xs text-white/50 mt-0.5">NFS-e, NF-e e NFC-e emitidas pela empresa</p>
+            <h1 className="text-xl font-bold text-foreground">Documentos Fiscais</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">NFS-e, NF-e e NFC-e emitidas pela empresa</p>
           </div>
         </div>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => refetch()}
-          className="text-white/50 hover:text-white"
+          className="text-muted-foreground hover:text-foreground"
         >
           <RefreshCw className="h-4 w-4 mr-1.5" />
           Atualizar
@@ -228,9 +228,9 @@ export default function FiscalDocumentosPage() {
         ].map((kpi) => (
           <div
             key={kpi.label}
-            className="rounded-xl bg-white/[0.03] border border-white/[0.07] px-4 py-3"
+            className="rounded-xl bg-muted/30 border border-white/[0.07] px-4 py-3"
           >
-            <p className="text-xs text-white/40">{kpi.label}</p>
+            <p className="text-xs text-muted-foreground">{kpi.label}</p>
             <p className={cn("text-2xl font-bold mt-0.5", kpi.color)}>{kpi.value}</p>
           </div>
         ))}
@@ -241,7 +241,7 @@ export default function FiscalDocumentosPage() {
         <select
           value={docType}
           onChange={(e) => setDocType(e.target.value)}
-          className="rounded-md border border-white/15 bg-white/[0.05] px-3 py-1.5 text-sm text-white"
+          className="rounded-md border border-border bg-muted/50 px-3 py-1.5 text-sm text-foreground"
         >
           <option value="">Todos os tipos</option>
           <option value="nfse">NFS-e</option>
@@ -251,7 +251,7 @@ export default function FiscalDocumentosPage() {
         <select
           value={docStatus}
           onChange={(e) => setDocStatus(e.target.value)}
-          className="rounded-md border border-white/15 bg-white/[0.05] px-3 py-1.5 text-sm text-white"
+          className="rounded-md border border-border bg-muted/50 px-3 py-1.5 text-sm text-foreground"
         >
           <option value="">Todos os status</option>
           <option value="pending">Aguardando</option>
@@ -262,16 +262,16 @@ export default function FiscalDocumentosPage() {
       </div>
 
       {/* Tabela */}
-      <div className="rounded-xl bg-white/[0.03] border border-white/[0.07] overflow-hidden">
+      <div className="rounded-xl bg-muted/30 border border-white/[0.07] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-white/[0.06]">
+            <tr className="border-b border-border">
               {["Tipo", "Ref", "Número", "Valor", "Status", "Ambiente", "Emissão", ""].map(
                 (h) => (
                   <th
                     key={h}
                     className={cn(
-                      "py-2.5 px-4 text-xs font-semibold text-white/30 text-left",
+                      "py-2.5 px-4 text-xs font-semibold text-muted-foreground text-left",
                       h === "Valor" && "text-right"
                     )}
                   >
@@ -284,13 +284,13 @@ export default function FiscalDocumentosPage() {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={8} className="py-12 text-center text-xs text-white/30">
+                <td colSpan={8} className="py-12 text-center text-xs text-muted-foreground">
                   Carregando...
                 </td>
               </tr>
             ) : docs.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-12 text-center text-xs text-white/30">
+                <td colSpan={8} className="py-12 text-center text-xs text-muted-foreground">
                   Nenhum documento fiscal encontrado.
                 </td>
               </tr>
@@ -309,7 +309,7 @@ export default function FiscalDocumentosPage() {
       </div>
 
       {docs.length > 0 && (
-        <p className="text-xs text-white/30 text-right">{docs.length} documento(s)</p>
+        <p className="text-xs text-muted-foreground text-right">{docs.length} documento(s)</p>
       )}
     </div>
   )

@@ -132,7 +132,7 @@ export default function ArmazemDetailPage({
 
   if (isLoading || !armazem) {
     return (
-      <div className="p-6 text-white/40 text-sm">Carregando armazém...</div>
+      <div className="p-6 text-muted-foreground text-sm">Carregando armazém...</div>
     )
   }
 
@@ -141,22 +141,22 @@ export default function ArmazemDetailPage({
   return (
     <div className="p-6 space-y-6">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-xs text-white/40">
+      <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Link
           href={"/estoque" as Route}
-          className="hover:text-white/60 transition-colors"
+          className="hover:text-foreground/60 transition-colors"
         >
           Estoque
         </Link>
         <ChevronRight className="h-3 w-3" />
         <Link
           href={"/estoque/armazens" as Route}
-          className="hover:text-white/60 transition-colors"
+          className="hover:text-foreground/60 transition-colors"
         >
           Armazéns
         </Link>
         <ChevronRight className="h-3 w-3" />
-        <span className="text-white/60">{armazem.nome}</span>
+        <span className="text-foreground/60">{armazem.nome}</span>
       </nav>
 
       {/* Header */}
@@ -165,7 +165,7 @@ export default function ArmazemDetailPage({
           <Warehouse className="h-5 w-5 text-primary-500" />
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-semibold text-white">
+              <h1 className="text-lg font-semibold text-foreground">
                 {armazem.nome}
               </h1>
               <span
@@ -176,7 +176,7 @@ export default function ArmazemDetailPage({
             </div>
             <div className="flex items-center gap-3 mt-1">
               <span className="label-mono">{armazem.codigo}</span>
-              <span className="text-xs text-white/40">
+              <span className="text-xs text-muted-foreground">
                 {armazem.total_ruas} rua{armazem.total_ruas !== 1 ? "s" : ""}
               </span>
             </div>
@@ -197,7 +197,7 @@ export default function ArmazemDetailPage({
               className={`flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
                 activeForm === form
                   ? "border-primary-500 text-primary-400 bg-primary-500/10"
-                  : "border-white/10 text-white/60 hover:text-white hover:border-white/20"
+                  : "border-border text-foreground/60 hover:text-foreground hover:border-border"
               }`}
             >
               <Plus className="h-3 w-3" />
@@ -213,29 +213,29 @@ export default function ArmazemDetailPage({
 
       {/* Inline forms */}
       {activeForm === "rua" && (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
+        <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
           <div className="section-divider">NOVA RUA</div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="label-mono text-white/50 mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-0.5 block">
                 CÓDIGO
               </label>
               <input
                 value={ruaCodigo}
                 onChange={(e) => setRuaCodigo(e.target.value)}
                 placeholder="R01"
-                className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
             <div>
-              <label className="label-mono text-white/50 mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-0.5 block">
                 DESCRIÇÃO
               </label>
               <input
                 value={ruaDescricao}
                 onChange={(e) => setRuaDescricao(e.target.value)}
                 placeholder="Rua de Funilaria"
-                className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
           </div>
@@ -246,7 +246,7 @@ export default function ArmazemDetailPage({
                 resetForms()
                 setActiveForm(null)
               }}
-              className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-white/60 hover:text-white transition-colors"
+              className="rounded-md border border-border px-3 py-1.5 text-sm text-foreground/60 hover:text-foreground transition-colors"
             >
               Cancelar
             </button>
@@ -254,7 +254,7 @@ export default function ArmazemDetailPage({
               type="button"
               onClick={handleCreateRua}
               disabled={ruaCreate.isPending}
-              className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
             >
               {ruaCreate.isPending ? "Criando..." : "Criar Rua"}
             </button>
@@ -263,17 +263,17 @@ export default function ArmazemDetailPage({
       )}
 
       {activeForm === "prateleira" && (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
+        <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
           <div className="section-divider">NOVA PRATELEIRA</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="label-mono text-white/50 mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-0.5 block">
                 RUA
               </label>
               <select
                 value={pratRuaId}
                 onChange={(e) => setPratRuaId(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
               >
                 <option value="">Selecione...</option>
                 {ruas.map((r) => (
@@ -285,18 +285,18 @@ export default function ArmazemDetailPage({
               </select>
             </div>
             <div>
-              <label className="label-mono text-white/50 mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-0.5 block">
                 CÓDIGO
               </label>
               <input
                 value={pratCodigo}
                 onChange={(e) => setPratCodigo(e.target.value)}
                 placeholder="P01"
-                className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
             <div>
-              <label className="label-mono text-white/50 mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-0.5 block">
                 CAPACIDADE (KG)
               </label>
               <input
@@ -304,7 +304,7 @@ export default function ArmazemDetailPage({
                 onChange={(e) => setPratCapacidade(e.target.value)}
                 placeholder="200"
                 type="number"
-                className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
           </div>
@@ -315,7 +315,7 @@ export default function ArmazemDetailPage({
                 resetForms()
                 setActiveForm(null)
               }}
-              className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-white/60 hover:text-white transition-colors"
+              className="rounded-md border border-border px-3 py-1.5 text-sm text-foreground/60 hover:text-foreground transition-colors"
             >
               Cancelar
             </button>
@@ -323,7 +323,7 @@ export default function ArmazemDetailPage({
               type="button"
               onClick={handleCreatePrateleira}
               disabled={prateleiraCreate.isPending}
-              className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
             >
               {prateleiraCreate.isPending ? "Criando..." : "Criar Prateleira"}
             </button>
@@ -332,11 +332,11 @@ export default function ArmazemDetailPage({
       )}
 
       {activeForm === "nivel" && (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
+        <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
           <div className="section-divider">NOVO NÍVEL</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="label-mono text-white/50 mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-0.5 block">
                 RUA
               </label>
               <select
@@ -345,7 +345,7 @@ export default function ArmazemDetailPage({
                   setNivelRuaId(e.target.value)
                   setNivelPratId("")
                 }}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
               >
                 <option value="">Selecione a rua...</option>
                 {ruas.map((r) => (
@@ -357,14 +357,14 @@ export default function ArmazemDetailPage({
               </select>
             </div>
             <div>
-              <label className="label-mono text-white/50 mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-0.5 block">
                 PRATELEIRA
               </label>
               <select
                 value={nivelPratId}
                 onChange={(e) => setNivelPratId(e.target.value)}
                 disabled={!nivelRuaId}
-                className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-40"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-40"
               >
                 <option value="">
                   {nivelRuaId ? "Selecione..." : "Escolha a rua primeiro"}
@@ -378,14 +378,14 @@ export default function ArmazemDetailPage({
               </select>
             </div>
             <div>
-              <label className="label-mono text-white/50 mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-0.5 block">
                 CÓDIGO
               </label>
               <input
                 value={nivelCodigo}
                 onChange={(e) => setNivelCodigo(e.target.value)}
                 placeholder="N1"
-                className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
               />
             </div>
           </div>
@@ -396,7 +396,7 @@ export default function ArmazemDetailPage({
                 resetForms()
                 setActiveForm(null)
               }}
-              className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-white/60 hover:text-white transition-colors"
+              className="rounded-md border border-border px-3 py-1.5 text-sm text-foreground/60 hover:text-foreground transition-colors"
             >
               Cancelar
             </button>
@@ -404,7 +404,7 @@ export default function ArmazemDetailPage({
               type="button"
               onClick={handleCreateNivel}
               disabled={nivelCreate.isPending}
-              className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
             >
               {nivelCreate.isPending ? "Criando..." : "Criar Nível"}
             </button>

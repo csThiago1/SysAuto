@@ -17,7 +17,7 @@ const RECONCILIACAO_COLORS: Record<StatusReconciliacao, string> = {
   pendente: "text-yellow-400 bg-yellow-400/10",
   peca: "text-success-400 bg-success-400/10",
   insumo: "text-blue-400 bg-blue-400/10",
-  ignorado: "text-white/40 bg-white/5",
+  ignorado: "text-muted-foreground bg-muted/50",
 }
 
 function ReconciliacaoSelect({
@@ -47,12 +47,12 @@ function ReconciliacaoSelect({
       value={item.status_reconciliacao}
       onChange={(e) => handleReconciliar(e.target.value)}
       disabled={disabled || reconciliarMutation.isPending}
-      className={`text-xs bg-white/5 border border-white/10 text-white rounded px-2 py-1 disabled:opacity-50 ${RECONCILIACAO_COLORS[item.status_reconciliacao]}`}
+      className={`text-xs bg-muted/50 border border-border text-foreground rounded px-2 py-1 disabled:opacity-50 ${RECONCILIACAO_COLORS[item.status_reconciliacao]}`}
     >
-      <option value="pendente" className="bg-[#1c1c1e] text-white">Pendente</option>
-      <option value="peca" className="bg-[#1c1c1e] text-white">Peça</option>
-      <option value="insumo" className="bg-[#1c1c1e] text-white">Insumo</option>
-      <option value="ignorado" className="bg-[#1c1c1e] text-white">Ignorado</option>
+      <option value="pendente" className="bg-card text-foreground">Pendente</option>
+      <option value="peca" className="bg-card text-foreground">Peça</option>
+      <option value="insumo" className="bg-card text-foreground">Insumo</option>
+      <option value="ignorado" className="bg-card text-foreground">Ignorado</option>
     </select>
   )
 }
@@ -76,11 +76,11 @@ export default function NFeEntradaDetailPage({ params }: { params: { id: string 
   }
 
   if (isLoading) {
-    return <div className="p-6 text-white/40 text-sm">Carregando...</div>
+    return <div className="p-6 text-muted-foreground text-sm">Carregando...</div>
   }
 
   if (!nfe) {
-    return <div className="p-6 text-white/40 text-sm">NF-e não encontrada.</div>
+    return <div className="p-6 text-muted-foreground text-sm">NF-e não encontrada.</div>
   }
 
   return (
@@ -88,15 +88,15 @@ export default function NFeEntradaDetailPage({ params }: { params: { id: string 
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/estoque/nfe-recebida" className="text-white/40 hover:text-white transition-colors">
+          <Link href="/estoque/nfe-recebida" className="text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-lg font-semibold text-white">
+            <h1 className="text-lg font-semibold text-foreground">
               NF-e {nfe.numero || nfe.id.slice(0, 8)}
               {nfe.serie ? ` / ${nfe.serie}` : ""}
             </h1>
-            <p className="text-xs text-white/40 mt-0.5">{nfe.emitente_nome}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{nfe.emitente_nome}</p>
           </div>
         </div>
 
@@ -104,7 +104,7 @@ export default function NFeEntradaDetailPage({ params }: { params: { id: string 
           <button
             onClick={handleGerarEstoque}
             disabled={gerarEstoqueMutation.isPending || pendentes > 0}
-            className="flex items-center gap-2 text-sm bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md transition-colors"
+            className="flex items-center gap-2 text-sm bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-foreground px-4 py-2 rounded-md transition-colors"
           >
             <Package className="h-4 w-4" />
             {gerarEstoqueMutation.isPending ? "Gerando..." : "Gerar Estoque"}
@@ -127,9 +127,9 @@ export default function NFeEntradaDetailPage({ params }: { params: { id: string 
           { label: "CNPJ Emitente", value: nfe.emitente_cnpj || "—" },
           { label: "Total de Itens", value: String(nfe.itens.length) },
         ].map(({ label, value }) => (
-          <div key={label} className="rounded-lg border border-white/10 bg-white/5 p-4">
-            <p className="text-xs text-white/40 mb-1">{label}</p>
-            <p className="text-sm font-semibold text-white">{value}</p>
+          <div key={label} className="rounded-lg border border-border bg-muted/50 p-4">
+            <p className="text-xs text-muted-foreground mb-1">{label}</p>
+            <p className="text-sm font-semibold text-foreground">{value}</p>
           </div>
         ))}
       </div>
@@ -143,11 +143,11 @@ export default function NFeEntradaDetailPage({ params }: { params: { id: string 
 
       {/* Itens */}
       <div className="space-y-2">
-        <h2 className="text-sm font-semibold text-white/70">Itens da NF-e</h2>
-        <div className="rounded-lg border border-white/10 overflow-hidden">
+        <h2 className="text-sm font-semibold text-foreground/70">Itens da NF-e</h2>
+        <div className="rounded-lg border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/5 text-white/50 text-xs">
+              <tr className="border-b border-border bg-muted/50 text-muted-foreground text-xs">
                 <th className="px-4 py-3 text-left w-8">#</th>
                 <th className="px-4 py-3 text-left">Descrição</th>
                 <th className="px-4 py-3 text-right">Qtd</th>
@@ -160,18 +160,18 @@ export default function NFeEntradaDetailPage({ params }: { params: { id: string 
             <tbody>
               {nfe.itens.map((item) => (
                 <tr key={item.id} className="border-b border-white/5">
-                  <td className="px-4 py-3 text-white/40 text-xs">{item.numero_item}</td>
+                  <td className="px-4 py-3 text-muted-foreground text-xs">{item.numero_item}</td>
                   <td className="px-4 py-3">
-                    <p className="text-white text-sm">{item.descricao_original}</p>
-                    {item.ncm && <p className="text-white/40 text-xs mt-0.5">NCM: {item.ncm}</p>}
+                    <p className="text-foreground text-sm">{item.descricao_original}</p>
+                    {item.ncm && <p className="text-muted-foreground text-xs mt-0.5">NCM: {item.ncm}</p>}
                   </td>
-                  <td className="px-4 py-3 text-right text-white/80">
+                  <td className="px-4 py-3 text-right text-foreground/80">
                     {item.quantidade} {item.unidade_compra}
                   </td>
-                  <td className="px-4 py-3 text-right text-white/80">
+                  <td className="px-4 py-3 text-right text-foreground/80">
                     R$ {parseFloat(item.valor_unitario_com_tributos).toFixed(4)}
                   </td>
-                  <td className="px-4 py-3 text-right text-white/80">
+                  <td className="px-4 py-3 text-right text-foreground/80">
                     {parseFloat(item.valor_total_com_tributos).toLocaleString("pt-BR", {
                       style: "currency",
                       currency: "BRL",
@@ -184,7 +184,7 @@ export default function NFeEntradaDetailPage({ params }: { params: { id: string 
                       disabled={nfe.estoque_gerado}
                     />
                   </td>
-                  <td className="px-4 py-3 text-white/60 text-xs">
+                  <td className="px-4 py-3 text-foreground/60 text-xs">
                     {item.peca_nome && (
                       <span className="flex items-center gap-1">
                         <Package className="h-3 w-3" /> {item.peca_nome}
@@ -205,7 +205,7 @@ export default function NFeEntradaDetailPage({ params }: { params: { id: string 
       </div>
 
       {nfe.chave_acesso && (
-        <p className="text-xs text-white/30 font-mono break-all">
+        <p className="text-xs text-muted-foreground font-mono break-all">
           Chave: {nfe.chave_acesso}
         </p>
       )}

@@ -15,9 +15,9 @@ export default function BudgetDetailPage() {
   if (isLoading) {
     return (
       <div className="p-6 space-y-4">
-        <Skeleton className="h-14 w-full rounded-xl bg-white/5" />
-        <Skeleton className="h-8 w-64 rounded-lg bg-white/5" />
-        <Skeleton className="h-48 w-full rounded-xl bg-white/5" />
+        <Skeleton className="h-14 w-full rounded-xl bg-muted/50" />
+        <Skeleton className="h-8 w-64 rounded-lg bg-muted/50" />
+        <Skeleton className="h-48 w-full rounded-xl bg-muted/50" />
       </div>
     )
   }
@@ -37,16 +37,16 @@ export default function BudgetDetailPage() {
       <BudgetHeader budget={budget} />
 
       <Tabs defaultValue="itens">
-        <TabsList className="bg-white/5 border border-white/10">
+        <TabsList className="bg-muted/50 border border-border">
           <TabsTrigger
             value="itens"
-            className="data-[state=active]:bg-white/10 text-white/60 data-[state=active]:text-white"
+            className="data-[state=active]:bg-muted text-foreground/60 data-[state=active]:text-foreground"
           >
             Itens
           </TabsTrigger>
           <TabsTrigger
             value="versoes"
-            className="data-[state=active]:bg-white/10 text-white/60 data-[state=active]:text-white"
+            className="data-[state=active]:bg-muted text-foreground/60 data-[state=active]:text-foreground"
           >
             Versões
           </TabsTrigger>
@@ -56,7 +56,7 @@ export default function BudgetDetailPage() {
           {version ? (
             <ItemsTable budgetId={budget.id} version={version} />
           ) : (
-            <p className="text-white/30 text-sm">Nenhuma versão ativa.</p>
+            <p className="text-muted-foreground text-sm">Nenhuma versão ativa.</p>
           )}
         </TabsContent>
 

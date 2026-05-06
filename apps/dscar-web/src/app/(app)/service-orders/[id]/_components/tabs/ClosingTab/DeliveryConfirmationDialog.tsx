@@ -48,7 +48,7 @@ export function DeliveryConfirmationDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white/5 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="bg-muted/50 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-2.5 bg-success-500/10 border-b border-success-500/20 px-5 py-4">
           <Truck className="h-5 w-5 text-success-400 shrink-0" />
@@ -142,7 +142,7 @@ export function DeliveryConfirmationDialog({
           <Button
             onClick={handleConfirm}
             disabled={!canDeliver || deliverMutation.isPending}
-            className="bg-success-600 hover:bg-success-700 text-white"
+            className="bg-success-600 hover:bg-success-700 text-foreground"
           >
             {deliverMutation.isPending ? (
               <>

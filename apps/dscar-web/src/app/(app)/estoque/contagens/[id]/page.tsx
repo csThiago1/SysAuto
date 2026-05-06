@@ -32,7 +32,7 @@ const STATUS_BADGE: Record<StatusContagem, { label: string; className: string }>
   },
   cancelada: {
     label: "CANCELADA",
-    className: "bg-white/5 text-white/40 border border-white/10",
+    className: "bg-muted/50 text-muted-foreground border border-border",
   },
 }
 
@@ -61,11 +61,11 @@ function formatDate(iso: string | null): string {
 }
 
 function divergenceColor(value: string | null): string {
-  if (!value) return "text-white/40"
+  if (!value) return "text-muted-foreground"
   const n = parseFloat(value)
   if (n > 0) return "text-success-400"
   if (n < 0) return "text-error-400"
-  return "text-white/40"
+  return "text-muted-foreground"
 }
 
 function divergenceLabel(value: string | null): string {
@@ -110,14 +110,14 @@ function ItemRow({
   }
 
   return (
-    <tr className="border-b border-white/5 hover:bg-white/[0.03] transition-colors">
-      <td className="px-4 py-3 font-mono text-xs text-white/60">
+    <tr className="border-b border-white/5 hover:bg-muted/30 transition-colors">
+      <td className="px-4 py-3 font-mono text-xs text-foreground/60">
         {item.nivel_endereco}
       </td>
-      <td className="px-4 py-3 font-mono text-xs text-white/80">
+      <td className="px-4 py-3 font-mono text-xs text-foreground/80">
         {item.unidade_barcode || item.lote_barcode || "—"}
       </td>
-      <td className="px-4 py-3 font-mono text-xs text-white/80 text-right">
+      <td className="px-4 py-3 font-mono text-xs text-foreground/80 text-right">
         {item.quantidade_sistema}
       </td>
       <td className="px-4 py-3">
@@ -134,11 +134,11 @@ function ItemRow({
             type="number"
             min="0"
             step="any"
-            className="w-24 bg-white/5 border border-white/10 text-white rounded-md px-2 py-1 text-xs font-mono text-right placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="w-24 bg-muted/50 border border-border text-foreground rounded-md px-2 py-1 text-xs font-mono text-right placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
             placeholder="0"
           />
         ) : (
-          <span className="font-mono text-xs text-white/80 text-right block">
+          <span className="font-mono text-xs text-foreground/80 text-right block">
             {item.quantidade_contada ?? "—"}
           </span>
         )}
@@ -154,16 +154,16 @@ function ItemRow({
             onBlur={() => {
               if (dirty) handleSave()
             }}
-            className="w-full bg-white/5 border border-white/10 text-white rounded-md px-2 py-1 text-xs placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-2 py-1 text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
             placeholder="Observacao..."
           />
         ) : (
-          <span className="text-xs text-white/60">
+          <span className="text-xs text-foreground/60">
             {item.observacao || "—"}
           </span>
         )}
       </td>
-      <td className="px-4 py-3 text-xs text-white/60">
+      <td className="px-4 py-3 text-xs text-foreground/60">
         {item.contado_por_nome || "—"}
       </td>
       <td className="px-4 py-3">
@@ -172,7 +172,7 @@ function ItemRow({
             type="button"
             onClick={handleSave}
             disabled={registrar.isPending}
-            className="rounded-md bg-primary-600 px-2.5 py-1 text-[10px] font-medium text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
+            className="rounded-md bg-primary-600 px-2.5 py-1 text-[10px] font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
           >
             {registrar.isPending ? "..." : "Salvar"}
           </button>
@@ -218,7 +218,7 @@ export default function ContagemDetailPage({
 
   if (isLoading || !contagem) {
     return (
-      <div className="p-6 text-white/40 text-sm">Carregando contagem...</div>
+      <div className="p-6 text-muted-foreground text-sm">Carregando contagem...</div>
     )
   }
 
@@ -230,22 +230,22 @@ export default function ContagemDetailPage({
   return (
     <div className="p-6 space-y-6">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-xs text-white/40">
+      <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Link
           href={"/estoque" as Route}
-          className="hover:text-white/60 transition-colors"
+          className="hover:text-foreground/60 transition-colors"
         >
           Estoque
         </Link>
         <ChevronRight className="h-3 w-3" />
         <Link
           href={"/estoque/contagens" as Route}
-          className="hover:text-white/60 transition-colors"
+          className="hover:text-foreground/60 transition-colors"
         >
           Contagens
         </Link>
         <ChevronRight className="h-3 w-3" />
-        <span className="text-white/60">#{id.slice(0, 8)}</span>
+        <span className="text-foreground/60">#{id.slice(0, 8)}</span>
       </nav>
 
       {/* Header */}
@@ -254,7 +254,7 @@ export default function ContagemDetailPage({
           <ClipboardList className="h-5 w-5 text-primary-500" />
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-semibold text-white">
+              <h1 className="text-lg font-semibold text-foreground">
                 Contagem #{id.slice(0, 8)}
               </h1>
               <span
@@ -268,7 +268,7 @@ export default function ContagemDetailPage({
                 {statusBadge.label}
               </span>
             </div>
-            <div className="flex items-center gap-4 mt-1 text-xs text-white/40">
+            <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
               <span>Aberta em {formatDate(contagem.data_abertura)}</span>
               {contagem.data_fechamento && (
                 <span>Fechada em {formatDate(contagem.data_fechamento)}</span>
@@ -281,23 +281,23 @@ export default function ContagemDetailPage({
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-          <p className="label-mono text-white/50 mb-1">TOTAL ITENS</p>
-          <p className="text-2xl font-mono font-semibold text-white">
+        <div className="rounded-lg border border-border bg-muted/50 p-4">
+          <p className="label-mono text-muted-foreground mb-1">TOTAL ITENS</p>
+          <p className="text-2xl font-mono font-semibold text-foreground">
             {contagem.total_itens}
           </p>
         </div>
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-          <p className="label-mono text-white/50 mb-1">CONTADOS</p>
-          <p className="text-2xl font-mono font-semibold text-white">
+        <div className="rounded-lg border border-border bg-muted/50 p-4">
+          <p className="label-mono text-muted-foreground mb-1">CONTADOS</p>
+          <p className="text-2xl font-mono font-semibold text-foreground">
             {contagem.total_contados}
           </p>
         </div>
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-          <p className="label-mono text-white/50 mb-1">DIVERGÊNCIAS</p>
+        <div className="rounded-lg border border-border bg-muted/50 p-4">
+          <p className="label-mono text-muted-foreground mb-1">DIVERGÊNCIAS</p>
           <p
             className={`text-2xl font-mono font-semibold ${
-              contagem.total_divergencias > 0 ? "text-error-400" : "text-white"
+              contagem.total_divergencias > 0 ? "text-error-400" : "text-foreground"
             }`}
           >
             {contagem.total_divergencias}
@@ -309,36 +309,36 @@ export default function ContagemDetailPage({
       <div className="section-divider">ITENS</div>
 
       {contagem.itens.length === 0 ? (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
+        <div className="rounded-lg border border-border bg-muted/50 p-8 text-center text-muted-foreground text-sm">
           Nenhum item nesta contagem.
         </div>
       ) : (
-        <div className="overflow-x-auto overflow-hidden rounded-md border border-white/10 bg-white/5">
+        <div className="overflow-x-auto overflow-hidden rounded-md border border-border bg-muted/50">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-white/[0.03]">
-                <th className="label-mono text-white/40 px-4 py-2.5 text-left font-normal">
+              <tr className="bg-muted/30">
+                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left font-normal">
                   POSIÇÃO
                 </th>
-                <th className="label-mono text-white/40 px-4 py-2.5 text-left font-normal">
+                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left font-normal">
                   ITEM
                 </th>
-                <th className="label-mono text-white/40 px-4 py-2.5 text-right font-normal">
+                <th className="label-mono text-muted-foreground px-4 py-2.5 text-right font-normal">
                   QTD SISTEMA
                 </th>
-                <th className="label-mono text-white/40 px-4 py-2.5 text-right font-normal">
+                <th className="label-mono text-muted-foreground px-4 py-2.5 text-right font-normal">
                   QTD CONTADA
                 </th>
-                <th className="label-mono text-white/40 px-4 py-2.5 text-right font-normal">
+                <th className="label-mono text-muted-foreground px-4 py-2.5 text-right font-normal">
                   DIVERGÊNCIA
                 </th>
-                <th className="label-mono text-white/40 px-4 py-2.5 text-left font-normal">
+                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left font-normal">
                   OBSERVAÇÃO
                 </th>
-                <th className="label-mono text-white/40 px-4 py-2.5 text-left font-normal">
+                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left font-normal">
                   CONTADO POR
                 </th>
-                <th className="label-mono text-white/40 px-4 py-2.5 text-left font-normal w-20" />
+                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left font-normal w-20" />
               </tr>
             </thead>
             <tbody>
@@ -361,7 +361,7 @@ export default function ContagemDetailPage({
           <button
             type="button"
             onClick={() => setConfirmCancelar(true)}
-            className="rounded-md border border-white/10 px-4 py-2 text-sm text-white/60 hover:text-white hover:border-white/20 transition-colors"
+            className="rounded-md border border-border px-4 py-2 text-sm text-foreground/60 hover:text-foreground hover:border-border transition-colors"
           >
             Cancelar Contagem
           </button>
@@ -370,7 +370,7 @@ export default function ContagemDetailPage({
               type="button"
               onClick={() => setConfirmFinalizar(true)}
               disabled={finalizarMut.isPending}
-              className="rounded-md bg-success-600 px-4 py-2 text-sm font-medium text-white hover:bg-success-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-success-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-success-700 disabled:opacity-50 transition-colors"
             >
               {finalizarMut.isPending ? "Finalizando..." : "Finalizar Contagem"}
             </button>

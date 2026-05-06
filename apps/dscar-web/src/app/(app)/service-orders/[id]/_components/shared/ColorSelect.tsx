@@ -32,7 +32,7 @@ export function ColorSelect({ value, onChange, disabled }: ColorSelectProps) {
     <div className="flex items-center gap-3">
       {/* Preview da cor */}
       <div
-        className="h-6 w-6 shrink-0 rounded-full border border-white/10 shadow-sm"
+        className="h-6 w-6 shrink-0 rounded-full border border-border shadow-sm"
         style={{ backgroundColor: selected?.hex_code ?? "#e5e7eb" }}
         title={selected?.name ?? "Sem cor"}
       />

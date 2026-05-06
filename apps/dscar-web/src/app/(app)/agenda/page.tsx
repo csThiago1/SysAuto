@@ -50,7 +50,7 @@ export default function AgendaPage() {
   }
 
   const Legend = () => (
-    <div className="flex items-center gap-4 text-xs text-white/50 px-1">
+    <div className="flex items-center gap-4 text-xs text-muted-foreground px-1">
       <span className="flex items-center gap-1">
         <span className="inline-block w-3 h-2 rounded bg-info-500" /> Entrada agendada
       </span>
@@ -63,11 +63,11 @@ export default function AgendaPage() {
   return (
     <div className="flex flex-col h-full gap-2 p-6 max-w-7xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold text-white">Agenda</h1>
-        <p className="text-sm text-white/50">Visualize e gerencie agendamentos de entrada e entrega das OS.</p>
+        <h1 className="text-2xl font-bold text-foreground">Agenda</h1>
+        <p className="text-sm text-muted-foreground">Visualize e gerencie agendamentos de entrada e entrega das OS.</p>
       </div>
 
-      <div className="bg-white/5 rounded-md border border-white/10 shadow-sm flex flex-col flex-1 overflow-hidden p-3">
+      <div className="bg-muted/50 rounded-md border border-border shadow-sm flex flex-col flex-1 overflow-hidden p-3">
         <CalendarHeader
           currentDate={currentDate}
           view={view}
@@ -79,7 +79,7 @@ export default function AgendaPage() {
         <Legend />
 
         {isLoading && (
-          <div className="flex-1 flex items-center justify-center text-sm text-white/40">
+          <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
             Carregando agenda...
           </div>
         )}

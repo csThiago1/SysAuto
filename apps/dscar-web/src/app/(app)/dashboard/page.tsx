@@ -70,7 +70,7 @@ export default function DashboardPage(): React.ReactElement {
             actions={
               <Link
                 href="/service-orders/new"
-                className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-foreground hover:bg-primary-700 transition-colors"
               >
                 <Plus size={16} />
                 Nova OS
@@ -93,7 +93,7 @@ export default function DashboardPage(): React.ReactElement {
             actions={
               <Link
                 href="/service-orders/new"
-                className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-foreground hover:bg-primary-700 transition-colors"
               >
                 <Plus size={16} />
                 Nova OS
@@ -117,7 +117,7 @@ export default function DashboardPage(): React.ReactElement {
           actions={
             <Link
               href="/service-orders/new"
-              className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-foreground hover:bg-primary-700 transition-colors"
             >
               <Plus size={16} />
               Nova OS
@@ -161,9 +161,9 @@ export default function DashboardPage(): React.ReactElement {
 
         <SectionDivider label="OS RECENTES" />
 
-        <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
+        <div className="rounded-md bg-muted/50 shadow-card overflow-hidden">
           <div className="flex items-center justify-between px-card-padding py-4 border-b border-white/5">
-            <h2 className="text-base font-semibold text-white">
+            <h2 className="text-base font-semibold text-foreground">
               Últimas Ordens de Serviço
             </h2>
             <Link

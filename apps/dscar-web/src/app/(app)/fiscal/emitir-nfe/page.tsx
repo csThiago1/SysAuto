@@ -80,7 +80,7 @@ function OsSearch({
   return (
     <div className="space-y-2">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
           className="pl-9"
           placeholder="Número da OS, placa ou cliente..."
@@ -88,33 +88,33 @@ function OsSearch({
           onChange={(e) => setQuery(e.target.value)}
         />
         {isFetching && (
-          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-white/30" />
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-muted-foreground" />
         )}
       </div>
 
       {query.trim().length >= 2 && results.length > 0 && (
-        <div className="rounded-lg border border-white/10 bg-[#1c1c1e] divide-y divide-white/[0.06] max-h-52 overflow-y-auto">
+        <div className="rounded-lg border border-border bg-card divide-y divide-white/[0.06] max-h-52 overflow-y-auto">
           {results.map((os) => (
             <button
               key={os.id}
               type="button"
               onClick={() => { onSelect(os); setQuery("") }}
-              className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/[0.05] transition-colors text-left"
+              className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-muted/50 transition-colors text-left"
             >
               <div>
-                <span className="text-sm font-medium text-white">OS #{os.number}</span>
-                <span className="ml-2 text-xs text-white/50">
+                <span className="text-sm font-medium text-foreground">OS #{os.number}</span>
+                <span className="ml-2 text-xs text-muted-foreground">
                   {os.plate} · {os.customer_name}
                 </span>
               </div>
-              <span className="text-xs text-white/30">{os.status}</span>
+              <span className="text-xs text-muted-foreground">{os.status}</span>
             </button>
           ))}
         </div>
       )}
 
       {query.trim().length >= 2 && !isFetching && results.length === 0 && (
-        <p className="text-xs text-white/40 px-1">Nenhuma OS encontrada.</p>
+        <p className="text-xs text-muted-foreground px-1">Nenhuma OS encontrada.</p>
       )}
     </div>
   )
@@ -141,14 +141,14 @@ function PersonSearchField({
     return (
       <div className="flex items-center justify-between rounded-lg bg-primary-600/10 border border-primary-600/30 px-4 py-3">
         <div>
-          <p className="text-sm font-semibold text-white">{selectedPerson.full_name}</p>
-          <p className="text-xs text-white/50 mt-0.5">
+          <p className="text-sm font-semibold text-foreground">{selectedPerson.full_name}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
             {selectedPerson.person_kind === "PJ" ? "Pessoa Jurídica" : "Pessoa Física"}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Check className="h-4 w-4 text-success-400" />
-          <button type="button" onClick={onClear} className="p-1 rounded text-white/30 hover:text-white/60">
+          <button type="button" onClick={onClear} className="p-1 rounded text-muted-foreground hover:text-foreground/60">
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -159,7 +159,7 @@ function PersonSearchField({
   return (
     <div className="space-y-2">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
           className="pl-9"
           placeholder="Buscar por nome, CPF ou CNPJ..."
@@ -167,22 +167,22 @@ function PersonSearchField({
           onChange={(e) => setQuery(e.target.value)}
         />
         {isFetching && (
-          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-white/30" />
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-muted-foreground" />
         )}
       </div>
 
       {query.trim().length >= 2 && results.length > 0 && (
-        <div className="rounded-lg border border-white/10 bg-[#1c1c1e] divide-y divide-white/[0.06] max-h-52 overflow-y-auto">
+        <div className="rounded-lg border border-border bg-card divide-y divide-white/[0.06] max-h-52 overflow-y-auto">
           {results.map((p) => (
             <button
               key={p.id}
               type="button"
               onClick={() => { onSelect({ id: String(p.id), full_name: p.full_name, person_kind: p.person_kind }); setQuery("") }}
-              className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/[0.05] transition-colors text-left"
+              className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-muted/50 transition-colors text-left"
             >
               <div>
-                <span className="text-sm font-medium text-white">{p.full_name}</span>
-                <span className="ml-2 text-xs text-white/40">{p.person_kind}</span>
+                <span className="text-sm font-medium text-foreground">{p.full_name}</span>
+                <span className="ml-2 text-xs text-muted-foreground">{p.person_kind}</span>
               </div>
             </button>
           ))}
@@ -190,7 +190,7 @@ function PersonSearchField({
       )}
 
       {query.trim().length >= 2 && !isFetching && results.length === 0 && (
-        <p className="text-xs text-white/40 px-1">Nenhuma pessoa encontrada.</p>
+        <p className="text-xs text-muted-foreground px-1">Nenhuma pessoa encontrada.</p>
       )}
     </div>
   )
@@ -246,27 +246,27 @@ function SuccessCard({
         </div>
       </div>
 
-      <div className="rounded-xl bg-white/[0.04] border border-white/10 p-4 space-y-2 text-sm">
+      <div className="rounded-xl bg-muted/30 border border-border p-4 space-y-2 text-sm">
         {doc.ref && (
           <div className="flex justify-between">
-            <span className="text-white/50">Referência</span>
-            <span className="font-mono text-white/80 text-xs">{doc.ref}</span>
+            <span className="text-muted-foreground">Referência</span>
+            <span className="font-mono text-foreground/80 text-xs">{doc.ref}</span>
           </div>
         )}
         <div className="flex justify-between">
-          <span className="text-white/50">Status</span>
+          <span className="text-muted-foreground">Status</span>
           <span className={doc.status === "authorized" ? "text-success-400 text-xs" : "text-warning-400 text-xs"}>
             {doc.status === "authorized" ? "Autorizada" : "Aguardando autorização"}
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-white/50">Tipo</span>
-          <span className="text-white/80 text-xs uppercase">{doc.document_type}</span>
+          <span className="text-muted-foreground">Tipo</span>
+          <span className="text-foreground/80 text-xs uppercase">{doc.document_type}</span>
         </div>
         {doc.key && (
           <div className="flex justify-between">
-            <span className="text-white/50">Chave</span>
-            <span className="font-mono text-white/60 text-[10px]">{doc.key}</span>
+            <span className="text-muted-foreground">Chave</span>
+            <span className="font-mono text-foreground/60 text-[10px]">{doc.key}</span>
           </div>
         )}
       </div>
@@ -279,7 +279,7 @@ function SuccessCard({
               href={`/api/proxy${doc.pdf_url.replace("/api/v1/", "/")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/[0.06] border border-white/10 text-xs text-white/70 hover:text-white hover:bg-white/[0.1] transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-muted/50 border border-border text-xs text-foreground/70 hover:text-foreground hover:bg-muted transition-colors"
             >
               <FileText className="h-3.5 w-3.5" />
               Ver DANFE (PDF)
@@ -290,7 +290,7 @@ function SuccessCard({
               href={`/api/proxy${doc.xml_url.replace("/api/v1/", "/")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/[0.06] border border-white/10 text-xs text-white/70 hover:text-white hover:bg-white/[0.1] transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-muted/50 border border-border text-xs text-foreground/70 hover:text-foreground hover:bg-muted transition-colors"
             >
               <FileText className="h-3.5 w-3.5" />
               XML
@@ -300,20 +300,20 @@ function SuccessCard({
       )}
 
       <div className="flex gap-2">
-        <Button variant="ghost" onClick={() => router.back()} className="text-white/60">
+        <Button variant="ghost" onClick={() => router.back()} className="text-foreground/60">
           Voltar
         </Button>
         <Button
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onClick={() => router.push("/fiscal/documentos" as any)}
-          className="bg-primary-600 hover:bg-primary-700 text-white"
+          className="bg-primary-600 hover:bg-primary-700 text-foreground"
         >
           Ver documentos emitidos
         </Button>
         <Button
           onClick={onReset}
           variant="outline"
-          className="border-white/15 text-white/70"
+          className="border-border text-foreground/70"
         >
           Emitir outra
         </Button>
@@ -345,16 +345,16 @@ function TabFromOs({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
 
   return (
     <div className="space-y-5">
-      <div className="rounded-xl bg-white/[0.03] border border-white/10 p-5 space-y-4">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-white/50">
+      <div className="rounded-xl bg-muted/30 border border-border p-5 space-y-4">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Buscar Ordem de Serviço
         </h2>
 
         {selectedOs ? (
           <div className="flex items-center justify-between rounded-lg bg-primary-600/10 border border-primary-600/30 px-4 py-3">
             <div>
-              <p className="text-sm font-semibold text-white">OS #{selectedOs.number}</p>
-              <p className="text-xs text-white/50 mt-0.5">
+              <p className="text-sm font-semibold text-foreground">OS #{selectedOs.number}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {selectedOs.plate} · {selectedOs.customer_name}
               </p>
             </div>
@@ -363,7 +363,7 @@ function TabFromOs({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
               <button
                 type="button"
                 onClick={() => setSelectedOs(null)}
-                className="p-1 rounded text-white/30 hover:text-white/60"
+                className="p-1 rounded text-muted-foreground hover:text-foreground/60"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -375,7 +375,7 @@ function TabFromOs({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
 
         {selectedOs && (
           <div>
-            <Label className="text-xs text-white/60">Forma de Pagamento</Label>
+            <Label className="text-xs text-foreground/60">Forma de Pagamento</Label>
             <div className="flex flex-wrap gap-2 mt-2">
               {FORMA_PAGAMENTO_OPTIONS.map((o) => (
                 <button
@@ -386,7 +386,7 @@ function TabFromOs({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
                     "px-3 py-1.5 rounded-md text-xs border transition-colors",
                     formaPagamento === o.value
                       ? "border-primary-600 bg-primary-600/10 text-primary-400"
-                      : "border-white/10 bg-white/[0.03] text-white/50 hover:text-white/70"
+                      : "border-border bg-muted/30 text-muted-foreground hover:text-foreground/70"
                   )}
                 >
                   {o.label}
@@ -410,7 +410,7 @@ function TabFromOs({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
         <Button
           onClick={handleEmit}
           disabled={!selectedOs || emitMutation.isPending}
-          className="bg-primary-600 hover:bg-primary-700 text-white"
+          className="bg-primary-600 hover:bg-primary-700 text-foreground"
         >
           {emitMutation.isPending ? (
             <>
@@ -478,8 +478,8 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
   return (
     <form onSubmit={form.handleSubmit(onSubmit, () => toast.error("Preencha todos os campos obrigatórios."))} className="space-y-5">
       {/* Destinatário */}
-      <div className="rounded-xl bg-white/[0.03] border border-white/10 p-5 space-y-4">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-white/50">
+      <div className="rounded-xl bg-muted/30 border border-border p-5 space-y-4">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Destinatário
         </h2>
 
@@ -499,15 +499,15 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
             Selecione um destinatário
           </p>
         )}
-        <p className="text-xs text-white/30">
+        <p className="text-xs text-muted-foreground">
           O destinatário precisa ter CPF/CNPJ e endereço cadastrado.
         </p>
       </div>
 
       {/* Itens */}
-      <div className="rounded-xl bg-white/[0.03] border border-white/10 p-5 space-y-4">
+      <div className="rounded-xl bg-muted/30 border border-border p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-white/50">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Itens / Mercadorias
           </h2>
           <button
@@ -538,15 +538,15 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
           {fields.map((field, index) => (
             <div
               key={field.id}
-              className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-3 space-y-2"
+              className="rounded-lg border border-border bg-white/[0.02] p-3 space-y-2"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-white/40">Item {index + 1}</span>
+                <span className="text-xs font-medium text-muted-foreground">Item {index + 1}</span>
                 <button
                   type="button"
                   onClick={() => remove(index)}
                   disabled={fields.length === 1}
-                  className="p-1 rounded text-white/30 hover:text-red-400 disabled:opacity-20 transition-colors"
+                  className="p-1 rounded text-muted-foreground hover:text-red-400 disabled:opacity-20 transition-colors"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
@@ -555,7 +555,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
               {/* Linha 1: descrição + código produto */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="col-span-2">
-                  <Label className="text-xs text-white/40">
+                  <Label className="text-xs text-muted-foreground">
                     Descrição <span className="text-red-400">*</span>
                   </Label>
                   <Input
@@ -570,7 +570,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
                   )}
                 </div>
                 <div>
-                  <Label className="text-xs text-white/40">Código Produto</Label>
+                  <Label className="text-xs text-muted-foreground">Código Produto</Label>
                   <Input
                     className="mt-0.5 text-xs font-mono"
                     placeholder="Ex: ATS-001"
@@ -582,7 +582,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
               {/* Linha 2: NCM + unidade + qtd + valor unit + desconto */}
               <div className="grid grid-cols-5 gap-2">
                 <div className="col-span-2">
-                  <Label className="text-xs text-white/40">
+                  <Label className="text-xs text-muted-foreground">
                     NCM <span className="text-red-400">*</span>
                   </Label>
                   <Input
@@ -598,7 +598,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
                   )}
                 </div>
                 <div>
-                  <Label className="text-xs text-white/40">Unid.</Label>
+                  <Label className="text-xs text-muted-foreground">Unid.</Label>
                   <Input
                     className="mt-0.5 text-xs"
                     placeholder="UN"
@@ -607,7 +607,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-white/40">Qtd</Label>
+                  <Label className="text-xs text-muted-foreground">Qtd</Label>
                   <Input
                     className="mt-0.5 text-xs"
                     placeholder="1.0000"
@@ -618,7 +618,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
                   )}
                 </div>
                 <div>
-                  <Label className="text-xs text-white/40">Preço Unit.</Label>
+                  <Label className="text-xs text-muted-foreground">Preço Unit.</Label>
                   <Input
                     className="mt-0.5 text-xs"
                     placeholder="0.00"
@@ -635,16 +635,16 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
       </div>
 
       {/* Dados complementares */}
-      <div className="rounded-xl bg-white/[0.03] border border-white/10 p-5 space-y-4">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-white/50">
+      <div className="rounded-xl bg-muted/30 border border-border p-5 space-y-4">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Dados Complementares
         </h2>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label className="text-xs text-white/60">Forma de Pagamento</Label>
+            <Label className="text-xs text-foreground/60">Forma de Pagamento</Label>
             <select
-              className="mt-1 w-full rounded-md border border-white/15 bg-white/[0.05] px-3 py-2 text-sm text-white"
+              className="mt-1 w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground"
               {...form.register("forma_pagamento")}
             >
               {FORMA_PAGAMENTO_OPTIONS.map((o) => (
@@ -657,10 +657,10 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
         </div>
 
         <div>
-          <Label className="text-xs text-white/60">Observações</Label>
+          <Label className="text-xs text-foreground/60">Observações</Label>
           <textarea
             rows={2}
-            className="mt-1 w-full rounded-md border border-white/15 bg-white/[0.05] px-3 py-2 text-sm text-white resize-none focus:outline-none focus:ring-1 focus:ring-primary-600"
+            className="mt-1 w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary-600"
             placeholder="Informações complementares ao fisco..."
             maxLength={2000}
             {...form.register("observacoes")}
@@ -668,7 +668,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
         </div>
 
         <div>
-          <Label className="text-xs text-white/60">
+          <Label className="text-xs text-foreground/60">
             Justificativa de Emissão Manual <span className="text-red-400">*</span>
           </Label>
           <Input
@@ -697,7 +697,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
         <Button
           type="submit"
           disabled={emitMutation.isPending}
-          className="bg-primary-600 hover:bg-primary-700 text-white"
+          className="bg-primary-600 hover:bg-primary-700 text-foreground"
         >
           {emitMutation.isPending ? (
             <>
@@ -734,23 +734,23 @@ function EmitirNfePageInner() {
       <div className="flex items-center gap-3">
         <Package className="h-6 w-6 text-primary-600" />
         <div>
-          <h1 className="text-xl font-bold text-white">Emissão de NF-e de Produto</h1>
-          <p className="text-xs text-white/50 mt-0.5">
+          <h1 className="text-xl font-bold text-foreground">Emissão de NF-e de Produto</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Nota fiscal de mercadoria — válida para qualquer estado — requer ADMIN
           </p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-lg bg-white/[0.04] border border-white/10 p-1">
+      <div className="flex gap-1 rounded-lg bg-muted/30 border border-border p-1">
         <button
           type="button"
           onClick={() => setTab("os")}
           className={cn(
             "flex items-center gap-2 flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors",
             tab === "os"
-              ? "bg-white/[0.08] text-white"
-              : "text-white/40 hover:text-white/70"
+              ? "bg-muted text-foreground"
+              : "text-muted-foreground hover:text-foreground/70"
           )}
         >
           <ClipboardList className="h-4 w-4" />
@@ -762,8 +762,8 @@ function EmitirNfePageInner() {
           className={cn(
             "flex items-center gap-2 flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors",
             tab === "manual"
-              ? "bg-white/[0.08] text-white"
-              : "text-white/40 hover:text-white/70"
+              ? "bg-muted text-foreground"
+              : "text-muted-foreground hover:text-foreground/70"
           )}
         >
           <Package className="h-4 w-4" />

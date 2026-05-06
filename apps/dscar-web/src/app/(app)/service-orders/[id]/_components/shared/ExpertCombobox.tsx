@@ -50,19 +50,19 @@ export function ExpertCombobox({ value, onChange, insurerId, disabled }: ExpertC
             disabled={disabled}
           />
           {search && !selected && experts.length > 0 && (
-            <div className="absolute z-10 mt-1 w-full rounded-md border bg-white/5 shadow-lg">
+            <div className="absolute z-10 mt-1 w-full rounded-md border bg-muted/50 shadow-lg">
               {experts.map((e) => (
                 <button
                   key={e.id}
                   type="button"
-                  className="flex w-full items-start px-3 py-2 text-left text-sm hover:bg-white/[0.03]"
+                  className="flex w-full items-start px-3 py-2 text-left text-sm hover:bg-muted/30"
                   onClick={() => {
                     onChange(e.id, e)
                     setSearch("")
                   }}
                 >
                   <span className="font-medium">{e.name}</span>
-                  {e.phone && <span className="ml-2 text-white/50 text-xs">{e.phone}</span>}
+                  {e.phone && <span className="ml-2 text-muted-foreground text-xs">{e.phone}</span>}
                 </button>
               ))}
             </div>
@@ -71,7 +71,7 @@ export function ExpertCombobox({ value, onChange, insurerId, disabled }: ExpertC
         <button
           type="button"
           onClick={() => setShowCreate(!showCreate)}
-          className="shrink-0 rounded-md border border-dashed border-white/15 px-2.5 py-1 text-xs text-white/60 hover:border-gray-400 hover:bg-white/[0.03]"
+          className="shrink-0 rounded-md border border-dashed border-border px-2.5 py-1 text-xs text-foreground/60 hover:border-gray-400 hover:bg-muted/30"
           title="Cadastrar novo perito"
         >
           + Novo
@@ -79,19 +79,19 @@ export function ExpertCombobox({ value, onChange, insurerId, disabled }: ExpertC
       </div>
 
       {showCreate && (
-        <div className="rounded-md border border-dashed bg-white/[0.03] p-3 space-y-2">
-          <p className="text-xs font-medium text-white/60 uppercase tracking-wide">Novo perito</p>
+        <div className="rounded-md border border-dashed bg-muted/30 p-3 space-y-2">
+          <p className="text-xs font-medium text-foreground/60 uppercase tracking-wide">Novo perito</p>
           <input
             type="text"
             placeholder="Nome *"
-            className="flex h-8 w-full rounded-md border border-input bg-white/5 px-3 py-1 text-sm"
+            className="flex h-8 w-full rounded-md border border-input bg-muted/50 px-3 py-1 text-sm"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
           />
           <input
             type="text"
             placeholder="Telefone"
-            className="flex h-8 w-full rounded-md border border-input bg-white/5 px-3 py-1 text-sm"
+            className="flex h-8 w-full rounded-md border border-input bg-muted/50 px-3 py-1 text-sm"
             value={newPhone}
             onChange={(e) => setNewPhone(e.target.value)}
           />
@@ -99,7 +99,7 @@ export function ExpertCombobox({ value, onChange, insurerId, disabled }: ExpertC
             <button
               type="button"
               onClick={() => setShowCreate(false)}
-              className="rounded px-3 py-1 text-xs text-white/60 hover:bg-white/10"
+              className="rounded px-3 py-1 text-xs text-foreground/60 hover:bg-muted"
             >
               Cancelar
             </button>
@@ -107,7 +107,7 @@ export function ExpertCombobox({ value, onChange, insurerId, disabled }: ExpertC
               type="button"
               onClick={handleCreate}
               disabled={!newName.trim() || createMutation.isPending}
-              className="rounded bg-primary-600 px-3 py-1 text-xs text-white hover:bg-primary-700 disabled:opacity-50"
+              className="rounded bg-primary-600 px-3 py-1 text-xs text-foreground hover:bg-primary-700 disabled:opacity-50"
             >
               {createMutation.isPending ? "Salvando..." : "Salvar"}
             </button>

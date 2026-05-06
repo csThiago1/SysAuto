@@ -68,11 +68,11 @@ export function ServiceGroupedView({
       {groups.map((group) => {
         const isExpanded = expandedGroups.has(group.partName)
         return (
-          <div key={group.partName} className="rounded-lg border border-white/10 overflow-hidden">
+          <div key={group.partName} className="rounded-lg border border-border overflow-hidden">
             <button
               type="button"
               onClick={() => toggleGroup(group.partName)}
-              className="flex w-full items-center justify-between px-4 py-3 bg-white/[0.03] hover:bg-white/[0.05] transition-colors"
+              className="flex w-full items-center justify-between px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors"
             >
               <div className="flex items-center gap-2">
                 {isExpanded ? (
@@ -80,12 +80,12 @@ export function ServiceGroupedView({
                 ) : (
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 )}
-                <span className="text-sm font-semibold text-white">{group.partName}</span>
-                <span className="text-[11px] text-muted-foreground bg-white/5 px-2 py-0.5 rounded">
+                <span className="text-sm font-semibold text-foreground">{group.partName}</span>
+                <span className="text-[11px] text-muted-foreground bg-muted/50 px-2 py-0.5 rounded">
                   {group.items.length} operações
                 </span>
               </div>
-              <span className="text-sm font-bold font-mono text-white">
+              <span className="text-sm font-bold font-mono text-foreground">
                 {formatCurrency(group.total)}
               </span>
             </button>
@@ -105,7 +105,7 @@ export function ServiceGroupedView({
 
       {/* Flat items: manual, complement, single-operation imported */}
       {flatItems.length > 0 && (
-        <div className="rounded-lg border border-white/10 overflow-hidden">
+        <div className="rounded-lg border border-border overflow-hidden">
           <table className="w-full text-sm">
             <tbody>
               {flatItems.map((item) => {

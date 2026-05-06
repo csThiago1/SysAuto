@@ -41,7 +41,7 @@ export default function InsurerDetailPage({ params }: Props) {
       </div>
     )
   }
-  if (!insurer) return <p className="text-white/50">Seguradora não encontrada.</p>
+  if (!insurer) return <p className="text-muted-foreground">Seguradora não encontrada.</p>
 
   function onSubmit(data: Partial<InsurerTenantProfile>) {
     updateProfile.mutate({ insurerId: id, data })
@@ -57,23 +57,23 @@ export default function InsurerDetailPage({ params }: Props) {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-semibold text-white">{insurer.name}</h1>
+          <h1 className="text-2xl font-semibold text-foreground">{insurer.name}</h1>
           {insurer.trade_name && (
-            <p className="text-sm text-white/50">{insurer.trade_name}</p>
+            <p className="text-sm text-muted-foreground">{insurer.trade_name}</p>
           )}
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-white/10">
+      <div className="flex gap-1 border-b border-border">
         {(["geral", "operacional"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === tab
-                ? "text-white border-b-2 border-primary"
-                : "text-white/50 hover:text-white/80"
+                ? "text-foreground border-b-2 border-primary"
+                : "text-muted-foreground hover:text-foreground/80"
             }`}
           >
             {tab === "geral" ? "Dados Gerais" : "Perfil Operacional"}
@@ -85,20 +85,20 @@ export default function InsurerDetailPage({ params }: Props) {
         <Card>
           <CardContent className="pt-4 grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-white/40">CNPJ</p>
-              <p className="text-sm text-white">{insurer.cnpj}</p>
+              <p className="text-xs text-muted-foreground">CNPJ</p>
+              <p className="text-sm text-foreground">{insurer.cnpj}</p>
             </div>
             <div>
-              <p className="text-xs text-white/40">Abreviação</p>
-              <p className="text-sm text-white">{insurer.abbreviation || "—"}</p>
+              <p className="text-xs text-muted-foreground">Abreviação</p>
+              <p className="text-sm text-foreground">{insurer.abbreviation || "—"}</p>
             </div>
             <div>
-              <p className="text-xs text-white/40">Integração Cilia</p>
-              <p className="text-sm text-white">{insurer.uses_cilia ? "Sim" : "Não"}</p>
+              <p className="text-xs text-muted-foreground">Integração Cilia</p>
+              <p className="text-sm text-foreground">{insurer.uses_cilia ? "Sim" : "Não"}</p>
             </div>
             <div>
-              <p className="text-xs text-white/40">Status</p>
-              <p className="text-sm text-white">{insurer.is_active ? "Ativa" : "Inativa"}</p>
+              <p className="text-xs text-muted-foreground">Status</p>
+              <p className="text-sm text-foreground">{insurer.is_active ? "Ativa" : "Inativa"}</p>
             </div>
           </CardContent>
         </Card>

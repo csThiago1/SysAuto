@@ -45,14 +45,14 @@ function PersonSearchField({
     return (
       <div className="flex items-center justify-between rounded-lg bg-primary-600/10 border border-primary-600/30 px-4 py-3">
         <div>
-          <p className="text-sm font-semibold text-white">{selectedPerson.full_name}</p>
-          <p className="text-xs text-white/50 mt-0.5">
+          <p className="text-sm font-semibold text-foreground">{selectedPerson.full_name}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
             {selectedPerson.person_kind === "PJ" ? "Pessoa Jurídica" : "Pessoa Física"}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Check className="h-4 w-4 text-success-400" />
-          <button type="button" onClick={onClear} className="p-1 rounded text-white/30 hover:text-white/60">
+          <button type="button" onClick={onClear} className="p-1 rounded text-muted-foreground hover:text-foreground/60">
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -63,7 +63,7 @@ function PersonSearchField({
   return (
     <div className="space-y-2">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
           className="pl-9"
           placeholder="Buscar por nome, CPF ou CNPJ..."
@@ -71,22 +71,22 @@ function PersonSearchField({
           onChange={(e) => setQuery(e.target.value)}
         />
         {isFetching && (
-          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-white/30" />
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-muted-foreground" />
         )}
       </div>
 
       {query.trim().length >= 2 && results.length > 0 && (
-        <div className="rounded-lg border border-white/10 bg-[#1c1c1e] divide-y divide-white/[0.06] max-h-52 overflow-y-auto">
+        <div className="rounded-lg border border-border bg-card divide-y divide-white/[0.06] max-h-52 overflow-y-auto">
           {results.map((p) => (
             <button
               key={p.id}
               type="button"
               onClick={() => { onSelect({ id: String(p.id), full_name: p.full_name, person_kind: p.person_kind }); setQuery("") }}
-              className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/[0.05] transition-colors text-left"
+              className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-muted/50 transition-colors text-left"
             >
               <div>
-                <span className="text-sm font-medium text-white">{p.full_name}</span>
-                <span className="ml-2 text-xs text-white/40">{p.person_kind}</span>
+                <span className="text-sm font-medium text-foreground">{p.full_name}</span>
+                <span className="ml-2 text-xs text-muted-foreground">{p.person_kind}</span>
               </div>
             </button>
           ))}
@@ -94,7 +94,7 @@ function PersonSearchField({
       )}
 
       {query.trim().length >= 2 && !isFetching && results.length === 0 && (
-        <p className="text-xs text-white/40 px-1">Nenhuma pessoa encontrada.</p>
+        <p className="text-xs text-muted-foreground px-1">Nenhuma pessoa encontrada.</p>
       )}
     </div>
   )
@@ -170,27 +170,27 @@ function EmitirNfseManualPageInner() {
           </div>
         </div>
 
-        <div className="rounded-xl bg-white/[0.04] border border-white/10 p-4 space-y-2 text-sm">
+        <div className="rounded-xl bg-muted/30 border border-border p-4 space-y-2 text-sm">
           {emitted.ref && (
             <div className="flex justify-between">
-              <span className="text-white/50">Referência</span>
-              <span className="font-mono text-white/80 text-xs">{emitted.ref}</span>
+              <span className="text-muted-foreground">Referência</span>
+              <span className="font-mono text-foreground/80 text-xs">{emitted.ref}</span>
             </div>
           )}
           <div className="flex justify-between">
-            <span className="text-white/50">Status</span>
+            <span className="text-muted-foreground">Status</span>
             <span className="text-warning-400 text-xs">Aguardando autorização</span>
           </div>
         </div>
 
         <div className="flex gap-2">
-          <Button variant="ghost" onClick={() => router.back()} className="text-white/60">
+          <Button variant="ghost" onClick={() => router.back()} className="text-foreground/60">
             Voltar
           </Button>
           <Button
             onClick={() => setEmitted(null)}
             variant="outline"
-            className="border-white/15 text-white/70"
+            className="border-border text-foreground/70"
           >
             Emitir outra
           </Button>
@@ -205,8 +205,8 @@ function EmitirNfseManualPageInner() {
       <div className="flex items-center gap-3">
         <FileText className="h-6 w-6 text-primary-600" />
         <div>
-          <h1 className="text-xl font-bold text-white">Emissão Manual de NFS-e</h1>
-          <p className="text-xs text-white/50 mt-0.5">
+          <h1 className="text-xl font-bold text-foreground">Emissão Manual de NFS-e</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Nota fiscal de serviço ad-hoc sem OS vinculada — requer ADMIN
           </p>
         </div>
@@ -214,8 +214,8 @@ function EmitirNfseManualPageInner() {
 
       <form onSubmit={form.handleSubmit(onSubmit, () => toast.error("Preencha todos os campos obrigatórios."))} className="space-y-6">
         {/* Destinatário */}
-        <div className="rounded-xl bg-white/[0.03] border border-white/10 p-5 space-y-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-white/50">
+        <div className="rounded-xl bg-muted/30 border border-border p-5 space-y-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Destinatário
           </h2>
 
@@ -235,20 +235,20 @@ function EmitirNfseManualPageInner() {
               Selecione um destinatário
             </p>
           )}
-          <p className="text-xs text-white/30">
+          <p className="text-xs text-muted-foreground">
             O destinatário precisa ter CPF/CNPJ e endereço com município IBGE cadastrado.
           </p>
         </div>
 
         {/* Dados da nota */}
-        <div className="rounded-xl bg-white/[0.03] border border-white/10 p-5 space-y-4">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-white/50">
+        <div className="rounded-xl bg-muted/30 border border-border p-5 space-y-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Dados da Nota
           </h2>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-xs text-white/60">
+              <Label className="text-xs text-foreground/60">
                 Data de Emissão <span className="text-red-400">*</span>
               </Label>
               <Input
@@ -263,9 +263,9 @@ function EmitirNfseManualPageInner() {
               )}
             </div>
             <div>
-              <Label className="text-xs text-white/60">Código LC 116</Label>
+              <Label className="text-xs text-foreground/60">Código LC 116</Label>
               <select
-                className="mt-1 w-full rounded-md border border-white/15 bg-white/[0.05] px-3 py-2 text-sm text-white"
+                className="mt-1 w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground"
                 {...form.register("codigo_servico_lc116")}
               >
                 <option value="14.12">14.12 — Funilaria, lanternagem, manutenção veicular</option>
@@ -276,12 +276,12 @@ function EmitirNfseManualPageInner() {
           </div>
 
           <div>
-            <Label className="text-xs text-white/60">
+            <Label className="text-xs text-foreground/60">
               Discriminação dos Serviços <span className="text-red-400">*</span>
             </Label>
             <textarea
               rows={3}
-              className="mt-1 w-full rounded-md border border-white/15 bg-white/[0.05] px-3 py-2 text-sm text-white resize-none focus:outline-none focus:ring-1 focus:ring-primary-600"
+              className="mt-1 w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary-600"
               placeholder="Descreva detalhadamente os serviços prestados..."
               maxLength={2000}
               {...form.register("discriminacao")}
@@ -294,7 +294,7 @@ function EmitirNfseManualPageInner() {
           </div>
 
           <div>
-            <Label className="text-xs text-white/60">
+            <Label className="text-xs text-foreground/60">
               Justificativa de Emissão Manual <span className="text-red-400">*</span>
             </Label>
             <Input
@@ -316,16 +316,16 @@ function EmitirNfseManualPageInner() {
               className="rounded"
               {...form.register("iss_retido")}
             />
-            <Label htmlFor="iss_retido" className="text-xs text-white/60 cursor-pointer">
+            <Label htmlFor="iss_retido" className="text-xs text-foreground/60 cursor-pointer">
               ISS retido na fonte
             </Label>
           </div>
         </div>
 
         {/* Itens */}
-        <div className="rounded-xl bg-white/[0.03] border border-white/10 p-5 space-y-4">
+        <div className="rounded-xl bg-muted/30 border border-border p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-white/50">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Itens
             </h2>
             <button
@@ -348,7 +348,7 @@ function EmitirNfseManualPageInner() {
                 {/* Descrição */}
                 <div className="col-span-6">
                   {index === 0 && (
-                    <Label className="text-xs text-white/40 mb-1 block">Descrição</Label>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Descrição</Label>
                   )}
                   <Input
                     placeholder="Ex: Serviço de pintura automotiva"
@@ -365,7 +365,7 @@ function EmitirNfseManualPageInner() {
                 {/* Quantidade */}
                 <div className="col-span-2">
                   {index === 0 && (
-                    <Label className="text-xs text-white/40 mb-1 block">Qtd</Label>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Qtd</Label>
                   )}
                   <Input
                     placeholder="1.0000"
@@ -377,7 +377,7 @@ function EmitirNfseManualPageInner() {
                 {/* Valor unitário */}
                 <div className="col-span-3">
                   {index === 0 && (
-                    <Label className="text-xs text-white/40 mb-1 block">Preço unit. (R$)</Label>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Preço unit. (R$)</Label>
                   )}
                   <Input
                     placeholder="0.00"
@@ -397,7 +397,7 @@ function EmitirNfseManualPageInner() {
                     type="button"
                     onClick={() => remove(index)}
                     disabled={fields.length === 1}
-                    className="p-1.5 rounded text-white/30 hover:text-red-400 disabled:opacity-20 transition-colors"
+                    className="p-1.5 rounded text-muted-foreground hover:text-red-400 disabled:opacity-20 transition-colors"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -413,14 +413,14 @@ function EmitirNfseManualPageInner() {
             type="button"
             variant="ghost"
             onClick={() => router.back()}
-            className="text-white/60"
+            className="text-foreground/60"
           >
             Cancelar
           </Button>
           <Button
             type="submit"
             disabled={emitMutation.isPending}
-            className="bg-primary-600 hover:bg-primary-700 text-white"
+            className="bg-primary-600 hover:bg-primary-700 text-foreground"
           >
             {emitMutation.isPending ? (
               <>

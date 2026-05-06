@@ -47,7 +47,7 @@ export default function KanbanPage(): React.ReactElement {
               "flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
               showDelivered
                 ? "bg-success-500/10 border-success-500/30 text-success-400"
-                : "bg-white/[0.03] border-white/10 text-white/60 hover:bg-white/5"
+                : "bg-muted/30 border-border text-foreground/60 hover:bg-muted/50"
             )}
           >
             <CheckCircle className="h-3.5 w-3.5" />
@@ -61,7 +61,7 @@ export default function KanbanPage(): React.ReactElement {
               "flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
               showCancelled
                 ? "bg-error-500/10 border-error-500/30 text-error-400"
-                : "bg-white/[0.03] border-white/10 text-white/60 hover:bg-white/5"
+                : "bg-muted/30 border-border text-foreground/60 hover:bg-muted/50"
             )}
           >
             <XCircle className="h-3.5 w-3.5" />

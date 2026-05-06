@@ -47,12 +47,12 @@ export function ArmazemTree({ armazemId }: ArmazemTreeProps) {
   }, [])
 
   if (isLoading) {
-    return <div className="text-white/40 text-sm">Carregando hierarquia...</div>
+    return <div className="text-muted-foreground text-sm">Carregando hierarquia...</div>
   }
 
   if (ruas.length === 0) {
     return (
-      <div className="rounded-lg border border-white/10 bg-white/5 p-6 text-center text-white/40 text-sm">
+      <div className="rounded-lg border border-border bg-muted/50 p-6 text-center text-muted-foreground text-sm">
         Nenhuma rua cadastrada neste armazém.
       </div>
     )
@@ -96,20 +96,20 @@ function RuaNode({
       <button
         type="button"
         onClick={() => onToggle(rua.id)}
-        className="w-full flex items-center gap-2 bg-white/[0.03] hover:bg-white/[0.06] px-4 py-3 rounded-md cursor-pointer transition-colors"
+        className="w-full flex items-center gap-2 bg-muted/30 hover:bg-muted/50 px-4 py-3 rounded-md cursor-pointer transition-colors"
       >
         {expanded ? (
-          <ChevronDown className="h-4 w-4 text-white/40 shrink-0" />
+          <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
         ) : (
-          <ChevronRight className="h-4 w-4 text-white/40 shrink-0" />
+          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
         )}
-        <span className="font-mono text-sm font-semibold text-white">
+        <span className="font-mono text-sm font-semibold text-foreground">
           {rua.codigo}
         </span>
         {rua.descricao && (
-          <span className="text-sm text-white/60">— {rua.descricao}</span>
+          <span className="text-sm text-foreground/60">— {rua.descricao}</span>
         )}
-        <span className="ml-auto text-xs text-white/40">
+        <span className="ml-auto text-xs text-muted-foreground">
           {rua.total_prateleiras} prateleira
           {rua.total_prateleiras !== 1 ? "s" : ""}
         </span>
@@ -143,7 +143,7 @@ function PrateleiraList({
 
   if (isLoading) {
     return (
-      <div className="pl-10 px-4 py-2 text-xs text-white/30">
+      <div className="pl-10 px-4 py-2 text-xs text-muted-foreground">
         Carregando prateleiras...
       </div>
     )
@@ -151,7 +151,7 @@ function PrateleiraList({
 
   if (prateleiras.length === 0) {
     return (
-      <div className="pl-10 px-4 py-2 text-xs text-white/30">
+      <div className="pl-10 px-4 py-2 text-xs text-muted-foreground">
         Nenhuma prateleira nesta rua.
       </div>
     )
@@ -189,28 +189,28 @@ function PrateleiraNode({
       <button
         type="button"
         onClick={() => onToggle(prateleira.id)}
-        className="w-full flex items-center gap-2 pl-10 px-4 py-2.5 hover:bg-white/[0.03] rounded-sm cursor-pointer transition-colors"
+        className="w-full flex items-center gap-2 pl-10 px-4 py-2.5 hover:bg-muted/30 rounded-sm cursor-pointer transition-colors"
       >
         {expanded ? (
-          <ChevronDown className="h-3.5 w-3.5 text-white/30 shrink-0" />
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
         ) : (
-          <ChevronRight className="h-3.5 w-3.5 text-white/30 shrink-0" />
+          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
         )}
-        <span className="font-mono text-sm text-white/80">
+        <span className="font-mono text-sm text-foreground/80">
           {prateleira.codigo}
         </span>
         {prateleira.descricao && (
-          <span className="text-xs text-white/40">
+          <span className="text-xs text-muted-foreground">
             — {prateleira.descricao}
           </span>
         )}
         <div className="ml-auto flex items-center gap-3">
           {prateleira.capacidade_kg && (
-            <span className="text-xs text-white/30">
+            <span className="text-xs text-muted-foreground">
               Cap: {prateleira.capacidade_kg}kg
             </span>
           )}
-          <span className="text-xs text-white/40">
+          <span className="text-xs text-muted-foreground">
             {prateleira.total_niveis} nível
             {prateleira.total_niveis !== 1 ? "s" : ""}
           </span>
@@ -231,7 +231,7 @@ function NivelList({ prateleiraId }: { prateleiraId: string }) {
 
   if (isLoading) {
     return (
-      <div className="pl-20 px-4 py-2 text-xs text-white/30">
+      <div className="pl-20 px-4 py-2 text-xs text-muted-foreground">
         Carregando níveis...
       </div>
     )
@@ -239,7 +239,7 @@ function NivelList({ prateleiraId }: { prateleiraId: string }) {
 
   if (niveis.length === 0) {
     return (
-      <div className="pl-20 px-4 py-2 text-xs text-white/30">
+      <div className="pl-20 px-4 py-2 text-xs text-muted-foreground">
         Nenhum nível nesta prateleira.
       </div>
     )
@@ -270,7 +270,7 @@ function NivelRow({ nivel }: { nivel: Nivel }) {
       </span>
 
       {/* Item count */}
-      <span className="text-xs text-white/40">
+      <span className="text-xs text-muted-foreground">
         {nivel.total_unidades > 0 &&
           `${nivel.total_unidades} peça${nivel.total_unidades !== 1 ? "s" : ""}`}
         {nivel.total_unidades > 0 && nivel.total_lotes > 0 && " + "}
@@ -288,7 +288,7 @@ function NivelRow({ nivel }: { nivel: Nivel }) {
         />
         <span
           className={`text-[10px] font-mono uppercase tracking-wider ${
-            isOcupado ? "text-success-400" : "text-white/40"
+            isOcupado ? "text-success-400" : "text-muted-foreground"
           }`}
         >
           {isOcupado ? "OCUPADO" : "VAZIO"}

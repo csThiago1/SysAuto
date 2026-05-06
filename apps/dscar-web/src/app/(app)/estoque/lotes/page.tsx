@@ -92,16 +92,16 @@ function BaixarModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-lg border border-white/10 bg-[#1a1a1c] p-6 space-y-4">
-        <h3 className="text-sm font-semibold text-white">Baixar Insumo</h3>
-        <p className="text-xs text-white/40">
+      <div className="w-full max-w-md rounded-lg border border-border bg-[#1a1a1c] p-6 space-y-4">
+        <h3 className="text-sm font-semibold text-foreground">Baixar Insumo</h3>
+        <p className="text-xs text-muted-foreground">
           {lote.material_nome}{" "}
-          <span className="font-mono text-white/60">
+          <span className="font-mono text-foreground/60">
             (saldo: {lote.saldo} {lote.unidade_base})
           </span>
         </p>
         <div>
-          <label className="label-mono text-white/50 mb-1 block">
+          <label className="label-mono text-muted-foreground mb-1 block">
             ID DA ORDEM DE SERVICO
           </label>
           <input
@@ -109,12 +109,12 @@ function BaixarModal({
             value={osId}
             onChange={(e) => setOsId(e.target.value)}
             placeholder="UUID da OS..."
-            className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm font-mono placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
             autoFocus
           />
         </div>
         <div>
-          <label className="label-mono text-white/50 mb-1 block">
+          <label className="label-mono text-muted-foreground mb-1 block">
             QUANTIDADE ({lote.unidade_base})
           </label>
           <input
@@ -125,14 +125,14 @@ function BaixarModal({
             value={quantidade}
             onChange={(e) => setQuantidade(e.target.value)}
             placeholder={`Max: ${lote.saldo}`}
-            className="w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm font-mono placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
           />
         </div>
         <div className="flex justify-end gap-2">
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1.5 text-xs text-white/60 hover:text-white transition-colors"
+            className="px-3 py-1.5 text-xs text-foreground/60 hover:text-foreground transition-colors"
           >
             Cancelar
           </button>
@@ -140,7 +140,7 @@ function BaixarModal({
             type="button"
             onClick={handleSubmit}
             disabled={!osId.trim() || !quantidade.trim() || baixar.isPending}
-            className="px-4 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-1.5 text-xs font-medium text-foreground bg-primary-600 hover:bg-primary-700 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {baixar.isPending ? "Baixando..." : "Baixar"}
           </button>
@@ -181,15 +181,15 @@ function TransferirLoteModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-2xl rounded-lg border border-white/10 bg-[#1a1a1c] p-6 space-y-4">
-        <h3 className="text-sm font-semibold text-white">Transferir Lote</h3>
-        <p className="text-xs text-white/40">
+      <div className="w-full max-w-2xl rounded-lg border border-border bg-[#1a1a1c] p-6 space-y-4">
+        <h3 className="text-sm font-semibold text-foreground">Transferir Lote</h3>
+        <p className="text-xs text-muted-foreground">
           {lote.material_nome}{" "}
-          <span className="font-mono text-white/60">{lote.codigo_barras}</span>
-          {" "}| Atual: <span className="text-white/60">{lote.nivel || lote.localizacao || "Sem posicao"}</span>
+          <span className="font-mono text-foreground/60">{lote.codigo_barras}</span>
+          {" "}| Atual: <span className="text-foreground/60">{lote.nivel || lote.localizacao || "Sem posicao"}</span>
         </p>
         <div>
-          <label className="label-mono text-white/50 mb-1 block">
+          <label className="label-mono text-muted-foreground mb-1 block">
             DESTINO
           </label>
           <PosicaoSelector value={nivelId} onChange={setNivelId} />
@@ -198,7 +198,7 @@ function TransferirLoteModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1.5 text-xs text-white/60 hover:text-white transition-colors"
+            className="px-3 py-1.5 text-xs text-foreground/60 hover:text-foreground transition-colors"
           >
             Cancelar
           </button>
@@ -206,7 +206,7 @@ function TransferirLoteModal({
             type="button"
             onClick={handleSubmit}
             disabled={!nivelId || transferir.isPending}
-            className="px-4 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-1.5 text-xs font-medium text-foreground bg-primary-600 hover:bg-primary-700 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {transferir.isPending ? "Transferindo..." : "Transferir"}
           </button>
@@ -249,19 +249,19 @@ export default function LotesPage() {
         <div className="flex items-center gap-3">
           <Layers className="h-5 w-5 text-primary-500" />
           <div>
-            <h1 className="text-lg font-semibold text-white">Lotes de Insumo</h1>
-            <p className="text-xs text-white/40 mt-0.5">
+            <h1 className="text-lg font-semibold text-foreground">Lotes de Insumo</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
               {lotes.length} lote{lotes.length !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
 
-        <label className="flex items-center gap-2 text-xs text-white/60 cursor-pointer">
+        <label className="flex items-center gap-2 text-xs text-foreground/60 cursor-pointer">
           <input
             type="checkbox"
             checked={apenasComSaldo}
             onChange={(e) => setApenasComSaldo(e.target.checked)}
-            className="rounded border-white/20 bg-white/5"
+            className="rounded border-border bg-muted/50"
           />
           Apenas com saldo
         </label>
@@ -273,14 +273,14 @@ export default function LotesPage() {
           {custosMedios.map((cm) => (
             <div
               key={cm.material}
-              className="rounded-md border border-white/10 bg-white/[0.03] p-3"
+              className="rounded-md border border-border bg-muted/30 p-3"
             >
-              <p className="text-xs text-white/60 truncate">{cm.material}</p>
-              <p className="text-lg font-mono text-white mt-1">
+              <p className="text-xs text-foreground/60 truncate">{cm.material}</p>
+              <p className="text-lg font-mono text-foreground mt-1">
                 R$ {cm.custoMedio.toFixed(4)}
-                <span className="text-xs text-white/30 ml-1">/{cm.unidade}</span>
+                <span className="text-xs text-muted-foreground ml-1">/{cm.unidade}</span>
               </p>
-              <p className="text-xs text-white/30 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {cm.loteCount} lotes | {cm.totalSaldo.toFixed(2)} {cm.unidade} em estoque
               </p>
             </div>
@@ -290,24 +290,24 @@ export default function LotesPage() {
 
       {/* Table */}
       {isLoading ? (
-        <div className="text-white/40 text-sm">Carregando...</div>
+        <div className="text-muted-foreground text-sm">Carregando...</div>
       ) : lotes.length === 0 ? (
-        <div className="overflow-hidden rounded-md border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
+        <div className="overflow-hidden rounded-md border border-border bg-muted/50 p-8 text-center text-muted-foreground text-sm">
           Nenhum lote encontrado.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+        <div className="overflow-hidden rounded-md border border-border bg-muted/50">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10 bg-white/[0.03]">
-                <th className="px-4 py-3 text-left label-mono text-white/40">BARCODE</th>
-                <th className="px-4 py-3 text-left label-mono text-white/40">MATERIAL</th>
-                <th className="px-4 py-3 text-left label-mono text-white/40">PRODUTO</th>
-                <th className="px-4 py-3 text-left label-mono text-white/40">SALDO / CUSTO</th>
-                <th className="px-4 py-3 text-left label-mono text-white/40">% RESTANTE</th>
-                <th className="px-4 py-3 text-left label-mono text-white/40">POSICAO</th>
-                <th className="px-4 py-3 text-left label-mono text-white/40">VALIDADE</th>
-                <th className="px-4 py-3 text-right label-mono text-white/40">ACOES</th>
+              <tr className="border-b border-border bg-muted/30">
+                <th className="px-4 py-3 text-left label-mono text-muted-foreground">BARCODE</th>
+                <th className="px-4 py-3 text-left label-mono text-muted-foreground">MATERIAL</th>
+                <th className="px-4 py-3 text-left label-mono text-muted-foreground">PRODUTO</th>
+                <th className="px-4 py-3 text-left label-mono text-muted-foreground">SALDO / CUSTO</th>
+                <th className="px-4 py-3 text-left label-mono text-muted-foreground">% RESTANTE</th>
+                <th className="px-4 py-3 text-left label-mono text-muted-foreground">POSICAO</th>
+                <th className="px-4 py-3 text-left label-mono text-muted-foreground">VALIDADE</th>
+                <th className="px-4 py-3 text-right label-mono text-muted-foreground">ACOES</th>
               </tr>
             </thead>
             <tbody>
@@ -319,30 +319,30 @@ export default function LotesPage() {
                 return (
                   <tr
                     key={lote.id}
-                    className="border-b border-white/5 hover:bg-white/[0.03] transition-colors"
+                    className="border-b border-white/5 hover:bg-muted/30 transition-colors"
                   >
-                    <td className="px-4 py-3 font-mono text-xs text-white/60">
+                    <td className="px-4 py-3 font-mono text-xs text-foreground/60">
                       {lote.codigo_barras}
                     </td>
-                    <td className="px-4 py-3 text-white text-sm">
+                    <td className="px-4 py-3 text-foreground text-sm">
                       {lote.material_nome}
                     </td>
-                    <td className="px-4 py-3 text-white/60 text-sm">
+                    <td className="px-4 py-3 text-foreground/60 text-sm">
                       {lote.produto_insumo || "\u2014"}
                     </td>
                     <td className="px-4 py-3">
                       <div className="space-y-0.5">
-                        <p className="font-mono text-xs text-white/80">
+                        <p className="font-mono text-xs text-foreground/80">
                           {saldo.toFixed(2)} {lote.unidade_base} a R$ {custo.toFixed(4)}/{lote.unidade_base}
                         </p>
-                        <p className="text-[10px] text-white/30">
+                        <p className="text-[10px] text-muted-foreground">
                           lote de {dataLote}
                         </p>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-16 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                        <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
                           <div
                             className={`h-full rounded-full transition-all ${
                               lote.saldo_percentual > 50
@@ -356,15 +356,15 @@ export default function LotesPage() {
                             }}
                           />
                         </div>
-                        <span className="font-mono text-xs text-white/40 w-10 text-right">
+                        <span className="font-mono text-xs text-muted-foreground w-10 text-right">
                           {lote.saldo_percentual}%
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs text-white/60">
+                    <td className="px-4 py-3 font-mono text-xs text-foreground/60">
                       {lote.nivel || lote.localizacao || "\u2014"}
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs text-white/40">
+                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                       {lote.validade
                         ? new Date(lote.validade).toLocaleDateString("pt-BR")
                         : "\u2014"}
@@ -376,7 +376,7 @@ export default function LotesPage() {
                             type="button"
                             onClick={() => setBaixarLote(lote)}
                             title="Baixar"
-                            className="p-1.5 rounded hover:bg-white/[0.06] text-warning-400 transition-colors"
+                            className="p-1.5 rounded hover:bg-muted/50 text-warning-400 transition-colors"
                           >
                             <ArrowDownToLine className="h-3.5 w-3.5" />
                           </button>
@@ -385,7 +385,7 @@ export default function LotesPage() {
                           type="button"
                           onClick={() => setTransferirLote(lote)}
                           title="Transferir"
-                          className="p-1.5 rounded hover:bg-white/[0.06] text-white/40 hover:text-white transition-colors"
+                          className="p-1.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
                         >
                           <ArrowRightLeft className="h-3.5 w-3.5" />
                         </button>
@@ -393,7 +393,7 @@ export default function LotesPage() {
                           type="button"
                           onClick={() => handlePrintLabel(lote)}
                           title="Imprimir Etiqueta"
-                          className="p-1.5 rounded hover:bg-white/[0.06] text-white/40 hover:text-white transition-colors"
+                          className="p-1.5 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
                         >
                           <Printer className="h-3.5 w-3.5" />
                         </button>
@@ -410,7 +410,7 @@ export default function LotesPage() {
       {/* Pagination info */}
       {!isLoading && lotes.length > 0 && (
         <div className="flex justify-end">
-          <p className="text-xs text-white/30 font-mono">
+          <p className="text-xs text-muted-foreground font-mono">
             {lotes.length} registro{lotes.length !== 1 ? "s" : ""}
           </p>
         </div>

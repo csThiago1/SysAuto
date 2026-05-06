@@ -63,41 +63,41 @@ function AddItemForm({
   }
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-4">
-      <p className="label-mono text-white/50">ADICIONAR ITEM</p>
+    <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-4">
+      <p className="label-mono text-muted-foreground">ADICIONAR ITEM</p>
 
       <div className="grid grid-cols-3 gap-3">
         {/* Fornecedor nome */}
         <div className="space-y-1">
-          <label className="label-mono text-white/40">FORNECEDOR</label>
+          <label className="label-mono text-muted-foreground">FORNECEDOR</label>
           <input
             type="text"
             value={form.fornecedor_nome}
             onChange={(e) => update("fornecedor_nome", e.target.value)}
             placeholder="Nome do fornecedor"
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-white/20"
+            className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground/80 placeholder:text-muted-foreground/50 focus:outline-none focus:border-border"
           />
         </div>
 
         {/* Descricao */}
         <div className="space-y-1">
-          <label className="label-mono text-white/40">DESCRICAO</label>
+          <label className="label-mono text-muted-foreground">DESCRICAO</label>
           <input
             type="text"
             value={form.descricao}
             onChange={(e) => update("descricao", e.target.value)}
             placeholder="Descricao da peca"
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-white/20"
+            className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground/80 placeholder:text-muted-foreground/50 focus:outline-none focus:border-border"
           />
         </div>
 
         {/* Tipo qualidade */}
         <div className="space-y-1">
-          <label className="label-mono text-white/40">TIPO</label>
+          <label className="label-mono text-muted-foreground">TIPO</label>
           <select
             value={form.tipo_qualidade}
             onChange={(e) => update("tipo_qualidade", e.target.value as TipoQualidade)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:border-white/20"
+            className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground/80 focus:outline-none focus:border-border"
           >
             <option value="genuina">Genuina</option>
             <option value="reposicao">Reposicao</option>
@@ -110,37 +110,37 @@ function AddItemForm({
       <div className="grid grid-cols-4 gap-3">
         {/* Quantidade */}
         <div className="space-y-1">
-          <label className="label-mono text-white/40">QTD</label>
+          <label className="label-mono text-muted-foreground">QTD</label>
           <input
             type="number"
             min="1"
             value={form.quantidade}
             onChange={(e) => update("quantidade", e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-white/20"
+            className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground/80 placeholder:text-muted-foreground/50 focus:outline-none focus:border-border"
           />
         </div>
 
         {/* Valor unitario */}
         <div className="space-y-1">
-          <label className="label-mono text-white/40">VALOR UNIT</label>
+          <label className="label-mono text-muted-foreground">VALOR UNIT</label>
           <input
             type="text"
             value={form.valor_unitario}
             onChange={(e) => update("valor_unitario", e.target.value)}
             placeholder="0.00"
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-white/80 placeholder:text-white/20 focus:outline-none focus:border-white/20"
+            className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm font-mono text-foreground/80 placeholder:text-muted-foreground/50 focus:outline-none focus:border-border"
           />
         </div>
 
         {/* Prazo entrega */}
         <div className="space-y-1">
-          <label className="label-mono text-white/40">PRAZO</label>
+          <label className="label-mono text-muted-foreground">PRAZO</label>
           <input
             type="text"
             value={form.prazo_entrega ?? ""}
             onChange={(e) => update("prazo_entrega", e.target.value)}
             placeholder="Ex: 3 dias"
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-white/20"
+            className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground/80 placeholder:text-muted-foreground/50 focus:outline-none focus:border-border"
           />
         </div>
 
@@ -175,17 +175,17 @@ function DraftItemsManager({ ocId }: { ocId: string }) {
   return (
     <div className="space-y-2">
       <div className="section-divider">ITENS NO RASCUNHO</div>
-      <div className="bg-white/5 rounded-md border border-white/10 overflow-hidden">
+      <div className="bg-muted/50 rounded-md border border-border overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-white/10">
-              <th className="label-mono text-white/40 text-left px-4 py-2.5">DESCRICAO</th>
-              <th className="label-mono text-white/40 text-left px-4 py-2.5">FORNECEDOR</th>
-              <th className="label-mono text-white/40 text-left px-4 py-2.5">TIPO</th>
-              <th className="label-mono text-white/40 text-right px-4 py-2.5">QTD</th>
-              <th className="label-mono text-white/40 text-right px-4 py-2.5">UNIT</th>
-              <th className="label-mono text-white/40 text-right px-4 py-2.5">TOTAL</th>
-              <th className="label-mono text-white/40 text-center px-4 py-2.5">ACAO</th>
+            <tr className="border-b border-border">
+              <th className="label-mono text-muted-foreground text-left px-4 py-2.5">DESCRICAO</th>
+              <th className="label-mono text-muted-foreground text-left px-4 py-2.5">FORNECEDOR</th>
+              <th className="label-mono text-muted-foreground text-left px-4 py-2.5">TIPO</th>
+              <th className="label-mono text-muted-foreground text-right px-4 py-2.5">QTD</th>
+              <th className="label-mono text-muted-foreground text-right px-4 py-2.5">UNIT</th>
+              <th className="label-mono text-muted-foreground text-right px-4 py-2.5">TOTAL</th>
+              <th className="label-mono text-muted-foreground text-center px-4 py-2.5">ACAO</th>
             </tr>
           </thead>
           <tbody>
@@ -240,29 +240,29 @@ function DraftItemRow({
       }`}
     >
       <td className="px-4 py-2.5">
-        <span className="text-sm text-white/70">{item.descricao}</span>
+        <span className="text-sm text-foreground/70">{item.descricao}</span>
         {item.codigo_referencia && (
-          <span className="ml-1.5 text-xs text-white/30 font-mono">
+          <span className="ml-1.5 text-xs text-muted-foreground font-mono">
             {item.codigo_referencia}
           </span>
         )}
       </td>
       <td className="px-4 py-2.5">
-        <span className="text-sm text-white/50">{item.fornecedor_nome || "--"}</span>
+        <span className="text-sm text-muted-foreground">{item.fornecedor_nome || "--"}</span>
       </td>
       <td className="px-4 py-2.5">
         <TipoQualidadeBadge tipo={item.tipo_qualidade} />
       </td>
       <td className="px-4 py-2.5 text-right">
-        <span className="text-sm font-mono text-white/60">{item.quantidade}</span>
+        <span className="text-sm font-mono text-foreground/60">{item.quantidade}</span>
       </td>
       <td className="px-4 py-2.5 text-right">
-        <span className="text-sm font-mono text-white/60">
+        <span className="text-sm font-mono text-foreground/60">
           {formatCurrency(item.valor_unitario)}
         </span>
       </td>
       <td className="px-4 py-2.5 text-right">
-        <span className="text-sm font-mono font-bold text-white">
+        <span className="text-sm font-mono font-bold text-foreground">
           {formatCurrency(item.valor_total)}
         </span>
       </td>
@@ -271,7 +271,7 @@ function DraftItemRow({
           type="button"
           onClick={() => void handleRemove()}
           disabled={isRemoving}
-          className="p-1 rounded text-white/20 hover:text-error-400 hover:bg-error-500/10 transition-colors disabled:opacity-50"
+          className="p-1 rounded text-muted-foreground/50 hover:text-error-400 hover:bg-error-500/10 transition-colors disabled:opacity-50"
           title="Remover item"
         >
           <Trash2 size={14} />
@@ -326,9 +326,9 @@ export default function OrdemCompraPage({
   if (isLoading) {
     return (
       <div className="p-6 space-y-6">
-        <div className="h-6 bg-white/5 rounded w-64 animate-pulse" />
-        <div className="h-40 bg-white/5 rounded-lg animate-pulse" />
-        <div className="h-60 bg-white/5 rounded-lg animate-pulse" />
+        <div className="h-6 bg-muted/50 rounded w-64 animate-pulse" />
+        <div className="h-40 bg-muted/50 rounded-lg animate-pulse" />
+        <div className="h-60 bg-muted/50 rounded-lg animate-pulse" />
       </div>
     )
   }
@@ -336,7 +336,7 @@ export default function OrdemCompraPage({
   if (!oc) {
     return (
       <div className="p-6">
-        <p className="text-white/40 text-sm">Ordem de compra nao encontrada.</p>
+        <p className="text-muted-foreground text-sm">Ordem de compra nao encontrada.</p>
       </div>
     )
   }
@@ -346,19 +346,19 @@ export default function OrdemCompraPage({
   return (
     <div className="p-6 space-y-6">
       {/* ── Breadcrumb ── */}
-      <nav className="flex items-center gap-1.5 text-sm text-white/30">
-        <Link href="/compras" className="hover:text-white/50 transition-colors">
+      <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        <Link href="/compras" className="hover:text-muted-foreground transition-colors">
           Compras
         </Link>
         <ChevronRight size={14} />
         <Link
           href="/compras"
-          className="hover:text-white/50 transition-colors"
+          className="hover:text-muted-foreground transition-colors"
         >
           Ordens de Compra
         </Link>
         <ChevronRight size={14} />
-        <span className="text-white/60 font-mono">{oc.numero}</span>
+        <span className="text-foreground/60 font-mono">{oc.numero}</span>
       </nav>
 
       {/* ── OC Detail ── */}

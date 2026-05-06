@@ -61,20 +61,20 @@ function SummaryCard({
       ? "border-success-500/20"
       : variant === "error"
       ? "border-error-500/20"
-      : "border-white/10"
+      : "border-border"
 
   const valueClass =
     variant === "success"
       ? "text-success-400"
       : variant === "error"
       ? "text-error-400"
-      : "text-white"
+      : "text-foreground"
 
   return (
     <div
-      className={`rounded-md border bg-white/5 px-4 py-3 ${borderClass}`}
+      className={`rounded-md border bg-muted/50 px-4 py-3 ${borderClass}`}
     >
-      <p className="label-mono text-white/40">{label}</p>
+      <p className="label-mono text-muted-foreground">{label}</p>
       <p className={`mt-1 text-lg font-mono font-semibold ${valueClass}`}>
         {value}
       </p>
@@ -114,7 +114,7 @@ export function EstoqueTab({ osId }: EstoqueTabProps) {
       <div className="space-y-6">
         {/* A) Barcode scan input */}
         <div>
-          <p className="label-mono text-white/40 mb-2">BIPAGEM RAPIDA</p>
+          <p className="label-mono text-muted-foreground mb-2">BIPAGEM RAPIDA</p>
           <BarcodeScanInput
             onScan={handleScan}
             placeholder="Bipe ou digite o codigo para vincular a esta OS..."
@@ -152,41 +152,41 @@ export function EstoqueTab({ osId }: EstoqueTabProps) {
 
         {/* C) Margin table */}
         <div>
-          <p className="label-mono text-white/40 mb-2">
+          <p className="label-mono text-muted-foreground mb-2">
             PECAS E INSUMOS CONSUMIDOS
           </p>
           {margemLoading ? (
-            <div className="flex items-center justify-center py-10 text-white/30">
+            <div className="flex items-center justify-center py-10 text-muted-foreground">
               <p className="text-sm">Carregando...</p>
             </div>
           ) : !margem?.itens.length ? (
-            <div className="flex flex-col items-center justify-center py-10 text-white/30">
+            <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
               <Package className="h-8 w-8 mb-2 opacity-40" />
               <p className="text-sm">
                 Nenhuma movimentacao de estoque vinculada a esta OS.
               </p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+            <div className="overflow-hidden rounded-md border border-border bg-muted/50">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="label-mono text-white/40 px-3 py-2 text-left">
+                  <tr className="border-b border-border">
+                    <th className="label-mono text-muted-foreground px-3 py-2 text-left">
                       PECA / INSUMO
                     </th>
-                    <th className="label-mono text-white/40 px-3 py-2 text-left">
+                    <th className="label-mono text-muted-foreground px-3 py-2 text-left">
                       SKU
                     </th>
-                    <th className="label-mono text-white/40 px-3 py-2 text-left">
+                    <th className="label-mono text-muted-foreground px-3 py-2 text-left">
                       POSICAO
                     </th>
-                    <th className="label-mono text-white/40 px-3 py-2 text-right">
+                    <th className="label-mono text-muted-foreground px-3 py-2 text-right">
                       CUSTO
                     </th>
-                    <th className="label-mono text-white/40 px-3 py-2 text-right">
+                    <th className="label-mono text-muted-foreground px-3 py-2 text-right">
                       COBRADO
                     </th>
-                    <th className="label-mono text-white/40 px-3 py-2 text-right">
+                    <th className="label-mono text-muted-foreground px-3 py-2 text-right">
                       MARGEM
                     </th>
                   </tr>
@@ -195,21 +195,21 @@ export function EstoqueTab({ osId }: EstoqueTabProps) {
                   {margem.itens.map((item, i) => (
                     <tr
                       key={i}
-                      className="border-b border-white/5 last:border-0"
+                      className="border-b border-border last:border-0"
                     >
-                      <td className="px-3 py-2 text-white text-sm">
+                      <td className="px-3 py-2 text-foreground text-sm">
                         {item.nome}
                       </td>
-                      <td className="px-3 py-2 font-mono text-xs text-white/50">
+                      <td className="px-3 py-2 font-mono text-xs text-muted-foreground">
                         {item.sku || "\u2014"}
                       </td>
                       <td className="px-3 py-2 font-mono text-xs text-primary-400">
                         {item.posicao || "\u2014"}
                       </td>
-                      <td className="px-3 py-2 text-right font-mono text-sm text-white/80">
+                      <td className="px-3 py-2 text-right font-mono text-sm text-foreground/80">
                         R$ {parseFloat(item.custo).toFixed(2)}
                       </td>
-                      <td className="px-3 py-2 text-right font-mono text-sm text-white/80">
+                      <td className="px-3 py-2 text-right font-mono text-sm text-foreground/80">
                         R$ {parseFloat(item.cobrado).toFixed(2)}
                       </td>
                       <td className="px-3 py-2 text-right">
@@ -228,7 +228,7 @@ export function EstoqueTab({ osId }: EstoqueTabProps) {
 
         {/* D) Movimentacao timeline */}
         <div>
-          <p className="label-mono text-white/40 mb-2">
+          <p className="label-mono text-muted-foreground mb-2">
             HISTORICO DE MOVIMENTACOES
           </p>
           <MovimentacaoTimeline

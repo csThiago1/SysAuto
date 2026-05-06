@@ -38,7 +38,7 @@ const STATUS_LABELS: Record<BenchmarkIngestaoStatus, string> = {
 }
 
 const STATUS_BADGE_CLS: Record<BenchmarkIngestaoStatus, string> = {
-  recebido: "border-white/20 text-white/50 bg-white/5",
+  recebido: "border-border text-muted-foreground bg-muted/50",
   processando: "border-blue-500/30 text-blue-400 bg-blue-400/10",
   concluido: "border-success-500/30 text-success-400 bg-success-400/10",
   erro: "border-red-500/30 text-red-400 bg-red-400/10",
@@ -83,15 +83,15 @@ export default function BenchmarkIngestoesPage() {
         <div className="flex items-center gap-3">
           <Upload className="h-5 w-5 text-primary-500" />
           <div>
-            <h1 className="text-lg font-semibold text-white">Ingestões de Benchmark</h1>
-            <p className="text-xs text-white/40 mt-0.5">PDFs e arquivos de seguradora processados pelo motor.</p>
+            <h1 className="text-lg font-semibold text-foreground">Ingestões de Benchmark</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">PDFs e arquivos de seguradora processados pelo motor.</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-white/40 hover:text-white"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
             onClick={() => refetch()}
             title="Atualizar"
           >
@@ -105,13 +105,13 @@ export default function BenchmarkIngestoesPage() {
       </div>
 
       {showForm && (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-4">
-          <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Nova Ingestão</p>
+        <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nova Ingestão</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Fonte *</Label>
+              <Label className="text-foreground/70 text-xs">Fonte *</Label>
               <Select value={fonteId} onValueChange={setFonteId}>
-                <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                <SelectTrigger className="bg-muted/50 border-border text-foreground">
                   <SelectValue placeholder="Selecionar fonte..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -122,21 +122,21 @@ export default function BenchmarkIngestoesPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Período de referência</Label>
+              <Label className="text-foreground/70 text-xs">Período de referência</Label>
               <Input
                 type="date"
-                className="bg-white/5 border-white/10 text-white"
+                className="bg-muted/50 border-border text-foreground"
                 value={periodoRef}
                 onChange={(e) => setPeriodoRef(e.target.value)}
               />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Arquivo PDF / CSV</Label>
+            <Label className="text-foreground/70 text-xs">Arquivo PDF / CSV</Label>
             <input
               type="file"
               accept=".pdf,.csv"
-              className="block text-sm text-white/60 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:bg-white/10 file:text-white"
+              className="block text-sm text-foreground/60 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:bg-muted file:text-foreground"
               onChange={(e) => setArquivo(e.target.files?.[0] ?? null)}
             />
           </div>
@@ -152,17 +152,17 @@ export default function BenchmarkIngestoesPage() {
       )}
 
       {isLoading ? (
-        <p className="text-xs text-white/40 py-8 text-center">Carregando...</p>
+        <p className="text-xs text-muted-foreground py-8 text-center">Carregando...</p>
       ) : ingestoes.length === 0 ? (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
+        <div className="rounded-lg border border-border bg-muted/50 p-8 text-center text-muted-foreground text-sm">
           Nenhuma ingestão registrada.
         </div>
       ) : (
         <div className="space-y-2">
           {ingestoes.map((ing) => (
-            <div key={ing.id} className="rounded-lg border border-white/10 overflow-hidden">
+            <div key={ing.id} className="rounded-lg border border-border overflow-hidden">
               <button
-                className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors text-left"
+                className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors text-left"
                 onClick={() => setExpandedId(expandedId === ing.id ? null : ing.id)}
               >
                 <div className="flex items-center gap-3">
@@ -172,12 +172,12 @@ export default function BenchmarkIngestoesPage() {
                   >
                     {STATUS_LABELS[ing.status]}
                   </Badge>
-                  <span className="text-sm text-white">{ing.fonte_nome}</span>
-                  <span className="text-xs text-white/40">
+                  <span className="text-sm text-foreground">{ing.fonte_nome}</span>
+                  <span className="text-xs text-muted-foreground">
                     {new Date(ing.criado_em).toLocaleDateString("pt-BR")}
                   </span>
                 </div>
-                <div className="flex items-center gap-4 text-xs text-white/40">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <span>{ing.amostras_importadas} amostras</span>
                   <span>{ing.amostras_descartadas} descartadas</span>
                   <ChevronRight className={`h-4 w-4 transition-transform ${expandedId === ing.id ? "rotate-90" : ""}`} />
@@ -198,36 +198,36 @@ function IngestaoDetail({ ingestaoId, logErro }: { ingestaoId: string; logErro: 
   const { data: amostras = [], isLoading } = useAmostrasPorIngestao(ingestaoId)
 
   if (isLoading) {
-    return <div className="px-4 py-3 text-white/40 text-xs">Carregando amostras...</div>
+    return <div className="px-4 py-3 text-muted-foreground text-xs">Carregando amostras...</div>
   }
 
   return (
-    <div className="border-t border-white/10 px-4 py-3 space-y-3">
+    <div className="border-t border-border px-4 py-3 space-y-3">
       {logErro && (
         <div className="text-xs text-red-400 bg-red-400/10 rounded px-3 py-2 font-mono">
           {logErro.slice(0, 500)}
         </div>
       )}
       {amostras.length === 0 ? (
-        <p className="text-xs text-white/40">Sem amostras ainda.</p>
+        <p className="text-xs text-muted-foreground">Sem amostras ainda.</p>
       ) : (
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="text-white/40 text-xs py-1.5">Descrição</TableHead>
-                <TableHead className="text-white/40 text-xs py-1.5 text-right">Valor</TableHead>
-                <TableHead className="text-white/40 text-xs py-1.5 text-right">Confiança</TableHead>
-                <TableHead className="text-white/40 text-xs py-1.5">Canônico</TableHead>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="text-muted-foreground text-xs py-1.5">Descrição</TableHead>
+                <TableHead className="text-muted-foreground text-xs py-1.5 text-right">Valor</TableHead>
+                <TableHead className="text-muted-foreground text-xs py-1.5 text-right">Confiança</TableHead>
+                <TableHead className="text-muted-foreground text-xs py-1.5">Canônico</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {amostras.slice(0, 20).map((a) => (
                 <TableRow key={a.id} className="border-white/5">
-                  <TableCell className="py-1.5 text-xs text-white/70 max-w-xs truncate">
+                  <TableCell className="py-1.5 text-xs text-foreground/70 max-w-xs truncate">
                     {a.descricao_bruta}
                   </TableCell>
-                  <TableCell className="py-1.5 text-xs text-right text-white/70">
+                  <TableCell className="py-1.5 text-xs text-right text-foreground/70">
                     R$ {parseFloat(a.valor_praticado).toFixed(2)}
                   </TableCell>
                   <TableCell className="py-1.5 text-xs text-right">
@@ -236,10 +236,10 @@ function IngestaoDetail({ ingestaoId, logErro }: { ingestaoId: string; logErro: 
                         {(parseFloat(a.alias_match_confianca) * 100).toFixed(0)}%
                       </span>
                     ) : (
-                      <span className="text-white/30">—</span>
+                      <span className="text-muted-foreground">—</span>
                     )}
                   </TableCell>
-                  <TableCell className="py-1.5 text-xs text-white/50">
+                  <TableCell className="py-1.5 text-xs text-muted-foreground">
                     {a.servico_nome || a.peca_nome || "—"}
                   </TableCell>
                 </TableRow>
@@ -247,7 +247,7 @@ function IngestaoDetail({ ingestaoId, logErro }: { ingestaoId: string; logErro: 
             </TableBody>
           </Table>
           {amostras.length > 20 && (
-            <p className="text-xs text-white/30 mt-2">Mostrando 20 de {amostras.length} amostras.</p>
+            <p className="text-xs text-muted-foreground mt-2">Mostrando 20 de {amostras.length} amostras.</p>
           )}
         </div>
       )}

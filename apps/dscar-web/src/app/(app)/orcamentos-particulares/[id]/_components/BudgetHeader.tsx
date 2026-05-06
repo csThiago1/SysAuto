@@ -30,13 +30,13 @@ const STATUS_LABELS: Record<BudgetVersionStatus, string> = {
 }
 
 const STATUS_COLORS: Record<BudgetVersionStatus, string> = {
-  draft:      "text-white/50 bg-white/10 border-white/10",
+  draft:      "text-muted-foreground bg-muted border-border",
   sent:       "text-info-400 bg-info-400/10 border-info-400/20",
   approved:   "text-success-400 bg-success-400/10 border-success-400/20",
   rejected:   "text-error-400 bg-error-400/10 border-error-400/20",
   expired:    "text-warning-400 bg-warning-400/10 border-warning-400/20",
   revision:   "text-warning-400 bg-warning-400/10 border-warning-400/20",
-  superseded: "text-white/20 bg-white/5 border-white/5",
+  superseded: "text-muted-foreground/50 bg-muted/50 border-white/5",
 }
 
 interface Props { budget: Budget }
@@ -121,15 +121,15 @@ export function BudgetHeader({ budget }: Props) {
         {/* Esquerda: voltar + info */}
         <div className="flex items-center gap-3">
           <Link href={"/orcamentos-particulares" as Route}>
-            <Button variant="ghost" size="icon" className="text-white/50 hover:text-white">
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
               <ChevronLeft className="h-5 w-5" />
             </Button>
           </Link>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-lg font-bold text-white">{budget.number}</span>
+              <span className="font-mono text-lg font-bold text-foreground">{budget.number}</span>
               {version && (
-                <span className="text-white/40 text-sm">v{version.version_number}</span>
+                <span className="text-muted-foreground text-sm">v{version.version_number}</span>
               )}
               {version && (
                 <Badge className={`text-xs border ${STATUS_COLORS[status]}`}>
@@ -137,7 +137,7 @@ export function BudgetHeader({ budget }: Props) {
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-white/40 mt-0.5 flex items-center gap-1.5">
+            <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
               {budget.vehicle_make_logo && (
                 <img src={budget.vehicle_make_logo} alt="" className="h-4 w-4 object-contain inline-block" />
               )}
@@ -150,7 +150,7 @@ export function BudgetHeader({ budget }: Props) {
         <div className="flex items-center gap-2 flex-shrink-0">
           {pdfUrl && (
             <a href={pdfUrl} target="_blank" rel="noopener noreferrer">
-              <Button variant="ghost" size="sm" className="gap-1.5 text-white/50 hover:text-white">
+              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
                 <Download className="h-4 w-4" />
                 PDF
               </Button>
@@ -174,7 +174,7 @@ export function BudgetHeader({ budget }: Props) {
               size="sm"
               disabled={cloning}
               onClick={handleClone}
-              className="gap-1.5 text-white/60 hover:text-white"
+              className="gap-1.5 text-foreground/60 hover:text-foreground"
             >
               <Copy className="h-4 w-4" />
               Clonar
@@ -214,7 +214,7 @@ export function BudgetHeader({ budget }: Props) {
               size="sm"
               disabled={approving}
               onClick={() => setConfirmApprove(true)}
-              className="gap-1.5 bg-success-600 hover:bg-success-700 text-white"
+              className="gap-1.5 bg-success-600 hover:bg-success-700 text-foreground"
             >
               <CheckCircle className="h-4 w-4" />
               Aprovar → OS

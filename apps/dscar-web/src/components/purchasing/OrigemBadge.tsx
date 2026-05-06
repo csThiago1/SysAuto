@@ -20,12 +20,12 @@ const ORIGENS: Record<string, { label: string; className: string }> = {
   },
   manual: {
     label: "Manual",
-    className: "bg-white/5 text-white/40 border border-white/10",
+    className: "bg-muted/50 text-muted-foreground border border-border",
   },
 }
 
 export function OrigemBadge({ origem, className = "" }: OrigemBadgeProps) {
-  const config = ORIGENS[origem] ?? { label: origem, className: "bg-white/5 text-white/40 border border-white/10" }
+  const config = ORIGENS[origem] ?? { label: origem, className: "bg-muted/50 text-muted-foreground border border-border" }
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${config.className} ${className}`}>
       {config.label}

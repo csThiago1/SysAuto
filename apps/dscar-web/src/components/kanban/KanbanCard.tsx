@@ -69,7 +69,7 @@ const CardContent = React.memo(function CardContent({
   return (
     <div
       className={cn(
-        "bg-white/[0.04] rounded-md border border-white/10 backdrop-blur-sm",
+        "bg-muted/30 rounded-md border border-border backdrop-blur-sm",
         borderCls,
         className
       )}
@@ -77,7 +77,7 @@ const CardContent = React.memo(function CardContent({
       <div className="p-2.5 space-y-1.5">
         {/* Row 1: OS number + status dot + days badge */}
         <div className="flex items-center justify-between gap-1">
-          <span className="text-xs font-bold text-white/80 leading-none font-mono">
+          <span className="text-xs font-bold text-foreground/80 leading-none font-mono">
             #{order.number}
           </span>
           <div className="flex items-center gap-1.5">
@@ -87,19 +87,19 @@ const CardContent = React.memo(function CardContent({
         </div>
 
         {/* Row 2: Plate */}
-        <div className="text-sm font-mono font-semibold tracking-widest text-white/90 leading-none">
+        <div className="text-sm font-mono font-semibold tracking-widest text-foreground/90 leading-none">
           {order.plate}
         </div>
 
         {/* Row 3: Vehicle */}
-        <p className="text-xs text-white/40 leading-snug truncate">
+        <p className="text-xs text-muted-foreground leading-snug truncate">
           {[order.make, order.model, order.year ? String(order.year) : ""]
             .filter(Boolean)
             .join(" · ")}
         </p>
 
         {/* Row 4: Customer */}
-        <p className="text-xs text-white/60 truncate font-medium">
+        <p className="text-xs text-foreground/60 truncate font-medium">
           {order.customer_name}
         </p>
 
@@ -108,7 +108,7 @@ const CardContent = React.memo(function CardContent({
           <div className="flex items-center gap-1 flex-wrap pt-0.5">
             {isOverdue && <UrgencyIndicator order={order} />}
             {!isOverdue && order.insurer_detail && (
-              <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-sm px-1 py-0.5 max-w-full">
+              <div className="flex items-center gap-1 bg-muted/50 border border-border rounded-sm px-1 py-0.5 max-w-full">
                 {order.insurer_detail.logo ? (
                   <img
                     src={order.insurer_detail.logo}
@@ -117,13 +117,13 @@ const CardContent = React.memo(function CardContent({
                   />
                 ) : (
                   <span
-                    className="h-3.5 w-3.5 rounded-full flex items-center justify-center text-white text-[7px] font-bold shrink-0"
+                    className="h-3.5 w-3.5 rounded-full flex items-center justify-center text-foreground text-[7px] font-bold shrink-0"
                     style={{ backgroundColor: order.insurer_detail.brand_color ?? "#6366f1" }}
                   >
                     {order.insurer_detail.abbreviation?.charAt(0)}
                   </span>
                 )}
-                <span className="text-xs text-white/50 font-medium truncate max-w-[90px]">
+                <span className="text-xs text-muted-foreground font-medium truncate max-w-[90px]">
                   {order.insurer_detail.display_name ?? order.insurer_detail.name}
                 </span>
               </div>

@@ -104,20 +104,20 @@ export function FiscalEmissionModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-[#1c1c1e] border border-white/10 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <div className="flex items-center gap-2.5">
             <FileText className="h-5 w-5 text-primary-600 shrink-0" />
             <div>
-              <p className="font-semibold text-white text-sm">Emitir Nota Fiscal</p>
-              <p className="text-xs text-white/50">OS #{orderNumber}</p>
+              <p className="font-semibold text-foreground text-sm">Emitir Nota Fiscal</p>
+              <p className="text-xs text-muted-foreground">OS #{orderNumber}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-white/40 hover:text-white/70 transition-colors"
+            className="rounded-md p-1 text-muted-foreground hover:text-foreground/70 transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -130,7 +130,7 @@ export function FiscalEmissionModal({
               {/* Seleção de tipo — só exibe quando a OS tem peças */}
               {hasParts && (
                 <div>
-                  <p className="text-xs font-medium text-white/50 mb-2 uppercase tracking-wide">
+                  <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
                     Tipo de Nota
                   </p>
                   <div className="flex gap-2">
@@ -141,12 +141,12 @@ export function FiscalEmissionModal({
                         "flex-1 flex flex-col items-center gap-1 py-3 px-2 rounded-lg border text-xs font-medium transition-colors",
                         docType === "nfse"
                           ? "border-primary-600 bg-primary-600/10 text-primary-400"
-                          : "border-white/10 bg-white/[0.03] text-white/50 hover:text-white/70"
+                          : "border-border bg-muted/30 text-muted-foreground hover:text-foreground/70"
                       )}
                     >
                       <FileText className="h-4 w-4" />
                       <span>NFS-e</span>
-                      <span className="text-white/30 font-normal">Serviços</span>
+                      <span className="text-muted-foreground font-normal">Serviços</span>
                     </button>
                     <button
                       type="button"
@@ -155,12 +155,12 @@ export function FiscalEmissionModal({
                         "flex-1 flex flex-col items-center gap-1 py-3 px-2 rounded-lg border text-xs font-medium transition-colors",
                         docType === "nfe"
                           ? "border-primary-600 bg-primary-600/10 text-primary-400"
-                          : "border-white/10 bg-white/[0.03] text-white/50 hover:text-white/70"
+                          : "border-border bg-muted/30 text-muted-foreground hover:text-foreground/70"
                       )}
                     >
                       <Package className="h-4 w-4" />
                       <span>NF-e</span>
-                      <span className="text-white/30 font-normal">Peças/Mercadorias</span>
+                      <span className="text-muted-foreground font-normal">Peças/Mercadorias</span>
                     </button>
                   </div>
                 </div>
@@ -169,11 +169,11 @@ export function FiscalEmissionModal({
               {/* Conteúdo por tipo */}
               {docType === "nfse" ? (
                 <>
-                  <p className="text-sm text-white/70">
+                  <p className="text-sm text-foreground/70">
                     Será emitida uma Nota Fiscal de Serviços Eletrônica (NFS-e) para esta OS junto à
                     Prefeitura de Manaus via Focus NF-e.
                   </p>
-                  <div className="rounded-lg bg-white/[0.04] border border-white/10 p-3 space-y-1.5 text-xs text-white/60">
+                  <div className="rounded-lg bg-muted/30 border border-border p-3 space-y-1.5 text-xs text-foreground/60">
                     <p>• O documento será processado de forma assíncrona.</p>
                     <p>• O status aparecerá atualizado em alguns segundos.</p>
                     <p>• A NFS-e ficará disponível na aba Fiscal após autorização.</p>
@@ -181,13 +181,13 @@ export function FiscalEmissionModal({
                 </>
               ) : (
                 <>
-                  <p className="text-sm text-white/70">
+                  <p className="text-sm text-foreground/70">
                     Será emitida uma NF-e de produto para as peças desta OS via Focus NF-e.
                     Todas as peças devem ter NCM de 8 dígitos preenchido no catálogo.
                   </p>
 
                   <div>
-                    <p className="text-xs text-white/50 mb-1.5">Forma de Pagamento</p>
+                    <p className="text-xs text-muted-foreground mb-1.5">Forma de Pagamento</p>
                     <div className="flex flex-wrap gap-2">
                       {FORMA_PAGAMENTO_OPTIONS.map((o) => (
                         <button
@@ -198,7 +198,7 @@ export function FiscalEmissionModal({
                             "px-3 py-1.5 rounded-md text-xs border transition-colors",
                             formaPagamento === o.value
                               ? "border-primary-600 bg-primary-600/10 text-primary-400"
-                              : "border-white/10 bg-white/[0.03] text-white/50 hover:text-white/70"
+                              : "border-border bg-muted/30 text-muted-foreground hover:text-foreground/70"
                           )}
                         >
                           {o.label}
@@ -231,19 +231,19 @@ export function FiscalEmissionModal({
                   {docType === "nfe" ? "NF-e" : "NFS-e"} enviada para processamento
                 </p>
               </div>
-              <div className="rounded-lg bg-white/[0.04] border border-white/10 p-3 space-y-1.5 text-xs text-white/60">
+              <div className="rounded-lg bg-muted/30 border border-border p-3 space-y-1.5 text-xs text-foreground/60">
                 {emitted.ref && (
                   <p>
-                    <span className="text-white/40">Ref:</span>{" "}
-                    <span className="font-mono text-white/80">{emitted.ref}</span>
+                    <span className="text-muted-foreground">Ref:</span>{" "}
+                    <span className="font-mono text-foreground/80">{emitted.ref}</span>
                   </p>
                 )}
                 <p>
-                  <span className="text-white/40">Status:</span>{" "}
+                  <span className="text-muted-foreground">Status:</span>{" "}
                   <span className="text-amber-400">Aguardando autorização SEFAZ...</span>
                 </p>
               </div>
-              <p className="text-xs text-white/40">
+              <p className="text-xs text-muted-foreground">
                 Você pode fechar esta janela. O status será atualizado automaticamente.
               </p>
             </div>
@@ -252,14 +252,14 @@ export function FiscalEmissionModal({
 
         {/* Footer */}
         <div className="flex gap-2 justify-end px-5 pb-5">
-          <Button variant="ghost" onClick={onClose} className="text-white/60">
+          <Button variant="ghost" onClick={onClose} className="text-foreground/60">
             {emitted ? "Fechar" : "Cancelar"}
           </Button>
           {!emitted && (
             <Button
               onClick={handleEmit}
               disabled={mutation.isPending}
-              className="bg-primary-600 hover:bg-primary-700 text-white"
+              className="bg-primary-600 hover:bg-primary-700 text-foreground"
             >
               {mutation.isPending ? (
                 <>

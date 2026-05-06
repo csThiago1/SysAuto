@@ -46,16 +46,16 @@ export default function RHDashboardPage(): React.ReactElement {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-2xl font-bold text-foreground">
               Recursos Humanos
             </h1>
-            <p className="mt-0.5 text-sm text-white/50">
+            <p className="mt-0.5 text-sm text-muted-foreground">
               Gestão de colaboradores, ponto, metas e folha
             </p>
           </div>
           <Link
             href={"/rh/colaboradores/novo" as Route}
-            className="inline-flex items-center gap-2 rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-primary-700 transition-colors"
           >
             + Admitir colaborador
           </Link>
@@ -87,7 +87,7 @@ export default function RHDashboardPage(): React.ReactElement {
               <StatCard
                 label="Férias"
                 value={totalVacation}
-                icon={<Palmtree className="h-5 w-5 text-white/50" />}
+                icon={<Palmtree className="h-5 w-5 text-muted-foreground" />}
               />
             </>
           )}
@@ -99,7 +99,7 @@ export default function RHDashboardPage(): React.ReactElement {
             <Link
               key={link.href}
               href={link.href as Route}
-              className="flex items-center justify-between rounded-md bg-white/5 p-4 shadow-card hover:shadow-card-hover transition-shadow duration-normal group"
+              className="flex items-center justify-between rounded-md bg-muted/50 p-4 shadow-card hover:shadow-card-hover transition-shadow duration-normal group"
             >
               <div className="flex items-center gap-3">
                 <div
@@ -108,13 +108,13 @@ export default function RHDashboardPage(): React.ReactElement {
                   <link.Icon className={`h-4 w-4 ${link.iconColor}`} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-foreground">
                     {link.label}
                   </p>
-                  <p className="text-xs text-white/50">{link.description}</p>
+                  <p className="text-xs text-muted-foreground">{link.description}</p>
                 </div>
               </div>
-              <ArrowRight className="h-4 w-4 text-white/40 group-hover:text-primary-600 transition-colors" />
+              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary-600 transition-colors" />
             </Link>
           ))}
         </div>
@@ -143,7 +143,7 @@ const QUICK_LINKS = [
     label: "Colaboradores",
     description: "Lista e fichas dos colaboradores",
     Icon: Users,
-    iconBg: "bg-white/[0.06]",
+    iconBg: "bg-muted/50",
     iconColor: "text-primary-400",
   },
   {
@@ -151,7 +151,7 @@ const QUICK_LINKS = [
     label: "Ponto",
     description: "Registro e espelho de ponto",
     Icon: UserCheck,
-    iconBg: "bg-white/[0.06]",
+    iconBg: "bg-muted/50",
     iconColor: "text-success-400",
   },
   {
@@ -159,7 +159,7 @@ const QUICK_LINKS = [
     label: "Metas",
     description: "Metas individuais e por setor",
     Icon: Users,
-    iconBg: "bg-white/[0.06]",
+    iconBg: "bg-muted/50",
     iconColor: "text-info-400",
   },
   {
@@ -167,15 +167,15 @@ const QUICK_LINKS = [
     label: "Vales e Benefícios",
     description: "Solicitações e aprovações",
     Icon: FileWarning,
-    iconBg: "bg-white/5",
-    iconColor: "text-white/50",
+    iconBg: "bg-muted/50",
+    iconColor: "text-muted-foreground",
   },
   {
     href: "/rh/folha",
     label: "Folha de Pagamento",
     description: "Contracheques e fechamentos",
     Icon: UserMinus,
-    iconBg: "bg-white/[0.06]",
+    iconBg: "bg-muted/50",
     iconColor: "text-warning-400",
   },
 ];

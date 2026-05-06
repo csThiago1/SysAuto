@@ -42,7 +42,7 @@ export function ServiceSubRow({
             type="number"
             value={editQty}
             onChange={(e) => setEditQty(e.target.value)}
-            className="w-16 border border-white/15 rounded px-1 py-0.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="w-16 border border-border rounded px-1 py-0.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary-500"
             min="0.01"
             step="0.01"
             autoFocus
@@ -66,7 +66,7 @@ export function ServiceSubRow({
             type="number"
             value={editPrice}
             onChange={(e) => setEditPrice(e.target.value)}
-            className="w-20 border border-white/15 rounded px-1 py-0.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="w-20 border border-border rounded px-1 py-0.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary-500"
             min="0"
             step="0.01"
             onKeyDown={(e) => {

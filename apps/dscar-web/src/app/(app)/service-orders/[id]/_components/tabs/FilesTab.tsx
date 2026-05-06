@@ -51,7 +51,7 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white/5 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="bg-muted/50 rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
         {/* Header */}
         <div className={cn("flex items-center justify-between px-4 py-3 border-b", folderCfg.bgColor, folderCfg.borderColor)}>
           <div className="flex items-center gap-2">
@@ -60,7 +60,7 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
               Adicionar foto — {folderCfg.label}
             </span>
           </div>
-          <button onClick={onClose} className="text-white/40 hover:text-white/60">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground/60">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -68,14 +68,14 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
         {/* Body */}
         <div className="p-4 space-y-3">
           {preview ? (
-            <div className="relative rounded-lg overflow-hidden border border-white/10">
+            <div className="relative rounded-lg overflow-hidden border border-border">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={preview} alt="Preview" className="w-full h-48 object-cover" />
               <button
                 onClick={() => { setSelectedFile(null); setPreview(null) }}
-                className="absolute top-2 right-2 bg-white/80 hover:bg-white/5 rounded-full p-1 shadow"
+                className="absolute top-2 right-2 bg-white/80 hover:bg-muted/50 rounded-full p-1 shadow"
               >
-                <X className="h-3 w-3 text-white/60" />
+                <X className="h-3 w-3 text-foreground/60" />
               </button>
             </div>
           ) : (
@@ -91,7 +91,7 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
               <span className={cn("text-sm font-medium", folderCfg.color)}>
                 Clique para selecionar foto
               </span>
-              <span className="text-xs text-white/40">JPG, PNG ou WEBP</span>
+              <span className="text-xs text-muted-foreground">JPG, PNG ou WEBP</span>
             </button>
           )}
 
@@ -146,7 +146,7 @@ function PhotoThumb({ photo, orderId, canDelete }: PhotoThumbProps) {
 
   return (
     <div
-      className="relative rounded-lg overflow-hidden border border-white/10 aspect-square bg-white/[0.03]"
+      className="relative rounded-lg overflow-hidden border border-border aspect-square bg-muted/30"
       onMouseEnter={() => setShowDelete(true)}
       onMouseLeave={() => setShowDelete(false)}
     >
@@ -158,17 +158,17 @@ function PhotoThumb({ photo, orderId, canDelete }: PhotoThumbProps) {
       />
       {photo.caption && (
         <div className="absolute bottom-0 inset-x-0 bg-black/60 px-2 py-1">
-          <p className="text-xs text-white truncate">{photo.caption}</p>
+          <p className="text-xs text-foreground truncate">{photo.caption}</p>
         </div>
       )}
       {canDelete && showDelete && (
         <button
           onClick={() => deleteMutation.mutate(photo.id)}
-          className="absolute top-1.5 right-1.5 bg-white/10 hover:bg-error-500/10 rounded-full p-1 shadow transition-colors"
+          className="absolute top-1.5 right-1.5 bg-muted hover:bg-error-500/10 rounded-full p-1 shadow transition-colors"
           title="Remover foto"
         >
           {deleteMutation.isPending ? (
-            <Loader2 className="h-3 w-3 animate-spin text-white/40" />
+            <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
           ) : (
             <Trash2 className="h-3 w-3 text-error-400" />
           )}
@@ -214,7 +214,7 @@ function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }:
           <IconComponent className={cn("h-4 w-4 shrink-0", cfg.color)} />
           <div className="text-left">
             <p className={cn("text-sm font-semibold leading-none", cfg.color)}>{cfg.label}</p>
-            <p className="text-xs text-white/50 mt-0.5 leading-none">{cfg.description}</p>
+            <p className="text-xs text-muted-foreground mt-0.5 leading-none">{cfg.description}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -228,7 +228,7 @@ function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }:
               className={cn(
                 "flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-md transition-colors",
                 cfg.color,
-                "bg-white/80 hover:bg-white/5 border border-white/10"
+                "bg-white/80 hover:bg-muted/50 border border-border"
               )}
             >
               <Plus className="h-3 w-3" />
@@ -243,11 +243,11 @@ function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }:
       </div>
 
       {isOpen && (
-        <div className="p-3 bg-white/5">
+        <div className="p-3 bg-muted/50">
           {count === 0 ? (
             <div className="flex flex-col items-center justify-center py-6 gap-2">
-              <Images className="h-8 w-8 text-white/20" />
-              <p className="text-sm text-white/40">Nenhuma foto nesta pasta</p>
+              <Images className="h-8 w-8 text-muted-foreground/50" />
+              <p className="text-sm text-muted-foreground">Nenhuma foto nesta pasta</p>
               {canUpload && (
                 <Button
                   variant="outline"
@@ -334,7 +334,7 @@ export function FilesTab({ order }: FilesTabProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-white/40" />
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     )
   }
@@ -342,13 +342,13 @@ export function FilesTab({ order }: FilesTabProps) {
   return (
     <div className="space-y-4">
       {/* Summary bar */}
-      <div className="flex items-center justify-between bg-white/[0.03] rounded-lg px-4 py-2.5 border border-white/10">
-        <div className="flex items-center gap-2 text-sm text-white/60">
-          <Images className="h-4 w-4 text-white/40" />
+      <div className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2.5 border border-border">
+        <div className="flex items-center gap-2 text-sm text-foreground/60">
+          <Images className="h-4 w-4 text-muted-foreground" />
           <span>
-            <strong className="text-white/90">{totalPhotos}</strong>{" "}
+            <strong className="text-foreground/90">{totalPhotos}</strong>{" "}
             foto{totalPhotos !== 1 ? "s" : ""} em{" "}
-            <strong className="text-white/90">{foldersWithPhotos}</strong>{" "}
+            <strong className="text-foreground/90">{foldersWithPhotos}</strong>{" "}
             pasta{foldersWithPhotos !== 1 ? "s" : ""}
           </span>
         </div>

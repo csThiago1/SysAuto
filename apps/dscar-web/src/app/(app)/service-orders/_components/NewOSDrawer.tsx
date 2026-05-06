@@ -21,7 +21,7 @@ import { ColorSelect } from "../[id]/_components/shared/ColorSelect"
 import { usePlateLookup } from "../[id]/_hooks/useVehicleCatalog"
 import { ApiError, handleApiFormError } from "@/lib/api"
 
-const LABEL = "block text-xs font-bold uppercase tracking-wide text-white/40 mb-0.5"
+const LABEL = "block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-0.5"
 const INPUT =
   "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 const INPUT_ERROR =
@@ -136,7 +136,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
               name="customer_type"
               control={control}
               render={({ field }) => (
-                <div className="flex rounded-lg border border-white/10 bg-white/5 p-0.5 w-fit">
+                <div className="flex rounded-lg border border-border bg-muted/50 p-0.5 w-fit">
                   {(["private", "insurer"] as const).map((type) => (
                     <button
                       key={type}
@@ -144,8 +144,8 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                       onClick={() => field.onChange(type)}
                       className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
                         field.value === type
-                          ? "bg-primary-600 text-white shadow-sm"
-                          : "text-white/50 hover:text-white/70"
+                          ? "bg-primary-600 text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground/70"
                       }`}
                     >
                       {type === "private" ? "Particular" : "Seguradora"}
@@ -228,7 +228,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
 
           {/* Veículo */}
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-white/50">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Veículo
             </p>
 
@@ -245,7 +245,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                   autoCapitalize="characters"
                 />
                 {plateFetching && (
-                  <Loader2 className="absolute right-2 top-2 h-4 w-4 animate-spin text-white/40" />
+                  <Loader2 className="absolute right-2 top-2 h-4 w-4 animate-spin text-muted-foreground" />
                 )}
               </div>
               {errors.plate && (
@@ -346,14 +346,14 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
             <button
               type="button"
               onClick={handleClose}
-              className="rounded border border-white/15 px-4 py-1.5 text-sm font-medium text-white/60 hover:bg-white/[0.03]"
+              className="rounded border border-border px-4 py-1.5 text-sm font-medium text-foreground/60 hover:bg-muted/30"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center gap-1.5 rounded bg-primary-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded bg-primary-600 px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50"
             >
               {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               {isSubmitting ? "Criando..." : "Criar OS"}

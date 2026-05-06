@@ -18,7 +18,7 @@ import type { ProdutoComercialPeca, ProdutoComercialInsumo } from "@paddock/type
 const UNIDADES_COMPRA = ["L", "KG", "UN", "M", "CX", "GL"] as const
 
 const INPUT_CLS =
-  "w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-white/30"
+  "w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-muted-foreground"
 
 /* ------------------------------------------------------------------ */
 /*  Peça form state                                                    */
@@ -220,12 +220,12 @@ export default function EntradaManualPage() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.06]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted/50">
             <PackagePlus className="h-5 w-5 text-primary-500" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-white">Entrada Manual</h1>
-            <p className="text-sm text-white/50">
+            <h1 className="text-lg font-semibold text-foreground">Entrada Manual</h1>
+            <p className="text-sm text-muted-foreground">
               Cadastrar peça ou lote sem NF-e
             </p>
           </div>
@@ -233,14 +233,14 @@ export default function EntradaManualPage() {
       </div>
 
       {/* Toggle */}
-      <div className="flex gap-1 rounded-lg bg-white/5 p-1 w-fit">
+      <div className="flex gap-1 rounded-lg bg-muted/50 p-1 w-fit">
         <button
           type="button"
           onClick={() => setTab("peca")}
           className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
             tab === "peca"
-              ? "bg-primary-600 text-white"
-              : "bg-white/5 text-white/60 hover:text-white/80"
+              ? "bg-primary-600 text-foreground"
+              : "bg-muted/50 text-foreground/60 hover:text-foreground/80"
           }`}
         >
           Peça
@@ -250,8 +250,8 @@ export default function EntradaManualPage() {
           onClick={() => setTab("lote")}
           className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
             tab === "lote"
-              ? "bg-primary-600 text-white"
-              : "bg-white/5 text-white/60 hover:text-white/80"
+              ? "bg-primary-600 text-foreground"
+              : "bg-muted/50 text-foreground/60 hover:text-foreground/80"
           }`}
         >
           Lote
@@ -262,12 +262,12 @@ export default function EntradaManualPage() {
       {tab === "peca" && (
         <div className="space-y-6">
           {/* IDENTIDADE */}
-          <div className="bg-white/5 border border-white/10 rounded-lg p-5 space-y-4">
+          <div className="bg-muted/50 border border-border rounded-lg p-5 space-y-4">
             <div className="section-divider">IDENTIDADE</div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Product search select */}
               <div className="md:col-span-2" ref={pecaDropdownRef}>
-                <label className="label-mono text-white/50 mb-0.5 block">PRODUTO *</label>
+                <label className="label-mono text-muted-foreground mb-0.5 block">PRODUTO *</label>
                 <div className="relative">
                   <input
                     type="text"
@@ -291,16 +291,16 @@ export default function EntradaManualPage() {
                     pecaSearch.length >= 2 &&
                     produtosPeca.length > 0 &&
                     !peca.produto_peca_id && (
-                      <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-md border border-white/10 bg-[#1a1a1a] shadow-lg">
+                      <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-md border border-border bg-card shadow-lg">
                         {produtosPeca.map((p) => (
                           <button
                             key={p.id}
                             type="button"
                             onClick={() => handleSelectProdutoPeca(p)}
-                            className="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 transition-colors flex justify-between items-center"
+                            className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors flex justify-between items-center"
                           >
                             <span>{p.nome_interno}</span>
-                            <span className="font-mono text-xs text-white/40">
+                            <span className="font-mono text-xs text-muted-foreground">
                               {p.sku_interno}
                             </span>
                           </button>
@@ -311,7 +311,7 @@ export default function EntradaManualPage() {
                 {peca.produto_peca_id && (
                   <div className="mt-1 flex items-center gap-2">
                     <span className="text-xs text-success-400">Selecionado</span>
-                    <span className="font-mono text-xs text-white/40">
+                    <span className="font-mono text-xs text-muted-foreground">
                       {peca.produto_peca_id.slice(0, 8)}...
                     </span>
                     <button
@@ -326,7 +326,7 @@ export default function EntradaManualPage() {
                 {pecaSearch.length >= 2 &&
                   produtosPeca.length === 0 &&
                   !peca.produto_peca_id && (
-                    <p className="mt-1 text-xs text-white/30">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Nenhum produto encontrado.
                     </p>
                   )}
@@ -334,7 +334,7 @@ export default function EntradaManualPage() {
 
               {/* Serial number */}
               <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-0.5 block">
                   NUMERO DE SERIE (OPCIONAL)
                 </label>
                 <input
@@ -349,14 +349,14 @@ export default function EntradaManualPage() {
           </div>
 
           {/* VALOR */}
-          <div className="bg-white/5 border border-white/10 rounded-lg p-5 space-y-4">
+          <div className="bg-muted/50 border border-border rounded-lg p-5 space-y-4">
             <div className="section-divider">VALOR</div>
             <div className="max-w-xs">
-              <label className="label-mono text-white/50 mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-0.5 block">
                 VALOR NF *
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/40">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                   R$
                 </span>
                 <input
@@ -373,7 +373,7 @@ export default function EntradaManualPage() {
           </div>
 
           {/* LOCALIZAÇÃO */}
-          <div className="bg-white/5 border border-white/10 rounded-lg p-5 space-y-4">
+          <div className="bg-muted/50 border border-border rounded-lg p-5 space-y-4">
             <div className="section-divider">LOCALIZAÇÃO</div>
             <PosicaoSelector
               value={peca.nivel_id}
@@ -382,10 +382,10 @@ export default function EntradaManualPage() {
           </div>
 
           {/* MOTIVO */}
-          <div className="bg-white/5 border border-white/10 rounded-lg p-5 space-y-4">
+          <div className="bg-muted/50 border border-border rounded-lg p-5 space-y-4">
             <div className="section-divider">MOTIVO</div>
             <div>
-              <label className="label-mono text-white/50 mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-0.5 block">
                 MOTIVO DA ENTRADA *
               </label>
               <textarea
@@ -403,7 +403,7 @@ export default function EntradaManualPage() {
             type="button"
             disabled={submitting}
             onClick={handleSubmitPeca}
-            className="bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-md px-6 py-2.5 text-sm transition-colors"
+            className="bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-foreground font-medium rounded-md px-6 py-2.5 text-sm transition-colors"
           >
             {entradaPeca.isPending ? "Registrando..." : "Registrar Entrada"}
           </button>
@@ -414,12 +414,12 @@ export default function EntradaManualPage() {
       {tab === "lote" && (
         <div className="space-y-6">
           {/* IDENTIDADE */}
-          <div className="bg-white/5 border border-white/10 rounded-lg p-5 space-y-4">
+          <div className="bg-muted/50 border border-border rounded-lg p-5 space-y-4">
             <div className="section-divider">IDENTIDADE</div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Product search select */}
               <div className="md:col-span-2" ref={insumoDropdownRef}>
-                <label className="label-mono text-white/50 mb-0.5 block">PRODUTO *</label>
+                <label className="label-mono text-muted-foreground mb-0.5 block">PRODUTO *</label>
                 <div className="relative">
                   <input
                     type="text"
@@ -443,16 +443,16 @@ export default function EntradaManualPage() {
                     insumoSearch.length >= 2 &&
                     produtosInsumo.length > 0 &&
                     !lote.produto_insumo_id && (
-                      <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-md border border-white/10 bg-[#1a1a1a] shadow-lg">
+                      <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto rounded-md border border-border bg-card shadow-lg">
                         {produtosInsumo.map((p) => (
                           <button
                             key={p.id}
                             type="button"
                             onClick={() => handleSelectProdutoInsumo(p)}
-                            className="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 transition-colors flex justify-between items-center"
+                            className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors flex justify-between items-center"
                           >
                             <span>{p.nome_interno}</span>
-                            <span className="font-mono text-xs text-white/40">
+                            <span className="font-mono text-xs text-muted-foreground">
                               {p.sku_interno}
                             </span>
                           </button>
@@ -463,7 +463,7 @@ export default function EntradaManualPage() {
                 {lote.produto_insumo_id && (
                   <div className="mt-1 flex items-center gap-2">
                     <span className="text-xs text-success-400">Selecionado</span>
-                    <span className="font-mono text-xs text-white/40">
+                    <span className="font-mono text-xs text-muted-foreground">
                       {lote.produto_insumo_id.slice(0, 8)}...
                     </span>
                     <button
@@ -478,7 +478,7 @@ export default function EntradaManualPage() {
                 {insumoSearch.length >= 2 &&
                   produtosInsumo.length === 0 &&
                   !lote.produto_insumo_id && (
-                    <p className="mt-1 text-xs text-white/30">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Nenhum produto encontrado.
                     </p>
                   )}
@@ -487,11 +487,11 @@ export default function EntradaManualPage() {
           </div>
 
           {/* QUANTIDADES */}
-          <div className="bg-white/5 border border-white/10 rounded-lg p-5 space-y-4">
+          <div className="bg-muted/50 border border-border rounded-lg p-5 space-y-4">
             <div className="section-divider">QUANTIDADES</div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-0.5 block">
                   QUANTIDADE COMPRA *
                 </label>
                 <input
@@ -505,7 +505,7 @@ export default function EntradaManualPage() {
                 />
               </div>
               <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-0.5 block">
                   UNIDADE DE COMPRA *
                 </label>
                 <select
@@ -521,7 +521,7 @@ export default function EntradaManualPage() {
                 </select>
               </div>
               <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-0.5 block">
                   FATOR DE CONVERSÃO *
                 </label>
                 <input
@@ -535,11 +535,11 @@ export default function EntradaManualPage() {
                 />
               </div>
               <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-0.5 block">
                   VALOR TOTAL NF *
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/40">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                     R$
                   </span>
                   <input
@@ -555,7 +555,7 @@ export default function EntradaManualPage() {
               </div>
             </div>
             <div className="max-w-xs">
-              <label className="label-mono text-white/50 mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-0.5 block">
                 VALIDADE (OPCIONAL)
               </label>
               <input
@@ -568,7 +568,7 @@ export default function EntradaManualPage() {
           </div>
 
           {/* LOCALIZAÇÃO */}
-          <div className="bg-white/5 border border-white/10 rounded-lg p-5 space-y-4">
+          <div className="bg-muted/50 border border-border rounded-lg p-5 space-y-4">
             <div className="section-divider">LOCALIZAÇÃO</div>
             <PosicaoSelector
               value={lote.nivel_id}
@@ -577,10 +577,10 @@ export default function EntradaManualPage() {
           </div>
 
           {/* MOTIVO */}
-          <div className="bg-white/5 border border-white/10 rounded-lg p-5 space-y-4">
+          <div className="bg-muted/50 border border-border rounded-lg p-5 space-y-4">
             <div className="section-divider">MOTIVO</div>
             <div>
-              <label className="label-mono text-white/50 mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-0.5 block">
                 MOTIVO DA ENTRADA *
               </label>
               <textarea
@@ -598,7 +598,7 @@ export default function EntradaManualPage() {
             type="button"
             disabled={submitting}
             onClick={handleSubmitLote}
-            className="bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-md px-6 py-2.5 text-sm transition-colors"
+            className="bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-foreground font-medium rounded-md px-6 py-2.5 text-sm transition-colors"
           >
             {entradaLote.isPending ? "Registrando..." : "Registrar Entrada"}
           </button>

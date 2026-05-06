@@ -42,7 +42,7 @@ export function DsCarLogo({
         <Wrench
           size={size - 4}
           strokeWidth={2.5}
-          className="text-white"
+          className="text-foreground"
           aria-hidden
         />
       </div>
@@ -52,7 +52,7 @@ export function DsCarLogo({
         <div className="flex flex-col leading-none">
           <span
             className={`font-plate font-bold tracking-widest uppercase text-sm ${
-              isLight ? "text-white" : "text-secondary-950"
+              isLight ? "text-foreground" : "text-secondary-950"
             }`}
           >
             DS Car

@@ -36,7 +36,7 @@ import { EstoqueBuscaModal } from "@/components/purchasing/EstoqueBuscaModal"
 import { CompraFormModal } from "@/components/purchasing/CompraFormModal"
 import { SeguradoraFormModal } from "@/components/purchasing/SeguradoraFormModal"
 import { formatCurrency } from "@paddock/utils"
-import type { ServiceOrderPart } from "@paddock/types"
+import { PartsSummary, calcPartsTotals } from "./PartsTab"
 
 // ─── Props ──────────────────────────────────────────────────────────────────────
 
@@ -66,21 +66,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
   const partsList = parts ?? []
   const filteredParts = sourceFilter === "all" ? partsList : partsList.filter((p) => p.source_type === sourceFilter)
 
-  const pendingCount = partsList.filter(
-    (p) => p.status_peca !== "recebida" && p.status_peca !== "instalada"
-  ).length
-
-  const custoTotal = partsList.reduce((acc, p) => {
-    return acc + (p.custo_real ? parseFloat(p.custo_real) * parseFloat(p.quantity) : 0)
-  }, 0)
-
-  const valorCobrado = partsList.reduce(
-    (acc, p) => acc + parseFloat(p.unit_price) * parseFloat(p.quantity),
-    0
-  )
-
-  const margemPct =
-    custoTotal > 0 ? ((valorCobrado - custoTotal) / custoTotal) * 100 : 0
+  const { custoTotal, valorCobrado, margemPct, pendingCount } = calcPartsTotals(partsList)
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
 
@@ -215,8 +201,8 @@ export function PartsTab({ orderId }: PartsTabProps) {
                       ? "bg-info-500/15 text-info-500"
                       : f.color === "warning"
                       ? "bg-warning-500/15 text-warning-500"
-                      : "bg-white/15 text-white"
-                    : "bg-white/5 text-muted-foreground hover:bg-white/10"
+                      : "bg-white/15 text-foreground"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
                 )}
               >
                 {f.label} ({f.count})
@@ -231,13 +217,13 @@ export function PartsTab({ orderId }: PartsTabProps) {
           <Loader2 className="animate-spin text-muted-foreground h-5 w-5" />
         </div>
       ) : partsList.length === 0 ? (
-        <div className="bg-white/5 border border-white/10 rounded-lg p-8 text-center text-muted-foreground text-sm">
+        <div className="bg-muted/50 border border-border rounded-lg p-8 text-center text-muted-foreground text-sm">
           Nenhuma peca adicionada. Use os botoes acima para adicionar.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+        <div className="overflow-hidden rounded-md border border-border bg-muted/50">
           <Table>
-            <TableHeader className="bg-white/[0.03]">
+            <TableHeader className="bg-muted/30">
               <TableRow>
                 <TableHead className="label-mono text-muted-foreground">Peca</TableHead>
                 <TableHead className="label-mono text-muted-foreground">Tipo</TableHead>
@@ -268,12 +254,12 @@ export function PartsTab({ orderId }: PartsTabProps) {
                 return (
                   <TableRow
                     key={part.id}
-                    className="border-b border-white/5 hover:bg-white/[0.03]"
+                    className="border-b border-white/5 hover:bg-muted/30"
                   >
                     {/* Peca name + SKU */}
                     <TableCell>
                       <div>
-                        <span className="text-white font-medium text-sm">
+                        <span className="text-foreground font-medium text-sm">
                           {part.description}
                         </span>
                         {part.part_number && (
@@ -308,7 +294,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
                             ? "bg-info-500/10 text-info-500"
                             : part.source_type === "complement"
                             ? "bg-warning-500/10 text-warning-500"
-                            : "bg-white/10 text-muted-foreground"
+                            : "bg-muted text-muted-foreground"
                         )}
                       >
                         {part.source_type_display ||
@@ -338,7 +324,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
                     </TableCell>
 
                     {/* Líquido */}
-                    <TableCell className="text-right font-mono text-sm text-white font-semibold">
+                    <TableCell className="text-right font-mono text-sm text-foreground font-semibold">
                       {formatCurrency(cobrado - parseFloat(part.discount))}
                     </TableCell>
 
@@ -366,7 +352,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
                         <DropdownMenuTrigger asChild>
                           <button
                             type="button"
-                            className="p-1.5 rounded text-muted-foreground hover:text-white hover:bg-white/5"
+                            className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted/50"
                           >
                             <MoreVertical className="h-4 w-4" />
                           </button>
@@ -391,53 +377,13 @@ export function PartsTab({ orderId }: PartsTabProps) {
 
       {/* Summary cards */}
       {partsList.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {/* Custo Total - MANAGER+ only */}
-          {isManager && (
-            <div className="bg-white/[0.03] border border-white/[0.08] rounded-lg p-3">
-              <span className="label-mono">Custo Total</span>
-              <p className="text-xl font-bold font-mono text-white mt-1">
-                {formatCurrency(custoTotal)}
-              </p>
-            </div>
-          )}
-
-          {/* Valor Cobrado */}
-          <div className="bg-white/[0.03] border border-white/[0.08] rounded-lg p-3">
-            <span className="label-mono">Valor Cobrado</span>
-            <p className="text-xl font-bold font-mono text-white mt-1">
-              {formatCurrency(valorCobrado)}
-            </p>
-          </div>
-
-          {/* Margem - MANAGER+ only */}
-          {isManager && (
-            <div className="bg-white/[0.03] border border-white/[0.08] rounded-lg p-3">
-              <span className="label-mono">Margem</span>
-              <p className={`text-xl font-bold font-mono mt-1 ${
-                margemPct > 0
-                  ? "text-success-400"
-                  : margemPct < 0
-                  ? "text-error-400"
-                  : "text-white"
-              }`}>
-                {margemPct.toFixed(1)}%
-              </p>
-            </div>
-          )}
-
-          {/* Pendentes */}
-          <div className={`bg-white/[0.03] border rounded-lg p-3 ${
-            pendingCount > 0 ? "border-warning-500/20" : "border-white/[0.08]"
-          }`}>
-            <span className="label-mono">Pendentes</span>
-            <p className={`text-xl font-bold font-mono mt-1 ${
-              pendingCount > 0 ? "text-warning-400" : "text-white"
-            }`}>
-              {pendingCount}
-            </p>
-          </div>
-        </div>
+        <PartsSummary
+          custoTotal={custoTotal}
+          valorCobrado={valorCobrado}
+          margemPct={margemPct}
+          pendingCount={pendingCount}
+          isManager={isManager}
+        />
       )}
 
       {/* Modals */}

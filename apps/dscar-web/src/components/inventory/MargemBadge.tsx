@@ -19,7 +19,7 @@ export function MargemBadge({ custo, cobrado, className }: MargemBadgeProps) {
     ? "bg-success-500/10 text-success-400"
     : isNegative
     ? "bg-error-500/10 text-error-400"
-    : "bg-white/5 text-white/40"
+    : "bg-muted/50 text-muted-foreground"
 
   return (
     <span

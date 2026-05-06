@@ -20,7 +20,7 @@ const STATUS_CLASSES: Record<string, string> = {
   success: "bg-success-500/10 text-success-400",
   warning: "bg-warning-500/10 text-warning-400",
   destructive: "bg-error-500/10 text-error-400",
-  default: "bg-white/5 text-white/60",
+  default: "bg-muted/50 text-foreground/60",
 };
 
 export function TabVales({ employee }: TabValesProps): React.ReactElement {
@@ -30,10 +30,10 @@ export function TabVales({ employee }: TabValesProps): React.ReactElement {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold text-white">
+        <h3 className="text-base font-semibold text-foreground">
           Vales e Benefícios ({allowances.length})
         </h3>
-        <p className="text-xs text-white/40">
+        <p className="text-xs text-muted-foreground">
           Para solicitar ou aprovar vales, acesse{" "}
           <span className="text-primary-600">/rh/vales</span>
         </p>
@@ -46,11 +46,11 @@ export function TabVales({ employee }: TabValesProps): React.ReactElement {
           ))}
         </div>
       ) : allowances.length === 0 ? (
-        <div className="rounded-md bg-white/5 shadow-card p-8 text-center text-sm text-white/50">
+        <div className="rounded-md bg-muted/50 shadow-card p-8 text-center text-sm text-muted-foreground">
           Nenhum vale registrado.
         </div>
       ) : (
-        <div className="rounded-md bg-white/5 shadow-card divide-y divide-white/5">
+        <div className="rounded-md bg-muted/50 shadow-card divide-y divide-white/5">
           {allowances.map((a) => {
             const statusCfg = ALLOWANCE_STATUS_CONFIG[a.status];
             return (
@@ -60,7 +60,7 @@ export function TabVales({ employee }: TabValesProps): React.ReactElement {
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-white">
+                    <p className="text-sm font-medium text-foreground">
                       {ALLOWANCE_TYPE_LABELS[a.allowance_type]}
                     </p>
                     <span
@@ -72,10 +72,10 @@ export function TabVales({ employee }: TabValesProps): React.ReactElement {
                       {statusCfg.label}
                     </span>
                     {a.is_recurring && (
-                      <span className="text-xs text-white/40">recorrente</span>
+                      <span className="text-xs text-muted-foreground">recorrente</span>
                     )}
                   </div>
-                  <p className="text-xs text-white/50">
+                  <p className="text-xs text-muted-foreground">
                     Ref:{" "}
                     {new Date(a.reference_month).toLocaleDateString("pt-BR", {
                       month: "long",
@@ -84,7 +84,7 @@ export function TabVales({ employee }: TabValesProps): React.ReactElement {
                     {a.notes && ` · ${a.notes}`}
                   </p>
                 </div>
-                <span className="text-sm font-semibold text-white/70">
+                <span className="text-sm font-semibold text-foreground/70">
                   {new Intl.NumberFormat("pt-BR", {
                     style: "currency",
                     currency: "BRL",

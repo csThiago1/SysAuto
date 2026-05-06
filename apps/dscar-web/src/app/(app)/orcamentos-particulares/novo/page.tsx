@@ -145,25 +145,25 @@ export default function NovoBudgetPage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link href={"/orcamentos-particulares" as Route}>
-          <Button variant="ghost" size="icon" className="text-white/50 hover:text-white">
+          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
             <ChevronLeft className="h-5 w-5" />
           </Button>
         </Link>
         <ReceiptText className="h-5 w-5 text-primary-500" />
-        <h1 className="text-lg font-semibold text-white">Novo Orçamento Particular</h1>
+        <h1 className="text-lg font-semibold text-foreground">Novo Orçamento Particular</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Cliente */}
         <div className="space-y-2">
-          <Label className="text-white/70">Cliente</Label>
+          <Label className="text-foreground/70">Cliente</Label>
           {clienteSelecionado ? (
-            <div className="flex items-center justify-between rounded-lg bg-white/5 border border-white/10 px-3 py-2">
-              <span className="text-white text-sm">{clienteSelecionado.name}</span>
+            <div className="flex items-center justify-between rounded-lg bg-muted/50 border border-border px-3 py-2">
+              <span className="text-foreground text-sm">{clienteSelecionado.name}</span>
               <button
                 type="button"
                 onClick={() => { setClienteSel(null); setClienteSearch("") }}
-                className="text-white/30 hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -171,21 +171,21 @@ export default function NovoBudgetPage() {
           ) : (
             <div className="space-y-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por nome (mínimo 2 caracteres)..."
                   value={clienteSearch}
                   onChange={(e) => setClienteSearch(e.target.value)}
-                  className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                  className="pl-9 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
                 />
               </div>
               {clientes.length > 0 && (
-                <ul className="rounded-lg border border-white/10 bg-[#1c1c1e] divide-y divide-white/5 max-h-48 overflow-y-auto">
+                <ul className="rounded-lg border border-border bg-card divide-y divide-white/5 max-h-48 overflow-y-auto">
                   {clientes.slice(0, 8).map((c) => (
                     <li key={c.id}>
                       <button
                         type="button"
-                        className="w-full text-left px-3 py-2 text-sm text-white/80 hover:bg-white/5"
+                        className="w-full text-left px-3 py-2 text-sm text-foreground/80 hover:bg-muted/50"
                         onClick={() => {
                           setClienteSel({ id: c.id, name: c.full_name })
                           setClienteSearch("")
@@ -202,27 +202,27 @@ export default function NovoBudgetPage() {
         </div>
 
         {/* Veículo */}
-        <div className="space-y-3 rounded-xl border border-white/10 bg-white/[0.02] p-4">
+        <div className="space-y-3 rounded-xl border border-border bg-white/[0.02] p-4">
           <div className="flex items-center gap-2">
             {makeLogo && (
               <img src={makeLogo} alt={marca} className="h-6 w-6 object-contain" />
             )}
-            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Veículo</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Veículo</p>
           </div>
 
           {/* Placa + status */}
           <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Placa</Label>
+            <Label className="text-foreground/70 text-xs">Placa</Label>
             <div className="flex items-center gap-3">
               <Input
                 placeholder="ABC1D23"
                 value={placa}
                 onChange={(e) => setPlaca(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
                 maxLength={8}
-                className="w-32 bg-white/5 border-white/10 text-white placeholder:text-white/30 font-mono uppercase tracking-widest font-bold"
+                className="w-32 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground font-mono uppercase tracking-widest font-bold"
               />
               {buscandoPlaca && (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/15 border-t-primary-600" />
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-primary-600" />
               )}
               {isOk && !buscandoPlaca && (
                 <span className="flex items-center gap-1 text-xs text-success-400">
@@ -249,21 +249,21 @@ export default function NovoBudgetPage() {
           {/* Montadora + Modelo */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Montadora *</Label>
+              <Label className="text-foreground/70 text-xs">Montadora *</Label>
               <Input
                 placeholder="Chevrolet"
                 value={marca}
                 onChange={(e) => setMarca(e.target.value)}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Modelo *</Label>
+              <Label className="text-foreground/70 text-xs">Modelo *</Label>
               <Input
                 placeholder="Onix"
                 value={modelo}
                 onChange={(e) => setModelo(e.target.value)}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
           </div>
@@ -271,21 +271,21 @@ export default function NovoBudgetPage() {
           {/* Versão + Motorização */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Versão / Trim</Label>
+              <Label className="text-foreground/70 text-xs">Versão / Trim</Label>
               <Input
                 placeholder="LT1, EXL, Touring…"
                 value={versao}
                 onChange={(e) => setVersao(e.target.value)}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Motorização</Label>
+              <Label className="text-foreground/70 text-xs">Motorização</Label>
               <Input
                 placeholder="1.0T, 2.0, 1.6"
                 value={motorizacao}
                 onChange={(e) => setMotorizacao(e.target.value)}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
           </div>
@@ -293,49 +293,49 @@ export default function NovoBudgetPage() {
           {/* Combustível + Cor */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Combustível</Label>
+              <Label className="text-foreground/70 text-xs">Combustível</Label>
               <Input
                 placeholder="Flex, Gasolina, Diesel…"
                 value={combustivel}
                 onChange={(e) => setCombustivel(e.target.value)}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Cor</Label>
+              <Label className="text-foreground/70 text-xs">Cor</Label>
               <Input
                 placeholder="Cinza, Branco, Preto…"
                 value={cor}
                 onChange={(e) => setCor(e.target.value)}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
           </div>
 
           {/* Ano */}
           <div className="w-32 space-y-1.5">
-            <Label className="text-white/70 text-xs">Ano modelo</Label>
+            <Label className="text-foreground/70 text-xs">Ano modelo</Label>
             <Input
               placeholder="2024"
               value={ano}
               onChange={(e) => setAno(e.target.value)}
               maxLength={4}
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+              className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
             />
           </div>
 
           {/* Chassi */}
           <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">
+            <Label className="text-foreground/70 text-xs">
               Chassi{" "}
-              <span className="text-white/30 font-normal">(ver CRLV — API retorna incompleto)</span>
+              <span className="text-muted-foreground font-normal">(ver CRLV — API retorna incompleto)</span>
             </Label>
             <Input
               placeholder="9BWZZZ377VT004251"
               value={chassi}
               onChange={(e) => setChassi(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
               maxLength={17}
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 font-mono text-xs tracking-widest"
+              className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground font-mono text-xs tracking-widest"
             />
             {chassi.length > 0 && chassi.length !== 17 && (
               <p className="text-xs text-warning-400">{chassi.length}/17 dígitos</p>

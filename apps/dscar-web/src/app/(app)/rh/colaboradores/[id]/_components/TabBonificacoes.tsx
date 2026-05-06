@@ -37,7 +37,7 @@ export function TabBonificacoes({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold text-white">
+        <h3 className="text-base font-semibold text-foreground">
           Bonificações ({bonuses.length})
         </h3>
         <button
@@ -51,11 +51,11 @@ export function TabBonificacoes({
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="rounded-md bg-white/5 shadow-card p-card-padding space-y-3"
+          className="rounded-md bg-muted/50 shadow-card p-card-padding space-y-3"
         >
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/50">Tipo</label>
+              <label className="text-xs text-muted-foreground">Tipo</label>
               <select
                 value={form.bonus_type}
                 onChange={(e) =>
@@ -64,7 +64,7 @@ export function TabBonificacoes({
                     bonus_type: e.target.value as BonusType,
                   }))
                 }
-                className="rounded border border-white/10 px-2 py-1.5 text-sm"
+                className="rounded border border-border px-2 py-1.5 text-sm"
               >
                 {(Object.entries(BONUS_TYPE_LABELS) as [BonusType, string][]).map(
                   ([v, l]) => (
@@ -76,13 +76,13 @@ export function TabBonificacoes({
               </select>
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/50">Valor (R$)</label>
+              <label className="text-xs text-muted-foreground">Valor (R$)</label>
               <input
                 type="number"
                 step="0.01"
                 min="0.01"
                 required
-                className="rounded border border-white/10 px-2 py-1.5 text-sm"
+                className="rounded border border-border px-2 py-1.5 text-sm"
                 value={form.amount || ""}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, amount: parseFloat(e.target.value) }))
@@ -90,11 +90,11 @@ export function TabBonificacoes({
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/50">Mês referência</label>
+              <label className="text-xs text-muted-foreground">Mês referência</label>
               <input
                 type="month"
                 required
-                className="rounded border border-white/10 px-2 py-1.5 text-sm"
+                className="rounded border border-border px-2 py-1.5 text-sm"
                 value={form.reference_month.slice(0, 7)}
                 onChange={(e) =>
                   setForm((p) => ({
@@ -105,11 +105,11 @@ export function TabBonificacoes({
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/50">Descrição</label>
+              <label className="text-xs text-muted-foreground">Descrição</label>
               <input
                 type="text"
                 required
-                className="rounded border border-white/10 px-2 py-1.5 text-sm"
+                className="rounded border border-border px-2 py-1.5 text-sm"
                 value={form.description}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, description: e.target.value }))
@@ -121,14 +121,14 @@ export function TabBonificacoes({
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="text-xs text-white/50 hover:underline"
+              className="text-xs text-muted-foreground hover:underline"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={create.isPending}
-              className="rounded bg-primary-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+              className="rounded bg-primary-600 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary-700 disabled:opacity-50"
             >
               {create.isPending ? "Salvando..." : "Registrar bônus"}
             </button>
@@ -143,18 +143,18 @@ export function TabBonificacoes({
           ))}
         </div>
       ) : bonuses.length === 0 ? (
-        <div className="rounded-md bg-white/5 shadow-card p-8 text-center text-sm text-white/50">
+        <div className="rounded-md bg-muted/50 shadow-card p-8 text-center text-sm text-muted-foreground">
           Nenhuma bonificação registrada.
         </div>
       ) : (
-        <div className="rounded-md bg-white/5 shadow-card divide-y divide-white/5">
+        <div className="rounded-md bg-muted/50 shadow-card divide-y divide-white/5">
           {bonuses.map((b) => (
             <div key={b.id} className="flex items-center justify-between px-card-padding py-3">
               <div>
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium text-foreground">
                   {BONUS_TYPE_LABELS[b.bonus_type]} — {b.description}
                 </p>
-                <p className="text-xs text-white/50">
+                <p className="text-xs text-muted-foreground">
                   Ref:{" "}
                   {new Date(b.reference_month).toLocaleDateString("pt-BR", {
                     month: "long",

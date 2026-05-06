@@ -42,7 +42,7 @@ const TIPO_PECA_COLORS: Record<PecaCanonica["tipo_peca"], string> = {
   genuina: "bg-success-500/10 text-success-400 border-success-500/20",
   original: "bg-info-500/10 text-info-400 border-info-500/20",
   paralela: "bg-warning-500/10 text-warning-400 border-warning-500/20",
-  usada: "bg-white/5 text-white/60 border-white/10",
+  usada: "bg-muted/50 text-foreground/60 border-border",
   recondicionada: "bg-purple-500/10 text-purple-400 border-purple-500/20",
 }
 
@@ -128,8 +128,8 @@ export default function PecasCanonicoPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Peças Canônicas</h1>
-          <p className="mt-1 text-sm text-white/50">
+          <h1 className="text-2xl font-bold text-foreground">Peças Canônicas</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Catálogo de peças automotivas — base do Motor de Orçamentos. NCM obrigatório para emissão de NF-e.
           </p>
         </div>
@@ -141,12 +141,12 @@ export default function PecasCanonicoPage() {
 
       {/* Search */}
       <div className="relative max-w-xs">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
           placeholder="Buscar peça..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 bg-white/5 h-9"
+          className="pl-9 bg-muted/50 h-9"
         />
       </div>
 
@@ -155,8 +155,8 @@ export default function PecasCanonicoPage() {
         <TableSkeleton columns={5} rows={8} />
       ) : pecas.length === 0 ? (
         <div className="py-12 text-center space-y-3">
-          <Package className="mx-auto h-8 w-8 text-white/30" />
-          <p className="text-sm text-white/40">
+          <Package className="mx-auto h-8 w-8 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
             {search ? "Nenhuma peça encontrada." : "Nenhuma peça cadastrada."}
           </p>
           {!search && (
@@ -167,9 +167,9 @@ export default function PecasCanonicoPage() {
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+        <div className="overflow-hidden rounded-md border border-border bg-muted/50">
           <Table>
-            <TableHeader className="bg-white/[0.03]">
+            <TableHeader className="bg-muted/30">
               <TableRow>
                 <TableHead className="w-48">Código</TableHead>
                 <TableHead>Nome</TableHead>
@@ -182,10 +182,10 @@ export default function PecasCanonicoPage() {
             <TableBody>
               {pecas.map((p: PecaCanonica) => (
                 <TableRow key={p.id}>
-                  <TableCell className="py-2 font-mono text-xs text-white/60">
+                  <TableCell className="py-2 font-mono text-xs text-foreground/60">
                     {p.codigo}
                   </TableCell>
-                  <TableCell className="py-2 font-medium text-white/90">{p.nome}</TableCell>
+                  <TableCell className="py-2 font-medium text-foreground/90">{p.nome}</TableCell>
                   <TableCell className="py-2">
                     <Badge className={`text-xs ${TIPO_PECA_COLORS[p.tipo_peca]}`}>
                       {TIPO_PECA_LABELS[p.tipo_peca]}
@@ -193,20 +193,20 @@ export default function PecasCanonicoPage() {
                   </TableCell>
                   <TableCell className="py-2">
                     {p.ncm ? (
-                      <span className="font-mono text-xs text-white/70">{p.ncm}</span>
+                      <span className="font-mono text-xs text-foreground/70">{p.ncm}</span>
                     ) : (
                       <span className="text-xs text-amber-500/70">sem NCM</span>
                     )}
                   </TableCell>
                   <TableCell className="py-2">
-                    <span className={`text-xs ${p.is_active ? "text-success-400" : "text-white/40"}`}>
+                    <span className={`text-xs ${p.is_active ? "text-success-400" : "text-muted-foreground"}`}>
                       {p.is_active ? "Ativo" : "Inativo"}
                     </span>
                   </TableCell>
                   <TableCell className="py-2">
                     <button
                       onClick={() => openEdit(p)}
-                      className="p-1 rounded text-white/30 hover:text-white/70 transition-colors"
+                      className="p-1 rounded text-muted-foreground hover:text-foreground/70 transition-colors"
                       title="Editar peça"
                     >
                       <Pencil className="h-3.5 w-3.5" />
@@ -219,7 +219,7 @@ export default function PecasCanonicoPage() {
         </div>
       )}
 
-      <p className="text-xs text-white/40">
+      <p className="text-xs text-muted-foreground">
         {pecas.length} peça{pecas.length !== 1 ? "s" : ""} carregada{pecas.length !== 1 ? "s" : ""}.
         {pecas.filter((p: PecaCanonica) => !p.ncm).length > 0 && (
           <span className="ml-2 text-amber-500/70">
@@ -246,7 +246,7 @@ export default function PecasCanonicoPage() {
                 onChange={(e) => set("codigo", e.target.value.toUpperCase())}
               />
               {!editTarget && (
-                <p className="text-xs text-white/40">Use letras maiúsculas e hifens. Imutável após criação.</p>
+                <p className="text-xs text-muted-foreground">Use letras maiúsculas e hifens. Imutável após criação.</p>
               )}
             </div>
 
@@ -264,7 +264,7 @@ export default function PecasCanonicoPage() {
               <select
                 value={form.tipo_peca}
                 onChange={(e) => set("tipo_peca", e.target.value)}
-                className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 {Object.entries(TIPO_PECA_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
@@ -281,7 +281,7 @@ export default function PecasCanonicoPage() {
                 value={form.ncm ?? ""}
                 onChange={(e) => set("ncm", e.target.value)}
               />
-              <p className="text-xs text-white/40">
+              <p className="text-xs text-muted-foreground">
                 8 dígitos numéricos. Obrigatório para emissão de NF-e de produto.
               </p>
             </div>

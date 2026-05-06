@@ -118,7 +118,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
           </div>
           <Button
             onClick={() => setShowDelivery(true)}
-            className="bg-success-600 hover:bg-success-700 text-white shrink-0"
+            className="bg-success-600 hover:bg-success-700 text-foreground shrink-0"
           >
             <Truck className="h-4 w-4 mr-1.5" />
             Registrar Entrega
@@ -127,8 +127,8 @@ export function ClosingTab({ order }: ClosingTabProps) {
       )}
 
       {/* Financial summary */}
-      <div className="bg-white/5 border border-white/10 rounded-xl shadow-sm overflow-hidden">
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/[0.03]">
+      <div className="bg-muted/50 border border-border rounded-xl shadow-sm overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
           <DollarSign className="h-4 w-4 text-muted-foreground" />
           <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
             Resumo Financeiro
@@ -137,11 +137,11 @@ export function ClosingTab({ order }: ClosingTabProps) {
         <div className="p-5 space-y-3">
           <div className="flex justify-between text-sm">
             <span className="text-foreground/60">Peças</span>
-            <span className="font-medium text-white">{formatCurrency(partsTotal)}</span>
+            <span className="font-medium text-foreground">{formatCurrency(partsTotal)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-foreground/60">Serviços / Mão de obra</span>
-            <span className="font-medium text-white">{formatCurrency(servicesTotal)}</span>
+            <span className="font-medium text-foreground">{formatCurrency(servicesTotal)}</span>
           </div>
           {discountTotal > 0 && (
             <div className="flex justify-between text-sm">
@@ -149,16 +149,16 @@ export function ClosingTab({ order }: ClosingTabProps) {
               <span className="font-medium text-error-400">− {formatCurrency(discountTotal)}</span>
             </div>
           )}
-          <div className="border-t border-white/10 pt-3 flex justify-between items-baseline">
-            <span className="text-base font-bold text-white">Total</span>
-            <span className="text-xl font-bold text-white">{formatCurrency(grandTotal)}</span>
+          <div className="border-t border-border pt-3 flex justify-between items-baseline">
+            <span className="text-base font-bold text-foreground">Total</span>
+            <span className="text-xl font-bold text-foreground">{formatCurrency(grandTotal)}</span>
           </div>
         </div>
       </div>
 
       {/* KM section */}
-      <div className="bg-white/5 border border-white/10 rounded-xl shadow-sm overflow-hidden">
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/[0.03]">
+      <div className="bg-muted/50 border border-border rounded-xl shadow-sm overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
           <Car className="h-4 w-4 text-muted-foreground" />
           <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
             Quilometragem
@@ -202,8 +202,8 @@ export function ClosingTab({ order }: ClosingTabProps) {
       </div>
 
       {/* Fiscal */}
-      <div className="bg-white/5 border border-white/10 rounded-xl shadow-sm overflow-hidden">
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-white/10 bg-white/[0.03]">
+      <div className="bg-muted/50 border border-border rounded-xl shadow-sm overflow-hidden">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
           <FileText className="h-4 w-4 text-muted-foreground" />
           <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">Fiscal</h2>
         </div>
@@ -219,7 +219,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
           {order.nfe_key && (
             <div>
               <Label className="text-xs text-muted-foreground">Chave NF-e</Label>
-              <p className="mt-0.5 font-mono text-xs text-foreground/70 break-all bg-white/[0.03] rounded px-2 py-1.5">
+              <p className="mt-0.5 font-mono text-xs text-foreground/70 break-all bg-muted/30 rounded px-2 py-1.5">
                 {order.nfe_key}
               </p>
             </div>
@@ -238,7 +238,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
           {!order.invoice_issued && (
             <Button
               onClick={() => setShowBillingModal(true)}
-              className="gap-1.5 bg-success-600 hover:bg-success-700 text-white"
+              className="gap-1.5 bg-success-600 hover:bg-success-700 text-foreground"
             >
               <DollarSign className="h-4 w-4" />
               Faturar OS

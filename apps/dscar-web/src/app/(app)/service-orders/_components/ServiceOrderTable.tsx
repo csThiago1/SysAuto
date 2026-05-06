@@ -34,18 +34,18 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
 
   return (
     <>
-    <div className="rounded-md border bg-white/5 overflow-hidden">
+    <div className="rounded-md border bg-muted/50 overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow className="bg-white/[0.03] hover:bg-white/[0.03] border-b border-white/10">
-            <TableHead className="w-[80px] label-mono text-white/40">OS</TableHead>
-            <TableHead className="min-w-[160px] label-mono text-white/40">CLIENTE</TableHead>
-            <TableHead className="w-[140px] label-mono text-white/40">SEGURADORA</TableHead>
-            <TableHead className="w-[100px] label-mono text-white/40">PLACA</TableHead>
-            <TableHead className="min-w-[150px] label-mono text-white/40">VEÍCULO</TableHead>
-            <TableHead className="w-[130px] label-mono text-white/40">DATAS</TableHead>
-            <TableHead className="w-[150px] label-mono text-white/40">STATUS</TableHead>
-            <TableHead className="w-[50px] label-mono text-white/40">$</TableHead>
+          <TableRow className="bg-muted/30 hover:bg-muted/30 border-b border-border">
+            <TableHead className="w-[80px] label-mono text-muted-foreground">OS</TableHead>
+            <TableHead className="min-w-[160px] label-mono text-muted-foreground">CLIENTE</TableHead>
+            <TableHead className="w-[140px] label-mono text-muted-foreground">SEGURADORA</TableHead>
+            <TableHead className="w-[100px] label-mono text-muted-foreground">PLACA</TableHead>
+            <TableHead className="min-w-[150px] label-mono text-muted-foreground">VEÍCULO</TableHead>
+            <TableHead className="w-[130px] label-mono text-muted-foreground">DATAS</TableHead>
+            <TableHead className="w-[150px] label-mono text-muted-foreground">STATUS</TableHead>
+            <TableHead className="w-[50px] label-mono text-muted-foreground">$</TableHead>
             <TableHead className="w-[50px]"></TableHead>
           </TableRow>
         </TableHeader>
@@ -60,13 +60,13 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                 onClick={() => router.push(`/service-orders/${order.id}`)}
               >
                 {/* OS Number */}
-                <TableCell className="font-medium text-white">
+                <TableCell className="font-medium text-foreground">
                   <span className="text-primary-600 font-bold">#{order.number}</span>
                 </TableCell>
 
                 {/* Cliente */}
                 <TableCell>
-                  <span className="text-sm font-medium text-white truncate block max-w-[200px]">
+                  <span className="text-sm font-medium text-foreground truncate block max-w-[200px]">
                     {order.customer_name || "Sem nome"}
                   </span>
                 </TableCell>
@@ -74,12 +74,12 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                 {/* Seguradora */}
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-white/5 border border-white/10">
+                    <div className="h-6 w-6 rounded-full flex items-center justify-center shrink-0 overflow-hidden bg-muted/50 border border-border">
                       {order.customer_type === "insurer" && order.insurer_detail?.logo ? (
                         <img src={order.insurer_detail.logo} alt="" className="h-full w-full object-contain p-0.5" />
                       ) : order.customer_type === "insurer" && order.insurer_detail?.abbreviation ? (
                         <span
-                          className="h-full w-full flex items-center justify-center text-white text-[9px] font-bold"
+                          className="h-full w-full flex items-center justify-center text-foreground text-[9px] font-bold"
                           style={{ backgroundColor: order.insurer_detail?.brand_color ?? "#6366f1" }}
                         >
                           {order.insurer_detail.abbreviation.slice(0, 2)}
@@ -88,7 +88,7 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                         <img src="/dscar-logo.png" alt="DS Car" className="h-4 w-4 object-contain" />
                       )}
                     </div>
-                    <span className="text-xs text-white/60 truncate max-w-[100px]">
+                    <span className="text-xs text-foreground/60 truncate max-w-[100px]">
                       {order.customer_type === "insurer"
                         ? (order.insurer_detail?.display_name ?? "Seguradora")
                         : "Particular"}
@@ -98,18 +98,18 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
 
                 {/* Placa */}
                 <TableCell>
-                  <span className="text-xs font-mono text-white/70 bg-white/5 px-1.5 py-0.5 rounded border border-white/10 uppercase">
+                  <span className="text-xs font-mono text-foreground/70 bg-muted/50 px-1.5 py-0.5 rounded border border-border uppercase">
                     {order.plate || "—"}
                   </span>
                 </TableCell>
 
                 {/* Veículo */}
                 <TableCell>
-                  <span className="text-sm text-white/80 flex items-center gap-1.5">
+                  <span className="text-sm text-foreground/80 flex items-center gap-1.5">
                     {order.make_logo ? (
                       <img src={order.make_logo} alt={order.make} className="h-4 w-4 object-contain shrink-0" />
                     ) : (
-                      <Car className="h-3.5 w-3.5 text-white/30 shrink-0" />
+                      <Car className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                     )}
                     <span className="truncate">
                       {order.make} {order.model} {order.year ? `(${order.year})` : ""}
@@ -120,15 +120,15 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                 {/* Datas */}
                 <TableCell>
                   <div className="flex flex-col gap-0.5 text-xs">
-                    <div className="flex items-center justify-between gap-2 text-white/60">
-                      <span className="text-white/40">Entr:</span>
+                    <div className="flex items-center justify-between gap-2 text-foreground/60">
+                      <span className="text-muted-foreground">Entr:</span>
                       <span>{formatDate(order.entry_date)}</span>
                     </div>
                     <div className={cn(
                       "flex items-center justify-between gap-2 font-medium",
-                      isLate ? "text-error-600" : "text-white/70"
+                      isLate ? "text-error-600" : "text-foreground/70"
                     )}>
-                      <span className={cn(isLate ? "text-error-500" : "text-white/40")}>Prev:</span>
+                      <span className={cn(isLate ? "text-error-500" : "text-muted-foreground")}>Prev:</span>
                       <span>{formatDate(order.estimated_delivery_date)}</span>
                     </div>
                   </div>
@@ -158,7 +158,7 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                 <TableCell className="text-right">
                   <Link
                     href={`/service-orders/${order.id}`}
-                    className="inline-flex items-center justify-center h-8 w-8 rounded-md text-white/40 hover:text-primary-600 hover:bg-primary-500/5 transition-colors"
+                    className="inline-flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-primary-600 hover:bg-primary-500/5 transition-colors"
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Link>

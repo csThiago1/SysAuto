@@ -53,8 +53,8 @@ export default function VarianciasPage() {
         <div className="flex items-center gap-3">
           <TrendingUp className="h-5 w-5 text-primary-500" />
           <div>
-            <h1 className="text-lg font-semibold text-white">Variâncias do Motor</h1>
-            <p className="text-xs text-white/40 mt-0.5">
+            <h1 className="text-lg font-semibold text-foreground">Variâncias do Motor</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Desvios entre estimado (ficha técnica) e realizado (apontamento/NF-e).
             </p>
           </div>
@@ -72,7 +72,7 @@ export default function VarianciasPage() {
 
       <Tabs defaultValue="fichas">
         <div className="flex items-center gap-4 flex-wrap">
-          <TabsList className="bg-white/5 border border-white/10">
+          <TabsList className="bg-muted/50 border border-border">
             <TabsTrigger value="fichas" className="text-xs">
               Fichas Técnicas
             </TabsTrigger>
@@ -83,10 +83,10 @@ export default function VarianciasPage() {
 
           <div className="flex items-center gap-3 flex-wrap">
             <div className="space-y-0">
-              <Label className="text-white/50 text-xs block mb-1">Mês de referência</Label>
+              <Label className="text-muted-foreground text-xs block mb-1">Mês de referência</Label>
               <Input
                 type="month"
-                className="bg-white/5 border-white/10 text-white h-9 text-sm"
+                className="bg-muted/50 border-border text-foreground h-9 text-sm"
                 value={mes}
                 onChange={(e) => setMes(e.target.value)}
               />
@@ -97,31 +97,31 @@ export default function VarianciasPage() {
         {/* Fichas */}
         <TabsContent value="fichas" className="mt-4">
           {loadingFichas ? (
-            <p className="text-xs text-white/40 py-8 text-center">Carregando...</p>
+            <p className="text-xs text-muted-foreground py-8 text-center">Carregando...</p>
           ) : fichas.length === 0 ? (
-            <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
+            <div className="rounded-lg border border-border bg-muted/50 p-8 text-center text-muted-foreground text-sm">
               Sem variâncias de ficha para o período selecionado.
             </div>
           ) : (
-            <div className="rounded-lg border border-white/10 overflow-hidden">
+            <div className="rounded-lg border border-border overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-white/10 hover:bg-transparent">
-                    <TableHead className="text-white/60 text-xs">Serviço Canônico</TableHead>
-                    <TableHead className="text-white/60 text-xs">Mês</TableHead>
-                    <TableHead className="text-white/60 text-xs text-right">OS</TableHead>
-                    <TableHead className="text-white/60 text-xs text-right">Δ Horas</TableHead>
-                    <TableHead className="text-white/60 text-xs text-right">Δ Insumo</TableHead>
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-foreground/60 text-xs">Serviço Canônico</TableHead>
+                    <TableHead className="text-foreground/60 text-xs">Mês</TableHead>
+                    <TableHead className="text-foreground/60 text-xs text-right">OS</TableHead>
+                    <TableHead className="text-foreground/60 text-xs text-right">Δ Horas</TableHead>
+                    <TableHead className="text-foreground/60 text-xs text-right">Δ Insumo</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {fichas.map((f) => (
-                    <TableRow key={f.id} className="border-white/10">
-                      <TableCell className="text-white/70 font-mono text-xs max-w-[200px] truncate">
+                    <TableRow key={f.id} className="border-border">
+                      <TableCell className="text-foreground/70 font-mono text-xs max-w-[200px] truncate">
                         {f.servico_canonico_id}
                       </TableCell>
-                      <TableCell className="text-white/60 text-xs">{f.mes_referencia.slice(0, 7)}</TableCell>
-                      <TableCell className="text-right text-white/60 text-sm">{f.qtd_os}</TableCell>
+                      <TableCell className="text-foreground/60 text-xs">{f.mes_referencia.slice(0, 7)}</TableCell>
+                      <TableCell className="text-right text-foreground/60 text-sm">{f.qtd_os}</TableCell>
                       <TableCell className={`text-right font-semibold text-sm ${pctColor(f.variancia_horas_pct)}`}>
                         {formatPct(f.variancia_horas_pct)}
                       </TableCell>
@@ -139,7 +139,7 @@ export default function VarianciasPage() {
         {/* Peças */}
         <TabsContent value="pecas" className="mt-4 space-y-4">
           <div className="flex items-center gap-2">
-            <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
+            <label className="flex items-center gap-2 text-sm text-foreground/60 cursor-pointer">
               <input
                 type="checkbox"
                 checked={apenasAlertas}
@@ -160,37 +160,37 @@ export default function VarianciasPage() {
           </div>
 
           {loadingPecas ? (
-            <p className="text-xs text-white/40 py-8 text-center">Carregando...</p>
+            <p className="text-xs text-muted-foreground py-8 text-center">Carregando...</p>
           ) : pecas.length === 0 ? (
-            <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
+            <div className="rounded-lg border border-border bg-muted/50 p-8 text-center text-muted-foreground text-sm">
               Sem variâncias de peça para o período selecionado.
             </div>
           ) : (
-            <div className="rounded-lg border border-white/10 overflow-hidden">
+            <div className="rounded-lg border border-border overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-white/10 hover:bg-transparent">
-                    <TableHead className="text-white/60 text-xs">Peça Canônica</TableHead>
-                    <TableHead className="text-white/60 text-xs">Mês</TableHead>
-                    <TableHead className="text-white/60 text-xs text-right">Amostras</TableHead>
-                    <TableHead className="text-white/60 text-xs text-right">Custo Snapshot</TableHead>
-                    <TableHead className="text-white/60 text-xs text-right">Custo NF-e</TableHead>
-                    <TableHead className="text-white/60 text-xs text-right">Δ</TableHead>
-                    <TableHead className="text-white/60 text-xs text-center">Alerta</TableHead>
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-foreground/60 text-xs">Peça Canônica</TableHead>
+                    <TableHead className="text-foreground/60 text-xs">Mês</TableHead>
+                    <TableHead className="text-foreground/60 text-xs text-right">Amostras</TableHead>
+                    <TableHead className="text-foreground/60 text-xs text-right">Custo Snapshot</TableHead>
+                    <TableHead className="text-foreground/60 text-xs text-right">Custo NF-e</TableHead>
+                    <TableHead className="text-foreground/60 text-xs text-right">Δ</TableHead>
+                    <TableHead className="text-foreground/60 text-xs text-center">Alerta</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {pecas.map((p) => (
-                    <TableRow key={p.id} className="border-white/10">
-                      <TableCell className="text-white/70 font-mono text-xs max-w-[180px] truncate">
+                    <TableRow key={p.id} className="border-border">
+                      <TableCell className="text-foreground/70 font-mono text-xs max-w-[180px] truncate">
                         {p.peca_canonica_id}
                       </TableCell>
-                      <TableCell className="text-white/60 text-xs">{p.mes_referencia.slice(0, 7)}</TableCell>
-                      <TableCell className="text-right text-white/60 text-sm">{p.qtd_amostras}</TableCell>
-                      <TableCell className="text-right text-white/70 text-sm">
+                      <TableCell className="text-foreground/60 text-xs">{p.mes_referencia.slice(0, 7)}</TableCell>
+                      <TableCell className="text-right text-foreground/60 text-sm">{p.qtd_amostras}</TableCell>
+                      <TableCell className="text-right text-foreground/70 text-sm">
                         R$ {parseFloat(p.custo_snapshot_medio).toFixed(2)}
                       </TableCell>
-                      <TableCell className="text-right text-white/70 text-sm">
+                      <TableCell className="text-right text-foreground/70 text-sm">
                         R$ {parseFloat(p.custo_nfe_medio).toFixed(2)}
                       </TableCell>
                       <TableCell className={`text-right font-semibold text-sm ${pctColor(p.variancia_pct)}`}>

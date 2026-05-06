@@ -139,9 +139,9 @@ export function ItemSheet({ open, onOpenChange, budgetId, versionId, item }: Pro
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[480px] sm:max-w-[480px] bg-[#1c1c1e] border-white/10 text-white overflow-y-auto">
+      <SheetContent className="w-[480px] sm:max-w-[480px] bg-card border-border text-foreground overflow-y-auto">
         <SheetHeader>
-          <SheetTitle className="text-white">
+          <SheetTitle className="text-foreground">
             {item ? "Editar Item" : "Novo Item"}
           </SheetTitle>
         </SheetHeader>
@@ -149,20 +149,20 @@ export function ItemSheet({ open, onOpenChange, budgetId, versionId, item }: Pro
         <div className="mt-6 space-y-4">
           {/* Descrição */}
           <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Descrição</Label>
+            <Label className="text-foreground/70 text-xs">Descrição</Label>
             <Input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Ex: Parabrisa dianteiro"
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+              className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
             />
           </div>
 
           {/* Tipo */}
           <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Tipo</Label>
+            <Label className="text-foreground/70 text-xs">Tipo</Label>
             <Select value={itemType} onValueChange={setItemType}>
-              <SelectTrigger className="bg-white/5 border-white/10 text-white">
+              <SelectTrigger className="bg-muted/50 border-border text-foreground">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -178,29 +178,29 @@ export function ItemSheet({ open, onOpenChange, budgetId, versionId, item }: Pro
           {/* Quantidade + Preço + Desconto */}
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Qtd</Label>
+              <Label className="text-foreground/70 text-xs">Qtd</Label>
               <Input
                 type="number"
                 min="0"
                 step="0.001"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className="bg-white/5 border-white/10 text-white"
+                className="bg-muted/50 border-border text-foreground"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Preço Unit. (R$)</Label>
+              <Label className="text-foreground/70 text-xs">Preço Unit. (R$)</Label>
               <Input
                 type="number"
                 min="0"
                 step="0.01"
                 value={unitPrice}
                 onChange={(e) => setUnitPrice(e.target.value)}
-                className="bg-white/5 border-white/10 text-white"
+                className="bg-muted/50 border-border text-foreground"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Desconto (%)</Label>
+              <Label className="text-foreground/70 text-xs">Desconto (%)</Label>
               <Input
                 type="number"
                 min="0"
@@ -208,15 +208,15 @@ export function ItemSheet({ open, onOpenChange, budgetId, versionId, item }: Pro
                 step="0.01"
                 value={discountPct}
                 onChange={(e) => setDiscountPct(e.target.value)}
-                className="bg-white/5 border-white/10 text-white"
+                className="bg-muted/50 border-border text-foreground"
               />
             </div>
           </div>
 
           {/* Total calculado */}
-          <div className="rounded-lg bg-white/5 px-3 py-2 flex justify-between text-sm">
-            <span className="text-white/50">Total Líquido</span>
-            <span className="text-white font-medium">
+          <div className="rounded-lg bg-muted/50 px-3 py-2 flex justify-between text-sm">
+            <span className="text-muted-foreground">Total Líquido</span>
+            <span className="text-foreground font-medium">
               {parseFloat(netPrice).toLocaleString("pt-BR", {
                 style: "currency", currency: "BRL",
               })}
@@ -226,7 +226,7 @@ export function ItemSheet({ open, onOpenChange, budgetId, versionId, item }: Pro
           {/* Operações MO */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-white/70 text-xs">Operações de Mão de Obra</Label>
+              <Label className="text-foreground/70 text-xs">Operações de Mão de Obra</Label>
               <button
                 type="button"
                 onClick={addOperation}
@@ -238,22 +238,22 @@ export function ItemSheet({ open, onOpenChange, budgetId, versionId, item }: Pro
             </div>
 
             {operations.length === 0 && (
-              <p className="text-xs text-white/30 py-2">Nenhuma operação de MO.</p>
+              <p className="text-xs text-muted-foreground py-2">Nenhuma operação de MO.</p>
             )}
 
             {operations.map((op, idx) => (
               <div
                 key={idx}
-                className="rounded-lg border border-white/10 bg-white/5 p-3 space-y-2"
+                className="rounded-lg border border-border bg-muted/50 p-3 space-y-2"
               >
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-white/50 text-xs">Tipo de Operação</Label>
+                    <Label className="text-muted-foreground text-xs">Tipo de Operação</Label>
                     <Select
                       value={op.operation_type_code}
                       onValueChange={(v) => updateOp(idx, "operation_type_code", v)}
                     >
-                      <SelectTrigger className="bg-white/5 border-white/10 text-white text-xs h-8">
+                      <SelectTrigger className="bg-muted/50 border-border text-foreground text-xs h-8">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -264,12 +264,12 @@ export function ItemSheet({ open, onOpenChange, budgetId, versionId, item }: Pro
                     </Select>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-white/50 text-xs">Categoria</Label>
+                    <Label className="text-muted-foreground text-xs">Categoria</Label>
                     <Select
                       value={op.labor_category_code}
                       onValueChange={(v) => updateOp(idx, "labor_category_code", v)}
                     >
-                      <SelectTrigger className="bg-white/5 border-white/10 text-white text-xs h-8">
+                      <SelectTrigger className="bg-muted/50 border-border text-foreground text-xs h-8">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -282,36 +282,36 @@ export function ItemSheet({ open, onOpenChange, budgetId, versionId, item }: Pro
                 </div>
                 <div className="grid grid-cols-3 gap-2 items-end">
                   <div className="space-y-1">
-                    <Label className="text-white/50 text-xs">Horas</Label>
+                    <Label className="text-muted-foreground text-xs">Horas</Label>
                     <Input
                       type="number"
                       min="0"
                       step="0.25"
                       value={op.hours}
                       onChange={(e) => updateOp(idx, "hours", e.target.value)}
-                      className="bg-white/5 border-white/10 text-white h-8 text-xs"
+                      className="bg-muted/50 border-border text-foreground h-8 text-xs"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-white/50 text-xs">R$/hora</Label>
+                    <Label className="text-muted-foreground text-xs">R$/hora</Label>
                     <Input
                       type="number"
                       min="0"
                       step="0.01"
                       value={op.hourly_rate}
                       onChange={(e) => updateOp(idx, "hourly_rate", e.target.value)}
-                      className="bg-white/5 border-white/10 text-white h-8 text-xs"
+                      className="bg-muted/50 border-border text-foreground h-8 text-xs"
                     />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-white/60 font-medium">
+                    <span className="text-xs text-foreground/60 font-medium">
                       = {(parseFloat(op.hours || "0") * parseFloat(op.hourly_rate || "0"))
                           .toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                     </span>
                     <button
                       type="button"
                       onClick={() => removeOp(idx)}
-                      className="text-white/20 hover:text-error-400"
+                      className="text-muted-foreground/50 hover:text-error-400"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -325,7 +325,7 @@ export function ItemSheet({ open, onOpenChange, budgetId, versionId, item }: Pro
           <div className="flex gap-2 pt-2">
             <Button
               variant="ghost"
-              className="flex-1 text-white/50 hover:text-white border border-white/10"
+              className="flex-1 text-muted-foreground hover:text-foreground border border-border"
               onClick={() => onOpenChange(false)}
             >
               Cancelar

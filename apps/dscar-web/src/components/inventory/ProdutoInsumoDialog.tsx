@@ -27,7 +27,7 @@ const UNIDADE_OPTIONS = [
 ]
 
 const INPUT_CLS =
-  "w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-primary-500"
+  "w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary-500"
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -147,13 +147,13 @@ export function ProdutoInsumoDialog({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="sm:w-[500px] overflow-y-auto border-white/10 bg-[#141414]"
+        className="sm:w-[500px] overflow-y-auto border-border bg-card"
       >
         <SheetHeader className="mb-6">
-          <SheetTitle className="text-white">
+          <SheetTitle className="text-foreground">
             {isEdit ? "Editar Insumo" : "Novo Insumo"}
           </SheetTitle>
-          <SheetDescription className="text-white/40">
+          <SheetDescription className="text-muted-foreground">
             {isEdit
               ? `Editando ${produto?.sku_interno || produto?.nome_interno}`
               : "Preencha os dados do insumo."}
@@ -166,7 +166,7 @@ export function ProdutoInsumoDialog({
             <div className="section-divider">IDENTIDADE</div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-0.5 block">
                   SKU INTERNO
                 </label>
                 <input
@@ -177,7 +177,7 @@ export function ProdutoInsumoDialog({
                 />
               </div>
               <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-0.5 block">
                   NOME INTERNO
                 </label>
                 <input
@@ -190,7 +190,7 @@ export function ProdutoInsumoDialog({
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-0.5 block">
                   COD. FABRICANTE
                 </label>
                 <input
@@ -200,7 +200,7 @@ export function ProdutoInsumoDialog({
                 />
               </div>
               <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-0.5 block">
                   COD. EAN
                 </label>
                 <input
@@ -211,7 +211,7 @@ export function ProdutoInsumoDialog({
               </div>
             </div>
             <div>
-              <label className="label-mono text-white/50 mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-0.5 block">
                 NOME FABRICANTE
               </label>
               <input
@@ -227,7 +227,7 @@ export function ProdutoInsumoDialog({
             <div className="section-divider">CLASSIFICACAO</div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-0.5 block">
                   UNIDADE BASE
                 </label>
                 <select
@@ -243,7 +243,7 @@ export function ProdutoInsumoDialog({
                 </select>
               </div>
               <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-0.5 block">
                   CATEGORIA
                 </label>
                 <select
@@ -267,7 +267,7 @@ export function ProdutoInsumoDialog({
             <div className="section-divider">PRECO</div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-0.5 block">
                   PRECO VENDA SUGERIDO
                 </label>
                 <input
@@ -283,7 +283,7 @@ export function ProdutoInsumoDialog({
                 />
               </div>
               <div>
-                <label className="label-mono text-white/50 mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-0.5 block">
                   MARGEM PADRAO %
                 </label>
                 <input
@@ -318,7 +318,7 @@ export function ProdutoInsumoDialog({
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="rounded-md border border-white/10 px-3 py-1.5 text-sm text-white/60 hover:text-white transition-colors"
+            className="rounded-md border border-border px-3 py-1.5 text-sm text-foreground/60 hover:text-foreground transition-colors"
           >
             Cancelar
           </button>
@@ -326,7 +326,7 @@ export function ProdutoInsumoDialog({
             type="button"
             onClick={handleSave}
             disabled={isPending}
-            className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
+            className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
           >
             {isPending ? "Salvando..." : isEdit ? "Salvar" : "Criar"}
           </button>

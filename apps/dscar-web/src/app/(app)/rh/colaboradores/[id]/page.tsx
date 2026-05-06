@@ -67,7 +67,7 @@ export default function EmployeeDetailPage(): React.ReactElement {
     <ErrorBoundary>
       <div className="space-y-5">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-white/50">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link
             href={"/rh/colaboradores" as Route}
             className="flex items-center gap-1 hover:text-primary-600 transition-colors"
@@ -76,7 +76,7 @@ export default function EmployeeDetailPage(): React.ReactElement {
             Colaboradores
           </Link>
           <span>/</span>
-          <span className="text-white">
+          <span className="text-foreground">
             {isLoading ? (
               <Skeleton className="h-4 w-32 inline-block" />
             ) : (
@@ -87,7 +87,7 @@ export default function EmployeeDetailPage(): React.ReactElement {
 
         {/* Header card */}
         {isLoading ? (
-          <div className="rounded-md bg-white/5 shadow-card p-card-padding">
+          <div className="rounded-md bg-muted/50 shadow-card p-card-padding">
             <div className="flex items-start gap-4">
               <Skeleton className="h-14 w-14 rounded-full" />
               <div className="flex-1 space-y-2">
@@ -123,7 +123,7 @@ export default function EmployeeDetailPage(): React.ReactElement {
               <button
                 onClick={handleTerminate}
                 disabled={terminate.isPending}
-                className="rounded bg-red-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                className="rounded bg-red-600 px-2.5 py-1 text-xs font-medium text-foreground hover:bg-red-700 disabled:opacity-50"
               >
                 {terminate.isPending ? "..." : "Confirmar"}
               </button>
@@ -132,7 +132,7 @@ export default function EmployeeDetailPage(): React.ReactElement {
         )}
 
         {/* Tabs nav */}
-        <div className="border-b border-white/10">
+        <div className="border-b border-border">
           <nav className="flex gap-1 overflow-x-auto">
             {TABS.map((tab) => (
               <button
@@ -141,7 +141,7 @@ export default function EmployeeDetailPage(): React.ReactElement {
                 className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab.id
                     ? "border-primary-600 text-primary-600"
-                    : "border-transparent text-white/50 hover:text-white hover:border-white/15"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
                 }`}
               >
                 {tab.label}

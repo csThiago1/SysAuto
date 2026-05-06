@@ -15,9 +15,9 @@ const STATUS_CONFIG: Record<
 > = {
   rascunho: {
     label: "Rascunho",
-    bg: "bg-white/5",
-    text: "text-white/40",
-    border: "border-white/10",
+    bg: "bg-muted/50",
+    text: "text-muted-foreground",
+    border: "border-border",
   },
   pendente_aprovacao: {
     label: "Pend. Aprovacao",
@@ -102,9 +102,9 @@ function NovaOCDialog({
         tabIndex={0}
         aria-label="Fechar"
       />
-      <div className="relative bg-[#1c1c1e] border border-white/10 rounded-lg p-6 w-full max-w-md space-y-4">
-        <h2 className="text-lg font-semibold text-white">Nova Ordem de Compra</h2>
-        <p className="text-sm text-white/40">
+      <div className="relative bg-card border border-border rounded-lg p-6 w-full max-w-md space-y-4">
+        <h2 className="text-lg font-semibold text-foreground">Nova Ordem de Compra</h2>
+        <p className="text-sm text-muted-foreground">
           Informe o ID da OS para criar uma nova OC vinculada.
         </p>
         <input
@@ -112,13 +112,13 @@ function NovaOCDialog({
           placeholder="ID da OS (UUID)"
           value={osId}
           onChange={(e) => setOsId(e.target.value)}
-          className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/20"
+          className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-border"
         />
         <div className="flex justify-end gap-2">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm text-white/50 hover:text-white/70 transition-colors"
+            className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground/70 transition-colors"
           >
             Cancelar
           </button>
@@ -126,7 +126,7 @@ function NovaOCDialog({
             type="button"
             onClick={handleCreate}
             disabled={criarOC.isPending}
-            className="px-4 py-2 text-sm font-medium rounded-md bg-primary-600 text-white hover:bg-primary-700 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium rounded-md bg-primary-600 text-foreground hover:bg-primary-700 transition-colors disabled:opacity-50"
           >
             {criarOC.isPending ? "Criando..." : "Criar OC"}
           </button>
@@ -159,12 +159,12 @@ export default function OrdensCompraPage() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-white/[0.06] flex items-center justify-center">
-            <FileCheck size={20} className="text-white/60" />
+          <div className="w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center">
+            <FileCheck size={20} className="text-foreground/60" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-white">Ordens de Compra</h1>
-            <p className="text-sm text-white/40">
+            <h1 className="text-xl font-semibold text-foreground">Ordens de Compra</h1>
+            <p className="text-sm text-muted-foreground">
               {isLoading
                 ? "Carregando..."
                 : `${ordens?.length ?? 0} ordem${(ordens?.length ?? 0) !== 1 ? "s" : ""}`}
@@ -176,7 +176,7 @@ export default function OrdensCompraPage() {
           type="button"
           onClick={() => setDialogOpen(true)}
           className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md
-                     bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+                     bg-primary-600 text-foreground hover:bg-primary-700 transition-colors"
         >
           <Plus size={16} />
           Nova OC
@@ -184,17 +184,17 @@ export default function OrdensCompraPage() {
       </div>
 
       {/* ── Table ── */}
-      <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+      <div className="overflow-hidden rounded-md border border-border bg-muted/50">
         <table className="w-full">
           <thead>
-            <tr className="bg-white/[0.03] border-b border-white/10">
-              <th className="label-mono text-white/40 text-left px-4 py-3">Numero</th>
-              <th className="label-mono text-white/40 text-left px-4 py-3">OS</th>
-              <th className="label-mono text-white/40 text-left px-4 py-3">Status</th>
-              <th className="label-mono text-white/40 text-right px-4 py-3">Valor Total</th>
-              <th className="label-mono text-white/40 text-center px-4 py-3">Itens</th>
-              <th className="label-mono text-white/40 text-left px-4 py-3">Criado por</th>
-              <th className="label-mono text-white/40 text-left px-4 py-3">Data</th>
+            <tr className="bg-muted/30 border-b border-border">
+              <th className="label-mono text-muted-foreground text-left px-4 py-3">Numero</th>
+              <th className="label-mono text-muted-foreground text-left px-4 py-3">OS</th>
+              <th className="label-mono text-muted-foreground text-left px-4 py-3">Status</th>
+              <th className="label-mono text-muted-foreground text-right px-4 py-3">Valor Total</th>
+              <th className="label-mono text-muted-foreground text-center px-4 py-3">Itens</th>
+              <th className="label-mono text-muted-foreground text-left px-4 py-3">Criado por</th>
+              <th className="label-mono text-muted-foreground text-left px-4 py-3">Data</th>
             </tr>
           </thead>
           <tbody>
@@ -203,14 +203,14 @@ export default function OrdensCompraPage() {
                 <tr key={i} className="border-b border-white/5">
                   {[...Array(7)].map((__, j) => (
                     <td key={j} className="px-4 py-3">
-                      <div className="h-4 bg-white/5 rounded animate-pulse w-20" />
+                      <div className="h-4 bg-muted/50 rounded animate-pulse w-20" />
                     </td>
                   ))}
                 </tr>
               ))
             ) : !ordens?.length ? (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-white/30 text-sm">
+                <td colSpan={7} className="px-4 py-10 text-center text-muted-foreground text-sm">
                   Nenhuma ordem de compra encontrada.
                 </td>
               </tr>
@@ -218,7 +218,7 @@ export default function OrdensCompraPage() {
               ordens.map((oc: OrdemCompra) => (
                 <tr
                   key={oc.id}
-                  className="border-b border-white/5 hover:bg-white/[0.03] cursor-pointer transition-colors"
+                  className="border-b border-white/5 hover:bg-muted/30 cursor-pointer transition-colors"
                 >
                   <td className="px-4 py-3">
                     <Link
@@ -240,22 +240,22 @@ export default function OrdensCompraPage() {
                     <StatusBadge status={oc.status} />
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <span className="font-mono text-sm text-white/70">
+                    <span className="font-mono text-sm text-foreground/70">
                       {formatCurrency(oc.valor_total)}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span className="font-mono text-sm text-white/50">
+                    <span className="font-mono text-sm text-muted-foreground">
                       {oc.total_itens}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-sm text-white/50">
+                    <span className="text-sm text-muted-foreground">
                       {oc.criado_por_nome || "--"}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-xs text-white/40 font-mono">
+                    <span className="text-xs text-muted-foreground font-mono">
                       {formatDate(oc.created_at)}
                     </span>
                   </td>

@@ -29,7 +29,7 @@ const STATUS_CLASSES: Record<string, string> = {
   success: "bg-success-500/10 text-success-400",
   warning: "bg-warning-500/10 text-warning-400",
   destructive: "bg-error-500/10 text-error-400",
-  default: "bg-white/5 text-white/60",
+  default: "bg-muted/50 text-foreground/60",
 };
 
 export default function ValesPage(): React.ReactElement {
@@ -46,16 +46,16 @@ export default function ValesPage(): React.ReactElement {
       <div className="space-y-5">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-foreground">
             Vales e Benefícios
           </h1>
-          <p className="text-sm text-white/50 mt-0.5">
+          <p className="text-sm text-muted-foreground mt-0.5">
             Gestão de solicitações, aprovações e pagamentos
           </p>
         </div>
 
         {/* Status tabs */}
-        <div className="border-b border-white/10">
+        <div className="border-b border-border">
           <nav className="flex gap-1">
             {STATUS_TABS.map((tab) => (
               <button
@@ -64,7 +64,7 @@ export default function ValesPage(): React.ReactElement {
                 className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
                   activeStatus === tab.id
                     ? "border-primary-600 text-primary-600"
-                    : "border-transparent text-white/50 hover:text-white"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {tab.label}
@@ -81,7 +81,7 @@ export default function ValesPage(): React.ReactElement {
             ))}
           </div>
         ) : allowances.length === 0 ? (
-          <div className="rounded-md bg-white/5 shadow-card p-10 text-center text-sm text-white/50">
+          <div className="rounded-md bg-muted/50 shadow-card p-10 text-center text-sm text-muted-foreground">
             Nenhum vale{" "}
             {activeStatus === "requested"
               ? "pendente"
@@ -97,12 +97,12 @@ export default function ValesPage(): React.ReactElement {
               return (
                 <div
                   key={allowance.id}
-                  className="rounded-md bg-white/5 shadow-card p-card-padding"
+                  className="rounded-md bg-muted/50 shadow-card p-card-padding"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-sm font-semibold text-white">
+                        <p className="text-sm font-semibold text-foreground">
                           {ALLOWANCE_TYPE_LABELS[allowance.allowance_type]}
                         </p>
                         <span
@@ -114,12 +114,12 @@ export default function ValesPage(): React.ReactElement {
                           {statusCfg.label}
                         </span>
                         {allowance.is_recurring && (
-                          <span className="text-xs text-white/40">
+                          <span className="text-xs text-muted-foreground">
                             recorrente
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-white/50 mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         Ref:{" "}
                         {new Date(allowance.reference_month).toLocaleDateString(
                           "pt-BR",
@@ -128,7 +128,7 @@ export default function ValesPage(): React.ReactElement {
                         {allowance.notes && ` · ${allowance.notes}`}
                       </p>
                       {allowance.approved_by_name && (
-                        <p className="text-xs text-white/40 mt-0.5">
+                        <p className="text-xs text-muted-foreground mt-0.5">
                           Aprovado por {allowance.approved_by_name}
                           {allowance.approved_at &&
                             ` em ${new Date(allowance.approved_at).toLocaleDateString("pt-BR")}`}
@@ -137,7 +137,7 @@ export default function ValesPage(): React.ReactElement {
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-base font-bold text-white">
+                      <span className="text-base font-bold text-foreground">
                         {new Intl.NumberFormat("pt-BR", {
                           style: "currency",
                           currency: "BRL",
@@ -163,7 +163,7 @@ export default function ValesPage(): React.ReactElement {
                         </button>
                       )}
                       {allowance.status === "paid" && allowance.paid_at && (
-                        <span className="text-xs text-white/40">
+                        <span className="text-xs text-muted-foreground">
                           Pago em{" "}
                           {new Date(allowance.paid_at).toLocaleDateString(
                             "pt-BR"

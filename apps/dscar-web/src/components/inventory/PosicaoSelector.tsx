@@ -23,7 +23,7 @@ interface PosicaoSelectorProps {
 /* ------------------------------------------------------------------ */
 
 const SELECT_CLS =
-  "w-full bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-40 disabled:cursor-not-allowed"
+  "w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-40 disabled:cursor-not-allowed"
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
@@ -70,7 +70,7 @@ export function PosicaoSelector({
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       {/* Armazém */}
       <div>
-        <label className="label-mono text-white/50 mb-0.5 block">
+        <label className="label-mono text-muted-foreground mb-0.5 block">
           ARMAZÉM
         </label>
         <select
@@ -90,7 +90,7 @@ export function PosicaoSelector({
 
       {/* Rua */}
       <div>
-        <label className="label-mono text-white/50 mb-0.5 block">RUA</label>
+        <label className="label-mono text-muted-foreground mb-0.5 block">RUA</label>
         <select
           value={ruaId}
           onChange={(e) => handleRuaChange(e.target.value)}
@@ -111,7 +111,7 @@ export function PosicaoSelector({
 
       {/* Prateleira */}
       <div>
-        <label className="label-mono text-white/50 mb-0.5 block">
+        <label className="label-mono text-muted-foreground mb-0.5 block">
           PRATELEIRA
         </label>
         <select
@@ -134,7 +134,7 @@ export function PosicaoSelector({
 
       {/* Nível */}
       <div>
-        <label className="label-mono text-white/50 mb-0.5 block">NÍVEL</label>
+        <label className="label-mono text-muted-foreground mb-0.5 block">NÍVEL</label>
         <select
           value={value ?? ""}
           onChange={(e) => handleNivelChange(e.target.value)}

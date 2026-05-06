@@ -26,10 +26,10 @@ const OC_STATUS_CONFIG: Record<
 > = {
   rascunho: {
     label: "Rascunho",
-    bg: "bg-white/5",
-    text: "text-white/50",
-    border: "border-white/10",
-    dot: "bg-white/50",
+    bg: "bg-muted/50",
+    text: "text-muted-foreground",
+    border: "border-border",
+    dot: "bg-muted/500",
   },
   pendente_aprovacao: {
     label: "Pendente Aprovacao",
@@ -136,13 +136,13 @@ export function OrdemCompraDetail({
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h2 className="text-lg font-semibold text-white font-mono">
+            <h2 className="text-lg font-semibold text-foreground font-mono">
               {oc.numero}
             </h2>
             <OCStatusBadge status={oc.status} />
           </div>
 
-          <div className="flex items-center gap-4 text-sm text-white/40">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
             {oc.os_number && (
               <span className="flex items-center gap-1">
                 <FileText size={14} className="text-primary-500" />
@@ -189,51 +189,51 @@ export function OrdemCompraDetail({
             <div className="section-divider">{`FORNECEDOR ${idx + 1}`}</div>
 
             {/* Fornecedor info bar */}
-            <div className="bg-white/[0.02] border border-white/[0.08] rounded-t-lg px-4 py-3 flex items-center justify-between">
+            <div className="bg-white/[0.02] border border-border rounded-t-lg px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Truck size={16} className="text-white/30" />
-                <span className="text-sm font-medium text-white/70">
+                <Truck size={16} className="text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground/70">
                   {fornecedorNome}
                 </span>
                 {firstItem?.fornecedor_cnpj && (
-                  <span className="text-xs font-mono text-white/30">
+                  <span className="text-xs font-mono text-muted-foreground">
                     {firstItem.fornecedor_cnpj}
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-3">
                 {firstItem?.fornecedor_contato && (
-                  <span className="text-xs text-white/30">
+                  <span className="text-xs text-muted-foreground">
                     {firstItem.fornecedor_contato}
                   </span>
                 )}
-                <span className="text-xs font-mono font-medium text-white/50">
+                <span className="text-xs font-mono font-medium text-muted-foreground">
                   {formatCurrency(groupTotal)}
                 </span>
               </div>
             </div>
 
             {/* Items table */}
-            <div className="bg-white/5 rounded-b-md border border-t-0 border-white/10 overflow-hidden">
+            <div className="bg-muted/50 rounded-b-md border border-t-0 border-border overflow-hidden">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="label-mono text-white/40 text-left px-4 py-2.5">
+                  <tr className="border-b border-border">
+                    <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
                       DESCRICAO
                     </th>
-                    <th className="label-mono text-white/40 text-left px-4 py-2.5">
+                    <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
                       TIPO
                     </th>
-                    <th className="label-mono text-white/40 text-right px-4 py-2.5">
+                    <th className="label-mono text-muted-foreground text-right px-4 py-2.5">
                       QTD
                     </th>
-                    <th className="label-mono text-white/40 text-right px-4 py-2.5">
+                    <th className="label-mono text-muted-foreground text-right px-4 py-2.5">
                       UNIT
                     </th>
-                    <th className="label-mono text-white/40 text-right px-4 py-2.5">
+                    <th className="label-mono text-muted-foreground text-right px-4 py-2.5">
                       TOTAL
                     </th>
-                    <th className="label-mono text-white/40 text-left px-4 py-2.5">
+                    <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
                       PRAZO
                     </th>
                   </tr>
@@ -245,11 +245,11 @@ export function OrdemCompraDetail({
                       className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
                     >
                       <td className="px-4 py-2.5">
-                        <span className="text-sm text-white/70">
+                        <span className="text-sm text-foreground/70">
                           {item.descricao}
                         </span>
                         {item.codigo_referencia && (
-                          <span className="ml-1.5 text-xs text-white/30 font-mono">
+                          <span className="ml-1.5 text-xs text-muted-foreground font-mono">
                             {item.codigo_referencia}
                           </span>
                         )}
@@ -258,22 +258,22 @@ export function OrdemCompraDetail({
                         <TipoQualidadeBadge tipo={item.tipo_qualidade} />
                       </td>
                       <td className="px-4 py-2.5 text-right">
-                        <span className="text-sm font-mono text-white/60">
+                        <span className="text-sm font-mono text-foreground/60">
                           {item.quantidade}
                         </span>
                       </td>
                       <td className="px-4 py-2.5 text-right">
-                        <span className="text-sm font-mono text-white/60">
+                        <span className="text-sm font-mono text-foreground/60">
                           {formatCurrency(item.valor_unitario)}
                         </span>
                       </td>
                       <td className="px-4 py-2.5 text-right">
-                        <span className="text-sm font-mono font-bold text-white">
+                        <span className="text-sm font-mono font-bold text-foreground">
                           {formatCurrency(item.valor_total)}
                         </span>
                       </td>
                       <td className="px-4 py-2.5">
-                        <span className="text-xs text-white/40">
+                        <span className="text-xs text-muted-foreground">
                           {item.prazo_entrega || "--"}
                         </span>
                       </td>
@@ -288,12 +288,12 @@ export function OrdemCompraDetail({
 
       {/* ── OC Total ── */}
       <div className="section-divider">TOTAL DA ORDEM</div>
-      <div className="bg-white/5 border border-white/10 rounded-lg p-6 flex items-center justify-between">
+      <div className="bg-muted/50 border border-border rounded-lg p-6 flex items-center justify-between">
         <div className="space-y-1">
-          <p className="text-2xl font-mono font-bold text-white">
+          <p className="text-2xl font-mono font-bold text-foreground">
             {formatCurrency(oc.valor_total)}
           </p>
-          <p className="text-xs text-white/30">
+          <p className="text-xs text-muted-foreground">
             {oc.total_itens} {oc.total_itens === 1 ? "item" : "itens"} ·{" "}
             {supplierCount}{" "}
             {supplierCount === 1 ? "fornecedor" : "fornecedores"}
@@ -301,7 +301,7 @@ export function OrdemCompraDetail({
         </div>
 
         {oc.observacoes && (
-          <p className="text-sm text-white/40 max-w-sm text-right">
+          <p className="text-sm text-muted-foreground max-w-sm text-right">
             {oc.observacoes}
           </p>
         )}
@@ -313,8 +313,8 @@ export function OrdemCompraDetail({
           <div className="section-divider">APROVACAO</div>
 
           {showRejectInput ? (
-            <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-3">
-              <label className="label-mono text-white/50">
+            <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-3">
+              <label className="label-mono text-muted-foreground">
                 MOTIVO DA REJEICAO
               </label>
               <textarea
@@ -322,7 +322,7 @@ export function OrdemCompraDetail({
                 onChange={(e) => setMotivoRejeicao(e.target.value)}
                 placeholder="Descreva o motivo da rejeicao..."
                 rows={3}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-white/20 resize-none"
+                className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground/80 placeholder:text-muted-foreground/50 focus:outline-none focus:border-border resize-none"
               />
               <div className="flex items-center gap-2">
                 <button
@@ -343,7 +343,7 @@ export function OrdemCompraDetail({
                     setShowRejectInput(false)
                     setMotivoRejeicao("")
                   }}
-                  className="px-4 py-2 rounded-lg text-sm text-white/40 hover:text-white/60 transition-colors"
+                  className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground/60 transition-colors"
                 >
                   Cancelar
                 </button>
@@ -379,7 +379,7 @@ export function OrdemCompraDetail({
             </div>
           )}
 
-          <p className="text-xs text-white/20">
+          <p className="text-xs text-muted-foreground/50">
             Aprovacao requer permissao Financeiro/Admin (MANAGER+)
           </p>
         </div>

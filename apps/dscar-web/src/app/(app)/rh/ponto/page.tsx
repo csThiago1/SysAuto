@@ -40,10 +40,10 @@ function LiveClock(): React.ReactElement {
 
   return (
     <div className="text-center">
-      <p className="text-5xl font-bold font-plate text-white tabular-nums">
+      <p className="text-5xl font-bold font-plate text-foreground tabular-nums">
         {time.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
       </p>
-      <p className="mt-1 text-sm text-white/50">
+      <p className="mt-1 text-sm text-muted-foreground">
         {time.toLocaleDateString("pt-BR", {
           weekday: "long",
           day: "numeric",
@@ -82,8 +82,8 @@ export default function PontoPage(): React.ReactElement {
       <div className="space-y-6 max-w-lg mx-auto">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Ponto</h1>
-            <p className="text-sm text-white/50 mt-0.5">
+            <h1 className="text-2xl font-bold text-foreground">Ponto</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
               Registro de ponto do colaborador
             </p>
           </div>
@@ -96,7 +96,7 @@ export default function PontoPage(): React.ReactElement {
         </div>
 
         {/* Clock */}
-        <div className="rounded-md bg-white/5 shadow-card p-8 space-y-6">
+        <div className="rounded-md bg-muted/50 shadow-card p-8 space-y-6">
           <LiveClock />
 
           {/* Employee info */}
@@ -110,7 +110,7 @@ export default function PontoPage(): React.ReactElement {
               para criar.
             </p>
           ) : myEmployee ? (
-            <p className="text-center text-sm text-white/60">
+            <p className="text-center text-sm text-foreground/60">
               {myEmployee.user.name} · {myEmployee.position_display}
             </p>
           ) : null}
@@ -124,14 +124,14 @@ export default function PontoPage(): React.ReactElement {
                   <button
                     onClick={() => handleRegister("break_end")}
                     disabled={register.isPending || !myEmployee}
-                    className="rounded-md bg-blue-600 hover:bg-blue-700 px-6 py-3 text-sm font-semibold text-white transition-colors disabled:opacity-50"
+                    className="rounded-md bg-blue-600 hover:bg-blue-700 px-6 py-3 text-sm font-semibold text-foreground transition-colors disabled:opacity-50"
                   >
                     {CLOCK_ENTRY_LABELS["break_end"]}
                   </button>
                   <button
                     onClick={() => handleRegister("clock_out")}
                     disabled={register.isPending || !myEmployee}
-                    className="rounded-md bg-red-600 hover:bg-red-700 px-6 py-3 text-sm font-semibold text-white transition-colors disabled:opacity-50"
+                    className="rounded-md bg-red-600 hover:bg-red-700 px-6 py-3 text-sm font-semibold text-foreground transition-colors disabled:opacity-50"
                   >
                     {CLOCK_ENTRY_LABELS["clock_out"]}
                   </button>
@@ -140,12 +140,12 @@ export default function PontoPage(): React.ReactElement {
                 <button
                   onClick={() => handleRegister(nextType)}
                   disabled={register.isPending || !myEmployee}
-                  className={`rounded-md ${BUTTON_COLORS[nextType]} px-8 py-3 text-base font-semibold text-white transition-colors disabled:opacity-50`}
+                  className={`rounded-md ${BUTTON_COLORS[nextType]} px-8 py-3 text-base font-semibold text-foreground transition-colors disabled:opacity-50`}
                 >
                   {register.isPending ? "Registrando..." : CLOCK_ENTRY_LABELS[nextType]}
                 </button>
               ) : (
-                <p className="text-sm text-white/50 font-medium">
+                <p className="text-sm text-muted-foreground font-medium">
                   Expediente encerrado. Até amanhã!
                 </p>
               )}
@@ -154,9 +154,9 @@ export default function PontoPage(): React.ReactElement {
         </div>
 
         {/* Today's entries */}
-        <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
-          <div className="px-card-padding py-3 border-b border-white/10">
-            <h3 className="text-sm font-semibold text-white">
+        <div className="rounded-md bg-muted/50 shadow-card overflow-hidden">
+          <div className="px-card-padding py-3 border-b border-border">
+            <h3 className="text-sm font-semibold text-foreground">
               Registros de hoje
             </h3>
           </div>
@@ -167,7 +167,7 @@ export default function PontoPage(): React.ReactElement {
               ))}
             </div>
           ) : !summary || summary.entries.length === 0 ? (
-            <div className="px-card-padding py-6 text-center text-sm text-white/50">
+            <div className="px-card-padding py-6 text-center text-sm text-muted-foreground">
               Nenhum registro hoje.
             </div>
           ) : (
@@ -177,10 +177,10 @@ export default function PontoPage(): React.ReactElement {
                   key={entry.id}
                   className="flex items-center justify-between px-card-padding py-2.5"
                 >
-                  <span className="text-sm text-white/70">
+                  <span className="text-sm text-foreground/70">
                     {CLOCK_ENTRY_LABELS[entry.type]}
                   </span>
-                  <span className="text-sm font-medium text-white tabular-nums">
+                  <span className="text-sm font-medium text-foreground tabular-nums">
                     {new Date(entry.timestamp).toLocaleTimeString("pt-BR", {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -188,11 +188,11 @@ export default function PontoPage(): React.ReactElement {
                   </span>
                 </div>
               ))}
-              <div className="flex items-center justify-between px-card-padding py-2.5 bg-white/[0.03]">
-                <span className="text-xs font-medium text-white/50">
+              <div className="flex items-center justify-between px-card-padding py-2.5 bg-muted/30">
+                <span className="text-xs font-medium text-muted-foreground">
                   Total trabalhado
                 </span>
-                <span className="text-sm font-bold text-white">
+                <span className="text-sm font-bold text-foreground">
                   {Math.floor(summary.total_minutes / 60)}h{" "}
                   {summary.total_minutes % 60}min
                 </span>

@@ -61,7 +61,7 @@ export default function LoginPage(): React.ReactElement {
 
         <Card className="w-full max-w-md border-secondary-800 bg-secondary-900 shadow-dropdown">
           <CardHeader>
-            <CardTitle className="text-white">DS Car ERP</CardTitle>
+            <CardTitle className="text-foreground">DS Car ERP</CardTitle>
             <p className="text-sm text-secondary-400">Acesse sua conta</p>
           </CardHeader>
           <CardContent>
@@ -76,7 +76,7 @@ export default function LoginPage(): React.ReactElement {
                   placeholder="dev@dscar.com.br"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-secondary-950 border-secondary-700 text-white placeholder:text-secondary-600 focus-visible:ring-primary-500"
+                  className="bg-secondary-950 border-secondary-700 text-foreground placeholder:text-secondary-600 focus-visible:ring-primary-500"
                   autoComplete="email"
                   required
                 />
@@ -91,7 +91,7 @@ export default function LoginPage(): React.ReactElement {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-secondary-950 border-secondary-700 text-white placeholder:text-secondary-600 focus-visible:ring-primary-500"
+                  className="bg-secondary-950 border-secondary-700 text-foreground placeholder:text-secondary-600 focus-visible:ring-primary-500"
                   autoComplete="current-password"
                   required
                 />
@@ -121,7 +121,7 @@ export default function LoginPage(): React.ReactElement {
 
                 <Button
                   variant="outline"
-                  className="w-full border-secondary-700 bg-transparent text-secondary-200 hover:bg-secondary-800 hover:text-white"
+                  className="w-full border-secondary-700 bg-transparent text-secondary-200 hover:bg-secondary-800 hover:text-foreground"
                   onClick={() => void handleKeycloak()}
                   disabled={isLoading}
                 >

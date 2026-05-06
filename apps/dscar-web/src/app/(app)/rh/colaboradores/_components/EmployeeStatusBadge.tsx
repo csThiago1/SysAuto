@@ -14,7 +14,7 @@ const VARIANT_CLASSES: Record<string, string> = {
   success: "bg-success-500/10 text-success-400 border-success-500/20",
   warning: "bg-warning-500/10 text-warning-400 border-warning-500/20",
   destructive: "bg-error-500/10 text-error-400 border-error-500/20",
-  default: "bg-white/5 text-white/60 border-white/10",
+  default: "bg-muted/50 text-foreground/60 border-border",
 };
 
 export function EmployeeStatusBadge({

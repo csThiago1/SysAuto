@@ -52,7 +52,7 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
         <Button variant="outline" size="icon" className="h-8 w-8" onClick={goBack}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <h2 className="text-base font-semibold text-white/90 capitalize min-w-[200px] text-center">
+        <h2 className="text-base font-semibold text-foreground/90 capitalize min-w-[200px] text-center">
           {getLabel()}
         </h2>
         <Button variant="outline" size="icon" className="h-8 w-8" onClick={goForward}>
@@ -61,7 +61,7 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
         <Button
           variant="ghost"
           size="sm"
-          className="text-xs text-white/50"
+          className="text-xs text-muted-foreground"
           onClick={() => onDateChange(new Date())}
         >
           Hoje
@@ -70,7 +70,7 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
 
       <div className="flex items-center gap-2">
         {/* Seletor de view */}
-        <div className="flex rounded-md border border-white/10 bg-white/5 p-0.5">
+        <div className="flex rounded-md border border-border bg-muted/50 p-0.5">
           {(["month", "week", "day"] as CalendarView[]).map((v) => (
             <button
               key={v}
@@ -78,8 +78,8 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
               onClick={() => onViewChange(v)}
               className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
                 view === v
-                  ? "bg-white/10 text-white"
-                  : "text-white/50 hover:text-white/70"
+                  ? "bg-muted text-foreground"
+                  : "text-muted-foreground hover:text-foreground/70"
               }`}
             >
               {VIEW_LABELS[v]}
@@ -87,7 +87,7 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
           ))}
         </div>
 
-        <Button onClick={onSchedule} size="sm" className="bg-primary-600 hover:bg-primary-700 text-white gap-1.5">
+        <Button onClick={onSchedule} size="sm" className="bg-primary-600 hover:bg-primary-700 text-foreground gap-1.5">
           <CalendarDays className="h-3.5 w-3.5" />
           Agendar
         </Button>

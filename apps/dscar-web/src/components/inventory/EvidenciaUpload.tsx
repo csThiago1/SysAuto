@@ -80,13 +80,13 @@ export default function EvidenciaUpload({
           <img
             src={preview}
             alt="Evidencia"
-            className="h-24 w-24 rounded-lg object-cover border border-white/10"
+            className="h-24 w-24 rounded-lg object-cover border border-border"
           />
           {!disabled && (
             <button
               type="button"
               onClick={handleClear}
-              className="absolute -top-1.5 -right-1.5 rounded-full bg-error-600 p-0.5 text-white hover:bg-error-700 transition-colors"
+              className="absolute -top-1.5 -right-1.5 rounded-full bg-error-600 p-0.5 text-foreground hover:bg-error-700 transition-colors"
             >
               <X className="h-3 w-3" />
             </button>
@@ -102,15 +102,15 @@ export default function EvidenciaUpload({
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") handleClick()
           }}
-          className={`border-2 border-dashed border-white/20 rounded-lg p-6 text-center cursor-pointer transition-colors hover:border-white/30 hover:bg-white/[0.02] ${
+          className={`border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer transition-colors hover:border-white/30 hover:bg-white/[0.02] ${
             disabled ? "opacity-40 pointer-events-none" : ""
           }`}
         >
-          <Upload className="h-6 w-6 text-white/30 mx-auto mb-2" />
-          <p className="text-sm text-white/40">
+          <Upload className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">
             Clique ou arraste uma imagem
           </p>
-          <p className="text-xs text-white/20 mt-1">PNG, JPG, max 5 MB</p>
+          <p className="text-xs text-muted-foreground/50 mt-1">PNG, JPG, max 5 MB</p>
         </div>
       )}
 

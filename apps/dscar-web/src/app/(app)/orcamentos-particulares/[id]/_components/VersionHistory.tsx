@@ -15,13 +15,13 @@ const STATUS_LABELS: Record<BudgetVersionStatus, string> = {
 }
 
 const STATUS_COLORS: Record<BudgetVersionStatus, string> = {
-  draft:      "text-white/50 bg-white/10 border-white/10",
+  draft:      "text-muted-foreground bg-muted border-border",
   sent:       "text-info-400 bg-info-400/10 border-info-400/20",
   approved:   "text-success-400 bg-success-400/10 border-success-400/20",
   rejected:   "text-error-400 bg-error-400/10 border-error-400/20",
   expired:    "text-warning-400 bg-warning-400/10 border-warning-400/20",
   revision:   "text-warning-400 bg-warning-400/10 border-warning-400/20",
-  superseded: "text-white/20 bg-white/5 border-white/5",
+  superseded: "text-muted-foreground/50 bg-muted/50 border-white/5",
 }
 
 const fmt = (iso: string | null) =>
@@ -37,11 +37,11 @@ export function VersionHistory({ budgetId }: Props) {
   const { data: versions = [], isLoading } = useBudgetVersions(budgetId)
 
   if (isLoading) {
-    return <div className="text-white/30 text-sm py-4">Carregando versões...</div>
+    return <div className="text-muted-foreground text-sm py-4">Carregando versões...</div>
   }
 
   if (versions.length === 0) {
-    return <div className="text-white/30 text-sm py-4">Nenhuma versão encontrada.</div>
+    return <div className="text-muted-foreground text-sm py-4">Nenhuma versão encontrada.</div>
   }
 
   return (
@@ -49,22 +49,22 @@ export function VersionHistory({ budgetId }: Props) {
       {versions.map((v) => (
         <div
           key={v.id}
-          className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-2"
+          className="rounded-xl border border-border bg-muted/50 p-4 space-y-2"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-white font-medium">Versão {v.version_number}</span>
+              <span className="text-foreground font-medium">Versão {v.version_number}</span>
               <Badge className={`text-xs border ${STATUS_COLORS[v.status]}`}>
                 {STATUS_LABELS[v.status]}
               </Badge>
             </div>
-            <span className="text-white/40 text-xs font-mono">
+            <span className="text-muted-foreground text-xs font-mono">
               {parseFloat(v.net_total).toLocaleString("pt-BR", {
                 style: "currency", currency: "BRL",
               })}
             </span>
           </div>
-          <div className="grid grid-cols-3 gap-2 text-xs text-white/40">
+          <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
             <span>Criado: {fmt(v.created_at)}</span>
             <span>Enviado: {fmt(v.sent_at)}</span>
             <span>Aprovado: {fmt(v.approved_at)}</span>

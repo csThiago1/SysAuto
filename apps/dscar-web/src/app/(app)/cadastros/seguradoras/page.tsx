@@ -82,12 +82,12 @@ export default function SeguradorasPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Seguradoras</h1>
-          <p className="mt-1 text-sm text-white/50">
+          <h1 className="text-2xl font-bold text-foreground">Seguradoras</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Seguradoras cadastradas no sistema — compartilhadas entre todas as unidades.
           </p>
         </div>
-        <Button onClick={handleNew} className="bg-primary-600 hover:bg-primary-700 text-white gap-1.5">
+        <Button onClick={handleNew} className="bg-primary-600 hover:bg-primary-700 text-foreground gap-1.5">
           <Plus className="h-4 w-4" />
           Nova Seguradora
         </Button>
@@ -95,12 +95,12 @@ export default function SeguradorasPage() {
 
       {/* Search */}
       <div className="relative max-w-xs">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
           placeholder="Buscar seguradora..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 bg-white/5 h-9"
+          className="pl-9 bg-muted/50 h-9"
         />
       </div>
 
@@ -108,13 +108,13 @@ export default function SeguradorasPage() {
       {isLoading ? (
         <TableSkeleton columns={6} rows={6} />
       ) : insurers.length === 0 ? (
-        <div className="py-12 text-center text-sm text-white/40">
+        <div className="py-12 text-center text-sm text-muted-foreground">
           {search ? "Nenhuma seguradora encontrada." : "Nenhuma seguradora cadastrada."}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+        <div className="overflow-hidden rounded-md border border-border bg-muted/50">
           <Table>
-            <TableHeader className="bg-white/[0.03]">
+            <TableHeader className="bg-muted/30">
               <TableRow>
                 <TableHead className="w-16">Logo</TableHead>
                 <TableHead>Nome</TableHead>
@@ -130,7 +130,7 @@ export default function SeguradorasPage() {
                   {/* Logo cell — click to upload */}
                   <TableCell className="py-2">
                     <label className="cursor-pointer group relative" title="Clique para trocar o logo">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 overflow-hidden shadow-sm group-hover:ring-2 group-hover:ring-primary-600/30 transition">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted/50 overflow-hidden shadow-sm group-hover:ring-2 group-hover:ring-primary-600/30 transition">
                         {ins.logo_url ? (
                           <img
                             src={ins.logo_url}
@@ -139,7 +139,7 @@ export default function SeguradorasPage() {
                           />
                         ) : (
                           <div
-                            className="flex h-full w-full items-center justify-center text-white text-xs font-bold"
+                            className="flex h-full w-full items-center justify-center text-foreground text-xs font-bold"
                             style={{ backgroundColor: ins.brand_color || "#6b7280" }}
                           >
                             {ins.abbreviation || ins.name.charAt(0)}
@@ -156,25 +156,25 @@ export default function SeguradorasPage() {
                   </TableCell>
 
                   <TableCell className="py-2">
-                    <div className="font-medium text-white/90">{ins.trade_name || ins.name}</div>
+                    <div className="font-medium text-foreground/90">{ins.trade_name || ins.name}</div>
                     {ins.trade_name && (
-                      <div className="text-xs text-white/40">{ins.name}</div>
+                      <div className="text-xs text-muted-foreground">{ins.name}</div>
                     )}
                   </TableCell>
 
-                  <TableCell className="py-2 font-mono text-white/60">{ins.abbreviation || "—"}</TableCell>
+                  <TableCell className="py-2 font-mono text-foreground/60">{ins.abbreviation || "—"}</TableCell>
 
                   <TableCell className="py-2">
                     <div className="flex items-center gap-2">
                       <div
-                        className="h-5 w-5 rounded-full border border-white/10 shrink-0"
+                        className="h-5 w-5 rounded-full border border-border shrink-0"
                         style={{ backgroundColor: ins.brand_color || "#6b7280" }}
                       />
-                      <span className="font-mono text-xs text-white/50">{ins.brand_color || "—"}</span>
+                      <span className="font-mono text-xs text-muted-foreground">{ins.brand_color || "—"}</span>
                     </div>
                   </TableCell>
 
-                  <TableCell className="py-2 font-mono text-xs text-white/60">{ins.cnpj}</TableCell>
+                  <TableCell className="py-2 font-mono text-xs text-foreground/60">{ins.cnpj}</TableCell>
 
                   <TableCell className="py-2 text-right">
                     <div className="flex justify-end gap-1">
@@ -217,7 +217,7 @@ export default function SeguradorasPage() {
         </div>
       )}
 
-      <p className="text-xs text-white/40 flex items-center gap-1">
+      <p className="text-xs text-muted-foreground flex items-center gap-1">
         <Shield className="h-3 w-3" />
         Clique no logo da seguradora para trocar a imagem rapidamente (PNG ou SVG).
       </p>

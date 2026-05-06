@@ -152,7 +152,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
           <button
             type="button"
             onClick={handleBuscarOutro}
-            className="text-xs text-white/40 hover:text-white/60 underline"
+            className="text-xs text-muted-foreground hover:text-foreground/60 underline"
           >
             ou buscar outro
           </button>
@@ -164,16 +164,16 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
   // ── Modo: criar novo cliente ─────────────────────────────────────
   if (mode === "create") {
     return (
-      <div className="rounded-lg border border-dashed border-white/15 bg-white/[0.03] px-3 py-2 space-y-1.5">
+      <div className="rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2 space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-white/60">
+          <span className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-foreground/60">
             <UserPlus className="h-3 w-3" />
             Novo cliente
           </span>
           <button
             type="button"
             onClick={() => setMode("search")}
-            className="text-xs text-white/40 hover:text-white/60"
+            className="text-xs text-muted-foreground hover:text-foreground/60"
           >
             ← Voltar
           </button>
@@ -235,7 +235,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
           <button
             type="button"
             onClick={() => setMode("search")}
-            className="rounded border border-white/15 px-2.5 py-1 text-xs font-medium text-white/60 hover:bg-white/5"
+            className="rounded border border-border px-2.5 py-1 text-xs font-medium text-foreground/60 hover:bg-muted/50"
           >
             Cancelar
           </button>
@@ -243,7 +243,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
             type="button"
             onClick={handleCreate}
             disabled={!canCreate || createMutation.isPending}
-            className="flex items-center gap-1 rounded bg-primary-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+            className="flex items-center gap-1 rounded bg-primary-600 px-2.5 py-1 text-xs font-medium text-foreground hover:bg-primary-700 disabled:opacity-50"
           >
             {createMutation.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
             {createMutation.isPending ? "Salvando..." : "Cadastrar"}
@@ -262,7 +262,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
     <div ref={containerRef} className="relative">
       <div className="relative flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-white/40 pointer-events-none" />
+          <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
           <input
             ref={inputRef}
             type="text"
@@ -275,13 +275,13 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
             autoComplete="off"
           />
           {isFetching && (
-            <Loader2 className="absolute right-2.5 top-2 h-3.5 w-3.5 animate-spin text-white/40" />
+            <Loader2 className="absolute right-2.5 top-2 h-3.5 w-3.5 animate-spin text-muted-foreground" />
           )}
         </div>
         <button
           type="button"
           onClick={() => openCreateForm(query)}
-          className="shrink-0 flex items-center gap-1 rounded border border-dashed border-white/15 px-2 py-1 text-xs font-medium text-white/50 hover:border-white/30 hover:text-white/70 h-8"
+          className="shrink-0 flex items-center gap-1 rounded border border-dashed border-border px-2 py-1 text-xs font-medium text-muted-foreground hover:border-white/30 hover:text-foreground/70 h-8"
         >
           <UserPlus className="h-3 w-3" />
           Novo
@@ -289,13 +289,13 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
       </div>
 
       {showResults && (
-        <div className="absolute z-20 mt-1 w-full rounded-lg border border-white/10 bg-white/5 shadow-lg overflow-hidden">
+        <div className="absolute z-20 mt-1 w-full rounded-lg border border-border bg-muted/50 shadow-lg overflow-hidden">
           <ul>
             {results.map((c) => (
               <li key={c.id}>
                 <button
                   type="button"
-                  className="flex w-full items-start gap-3 px-3 py-2 text-left hover:bg-white/[0.03] transition-colors"
+                  className="flex w-full items-start gap-3 px-3 py-2 text-left hover:bg-muted/30 transition-colors"
                   onClick={() =>
                     handleSelect({
                       id: c.id,
@@ -306,9 +306,9 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
                   }
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">{c.name}</p>
+                    <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
                     {(c.cpf_masked || c.phone_masked) && (
-                      <p className="text-xs text-white/50 mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {[c.cpf_masked, c.phone_masked].filter(Boolean).join(" · ")}
                       </p>
                     )}
@@ -320,7 +320,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
           <button
             type="button"
             onClick={() => openCreateForm(query)}
-            className="flex w-full items-center gap-2 border-t border-white/10 px-3 py-2 text-xs font-medium text-primary-600 hover:bg-white/[0.03] transition-colors"
+            className="flex w-full items-center gap-2 border-t border-border px-3 py-2 text-xs font-medium text-primary-600 hover:bg-muted/30 transition-colors"
           >
             <UserPlus className="h-3.5 w-3.5" />
             Cadastrar novo cliente
@@ -329,14 +329,14 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
       )}
 
       {showEmpty && (
-        <div className="absolute z-20 mt-1 w-full rounded-lg border border-white/10 bg-white/5 shadow-lg">
+        <div className="absolute z-20 mt-1 w-full rounded-lg border border-border bg-muted/50 shadow-lg">
           <div className="px-3 py-2 text-center">
-            <p className="text-sm text-white/50">Nenhum cliente encontrado.</p>
+            <p className="text-sm text-muted-foreground">Nenhum cliente encontrado.</p>
           </div>
           <button
             type="button"
             onClick={() => openCreateForm(query)}
-            className="flex w-full items-center justify-center gap-2 border-t border-white/10 px-3 py-2 text-sm font-medium text-primary-600 hover:bg-white/[0.03] transition-colors"
+            className="flex w-full items-center justify-center gap-2 border-t border-border px-3 py-2 text-sm font-medium text-primary-600 hover:bg-muted/30 transition-colors"
           >
             <UserPlus className="h-4 w-4" />
             Cadastrar &quot;{query}&quot;

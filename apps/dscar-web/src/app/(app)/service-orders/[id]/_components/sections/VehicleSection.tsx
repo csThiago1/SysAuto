@@ -54,10 +54,10 @@ export function VehicleSection({ form }: VehicleSectionProps) {
           <img
             src={makeLogo}
             alt="Logo montadora"
-            className="h-14 w-14 shrink-0 rounded-lg border border-white/10 bg-white/[0.03] object-contain p-1.5"
+            className="h-14 w-14 shrink-0 rounded-lg border border-border bg-muted/30 object-contain p-1.5"
           />
         ) : (
-          <div className="h-14 w-14 shrink-0 rounded-lg border-2 border-dashed border-white/10 bg-white/[0.03] flex items-center justify-center">
+          <div className="h-14 w-14 shrink-0 rounded-lg border-2 border-dashed border-border bg-muted/30 flex items-center justify-center">
             <span className="text-2xl">🚗</span>
           </div>
         )}
@@ -75,7 +75,7 @@ export function VehicleSection({ form }: VehicleSectionProps) {
               onChange={handlePlateChange}
             />
             {isFetching && (
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/15 border-t-primary-600" />
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-primary-600" />
             )}
           </div>
           {errors.plate && (

@@ -87,14 +87,14 @@ function SimuladorContent() {
     <div className="flex flex-col gap-6 p-6 max-w-6xl mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">Simulador de Fichas Técnicas</h1>
-        <p className="mt-1 text-sm text-white/50">
+        <h1 className="text-2xl font-bold text-foreground">Simulador de Fichas Técnicas</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Visualize a ficha base e o resultado com multiplicadores de tamanho.
         </p>
       </div>
 
       {/* Filtros */}
-      <div className="grid grid-cols-3 gap-4 p-4 bg-white/5 rounded-md border border-white/10">
+      <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-md border border-border">
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">Serviço</Label>
           <Select value={servicoId} onValueChange={setServicoId}>
@@ -148,13 +148,13 @@ function SimuladorContent() {
       {/* Multiplicador info */}
       {servicoSelecionado && (
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-white/60">Aplica multiplicador de tamanho:</span>
+          <span className="text-foreground/60">Aplica multiplicador de tamanho:</span>
           {aplica ? (
             <Badge className="bg-warning-500/10 text-warning-400 border-warning-500/20 text-xs">
               Sim
             </Badge>
           ) : (
-            <Badge variant="outline" className="text-xs text-white/40">
+            <Badge variant="outline" className="text-xs text-muted-foreground">
               Não — serviço com tempo/quantidade fixos
             </Badge>
           )}
@@ -163,7 +163,7 @@ function SimuladorContent() {
 
       {/* Loading / Error */}
       {servicoId && loadingFicha && (
-        <p className="text-sm text-white/40">Buscando ficha técnica...</p>
+        <p className="text-sm text-muted-foreground">Buscando ficha técnica...</p>
       )}
       {servicoId && error && !loadingFicha && (
         <div className="p-4 rounded-md bg-error-500/10 border border-error-500/20 text-sm text-error-400">
@@ -176,7 +176,7 @@ function SimuladorContent() {
         <div className="grid grid-cols-[1fr_auto_1fr] gap-4">
           {/* Ficha Base */}
           <div className="flex flex-col gap-3">
-            <h2 className="text-sm font-semibold text-white/70">
+            <h2 className="text-sm font-semibold text-foreground/70">
               Ficha Base — v{fichaBase.versao}
             </h2>
             <FichaTable ficha={fichaBase} label="Base" />
@@ -184,15 +184,15 @@ function SimuladorContent() {
 
           {/* Separador */}
           <div className="flex items-center justify-center pt-8">
-            <ArrowRight className="h-5 w-5 text-white/30" />
+            <ArrowRight className="h-5 w-5 text-muted-foreground" />
           </div>
 
           {/* Ficha com multiplicadores */}
           <div className="flex flex-col gap-3">
-            <h2 className="text-sm font-semibold text-white/70">
+            <h2 className="text-sm font-semibold text-foreground/70">
               Com Multiplicadores
               {tamanhoSelecionado && (
-                <span className="ml-2 text-white/40 font-normal">
+                <span className="ml-2 text-muted-foreground font-normal">
                   ({tamanhoSelecionado.nome})
                 </span>
               )}
@@ -200,7 +200,7 @@ function SimuladorContent() {
             {fichaComMulti && tamanhoSelecionado ? (
               <FichaTable ficha={fichaComMulti} label="Com mult." variant="adjusted" />
             ) : (
-              <div className="flex items-center justify-center h-32 rounded-md border border-dashed border-white/10 text-sm text-white/40">
+              <div className="flex items-center justify-center h-32 rounded-md border border-dashed border-border text-sm text-muted-foreground">
                 {!aplica
                   ? "— serviço não aplica multiplicador"
                   : "Selecione um tamanho para ver o resultado"}
@@ -230,15 +230,15 @@ function FichaTable({
     <div className="flex flex-col gap-3">
       {/* Mão de Obra */}
       <div>
-        <p className="text-xs font-medium text-white/50 mb-1 uppercase tracking-wide">
+        <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wide">
           Mão de Obra
         </p>
         {ficha.maos_obra.length === 0 ? (
-          <p className="text-xs text-white/40">—</p>
+          <p className="text-xs text-muted-foreground">—</p>
         ) : (
-          <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+          <div className="overflow-hidden rounded-md border border-border bg-muted/50">
             <Table>
-              <TableHeader className="bg-white/[0.03]">
+              <TableHeader className="bg-muted/30">
                 <TableRow>
                   <TableHead className="text-xs py-1.5">Categoria</TableHead>
                   <TableHead className="text-xs py-1.5 text-right w-20">Horas</TableHead>
@@ -252,7 +252,7 @@ function FichaTable({
                       className={`py-1.5 text-xs text-right font-mono ${
                         isAdjusted && mo.afetada_por_tamanho
                           ? "text-warning-400 font-semibold"
-                          : "text-white/70"
+                          : "text-foreground/70"
                       }`}
                     >
                       {mo.horas}h
@@ -267,15 +267,15 @@ function FichaTable({
 
       {/* Insumos */}
       <div>
-        <p className="text-xs font-medium text-white/50 mb-1 uppercase tracking-wide">
+        <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wide">
           Insumos
         </p>
         {ficha.insumos.length === 0 ? (
-          <p className="text-xs text-white/40">—</p>
+          <p className="text-xs text-muted-foreground">—</p>
         ) : (
-          <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+          <div className="overflow-hidden rounded-md border border-border bg-muted/50">
             <Table>
-              <TableHeader className="bg-white/[0.03]">
+              <TableHeader className="bg-muted/30">
                 <TableRow>
                   <TableHead className="text-xs py-1.5">Material</TableHead>
                   <TableHead className="text-xs py-1.5 text-right w-24">Qtde</TableHead>
@@ -290,12 +290,12 @@ function FichaTable({
                       className={`py-1.5 text-xs text-right font-mono ${
                         isAdjusted && ins.afetado_por_tamanho
                           ? "text-warning-400 font-semibold"
-                          : "text-white/70"
+                          : "text-foreground/70"
                       }`}
                     >
                       {ins.quantidade}
                     </TableCell>
-                    <TableCell className="py-1.5 text-xs text-white/50">
+                    <TableCell className="py-1.5 text-xs text-muted-foreground">
                       {ins.unidade_base}
                     </TableCell>
                   </TableRow>
@@ -318,8 +318,8 @@ export default function SimuladorPage() {
       fallback={
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <FlaskConical className="h-10 w-10 text-white/30 mx-auto mb-3" />
-            <p className="text-sm text-white/50">
+            <FlaskConical className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground">
               Acesso restrito a Administradores.
             </p>
           </div>

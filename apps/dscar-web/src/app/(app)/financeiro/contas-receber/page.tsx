@@ -96,18 +96,18 @@ function SummaryCard({
   isLoading,
 }: SummaryCardProps): React.ReactElement {
   return (
-    <div className="rounded-md bg-white/5 shadow-card p-4 flex items-start gap-3">
+    <div className="rounded-md bg-muted/50 shadow-card p-4 flex items-start gap-3">
       <div
         className={`flex h-10 w-10 items-center justify-center rounded-md shrink-0 ${iconBg}`}
       >
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-white/50 font-medium">{label}</p>
+        <p className="text-xs text-muted-foreground font-medium">{label}</p>
         {isLoading ? (
           <Skeleton className="h-6 w-20 mt-0.5" />
         ) : (
-          <p className="text-xl font-bold text-white mt-0.5">{value}</p>
+          <p className="text-xl font-bold text-foreground mt-0.5">{value}</p>
         )}
       </div>
     </div>
@@ -178,13 +178,13 @@ function RecordReceiptDialog({
           <DialogTitle>Registrar Recebimento</DialogTitle>
         </DialogHeader>
         {document && (
-          <p className="text-sm text-white/50 -mt-2">
+          <p className="text-sm text-muted-foreground -mt-2">
             {document.customer_name} — {document.description}
           </p>
         )}
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-white/70">
+            <Label className="text-xs font-medium text-foreground/70">
               Valor a receber *
             </Label>
             <Input
@@ -197,7 +197,7 @@ function RecordReceiptDialog({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-white/70">
+            <Label className="text-xs font-medium text-foreground/70">
               Data do recebimento *
             </Label>
             <Input
@@ -208,13 +208,13 @@ function RecordReceiptDialog({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-white/70">
+            <Label className="text-xs font-medium text-foreground/70">
               Forma de recebimento *
             </Label>
             <select
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-              className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               required
             >
               {paymentMethods.map(([value, label]) => (
@@ -225,7 +225,7 @@ function RecordReceiptDialog({
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-white/70">
+            <Label className="text-xs font-medium text-foreground/70">
               Conta bancária
             </Label>
             <Input
@@ -235,14 +235,14 @@ function RecordReceiptDialog({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-white/70">
+            <Label className="text-xs font-medium text-foreground/70">
               Observações
             </Label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Opcional..."
             />
           </div>
@@ -257,14 +257,14 @@ function RecordReceiptDialog({
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="text-sm text-white/50 hover:underline px-3 py-2"
+              className="text-sm text-muted-foreground hover:underline px-3 py-2"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={recordReceipt.isPending}
-              className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
             >
               {recordReceipt.isPending ? "Salvando..." : "Registrar Recebimento"}
             </button>
@@ -311,13 +311,13 @@ function CancelDialog({
           <DialogTitle>Cancelar Título</DialogTitle>
         </DialogHeader>
         {document && (
-          <p className="text-sm text-white/50 -mt-2">
+          <p className="text-sm text-muted-foreground -mt-2">
             {document.customer_name} — {formatBRL(document.amount)}
           </p>
         )}
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-white/70">
+            <Label className="text-xs font-medium text-foreground/70">
               Motivo do cancelamento *
             </Label>
             <textarea
@@ -325,7 +325,7 @@ function CancelDialog({
               onChange={(e) => setReason(e.target.value)}
               rows={3}
               required
-              className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Informe o motivo..."
             />
           </div>
@@ -340,14 +340,14 @@ function CancelDialog({
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="text-sm text-white/50 hover:underline px-3 py-2"
+              className="text-sm text-muted-foreground hover:underline px-3 py-2"
             >
               Voltar
             </button>
             <button
               type="submit"
               disabled={cancelReceivable.isPending || !reason.trim()}
-              className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-red-700 disabled:opacity-50 transition-colors"
             >
               {cancelReceivable.isPending
                 ? "Cancelando..."
@@ -454,17 +454,17 @@ export default function ContasReceberPage(): React.ReactElement {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-2xl font-bold text-foreground">
               Contas a Receber
             </h1>
-            <p className="mt-0.5 text-sm text-white/50">
+            <p className="mt-0.5 text-sm text-muted-foreground">
               {data?.count ?? "—"} título
               {(data?.count ?? 0) !== 1 ? "s" : ""}
             </p>
           </div>
           <Link
             href={"/financeiro/contas-receber/novo" as Route}
-            className="inline-flex items-center gap-2 rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-primary-700 transition-colors"
           >
             <PlusCircle className="h-4 w-4" />
             Novo Título
@@ -476,8 +476,8 @@ export default function ContasReceberPage(): React.ReactElement {
           <SummaryCard
             label="Total a Receber"
             value={formatBRL(String(totalOpen))}
-            iconBg="bg-white/[0.06]"
-            icon={<TrendingUp className="h-5 w-5 text-white/70" />}
+            iconBg="bg-muted/50"
+            icon={<TrendingUp className="h-5 w-5 text-foreground/70" />}
             isLoading={isAllLoading}
           />
           <SummaryCard
@@ -514,7 +514,7 @@ export default function ContasReceberPage(): React.ReactElement {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as FilterStatus)}
-            className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">Todos os status</option>
             {STATUS_OPTIONS.map(([value, label]) => (
@@ -526,7 +526,7 @@ export default function ContasReceberPage(): React.ReactElement {
           <select
             value={origin}
             onChange={(e) => setOrigin(e.target.value as FilterOrigin)}
-            className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">Todas as origens</option>
             {ORIGIN_OPTIONS.map(([value, label]) => (
@@ -536,14 +536,14 @@ export default function ContasReceberPage(): React.ReactElement {
             ))}
           </select>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-white/50">Venc. de</span>
+            <span className="text-xs text-muted-foreground">Venc. de</span>
             <Input
               type="date"
               value={dueDateGte}
               onChange={(e) => setDueDateGte(e.target.value)}
               className="w-36"
             />
-            <span className="text-xs text-white/50">até</span>
+            <span className="text-xs text-muted-foreground">até</span>
             <Input
               type="date"
               value={dueDateLte}
@@ -554,9 +554,9 @@ export default function ContasReceberPage(): React.ReactElement {
         </div>
 
         {/* Table */}
-        <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
+        <div className="rounded-md bg-muted/50 shadow-card overflow-hidden">
           {/* Table header */}
-          <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-2.5 bg-white/[0.03] border-b border-white/10 text-xs font-semibold text-white/50 uppercase tracking-wide">
+          <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-2.5 bg-muted/30 border-b border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
             <span>Cliente</span>
             <span>Descrição</span>
             <span>Origem</span>
@@ -571,7 +571,7 @@ export default function ContasReceberPage(): React.ReactElement {
           {isLoading ? (
             <TableSkeleton />
           ) : documents.length === 0 ? (
-            <div className="py-16 text-center text-sm text-white/40">
+            <div className="py-16 text-center text-sm text-muted-foreground">
               Nenhum título encontrado.
             </div>
           ) : (
@@ -579,38 +579,38 @@ export default function ContasReceberPage(): React.ReactElement {
               {documents.map((doc) => (
                 <div
                   key={doc.id}
-                  className="grid grid-cols-1 md:grid-cols-[2fr_2fr_1fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-3.5 items-center text-sm hover:bg-white/[0.03] transition-colors"
+                  className="grid grid-cols-1 md:grid-cols-[2fr_2fr_1fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-3.5 items-center text-sm hover:bg-muted/30 transition-colors"
                 >
-                  <span className="font-medium text-white truncate">
+                  <span className="font-medium text-foreground truncate">
                     {doc.customer_name}
                   </span>
-                  <span className="text-white/60 truncate">
+                  <span className="text-foreground/60 truncate">
                     {doc.description}
                     {doc.document_number && (
-                      <span className="ml-1 text-xs text-white/40">
+                      <span className="ml-1 text-xs text-muted-foreground">
                         #{doc.document_number}
                       </span>
                     )}
                   </span>
-                  <span className="text-xs text-white/50">
+                  <span className="text-xs text-muted-foreground">
                     {RECEIVABLE_ORIGIN_LABELS[doc.origin]}
                   </span>
                   <span
                     className={
                       isOverdue(doc.due_date, doc.status)
                         ? "text-error-400 font-medium"
-                        : "text-white/60"
+                        : "text-foreground/60"
                     }
                   >
                     {formatDate(doc.due_date)}
                   </span>
-                  <span className="text-right font-mono text-white">
+                  <span className="text-right font-mono text-foreground">
                     {formatBRL(doc.amount)}
                   </span>
                   <span className="text-right font-mono text-success-400">
                     {formatBRL(doc.amount_received)}
                   </span>
-                  <span className="text-right font-mono text-white font-semibold">
+                  <span className="text-right font-mono text-foreground font-semibold">
                     {formatBRL(doc.amount_remaining)}
                   </span>
                   <div>

@@ -28,12 +28,12 @@ export const KanbanColumn = React.memo(function KanbanColumn({
     <div className="flex flex-col min-w-[220px] w-[220px]">
       {/* Column header */}
       <div
-        className="flex items-center justify-between px-3 py-2 rounded-t-md bg-white/[0.04] border border-b-0 border-white/10"
+        className="flex items-center justify-between px-3 py-2 rounded-t-md bg-muted/30 border border-b-0 border-border"
       >
-        <span className="label-mono text-white/70 truncate">
+        <span className="label-mono text-foreground/70 truncate">
           {cfg.label}
         </span>
-        <span className="ml-2 shrink-0 rounded-full bg-white/10 px-1.5 py-0.5 label-mono text-white/50 leading-none">
+        <span className="ml-2 shrink-0 rounded-full bg-muted px-1.5 py-0.5 label-mono text-muted-foreground leading-none">
           {orders.length}
         </span>
       </div>
@@ -43,7 +43,7 @@ export const KanbanColumn = React.memo(function KanbanColumn({
         ref={setNodeRef}
         className={cn(
           "overflow-y-auto rounded-b-md p-2 space-y-2 min-h-[100px] max-h-[calc(100vh-220px)]",
-          "bg-white/[0.02] border border-t-0 border-white/5",
+          "bg-muted/30 border border-t-0 border-border",
           "transition-colors",
           isOver && "bg-primary-500/5 border-primary-500/20"
         )}
@@ -55,7 +55,7 @@ export const KanbanColumn = React.memo(function KanbanColumn({
         </SortableContext>
 
         {orders.length === 0 && (
-          <div className="flex items-center justify-center h-16 text-xs text-white/30 select-none">
+          <div className="flex items-center justify-center h-16 text-xs text-muted-foreground select-none">
             Vazia
           </div>
         )}
@@ -69,7 +69,7 @@ export function KanbanColumnSkeleton(): React.ReactElement {
   return (
     <div className="flex flex-col min-w-[280px] w-[280px]">
       <Skeleton className="h-10 rounded-b-none" />
-      <div className="rounded-b-md border border-t-0 border-white/5 bg-white/[0.02] p-2 space-y-2 min-h-[200px]">
+      <div className="rounded-b-md border border-t-0 border-border bg-muted/30 p-2 space-y-2 min-h-[200px]">
         {Array.from({ length: 3 }).map((_, i) => (
           <Skeleton key={i} className="h-24 rounded-md" />
         ))}

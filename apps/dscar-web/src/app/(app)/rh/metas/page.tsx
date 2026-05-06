@@ -20,7 +20,7 @@ const STATUS_CLASSES: Record<string, string> = {
   success: "bg-success-500/10 text-success-400",
   warning: "bg-warning-500/10 text-warning-400",
   destructive: "bg-error-500/10 text-error-400",
-  default: "bg-white/5 text-white/60",
+  default: "bg-muted/50 text-foreground/60",
 };
 
 export default function MetasPage(): React.ReactElement {
@@ -42,14 +42,14 @@ export default function MetasPage(): React.ReactElement {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Metas</h1>
-            <p className="text-sm text-white/50 mt-0.5">
+            <h1 className="text-2xl font-bold text-foreground">Metas</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
               {data?.count ?? "—"} meta{(data?.count ?? 0) !== 1 ? "s" : ""}
             </p>
           </div>
           <button
             onClick={() => setShowCreate(true)}
-            className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+            className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-primary-700"
           >
             + Nova meta
           </button>
@@ -66,7 +66,7 @@ export default function MetasPage(): React.ReactElement {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as GoalStatus | "")}
-            className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm"
+            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm"
           >
             <option value="">Todos os status</option>
             {(Object.entries(GOAL_STATUS_CONFIG) as [GoalStatus, { label: string }][]).map(
@@ -82,7 +82,7 @@ export default function MetasPage(): React.ReactElement {
             onChange={(e) =>
               setDeptFilter(e.target.value as HRDepartment | "")
             }
-            className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm"
+            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm"
           >
             <option value="">Todos os setores</option>
             {(Object.entries(DEPARTMENT_LABELS) as [HRDepartment, string][]).map(
@@ -103,7 +103,7 @@ export default function MetasPage(): React.ReactElement {
             ))}
           </div>
         ) : goals.length === 0 ? (
-          <div className="rounded-md bg-white/5 shadow-card p-10 text-center text-sm text-white/50">
+          <div className="rounded-md bg-muted/50 shadow-card p-10 text-center text-sm text-muted-foreground">
             Nenhuma meta encontrada.
           </div>
         ) : (
@@ -113,12 +113,12 @@ export default function MetasPage(): React.ReactElement {
               return (
                 <div
                   key={goal.id}
-                  className="rounded-md bg-white/5 shadow-card p-card-padding"
+                  className="rounded-md bg-muted/50 shadow-card p-card-padding"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-sm font-semibold text-white">
+                        <h3 className="text-sm font-semibold text-foreground">
                           {goal.title}
                         </h3>
                         <span
@@ -135,20 +135,20 @@ export default function MetasPage(): React.ReactElement {
                           </span>
                         )}
                         {goal.department && (
-                          <span className="text-xs text-white/40">
+                          <span className="text-xs text-muted-foreground">
                             Setor: {DEPARTMENT_LABELS[goal.department]}
                           </span>
                         )}
                       </div>
                       {goal.description && (
-                        <p className="text-xs text-white/50 mt-0.5">
+                        <p className="text-xs text-muted-foreground mt-0.5">
                           {goal.description}
                         </p>
                       )}
 
                       {/* Progress bar */}
                       <div className="mt-3">
-                        <div className="flex items-center justify-between text-xs text-white/50 mb-1">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
                           <span>
                             {goal.current_value} / {goal.target_value} {goal.unit}
                           </span>
@@ -156,7 +156,7 @@ export default function MetasPage(): React.ReactElement {
                             {goal.progress_pct}%
                           </span>
                         </div>
-                        <div className="h-2 w-full rounded-full bg-white/5 overflow-hidden">
+                        <div className="h-2 w-full rounded-full bg-muted/50 overflow-hidden">
                           <div
                             className="h-full rounded-full bg-primary-500 transition-all"
                             style={{
@@ -166,7 +166,7 @@ export default function MetasPage(): React.ReactElement {
                         </div>
                       </div>
 
-                      <div className="mt-2 flex gap-4 text-xs text-white/40">
+                      <div className="mt-2 flex gap-4 text-xs text-muted-foreground">
                         <span>
                           Prazo:{" "}
                           {new Date(goal.end_date).toLocaleDateString("pt-BR")}
@@ -236,9 +236,9 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-md bg-white/5 shadow-card p-card-padding space-y-4"
+      className="rounded-md bg-muted/50 shadow-card p-card-padding space-y-4"
     >
-      <h3 className="text-sm font-semibold text-white">Nova meta</h3>
+      <h3 className="text-sm font-semibold text-foreground">Nova meta</h3>
 
       {/* Scope */}
       <div className="flex gap-3">
@@ -269,10 +269,10 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
       <div className="grid grid-cols-2 gap-3">
         {scopeType === "employee" ? (
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-white/50">Colaborador *</label>
+            <label className="text-xs text-muted-foreground">Colaborador *</label>
             <select
               required
-              className="rounded border border-white/10 px-2 py-1.5 text-sm"
+              className="rounded border border-border px-2 py-1.5 text-sm"
               value={form.employee ?? ""}
               onChange={(e) =>
                 setForm((p) => ({ ...p, employee: e.target.value }))
@@ -288,10 +288,10 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
           </div>
         ) : (
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-white/50">Setor *</label>
+            <label className="text-xs text-muted-foreground">Setor *</label>
             <select
               required
-              className="rounded border border-white/10 px-2 py-1.5 text-sm"
+              className="rounded border border-border px-2 py-1.5 text-sm"
               value={form.department ?? ""}
               onChange={(e) =>
                 setForm((p) => ({
@@ -313,22 +313,22 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
         )}
 
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-white/50">Título *</label>
+          <label className="text-xs text-muted-foreground">Título *</label>
           <input
             required
             type="text"
-            className="rounded border border-white/10 px-2 py-1.5 text-sm"
+            className="rounded border border-border px-2 py-1.5 text-sm"
             value={form.title}
             onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-white/50">Valor alvo *</label>
+          <label className="text-xs text-muted-foreground">Valor alvo *</label>
           <input
             required
             type="number"
             step="0.01"
-            className="rounded border border-white/10 px-2 py-1.5 text-sm"
+            className="rounded border border-border px-2 py-1.5 text-sm"
             value={form.target_value || ""}
             onChange={(e) =>
               setForm((p) => ({
@@ -339,9 +339,9 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-white/50">Unidade</label>
+          <label className="text-xs text-muted-foreground">Unidade</label>
           <select
-            className="rounded border border-white/10 px-2 py-1.5 text-sm"
+            className="rounded border border-border px-2 py-1.5 text-sm"
             value={form.unit ?? "unit"}
             onChange={(e) => setForm((p) => ({ ...p, unit: e.target.value }))}
           >
@@ -352,12 +352,12 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
           </select>
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-white/50">Bônus ao atingir (R$)</label>
+          <label className="text-xs text-muted-foreground">Bônus ao atingir (R$)</label>
           <input
             type="number"
             step="0.01"
             min="0"
-            className="rounded border border-white/10 px-2 py-1.5 text-sm"
+            className="rounded border border-border px-2 py-1.5 text-sm"
             value={form.bonus_amount ?? 0}
             onChange={(e) =>
               setForm((p) => ({
@@ -368,11 +368,11 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-white/50">Início *</label>
+          <label className="text-xs text-muted-foreground">Início *</label>
           <input
             required
             type="date"
-            className="rounded border border-white/10 px-2 py-1.5 text-sm"
+            className="rounded border border-border px-2 py-1.5 text-sm"
             value={form.start_date}
             onChange={(e) =>
               setForm((p) => ({ ...p, start_date: e.target.value }))
@@ -380,11 +380,11 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-white/50">Prazo *</label>
+          <label className="text-xs text-muted-foreground">Prazo *</label>
           <input
             required
             type="date"
-            className="rounded border border-white/10 px-2 py-1.5 text-sm"
+            className="rounded border border-border px-2 py-1.5 text-sm"
             value={form.end_date}
             onChange={(e) =>
               setForm((p) => ({ ...p, end_date: e.target.value }))
@@ -408,13 +408,13 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
         </label>
         {isRecurring && (
           <div className="flex flex-col gap-1 max-w-xs">
-            <label className="text-xs text-white/50">Dia de reinício (1-28)</label>
+            <label className="text-xs text-muted-foreground">Dia de reinício (1-28)</label>
             <input
               type="number"
               min={1}
               max={28}
               required
-              className="rounded border border-white/10 px-2 py-1.5 text-sm"
+              className="rounded border border-border px-2 py-1.5 text-sm"
               value={form.recurrence_day ?? 1}
               onChange={(e) =>
                 setForm((p) => ({
@@ -431,14 +431,14 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
         <button
           type="button"
           onClick={onClose}
-          className="text-xs text-white/50 hover:underline"
+          className="text-xs text-muted-foreground hover:underline"
         >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={create.isPending}
-          className="rounded bg-primary-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+          className="rounded bg-primary-600 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary-700 disabled:opacity-50"
         >
           {create.isPending ? "Criando..." : "Criar meta"}
         </button>

@@ -81,7 +81,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
 
   if (!entry) {
     return (
-      <div className="rounded-md bg-white/5 shadow-card p-8 text-center text-white/50">
+      <div className="rounded-md bg-muted/50 shadow-card p-8 text-center text-muted-foreground">
         <p className="text-sm">Lançamento não encontrado.</p>
         <Link
           href={"/financeiro/lancamentos" as Route}
@@ -100,7 +100,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
     <ErrorBoundary>
       <div className="space-y-5 max-w-3xl">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-white/50">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link
             href={"/financeiro" as Route}
             className="hover:text-primary-600 transition-colors"
@@ -116,14 +116,14 @@ export default function LancamentoDetailPage(): React.ReactElement {
             Lançamentos
           </Link>
           <span>/</span>
-          <span className="font-mono text-white">{entry.number}</span>
+          <span className="font-mono text-foreground">{entry.number}</span>
         </div>
 
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl font-bold text-white font-mono">
+              <h1 className="text-2xl font-bold text-foreground font-mono">
                 {entry.number}
               </h1>
               {entry.is_reversed && (
@@ -141,7 +141,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
                 <Badge variant="destructive">Desbalanceado</Badge>
               )}
             </div>
-            <p className="mt-1 text-sm text-white/60">{entry.description}</p>
+            <p className="mt-1 text-sm text-foreground/60">{entry.description}</p>
           </div>
 
           {/* Action buttons */}
@@ -150,7 +150,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
               <button
                 onClick={handleApprove}
                 disabled={approve.isPending}
-                className="inline-flex items-center gap-2 rounded-md bg-success-600 px-3 py-2 text-sm font-medium text-white hover:bg-success-700 disabled:opacity-50 transition-colors"
+                className="inline-flex items-center gap-2 rounded-md bg-success-600 px-3 py-2 text-sm font-medium text-foreground hover:bg-success-700 disabled:opacity-50 transition-colors"
               >
                 <CheckCircle className="h-4 w-4" />
                 {approve.isPending ? "Aprovando..." : "Aprovar"}
@@ -169,40 +169,40 @@ export default function LancamentoDetailPage(): React.ReactElement {
         </div>
 
         {/* Info section */}
-        <div className="rounded-md bg-white/5 shadow-card p-5">
-          <h2 className="text-sm font-semibold text-white border-b border-white/10 pb-2 mb-4">
+        <div className="rounded-md bg-muted/50 shadow-card p-5">
+          <h2 className="text-sm font-semibold text-foreground border-b border-border pb-2 mb-4">
             Informacoes
           </h2>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
             <div>
-              <dt className="text-white/50">Data de Competencia</dt>
-              <dd className="font-medium text-white mt-0.5">
+              <dt className="text-muted-foreground">Data de Competencia</dt>
+              <dd className="font-medium text-foreground mt-0.5">
                 {new Date(`${entry.competence_date}T12:00:00`).toLocaleDateString("pt-BR")}
               </dd>
             </div>
             {entry.document_date && (
               <div>
-                <dt className="text-white/50">Data do Documento</dt>
-                <dd className="font-medium text-white mt-0.5">
+                <dt className="text-muted-foreground">Data do Documento</dt>
+                <dd className="font-medium text-foreground mt-0.5">
                   {new Date(`${entry.document_date}T12:00:00`).toLocaleDateString("pt-BR")}
                 </dd>
               </div>
             )}
             <div>
-              <dt className="text-white/50">Origem</dt>
-              <dd className="font-medium text-white mt-0.5">
+              <dt className="text-muted-foreground">Origem</dt>
+              <dd className="font-medium text-foreground mt-0.5">
                 {ORIGIN_LABELS[entry.origin] ?? entry.origin}
               </dd>
             </div>
             <div>
-              <dt className="text-white/50">Periodo Fiscal</dt>
-              <dd className="font-medium text-white mt-0.5">
+              <dt className="text-muted-foreground">Periodo Fiscal</dt>
+              <dd className="font-medium text-foreground mt-0.5">
                 {entry.fiscal_period_label}
               </dd>
             </div>
             <div>
-              <dt className="text-white/50">Criado em</dt>
-              <dd className="font-medium text-white mt-0.5">
+              <dt className="text-muted-foreground">Criado em</dt>
+              <dd className="font-medium text-foreground mt-0.5">
                 {new Date(entry.created_at).toLocaleString("pt-BR")}
               </dd>
             </div>
@@ -210,72 +210,72 @@ export default function LancamentoDetailPage(): React.ReactElement {
         </div>
 
         {/* Lines table */}
-        <div className="rounded-md bg-white/5 shadow-card overflow-hidden">
+        <div className="rounded-md bg-muted/50 shadow-card overflow-hidden">
           <div className="p-5 pb-3">
-            <h2 className="text-sm font-semibold text-white">
+            <h2 className="text-sm font-semibold text-foreground">
               Partidas ({entry.lines.length} linha{entry.lines.length !== 1 ? "s" : ""})
             </h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-y border-white/10 bg-white/[0.03]">
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-white/50 uppercase tracking-wide">
+                <tr className="border-y border-border bg-muted/30">
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     Conta
                   </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-white/50 uppercase tracking-wide">
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     Centro de Custo
                   </th>
-                  <th className="text-right px-4 py-2.5 text-xs font-semibold text-white/50 uppercase tracking-wide">
+                  <th className="text-right px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     Debito
                   </th>
-                  <th className="text-right px-4 py-2.5 text-xs font-semibold text-white/50 uppercase tracking-wide">
+                  <th className="text-right px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     Credito
                   </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-white/50 uppercase tracking-wide">
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                     Descricao
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {entry.lines.map((line) => (
-                  <tr key={line.id} className="hover:bg-white/[0.03]">
+                  <tr key={line.id} className="hover:bg-muted/30">
                     <td className="px-4 py-3">
-                      <span className="font-mono text-xs text-white/50">
+                      <span className="font-mono text-xs text-muted-foreground">
                         {line.account.code}
                       </span>{" "}
-                      <span className="text-white">{line.account.name}</span>
+                      <span className="text-foreground">{line.account.name}</span>
                     </td>
-                    <td className="px-4 py-3 text-white/60">
+                    <td className="px-4 py-3 text-foreground/60">
                       {line.cost_center
                         ? `${line.cost_center.code} — ${line.cost_center.name}`
-                        : <span className="text-white/30">—</span>}
+                        : <span className="text-muted-foreground">—</span>}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono text-white/70">
+                    <td className="px-4 py-3 text-right font-mono text-foreground/70">
                       {parseFloat(line.debit_amount) > 0
                         ? formatBRL(line.debit_amount)
-                        : <span className="text-white/30">—</span>}
+                        : <span className="text-muted-foreground">—</span>}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono text-white/70">
+                    <td className="px-4 py-3 text-right font-mono text-foreground/70">
                       {parseFloat(line.credit_amount) > 0
                         ? formatBRL(line.credit_amount)
-                        : <span className="text-white/30">—</span>}
+                        : <span className="text-muted-foreground">—</span>}
                     </td>
-                    <td className="px-4 py-3 text-white/60 max-w-xs truncate">
-                      {line.description || <span className="text-white/30">—</span>}
+                    <td className="px-4 py-3 text-foreground/60 max-w-xs truncate">
+                      {line.description || <span className="text-muted-foreground">—</span>}
                     </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t-2 border-white/10 bg-white/[0.03]">
-                  <td colSpan={2} className="px-4 py-3 text-sm font-semibold text-white/70">
+                <tr className="border-t-2 border-border bg-muted/30">
+                  <td colSpan={2} className="px-4 py-3 text-sm font-semibold text-foreground/70">
                     Totais
                   </td>
-                  <td className="px-4 py-3 text-right font-mono font-semibold text-white">
+                  <td className="px-4 py-3 text-right font-mono font-semibold text-foreground">
                     {brl.format(totalDebit)}
                   </td>
-                  <td className="px-4 py-3 text-right font-mono font-semibold text-white">
+                  <td className="px-4 py-3 text-right font-mono font-semibold text-foreground">
                     {brl.format(totalCredit)}
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -299,12 +299,12 @@ export default function LancamentoDetailPage(): React.ReactElement {
             <DialogTitle>Estornar Lançamento</DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-3">
-            <p className="text-sm text-white/60">
+            <p className="text-sm text-foreground/60">
               Esta ação ira criar um lançamento de estorno automaticamente. O lançamento original
               sera marcado como estornado e sera imutavel.
             </p>
             <div className="flex flex-col gap-1.5">
-              <Label className="text-xs font-medium text-white/70">
+              <Label className="text-xs font-medium text-foreground/70">
                 Motivo do estorno *
               </Label>
               <Input
@@ -329,7 +329,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
                 setReverseReason("");
                 setReverseError("");
               }}
-              className="text-sm text-white/50 hover:underline px-3 py-2"
+              className="text-sm text-muted-foreground hover:underline px-3 py-2"
             >
               Cancelar
             </button>
@@ -337,7 +337,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
               type="button"
               onClick={handleReverse}
               disabled={reverse.isPending}
-              className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-red-700 disabled:opacity-50 transition-colors"
             >
               {reverse.isPending ? "Estornando..." : "Confirmar Estorno"}
             </button>

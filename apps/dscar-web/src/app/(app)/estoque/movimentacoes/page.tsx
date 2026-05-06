@@ -95,7 +95,7 @@ export default function MovimentacoesPage() {
   }
 
   const inputClass =
-    "text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-white/20"
+    "text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-muted-foreground/50"
 
   return (
     <div className="p-6 space-y-4">
@@ -103,8 +103,8 @@ export default function MovimentacoesPage() {
       <div className="flex items-center gap-3">
         <ArrowLeftRight className="h-5 w-5 text-primary-500" />
         <div>
-          <h1 className="text-lg font-semibold text-white">Movimentações</h1>
-          <p className="text-xs text-white/40 mt-0.5">
+          <h1 className="text-lg font-semibold text-foreground">Movimentações</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
             {movimentacoes.length} registro{movimentacoes.length !== 1 ? "s" : ""}
           </p>
         </div>
@@ -157,39 +157,39 @@ export default function MovimentacoesPage() {
 
       {/* Table */}
       {isLoading ? (
-        <div className="text-white/40 text-sm">Carregando...</div>
+        <div className="text-muted-foreground text-sm">Carregando...</div>
       ) : movimentacoes.length === 0 ? (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
+        <div className="rounded-lg border border-border bg-muted/50 p-8 text-center text-muted-foreground text-sm">
           Nenhuma movimentacao encontrada.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+        <div className="overflow-hidden rounded-md border border-border bg-muted/50">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-white/[0.03]">
-                <th className="label-mono text-white/40 text-left px-3 py-2 w-8" />
-                <th className="label-mono text-white/40 text-left px-3 py-2">
+              <tr className="bg-muted/30">
+                <th className="label-mono text-muted-foreground text-left px-3 py-2 w-8" />
+                <th className="label-mono text-muted-foreground text-left px-3 py-2">
                   DATA/HORA
                 </th>
-                <th className="label-mono text-white/40 text-left px-3 py-2">
+                <th className="label-mono text-muted-foreground text-left px-3 py-2">
                   TIPO
                 </th>
-                <th className="label-mono text-white/40 text-left px-3 py-2">
+                <th className="label-mono text-muted-foreground text-left px-3 py-2">
                   ITEM
                 </th>
-                <th className="label-mono text-white/40 text-left px-3 py-2">
+                <th className="label-mono text-muted-foreground text-left px-3 py-2">
                   ORIGEM
                 </th>
-                <th className="label-mono text-white/40 text-left px-3 py-2">
+                <th className="label-mono text-muted-foreground text-left px-3 py-2">
                   DESTINO
                 </th>
-                <th className="label-mono text-white/40 text-right px-3 py-2">
+                <th className="label-mono text-muted-foreground text-right px-3 py-2">
                   QTD
                 </th>
-                <th className="label-mono text-white/40 text-left px-3 py-2">
+                <th className="label-mono text-muted-foreground text-left px-3 py-2">
                   MOTIVO
                 </th>
-                <th className="label-mono text-white/40 text-left px-3 py-2">
+                <th className="label-mono text-muted-foreground text-left px-3 py-2">
                   REALIZADO POR
                 </th>
               </tr>
@@ -198,7 +198,7 @@ export default function MovimentacoesPage() {
               {movimentacoes.map((mov) => {
                 const cfg = TIPO_CONFIG[mov.tipo] ?? {
                   label: mov.tipo_display,
-                  className: "bg-white/10 text-white/60",
+                  className: "bg-muted text-foreground/60",
                 }
                 const isExpanded = expandedId === mov.id
                 return (
@@ -236,17 +236,17 @@ function RowWithExpand({
   return (
     <>
       <tr
-        className="border-b border-white/5 hover:bg-white/[0.03] cursor-pointer transition-colors"
+        className="border-b border-white/5 hover:bg-muted/30 cursor-pointer transition-colors"
         onClick={onToggle}
       >
-        <td className="px-3 py-2 text-white/30">
+        <td className="px-3 py-2 text-muted-foreground">
           {isExpanded ? (
             <ChevronDown className="h-3.5 w-3.5" />
           ) : (
             <ChevronRight className="h-3.5 w-3.5" />
           )}
         </td>
-        <td className="px-3 py-2 text-white/70 whitespace-nowrap">
+        <td className="px-3 py-2 text-foreground/70 whitespace-nowrap">
           {formatDateShort(mov.created_at)}
         </td>
         <td className="px-3 py-2">
@@ -256,22 +256,22 @@ function RowWithExpand({
             {cfg.label}
           </span>
         </td>
-        <td className="px-3 py-2 font-mono text-xs text-white/60">
+        <td className="px-3 py-2 font-mono text-xs text-foreground/60">
           {barcode}
         </td>
-        <td className="px-3 py-2 text-white/50 text-xs">
+        <td className="px-3 py-2 text-muted-foreground text-xs">
           {mov.nivel_origem_endereco || "—"}
         </td>
-        <td className="px-3 py-2 text-white/50 text-xs">
+        <td className="px-3 py-2 text-muted-foreground text-xs">
           {mov.nivel_destino_endereco || "—"}
         </td>
-        <td className="px-3 py-2 text-white text-right font-mono">
+        <td className="px-3 py-2 text-foreground text-right font-mono">
           {mov.quantidade}
         </td>
-        <td className="px-3 py-2 text-white/50 text-xs max-w-[160px] truncate">
+        <td className="px-3 py-2 text-muted-foreground text-xs max-w-[160px] truncate">
           {mov.motivo || "—"}
         </td>
-        <td className="px-3 py-2 text-white/50 text-xs">
+        <td className="px-3 py-2 text-muted-foreground text-xs">
           {mov.realizado_por_nome || "—"}
         </td>
       </tr>
@@ -280,25 +280,25 @@ function RowWithExpand({
           <td colSpan={9} className="px-6 py-3 space-y-2">
             {mov.motivo && (
               <div>
-                <span className="label-mono text-white/40">MOTIVO</span>
-                <p className="text-sm text-white/70 mt-0.5">{mov.motivo}</p>
+                <span className="label-mono text-muted-foreground">MOTIVO</span>
+                <p className="text-sm text-foreground/70 mt-0.5">{mov.motivo}</p>
               </div>
             )}
             {mov.evidencia && (
               <div>
-                <span className="label-mono text-white/40">EVIDENCIA</span>
+                <span className="label-mono text-muted-foreground">EVIDENCIA</span>
                 <div className="mt-1">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={mov.evidencia}
                     alt="Evidencia"
-                    className="h-20 w-20 rounded-lg object-cover border border-white/10"
+                    className="h-20 w-20 rounded-lg object-cover border border-border"
                   />
                 </div>
               </div>
             )}
             {mov.aprovado_por_nome && (
-              <div className="text-xs text-white/30">
+              <div className="text-xs text-muted-foreground">
                 Aprovado por {mov.aprovado_por_nome}
                 {mov.aprovado_em
                   ? ` em ${formatDateShort(mov.aprovado_em)}`

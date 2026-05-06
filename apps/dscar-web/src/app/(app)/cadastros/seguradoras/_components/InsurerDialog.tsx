@@ -49,7 +49,7 @@ interface Props {
   editing: Insurer | null
 }
 
-const LABEL = "block text-xs font-bold uppercase tracking-wide text-white/40 mb-0.5"
+const LABEL = "block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-0.5"
 
 export function InsurerDialog({ open, onOpenChange, editing }: Props) {
   const create = useInsurerCreate()
@@ -153,11 +153,11 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
           <div>
             <label className={LABEL}>Logo (PNG ou SVG · máx. 2 MB)</label>
             <div className="flex items-center gap-3 mt-1">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-white/10 bg-white/[0.03] overflow-hidden">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/30 overflow-hidden">
                 {logoPreview ? (
                   <img src={logoPreview} alt="preview" className="h-full w-full object-contain p-1" />
                 ) : (
-                  <span className="text-2xl font-bold text-white/30">?</span>
+                  <span className="text-2xl font-bold text-muted-foreground">?</span>
                 )}
               </div>
               <div className="flex flex-col gap-1.5">
@@ -176,12 +176,12 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
                     <button
                       type="button"
                       onClick={clearLogo}
-                      className="flex items-center gap-1 text-xs text-white/40 hover:text-error-400"
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-error-400"
                     >
                       <X className="h-3 w-3" />
                       Remover seleção
                     </button>
-                    <span className="text-xs text-white/50 truncate max-w-[160px]">
+                    <span className="text-xs text-muted-foreground truncate max-w-[160px]">
                       {pendingFile.name}
                     </span>
                   </>
@@ -254,7 +254,7 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
                 {/* Live preview swatch */}
                 {/^#[0-9a-fA-F]{6}$/.test(brandColor ?? "") && (
                   <div
-                    className="h-8 w-8 shrink-0 rounded border border-white/10"
+                    className="h-8 w-8 shrink-0 rounded border border-border"
                     style={{ backgroundColor: brandColor ?? undefined }}
                   />
                 )}
@@ -270,10 +270,10 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
             <input
               type="checkbox"
               id="uses_cilia"
-              className="h-4 w-4 rounded border-white/15"
+              className="h-4 w-4 rounded border-border"
               {...register("uses_cilia")}
             />
-            <label htmlFor="uses_cilia" className="text-sm text-white/70">
+            <label htmlFor="uses_cilia" className="text-sm text-foreground/70">
               Envia orçamentos via sistema Cilia
             </label>
           </div>
@@ -286,7 +286,7 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
             <Button
               type="submit"
               disabled={saving}
-              className="bg-primary-600 hover:bg-primary-700 text-white"
+              className="bg-primary-600 hover:bg-primary-700 text-foreground"
             >
               {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
               {editing ? "Salvar" : "Criar Seguradora"}

@@ -44,31 +44,31 @@ function utilizacaoColor(u: number): string {
 function HeatmapWidget({ dias }: { dias: HeatmapDia[] }) {
   const diasSemana = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 p-4">
-      <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">
+    <div className="rounded-lg border border-border bg-muted/50 p-4">
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
         Utilização da Semana
       </h3>
       <div className="grid grid-cols-7 gap-1">
         {diasSemana.map((d, i) => (
           <div key={d} className="text-center">
-            <p className="text-xs text-white/40 mb-1">{d}</p>
+            <p className="text-xs text-muted-foreground mb-1">{d}</p>
             {dias[i] ? (
               <div
                 className={`h-8 rounded ${utilizacaoColor(dias[i].utilizacao_geral)} opacity-80`}
                 title={`${(dias[i].utilizacao_geral * 100).toFixed(0)}%`}
               />
             ) : (
-              <div className="h-8 rounded bg-white/10" />
+              <div className="h-8 rounded bg-muted" />
             )}
             {dias[i] && (
-              <p className="text-xs text-white/40 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {(dias[i].utilizacao_geral * 100).toFixed(0)}%
               </p>
             )}
           </div>
         ))}
       </div>
-      <div className="flex items-center gap-3 mt-3 text-xs text-white/40">
+      <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
         <span className="flex items-center gap-1">
           <span className="h-2 w-2 rounded-full bg-success-500 inline-block" />
           Livre
@@ -101,9 +101,9 @@ function TecnicoSearch({
 
   if (value) {
     return (
-      <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-md px-3 py-2">
-        <span className="text-sm text-white">{value.nome}</span>
-        <button type="button" onClick={() => onChange(null)} className="text-white/30 hover:text-white/70">
+      <div className="flex items-center justify-between bg-muted/50 border border-border rounded-md px-3 py-2">
+        <span className="text-sm text-foreground">{value.nome}</span>
+        <button type="button" onClick={() => onChange(null)} className="text-muted-foreground hover:text-foreground/70">
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -113,31 +113,31 @@ function TecnicoSearch({
   return (
     <div className="space-y-1">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/30" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
         <Input
-          className="bg-white/5 border-white/10 text-white placeholder:text-white/20 pl-8"
+          className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50 pl-8"
           placeholder="Buscar colaborador..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
       {funcionarios.length > 0 && (
-        <div className="rounded-md border border-white/10 overflow-hidden max-h-40 overflow-y-auto">
+        <div className="rounded-md border border-border overflow-hidden max-h-40 overflow-y-auto">
           {funcionarios.slice(0, 6).map((emp: EmployeeListItem) => (
             <button
               key={emp.id}
               type="button"
               onClick={() => { onChange({ id: emp.id, nome: emp.user.name }); setSearch("") }}
-              className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-white/5 border-b border-white/5 last:border-0 transition-colors"
+              className="w-full flex items-center justify-between px-3 py-2 text-left hover:bg-muted/50 border-b border-white/5 last:border-0 transition-colors"
             >
-              <span className="text-sm text-white">{emp.user.name}</span>
-              <span className="text-xs text-white/40">{emp.position_display}</span>
+              <span className="text-sm text-foreground">{emp.user.name}</span>
+              <span className="text-xs text-muted-foreground">{emp.position_display}</span>
             </button>
           ))}
         </div>
       )}
       {search.length >= 2 && funcionarios.length === 0 && (
-        <p className="text-xs text-white/30 px-1">Nenhum colaborador encontrado.</p>
+        <p className="text-xs text-muted-foreground px-1">Nenhum colaborador encontrado.</p>
       )}
     </div>
   )
@@ -212,8 +212,8 @@ export default function CapacidadePage() {
       <div className="flex items-center gap-3">
         <Users className="h-5 w-5 text-primary-500" />
         <div>
-          <h1 className="text-lg font-semibold text-white">Capacidade Técnica</h1>
-          <p className="text-xs text-white/40 mt-0.5">
+          <h1 className="text-lg font-semibold text-foreground">Capacidade Técnica</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Disponibilidade e utilização da equipe técnica por categoria.
           </p>
         </div>
@@ -225,7 +225,7 @@ export default function CapacidadePage() {
       {/* Capacidades */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-white">Capacidades por Técnico</h2>
+          <h2 className="text-sm font-semibold text-foreground">Capacidades por Técnico</h2>
           <Button size="sm" onClick={() => setShowCapForm(!showCapForm)}>
             <Plus className="h-4 w-4 mr-1" />
             Nova Capacidade
@@ -233,16 +233,16 @@ export default function CapacidadePage() {
         </div>
 
         {showCapForm && (
-          <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-4">
+          <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-white/70 text-xs">Técnico *</Label>
+                <Label className="text-foreground/70 text-xs">Técnico *</Label>
                 <TecnicoSearch value={capTecnico} onChange={setCapTecnico} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-white/70 text-xs">Categoria de mão de obra *</Label>
+                <Label className="text-foreground/70 text-xs">Categoria de mão de obra *</Label>
                 <select
-                  className="w-full text-sm bg-white/5 border border-white/10 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   value={capCategoria}
                   onChange={(e) => setCapCategoria(e.target.value)}
                 >
@@ -253,9 +253,9 @@ export default function CapacidadePage() {
                 </select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-white/70 text-xs">Horas/dia útil</Label>
+                <Label className="text-foreground/70 text-xs">Horas/dia útil</Label>
                 <Input
-                  className="bg-white/5 border-white/10 text-white"
+                  className="bg-muted/50 border-border text-foreground"
                   type="number"
                   min="1"
                   max="24"
@@ -265,9 +265,9 @@ export default function CapacidadePage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-white/70 text-xs">Vigente desde *</Label>
+                <Label className="text-foreground/70 text-xs">Vigente desde *</Label>
                 <Input
-                  className="bg-white/5 border-white/10 text-white"
+                  className="bg-muted/50 border-border text-foreground"
                   type="date"
                   value={capVigente}
                   onChange={(e) => setCapVigente(e.target.value)}
@@ -286,35 +286,35 @@ export default function CapacidadePage() {
         )}
 
         {loadingCap ? (
-          <p className="text-xs text-white/40 py-8 text-center">Carregando...</p>
+          <p className="text-xs text-muted-foreground py-8 text-center">Carregando...</p>
         ) : capacidades.length === 0 ? (
-          <div className="rounded-lg border border-white/10 bg-white/5 p-6 text-center text-white/40 text-sm">
+          <div className="rounded-lg border border-border bg-muted/50 p-6 text-center text-muted-foreground text-sm">
             Nenhuma capacidade cadastrada.
           </div>
         ) : (
-          <div className="rounded-lg border border-white/10 overflow-hidden">
+          <div className="rounded-lg border border-border overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="border-white/10 hover:bg-transparent">
-                  <TableHead className="text-white/60 text-xs">Técnico</TableHead>
-                  <TableHead className="text-white/60 text-xs">Categoria</TableHead>
-                  <TableHead className="text-white/60 text-xs text-right">Horas/dia</TableHead>
-                  <TableHead className="text-white/60 text-xs">Vigente desde</TableHead>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-foreground/60 text-xs">Técnico</TableHead>
+                  <TableHead className="text-foreground/60 text-xs">Categoria</TableHead>
+                  <TableHead className="text-foreground/60 text-xs text-right">Horas/dia</TableHead>
+                  <TableHead className="text-foreground/60 text-xs">Vigente desde</TableHead>
                   <TableHead className="w-10" />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {capacidades.map((c) => (
-                  <TableRow key={c.id} className="border-white/10">
-                    <TableCell className="text-white/70 text-sm">{c.tecnico}</TableCell>
-                    <TableCell className="text-white/70 text-sm">{c.categoria_mao_obra}</TableCell>
-                    <TableCell className="text-right text-white text-sm">{c.horas_dia_util}h</TableCell>
-                    <TableCell className="text-white/60 text-xs">{c.vigente_desde}</TableCell>
+                  <TableRow key={c.id} className="border-border">
+                    <TableCell className="text-foreground/70 text-sm">{c.tecnico}</TableCell>
+                    <TableCell className="text-foreground/70 text-sm">{c.categoria_mao_obra}</TableCell>
+                    <TableCell className="text-right text-foreground text-sm">{c.horas_dia_util}h</TableCell>
+                    <TableCell className="text-foreground/60 text-xs">{c.vigente_desde}</TableCell>
                     <TableCell>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 text-white/30 hover:text-red-400"
+                        className="h-7 w-7 text-muted-foreground hover:text-red-400"
                         onClick={() => deleteCap(c.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -331,7 +331,7 @@ export default function CapacidadePage() {
       {/* Bloqueios */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-white">Bloqueios de Capacidade</h2>
+          <h2 className="text-sm font-semibold text-foreground">Bloqueios de Capacidade</h2>
           <Button variant="outline" size="sm" onClick={() => setShowBlqForm(!showBlqForm)}>
             <Plus className="h-4 w-4 mr-1" />
             Novo Bloqueio
@@ -339,34 +339,34 @@ export default function CapacidadePage() {
         </div>
 
         {showBlqForm && (
-          <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-4">
+          <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-white/70 text-xs">Técnico *</Label>
+                <Label className="text-foreground/70 text-xs">Técnico *</Label>
                 <TecnicoSearch value={blqTecnico} onChange={setBlqTecnico} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-white/70 text-xs">Motivo *</Label>
+                <Label className="text-foreground/70 text-xs">Motivo *</Label>
                 <Input
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
+                  className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50"
                   placeholder="Ex: Férias, Licença médica"
                   value={blqMotivo}
                   onChange={(e) => setBlqMotivo(e.target.value)}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-white/70 text-xs">Data início *</Label>
+                <Label className="text-foreground/70 text-xs">Data início *</Label>
                 <Input
-                  className="bg-white/5 border-white/10 text-white"
+                  className="bg-muted/50 border-border text-foreground"
                   type="date"
                   value={blqInicio}
                   onChange={(e) => setBlqInicio(e.target.value)}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-white/70 text-xs">Data fim *</Label>
+                <Label className="text-foreground/70 text-xs">Data fim *</Label>
                 <Input
-                  className="bg-white/5 border-white/10 text-white"
+                  className="bg-muted/50 border-border text-foreground"
                   type="date"
                   value={blqFim}
                   onChange={(e) => setBlqFim(e.target.value)}
@@ -385,33 +385,33 @@ export default function CapacidadePage() {
         )}
 
         {loadingBlq ? (
-          <p className="text-xs text-white/40 py-8 text-center">Carregando...</p>
+          <p className="text-xs text-muted-foreground py-8 text-center">Carregando...</p>
         ) : bloqueios.length === 0 ? (
-          <div className="rounded-lg border border-white/10 bg-white/5 p-4 text-center text-white/40 text-sm">
+          <div className="rounded-lg border border-border bg-muted/50 p-4 text-center text-muted-foreground text-sm">
             Nenhum bloqueio cadastrado.
           </div>
         ) : (
-          <div className="rounded-lg border border-white/10 overflow-hidden">
+          <div className="rounded-lg border border-border overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="border-white/10 hover:bg-transparent">
-                  <TableHead className="text-white/60 text-xs">Técnico</TableHead>
-                  <TableHead className="text-white/60 text-xs">Período</TableHead>
-                  <TableHead className="text-white/60 text-xs">Motivo</TableHead>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-foreground/60 text-xs">Técnico</TableHead>
+                  <TableHead className="text-foreground/60 text-xs">Período</TableHead>
+                  <TableHead className="text-foreground/60 text-xs">Motivo</TableHead>
                   <TableHead className="w-10" />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {bloqueios.map((b) => (
-                  <TableRow key={b.id} className="border-white/10">
-                    <TableCell className="text-white/70 text-sm">{b.tecnico}</TableCell>
-                    <TableCell className="text-white/60 text-xs">{b.data_inicio} → {b.data_fim}</TableCell>
-                    <TableCell className="text-white/80 text-sm">{b.motivo}</TableCell>
+                  <TableRow key={b.id} className="border-border">
+                    <TableCell className="text-foreground/70 text-sm">{b.tecnico}</TableCell>
+                    <TableCell className="text-foreground/60 text-xs">{b.data_inicio} → {b.data_fim}</TableCell>
+                    <TableCell className="text-foreground/80 text-sm">{b.motivo}</TableCell>
                     <TableCell>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 text-white/30 hover:text-red-400"
+                        className="h-7 w-7 text-muted-foreground hover:text-red-400"
                         onClick={() => deleteBlq(b.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />

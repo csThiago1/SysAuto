@@ -107,11 +107,11 @@ export function VehiclePlateSearch({ value, onChange, showVersion = true }: Prop
   // ── Estado: veículo já selecionado ──────────────────────────────────────────
   if (value && !editing) {
     return (
-      <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
+      <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Car className="h-4 w-4 text-primary-500 shrink-0" />
-            <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">Veículo</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Veículo</span>
             {history?.found && (
               <Badge variant="outline" className="text-xs border-success-500/30 text-success-400 bg-success-400/10 flex items-center gap-1">
                 <History className="h-3 w-3" />
@@ -123,14 +123,14 @@ export function VehiclePlateSearch({ value, onChange, showVersion = true }: Prop
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className="text-xs text-white/30 hover:text-white/60 transition-colors px-2"
+              className="text-xs text-muted-foreground hover:text-foreground/60 transition-colors px-2"
             >
               Editar
             </button>
             <button
               type="button"
               onClick={handleClear}
-              className="text-white/30 hover:text-white/60 transition-colors"
+              className="text-muted-foreground hover:text-foreground/60 transition-colors"
             >
               <X className="h-4 w-4" />
             </button>
@@ -139,37 +139,37 @@ export function VehiclePlateSearch({ value, onChange, showVersion = true }: Prop
 
         <div className="grid grid-cols-2 gap-x-6 gap-y-1">
           <div>
-            <p className="text-xs text-white/40">Placa</p>
-            <p className="text-sm font-semibold text-white font-plate tracking-widest">{formatPlate(value.plate)}</p>
+            <p className="text-xs text-muted-foreground">Placa</p>
+            <p className="text-sm font-semibold text-foreground font-plate tracking-widest">{formatPlate(value.plate)}</p>
           </div>
           <div>
-            <p className="text-xs text-white/40">Ano</p>
-            <p className="text-sm text-white">{value.year ?? "—"}</p>
+            <p className="text-xs text-muted-foreground">Ano</p>
+            <p className="text-sm text-foreground">{value.year ?? "—"}</p>
           </div>
           <div>
-            <p className="text-xs text-white/40">Marca</p>
-            <p className="text-sm text-white">{value.make || "—"}</p>
+            <p className="text-xs text-muted-foreground">Marca</p>
+            <p className="text-sm text-foreground">{value.make || "—"}</p>
           </div>
           <div>
-            <p className="text-xs text-white/40">Modelo</p>
-            <p className="text-sm text-white">{value.model || "—"}</p>
+            <p className="text-xs text-muted-foreground">Modelo</p>
+            <p className="text-sm text-foreground">{value.model || "—"}</p>
           </div>
           {value.vehicle_version && (
             <div className="col-span-2">
-              <p className="text-xs text-white/40">Versão</p>
-              <p className="text-sm text-white">{value.vehicle_version}</p>
+              <p className="text-xs text-muted-foreground">Versão</p>
+              <p className="text-sm text-foreground">{value.vehicle_version}</p>
             </div>
           )}
           {value.color && (
             <div>
-              <p className="text-xs text-white/40">Cor</p>
-              <p className="text-sm text-white">{value.color}</p>
+              <p className="text-xs text-muted-foreground">Cor</p>
+              <p className="text-sm text-foreground">{value.color}</p>
             </div>
           )}
           {value.last_customer_name && (
             <div className="col-span-2 pt-1 border-t border-white/5">
-              <p className="text-xs text-white/40">Último cliente</p>
-              <p className="text-sm text-white/70">{value.last_customer_name}</p>
+              <p className="text-xs text-muted-foreground">Último cliente</p>
+              <p className="text-sm text-foreground/70">{value.last_customer_name}</p>
             </div>
           )}
         </div>
@@ -180,13 +180,13 @@ export function VehiclePlateSearch({ value, onChange, showVersion = true }: Prop
   // ── Estado: edição manual (após selecionado) ────────────────────────────────
   if (value && editing) {
     return (
-      <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-4">
+      <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-white/50 uppercase tracking-wider">Editar Veículo</span>
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Editar Veículo</span>
           <button
             type="button"
             onClick={() => setEditing(false)}
-            className="text-xs text-white/40 hover:text-white/70"
+            className="text-xs text-muted-foreground hover:text-foreground/70"
           >
             Concluir
           </button>
@@ -198,22 +198,22 @@ export function VehiclePlateSearch({ value, onChange, showVersion = true }: Prop
 
   // ── Estado: busca por placa ─────────────────────────────────────────────────
   return (
-    <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-4">
-      <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Veículo</p>
+    <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Veículo</p>
 
       {/* Input de placa */}
       <div className="space-y-1.5">
-        <Label className="text-white/70 text-xs">Placa</Label>
+        <Label className="text-foreground/70 text-xs">Placa</Label>
         <div className="relative">
           <Input
-            className="bg-white/5 border-white/10 text-white placeholder:text-white/20 uppercase font-plate tracking-widest text-base"
+            className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50 uppercase font-plate tracking-widest text-base"
             placeholder="ABC-1234"
             value={plateInput}
             maxLength={8}
             onChange={(e) => setPlateInput(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ""))}
           />
           {historyLoading && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-white/30 animate-pulse">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground animate-pulse">
               buscando…
             </span>
           )}
@@ -231,26 +231,26 @@ export function VehiclePlateSearch({ value, onChange, showVersion = true }: Prop
                   Encontrado no histórico · {history.visits} {history.visits === 1 ? "visita" : "visitas"}
                 </span>
                 {history.last_visit && (
-                  <span className="text-xs text-white/30 ml-auto">
+                  <span className="text-xs text-muted-foreground ml-auto">
                     última: {new Date(history.last_visit).toLocaleDateString("pt-BR")}
                   </span>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                <span className="text-white/40">Marca</span>
-                <span className="text-white">{history.make}</span>
-                <span className="text-white/40">Modelo</span>
-                <span className="text-white">{history.model}</span>
+                <span className="text-muted-foreground">Marca</span>
+                <span className="text-foreground">{history.make}</span>
+                <span className="text-muted-foreground">Modelo</span>
+                <span className="text-foreground">{history.model}</span>
                 {history.year && (
                   <>
-                    <span className="text-white/40">Ano</span>
-                    <span className="text-white">{history.year}</span>
+                    <span className="text-muted-foreground">Ano</span>
+                    <span className="text-foreground">{history.year}</span>
                   </>
                 )}
                 {history.last_customer_name && (
                   <>
-                    <span className="text-white/40">Cliente</span>
-                    <span className="text-white/70">{history.last_customer_name}</span>
+                    <span className="text-muted-foreground">Cliente</span>
+                    <span className="text-foreground/70">{history.last_customer_name}</span>
                   </>
                 )}
               </div>
@@ -278,7 +278,7 @@ export function VehiclePlateSearch({ value, onChange, showVersion = true }: Prop
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-white/40">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <span className="text-xs">Placa não está no histórico.</span>
               </div>
@@ -287,7 +287,7 @@ export function VehiclePlateSearch({ value, onChange, showVersion = true }: Prop
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="flex-1 border-white/10 text-white/60 hover:text-white"
+                  className="flex-1 border-border text-foreground/60 hover:text-foreground"
                   onClick={handleSearchApi}
                   disabled={apiLoading}
                 >
@@ -298,7 +298,7 @@ export function VehiclePlateSearch({ value, onChange, showVersion = true }: Prop
                   type="button"
                   size="sm"
                   variant="ghost"
-                  className="flex-1 text-white/60 hover:text-white"
+                  className="flex-1 text-foreground/60 hover:text-foreground"
                   onClick={() =>
                     onChange({
                       plate: searchedPlate,
@@ -329,7 +329,7 @@ export function VehiclePlateSearch({ value, onChange, showVersion = true }: Prop
       {!searchedPlate && (
         <button
           type="button"
-          className="text-xs text-white/30 hover:text-white/50 transition-colors"
+          className="text-xs text-muted-foreground hover:text-muted-foreground transition-colors"
           onClick={() =>
             onChange({
               plate: "",
@@ -367,17 +367,17 @@ function VehicleForm({
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label className="text-white/70 text-xs">Placa</Label>
+          <Label className="text-foreground/70 text-xs">Placa</Label>
           <Input
-            className="bg-white/5 border-white/10 text-white uppercase font-plate tracking-widest"
+            className="bg-muted/50 border-border text-foreground uppercase font-plate tracking-widest"
             value={value.plate}
             onChange={(e) => set("plate", e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-white/70 text-xs">Ano *</Label>
+          <Label className="text-foreground/70 text-xs">Ano *</Label>
           <Input
-            className="bg-white/5 border-white/10 text-white"
+            className="bg-muted/50 border-border text-foreground"
             type="number"
             min="1980"
             max={new Date().getFullYear() + 1}
@@ -388,18 +388,18 @@ function VehicleForm({
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <Label className="text-white/70 text-xs">Marca *</Label>
+          <Label className="text-foreground/70 text-xs">Marca *</Label>
           <Input
-            className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
+            className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50"
             placeholder="Ex: Toyota"
             value={value.make}
             onChange={(e) => set("make", e.target.value)}
           />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-white/70 text-xs">Modelo *</Label>
+          <Label className="text-foreground/70 text-xs">Modelo *</Label>
           <Input
-            className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
+            className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50"
             placeholder="Ex: Corolla"
             value={value.model}
             onChange={(e) => set("model", e.target.value)}
@@ -409,18 +409,18 @@ function VehicleForm({
       {showVersion && (
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Versão</Label>
+            <Label className="text-foreground/70 text-xs">Versão</Label>
             <Input
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
+              className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50"
               placeholder="Ex: 2.0 XEI CVT"
               value={value.vehicle_version}
               onChange={(e) => set("vehicle_version", e.target.value)}
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-white/70 text-xs">Cor</Label>
+            <Label className="text-foreground/70 text-xs">Cor</Label>
             <Input
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
+              className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50"
               placeholder="Ex: Prata"
               value={value.color}
               onChange={(e) => set("color", e.target.value)}

@@ -37,8 +37,8 @@ export default function ConfiguracaoMotorPage() {
       <div className="flex items-center gap-3">
         <SlidersHorizontal className="h-5 w-5 text-primary-500" />
         <div>
-          <h1 className="text-lg font-semibold text-white">Configuração do Motor</h1>
-          <p className="text-xs text-white/40 mt-0.5">
+          <h1 className="text-lg font-semibold text-foreground">Configuração do Motor</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Parâmetros de precificação do Motor de Orçamentos.
           </p>
         </div>
@@ -49,12 +49,12 @@ export default function ConfiguracaoMotorPage() {
           <Link
             key={mod.href}
             href={mod.href as Route}
-            className="group rounded-lg border border-white/10 bg-white/5 p-5 hover:bg-white/10 hover:border-white/20 transition-all space-y-2"
+            className="group rounded-lg border border-border bg-muted/50 p-5 hover:bg-muted hover:border-border transition-all space-y-2"
           >
             <mod.icon className="h-5 w-5 text-primary-500 group-hover:text-primary-400 transition-colors" />
             <div>
-              <h2 className="text-sm font-semibold text-white">{mod.title}</h2>
-              <p className="text-xs text-white/50 mt-0.5">{mod.description}</p>
+              <h2 className="text-sm font-semibold text-foreground">{mod.title}</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">{mod.description}</p>
             </div>
           </Link>
         ))}

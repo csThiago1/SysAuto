@@ -50,7 +50,7 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold text-white">
+        <h3 className="text-base font-semibold text-foreground">
           Descontos ({deductions.length})
         </h3>
         <button
@@ -64,7 +64,7 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="rounded-md bg-white/5 shadow-card p-card-padding space-y-3"
+          className="rounded-md bg-muted/50 shadow-card p-card-padding space-y-3"
         >
           {/* Tipo de desconto toggle */}
           <div className="flex gap-3">
@@ -88,7 +88,7 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
 
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/50">Tipo</label>
+              <label className="text-xs text-muted-foreground">Tipo</label>
               <select
                 value={form.deduction_type}
                 onChange={(e) =>
@@ -97,7 +97,7 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
                     deduction_type: e.target.value as DeductionType,
                   }))
                 }
-                className="rounded border border-white/10 px-2 py-1.5 text-sm"
+                className="rounded border border-border px-2 py-1.5 text-sm"
               >
                 {(
                   Object.entries(DEDUCTION_TYPE_LABELS) as [DeductionType, string][]
@@ -111,13 +111,13 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
 
             {discountType === "fixed" ? (
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-white/50">Valor (R$)</label>
+                <label className="text-xs text-muted-foreground">Valor (R$)</label>
                 <input
                   type="number"
                   step="0.01"
                   min="0.01"
                   required
-                  className="rounded border border-white/10 px-2 py-1.5 text-sm"
+                  className="rounded border border-border px-2 py-1.5 text-sm"
                   value={form.amount ?? ""}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, amount: parseFloat(e.target.value) }))
@@ -126,14 +126,14 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
               </div>
             ) : (
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-white/50">Taxa (%)</label>
+                <label className="text-xs text-muted-foreground">Taxa (%)</label>
                 <input
                   type="number"
                   step="0.01"
                   min="0.01"
                   max="100"
                   required
-                  className="rounded border border-white/10 px-2 py-1.5 text-sm"
+                  className="rounded border border-border px-2 py-1.5 text-sm"
                   value={form.rate ?? ""}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, rate: parseFloat(e.target.value) }))
@@ -143,11 +143,11 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
             )}
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/50">Mês referência</label>
+              <label className="text-xs text-muted-foreground">Mês referência</label>
               <input
                 type="month"
                 required
-                className="rounded border border-white/10 px-2 py-1.5 text-sm"
+                className="rounded border border-border px-2 py-1.5 text-sm"
                 value={form.reference_month.slice(0, 7)}
                 onChange={(e) =>
                   setForm((p) => ({
@@ -158,11 +158,11 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-white/50">Descrição</label>
+              <label className="text-xs text-muted-foreground">Descrição</label>
               <input
                 type="text"
                 required
-                className="rounded border border-white/10 px-2 py-1.5 text-sm"
+                className="rounded border border-border px-2 py-1.5 text-sm"
                 value={form.description}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, description: e.target.value }))
@@ -174,14 +174,14 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="text-xs text-white/50 hover:underline"
+              className="text-xs text-muted-foreground hover:underline"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={create.isPending}
-              className="rounded bg-primary-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+              className="rounded bg-primary-600 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary-700 disabled:opacity-50"
             >
               {create.isPending ? "Salvando..." : "Registrar desconto"}
             </button>
@@ -196,12 +196,12 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
           ))}
         </div>
       ) : deductions.length === 0 ? (
-        <div className="rounded-md bg-white/5 shadow-card p-8 text-center text-sm text-white/50">
+        <div className="rounded-md bg-muted/50 shadow-card p-8 text-center text-sm text-muted-foreground">
           Nenhum desconto registrado.
         </div>
       ) : (
         <>
-          <div className="rounded-md bg-white/5 shadow-card divide-y divide-white/5">
+          <div className="rounded-md bg-muted/50 shadow-card divide-y divide-white/5">
             {deductions.map((d) => (
               <div
                 key={d.id}
@@ -209,20 +209,20 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-medium text-white">
+                    <p className="text-sm font-medium text-foreground">
                       {DEDUCTION_TYPE_LABELS[d.deduction_type]} — {d.description}
                     </p>
                     <span
                       className={
                         d.discount_type === "percentage"
                           ? "rounded-full px-2 py-0.5 text-xs font-medium bg-info-500/10 text-info-400"
-                          : "rounded-full px-2 py-0.5 text-xs font-medium bg-white/5 text-white/60"
+                          : "rounded-full px-2 py-0.5 text-xs font-medium bg-muted/50 text-foreground/60"
                       }
                     >
                       {d.discount_type === "percentage" ? "Percentual" : "Fixo"}
                     </span>
                   </div>
-                  <p className="text-xs text-white/50">
+                  <p className="text-xs text-muted-foreground">
                     Ref:{" "}
                     {new Date(d.reference_month).toLocaleDateString("pt-BR", {
                       month: "long",
@@ -242,7 +242,7 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
             ))}
           </div>
           <div className="flex justify-end">
-            <span className="text-sm font-semibold text-white/70">
+            <span className="text-sm font-semibold text-foreground/70">
               Total fixo:{" "}
               {fmt.format(total)}
             </span>

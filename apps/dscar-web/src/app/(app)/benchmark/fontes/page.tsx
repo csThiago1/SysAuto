@@ -75,8 +75,8 @@ export default function BenchmarkFontesPage() {
         <div className="flex items-center gap-3">
           <Database className="h-5 w-5 text-primary-500" />
           <div>
-            <h1 className="text-lg font-semibold text-white">Fontes de Benchmark</h1>
-            <p className="text-xs text-white/40 mt-0.5">
+            <h1 className="text-lg font-semibold text-foreground">Fontes de Benchmark</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Seguradoras, marketplaces e concorrentes como fonte de preços de mercado.
             </p>
           </div>
@@ -88,22 +88,22 @@ export default function BenchmarkFontesPage() {
       </div>
 
       {showForm && (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-4">
-          <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Nova Fonte</p>
+        <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-4">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nova Fonte</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Nome *</Label>
+              <Label className="text-foreground/70 text-xs">Nome *</Label>
               <Input
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
+                className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50"
                 value={form.nome}
                 onChange={(e) => set("nome", e.target.value)}
                 placeholder="Ex: Porto Seguro Q1 2026"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Tipo</Label>
+              <Label className="text-foreground/70 text-xs">Tipo</Label>
               <Select value={form.tipo} onValueChange={(v) => set("tipo", v)}>
-                <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                <SelectTrigger className="bg-muted/50 border-border text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -114,9 +114,9 @@ export default function BenchmarkFontesPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-white/70 text-xs">Confiabilidade (0–1)</Label>
+              <Label className="text-foreground/70 text-xs">Confiabilidade (0–1)</Label>
               <Input
-                className="bg-white/5 border-white/10 text-white"
+                className="bg-muted/50 border-border text-foreground"
                 type="number"
                 min="0"
                 max="1"
@@ -138,28 +138,28 @@ export default function BenchmarkFontesPage() {
       )}
 
       {isLoading ? (
-        <p className="text-xs text-white/40 py-8 text-center">Carregando...</p>
+        <p className="text-xs text-muted-foreground py-8 text-center">Carregando...</p>
       ) : fontes.length === 0 ? (
-        <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center text-white/40 text-sm">
+        <div className="rounded-lg border border-border bg-muted/50 p-8 text-center text-muted-foreground text-sm">
           Nenhuma fonte cadastrada.
         </div>
       ) : (
-        <div className="rounded-lg border border-white/10 overflow-hidden">
+        <div className="rounded-lg border border-border overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead className="text-white/60 text-xs">Nome</TableHead>
-                <TableHead className="text-white/60 text-xs">Tipo</TableHead>
-                <TableHead className="text-white/60 text-xs text-right">Confiabilidade</TableHead>
-                <TableHead className="text-white/60 text-xs">Status</TableHead>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="text-foreground/60 text-xs">Nome</TableHead>
+                <TableHead className="text-foreground/60 text-xs">Tipo</TableHead>
+                <TableHead className="text-foreground/60 text-xs text-right">Confiabilidade</TableHead>
+                <TableHead className="text-foreground/60 text-xs">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {fontes.map((f) => (
-                <TableRow key={f.id} className="border-white/10">
-                  <TableCell className="text-sm text-white">{f.nome}</TableCell>
-                  <TableCell className="text-sm text-white/60">{TIPO_LABELS[f.tipo]}</TableCell>
-                  <TableCell className="text-sm text-right font-mono text-white/60">
+                <TableRow key={f.id} className="border-border">
+                  <TableCell className="text-sm text-foreground">{f.nome}</TableCell>
+                  <TableCell className="text-sm text-foreground/60">{TIPO_LABELS[f.tipo]}</TableCell>
+                  <TableCell className="text-sm text-right font-mono text-foreground/60">
                     {(parseFloat(f.confiabilidade) * 100).toFixed(0)}%
                   </TableCell>
                   <TableCell>

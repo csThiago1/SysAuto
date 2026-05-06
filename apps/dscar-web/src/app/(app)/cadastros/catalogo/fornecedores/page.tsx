@@ -13,7 +13,7 @@ import { useFornecedores } from "@/hooks/usePricingCatalog"
 import type { Fornecedor } from "@paddock/types"
 
 function AvaliacaoStars({ value }: { value: number | null }) {
-  if (value === null) return <span className="text-white/40 text-xs">—</span>
+  if (value === null) return <span className="text-muted-foreground text-xs">—</span>
   return (
     <span className="text-sm text-amber-500" title={`${value}/5`}>
       {"★".repeat(value)}{"☆".repeat(5 - value)}
@@ -28,8 +28,8 @@ export default function FornecedoresPage() {
     <div className="flex flex-col gap-6 p-6 max-w-5xl mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">Fornecedores</h1>
-        <p className="mt-1 text-sm text-white/50">
+        <h1 className="text-2xl font-bold text-foreground">Fornecedores</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Fornecedores de peças cadastrados no catálogo técnico.
         </p>
       </div>
@@ -38,13 +38,13 @@ export default function FornecedoresPage() {
       {isLoading ? (
         <TableSkeleton columns={4} rows={6} />
       ) : fornecedores.length === 0 ? (
-        <div className="py-12 text-center text-sm text-white/40">
+        <div className="py-12 text-center text-sm text-muted-foreground">
           Nenhum fornecedor cadastrado.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-md border border-white/10 bg-white/5">
+        <div className="overflow-hidden rounded-md border border-border bg-muted/50">
           <Table>
-            <TableHeader className="bg-white/[0.03]">
+            <TableHeader className="bg-muted/30">
               <TableRow>
                 <TableHead>Condições de Pagamento</TableHead>
                 <TableHead className="w-40">Prazo Entrega</TableHead>
@@ -55,17 +55,17 @@ export default function FornecedoresPage() {
             <TableBody>
               {fornecedores.map((f: Fornecedor) => (
                 <TableRow key={f.id}>
-                  <TableCell className="py-2 text-sm text-white/90">
+                  <TableCell className="py-2 text-sm text-foreground/90">
                     {f.condicoes_pagamento || "—"}
                   </TableCell>
-                  <TableCell className="py-2 text-sm text-white/60">
+                  <TableCell className="py-2 text-sm text-foreground/60">
                     {f.prazo_entrega_dias !== null ? `${f.prazo_entrega_dias} dias` : "—"}
                   </TableCell>
                   <TableCell className="py-2">
                     <AvaliacaoStars value={f.avaliacao} />
                   </TableCell>
                   <TableCell className="py-2">
-                    <span className={`text-xs ${f.is_active ? "text-success-400" : "text-white/40"}`}>
+                    <span className={`text-xs ${f.is_active ? "text-success-400" : "text-muted-foreground"}`}>
                       {f.is_active ? "Ativo" : "Inativo"}
                     </span>
                   </TableCell>
@@ -76,7 +76,7 @@ export default function FornecedoresPage() {
         </div>
       )}
 
-      <p className="text-xs text-white/40">{fornecedores.length} fornecedores carregados.</p>
+      <p className="text-xs text-muted-foreground">{fornecedores.length} fornecedores carregados.</p>
     </div>
   )
 }

@@ -72,16 +72,16 @@ export function ItemsTable({ budgetId, version }: Props) {
   return (
     <div className="space-y-3">
       {/* Tabela */}
-      <div className="rounded-xl border border-white/10 overflow-hidden">
+      <div className="rounded-xl border border-border overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="border-white/10 hover:bg-transparent">
-              <TableHead className="text-white/50">Descrição</TableHead>
-              <TableHead className="text-white/50">Tipo</TableHead>
-              <TableHead className="text-white/50 text-right">Qtd</TableHead>
-              <TableHead className="text-white/50 text-right">Preço Unit.</TableHead>
-              <TableHead className="text-white/50 text-right">Desconto</TableHead>
-              <TableHead className="text-white/50 text-right">Total Líq.</TableHead>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-muted-foreground">Descrição</TableHead>
+              <TableHead className="text-muted-foreground">Tipo</TableHead>
+              <TableHead className="text-muted-foreground text-right">Qtd</TableHead>
+              <TableHead className="text-muted-foreground text-right">Preço Unit.</TableHead>
+              <TableHead className="text-muted-foreground text-right">Desconto</TableHead>
+              <TableHead className="text-muted-foreground text-right">Total Líq.</TableHead>
               {isDraft && <TableHead className="w-16" />}
             </TableRow>
           </TableHeader>
@@ -90,7 +90,7 @@ export function ItemsTable({ budgetId, version }: Props) {
               <TableRow>
                 <TableCell
                   colSpan={isDraft ? 7 : 6}
-                  className="text-center text-white/30 py-10 text-sm"
+                  className="text-center text-muted-foreground py-10 text-sm"
                 >
                   {isDraft
                     ? 'Nenhum item adicionado. Clique em "Adicionar Item" para começar.'
@@ -101,31 +101,31 @@ export function ItemsTable({ budgetId, version }: Props) {
               items.map((item) => (
                 <TableRow
                   key={item.id}
-                  className={`border-white/5 ${isDraft ? "hover:bg-white/5 cursor-pointer" : ""}`}
+                  className={`border-white/5 ${isDraft ? "hover:bg-muted/50 cursor-pointer" : ""}`}
                   onClick={() => openEdit(item)}
                 >
-                  <TableCell className="text-white/90 text-sm max-w-xs truncate">
+                  <TableCell className="text-foreground/90 text-sm max-w-xs truncate">
                     {item.description}
                   </TableCell>
-                  <TableCell className="text-white/50 text-xs">
+                  <TableCell className="text-muted-foreground text-xs">
                     {ITEM_TYPE_LABELS[item.item_type] ?? item.item_type}
                   </TableCell>
-                  <TableCell className="text-right text-white/70 text-sm">
+                  <TableCell className="text-right text-foreground/70 text-sm">
                     {item.quantity}
                   </TableCell>
-                  <TableCell className="text-right text-white/70 text-sm">
+                  <TableCell className="text-right text-foreground/70 text-sm">
                     {fmt(item.unit_price)}
                   </TableCell>
-                  <TableCell className="text-right text-white/50 text-sm">
+                  <TableCell className="text-right text-muted-foreground text-sm">
                     {parseFloat(item.discount_pct) > 0 ? `${item.discount_pct}%` : "—"}
                   </TableCell>
-                  <TableCell className="text-right text-white font-medium text-sm">
+                  <TableCell className="text-right text-foreground font-medium text-sm">
                     {fmt(item.net_price)}
                   </TableCell>
                   {isDraft && (
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <button
-                        className="text-white/20 hover:text-error-400 transition-colors"
+                        className="text-muted-foreground/50 hover:text-error-400 transition-colors"
                         onClick={() => setDeleteTarget(item.id)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -142,22 +142,22 @@ export function ItemsTable({ budgetId, version }: Props) {
       {/* Totais */}
       {items.length > 0 && (
         <div className="flex justify-end">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 w-72 space-y-1.5 text-sm">
-            <div className="flex justify-between text-white/50">
+          <div className="rounded-xl border border-border bg-muted/50 p-4 w-72 space-y-1.5 text-sm">
+            <div className="flex justify-between text-muted-foreground">
               <span>Peças</span>
               <span>{fmt(version.parts_total)}</span>
             </div>
-            <div className="flex justify-between text-white/50">
+            <div className="flex justify-between text-muted-foreground">
               <span>Mão de Obra</span>
               <span>
                 {fmt(version.labor_total !== "0.00" ? version.labor_total : laborTotal)}
               </span>
             </div>
-            <div className="flex justify-between text-white/50">
+            <div className="flex justify-between text-muted-foreground">
               <span>Descontos</span>
               <span className="text-error-400">- {fmt(version.discount_total)}</span>
             </div>
-            <div className="border-t border-white/10 pt-1.5 flex justify-between text-white font-semibold">
+            <div className="border-t border-border pt-1.5 flex justify-between text-foreground font-semibold">
               <span>Total Líquido</span>
               <span>{fmt(version.net_total)}</span>
             </div>
@@ -172,7 +172,7 @@ export function ItemsTable({ budgetId, version }: Props) {
             size="sm"
             variant="outline"
             onClick={openNew}
-            className="gap-2 border-white/20 text-white/70 hover:text-white hover:border-white/40"
+            className="gap-2 border-border text-foreground/70 hover:text-foreground hover:border-white/40"
           >
             <Plus className="h-4 w-4" />
             Adicionar Item
@@ -181,7 +181,7 @@ export function ItemsTable({ budgetId, version }: Props) {
       )}
 
       {!isDraft && (
-        <p className="text-xs text-white/30 italic">
+        <p className="text-xs text-muted-foreground italic">
           Versão {version.status === "sent" ? "enviada" : version.status} — somente leitura.
         </p>
       )}

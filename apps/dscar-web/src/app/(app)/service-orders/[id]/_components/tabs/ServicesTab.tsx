@@ -231,7 +231,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                 onClick={() => handleSubmit(onAdd)()}
                 disabled={isSubmitting}
                 size="sm"
-                className="bg-primary-600 hover:bg-primary-700 text-white gap-1.5"
+                className="bg-primary-600 hover:bg-primary-700 text-foreground gap-1.5"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Adicionar
@@ -263,7 +263,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                       ? "bg-info-500/15 text-info-500"
                       : f.color === "warning"
                       ? "bg-warning-500/15 text-warning-500"
-                      : "bg-white/15 text-white"
+                      : "bg-white/15 text-foreground"
                     : "bg-muted/50 text-muted-foreground hover:bg-muted"
                 )}
               >
@@ -308,7 +308,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
             )}
             <div className="border-t border-border pt-2 flex items-center justify-between">
               <span className="text-sm font-semibold text-foreground/90">Total Serviços</span>
-              <span className="text-base font-bold text-white">{formatCurrency(servicesTotal)}</span>
+              <span className="text-base font-bold text-foreground">{formatCurrency(servicesTotal)}</span>
             </div>
           </div>
         </>

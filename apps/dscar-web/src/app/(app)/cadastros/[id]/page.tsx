@@ -93,8 +93,8 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
 
   if (isError || !person) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-white/50">
-        <User className="h-12 w-12 text-white/30 mb-4" />
+      <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+        <User className="h-12 w-12 text-muted-foreground mb-4" />
         <p className="text-lg font-medium">Cadastro não encontrado</p>
         <Button variant="ghost" className="mt-4" asChild>
           <Link href="/cadastros">
@@ -125,16 +125,16 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
 
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-white">
+              <h1 className="text-2xl font-semibold text-foreground">
                 {person.full_name}
               </h1>
-              <span className="inline-flex items-center gap-1 rounded-md bg-white/5 px-2 py-0.5 text-xs font-medium text-white/60">
+              <span className="inline-flex items-center gap-1 rounded-md bg-muted/50 px-2 py-0.5 text-xs font-medium text-foreground/60">
                 {isPF ? <User className="h-3 w-3" /> : <Building2 className="h-3 w-3" />}
                 {PERSON_KIND_LABEL[person.person_kind]}
               </span>
             </div>
             {person.fantasy_name && (
-              <p className="text-sm text-white/50 mt-0.5">{person.fantasy_name}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">{person.fantasy_name}</p>
             )}
             <div className="flex flex-wrap gap-1.5 mt-2">
               {roles.map((role) => (
@@ -195,13 +195,13 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
               </div>
               {person.notes && (
                 <div className="mt-4 pt-4 border-t">
-                  <p className="text-xs font-medium text-white/40 uppercase tracking-wide mb-1">Observações</p>
-                  <p className="text-sm text-white/70 whitespace-pre-wrap">{person.notes}</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Observações</p>
+                  <p className="text-sm text-foreground/70 whitespace-pre-wrap">{person.notes}</p>
                 </div>
               )}
               {person.client_profile && (
-                <div className="mt-4 pt-4 border-t border-white/10">
-                  <p className="text-2xs font-medium text-white/40 uppercase tracking-wide mb-2">LGPD</p>
+                <div className="mt-4 pt-4 border-t border-border">
+                  <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wide mb-2">LGPD</p>
                   <div className="grid grid-cols-2 gap-2">
                     <InfoItem
                       label="Consentimento"
@@ -257,7 +257,7 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <FileText className="h-4 w-4 text-white/40" />
+                <FileText className="h-4 w-4 text-muted-foreground" />
                 Ordens de Serviço
               </CardTitle>
             </CardHeader>
@@ -269,7 +269,7 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
                   <Skeleton className="h-14 w-full" />
                 </div>
               ) : orders.length === 0 ? (
-                <p className="text-sm text-white/40 text-center py-8">
+                <p className="text-sm text-muted-foreground text-center py-8">
                   Nenhuma OS vinculada.
                 </p>
               ) : (
@@ -278,13 +278,13 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
                     <Link
                       key={os.id}
                       href={`/service-orders/${os.id}` as `/service-orders/${string}`}
-                      className="flex items-center justify-between gap-3 rounded-md border border-white/10 px-3 py-2.5 hover:bg-white/[0.03] transition-colors"
+                      className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2.5 hover:bg-muted/30 transition-colors"
                     >
                       <div className="flex flex-col min-w-0">
-                        <span className="text-sm font-semibold text-white">
+                        <span className="text-sm font-semibold text-foreground">
                           OS #{formatOSNumber(os.number)}
                         </span>
-                        <span className="text-xs text-white/50 truncate">
+                        <span className="text-xs text-muted-foreground truncate">
                           {os.plate} · {os.make} {os.model}
                         </span>
                       </div>
@@ -296,7 +296,7 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
                   ))}
 
                   {(ordersData?.count ?? 0) > orders.length && (
-                    <p className="text-xs text-white/40 text-center pt-2">
+                    <p className="text-xs text-muted-foreground text-center pt-2">
                       Exibindo {orders.length} de {ordersData?.count} OS
                     </p>
                   )}
@@ -327,8 +327,8 @@ function InfoItem({
   if (!value || value === "—") return null;
   return (
     <div>
-      <p className="text-2xs font-medium text-white/40 uppercase tracking-wide">{label}</p>
-      <p className={cn("text-sm text-white mt-0.5", valueClassName)}>{value}</p>
+      <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
+      <p className={cn("text-sm text-foreground mt-0.5", valueClassName)}>{value}</p>
     </div>
   );
 }
@@ -346,12 +346,12 @@ const CONTACT_ICON: Record<string, React.ReactNode> = {
 function ContactRow({ contact }: { contact: PersonContact }): React.ReactElement {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/50 shrink-0">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50 text-muted-foreground shrink-0">
         {CONTACT_ICON[contact.contact_type] ?? <Phone className="h-3.5 w-3.5" />}
       </div>
       <div className="flex flex-col min-w-0">
-        <span className="text-sm text-white">{contact.value}</span>
-        <span className="text-xs text-white/50">
+        <span className="text-sm text-foreground">{contact.value}</span>
+        <span className="text-xs text-muted-foreground">
           {CONTACT_TYPE_LABEL[contact.contact_type]}
           {contact.label ? ` · ${contact.label}` : ""}
           {contact.is_primary ? " · Principal" : ""}
@@ -364,20 +364,20 @@ function ContactRow({ contact }: { contact: PersonContact }): React.ReactElement
 function AddressRow({ address }: { address: PersonAddress }): React.ReactElement {
   return (
     <div className="flex gap-3">
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/50 shrink-0 mt-0.5">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50 text-muted-foreground shrink-0 mt-0.5">
         <MapPin className="h-3.5 w-3.5" />
       </div>
       <div className="flex flex-col min-w-0">
-        <p className="text-sm text-white">
+        <p className="text-sm text-foreground">
           {address.street}
           {address.number ? `, ${address.number}` : ""}
           {address.complement ? ` — ${address.complement}` : ""}
         </p>
-        <p className="text-xs text-white/50">
+        <p className="text-xs text-muted-foreground">
           {address.neighborhood} · {address.city}/{address.state}
           {address.zip_code ? ` · CEP ${address.zip_code}` : ""}
         </p>
-        <span className="text-xs text-white/40 mt-0.5">
+        <span className="text-xs text-muted-foreground mt-0.5">
           {ADDRESS_TYPE_LABEL[address.address_type]}
           {address.is_primary ? " · Principal" : ""}
         </span>

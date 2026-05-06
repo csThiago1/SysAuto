@@ -318,8 +318,8 @@ export function PersonFormModal({
                     onClick={() => toggleRole(role)}
                     className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                       selectedRoles.includes(role)
-                        ? "bg-primary text-white border-primary"
-                        : "bg-white/5 text-white/60 border-white/15 hover:border-white/30"
+                        ? "bg-primary text-foreground border-primary"
+                        : "bg-muted/50 text-foreground/60 border-border hover:border-white/30"
                     }`}
                   >
                     {PERSON_ROLE_LABEL[role]}
@@ -331,7 +331,7 @@ export function PersonFormModal({
 
           {/* ── Seção 2: Dados Gerais ────────────────────────────────────── */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-white/70 border-b border-white/10 pb-1">Dados Gerais</h3>
+            <h3 className="text-sm font-semibold text-foreground/70 border-b border-border pb-1">Dados Gerais</h3>
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
                 <Label htmlFor="full_name">
@@ -412,7 +412,7 @@ export function PersonFormModal({
           {/* ── Seção 3: Documentos ──────────────────────────────────────── */}
           <div className="space-y-2">
             <div className="flex items-center justify-between border-b pb-1">
-              <h3 className="text-sm font-semibold text-white/70">Documentos</h3>
+              <h3 className="text-sm font-semibold text-foreground/70">Documentos</h3>
               <Button
                 type="button"
                 variant="ghost"
@@ -435,17 +435,17 @@ export function PersonFormModal({
             {isEditing && personData?.documents && personData.documents.length > 0 && (
               <div className="space-y-1">
                 {personData.documents.map((d) => (
-                  <div key={d.id} className="flex items-center gap-2 px-3 py-1.5 rounded border border-white/10 bg-white/5 text-xs text-white/50">
-                    <span className="font-medium text-white/80">{d.doc_type}</span>
+                  <div key={d.id} className="flex items-center gap-2 px-3 py-1.5 rounded border border-border bg-muted/50 text-xs text-muted-foreground">
+                    <span className="font-medium text-foreground/80">{d.doc_type}</span>
                     <span>{d.value_masked}</span>
                     {d.is_primary && <span className="ml-auto text-primary-600">principal</span>}
                   </div>
                 ))}
-                <p className="text-xs text-white/30">Para alterar documentos existentes, use o painel de detalhe.</p>
+                <p className="text-xs text-muted-foreground">Para alterar documentos existentes, use o painel de detalhe.</p>
               </div>
             )}
             {documentFields.map((field, index) => (
-              <div key={field.id} className="space-y-2 p-3 border border-white/10 rounded-md bg-white/5">
+              <div key={field.id} className="space-y-2 p-3 border border-border rounded-md bg-muted/50">
                 <div className="flex items-center justify-between">
                   <Controller
                     control={control}
@@ -477,7 +477,7 @@ export function PersonFormModal({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 text-white/30 hover:text-red-400"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-red-400"
                     onClick={() => removeDocument(index)}
                   >
                     ✕
@@ -515,7 +515,7 @@ export function PersonFormModal({
           {/* ── Seção 4: Contatos ────────────────────────────────────────── */}
           <div className="space-y-2">
             <div className="flex items-center justify-between border-b pb-1">
-              <h3 className="text-sm font-semibold text-white/70">Contatos</h3>
+              <h3 className="text-sm font-semibold text-foreground/70">Contatos</h3>
               <Button type="button" variant="ghost" size="sm"
                 onClick={() => appendContact({ contact_type: "CELULAR", value: "", label: "", is_primary: false })}>
                 + Adicionar
@@ -523,9 +523,9 @@ export function PersonFormModal({
             </div>
 
             {/* Campos primários fixos — celular e e-mail obrigatórios */}
-            <div className="grid grid-cols-2 gap-3 p-3 rounded-md border border-white/10 bg-white/[0.03]">
+            <div className="grid grid-cols-2 gap-3 p-3 rounded-md border border-border bg-muted/30">
               <div>
-                <Label className="text-xs text-white/50 uppercase tracking-widest font-mono">
+                <Label className="text-xs text-muted-foreground uppercase tracking-widest font-mono">
                   Celular principal{needsContacts ? " *" : ""}
                 </Label>
                 <PhoneInput
@@ -536,11 +536,11 @@ export function PersonFormModal({
                   title={isEditing && !!primaryPhoneValue ? "Para alterar, use o painel de detalhe da pessoa" : undefined}
                 />
                 {isEditing && !!primaryPhoneValue && (
-                  <p className="text-xs text-white/30 mt-0.5">Dado encriptado — edite via painel de detalhe.</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Dado encriptado — edite via painel de detalhe.</p>
                 )}
               </div>
               <div>
-                <Label className="text-xs text-white/50 uppercase tracking-widest font-mono">
+                <Label className="text-xs text-muted-foreground uppercase tracking-widest font-mono">
                   E-mail principal{needsContacts ? " *" : ""}
                 </Label>
                 <Input
@@ -552,7 +552,7 @@ export function PersonFormModal({
                   title={isEditing && !!primaryEmailValue ? "Para alterar, use o painel de detalhe da pessoa" : undefined}
                 />
                 {isEditing && !!primaryEmailValue && (
-                  <p className="text-xs text-white/30 mt-0.5">Dado encriptado — edite via painel de detalhe.</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Dado encriptado — edite via painel de detalhe.</p>
                 )}
               </div>
             </div>
@@ -580,7 +580,7 @@ export function PersonFormModal({
                   <Input {...register(`contacts.${index}.value`)} placeholder="Valor" className="flex-1" />
                 )}
                 <Input {...register(`contacts.${index}.label`)} placeholder="Rótulo (opcional)" className="w-28" />
-                <Button type="button" variant="ghost" size="sm" className="h-9 w-9 p-0 text-white/30 hover:text-red-400"
+                <Button type="button" variant="ghost" size="sm" className="h-9 w-9 p-0 text-muted-foreground hover:text-red-400"
                   onClick={() => removeContact(index)}>
                   ✕
                 </Button>
@@ -591,7 +591,7 @@ export function PersonFormModal({
           {/* ── Seção 5: Endereços ───────────────────────────────────────── */}
           <div className="space-y-2">
             <div className="flex items-center justify-between border-b pb-1">
-              <h3 className="text-sm font-semibold text-white/70">Endereços</h3>
+              <h3 className="text-sm font-semibold text-foreground/70">Endereços</h3>
               <Button type="button" variant="ghost" size="sm"
                 onClick={() => appendAddress({
                   address_type: "PRINCIPAL", zip_code: "", street: "",
@@ -603,7 +603,7 @@ export function PersonFormModal({
               </Button>
             </div>
             {addressFields.map((field, index) => (
-              <div key={field.id} className="space-y-2 p-3 border border-white/10 rounded-md bg-white/5">
+              <div key={field.id} className="space-y-2 p-3 border border-border rounded-md bg-muted/50">
                 <div className="flex items-center justify-between">
                   <Controller
                     control={control}
@@ -619,7 +619,7 @@ export function PersonFormModal({
                       </Select>
                     )}
                   />
-                  <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-white/30 hover:text-red-400"
+                  <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-red-400"
                     onClick={() => removeAddress(index)}>✕</Button>
                 </div>
                 <div className="grid grid-cols-4 gap-2">

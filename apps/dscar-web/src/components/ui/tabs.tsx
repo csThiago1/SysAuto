@@ -97,7 +97,7 @@ function TabsTrigger({ value, className, children, disabled }: TabsTriggerProps)
       data-state={isActive ? "active" : "inactive"}
       className={cn(
         "inline-flex items-center rounded-md px-3 py-1.5 text-sm font-medium ring-offset-transparent transition-all",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20",
         "disabled:pointer-events-none disabled:opacity-50",
         className
       )}

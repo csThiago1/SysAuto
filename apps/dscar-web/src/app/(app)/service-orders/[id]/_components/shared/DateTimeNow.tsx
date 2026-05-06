@@ -51,7 +51,7 @@ export const DateTimeNow = forwardRef<HTMLInputElement, DateTimeNowProps>(
           <button
             type="button"
             onClick={handleSetNow}
-            className="shrink-0 h-8 rounded-md border border-white/15 bg-white/5 px-2 text-xs font-medium text-white/60 hover:bg-white/[0.03] transition-colors"
+            className="shrink-0 h-8 rounded-md border border-border bg-muted/50 px-2 text-xs font-medium text-foreground/60 hover:bg-muted/30 transition-colors"
             title="Preencher com agora"
           >
             Agora
