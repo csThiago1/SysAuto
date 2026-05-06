@@ -17,7 +17,7 @@ import {
 } from "@/hooks/useServiceCatalog"
 import type { ServiceOrderStatus } from "@paddock/types"
 import { formatCurrency } from "@paddock/utils"
-import { ServiceGroupedView } from "./ServicesTab"
+import { ServiceGroupedView } from "./ServicesTab/ServiceGroupedView"
 import type { ServiceItem } from "../../_utils/service-grouping"
 
 const BLOCKED_STATUSES: ServiceOrderStatus[] = ["ready", "delivered", "cancelled"]
@@ -129,7 +129,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
     }
   }
 
-  const items            = laborData ?? []
+  const items            = (laborData ?? []) as ServiceItem[]
   const filteredItems    = sourceFilter === "all" ? items : items.filter((i) => i.source_type === sourceFilter)
   const servicesSubtotal = items.reduce((sum, i) => sum + Number(i.unit_price) * Number(i.quantity), 0)
   const servicesDiscount = items.reduce((sum, i) => sum + Number(i.discount), 0)
@@ -138,7 +138,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
   return (
     <div className="space-y-4 py-6">
       {!isBlocked && (
-        <div className="rounded-md border border-white/10 bg-white/[0.03] p-4 space-y-3">
+        <div className="rounded-md border border-border bg-muted/30 p-4 space-y-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Adicionar Serviço
           </p>
@@ -158,12 +158,12 @@ export function ServicesTab({ osId, osStatus }: Props) {
               </div>
             </div>
             {showCatalog && catalogData && catalogData.results.length > 0 && (
-              <div className="absolute z-10 mt-1 w-full rounded-md border border-white/10 bg-white/5 shadow-lg max-h-48 overflow-y-auto">
+              <div className="absolute z-10 mt-1 w-full rounded-md border border-border bg-muted/50 shadow-lg max-h-48 overflow-y-auto">
                 {catalogData.results.map((item) => (
                   <button
                     key={item.id}
                     type="button"
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-white/[0.03] flex justify-between items-center"
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-muted/30 flex justify-between items-center"
                     onMouseDown={() => selectFromCatalog(item)}
                   >
                     <span className="font-medium">{item.name}</span>
@@ -212,7 +212,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                   id="services-show-discount"
                   checked={showDiscount}
                   onChange={(e) => handleDiscountToggle(e.target.checked)}
-                  className="h-4 w-4 rounded border-white/15 text-primary-600 cursor-pointer"
+                  className="h-4 w-4 rounded border-border text-primary-600 cursor-pointer"
                 />
                 <label htmlFor="services-show-discount" className="text-xs font-medium text-muted-foreground uppercase tracking-wide cursor-pointer">
                   Aplicar desconto
@@ -264,7 +264,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                       : f.color === "warning"
                       ? "bg-warning-500/15 text-warning-500"
                       : "bg-white/15 text-white"
-                    : "bg-white/5 text-muted-foreground hover:bg-white/10"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
                 )}
               >
                 {f.label} ({f.count})
@@ -295,7 +295,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
           />
 
           {/* Totals panel */}
-          <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4 space-y-2">
+          <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-foreground/60">Subtotal</span>
               <span className="font-medium">{formatCurrency(servicesSubtotal)}</span>
@@ -306,7 +306,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                 <span className="font-medium text-error-400">- {formatCurrency(servicesDiscount)}</span>
               </div>
             )}
-            <div className="border-t border-white/10 pt-2 flex items-center justify-between">
+            <div className="border-t border-border pt-2 flex items-center justify-between">
               <span className="text-sm font-semibold text-foreground/90">Total Serviços</span>
               <span className="text-base font-bold text-white">{formatCurrency(servicesTotal)}</span>
             </div>

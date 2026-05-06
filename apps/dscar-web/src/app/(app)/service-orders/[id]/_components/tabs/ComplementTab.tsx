@@ -9,7 +9,7 @@ import { apiFetch } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@paddock/utils"
 import type { ServiceOrderPart, ServiceOrderLabor } from "@paddock/types"
-import { ComplementAddForm } from "./ComplementTab"
+import { ComplementAddForm } from "./ComplementTab/ComplementAddForm"
 
 interface Props {
   orderId: string
@@ -90,7 +90,7 @@ export function ComplementTab({ orderId }: Props) {
         <span className="text-warning-500">💰</span>
         <div>
           <div className="text-sm font-semibold text-warning-400">Itens cobrados diretamente do cliente</div>
-          <div className="text-xs text-white/50">
+          <div className="text-xs text-muted-foreground">
             Serviços extras fora da cobertura da seguradora. Faturamento independente.
           </div>
         </div>
@@ -177,7 +177,7 @@ export function ComplementTab({ orderId }: Props) {
                     </td>
                     <td className="px-3 py-2.5 text-center">
                       {isBilled ? (
-                        <span className="text-white/20">—</span>
+                        <span className="text-muted-foreground/50">—</span>
                       ) : (
                         <div className="flex items-center justify-center gap-2">
                           <button type="button" className="text-info-500 hover:text-info-400">
@@ -205,11 +205,11 @@ export function ComplementTab({ orderId }: Props) {
       <div className="flex items-end justify-between">
         <div className="flex gap-3">
           <div className="rounded-lg bg-surface-800 px-4 py-3">
-            <div className="text-[11px] uppercase text-white/40">Já Faturado</div>
+            <div className="text-[11px] uppercase text-muted-foreground">Já Faturado</div>
             <div className="text-base font-bold text-success-500">{formatCurrency(totalBilled)}</div>
           </div>
           <div className="rounded-lg bg-surface-800 px-4 py-3">
-            <div className="text-[11px] uppercase text-white/40">Pendente</div>
+            <div className="text-[11px] uppercase text-muted-foreground">Pendente</div>
             <div className="text-base font-bold text-warning-500">{formatCurrency(totalPending)}</div>
           </div>
           <div className="rounded-lg border border-warning-500/30 bg-warning-500/10 px-4 py-3">

@@ -12,7 +12,7 @@ import { toast } from "sonner"
 import { ArrowRight, Loader2, ChevronDown, Save } from "lucide-react"
 
 import { serviceOrderUpdateSchema, type ServiceOrderUpdateInput } from "../_schemas/service-order.schema"
-import { buildFormDefaults, FIELD_LABELS } from "../../_utils/form-defaults"
+import { buildFormDefaults, FIELD_LABELS } from "../_utils/form-defaults"
 import { useServiceOrderUpdate } from "../_hooks/useServiceOrder"
 import { useAutoTransition } from "../_hooks/useAutoTransition"
 import { usePersonUpdate, type PersonPatch } from "../_hooks/useCustomerSearch"
@@ -126,7 +126,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between border-b bg-white/5 px-6 py-4">
+      <div className="flex items-center justify-between border-b bg-muted/50 px-6 py-4">
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-bold text-white">OS #{order.number}</h1>
           <StatusBadge status={order.status as ServiceOrderStatus} />
@@ -190,7 +190,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
           <button
             type="button"
             onClick={() => router.back()}
-            className="rounded-md border border-white/15 px-4 py-2 text-sm font-medium text-white/70 hover:bg-white/[0.03]"
+            className="rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground/70 hover:bg-muted/30"
           >
             Voltar
           </button>
@@ -202,7 +202,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
               "inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-medium transition-all",
               isDirty
                 ? "bg-primary-600 text-white shadow-md hover:bg-primary-700"
-                : "cursor-not-allowed bg-white/10 text-white/40",
+                : "cursor-not-allowed bg-muted text-muted-foreground",
               isPending && "opacity-50"
             )}
           >
@@ -222,7 +222,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       </div>
 
       {/* Tabs */}
-      <div className="border-b bg-white/5">
+      <div className="border-b bg-muted/50">
         <nav className="flex overflow-x-auto px-6" aria-label="Abas da OS">
           {TABS.map((tab) => (
             <button
@@ -235,7 +235,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
                   ? tab.id === "complement"
                     ? "border-warning-500 text-warning-500"
                     : "border-primary-600 text-primary-600"
-                  : "border-transparent text-white/60 hover:border-white/15 hover:text-white/90"
+                  : "border-transparent text-foreground/60 hover:border-border hover:text-foreground/90"
               )}
             >
               {tab.label}
@@ -245,7 +245,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       </div>
 
       {/* Conteúdo das abas */}
-      <div className="flex-1 overflow-y-auto bg-white/[0.03] px-6">
+      <div className="flex-1 overflow-y-auto bg-muted/30 px-6">
         <form onSubmit={form.handleSubmit(onSubmit)}>
           {activeTab === "opening" && (
             <OpeningTab form={form} order={order} onPersonDataChange={setPersonDirtyData} />
