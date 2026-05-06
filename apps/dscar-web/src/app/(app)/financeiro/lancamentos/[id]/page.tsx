@@ -7,7 +7,8 @@
 import React from "react";
 import Link from "next/link";
 import type { Route } from "next";
-import { ChevronLeft, CheckCircle, RotateCcw } from "lucide-react";
+import { CheckCircle, RotateCcw } from "lucide-react";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { useParams } from "next/navigation";
 import { useJournalEntry, useApproveJournalEntry, useReverseJournalEntry } from "@/hooks";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -100,24 +101,13 @@ export default function LancamentoDetailPage(): React.ReactElement {
     <ErrorBoundary>
       <div className="space-y-5 max-w-3xl">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link
-            href={"/financeiro" as Route}
-            className="hover:text-primary transition-colors"
-          >
-            Financeiro
-          </Link>
-          <span>/</span>
-          <Link
-            href={"/financeiro/lancamentos" as Route}
-            className="flex items-center gap-1 hover:text-primary transition-colors"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Lançamentos
-          </Link>
-          <span>/</span>
-          <span className="font-mono text-foreground">{entry.number}</span>
-        </div>
+        <Breadcrumb
+          items={[
+            { label: "Financeiro", href: "/financeiro" },
+            { label: "Lançamentos", href: "/financeiro/lancamentos" },
+            { label: "Lançamento" },
+          ]}
+        />
 
         {/* Header */}
         <div className="flex items-start justify-between gap-4">

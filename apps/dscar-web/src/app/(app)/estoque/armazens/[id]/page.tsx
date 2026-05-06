@@ -1,9 +1,8 @@
 "use client"
 
 import { use, useState } from "react"
-import Link from "next/link"
-import type { Route } from "next"
-import { Warehouse, ChevronRight, Plus } from "lucide-react"
+import { Warehouse, Plus } from "lucide-react"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { toast } from "sonner"
 import type { ArmazemTipo } from "@paddock/types"
 import {
@@ -141,23 +140,13 @@ export default function ArmazemDetailPage({
   return (
     <div className="p-6 space-y-6">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Link
-          href={"/estoque" as Route}
-          className="hover:text-foreground/60 transition-colors"
-        >
-          Estoque
-        </Link>
-        <ChevronRight className="h-3 w-3" />
-        <Link
-          href={"/estoque/armazens" as Route}
-          className="hover:text-foreground/60 transition-colors"
-        >
-          Armazéns
-        </Link>
-        <ChevronRight className="h-3 w-3" />
-        <span className="text-foreground/60">{armazem.nome}</span>
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: "Estoque", href: "/estoque" },
+          { label: "Armazéns", href: "/estoque/armazens" },
+          { label: armazem.nome },
+        ]}
+      />
 
       {/* Header */}
       <div className="flex items-start justify-between">

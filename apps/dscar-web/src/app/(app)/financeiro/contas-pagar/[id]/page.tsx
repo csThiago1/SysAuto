@@ -7,9 +7,8 @@
 
 import React from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
-import type { Route } from "next";
-import { ChevronLeft, FileText, User, Calendar, DollarSign } from "lucide-react";
+import { FileText, User, Calendar, DollarSign } from "lucide-react";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import {
   usePayableDocument,
   useRecordPayment,
@@ -410,26 +409,13 @@ export default function ContaPagarDetailPage(): React.ReactElement {
     <ErrorBoundary>
       <div className="space-y-5">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link
-            href={"/financeiro" as Route}
-            className="hover:text-primary transition-colors"
-          >
-            Financeiro
-          </Link>
-          <span>/</span>
-          <Link
-            href={"/financeiro/contas-pagar" as Route}
-            className="flex items-center gap-1 hover:text-primary transition-colors"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Contas a Pagar
-          </Link>
-          <span>/</span>
-          <span className="text-foreground truncate max-w-xs">
-            {doc.document_number || doc.description}
-          </span>
-        </div>
+        <Breadcrumb
+          items={[
+            { label: "Financeiro", href: "/financeiro" },
+            { label: "Contas a Pagar", href: "/financeiro/contas-pagar" },
+            { label: `Título #${doc.document_number || id}` },
+          ]}
+        />
 
         {/* Header card */}
         <div className="rounded-md bg-muted/50 shadow-card p-5">

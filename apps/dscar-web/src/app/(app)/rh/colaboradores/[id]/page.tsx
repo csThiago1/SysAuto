@@ -8,9 +8,8 @@
 
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import type { Route } from "next";
-import { ChevronLeft } from "lucide-react";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { useEmployee, useTerminateEmployee } from "@/hooks";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui";
@@ -67,23 +66,17 @@ export default function EmployeeDetailPage(): React.ReactElement {
     <ErrorBoundary>
       <div className="space-y-5">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link
-            href={"/rh/colaboradores" as Route}
-            className="flex items-center gap-1 hover:text-primary transition-colors"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Colaboradores
-          </Link>
-          <span>/</span>
-          <span className="text-foreground">
-            {isLoading ? (
-              <Skeleton className="h-4 w-32 inline-block" />
-            ) : (
-              employee?.user.name
-            )}
-          </span>
-        </div>
+        <Breadcrumb
+          items={[
+            { label: "RH" },
+            { label: "Colaboradores", href: "/rh/colaboradores" },
+            {
+              label: isLoading
+                ? "..."
+                : (employee?.user.name ?? "Colaborador"),
+            },
+          ]}
+        />
 
         {/* Header card */}
         {isLoading ? (

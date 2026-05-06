@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
@@ -10,6 +10,7 @@ import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { ArrowRight, Loader2, ChevronDown, Save } from "lucide-react"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
 
 import { serviceOrderUpdateSchema, type ServiceOrderUpdateInput } from "../_schemas/service-order.schema"
 import { buildFormDefaults, FIELD_LABELS } from "../_utils/form-defaults"
@@ -36,12 +37,9 @@ import { PartsTab } from "./tabs/PartsTab"
 import { RemindersTab } from "./tabs/RemindersTab"
 import { ServicesTab } from "./tabs/ServicesTab"
 import { EstoqueTab } from "@/components/os/EstoqueTab"
-import { InsurerBudgetTab } from "./tabs/InsurerBudgetTab"
-import { ComplementTab } from "./tabs/ComplementTab"
 import { ImportBudgetModal } from "./ImportBudgetModal"
-import { FinancialSummaryCard } from "./FinancialSummaryCard"
 
-type TabId = "opening" | "parts" | "services" | "insurer_budget" | "complement" | "notes" | "reminders" | "history" | "closing" | "estoque" | "files"
+type TabId = "opening" | "parts" | "services" | "notes" | "reminders" | "history" | "closing" | "estoque" | "files"
 
 interface ServiceOrderFormProps {
   order: ServiceOrder
@@ -53,21 +51,17 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   const [personDirtyData, setPersonDirtyData] = useState<PersonPatch | null>(null)
   const [importModalOpen, setImportModalOpen] = useState(false)
 
-  const isInsurer = order.customer_type === "insurer"
-
-  const TABS = useMemo(() => [
-    { id: "opening" as const, label: "Abertura" },
-    { id: "parts" as const, label: "Peças" },
-    { id: "services" as const, label: "Serviços" },
-    ...(isInsurer ? [{ id: "insurer_budget" as const, label: "Orçamento Seguradora" }] : []),
-    ...(isInsurer ? [{ id: "complement" as const, label: "Complemento Particular" }] : []),
-    { id: "notes" as const, label: "Observações" },
-    { id: "reminders" as const, label: "Lembretes" },
-    { id: "history" as const, label: "Histórico" },
-    { id: "closing" as const, label: "Fechamento" },
-    { id: "estoque" as const, label: "Estoque" },
-    { id: "files" as const, label: "Arquivos" },
-  ], [isInsurer])
+  const TABS: { id: TabId; label: string }[] = [
+    { id: "opening", label: "Abertura" },
+    { id: "parts", label: "Peças" },
+    { id: "services", label: "Serviços" },
+    { id: "notes", label: "Observações" },
+    { id: "reminders", label: "Lembretes" },
+    { id: "history", label: "Histórico" },
+    { id: "closing", label: "Fechamento" },
+    { id: "estoque", label: "Estoque" },
+    { id: "files", label: "Arquivos" },
+  ]
 
   const form = useForm<ServiceOrderUpdateInput>({
     resolver: zodResolver(serviceOrderUpdateSchema),
@@ -91,6 +85,25 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   const personUpdateMutation = usePersonUpdate(order.customer_person_id ?? null)
   const transitionMutation = useTransitionStatus(order.id)
   useAutoTransition({ order })
+
+  useEffect(() => {
+    if (!isDirty) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+    }
+    window.addEventListener("beforeunload", handler)
+    return () => window.removeEventListener("beforeunload", handler)
+  }, [isDirty])
+
+  const handleBack = useCallback(() => {
+    if (isDirty) {
+      if (window.confirm("Existem alterações não salvas. Deseja sair mesmo assim?")) {
+        router.back()
+      }
+    } else {
+      router.back()
+    }
+  }, [isDirty, router])
 
   const isPending = updateMutation.isPending || personUpdateMutation.isPending
   const nextStatuses = isRepairPhase
@@ -125,6 +138,16 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Breadcrumb */}
+      <div className="px-6 pt-4 pb-0">
+        <Breadcrumb
+          items={[
+            { label: "Ordens de Serviço", href: "/service-orders" },
+            { label: `OS #${order.number}` },
+          ]}
+        />
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between border-b bg-muted/50 px-6 py-4">
         <div className="flex items-center gap-4">
@@ -178,18 +201,16 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
               Alterações não salvas
             </span>
           )}
-          {isInsurer && (
-            <button
-              type="button"
-              onClick={() => setImportModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-md bg-info-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-info-700"
-            >
-              ⬇ Importar Orçamento
-            </button>
-          )}
           <button
             type="button"
-            onClick={() => router.back()}
+            onClick={() => setImportModalOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-md bg-info-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-info-700"
+          >
+            ⬇ Importar Orçamento
+          </button>
+          <button
+            type="button"
+            onClick={handleBack}
             className="rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground/70 hover:bg-muted/30"
           >
             Voltar
@@ -232,9 +253,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
               className={cn(
                 "shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors",
                 activeTab === tab.id
-                  ? tab.id === "complement"
-                    ? "border-warning-500 text-warning-500"
-                    : "border-primary text-primary"
+                  ? "border-primary text-primary"
                   : "border-transparent text-foreground/60 hover:border-border hover:text-foreground/90"
               )}
             >
@@ -256,23 +275,20 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
           {activeTab === "reminders" && <RemindersTab orderId={order.id} />}
           {activeTab === "history" && <HistoryTab order={order} />}
           {activeTab === "closing" && <ClosingTab order={order} />}
-          {activeTab === "insurer_budget" && (
-            <InsurerBudgetTab order={order} onOpenImport={() => setImportModalOpen(true)} />
-          )}
-          {activeTab === "complement" && <ComplementTab orderId={order.id} />}
           {activeTab === "estoque" && <EstoqueTab osId={order.id} />}
           {activeTab === "files" && <FilesTab order={order} />}
         </form>
       </div>
 
       {/* Import Budget Modal */}
-      {isInsurer && (
-        <ImportBudgetModal
-          order={order}
-          open={importModalOpen}
-          onClose={() => setImportModalOpen(false)}
-        />
-      )}
+      <ImportBudgetModal
+        order={order}
+        open={importModalOpen}
+        onClose={() => {
+          setImportModalOpen(false)
+          router.refresh()
+        }}
+      />
 
       {/* Erros de validação */}
       {Object.keys(form.formState.errors).length > 0 && (
