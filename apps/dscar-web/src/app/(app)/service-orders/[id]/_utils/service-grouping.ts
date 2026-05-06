@@ -29,7 +29,8 @@ export interface ServiceItem {
   unit_price: string | number
   discount?: string | number
   total: number
-  [key: string]: unknown
+  service_catalog_name?: string
+  billing_status?: string
 }
 
 /**
