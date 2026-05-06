@@ -42,13 +42,13 @@ function OrderItem({ item }: { item: OverdueServiceOrder }): React.ReactElement 
           ? "bg-error-500/10 border-error-500"
           : isDueToday
           ? "bg-amber-50 border-amber-500"
-          : "bg-white/[0.03] border-white/20"
+          : "bg-muted/30 border-border"
       )}
     >
-      <p className="text-xs font-semibold text-white/90">
+      <p className="text-xs font-semibold text-foreground/90">
         OS #{item.number} · {item.plate} · {item.customer_name}
       </p>
-      <p className="text-xs text-white/50 mt-0.5">
+      <p className="text-xs text-muted-foreground mt-0.5">
         {item.status_display} ·{" "}
         {isOverdue ? (
           <span className="font-bold text-error-400">
@@ -57,7 +57,7 @@ function OrderItem({ item }: { item: OverdueServiceOrder }): React.ReactElement 
         ) : isDueToday ? (
           <span className="text-amber-600 font-medium">Entrega hoje</span>
         ) : (
-          <span className="text-white/30">Em {Math.abs(item.days_overdue)} dias</span>
+          <span className="text-muted-foreground">Em {Math.abs(item.days_overdue)} dias</span>
         )}
       </p>
     </Link>
@@ -78,7 +78,7 @@ export function NotificationBell(): React.ReactElement {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="relative flex h-9 w-9 items-center justify-center rounded-md text-white/50 hover:bg-white/[0.06] hover:text-white/70 transition-colors"
+          className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground/70 transition-colors"
           aria-label="Notificações de OS"
           aria-haspopup="true"
         >
@@ -92,8 +92,8 @@ export function NotificationBell(): React.ReactElement {
       </PopoverTrigger>
 
       <PopoverContent className="w-80 p-0" align="end" sideOffset={8}>
-        <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
-          <p className="text-sm font-semibold text-white/90">OS Vencidas / Hoje</p>
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+          <p className="text-sm font-semibold text-foreground/90">OS Vencidas / Hoje</p>
           {alertCount > 0 && (
             <span className="text-xs font-medium text-error-400">{alertCount}</span>
           )}
@@ -119,7 +119,7 @@ export function NotificationBell(): React.ReactElement {
         ) : orders.length === 0 ? (
           <div className="px-4 py-6 text-center flex flex-col items-center gap-2">
             <CheckCircle2 className="h-6 w-6 text-green-500" />
-            <p className="text-sm text-white/30">Nenhuma OS vencida ou com entrega hoje.</p>
+            <p className="text-sm text-muted-foreground">Nenhuma OS vencida ou com entrega hoje.</p>
           </div>
         ) : (
           <div className="max-h-72 overflow-y-auto px-3 py-2">
@@ -147,7 +147,7 @@ export function NotificationBell(): React.ReactElement {
         )}
 
         {orders.length >= 10 && (
-          <div className="border-t border-white/10 px-4 py-2.5">
+          <div className="border-t border-border px-4 py-2.5">
             <Link
               href="/os?overdue=true"
               className="text-xs text-primary-600 hover:underline font-medium"
