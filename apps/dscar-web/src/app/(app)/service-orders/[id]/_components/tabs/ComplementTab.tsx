@@ -6,10 +6,10 @@ import { toast } from "sonner"
 import { Loader2, Plus, Pencil, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { formatCurrency } from "@paddock/utils"
 import type { ServiceOrderPart, ServiceOrderLabor } from "@paddock/types"
+import { ComplementAddForm } from "./ComplementTab"
 
 interface Props {
   orderId: string
@@ -62,21 +62,21 @@ export function ComplementTab({ orderId }: Props) {
     onError: () => toast.error("Erro ao remover item."),
   })
 
-  const fmtMoney = (v: number | string) =>
-    parseFloat(String(v)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-
   const allItems = [
     ...parts.map((p) => ({ ...p, kind: "part" as const })),
     ...services.map((s) => ({ ...s, kind: "service" as const })),
   ]
 
+  const calcTotal = (i: { quantity: number | string; unit_price: number | string; discount: number | string }) =>
+    parseFloat(String(i.quantity)) * parseFloat(String(i.unit_price)) - parseFloat(String(i.discount))
+
   const totalBilled = allItems
     .filter((i) => i.billing_status === "billed")
-    .reduce((sum, i) => sum + (parseFloat(String(i.quantity)) * parseFloat(String(i.unit_price)) - parseFloat(String(i.discount))), 0)
+    .reduce((sum, i) => sum + calcTotal(i), 0)
 
   const totalPending = allItems
     .filter((i) => i.billing_status === "pending")
-    .reduce((sum, i) => sum + (parseFloat(String(i.quantity)) * parseFloat(String(i.unit_price)) - parseFloat(String(i.discount))), 0)
+    .reduce((sum, i) => sum + calcTotal(i), 0)
 
   const grandTotal = totalBilled + totalPending
 
@@ -147,7 +147,7 @@ export function ComplementTab({ orderId }: Props) {
             </thead>
             <tbody>
               {allItems.map((item) => {
-                const total = parseFloat(String(item.quantity)) * parseFloat(String(item.unit_price)) - parseFloat(String(item.discount))
+                const total = calcTotal(item)
                 const isBilled = item.billing_status === "billed"
                 return (
                   <tr key={item.id} className="border-t border-white/5">
@@ -163,8 +163,8 @@ export function ComplementTab({ orderId }: Props) {
                       </span>
                     </td>
                     <td className="px-3 py-2.5 text-center text-white">{item.quantity}</td>
-                    <td className="px-3 py-2.5 text-right text-white">{fmtMoney(item.unit_price)}</td>
-                    <td className="px-3 py-2.5 text-right font-semibold text-white">{fmtMoney(total)}</td>
+                    <td className="px-3 py-2.5 text-right text-white">{formatCurrency(item.unit_price)}</td>
+                    <td className="px-3 py-2.5 text-right font-semibold text-white">{formatCurrency(total)}</td>
                     <td className="px-3 py-2.5 text-center">
                       <span className={cn(
                         "rounded px-2 py-0.5 text-[11px]",
@@ -206,15 +206,15 @@ export function ComplementTab({ orderId }: Props) {
         <div className="flex gap-3">
           <div className="rounded-lg bg-surface-800 px-4 py-3">
             <div className="text-[11px] uppercase text-white/40">Já Faturado</div>
-            <div className="text-base font-bold text-success-500">{fmtMoney(totalBilled)}</div>
+            <div className="text-base font-bold text-success-500">{formatCurrency(totalBilled)}</div>
           </div>
           <div className="rounded-lg bg-surface-800 px-4 py-3">
             <div className="text-[11px] uppercase text-white/40">Pendente</div>
-            <div className="text-base font-bold text-warning-500">{fmtMoney(totalPending)}</div>
+            <div className="text-base font-bold text-warning-500">{formatCurrency(totalPending)}</div>
           </div>
           <div className="rounded-lg border border-warning-500/30 bg-warning-500/10 px-4 py-3">
             <div className="text-[11px] uppercase text-warning-500">Total Complemento</div>
-            <div className="text-lg font-bold text-warning-400">{fmtMoney(grandTotal)}</div>
+            <div className="text-lg font-bold text-warning-400">{formatCurrency(grandTotal)}</div>
           </div>
         </div>
         {totalPending > 0 && (
@@ -227,72 +227,6 @@ export function ComplementTab({ orderId }: Props) {
           </Button>
         )}
       </div>
-    </div>
-  )
-}
-
-// ── Formulário inline de adição ──────────────────────────────────
-function ComplementAddForm({
-  orderId,
-  kind,
-  onClose,
-}: {
-  orderId: string
-  kind: "part" | "service"
-  onClose: () => void
-}) {
-  const queryClient = useQueryClient()
-  const [description, setDescription] = useState("")
-  const [quantity, setQuantity] = useState("1")
-  const [unitPrice, setUnitPrice] = useState("")
-
-  const addMutation = useMutation({
-    mutationFn: () =>
-      apiFetch(
-        `/api/proxy/service-orders/${orderId}/complement/${kind === "part" ? "parts" : "services"}/`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            description,
-            quantity,
-            unit_price: unitPrice,
-            discount: "0.00",
-          }),
-        },
-      ),
-    onSuccess: () => {
-      toast.success(`${kind === "part" ? "Peça" : "Serviço"} adicionado(a)!`)
-      queryClient.invalidateQueries({ queryKey: ["complement", orderId] })
-      onClose()
-    },
-    onError: () => toast.error("Erro ao adicionar item."),
-  })
-
-  return (
-    <div className="flex items-end gap-3 rounded-lg border border-warning-500/20 bg-warning-500/5 p-3">
-      <div className="flex-1 space-y-1.5">
-        <Label htmlFor="comp-desc">Descrição</Label>
-        <Input id="comp-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
-      </div>
-      <div className="w-20 space-y-1.5">
-        <Label htmlFor="comp-qty">Qtd</Label>
-        <Input id="comp-qty" type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-      </div>
-      <div className="w-28 space-y-1.5">
-        <Label htmlFor="comp-price">Valor Unit.</Label>
-        <Input id="comp-price" type="number" step="0.01" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} />
-      </div>
-      <Button
-        size="sm"
-        disabled={addMutation.isPending || !description || !unitPrice}
-        onClick={() => addMutation.mutate()}
-      >
-        {addMutation.isPending ? "..." : "Adicionar"}
-      </Button>
-      <Button variant="outline" size="sm" onClick={onClose}>
-        Cancelar
-      </Button>
     </div>
   )
 }
