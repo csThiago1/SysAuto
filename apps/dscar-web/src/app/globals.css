@@ -49,6 +49,44 @@
   --sidebar-border:      0 0% 16%;
 }
 
+/* ─── Light Theme — Warm Sand ─────────────────────────────────────────────── */
+.light {
+  --background:          30 100% 99%;
+  --foreground:          25 30% 18%;
+
+  --card:                0 0% 100%;
+  --card-foreground:     25 30% 18%;
+
+  --popover:             0 0% 100%;
+  --popover-foreground:  25 30% 18%;
+
+  --primary:             0 76% 42%;
+  --primary-foreground:  0 0% 100%;
+
+  --secondary:           30 30% 94%;
+  --secondary-foreground:25 20% 27%;
+
+  --muted:               30 30% 94%;
+  --muted-foreground:    30 20% 40%;
+
+  --accent:              30 30% 94%;
+  --accent-foreground:   25 20% 27%;
+
+  --destructive:         0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border:              30 30% 90%;
+  --input:               30 30% 90%;
+  --ring:                0 76% 42%;
+
+  --sidebar-bg:          30 100% 99%;
+  --sidebar-bg-hover:    30 30% 94%;
+  --sidebar-text:        25 20% 35%;
+  --sidebar-text-active: 0 76% 42%;
+  --sidebar-accent:      0 76% 42%;
+  --sidebar-border:      30 30% 90%;
+}
+
 /* ─── Base ──────────────────────────────────────────────────────────────────── */
 @layer base {
   * {
@@ -103,11 +141,11 @@
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.08);
+    background: hsl(var(--border));
     border-radius: 4px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: hsl(var(--muted-foreground) / 0.3);
   }
 
   /* Label mono — fintech terminal style */
@@ -116,7 +154,7 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: #cc4444;
+    color: hsl(var(--primary));
     line-height: 1;
   }
 
@@ -125,7 +163,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: #cc4444;
+    color: hsl(var(--primary));
     font-size: 10px;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     letter-spacing: 0.14em;
@@ -136,6 +174,6 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: rgba(255, 255, 255, 0.06);
+    background: hsl(var(--border));
   }
 }
