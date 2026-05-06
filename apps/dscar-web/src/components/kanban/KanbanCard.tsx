@@ -174,7 +174,7 @@ export const KanbanCard = React.memo(function KanbanCard({
       aria-label={`OS #${order.number} — ${order.plate}`}
       className="cursor-grab active:cursor-grabbing select-none"
       onClick={handleNavigate}
-      onKeyDown={(e) => { if (e.key === "Enter") handleNavigate(); }}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleNavigate(); } }}
     >
       <CardContent
         order={order}
