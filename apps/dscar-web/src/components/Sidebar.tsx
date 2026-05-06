@@ -59,6 +59,7 @@ import {
 } from "lucide-react";
 import { ROLE_HIERARCHY, type PaddockRole } from "@paddock/types";
 import { NotificationBell } from "@/components/header/NotificationBell";
+import { ThemeToggle } from "./ThemeToggle";
 import { useOverdueOrders } from "@/hooks/useOverdueOrders";
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -670,11 +671,11 @@ export function Sidebar() {
       </nav>
 
       {/* ── Footer / User ── */}
-      <div className="border-t border-white/[0.06] p-4">
+      <div className="border-t border-border p-4">
         <div
           className={[
-            "flex items-center rounded-[10px] bg-white/[0.03]",
-            "hover:bg-white/[0.06] transition-colors duration-150",
+            "flex items-center rounded-lg bg-muted/50",
+            "hover:bg-muted transition-colors duration-150",
             collapsed ? "p-2 justify-center" : "p-2 gap-2.5",
           ].join(" ")}
         >
@@ -684,21 +685,22 @@ export function Sidebar() {
           {!collapsed && (
             <>
               <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-semibold text-white/85 whitespace-nowrap overflow-hidden text-ellipsis">
+                <div className="text-[13px] font-semibold text-foreground/85 whitespace-nowrap overflow-hidden text-ellipsis">
                   {session?.user?.name ?? "Usuário"}
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <Building2 size={10} className="text-white/30 flex-shrink-0" />
-                  <span className="text-xs text-white/35 font-normal truncate">
+                  <Building2 size={10} className="text-muted-foreground flex-shrink-0" />
+                  <span className="text-xs text-muted-foreground font-normal truncate">
                     DS Car{roleLabel ? ` · ${roleLabel}` : ""}
                   </span>
                 </div>
               </div>
+              <ThemeToggle />
               <button
                 type="button"
                 onClick={() => void signOut({ callbackUrl: "/login" })}
-                className="text-white/30 hover:text-white/60 transition-colors flex-shrink-0"
-                title="Sair"
+                className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+                aria-label="Sair"
               >
                 <LogOut size={18} />
               </button>
