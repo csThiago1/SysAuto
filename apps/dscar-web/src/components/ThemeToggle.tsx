@@ -5,7 +5,14 @@ import { Sun, Moon } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 
 export function ThemeToggle(): React.ReactElement {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, mounted, toggleTheme } = useTheme();
+
+  // Render a placeholder with fixed size to avoid layout shift before mount
+  if (!mounted) {
+    return (
+      <div className="w-7 h-7 rounded-md border border-border bg-muted/50 flex-shrink-0" />
+    );
+  }
 
   return (
     <button

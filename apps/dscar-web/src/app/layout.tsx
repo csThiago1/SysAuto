@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Montserrat, Rajdhani } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
@@ -28,14 +29,6 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-// Script inline para evitar flash de tema incorreto
-const themeScript = `
-(function() {
-  var t = localStorage.getItem('dscar-theme') || 'dark';
-  document.documentElement.classList.add(t);
-})()
-`;
-
 // ─── Layout raiz ──────────────────────────────────────────────────────────────
 export default function RootLayout({
   children,
@@ -45,11 +38,19 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${montserrat.variable} ${rajdhani.variable}`}
+      className={`dark ${montserrat.variable} ${rajdhani.variable}`}
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <Script id="theme-init" strategy="beforeInteractive">{`
+          (function() {
+            try {
+              var t = localStorage.getItem('dscar-theme') || 'dark';
+              document.documentElement.classList.remove('dark', 'light');
+              document.documentElement.classList.add(t);
+            } catch(e) {}
+          })()
+        `}</Script>
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <Providers>{children}</Providers>
