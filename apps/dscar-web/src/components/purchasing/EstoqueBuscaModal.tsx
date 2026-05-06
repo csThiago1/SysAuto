@@ -158,7 +158,7 @@ export function EstoqueBuscaModal({ open, onClose, onSelect }: EstoqueBuscaModal
                 disabled={item.estoque_disponivel === 0}
                 className={`w-full text-left rounded-md border px-3 py-2.5 transition-colors ${
                   item.estoque_disponivel === 0
-                    ? "border-white/5 bg-white/[0.02] opacity-40 cursor-not-allowed"
+                    ? "border-border bg-muted/30 opacity-40 cursor-not-allowed"
                     : "border-border bg-muted/30 hover:bg-muted/50 cursor-pointer"
                 }`}
               >
@@ -262,7 +262,7 @@ export function EstoqueBuscaModal({ open, onClose, onSelect }: EstoqueBuscaModal
                 type="button"
                 onClick={handleConfirm}
                 disabled={!valorCobrado}
-                className="rounded-md bg-success-500 hover:bg-success-600 px-4 py-2 text-sm font-medium text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                className="rounded-md bg-success-500 hover:bg-success-600 px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Bloquear e Adicionar
               </button>

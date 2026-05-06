@@ -61,7 +61,7 @@ export function AppHeader(): React.ReactElement {
         {/* User info */}
         {session?.user && (
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-foreground text-sm font-bold">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-white text-sm font-bold">
               {session.user.name?.charAt(0).toUpperCase() ?? "U"}
             </div>
             <span className="text-sm font-medium text-foreground/70 hidden sm:block">

@@ -189,7 +189,7 @@ export function OrdemCompraDetail({
             <div className="section-divider">{`FORNECEDOR ${idx + 1}`}</div>
 
             {/* Fornecedor info bar */}
-            <div className="bg-white/[0.02] border border-border rounded-t-lg px-4 py-3 flex items-center justify-between">
+            <div className="bg-muted/30 border border-border rounded-t-lg px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Truck size={16} className="text-muted-foreground" />
                 <span className="text-sm font-medium text-foreground/70">
@@ -242,7 +242,7 @@ export function OrdemCompraDetail({
                   {items.map((item) => (
                     <tr
                       key={item.id}
-                      className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+                      className="border-b border-border hover:bg-muted transition-colors"
                     >
                       <td className="px-4 py-2.5">
                         <span className="text-sm text-foreground/70">

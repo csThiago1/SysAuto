@@ -318,8 +318,8 @@ export function PersonFormModal({
                     onClick={() => toggleRole(role)}
                     className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                       selectedRoles.includes(role)
-                        ? "bg-primary text-foreground border-primary"
-                        : "bg-muted/50 text-foreground/60 border-border hover:border-white/30"
+                        ? "bg-primary text-white border-primary"
+                        : "bg-muted/50 text-foreground/60 border-border hover:border-border"
                     }`}
                   >
                     {PERSON_ROLE_LABEL[role]}

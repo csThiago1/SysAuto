@@ -189,7 +189,7 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
             type="button"
             onClick={handleSubmit}
             disabled={!description || !unitPrice}
-            className="rounded-md bg-info-500 hover:bg-info-600 px-4 py-2 text-sm font-medium text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="rounded-md bg-info-500 hover:bg-info-600 px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Solicitar Compra
           </button>

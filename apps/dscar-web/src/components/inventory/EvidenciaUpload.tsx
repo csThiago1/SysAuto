@@ -102,7 +102,7 @@ export default function EvidenciaUpload({
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") handleClick()
           }}
-          className={`border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer transition-colors hover:border-white/30 hover:bg-white/[0.02] ${
+          className={`border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer transition-colors hover:border-border hover:bg-muted ${
             disabled ? "opacity-40 pointer-events-none" : ""
           }`}
         >

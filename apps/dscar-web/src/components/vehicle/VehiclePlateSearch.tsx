@@ -167,7 +167,7 @@ export function VehiclePlateSearch({ value, onChange, showVersion = true }: Prop
             </div>
           )}
           {value.last_customer_name && (
-            <div className="col-span-2 pt-1 border-t border-white/5">
+            <div className="col-span-2 pt-1 border-t border-border">
               <p className="text-xs text-muted-foreground">Último cliente</p>
               <p className="text-sm text-foreground/70">{value.last_customer_name}</p>
             </div>

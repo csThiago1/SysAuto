@@ -392,7 +392,7 @@ export function ProdutoPecaDialog({
             type="button"
             onClick={handleSave}
             disabled={isPending}
-            className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
+            className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
           >
             {isPending ? "Salvando..." : isEdit ? "Salvar" : "Criar"}
           </button>

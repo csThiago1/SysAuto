@@ -117,7 +117,7 @@ const CardContent = React.memo(function CardContent({
                   />
                 ) : (
                   <span
-                    className="h-3.5 w-3.5 rounded-full flex items-center justify-center text-foreground text-[7px] font-bold shrink-0"
+                    className="h-3.5 w-3.5 rounded-full flex items-center justify-center text-white text-[7px] font-bold shrink-0"
                     style={{ backgroundColor: order.insurer_detail.brand_color ?? "#6366f1" }}
                   >
                     {order.insurer_detail.abbreviation?.charAt(0)}
