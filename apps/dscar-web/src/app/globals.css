@@ -49,42 +49,43 @@
   --sidebar-border:      0 0% 16%;
 }
 
-/* ─── Light Theme — Warm Sand ─────────────────────────────────────────────── */
+/* ─── Light Theme — Coolors Palette ───────────────────────────────────────── */
+/* #22223B · #4A4E69 · #9A8C98 · #C9ADA7 · #F2E9E4                          */
 .light {
-  --background:          30 100% 99%;
-  --foreground:          25 30% 18%;
+  --background:          21 28% 92%;
+  --foreground:          240 27% 18%;
 
-  --card:                0 0% 100%;
-  --card-foreground:     25 30% 18%;
+  --card:                30 33% 97%;
+  --card-foreground:     240 27% 18%;
 
-  --popover:             0 0% 100%;
-  --popover-foreground:  25 30% 18%;
+  --popover:             30 33% 97%;
+  --popover-foreground:  240 27% 18%;
 
-  --primary:             20 52% 40%;
+  --primary:             233 17% 35%;
   --primary-foreground:  0 0% 100%;
 
-  --secondary:           30 30% 94%;
-  --secondary-foreground:25 20% 27%;
+  --secondary:           11 18% 82%;
+  --secondary-foreground:240 27% 18%;
 
-  --muted:               30 30% 94%;
-  --muted-foreground:    30 20% 40%;
+  --muted:               11 18% 85%;
+  --muted-foreground:    273 7% 58%;
 
-  --accent:              30 30% 94%;
-  --accent-foreground:   25 20% 27%;
+  --accent:              11 18% 82%;
+  --accent-foreground:   240 27% 18%;
 
   --destructive:         0 72% 51%;
   --destructive-foreground: 0 0% 100%;
 
-  --border:              30 30% 90%;
-  --input:               30 30% 90%;
-  --ring:                20 52% 40%;
+  --border:              11 18% 78%;
+  --input:               11 18% 78%;
+  --ring:                233 17% 35%;
 
-  --sidebar-bg:          30 100% 99%;
-  --sidebar-bg-hover:    30 30% 94%;
-  --sidebar-text:        25 20% 35%;
-  --sidebar-text-active: 20 52% 40%;
-  --sidebar-accent:      20 52% 40%;
-  --sidebar-border:      30 30% 90%;
+  --sidebar-bg:          21 28% 92%;
+  --sidebar-bg-hover:    11 18% 85%;
+  --sidebar-text:        273 7% 58%;
+  --sidebar-text-active: 233 17% 35%;
+  --sidebar-accent:      233 17% 35%;
+  --sidebar-border:      11 18% 78%;
 }
 
 /* ─── Base ──────────────────────────────────────────────────────────────────── */
