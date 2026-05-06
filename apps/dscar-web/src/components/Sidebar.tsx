@@ -364,10 +364,10 @@ function DSCarLogoInline({ collapsed }: { collapsed: boolean }) {
         draggable={false}
       />
       <div className="flex flex-col leading-none">
-        <span className="font-extrabold text-[16px] text-white tracking-wide">
+        <span className="font-extrabold text-[16px] text-foreground tracking-wide">
           DSCAR
         </span>
-        <span className="font-normal text-[9.5px] text-white/40 tracking-[1.5px] uppercase mt-0.5">
+        <span className="font-normal text-[9.5px] text-muted-foreground tracking-[1.5px] uppercase mt-0.5">
           Centro Automotivo
         </span>
       </div>
@@ -470,7 +470,7 @@ export function Sidebar() {
     <aside
       ref={sidebarRef}
       className={[
-        "relative flex flex-col h-screen bg-[#0f0f0f] shadow-[4px_0_16px_rgba(0,0,0,0.18)]",
+        "relative flex flex-col h-screen bg-card shadow-lg",
         "transition-[width] duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
         "flex-shrink-0 overflow-hidden",
         collapsed ? "w-[72px]" : "w-[260px]",
@@ -479,7 +479,7 @@ export function Sidebar() {
       {/* ── Header ── */}
       <div
         className={[
-          "flex items-center border-b border-white/[0.06] min-h-[76px]",
+          "flex items-center border-b border-border min-h-[76px]",
           collapsed ? "px-[18px] justify-center cursor-pointer" : "px-5 justify-between",
         ].join(" ")}
         onClick={collapsed ? () => setCollapsed(false) : undefined}
@@ -492,8 +492,8 @@ export function Sidebar() {
             <NotificationBell />
             <button
               onClick={() => setCollapsed(true)}
-              className="w-7 h-7 rounded-md border border-white/[0.08] bg-white/[0.03] text-white/40
-                         flex items-center justify-center hover:bg-white/[0.08] hover:text-white/70
+              className="w-7 h-7 rounded-md border border-border bg-muted/50 text-muted-foreground
+                         flex items-center justify-center hover:bg-muted hover:text-foreground
                          transition-all duration-150 flex-shrink-0"
               title="Recolher sidebar"
             >
@@ -512,18 +512,18 @@ export function Sidebar() {
       {/* ── Search ── */}
       <div
         className={[
-          "flex items-center rounded-lg border border-white/[0.06] bg-white/[0.03]",
-          "cursor-pointer hover:border-white/[0.12] transition-colors duration-150",
+          "flex items-center rounded-lg border border-border bg-muted/50",
+          "cursor-pointer hover:border-border hover:bg-muted transition-colors duration-150",
           collapsed ? "mx-3.5 my-3 p-2 justify-center" : "mx-4 my-3 px-3 py-2 gap-2",
         ].join(" ")}
       >
-        <Search size={18} className="text-white/30 flex-shrink-0" />
+        <Search size={18} className="text-muted-foreground flex-shrink-0" />
         {!collapsed && (
           <>
-            <span className="text-[13px] text-white/30 font-normal">
+            <span className="text-[13px] text-muted-foreground font-normal">
               Buscar...
             </span>
-            <span className="ml-auto text-xs text-white/20 bg-white/[0.05] px-1.5 py-0.5 rounded font-medium">
+            <span className="ml-auto text-xs text-muted-foreground/70 bg-muted px-1.5 py-0.5 rounded font-medium">
               ⌘K
             </span>
           </>
@@ -536,7 +536,7 @@ export function Sidebar() {
           <div key={section.label}>
             {/* Section label */}
             {collapsed ? (
-              <hr className="border-white/[0.08] mx-3 my-2" />
+              <hr className="border-border mx-3 my-2" />
             ) : (
               <div className="section-divider px-5 pt-4 pb-1.5">
                 {section.label}
@@ -585,8 +585,8 @@ export function Sidebar() {
                       active
                         ? "bg-primary-600/[0.12] text-primary-600"
                         : hovered
-                        ? "bg-white/[0.04] text-white/70"
-                        : "text-white/50",
+                        ? "bg-muted text-foreground/70"
+                        : "text-muted-foreground",
                     ].join(" ")}
                   >
                     {/* Active bar */}
@@ -610,7 +610,7 @@ export function Sidebar() {
                           <ChevronDown
                             size={16}
                             className={[
-                              "text-white/25 transition-transform duration-200",
+                              "text-muted-foreground/60 transition-transform duration-200",
                               badge == null ? "ml-auto" : "",
                               expanded ? "rotate-180" : "",
                             ].join(" ")}
@@ -647,14 +647,14 @@ export function Sidebar() {
                               childActive
                                 ? "bg-primary-600/[0.08] text-primary-600 font-medium"
                                 : childHovered
-                                ? "bg-white/[0.03] text-white/50"
-                                : "text-white/35",
+                                ? "bg-muted/50 text-foreground/60"
+                                : "text-muted-foreground",
                             ].join(" ")}
                           >
                             <span
                               className={[
                                 "w-[5px] h-[5px] rounded-full flex-shrink-0 transition-colors duration-150",
-                                childActive ? "bg-primary-600" : "bg-white/15",
+                                childActive ? "bg-primary-600" : "bg-muted-foreground/30",
                               ].join(" ")}
                             />
                             <span className="text-[12.5px]">{child.label}</span>
@@ -713,9 +713,9 @@ export function Sidebar() {
       {collapsed && (
         <div
           className={[
-            "absolute left-[calc(100%+12px)] z-50 bg-[#1a1a1a] border border-white/10",
-            "text-white px-3 py-1.5 rounded-md text-[12px] font-medium whitespace-nowrap",
-            "pointer-events-none shadow-[0_4px_12px_rgba(0,0,0,0.4)]",
+            "absolute left-[calc(100%+12px)] z-50 bg-popover border border-border",
+            "text-popover-foreground px-3 py-1.5 rounded-md text-[12px] font-medium whitespace-nowrap",
+            "pointer-events-none shadow-lg",
             "transition-opacity duration-150",
             tooltip.visible ? "opacity-100" : "opacity-0",
           ].join(" ")}
