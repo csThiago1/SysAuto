@@ -28,6 +28,14 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+// Script inline para evitar flash de tema incorreto
+const themeScript = `
+(function() {
+  var t = localStorage.getItem('dscar-theme') || 'dark';
+  document.documentElement.classList.add(t);
+})()
+`;
+
 // ─── Layout raiz ──────────────────────────────────────────────────────────────
 export default function RootLayout({
   children,
@@ -37,9 +45,12 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`dark ${montserrat.variable} ${rajdhani.variable}`}
+      className={`${montserrat.variable} ${rajdhani.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <Providers>{children}</Providers>
       </body>
