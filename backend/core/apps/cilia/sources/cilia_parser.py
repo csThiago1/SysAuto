@@ -156,9 +156,24 @@ class CiliaParser:
         pb.global_discount_pct = cls._dec(labor.get("discount", 0))
 
         # --- Items ---
-        # Cada budgeting pode gerar 0-1 PART (se troca) + 0-1 SERVICE (se horas de MO)
+        # Cada budgeting pode gerar 0-1 PART (se troca) + N SERVICE (1 por operação)
+        # IMPORTANTE: remove_install_hours por item pode incluir horas de
+        # desmontagem para pintar/reparar (double-counting). O Cilia calcula
+        # total_remove_install_hours separadamente (sem overlap). Usamos um fator
+        # de correção para que a soma bata com o total do Cilia.
+        raw_ri_sum = sum(
+            cls._dec(e.get("remove_install_hours", 0))
+            for e in (payload.get("budgetings") or [])
+        )
+        cilia_ri_total = cls._dec(totals.get("total_remove_install_hours", 0))
+        ri_correction = (
+            cilia_ri_total / raw_ri_sum
+            if raw_ri_sum > 0
+            else Decimal("1")
+        )
+
         for entry in payload.get("budgetings") or []:
-            pb.items.extend(cls._parse_budgeting(entry, pb.hourly_rates))
+            pb.items.extend(cls._parse_budgeting(entry, pb.hourly_rates, ri_correction))
 
         # --- Parecer / conclusion (1 por versão) ---
         if conclusion_raw:
@@ -184,15 +199,19 @@ class CiliaParser:
     # ------------------------------------------------------------------ helpers
     @classmethod
     def _parse_budgeting(
-        cls, entry: dict[str, Any], hourly_rates: dict[str, str],
+        cls,
+        entry: dict[str, Any],
+        hourly_rates: dict[str, str],
+        ri_correction: Decimal = Decimal("1"),
     ) -> list[ParsedItemDTO]:
         """Converte um `budgetings[]` em N ParsedItemDTOs.
 
         Lógica do centro automotivo:
         - exchange_used=True → 1 item PART com preço da peça (desconto aplicado)
         - Cada operação com horas > 0 (R&I, pintura, reparação) → 1 item SERVICE
-          separado, com horas × tarifa. Descrição = nome da peça, external_code
-          prefixado com tipo de operação para exibir em coluna separada.
+          separado, com horas × tarifa.
+        - R&I usa ri_correction para corrigir double-counting de horas
+          (remove_install_hours por item pode incluir horas de pintura/reparo).
         - Itens sem troca e sem horas → 1 item SERVICE com selling_cost fixo
         """
         items: list[ParsedItemDTO] = []
@@ -242,8 +261,12 @@ class CiliaParser:
         paint_rate = cls._dec(hourly_rates.get("PINTURA", "0"))
         repair_rate = cls._dec(hourly_rates.get("REPARACAO", "0"))
 
+        # R&I hours corrigidas pelo fator proporcional (evita double-counting)
+        raw_ri = cls._dec(entry.get("remove_install_hours", 0))
+        corrected_ri = (raw_ri * ri_correction).quantize(Decimal("0.01"))
+
         operations = [
-            ("R_I", cls._dec(entry.get("remove_install_hours", 0)), workforce_rate),
+            ("R_I", corrected_ri, workforce_rate),
             ("PINTURA", cls._dec(entry.get("paint_hours", 0)), paint_rate),
             ("RECUPERACAO", cls._dec(entry.get("repair_hours", 0)), repair_rate),
         ]
