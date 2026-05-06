@@ -107,7 +107,7 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
         <h2 className="mb-4 text-lg font-semibold text-white">Importar Orçamento</h2>
 
         <div className="mb-5">
-          <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-white/50">
+          <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Fonte de Importação
           </label>
           <div className="flex gap-2">
@@ -116,8 +116,8 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
                 className={cn("flex-1 rounded-lg border p-3 text-center transition",
                   source === s.id ? "border-info-500 bg-info-500/10" : "border-white/10 bg-white/5 hover:bg-white/10",
                 )}>
-                <div className={cn("text-sm font-semibold", source === s.id ? "text-info-500" : "text-white/60")}>{s.label}</div>
-                <div className="text-[11px] text-white/40">{s.sub}</div>
+                <div className={cn("text-sm font-semibold", source === s.id ? "text-info-500" : "text-foreground/60")}>{s.label}</div>
+                <div className="text-[11px] text-muted-foreground">{s.sub}</div>
               </button>
             ))}
           </div>

@@ -144,7 +144,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
 
   if (!orderId) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-white/40">
+      <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
         <Package className="h-10 w-10 mb-3 opacity-40" />
         <p className="text-sm">Salve a OS antes de adicionar pecas.</p>
       </div>
@@ -216,7 +216,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
                       : f.color === "warning"
                       ? "bg-warning-500/15 text-warning-500"
                       : "bg-white/15 text-white"
-                    : "bg-white/5 text-white/50 hover:bg-white/10"
+                    : "bg-white/5 text-muted-foreground hover:bg-white/10"
                 )}
               >
                 {f.label} ({f.count})
@@ -228,10 +228,10 @@ export function PartsTab({ orderId }: PartsTabProps) {
       {/* Table */}
       {isLoading ? (
         <div className="flex justify-center py-8">
-          <Loader2 className="animate-spin text-white/40 h-5 w-5" />
+          <Loader2 className="animate-spin text-muted-foreground h-5 w-5" />
         </div>
       ) : partsList.length === 0 ? (
-        <div className="bg-white/5 border border-white/10 rounded-lg p-8 text-center text-white/40 text-sm">
+        <div className="bg-white/5 border border-white/10 rounded-lg p-8 text-center text-muted-foreground text-sm">
           Nenhuma peca adicionada. Use os botoes acima para adicionar.
         </div>
       ) : (
@@ -239,20 +239,20 @@ export function PartsTab({ orderId }: PartsTabProps) {
           <Table>
             <TableHeader className="bg-white/[0.03]">
               <TableRow>
-                <TableHead className="label-mono text-white/40">Peca</TableHead>
-                <TableHead className="label-mono text-white/40">Tipo</TableHead>
-                <TableHead className="label-mono text-white/40">Origem</TableHead>
-                <TableHead className="label-mono text-white/40">Status</TableHead>
-                <TableHead className="label-mono text-white/40 text-center">Pagador</TableHead>
-                <TableHead className="label-mono text-white/40 text-right">Qtd</TableHead>
-                <TableHead className="label-mono text-white/40 text-right">Unit.</TableHead>
-                <TableHead className="label-mono text-white/40 text-right">Desconto</TableHead>
-                <TableHead className="label-mono text-white/40 text-right">Líquido</TableHead>
+                <TableHead className="label-mono text-muted-foreground">Peca</TableHead>
+                <TableHead className="label-mono text-muted-foreground">Tipo</TableHead>
+                <TableHead className="label-mono text-muted-foreground">Origem</TableHead>
+                <TableHead className="label-mono text-muted-foreground">Status</TableHead>
+                <TableHead className="label-mono text-muted-foreground text-center">Pagador</TableHead>
+                <TableHead className="label-mono text-muted-foreground text-right">Qtd</TableHead>
+                <TableHead className="label-mono text-muted-foreground text-right">Unit.</TableHead>
+                <TableHead className="label-mono text-muted-foreground text-right">Desconto</TableHead>
+                <TableHead className="label-mono text-muted-foreground text-right">Líquido</TableHead>
                 {isManager && (
-                  <TableHead className="label-mono text-white/40 text-right">Custo</TableHead>
+                  <TableHead className="label-mono text-muted-foreground text-right">Custo</TableHead>
                 )}
                 {isManager && (
-                  <TableHead className="label-mono text-white/40 text-right">Margem</TableHead>
+                  <TableHead className="label-mono text-muted-foreground text-right">Margem</TableHead>
                 )}
                 <TableHead className="w-10" />
               </TableRow>
@@ -277,7 +277,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
                           {part.description}
                         </span>
                         {part.part_number && (
-                          <span className="block text-xs text-white/40 font-mono mt-0.5">
+                          <span className="block text-xs text-muted-foreground font-mono mt-0.5">
                             {part.part_number}
                           </span>
                         )}
@@ -308,7 +308,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
                             ? "bg-info-500/10 text-info-500"
                             : part.source_type === "complement"
                             ? "bg-warning-500/10 text-warning-500"
-                            : "bg-white/10 text-white/50"
+                            : "bg-white/10 text-muted-foreground"
                         )}
                       >
                         {part.source_type_display ||
@@ -321,17 +321,17 @@ export function PartsTab({ orderId }: PartsTabProps) {
                     </TableCell>
 
                     {/* Qtd */}
-                    <TableCell className="text-right font-mono text-sm text-white/60">
+                    <TableCell className="text-right font-mono text-sm text-foreground/60">
                       {part.quantity}
                     </TableCell>
 
                     {/* Unit. */}
-                    <TableCell className="text-right font-mono text-sm text-white/60">
+                    <TableCell className="text-right font-mono text-sm text-foreground/60">
                       {formatCurrency(parseFloat(part.unit_price))}
                     </TableCell>
 
                     {/* Desconto */}
-                    <TableCell className="text-right font-mono text-sm text-white/60">
+                    <TableCell className="text-right font-mono text-sm text-foreground/60">
                       {parseFloat(part.discount) > 0
                         ? formatCurrency(parseFloat(part.discount))
                         : "\u2014"}
@@ -344,7 +344,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
 
                     {/* Custo (MANAGER+) */}
                     {isManager && (
-                      <TableCell className="text-right font-mono text-sm text-white/60">
+                      <TableCell className="text-right font-mono text-sm text-foreground/60">
                         {custoReal !== null ? formatCurrency(custoReal) : "\u2014"}
                       </TableCell>
                     )}
@@ -355,7 +355,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
                         {hasMargem ? (
                           <MargemBadge custo={custoReal!} cobrado={cobrado} />
                         ) : (
-                          <span className="text-white/30">\u2014</span>
+                          <span className="text-muted-foreground">\u2014</span>
                         )}
                       </TableCell>
                     )}
@@ -366,7 +366,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
                         <DropdownMenuTrigger asChild>
                           <button
                             type="button"
-                            className="p-1.5 rounded text-white/40 hover:text-white hover:bg-white/5"
+                            className="p-1.5 rounded text-muted-foreground hover:text-white hover:bg-white/5"
                           >
                             <MoreVertical className="h-4 w-4" />
                           </button>
