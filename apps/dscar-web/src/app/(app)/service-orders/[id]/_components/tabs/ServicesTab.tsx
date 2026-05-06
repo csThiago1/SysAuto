@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Plus, Trash2, Search, Pencil, Check, X } from "lucide-react"
+import { useState, useMemo } from "react"
+import { Plus, Trash2, Search, Pencil, Check, X, ChevronDown, ChevronRight } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -287,177 +287,19 @@ export function ServicesTab({ osId, osStatus }: Props) {
         <p className="py-8 text-center text-sm text-white/40">Nenhum serviço adicionado.</p>
       ) : (
         <>
-          <div className="rounded-md border border-white/10 overflow-hidden">
-            <Table>
-              <TableHeader className="bg-white/[0.03]">
-                <TableRow>
-                  <TableHead>Descrição</TableHead>
-                  <TableHead>Serviço</TableHead>
-                  <TableHead className="text-center">Pagador</TableHead>
-                  <TableHead className="text-right">Qtd.</TableHead>
-                  <TableHead className="text-right">Unit.</TableHead>
-                  <TableHead className="text-right">Desconto</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  {!isBlocked && <TableHead className="w-16" />}
-                </TableRow>
-              </TableHeader>
-              <TableBody className="bg-white/5">
-                {filteredItems.map((item) => {
-                  const isEditing = editingId === item.id
-                  return (
-                    <TableRow key={item.id}>
-                      <TableCell className="py-2.5 px-3">
-                        {(() => {
-                          // Parse "[Tipo] Descrição" format from imported services
-                          const match = item.description.match(/^\[(.+?)\]\s*(.+)$/)
-                          const desc = match ? match[2] : item.description
-                          return (
-                            <>
-                              <span className="font-medium text-white/90">{desc}</span>
-                              {item.service_catalog_name && item.service_catalog_name !== item.description && (
-                                <span className="ml-1 text-xs text-white/40">
-                                  ({item.service_catalog_name})
-                                </span>
-                              )}
-                            </>
-                          )
-                        })()}
-                      </TableCell>
-                      <TableCell className="py-2.5 px-3">
-                        {(() => {
-                          const match = item.description.match(/^\[(.+?)\]/)
-                          const svcType = match ? match[1] : ""
-                          if (!svcType) return <span className="text-white/30">—</span>
-                          return (
-                            <span className="text-xs text-white/60">{svcType}</span>
-                          )
-                        })()}
-                      </TableCell>
-                      <TableCell className="py-2.5 px-3 text-center">
-                        <span
-                          className={cn(
-                            "rounded px-2 py-0.5 text-[11px]",
-                            item.source_type === "import"
-                              ? "bg-info-500/10 text-info-500"
-                              : item.source_type === "complement"
-                              ? "bg-warning-500/10 text-warning-500"
-                              : "bg-white/10 text-white/50"
-                          )}
-                        >
-                          {item.source_type_display ||
-                            (item.source_type === "import"
-                              ? "Seguradora"
-                              : item.source_type === "complement"
-                              ? "Particular"
-                              : "Manual")}
-                        </span>
-                      </TableCell>
-                      <TableCell className="py-2.5 px-3 text-right text-white/60">
-                        {isEditing ? (
-                          <input
-                            type="number"
-                            value={editQty}
-                            onChange={(e) => setEditQty(e.target.value)}
-                            className="w-16 border border-white/15 rounded px-1 py-0.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary-500"
-                            min="0.01"
-                            step="0.01"
-                            autoFocus
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") void saveEdit(item.id)
-                              if (e.key === "Escape") cancelEdit()
-                            }}
-                          />
-                        ) : (
-                          <span
-                            className={!isBlocked ? "cursor-pointer hover:text-primary-600 transition-colors" : ""}
-                            onClick={!isBlocked ? () => startEdit(item) : undefined}
-                            title={!isBlocked ? "Clique para editar" : undefined}
-                          >
-                            {item.quantity}
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="py-2.5 px-3 text-right font-mono text-white/60">
-                        {isEditing ? (
-                          <input
-                            type="number"
-                            value={editPrice}
-                            onChange={(e) => setEditPrice(e.target.value)}
-                            className="w-24 border border-white/15 rounded px-1 py-0.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary-500"
-                            min="0"
-                            step="0.01"
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") void saveEdit(item.id)
-                              if (e.key === "Escape") cancelEdit()
-                            }}
-                          />
-                        ) : (
-                          <span
-                            className={!isBlocked ? "cursor-pointer hover:text-primary-600 transition-colors" : ""}
-                            onClick={!isBlocked ? () => startEdit(item) : undefined}
-                            title={!isBlocked ? "Clique para editar" : undefined}
-                          >
-                            {formatCurrency(item.unit_price)}
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="py-2.5 px-3 text-right font-mono text-white/40">
-                        {Number(item.discount) > 0
-                          ? `- ${formatCurrency(item.discount)}`
-                          : "—"}
-                      </TableCell>
-                      <TableCell className="py-2.5 px-3 text-right font-mono font-semibold text-white/90">
-                        {formatCurrency(item.total)}
-                      </TableCell>
-                      {!isBlocked && (
-                        <TableCell className="py-2.5 px-3 text-center">
-                          {isEditing ? (
-                            <div className="flex items-center gap-1 justify-center">
-                              <button
-                                type="button"
-                                onClick={() => void saveEdit(item.id)}
-                                className="text-success-400 hover:text-success-300 transition-colors"
-                                title="Salvar"
-                              >
-                                <Check className="h-4 w-4" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={cancelEdit}
-                                className="text-white/40 hover:text-white/60 transition-colors"
-                                title="Cancelar"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1 justify-center">
-                              <button
-                                type="button"
-                                onClick={() => startEdit(item)}
-                                className="text-white/30 hover:text-white/60 transition-colors"
-                                title="Editar quantidade e preço"
-                              >
-                                <Pencil className="h-3.5 w-3.5" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDelete(item.id, item.description)}
-                                className="text-white/30 hover:text-error-400 transition-colors"
-                                title="Remover"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                          )}
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          </div>
+          <ServiceGroupedView
+            items={filteredItems}
+            isBlocked={isBlocked}
+            editingId={editingId}
+            editQty={editQty}
+            editPrice={editPrice}
+            setEditQty={setEditQty}
+            setEditPrice={setEditPrice}
+            startEdit={startEdit}
+            saveEdit={saveEdit}
+            cancelEdit={cancelEdit}
+            handleDelete={handleDelete}
+          />
 
           {/* Totals panel */}
           <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4 space-y-2">
@@ -479,5 +321,251 @@ export function ServicesTab({ osId, osStatus }: Props) {
         </>
       )}
     </div>
+  )
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────
+
+/** Parse "[Tipo] Descrição" → { svcType, partName } */
+function parseServiceDescription(desc: string): { svcType: string; partName: string } {
+  const match = desc.match(/^\[(.+?)\]\s*(.+)$/)
+  return match ? { svcType: match[1], partName: match[2] } : { svcType: "", partName: desc }
+}
+
+interface GroupedItem {
+  partName: string
+  items: any[]
+  total: number
+}
+
+/** Agrupa itens importados por nome de peça, mantém manuais/complemento como flat */
+function groupServicesByPart(items: any[]): { groups: GroupedItem[]; flatItems: any[] } {
+  const groups = new Map<string, any[]>()
+  const flatItems: any[] = []
+
+  for (const item of items) {
+    const { svcType, partName } = parseServiceDescription(item.description)
+    // Itens importados com tipo de serviço → agrupar
+    if (svcType && item.source_type === "import") {
+      const existing = groups.get(partName) || []
+      existing.push({ ...item, _svcType: svcType, _partName: partName })
+      groups.set(partName, existing)
+    } else {
+      flatItems.push(item)
+    }
+  }
+
+  const result: GroupedItem[] = []
+  for (const [partName, groupItems] of groups) {
+    // Se só tem 1 item, não precisa accordion
+    if (groupItems.length === 1) {
+      flatItems.push(groupItems[0])
+    } else {
+      const total = groupItems.reduce((sum: number, i: any) => sum + Number(i.total || 0), 0)
+      result.push({ partName, items: groupItems, total })
+    }
+  }
+
+  return { groups: result, flatItems }
+}
+
+// ── Accordion View ──────────────────────────────────────────────────
+
+interface ServiceGroupedViewProps {
+  items: any[]
+  isBlocked: boolean
+  editingId: string | null
+  editQty: string
+  editPrice: string
+  setEditQty: (v: string) => void
+  setEditPrice: (v: string) => void
+  startEdit: (item: any) => void
+  saveEdit: (id: string) => Promise<void>
+  cancelEdit: () => void
+  handleDelete: (id: string, desc: string) => void
+}
+
+function ServiceGroupedView({
+  items, isBlocked, editingId, editQty, editPrice,
+  setEditQty, setEditPrice, startEdit, saveEdit, cancelEdit, handleDelete,
+}: ServiceGroupedViewProps) {
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
+  const { groups, flatItems } = useMemo(() => groupServicesByPart(items), [items])
+
+  const toggleGroup = (name: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev)
+      next.has(name) ? next.delete(name) : next.add(name)
+      return next
+    })
+  }
+
+  return (
+    <div className="space-y-2">
+      {/* Accordion groups */}
+      {groups.map((group) => {
+        const isExpanded = expandedGroups.has(group.partName)
+        return (
+          <div key={group.partName} className="rounded-lg border border-white/10 overflow-hidden">
+            {/* Group header */}
+            <button
+              type="button"
+              onClick={() => toggleGroup(group.partName)}
+              className="flex w-full items-center justify-between px-4 py-3 bg-white/[0.03] hover:bg-white/[0.05] transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                {isExpanded
+                  ? <ChevronDown className="h-4 w-4 text-info-500" />
+                  : <ChevronRight className="h-4 w-4 text-white/40" />
+                }
+                <span className="text-sm font-semibold text-white">{group.partName}</span>
+                <span className="text-[11px] text-white/40 bg-white/5 px-2 py-0.5 rounded">
+                  {group.items.length} operações
+                </span>
+              </div>
+              <span className="text-sm font-bold font-mono text-white">
+                {formatCurrency(group.total)}
+              </span>
+            </button>
+
+            {/* Expanded sub-rows */}
+            {isExpanded && (
+              <table className="w-full text-sm">
+                <tbody>
+                  {group.items.map((item: any) => (
+                    <ServiceSubRow
+                      key={item.id}
+                      item={item}
+                      isBlocked={isBlocked}
+                      editingId={editingId}
+                      editQty={editQty}
+                      editPrice={editPrice}
+                      setEditQty={setEditQty}
+                      setEditPrice={setEditPrice}
+                      startEdit={startEdit}
+                      saveEdit={saveEdit}
+                      cancelEdit={cancelEdit}
+                      handleDelete={handleDelete}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )
+      })}
+
+      {/* Flat items (manual, complement, single-operation) */}
+      {flatItems.length > 0 && (
+        <div className="rounded-lg border border-white/10 overflow-hidden">
+          <table className="w-full text-sm">
+            <tbody>
+              {flatItems.map((item: any) => {
+                const { svcType, partName } = parseServiceDescription(item.description)
+                const isEditing = editingId === item.id
+                return (
+                  <tr key={item.id} className="border-t border-white/5 first:border-t-0">
+                    <td className="py-2.5 px-4 text-white/90 font-medium">{partName}</td>
+                    <td className="py-2.5 px-3 text-xs text-white/50">{svcType || "Serviço"}</td>
+                    <td className="py-2.5 px-3 text-right text-white/60 font-mono">{item.quantity}h</td>
+                    <td className="py-2.5 px-3 text-right text-white/40 font-mono">{formatCurrency(item.unit_price)}/h</td>
+                    <td className="py-2.5 px-4 text-right font-mono font-semibold text-white/90">{formatCurrency(item.total)}</td>
+                    {!isBlocked && (
+                      <td className="py-2.5 px-3 text-center w-16">
+                        <div className="flex items-center gap-1 justify-center">
+                          <button type="button" onClick={() => startEdit(item)}
+                            className="text-white/30 hover:text-white/60 transition-colors" title="Editar">
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <button type="button" onClick={() => handleDelete(item.id, item.description)}
+                            className="text-white/30 hover:text-error-400 transition-colors" title="Remover">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Sub-row inside an accordion group */
+function ServiceSubRow({
+  item, isBlocked, editingId, editQty, editPrice,
+  setEditQty, setEditPrice, startEdit, saveEdit, cancelEdit, handleDelete,
+}: {
+  item: any
+  isBlocked: boolean
+  editingId: string | null
+  editQty: string
+  editPrice: string
+  setEditQty: (v: string) => void
+  setEditPrice: (v: string) => void
+  startEdit: (item: any) => void
+  saveEdit: (id: string) => Promise<void>
+  cancelEdit: () => void
+  handleDelete: (id: string, desc: string) => void
+}) {
+  const isEditing = editingId === item.id
+  return (
+    <tr className="border-t border-white/5">
+      <td className="py-2 pl-10 pr-3 text-white/60">{item._svcType}</td>
+      <td className="py-2 px-3 text-right text-white/90 font-mono">
+        {isEditing ? (
+          <input type="number" value={editQty} onChange={(e) => setEditQty(e.target.value)}
+            className="w-16 border border-white/15 rounded px-1 py-0.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary-500"
+            min="0.01" step="0.01" autoFocus
+            onKeyDown={(e) => { if (e.key === "Enter") void saveEdit(item.id); if (e.key === "Escape") cancelEdit() }}
+          />
+        ) : (
+          <span className={!isBlocked ? "cursor-pointer hover:text-primary-600" : ""} onClick={!isBlocked ? () => startEdit(item) : undefined}>
+            {item.quantity}h
+          </span>
+        )}
+      </td>
+      <td className="py-2 px-3 text-right text-white/40 font-mono">
+        {isEditing ? (
+          <input type="number" value={editPrice} onChange={(e) => setEditPrice(e.target.value)}
+            className="w-20 border border-white/15 rounded px-1 py-0.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary-500"
+            min="0" step="0.01"
+            onKeyDown={(e) => { if (e.key === "Enter") void saveEdit(item.id); if (e.key === "Escape") cancelEdit() }}
+          />
+        ) : (
+          <span className={!isBlocked ? "cursor-pointer hover:text-primary-600" : ""} onClick={!isBlocked ? () => startEdit(item) : undefined}>
+            {formatCurrency(item.unit_price)}/h
+          </span>
+        )}
+      </td>
+      <td className="py-2 px-4 text-right font-mono font-semibold text-white/90">{formatCurrency(item.total)}</td>
+      {!isBlocked && (
+        <td className="py-2 px-3 text-center w-16">
+          {isEditing ? (
+            <div className="flex items-center gap-1 justify-center">
+              <button type="button" onClick={() => void saveEdit(item.id)} className="text-success-400 hover:text-success-300" title="Salvar">
+                <Check className="h-4 w-4" />
+              </button>
+              <button type="button" onClick={cancelEdit} className="text-white/40 hover:text-white/60" title="Cancelar">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 justify-center">
+              <button type="button" onClick={() => startEdit(item)} className="text-white/30 hover:text-white/60" title="Editar">
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+              <button type="button" onClick={() => handleDelete(item.id, item.description)} className="text-white/30 hover:text-error-400" title="Remover">
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+        </td>
+      )}
+    </tr>
   )
 }
