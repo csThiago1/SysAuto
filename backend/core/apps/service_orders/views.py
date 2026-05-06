@@ -1149,14 +1149,50 @@ class ServiceOrderViewSet(
                     status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 )
 
-            # 3. Atualizar dados da OS com informações do Cilia (se vazios)
-            if not order.casualty_number and parsed.casualty_number:
-                order.casualty_number = parsed.casualty_number
-            if not order.plate and parsed.vehicle_plate:
-                order.plate = parsed.vehicle_plate
+            # 3. Atualizar dados da OS com informações do Cilia (preenche campos vazios)
+            update_fields: list[str] = []
+
+            field_mapping = {
+                "casualty_number": parsed.casualty_number,
+                "plate": parsed.vehicle_plate,
+                "make": parsed.vehicle_brand,
+                "color": parsed.vehicle_color,
+                "chassis": parsed.vehicle_chassis,
+                "customer_name": parsed.segurado_name,
+            }
+            for field, value in field_mapping.items():
+                if value and not getattr(order, field, None):
+                    setattr(order, field, value)
+                    update_fields.append(field)
+
+            # Veículo: descrição pode conter marca + modelo
+            if not order.model and parsed.vehicle_description:
+                # vehicle_description = "brand model year color" — tentar extrair modelo
+                desc_parts = parsed.vehicle_description.split()
+                if len(desc_parts) >= 2:
+                    order.model = " ".join(desc_parts[1:3])  # pega model + version
+                    update_fields.append("model")
+
+            if parsed.vehicle_year and not order.year:
+                order.year = parsed.vehicle_year
+                update_fields.append("year")
+
+            # Seguradora: vincular se não tiver
+            if not order.insurer_id and parsed.insurer_code:
+                from apps.insurers.models import Insurer
+                insurer = Insurer.objects.filter(code=parsed.insurer_code).first()
+                if insurer:
+                    order.insurer = insurer
+                    order.customer_type = "insurer"
+                    update_fields.extend(["insurer_id", "customer_type"])
+
+            # Franquia: sempre atualizar (pode mudar entre versões)
             if parsed.franchise_amount:
                 order.deductible_amount = parsed.franchise_amount
-            order.save()
+                update_fields.append("deductible_amount")
+
+            if update_fields:
+                order.save(update_fields=update_fields)
 
             # 4. Criar versão via ImportAttempt + ServiceOrderService
             from apps.cilia.models import ImportAttempt
