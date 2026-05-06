@@ -509,26 +509,18 @@ export function Sidebar() {
         </div>
       )}
 
-      {/* ── Search ── */}
-      <div
-        className={[
-          "flex items-center rounded-lg border border-border bg-muted/50",
-          "cursor-pointer hover:border-border hover:bg-muted transition-colors duration-150",
-          collapsed ? "mx-3.5 my-3 p-2 justify-center" : "mx-4 my-3 px-3 py-2 gap-2",
-        ].join(" ")}
-      >
-        <Search size={18} className="text-muted-foreground flex-shrink-0" />
-        {!collapsed && (
-          <>
-            <span className="text-[13px] text-muted-foreground font-normal">
-              Buscar...
-            </span>
-            <span className="ml-auto text-xs text-muted-foreground/70 bg-muted px-1.5 py-0.5 rounded font-medium">
-              ⌘K
-            </span>
-          </>
-        )}
-      </div>
+      {/* ── Search placeholder (command palette — TODO) ── */}
+      {!collapsed && (
+        <div
+          className="flex items-center rounded-lg border border-border bg-muted/50 mx-4 my-3 px-3 py-2 gap-2 opacity-50"
+          aria-hidden="true"
+        >
+          <Search size={18} className="text-muted-foreground flex-shrink-0" />
+          <span className="text-[13px] text-muted-foreground font-normal">
+            Buscar... (em breve)
+          </span>
+        </div>
+      )}
 
       {/* ── Navigation ── */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-thin">
