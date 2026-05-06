@@ -36,7 +36,7 @@ import { EstoqueBuscaModal } from "@/components/purchasing/EstoqueBuscaModal"
 import { CompraFormModal } from "@/components/purchasing/CompraFormModal"
 import { SeguradoraFormModal } from "@/components/purchasing/SeguradoraFormModal"
 import { formatCurrency } from "@paddock/utils"
-import { PartsSummary, calcPartsTotals } from "./PartsTab"
+import { PartsSummary, calcPartsTotals } from "./PartsTab/PartsSummary"
 
 // ─── Props ──────────────────────────────────────────────────────────────────────
 
