@@ -51,7 +51,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
           </div>
           <button
             onClick={() => setShowForm((p) => !p)}
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary-700 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary/90 transition-colors"
           >
             <TrendingUp className="h-3.5 w-3.5" />
             Novo reajuste
@@ -144,7 +144,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
             <button
               type="submit"
               disabled={create.isPending}
-              className="rounded-md bg-primary-600 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary-700 disabled:opacity-50"
+              className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {create.isPending ? "Salvando..." : "Confirmar reajuste"}
             </button>

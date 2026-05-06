@@ -70,7 +70,7 @@ export default function EmployeeDetailPage(): React.ReactElement {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link
             href={"/rh/colaboradores" as Route}
-            className="flex items-center gap-1 hover:text-primary-600 transition-colors"
+            className="flex items-center gap-1 hover:text-primary transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
             Colaboradores
@@ -140,7 +140,7 @@ export default function EmployeeDetailPage(): React.ReactElement {
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab.id
-                    ? "border-primary-600 text-primary-600"
+                    ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
                 }`}
               >

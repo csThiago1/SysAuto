@@ -63,7 +63,7 @@ export default function ValesPage(): React.ReactElement {
                 onClick={() => setActiveStatus(tab.id)}
                 className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
                   activeStatus === tab.id
-                    ? "border-primary-600 text-primary-600"
+                    ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -157,7 +157,7 @@ export default function ValesPage(): React.ReactElement {
                         <button
                           onClick={() => pay.mutate({ id: allowance.id })}
                           disabled={pay.isPending}
-                          className="rounded-md border border-primary-500/20 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-400 hover:bg-primary-500/20 disabled:opacity-50"
+                          className="rounded-md border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary/80 hover:bg-primary/20 disabled:opacity-50"
                         >
                           Marcar pago
                         </button>

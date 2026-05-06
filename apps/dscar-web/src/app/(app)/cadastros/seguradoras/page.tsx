@@ -87,7 +87,7 @@ export default function SeguradorasPage() {
             Seguradoras cadastradas no sistema — compartilhadas entre todas as unidades.
           </p>
         </div>
-        <Button onClick={handleNew} className="bg-primary-600 hover:bg-primary-700 text-foreground gap-1.5">
+        <Button onClick={handleNew} className="bg-primary hover:bg-primary/90 text-foreground gap-1.5">
           <Plus className="h-4 w-4" />
           Nova Seguradora
         </Button>
@@ -130,7 +130,7 @@ export default function SeguradorasPage() {
                   {/* Logo cell — click to upload */}
                   <TableCell className="py-2">
                     <label className="cursor-pointer group relative" title="Clique para trocar o logo">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted/50 overflow-hidden shadow-sm group-hover:ring-2 group-hover:ring-primary-600/30 transition">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted/50 overflow-hidden shadow-sm group-hover:ring-2 group-hover:ring-ring/30 transition">
                         {ins.logo_url ? (
                           <img
                             src={ins.logo_url}

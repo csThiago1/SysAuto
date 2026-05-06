@@ -77,7 +77,7 @@ export default function ServicosPage() {
             {total === 0 ? "Nenhum serviço cadastrado" : `${total} serviço${total !== 1 ? "s" : ""}`}
           </p>
         </div>
-        <Button onClick={handleNew} className="bg-primary-600 hover:bg-primary-700 text-foreground gap-2">
+        <Button onClick={handleNew} className="bg-primary hover:bg-primary/90 text-foreground gap-2">
           <Plus className="h-4 w-4" /> Novo Serviço
         </Button>
       </div>

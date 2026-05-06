@@ -79,7 +79,7 @@ function ReservarModal({
             value={osId}
             onChange={(e) => setOsId(e.target.value)}
             placeholder="UUID da OS..."
-            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
             autoFocus
           />
         </div>
@@ -95,7 +95,7 @@ function ReservarModal({
             type="button"
             onClick={handleSubmit}
             disabled={!osId.trim() || reservar.isPending}
-            className="px-4 py-1.5 text-xs font-medium text-foreground bg-primary-600 hover:bg-primary-700 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-1.5 text-xs font-medium text-foreground bg-primary hover:bg-primary/90 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {reservar.isPending ? "Reservando..." : "Reservar"}
           </button>
@@ -162,7 +162,7 @@ function TransferirModal({
             type="button"
             onClick={handleSubmit}
             disabled={!nivelId || transferir.isPending}
-            className="px-4 py-1.5 text-xs font-medium text-foreground bg-primary-600 hover:bg-primary-700 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-1.5 text-xs font-medium text-foreground bg-primary hover:bg-primary/90 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {transferir.isPending ? "Transferindo..." : "Transferir"}
           </button>
@@ -215,7 +215,7 @@ export default function UnidadesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Package className="h-5 w-5 text-primary-500" />
+          <Package className="h-5 w-5 text-primary" />
           <div>
             <h1 className="text-lg font-semibold text-foreground">Unidades Fisicas</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -227,7 +227,7 @@ export default function UnidadesPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary-500"
+          className="text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
         >
           <option value="">Todos os status</option>
           {Object.entries(STATUS_LABELS).map(([k, v]) => (

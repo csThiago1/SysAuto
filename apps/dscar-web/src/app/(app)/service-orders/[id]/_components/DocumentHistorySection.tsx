@@ -97,13 +97,13 @@ export function DocumentHistorySection({ order }: Props) {
                   className="bg-muted/30 border border-white/5 rounded-lg overflow-hidden"
                 >
                   <div className="flex items-center gap-3 px-4 py-3">
-                    <Icon className="h-4 w-4 text-primary-400 shrink-0" />
+                    <Icon className="h-4 w-4 text-primary/80 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-foreground">
                           {latest.document_type_display}
                         </span>
-                        <span className="text-xs font-mono bg-primary-600/20 text-primary-400 px-1.5 py-0.5 rounded">
+                        <span className="text-xs font-mono bg-primary/20 text-primary/80 px-1.5 py-0.5 rounded">
                           v{latest.version}
                         </span>
                       </div>

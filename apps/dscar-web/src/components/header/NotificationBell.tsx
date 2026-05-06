@@ -111,7 +111,7 @@ export function NotificationBell(): React.ReactElement {
             <button
               type="button"
               onClick={() => void refetch()}
-              className="text-xs text-primary-600 hover:underline"
+              className="text-xs text-primary hover:underline"
             >
               Tentar novamente
             </button>
@@ -150,7 +150,7 @@ export function NotificationBell(): React.ReactElement {
           <div className="border-t border-border px-4 py-2.5">
             <Link
               href="/os?overdue=true"
-              className="text-xs text-primary-600 hover:underline font-medium"
+              className="text-xs text-primary hover:underline font-medium"
             >
               Ver todas as OS com prazo →
             </Link>

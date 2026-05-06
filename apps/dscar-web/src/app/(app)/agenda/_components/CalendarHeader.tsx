@@ -87,7 +87,7 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
           ))}
         </div>
 
-        <Button onClick={onSchedule} size="sm" className="bg-primary-600 hover:bg-primary-700 text-foreground gap-1.5">
+        <Button onClick={onSchedule} size="sm" className="bg-primary hover:bg-primary/90 text-foreground gap-1.5">
           <CalendarDays className="h-3.5 w-3.5" />
           Agendar
         </Button>

@@ -43,7 +43,7 @@ function PersonSearchField({
 
   if (selectedPerson) {
     return (
-      <div className="flex items-center justify-between rounded-lg bg-primary-600/10 border border-primary-600/30 px-4 py-3">
+      <div className="flex items-center justify-between rounded-lg bg-primary/10 border border-primary/30 px-4 py-3">
         <div>
           <p className="text-sm font-semibold text-foreground">{selectedPerson.full_name}</p>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -203,7 +203,7 @@ function EmitirNfseManualPageInner() {
     <div className="p-6 max-w-2xl space-y-6">
       {/* Page header */}
       <div className="flex items-center gap-3">
-        <FileText className="h-6 w-6 text-primary-600" />
+        <FileText className="h-6 w-6 text-primary" />
         <div>
           <h1 className="text-xl font-bold text-foreground">Emissão Manual de NFS-e</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -281,7 +281,7 @@ function EmitirNfseManualPageInner() {
             </Label>
             <textarea
               rows={3}
-              className="mt-1 w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary-600"
+              className="mt-1 w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-ring"
               placeholder="Descreva detalhadamente os serviços prestados..."
               maxLength={2000}
               {...form.register("discriminacao")}
@@ -331,7 +331,7 @@ function EmitirNfseManualPageInner() {
             <button
               type="button"
               onClick={() => append({ descricao: "", quantidade: "1.0000", valor_unitario: "", valor_desconto: "0" })}
-              className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-500"
+              className="flex items-center gap-1 text-xs text-primary hover:text-primary"
             >
               <Plus className="h-3.5 w-3.5" />
               Adicionar item
@@ -420,7 +420,7 @@ function EmitirNfseManualPageInner() {
           <Button
             type="submit"
             disabled={emitMutation.isPending}
-            className="bg-primary-600 hover:bg-primary-700 text-foreground"
+            className="bg-primary hover:bg-primary/90 text-foreground"
           >
             {emitMutation.isPending ? (
               <>

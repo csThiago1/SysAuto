@@ -48,7 +48,7 @@ export default function ColaboradoresPage(): React.ReactElement {
           </div>
           <Link
             href={"/rh/colaboradores/novo" as Route}
-            className="inline-flex items-center gap-2 rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-primary-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 transition-colors"
           >
             + Admitir
           </Link>
@@ -65,7 +65,7 @@ export default function ColaboradoresPage(): React.ReactElement {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as FilterStatus)}
-            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="">Todos os status</option>
             <option value="active">Ativos</option>
@@ -76,7 +76,7 @@ export default function ColaboradoresPage(): React.ReactElement {
           <select
             value={department}
             onChange={(e) => setDepartment(e.target.value as FilterDepartment)}
-            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="">Todos os setores</option>
             {(

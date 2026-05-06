@@ -63,7 +63,7 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
           </div>
           <Link
             href={"/financeiro/lancamentos/novo" as Route}
-            className="inline-flex items-center gap-2 rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-primary-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 transition-colors"
           >
             <PlusCircle className="h-4 w-4" />
             Novo Lançamento
@@ -79,7 +79,7 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
               <StatCard
                 label="Lançamentos hoje"
                 value={todayEntries?.count ?? 0}
-                icon={<ReceiptText className="h-5 w-5 text-primary-600" />}
+                icon={<ReceiptText className="h-5 w-5 text-primary" />}
               />
               <StatCard
                 label="Período atual"
@@ -188,7 +188,7 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
                 <Link
                   key={link.href}
                   href={link.href as Route}
-                  className="flex items-center gap-3 rounded-md border border-border p-3 hover:border-primary-500/30 hover:bg-primary-500/5 transition-colors group"
+                  className="flex items-center gap-3 rounded-md border border-border p-3 hover:border-primary/30 hover:bg-primary/5 transition-colors group"
                 >
                   <div
                     className={`flex h-8 w-8 items-center justify-center rounded-md shrink-0 ${link.iconBg}`}
@@ -196,12 +196,12 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
                     <link.Icon className={`h-4 w-4 ${link.iconColor}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-foreground/90 group-hover:text-primary-400 truncate">
+                    <p className="text-xs font-semibold text-foreground/90 group-hover:text-primary/80 truncate">
                       {link.label}
                     </p>
                     <p className="text-xs text-muted-foreground truncate">{link.description}</p>
                   </div>
-                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary-500 shrink-0" />
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary shrink-0" />
                 </Link>
               ))}
             </div>
@@ -220,8 +220,8 @@ const QUICK_LINKS = [
     label: "Novo Lançamento",
     description: "Criar lançamento manual",
     Icon: PlusCircle,
-    iconBg: "bg-primary-500/10",
-    iconColor: "text-primary-600",
+    iconBg: "bg-primary/10",
+    iconColor: "text-primary",
   },
   {
     href: "/financeiro/plano-contas",

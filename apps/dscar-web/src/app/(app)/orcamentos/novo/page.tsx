@@ -72,7 +72,7 @@ export default function NovoOrcamentoPage() {
         <Link href={"/orcamentos" as Route} className="text-muted-foreground hover:text-foreground/70 transition-colors">
           <ChevronLeft className="h-4 w-4" />
         </Link>
-        <FileText className="h-5 w-5 text-primary-500" />
+        <FileText className="h-5 w-5 text-primary" />
         <div>
           <h1 className="text-lg font-semibold text-foreground">Novo Orçamento</h1>
           <p className="text-xs text-muted-foreground">Preencha as informações para criar o orçamento.</p>
@@ -137,7 +137,7 @@ export default function NovoOrcamentoPage() {
         <div className="space-y-1.5">
           <Label className="text-foreground/70 text-xs">Observações</Label>
           <textarea
-            className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-muted-foreground/50 resize-none"
+            className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50 resize-none"
             rows={3}
             placeholder="Observações gerais sobre o orçamento..."
             value={observacoes}

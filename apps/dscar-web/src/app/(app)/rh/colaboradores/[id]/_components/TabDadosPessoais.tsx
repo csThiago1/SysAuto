@@ -71,7 +71,7 @@ export function TabDadosPessoais({
           {!editing ? (
             <button
               onClick={() => setEditing(true)}
-              className="text-xs text-primary-600 hover:underline"
+              className="text-xs text-primary hover:underline"
             >
               Editar
             </button>
@@ -87,7 +87,7 @@ export function TabDadosPessoais({
               <button
                 onClick={handleSave}
                 disabled={update.isPending}
-                className="text-xs font-medium text-primary-600 hover:underline disabled:opacity-50"
+                className="text-xs font-medium text-primary hover:underline disabled:opacity-50"
               >
                 {update.isPending ? "Salvando..." : "Salvar"}
               </button>

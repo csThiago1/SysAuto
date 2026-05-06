@@ -214,7 +214,7 @@ function RecordReceiptDialog({
             <select
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               required
             >
               {paymentMethods.map(([value, label]) => (
@@ -242,7 +242,7 @@ function RecordReceiptDialog({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Opcional..."
             />
           </div>
@@ -264,7 +264,7 @@ function RecordReceiptDialog({
             <button
               type="submit"
               disabled={recordReceipt.isPending}
-              className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {recordReceipt.isPending ? "Salvando..." : "Registrar Recebimento"}
             </button>
@@ -325,7 +325,7 @@ function CancelDialog({
               onChange={(e) => setReason(e.target.value)}
               rows={3}
               required
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Informe o motivo..."
             />
           </div>
@@ -464,7 +464,7 @@ export default function ContasReceberPage(): React.ReactElement {
           </div>
           <Link
             href={"/financeiro/contas-receber/novo" as Route}
-            className="inline-flex items-center gap-2 rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-primary-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 transition-colors"
           >
             <PlusCircle className="h-4 w-4" />
             Novo Título
@@ -514,7 +514,7 @@ export default function ContasReceberPage(): React.ReactElement {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as FilterStatus)}
-            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="">Todos os status</option>
             {STATUS_OPTIONS.map(([value, label]) => (
@@ -526,7 +526,7 @@ export default function ContasReceberPage(): React.ReactElement {
           <select
             value={origin}
             onChange={(e) => setOrigin(e.target.value as FilterOrigin)}
-            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="">Todas as origens</option>
             {ORIGIN_OPTIONS.map(([value, label]) => (

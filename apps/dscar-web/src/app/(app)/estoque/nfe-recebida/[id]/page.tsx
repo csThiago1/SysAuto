@@ -104,7 +104,7 @@ export default function NFeEntradaDetailPage({ params }: { params: { id: string 
           <button
             onClick={handleGerarEstoque}
             disabled={gerarEstoqueMutation.isPending || pendentes > 0}
-            className="flex items-center gap-2 text-sm bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-foreground px-4 py-2 rounded-md transition-colors"
+            className="flex items-center gap-2 text-sm bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-foreground px-4 py-2 rounded-md transition-colors"
           >
             <Package className="h-4 w-4" />
             {gerarEstoqueMutation.isPending ? "Gerando..." : "Gerar Estoque"}

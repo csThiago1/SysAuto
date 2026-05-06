@@ -35,7 +35,7 @@ export function TabVales({ employee }: TabValesProps): React.ReactElement {
         </h3>
         <p className="text-xs text-muted-foreground">
           Para solicitar ou aprovar vales, acesse{" "}
-          <span className="text-primary-600">/rh/vales</span>
+          <span className="text-primary">/rh/vales</span>
         </p>
       </div>
 

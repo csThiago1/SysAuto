@@ -38,7 +38,7 @@ export function TabDocumentos({
         <h3 className="text-base font-semibold text-foreground">
           Documentos ({documents.length})
         </h3>
-        <button className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary-700 transition-colors">
+        <button className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary/90 transition-colors">
           + Enviar documento
         </button>
       </div>

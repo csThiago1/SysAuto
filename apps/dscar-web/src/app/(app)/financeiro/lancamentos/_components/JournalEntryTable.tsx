@@ -111,7 +111,7 @@ export function JournalEntryTable({ entries }: JournalEntryTableProps): React.Re
               <td className="px-4 py-3">
                 <Link
                   href={`/financeiro/lancamentos/${entry.id}` as Route}
-                  className="font-mono text-xs text-primary-600 hover:text-primary-800 font-semibold"
+                  className="font-mono text-xs text-primary hover:text-primary/80 font-semibold"
                 >
                   {entry.number}
                 </Link>
@@ -122,7 +122,7 @@ export function JournalEntryTable({ entries }: JournalEntryTableProps): React.Re
               <td className="px-4 py-3 text-foreground max-w-xs truncate">
                 <Link
                   href={`/financeiro/lancamentos/${entry.id}` as Route}
-                  className="hover:text-primary-600 transition-colors"
+                  className="hover:text-primary transition-colors"
                 >
                   {entry.description}
                 </Link>

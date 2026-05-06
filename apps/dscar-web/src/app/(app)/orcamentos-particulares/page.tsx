@@ -83,7 +83,7 @@ export default function OrcamentosParticularesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <ReceiptText className="h-5 w-5 text-primary-500" />
+          <ReceiptText className="h-5 w-5 text-primary" />
           <div>
             <h1 className="text-lg font-semibold text-foreground">Orçamentos Particulares</h1>
             <p className="text-xs text-muted-foreground mt-0.5">

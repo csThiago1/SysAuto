@@ -108,7 +108,7 @@ export function FiscalEmissionModal({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <div className="flex items-center gap-2.5">
-            <FileText className="h-5 w-5 text-primary-600 shrink-0" />
+            <FileText className="h-5 w-5 text-primary shrink-0" />
             <div>
               <p className="font-semibold text-foreground text-sm">Emitir Nota Fiscal</p>
               <p className="text-xs text-muted-foreground">OS #{orderNumber}</p>
@@ -140,7 +140,7 @@ export function FiscalEmissionModal({
                       className={cn(
                         "flex-1 flex flex-col items-center gap-1 py-3 px-2 rounded-lg border text-xs font-medium transition-colors",
                         docType === "nfse"
-                          ? "border-primary-600 bg-primary-600/10 text-primary-400"
+                          ? "border-primary bg-primary/10 text-primary/80"
                           : "border-border bg-muted/30 text-muted-foreground hover:text-foreground/70"
                       )}
                     >
@@ -154,7 +154,7 @@ export function FiscalEmissionModal({
                       className={cn(
                         "flex-1 flex flex-col items-center gap-1 py-3 px-2 rounded-lg border text-xs font-medium transition-colors",
                         docType === "nfe"
-                          ? "border-primary-600 bg-primary-600/10 text-primary-400"
+                          ? "border-primary bg-primary/10 text-primary/80"
                           : "border-border bg-muted/30 text-muted-foreground hover:text-foreground/70"
                       )}
                     >
@@ -197,7 +197,7 @@ export function FiscalEmissionModal({
                           className={cn(
                             "px-3 py-1.5 rounded-md text-xs border transition-colors",
                             formaPagamento === o.value
-                              ? "border-primary-600 bg-primary-600/10 text-primary-400"
+                              ? "border-primary bg-primary/10 text-primary/80"
                               : "border-border bg-muted/30 text-muted-foreground hover:text-foreground/70"
                           )}
                         >
@@ -259,7 +259,7 @@ export function FiscalEmissionModal({
             <Button
               onClick={handleEmit}
               disabled={mutation.isPending}
-              className="bg-primary-600 hover:bg-primary-700 text-foreground"
+              className="bg-primary hover:bg-primary/90 text-foreground"
             >
               {mutation.isPending ? (
                 <>

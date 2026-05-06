@@ -262,14 +262,14 @@ export default function NovoLancamentoPage(): React.ReactElement {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link
             href={"/financeiro" as Route}
-            className="hover:text-primary-600 transition-colors"
+            className="hover:text-primary transition-colors"
           >
             Financeiro
           </Link>
           <span>/</span>
           <Link
             href={"/financeiro/lancamentos" as Route}
-            className="flex items-center gap-1 hover:text-primary-600 transition-colors"
+            className="flex items-center gap-1 hover:text-primary transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
             Lançamentos
@@ -313,7 +313,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
                 <select
                   value={form.origin}
                   onChange={(e) => setField("origin", e.target.value)}
-                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   {ORIGINS.map(([value, label]) => (
                     <option key={value} value={value}>
@@ -368,7 +368,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
                             value={line.account_id}
                             onChange={(e) => setLineField(i, "account_id", e.target.value)}
                             className={cn(
-                              "w-full rounded-md border bg-muted/50 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500",
+                              "w-full rounded-md border bg-muted/50 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary",
                               lineErr?.account_id
                                 ? "border-error-500/20"
                                 : "border-border"
@@ -451,7 +451,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
                   <button
                     type="button"
                     onClick={addLine}
-                    className="inline-flex items-center gap-1.5 text-xs text-primary-600 hover:text-primary-800 font-medium transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 font-medium transition-colors"
                   >
                     <Plus className="h-3.5 w-3.5" />
                     Adicionar linha
@@ -504,7 +504,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
             <button
               type="submit"
               disabled={create.isPending}
-              className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {create.isPending ? "Salvando..." : "Salvar Lançamento"}
             </button>

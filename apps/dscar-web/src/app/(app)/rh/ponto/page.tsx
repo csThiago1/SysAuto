@@ -89,7 +89,7 @@ export default function PontoPage(): React.ReactElement {
           </div>
           <Link
             href={"/rh/ponto/espelho" as Route}
-            className="text-xs text-primary-600 hover:underline"
+            className="text-xs text-primary hover:underline"
           >
             Espelho (gestor) →
           </Link>

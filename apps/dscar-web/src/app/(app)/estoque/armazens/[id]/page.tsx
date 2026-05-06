@@ -162,7 +162,7 @@ export default function ArmazemDetailPage({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <Warehouse className="h-5 w-5 text-primary-500" />
+          <Warehouse className="h-5 w-5 text-primary" />
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold text-foreground">
@@ -196,7 +196,7 @@ export default function ArmazemDetailPage({
               }
               className={`flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
                 activeForm === form
-                  ? "border-primary-500 text-primary-400 bg-primary-500/10"
+                  ? "border-primary text-primary/80 bg-primary/10"
                   : "border-border text-foreground/60 hover:text-foreground hover:border-border"
               }`}
             >
@@ -224,7 +224,7 @@ export default function ArmazemDetailPage({
                 value={ruaCodigo}
                 onChange={(e) => setRuaCodigo(e.target.value)}
                 placeholder="R01"
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             <div>
@@ -235,7 +235,7 @@ export default function ArmazemDetailPage({
                 value={ruaDescricao}
                 onChange={(e) => setRuaDescricao(e.target.value)}
                 placeholder="Rua de Funilaria"
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
           </div>
@@ -254,7 +254,7 @@ export default function ArmazemDetailPage({
               type="button"
               onClick={handleCreateRua}
               disabled={ruaCreate.isPending}
-              className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {ruaCreate.isPending ? "Criando..." : "Criar Rua"}
             </button>
@@ -273,7 +273,7 @@ export default function ArmazemDetailPage({
               <select
                 value={pratRuaId}
                 onChange={(e) => setPratRuaId(e.target.value)}
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="">Selecione...</option>
                 {ruas.map((r) => (
@@ -292,7 +292,7 @@ export default function ArmazemDetailPage({
                 value={pratCodigo}
                 onChange={(e) => setPratCodigo(e.target.value)}
                 placeholder="P01"
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             <div>
@@ -304,7 +304,7 @@ export default function ArmazemDetailPage({
                 onChange={(e) => setPratCapacidade(e.target.value)}
                 placeholder="200"
                 type="number"
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
           </div>
@@ -323,7 +323,7 @@ export default function ArmazemDetailPage({
               type="button"
               onClick={handleCreatePrateleira}
               disabled={prateleiraCreate.isPending}
-              className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {prateleiraCreate.isPending ? "Criando..." : "Criar Prateleira"}
             </button>
@@ -345,7 +345,7 @@ export default function ArmazemDetailPage({
                   setNivelRuaId(e.target.value)
                   setNivelPratId("")
                 }}
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="">Selecione a rua...</option>
                 {ruas.map((r) => (
@@ -364,7 +364,7 @@ export default function ArmazemDetailPage({
                 value={nivelPratId}
                 onChange={(e) => setNivelPratId(e.target.value)}
                 disabled={!nivelRuaId}
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-40"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-40"
               >
                 <option value="">
                   {nivelRuaId ? "Selecione..." : "Escolha a rua primeiro"}
@@ -385,7 +385,7 @@ export default function ArmazemDetailPage({
                 value={nivelCodigo}
                 onChange={(e) => setNivelCodigo(e.target.value)}
                 placeholder="N1"
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
           </div>
@@ -404,7 +404,7 @@ export default function ArmazemDetailPage({
               type="button"
               onClick={handleCreateNivel}
               disabled={nivelCreate.isPending}
-              className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {nivelCreate.isPending ? "Criando..." : "Criar Nível"}
             </button>

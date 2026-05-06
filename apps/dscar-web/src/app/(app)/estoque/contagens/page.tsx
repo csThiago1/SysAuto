@@ -101,7 +101,7 @@ export default function ContagensPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <ClipboardList className="h-5 w-5 text-primary-500" />
+          <ClipboardList className="h-5 w-5 text-primary" />
           <div>
             <h1 className="text-lg font-semibold text-foreground">
               Contagens de Inventário
@@ -115,7 +115,7 @@ export default function ContagensPage() {
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 transition-colors"
+          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Nova Contagem
@@ -140,7 +140,7 @@ export default function ContagensPage() {
                   }}
                   className={`rounded-md border px-4 py-2 text-sm font-medium transition-colors ${
                     tipo === t
-                      ? "border-primary-500 text-primary-400 bg-primary-500/10"
+                      ? "border-primary text-primary/80 bg-primary/10"
                       : "border-border text-foreground/60 hover:text-foreground hover:border-border"
                   }`}
                 >
@@ -163,7 +163,7 @@ export default function ContagensPage() {
                   setArmazemId(e.target.value)
                   setRuaId("")
                 }}
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="">Selecione...</option>
                 {armazens.map((a) => (
@@ -184,7 +184,7 @@ export default function ContagensPage() {
                   value={ruaId}
                   onChange={(e) => setRuaId(e.target.value)}
                   disabled={!armazemId}
-                  className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-40"
+                  className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-40"
                 >
                   <option value="">
                     {armazemId ? "Selecione a rua..." : "Escolha o armazém primeiro"}
@@ -215,7 +215,7 @@ export default function ContagensPage() {
               type="button"
               onClick={handleCreate}
               disabled={createMut.isPending}
-              className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {createMut.isPending ? "Abrindo..." : "Abrir Contagem"}
             </button>

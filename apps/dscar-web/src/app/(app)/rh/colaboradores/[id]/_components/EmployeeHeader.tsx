@@ -27,7 +27,7 @@ export function EmployeeHeader({
         {/* Avatar + info */}
         <div className="flex items-start gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted/50 shrink-0">
-            <User className="h-7 w-7 text-primary-600" />
+            <User className="h-7 w-7 text-primary" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">

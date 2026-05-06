@@ -70,7 +70,7 @@ export default function DashboardPage(): React.ReactElement {
             actions={
               <Link
                 href="/service-orders/new"
-                className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-foreground hover:bg-primary-700 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-foreground hover:bg-primary/90 transition-colors"
               >
                 <Plus size={16} />
                 Nova OS
@@ -93,7 +93,7 @@ export default function DashboardPage(): React.ReactElement {
             actions={
               <Link
                 href="/service-orders/new"
-                className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-foreground hover:bg-primary-700 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-foreground hover:bg-primary/90 transition-colors"
               >
                 <Plus size={16} />
                 Nova OS
@@ -117,7 +117,7 @@ export default function DashboardPage(): React.ReactElement {
           actions={
             <Link
               href="/service-orders/new"
-              className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-foreground hover:bg-primary-700 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-foreground hover:bg-primary/90 transition-colors"
             >
               <Plus size={16} />
               Nova OS
@@ -138,7 +138,7 @@ export default function DashboardPage(): React.ReactElement {
           <StatCard
             label="OS em Aberto"
             value={legacyStats?.total_open ?? 0}
-            icon={<ClipboardList className="h-5 w-5 text-primary-600" />}
+            icon={<ClipboardList className="h-5 w-5 text-primary" />}
           />
           <StatCard
             label="Entregas Hoje"
@@ -168,7 +168,7 @@ export default function DashboardPage(): React.ReactElement {
             </h2>
             <Link
               href="/service-orders"
-              className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+              className="text-sm font-medium text-primary hover:text-primary/90 transition-colors"
             >
               Ver todas →
             </Link>

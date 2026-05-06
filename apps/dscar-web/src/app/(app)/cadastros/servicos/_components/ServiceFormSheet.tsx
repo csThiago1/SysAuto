@@ -152,7 +152,7 @@ export function ServiceFormSheet({ open, onOpenChange, editing }: Props) {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-primary-600 hover:bg-primary-700 text-foreground"
+              className="bg-primary hover:bg-primary/90 text-foreground"
             >
               {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
               {editing ? "Salvar" : "Criar"}

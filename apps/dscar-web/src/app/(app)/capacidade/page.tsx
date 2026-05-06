@@ -210,7 +210,7 @@ export default function CapacidadePage() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <Users className="h-5 w-5 text-primary-500" />
+        <Users className="h-5 w-5 text-primary" />
         <div>
           <h1 className="text-lg font-semibold text-foreground">Capacidade Técnica</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -242,7 +242,7 @@ export default function CapacidadePage() {
               <div className="space-y-1.5">
                 <Label className="text-foreground/70 text-xs">Categoria de mão de obra *</Label>
                 <select
-                  className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
                   value={capCategoria}
                   onChange={(e) => setCapCategoria(e.target.value)}
                 >

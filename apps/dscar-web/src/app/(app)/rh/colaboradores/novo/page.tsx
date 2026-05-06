@@ -162,7 +162,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link
             href={"/rh/colaboradores" as Route}
-            className="flex items-center gap-1 hover:text-primary-600 transition-colors"
+            className="flex items-center gap-1 hover:text-primary transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
             Colaboradores
@@ -235,7 +235,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
                 <select
                   value={form.department}
                   onChange={(e) => set("department", e.target.value)}
-                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="">Selecione...</option>
                   {(Object.entries(DEPARTMENT_LABELS) as [HRDepartment, string][]).map(
@@ -251,7 +251,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
                 <select
                   value={form.position}
                   onChange={(e) => set("position", e.target.value)}
-                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="">Selecione...</option>
                   {(Object.entries(POSITION_LABELS) as [HRPosition, string][]).map(([v, l]) => (
@@ -265,7 +265,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
                 <select
                   value={form.contract_type}
                   onChange={(e) => set("contract_type", e.target.value)}
-                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   {(Object.entries(CONTRACT_TYPE_LABELS) as [ContractType, string][]).map(
                     ([v, l]) => (
@@ -311,7 +311,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
                 <select
                   value={form.pay_frequency}
                   onChange={(e) => set("pay_frequency", e.target.value)}
-                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="monthly">Mensal</option>
                   <option value="biweekly">Quinzenal</option>
@@ -421,7 +421,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
             <button
               type="submit"
               disabled={create.isPending}
-              className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {create.isPending ? "Admitindo..." : "Admitir colaborador"}
             </button>

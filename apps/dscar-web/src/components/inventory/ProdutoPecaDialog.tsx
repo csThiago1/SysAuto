@@ -37,7 +37,7 @@ const LADO_OPTIONS: { value: LadoPeca; label: string }[] = [
 ]
 
 const INPUT_CLS =
-  "w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary-500"
+  "w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -392,7 +392,7 @@ export function ProdutoPecaDialog({
             type="button"
             onClick={handleSave}
             disabled={isPending}
-            className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
+            className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50 transition-colors"
           >
             {isPending ? "Salvando..." : isEdit ? "Salvar" : "Criar"}
           </button>

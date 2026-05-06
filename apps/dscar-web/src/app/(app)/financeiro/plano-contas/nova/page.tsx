@@ -135,14 +135,14 @@ export default function NovaContaPage(): React.ReactElement {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link
             href={"/financeiro" as Route}
-            className="hover:text-primary-600 transition-colors"
+            className="hover:text-primary transition-colors"
           >
             Financeiro
           </Link>
           <span>/</span>
           <Link
             href={"/financeiro/plano-contas" as Route}
-            className="flex items-center gap-1 hover:text-primary-600 transition-colors"
+            className="flex items-center gap-1 hover:text-primary transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
             Plano de Contas
@@ -218,7 +218,7 @@ export default function NovaContaPage(): React.ReactElement {
                   value={form.account_type}
                   onChange={(e) => setField("account_type", e.target.value)}
                   className={cn(
-                    "w-full rounded-md border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500",
+                    "w-full rounded-md border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary",
                     errors.account_type ? "border-error-500/20" : "border-border"
                   )}
                 >
@@ -237,7 +237,7 @@ export default function NovaContaPage(): React.ReactElement {
                   value={form.nature}
                   onChange={(e) => setField("nature", e.target.value)}
                   className={cn(
-                    "w-full rounded-md border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500",
+                    "w-full rounded-md border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary",
                     errors.nature ? "border-error-500/20" : "border-border"
                   )}
                 >
@@ -300,7 +300,7 @@ export default function NovaContaPage(): React.ReactElement {
                 checked={form.accepts_cost_center}
                 disabled={!form.is_analytical}
                 onChange={(e) => setField("accepts_cost_center", e.target.checked)}
-                className="h-4 w-4 rounded border-border text-primary-600 focus:ring-primary-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="h-4 w-4 rounded border-border text-primary focus:ring-primary disabled:opacity-40 disabled:cursor-not-allowed"
               />
               <label
                 htmlFor="accepts_cost_center"
@@ -332,7 +332,7 @@ export default function NovaContaPage(): React.ReactElement {
             <button
               type="submit"
               disabled={create.isPending}
-              className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {create.isPending ? "Criando..." : "Criar Conta"}
             </button>

@@ -13,7 +13,7 @@ import {
 import { ProdutoPecaDialog } from "@/components/inventory/ProdutoPecaDialog"
 
 const INPUT_CLS =
-  "bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
+  "bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
 
 export default function ProdutosPecasPage() {
   const [search, setSearch] = useState("")
@@ -61,7 +61,7 @@ export default function ProdutosPecasPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Package className="h-5 w-5 text-primary-500" />
+          <Package className="h-5 w-5 text-primary" />
           <div>
             <h1 className="text-lg font-semibold text-foreground">
               Produtos — Peças
@@ -75,7 +75,7 @@ export default function ProdutosPecasPage() {
         <button
           type="button"
           onClick={handleNew}
-          className="flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 transition-colors"
+          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Nova Peca

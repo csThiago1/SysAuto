@@ -30,7 +30,7 @@ export default function NFeRecebidaPage() {
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <FileText className="h-5 w-5 text-primary-500" />
+          <FileText className="h-5 w-5 text-primary" />
           <div>
             <h1 className="text-lg font-semibold text-foreground">NF-e de Entrada</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -43,7 +43,7 @@ export default function NFeRecebidaPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="">Todos os status</option>
             {Object.entries(STATUS_LABELS).map(([k, v]) => (

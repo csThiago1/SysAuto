@@ -425,7 +425,7 @@ export default function OrcamentoDetailPage() {
           <Link href={"/orcamentos" as Route} className="text-muted-foreground hover:text-foreground/70 transition-colors shrink-0">
             <ChevronLeft className="h-4 w-4" />
           </Link>
-          <FileText className="h-5 w-5 text-primary-500 shrink-0" />
+          <FileText className="h-5 w-5 text-primary shrink-0" />
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-lg font-semibold text-foreground">{orc.numero}</h1>
@@ -486,9 +486,9 @@ export default function OrcamentoDetailPage() {
           <p className="text-xs text-muted-foreground">Desconto</p>
           <p className="text-lg font-semibold text-error-400 mt-1">-{formatBRL(orc.desconto)}</p>
         </div>
-        <div className="rounded-lg border border-primary-500/20 bg-primary-500/5 p-4">
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
           <p className="text-xs text-muted-foreground">Total</p>
-          <p className="text-lg font-semibold text-primary-400 mt-1">{formatBRL(orc.total)}</p>
+          <p className="text-lg font-semibold text-primary/80 mt-1">{formatBRL(orc.total)}</p>
         </div>
       </div>
 

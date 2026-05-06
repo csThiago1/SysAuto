@@ -56,12 +56,12 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
             return (
               <TableRow
                 key={order.id}
-                className="group hover:bg-primary-500/5 cursor-pointer transition-colors"
+                className="group hover:bg-primary/5 cursor-pointer transition-colors"
                 onClick={() => router.push(`/service-orders/${order.id}`)}
               >
                 {/* OS Number */}
                 <TableCell className="font-medium text-foreground">
-                  <span className="text-primary-600 font-bold">#{order.number}</span>
+                  <span className="text-primary font-bold">#{order.number}</span>
                 </TableCell>
 
                 {/* Cliente */}
@@ -158,7 +158,7 @@ export function ServiceOrderTable({ orders }: ServiceOrderTableProps) {
                 <TableCell className="text-right">
                   <Link
                     href={`/service-orders/${order.id}`}
-                    className="inline-flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-primary-600 hover:bg-primary-500/5 transition-colors"
+                    className="inline-flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors"
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Link>

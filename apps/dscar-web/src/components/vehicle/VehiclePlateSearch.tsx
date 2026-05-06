@@ -110,7 +110,7 @@ export function VehiclePlateSearch({ value, onChange, showVersion = true }: Prop
       <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Car className="h-4 w-4 text-primary-500 shrink-0" />
+            <Car className="h-4 w-4 text-primary shrink-0" />
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Veículo</span>
             {history?.found && (
               <Badge variant="outline" className="text-xs border-success-500/30 text-success-400 bg-success-400/10 flex items-center gap-1">

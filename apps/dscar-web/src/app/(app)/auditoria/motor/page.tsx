@@ -42,7 +42,7 @@ export default function AuditoriaMotorPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <Shield className="h-5 w-5 text-primary-500" />
+        <Shield className="h-5 w-5 text-primary" />
         <div>
           <h1 className="text-lg font-semibold text-foreground">Auditoria do Motor</h1>
           <p className="text-xs text-muted-foreground mt-0.5">

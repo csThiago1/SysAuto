@@ -75,7 +75,7 @@ export function DocumentsDropdown({ order }: DocumentsDropdownProps) {
             <FileText className="h-4 w-4" />
             Documentos
             {docCount > 0 && (
-              <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary-600/20 px-1.5 text-xs font-mono text-primary-400">
+              <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/20 px-1.5 text-xs font-mono text-primary/80">
                 {docCount}
               </span>
             )}

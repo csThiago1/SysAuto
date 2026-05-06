@@ -102,7 +102,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
       <SheetContent className="w-[520px] sm:max-w-[520px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary-500" />
+            <FileText className="h-5 w-5 text-primary" />
             {config.label} — OS #{order.number}
           </SheetTitle>
         </SheetHeader>
@@ -314,7 +314,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                 value={formData.observations}
                 onChange={(e) => updateField("observations", e.target.value)}
                 rows={3}
-                className="w-full rounded-md bg-muted/50 border border-border px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full rounded-md bg-muted/50 border border-border px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="Observações adicionais (opcional)"
               />
             </section>
@@ -327,7 +327,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
               <Button
                 onClick={handleGenerate}
                 disabled={generateMutation.isPending}
-                className="bg-primary-600 hover:bg-primary-700 text-foreground"
+                className="bg-primary hover:bg-primary/90 text-foreground"
               >
                 {generateMutation.isPending ? (
                   <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Gerando...</>

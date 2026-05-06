@@ -44,7 +44,7 @@ export function TypeBar({ form, customerType }: TypeBarProps) {
                   onClick={() => field.onChange(type)}
                   className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
                     field.value === type
-                      ? "bg-primary-600 text-foreground shadow-sm"
+                      ? "bg-primary text-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground/70"
                   }`}
                 >

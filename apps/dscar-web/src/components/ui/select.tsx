@@ -40,7 +40,7 @@ function SelectTrigger({ className, children, ...props }: React.ButtonHTMLAttrib
       type="button"
       className={cn(
         "flex h-9 w-full items-center justify-between rounded border border-border bg-muted/50 px-3 py-2 text-sm text-foreground",
-        "focus:outline-none focus:ring-1 focus:ring-primary-500",
+        "focus:outline-none focus:ring-1 focus:ring-primary",
         "disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
@@ -93,7 +93,7 @@ function SelectItem({
       className={cn(
         "relative flex cursor-pointer select-none items-center gap-2 px-3 py-2 text-sm text-foreground/80",
         "hover:bg-muted/50 transition-colors",
-        isSelected && "bg-primary-500/10 text-primary-400",
+        isSelected && "bg-primary/10 text-primary/80",
         className
       )}
       onClick={() => {

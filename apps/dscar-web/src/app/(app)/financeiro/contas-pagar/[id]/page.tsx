@@ -97,7 +97,7 @@ function ValueCard({
         <p className="text-xs text-muted-foreground font-medium">{label}</p>
         <p
           className={`text-lg font-bold mt-0.5 ${
-            highlight ? "text-primary-400" : "text-foreground"
+            highlight ? "text-primary/80" : "text-foreground"
           }`}
         >
           {value}
@@ -229,7 +229,7 @@ function RecordPaymentDialog({
             <select
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               required
             >
               {paymentMethods.map(([value, label]) => (
@@ -257,7 +257,7 @@ function RecordPaymentDialog({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Opcional..."
             />
           </div>
@@ -279,7 +279,7 @@ function RecordPaymentDialog({
             <button
               type="submit"
               disabled={recordPayment.isPending}
-              className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {recordPayment.isPending ? "Salvando..." : "Registrar Pagamento"}
             </button>
@@ -337,7 +337,7 @@ function CancelDialog({
               onChange={(e) => setReason(e.target.value)}
               rows={3}
               required
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="Informe o motivo..."
             />
           </div>
@@ -413,14 +413,14 @@ export default function ContaPagarDetailPage(): React.ReactElement {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link
             href={"/financeiro" as Route}
-            className="hover:text-primary-600 transition-colors"
+            className="hover:text-primary transition-colors"
           >
             Financeiro
           </Link>
           <span>/</span>
           <Link
             href={"/financeiro/contas-pagar" as Route}
-            className="flex items-center gap-1 hover:text-primary-600 transition-colors"
+            className="flex items-center gap-1 hover:text-primary transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
             Contas a Pagar
@@ -471,7 +471,7 @@ export default function ContaPagarDetailPage(): React.ReactElement {
                 <button
                   type="button"
                   onClick={() => setPayDialogOpen(true)}
-                  className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-primary-700 transition-colors"
+                  className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 transition-colors"
                 >
                   Registrar Pagamento
                 </button>

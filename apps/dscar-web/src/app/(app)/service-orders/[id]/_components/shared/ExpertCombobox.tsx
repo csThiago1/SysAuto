@@ -107,7 +107,7 @@ export function ExpertCombobox({ value, onChange, insurerId, disabled }: ExpertC
               type="button"
               onClick={handleCreate}
               disabled={!newName.trim() || createMutation.isPending}
-              className="rounded bg-primary-600 px-3 py-1 text-xs text-foreground hover:bg-primary-700 disabled:opacity-50"
+              className="rounded bg-primary px-3 py-1 text-xs text-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {createMutation.isPending ? "Salvando..." : "Salvar"}
             </button>

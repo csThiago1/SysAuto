@@ -203,7 +203,7 @@ export function EstoqueTab({ osId }: EstoqueTabProps) {
                       <td className="px-3 py-2 font-mono text-xs text-muted-foreground">
                         {item.sku || "\u2014"}
                       </td>
-                      <td className="px-3 py-2 font-mono text-xs text-primary-400">
+                      <td className="px-3 py-2 font-mono text-xs text-primary/80">
                         {item.posicao || "\u2014"}
                       </td>
                       <td className="px-3 py-2 text-right font-mono text-sm text-foreground/80">

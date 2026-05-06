@@ -35,7 +35,7 @@ export default function ConfiguracaoMotorPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <SlidersHorizontal className="h-5 w-5 text-primary-500" />
+        <SlidersHorizontal className="h-5 w-5 text-primary" />
         <div>
           <h1 className="text-lg font-semibold text-foreground">Configuração do Motor</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -51,7 +51,7 @@ export default function ConfiguracaoMotorPage() {
             href={mod.href as Route}
             className="group rounded-lg border border-border bg-muted/50 p-5 hover:bg-muted hover:border-border transition-all space-y-2"
           >
-            <mod.icon className="h-5 w-5 text-primary-500 group-hover:text-primary-400 transition-colors" />
+            <mod.icon className="h-5 w-5 text-primary group-hover:text-primary/80 transition-colors" />
             <div>
               <h2 className="text-sm font-semibold text-foreground">{mod.title}</h2>
               <p className="text-xs text-muted-foreground mt-0.5">{mod.description}</p>

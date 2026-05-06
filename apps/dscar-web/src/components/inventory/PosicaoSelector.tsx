@@ -23,7 +23,7 @@ interface PosicaoSelectorProps {
 /* ------------------------------------------------------------------ */
 
 const SELECT_CLS =
-  "w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 disabled:opacity-40 disabled:cursor-not-allowed"
+  "w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-40 disabled:cursor-not-allowed"
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */

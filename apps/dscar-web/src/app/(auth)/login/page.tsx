@@ -76,7 +76,7 @@ export default function LoginPage(): React.ReactElement {
                   placeholder="dev@dscar.com.br"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-secondary-950 border-secondary-700 text-foreground placeholder:text-secondary-600 focus-visible:ring-primary-500"
+                  className="bg-secondary-950 border-secondary-700 text-foreground placeholder:text-secondary-600 focus-visible:ring-ring"
                   autoComplete="email"
                   required
                 />
@@ -91,7 +91,7 @@ export default function LoginPage(): React.ReactElement {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-secondary-950 border-secondary-700 text-foreground placeholder:text-secondary-600 focus-visible:ring-primary-500"
+                  className="bg-secondary-950 border-secondary-700 text-foreground placeholder:text-secondary-600 focus-visible:ring-ring"
                   autoComplete="current-password"
                   required
                 />

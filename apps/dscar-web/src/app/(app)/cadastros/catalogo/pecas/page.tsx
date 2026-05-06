@@ -264,7 +264,7 @@ export default function PecasCanonicoPage() {
               <select
                 value={form.tipo_peca}
                 onChange={(e) => set("tipo_peca", e.target.value)}
-                className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 {Object.entries(TIPO_PECA_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>

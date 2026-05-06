@@ -45,7 +45,7 @@ export const KanbanColumn = React.memo(function KanbanColumn({
           "overflow-y-auto rounded-b-md p-2 space-y-2 min-h-[100px] max-h-[calc(100vh-220px)]",
           "bg-muted/30 border border-t-0 border-border",
           "transition-colors",
-          isOver && "bg-primary-500/5 border-primary-500/20"
+          isOver && "bg-primary/5 border-primary/20"
         )}
       >
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>

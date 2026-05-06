@@ -126,7 +126,7 @@ function NovaOCDialog({
             type="button"
             onClick={handleCreate}
             disabled={criarOC.isPending}
-            className="px-4 py-2 text-sm font-medium rounded-md bg-primary-600 text-foreground hover:bg-primary-700 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium rounded-md bg-primary text-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
             {criarOC.isPending ? "Criando..." : "Criar OC"}
           </button>
@@ -176,7 +176,7 @@ export default function OrdensCompraPage() {
           type="button"
           onClick={() => setDialogOpen(true)}
           className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md
-                     bg-primary-600 text-foreground hover:bg-primary-700 transition-colors"
+                     bg-primary text-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus size={16} />
           Nova OC
@@ -223,7 +223,7 @@ export default function OrdensCompraPage() {
                   <td className="px-4 py-3">
                     <Link
                       href={`/compras/ordens/${oc.id}`}
-                      className="font-mono text-sm text-primary-500 font-medium hover:underline"
+                      className="font-mono text-sm text-primary font-medium hover:underline"
                     >
                       {oc.numero}
                     </Link>
@@ -231,7 +231,7 @@ export default function OrdensCompraPage() {
                   <td className="px-4 py-3">
                     <Link
                       href={`/service-orders/${oc.service_order}`}
-                      className="font-mono text-sm text-primary-500/70 hover:text-primary-500 hover:underline"
+                      className="font-mono text-sm text-primary/70 hover:text-primary hover:underline"
                     >
                       {oc.os_number ? `#${oc.os_number}` : "--"}
                     </Link>

@@ -33,7 +33,7 @@ export default function EspelhoPontoPage(): React.ReactElement {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link
             href={"/rh/ponto" as Route}
-            className="flex items-center gap-1 hover:text-primary-600"
+            className="flex items-center gap-1 hover:text-primary"
           >
             <ChevronLeft className="h-4 w-4" />
             Ponto

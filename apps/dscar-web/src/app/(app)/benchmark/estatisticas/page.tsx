@@ -32,7 +32,7 @@ export default function BenchmarkEstatisticasPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <BarChart3 className="h-5 w-5 text-primary-500" />
+        <BarChart3 className="h-5 w-5 text-primary" />
         <div>
           <h1 className="text-lg font-semibold text-foreground">Estatísticas de Benchmark</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -90,7 +90,7 @@ export default function BenchmarkEstatisticasPage() {
           <div className="space-y-1.5">
             <Label className="text-foreground/70 text-xs">Segmento do veículo</Label>
             <select
-              className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
               value={segmento}
               onChange={(e) => setSegmento(e.target.value)}
             >
@@ -103,7 +103,7 @@ export default function BenchmarkEstatisticasPage() {
           <div className="space-y-1.5">
             <Label className="text-foreground/70 text-xs">Tamanho do veículo</Label>
             <select
-              className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
               value={tamanho}
               onChange={(e) => setTamanho(e.target.value)}
             >

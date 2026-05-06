@@ -49,7 +49,7 @@ export default function MetasPage(): React.ReactElement {
           </div>
           <button
             onClick={() => setShowCreate(true)}
-            className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-primary-700"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90"
           >
             + Nova meta
           </button>
@@ -158,7 +158,7 @@ export default function MetasPage(): React.ReactElement {
                         </div>
                         <div className="h-2 w-full rounded-full bg-muted/50 overflow-hidden">
                           <div
-                            className="h-full rounded-full bg-primary-500 transition-all"
+                            className="h-full rounded-full bg-primary transition-all"
                             style={{
                               width: `${Math.min(goal.progress_pct, 100)}%`,
                             }}
@@ -438,7 +438,7 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
         <button
           type="submit"
           disabled={create.isPending}
-          className="rounded bg-primary-600 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary-700 disabled:opacity-50"
+          className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary/90 disabled:opacity-50"
         >
           {create.isPending ? "Criando..." : "Criar meta"}
         </button>

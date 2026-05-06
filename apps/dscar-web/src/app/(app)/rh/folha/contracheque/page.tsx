@@ -38,7 +38,7 @@ export default function ContrachequesSelfPage(): React.ReactElement {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link
             href={"/rh/folha" as Route}
-            className="flex items-center gap-1 hover:text-primary-600"
+            className="flex items-center gap-1 hover:text-primary"
           >
             <ChevronLeft className="h-4 w-4" />
             Folha de Pagamento
@@ -91,7 +91,7 @@ export default function ContrachequesSelfPage(): React.ReactElement {
                   {/* Month + icon */}
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted/50 shrink-0">
-                      <FileText className="h-5 w-5 text-primary-600" />
+                      <FileText className="h-5 w-5 text-primary" />
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground capitalize">
@@ -165,7 +165,7 @@ export default function ContrachequesSelfPage(): React.ReactElement {
                   <div className="mt-3 rounded-md border border-border bg-muted/30 p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted/50">
-                        <ReceiptText className="h-4 w-4 text-primary-600" />
+                        <ReceiptText className="h-4 w-4 text-primary" />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-foreground">Lancamento Contabil</p>
@@ -174,7 +174,7 @@ export default function ContrachequesSelfPage(): React.ReactElement {
                     </div>
                     <Link
                       href={`/financeiro/lancamentos/${payslip.journal_entry_id}` as Route}
-                      className="text-sm font-medium text-primary-600 hover:underline flex items-center gap-1"
+                      className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
                     >
                       Ver lancamento
                       <ChevronRight className="h-4 w-4" />

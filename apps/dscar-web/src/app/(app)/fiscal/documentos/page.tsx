@@ -133,7 +133,7 @@ function FiscalDocRow({
               href={`/api/proxy${doc.pdf_url.replace("/api/v1/", "/")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-primary-600 hover:text-primary-500"
+              className="text-xs text-primary hover:text-primary"
             >
               PDF
             </a>
@@ -202,7 +202,7 @@ export default function FiscalDocumentosPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <FileText className="h-6 w-6 text-primary-600" />
+          <FileText className="h-6 w-6 text-primary" />
           <div>
             <h1 className="text-xl font-bold text-foreground">Documentos Fiscais</h1>
             <p className="text-xs text-muted-foreground mt-0.5">NFS-e, NF-e e NFC-e emitidas pela empresa</p>

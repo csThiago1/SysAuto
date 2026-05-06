@@ -85,7 +85,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
         <p className="text-sm">Lançamento não encontrado.</p>
         <Link
           href={"/financeiro/lancamentos" as Route}
-          className="text-primary-600 text-sm hover:underline mt-2 inline-block"
+          className="text-primary text-sm hover:underline mt-2 inline-block"
         >
           Voltar para lançamentos
         </Link>
@@ -103,14 +103,14 @@ export default function LancamentoDetailPage(): React.ReactElement {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link
             href={"/financeiro" as Route}
-            className="hover:text-primary-600 transition-colors"
+            className="hover:text-primary transition-colors"
           >
             Financeiro
           </Link>
           <span>/</span>
           <Link
             href={"/financeiro/lancamentos" as Route}
-            className="flex items-center gap-1 hover:text-primary-600 transition-colors"
+            className="flex items-center gap-1 hover:text-primary transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
             Lançamentos

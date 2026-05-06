@@ -265,7 +265,7 @@ function NivelRow({ nivel }: { nivel: Nivel }) {
   return (
     <div className="flex items-center gap-3 pl-20 px-4 py-2 hover:bg-muted rounded-sm transition-colors">
       {/* Endereco completo badge */}
-      <span className="font-mono text-xs text-primary-400 bg-primary-500/10 px-2 py-0.5 rounded whitespace-nowrap">
+      <span className="font-mono text-xs text-primary/80 bg-primary/10 px-2 py-0.5 rounded whitespace-nowrap">
         {nivel.endereco_completo}
       </span>
 

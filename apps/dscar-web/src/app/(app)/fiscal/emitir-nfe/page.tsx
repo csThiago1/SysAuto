@@ -139,7 +139,7 @@ function PersonSearchField({
 
   if (selectedPerson) {
     return (
-      <div className="flex items-center justify-between rounded-lg bg-primary-600/10 border border-primary-600/30 px-4 py-3">
+      <div className="flex items-center justify-between rounded-lg bg-primary/10 border border-primary/30 px-4 py-3">
         <div>
           <p className="text-sm font-semibold text-foreground">{selectedPerson.full_name}</p>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -306,7 +306,7 @@ function SuccessCard({
         <Button
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onClick={() => router.push("/fiscal/documentos" as any)}
-          className="bg-primary-600 hover:bg-primary-700 text-foreground"
+          className="bg-primary hover:bg-primary/90 text-foreground"
         >
           Ver documentos emitidos
         </Button>
@@ -351,7 +351,7 @@ function TabFromOs({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
         </h2>
 
         {selectedOs ? (
-          <div className="flex items-center justify-between rounded-lg bg-primary-600/10 border border-primary-600/30 px-4 py-3">
+          <div className="flex items-center justify-between rounded-lg bg-primary/10 border border-primary/30 px-4 py-3">
             <div>
               <p className="text-sm font-semibold text-foreground">OS #{selectedOs.number}</p>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -385,7 +385,7 @@ function TabFromOs({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
                   className={cn(
                     "px-3 py-1.5 rounded-md text-xs border transition-colors",
                     formaPagamento === o.value
-                      ? "border-primary-600 bg-primary-600/10 text-primary-400"
+                      ? "border-primary bg-primary/10 text-primary/80"
                       : "border-border bg-muted/30 text-muted-foreground hover:text-foreground/70"
                   )}
                 >
@@ -410,7 +410,7 @@ function TabFromOs({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
         <Button
           onClick={handleEmit}
           disabled={!selectedOs || emitMutation.isPending}
-          className="bg-primary-600 hover:bg-primary-700 text-foreground"
+          className="bg-primary hover:bg-primary/90 text-foreground"
         >
           {emitMutation.isPending ? (
             <>
@@ -523,7 +523,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
                 valor_desconto: "0",
               })
             }
-            className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-500"
+            className="flex items-center gap-1 text-xs text-primary hover:text-primary"
           >
             <Plus className="h-3.5 w-3.5" />
             Adicionar item
@@ -660,7 +660,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
           <Label className="text-xs text-foreground/60">Observações</Label>
           <textarea
             rows={2}
-            className="mt-1 w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary-600"
+            className="mt-1 w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-ring"
             placeholder="Informações complementares ao fisco..."
             maxLength={2000}
             {...form.register("observacoes")}
@@ -697,7 +697,7 @@ function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => void }) 
         <Button
           type="submit"
           disabled={emitMutation.isPending}
-          className="bg-primary-600 hover:bg-primary-700 text-foreground"
+          className="bg-primary hover:bg-primary/90 text-foreground"
         >
           {emitMutation.isPending ? (
             <>
@@ -732,7 +732,7 @@ function EmitirNfePageInner() {
     <div className="p-6 max-w-2xl space-y-6">
       {/* Page header */}
       <div className="flex items-center gap-3">
-        <Package className="h-6 w-6 text-primary-600" />
+        <Package className="h-6 w-6 text-primary" />
         <div>
           <h1 className="text-xl font-bold text-foreground">Emissão de NF-e de Produto</h1>
           <p className="text-xs text-muted-foreground mt-0.5">

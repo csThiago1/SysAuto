@@ -49,7 +49,7 @@ export default function OrcamentosPage() {
       {/* Cabeçalho */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <FileText className="h-5 w-5 text-primary-500" />
+          <FileText className="h-5 w-5 text-primary" />
           <div>
             <h1 className="text-lg font-semibold text-foreground">Orçamentos</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -59,7 +59,7 @@ export default function OrcamentosPage() {
         </div>
         <Link
           href={"/orcamentos/novo" as Route}
-          className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 hover:bg-primary-700 px-3 py-1.5 text-sm text-foreground transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-md bg-primary hover:bg-primary/90 px-3 py-1.5 text-sm text-foreground transition-colors"
         >
           <Plus className="h-4 w-4" />
           Novo Orçamento
@@ -86,7 +86,7 @@ export default function OrcamentosPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary-500"
+          className="text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
         >
           <option value="">Todos os status</option>
           {Object.entries(STATUS_LABELS).map(([k, v]) => (

@@ -53,7 +53,7 @@ export function EmployeeTable({
             <TableCell>
               <Link
                 href={`/rh/colaboradores/${emp.id}` as Route}
-                className="flex flex-col hover:text-primary-600 transition-colors"
+                className="flex flex-col hover:text-primary transition-colors"
               >
                 <span className="font-medium text-foreground">
                   {emp.user.name}

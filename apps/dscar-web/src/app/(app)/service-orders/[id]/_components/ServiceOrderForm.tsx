@@ -141,7 +141,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
                 <button
                   type="button"
                   disabled={transitionMutation.isPending}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-primary-600 px-3 py-2 text-sm font-medium text-primary-600 hover:bg-primary-500/5 disabled:opacity-50 transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-primary px-3 py-2 text-sm font-medium text-primary hover:bg-primary/5 disabled:opacity-50 transition-colors"
                 >
                   {transitionMutation.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -201,7 +201,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
             className={cn(
               "inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-medium transition-all",
               isDirty
-                ? "bg-primary-600 text-foreground shadow-md hover:bg-primary-700"
+                ? "bg-primary text-foreground shadow-md hover:bg-primary/90"
                 : "cursor-not-allowed bg-muted text-muted-foreground",
               isPending && "opacity-50"
             )}
@@ -234,7 +234,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
                 activeTab === tab.id
                   ? tab.id === "complement"
                     ? "border-warning-500 text-warning-500"
-                    : "border-primary-600 text-primary-600"
+                    : "border-primary text-primary"
                   : "border-transparent text-foreground/60 hover:border-border hover:text-foreground/90"
               )}
             >

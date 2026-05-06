@@ -134,7 +134,7 @@ function ItemRow({
             type="number"
             min="0"
             step="any"
-            className="w-24 bg-muted/50 border border-border text-foreground rounded-md px-2 py-1 text-xs font-mono text-right placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="w-24 bg-muted/50 border border-border text-foreground rounded-md px-2 py-1 text-xs font-mono text-right placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
             placeholder="0"
           />
         ) : (
@@ -154,7 +154,7 @@ function ItemRow({
             onBlur={() => {
               if (dirty) handleSave()
             }}
-            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-2 py-1 text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-2 py-1 text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
             placeholder="Observacao..."
           />
         ) : (
@@ -172,7 +172,7 @@ function ItemRow({
             type="button"
             onClick={handleSave}
             disabled={registrar.isPending}
-            className="rounded-md bg-primary-600 px-2.5 py-1 text-[10px] font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
+            className="rounded-md bg-primary px-2.5 py-1 text-[10px] font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
           >
             {registrar.isPending ? "..." : "Salvar"}
           </button>
@@ -251,7 +251,7 @@ export default function ContagemDetailPage({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <ClipboardList className="h-5 w-5 text-primary-500" />
+          <ClipboardList className="h-5 w-5 text-primary" />
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold text-foreground">

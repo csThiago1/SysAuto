@@ -149,7 +149,7 @@ export default function NovoBudgetPage() {
             <ChevronLeft className="h-5 w-5" />
           </Button>
         </Link>
-        <ReceiptText className="h-5 w-5 text-primary-500" />
+        <ReceiptText className="h-5 w-5 text-primary" />
         <h1 className="text-lg font-semibold text-foreground">Novo Orçamento Particular</h1>
       </div>
 
@@ -222,7 +222,7 @@ export default function NovoBudgetPage() {
                 className="w-32 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground font-mono uppercase tracking-widest font-bold"
               />
               {buscandoPlaca && (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-primary-600" />
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-primary" />
               )}
               {isOk && !buscandoPlaca && (
                 <span className="flex items-center gap-1 text-xs text-success-400">

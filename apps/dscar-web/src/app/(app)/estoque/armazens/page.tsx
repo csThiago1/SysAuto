@@ -56,7 +56,7 @@ export default function ArmazensPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Warehouse className="h-5 w-5 text-primary-500" />
+          <Warehouse className="h-5 w-5 text-primary" />
           <div>
             <h1 className="text-lg font-semibold text-foreground">Armazéns</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -68,7 +68,7 @@ export default function ArmazensPage() {
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 transition-colors"
+          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Novo Armazém
@@ -85,7 +85,7 @@ export default function ArmazensPage() {
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="Galpão Principal"
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             <div>
@@ -94,7 +94,7 @@ export default function ArmazensPage() {
                 value={codigo}
                 onChange={(e) => setCodigo(e.target.value)}
                 placeholder="G1"
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             <div>
@@ -102,7 +102,7 @@ export default function ArmazensPage() {
               <select
                 value={tipo}
                 onChange={(e) => setTipo(e.target.value as ArmazemTipo)}
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="galpao">Galpão</option>
                 <option value="patio">Pátio</option>
@@ -121,7 +121,7 @@ export default function ArmazensPage() {
               type="button"
               onClick={handleCreate}
               disabled={createMut.isPending}
-              className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {createMut.isPending ? "Criando..." : "Criar"}
             </button>

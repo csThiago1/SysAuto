@@ -212,7 +212,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                   id="services-show-discount"
                   checked={showDiscount}
                   onChange={(e) => handleDiscountToggle(e.target.checked)}
-                  className="h-4 w-4 rounded border-border text-primary-600 cursor-pointer"
+                  className="h-4 w-4 rounded border-border text-primary cursor-pointer"
                 />
                 <label htmlFor="services-show-discount" className="text-xs font-medium text-muted-foreground uppercase tracking-wide cursor-pointer">
                   Aplicar desconto
@@ -231,7 +231,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                 onClick={() => handleSubmit(onAdd)()}
                 disabled={isSubmitting}
                 size="sm"
-                className="bg-primary-600 hover:bg-primary-700 text-foreground gap-1.5"
+                className="bg-primary hover:bg-primary/90 text-foreground gap-1.5"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Adicionar

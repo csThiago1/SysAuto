@@ -110,7 +110,7 @@ export default function ImpressorasPage() {
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Printer className="h-5 w-5 text-primary-500" />
+          <Printer className="h-5 w-5 text-primary" />
           <div>
             <h1 className="text-lg font-semibold text-foreground">Impressoras de Etiqueta</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -121,7 +121,7 @@ export default function ImpressorasPage() {
 
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 text-sm bg-primary-600 hover:bg-primary-700 text-foreground px-4 py-2 rounded-md transition-colors"
+          className="flex items-center gap-2 text-sm bg-primary hover:bg-primary/90 text-foreground px-4 py-2 rounded-md transition-colors"
         >
           <Plus className="h-4 w-4" />
           Nova Impressora
@@ -139,7 +139,7 @@ export default function ImpressorasPage() {
                 value={form.nome}
                 onChange={(e) => setForm({ ...form, nome: e.target.value })}
                 placeholder="Ex: Zebra GK420d"
-                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             <div className="space-y-1">
@@ -147,7 +147,7 @@ export default function ImpressorasPage() {
               <select
                 value={form.modelo}
                 onChange={(e) => setForm({ ...form, modelo: e.target.value as ModeloImpressora })}
-                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 {MODELOS.map((m) => (
                   <option key={m.value} value={m.value}>{m.label}</option>
@@ -161,7 +161,7 @@ export default function ImpressorasPage() {
                 value={form.endpoint}
                 onChange={(e) => setForm({ ...form, endpoint: e.target.value })}
                 placeholder="Ex: http://192.168.1.100:9100"
-                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             <div className="space-y-1">
@@ -170,7 +170,7 @@ export default function ImpressorasPage() {
                 type="number"
                 value={form.largura_mm}
                 onChange={(e) => setForm({ ...form, largura_mm: parseInt(e.target.value) })}
-                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
             <div className="space-y-1">
@@ -179,7 +179,7 @@ export default function ImpressorasPage() {
                 type="number"
                 value={form.altura_mm}
                 onChange={(e) => setForm({ ...form, altura_mm: parseInt(e.target.value) })}
-                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
           </div>
@@ -187,7 +187,7 @@ export default function ImpressorasPage() {
             <button
               type="submit"
               disabled={createMutation.isPending}
-              className="text-sm bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-foreground px-4 py-2 rounded-md transition-colors"
+              className="text-sm bg-primary hover:bg-primary/90 disabled:opacity-50 text-foreground px-4 py-2 rounded-md transition-colors"
             >
               {createMutation.isPending ? "Salvando..." : "Salvar"}
             </button>

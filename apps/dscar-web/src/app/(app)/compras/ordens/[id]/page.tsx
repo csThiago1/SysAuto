@@ -151,8 +151,8 @@ function AddItemForm({
             onClick={() => void handleSubmit()}
             disabled={mutation.isPending}
             className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium
-                       bg-primary-500/15 text-primary-400 border border-primary-500/20
-                       hover:bg-primary-500/25 transition-colors
+                       bg-primary/15 text-primary/80 border border-primary/20
+                       hover:bg-primary/25 transition-colors
                        disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Plus size={16} />
@@ -384,8 +384,8 @@ export default function OrdemCompraPage({
                 onClick={() => void handleEnviar()}
                 disabled={enviarMutation.isPending}
                 className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-sm font-semibold
-                           bg-primary-500/15 text-primary-400 border border-primary-500/20
-                           hover:bg-primary-500/25 transition-colors
+                           bg-primary/15 text-primary/80 border border-primary/20
+                           hover:bg-primary/25 transition-colors
                            disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send size={16} />

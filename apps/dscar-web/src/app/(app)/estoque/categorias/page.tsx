@@ -25,7 +25,7 @@ const INV = "/api/proxy/inventory"
 // ─── Input class tokens ─────────────────────────────────────────────────────
 
 const INPUT_CLS =
-  "w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
+  "w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
 
 // ─── Tab type ────────────────────────────────────────────────────────────────
 
@@ -122,7 +122,7 @@ function TiposPecaTab() {
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 transition-colors"
+          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Novo Tipo
@@ -181,7 +181,7 @@ function TiposPecaTab() {
               type="button"
               onClick={handleCreate}
               disabled={createMut.isPending}
-              className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {createMut.isPending ? "Criando..." : "Criar"}
             </button>
@@ -441,7 +441,7 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 transition-colors"
+          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Nova {entityLabel}
@@ -514,7 +514,7 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
               type="button"
               onClick={handleCreate}
               disabled={createPending}
-              className="rounded-md bg-primary-600 px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {createPending ? "Criando..." : "Criar"}
             </button>
@@ -842,7 +842,7 @@ export default function CategoriasPage() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Tags className="h-5 w-5 text-primary-500" />
+        <Tags className="h-5 w-5 text-primary" />
         <div>
           <h1 className="text-lg font-semibold text-foreground">
             Categorias e Tipos
@@ -859,7 +859,7 @@ export default function CategoriasPage() {
           type="button"
           className={`px-4 py-2.5 text-sm transition-colors ${
             activeTab === "tipos"
-              ? "text-foreground border-b-2 border-primary-500 font-medium"
+              ? "text-foreground border-b-2 border-primary font-medium"
               : "text-muted-foreground hover:text-foreground/60"
           }`}
           onClick={() => setActiveTab("tipos")}
@@ -870,7 +870,7 @@ export default function CategoriasPage() {
           type="button"
           className={`px-4 py-2.5 text-sm transition-colors ${
             activeTab === "cat_produto"
-              ? "text-foreground border-b-2 border-primary-500 font-medium"
+              ? "text-foreground border-b-2 border-primary font-medium"
               : "text-muted-foreground hover:text-foreground/60"
           }`}
           onClick={() => setActiveTab("cat_produto")}
@@ -881,7 +881,7 @@ export default function CategoriasPage() {
           type="button"
           className={`px-4 py-2.5 text-sm transition-colors ${
             activeTab === "cat_insumo"
-              ? "text-foreground border-b-2 border-primary-500 font-medium"
+              ? "text-foreground border-b-2 border-primary font-medium"
               : "text-muted-foreground hover:text-foreground/60"
           }`}
           onClick={() => setActiveTab("cat_insumo")}

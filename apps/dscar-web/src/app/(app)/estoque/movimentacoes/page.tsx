@@ -95,13 +95,13 @@ export default function MovimentacoesPage() {
   }
 
   const inputClass =
-    "text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary-500 placeholder:text-muted-foreground/50"
+    "text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
 
   return (
     <div className="p-6 space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <ArrowLeftRight className="h-5 w-5 text-primary-500" />
+        <ArrowLeftRight className="h-5 w-5 text-primary" />
         <div>
           <h1 className="text-lg font-semibold text-foreground">Movimentações</h1>
           <p className="text-xs text-muted-foreground mt-0.5">

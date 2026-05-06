@@ -81,7 +81,7 @@ export default function BenchmarkIngestoesPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Upload className="h-5 w-5 text-primary-500" />
+          <Upload className="h-5 w-5 text-primary" />
           <div>
             <h1 className="text-lg font-semibold text-foreground">Ingestões de Benchmark</h1>
             <p className="text-xs text-muted-foreground mt-0.5">PDFs e arquivos de seguradora processados pelo motor.</p>

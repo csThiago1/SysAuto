@@ -71,12 +71,12 @@ export function WeekView({ currentDate, events, onSwitchToDayView }: Props) {
             return (
               <div
                 key={day.toISOString()}
-                className={cn("py-2 text-center", isToday(day) && "font-bold text-primary-600", isClosed && "opacity-40")}
+                className={cn("py-2 text-center", isToday(day) && "font-bold text-primary", isClosed && "opacity-40")}
               >
                 <div className="text-xs uppercase text-muted-foreground">
                   {format(day, "EEE", { locale: ptBR })}
                 </div>
-                <div className={cn("text-sm font-semibold", isToday(day) ? "text-primary-600" : "text-foreground/70")}>
+                <div className={cn("text-sm font-semibold", isToday(day) ? "text-primary" : "text-foreground/70")}>
                   {format(day, "d")}
                 </div>
                 {isClosed && <div className="text-xs text-muted-foreground">Fechado</div>}
@@ -116,7 +116,7 @@ export function WeekView({ currentDate, events, onSwitchToDayView }: Props) {
                   key={day.toISOString()}
                   className={cn(
                     "border-l border-border min-h-[64px] p-1 relative group overflow-hidden min-w-0",
-                    working ? "cursor-pointer hover:bg-primary-600/5 transition-colors" : "bg-muted/30"
+                    working ? "cursor-pointer hover:bg-primary/5 transition-colors" : "bg-muted/30"
                   )}
                   onClick={() => working && handleSlotClick(day, hour)}
                 >
@@ -131,7 +131,7 @@ export function WeekView({ currentDate, events, onSwitchToDayView }: Props) {
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); onSwitchToDayView?.(day) }}
-                          className="text-[10px] text-primary-600 font-medium px-1 leading-tight hover:underline text-left w-full"
+                          className="text-[10px] text-primary font-medium px-1 leading-tight hover:underline text-left w-full"
                         >
                           +{dayHourEvents.length - MAX_VISIBLE} mais
                         </button>
@@ -139,7 +139,7 @@ export function WeekView({ currentDate, events, onSwitchToDayView }: Props) {
                     </div>
                   ) : null}
                   {working && dayHourEvents.length === 0 && (
-                    <span className="absolute inset-0 flex items-center justify-center text-xs text-primary-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="absolute inset-0 flex items-center justify-center text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                       +
                     </span>
                   )}

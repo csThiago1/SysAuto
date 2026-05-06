@@ -110,7 +110,7 @@ export default function FolhaMonthPage({
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link
             href={"/rh/folha" as Route}
-            className="flex items-center gap-1 hover:text-primary-600"
+            className="flex items-center gap-1 hover:text-primary"
           >
             <ChevronLeft className="h-4 w-4" />
             Folha de Pagamento
@@ -180,7 +180,7 @@ export default function FolhaMonthPage({
               { label: "Bônus", value: totals.bonuses, color: "text-success-400" },
               { label: "Vales", value: totals.allowances, color: "text-info-400" },
               { label: "Descontos", value: totals.deductions, color: "text-error-400" },
-              { label: "Total líquido", value: totals.net, color: "text-primary-400" },
+              { label: "Total líquido", value: totals.net, color: "text-primary/80" },
             ].map((c) => (
               <div
                 key={c.label}
@@ -257,7 +257,7 @@ export default function FolhaMonthPage({
                     <td className="px-4 py-2.5 text-sm font-semibold text-error-400 text-right tabular-nums">
                       -{fmt.format(totals.deductions)}
                     </td>
-                    <td className="px-4 py-2.5 text-sm font-bold text-primary-700 text-right tabular-nums">
+                    <td className="px-4 py-2.5 text-sm font-bold text-primary/90 text-right tabular-nums">
                       {fmt.format(totals.net)}
                     </td>
                     <td />

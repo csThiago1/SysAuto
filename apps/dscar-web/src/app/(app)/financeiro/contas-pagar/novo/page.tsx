@@ -162,14 +162,14 @@ export default function NovoContaPagarPage(): React.ReactElement {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link
             href={"/financeiro" as Route}
-            className="hover:text-primary-600 transition-colors"
+            className="hover:text-primary transition-colors"
           >
             Financeiro
           </Link>
           <span>/</span>
           <Link
             href={"/financeiro/contas-pagar" as Route}
-            className="flex items-center gap-1 hover:text-primary-600 transition-colors"
+            className="flex items-center gap-1 hover:text-primary transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
             Contas a Pagar
@@ -198,7 +198,7 @@ export default function NovoContaPagarPage(): React.ReactElement {
                 <select
                   value={form.supplier_id}
                   onChange={(e) => setField("supplier_id", e.target.value)}
-                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="">Selecione o fornecedor...</option>
                   {suppliers.map((s) => (
@@ -211,7 +211,7 @@ export default function NovoContaPagarPage(): React.ReactElement {
             </FormField>
             <p className="text-xs text-muted-foreground">
               Fornecedor não cadastrado?{" "}
-              <span className="text-primary-600 cursor-not-allowed opacity-60">
+              <span className="text-primary cursor-not-allowed opacity-60">
                 Cadastrar fornecedor (em breve)
               </span>
             </p>
@@ -271,7 +271,7 @@ export default function NovoContaPagarPage(): React.ReactElement {
                 <select
                   value={form.origin}
                   onChange={(e) => setField("origin", e.target.value)}
-                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   {ORIGIN_OPTIONS.map(([value, label]) => (
                     <option key={value} value={value}>
@@ -293,7 +293,7 @@ export default function NovoContaPagarPage(): React.ReactElement {
                 value={form.notes}
                 onChange={(e) => setField("notes", e.target.value)}
                 rows={3}
-                className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Informações adicionais sobre este título..."
               />
             </FormField>
@@ -318,7 +318,7 @@ export default function NovoContaPagarPage(): React.ReactElement {
             <button
               type="submit"
               disabled={createPayable.isPending}
-              className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-primary-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {createPayable.isPending ? "Salvando..." : "Salvar Título"}
             </button>

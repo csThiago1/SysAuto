@@ -36,7 +36,7 @@ export function DsCarLogo({
     >
       {/* Ícone — losango vermelho + wrench branco */}
       <div
-        className="flex items-center justify-center rounded-sm bg-primary-600 shrink-0"
+        className="flex items-center justify-center rounded-sm bg-primary shrink-0"
         style={{ width: size + 8, height: size + 8 }}
       >
         <Wrench
@@ -59,7 +59,7 @@ export function DsCarLogo({
           </span>
           <span
             className={`text-2xs font-sans tracking-wide uppercase ${
-              isLight ? "text-primary-300" : "text-primary-600"
+              isLight ? "text-primary/60" : "text-primary"
             }`}
           >
             Centro Automotivo

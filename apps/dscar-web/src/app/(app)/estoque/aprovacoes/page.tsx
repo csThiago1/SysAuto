@@ -73,7 +73,7 @@ export default function AprovacoesPage() {
     <div className="p-6 space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <CheckCircle2 className="h-5 w-5 text-primary-500" />
+        <CheckCircle2 className="h-5 w-5 text-primary" />
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-semibold text-foreground">
             Aprovacoes Pendentes
@@ -267,7 +267,7 @@ function ApprovalRow({
                   value={rejectMotivo}
                   onChange={(e) => onRejectMotivoChange(e.target.value)}
                   placeholder="Descreva o motivo..."
-                  className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
                   autoFocus
                 />
               </div>

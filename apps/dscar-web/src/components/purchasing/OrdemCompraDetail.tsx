@@ -145,8 +145,8 @@ export function OrdemCompraDetail({
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             {oc.os_number && (
               <span className="flex items-center gap-1">
-                <FileText size={14} className="text-primary-500" />
-                <span className="font-mono text-primary-500">
+                <FileText size={14} className="text-primary" />
+                <span className="font-mono text-primary">
                   OS #{oc.os_number}
                 </span>
               </span>

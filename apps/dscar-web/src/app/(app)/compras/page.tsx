@@ -265,7 +265,7 @@ export default function ComprasPage() {
                   }`}
                 >
                   <td className="px-4 py-3">
-                    <span className="font-mono text-sm text-primary-500 font-medium">
+                    <span className="font-mono text-sm text-primary font-medium">
                       {p.os_number ? `#${p.os_number}` : "--"}
                     </span>
                   </td>

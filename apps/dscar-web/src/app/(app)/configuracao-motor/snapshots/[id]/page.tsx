@@ -66,7 +66,7 @@ export default function SnapshotDetailPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex items-center gap-2">
-          <Layers className="h-4 w-4 text-primary-500" />
+          <Layers className="h-4 w-4 text-primary" />
           <h1 className="text-base font-semibold text-foreground">Snapshot de Custo</h1>
           <Lock className="h-3.5 w-3.5 text-muted-foreground" />
         </div>

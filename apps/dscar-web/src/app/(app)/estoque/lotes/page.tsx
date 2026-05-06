@@ -109,7 +109,7 @@ function BaixarModal({
             value={osId}
             onChange={(e) => setOsId(e.target.value)}
             placeholder="UUID da OS..."
-            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
             autoFocus
           />
         </div>
@@ -125,7 +125,7 @@ function BaixarModal({
             value={quantidade}
             onChange={(e) => setQuantidade(e.target.value)}
             placeholder={`Max: ${lote.saldo}`}
-            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
         <div className="flex justify-end gap-2">
@@ -140,7 +140,7 @@ function BaixarModal({
             type="button"
             onClick={handleSubmit}
             disabled={!osId.trim() || !quantidade.trim() || baixar.isPending}
-            className="px-4 py-1.5 text-xs font-medium text-foreground bg-primary-600 hover:bg-primary-700 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-1.5 text-xs font-medium text-foreground bg-primary hover:bg-primary/90 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {baixar.isPending ? "Baixando..." : "Baixar"}
           </button>
@@ -206,7 +206,7 @@ function TransferirLoteModal({
             type="button"
             onClick={handleSubmit}
             disabled={!nivelId || transferir.isPending}
-            className="px-4 py-1.5 text-xs font-medium text-foreground bg-primary-600 hover:bg-primary-700 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-1.5 text-xs font-medium text-foreground bg-primary hover:bg-primary/90 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {transferir.isPending ? "Transferindo..." : "Transferir"}
           </button>
@@ -247,7 +247,7 @@ export default function LotesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Layers className="h-5 w-5 text-primary-500" />
+          <Layers className="h-5 w-5 text-primary" />
           <div>
             <h1 className="text-lg font-semibold text-foreground">Lotes de Insumo</h1>
             <p className="text-xs text-muted-foreground mt-0.5">

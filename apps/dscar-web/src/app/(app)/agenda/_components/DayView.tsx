@@ -80,7 +80,7 @@ export function DayView({ currentDate, events }: Props) {
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden">
-      <div className={cn("py-3 text-center border-b border-border", showingToday && "text-primary-600")}>
+      <div className={cn("py-3 text-center border-b border-border", showingToday && "text-primary")}>
         <p className="text-sm font-semibold">{format(currentDate, "EEEE, d 'de' MMMM", { locale: ptBR })}</p>
       </div>
 
@@ -112,7 +112,7 @@ export function DayView({ currentDate, events }: Props) {
                 return (
                   <div
                     key={hour}
-                    className="flex gap-3 px-4 py-2 border-b border-border min-h-[52px] cursor-pointer hover:bg-primary-600/5 transition-colors group"
+                    className="flex gap-3 px-4 py-2 border-b border-border min-h-[52px] cursor-pointer hover:bg-primary/5 transition-colors group"
                     onClick={() => handleSlotClick(hour)}
                   >
                     <span className="text-xs text-muted-foreground w-8 shrink-0 pt-0.5">{hour}h</span>
@@ -123,7 +123,7 @@ export function DayView({ currentDate, events }: Props) {
                         </div>
                       ))}
                       {hourEvents.length === 0 && (
-                        <span className="absolute inset-0 flex items-center text-xs text-primary-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="absolute inset-0 flex items-center text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                           + Agendar
                         </span>
                       )}

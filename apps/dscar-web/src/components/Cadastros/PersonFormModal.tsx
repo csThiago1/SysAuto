@@ -438,7 +438,7 @@ export function PersonFormModal({
                   <div key={d.id} className="flex items-center gap-2 px-3 py-1.5 rounded border border-border bg-muted/50 text-xs text-muted-foreground">
                     <span className="font-medium text-foreground/80">{d.doc_type}</span>
                     <span>{d.value_masked}</span>
-                    {d.is_primary && <span className="ml-auto text-primary-600">principal</span>}
+                    {d.is_primary && <span className="ml-auto text-primary">principal</span>}
                   </div>
                 ))}
                 <p className="text-xs text-muted-foreground">Para alterar documentos existentes, use o painel de detalhe.</p>

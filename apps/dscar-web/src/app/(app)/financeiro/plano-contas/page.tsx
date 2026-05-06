@@ -254,20 +254,20 @@ export default function PlanoContasPage(): React.ReactElement {
             <button
               type="button"
               onClick={expandAll}
-              className="text-xs text-muted-foreground hover:text-primary-600 transition-colors px-2 py-1 rounded hover:bg-muted/50"
+              className="text-xs text-muted-foreground hover:text-primary transition-colors px-2 py-1 rounded hover:bg-muted/50"
             >
               Expandir tudo
             </button>
             <button
               type="button"
               onClick={collapseAll}
-              className="text-xs text-muted-foreground hover:text-primary-600 transition-colors px-2 py-1 rounded hover:bg-muted/50"
+              className="text-xs text-muted-foreground hover:text-primary transition-colors px-2 py-1 rounded hover:bg-muted/50"
             >
               Recolher tudo
             </button>
             <Link
               href={"/financeiro/plano-contas/nova" as Route}
-              className="inline-flex items-center gap-1.5 rounded-md bg-primary-600 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary-700 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary/90 transition-colors"
             >
               <PlusCircle className="h-3.5 w-3.5" />
               Nova Conta
@@ -282,7 +282,7 @@ export default function PlanoContasPage(): React.ReactElement {
             placeholder="Filtrar por codigo ou nome..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-72 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-72 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
 
