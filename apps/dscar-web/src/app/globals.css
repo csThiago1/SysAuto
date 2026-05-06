@@ -60,7 +60,7 @@
   --popover:             0 0% 100%;
   --popover-foreground:  25 30% 18%;
 
-  --primary:             0 76% 42%;
+  --primary:             20 52% 40%;
   --primary-foreground:  0 0% 100%;
 
   --secondary:           30 30% 94%;
@@ -77,13 +77,13 @@
 
   --border:              30 30% 90%;
   --input:               30 30% 90%;
-  --ring:                0 76% 42%;
+  --ring:                20 52% 40%;
 
   --sidebar-bg:          30 100% 99%;
   --sidebar-bg-hover:    30 30% 94%;
   --sidebar-text:        25 20% 35%;
-  --sidebar-text-active: 0 76% 42%;
-  --sidebar-accent:      0 76% 42%;
+  --sidebar-text-active: 20 52% 40%;
+  --sidebar-accent:      20 52% 40%;
   --sidebar-border:      30 30% 90%;
 }
 
