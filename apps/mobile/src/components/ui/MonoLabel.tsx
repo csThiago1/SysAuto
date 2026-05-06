@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   accent: {
-    color: '#cc4444',
+    color: Typography.labelMono.color,
     fontWeight: '600',
   },
 });

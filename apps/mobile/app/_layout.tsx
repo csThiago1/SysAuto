@@ -6,6 +6,7 @@ import { DatabaseProvider } from '@nozbe/watermelondb/DatabaseProvider';
 import { useAuthStore } from '@/stores/auth.store';
 import { OfflineBanner } from '@/components/common/OfflineBanner';
 import { SplashScreen } from '@/components/ui/SplashScreen';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { database } from '@/db';
 
 const queryClient = new QueryClient({
@@ -57,15 +58,17 @@ export default function RootLayout() {
   }
 
   return (
-    <DatabaseProvider database={database}>
-      <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthGuard>
-            <OfflineBanner />
-            <Slot />
-          </AuthGuard>
-        </QueryClientProvider>
-      </SafeAreaProvider>
-    </DatabaseProvider>
+    <ErrorBoundary>
+      <DatabaseProvider database={database}>
+        <SafeAreaProvider>
+          <QueryClientProvider client={queryClient}>
+            <AuthGuard>
+              <OfflineBanner />
+              <Slot />
+            </AuthGuard>
+          </QueryClientProvider>
+        </SafeAreaProvider>
+      </DatabaseProvider>
+    </ErrorBoundary>
   );
 }

@@ -25,6 +25,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Crypto from 'expo-crypto';
 import { Directory, File, Paths } from 'expo-file-system';
 import { Text } from '@/components/ui/Text';
+import { Colors } from '@/constants/theme';
 import { AnnotationCanvas } from '@/components/photo-editor/AnnotationCanvas';
 import { EditorToolBar } from '@/components/photo-editor/EditorToolBar';
 import { usePhotoStore } from '@/stores/photo.store';
@@ -80,7 +81,7 @@ export default function PhotoEditorScreen(): React.ReactElement {
 
   // Tool state
   const [activeTool, setActiveTool] = useState<AnnotationTool>('arrow');
-  const [activeColor, setActiveColor] = useState<AnnotationColor>('#e31b1b');
+  const [activeColor, setActiveColor] = useState<AnnotationColor>(Colors.brand as AnnotationColor);
 
   // Observation text
   const [observation, setObservationText] = useState<string>(photo?.observation ?? '');
@@ -279,9 +280,9 @@ export default function PhotoEditorScreen(): React.ReactElement {
     return (
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
         <View style={styles.errorContainer}>
-          <Text variant="body" color="#6b7280">Foto não encontrada.</Text>
+          <Text variant="body" color={Colors.textTertiary}>Foto não encontrada.</Text>
           <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
-            <Text variant="label" color="#e31b1b">Voltar</Text>
+            <Text variant="label" color={Colors.brand}>Voltar</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -403,14 +404,14 @@ export default function PhotoEditorScreen(): React.ReactElement {
                 activeOpacity={0.7}
                 style={styles.textModalCancel}
               >
-                <Text variant="label" color="#6b7280">Cancelar</Text>
+                <Text variant="label" color={Colors.textTertiary}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleTextConfirm}
                 activeOpacity={0.7}
                 style={styles.textModalConfirm}
               >
-                <Text variant="label" color="#ffffff">Adicionar</Text>
+                <Text variant="label" color={Colors.textPrimary}>Adicionar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -425,7 +426,7 @@ export default function PhotoEditorScreen(): React.ReactElement {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#141414',
+    backgroundColor: Colors.bg,
   },
   flex: {
     flex: 1,
@@ -519,7 +520,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   textModalConfirm: {
-    backgroundColor: '#e31b1b',
+    backgroundColor: Colors.brand,
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 8,

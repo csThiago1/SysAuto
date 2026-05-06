@@ -69,7 +69,7 @@ export default function LoginScreen() {
             resizeMode="contain"
           />
           <LinearGradient
-            colors={['transparent', '#ea0e03', 'transparent']}
+            colors={['transparent', Colors.brand, 'transparent']}
             start={{ x: 0, y: 0.5 }}
             end={{ x: 1, y: 0.5 }}
             style={styles.logoDivider}
@@ -131,7 +131,7 @@ export default function LoginScreen() {
               disabled={loading}
             >
               <LinearGradient
-                colors={['#ea0e03', '#c50b02']}
+                colors={[Colors.brand, Colors.brandShade]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.buttonGradient}
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 180,
     height: 70,
-    tintColor: '#ffffff',
+    tintColor: Colors.textPrimary,
     marginBottom: 8,
   },
   logoDivider: {
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   welcome: {
     fontSize: 15,
     fontWeight: '600',
-    color: 'rgba(255,255,255,0.85)',
+    color: Colors.textPrimary,
     marginBottom: 4,
   },
   welcomeSub: {
@@ -216,18 +216,18 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: 46,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: Colors.inputBg,
     borderWidth: 1,
-    borderColor: '#222',
+    borderColor: Colors.border,
     borderRadius: 9,
     paddingHorizontal: 14,
     fontSize: 15,
-    color: '#ffffff',
+    color: Colors.textPrimary,
   },
   inputFocused: {
-    borderColor: '#ea0e03',
-    backgroundColor: 'rgba(234,14,3,0.04)',
-    shadowColor: '#ea0e03',
+    borderColor: Colors.brand,
+    backgroundColor: Colors.brandTint,
+    shadowColor: Colors.brand,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     overflow: 'hidden',
     marginTop: 8,
-    shadowColor: '#ea0e03',
+    shadowColor: Colors.brand,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 12,
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonText: {
-    color: '#ffffff',
+    color: Colors.textPrimary,
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.4,

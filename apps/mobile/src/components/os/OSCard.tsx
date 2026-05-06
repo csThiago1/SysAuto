@@ -46,6 +46,8 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
   const plateLine = order.vehiclePlate ? order.vehiclePlate.toUpperCase() : '—';
   const vehicleLine = [order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ');
   const borderColor = OS_STATUS_MAP[order.status as OSStatus]?.color ?? '#94a3b8';
+  const statusLabel = OS_STATUS_MAP[order.status as OSStatus]?.label ?? order.status;
+  const cardAccessibilityLabel = `OS ${order.number}, ${order.customerName}, ${statusLabel}`;
 
   return (
     <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
@@ -53,6 +55,8 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
         onPress={handlePress}
         activeOpacity={0.75}
         style={styles.touchable}
+        accessibilityRole="button"
+        accessibilityLabel={cardAccessibilityLabel}
       >
         <LinearGradient
         colors={[Colors.cardTop, Colors.cardBottom]}

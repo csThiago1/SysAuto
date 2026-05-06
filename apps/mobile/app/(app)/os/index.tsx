@@ -132,6 +132,9 @@ function StatusFilterModal({
             styles.statusRow,
             activeStatus === undefined && styles.statusRowActive,
           ]}
+          accessibilityRole="radio"
+          accessibilityState={{ checked: activeStatus === undefined }}
+          accessibilityLabel="Todas"
         >
           <View style={[styles.statusDot, { backgroundColor: Colors.brand }]} />
           <Text
@@ -150,19 +153,23 @@ function StatusFilterModal({
           const color = getStatusColor(status);
           const bg = getStatusBackgroundColor(status);
           const isSelected = activeStatus === status;
+          const statusLabel = getStatusLabel(status);
           return (
             <TouchableOpacity
               key={status}
               activeOpacity={0.75}
               onPress={() => { onSelect(isSelected ? undefined : status); onClose(); }}
               style={[styles.statusRow, isSelected && { backgroundColor: bg }]}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: isSelected }}
+              accessibilityLabel={statusLabel}
             >
               <View style={[styles.statusDot, { backgroundColor: color }]} />
               <Text
                 variant="body"
                 style={[styles.statusRowLabel, isSelected && { color, fontWeight: '700' }]}
               >
-                {getStatusLabel(status)}
+                {statusLabel}
               </Text>
               {isSelected && (
                 <Ionicons name="checkmark" size={18} color={color} style={styles.statusCheck} />
@@ -204,6 +211,8 @@ function OSHeader({ paddingTop }: OSHeaderProps): React.JSX.Element {
           style={styles.headerBtn}
           onPress={() => navigation.navigate('notificacoes' as never)}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Notificações"
         >
           <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
         </TouchableOpacity>
@@ -318,6 +327,8 @@ export default function OSListScreen(): React.JSX.Element {
           style={[styles.filterBtn, activeStatus !== undefined && styles.filterBtnActive]}
           onPress={() => setFilterModalVisible(true)}
           activeOpacity={0.75}
+          accessibilityRole="button"
+          accessibilityLabel="Filtrar por status"
         >
           <Ionicons
             name="options-outline"
@@ -334,7 +345,12 @@ export default function OSListScreen(): React.JSX.Element {
           <Text variant="caption" color={Colors.brand} style={styles.activeFilterLabel}>
             {getStatusLabel(activeStatus)}
           </Text>
-          <TouchableOpacity onPress={() => setActiveStatus(undefined)} activeOpacity={0.7}>
+          <TouchableOpacity
+            onPress={() => setActiveStatus(undefined)}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Limpar filtro"
+          >
             <Ionicons name="close-circle" size={16} color={Colors.brand} />
           </TouchableOpacity>
         </View>

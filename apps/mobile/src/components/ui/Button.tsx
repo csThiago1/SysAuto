@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   labelPrimary: {
-    color: '#ffffff',
+    color: Colors.textPrimary,
   },
   labelSecondary: {
     color: Colors.brand,
@@ -114,6 +114,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   labelDanger: {
-    color: '#ffffff',
+    color: Colors.textPrimary,
   },
 });

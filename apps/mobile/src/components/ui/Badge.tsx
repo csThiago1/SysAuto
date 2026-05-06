@@ -1,38 +1,26 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from './Text';
-
-// Status de OS espelhando VALID_TRANSITIONS do backend
-type OSStatus =
-  | 'OPEN'
-  | 'WAITING_PARTS'
-  | 'IN_PROGRESS'
-  | 'WAITING_APPROVAL'
-  | 'APPROVED'
-  | 'READY'
-  | 'DELIVERED'
-  | 'CANCELLED';
+import { Colors, SemanticColors, OS_STATUS_MAP } from '@/constants/theme';
 
 interface BadgeProps {
-  status: OSStatus;
+  status: string;
 }
 
-const STATUS_CONFIG: Record<
-  OSStatus,
-  { label: string; backgroundColor: string; color: string }
-> = {
-  OPEN: { label: 'Aberta', backgroundColor: '#dbeafe', color: '#1d4ed8' },
-  WAITING_PARTS: { label: 'Aguard. Peças', backgroundColor: '#fef3c7', color: '#b45309' },
-  IN_PROGRESS: { label: 'Em Andamento', backgroundColor: '#dcfce7', color: '#15803d' },
-  WAITING_APPROVAL: { label: 'Aguard. Aprovação', backgroundColor: '#f3e8ff', color: '#7e22ce' },
-  APPROVED: { label: 'Aprovada', backgroundColor: '#d1fae5', color: '#065f46' },
-  READY: { label: 'Pronta', backgroundColor: '#e0f2fe', color: '#0369a1' },
-  DELIVERED: { label: 'Entregue', backgroundColor: '#f0fdf4', color: '#166534' },
-  CANCELLED: { label: 'Cancelada', backgroundColor: '#fee2e2', color: '#991b1b' },
-};
+function getStatusStyle(status: string): { backgroundColor: string; color: string; label: string } {
+  const mapped = OS_STATUS_MAP[status as keyof typeof OS_STATUS_MAP];
+  if (mapped) {
+    return { backgroundColor: mapped.bg, color: mapped.color, label: mapped.label };
+  }
+  return {
+    backgroundColor: SemanticColors.neutral.bg,
+    color: SemanticColors.neutral.color,
+    label: status,
+  };
+}
 
 export function Badge({ status }: BadgeProps) {
-  const config = STATUS_CONFIG[status];
+  const config = getStatusStyle(status);
 
   return (
     <View style={[styles.badge, { backgroundColor: config.backgroundColor }]}>
