@@ -12,20 +12,28 @@ export function Breadcrumb({ items }: { items: BreadcrumbItem[] }): React.ReactE
   return (
     <nav aria-label="breadcrumb">
       <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        {items.map((item, i) => (
-          <React.Fragment key={i}>
-            {i > 0 && <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
-            <li>
-              {item.href ? (
-                <Link href={item.href as Route} className="hover:text-foreground/90 transition-colors">
-                  {item.label}
-                </Link>
-              ) : (
-                <span className="text-foreground/90 font-medium">{item.label}</span>
-              )}
-            </li>
-          </React.Fragment>
-        ))}
+        {items.map((item, i) => {
+          const isLast = i === items.length - 1;
+          return (
+            <React.Fragment key={i}>
+              {i > 0 && <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
+              <li>
+                {item.href ? (
+                  <Link href={item.href as Route} className="hover:text-foreground/90 transition-colors">
+                    {item.label}
+                  </Link>
+                ) : (
+                  <span
+                    className="text-foreground/90 font-medium"
+                    {...(isLast ? { "aria-current": "page" as const } : {})}
+                  >
+                    {item.label}
+                  </span>
+                )}
+              </li>
+            </React.Fragment>
+          );
+        })}
       </ol>
     </nav>
   );
