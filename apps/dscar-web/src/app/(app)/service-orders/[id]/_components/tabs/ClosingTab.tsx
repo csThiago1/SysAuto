@@ -55,6 +55,10 @@ export function ClosingTab({ order }: ClosingTabProps) {
   const servicesTotal = Number(order.services_total)
   const discountTotal = Number(order.discount_total)
   const grandTotal = partsTotal + servicesTotal - discountTotal
+  const deductible = Number(order.deductible_amount ?? 0)
+  const isInsurer = order.customer_type === "insurer"
+  const insurerPays = isInsurer ? Math.max(grandTotal - deductible, 0) : 0
+  const customerPays = isInsurer ? Math.min(deductible, grandTotal) : grandTotal
 
   const isDelivered = order.status === "delivered"
   const isCancelled = order.status === "cancelled"
@@ -153,6 +157,20 @@ export function ClosingTab({ order }: ClosingTabProps) {
             <span className="text-base font-bold text-foreground">Total</span>
             <span className="text-xl font-bold text-foreground">{formatCurrency(grandTotal)}</span>
           </div>
+          {isInsurer && deductible > 0 && (
+            <>
+              <div className="border-t border-border pt-3 mt-1 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-foreground/60">Franquia (cliente paga)</span>
+                  <span className="font-semibold text-warning-500">{formatCurrency(customerPays)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-foreground/60">Seguradora paga</span>
+                  <span className="font-semibold text-info-500">{formatCurrency(insurerPays)}</span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
