@@ -11,7 +11,8 @@
       "expo-router",
       "expo-camera",
       "expo-secure-store",
-      "@sentry/react-native"
+      "@sentry/react-native",
+      "expo-sharing"
     ],
     "ios": {
       "supportsTablet": false,
