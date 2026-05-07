@@ -61,7 +61,7 @@ export function SignatureCanvas({
 
   return (
     <View style={styles.wrapper}>
-      <Text variant="labelMono" style={styles.label}>
+      <Text variant="mono" style={styles.label}>
         ASSINE ABAIXO
       </Text>
       <View style={[styles.container, { height }]}>

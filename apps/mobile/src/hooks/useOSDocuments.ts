@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import * as FileSystem from 'expo-file-system';
+import { cacheDirectory, downloadAsync } from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth.store';
@@ -52,9 +52,9 @@ export async function downloadAndSharePdf(
 ): Promise<void> {
   const { token, activeCompany } = useAuthStore.getState();
 
-  const localUri = `${FileSystem.cacheDirectory}${fileName}.pdf`;
+  const localUri = `${cacheDirectory}${fileName}.pdf`;
 
-  await FileSystem.downloadAsync(
+  await downloadAsync(
     `${API_BASE_URL}${downloadUrl}`,
     localUri,
     {
