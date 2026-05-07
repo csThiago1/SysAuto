@@ -10,6 +10,7 @@ MO-5: FiscalDocument (stub), NFeEntrada, NFeEntradaItem
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from encrypted_model_fields.fields import EncryptedCharField
 
 from apps.authentication.models import PaddockBaseModel
 
@@ -288,8 +289,7 @@ class FiscalConfigModel(models.Model):
         help_text="1=Simples Nacional, 2=Simples Nacional Excesso, 3=Normal",
     )
     endereco = models.JSONField(default=dict, blank=True, help_text="Endereço completo do emissor.")
-    # Token Focus: plain text aqui — EncryptedField no Ciclo 06C
-    focus_token = models.CharField(max_length=255, blank=True, default="")
+    focus_token = EncryptedCharField(max_length=255, blank=True, default="")
     aliquota_iss_default = models.DecimalField(
         max_digits=5,
         decimal_places=2,

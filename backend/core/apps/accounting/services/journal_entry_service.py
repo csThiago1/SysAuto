@@ -386,7 +386,8 @@ class JournalEntryService:
             competence_date=comp_date,
             origin=JournalEntryOrigin.SERVICE_ORDER,
             lines=lines,
-            origin_object=service_order,
+            # origin_object omitido: ServiceOrder PK é UUID mas JournalEntry.object_id
+            # é PositiveIntegerField. Rastreabilidade via description + origin.
             auto_approve=True,
         )
 

@@ -349,6 +349,18 @@ class BillingService:
             order.invoice_issued = True
             order.save(update_fields=["invoice_issued"])
 
+        # ── Lançamento contábil de receita + CMV ────────────────────
+        try:
+            from apps.accounting.services.journal_entry_service import JournalEntryService
+
+            JournalEntryService.create_from_service_order(order)
+        except Exception as exc:
+            error_msg = (
+                f"Erro ao gerar lançamento contábil para OS {order.number}: {exc}"
+            )
+            logger.error(error_msg)
+            errors.append(error_msg)
+
         # ── Log de atividade ──────────────────────────────────────────
         total_billed = sum(_d(r.amount) for r in receivables)
         activity_description = (

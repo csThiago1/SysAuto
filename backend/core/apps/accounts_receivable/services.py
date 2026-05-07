@@ -104,6 +104,56 @@ class ReceivableDocumentService:
 
     @classmethod
     @transaction.atomic
+    def create_from_billing(
+        cls,
+        order: "object",
+        person: "object | None",
+        billing_item: dict,
+    ) -> ReceivableDocument:
+        """Cria titulo a receber a partir de um item de faturamento de OS.
+
+        Converte os dados do billing_item (preview) para os parametros
+        esperados por create_receivable().
+
+        Args:
+            order: ServiceOrder instance.
+            person: Person do cliente (pode ser None).
+            billing_item: Dict com keys: recipient_type, category, label,
+                          amount, default_payment_method, default_payment_term_days.
+
+        Returns:
+            ReceivableDocument criado.
+        """
+        category = billing_item.get("category", "full")
+        is_services = category == "services"
+        is_parts = category == "parts"
+        origin = "NFSE" if is_services else ("NFE" if is_parts else "MANUAL")
+
+        term_days = int(billing_item.get("default_payment_term_days", 0))
+        today = timezone.now().date()
+        due_date = today + timezone.timedelta(days=term_days)
+
+        customer_id = str(person.pk) if person else str(getattr(order, "customer_uuid", "") or "")
+        customer_name = (
+            getattr(person, "full_name", None)
+            or getattr(order, "customer_name", "")
+            or ""
+        )
+
+        return cls.create_receivable(
+            customer_id=customer_id,
+            customer_name=customer_name,
+            description=f"OS {getattr(order, 'number', '')} — {billing_item.get('label', category)}",
+            amount=billing_item.get("amount", "0"),
+            due_date=due_date,
+            competence_date=today,
+            origin=origin,
+            service_order_id=str(order.pk),
+            user=getattr(order, "created_by", None),
+        )
+
+    @classmethod
+    @transaction.atomic
     def record_receipt(
         cls,
         *,
