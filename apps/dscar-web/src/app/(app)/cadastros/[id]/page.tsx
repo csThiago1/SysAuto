@@ -178,7 +178,7 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
                     <InfoItem
                       key={doc.id}
                       label={doc.doc_type}
-                      value={`${doc.value_masked}${doc.is_primary ? " · Principal" : ""}`}
+                      value={`${doc.value ?? doc.value_masked}${doc.is_primary ? " · Principal" : ""}`}
                     />
                   ))}
                   {isPF && <InfoItem label="Data de Nascimento" value={formatDate(person.birth_date)} />}

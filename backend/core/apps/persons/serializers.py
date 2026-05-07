@@ -46,6 +46,7 @@ class PersonDocumentMaskedSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "doc_type",
+            "value",
             "value_masked",
             "is_primary",
             "issued_by",
@@ -199,9 +200,7 @@ class PersonListSerializer(serializers.ModelSerializer):
     def get_primary_contact(self, obj: Person) -> dict | None:
         contact = obj.contacts.filter(is_primary=True).first() or obj.contacts.first()
         if contact:
-            # Mascarar o contato — nunca retornar plain em listagem
-            v: str = contact.value or ""
-            return {"type": contact.contact_type, "value": _mask_value(v)}
+            return {"type": contact.contact_type, "value": contact.value or ""}
         return None
 
 

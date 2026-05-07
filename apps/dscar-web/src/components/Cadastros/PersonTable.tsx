@@ -9,6 +9,7 @@
  *  - Sem hooks internos — dados chegam via props
  */
 
+import Link from "next/link";
 import type { Person } from "@paddock/types";
 import { CONTACT_TYPE_LABEL } from "@paddock/utils";
 import { Pencil } from "lucide-react";
@@ -84,10 +85,10 @@ export function PersonTable({ persons, onEdit, isLoading = false }: PersonTableP
             </TableRow>
           ) : (
             persons.map((p) => (
-              <TableRow key={p.id} className="hover:bg-muted/30">
+              <TableRow key={p.id} className="hover:bg-muted/30 cursor-pointer" onClick={() => window.location.href = `/cadastros/${p.id}`}>
                 {/* Avatar + nome */}
                 <TableCell>
-                  <div className="flex items-center gap-3">
+                  <Link href={`/cadastros/${p.id}`} className="flex items-center gap-3">
                     <Avatar name={p.full_name} size="sm" />
                     <div>
                       <p className="font-medium text-foreground/90 leading-tight">{p.full_name}</p>
@@ -95,7 +96,7 @@ export function PersonTable({ persons, onEdit, isLoading = false }: PersonTableP
                         <p className="text-xs text-muted-foreground leading-tight">{p.fantasy_name}</p>
                       )}
                     </div>
-                  </div>
+                  </Link>
                 </TableCell>
 
                 {/* Roles */}
