@@ -88,6 +88,7 @@ export default function PerfilScreen() {
           ) : (
             <SignatureCanvas
               height={180}
+              signerName={user?.name ?? ''}
               onSave={async (base64) => {
                 try {
                   await uploadSignature(base64);

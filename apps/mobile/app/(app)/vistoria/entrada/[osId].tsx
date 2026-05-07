@@ -378,6 +378,7 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
             </Text>
             <SignatureCanvas
               height={250}
+              signerName={order?.customer_name ?? ''}
               onSave={async (base64) => {
                 try {
                   await signatureCapture.mutateAsync({
