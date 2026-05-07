@@ -417,6 +417,12 @@ export default function VistoriaSaidaScreen(): React.JSX.Element {
         {activeTab === 'comparativo' && (
           <View style={styles.comparativoContainer}>
             <SectionDivider label="COMPARATIVO" />
+            <View style={styles.tipCard}>
+              <Ionicons name="bulb-outline" size={16} color={Colors.warning} />
+              <Text variant="bodySmall" style={{ color: Colors.textSecondary, flex: 1 }}>
+                Compare o estado do veículo antes e depois do reparo. Fotografe os mesmos ângulos da vistoria de entrada.
+              </Text>
+            </View>
             <Text variant="bodySmall" color={Colors.textTertiary} style={styles.comparativoHint}>
               Fotografe o veículo nos mesmos ângulos da vistoria de entrada para comparação.
             </Text>
@@ -651,6 +657,19 @@ const styles = StyleSheet.create({
   },
   scrollContentWithButton: {
     paddingBottom: 112,
+  },
+
+  // Tip card
+  tipCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    backgroundColor: SemanticColors.warning.bg,
+    borderWidth: 1,
+    borderColor: SemanticColors.warning.border,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
   },
 
   // Comparativo

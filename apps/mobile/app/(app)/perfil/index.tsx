@@ -77,6 +77,20 @@ export default function PerfilScreen() {
           />
         </Card>
 
+        {/* Suporte */}
+        <SectionDivider label="SUPORTE" />
+        <Card style={styles.infoCard}>
+          <InfoRow label="CONTATO" value="suporte@paddock.solutions" />
+          <InfoRow label="WHATSAPP" value="(92) 99999-0000" noDivider />
+        </Card>
+
+        {/* Legal */}
+        <SectionDivider label="LEGAL" />
+        <Card style={styles.infoCard}>
+          <InfoRow label="TERMOS DE USO" value="paddock.solutions/termos" />
+          <InfoRow label="POLÍTICA DE PRIVACIDADE" value="paddock.solutions/privacidade" noDivider />
+        </Card>
+
         <View style={styles.actions}>
           <Button
             variant="danger"

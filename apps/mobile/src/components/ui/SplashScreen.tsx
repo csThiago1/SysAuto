@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 200,
     height: 80,
-    tintColor: '#ffffff',
+    tintColor: Colors.textPrimary,
   },
   powered: {
     ...Typography.labelMono,

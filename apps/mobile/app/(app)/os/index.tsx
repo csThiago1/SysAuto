@@ -230,6 +230,7 @@ export default function OSListScreen(): React.JSX.Element {
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
   const [activeStatus, setActiveStatus] = useState<OSStatus | undefined>(undefined);
   const [filterModalVisible, setFilterModalVisible] = useState<boolean>(false);
+  const [excludeClosed, setExcludeClosed] = useState<boolean>(true);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -239,6 +240,9 @@ export default function OSListScreen(): React.JSX.Element {
   const filters = {
     status: activeStatus,
     search: debouncedSearch || undefined,
+    // When a specific status is selected, it takes precedence — don't exclude anything.
+    // When no specific status is active, apply the "Na Oficina" filter if toggled on.
+    excludeClosed: activeStatus === undefined ? excludeClosed : false,
   };
 
   const {
@@ -270,7 +274,7 @@ export default function OSListScreen(): React.JSX.Element {
   );
 
   const keyExtractor = useCallback((item: ServiceOrder): string => item.id, []);
-  const hasActiveFilter = Boolean(activeStatus) || Boolean(debouncedSearch);
+  const hasActiveFilter = Boolean(activeStatus) || Boolean(debouncedSearch) || excludeClosed;
 
   if (isLoading && orders.length === 0) {
     return (
@@ -336,6 +340,27 @@ export default function OSListScreen(): React.JSX.Element {
             color={activeStatus !== undefined ? Colors.brand : Colors.textTertiary}
           />
           {activeStatus !== undefined && <View style={styles.filterDot} />}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setExcludeClosed(!excludeClosed)}
+          style={[
+            styles.naOficinaButton,
+            excludeClosed && styles.naOficinaButtonActive,
+          ]}
+          activeOpacity={0.75}
+          accessibilityRole="button"
+          accessibilityLabel={excludeClosed ? 'Mostrando veículos na oficina' : 'Mostrando todas as OS'}
+        >
+          <Text
+            variant="caption"
+            style={[
+              styles.naOficinaText,
+              excludeClosed && styles.naOficinaTextActive,
+            ]}
+          >
+            {excludeClosed ? 'Na Oficina' : 'Todas'}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -629,5 +654,27 @@ const styles = StyleSheet.create({
   },
   statusCheck: {
     marginLeft: 'auto',
+  },
+
+  // "Na Oficina" toggle
+  naOficinaButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: Radii.full,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: 'transparent',
+  },
+  naOficinaButtonActive: {
+    borderColor: Colors.brand,
+    backgroundColor: Colors.brandTint,
+  },
+  naOficinaText: {
+    color: Colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  naOficinaTextActive: {
+    color: Colors.brand,
   },
 });

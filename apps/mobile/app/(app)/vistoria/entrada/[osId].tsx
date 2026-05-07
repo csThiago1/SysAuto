@@ -239,6 +239,12 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
           {activeTab === 'fotos' && (
             <View>
               <SectionDivider label="FOTOS" />
+              <View style={styles.tipCard}>
+                <Ionicons name="bulb-outline" size={16} color={Colors.warning} />
+                <Text variant="bodySmall" style={{ color: Colors.textSecondary, flex: 1 }}>
+                  Fotografe todas as avarias existentes. Inclua fotos gerais (frente, traseira, laterais) e detalhes de cada dano.
+                </Text>
+              </View>
               <PhotoSlotGrid
                 osId={osId ?? ''}
                 folder={FOLDER}
@@ -456,6 +462,19 @@ const styles = StyleSheet.create({
   },
   scrollContentWithButton: {
     paddingBottom: 112,
+  },
+
+  // Tip card
+  tipCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    backgroundColor: SemanticColors.warning.bg,
+    borderWidth: 1,
+    borderColor: SemanticColors.warning.border,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
   },
 
   // Observations

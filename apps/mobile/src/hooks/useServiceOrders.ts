@@ -61,6 +61,7 @@ export interface OSFilters {
   status?: OSStatus;
   search?: string;
   page?: number;
+  excludeClosed?: boolean;
 }
 
 // ─── Return Types ─────────────────────────────────────────────────────────────
@@ -80,6 +81,7 @@ export interface UseServiceOrderResult {
   order: ServiceOrderDetailAPI | null;
   isLoading: boolean;
   isOffline: boolean;
+  refetch: () => Promise<void>;
 }
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
@@ -113,6 +115,11 @@ export function useServiceOrdersList(filters: OSFilters): UseServiceOrdersListRe
 
     if (filters.status) {
       conditions.push(Q.where('status', filters.status));
+    } else if (filters.excludeClosed) {
+      // Default view: exclude terminal statuses (delivered / cancelled)
+      conditions.push(
+        Q.where('status', Q.notIn(['delivered', 'cancelled'])),
+      );
     }
     if (filters.search) {
       const term = filters.search;
@@ -151,7 +158,7 @@ export function useServiceOrdersList(filters: OSFilters): UseServiceOrdersListRe
       });
 
     return () => subscription.unsubscribe();
-  }, [filters.status, filters.search]);
+  }, [filters.status, filters.search, filters.excludeClosed]);
 
   // Executa sync quando online — result popula WatermelonDB, observer reage
   const doSync = useCallback(async (): Promise<void> => {
@@ -294,12 +301,18 @@ export function useServiceOrder(id: string): UseServiceOrderResult {
   }, [id, isOnline, queryClient]);
 
   // ── Online: busca extras da API ───────────────────────────────────────────────
-  const { data: apiOrder, isLoading: isApiLoading } = useQuery({
+  const { data: apiOrder, isLoading: isApiLoading, refetch: refetchQuery } = useQuery({
     queryKey: serviceOrderKeys.detail(id),
     queryFn: () => api.get<ServiceOrderDetailAPI>(`/service-orders/${id}/`),
     enabled: isOnline && id.length > 0,
     staleTime: 1000 * 60 * 2,
   });
+
+  const refetch = useCallback(async (): Promise<void> => {
+    if (isOnline) {
+      await refetchQuery();
+    }
+  }, [isOnline, refetchQuery]);
 
   // ── Offline: apenas WDB ───────────────────────────────────────────────────────
   if (!isOnline) {
@@ -307,6 +320,7 @@ export function useServiceOrder(id: string): UseServiceOrderResult {
       order: wdbRecord != null ? mapWdbToDetail(wdbRecord) : null,
       isLoading: isWdbLoading,
       isOffline: true,
+      refetch: async () => undefined,
     };
   }
 
@@ -332,5 +346,6 @@ export function useServiceOrder(id: string): UseServiceOrderResult {
     // Carregando apenas enquanto nenhuma fonte entregou dados
     isLoading: isApiLoading && isWdbLoading,
     isOffline: false,
+    refetch,
   };
 }

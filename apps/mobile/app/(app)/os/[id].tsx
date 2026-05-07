@@ -4,6 +4,7 @@ import {
   Animated,
   Image,
   Modal,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -589,11 +590,19 @@ export default function OSDetailScreen(): React.JSX.Element {
     });
   }, [tabOpacity]);
 
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+
   // The hook returns ServiceOrderDetailAPI; we cast to ServiceOrderDetail because
   // the real API endpoint serializes photos/parts/labor_items/transition_logs.
   // The offline model omits them — they will simply be undefined.
-  const { order: rawOrder, isLoading } = useServiceOrder(id ?? '');
+  const { order: rawOrder, isLoading, refetch } = useServiceOrder(id ?? '');
   const order = rawOrder as ServiceOrderDetail | null;
+
+  const handleRefresh = useCallback(async (): Promise<void> => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   const { update: updateStatus, isUpdating } = useUpdateOSStatus(id ?? '');
 
@@ -741,6 +750,14 @@ export default function OSDetailScreen(): React.JSX.Element {
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => { void handleRefresh(); }}
+            tintColor={Colors.brand}
+            colors={[Colors.brand]}
+          />
+        }
       >
         {/* ── Tab Geral ──────────────────────────────────────────────────── */}
         {activeTab === 0 && (
@@ -969,24 +986,37 @@ export default function OSDetailScreen(): React.JSX.Element {
 
       {/* ── Modal de preview de foto ───────────────────────────────────── */}
       <Modal
-        visible={previewUrl !== null}
+        visible={!!previewUrl}
         transparent
         animationType="fade"
-        onRequestClose={handleClosePreview}
+        onRequestClose={() => setPreviewUrl(null)}
+        statusBarTranslucent
       >
-        <TouchableOpacity
-          style={styles.previewBackdrop}
-          onPress={handleClosePreview}
-          activeOpacity={1}
-        >
-          {previewUrl !== null && (
+        <View style={styles.previewOverlay}>
+          <TouchableOpacity
+            style={styles.previewClose}
+            onPress={() => setPreviewUrl(null)}
+            accessibilityRole="button"
+            accessibilityLabel="Fechar preview"
+          >
+            <Ionicons name="close" size={28} color={Colors.textPrimary} />
+          </TouchableOpacity>
+          <ScrollView
+            contentContainerStyle={styles.previewScrollContent}
+            maximumZoomScale={4}
+            minimumZoomScale={1}
+            bouncesZoom
+            centerContent
+            showsHorizontalScrollIndicator={false}
+            showsVerticalScrollIndicator={false}
+          >
             <Image
-              source={{ uri: previewUrl }}
+              source={{ uri: previewUrl! }}
               style={styles.previewImage}
               resizeMode="contain"
             />
-          )}
-        </TouchableOpacity>
+          </ScrollView>
+        </View>
       </Modal>
     </SafeAreaView>
   );
@@ -1402,14 +1432,29 @@ const styles = StyleSheet.create({
     height: 32,
   },
   // Photo preview modal
-  previewBackdrop: {
+  previewOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    backgroundColor: 'rgba(0,0,0,0.95)',
+  },
+  previewClose: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
+  previewScrollContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   previewImage: {
     width: '100%',
-    height: '80%',
+    height: '100%',
   },
 });

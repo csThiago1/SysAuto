@@ -235,7 +235,19 @@ export default function BuscaScreen(): React.JSX.Element {
         <View style={styles.historyContainer}>
           {history.length > 0 ? (
             <>
-              <SectionDivider label="RECENTES" />
+              <View style={styles.historyHeader}>
+                <SectionDivider label="RECENTES" />
+                <TouchableOpacity
+                  onPress={() => {
+                    setHistory([]);
+                    try { searchStorage.set(HISTORY_KEY, JSON.stringify([])); } catch {}
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Limpar histórico de busca"
+                >
+                  <Text variant="caption" style={{ color: Colors.brand }}>Limpar tudo</Text>
+                </TouchableOpacity>
+              </View>
               <FlatList
                 data={history}
                 keyExtractor={historyKeyExtractor}
@@ -257,6 +269,11 @@ export default function BuscaScreen(): React.JSX.Element {
       )}
 
       {/* ── Results (shown when query.length >= 2 after debounce) ─────── */}
+      {showResults && orders.length > 0 && (
+        <Text variant="caption" style={{ color: Colors.textSecondary, paddingHorizontal: 16, marginBottom: 8 }}>
+          {orders.length} resultado{orders.length !== 1 ? 's' : ''}
+        </Text>
+      )}
       {showResults && (
         <FlatList
           data={orders}
@@ -314,6 +331,13 @@ const styles = StyleSheet.create({
   // History
   historyContainer: {
     flex: 1,
+  },
+  historyHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 8,
   },
   historyList: {
     paddingHorizontal: Spacing.lg,

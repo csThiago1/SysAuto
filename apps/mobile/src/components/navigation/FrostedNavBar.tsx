@@ -26,6 +26,7 @@ interface TabConfig {
   iconInactive: keyof typeof Ionicons.glyphMap;
   label: string;
   isCentral?: boolean;
+  badge?: boolean;
 }
 
 const TAB_CONFIG: TabConfig[] = [
@@ -55,6 +56,7 @@ const TAB_CONFIG: TabConfig[] = [
     iconActive: 'notifications',
     iconInactive: 'notifications-outline',
     label: 'Alertas',
+    badge: true,
   },
   {
     routeName: 'perfil/index',
@@ -75,9 +77,10 @@ interface TabItemProps {
   config: TabConfig;
   isActive: boolean;
   onPress: () => void;
+  hasBadge?: boolean;
 }
 
-function TabItem({ config, isActive, onPress }: TabItemProps): React.JSX.Element {
+function TabItem({ config, isActive, onPress, hasBadge = false }: TabItemProps): React.JSX.Element {
   const pressScale = useSharedValue(1);
   const restingScale = useSharedValue(isActive ? 1.05 : 1);
   const lineOpacity = useSharedValue(isActive && !config.isCentral ? 1 : 0);
@@ -136,7 +139,10 @@ function TabItem({ config, isActive, onPress }: TabItemProps): React.JSX.Element
       accessibilityState={{ selected: isActive }}
     >
       <Animated.View style={[styles.iconWrapper, iconAnimStyle]}>
-        <Ionicons name={iconName} size={22} color={iconColor} />
+        <View>
+          <Ionicons name={iconName} size={22} color={iconColor} />
+          {hasBadge && <View style={styles.badgeDot} />}
+        </View>
         <Animated.View style={[styles.activeLine, lineAnimStyle]} />
       </Animated.View>
     </TouchableOpacity>
@@ -195,6 +201,7 @@ export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.J
               config={config}
               isActive={isActive}
               onPress={() => handleTabPress(route.name, route.key, isActive)}
+              hasBadge={config.badge === true}
             />
           );
         })}
@@ -273,5 +280,16 @@ const styles = StyleSheet.create({
   },
   hiddenPlaceholder: {
     height: 0,
+  },
+  badgeDot: {
+    position: 'absolute',
+    top: -2,
+    right: -4,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.brand,
+    borderWidth: 1.5,
+    borderColor: Colors.bg,
   },
 });
