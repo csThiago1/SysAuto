@@ -91,8 +91,9 @@ class JournalEntry(PaddockBaseModel):
         blank=True,
         verbose_name=_("Tipo do objeto de origem"),
     )
-    object_id = models.PositiveIntegerField(
+    object_id = models.CharField(
         _("ID do objeto de origem"),
+        max_length=36,
         null=True,
         blank=True,
     )
