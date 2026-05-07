@@ -12,7 +12,7 @@ import { captureRef } from 'react-native-view-shot';
 import { useAuthStore } from '@/stores/auth.store';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const dscarLogo = require('../../../assets/dscar-logo.png') as number;
+const dscarLogo = require('../../assets/dscar-logo.png') as number;
 
 function formatDateTime(): string {
   const now = new Date();
