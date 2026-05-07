@@ -6,7 +6,7 @@ import logging
 from datetime import timedelta
 from typing import Any, Optional
 
-from django.db.models import Count, Max, Q, QuerySet
+from django.db.models import Count, DecimalField, F, Max, Min, Q, QuerySet, Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -63,6 +63,7 @@ from .serializers import (
     NotificationFeedSerializer,
     UploadPhotoSerializer,
     VersionDetailSerializer,
+    VehicleHistoryItemSerializer,
 )
 from .billing import BillingService
 from .services import ServiceOrderDeliveryService, ServiceOrderService
@@ -1406,6 +1407,50 @@ class ServiceOrderViewSet(
         order = self.get_object()
         summary = ServiceOrderService.financial_summary(order)
         return Response(FinancialSummarySerializer(summary).data)
+
+    @extend_schema(
+        summary="Histórico de OS por placa do veículo",
+        parameters=[
+            OpenApiParameter("plate", description="Placa do veículo", required=True),
+            OpenApiParameter("exclude_id", description="ID da OS a excluir", required=False),
+        ],
+    )
+    @action(detail=False, methods=["get"], url_path="vehicle-history")
+    def vehicle_history(self, request: Request) -> Response:
+        """Retorna todas as OS de uma placa com resumo agregado."""
+        plate = request.query_params.get("plate", "").strip().upper()
+        if not plate:
+            return Response(
+                {"detail": "Parâmetro 'plate' é obrigatório."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        qs = ServiceOrder.objects.filter(
+            plate__iexact=plate, is_active=True
+        ).order_by("-opened_at")
+
+        exclude_id = request.query_params.get("exclude_id")
+        if exclude_id:
+            qs = qs.exclude(pk=exclude_id)
+
+        # Agregações — total_spent só de OS entregues
+        delivered_qs = qs.filter(status=ServiceOrderStatus.DELIVERED)
+        agg = delivered_qs.aggregate(
+            total_spent=Sum(
+                F("parts_total") + F("services_total") - F("discount_total"),
+                output_field=DecimalField(),
+            ),
+        )
+        first_visit = qs.aggregate(first_visit=Min("entry_date"))
+
+        summary = {
+            "os_count": qs.count(),
+            "total_spent": str(agg["total_spent"] or 0),
+            "first_visit": first_visit["first_visit"],
+        }
+
+        serializer = VehicleHistoryItemSerializer(qs, many=True)
+        return Response({"summary": summary, "results": serializer.data})
 
 
 # ── Versioning ViewSets ──────────────────────────────────────────────────────

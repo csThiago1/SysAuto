@@ -6,7 +6,7 @@ from rest_framework.routers import DefaultRouter, SimpleRouter
 
 from .views import (
     CalendarView, DashboardStatsView, HolidayViewSet,
-    ServiceCatalogViewSet, ServiceOrderViewSet, VehicleHistoryView,
+    ServiceCatalogViewSet, ServiceOrderViewSet,
     ServiceOrderVersionViewSet, ServiceOrderEventViewSet, ServiceOrderParecerViewSet,
 )
 
@@ -31,7 +31,7 @@ pareceres_router.register(r"", ServiceOrderParecerViewSet, basename="service-ord
 urlpatterns = [
     path("dashboard/stats/", DashboardStatsView.as_view(), name="service-order-dashboard-stats"),
     path("calendar/", CalendarView.as_view(), name="service-order-calendar"),
-    path("vehicle-history/", VehicleHistoryView.as_view(), name="vehicle-history"),
+    # vehicle-history/ é gerado automaticamente pelo router via @action no ServiceOrderViewSet
     path("service-catalog/", include(catalog_router.urls)),
     path("holidays/", include(holiday_router.urls)),
     path("versions/", include(versions_router.urls)),

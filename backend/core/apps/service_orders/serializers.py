@@ -1046,3 +1046,25 @@ class FinancialSummarySerializer(serializers.Serializer):
     insurer_owes = serializers.DecimalField(max_digits=14, decimal_places=2)
     grand_total = serializers.DecimalField(max_digits=14, decimal_places=2)
     active_version = VersionDetailSerializer(allow_null=True)
+
+
+class VehicleHistoryItemSerializer(serializers.ModelSerializer):
+    """Serializer compacto para itens do histórico de veículo."""
+
+    total = serializers.FloatField(read_only=True)
+
+    class Meta:
+        model = ServiceOrder
+        fields = [
+            "id",
+            "number",
+            "status",
+            "customer_name",
+            "entry_date",
+            "delivered_at",
+            "parts_total",
+            "services_total",
+            "discount_total",
+            "total",
+        ]
+        read_only_fields = fields
