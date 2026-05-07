@@ -6,7 +6,7 @@ import logging
 from datetime import timedelta
 from typing import Any, Optional
 
-from django.db.models import Count, DecimalField, F, Max, Min, Q, QuerySet, Sum
+from django.db.models import Count, DecimalField, Exists, F, Max, Min, OuterRef, Q, QuerySet, Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -65,6 +65,7 @@ from .serializers import (
     VersionDetailSerializer,
     VehicleHistoryItemSerializer,
 )
+from apps.accounts_receivable.models import ReceivableDocument
 from .billing import BillingService
 from .services import ServiceOrderDeliveryService, ServiceOrderService
 
@@ -189,10 +190,42 @@ class ServiceOrderViewSet(
             )
             .order_by("-opened_at")
         )
+
+        qs = qs.annotate(
+            _has_any_receivables=Exists(
+                ReceivableDocument.objects.filter(
+                    service_order_id=OuterRef("pk"),
+                    is_active=True,
+                )
+            ),
+            _has_pending_receivables=Exists(
+                ReceivableDocument.objects.filter(
+                    service_order_id=OuterRef("pk"),
+                    is_active=True,
+                ).exclude(status="received")
+            ),
+        )
+
         if self.request.query_params.get("exclude_closed") == "true":
             qs = qs.exclude(
                 status__in=[ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED]
             )
+
+        closure = self.request.query_params.get("closure")
+        if closure == "closed":
+            qs = qs.filter(
+                status=ServiceOrderStatus.DELIVERED,
+                invoice_issued=True,
+                _has_any_receivables=True,
+                _has_pending_receivables=False,
+            )
+        elif closure == "pending":
+            qs = qs.filter(status=ServiceOrderStatus.DELIVERED).exclude(
+                invoice_issued=True,
+                _has_any_receivables=True,
+                _has_pending_receivables=False,
+            )
+
         return qs
 
     def get_serializer_class(self):  # type: ignore[override]

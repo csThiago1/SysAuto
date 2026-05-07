@@ -420,6 +420,7 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
     consultant_name = serializers.SerializerMethodField()
     days_in_shop = serializers.SerializerMethodField()
     allowed_transitions = serializers.SerializerMethodField()
+    closure_status = serializers.SerializerMethodField()
 
     class Meta:
         model = ServiceOrder
@@ -454,6 +455,7 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
             "is_active",
             "opened_at",
             "created_at",
+            "closure_status",
         ]
         read_only_fields = ["id", "total", "status_display", "days_in_shop", "created_at"]
 
@@ -470,6 +472,40 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
 
     def get_allowed_transitions(self, obj: ServiceOrder) -> list[str]:
         return VALID_TRANSITIONS.get(obj.status, [])
+
+    def get_closure_status(self, obj: ServiceOrder) -> Optional[dict]:
+        """Retorna o status de encerramento da OS (entregue + faturada + paga).
+
+        Retorna None se a OS não estiver no status delivered.
+        Usa anotações do queryset quando disponíveis; caso contrário faz query direta.
+        """
+        if obj.status != ServiceOrderStatus.DELIVERED:
+            return None
+
+        is_invoiced: bool = bool(obj.invoice_issued)
+
+        has_any = getattr(obj, "_has_any_receivables", None)
+        has_pending = getattr(obj, "_has_pending_receivables", None)
+
+        if has_any is None or has_pending is None:
+            from apps.accounts_receivable.models import ReceivableDocument
+
+            qs = ReceivableDocument.objects.filter(
+                service_order_id=obj.pk,
+                is_active=True,
+            )
+            has_any = qs.exists()
+            has_pending = qs.exclude(status="received").exists() if has_any else False
+
+        is_paid: bool = bool(has_any) and not bool(has_pending)
+        is_closed: bool = is_invoiced and is_paid
+
+        return {
+            "is_delivered": True,
+            "is_invoiced": is_invoiced,
+            "is_paid": is_paid,
+            "is_closed": is_closed,
+        }
 
 
 class ServiceOrderDetailSerializer(serializers.ModelSerializer):
@@ -503,6 +539,7 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
     # Expõe o PK inteiro da Person FK para que o frontend possa renderizar
     # dados do cliente mesmo quando customer_uuid é nulo (OS do novo fluxo).
     customer_person_id = serializers.SerializerMethodField()
+    closure_status = serializers.SerializerMethodField()
 
     class Meta:
         model = ServiceOrder
@@ -529,6 +566,40 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
         if obj.consultant:
             return obj.consultant.get_full_name() or obj.consultant.email
         return ""
+
+    def get_closure_status(self, obj: ServiceOrder) -> Optional[dict]:
+        """Retorna o status de encerramento da OS (entregue + faturada + paga).
+
+        Retorna None se a OS não estiver no status delivered.
+        Usa anotações do queryset quando disponíveis; caso contrário faz query direta.
+        """
+        if obj.status != ServiceOrderStatus.DELIVERED:
+            return None
+
+        is_invoiced: bool = bool(obj.invoice_issued)
+
+        has_any = getattr(obj, "_has_any_receivables", None)
+        has_pending = getattr(obj, "_has_pending_receivables", None)
+
+        if has_any is None or has_pending is None:
+            from apps.accounts_receivable.models import ReceivableDocument
+
+            qs = ReceivableDocument.objects.filter(
+                service_order_id=obj.pk,
+                is_active=True,
+            )
+            has_any = qs.exists()
+            has_pending = qs.exclude(status="received").exists() if has_any else False
+
+        is_paid: bool = bool(has_any) and not bool(has_pending)
+        is_closed: bool = is_invoiced and is_paid
+
+        return {
+            "is_delivered": True,
+            "is_invoiced": is_invoiced,
+            "is_paid": is_paid,
+            "is_closed": is_closed,
+        }
 
 
 class ServiceOrderCreateSerializer(serializers.ModelSerializer):
