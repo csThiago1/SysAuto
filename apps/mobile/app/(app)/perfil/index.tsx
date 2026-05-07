@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import { Colors, Shadow, Spacing } from '@/constants/theme';
@@ -8,8 +8,11 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { InfoRow } from '@/components/ui/InfoRow';
 import { SectionDivider } from '@/components/ui/SectionDivider';
+import { SignatureCanvas } from '@/components/ui/SignatureCanvas';
 import { useAuth } from '@/hooks/useAuth';
+import { useEmployeeSignature } from '@/hooks/useEmployeeSignature';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { toast } from '@/stores/toast.store';
 
 const ROLE_LABELS: Record<string, string> = {
   OWNER: 'Proprietário',
@@ -22,10 +25,12 @@ const ROLE_LABELS: Record<string, string> = {
 export default function PerfilScreen() {
   const { user, logout } = useAuth();
   const [showLogout, setShowLogout] = useState(false);
+  const { signatureUrl, isLoading: sigLoading, uploadSignature, isUploading } = useEmployeeSignature();
+  const [editingSignature, setEditingSignature] = useState(false);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-      <View style={styles.container}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
         <Text variant="heading2" style={styles.pageTitle}>
           Perfil
         </Text>
@@ -59,6 +64,47 @@ export default function PerfilScreen() {
             icon="business-outline"
             noDivider
           />
+        </Card>
+
+        {/* Assinatura */}
+        <SectionDivider label="MINHA ASSINATURA" />
+        <Card style={styles.infoCard}>
+          {sigLoading ? (
+            <Text variant="body" color={Colors.textTertiary}>Carregando...</Text>
+          ) : signatureUrl && !editingSignature ? (
+            <View style={styles.signaturePreview}>
+              <SignatureCanvas
+                initialImage={signatureUrl}
+                disabled
+                height={150}
+                onSave={() => {}}
+              />
+              <Button
+                variant="ghost"
+                label="Alterar Assinatura"
+                onPress={() => setEditingSignature(true)}
+              />
+            </View>
+          ) : (
+            <SignatureCanvas
+              height={180}
+              onSave={async (base64) => {
+                try {
+                  await uploadSignature(base64);
+                  setEditingSignature(false);
+                  toast.success('Assinatura salva com sucesso');
+                } catch {
+                  toast.error('Erro ao salvar assinatura');
+                }
+              }}
+              onClear={() => {}}
+            />
+          )}
+          {isUploading && (
+            <Text variant="bodySmall" color={Colors.textTertiary} style={{ textAlign: 'center' }}>
+              Salvando...
+            </Text>
+          )}
         </Card>
 
         {/* Sobre o app */}
@@ -99,7 +145,7 @@ export default function PerfilScreen() {
             fullWidth
           />
         </View>
-      </View>
+      </ScrollView>
 
       <ConfirmDialog
         visible={showLogout}
@@ -126,6 +172,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: Spacing.lg,
+  },
+  scrollContent: {
     paddingBottom: 120,
     gap: 20,
   },
@@ -154,6 +202,10 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     gap: 0,
+  },
+  signaturePreview: {
+    gap: Spacing.sm,
+    alignItems: 'center',
   },
   actions: {
     marginTop: Spacing.sm,
