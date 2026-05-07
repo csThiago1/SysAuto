@@ -143,11 +143,6 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Dev hint */}
-          {__DEV__ && (
-            <Text style={styles.devHint}>DEV: qualquer email + paddock123</Text>
-          )}
-
           {/* Spacer bottom */}
           <View style={styles.spacer} />
 
@@ -179,8 +174,8 @@ const styles = StyleSheet.create({
 
   // Logo
   logo: {
-    width: 180,
-    height: 70,
+    width: 240,
+    height: 100,
     tintColor: Colors.textPrimary,
     marginBottom: 8,
   },
@@ -275,12 +270,6 @@ const styles = StyleSheet.create({
   },
 
   // Footer
-  devHint: {
-    marginTop: 24,
-    fontSize: 10,
-    color: 'rgba(255,255,255,0.1)',
-    fontStyle: 'italic',
-  },
   powered: {
     ...Typography.labelMono,
     color: 'rgba(255,255,255,0.15)',

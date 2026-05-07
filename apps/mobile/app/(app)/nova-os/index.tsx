@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Colors, Radii, Spacing, SemanticColors, Typography } from '@/constants/theme';
+import { Colors, Radii, Spacing, SemanticColors } from '@/constants/theme';
 
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { useCreateServiceOrder, type CreateOSPayload } from '@/hooks/useCreateServiceOrder';
@@ -14,25 +14,9 @@ import { Step2Customer } from '@/components/nova-os/Step2Customer';
 import { Step3OSType } from '@/components/nova-os/Step3OSType';
 import { Step4Review } from '@/components/nova-os/Step4Review';
 import { Text } from '@/components/ui/Text';
-
-// ─── Step names ───────────────────────────────────────────────────────────────
-
-const STEP_NAMES = ['Veículo', 'Cliente', 'Tipo da OS', 'Revisão'];
-
-// ─── ProgressBar ──────────────────────────────────────────────────────────────
-
-function ProgressBar({ step, total }: { step: number; total: number }): React.JSX.Element {
-  return (
-    <View style={styles.progressContainer}>
-      {Array.from({ length: total }).map((_, i) => (
-        <View
-          key={i}
-          style={[styles.progressSegment, i <= step && styles.progressSegmentActive]}
-        />
-      ))}
-    </View>
-  );
-}
+import { StepIndicator } from '@/components/ui/StepIndicator';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { toast } from '@/stores/toast.store';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -41,11 +25,16 @@ export default function NovaOSScreen(): React.JSX.Element {
   const router = useRouter();
   const isOnline = useConnectivity();
   const [activeStep, setActiveStep] = useState<number>(0);
+  const [showBackConfirm, setShowBackConfirm] = useState(false);
   const { create, isCreating, error } = useCreateServiceOrder();
 
   const handleBack = useCallback((): void => {
-    setActiveStep((prev) => (prev > 0 ? prev - 1 : prev));
-  }, []);
+    if (activeStep === 0) {
+      setShowBackConfirm(true);
+    } else {
+      setActiveStep((prev) => prev - 1);
+    }
+  }, [activeStep]);
 
   const handleConfirm = useCallback(
     async (startChecklist: boolean): Promise<void> => {
@@ -72,17 +61,22 @@ export default function NovaOSScreen(): React.JSX.Element {
             ? parseFloat(store.deductible)
             : undefined,
       };
-      const result = await create(payload);
-      if (result !== null) {
-        store.reset();
-        if (startChecklist) {
-          router.push(`/checklist/${result.localId}` as never);
-        } else {
-          router.replace('/(app)' as never);
+      try {
+        const result = await create(payload);
+        if (result !== null) {
+          toast.success('OS criada com sucesso');
+          store.reset();
+          if (startChecklist) {
+            router.push(`/checklist/${result.localId}` as never);
+          } else {
+            router.replace('/(app)' as never);
+          }
         }
+      } catch {
+        toast.error('Erro ao criar OS. Tente novamente.');
       }
     },
-    [create],
+    [create, router],
   );
 
   return (
@@ -95,22 +89,21 @@ export default function NovaOSScreen(): React.JSX.Element {
         style={[styles.header, { paddingTop: insets.top + 8 }]}
       >
         <View style={styles.headerRow}>
-          {activeStep > 0 ? (
-            <TouchableOpacity
-              onPress={handleBack}
-              style={styles.headerBtn}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.headerSpacer} />
-          )}
+          <TouchableOpacity
+            onPress={handleBack}
+            style={styles.headerBtn}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
+          </TouchableOpacity>
           <Text style={styles.headerTitle}>Nova OS</Text>
           <View style={styles.headerSpacer} />
         </View>
-        <ProgressBar step={activeStep} total={4} />
-        <Text style={styles.stepName}>{STEP_NAMES[activeStep]}</Text>
+        <StepIndicator
+          current={activeStep}
+          total={4}
+          labels={['Veículo', 'Cliente', 'Tipo da OS', 'Revisão']}
+        />
       </LinearGradient>
 
       {/* Offline banner */}
@@ -141,6 +134,21 @@ export default function NovaOSScreen(): React.JSX.Element {
           />
         )}
       </View>
+
+      <ConfirmDialog
+        visible={showBackConfirm}
+        title="Descartar OS?"
+        message="Os dados preenchidos serão perdidos. Deseja sair?"
+        confirmLabel="Sair"
+        cancelLabel="Continuar"
+        variant="danger"
+        onConfirm={() => {
+          setShowBackConfirm(false);
+          useNewOSStore.getState().reset();
+          router.back();
+        }}
+        onCancel={() => setShowBackConfirm(false)}
+      />
     </View>
   );
 }
@@ -179,28 +187,6 @@ const styles = StyleSheet.create({
   headerSpacer: {
     width: 40,
     height: 40,
-  },
-  progressContainer: {
-    flexDirection: 'row',
-    gap: Spacing.xs,
-    marginTop: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
-  },
-  progressSegment: {
-    flex: 1,
-    height: 3,
-    borderRadius: 2,
-    backgroundColor: Colors.borderSubtle,
-  },
-  progressSegmentActive: {
-    backgroundColor: Colors.brand,
-  },
-  stepName: {
-    textAlign: 'center',
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    marginTop: 6,
   },
   offlineBanner: {
     flexDirection: 'row',

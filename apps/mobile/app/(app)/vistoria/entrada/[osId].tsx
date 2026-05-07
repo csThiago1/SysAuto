@@ -24,6 +24,8 @@ import { usePhotoStore, uploadPendingPhotos } from '@/stores/photo.store';
 import { useChecklistItemsStore, syncChecklistItems } from '@/stores/checklist-items.store';
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { useShallow } from 'zustand/react/shallow';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { toast } from '@/stores/toast.store';
 import { VALID_TRANSITIONS } from '@paddock/types';
 import type { ServiceOrderStatus } from '@paddock/types';
 import {
@@ -61,6 +63,7 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
   const [activeTab, setActiveTab] = useState<string>('fotos');
   const [observacoes, setObservacoes] = useState<string>('');
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [showConcluir, setShowConcluir] = useState<boolean>(false);
 
   const tabOpacity = useRef(new Animated.Value(1)).current;
 
@@ -140,9 +143,10 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
       : nextStatuses[0]) as ServiceOrderStatus;
     try {
       await updateStatus(targetStatus);
+      toast.success('Vistoria de entrada concluída');
       router.replace(`/(app)/os/${osId ?? ''}`);
     } catch {
-      // erro tratado pelo hook
+      toast.error('Erro ao concluir vistoria');
     }
   }, [nextStatuses, updateStatus, router, osId]);
 
@@ -306,7 +310,7 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
             </Text>
             <TouchableOpacity
               style={[styles.concluirBtn, isUpdating && styles.concluirBtnDisabled]}
-              onPress={handleConcluir}
+              onPress={() => setShowConcluir(true)}
               activeOpacity={0.85}
               disabled={isUpdating}
             >
@@ -329,6 +333,19 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
           </View>
         )}
       </View>
+
+      <ConfirmDialog
+        visible={showConcluir}
+        title="Concluir Vistoria de Entrada"
+        message="Após concluir, o status da OS será atualizado. Deseja continuar?"
+        confirmLabel="Concluir"
+        cancelLabel="Voltar"
+        onConfirm={() => {
+          setShowConcluir(false);
+          void handleConcluir();
+        }}
+        onCancel={() => setShowConcluir(false)}
+      />
     </SafeAreaView>
   );
 }

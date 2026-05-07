@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { InfoRow } from '@/components/ui/InfoRow';
 import { SectionDivider } from '@/components/ui/SectionDivider';
 import { useAuth } from '@/hooks/useAuth';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 const ROLE_LABELS: Record<string, string> = {
   OWNER: 'Proprietário',
@@ -20,10 +21,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 export default function PerfilScreen() {
   const { user, logout } = useAuth();
-
-  async function handleLogout() {
-    await logout();
-  }
+  const [showLogout, setShowLogout] = useState(false);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
@@ -83,11 +81,25 @@ export default function PerfilScreen() {
           <Button
             variant="danger"
             label="Sair da conta"
-            onPress={handleLogout}
+            onPress={() => setShowLogout(true)}
             fullWidth
           />
         </View>
       </View>
+
+      <ConfirmDialog
+        visible={showLogout}
+        title="Sair da conta"
+        message="Tem certeza que deseja sair? Dados não sincronizados podem ser perdidos."
+        confirmLabel="Sair"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={() => {
+          setShowLogout(false);
+          void logout();
+        }}
+        onCancel={() => setShowLogout(false)}
+      />
     </SafeAreaView>
   );
 }

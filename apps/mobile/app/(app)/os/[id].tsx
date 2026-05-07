@@ -31,6 +31,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { usePhotoStore, uploadPendingPhotos } from '@/stores/photo.store';
 import { useChecklistItemsStore } from '@/stores/checklist-items.store';
 import { useConnectivity } from '@/hooks/useConnectivity';
+import { toast } from '@/stores/toast.store';
 import { VALID_TRANSITIONS } from '@paddock/types';
 import type { ServiceOrderStatus } from '@paddock/types';
 import type { OSStatus } from '@/constants/theme';
@@ -452,7 +453,10 @@ const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
       .map((p) => p.id);
     errorIds.forEach((pid) => usePhotoStore.getState().retryPhoto(pid));
     setIsUploading(true);
-    void uploadPendingPhotos().finally(() => setIsUploading(false));
+    void uploadPendingPhotos()
+      .then(() => { toast.success('Foto enviada'); })
+      .catch(() => { toast.error('Erro ao enviar foto'); })
+      .finally(() => setIsUploading(false));
   }, [isUploading, osId]);
 
   return (
@@ -636,8 +640,9 @@ export default function OSDetailScreen(): React.JSX.Element {
     try {
       await updateStatus(newStatus);
       setStatusModalVisible(false);
+      toast.success(`Status atualizado: ${getStatusLabel(newStatus)}`);
     } catch {
-      // erro exibido via toast ou deixado para futuro refinamento
+      toast.error('Erro ao atualizar status');
     }
   }, [updateStatus]);
 

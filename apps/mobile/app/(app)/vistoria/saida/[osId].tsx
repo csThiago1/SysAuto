@@ -23,6 +23,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { usePhotoStore, uploadPendingPhotos } from '@/stores/photo.store';
 import type { PhotoQueueItem } from '@/stores/photo.store';
 import { useConnectivity } from '@/hooks/useConnectivity';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { toast } from '@/stores/toast.store';
 import { VALID_TRANSITIONS } from '@paddock/types';
 import type { ServiceOrderStatus } from '@paddock/types';
 import { getStatusLabel, getStatusColor } from '@/components/os/OSStatusBadge';
@@ -202,6 +204,7 @@ export default function VistoriaSaidaScreen(): React.JSX.Element {
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [beforePhotos, setBeforePhotos] = useState<RemotePhoto[]>([]);
   const [beforeLoaded, setBeforeLoaded] = useState<boolean>(false);
+  const [showConcluir, setShowConcluir] = useState<boolean>(false);
 
   const tabOpacity = useRef(new Animated.Value(1)).current;
 
@@ -315,9 +318,10 @@ export default function VistoriaSaidaScreen(): React.JSX.Element {
       : nextStatuses[0]) as ServiceOrderStatus;
     try {
       await updateStatus(targetStatus);
+      toast.success('Vistoria final concluída');
       router.replace(`/(app)/os/${osId ?? ''}`);
     } catch {
-      // erro tratado pelo hook
+      toast.error('Erro ao concluir vistoria final');
     }
   }, [nextStatuses, updateStatus, router, osId]);
 
@@ -501,7 +505,7 @@ export default function VistoriaSaidaScreen(): React.JSX.Element {
             </Text>
             <TouchableOpacity
               style={[styles.concluirBtn, isUpdating && styles.concluirBtnDisabled]}
-              onPress={handleConcluir}
+              onPress={() => setShowConcluir(true)}
               activeOpacity={0.85}
               disabled={isUpdating}
             >
@@ -524,6 +528,19 @@ export default function VistoriaSaidaScreen(): React.JSX.Element {
           </View>
         )}
       </View>
+
+      <ConfirmDialog
+        visible={showConcluir}
+        title="Concluir Vistoria Final"
+        message="Após concluir, a OS será marcada como pronta para entrega. Deseja continuar?"
+        confirmLabel="Concluir"
+        cancelLabel="Voltar"
+        onConfirm={() => {
+          setShowConcluir(false);
+          void handleConcluir();
+        }}
+        onCancel={() => setShowConcluir(false)}
+      />
     </SafeAreaView>
   );
 }

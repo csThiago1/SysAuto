@@ -6,6 +6,7 @@ import { DatabaseProvider } from '@nozbe/watermelondb/DatabaseProvider';
 import { useAuthStore } from '@/stores/auth.store';
 import { OfflineBanner } from '@/components/common/OfflineBanner';
 import { SplashScreen } from '@/components/ui/SplashScreen';
+import { Toast } from '@/components/ui/Toast';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { database } from '@/db';
 
@@ -66,6 +67,7 @@ export default function RootLayout() {
               <OfflineBanner />
               <Slot />
             </AuthGuard>
+            <Toast />
           </QueryClientProvider>
         </SafeAreaProvider>
       </DatabaseProvider>
