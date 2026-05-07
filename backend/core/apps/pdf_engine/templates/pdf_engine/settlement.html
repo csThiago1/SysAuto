@@ -4,22 +4,42 @@
 
 {% block content %}
     <div class="section">
-        <h2 class="section-title"><span class="section-number">1.</span>Dados do Cliente</h2>
-        {% include "pdf_engine/_partials/customer_info.html" %}
+        <h2 class="section-title"><span class="section-number">01</span>Cliente e Veículo</h2>
+        <div class="info-grid">
+            <div class="info-row">
+                <span class="info-label">Cliente</span>
+                <span class="info-value bold">{{ customer.name|default:"—" }}</span>
+            </div>
+            {% if customer.cpf %}
+            <div class="info-row">
+                <span class="info-label">CPF</span>
+                <span class="info-value">{{ customer.cpf }}</span>
+            </div>
+            {% endif %}
+            {% if customer.cnpj %}
+            <div class="info-row">
+                <span class="info-label">CNPJ</span>
+                <span class="info-value">{{ customer.cnpj }}</span>
+            </div>
+            {% endif %}
+            <div class="info-row">
+                <span class="info-label">Veículo</span>
+                <span class="info-value bold">{{ vehicle.make }} {{ vehicle.model }} — {{ vehicle.color|default:"" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Placa / Ano</span>
+                <span class="info-value bold">{{ vehicle.plate|default:"—" }} · {{ vehicle.year|default:"—" }}</span>
+            </div>
+        </div>
     </div>
 
     <div class="section">
-        <h2 class="section-title"><span class="section-number">2.</span>Dados do Veículo</h2>
-        {% include "pdf_engine/_partials/vehicle_info.html" %}
-    </div>
-
-    <div class="section">
-        <h2 class="section-title"><span class="section-number">3.</span>Serviços Realizados</h2>
+        <h2 class="section-title"><span class="section-number">02</span>Serviços Realizados</h2>
         {% include "pdf_engine/_partials/services_table.html" %}
     </div>
 
     <div class="section">
-        <h2 class="section-title"><span class="section-number">4.</span>Forma de Pagamento e Quitação</h2>
+        <h2 class="section-title"><span class="section-number">03</span>Pagamento e Quitação</h2>
         <div class="info-grid">
             <div class="info-row">
                 <span class="info-label">Forma de pagamento</span>
@@ -41,7 +61,7 @@
     </div>
 
     <div class="section">
-        <h2 class="section-title"><span class="section-number">5.</span>Declaração de Quitação</h2>
+        <h2 class="section-title"><span class="section-number">04</span>Declaração de Quitação</h2>
         <p style="font-size: 10px; text-align: justify; line-height: 1.6;">
             Por meio do presente instrumento, o cliente <strong>{{ customer.name|default:"" }}</strong>,
             {% if customer.cpf %}portador do CPF {{ customer.cpf }},{% endif %}
@@ -57,7 +77,7 @@
     </div>
 
     <div class="section">
-        <h2 class="section-title"><span class="section-number">6.</span>Assinaturas</h2>
+        <h2 class="section-title"><span class="section-number">05</span>Assinaturas</h2>
         {% include "pdf_engine/_partials/signature_block.html" %}
     </div>
 {% endblock %}

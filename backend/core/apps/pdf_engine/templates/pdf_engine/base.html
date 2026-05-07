@@ -34,12 +34,16 @@
             background-color: #000;
             padding: 6px;
             border-radius: 4px;
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
         .doc-header-logo img {
             height: 42px;
             width: auto;
             display: block;
+            vertical-align: middle;
         }
         .doc-header-info {
             flex: 1;
@@ -167,6 +171,7 @@
 <body>
     {% include "pdf_engine/_partials/watermark.html" %}
 
+    {% block doc_header %}
     <div class="doc-header">
         {% if logo_base64 %}
         <div class="doc-header-logo">
@@ -186,6 +191,7 @@
             </p>
         </div>
     </div>
+    {% endblock %}
 
     {% block content %}{% endblock %}
 </body>
