@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
+import { Card } from '@/components/ui/Card';
 import { Colors, Radii, Spacing, SemanticColors, type OSStatus } from '@/constants/theme';
 import {
   useNotificationFeed,
@@ -58,41 +59,43 @@ function NotificationItem({
   const isAuto = Boolean(item.triggered_by_field);
 
   return (
-    <TouchableOpacity style={styles.item} onPress={onPress} activeOpacity={0.75}>
-      <View style={[styles.itemBar, { backgroundColor: color }]} />
-      <View style={styles.itemContent}>
-        <View style={styles.itemTopRow}>
-          <Text style={styles.itemOS}>OS #{item.os_number}</Text>
-          {isAuto && (
-            <View style={styles.autoBadge}>
-              <Ionicons name="flash" size={10} color={Colors.warning} />
-              <Text style={styles.autoBadgeText}>automático</Text>
-            </View>
-          )}
-          <Text style={styles.itemTime}>{timeAgo(item.created_at)}</Text>
-        </View>
+    <Card padded={false} style={styles.item}>
+      <TouchableOpacity style={styles.itemInner} onPress={onPress} activeOpacity={0.75}>
+        <View style={[styles.itemBar, { backgroundColor: color }]} />
+        <View style={styles.itemContent}>
+          <View style={styles.itemTopRow}>
+            <Text style={styles.itemOS}>OS #{item.os_number}</Text>
+            {isAuto && (
+              <View style={styles.autoBadge}>
+                <Ionicons name="flash" size={10} color={Colors.warning} />
+                <Text style={styles.autoBadgeText}>automático</Text>
+              </View>
+            )}
+            <Text style={styles.itemTime}>{timeAgo(item.created_at)}</Text>
+          </View>
 
-        <View style={styles.statusRow}>
-          <Text style={styles.fromStatus}>{item.from_status_display}</Text>
-          <Ionicons name="arrow-forward" size={12} color={Colors.textTertiary} />
-          <StatusDot status={item.to_status as OSStatus} size={8} />
-          <Text style={[styles.toStatus, { color }]}>{item.to_status_display}</Text>
-        </View>
+          <View style={styles.statusRow}>
+            <Text style={styles.fromStatus}>{item.from_status_display}</Text>
+            <Ionicons name="arrow-forward" size={12} color={Colors.textTertiary} />
+            <StatusDot status={item.to_status as OSStatus} size={8} />
+            <Text style={[styles.toStatus, { color }]}>{item.to_status_display}</Text>
+          </View>
 
-        <Text style={styles.itemVehicle} numberOfLines={1}>
-          {vehicle} · {item.os_plate}
-        </Text>
-        <Text style={styles.itemCustomer} numberOfLines={1}>
-          {item.os_customer_name}
-        </Text>
-        {!isAuto && (
-          <Text style={styles.itemAgent} numberOfLines={1}>
-            por {item.changed_by_name}
+          <Text style={styles.itemVehicle} numberOfLines={1}>
+            {vehicle} · {item.os_plate}
           </Text>
-        )}
-      </View>
-      <Ionicons name="chevron-forward" size={14} color={Colors.textTertiary} />
-    </TouchableOpacity>
+          <Text style={styles.itemCustomer} numberOfLines={1}>
+            {item.os_customer_name}
+          </Text>
+          {!isAuto && (
+            <Text style={styles.itemAgent} numberOfLines={1}>
+              por {item.changed_by_name}
+            </Text>
+          )}
+        </View>
+        <Ionicons name="chevron-forward" size={14} color={Colors.textTertiary} />
+      </TouchableOpacity>
+    </Card>
   );
 }
 
@@ -246,13 +249,11 @@ const styles = StyleSheet.create({
 
   // Item
   item: {
+    overflow: 'hidden',
+  },
+  itemInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surfaceLight,
-    borderRadius: Radii.md,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: Colors.borderSubtle,
   },
   itemBar: {
     width: 4,
