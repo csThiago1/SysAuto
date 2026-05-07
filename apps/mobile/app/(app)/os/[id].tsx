@@ -28,6 +28,9 @@ import { getStatusLabel, getStatusColor, getStatusBackgroundColor } from '@/comp
 import { ShimmerBlock } from '@/components/ui/ShimmerBlock';
 import { useServiceOrder } from '@/hooks/useServiceOrders';
 import { useUpdateOSStatus } from '@/hooks/useUpdateOSStatus';
+import { SignatureCanvas } from '@/components/ui/SignatureCanvas';
+import { useSignatureCapture } from '@/hooks/useSignatureCapture';
+import { useOSDocuments, downloadAndSharePdf } from '@/hooks/useOSDocuments';
 import { useShallow } from 'zustand/react/shallow';
 import { usePhotoStore, uploadPendingPhotos } from '@/stores/photo.store';
 import { useChecklistItemsStore } from '@/stores/checklist-items.store';
@@ -88,7 +91,7 @@ interface ServiceOrderDetail {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const TAB_NAMES = ['Geral', 'Peças', 'Serviços', 'Fotos', 'Histórico'];
+const TAB_NAMES = ['Geral', 'Peças', 'Serviços', 'Fotos', 'Docs', 'Histórico'];
 
 const FOLDER_LABELS: Record<string, string> = {
   checklist_entrada: 'Checklist de Entrada',
@@ -606,6 +609,10 @@ export default function OSDetailScreen(): React.JSX.Element {
 
   const { update: updateStatus, isUpdating } = useUpdateOSStatus(id ?? '');
 
+  const signatureCapture = useSignatureCapture();
+  const [showDeliverySignature, setShowDeliverySignature] = useState(false);
+  const { documents, isLoading: docsLoading, generateDocument, isGenerating } = useOSDocuments(id ?? '');
+
   const osId = id ?? '';
   const photoCount = usePhotoStore(
     (s) => s.queue.filter((i) => i.osId === osId).length,
@@ -646,6 +653,11 @@ export default function OSDetailScreen(): React.JSX.Element {
   }, []);
 
   const handleSelectStatus = useCallback(async (newStatus: ServiceOrderStatus): Promise<void> => {
+    if (newStatus === 'delivered') {
+      setStatusModalVisible(false);
+      setShowDeliverySignature(true);
+      return;
+    }
     try {
       await updateStatus(newStatus);
       setStatusModalVisible(false);
@@ -951,8 +963,66 @@ export default function OSDetailScreen(): React.JSX.Element {
           </>
         )}
 
-        {/* ── Tab Histórico ──────────────────────────────────────────────── */}
+        {/* ── Tab Docs ─────────────────────────────────────────────────── */}
         {activeTab === 4 && (
+          <View style={{ gap: Spacing.md }}>
+            {docsLoading ? (
+              <ShimmerBlock height={80} />
+            ) : documents.length === 0 ? (
+              <Card style={styles.card}>
+                <View style={{ alignItems: 'center', padding: Spacing.xl, gap: Spacing.sm }}>
+                  <Ionicons name="document-text-outline" size={32} color={Colors.textTertiary} />
+                  <Text variant="body" color={Colors.textTertiary}>Nenhum documento gerado</Text>
+                </View>
+              </Card>
+            ) : (
+              documents.map((doc) => (
+                <Card key={doc.id} style={styles.card}>
+                  <View style={{ gap: Spacing.sm }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text variant="body" color={Colors.textPrimary}>{doc.document_type_display}</Text>
+                      <MonoLabel variant="accent">{`v${doc.version}`}</MonoLabel>
+                    </View>
+                    <Text variant="bodySmall" color={Colors.textTertiary}>
+                      {new Date(doc.generated_at).toLocaleDateString('pt-BR')} · {doc.generated_by_name}
+                    </Text>
+                    <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
+                      <Button
+                        variant="ghost"
+                        label="Compartilhar"
+                        onPress={async () => {
+                          try {
+                            await downloadAndSharePdf(doc.download_url, `${doc.document_type_display}-v${doc.version}`);
+                          } catch {
+                            toast.error('Erro ao compartilhar documento');
+                          }
+                        }}
+                      />
+                    </View>
+                  </View>
+                </Card>
+              ))
+            )}
+            <View style={{ marginHorizontal: 16 }}>
+              <Button
+                variant="secondary"
+                label={isGenerating ? 'Gerando...' : 'Gerar Documento'}
+                loading={isGenerating}
+                onPress={async () => {
+                  try {
+                    await generateDocument('os_report');
+                    toast.success('Documento gerado com sucesso');
+                  } catch {
+                    toast.error('Erro ao gerar documento');
+                  }
+                }}
+              />
+            </View>
+          </View>
+        )}
+
+        {/* ── Tab Histórico ──────────────────────────────────────────────── */}
+        {activeTab === 5 && (
           <>
             {hasHistory ? (
               <Card style={styles.card}>
@@ -983,6 +1053,59 @@ export default function OSDetailScreen(): React.JSX.Element {
         onClose={() => setStatusModalVisible(false)}
         isUpdating={isUpdating}
       />
+
+      {/* ── Modal de assinatura de entrega ─────────────────────────────── */}
+      <Modal
+        visible={showDeliverySignature}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowDeliverySignature(false)}
+      >
+        <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bg }}>
+          <View style={{ flex: 1, padding: Spacing.lg, gap: Spacing.lg }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text variant="heading3">Assinatura de Entrega</Text>
+              <TouchableOpacity onPress={async () => {
+                setShowDeliverySignature(false);
+                try {
+                  await updateStatus('delivered');
+                  toast.success(`Status atualizado: ${getStatusLabel('delivered')}`);
+                } catch {
+                  toast.error('Erro ao atualizar status');
+                }
+              }}>
+                <Text variant="body" color={Colors.textTertiary}>Pular</Text>
+              </TouchableOpacity>
+            </View>
+            <Text variant="body" color={Colors.textSecondary}>
+              O cliente confirma o recebimento do veículo em boas condições.
+            </Text>
+            <SignatureCanvas
+              height={250}
+              onSave={async (base64) => {
+                try {
+                  await signatureCapture.mutateAsync({
+                    service_order_id: order?.number ?? 0,
+                    document_type: 'OS_DELIVERY',
+                    signer_name: order?.customer_name ?? '',
+                    signature_png_base64: base64,
+                  });
+                  toast.success('Assinatura de entrega registrada');
+                } catch {
+                  toast.error('Erro ao registrar assinatura');
+                }
+                setShowDeliverySignature(false);
+                try {
+                  await updateStatus('delivered');
+                  toast.success(`Status atualizado: ${getStatusLabel('delivered')}`);
+                } catch {
+                  toast.error('Erro ao atualizar status');
+                }
+              }}
+            />
+          </View>
+        </SafeAreaView>
+      </Modal>
 
       {/* ── Modal de preview de foto ───────────────────────────────────── */}
       <Modal
