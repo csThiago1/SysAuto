@@ -11,6 +11,7 @@ import { Text } from '@/components/ui/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { Card } from '@/components/ui/Card';
 import { Colors, Radii, Spacing, SemanticColors, Typography } from '@/constants/theme';
 import {
   useCalendar,
@@ -246,27 +247,29 @@ function EventCard({
     [event.os.make, event.os.model].filter(Boolean).join(' ') || event.os.plate;
 
   return (
-    <TouchableOpacity style={styles.eventCard} onPress={onPress} activeOpacity={0.75}>
-      <View style={[styles.eventBar, { backgroundColor: color }]} />
-      <View style={styles.eventContent}>
-        <View style={styles.eventTopRow}>
-          <Text style={styles.eventOS}>OS #{event.os.number}</Text>
-          <View style={[styles.typeBadge, { backgroundColor: semantic.bg }]}>
-            <Text style={[styles.typeBadgeText, { color }]}>{label}</Text>
+    <Card padded={false} style={styles.eventCard}>
+      <TouchableOpacity style={styles.eventCardInner} onPress={onPress} activeOpacity={0.75}>
+        <View style={[styles.eventBar, { backgroundColor: color }]} />
+        <View style={styles.eventContent}>
+          <View style={styles.eventTopRow}>
+            <Text style={styles.eventOS}>OS #{event.os.number}</Text>
+            <View style={[styles.typeBadge, { backgroundColor: semantic.bg }]}>
+              <Text style={[styles.typeBadgeText, { color }]}>{label}</Text>
+            </View>
+            {event.timeStr && (
+              <Text style={styles.eventTime}>{event.timeStr}</Text>
+            )}
           </View>
-          {event.timeStr && (
-            <Text style={styles.eventTime}>{event.timeStr}</Text>
-          )}
+          <Text style={styles.eventVehicle} numberOfLines={1}>
+            {vehicle}
+          </Text>
+          <Text style={styles.eventCustomer} numberOfLines={1}>
+            {event.os.plate} · {event.os.customer_name}
+          </Text>
         </View>
-        <Text style={styles.eventVehicle} numberOfLines={1}>
-          {vehicle}
-        </Text>
-        <Text style={styles.eventCustomer} numberOfLines={1}>
-          {event.os.plate} · {event.os.customer_name}
-        </Text>
-      </View>
-      <Ionicons name="chevron-forward" size={16} color={Colors.textTertiary} />
-    </TouchableOpacity>
+        <Ionicons name="chevron-forward" size={16} color={Colors.textTertiary} />
+      </TouchableOpacity>
+    </Card>
   );
 }
 
@@ -431,14 +434,12 @@ const styles = StyleSheet.create({
 
   // Event card
   eventCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.surfaceLight,
-    borderRadius: Radii.md,
     marginBottom: Spacing.sm,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: Colors.borderSubtle,
+  },
+  eventCardInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   eventBar: {
     width: 4,
