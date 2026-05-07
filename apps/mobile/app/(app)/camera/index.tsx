@@ -16,6 +16,7 @@ import * as Crypto from 'expo-crypto';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { usePhotoStore } from '@/stores/photo.store';
 import { MAX_PHOTO_SIZE_PX, JPEG_QUALITY } from '@/lib/constants';
+import { WatermarkOverlay, type WatermarkHandle } from '@/lib/watermark';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -55,6 +56,7 @@ export default function CameraScreen(): React.ReactElement {
   const { osId, slot, folder, checklistType, returnTo } = params;
 
   const cameraRef = useRef<CameraView>(null);
+  const watermarkRef = useRef<WatermarkHandle>(null);
   const [facing, setFacing] = useState<CameraType>('back');
   const [flash, setFlash] = useState<FlashMode>('off');
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -139,6 +141,21 @@ export default function CameraScreen(): React.ReactElement {
         { compress: JPEG_QUALITY, format: SaveFormat.JPEG },
       );
 
+      // 2b. Apply watermark (DS Car · Nome · Data/Hora)
+      let finalUri = manipResult.uri;
+      if (watermarkRef.current) {
+        try {
+          finalUri = await watermarkRef.current.apply(
+            manipResult.uri,
+            manipResult.width,
+            manipResult.height,
+          );
+        } catch {
+          // Fallback: usa foto sem marca d'água
+          finalUri = manipResult.uri;
+        }
+      }
+
       // 3. Ensure photos/ sub-directory exists in the document directory
       const photosDir = new Directory(Paths.document, 'photos');
       if (!photosDir.exists) {
@@ -150,7 +167,7 @@ export default function CameraScreen(): React.ReactElement {
       const destFile = new File(photosDir, `${uuid}.jpg`);
 
       // 5. Copy from temp URI to permanent path
-      const sourceFile = new File(manipResult.uri);
+      const sourceFile = new File(finalUri);
       sourceFile.copy(destFile);
 
       // 6. Register in photo queue store
@@ -185,6 +202,7 @@ export default function CameraScreen(): React.ReactElement {
         facing={facing}
         flash={flash}
       />
+      <WatermarkOverlay ref={watermarkRef} />
 
       {/* Saving overlay */}
       {isSaving && (
