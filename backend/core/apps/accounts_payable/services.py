@@ -37,6 +37,7 @@ class PayableDocumentService:
         document_number: str = "",
         origin: str = PayableOrigin.MANUAL,
         cost_center_id: str | None = None,
+        expense_account_id: str | None = None,
         notes: str = "",
         user: "object",
     ) -> PayableDocument:
@@ -88,6 +89,7 @@ class PayableDocumentService:
             document_number=document_number,
             origin=origin,
             cost_center_id=cost_center_id,
+            expense_account_id=expense_account_id,
             notes=notes,
             status=initial_status,
             created_by=user,
@@ -99,6 +101,18 @@ class PayableDocumentService:
             supplier.name,
             amount_decimal,
         )
+
+        # Gera lançamento de reconhecimento de despesa se expense_account informado
+        if expense_account_id:
+            try:
+                from .accounting_service import PayableAccountingService
+                PayableAccountingService.post_expense_recognition(document, user)
+            except Exception as exc:
+                logger.warning(
+                    "Erro ao gerar lançamento de despesa para titulo %s: %s",
+                    document.id, exc,
+                )
+
         return document
 
     @classmethod

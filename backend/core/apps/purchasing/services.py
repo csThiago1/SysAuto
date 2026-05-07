@@ -201,24 +201,81 @@ class OrdemCompraService:
     @staticmethod
     @transaction.atomic
     def aprovar(oc_id: UUID, user_id: UUID) -> OrdemCompra:
-        """PC-5: aprovação atômica — tudo ou nada."""
+        """PC-5: aprovação atômica — tudo ou nada.
+
+        Além de aprovar a OC e atualizar pedidos/peças, gera títulos
+        a pagar (PayableDocument) agrupados por fornecedor.
+        """
+        from apps.accounts_payable.models import Supplier
+        from apps.accounts_payable.services import PayableDocumentService
+        from apps.authentication.models import GlobalUser
+
         oc = OrdemCompra.objects.select_for_update().get(pk=oc_id, is_active=True)
         if oc.status != "pendente_aprovacao":
             raise ValueError(f"OC {oc.numero} não está pendente de aprovação.")
 
+        now = timezone.now()
         OrdemCompra.objects.filter(pk=oc.pk).update(
             status="aprovada",
             aprovado_por_id=user_id,
-            aprovado_em=timezone.now(),
+            aprovado_em=now,
         )
         # Atualizar pedidos e peças
-        for item in oc.itens.filter(is_active=True, pedido_compra__isnull=False):
-            PedidoCompra.objects.filter(pk=item.pedido_compra_id).update(status="aprovado")
-            from apps.service_orders.models import ServiceOrderPart
-            pedido = PedidoCompra.objects.get(pk=item.pedido_compra_id)
-            ServiceOrderPart.objects.filter(pk=pedido.service_order_part_id).update(
-                status_peca="comprada",
-                # PC-6: custo_real NÃO preenchido aqui — só quando peça chega fisicamente
+        itens_ativos = list(oc.itens.filter(is_active=True))
+        for item in itens_ativos:
+            if item.pedido_compra_id:
+                PedidoCompra.objects.filter(pk=item.pedido_compra_id).update(status="aprovado")
+                from apps.service_orders.models import ServiceOrderPart
+                pedido = PedidoCompra.objects.get(pk=item.pedido_compra_id)
+                ServiceOrderPart.objects.filter(pk=pedido.service_order_part_id).update(
+                    status_peca="comprada",
+                )
+
+        # ── Gerar títulos a pagar agrupados por fornecedor ──────────
+        user = GlobalUser.objects.filter(pk=user_id).first()
+        today = now.date()
+
+        # Agrupa itens por fornecedor_nome (chave de agrupamento)
+        fornecedores: dict[str, list] = {}
+        for item in itens_ativos:
+            key = item.fornecedor_nome or "Fornecedor não informado"
+            fornecedores.setdefault(key, []).append(item)
+
+        for forn_nome, forn_itens in fornecedores.items():
+            total = sum(it.valor_total for it in forn_itens)
+            if total <= 0:
+                continue
+
+            # Busca ou cria Supplier pelo nome (e CNPJ se disponível)
+            cnpj = forn_itens[0].fornecedor_cnpj or ""
+            contato = forn_itens[0].fornecedor_contato or ""
+            supplier = Supplier.objects.filter(name=forn_nome).first()
+            if not supplier:
+                supplier = Supplier.objects.create(
+                    name=forn_nome,
+                    cnpj=cnpj,
+                    contact_name=contato,
+                    created_by=user,
+                )
+
+            # Prazo de entrega como vencimento (default 30 dias)
+            due_date = today + timezone.timedelta(days=30)
+
+            descricao_itens = ", ".join(it.descricao for it in forn_itens)
+            PayableDocumentService.create_payable(
+                supplier_id=str(supplier.pk),
+                description=f"OC {oc.numero} — {descricao_itens[:250]}",
+                amount=total,
+                due_date=due_date,
+                competence_date=today,
+                document_number=oc.numero,
+                origin="AUTO",
+                notes=f"Gerado automaticamente na aprovação da OC {oc.numero}.",
+                user=user,
+            )
+            logger.info(
+                "OC %s: título AP gerado para %s — R$%s",
+                oc.numero, forn_nome, total,
             )
 
         oc.refresh_from_db()

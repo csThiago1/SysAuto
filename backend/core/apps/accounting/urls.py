@@ -8,6 +8,7 @@ from .views import (
     ChartOfAccountViewSet,
     CostCenterViewSet,
     DespesaRecorrenteViewSet,
+    DREView,
     FiscalPeriodViewSet,
     FiscalYearViewSet,
     JournalEntryViewSet,
@@ -22,5 +23,6 @@ router.register(r"fiscal-periods", FiscalPeriodViewSet, basename="fiscal-period"
 router.register(r"journal-entries", JournalEntryViewSet, basename="journal-entry")
 
 urlpatterns = [
+    path("dre/", DREView.as_view(), name="dre"),
     path("", include(router.urls)),
 ]

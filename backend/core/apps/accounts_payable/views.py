@@ -134,6 +134,7 @@ class PayableDocumentViewSet(ModelViewSet):
             document_number=data.get("document_number", ""),
             origin=data.get("origin", "MAN"),
             cost_center_id=str(data["cost_center_id"]) if data.get("cost_center_id") else None,
+            expense_account_id=str(data["expense_account_id"]) if data.get("expense_account_id") else None,
             notes=data.get("notes", ""),
             user=request.user,
         )

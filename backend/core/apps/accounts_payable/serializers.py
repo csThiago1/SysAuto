@@ -135,6 +135,7 @@ class PayableDocumentSerializer(serializers.ModelSerializer):
             "origin",
             "origin_display",
             "cost_center",
+            "expense_account",
             "notes",
             "cancelled_at",
             "cancelled_by",
@@ -181,6 +182,7 @@ class CreatePayableDocumentSerializer(serializers.Serializer):
         default="MAN",
     )
     cost_center_id = serializers.UUIDField(required=False, allow_null=True)
+    expense_account_id = serializers.UUIDField(required=False, allow_null=True)
     notes = serializers.CharField(required=False, default="", allow_blank=True)
 
 

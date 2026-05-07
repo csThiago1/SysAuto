@@ -185,3 +185,91 @@ class PayableAccountingService:
                 exc_info=True,
             )
             return None
+
+    @classmethod
+    def post_expense_recognition(
+        cls,
+        document: "PayableDocument",
+        user: "GlobalUser | None",
+    ) -> "JournalEntry | None":
+        """Gera lançamento de reconhecimento de despesa ao criar título AP.
+
+        Estrutura (partidas dobradas):
+          D  expense_account (6.x)    Despesa (aluguel, material, etc.)
+          C  2.1.04.001               Fornecedores a Pagar (passivo)
+
+        Só é chamado quando document.expense_account está preenchido.
+        Para títulos sem expense_account, o reconhecimento é manual.
+
+        Args:
+            document: PayableDocument recém-criado com expense_account preenchido.
+            user: Usuário criador.
+
+        Returns:
+            JournalEntry aprovado ou None em caso de erro.
+        """
+        from apps.accounting.models.journal_entry import JournalEntryOrigin
+        from apps.accounting.services.journal_entry_service import JournalEntryService
+
+        if not document.expense_account:
+            return None
+
+        try:
+            amount = Decimal(str(document.amount))
+            if amount <= 0:
+                return None
+
+            acc_expense = document.expense_account
+            is_payroll = document.origin == "FOLHA"
+            acc_payable = _resolve_account("payroll_payable" if is_payroll else "suppliers_payable")
+
+            if not acc_payable:
+                logger.warning(
+                    "PayableAccountingService.post_expense_recognition: conta passivo "
+                    "nao encontrada para document %s.",
+                    document.id,
+                )
+                return None
+
+            lines: list[dict] = [
+                {
+                    "account_id": str(acc_expense.id),
+                    "debit_amount": str(amount),
+                    "credit_amount": "0.00",
+                    "cost_center_id": str(document.cost_center_id) if document.cost_center_id else None,
+                    "description": f"Despesa: {document.description} — {document.supplier.name}",
+                },
+                {
+                    "account_id": str(acc_payable.id),
+                    "debit_amount": "0.00",
+                    "credit_amount": str(amount),
+                    "description": f"Obrigação: {document.description} — {document.supplier.name}",
+                },
+            ]
+
+            entry = JournalEntryService.create_entry(
+                description=(
+                    f"Reconhecimento despesa: {document.description} — "
+                    f"{document.supplier.name} — R${amount}"
+                ),
+                competence_date=document.competence_date,
+                origin=JournalEntryOrigin.BANK_PAYMENT,
+                lines=lines,
+                user=user,
+                auto_approve=True,
+            )
+
+            logger.info(
+                "PayableAccountingService.post_expense_recognition: lancamento %s "
+                "gerado para document %s (conta %s)",
+                entry.number, document.id, acc_expense.code,
+            )
+            return entry
+
+        except Exception as exc:
+            logger.warning(
+                "PayableAccountingService.post_expense_recognition: erro para "
+                "document %s: %s",
+                document.id, exc, exc_info=True,
+            )
+            return None

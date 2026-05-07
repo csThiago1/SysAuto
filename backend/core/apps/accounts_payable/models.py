@@ -106,6 +106,15 @@ class PayableDocument(PaddockBaseModel):
         related_name="payables",
         verbose_name=_("Centro de Custo"),
     )
+    expense_account = models.ForeignKey(
+        "accounting.ChartOfAccount",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="payables",
+        verbose_name=_("Conta de Despesa"),
+        help_text=_("Conta contábil para reconhecimento da despesa (6.x). Se vazio, não gera lançamento de despesa."),
+    )
     notes = models.TextField(_("Observacoes"), blank=True, default="")
     cancelled_at = models.DateTimeField(_("Cancelado em"), null=True, blank=True)
     cancelled_by = models.ForeignKey(
