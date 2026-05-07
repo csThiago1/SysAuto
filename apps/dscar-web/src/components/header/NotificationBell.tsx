@@ -36,7 +36,7 @@ function OrderItem({ item }: { item: OverdueServiceOrder }): React.ReactElement 
 
   return (
     <Link
-      href={`/service-orders/${item.id}` as `/service-orders/${string}`}
+      href={`/os/${item.number}`}
       className={cn(
         "block px-3 py-2.5 border-l-4 mb-1 rounded-r hover:opacity-80 transition-opacity",
         isOverdue

@@ -69,7 +69,7 @@ export default function KanbanPage(): React.ReactElement {
           </button>
 
           <Button variant="outline" asChild>
-            <Link href="/service-orders">
+            <Link href="/os">
               <LayoutList className="h-4 w-4" />
               Ver Lista
             </Link>

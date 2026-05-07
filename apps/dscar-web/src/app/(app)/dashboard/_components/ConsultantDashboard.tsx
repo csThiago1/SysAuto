@@ -63,7 +63,7 @@ export function ConsultantDashboard({ data }: Props) {
                 return (
                   <tr key={os.id} className="hover:bg-muted/30">
                     <td className="px-4 py-2.5">
-                      <Link href={`/service-orders/${os.id}`} className="font-mono text-sm font-bold text-foreground/90 hover:text-info-600">
+                      <Link href={`/os/${os.number}`} className="font-mono text-sm font-bold text-foreground/90 hover:text-info-600">
                         {os.plate}
                       </Link>
                     </td>

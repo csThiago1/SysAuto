@@ -20,7 +20,7 @@ export default function LoginPage(): React.ReactElement {
 
   async function handleKeycloak(): Promise<void> {
     setIsLoading(true);
-    await signIn("keycloak", { callbackUrl: "/service-orders" });
+    await signIn("keycloak", { callbackUrl: "/os" });
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {

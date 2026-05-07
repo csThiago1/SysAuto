@@ -14,11 +14,11 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { newOSSchema, type NewOSInput } from "./new-os.schema"
-import { useServiceOrderCreate } from "../[id]/_hooks/useServiceOrder"
-import { CustomerSearch } from "../[id]/_components/shared/CustomerSearch"
-import { InsurerSelect } from "../[id]/_components/shared/InsurerSelect"
-import { ColorSelect } from "../[id]/_components/shared/ColorSelect"
-import { usePlateLookup } from "../[id]/_hooks/useVehicleCatalog"
+import { useServiceOrderCreate } from "../[numero]/_hooks/useServiceOrder"
+import { CustomerSearch } from "../[numero]/_components/shared/CustomerSearch"
+import { InsurerSelect } from "../[numero]/_components/shared/InsurerSelect"
+import { ColorSelect } from "../[numero]/_components/shared/ColorSelect"
+import { usePlateLookup } from "../[numero]/_hooks/useVehicleCatalog"
 import { ApiError, handleApiFormError } from "@/lib/api"
 
 const LABEL = "block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-0.5"
@@ -107,7 +107,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
     try {
       const os = await createMutation.mutateAsync(data)
       handleClose()
-      router.push(`/service-orders/${os.id}`)
+      router.push(`/os/${os.number}`)
     } catch (err) {
       if (err instanceof ApiError) {
         handleApiFormError(err, setError)

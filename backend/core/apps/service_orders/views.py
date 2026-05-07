@@ -7,6 +7,7 @@ from datetime import timedelta
 from typing import Any, Optional
 
 from django.db.models import Count, Max, Q, QuerySet
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
@@ -131,11 +132,13 @@ class ServiceOrderViewSet(
     ViewSet para Ordens de Serviço.
 
     Não expõe destroy — OS nunca são deletadas (soft delete via is_active).
-    Transição de status: POST /service-orders/{id}/transition/
-    Histórico de transições: GET /service-orders/{id}/transitions/
+    Transição de status: POST /service-orders/{number}/transition/
+    Histórico de transições: GET /service-orders/{number}/transitions/
     Próximo número: GET /service-orders/next-number/
     """
 
+    lookup_field = "pk"
+    lookup_value_regex = r"[0-9a-f-]+"
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
@@ -152,6 +155,17 @@ class ServiceOrderViewSet(
     search_fields = ["number", "casualty_number", "customer_name", "plate"]
     ordering_fields = ["number", "created_at", "entry_date", "estimated_delivery_date", "opened_at"]
     ordering = ["-opened_at"]
+
+    def get_object(self) -> ServiceOrder:
+        """Aceita tanto UUID quanto número da OS na URL."""
+        lookup = self.kwargs.get(self.lookup_field, "")
+        qs = self.filter_queryset(self.get_queryset())
+        if lookup.isdigit():
+            obj = get_object_or_404(qs, number=int(lookup))
+        else:
+            obj = get_object_or_404(qs, pk=lookup)
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def get_queryset(self) -> QuerySet[ServiceOrder]:
         """
@@ -215,7 +229,14 @@ class ServiceOrderViewSet(
         serializer = ServiceOrderUpdateSerializer(
             instance, data=request.data, partial=partial, context={"request": request}
         )
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            logger.warning(
+                "PATCH OS #%s falhou validação: %s (campos enviados: %s)",
+                instance.number,
+                serializer.errors,
+                list(request.data.keys()),
+            )
+            serializer.is_valid(raise_exception=True)
         order = ServiceOrderService.update(
             order_id=str(instance.id),
             data=serializer.validated_data,

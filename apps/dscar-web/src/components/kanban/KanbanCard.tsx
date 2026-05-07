@@ -160,7 +160,7 @@ export const KanbanCard = React.memo(function KanbanCard({
   };
 
   const handleNavigate = () => {
-    if (!isDragging) router.push(`/service-orders/${order.id}`);
+    if (!isDragging) router.push(`/os/${order.number}`);
   };
 
   return (

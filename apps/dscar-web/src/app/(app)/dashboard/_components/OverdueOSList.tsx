@@ -36,7 +36,7 @@ export function OverdueOSList({ items }: Props) {
           {items.map((os) => (
             <tr key={os.id} className="hover:bg-error-500/5">
               <td className="px-4 py-2">
-                <Link href={`/service-orders/${os.id}`} className="font-medium text-foreground/90 hover:text-info-600">
+                <Link href={`/os/${os.number}`} className="font-medium text-foreground/90 hover:text-info-600">
                   #{os.number} · {os.plate}
                 </Link>
               </td>

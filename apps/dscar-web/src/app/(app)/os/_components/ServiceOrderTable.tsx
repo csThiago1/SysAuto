@@ -17,7 +17,7 @@ import {
   StatusBadge
 } from "@/components/ui"
 import { cn } from "@/lib/utils"
-import { BillingModal } from "../[id]/_components/BillingModal"
+import { BillingModal } from "../[numero]/_components/BillingModal"
 
 interface ServiceOrderTableProps {
   orders: ServiceOrder[]
@@ -84,7 +84,7 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
               <TableRow
                 key={order.id}
                 className="group hover:bg-primary/5 cursor-pointer transition-colors"
-                onClick={() => router.push(`/service-orders/${order.id}`)}
+                onClick={() => router.push(`/os/${order.number}`)}
               >
                 {/* OS Number */}
                 <TableCell className="font-medium text-foreground">
@@ -184,7 +184,7 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
                 {/* Ação */}
                 <TableCell className="text-right">
                   <Link
-                    href={`/service-orders/${order.id}`}
+                    href={`/os/${order.number}`}
                     className="inline-flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors"
                   >
                     <ExternalLink className="h-4 w-4" />

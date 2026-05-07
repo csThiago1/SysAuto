@@ -229,7 +229,7 @@ export default function OrdensCompraPage() {
                   </td>
                   <td className="px-4 py-3">
                     <Link
-                      href={`/service-orders/${oc.service_order}`}
+                      href={`/os/${oc.os_number}`}
                       className="font-mono text-sm text-primary/70 hover:text-primary hover:underline"
                     >
                       {oc.os_number ? `#${oc.os_number}` : "--"}

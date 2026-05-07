@@ -69,7 +69,7 @@ export default function DashboardPage(): React.ReactElement {
             description="Meu painel de atendimento"
             actions={
               <Link
-                href="/service-orders/new"
+                href="/os/nova"
                 className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-foreground hover:bg-primary/90 transition-colors"
               >
                 <Plus size={16} />
@@ -92,7 +92,7 @@ export default function DashboardPage(): React.ReactElement {
             description="Visão gerencial"
             actions={
               <Link
-                href="/service-orders/new"
+                href="/os/nova"
                 className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-foreground hover:bg-primary/90 transition-colors"
               >
                 <Plus size={16} />
@@ -116,7 +116,7 @@ export default function DashboardPage(): React.ReactElement {
           description="Visão geral das Ordens de Serviço"
           actions={
             <Link
-              href="/service-orders/new"
+              href="/os/nova"
               className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-foreground hover:bg-primary/90 transition-colors"
             >
               <Plus size={16} />
@@ -167,7 +167,7 @@ export default function DashboardPage(): React.ReactElement {
               Últimas Ordens de Serviço
             </h2>
             <Link
-              href="/service-orders"
+              href="/os"
               className="text-sm font-medium text-primary hover:text-primary/90 transition-colors"
             >
               Ver todas →

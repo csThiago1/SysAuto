@@ -18,7 +18,7 @@ export default auth((req) => {
 
   // Usuário já autenticado tentando acessar /login → redireciona para OS
   if (isLoggedIn && isAuthPage) {
-    return Response.redirect(new URL("/service-orders", req.url));
+    return Response.redirect(new URL("/os", req.url));
   }
 
   const role = req.auth?.role as string | undefined;
@@ -31,9 +31,9 @@ export default auth((req) => {
   }
 
   // Criar nova OS: CONSULTANT ou superior
-  const isNewOSRoute = pathname === "/service-orders/new";
+  const isNewOSRoute = pathname === "/os/nova";
   if (isNewOSRoute && !hasMinRole(role, "CONSULTANT")) {
-    return Response.redirect(new URL("/service-orders", req.url));
+    return Response.redirect(new URL("/os", req.url));
   }
 });
 

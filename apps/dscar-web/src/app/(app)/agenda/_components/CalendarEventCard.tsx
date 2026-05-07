@@ -22,7 +22,7 @@ export function CalendarEventCard({ event, compact = false }: Props) {
 
   return (
     <Link
-      href={`/service-orders/${event.os.id}`}
+      href={`/os/${event.os.number}`}
       className={cn(
         "block rounded px-1.5 py-0.5 text-foreground text-xs font-medium truncate hover:opacity-90 transition-opacity",
         cfg.bg,

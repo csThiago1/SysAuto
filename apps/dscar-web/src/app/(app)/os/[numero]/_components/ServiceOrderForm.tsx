@@ -142,7 +142,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       <div className="px-6 pt-4 pb-0">
         <Breadcrumb
           items={[
-            { label: "Ordens de Serviço", href: "/service-orders" },
+            { label: "Ordens de Serviço", href: "/os" },
             { label: `OS #${order.number}` },
           ]}
         />

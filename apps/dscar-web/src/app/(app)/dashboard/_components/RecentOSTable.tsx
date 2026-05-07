@@ -71,7 +71,7 @@ export function RecentOSTable({ orders }: RecentOSTableProps): React.ReactElemen
             <tr
               key={order.id}
               className="hover:bg-muted/30 transition-colors cursor-pointer"
-              onClick={() => router.push(`/service-orders/${order.id}` as `/service-orders/${string}`)}
+              onClick={() => router.push(`/os/${order.number}`)}
             >
               <td className="px-4 py-3 font-plate font-semibold text-foreground/90">
                 #{formatOSNumber(order.number)}

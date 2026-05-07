@@ -11,9 +11,9 @@ import { NotificationBell } from "@/components/header/NotificationBell";
 
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard": "Dashboard",
-  "/service-orders": "Ordens de Serviço",
-  "/service-orders/new": "Nova OS",
-  "/service-orders/kanban": "Kanban",
+  "/os": "Ordens de Serviço",
+  "/os/nova": "Nova OS",
+  "/os/kanban": "Kanban",
   "/cadastros": "Cadastros",
   "/rh": "Recursos Humanos",
   "/rh/colaboradores": "Colaboradores",

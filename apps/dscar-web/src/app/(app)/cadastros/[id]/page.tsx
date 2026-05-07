@@ -277,7 +277,7 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
                   {orders.map((os) => (
                     <Link
                       key={os.id}
-                      href={`/service-orders/${os.id}` as `/service-orders/${string}`}
+                      href={`/os/${os.number}`}
                       className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2.5 hover:bg-muted/30 transition-colors"
                     >
                       <div className="flex flex-col min-w-0">

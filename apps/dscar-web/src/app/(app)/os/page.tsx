@@ -75,7 +75,7 @@ export default function ServiceOrdersPage() {
         actions={
           <div className="flex items-center gap-3">
             <Link
-              href="/service-orders/kanban"
+              href="/os/kanban"
               className="rounded-md border border-border bg-muted/50 px-4 py-2 text-sm font-medium text-foreground/70 hover:bg-muted/30"
             >
               Ver Kanban

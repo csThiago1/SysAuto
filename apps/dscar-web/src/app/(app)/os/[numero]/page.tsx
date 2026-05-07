@@ -4,22 +4,22 @@ import { auth } from "@/lib/auth"
 import type { ServiceOrder } from "@paddock/types"
 
 interface PageProps {
-  params: Promise<{ id: string }>
+  params: Promise<{ numero: string }>
 }
 
-async function getServiceOrder(id: string, token: string): Promise<ServiceOrder> {
+async function getServiceOrder(numero: string, token: string): Promise<ServiceOrder> {
   return apiFetch<ServiceOrder>(
-    `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/api/v1/service-orders/${id}/`,
+    `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/api/v1/service-orders/${numero}/`,
     { headers: { Authorization: `Bearer ${token}`, "X-Tenant-Domain": "dscar.localhost" } }
   )
 }
 
 export default async function ServiceOrderPage({ params }: PageProps) {
-  const { id } = await params
+  const { numero } = await params
   const session = await auth()
   const token = session?.accessToken ?? ""
 
-  const order = await getServiceOrder(id, token)
+  const order = await getServiceOrder(numero, token)
 
   return (
     <div className="flex h-[calc(100vh-64px)] flex-col">
@@ -29,6 +29,6 @@ export default async function ServiceOrderPage({ params }: PageProps) {
 }
 
 export async function generateMetadata({ params }: PageProps) {
-  const { id } = await params
-  return { title: `OS #${id} — DS Car` }
+  const { numero } = await params
+  return { title: `OS #${numero} — DS Car` }
 }
