@@ -25,6 +25,7 @@ class Signature(models.Model):
         ("OS_DELIVERY", "Entrega do Veículo"),
         ("COMPLEMENT_APPROVAL", "Aprovação de Complemento"),
         ("INSURANCE_ACCEPTANCE", "Aceite da Seguradora"),
+        ("VISTORIA_ENTRADA", "Vistoria de Entrada"),
     ]
 
     # Vínculos — ao menos um deve estar preenchido (OS ou Orçamento)
