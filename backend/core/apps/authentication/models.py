@@ -47,7 +47,13 @@ class GlobalUserManager(BaseUserManager):
     """Manager customizado para GlobalUser."""
 
     def get_by_natural_key(self, username: str) -> "GlobalUser":
-        """Aceita e-mail legível OU email_hash — necessário para o login do Django admin."""
+        """Aceita username, e-mail legível OU email_hash — necessário para o login."""
+        # Tenta primeiro pelo campo username (login do colaborador)
+        try:
+            return self.get(username=username)
+        except self.model.DoesNotExist:
+            pass
+        # Fallback: email_hash (direto ou computado a partir do e-mail)
         if "@" in username:
             username = hashlib.sha256(username.lower().encode()).hexdigest()
         return self.get(**{self.model.USERNAME_FIELD: username})
@@ -102,6 +108,15 @@ class GlobalUser(AbstractBaseUser, PermissionsMixin):
         blank=True,
         default="",
         verbose_name="Setor / Cargo",
+    )
+
+    username = models.CharField(
+        max_length=100,
+        unique=True,
+        null=True,
+        blank=True,
+        verbose_name="Login do colaborador",
+        help_text="Gerado automaticamente na admissão: primeiro.ultimo",
     )
 
     push_token = models.CharField(

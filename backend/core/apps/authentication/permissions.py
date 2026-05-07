@@ -75,3 +75,32 @@ class IsAdminOrAbove(BasePermission):
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         return bool(request.user and request.user.is_authenticated and _has_min_role(request, "ADMIN"))
+
+
+def _has_extra_permission(request: Request, perm: str) -> bool:
+    """Verifica se o JWT contém a permissão granular ou se o role é MANAGER+."""
+    if _has_min_role(request, "MANAGER"):
+        return True
+    if isinstance(request.auth, dict):
+        perms = request.auth.get("extra_permissions", [])
+        return perm in perms
+    return False
+
+
+class HasPermission(BasePermission):
+    """Permission class genérica para permissões granulares.
+
+    Uso nos ViewSets:
+        permission_classes = [IsAuthenticated, HasPermission("can_close_os")]
+    """
+
+    def __init__(self, perm: str) -> None:
+        self.perm = perm
+        self.message = f"Você não tem a permissão '{perm}'."
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and _has_extra_permission(request, self.perm)
+        )

@@ -49,6 +49,25 @@ class Employee(PaddockBaseModel):
         BIWEEKLY = "biweekly", _("Quinzenal")
         WEEKLY   = "weekly",   _("Semanal")
 
+    class Role(models.TextChoices):
+        STOREKEEPER = "STOREKEEPER", _("Almoxarife")
+        CONSULTANT  = "CONSULTANT",  _("Consultor")
+        MANAGER     = "MANAGER",     _("Gerente")
+        ADMIN       = "ADMIN",       _("Administrador")
+        OWNER       = "OWNER",       _("Proprietário")
+
+    # Permissões granulares que podem ser atribuídas independente da role
+    AVAILABLE_PERMISSIONS = [
+        ("can_close_os",          "Fechar/entregar OS"),
+        ("can_approve_budget",    "Aprovar orçamento"),
+        ("can_approve_purchase",  "Aprovar pedido de compra"),
+        ("can_view_financial",    "Ver dados financeiros"),
+        ("can_approve_allowance", "Aprovar vales"),
+        ("can_manage_employees",  "Admitir/demitir colaboradores"),
+        ("can_generate_payroll",  "Gerar/fechar folha"),
+        ("can_adjust_inventory",  "Ajustar estoque manualmente"),
+    ]
+
     # ── Vínculo com entidades existentes ──────────────────────────────────────
     user = models.OneToOneField(
         "authentication.GlobalUser",
@@ -76,6 +95,22 @@ class Employee(PaddockBaseModel):
         max_length=30,
         choices=CargoPessoa.choices,
         db_index=True,
+    )
+
+    # ── RBAC ────────────────────────────────────────────────────────────────────
+    role = models.CharField(
+        _("Role RBAC"),
+        max_length=20,
+        choices=Role.choices,
+        default="CONSULTANT",
+        db_index=True,
+        help_text="Nível de acesso do colaborador no sistema.",
+    )
+    extra_permissions = models.JSONField(
+        _("Permissões extras"),
+        default=list,
+        blank=True,
+        help_text="Lista de permissões granulares além da role base. Ex: ['can_close_os', 'can_approve_purchase']",
     )
 
     # ── Dados trabalhistas ────────────────────────────────────────────────────
@@ -265,6 +300,16 @@ class Employee(PaddockBaseModel):
         """Dias de empresa — usa termination_date se desligado, caso contrário hoje."""
         end = self.termination_date or timezone.now().date()
         return (end - self.hire_date).days
+
+    def has_permission(self, perm: str) -> bool:
+        """Verifica se o colaborador tem uma permissão granular.
+
+        Managers+ têm todas as permissões automaticamente.
+        """
+        from apps.authentication.permissions import ROLE_HIERARCHY
+        if ROLE_HIERARCHY.get(self.role, 0) >= ROLE_HIERARCHY.get("MANAGER", 3):
+            return True
+        return perm in (self.extra_permissions or [])
 
     def save(self, *args: object, **kwargs: object) -> None:
         """Gera cpf_hash automaticamente para lookup sem expor CPF em claro."""

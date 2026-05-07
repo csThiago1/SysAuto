@@ -63,14 +63,14 @@
             </#if>
 
             <div class="field">
-              <label for="username">E-mail</label>
-              <input type="email"
+              <label for="username">Login ou E-mail</label>
+              <input type="text"
                      id="username"
                      name="username"
                      value="${(login.username!'')}"
-                     autocomplete="email"
+                     autocomplete="username"
                      autofocus
-                     placeholder="seu@dscar.com.br">
+                     placeholder="carlos.silva ou seu@dscar.com.br">
             </div>
 
             <div class="field">

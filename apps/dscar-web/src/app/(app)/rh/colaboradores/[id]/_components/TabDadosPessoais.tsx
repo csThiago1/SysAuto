@@ -54,6 +54,7 @@ export function TabDadosPessoais({
     address_state: employee.address_state,
     address_zip: employee.address_zip,
     pay_frequency: employee.pay_frequency,
+    dependents_count: employee.dependents_count ?? 0,
   });
 
   const handleSave = (): void => {
@@ -162,6 +163,23 @@ export function TabDadosPessoais({
                   <option value="weekly">Semanal</option>
                 </select>
               </div>
+              <div className="flex flex-col gap-0.5">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Nº de dependentes (IRRF)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  className="rounded border border-border px-2 py-1 text-sm w-24"
+                  value={form.dependents_count ?? 0}
+                  onChange={(e) =>
+                    setForm((p) => ({
+                      ...p,
+                      dependents_count: parseInt(e.target.value, 10) || 0,
+                    }))
+                  }
+                />
+              </div>
             </>
           ) : (
             <>
@@ -171,6 +189,10 @@ export function TabDadosPessoais({
               <InfoRow
                 label="Periodicidade de pagamento"
                 value={PAY_FREQUENCY_LABELS[employee.pay_frequency] ?? employee.pay_frequency}
+              />
+              <InfoRow
+                label="Nº de dependentes (IRRF)"
+                value={String(employee.dependents_count ?? 0)}
               />
             </>
           )}

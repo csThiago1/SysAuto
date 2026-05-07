@@ -20,6 +20,7 @@ import { TabSalario } from "./_components/TabSalario";
 import { TabBonificacoes } from "./_components/TabBonificacoes";
 import { TabVales } from "./_components/TabVales";
 import { TabDescontos } from "./_components/TabDescontos";
+import { TabAcesso } from "./_components/TabAcesso";
 
 const TABS = [
   { id: "dados", label: "Dados pessoais" },
@@ -28,6 +29,7 @@ const TABS = [
   { id: "bonus", label: "Bonificações" },
   { id: "vales", label: "Vales" },
   { id: "descontos", label: "Descontos" },
+  { id: "acesso", label: "Acesso" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -161,6 +163,9 @@ export default function EmployeeDetailPage(): React.ReactElement {
             )}
             {activeTab === "descontos" && (
               <TabDescontos employee={employee} />
+            )}
+            {activeTab === "acesso" && (
+              <TabAcesso employee={employee} />
             )}
           </div>
         )}

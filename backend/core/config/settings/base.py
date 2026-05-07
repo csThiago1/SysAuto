@@ -161,6 +161,12 @@ OIDC_RP_SIGN_ALGO = "RS256"
 OIDC_STORE_ACCESS_TOKEN = True
 OIDC_STORE_ID_TOKEN = True
 
+# ─── Keycloak Admin API (provisionamento de usuários) ────────────────────────
+KEYCLOAK_BASE_URL = config("KEYCLOAK_BASE_URL", default="http://keycloak:8080")
+KEYCLOAK_REALM = config("KEYCLOAK_REALM", default="paddock")
+KEYCLOAK_ADMIN_USER = config("KEYCLOAK_ADMIN_USER", default="admin")
+KEYCLOAK_ADMIN_PASSWORD = config("KEYCLOAK_ADMIN_PASSWORD", default="admin")
+
 # ─── JWT (simplejwt) ─────────────────────────────────────────────────────────
 from datetime import timedelta  # noqa: E402
 

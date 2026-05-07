@@ -51,7 +51,7 @@ import {
   FileCheck,
   type LucideIcon,
 } from "lucide-react";
-import { ROLE_HIERARCHY, type PaddockRole } from "@paddock/types";
+import { ROLE_HIERARCHY, type PaddockRole, type ExtraPermission } from "@paddock/types";
 import { NotificationBell } from "@/components/header/NotificationBell";
 import { ThemeToggle } from "./ThemeToggle";
 import { useOverdueOrders } from "@/hooks/useOverdueOrders";
@@ -80,6 +80,8 @@ export interface NavSection {
   items: NavItem[];
   /** Papel mínimo para ver esta seção (undefined = todos) */
   minRole?: PaddockRole;
+  /** Permissão granular necessária (além do minRole) */
+  requiredPermission?: ExtraPermission;
 }
 
 // ─── Role labels ─────────────────────────────────────────────────────
@@ -143,6 +145,7 @@ export const NAV_SECTIONS: NavSection[] = [
   },
   {
     label: "FINANCEIRO",
+    requiredPermission: "can_view_financial",
     items: [
       {
         id: "financeiro",
@@ -178,6 +181,7 @@ export const NAV_SECTIONS: NavSection[] = [
   },
   {
     label: "RH",
+    requiredPermission: "can_manage_employees",
     items: [
       {
         id: "rh",
@@ -187,7 +191,7 @@ export const NAV_SECTIONS: NavSection[] = [
         children: [
           { id: "rh-dash",  label: "Dashboard RH",  href: "/rh",               icon: UserCog },
           { id: "rh-colab", label: "Colaboradores", href: "/rh/colaboradores",  icon: UserPlus },
-          { id: "rh-ponto", label: "Ponto",         href: "/rh/ponto",          icon: Clock },
+          // { id: "rh-ponto", label: "Ponto",         href: "/rh/ponto",          icon: Clock },
           { id: "rh-metas", label: "Metas",         href: "/rh/metas",          icon: Target },
           { id: "rh-vales", label: "Vales",         href: "/rh/vales",          icon: Ticket },
           { id: "rh-folha", label: "Folha",         href: "/rh/folha",          icon: FileSpreadsheet },
@@ -391,10 +395,19 @@ export function Sidebar() {
 
   const userInitials = getInitials(session?.user?.name);
   const roleLabel = ROLE_LABELS[session?.role ?? ""] ?? session?.role ?? "";
-  const userRoleLevel = ROLE_HIERARCHY[(session?.role ?? "STOREKEEPER") as PaddockRole] ?? 0;
-  const visibleSections = NAV_SECTIONS.filter((s) =>
-    !s.minRole || userRoleLevel >= (ROLE_HIERARCHY[s.minRole] ?? 0)
-  );
+  const userRole = (session?.role ?? "STOREKEEPER") as PaddockRole;
+  const userRoleLevel = ROLE_HIERARCHY[userRole] ?? 0;
+  const userPerms = (session?.extraPermissions ?? []) as ExtraPermission[];
+  const visibleSections = NAV_SECTIONS.filter((s) => {
+    // Checar role mínimo
+    if (s.minRole && userRoleLevel < (ROLE_HIERARCHY[s.minRole] ?? 0)) return false;
+    // Checar permissão granular — MANAGER+ tem todas automaticamente
+    if (s.requiredPermission) {
+      if (userRoleLevel >= ROLE_HIERARCHY.MANAGER) return true;
+      return userPerms.includes(s.requiredPermission);
+    }
+    return true;
+  });
 
   return (
     <aside

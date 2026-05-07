@@ -35,18 +35,62 @@ class DevTokenView(APIView):
     authentication_classes: list = []
 
     def post(self, request: Request) -> Response:
-        """Valida credenciais dev e retorna JWT HS256 assinado."""
-        email: str = request.data.get("email", "").strip().lower()
+        """Valida credenciais dev e retorna JWT HS256 assinado.
+
+        Aceita login por email OU username (campo 'email' aceita ambos).
+        - Se contém '@': login por email + senha dev (paddock123)
+        - Senão: login por username + senha do colaborador (CPF)
+        """
+        login_input: str = request.data.get("email", "").strip().lower()
         password: str = request.data.get("password", "")
 
-        if not email:
+        if not login_input:
             return Response({"detail": "Campo 'email' obrigatório."}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Login por username (colaborador) — senha é o CPF
+        if "@" not in login_input:
+            try:
+                user = GlobalUser.objects.get(username=login_input, is_active=True)
+            except GlobalUser.DoesNotExist:
+                return Response({"detail": "Credenciais inválidas."}, status=status.HTTP_401_UNAUTHORIZED)
+
+            if not user.check_password(password):
+                return Response({"detail": "Credenciais inválidas."}, status=status.HTTP_401_UNAUTHORIZED)
+
+            # Ler role e permissões do Employee
+            role = "CONSULTANT"
+            extra_permissions: list[str] = []
+            try:
+                from apps.hr.models import Employee
+                emp = Employee.objects.get(user=user, is_active=True)
+                role = emp.role or "CONSULTANT"
+                extra_permissions = emp.extra_permissions or []
+            except Exception:
+                pass
+
+            now = int(time.time())
+            payload: dict = {
+                "sub": str(user.pk),
+                "email": user.email,
+                "name": user.name,
+                "role": role,
+                "extra_permissions": extra_permissions,
+                "active_company": "dscar",
+                "tenant_schema": "tenant_dscar",
+                "client_slug": "grupo-dscar",
+                "iat": now,
+                "exp": now + 86400,
+            }
+            token: str = pyjwt.encode(payload, _DEV_JWT_SECRET, algorithm="HS256")
+            return Response({"access": token, "refresh": token})
+
+        # Login por email — senha dev fixa (paddock123)
+        email = login_input
         if password != _DEV_ACCESS_CODE:
             return Response({"detail": "Credenciais inválidas."}, status=status.HTTP_401_UNAUTHORIZED)
 
         now = int(time.time())
-        payload: dict = {
+        payload = {
             "sub": f"dev-{email}",
             "email": email,
             "name": email.split("@")[0],
@@ -58,7 +102,7 @@ class DevTokenView(APIView):
             "exp": now + 86400,  # 24 horas
         }
 
-        token: str = pyjwt.encode(payload, _DEV_JWT_SECRET, algorithm="HS256")
+        token = pyjwt.encode(payload, _DEV_JWT_SECRET, algorithm="HS256")
 
         # Cria o GlobalUser automaticamente se não existir
         email_hash = hashlib.sha256(email.encode()).hexdigest()
@@ -92,6 +136,7 @@ class MeView(APIView):
             "name": user.name,
             "email_hash": user.email_hash,
             "role": payload.get("role", "STOREKEEPER"),
+            "extra_permissions": payload.get("extra_permissions", []),
             "active_company": payload.get("active_company", ""),
             "tenant_schema": payload.get("tenant_schema", ""),
             "is_employee": False,
@@ -111,6 +156,9 @@ class MeView(APIView):
                 "status": emp.status,
                 "registration_number": emp.registration_number,
             }
+            # Enriquecer role e permissions do Employee (fonte da verdade)
+            data["role"] = emp.role or data["role"]
+            data["extra_permissions"] = emp.extra_permissions or []
         except Exception:
             pass
 

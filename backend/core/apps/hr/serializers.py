@@ -102,6 +102,7 @@ class EmployeeDetailSerializer(serializers.ModelSerializer):
     )
     cpf_masked = serializers.SerializerMethodField()
     signature_url = serializers.SerializerMethodField()
+    available_permissions = serializers.SerializerMethodField()
     rg = serializers.SerializerMethodField()
     mother_name = serializers.SerializerMethodField()
     father_name = serializers.SerializerMethodField()
@@ -120,6 +121,10 @@ class EmployeeDetailSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.signature_image.url)
             return obj.signature_image.url
         return None
+
+    def get_available_permissions(self, obj: Employee) -> list[dict[str, str]]:
+        """Retorna lista de permissões disponíveis com código e label."""
+        return [{"code": code, "label": label} for code, label in Employee.AVAILABLE_PERMISSIONS]
 
     def get_cpf_masked(self, obj: Employee) -> str:
         """Retorna CPF parcialmente mascarado — LGPD: nunca expor em claro."""
@@ -184,6 +189,9 @@ class EmployeeDetailSerializer(serializers.ModelSerializer):
             "weekly_hours",
             "work_schedule",
             "pay_frequency",
+            "role",
+            "extra_permissions",
+            "available_permissions",
             "legacy_databox_id",
             "is_active",
             "created_at",
@@ -197,6 +205,7 @@ class EmployeeDetailSerializer(serializers.ModelSerializer):
             "mother_name",
             "father_name",
             "signature_image",
+            "available_permissions",
             "is_active",
             "created_at",
             "updated_at",
@@ -389,7 +398,34 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
                     is_primary=True,
                 )
 
-            return Employee.objects.create(user=user, person=person, **validated_data)
+            employee = Employee.objects.create(user=user, person=person, **validated_data)
+
+        # Provisionar no Keycloak (fora da transaction — não bloqueia o DB)
+        if cpf and user.username:
+            try:
+                from apps.authentication.keycloak_admin import create_keycloak_user
+
+                parts = name.split(maxsplit=1)
+                first = parts[0]
+                last = parts[1] if len(parts) > 1 else ""
+
+                kc_id = create_keycloak_user(
+                    username=user.username,
+                    email=email,
+                    first_name=first,
+                    last_name=last,
+                    password=cpf,
+                )
+                if kc_id:
+                    user.keycloak_id = kc_id
+                    user.save(update_fields=["keycloak_id", "updated_at"])
+            except Exception as exc:
+                logger.warning(
+                    "Keycloak provisioning failed for %s — %s (employee created OK)",
+                    user.username, exc,
+                )
+
+        return employee
 
     class Meta:
         model = Employee
@@ -467,7 +503,19 @@ class EmployeeUpdateSerializer(serializers.ModelSerializer):
             "weekly_hours",
             "work_schedule",
             "pay_frequency",
+            "role",
+            "extra_permissions",
         ]
+
+    def validate_extra_permissions(self, value: list) -> list:
+        """Valida que todas as permissões enviadas são válidas."""
+        valid_codes = {code for code, _ in Employee.AVAILABLE_PERMISSIONS}
+        invalid = [p for p in value if p not in valid_codes]
+        if invalid:
+            raise serializers.ValidationError(
+                f"Permissões inválidas: {', '.join(invalid)}"
+            )
+        return value
 
 
 # ── EmployeeDocument ──────────────────────────────────────────────────────────

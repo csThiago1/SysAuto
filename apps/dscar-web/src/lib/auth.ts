@@ -49,6 +49,8 @@ declare module "next-auth" {
     accessToken: string;
     /** Role RBAC do usuário — extraído do JWT. */
     role: PaddockRole;
+    /** Permissões granulares do colaborador. */
+    extraPermissions: string[];
     /** Empresas às quais o usuário tem acesso. */
     companies: string[];
     /** Empresa ativa no momento do login. */
@@ -62,6 +64,7 @@ declare module "next-auth" {
   interface User {
     accessToken?: string;
     role?: string;
+    extraPermissions?: string[];
     companies?: string[];
     activeCompany?: string;
     tenantSchema?: string;
@@ -71,6 +74,7 @@ declare module "next-auth" {
   interface JWT {
     accessToken?: string;
     role?: string;
+    extraPermissions?: string[];
     companies?: string[];
     activeCompany?: string;
     tenantSchema?: string;
@@ -121,6 +125,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         if ("accessToken" in user && user.accessToken) token.accessToken = user.accessToken;
         if ("role" in user && user.role) token.role = user.role;
+        if ("extraPermissions" in user) token.extraPermissions = user.extraPermissions;
         if ("companies" in user) token.companies = user.companies;
         if ("activeCompany" in user) token.activeCompany = user.activeCompany;
         if ("tenantSchema" in user) token.tenantSchema = user.tenantSchema;
@@ -158,6 +163,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Propaga claims do JWT para a sessão acessível no cliente
       session.accessToken = (token.accessToken as string) ?? "";
       session.role = (token.role as PaddockRole) ?? "STOREKEEPER";
+      session.extraPermissions = (token.extraPermissions as string[]) ?? [];
       session.companies = (token.companies as string[]) ?? ["dscar"];
       session.activeCompany = (token.activeCompany as string) ?? "dscar";
       session.tenantSchema = (token.tenantSchema as string) ?? "tenant_dscar";

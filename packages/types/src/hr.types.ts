@@ -144,10 +144,14 @@ export interface Employee extends EmployeeListItem {
   address_zip: string;
   /** Decimal as string (DRF default) */
   base_salary: string;
+  dependents_count: number;
   pix_key_type: string;
   weekly_hours: string;
   work_schedule: string;
   pay_frequency: "monthly" | "biweekly" | "weekly";
+  role: import("./auth.types").PaddockRole;
+  extra_permissions: import("./auth.types").ExtraPermission[];
+  available_permissions: { code: string; label: string }[];
   legacy_databox_id: number | null;
   is_active: boolean;
   created_at: string;
@@ -365,12 +369,15 @@ export interface CreateEmployeePayload {
   address_state?: string;
   address_zip?: string;
   base_salary: number;
+  dependents_count?: number;
   pix_key?: string;
   pix_key_type?: string;
   weekly_hours?: number;
   work_schedule?: string;
   /** Default: "monthly" */
   pay_frequency?: "monthly" | "biweekly" | "weekly";
+  role?: import("./auth.types").PaddockRole;
+  extra_permissions?: string[];
 }
 
 export type UpdateEmployeePayload = Partial<
