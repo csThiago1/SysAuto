@@ -178,6 +178,11 @@ class Employee(PaddockBaseModel):
     base_salary = models.DecimalField(
         _("Salário base"), max_digits=10, decimal_places=2, default=0
     )
+    dependents_count = models.PositiveSmallIntegerField(
+        _("Nº de dependentes"),
+        default=0,
+        help_text="Dependentes para dedução de IRRF (R$ 189,59/dependente).",
+    )
 
     # ── Dados bancários ────────────────────────────────────────────────────────
     bank_name = models.CharField(
@@ -233,6 +238,14 @@ class Employee(PaddockBaseModel):
         blank=True,
         db_index=True,
         help_text="ID no Box Empresa para rastreabilidade de migração",
+    )
+
+    # ── Assinatura digital ───────────────────────────────────────────────────
+    signature_image = models.ImageField(
+        upload_to="employees/signatures/",
+        blank=True,
+        null=True,
+        help_text="Assinatura digital do funcionário (PNG transparente).",
     )
 
     class Meta:
