@@ -2,6 +2,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -25,7 +26,9 @@ import { useChecklistItemsStore, syncChecklistItems } from '@/stores/checklist-i
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { useShallow } from 'zustand/react/shallow';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { SignatureCanvas } from '@/components/ui/SignatureCanvas';
 import { toast } from '@/stores/toast.store';
+import { useSignatureCapture } from '@/hooks/useSignatureCapture';
 import { VALID_TRANSITIONS } from '@paddock/types';
 import type { ServiceOrderStatus } from '@paddock/types';
 import {
@@ -64,6 +67,8 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
   const [observacoes, setObservacoes] = useState<string>('');
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [showConcluir, setShowConcluir] = useState<boolean>(false);
+  const [showSignature, setShowSignature] = useState<boolean>(false);
+  const signatureCapture = useSignatureCapture();
 
   const tabOpacity = useRef(new Animated.Value(1)).current;
 
@@ -348,10 +353,50 @@ export default function VistoriaEntradaScreen(): React.JSX.Element {
         cancelLabel="Voltar"
         onConfirm={() => {
           setShowConcluir(false);
-          void handleConcluir();
+          setShowSignature(true);
         }}
         onCancel={() => setShowConcluir(false)}
       />
+
+      {/* Assinatura do cliente */}
+      <Modal
+        visible={showSignature}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowSignature(false)}
+      >
+        <SafeAreaView style={{ flex: 1, backgroundColor: Colors.bg }}>
+          <View style={{ flex: 1, padding: Spacing.lg, gap: Spacing.lg }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text variant="heading3">Assinatura do Cliente</Text>
+              <TouchableOpacity onPress={() => { setShowSignature(false); void handleConcluir(); }}>
+                <Text variant="body" color={Colors.textTertiary}>Pular</Text>
+              </TouchableOpacity>
+            </View>
+            <Text variant="body" color={Colors.textSecondary}>
+              Solicite ao cliente que assine abaixo confirmando a vistoria de entrada.
+            </Text>
+            <SignatureCanvas
+              height={250}
+              onSave={async (base64) => {
+                try {
+                  await signatureCapture.mutateAsync({
+                    service_order_id: Number(osId),
+                    document_type: 'VISTORIA_ENTRADA',
+                    signer_name: order?.customer_name ?? '',
+                    signature_png_base64: base64,
+                  });
+                  toast.success('Assinatura registrada');
+                } catch {
+                  toast.error('Erro ao registrar assinatura');
+                }
+                setShowSignature(false);
+                void handleConcluir();
+              }}
+            />
+          </View>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
