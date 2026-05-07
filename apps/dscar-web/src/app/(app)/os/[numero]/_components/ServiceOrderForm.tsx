@@ -8,6 +8,7 @@ import type { ServiceOrder, ServiceOrderStatus } from "@paddock/types"
 import { VALID_TRANSITIONS } from "@paddock/types"
 import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 import { cn } from "@/lib/utils"
+import { ApiError } from "@/lib/api"
 import { toast } from "sonner"
 import { ArrowRight, Loader2, ChevronDown, Save } from "lucide-react"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
@@ -122,7 +123,13 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
 
   async function onSubmit(data: ServiceOrderUpdateInput) {
     try {
-      const savedOrder = await updateMutation.mutateAsync(data)
+      // Enviar apenas campos alterados — evita erros de validação em campos intocados
+      const dirtyKeys = Object.keys(dirtyFields)
+      const patch: Record<string, unknown> = {}
+      for (const key of dirtyKeys) {
+        patch[key] = data[key as keyof ServiceOrderUpdateInput]
+      }
+      const savedOrder = await updateMutation.mutateAsync(patch as ServiceOrderUpdateInput)
       // Reset form to saved values so isDirty becomes false
       form.reset(buildFormDefaults(savedOrder))
       if (personDirtyData && order.customer_person_id) {
@@ -131,8 +138,18 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
       }
       toast.success("OS salva com sucesso!")
       router.refresh()
-    } catch {
-      toast.error("Erro ao salvar OS. Tente novamente.")
+    } catch (err) {
+      if (err instanceof ApiError && err.fieldErrors) {
+        for (const [field, messages] of Object.entries(err.fieldErrors)) {
+          form.setError(field as keyof ServiceOrderUpdateInput, {
+            type: "server",
+            message: messages[0],
+          })
+        }
+        toast.error(err.message !== "Ocorreu um erro na requisição." ? err.message : "Erro de validação. Verifique os campos destacados.")
+      } else {
+        toast.error("Erro ao salvar OS. Tente novamente.")
+      }
     }
   }
 

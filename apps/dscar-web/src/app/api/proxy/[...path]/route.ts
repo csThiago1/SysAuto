@@ -46,7 +46,9 @@ async function proxyRequest(
 
   if (!response.ok) {
     // Não logar o body do request — pode conter CPF, email, telefone (LGPD)
-    console.error(`[proxy] ${method} ${backendUrl} → ${response.status}`)
+    // Mas logar o body da RESPOSTA de erro (contém nomes de campo, não PII)
+    const errBody = await response.clone().json().catch(() => null)
+    console.error(`[proxy] ${method} ${backendUrl} → ${response.status}`, errBody)
   }
 
   // Passthrough binário para PDF/XML/HTML (não parsear como JSON)

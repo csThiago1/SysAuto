@@ -653,9 +653,18 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def validate(self, attrs: dict) -> dict:
-        """Valida campos de seguradora quando customer_type muda para 'insurer'."""
-        # Usa o valor atual do objeto se não foi enviado no payload
+        """Valida campos de seguradora quando customer_type muda para 'insurer'.
+
+        Em PATCH parcial, só valida se o usuário está alterando customer_type,
+        insurer ou insured_type — não bloqueia edições de campos não-relacionados
+        em OS com dados inconsistentes pré-existentes.
+        """
         instance = self.instance
+        # Só dispara validação se algum campo relevante está sendo alterado
+        insurer_fields_in_payload = {"customer_type", "insurer", "insured_type"} & attrs.keys()
+        if not insurer_fields_in_payload and instance is not None:
+            return attrs
+
         customer_type = attrs.get(
             "customer_type",
             getattr(instance, "customer_type", None) if instance else None,
