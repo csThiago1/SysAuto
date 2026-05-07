@@ -5,6 +5,7 @@ Sprint 6: Bonus, GoalTarget, Allowance, Deduction, TimeClockEntry, WorkSchedule,
 """
 import hashlib
 import logging
+import unicodedata
 from decimal import Decimal
 
 from django.db import transaction
@@ -100,6 +101,7 @@ class EmployeeDetailSerializer(serializers.ModelSerializer):
         source="get_contract_type_display", read_only=True
     )
     cpf_masked = serializers.SerializerMethodField()
+    signature_url = serializers.SerializerMethodField()
     rg = serializers.SerializerMethodField()
     mother_name = serializers.SerializerMethodField()
     father_name = serializers.SerializerMethodField()
@@ -109,6 +111,15 @@ class EmployeeDetailSerializer(serializers.ModelSerializer):
         if not request:
             return False
         return _get_role(request) in ("MANAGER", "ADMIN", "OWNER")
+
+    def get_signature_url(self, obj: "Employee") -> str | None:
+        """Return full URL for the signature image, or None."""
+        if obj.signature_image:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(obj.signature_image.url)
+            return obj.signature_image.url
+        return None
 
     def get_cpf_masked(self, obj: Employee) -> str:
         """Retorna CPF parcialmente mascarado — LGPD: nunca expor em claro."""
@@ -144,6 +155,7 @@ class EmployeeDetailSerializer(serializers.ModelSerializer):
             "termination_date",
             "tenure_days",
             "cpf_masked",
+            "signature_url",
             "rg_issuer",
             "birth_date",
             "marital_status",
@@ -167,6 +179,7 @@ class EmployeeDetailSerializer(serializers.ModelSerializer):
             "address_state",
             "address_zip",
             "base_salary",
+            "dependents_count",
             "pix_key_type",
             "weekly_hours",
             "work_schedule",
@@ -183,10 +196,44 @@ class EmployeeDetailSerializer(serializers.ModelSerializer):
             "rg",
             "mother_name",
             "father_name",
+            "signature_image",
             "is_active",
             "created_at",
             "updated_at",
         ]
+
+
+def _generate_username(full_name: str) -> str:
+    """Gera username no formato primeiro.ultimo, normalizado e sem duplicatas.
+
+    Exemplos:
+        "João García Silva" → "joao.silva"
+        "Maria da Silva" → "maria.silva"
+        Se "joao.silva" já existe → "joao.silva2"
+    """
+    # Normalizar: remover acentos e converter para minúsculo
+    normalized = unicodedata.normalize("NFKD", full_name.lower())
+    ascii_name = "".join(c for c in normalized if not unicodedata.combining(c))
+
+    # Separar em partes, ignorar preposições comuns
+    prepositions = {"de", "da", "do", "dos", "das", "e"}
+    parts = [p for p in ascii_name.split() if p not in prepositions and p.isalpha()]
+
+    if len(parts) >= 2:
+        base = f"{parts[0]}.{parts[-1]}"
+    elif parts:
+        base = parts[0]
+    else:
+        base = "colaborador"
+
+    # Verificar duplicatas
+    candidate = base
+    suffix = 2
+    while GlobalUser.objects.filter(username=candidate).exists():
+        candidate = f"{base}{suffix}"
+        suffix += 1
+
+    return candidate
 
 
 class EmployeeCreateSerializer(serializers.ModelSerializer):
@@ -195,12 +242,15 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
 
     Aceita ``name`` + ``email`` em vez do UUID do GlobalUser —
     cria ou localiza o GlobalUser automaticamente via email_hash.
-    Retorna ``id`` para o frontend redirecionar ao detalhe.
+    Retorna ``id`` + ``username`` para o frontend redirecionar ao detalhe.
     """
 
     # Identificação — substituem o campo 'user' no input
     name = serializers.CharField(max_length=200, write_only=True)
     email = serializers.EmailField(write_only=True)
+
+    # Retornado na resposta — login gerado para o colaborador
+    username = serializers.SerializerMethodField(read_only=True)
     phone = serializers.CharField(
         max_length=20, write_only=True, required=True,
         help_text="Celular do colaborador (obrigatório)."
@@ -250,6 +300,10 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("CPF já cadastrado.")
         return digits
 
+    def get_username(self, obj: "Employee") -> str | None:
+        """Retorna o username do GlobalUser vinculado."""
+        return getattr(obj.user, "username", None) if obj.user_id else None
+
     def validate_base_salary(self, value: Decimal) -> Decimal:
         if value < 0:
             raise serializers.ValidationError("Salário base não pode ser negativo.")
@@ -278,9 +332,16 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
                 user.name = name
                 user.save(update_fields=["name", "updated_at"])
 
+            # 2. Gerar credenciais de acesso (username + senha = CPF)
+            if not user.username:
+                user.username = _generate_username(name)
+            if cpf:
+                user.set_password(cpf)
+            user.save(update_fields=["username", "password", "updated_at"])
+
             logger.info(
-                "Employee onboarding: GlobalUser %s (%s)",
-                user.pk, "created" if created else "existing",
+                "Employee onboarding: GlobalUser %s (%s) username=%s",
+                user.pk, "created" if created else "existing", user.username,
             )
 
             # 2. Buscar Person existente por CPF (evita duplicata)
@@ -334,6 +395,7 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
         model = Employee
         fields = [
             "id",               # read_only — para redirect pós-criação
+            "username",         # read_only — login gerado (primeiro.ultimo)
             "name",             # write_only — GlobalUser.name
             "email",            # write_only — GlobalUser.email (chave de busca)
             "phone",            # write_only — celular do colaborador
@@ -369,7 +431,7 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
             "pay_frequency",
             "legacy_databox_id",
         ]
-        read_only_fields = ["id"]
+        read_only_fields = ["id", "username"]
 
 
 class EmployeeUpdateSerializer(serializers.ModelSerializer):
@@ -400,6 +462,7 @@ class EmployeeUpdateSerializer(serializers.ModelSerializer):
             "address_state",
             "address_zip",
             "base_salary",
+            "dependents_count",
             "pix_key_type",
             "weekly_hours",
             "work_schedule",

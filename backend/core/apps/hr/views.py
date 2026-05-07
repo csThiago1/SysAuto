@@ -26,6 +26,7 @@ from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status
 from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -122,6 +123,21 @@ class EmployeeViewSet(ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
         return Response(EmployeeDetailSerializer(employee, context={"request": request}).data)
+
+    @action(detail=True, methods=["post"], url_path="upload-signature", parser_classes=[MultiPartParser])
+    def upload_signature(self, request: Request, pk: str | None = None) -> Response:
+        """Upload assinatura digital do funcionário (PNG transparente)."""
+        employee = self.get_object()
+        file = request.FILES.get("signature_image")
+        if not file:
+            return Response({"detail": "Campo 'signature_image' é obrigatório."}, status=400)
+        if not file.content_type.startswith("image/"):
+            return Response({"detail": "Arquivo deve ser uma imagem."}, status=400)
+        employee.signature_image = file
+        employee.save(update_fields=["signature_image"])
+        logger.info("Assinatura atualizada para employee %s", employee.pk)
+        serializer = self.get_serializer(employee)
+        return Response(serializer.data)
 
     @action(detail=True, methods=["post"], url_path="terminate")
     @transaction.atomic
