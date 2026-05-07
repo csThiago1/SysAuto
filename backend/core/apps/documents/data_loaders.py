@@ -551,8 +551,8 @@ class OSDataLoader:
             "location_date": _location_date_str(),
             "consultant_signature_base64": _get_employee_signature_base64(order.consultant),
             "consultant_name": (
-                order.consultant.full_name
-                if order.consultant and hasattr(order.consultant, "full_name")
+                order.consultant.get_full_name()
+                if order.consultant
                 else ""
             ),
         }
