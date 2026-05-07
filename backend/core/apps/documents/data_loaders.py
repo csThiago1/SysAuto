@@ -77,7 +77,7 @@ def _get_employee_signature_base64(user: Any) -> str:
         return ""
     try:
         from apps.hr.models import Employee
-        employee = Employee.objects.filter(user=user, status="ACTIVE").first()
+        employee = Employee.objects.filter(user=user, status__iexact="active").first()
         if employee and employee.signature_image:
             with employee.signature_image.open("rb") as f:
                 return base64.b64encode(f.read()).decode("utf-8")
@@ -538,8 +538,8 @@ class OSDataLoader:
                     order.estimated_delivery or order.estimated_delivery_date
                 ),
                 "consultor": (
-                    order.consultant.full_name
-                    if order.consultant and hasattr(order.consultant, "full_name")
+                    order.consultant.get_full_name()
+                    if order.consultant
                     else ""
                 ),
             },
