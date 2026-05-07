@@ -445,6 +445,7 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
             "consultant_name",
             "entry_date",
             "estimated_delivery_date",
+            "delivered_at",
             "days_in_shop",
             "parts_total",
             "services_total",

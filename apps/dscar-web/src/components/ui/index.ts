@@ -34,6 +34,11 @@ export {
   SheetFooter, SheetHeader, SheetTitle, SheetTrigger, SheetOverlay, SheetPortal, SheetClose,
 } from "./sheet";
 
+// Tabs
+export {
+  Tabs, TabsList, TabsTrigger, TabsContent,
+} from "./tabs";
+
 // Select
 export {
   Select, SelectContent, SelectItem,

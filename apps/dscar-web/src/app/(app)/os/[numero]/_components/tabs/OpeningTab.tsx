@@ -13,7 +13,7 @@ import { PrazosSection } from "../sections/PrazosSection"
 
 interface OpeningTabProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
-  order?: Pick<ServiceOrder, "nfe_key" | "nfse_number" | "invoice_issued">
+  order?: Pick<ServiceOrder, "id" | "nfe_key" | "nfse_number" | "invoice_issued">
   onPersonDataChange?: (data: PersonPatch | null) => void
 }
 
@@ -35,7 +35,7 @@ export function OpeningTab({ form, order, onPersonDataChange }: OpeningTabProps)
         </div>
         {/* Coluna direita */}
         <div className="space-y-3">
-          <VehicleSection form={form} />
+          <VehicleSection form={form} osId={order?.id} />
           <PrazosSection form={form} />
         </div>
       </div>

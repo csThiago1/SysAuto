@@ -18,7 +18,6 @@ import {
   Mail,
   Globe,
   MapPin,
-  FileText,
   Pencil,
   User,
   Building2,
@@ -31,8 +30,11 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  StatusBadge,
   Avatar,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
 } from "@/components/ui";
 import { usePerson, useClientOrders } from "@/hooks";
 import {
@@ -42,14 +44,12 @@ import {
   ADDRESS_TYPE_LABEL,
   PERSON_ROLE_BADGE,
   formatDate,
-  formatOSNumber,
 } from "@paddock/utils";
 import type {
-  PersonRole,
   PersonContact,
   PersonAddress,
-  ServiceOrderStatus,
 } from "@paddock/types";
+import { ClientHistoryTab } from "./_components/ClientHistoryTab";
 import { cn } from "@/lib/utils";
 import { PersonFormModal } from "@/components/Cadastros/PersonFormModal";
 
@@ -158,154 +158,115 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
         </Button>
       </div>
 
-      {/* Main content grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column — details */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Basic info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Dados Gerais</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                {(person.documents ?? []).map((doc) => (
-                  <InfoItem
-                    key={doc.id}
-                    label={doc.doc_type}
-                    value={`${doc.value_masked}${doc.is_primary ? " · Principal" : ""}`}
-                  />
-                ))}
-                {isPF && <InfoItem label="Data de Nascimento" value={formatDate(person.birth_date)} />}
-                {!isPF && person.fantasy_name && (
-                  <InfoItem label="Nome Fantasia" value={person.fantasy_name} />
-                )}
-                {!isPF && person.secondary_document && (
-                  <InfoItem label="Inscrição Estadual" value={person.secondary_document} />
-                )}
-                {!isPF && person.municipal_registration && (
-                  <InfoItem label="Inscrição Municipal" value={person.municipal_registration} />
-                )}
-                <InfoItem
-                  label="Status"
-                  value={person.is_active ? "Ativo" : "Inativo"}
-                  valueClassName={person.is_active ? "text-success-400" : "text-error-400"}
-                />
-                <InfoItem label="Cadastrado em" value={formatDate(person.created_at)} />
-              </div>
-              {person.notes && (
-                <div className="mt-4 pt-4 border-t">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Observações</p>
-                  <p className="text-sm text-foreground/70 whitespace-pre-wrap">{person.notes}</p>
-                </div>
-              )}
-              {person.client_profile && (
-                <div className="mt-4 pt-4 border-t border-border">
-                  <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wide mb-2">LGPD</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <InfoItem
-                      label="Consentimento"
-                      value={person.client_profile.lgpd_consent_date
-                        ? new Date(person.client_profile.lgpd_consent_date).toLocaleDateString("pt-BR")
-                        : "Não registrado"}
-                    />
-                    <InfoItem
-                      label="Compartilhamento no grupo"
-                      value={person.client_profile.group_sharing_consent ? "Autorizado" : "Não autorizado"}
-                    />
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+      {/* Tabs layout */}
+      <Tabs defaultValue="dados" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="dados">Dados</TabsTrigger>
+          <TabsTrigger value="historico">Histórico</TabsTrigger>
+        </TabsList>
 
-          {/* Contacts */}
-          {person.contacts.length > 0 && (
+        <TabsContent value="dados">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Basic info */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Contatos</CardTitle>
+                <CardTitle className="text-base">Dados Gerais</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {person.contacts.map((contact, i) => (
-                    <ContactRow key={contact.id ?? i} contact={contact} />
+                <div className="grid grid-cols-2 gap-4">
+                  {(person.documents ?? []).map((doc) => (
+                    <InfoItem
+                      key={doc.id}
+                      label={doc.doc_type}
+                      value={`${doc.value_masked}${doc.is_primary ? " · Principal" : ""}`}
+                    />
                   ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Addresses */}
-          {person.addresses.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Endereços</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {person.addresses.map((addr, i) => (
-                    <AddressRow key={addr.id ?? i} address={addr} />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Right column — OS history */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <FileText className="h-4 w-4 text-muted-foreground" />
-                Ordens de Serviço
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {ordersLoading ? (
-                <div className="space-y-3">
-                  <Skeleton className="h-14 w-full" />
-                  <Skeleton className="h-14 w-full" />
-                  <Skeleton className="h-14 w-full" />
-                </div>
-              ) : orders.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  Nenhuma OS vinculada.
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {orders.map((os) => (
-                    <Link
-                      key={os.id}
-                      href={`/os/${os.number}`}
-                      className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2.5 hover:bg-muted/30 transition-colors"
-                    >
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-sm font-semibold text-foreground">
-                          OS #{formatOSNumber(os.number)}
-                        </span>
-                        <span className="text-xs text-muted-foreground truncate">
-                          {os.plate} · {os.make} {os.model}
-                        </span>
-                      </div>
-                      <StatusBadge
-                        status={os.status as ServiceOrderStatus}
-                        size="sm"
-                      />
-                    </Link>
-                  ))}
-
-                  {(ordersData?.count ?? 0) > orders.length && (
-                    <p className="text-xs text-muted-foreground text-center pt-2">
-                      Exibindo {orders.length} de {ordersData?.count} OS
-                    </p>
+                  {isPF && <InfoItem label="Data de Nascimento" value={formatDate(person.birth_date)} />}
+                  {!isPF && person.fantasy_name && (
+                    <InfoItem label="Nome Fantasia" value={person.fantasy_name} />
                   )}
+                  {!isPF && person.secondary_document && (
+                    <InfoItem label="Inscrição Estadual" value={person.secondary_document} />
+                  )}
+                  {!isPF && person.municipal_registration && (
+                    <InfoItem label="Inscrição Municipal" value={person.municipal_registration} />
+                  )}
+                  <InfoItem
+                    label="Status"
+                    value={person.is_active ? "Ativo" : "Inativo"}
+                    valueClassName={person.is_active ? "text-success-400" : "text-error-400"}
+                  />
+                  <InfoItem label="Cadastrado em" value={formatDate(person.created_at)} />
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+                {person.notes && (
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Observações</p>
+                    <p className="text-sm text-foreground/70 whitespace-pre-wrap">{person.notes}</p>
+                  </div>
+                )}
+                {person.client_profile && (
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <p className="text-2xs font-medium text-muted-foreground uppercase tracking-wide mb-2">LGPD</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <InfoItem
+                        label="Consentimento"
+                        value={person.client_profile.lgpd_consent_date
+                          ? new Date(person.client_profile.lgpd_consent_date).toLocaleDateString("pt-BR")
+                          : "Não registrado"}
+                      />
+                      <InfoItem
+                        label="Compartilhamento no grupo"
+                        value={person.client_profile.group_sharing_consent ? "Autorizado" : "Não autorizado"}
+                      />
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Contacts */}
+            {person.contacts.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Contatos</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {person.contacts.map((contact, i) => (
+                      <ContactRow key={contact.id ?? i} contact={contact} />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Addresses */}
+            {person.addresses.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Endereços</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {person.addresses.map((addr, i) => (
+                      <AddressRow key={addr.id ?? i} address={addr} />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="historico">
+          <ClientHistoryTab
+            personId={id}
+            orders={orders}
+            ordersLoading={ordersLoading}
+            ordersCount={ordersData?.count ?? 0}
+          />
+        </TabsContent>
+      </Tabs>
 
       {/* Edit Modal */}
       <PersonFormModal open={editOpen} onOpenChange={setEditOpen} person={person} />

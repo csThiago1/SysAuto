@@ -344,6 +344,9 @@ export interface ServiceOrder {
   final_survey_date: string | null;
   client_delivery_date: string | null;
 
+  // Entrega
+  delivered_at: string | null;
+
   // Controle
   consultant: string | null;
   consultant_name: string;

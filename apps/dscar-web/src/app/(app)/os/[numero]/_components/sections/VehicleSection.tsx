@@ -2,22 +2,30 @@
 
 import { useEffect, useState } from "react"
 import { Controller, type UseFormReturn } from "react-hook-form"
+import { History } from "lucide-react"
 import { toast } from "sonner"
 import { usePlateLookup } from "../../_hooks/useVehicleCatalog"
+import { useVehicleHistory } from "../../_hooks/useVehicleHistory"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import { FORM_SECTION_TITLE, FORM_LABEL, FORM_INPUT, FORM_ERROR, FORM_WARN } from "@paddock/utils"
 import { ColorSelect } from "../shared/ColorSelect"
+import { VehicleHistorySheet } from "../shared/VehicleHistorySheet"
 
 interface VehicleSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
+  osId?: string
 }
 
-export function VehicleSection({ form }: VehicleSectionProps) {
+export function VehicleSection({ form, osId }: VehicleSectionProps) {
   const { register, control, setValue, watch, formState: { errors } } = form
   const [plateQuery, setPlateQuery] = useState("")
   const { data: plateData, isFetching, error } = usePlateLookup(plateQuery)
 
   const makeLogo = watch("make_logo")
+  const plate = watch("plate") ?? ""
+  const [historyOpen, setHistoryOpen] = useState(false)
+  const { data: vehicleHistory } = useVehicleHistory(plate, osId)
+  const hasHistory = (vehicleHistory?.summary.os_count ?? 0) > 0
 
   function handlePlateChange(e: React.ChangeEvent<HTMLInputElement>) {
     const v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")
@@ -44,8 +52,18 @@ export function VehicleSection({ form }: VehicleSectionProps) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-3 border-b pb-1.5">
+      <div className="flex items-center justify-between border-b pb-1.5">
         <span className={FORM_SECTION_TITLE}>Dados do Veículo</span>
+        {hasHistory && (
+          <button
+            type="button"
+            onClick={() => setHistoryOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+          >
+            <History className="h-3.5 w-3.5" />
+            Histórico ({vehicleHistory?.summary.os_count})
+          </button>
+        )}
       </div>
 
       {/* Header: logo montadora + placa destaque */}
@@ -151,6 +169,17 @@ export function VehicleSection({ form }: VehicleSectionProps) {
 
       {/* Hidden field para persistir make_logo */}
       <input type="hidden" {...register("make_logo")} />
+
+      <VehicleHistorySheet
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
+        plate={plate}
+        make={watch("make") ?? undefined}
+        model={watch("model") ?? undefined}
+        year={watch("year") ?? undefined}
+        makeLogo={makeLogo ?? undefined}
+        excludeId={osId}
+      />
     </div>
   )
 }
