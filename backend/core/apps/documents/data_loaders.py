@@ -1,7 +1,10 @@
 """Funções que buscam e formatam dados de OS para templates PDF."""
 from __future__ import annotations
 
+import base64
 import logging
+import re
+from collections import OrderedDict
 from datetime import date
 from decimal import Decimal
 from typing import Any
@@ -45,6 +48,20 @@ def _format_date_br(d: date | str | None) -> str:
     return d.strftime("%d/%m/%Y")
 
 
+def _format_time_br(dt: Any) -> str:
+    """Extrai HH:MM de um datetime. Retorna '' se não tiver hora ou for meia-noite."""
+    if dt is None:
+        return ""
+    if isinstance(dt, str):
+        return ""
+    if hasattr(dt, "hour"):
+        # Ignora meia-noite (provavelmente campo sem hora preenchida)
+        if dt.hour == 0 and dt.minute == 0:
+            return ""
+        return dt.strftime("%H:%M")
+    return ""
+
+
 def _location_date_str() -> str:
     now = timezone.localtime()
     meses = [
@@ -52,6 +69,21 @@ def _location_date_str() -> str:
         "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
     ]
     return f"Manaus (AM), {now.day} de {meses[now.month]} de {now.year}."
+
+
+def _get_employee_signature_base64(user: Any) -> str:
+    """Retorna a assinatura do Employee (base64 PNG) vinculado ao GlobalUser, ou ''."""
+    if not user:
+        return ""
+    try:
+        from apps.hr.models import Employee
+        employee = Employee.objects.filter(user=user, status="ACTIVE").first()
+        if employee and employee.signature_image:
+            with employee.signature_image.open("rb") as f:
+                return base64.b64encode(f.read()).decode("utf-8")
+    except Exception:
+        logger.debug("Não foi possível carregar assinatura do employee para user %s", user)
+    return ""
 
 
 class OSDataLoader:
@@ -64,7 +96,7 @@ class OSDataLoader:
             ServiceOrder.objects
             .select_related("insurer", "consultant", "customer")
             .prefetch_related(
-                "parts", "labor_items",
+                "parts", "labor_items", "labor_items__service_catalog",
                 "customer__documents", "customer__contacts", "customer__addresses",
             )
             .get(pk=order_id, is_active=True)
@@ -170,18 +202,289 @@ class OSDataLoader:
             "mileage_in": order.mileage_in,
         }
 
-    @staticmethod
-    def _services_list(order: Any) -> list[dict[str, Any]]:
+    # Ordem canônica das categorias no PDF + labels em português.
+    # Funilaria é subdividida em R&I, Reparação e Chapeação para clareza.
+    CATEGORY_ORDER: list[tuple[str, str]] = [
+        ("ri", "Remoção e Instalação"),
+        ("funilaria", "Reparação"),
+        ("pintura", "Pintura"),
+        ("mecanica", "Mecânica"),
+        ("eletrica", "Elétrica"),
+        ("alinhamento", "Alinhamento / Balanceamento"),
+        ("estetica", "Estética / Polimento"),
+        ("lavagem", "Lavagem / Higienização"),
+        ("revisao", "Revisão"),
+        ("outros", "Outros Serviços"),
+    ]
+    _CATEGORY_LABEL_MAP: dict[str, str] = dict(CATEGORY_ORDER)
+
+    # Palavras-chave para inferir categoria quando não há vínculo com catálogo.
+    # Ordem importa: a primeira match vence (R&I antes de funilaria genérica).
+    _CATEGORY_KEYWORDS: list[tuple[str, list[str]]] = [
+        ("ri", [
+            "remoção e instalação", "remoção e inst", "remocao e instalacao",
+            "r&i", "r & i", "r/i",
+            "montagem", "desmontagem", "desmontar", "montar",
+        ]),
+        ("funilaria", [
+            "funilaria", "chapeação", "chapeacao", "desempeno", "desamasso",
+            "solda", "reparação", "reparacao", "reparo", "recuperação", "recuperacao",
+        ]),
+        ("pintura", ["pintura", "repintura", "verniz", "primer", "base", "tricoat"]),
+        ("mecanica", ["mecânica", "mecanica", "motor", "freio", "suspensão", "suspensao", "câmbio", "cambio"]),
+        ("eletrica", ["elétrica", "eletrica", "fiação", "fiacao", "módulo", "modulo", "sensor"]),
+        ("alinhamento", ["alinhamento", "balanceamento", "geometria", "cambagem"]),
+        ("estetica", ["polimento", "cristalização", "cristalizacao", "estética", "estetica", "vitrificação", "vitrificacao"]),
+        ("lavagem", ["lavagem", "higienização", "higienizacao", "limpeza"]),
+        ("revisao", ["revisão", "revisao"]),
+    ]
+
+    # Regex para prefixo [OperationType] e sufixo ***MODIFICADOR***
+    _BRACKET_RE = re.compile(r"^\[([^\]]+)\]\s*")
+    _STAR_SUFFIX_RE = re.compile(r"\s*\*{2,}[^*]+\*{2,}")
+    _TRAILING_PRIMER_RE = re.compile(r"\s+PRIMER\s*$", re.IGNORECASE)
+
+    # Mapa de conteúdo do [bracket] → categoria
+    _BRACKET_CATEGORY: dict[str, str] = {
+        "remoção e instalação": "ri",
+        "pintura": "pintura",
+        "reparação": "funilaria",
+        "serviço": "outros",
+    }
+
+    @classmethod
+    def _infer_category(cls, description: str) -> str:
+        """Infere a categoria pelo texto da descrição.
+
+        Verifica primeiro o prefixo [OperationType] (formato Cilia/legado),
+        depois fallback para keyword matching no texto livre.
+        """
+        desc = description.strip()
+
+        # 1. Prefixo entre colchetes: [Pintura], [Remoção e Instalação], etc.
+        bracket = cls._BRACKET_RE.match(desc)
+        if bracket:
+            content = bracket.group(1).lower().strip()
+            for key, cat in cls._BRACKET_CATEGORY.items():
+                if key in content:
+                    return cat
+            return "outros"
+
+        # 2. Fallback: keyword no texto
+        desc_lower = desc.lower()
+        for cat_key, keywords in cls._CATEGORY_KEYWORDS:
+            if any(kw in desc_lower for kw in keywords):
+                return cat_key
+        return "outros"
+
+    @classmethod
+    def _resolve_category(cls, labor: Any) -> str:
+        """Resolve a categoria do item: catálogo > inferência por descrição.
+
+        Para itens do catálogo com categoria 'funilaria', tenta refinar
+        em subcategoria (ri, funilaria) via descrição.
+        """
+        catalog = getattr(labor, "service_catalog", None)
+        if catalog and getattr(catalog, "category", None):
+            cat = catalog.category
+            if cat == "funilaria":
+                return cls._infer_category(labor.description)
+            return cat
+        return cls._infer_category(labor.description)
+
+    @classmethod
+    def _clean_description(cls, description: str) -> str:
+        """Remove prefixo [OperationType] das descrições para documentos externos."""
+        desc = description.strip()
+        bracket = cls._BRACKET_RE.match(desc)
+        if bracket:
+            op = bracket.group(1).strip()
+            panel = desc[bracket.end():].strip()
+            # Limpa sufixos ***...*** e PRIMER do painel
+            panel = cls._STAR_SUFFIX_RE.sub("", panel).strip()
+            panel = cls._TRAILING_PRIMER_RE.sub("", panel).strip()
+            return f"{op} — {panel}" if panel else op
+        return desc
+
+    @classmethod
+    def _services_list(cls, order: Any) -> list[dict[str, Any]]:
         items = []
         for labor in order.labor_items.filter(is_active=True):
+            catalog = getattr(labor, "service_catalog", None)
+            category = "default"
+            if catalog and getattr(catalog, "category", None):
+                category = catalog.category
             items.append({
-                "description": labor.description,
+                "description": cls._clean_description(labor.description),
                 "quantity": str(labor.quantity),
                 "unit_price": str(labor.unit_price),
                 "total": str(labor.total),
-                "category": getattr(labor, "category", "default") or "default",
+                "category": category,
             })
         return items
+
+    # Labels curtos para colunas da matriz
+    _CATEGORY_SHORT: dict[str, str] = {
+        "ri": "R&I",
+        "funilaria": "Reparação",
+        "pintura": "Pintura",
+        "mecanica": "Mecânica",
+        "eletrica": "Elétrica",
+        "alinhamento": "Alinh.",
+        "estetica": "Estética",
+        "lavagem": "Lavagem",
+        "revisao": "Revisão",
+        "outros": "Outros",
+    }
+
+    # Prefixos de operação para extrair o nome do painel da descrição
+    _OPERATION_PREFIXES: list[str] = [
+        "remoção e instalação de ", "remoção e instalação ",
+        "remoção e inst. de ", "remoção e inst. ",
+        "remocao e instalacao de ", "remocao e instalacao ",
+        "r&i de ", "r&i ", "r/i de ", "r/i ",
+        "montagem de ", "montagem ", "desmontagem de ", "desmontagem ",
+        "funilaria de ", "funilaria ",
+        "chapeação de ", "chapeação ", "chapeacao de ", "chapeacao ",
+        "desempeno de ", "desempeno ",
+        "reparação de ", "reparação ", "reparacao de ", "reparacao ",
+        "reparo de ", "reparo ",
+        "pintura de ", "pintura ", "repintura de ", "repintura ",
+        "polimento de ", "polimento ",
+        "mecânica de ", "mecânica ", "mecanica de ", "mecanica ",
+        "elétrica de ", "elétrica ", "eletrica de ", "eletrica ",
+        "lavagem de ", "lavagem ",
+    ]
+
+    @classmethod
+    def _extract_panel_name(cls, description: str) -> str:
+        """Remove prefixo de operação e sufixos para obter o nome do painel.
+
+        Lida com formatos:
+          - "[Remoção e Instalação] PARALAMA DIANT DIR"
+          - "[Pintura] PARACHOQUE TRAS DIR PRIMER"
+          - "[Remoção e Instalação] FAROL DIREITO ***POLIMENTO***"
+          - "Funilaria porta dianteira esquerda"
+        """
+        desc = description.strip()
+
+        # 1. Strip [OperationType] prefix
+        bracket = cls._BRACKET_RE.match(desc)
+        if bracket:
+            desc = desc[bracket.end():].strip()
+        else:
+            # Fallback: strip plain text prefixes
+            desc_lower = desc.lower()
+            for prefix in cls._OPERATION_PREFIXES:
+                if desc_lower.startswith(prefix):
+                    remainder = desc[len(prefix):].strip()
+                    if remainder:
+                        desc = remainder
+                    break
+
+        # 2. Strip ***MODIFICADOR*** sufixos (ex: ***POLIMENTO***)
+        desc = cls._STAR_SUFFIX_RE.sub("", desc).strip()
+
+        # 3. Strip PRIMER sufixo
+        desc = cls._TRAILING_PRIMER_RE.sub("", desc).strip()
+
+        return desc or description.strip()
+
+    @staticmethod
+    def _normalize_key(text: str) -> str:
+        """Chave de agrupamento: uppercase + strip para casar peça com serviço."""
+        return text.strip().upper()
+
+    @classmethod
+    def _build_service_matrix(cls, order: Any) -> dict[str, Any]:
+        """Monta a matriz peça × serviço para o PDF.
+
+        Linhas = painéis/peças únicas (union de parts + labor descriptions).
+        Colunas = tipos de operação (R&I, Funilaria, Pintura, etc.).
+        Primeira coluna fixa = 'Troca' (se há peça para substituir).
+
+        Usa chave normalizada (UPPERCASE) para casar peças e serviços
+        independente de capitalização.
+        """
+        # Mapa key→display: guarda o primeiro nome visto para cada chave
+        display_names: dict[str, str] = {}
+
+        def _register(raw: str) -> str:
+            key = cls._normalize_key(raw)
+            if key not in display_names:
+                display_names[key] = raw.strip()
+            return key
+
+        # 1. Coletar peças agrupadas por painel (normalizado)
+        parts_by_key: OrderedDict[str, dict[str, Any]] = OrderedDict()
+        for part in order.parts.filter(is_active=True).order_by("created_at"):
+            key = _register(part.description)
+            if key not in parts_by_key:
+                parts_by_key[key] = {"qty": 0, "code": ""}
+            parts_by_key[key]["qty"] += int(part.quantity)
+            if part.part_number and not parts_by_key[key]["code"]:
+                parts_by_key[key]["code"] = part.part_number
+
+        # 2. Coletar serviços por painel (normalizado) + categoria
+        services_by_key: OrderedDict[str, set[str]] = OrderedDict()
+        for labor in order.labor_items.filter(is_active=True).order_by("created_at"):
+            category = cls._resolve_category(labor)
+            panel_raw = cls._extract_panel_name(labor.description)
+            key = _register(panel_raw)
+            if key not in services_by_key:
+                services_by_key[key] = set()
+            services_by_key[key].add(category)
+
+        # 3. Union de todas as chaves (peças primeiro, depois serviços-only)
+        all_keys: list[str] = []
+        seen: set[str] = set()
+        for k in parts_by_key:
+            if k not in seen:
+                all_keys.append(k)
+                seen.add(k)
+        for k in services_by_key:
+            if k not in seen:
+                all_keys.append(k)
+                seen.add(k)
+
+        if not all_keys:
+            return {}
+
+        # 4. Determinar colunas de serviço presentes (na ordem canônica)
+        all_cats: set[str] = set()
+        for cats in services_by_key.values():
+            all_cats.update(cats)
+
+        columns: list[dict[str, str]] = []
+        for cat_key, _ in cls.CATEGORY_ORDER:
+            if cat_key in all_cats:
+                columns.append({
+                    "key": cat_key,
+                    "label": cls._CATEGORY_SHORT.get(cat_key, cat_key),
+                })
+
+        has_parts = bool(parts_by_key)
+
+        # 5. Montar linhas
+        rows: list[dict[str, Any]] = []
+        for key in all_keys:
+            part_info = parts_by_key.get(key)
+            panel_cats = services_by_key.get(key, set())
+            rows.append({
+                "panel": display_names.get(key, key),
+                "has_part": part_info is not None,
+                "part_qty": part_info["qty"] if part_info else 0,
+                "part_code": part_info["code"] if part_info else "",
+                "cells": [cat["key"] in panel_cats for cat in columns],
+            })
+
+        return {
+            "has_parts_column": has_parts,
+            "columns": columns,
+            "rows": rows,
+            "total_parts": len(parts_by_key),
+            "total_services": sum(len(cats) for cats in services_by_key.values()),
+        }
 
     @staticmethod
     def _parts_list(order: Any) -> list[dict[str, Any]]:
@@ -219,6 +522,8 @@ class OSDataLoader:
         customer_type_map = {"insurer": "Seguradora", "private": "Particular"}
         customer_type_display = customer_type_map.get(order.customer_type or "", "Particular")
 
+        matrix = cls._build_service_matrix(order)
+
         data: dict[str, Any] = {
             "company": company,
             "logo_base64": get_logo_base64(),
@@ -227,13 +532,29 @@ class OSDataLoader:
                 "number": order.number,
                 "customer_type_display": customer_type_display,
                 "entry_date": _format_date_br(order.entry_date),
+                "entry_time": _format_time_br(order.entry_date),
                 "estimated_delivery_date": _format_date_br(order.estimated_delivery_date),
+                "estimated_delivery_time": _format_time_br(
+                    order.estimated_delivery or order.estimated_delivery_date
+                ),
+                "consultor": (
+                    order.consultant.full_name
+                    if order.consultant and hasattr(order.consultant, "full_name")
+                    else ""
+                ),
             },
             "vehicle": cls._vehicle_dict(order),
+            "matrix": matrix,
             "services": cls._services_list(order),
             "parts": cls._parts_list(order),
             "observations": "",
             "location_date": _location_date_str(),
+            "consultant_signature_base64": _get_employee_signature_base64(order.consultant),
+            "consultant_name": (
+                order.consultant.full_name
+                if order.consultant and hasattr(order.consultant, "full_name")
+                else ""
+            ),
         }
         if order.customer_type == "insurer" and order.insurer:
             data["insurer"] = {

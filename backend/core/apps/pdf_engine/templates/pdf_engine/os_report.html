@@ -2,6 +2,8 @@
 
 {% block title %}OS #{{ order.number }}{% endblock %}
 
+{% block doc_header %}{% endblock %}
+
 {% block extra_styles %}
 /* ── Hero OS ──────────────────────────────────────── */
 .os-hero {
@@ -83,6 +85,12 @@
     color: #000;
 }
 .hero-date-emph .hero-date-lbl { color: #000; }
+.hero-time {
+    font-size: 11px;
+    font-weight: 400;
+    color: #666;
+    letter-spacing: 0;
+}
 
 /* ── Consultor ────────────────────────────────────── */
 .field-row {
@@ -196,21 +204,6 @@
     font-weight: 600;
 }
 
-/* ── Seguradora ───────────────────────────────────── */
-.ins-grid {
-    border-top: 0.5px solid #e0e0e0;
-    display: flex;
-    flex-wrap: wrap;
-}
-.ins-cell {
-    flex: 1;
-    min-width: 140px;
-    padding: 8px 10px 8px 0;
-    border-bottom: 0.5px solid #e0e0e0;
-    border-right: 0.5px solid #e0e0e0;
-}
-.ins-cell:last-child { border-right: 0; }
-
 /* ── Seção contadora (N itens) ────────────────────── */
 .sec-count {
     font-size: 9px;
@@ -219,6 +212,53 @@
     text-transform: uppercase;
     float: right;
     margin-top: 2px;
+}
+
+/* ── Matriz peça × serviço ────────────────────────── */
+.matrix { width: 100%; border-collapse: collapse; font-size: 10px; }
+.matrix thead th {
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #000;
+    font-weight: 800;
+    text-align: center;
+    padding: 7px 4px;
+    background: #000;
+    color: #fff;
+}
+.matrix thead th:first-child {
+    text-align: left;
+    padding-left: 8px;
+}
+.matrix tbody td {
+    padding: 4px 4px;
+    border-bottom: 0.5px solid #e0e0e0;
+    text-align: center;
+    vertical-align: middle;
+}
+.matrix tbody td:first-child {
+    text-align: left;
+    padding-left: 0;
+    font-size: 10px;
+}
+.matrix tbody tr:nth-child(odd) { background: rgba(0,0,0,.02); }
+.matrix .col-panel { width: auto; }
+.matrix .col-op { width: 52px; }
+.matrix .col-troca { width: 48px; }
+.dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #000;
+}
+.dot-empty {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 0.5px solid #ccc;
 }
 {% endblock %}
 
@@ -235,30 +275,27 @@
         <div class="os-hero-dates">
             <div class="hero-date">
                 <div class="hero-date-lbl">Data de Entrada</div>
-                <div class="hero-date-val">{{ order.entry_date|default:"—" }}</div>
+                <div class="hero-date-val">{{ order.entry_date|default:"—" }}{% if order.entry_time %} <span class="hero-time">{{ order.entry_time }}</span>{% endif %}</div>
             </div>
             <div class="hero-arrow" aria-hidden="true">→</div>
             <div class="hero-date hero-date-emph">
                 <div class="hero-date-lbl">Previsão de Entrega</div>
-                <div class="hero-date-val">{{ order.estimated_delivery_date|default:"—" }}</div>
+                <div class="hero-date-val">{{ order.estimated_delivery_date|default:"—" }}{% if order.estimated_delivery_time %} <span class="hero-time">{{ order.estimated_delivery_time }}</span>{% endif %}</div>
             </div>
         </div>
     </div>
 
-    {% if order.consultor %}
-    <div class="field-row">
-        <div class="field-lbl">Consultor Responsável</div>
-        <div class="field-val">{{ order.consultor }}</div>
-    </div>
-    {% endif %}
-
-    {# ── 2. Veículo ───────────────────────────────────────────────────────── #}
+    {# ── 1. Veículo + Seguradora (seção unificada) ─────────────────────── #}
     <div class="section">
-        <h2 class="section-title"><span class="section-number">01</span>Dados do Veículo</h2>
+        <h2 class="section-title"><span class="section-number">01</span>Veículo{% if insurer %} e Seguradora{% endif %}</h2>
         <div class="veh-grid">
             <div class="veh-cell veh-cell-wide">
                 <div class="field-lbl">Marca / Modelo</div>
                 <div class="field-val bold">{{ vehicle.make }} {{ vehicle.model }}</div>
+            </div>
+            <div class="veh-cell">
+                <div class="field-lbl">Placa</div>
+                <div class="field-val bold">{{ vehicle.plate|default:"—" }}</div>
             </div>
             <div class="veh-cell">
                 <div class="field-lbl">Ano</div>
@@ -269,129 +306,100 @@
                 <div class="field-val">{{ vehicle.color|default:"—" }}</div>
             </div>
             <div class="veh-cell">
-                <div class="field-lbl">Placa</div>
-                <div class="field-val bold">{{ vehicle.plate|default:"—" }}</div>
-            </div>
-            <div class="veh-cell">
-                <div class="field-lbl">KM Entrada</div>
-                <div class="field-val">{% if vehicle.mileage_in %}{{ vehicle.mileage_in|floatformat:0 }} km{% else %}—{% endif %}</div>
+                <div class="field-lbl">KM</div>
+                <div class="field-val">{% if vehicle.mileage_in %}{{ vehicle.mileage_in|floatformat:0 }}{% else %}—{% endif %}</div>
             </div>
         </div>
+        {% if vehicle.chassis and vehicle.chassis != "—" %}
         <div class="veh-grid">
             <div class="veh-cell veh-cell-full">
                 <div class="field-lbl">Chassi</div>
-                <div class="field-val" style="font-size: 10px; letter-spacing: 0.02em;">{{ vehicle.chassis|default:"—" }}</div>
+                <div class="field-val" style="font-size: 10px; letter-spacing: 0.02em;">{{ vehicle.chassis }}</div>
             </div>
         </div>
-    </div>
-
-    {# ── 3. Seguradora (se houver) ────────────────────────────────────────── #}
-    {% if insurer %}
-    <div class="section">
-        <h2 class="section-title"><span class="section-number">02</span>Seguradora</h2>
-        <div class="ins-grid">
-            <div class="ins-cell" style="flex: 2;">
+        {% endif %}
+        {% if insurer %}
+        <div class="veh-grid">
+            <div class="veh-cell veh-cell-wide">
                 <div class="field-lbl">Seguradora</div>
                 <div class="field-val bold">{{ insurer.name }}</div>
             </div>
             {% if insurer.casualty_number %}
-            <div class="ins-cell">
+            <div class="veh-cell">
                 <div class="field-lbl">Nº Sinistro</div>
                 <div class="field-val">{{ insurer.casualty_number }}</div>
             </div>
             {% endif %}
             {% if insurer.insured_type %}
-            <div class="ins-cell">
+            <div class="veh-cell">
                 <div class="field-lbl">Tipo</div>
                 <div class="field-val">{{ insurer.insured_type }}</div>
             </div>
             {% endif %}
+            {% if order.consultor %}
+            <div class="veh-cell">
+                <div class="field-lbl">Consultor</div>
+                <div class="field-val">{{ order.consultor }}</div>
+            </div>
+            {% endif %}
         </div>
+        {% elif order.consultor %}
+        <div class="veh-grid">
+            <div class="veh-cell veh-cell-full">
+                <div class="field-lbl">Consultor</div>
+                <div class="field-val">{{ order.consultor }}</div>
+            </div>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 
-    {# ── 4. Serviços ──────────────────────────────────────────────────────── #}
+    {# ── 2. Matriz Peças × Serviços ─────────────────────────────────────── #}
     <div class="section">
         <h2 class="section-title">
-            <span class="section-number">{% if insurer %}03{% else %}02{% endif %}</span>
-            Serviços a Realizar
-            <span class="sec-count">{{ services|length }} {{ services|length|pluralize:"item,itens" }}</span>
+            <span class="section-number">02</span>
+            Peças e Serviços
         </h2>
-        <table class="tbl">
+
+        {% if matrix.rows %}
+        <table class="matrix">
             <thead>
                 <tr>
-                    <th class="c-num">Nº</th>
-                    <th>Descrição do Serviço</th>
-                    <th class="c-qtd">Qtd.</th>
-                    <th class="c-chk">Concluído</th>
+                    <th class="col-panel">Peça / Painel</th>
+                    {% if matrix.has_parts_column %}<th class="col-troca">Troca</th>{% endif %}
+                    {% for col in matrix.columns %}
+                    <th class="col-op">{{ col.label }}</th>
+                    {% endfor %}
                 </tr>
             </thead>
             <tbody>
-                {% for s in services %}
+                {% for row in matrix.rows %}
                 <tr>
-                    <td class="c-num">{{ forloop.counter|stringformat:"02d" }}</td>
-                    <td>{{ s.description }}</td>
-                    <td class="c-qtd">{{ s.quantity }}</td>
-                    <td class="c-chk"><span class="checkbox"></span></td>
-                </tr>
-                {% endfor %}
-                {# Linhas em branco para preenchimento manual #}
-                {% for i in "1234" %}
-                <tr class="blank">
-                    <td class="c-num">{{ services|length|add:forloop.counter|stringformat:"02d" }}</td>
-                    <td><span class="rule-line"></span></td>
-                    <td class="c-qtd"><span class="rule-line"></span></td>
-                    <td class="c-chk"><span class="checkbox"></span></td>
+                    <td>{{ row.panel }}</td>
+                    {% if matrix.has_parts_column %}
+                    <td>{% if row.has_part %}<span class="dot"></span>{% else %}<span class="dot-empty"></span>{% endif %}</td>
+                    {% endif %}
+                    {% for filled in row.cells %}
+                    <td>{% if filled %}<span class="dot"></span>{% else %}<span class="dot-empty"></span>{% endif %}</td>
+                    {% endfor %}
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-    </div>
-
-    {# ── 5. Peças ─────────────────────────────────────────────────────────── #}
-    <div class="section">
-        <h2 class="section-title">
-            <span class="section-number">{% if insurer %}04{% else %}03{% endif %}</span>
-            Peças a Utilizar
-            <span class="sec-count">{{ parts|length }} {{ parts|length|pluralize:"item,itens" }}</span>
-        </h2>
-        <table class="tbl">
-            <thead>
-                <tr>
-                    <th class="c-num">Nº</th>
-                    <th>Descrição</th>
-                    <th class="c-cod">Código</th>
-                    <th class="c-qtd">Qtd.</th>
-                    <th class="c-chk">Aplicada</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for p in parts %}
-                <tr>
-                    <td class="c-num">{{ forloop.counter|stringformat:"02d" }}</td>
-                    <td>{{ p.description }}</td>
-                    <td class="c-cod" style="font-size: 9px;">{{ p.part_number|default:"—" }}</td>
-                    <td class="c-qtd">{{ p.quantity }}</td>
-                    <td class="c-chk"><span class="checkbox"></span></td>
-                </tr>
-                {% endfor %}
-                {% for i in "1234" %}
-                <tr class="blank">
-                    <td class="c-num">{{ parts|length|add:forloop.counter|stringformat:"02d" }}</td>
-                    <td><span class="rule-line"></span></td>
-                    <td class="c-cod"><span class="rule-line"></span></td>
-                    <td class="c-qtd"><span class="rule-line"></span></td>
-                    <td class="c-chk"><span class="checkbox"></span></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        {% else %}
+            {# Fallback se não houver matriz #}
+            {% if parts %}
+            <p style="font-size: 10px; color: #666;">{{ parts|length }} peça{{ parts|length|pluralize:"s" }}</p>
+            {% endif %}
+            {% if services %}
+            <p style="font-size: 10px; color: #666;">{{ services|length }} serviço{{ services|length|pluralize:"s" }}</p>
+            {% endif %}
+        {% endif %}
     </div>
 
     {# ── 6. Observações ───────────────────────────────────────────────────── #}
     <div class="section">
         <h2 class="section-title">
-            <span class="section-number">{% if insurer %}05{% else %}04{% endif %}</span>
+            <span class="section-number">03</span>
             Observações Técnicas
         </h2>
         {% if observations %}
@@ -408,7 +416,14 @@
     {# ── Assinaturas ──────────────────────────────────────────────────────── #}
     <div class="os-sigs">
         <div class="os-sig">
+            {% if consultant_signature_base64 %}
+                <img src="data:image/png;base64,{{ consultant_signature_base64 }}"
+                     style="height: 48px; object-fit: contain; margin-bottom: 4px;" alt="Assinatura" />
+            {% endif %}
             <div class="os-sig-line"></div>
+            {% if consultant_name %}
+                <div class="os-sig-lbl" style="color: #333; font-size: 9px;">{{ consultant_name }}</div>
+            {% endif %}
             <div class="os-sig-lbl">Consultor Responsável</div>
         </div>
         <div class="os-sig">
