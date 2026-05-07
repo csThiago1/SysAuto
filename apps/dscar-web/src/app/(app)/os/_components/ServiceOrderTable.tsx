@@ -14,7 +14,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  StatusBadge
+  StatusBadge,
+  ClosureDots,
 } from "@/components/ui"
 import { cn } from "@/lib/utils"
 import { BillingModal } from "../[numero]/_components/BillingModal"
@@ -163,7 +164,10 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
 
                 {/* Status */}
                 <TableCell>
-                  <StatusBadge status={order.status} />
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={order.status} />
+                    <ClosureDots closureStatus={order.closure_status} />
+                  </div>
                 </TableCell>
 
                 {/* Faturamento */}

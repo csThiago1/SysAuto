@@ -28,6 +28,7 @@ export default function ServiceOrdersPage() {
   const [insurerId, setInsurerId] = useState<string>("ALL")
   const [ordering, setOrdering] = useState<string>("-number")
   const [excludeClosed, setExcludeClosed] = useState(true)
+  const [closure, setClosure] = useState<string>("ALL")
   const [page, setPage] = useState(1)
 
   const debouncedSearch = useDebounce(search, 300)
@@ -43,13 +44,14 @@ export default function ServiceOrdersPage() {
   if (insurerId !== "ALL") filters.insurer = insurerId
   if (ordering) filters.ordering = ordering
   if (excludeClosed && status === "ALL") filters.exclude_closed = "true"
+  if (closure !== "ALL") filters.closure = closure
 
   const { data, isLoading, isError } = useServiceOrders(filters, page, PAGE_SIZE)
 
   // Reset to page 1 whenever filters change
   useEffect(() => {
     setPage(1)
-  }, [debouncedSearch, status, customerType, insurerId, ordering, excludeClosed])
+  }, [debouncedSearch, status, customerType, insurerId, ordering, excludeClosed, closure])
 
   const clearFilters = () => {
     setSearch("")
@@ -57,9 +59,10 @@ export default function ServiceOrdersPage() {
     setCustomerType("ALL")
     setInsurerId("ALL")
     setExcludeClosed(true)
+    setClosure("ALL")
   }
 
-  const hasFilters = search || status !== "ALL" || customerType !== "ALL" || insurerId !== "ALL" || !excludeClosed
+  const hasFilters = search || status !== "ALL" || customerType !== "ALL" || insurerId !== "ALL" || !excludeClosed || closure !== "ALL"
 
   const totalPages = data ? Math.ceil(data.count / PAGE_SIZE) : 0
   const firstItem = data && data.count > 0 ? (page - 1) * PAGE_SIZE + 1 : 0
@@ -166,6 +169,16 @@ export default function ServiceOrdersPage() {
             <option value="private">Particular</option>
           </select>
 
+          <select
+            className={SELECT_CLS}
+            value={closure}
+            onChange={(e) => setClosure(e.target.value)}
+          >
+            <option value="ALL">Fechamento</option>
+            <option value="closed">Fechadas</option>
+            <option value="pending">Pendentes</option>
+          </select>
+
           {hasFilters && (
             <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground hover:text-error-600 px-3">
               <FilterX className="h-4 w-4 mr-2" /> Limpar
@@ -213,6 +226,14 @@ export default function ServiceOrdersPage() {
             <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-3 py-1 text-xs font-medium text-foreground/80">
               Mostrando todas (incluindo entregues)
               <button type="button" onClick={() => setExcludeClosed(true)} className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors" aria-label="Voltar para na oficina">
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          )}
+          {closure !== "ALL" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-3 py-1 text-xs font-medium text-foreground/80">
+              {closure === "closed" ? "Fechadas" : "Pendentes"}
+              <button type="button" onClick={() => setClosure("ALL")} className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors" aria-label="Remover filtro de fechamento">
                 <X className="h-3 w-3" />
               </button>
             </span>

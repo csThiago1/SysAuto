@@ -63,3 +63,4 @@ export { RoleBadge } from "./role-badge";
 export { Avatar } from "./avatar";
 export { PageHeader } from "./page-header";
 export { EmptyState } from "./empty-state";
+export { ClosureDots } from "./closure-dots";

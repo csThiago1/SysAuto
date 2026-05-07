@@ -278,6 +278,15 @@ export interface OverdueServiceOrder {
   urgency: "overdue" | "due_today" | "upcoming";
 }
 
+// ─── Closure status ────────────────────────────────────────────────────────────
+
+export interface ClosureStatus {
+  is_delivered: boolean;
+  is_invoiced: boolean;
+  is_paid: boolean;
+  is_closed: boolean;
+}
+
 // ─── Entidade principal ────────────────────────────────────────────────────────
 
 export interface ServiceOrder {
@@ -367,6 +376,9 @@ export interface ServiceOrder {
   nfe_key: string;
   nfse_number: string;
   invoice_issued: boolean;
+
+  // Fechamento
+  closure_status: ClosureStatus | null;
 
   opened_at: string;
   created_at: string;

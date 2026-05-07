@@ -5,9 +5,11 @@ import { useQueryClient } from "@tanstack/react-query"
 import {
   Car,
   CheckCircle2,
+  Circle,
   DollarSign,
   FileText,
   Loader2,
+  Lock,
   Truck,
   XCircle,
 } from "lucide-react"
@@ -68,6 +70,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
   const isDelivered = order.status === "delivered"
   const isCancelled = order.status === "cancelled"
   const isReady = order.status === "ready"
+  const cs = order.closure_status
 
   async function saveMileageOut(): Promise<void> {
     const val = parseInt(mileageOut, 10)
@@ -90,6 +93,31 @@ export function ClosingTab({ order }: ClosingTabProps) {
 
   return (
     <div className="space-y-4 max-w-2xl">
+      {/* Closure checklist */}
+      {cs && (
+        <div className={cn(
+          "rounded-xl border p-4",
+          cs.is_closed
+            ? "bg-success-500/10 border-success-500/20"
+            : "bg-muted/50 border-border"
+        )}>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-foreground/80">Fechamento da OS</h2>
+            {cs.is_closed && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-success-500/20 border border-success-500/30 px-3 py-1 text-xs font-semibold text-success-400">
+                <Lock className="h-3 w-3" />
+                OS Fechada
+              </span>
+            )}
+          </div>
+          <div className="space-y-2">
+            <ClosureCheckItem label="Entregue" done={cs.is_delivered} />
+            <ClosureCheckItem label="Faturada" done={cs.is_invoiced} />
+            <ClosureCheckItem label="Quitada" done={cs.is_paid} />
+          </div>
+        </div>
+      )}
+
       {/* Status banner */}
       {isDelivered && (
         <div className="flex items-center gap-3 rounded-lg bg-success-500/10 border border-success-500/20 p-4">
@@ -333,6 +361,21 @@ export function ClosingTab({ order }: ClosingTabProps) {
         onOpenChange={setShowBillingModal}
         order={order}
       />
+    </div>
+  )
+}
+
+function ClosureCheckItem({ label, done }: { label: string; done: boolean }) {
+  return (
+    <div className="flex items-center gap-2">
+      {done ? (
+        <CheckCircle2 className="h-4 w-4 text-success-400" />
+      ) : (
+        <Circle className="h-4 w-4 text-muted-foreground/40" />
+      )}
+      <span className={cn("text-sm", done ? "text-foreground" : "text-muted-foreground")}>
+        {label}
+      </span>
     </div>
   )
 }
