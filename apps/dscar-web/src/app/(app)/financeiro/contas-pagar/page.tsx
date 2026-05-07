@@ -9,6 +9,7 @@ import React from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { PlusCircle, TrendingDown, AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import { toast } from "sonner";
 import { usePayableDocuments, useRecordPayment, useCancelPayable } from "@/hooks";
 import { useDebounce } from "@/hooks";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -156,6 +157,7 @@ function RecordPaymentDialog({
       },
       {
         onSuccess: () => {
+          toast.success("Pagamento registrado com sucesso!");
           onOpenChange(false);
         },
       }
@@ -547,8 +549,74 @@ export default function ContasPagarPage(): React.ReactElement {
           </div>
         </div>
 
+        {/* Mobile card view */}
+        {isLoading && (
+          <div className="md:hidden space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="rounded-lg border border-border bg-muted/50 p-4 space-y-2 animate-pulse">
+                <div className="h-4 w-32 bg-muted rounded" />
+                <div className="h-3 w-48 bg-muted rounded" />
+                <div className="h-3 w-full bg-muted rounded" />
+              </div>
+            ))}
+          </div>
+        )}
+        {!isLoading && documents.length === 0 && (
+          <div className="md:hidden py-12 text-center text-sm text-muted-foreground">
+            Nenhum título encontrado.
+          </div>
+        )}
+        {!isLoading && documents.length > 0 && (
+          <div className="md:hidden space-y-3">
+            {documents.map((doc) => (
+              <div key={doc.id} className="rounded-lg border border-border bg-muted/50 p-4 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-medium text-foreground truncate">
+                    {doc.supplier_name}
+                  </span>
+                  <PayableStatusBadge status={doc.status} />
+                </div>
+                <p className="text-xs text-muted-foreground truncate">
+                  {doc.description}
+                  {doc.document_number && (
+                    <span className="ml-1">#{doc.document_number}</span>
+                  )}
+                </p>
+                <div className="flex items-center justify-between text-xs">
+                  <span className={isOverdue(doc.due_date, doc.status) ? "text-error-400 font-medium" : "text-muted-foreground"}>
+                    Vencimento: {formatDate(doc.due_date)}
+                  </span>
+                  <span className="font-mono font-semibold text-foreground">
+                    {formatBRL(doc.amount_remaining)}
+                  </span>
+                </div>
+                {(doc.status === "open" || doc.status === "partial" || doc.status === "overdue") && (
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setPayingDoc(doc)}
+                      className="rounded-md bg-primary/10 border border-primary/40 px-2.5 py-1 text-xs font-medium text-primary/90 hover:bg-primary/20 transition-colors"
+                    >
+                      Pagar
+                    </button>
+                    {canCancel(doc.status) && (
+                      <button
+                        type="button"
+                        onClick={() => setCancellingDoc(doc)}
+                        className="rounded-md bg-error-500/10 border border-error-500/20 px-2.5 py-1 text-xs font-medium text-error-400 hover:bg-error-500/20 transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Table */}
-        <div className="rounded-md bg-muted/50 shadow-card overflow-hidden">
+        <div className="hidden md:block rounded-md bg-muted/50 shadow-card overflow-hidden overflow-x-auto">
           {/* Table header */}
           <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-2.5 bg-muted/30 border-b border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
             <span>Fornecedor</span>

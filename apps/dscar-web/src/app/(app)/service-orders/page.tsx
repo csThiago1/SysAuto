@@ -6,6 +6,7 @@ import { Search, FilterX, Plus, ChevronLeft, ChevronRight, X } from "lucide-reac
 import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 
 import { useServiceOrders, useDebounce, usePersons } from "@/hooks"
+import { cn } from "@/lib/utils"
 import {
   Button,
   Input,
@@ -26,6 +27,7 @@ export default function ServiceOrdersPage() {
   const [customerType, setCustomerType] = useState<string>("ALL")
   const [insurerId, setInsurerId] = useState<string>("ALL")
   const [ordering, setOrdering] = useState<string>("-number")
+  const [excludeClosed, setExcludeClosed] = useState(true)
   const [page, setPage] = useState(1)
 
   const debouncedSearch = useDebounce(search, 300)
@@ -40,22 +42,24 @@ export default function ServiceOrdersPage() {
   if (customerType !== "ALL") filters.customer_type = customerType
   if (insurerId !== "ALL") filters.insurer = insurerId
   if (ordering) filters.ordering = ordering
+  if (excludeClosed && status === "ALL") filters.exclude_closed = "true"
 
   const { data, isLoading, isError } = useServiceOrders(filters, page, PAGE_SIZE)
 
   // Reset to page 1 whenever filters change
   useEffect(() => {
     setPage(1)
-  }, [debouncedSearch, status, customerType, insurerId, ordering])
+  }, [debouncedSearch, status, customerType, insurerId, ordering, excludeClosed])
 
   const clearFilters = () => {
     setSearch("")
     setStatus("ALL")
     setCustomerType("ALL")
     setInsurerId("ALL")
+    setExcludeClosed(true)
   }
 
-  const hasFilters = search || status !== "ALL" || customerType !== "ALL" || insurerId !== "ALL"
+  const hasFilters = search || status !== "ALL" || customerType !== "ALL" || insurerId !== "ALL" || !excludeClosed
 
   const totalPages = data ? Math.ceil(data.count / PAGE_SIZE) : 0
   const firstItem = data && data.count > 0 ? (page - 1) * PAGE_SIZE + 1 : 0
@@ -101,6 +105,19 @@ export default function ServiceOrdersPage() {
         </div>
 
         <div className="flex flex-col md:flex-row gap-3">
+          <button
+            type="button"
+            onClick={() => setExcludeClosed(!excludeClosed)}
+            className={cn(
+              "h-9 rounded-md border px-3 py-1 text-sm font-medium shadow-sm transition-colors whitespace-nowrap",
+              excludeClosed
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border bg-muted/50 text-foreground/70 hover:bg-muted/30"
+            )}
+          >
+            {excludeClosed ? "Na Oficina" : "Todas"}
+          </button>
+
           <select
             className={SELECT_CLS}
             value={status}
@@ -188,6 +205,14 @@ export default function ServiceOrdersPage() {
             <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-3 py-1 text-xs font-medium text-foreground/80">
               Tipo: {customerType === "insurer" ? "Seguradora" : "Particular"}
               <button type="button" onClick={() => setCustomerType("ALL")} className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors" aria-label="Remover filtro de tipo">
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          )}
+          {!excludeClosed && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-3 py-1 text-xs font-medium text-foreground/80">
+              Mostrando todas (incluindo entregues)
+              <button type="button" onClick={() => setExcludeClosed(true)} className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors" aria-label="Voltar para na oficina">
                 <X className="h-3 w-3" />
               </button>
             </span>
