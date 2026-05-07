@@ -233,6 +233,14 @@ class PersonDocument(models.Model):
         verbose_name = "Documento"
         verbose_name_plural = "Documentos"
 
+    def save(self, *args, **kwargs) -> None:
+        """Auto-gera value_hash a partir do value (SHA-256 para busca)."""
+        if self.value:
+            from apps.persons.utils import sha256_hex
+
+            self.value_hash = sha256_hex(self.value)
+        super().save(*args, **kwargs)
+
     def __str__(self) -> str:
         return f"{self.doc_type} — {self.person}"
 
@@ -258,6 +266,14 @@ class PersonContact(models.Model):
         ordering = ["-is_primary", "contact_type"]
         verbose_name = "Contato"
         verbose_name_plural = "Contatos"
+
+    def save(self, *args, **kwargs) -> None:
+        """Auto-gera value_hash a partir do value (SHA-256 para busca)."""
+        if self.value:
+            from apps.persons.utils import sha256_hex
+
+            self.value_hash = sha256_hex(self.value)
+        super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return f"{self.contact_type}: ***"
