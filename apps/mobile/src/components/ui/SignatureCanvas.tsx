@@ -34,8 +34,8 @@ export function SignatureCanvas({
   initialImage,
   height = 200,
   disabled = false,
-  penColor = '#ffffff',
-  backgroundColor = '#1c1c1e',
+  penColor = '#000000',
+  backgroundColor = '#ffffff',
   signerName,
 }: SignatureCanvasProps): React.JSX.Element {
   const ref = useRef<SignatureViewRef>(null);
