@@ -17,6 +17,7 @@
     "@nozbe/watermelondb": "^0.28.0",
     "@paddock/types": "*",
     "@react-native-community/netinfo": "11.5.2",
+    "@sentry/react-native": "~7.11.0",
     "@tanstack/react-query": "^5.64.1",
     "expo": "~55.0.19",
     "expo-auth-session": "~55.0.15",

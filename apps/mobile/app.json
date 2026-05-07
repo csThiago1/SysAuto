@@ -1,38 +1,45 @@
 {
-    "expo": {
-        "name": "Paddock Solutions",
-        "slug": "paddock-mobile",
-        "version": "1.0.0",
-        "orientation": "portrait",
-        "icon": "./assets/icon.png",
-        "userInterfaceStyle": "automatic",
-        "scheme": "paddock",
-        "plugins": [
-            "expo-router",
-            "expo-camera",
-            "expo-secure-store"
-        ],
-        "ios": {
-            "supportsTablet": false,
-            "bundleIdentifier": "solutions.paddock.app"
-        },
-        "android": {
-            "package": "solutions.paddock.app",
-            "adaptiveIcon": {
-                "foregroundImage": "./assets/adaptive-icon.png",
-                "backgroundColor": "#ffffff"
-            }
-        },
-        "web": {
-            "bundler": "metro"
-        },
-        "experiments": {
-            "typedRoutes": true
-        },
-        "extra": {
-            "router": {
-                "origin": false
-            }
-        }
+  "expo": {
+    "name": "Paddock Solutions",
+    "slug": "paddock-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "paddock",
+    "plugins": [
+      "expo-router",
+      "expo-camera",
+      "expo-secure-store",
+      "@sentry/react-native"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "solutions.paddock.app"
+    },
+    "android": {
+      "package": "solutions.paddock.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "experiments": {
+      "typedRoutes": true
+    },
+    "updates": {
+      "url": "https://u.expo.dev/YOUR_PROJECT_ID"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      }
     }
+  }
 }
