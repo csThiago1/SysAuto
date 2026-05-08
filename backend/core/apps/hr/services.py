@@ -467,21 +467,27 @@ class PayslipService:
             {"type": a.allowance_type, "amount": float(a.amount)} for a in allowances
         ]
 
-        # Descontos manuais do mês (adiantamentos, faltas, etc.)
+        # Descontos manuais do mês — suporta valores fixos (FIXED) e percentuais (PERCENTAGE)
         deductions = Deduction.objects.filter(
             employee=employee,
             reference_month=month_start,
             is_active=True,
         )
-        manual_deduction_total = sum(d.amount for d in deductions)
-        manual_deduction_breakdown = [
-            {
+        manual_deduction_total = Decimal("0")
+        manual_deduction_breakdown: list[dict] = []
+        for d in deductions:
+            if d.discount_type == "percentage" and d.rate:
+                calc_amount = (employee.base_salary * d.rate / Decimal("100")).quantize(
+                    Decimal("0.01")
+                )
+            else:
+                calc_amount = d.amount or Decimal("0")
+            manual_deduction_total += calc_amount
+            manual_deduction_breakdown.append({
                 "type": d.deduction_type,
                 "description": d.description,
-                "amount": float(d.amount),
-            }
-            for d in deductions
-        ]
+                "amount": float(calc_amount),
+            })
 
         # Base para cálculo de impostos: salário base + HE + bônus
         # Vales (refeição/transporte) não compõem base tributável pelo art. 458 CLT

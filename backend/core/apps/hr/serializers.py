@@ -738,9 +738,11 @@ class DeductionCreateSerializer(serializers.ModelSerializer):
         if discount_type == "fixed":
             if amount is None or amount <= 0:
                 raise serializers.ValidationError({"amount": "Informe um valor positivo para desconto fixo."})
+            attrs["rate"] = None  # fixo não usa rate
         else:  # percentage
             if rate is None or not (0 < rate <= 100):
                 raise serializers.ValidationError({"rate": "Taxa deve ser entre 0.01 e 100."})
+            attrs["amount"] = None  # percentual é calculado na folha
         return attrs
 
     class Meta:
