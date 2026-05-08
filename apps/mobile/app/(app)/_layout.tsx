@@ -27,6 +27,9 @@ export default function AppLayout() {
       <Tabs.Screen name="camera" options={{ href: null }} />
       <Tabs.Screen name="photo-editor" options={{ href: null }} />
       <Tabs.Screen name="vistoria" options={{ href: null }} />
+      <Tabs.Screen name="cadastro/cliente" options={{ href: null }} />
+      <Tabs.Screen name="cadastro/veiculo" options={{ href: null }} />
+      <Tabs.Screen name="kanban" options={{ href: null }} />
       </Tabs>
     </View>
   );

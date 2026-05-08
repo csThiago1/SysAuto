@@ -13,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Card } from '@/components/ui/Card';
 import { Colors, Radii, Spacing, SemanticColors, Typography } from '@/constants/theme';
+import { CreateEventModal } from '@/components/agenda/CreateEventModal';
+import { toast } from '@/stores/toast.store';
 import {
   useCalendar,
   buildAgendaEventsMap,
