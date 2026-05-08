@@ -72,6 +72,8 @@ export default function AgendaScreen(): React.JSX.Element {
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState(today);
+  const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [selectedDateForEvent, setSelectedDateForEvent] = useState<Date>(new Date());
 
   const startDate = useMemo(() => new Date(year, month, 1), [year, month]);
   const endDate = useMemo(() => new Date(year, month + 1, 0), [year, month]);
@@ -228,6 +230,28 @@ export default function AgendaScreen(): React.JSX.Element {
           )}
         </View>
       </ScrollView>
+
+      {/* FAB */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => {
+          setSelectedDateForEvent(selectedDate ?? new Date());
+          setShowCreateEvent(true);
+        }}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="add" size={28} color={Colors.textPrimary} />
+      </TouchableOpacity>
+
+      <CreateEventModal
+        visible={showCreateEvent}
+        initialDate={selectedDateForEvent}
+        onSave={(_data) => {
+          setShowCreateEvent(false);
+          toast.success('Evento criado');
+        }}
+        onClose={() => setShowCreateEvent(false)}
+      />
     </View>
   );
 }
@@ -485,5 +509,23 @@ const styles = StyleSheet.create({
   eventCustomer: {
     fontSize: 12,
     color: Colors.textSecondary,
+  },
+
+  // FAB
+  fab: {
+    position: 'absolute',
+    right: Spacing.lg,
+    bottom: 100,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.brand,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: Colors.brand,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
   },
 });
