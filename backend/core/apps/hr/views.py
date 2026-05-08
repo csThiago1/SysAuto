@@ -152,6 +152,15 @@ class EmployeeViewSet(ModelViewSet):
         employee.status = Employee.Status.TERMINATED
         employee.termination_date = date.today()
         employee.save(update_fields=["status", "termination_date", "updated_at"])
+
+        # Desativar acesso no Keycloak (se provisionado)
+        if employee.user and employee.user.keycloak_id:
+            try:
+                from apps.authentication.keycloak_admin import disable_keycloak_user
+                disable_keycloak_user(str(employee.user.keycloak_id))
+            except Exception as exc:
+                logger.warning("Keycloak disable failed for %s: %s", pk, exc)
+
         logger.info("Employee terminated: %s", pk)
         return Response(EmployeeDetailSerializer(employee, context={"request": request}).data)
 
