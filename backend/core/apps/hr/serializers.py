@@ -25,6 +25,7 @@ from .models import (
     Payslip,
     SalaryHistory,
     TimeClockEntry,
+    Vacation,
     WorkSchedule,
 )
 
@@ -807,7 +808,7 @@ class PayslipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payslip
         fields = [
-            "id", "employee", "employee_name", "reference_month",
+            "id", "employee", "employee_name", "reference_month", "payslip_type",
             "base_salary", "total_bonuses", "total_allowances",
             "total_overtime_hours", "total_overtime_value",
             "total_deductions", "gross_pay", "net_pay",
@@ -826,3 +827,63 @@ class PayslipSerializer(serializers.ModelSerializer):
 class PayslipGenerateSerializer(serializers.Serializer):
     employee = serializers.PrimaryKeyRelatedField(queryset=Employee.objects.filter(is_active=True))
     reference_month = serializers.DateField(help_text="Primeiro dia do mês (ex: 2026-04-01)")
+    payslip_type = serializers.ChoiceField(
+        choices=Payslip.PayslipType.choices,
+        default="regular",
+        help_text="Tipo: regular, thirteenth_first, thirteenth_second, thirteenth_full",
+    )
+
+
+# ── Vacation ─────────────────────────────────────────────────────────────────
+
+
+class VacationSerializer(serializers.ModelSerializer):
+    status_display = serializers.CharField(source="get_status_display", read_only=True)
+
+    class Meta:
+        model = Vacation
+        fields = [
+            "id", "employee", "acquisition_start", "acquisition_end",
+            "start_date", "end_date", "days_taken", "days_sold",
+            "base_salary_snapshot", "vacation_pay", "one_third_pay",
+            "sold_pay", "total_pay", "deductions", "net_pay",
+            "status", "status_display",
+            "created_at", "updated_at",
+        ]
+        read_only_fields = [
+            "id", "base_salary_snapshot", "vacation_pay", "one_third_pay",
+            "sold_pay", "total_pay", "deductions", "net_pay",
+            "created_at", "updated_at",
+        ]
+
+
+class VacationCreateSerializer(serializers.ModelSerializer):
+    def validate(self, attrs: dict) -> dict:
+        days_taken = attrs.get("days_taken", 30)
+        days_sold = attrs.get("days_sold", 0)
+        if days_taken < 20 or days_taken > 30:
+            raise serializers.ValidationError({"days_taken": "Férias devem ter entre 20 e 30 dias."})
+        if days_sold > 10:
+            raise serializers.ValidationError({"days_sold": "Abono pecuniário máximo é 10 dias."})
+        if days_taken + days_sold > 30:
+            raise serializers.ValidationError("Total dias (gozo + vendidos) não pode exceder 30.")
+        return attrs
+
+    class Meta:
+        model = Vacation
+        fields = [
+            "employee", "acquisition_start", "acquisition_end",
+            "start_date", "end_date", "days_taken", "days_sold",
+        ]
+
+
+# ── PJ Payment ───────────────────────────────────────────────────────────────
+
+
+class PJPaymentSerializer(serializers.Serializer):
+    """Payload para registrar pagamento de colaborador PJ."""
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+    reference_month = serializers.DateField(help_text="Primeiro dia do mês")
+    description = serializers.CharField(max_length=300, required=False, default="")
+    nf_number = serializers.CharField(max_length=50, required=False, default="")
+    nf_file_key = serializers.CharField(max_length=500, required=False, default="")

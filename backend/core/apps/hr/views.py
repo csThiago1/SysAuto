@@ -6,6 +6,7 @@ Regras de negócio ficam em services.py — nunca aqui.
 """
 import logging
 from datetime import date
+from decimal import Decimal
 from typing import Any
 
 
@@ -44,6 +45,7 @@ from .models import (
     Payslip,
     SalaryHistory,
     TimeClockEntry,
+    Vacation,
     WorkSchedule,
 )
 from .serializers import (
@@ -63,10 +65,13 @@ from .serializers import (
     GoalTargetUpdateSerializer,
     PayslipGenerateSerializer,
     PayslipSerializer,
+    PJPaymentSerializer,
     SalaryHistoryCreateSerializer,
     SalaryHistorySerializer,
     TimeClockRegisterSerializer,
     TimeClockEntrySerializer,
+    VacationCreateSerializer,
+    VacationSerializer,
     WorkScheduleSerializer,
 )
 from .services import AllowanceService, GoalService, PayslipService, TimeClockService
@@ -478,6 +483,7 @@ class PayslipViewSet(
         payslip = PayslipService.generate_payslip(
             employee_id=str(data["employee"].id),
             reference_month=data["reference_month"],
+            payslip_type=data.get("payslip_type", "regular"),
         )
         return Response(
             PayslipSerializer(payslip, context={"request": request}).data,
@@ -507,3 +513,247 @@ class PayslipViewSet(
             )
         url = _generate_presigned_url(payslip.pdf_file_key, expiration=900)
         return Response({"url": url})
+
+
+# ── Vacation ─────────────────────────────────────────────────────────────────
+
+
+class VacationViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    GenericViewSet,
+):
+    """Férias — agendamento, cálculo e controle de saldo."""
+
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get_permissions(self) -> list[Any]:
+        if self.action in ["create", "complete", "cancel"]:
+            return [IsAuthenticated(), IsManagerOrAbove()]
+        return [IsAuthenticated(), IsConsultantOrAbove()]
+
+    def get_queryset(self) -> Any:
+        qs = Vacation.objects.filter(is_active=True).select_related("employee__user")
+        if "employee_pk" in self.kwargs:
+            qs = qs.filter(employee_id=self.kwargs["employee_pk"])
+        return qs.order_by("-start_date")
+
+    def get_serializer_class(self) -> Any:
+        if self.action == "create":
+            return VacationCreateSerializer
+        return VacationSerializer
+
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Cria férias e calcula valores. Retorna VacationSerializer (com valores)."""
+        serializer = VacationCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        employee = serializer.validated_data["employee"]
+        vacation = serializer.save(base_salary_snapshot=employee.base_salary)
+        self._calculate_vacation(vacation)
+        return Response(
+            VacationSerializer(vacation).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    def _calculate_vacation(self, vacation: Vacation) -> None:
+        """Calcula férias + 1/3 + abono + descontos."""
+        from apps.hr.tax_calculator import calcular_impostos
+
+        emp = vacation.employee
+        salary = emp.base_salary
+        daily = salary / 30
+
+        # Férias
+        vacation_pay = (daily * vacation.days_taken).quantize(Decimal("0.01"))
+        one_third = (vacation_pay / 3).quantize(Decimal("0.01"))
+
+        # Abono pecuniário (isento de IRRF)
+        sold_pay = Decimal("0")
+        if vacation.days_sold > 0:
+            sold_base = (daily * vacation.days_sold).quantize(Decimal("0.01"))
+            sold_third = (sold_base / 3).quantize(Decimal("0.01"))
+            sold_pay = sold_base + sold_third
+
+        # Descontos sobre férias + 1/3 (sem abono)
+        taxable = vacation_pay + one_third
+        tributos = calcular_impostos(
+            salario_bruto=taxable,
+            dependentes=getattr(emp, "dependents_count", 0),
+        )
+        deductions_total = tributos["inss"] + tributos["irrf"]
+
+        total = vacation_pay + one_third + sold_pay
+        net = total - deductions_total
+
+        vacation.base_salary_snapshot = salary
+        vacation.vacation_pay = vacation_pay
+        vacation.one_third_pay = one_third
+        vacation.sold_pay = sold_pay
+        vacation.total_pay = total
+        vacation.deductions = deductions_total
+        vacation.net_pay = net
+        vacation.save(update_fields=[
+            "base_salary_snapshot", "vacation_pay", "one_third_pay",
+            "sold_pay", "total_pay", "deductions", "net_pay", "updated_at",
+        ])
+
+    @action(detail=True, methods=["post"])
+    def complete(self, request: Request, pk: str | None = None, **kwargs: Any) -> Response:
+        """Marca férias como concluídas."""
+        vacation = self.get_object()
+        if vacation.status != Vacation.Status.ACTIVE:
+            return Response(
+                {"detail": "Férias precisam estar em gozo para serem concluídas."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        vacation.status = Vacation.Status.COMPLETED
+        vacation.save(update_fields=["status", "updated_at"])
+        return Response(VacationSerializer(vacation).data)
+
+    @action(detail=True, methods=["post"])
+    def cancel(self, request: Request, pk: str | None = None, **kwargs: Any) -> Response:
+        """Cancela férias agendadas."""
+        vacation = self.get_object()
+        if vacation.status not in (Vacation.Status.SCHEDULED,):
+            return Response(
+                {"detail": "Só é possível cancelar férias agendadas."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        vacation.status = Vacation.Status.CANCELLED
+        vacation.save(update_fields=["status", "updated_at"])
+        return Response(VacationSerializer(vacation).data)
+
+    @action(detail=False, methods=["get"], url_path="balance/(?P<employee_pk>[^/.]+)")
+    def balance(self, request: Request, employee_pk: str | None = None, **kwargs: Any) -> Response:
+        """Retorna saldo de férias do colaborador."""
+        from dateutil.relativedelta import relativedelta
+
+        try:
+            emp = Employee.objects.get(id=employee_pk, is_active=True)
+        except Employee.DoesNotExist:
+            return Response({"detail": "Colaborador não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        today = date.today()
+        hire = emp.hire_date
+
+        # Períodos aquisitivos
+        periods = []
+        period_start = hire
+        while period_start < today:
+            period_end = period_start + relativedelta(months=12) - relativedelta(days=1)
+            # Dias usados nesse período
+            used = Vacation.objects.filter(
+                employee=emp,
+                acquisition_start=period_start,
+                status__in=["scheduled", "active", "completed"],
+                is_active=True,
+            ).values_list("days_taken", flat=True)
+            total_used = sum(used)
+            is_complete = today > period_end
+            is_overdue = is_complete and total_used < 30 and (today - period_end).days > 365
+
+            periods.append({
+                "acquisition_start": str(period_start),
+                "acquisition_end": str(period_end),
+                "is_complete": is_complete,
+                "days_entitled": 30,
+                "days_used": total_used,
+                "days_remaining": max(0, 30 - total_used),
+                "is_overdue": is_overdue,
+            })
+            period_start = period_start + relativedelta(months=12)
+
+        return Response({
+            "employee_id": str(emp.id),
+            "employee_name": emp.user.get_full_name(),
+            "hire_date": str(hire),
+            "periods": periods,
+        })
+
+
+# ── PJ Payment ──────────────────────────────────────────────────────────────
+
+
+class PJPaymentViewSet(GenericViewSet):
+    """Pagamento de colaboradores PJ — cria conta a pagar + lançamento contábil."""
+
+    permission_classes = [IsAuthenticated, IsManagerOrAbove]
+    serializer_class = PJPaymentSerializer
+
+    @action(detail=False, methods=["post"], url_path="(?P<employee_pk>[^/.]+)")
+    @transaction.atomic
+    def create_payment(self, request: Request, employee_pk: str | None = None) -> Response:
+        """POST /hr/pj-payment/{employee_id}/ — registra pagamento PJ."""
+        try:
+            employee = Employee.objects.select_related("user").get(
+                id=employee_pk, is_active=True
+            )
+        except Employee.DoesNotExist:
+            return Response({"detail": "Colaborador não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        if employee.contract_type != "pj":
+            return Response(
+                {"detail": "Este colaborador não é PJ."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = PJPaymentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        amount = data["amount"]
+        ref = data["reference_month"].replace(day=1)
+        desc = data.get("description") or f"Serviço PJ — {employee.user.get_full_name()}"
+        nf_number = data.get("nf_number", "")
+        nf_file_key = data.get("nf_file_key", "")
+
+        # Criar conta a pagar
+        from apps.accounts_payable.models import PayableDocument, Supplier
+        # Reutilizar ou criar fornecedor "Colaboradores DS Car"
+        supplier, _ = Supplier.objects.get_or_create(
+            name=employee.user.get_full_name(),
+            defaults={"notes": f"Colaborador PJ — {employee.registration_number}"},
+        )
+        due = date(ref.year, ref.month + 1, 5) if ref.month < 12 else date(ref.year + 1, 1, 5)
+        payable = PayableDocument.objects.create(
+            supplier=supplier,
+            description=f"PJ {ref.strftime('%m/%Y')} — {employee.registration_number} — {employee.user.get_full_name()}",
+            document_number=nf_number,
+            amount=amount,
+            due_date=due,
+            competence_date=ref,
+            status="open",
+            origin="FOLHA",
+            notes=f"NF: {nf_number}" if nf_number else "",
+            created_by=request.user,
+        )
+
+        # Tentar contabilizar
+        try:
+            from apps.hr.accounting_service import HRAccountingService, _resolve_account
+            acc_pj = _resolve_account("salary_gross")  # Despesa com PJ
+            acc_payable = _resolve_account("payable_net")
+            if acc_pj and acc_payable:
+                from apps.accounting.services.journal_entry_service import JournalEntryService
+                JournalEntryService.create_entry(
+                    description=f"Pagamento PJ — {employee.registration_number} — {employee.user.get_full_name()} — {ref.strftime('%m/%Y')}",
+                    competence_date=ref,
+                    origin="FOLHA",
+                    lines=[
+                        {"account_id": acc_pj.pk, "debit_amount": amount, "credit_amount": Decimal("0")},
+                        {"account_id": acc_payable.pk, "debit_amount": Decimal("0"), "credit_amount": amount},
+                    ],
+                    user=request.user,
+                    auto_approve=True,
+                )
+        except Exception as exc:
+            logger.warning("PJ accounting failed: %s", exc)
+
+        return Response({
+            "payable_id": str(payable.pk),
+            "description": payable.description,
+            "amount": str(amount),
+            "due_date": str(payable.due_date),
+            "nf_number": nf_number,
+        }, status=status.HTTP_201_CREATED)

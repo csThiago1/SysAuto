@@ -400,28 +400,64 @@ class PayslipService:
     """Geração e fechamento de contracheque mensal."""
 
     @classmethod
+    def _thirteenth_proportional_months(cls, employee: Employee, year: int) -> int:
+        """Calcula meses proporcionais para 13º salário.
+
+        Regra CLT: mínimo 15 dias trabalhados no mês conta como mês cheio.
+        """
+        hire = employee.hire_date
+        # Início da contagem no ano
+        start_month = hire.month if hire.year == year else 1
+        # Fim: mês atual ou 12
+        end_month = 12
+        if employee.termination_date and employee.termination_date.year == year:
+            end_month = employee.termination_date.month
+
+        months = 0
+        for m in range(start_month, end_month + 1):
+            if hire.year == year and m == hire.month:
+                # Mês da admissão — conta se trabalhou >= 15 dias
+                days_in_month = 30  # simplificação CLT
+                if (days_in_month - hire.day + 1) >= 15:
+                    months += 1
+            else:
+                months += 1
+        return months
+
+    @classmethod
     @transaction.atomic
     def generate_payslip(
         cls,
         employee_id: str,
         reference_month: date,
+        payslip_type: str = "regular",
     ) -> Payslip:
         """
         Calcula contracheque: salário + bônus + vales + HE - descontos = líquido.
 
-        Se já existir contracheque aberto para o mês, atualiza os valores.
+        Suporta tipos: regular, thirteenth_first, thirteenth_second, thirteenth_full.
+        Colaboradores PJ não geram contracheque — levanta erro.
+
+        Se já existir contracheque aberto para o mês/tipo, atualiza os valores.
         Contracheques fechados são imutáveis — levanta erro.
         """
         employee = Employee.objects.get(id=employee_id)
+
+        # Bloquear PJ
+        if employee.contract_type == "pj":
+            raise serializers.ValidationError(
+                {"detail": "Colaboradores PJ não geram contracheque. Use pagamento PJ."}
+            )
+
         month_start = reference_month.replace(day=1)
         if month_start.month == 12:
             month_end = month_start.replace(year=month_start.year + 1, month=1)
         else:
             month_end = month_start.replace(month=month_start.month + 1)
 
-        # Verificar se já existe contracheque fechado
+        # Verificar se já existe contracheque fechado para este tipo
         existing = Payslip.objects.filter(
-            employee=employee, reference_month=month_start
+            employee=employee, reference_month=month_start, payslip_type=payslip_type,
         ).first()
         if existing and existing.is_closed:
             raise serializers.ValidationError(
@@ -489,35 +525,94 @@ class PayslipService:
                 "amount": float(calc_amount),
             })
 
-        # Base para cálculo de impostos: salário base + HE + bônus
-        # Vales (refeição/transporte) não compõem base tributável pelo art. 458 CLT
-        gross = (
-            employee.base_salary
-            + bonus_total
-            + Decimal(str(worked["overtime_value"]))
-        )
-        gross_total = gross + allowance_total  # total bruto incluindo vales
-
-        # Impostos automáticos (tabela progressiva 2024/2025)
+        # ── 13º salário: cálculo proporcional ──────────────────────────────────
         from apps.hr.tax_calculator import calcular_impostos
-        tributos = calcular_impostos(
-            salario_bruto=gross,
-            dependentes=getattr(employee, "dependents_count", 0),
-        )
-        inss  = tributos["inss"]
-        irrf  = tributos["irrf"]
-        fgts  = tributos["fgts_informativo"]
 
-        # Breakdown completo de descontos
-        deduction_breakdown = [
-            {"type": "INSS",  "description": "INSS (tabela progressiva 2024)",
-             "amount": float(inss)},
-            {"type": "IRRF",  "description": "IRRF retido na fonte",
-             "amount": float(irrf)},
-            *manual_deduction_breakdown,
-        ]
-        # Remove IRRF da lista se for zero (isenção)
-        deduction_breakdown = [d for d in deduction_breakdown if d["amount"] > 0]
+        is_thirteenth = payslip_type in (
+            "thirteenth_first", "thirteenth_second", "thirteenth_full"
+        )
+
+        if is_thirteenth:
+            prop_months = cls._thirteenth_proportional_months(employee, month_start.year)
+            thirteenth_base = (employee.base_salary * prop_months / Decimal("12")).quantize(
+                Decimal("0.01")
+            )
+
+            if payslip_type == "thirteenth_first":
+                # 1ª parcela: 50% sem descontos
+                gross = (thirteenth_base * Decimal("0.5")).quantize(Decimal("0.01"))
+                gross_total = gross
+                inss = irrf = Decimal("0")
+                deduction_breakdown = []
+                manual_deduction_total = Decimal("0")
+            elif payslip_type == "thirteenth_second":
+                # 2ª parcela: 50% com INSS e IRRF sobre total do 13º
+                gross = (thirteenth_base * Decimal("0.5")).quantize(Decimal("0.01"))
+                tributos = calcular_impostos(
+                    salario_bruto=thirteenth_base,
+                    dependentes=getattr(employee, "dependents_count", 0),
+                )
+                inss = tributos["inss"]
+                irrf = tributos["irrf"]
+                gross_total = gross
+                deduction_breakdown = [
+                    {"type": "INSS", "description": "INSS sobre 13º integral", "amount": float(inss)},
+                    {"type": "IRRF", "description": "IRRF sobre 13º integral", "amount": float(irrf)},
+                ]
+                deduction_breakdown = [d for d in deduction_breakdown if d["amount"] > 0]
+                manual_deduction_total = Decimal("0")
+            else:
+                # Integral: total com descontos
+                gross = thirteenth_base
+                tributos = calcular_impostos(
+                    salario_bruto=thirteenth_base,
+                    dependentes=getattr(employee, "dependents_count", 0),
+                )
+                inss = tributos["inss"]
+                irrf = tributos["irrf"]
+                gross_total = gross
+                deduction_breakdown = [
+                    {"type": "INSS", "description": "INSS sobre 13º", "amount": float(inss)},
+                    {"type": "IRRF", "description": "IRRF sobre 13º", "amount": float(irrf)},
+                ]
+                deduction_breakdown = [d for d in deduction_breakdown if d["amount"] > 0]
+                manual_deduction_total = Decimal("0")
+
+            # 13º não tem bônus, vales, HE nem ponto
+            bonus_total = allowance_total = Decimal("0")
+            bonus_breakdown = []
+            allowance_breakdown = []
+            worked = {"overtime_hours": 0, "overtime_value": 0, "days": 0,
+                      "total_hours": 0, "absences": 0, "late_minutes": 0}
+        else:
+            # ── Folha regular ────────────────────────────────────────────────────
+            # Base para cálculo de impostos: salário base + HE + bônus
+            # Vales (refeição/transporte) não compõem base tributável pelo art. 458 CLT
+            gross = (
+                employee.base_salary
+                + bonus_total
+                + Decimal(str(worked["overtime_value"]))
+            )
+            gross_total = gross + allowance_total  # total bruto incluindo vales
+
+            # Impostos automáticos (tabela progressiva 2024/2025)
+            tributos = calcular_impostos(
+                salario_bruto=gross,
+                dependentes=getattr(employee, "dependents_count", 0),
+            )
+            inss = tributos["inss"]
+            irrf = tributos["irrf"]
+
+            # Breakdown completo de descontos
+            deduction_breakdown = [
+                {"type": "INSS", "description": "INSS (tabela progressiva 2024)",
+                 "amount": float(inss)},
+                {"type": "IRRF", "description": "IRRF retido na fonte",
+                 "amount": float(irrf)},
+                *manual_deduction_breakdown,
+            ]
+            # Remove IRRF da lista se for zero (isenção)
+            deduction_breakdown = [d for d in deduction_breakdown if d["amount"] > 0]
 
         deduction_total = inss + irrf + manual_deduction_total
         net = gross_total - deduction_total
@@ -525,6 +620,7 @@ class PayslipService:
         payslip, _ = Payslip.objects.update_or_create(
             employee=employee,
             reference_month=month_start,
+            payslip_type=payslip_type,
             defaults={
                 "base_salary": employee.base_salary,
                 "total_bonuses": bonus_total,

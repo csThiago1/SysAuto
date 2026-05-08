@@ -13,8 +13,10 @@ from .views import (
     EmployeeViewSet,
     GoalTargetViewSet,
     PayslipViewSet,
+    PJPaymentViewSet,
     SalaryHistoryViewSet,
     TimeClockViewSet,
+    VacationViewSet,
     WorkScheduleViewSet,
 )
 
@@ -62,5 +64,32 @@ urlpatterns = [
         "employees/<uuid:employee_pk>/schedules/",
         WorkScheduleViewSet.as_view({"get": "list", "post": "create"}),
         name="employee-schedules-list",
+    ),
+    # ── Férias (nested em employee) ─────────────────────────────────────────
+    path(
+        "employees/<uuid:employee_pk>/vacations/",
+        VacationViewSet.as_view({"get": "list", "post": "create"}),
+        name="employee-vacations-list",
+    ),
+    path(
+        "vacations/<uuid:pk>/complete/",
+        VacationViewSet.as_view({"post": "complete"}),
+        name="vacation-complete",
+    ),
+    path(
+        "vacations/<uuid:pk>/cancel/",
+        VacationViewSet.as_view({"post": "cancel"}),
+        name="vacation-cancel",
+    ),
+    path(
+        "vacations/balance/<uuid:employee_pk>/",
+        VacationViewSet.as_view({"get": "balance"}),
+        name="vacation-balance",
+    ),
+    # ── Pagamento PJ ────────────────────────────────────────────────────────
+    path(
+        "pj-payment/<uuid:employee_pk>/",
+        PJPaymentViewSet.as_view({"post": "create_payment"}),
+        name="pj-payment",
     ),
 ]

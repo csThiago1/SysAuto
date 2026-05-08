@@ -849,6 +849,87 @@ class WorkSchedule(PaddockBaseModel):
         return f"{self.employee} — {day}: {self.start_time}–{self.end_time}"
 
 
+class Vacation(PaddockBaseModel):
+    """
+    Registro de férias do colaborador.
+
+    Controla período aquisitivo (12 meses), gozo, abono pecuniário (venda de até 10 dias)
+    e cálculo de 1/3 constitucional.
+    """
+
+    class Status(models.TextChoices):
+        SCHEDULED = "scheduled", _("Agendada")
+        ACTIVE = "active", _("Em gozo")
+        COMPLETED = "completed", _("Concluída")
+        CANCELLED = "cancelled", _("Cancelada")
+
+    employee = models.ForeignKey(
+        "Employee", on_delete=models.CASCADE, related_name="vacations"
+    )
+
+    # Período aquisitivo (12 meses de trabalho)
+    acquisition_start = models.DateField(_("Início período aquisitivo"))
+    acquisition_end = models.DateField(_("Fim período aquisitivo"))
+
+    # Período de gozo
+    start_date = models.DateField(_("Início das férias"))
+    end_date = models.DateField(_("Fim das férias"))
+    days_taken = models.PositiveSmallIntegerField(
+        _("Dias de férias"), help_text="Dias de gozo (20 a 30)"
+    )
+    days_sold = models.PositiveSmallIntegerField(
+        _("Abono pecuniário"), default=0,
+        help_text="Dias vendidos (0 a 10)"
+    )
+
+    # Valores calculados
+    base_salary_snapshot = models.DecimalField(
+        _("Salário base na data"), max_digits=10, decimal_places=2
+    )
+    vacation_pay = models.DecimalField(
+        _("Valor das férias"), max_digits=10, decimal_places=2, default=0
+    )
+    one_third_pay = models.DecimalField(
+        _("1/3 constitucional"), max_digits=10, decimal_places=2, default=0
+    )
+    sold_pay = models.DecimalField(
+        _("Valor abono pecuniário"), max_digits=10, decimal_places=2, default=0
+    )
+    total_pay = models.DecimalField(
+        _("Total a pagar"), max_digits=10, decimal_places=2, default=0
+    )
+    deductions = models.DecimalField(
+        _("Descontos (INSS+IRRF)"), max_digits=10, decimal_places=2, default=0
+    )
+    net_pay = models.DecimalField(
+        _("Líquido férias"), max_digits=10, decimal_places=2, default=0
+    )
+
+    status = models.CharField(
+        max_length=12, choices=Status.choices, default=Status.SCHEDULED, db_index=True
+    )
+
+    class Meta:
+        ordering = ["-start_date"]
+        indexes = [
+            models.Index(fields=["employee", "acquisition_start"]),
+        ]
+        verbose_name = _("Férias")
+        verbose_name_plural = _("Férias")
+
+    def __str__(self) -> str:
+        return f"{self.employee} — {self.start_date} a {self.end_date}"
+
+    def clean(self) -> None:
+        from django.core.exceptions import ValidationError
+        if self.days_sold > 10:
+            raise ValidationError({"days_sold": "Abono pecuniário máximo é de 10 dias."})
+        if self.days_taken < 20 or self.days_taken > 30:
+            raise ValidationError({"days_taken": "Férias devem ter entre 20 e 30 dias."})
+        if self.days_taken + self.days_sold > 30:
+            raise ValidationError("Total de dias (gozo + vendidos) não pode exceder 30.")
+
+
 class Payslip(PaddockBaseModel):
     """
     Contracheque mensal — snapshot imutável gerado pelo fechamento da folha.
@@ -860,8 +941,21 @@ class Payslip(PaddockBaseModel):
     Correções exigem lançamento compensatório no mês seguinte.
     """
 
+    class PayslipType(models.TextChoices):
+        REGULAR = "regular", _("Folha mensal")
+        THIRTEENTH_FIRST = "thirteenth_first", _("13º — 1ª parcela")
+        THIRTEENTH_SECOND = "thirteenth_second", _("13º — 2ª parcela")
+        THIRTEENTH_FULL = "thirteenth_full", _("13º — Integral")
+
     employee = models.ForeignKey(
         "Employee", on_delete=models.CASCADE, related_name="payslips"
+    )
+    payslip_type = models.CharField(
+        _("Tipo"),
+        max_length=20,
+        choices=PayslipType.choices,
+        default=PayslipType.REGULAR,
+        db_index=True,
     )
     reference_month = models.DateField(
         _("Mês de referência"),
@@ -950,8 +1044,8 @@ class Payslip(PaddockBaseModel):
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=["employee", "reference_month"],
-                name="unique_payslip_per_month",
+                fields=["employee", "reference_month", "payslip_type"],
+                name="unique_payslip_per_month_type",
             ),
         ]
         verbose_name = _("Contracheque")
