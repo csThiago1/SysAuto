@@ -12,7 +12,8 @@
       "expo-camera",
       "expo-secure-store",
       "@sentry/react-native",
-      "expo-sharing"
+      "expo-sharing",
+      "@react-native-community/datetimepicker"
     ],
     "ios": {
       "supportsTablet": false,
