@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import ImageViewing from 'react-native-image-viewing';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -39,6 +40,7 @@ import { toast } from '@/stores/toast.store';
 import { PartsTab } from '@/components/os/PartsTab';
 import { LaborTab } from '@/components/os/LaborTab';
 import { FinancialSummary } from '@/components/os/FinancialSummary';
+import { EditOSModal } from '@/components/os/EditOSModal';
 import { useOSParts } from '@/hooks/useOSParts';
 import { useOSLabor } from '@/hooks/useOSLabor';
 import { VALID_TRANSITIONS } from '@paddock/types';
@@ -616,6 +618,7 @@ export default function OSDetailScreen(): React.JSX.Element {
 
   const signatureCapture = useSignatureCapture();
   const [showDeliverySignature, setShowDeliverySignature] = useState(false);
+  const [showEditOS, setShowEditOS] = useState(false);
   const { documents, isLoading: docsLoading, generateDocument, isGenerating } = useOSDocuments(id ?? '');
 
   const osId = id ?? '';
@@ -663,6 +666,11 @@ export default function OSDetailScreen(): React.JSX.Element {
   const handleClosePreview = useCallback((): void => {
     setPreviewUrl(null);
   }, []);
+
+  const previewImages = useMemo(
+    () => (previewUrl ? [{ uri: previewUrl }] : []),
+    [previewUrl],
+  );
 
   const handleSelectStatus = useCallback(async (newStatus: ServiceOrderStatus): Promise<void> => {
     if (newStatus === 'delivered') {
@@ -825,7 +833,12 @@ export default function OSDetailScreen(): React.JSX.Element {
             )}
 
             {/* Dados Gerais */}
-            <SectionDivider label="DADOS GERAIS" />
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <SectionDivider label="DADOS GERAIS" />
+              <TouchableOpacity onPress={() => setShowEditOS(true)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Ionicons name="create-outline" size={20} color={Colors.brand} />
+              </TouchableOpacity>
+            </View>
             <Card style={styles.card}>
               <InfoRow label="CLIENTE" value={<Text variant="bodySmall" style={{ fontWeight: '700', color: Colors.textPrimary }}>{order.customer_name}</Text>} noDivider={false} />
               <InfoRow
@@ -1041,40 +1054,31 @@ export default function OSDetailScreen(): React.JSX.Element {
         </SafeAreaView>
       </Modal>
 
-      {/* ── Modal de preview de foto ───────────────────────────────────── */}
-      <Modal
+      {/* ── Photo viewer with pinch-to-zoom + landscape ─────────────── */}
+      <ImageViewing
+        images={previewImages}
+        imageIndex={0}
         visible={!!previewUrl}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setPreviewUrl(null)}
-        statusBarTranslucent
-      >
-        <View style={styles.previewOverlay}>
-          <TouchableOpacity
-            style={styles.previewClose}
-            onPress={() => setPreviewUrl(null)}
-            accessibilityRole="button"
-            accessibilityLabel="Fechar preview"
-          >
-            <Ionicons name="close" size={28} color={Colors.textPrimary} />
-          </TouchableOpacity>
-          <ScrollView
-            contentContainerStyle={styles.previewScrollContent}
-            maximumZoomScale={4}
-            minimumZoomScale={1}
-            bouncesZoom
-            centerContent
-            showsHorizontalScrollIndicator={false}
-            showsVerticalScrollIndicator={false}
-          >
-            <Image
-              source={{ uri: previewUrl! }}
-              style={styles.previewImage}
-              resizeMode="contain"
-            />
-          </ScrollView>
-        </View>
-      </Modal>
+        onRequestClose={handleClosePreview}
+        presentationStyle="overFullScreen"
+      />
+      {/* Edit OS Modal */}
+      {order && (
+        <EditOSModal
+          visible={showEditOS}
+          osId={id as string}
+          initialData={{
+            customer_type: order.customer_type,
+            os_type: order.os_type,
+            casualty_number: order.casualty_number,
+            deductible_amount: order.deductible_amount,
+            estimated_delivery_date: order.estimated_delivery_date,
+            observations: order.observations,
+          }}
+          onClose={() => setShowEditOS(false)}
+          onSaved={() => void refetch()}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -1487,31 +1491,5 @@ const styles = StyleSheet.create({
   // Bottom spacing
   bottomPadding: {
     height: 32,
-  },
-  // Photo preview modal
-  previewOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.95)',
-  },
-  previewClose: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
-    zIndex: 10,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  previewScrollContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  previewImage: {
-    width: '100%',
-    height: '100%',
   },
 });
