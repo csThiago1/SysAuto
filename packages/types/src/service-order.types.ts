@@ -380,6 +380,9 @@ export interface ServiceOrder {
   // Fechamento
   closure_status: ClosureStatus | null;
 
+  // Transition validation
+  transition_requirements: TransitionRequirements | null;
+
   opened_at: string;
   created_at: string;
   updated_at: string;
@@ -450,6 +453,64 @@ export interface ImportBudgetResponse {
   new_version?: ServiceOrderVersion;
   diff_items?: VersionDiffItem[];
   totals_diff?: { old_total: string; new_total: string; difference: string };
+}
+
+// ── Transition Validation ─────────────────────────────────────────
+
+export interface ValidationBlock {
+  code: string;
+  message: string;
+}
+
+export interface TransitionValidationResult {
+  can_proceed: boolean;
+  hard_blocks: ValidationBlock[];
+  soft_blocks: ValidationBlock[];
+  warnings: ValidationBlock[];
+  has_pending_override: boolean;
+}
+
+export type TransitionRequirements = Partial<Record<ServiceOrderStatus, TransitionValidationResult>>;
+
+// ── Override Requests ─────────────────────────────────────────────
+
+export type OverrideStatus = "pending" | "approved" | "rejected" | "expired";
+
+export interface TransitionOverrideRequest {
+  id: string;
+  os_number: number;
+  os_plate: string;
+  os_customer_name: string;
+  from_status: ServiceOrderStatus;
+  to_status: ServiceOrderStatus;
+  status: OverrideStatus;
+  blocks_snapshot: ValidationBlock[];
+  request_reason: string;
+  justification: string;
+  requested_by_name: string;
+  approved_by_name: string;
+  created_at: string;
+  resolved_at: string | null;
+  expires_at: string;
+}
+
+export interface CreateOverridePayload {
+  target_status: ServiceOrderStatus;
+  reason: string;
+}
+
+export interface ResolveOverridePayload {
+  action: "approved" | "rejected";
+  justification: string;
+}
+
+export interface TransitionPayload {
+  new_status: ServiceOrderStatus;
+  force?: boolean;
+  override_id?: string;
+  justification?: string;
+  manager_email?: string;
+  manager_password?: string;
 }
 
 // ── Resumo Financeiro ────────────────────────────────────────────

@@ -298,22 +298,35 @@ class ServiceOrderService:
         order_id: str,
         new_status: str,
         changed_by_id: str,
+        force: bool = False,
+        override_id: str | None = None,
+        justification: str = "",
     ) -> "ServiceOrder":
         """
-        Executa transição manual de status da OS.
+        Executa transição manual de status da OS com validação de pré-requisitos.
 
         Args:
             order_id: UUID da OS.
             new_status: Status de destino.
             changed_by_id: UUID do usuário que está executando a transição.
+            force: Se True, ignora soft blocks (requer MANAGER+).
+            override_id: ID de um TransitionOverrideRequest aprovado.
+            justification: Justificativa para force/cancelled.
 
         Raises:
-            ValidationError: Se a transição não for permitida pelas regras do Kanban.
+            ValidationError: Se a transição não for permitida ou tiver hard blocks.
 
         Returns:
             ServiceOrder com status atualizado.
         """
-        from apps.service_orders.models import ServiceOrder, StatusTransitionLog, VALID_TRANSITIONS
+        from apps.service_orders.models import (
+            ServiceOrder,
+            StatusTransitionLog,
+            ServiceOrderActivityLog,
+            TransitionOverrideRequest,
+            VALID_TRANSITIONS,
+        )
+        from apps.service_orders.transition_validator import TransitionValidator
 
         order = ServiceOrder.objects.select_for_update().get(id=order_id)
 
@@ -326,6 +339,65 @@ class ServiceOrderService:
                     )
                 }
             )
+
+        # Validar pré-requisitos de negócio
+        result = TransitionValidator.validate(
+            order, new_status, justification=justification
+        )
+
+        # Hard blocks: SEMPRE bloqueiam
+        if result.hard_blocks:
+            raise ValidationError({
+                "transition_blocks": {
+                    "type": "hard",
+                    "can_override": False,
+                    "blocks": [b.to_dict() for b in result.hard_blocks],
+                    "warnings": [w.to_dict() for w in result.warnings],
+                }
+            })
+
+        # Soft blocks: bloqueiam exceto com force/override aprovado
+        if result.soft_blocks:
+            has_approved_override = False
+
+            # Verificar override aprovado
+            if override_id:
+                has_approved_override = TransitionOverrideRequest.objects.filter(
+                    id=override_id,
+                    service_order=order,
+                    to_status=new_status,
+                    status="approved",
+                ).exists()
+
+            if not force and not has_approved_override:
+                raise ValidationError({
+                    "transition_blocks": {
+                        "type": "soft",
+                        "can_override": True,
+                        "blocks": [b.to_dict() for b in result.soft_blocks],
+                        "warnings": [w.to_dict() for w in result.warnings],
+                        "has_pending_override": TransitionValidator._has_pending_override(
+                            order, new_status
+                        ),
+                    }
+                })
+
+            # Se force=True sem override aprovado, criar registro de auditoria
+            if force and not has_approved_override:
+                from django.utils import timezone as tz
+                TransitionOverrideRequest.objects.create(
+                    service_order=order,
+                    from_status=order.status,
+                    to_status=new_status,
+                    requested_by_id=changed_by_id,
+                    approved_by_id=changed_by_id,
+                    status="approved",
+                    blocks_snapshot=[b.to_dict() for b in result.soft_blocks],
+                    request_reason=justification or "Override presencial",
+                    justification=justification or "Override presencial",
+                    resolved_at=tz.now(),
+                    expires_at=tz.now(),
+                )
 
         old_status = order.status
         order.status = new_status
@@ -361,7 +433,6 @@ class ServiceOrderService:
         )
 
         from apps.authentication.models import GlobalUser
-        from apps.service_orders.models import ServiceOrderActivityLog
         user = GlobalUser.objects.filter(id=changed_by_id).first()
         user_name = user.get_full_name() or user.email if user else "Usuário"
         from apps.service_orders.models import ServiceOrderStatus as SOS
@@ -372,15 +443,21 @@ class ServiceOrderService:
             user_id=changed_by_id,
             activity_type="status_changed",
             description=f"{user_name} moveu a OS de '{old_label}' para '{new_label}'",
-            metadata={"from_status": old_status, "to_status": new_status},
+            metadata={
+                "from_status": old_status,
+                "to_status": new_status,
+                "had_warnings": len(result.warnings) > 0,
+                "was_forced": force,
+            },
         )
 
         logger.info(
-            "OS #%d: transição manual %s→%s por user_id=%s",
+            "OS #%d: transição manual %s→%s por user_id=%s (force=%s)",
             order.number,
             old_status,
             new_status,
             changed_by_id,
+            force,
         )
         return order
 

@@ -5,6 +5,7 @@ import logging
 
 import httpx
 from celery import shared_task
+from django.utils import timezone
 from django_tenants.utils import schema_context
 
 logger = logging.getLogger(__name__)
@@ -90,3 +91,131 @@ def task_notify_status_change(
         body=f"Status atualizado: {new_status_label}",
         data={"os_number": os_number, "plate": plate, "status": new_status_label},
     )
+
+
+@shared_task
+def task_notify_override_request(
+    tenant_schema: str,
+    override_id: str,
+    os_number: int,
+    plate: str,
+    requester_name: str,
+    target_status: str,
+) -> None:
+    """Notifica todos os MANAGER+ sobre nova solicitação de override.
+
+    Args:
+        tenant_schema: Schema do tenant para contexto.
+        override_id: UUID do TransitionOverrideRequest criado.
+        os_number: Número da OS.
+        plate: Placa do veículo.
+        requester_name: Nome ou email do consultor solicitante.
+        target_status: Status de destino desejado.
+    """
+    from apps.authentication.models import GlobalUser
+    from apps.authentication.permissions import ROLE_HIERARCHY
+
+    managers = GlobalUser.objects.filter(
+        is_active=True,
+    ).exclude(push_token="")
+
+    for user in managers:
+        role = getattr(user, "role", "STOREKEEPER")
+        if ROLE_HIERARCHY.get(role, 0) >= ROLE_HIERARCHY.get("MANAGER", 3):
+            task_send_push_notification.delay(
+                tenant_schema=tenant_schema,
+                token=user.push_token,
+                title=f"Liberação solicitada — OS #{os_number}",
+                body=f"{requester_name} solicita avançar OS {plate} para '{target_status}'",
+                data={
+                    "type": "override_request",
+                    "override_id": override_id,
+                    "os_number": os_number,
+                },
+            )
+
+
+@shared_task
+def task_notify_override_resolved(
+    tenant_schema: str,
+    override_id: str,
+    requester_user_id: str,
+    os_number: int,
+    plate: str,
+    action: str,
+    justification: str,
+) -> None:
+    """Notifica o consultor sobre resolução (aprovação ou rejeição) do override.
+
+    Args:
+        tenant_schema: Schema do tenant para contexto.
+        override_id: UUID do TransitionOverrideRequest resolvido.
+        requester_user_id: UUID do GlobalUser solicitante.
+        os_number: Número da OS.
+        plate: Placa do veículo.
+        action: "approved" ou "rejected".
+        justification: Justificativa do gerente.
+    """
+    from apps.authentication.models import GlobalUser
+
+    try:
+        user = GlobalUser.objects.get(pk=requester_user_id, is_active=True)
+    except GlobalUser.DoesNotExist:
+        logger.debug("GlobalUser %s não encontrado para notificação de override", requester_user_id)
+        return
+
+    if not user.push_token:
+        return
+
+    approved = action == "approved"
+    title = (
+        f"Liberação aprovada — OS #{os_number}"
+        if approved
+        else f"Liberação recusada — OS #{os_number}"
+    )
+    body = justification[:100] if justification else f"OS {plate}"
+
+    task_send_push_notification.delay(
+        tenant_schema=tenant_schema,
+        token=user.push_token,
+        title=title,
+        body=body,
+        data={
+            "type": "override_resolved",
+            "override_id": override_id,
+            "os_number": os_number,
+            "action": action,
+        },
+    )
+
+
+@shared_task
+def task_expire_overrides(tenant_schema: str = "") -> None:
+    """Marca como expirados overrides pendentes que passaram de 24h.
+
+    Deve ser configurado no Celery Beat para executar a cada hora.
+    Itera sobre todos os schemas de tenant ativos.
+
+    Args:
+        tenant_schema: Ignorado — a task itera todos os tenants automaticamente.
+    """
+    from django_tenants.utils import get_tenant_model
+
+    TenantModel = get_tenant_model()
+    schemas = [t.schema_name for t in TenantModel.objects.exclude(schema_name="public")]
+
+    for schema in schemas:
+        with schema_context(schema):
+            from apps.service_orders.models import TransitionOverrideRequest
+
+            expired_count = TransitionOverrideRequest.objects.filter(
+                status="pending",
+                expires_at__lt=timezone.now(),
+            ).update(status="expired", resolved_at=timezone.now())
+
+            if expired_count:
+                logger.info(
+                    "Schema %s: %d override(s) expirado(s)",
+                    schema,
+                    expired_count,
+                )

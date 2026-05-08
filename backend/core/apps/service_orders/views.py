@@ -41,6 +41,9 @@ from .serializers import (
     ComplementPartCreateSerializer,
     DeliverOSSerializer,
     FinancialSummarySerializer,
+    OverrideRequestCreateSerializer,
+    OverrideRequestSerializer,
+    OverrideResolveSerializer,
     PartCompraInputSerializer,
     PartEstoqueInputSerializer,
     PartSeguradoraInputSerializer,
@@ -283,7 +286,7 @@ class ServiceOrderViewSet(
     def transition(self, request: Request, pk: Optional[str] = None) -> Response:
         """
         POST /service-orders/{id}/transition/
-        Body: {"new_status": "<status>"}
+        Body: {"new_status": "<status>", "force": false, "justification": "..."}
         """
         service_order: ServiceOrder = self.get_object()
         serializer = ServiceOrderStatusTransitionSerializer(
@@ -291,11 +294,22 @@ class ServiceOrderViewSet(
             context={"service_order": service_order, "request": request},
         )
         serializer.is_valid(raise_exception=True)
-        new_status: str = serializer.validated_data["new_status"]
+
+        data = serializer.validated_data
+        new_status: str = data["new_status"]
+        force: bool = data.get("force", False)
+
+        # Se override presencial com credenciais do gerente, usar ID do gerente
+        manager_user = data.get("_manager_user")
+        changed_by_id = str(manager_user.id) if manager_user else str(request.user.id)
+
         order = ServiceOrderService.transition(
             order_id=str(service_order.id),
             new_status=new_status,
-            changed_by_id=str(request.user.id),
+            changed_by_id=changed_by_id,
+            force=force,
+            override_id=str(data["override_id"]) if data.get("override_id") else None,
+            justification=data.get("justification", ""),
         )
 
         # Fire push notification to the consultant (if they have a token registered)
@@ -321,7 +335,15 @@ class ServiceOrderViewSet(
                 new_status_label=status_label,
             )
 
-        return Response(ServiceOrderDetailSerializer(order, context={"request": request}).data)
+        detail = ServiceOrderDetailSerializer(order, context={"request": request}).data
+
+        # Incluir warnings no response se a transição foi bem-sucedida e há alertas
+        from apps.service_orders.transition_validator import TransitionValidator
+        validation = TransitionValidator.validate(order, new_status)
+        if validation.warnings:
+            detail["_warnings"] = [w.to_dict() for w in validation.warnings]
+
+        return Response(detail)
 
     @extend_schema(summary="Histórico de transições de status")
     @action(detail=True, methods=["get"], url_path="transitions")
@@ -1484,6 +1506,185 @@ class ServiceOrderViewSet(
 
         serializer = VehicleHistoryItemSerializer(qs, many=True)
         return Response({"summary": summary, "results": serializer.data})
+
+    # ── Override de Transição ─────────────────────────────────────────────────
+
+    @extend_schema(summary="Solicitar override de transição bloqueada")
+    @action(detail=True, methods=["post", "get"], url_path="override-request")
+    def override_request(self, request: Request, pk: Optional[str] = None) -> Response:
+        """POST para criar, GET para listar overrides da OS."""
+        from .models import TransitionOverrideRequest
+
+        service_order = self.get_object()
+
+        if request.method == "GET":
+            overrides = TransitionOverrideRequest.objects.filter(
+                service_order=service_order
+            ).select_related("requested_by", "approved_by")
+            return Response(OverrideRequestSerializer(overrides, many=True).data)
+
+        serializer = OverrideRequestCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        from datetime import timedelta
+        now = timezone.now()
+
+        override = TransitionOverrideRequest.objects.create(
+            service_order=service_order,
+            from_status=service_order.status,
+            to_status=serializer.validated_data["target_status"],
+            requested_by=request.user,
+            request_reason=serializer.validated_data["reason"],
+            expires_at=now + timedelta(hours=24),
+        )
+
+        # Capturar blocks snapshot
+        from .transition_validator import TransitionValidator
+        result = TransitionValidator.validate(
+            service_order, serializer.validated_data["target_status"]
+        )
+        override.blocks_snapshot = [b.to_dict() for b in result.soft_blocks]
+        override.save(update_fields=["blocks_snapshot"])
+
+        # Log event
+        from .events import OSEventLogger
+        OSEventLogger.log_event(
+            service_order, "OVERRIDE_REQUESTED",
+            actor=request.user.get_full_name() or request.user.email,
+            payload={
+                "override_id": str(override.pk),
+                "target_status": override.to_status,
+                "reason": override.request_reason,
+            },
+            swallow_errors=True,
+        )
+
+        # Notificar MANAGER+ via push
+        from .tasks import task_notify_override_request
+        try:
+            from django_tenants.utils import get_tenant
+            schema = getattr(get_tenant(request), "schema_name", "public")
+        except Exception:
+            schema = "public"
+
+        task_notify_override_request.delay(
+            tenant_schema=schema,
+            override_id=str(override.pk),
+            os_number=service_order.number,
+            plate=service_order.plate,
+            requester_name=request.user.get_full_name() or request.user.email,
+            target_status=override.to_status,
+        )
+
+        return Response(
+            OverrideRequestSerializer(override).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    @extend_schema(summary="Resolver override (aprovar/rejeitar)")
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path=r"override-request/(?P<override_pk>[0-9a-f-]+)/resolve",
+    )
+    def override_resolve(self, request: Request, pk: Optional[str] = None, override_pk: Optional[str] = None) -> Response:
+        """POST /service-orders/{id}/override-request/{override_id}/resolve/"""
+        from .models import TransitionOverrideRequest
+        from apps.authentication.permissions import _has_min_role
+
+        if not _has_min_role(request, "MANAGER"):
+            return Response(
+                {"detail": "Apenas gerentes podem aprovar/rejeitar overrides."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        service_order = self.get_object()
+        override = get_object_or_404(
+            TransitionOverrideRequest,
+            pk=override_pk,
+            service_order=service_order,
+            status="pending",
+        )
+
+        serializer = OverrideResolveSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        action_taken = serializer.validated_data["action"]
+        override.status = action_taken
+        override.approved_by = request.user
+        override.justification = serializer.validated_data["justification"]
+        override.resolved_at = timezone.now()
+        override.save(update_fields=["status", "approved_by", "justification", "resolved_at"])
+
+        # Log event
+        from .events import OSEventLogger
+        event_type = "OVERRIDE_APPROVED" if action_taken == "approved" else "OVERRIDE_REJECTED"
+        OSEventLogger.log_event(
+            service_order, event_type,
+            actor=request.user.get_full_name() or request.user.email,
+            payload={
+                "override_id": str(override.pk),
+                "justification": override.justification,
+            },
+            swallow_errors=True,
+        )
+
+        # Se aprovado, executar a transição automaticamente
+        if action_taken == "approved":
+            try:
+                ServiceOrderService.transition(
+                    order_id=str(service_order.id),
+                    new_status=override.to_status,
+                    changed_by_id=str(request.user.id),
+                    override_id=str(override.pk),
+                )
+            except Exception as e:
+                logger.error("Falha ao executar transição após override: %s", e)
+                return Response(
+                    {"detail": f"Override aprovado, mas transição falhou: {e}"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+
+        # Notificar consultor do resultado
+        from .tasks import task_notify_override_resolved
+        try:
+            from django_tenants.utils import get_tenant
+            schema = getattr(get_tenant(request), "schema_name", "public")
+        except Exception:
+            schema = "public"
+
+        task_notify_override_resolved.delay(
+            tenant_schema=schema,
+            override_id=str(override.pk),
+            requester_user_id=str(override.requested_by_id),
+            os_number=service_order.number,
+            plate=service_order.plate,
+            action=action_taken,
+            justification=override.justification,
+        )
+
+        return Response(OverrideRequestSerializer(override).data)
+
+    @extend_schema(summary="Listar overrides pendentes (MANAGER+)")
+    @action(detail=False, methods=["get"], url_path="pending-overrides")
+    def pending_overrides(self, request: Request) -> Response:
+        """GET /service-orders/pending-overrides/ — overrides pendentes no tenant."""
+        from apps.authentication.permissions import _has_min_role
+        from .models import TransitionOverrideRequest
+
+        if not _has_min_role(request, "MANAGER"):
+            return Response(
+                {"detail": "Apenas gerentes podem ver overrides pendentes."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        overrides = (
+            TransitionOverrideRequest.objects
+            .filter(status="pending", expires_at__gt=timezone.now())
+            .select_related("service_order", "requested_by")
+            .order_by("-created_at")[:50]
+        )
+        return Response(OverrideRequestSerializer(overrides, many=True).data)
 
 
 # ── Versioning ViewSets ──────────────────────────────────────────────────────

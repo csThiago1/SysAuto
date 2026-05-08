@@ -421,6 +421,7 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
     days_in_shop = serializers.SerializerMethodField()
     allowed_transitions = serializers.SerializerMethodField()
     closure_status = serializers.SerializerMethodField()
+    has_transition_blocks = serializers.SerializerMethodField()
 
     class Meta:
         model = ServiceOrder
@@ -456,6 +457,7 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
             "opened_at",
             "created_at",
             "closure_status",
+            "has_transition_blocks",
         ]
         read_only_fields = ["id", "total", "status_display", "days_in_shop", "created_at"]
 
@@ -507,6 +509,17 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
             "is_closed": is_closed,
         }
 
+    def get_has_transition_blocks(self, obj: ServiceOrder) -> bool:
+        """Indicador leve para Kanban: True se próximo status tem hard ou soft blocks."""
+        from apps.service_orders.transition_validator import TransitionValidator
+
+        allowed = VALID_TRANSITIONS.get(obj.status, [])
+        if not allowed:
+            return False
+        # Checa apenas o primeiro target (caminho feliz) para performance
+        result = TransitionValidator.validate(obj, allowed[0])
+        return bool(result.hard_blocks or result.soft_blocks)
+
 
 class ServiceOrderDetailSerializer(serializers.ModelSerializer):
     """Serializer completo para a tela de abertura/edição da OS."""
@@ -540,6 +553,7 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
     # dados do cliente mesmo quando customer_uuid é nulo (OS do novo fluxo).
     customer_person_id = serializers.SerializerMethodField()
     closure_status = serializers.SerializerMethodField()
+    transition_requirements = serializers.SerializerMethodField()
 
     class Meta:
         model = ServiceOrder
@@ -600,6 +614,12 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
             "is_paid": is_paid,
             "is_closed": is_closed,
         }
+
+    def get_transition_requirements(self, obj: ServiceOrder) -> dict[str, dict]:
+        """Retorna validação de pré-requisitos para cada transição permitida."""
+        from apps.service_orders.transition_validator import TransitionValidator
+
+        return TransitionValidator.validate_all_targets(obj)
 
 
 class ServiceOrderCreateSerializer(serializers.ModelSerializer):
@@ -760,6 +780,12 @@ class ServiceOrderStatusTransitionSerializer(serializers.Serializer):
     """Serializer para mudança manual de status via ação customizada."""
 
     new_status = serializers.ChoiceField(choices=ServiceOrderStatus.choices)
+    force = serializers.BooleanField(required=False, default=False)
+    override_id = serializers.UUIDField(required=False, allow_null=True, default=None)
+    justification = serializers.CharField(required=False, allow_blank=True, default="")
+    # Credenciais presenciais do gerente (opcional — para override presencial)
+    manager_email = serializers.EmailField(required=False, allow_blank=True, default="")
+    manager_password = serializers.CharField(required=False, allow_blank=True, default="")
 
     def validate_new_status(self, value: str) -> str:
         service_order: ServiceOrder = self.context["service_order"]
@@ -770,6 +796,40 @@ class ServiceOrderStatusTransitionSerializer(serializers.Serializer):
                 f"Permitidas: {allowed}"
             )
         return value
+
+    def validate(self, attrs: dict) -> dict:
+        """Valida credenciais do gerente se force=True com credenciais presenciais."""
+        if attrs.get("force") and attrs.get("manager_email"):
+            from apps.authentication.models import GlobalUser
+            from apps.authentication.permissions import ROLE_HIERARCHY
+
+            email = attrs["manager_email"]
+            password = attrs["manager_password"]
+
+            try:
+                manager = GlobalUser.objects.get(email=email, is_active=True)
+            except GlobalUser.DoesNotExist:
+                raise serializers.ValidationError(
+                    {"manager_email": "Credenciais do gerente inválidas."}
+                )
+
+            if not manager.check_password(password):
+                raise serializers.ValidationError(
+                    {"manager_password": "Credenciais do gerente inválidas."}
+                )
+
+            # Verificar role MANAGER+
+            role = getattr(manager, "role", "STOREKEEPER")
+            # Em dev-credentials, role vem da session. Usar default ADMIN.
+            if ROLE_HIERARCHY.get(role, 0) < ROLE_HIERARCHY.get("MANAGER", 3):
+                raise serializers.ValidationError(
+                    {"manager_email": "Usuário não tem permissão de gerente."}
+                )
+
+            # Substituir changed_by pelo gerente autenticado presencialmente
+            attrs["_manager_user"] = manager
+
+        return attrs
 
 
 class DeliverOSSerializer(serializers.Serializer):
@@ -1140,3 +1200,62 @@ class VehicleHistoryItemSerializer(serializers.ModelSerializer):
             "total",
         ]
         read_only_fields = fields
+
+
+# ── Override de Transição — Serializers ──────────────────────────────────────
+
+
+class TransitionValidationResultSerializer(serializers.Serializer):
+    """Resultado de validação de transição — read-only."""
+
+    can_proceed = serializers.BooleanField()
+    hard_blocks = serializers.ListField(child=serializers.DictField())
+    soft_blocks = serializers.ListField(child=serializers.DictField())
+    warnings = serializers.ListField(child=serializers.DictField())
+    has_pending_override = serializers.BooleanField()
+
+
+class OverrideRequestCreateSerializer(serializers.Serializer):
+    """Criação de solicitação de override."""
+
+    target_status = serializers.ChoiceField(choices=ServiceOrderStatus.choices)
+    reason = serializers.CharField(max_length=1000)
+
+
+class OverrideResolveSerializer(serializers.Serializer):
+    """Resolução de override (aprovar/rejeitar)."""
+
+    action = serializers.ChoiceField(choices=["approved", "rejected"])
+    justification = serializers.CharField(max_length=1000)
+
+
+class OverrideRequestSerializer(serializers.ModelSerializer):
+    """Serializer de leitura de TransitionOverrideRequest."""
+
+    requested_by_name = serializers.SerializerMethodField()
+    approved_by_name = serializers.SerializerMethodField()
+    os_number = serializers.IntegerField(source="service_order.number", read_only=True)
+    os_plate = serializers.CharField(source="service_order.plate", read_only=True)
+    os_customer_name = serializers.CharField(source="service_order.customer_name", read_only=True)
+
+    class Meta:
+        from .models import TransitionOverrideRequest
+
+        model = TransitionOverrideRequest
+        fields = [
+            "id", "os_number", "os_plate", "os_customer_name",
+            "from_status", "to_status", "status",
+            "blocks_snapshot", "request_reason", "justification",
+            "requested_by_name", "approved_by_name",
+            "created_at", "resolved_at", "expires_at",
+        ]
+
+    def get_requested_by_name(self, obj) -> str:
+        """Retorna nome completo ou email do solicitante."""
+        return obj.requested_by.get_full_name() or obj.requested_by.email
+
+    def get_approved_by_name(self, obj) -> str:
+        """Retorna nome completo ou email do aprovador, ou string vazia."""
+        if obj.approved_by:
+            return obj.approved_by.get_full_name() or obj.approved_by.email
+        return ""

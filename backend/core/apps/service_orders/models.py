@@ -1618,6 +1618,9 @@ class ServiceOrderEvent(models.Model):
         ("SIGNATURE_CAPTURED", "Assinatura capturada"),
         ("BUDGET_LINKED",      "Orçamento aprovado virou OS"),
         ("COMPLEMENT_ADDED",   "Complemento particular adicionado"),
+        ("OVERRIDE_REQUESTED",   "Override solicitado"),
+        ("OVERRIDE_APPROVED",    "Override aprovado"),
+        ("OVERRIDE_REJECTED",    "Override rejeitado"),
     ]
 
     service_order = models.ForeignKey(
@@ -1709,3 +1712,77 @@ class ImpactAreaLabel(models.Model):
 
     def __str__(self) -> str:
         return f"Área {self.area_number}: {self.label_text}"
+
+
+# ── Override de Transição ─────────────────────────────────────────────────────
+
+
+class TransitionOverrideRequest(PaddockBaseModel):
+    """Solicitação de override para transição bloqueada por soft block.
+
+    Criado quando um CONSULTANT tenta avançar mas tem soft blocks.
+    Resolvido por um MANAGER+ (presencial ou assíncrono via notificação).
+    Expira automaticamente após 24h se não resolvido.
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pendente"
+        APPROVED = "approved", "Aprovado"
+        REJECTED = "rejected", "Rejeitado"
+        EXPIRED = "expired", "Expirado"
+
+    service_order = models.ForeignKey(
+        ServiceOrder,
+        on_delete=models.CASCADE,
+        related_name="override_requests",
+        verbose_name="OS",
+    )
+    from_status = models.CharField(max_length=20, verbose_name="Status atual")
+    to_status = models.CharField(max_length=20, verbose_name="Status desejado")
+    requested_by = models.ForeignKey(
+        "authentication.GlobalUser",
+        on_delete=models.PROTECT,
+        related_name="override_requests_made",
+        verbose_name="Solicitado por",
+    )
+    approved_by = models.ForeignKey(
+        "authentication.GlobalUser",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="override_requests_resolved",
+        verbose_name="Resolvido por",
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=Status.choices,
+        default=Status.PENDING,
+        db_index=True,
+        verbose_name="Status",
+    )
+    blocks_snapshot = models.JSONField(
+        default=list,
+        help_text="Soft blocks no momento da solicitação",
+    )
+    request_reason = models.TextField(verbose_name="Motivo da solicitação")
+    justification = models.TextField(
+        blank=True, default="", verbose_name="Justificativa do gerente"
+    )
+    resolved_at = models.DateTimeField(null=True, blank=True, verbose_name="Resolvido em")
+    expires_at = models.DateTimeField(verbose_name="Expira em")
+
+    class Meta:
+        db_table = "service_orders_override_request"
+        ordering = ["-created_at"]
+        verbose_name = "Solicitação de Override"
+        verbose_name_plural = "Solicitações de Override"
+        indexes = [
+            models.Index(fields=["service_order", "status"]),
+            models.Index(fields=["status", "expires_at"]),
+        ]
+
+    def __str__(self) -> str:
+        return (
+            f"Override OS #{self.service_order.number}: "
+            f"{self.from_status} → {self.to_status} ({self.status})"
+        )
