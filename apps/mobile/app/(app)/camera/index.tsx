@@ -13,6 +13,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { SaveFormat } from 'expo-image-manipulator';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as Crypto from 'expo-crypto';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { usePhotoStore } from '@/stores/photo.store';
 import { MAX_PHOTO_SIZE_PX, JPEG_QUALITY } from '@/lib/constants';
@@ -66,6 +67,15 @@ export default function CameraScreen(): React.ReactElement {
   useFocusEffect(useCallback(() => {
     setIsSaving(false);
   }, []));
+
+  useFocusEffect(
+    useCallback(() => {
+      void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_RIGHT);
+      return () => {
+        void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+      };
+    }, []),
+  );
 
   const [permission, requestPermission] = useCameraPermissions();
 
@@ -184,11 +194,13 @@ export default function CameraScreen(): React.ReactElement {
       const destination = (returnTo != null && returnTo.length > 0)
         ? returnTo
         : `/(app)/checklist/${osId ?? ''}`;
+      await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       router.navigate(destination as any);
     } catch (err: unknown) {
       console.error('[CameraScreen] capture error:', err);
       setIsSaving(false);
+      void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
     }
   }
 
@@ -328,16 +340,16 @@ const styles = StyleSheet.create({
   // Bottom controls
   controls: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
     right: 0,
-    height: 120,
+    top: 0,
+    bottom: 0,
+    width: 120,
     backgroundColor: Colors.overlayLight,
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingBottom: 20,
-    paddingHorizontal: 24,
+    paddingVertical: 24,
+    paddingHorizontal: 12,
   },
 
   // Side buttons (flash, flip)
