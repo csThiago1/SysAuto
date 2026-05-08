@@ -38,6 +38,7 @@
     "expo-sharing": "~55.0.18",
     "react": "19.2.0",
     "react-native": "0.83.6",
+    "react-native-image-viewing": "^0.2.2",
     "react-native-mmkv": "^3.2.0",
     "react-native-reanimated": "4.2.1",
     "react-native-safe-area-context": "~5.6.2",
