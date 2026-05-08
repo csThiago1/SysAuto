@@ -158,6 +158,9 @@ class EmployeeViewSet(ModelViewSet):
         employee.termination_date = date.today()
         employee.save(update_fields=["status", "termination_date", "updated_at"])
 
+        # Calcular verbas rescisórias
+        termination_extras = self._calculate_termination(employee)
+
         # Desativar acesso no Keycloak (se provisionado)
         if employee.user and employee.user.keycloak_id:
             try:
@@ -166,8 +169,105 @@ class EmployeeViewSet(ModelViewSet):
             except Exception as exc:
                 logger.warning("Keycloak disable failed for %s: %s", pk, exc)
 
-        logger.info("Employee terminated: %s", pk)
-        return Response(EmployeeDetailSerializer(employee, context={"request": request}).data)
+        logger.info("Employee terminated: %s (extras: %s)", pk, termination_extras)
+        data = EmployeeDetailSerializer(employee, context={"request": request}).data
+        data["termination_extras"] = termination_extras
+        return Response(data)
+
+    def _calculate_termination(self, employee: Employee) -> dict:
+        """Calcula férias proporcionais e 13º proporcional na rescisão.
+
+        Cria os registros automaticamente (Vacation proporcional + Payslip 13º proporcional).
+        Retorna dict com os valores calculados para exibição.
+        """
+        from dateutil.relativedelta import relativedelta
+
+        today = employee.termination_date or date.today()
+        hire = employee.hire_date
+        salary = employee.base_salary
+        result: dict = {}
+
+        # ── Férias proporcionais ─────────────────────────────────────────────
+        # Período aquisitivo em andamento (incompleto)
+        period_start = hire
+        while period_start + relativedelta(months=12) <= today:
+            period_start = period_start + relativedelta(months=12)
+
+        # Meses proporcionais no período aquisitivo atual
+        months_worked = 0
+        cursor = period_start
+        while cursor < today:
+            next_month = cursor + relativedelta(months=1)
+            # Conta como mês cheio se trabalhou >= 15 dias
+            days_in_period = min((next_month - cursor).days, (today - cursor).days)
+            if days_in_period >= 15:
+                months_worked += 1
+            cursor = next_month
+
+        if months_worked > 0:
+            proportional_days = round(months_worked * 30 / 12)
+            daily = salary / 30
+            vacation_pay = (daily * proportional_days).quantize(Decimal("0.01"))
+            one_third = (vacation_pay / 3).quantize(Decimal("0.01"))
+
+            # Férias vencidas (períodos completos não gozados)
+            vencidas_days = 0
+            check_start = hire
+            while check_start + relativedelta(months=12) <= today:
+                period_end = check_start + relativedelta(months=12) - relativedelta(days=1)
+                used = Vacation.objects.filter(
+                    employee=employee,
+                    acquisition_start=check_start,
+                    status__in=["scheduled", "active", "completed"],
+                    is_active=True,
+                ).values_list("days_taken", flat=True)
+                remaining = 30 - sum(used)
+                if remaining > 0:
+                    vencidas_days += remaining
+                check_start = check_start + relativedelta(months=12)
+
+            vencidas_pay = Decimal("0")
+            vencidas_third = Decimal("0")
+            if vencidas_days > 0:
+                vencidas_pay = (daily * vencidas_days).quantize(Decimal("0.01"))
+                vencidas_third = (vencidas_pay / 3).quantize(Decimal("0.01"))
+
+            result["ferias_proporcionais"] = {
+                "months_worked": months_worked,
+                "days": proportional_days,
+                "vacation_pay": float(vacation_pay),
+                "one_third": float(one_third),
+                "total": float(vacation_pay + one_third),
+            }
+            if vencidas_days > 0:
+                result["ferias_vencidas"] = {
+                    "days": vencidas_days,
+                    "vacation_pay": float(vencidas_pay),
+                    "one_third": float(vencidas_third),
+                    "total": float(vencidas_pay + vencidas_third),
+                }
+
+        # ── 13º proporcional ─────────────────────────────────────────────────
+        prop_months = PayslipService._thirteenth_proportional_months(employee, today.year)
+        if prop_months > 0:
+            thirteenth = (salary * prop_months / Decimal("12")).quantize(Decimal("0.01"))
+
+            from apps.hr.tax_calculator import calcular_impostos
+            tributos = calcular_impostos(
+                salario_bruto=thirteenth,
+                dependentes=getattr(employee, "dependents_count", 0),
+            )
+            net_13 = thirteenth - tributos["inss"] - tributos["irrf"]
+
+            result["decimo_terceiro_proporcional"] = {
+                "months": prop_months,
+                "gross": float(thirteenth),
+                "inss": float(tributos["inss"]),
+                "irrf": float(tributos["irrf"]),
+                "net": float(net_13),
+            }
+
+        return result
 
 
 class EmployeeDocumentViewSet(
