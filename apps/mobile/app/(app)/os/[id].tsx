@@ -36,6 +36,11 @@ import { usePhotoStore, uploadPendingPhotos } from '@/stores/photo.store';
 import { useChecklistItemsStore } from '@/stores/checklist-items.store';
 import { useConnectivity } from '@/hooks/useConnectivity';
 import { toast } from '@/stores/toast.store';
+import { PartsTab } from '@/components/os/PartsTab';
+import { LaborTab } from '@/components/os/LaborTab';
+import { FinancialSummary } from '@/components/os/FinancialSummary';
+import { useOSParts } from '@/hooks/useOSParts';
+import { useOSLabor } from '@/hooks/useOSLabor';
 import { VALID_TRANSITIONS } from '@paddock/types';
 import type { ServiceOrderStatus } from '@paddock/types';
 import type { OSStatus } from '@/constants/theme';
@@ -620,6 +625,13 @@ export default function OSDetailScreen(): React.JSX.Element {
   const { ok: itemsOk, attention: itemsAttention, critical: itemsCritical } =
     useChecklistItemsStore(useShallow((s) => s.getSummary(osId, 'entrada')));
 
+  const { data: parts } = useOSParts(id as string);
+  const { data: laborItems } = useOSLabor(id as string);
+
+  const partsHookTotal = (parts ?? []).reduce((sum, p) => sum + parseFloat(p.subtotal || '0'), 0);
+  const laborHookTotal = (laborItems ?? []).reduce((sum, l) => sum + parseFloat(l.total || '0'), 0);
+  const discountPercent = 0; // TODO: extract from OS data if available
+
   const handleBack = useCallback((): void => {
     router.replace('/(app)');
   }, [router]);
@@ -694,18 +706,12 @@ export default function OSDetailScreen(): React.JSX.Element {
   }
 
   // ── Computed values ───────────────────────────────────────────────────────
-  const partsTotal = parseFloat(order.parts_total);
-  const servicesTotal = parseFloat(order.services_total);
-  const grandTotal = (isNaN(partsTotal) ? 0 : partsTotal) + (isNaN(servicesTotal) ? 0 : servicesTotal);
-
   const acompanhamentoRemote = (order.photos ?? []).filter((p) => p.folder === 'acompanhamento');
   const nonAcompanhamenntoPhotos = (order.photos ?? []).filter((p) => p.folder !== 'acompanhamento');
   const photoGroups = nonAcompanhamenntoPhotos.length > 0
     ? groupPhotosByFolder(nonAcompanhamenntoPhotos)
     : [];
 
-  const hasParts = order.parts != null && order.parts.length > 0;
-  const hasLaborItems = order.labor_items != null && order.labor_items.length > 0;
   const hasHistory = order.transition_logs != null && order.transition_logs.length > 0;
 
   const vehicleLine = [order.make, order.model, order.year ? String(order.year) : undefined]
@@ -838,93 +844,20 @@ export default function OSDetailScreen(): React.JSX.Element {
               <InfoRow label="ABERTURA" value={formatDateTime(order.opened_at)} noDivider />
             </Card>
 
-            {/* Totais */}
-            <SectionDivider label="TOTAIS" />
-            <Card style={styles.card}>
-              <View style={styles.totalsRow}>
-                <View style={styles.totalItem}>
-                  <Text variant="caption" color={Colors.textTertiary}>
-                    Peças
-                  </Text>
-                  <MonoLabel variant="accent">{formatCurrency(order.parts_total)}</MonoLabel>
-                </View>
-                <View style={styles.totalItem}>
-                  <Text variant="caption" color={Colors.textTertiary}>
-                    Serviços
-                  </Text>
-                  <MonoLabel variant="accent">{formatCurrency(order.services_total)}</MonoLabel>
-                </View>
-                <View style={styles.totalItem}>
-                  <Text variant="caption" color={Colors.textTertiary}>
-                    Total
-                  </Text>
-                  <MonoLabel variant="accent">
-                    {grandTotal.toLocaleString('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL',
-                    })}
-                  </MonoLabel>
-                </View>
-              </View>
-            </Card>
+            {/* Resumo Financeiro */}
+            <FinancialSummary
+              partsTotal={partsHookTotal}
+              laborTotal={laborHookTotal}
+              discountPercent={discountPercent}
+            />
           </>
         )}
 
         {/* ── Tab Peças ──────────────────────────────────────────────────── */}
-        {activeTab === 1 && (
-          <>
-            {hasParts ? (
-              <>
-                <Card style={styles.card}>
-                  {order.parts!.map((item) => (
-                    <LineItemRow key={item.id} item={item} />
-                  ))}
-                </Card>
-                <SectionDivider label="TOTAL PEÇAS" />
-                <Card style={styles.card}>
-                  <View style={styles.subtotalRowCenter}>
-                    <MonoLabel variant="accent">{formatCurrency(order.parts_total)}</MonoLabel>
-                  </View>
-                </Card>
-              </>
-            ) : (
-              <View style={styles.tabEmpty}>
-                <Ionicons name="cube-outline" size={40} color={Colors.skeleton} />
-                <Text variant="bodySmall" color={Colors.textSecondary}>
-                  Nenhuma peça adicionada
-                </Text>
-              </View>
-            )}
-          </>
-        )}
+        {activeTab === 1 && <PartsTab osId={id as string} />}
 
         {/* ── Tab Serviços ───────────────────────────────────────────────── */}
-        {activeTab === 2 && (
-          <>
-            {hasLaborItems ? (
-              <>
-                <Card style={styles.card}>
-                  {order.labor_items!.map((item) => (
-                    <LineItemRow key={item.id} item={item} />
-                  ))}
-                </Card>
-                <SectionDivider label="TOTAL SERVIÇOS" />
-                <Card style={styles.card}>
-                  <View style={styles.subtotalRowCenter}>
-                    <MonoLabel variant="accent">{formatCurrency(order.services_total)}</MonoLabel>
-                  </View>
-                </Card>
-              </>
-            ) : (
-              <View style={styles.tabEmpty}>
-                <Ionicons name="construct-outline" size={40} color={Colors.skeleton} />
-                <Text variant="bodySmall" color={Colors.textSecondary}>
-                  Nenhum serviço adicionado
-                </Text>
-              </View>
-            )}
-          </>
-        )}
+        {activeTab === 2 && <LaborTab osId={id as string} />}
 
         {/* ── Tab Fotos ──────────────────────────────────────────────────── */}
         {activeTab === 3 && (
