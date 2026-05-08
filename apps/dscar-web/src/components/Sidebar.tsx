@@ -154,6 +154,7 @@ export const NAV_SECTIONS: NavSection[] = [
         href: "/financeiro",
         children: [
           { id: "fin-dash",        label: "Visão Geral",     href: "/financeiro",                 icon: DollarSign },
+          { id: "fin-dre",         label: "DRE",             href: "/financeiro/dre",              icon: FileSpreadsheet },
           { id: "fin-lancamentos", label: "Lançamentos",     href: "/financeiro/lancamentos",      icon: Receipt },
           { id: "fin-plano",       label: "Plano de Contas", href: "/financeiro/plano-contas",     icon: BookOpen },
           { id: "fin-pagar",       label: "Contas a Pagar",  href: "/financeiro/contas-pagar",     icon: ArrowUpCircle },

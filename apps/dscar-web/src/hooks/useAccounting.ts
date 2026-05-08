@@ -13,6 +13,7 @@ import type {
   JournalEntryListItem,
   CreateJournalEntryPayload,
   CreateChartOfAccountPayload,
+  DREResponse,
 } from "@paddock/types";
 import { apiFetch } from "@/lib/api";
 
@@ -29,6 +30,8 @@ export const accountingKeys = {
     filters ? ["fin-entries", filters] : ["fin-entries"],
   entry: (id: string) => ["fin-entries", id],
   currentPeriod: () => ["fin-current-period"],
+  dre: (startDate: string, endDate: string, costCenterId?: string) =>
+    ["fin-dre", startDate, endDate, costCenterId].filter(Boolean),
 } as const;
 
 // ── Chart of Accounts hooks ───────────────────────────────────────────────────
@@ -183,5 +186,21 @@ export function useCurrentFiscalPeriod(): ReturnType<
     queryKey: accountingKeys.currentPeriod(),
     queryFn: () =>
       apiFetch<FiscalPeriod>(`${API}/fiscal-periods/current/`),
+  });
+}
+
+// ── DRE hooks ─────────────────────────────────────────────────────────────────
+
+export function useDRE(
+  startDate: string,
+  endDate: string,
+  costCenterId?: string,
+): ReturnType<typeof useQuery<DREResponse>> {
+  const params = new URLSearchParams({ start_date: startDate, end_date: endDate });
+  if (costCenterId) params.set("cost_center_id", costCenterId);
+  return useQuery<DREResponse>({
+    queryKey: accountingKeys.dre(startDate, endDate, costCenterId),
+    queryFn: () => apiFetch<DREResponse>(`${API}/dre/?${params.toString()}`),
+    enabled: Boolean(startDate && endDate),
   });
 }

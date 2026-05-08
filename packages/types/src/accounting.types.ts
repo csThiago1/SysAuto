@@ -138,6 +138,34 @@ export interface AccountBalanceResponse {
   credit_total: string;
 }
 
+// ── DRE (Demonstração do Resultado do Exercício) ─────────────────────────────
+
+export interface DREDetailItem {
+  code: string;
+  name: string;
+  balance: string;
+}
+
+export interface DREGroup {
+  total: string;
+  detail: DREDetailItem[];
+}
+
+export interface DREResponse {
+  periodo: { inicio: string; fim: string };
+  receita_bruta: DREGroup;
+  deducoes_receita: DREGroup;
+  receita_liquida: string;
+  custos: DREGroup;
+  lucro_bruto: string;
+  despesas_operacionais: DREGroup;
+  resultado_operacional: string;
+  resultado_financeiro: DREGroup;
+  resultado_antes_ir: string;
+  impostos_resultado: DREGroup;
+  resultado_liquido: string;
+}
+
 // ── Display helpers ────────────────────────────────────────────────────────────
 
 export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
