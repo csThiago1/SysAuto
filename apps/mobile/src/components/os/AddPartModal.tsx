@@ -30,11 +30,11 @@ export function AddPartModal({
 
   useEffect(() => {
     if (editingPart) {
-      setDescription(editingPart.name);
+      setDescription(editingPart.description);
       setPanel(editingPart.panel ?? '');
       setQuantity(String(editingPart.quantity));
       setUnitPrice(editingPart.unit_price);
-      setTipoQualidade(editingPart.part_type);
+      setTipoQualidade(editingPart.tipo_qualidade);
     } else {
       setDescription('');
       setPanel('');

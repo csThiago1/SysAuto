@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bg,
   },
   scrollContent: {
-    paddingBottom: 100, // space for nav bar
+    paddingBottom: 140, // space for nav bar
   },
 
   // Header
@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: Spacing.lg,
-    bottom: 100,
+    bottom: 130,
     width: 56,
     height: 56,
     borderRadius: 28,

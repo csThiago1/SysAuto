@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.bg },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: Spacing.lg },
   scroll: { flex: 1 },
-  content: { padding: Spacing.lg, gap: Spacing.md, paddingBottom: 120 },
+  content: { padding: Spacing.lg, gap: Spacing.md, paddingBottom: 160 },
   fieldGroup: { gap: Spacing.md },
   field: { gap: Spacing.xs },
   label: { color: Colors.textTertiary, fontSize: 11 },

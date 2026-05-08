@@ -222,6 +222,7 @@ export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.J
           { icon: 'person-add-outline', label: 'Novo Cliente', onPress: () => router.push('/(app)/cadastro/cliente') },
           { icon: 'car-outline', label: 'Novo Veículo', onPress: () => router.push('/(app)/cadastro/veiculo') },
           { icon: 'calendar-outline', label: 'Agendar Entrada', onPress: () => router.push('/(app)/agenda') },
+          { icon: 'grid-outline', label: 'Kanban', onPress: () => router.push('/(app)/kanban') },
         ]}
       />
     </View>
