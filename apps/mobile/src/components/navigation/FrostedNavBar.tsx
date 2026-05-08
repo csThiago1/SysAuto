@@ -1,6 +1,6 @@
 // apps/mobile/src/components/navigation/FrostedNavBar.tsx
 
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   StyleSheet,
   TouchableOpacity,
@@ -16,7 +16,9 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Colors, Radii } from '@/constants/theme';
+import { QuickActionsSheet } from '@/components/common/QuickActionsSheet';
 
 // ─── Tab configuration ─────────────────────────────────────────────────────
 
@@ -154,6 +156,8 @@ function TabItem({ config, isActive, onPress, hasBadge = false }: TabItemProps):
 
 export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const [showQuickActions, setShowQuickActions] = useState(false);
 
   const visibleRoutes = useMemo(
     () => state.routes.filter((r) => !HIDDEN_ROUTES.has(r.name)),
@@ -200,12 +204,26 @@ export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.J
               key={route.key}
               config={config}
               isActive={isActive}
-              onPress={() => handleTabPress(route.name, route.key, isActive)}
+              onPress={
+                config.isCentral
+                  ? () => setShowQuickActions(true)
+                  : () => handleTabPress(route.name, route.key, isActive)
+              }
               hasBadge={config.badge === true}
             />
           );
         })}
       </View>
+      <QuickActionsSheet
+        visible={showQuickActions}
+        onClose={() => setShowQuickActions(false)}
+        actions={[
+          { icon: 'add-circle-outline', label: 'Nova OS', onPress: () => router.push('/(app)/nova-os') },
+          { icon: 'person-add-outline', label: 'Novo Cliente', onPress: () => router.push('/(app)/cadastro/cliente') },
+          { icon: 'car-outline', label: 'Novo Veículo', onPress: () => router.push('/(app)/cadastro/veiculo') },
+          { icon: 'calendar-outline', label: 'Agendar Entrada', onPress: () => router.push('/(app)/agenda') },
+        ]}
+      />
     </View>
   );
 }
