@@ -63,6 +63,13 @@ export {
   useGeneratePayslip,
   useClosePayslip,
   useEmployeePayslips,
+  // Vacation
+  useVacations,
+  useVacationBalance,
+  useCreateVacation,
+  useCancelVacation,
+  // PJ Payment
+  usePJPayment,
   hrKeys,
 } from "./useHR";
 

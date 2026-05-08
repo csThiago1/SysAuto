@@ -9,6 +9,7 @@ import React from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { FileText, Lock } from "lucide-react";
+import type { GeneratePayslipPayload } from "@paddock/types";
 import { usePayslips, useGeneratePayslip, useEmployees } from "@/hooks";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui";
@@ -23,6 +24,7 @@ export default function FolhaPage(): React.ReactElement {
   const [genForm, setGenForm] = React.useState({
     employee: "",
     reference_month: new Date().toISOString().slice(0, 7) + "-01",
+    payslip_type: "regular" as string,
   });
 
   const payslips = data?.results ?? [];
@@ -63,7 +65,14 @@ export default function FolhaPage(): React.ReactElement {
 
   const handleGenerate = (e: React.FormEvent): void => {
     e.preventDefault();
-    generate.mutate(genForm, { onSuccess: () => setShowGenerate(false) });
+    generate.mutate(
+      {
+        employee: genForm.employee,
+        reference_month: genForm.reference_month,
+        payslip_type: genForm.payslip_type as GeneratePayslipPayload["payslip_type"],
+      },
+      { onSuccess: () => setShowGenerate(false) },
+    );
   };
 
   return (
@@ -104,7 +113,7 @@ export default function FolhaPage(): React.ReactElement {
             <h3 className="text-sm font-semibold text-foreground">
               Gerar / atualizar contracheque
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-muted-foreground">
                   Colaborador *
@@ -141,6 +150,23 @@ export default function FolhaPage(): React.ReactElement {
                     }))
                   }
                 />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-muted-foreground">
+                  Tipo
+                </label>
+                <select
+                  className="rounded border border-border px-2 py-1.5 text-sm"
+                  value={genForm.payslip_type}
+                  onChange={(e) =>
+                    setGenForm((p) => ({ ...p, payslip_type: e.target.value }))
+                  }
+                >
+                  <option value="regular">Folha mensal</option>
+                  <option value="thirteenth_first">13&ordm; &mdash; 1&ordf; parcela</option>
+                  <option value="thirteenth_second">13&ordm; &mdash; 2&ordf; parcela</option>
+                  <option value="thirteenth_full">13&ordm; &mdash; Integral</option>
+                </select>
               </div>
             </div>
             <div className="flex justify-end gap-2">

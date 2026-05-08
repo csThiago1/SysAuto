@@ -5,9 +5,10 @@
  */
 
 import React from "react";
-import { User, Calendar, Hash } from "lucide-react";
+import { User, Calendar, Hash, Palmtree, AlertTriangle } from "lucide-react";
 import type { Employee } from "@paddock/types";
 import { EmployeeStatusBadge } from "../../_components/EmployeeStatusBadge";
+import { useVacationBalance } from "@/hooks";
 
 interface EmployeeHeaderProps {
   employee: Employee;
@@ -20,6 +21,11 @@ export function EmployeeHeader({
 }: EmployeeHeaderProps): React.ReactElement {
   const tenureYears = Math.floor(employee.tenure_days / 365);
   const tenureMonths = Math.floor((employee.tenure_days % 365) / 30);
+  const { data: vacBalance } = useVacationBalance(employee.id);
+
+  // Calcular saldo total e se tem férias vencidas
+  const totalRemaining = vacBalance?.periods?.reduce((acc, p) => acc + p.days_remaining, 0) ?? 0;
+  const hasOverdue = vacBalance?.periods?.some((p) => p.is_overdue) ?? false;
 
   return (
     <div className="rounded-md bg-muted/50 shadow-card p-card-padding">
@@ -58,6 +64,18 @@ export function EmployeeHeader({
                   : ""}
               </span>
               <span>{employee.contract_type_display}</span>
+              {employee.contract_type === "pj" && (
+                <span className="inline-flex items-center rounded-full bg-info-500/10 px-2 py-0.5 text-xs font-medium text-info-400">
+                  PJ
+                </span>
+              )}
+              {totalRemaining > 0 && (
+                <span className={`flex items-center gap-1 ${hasOverdue ? "text-error-400" : "text-muted-foreground"}`}>
+                  {hasOverdue ? <AlertTriangle className="h-3 w-3" /> : <Palmtree className="h-3 w-3" />}
+                  {totalRemaining}d férias
+                  {hasOverdue && " (vencidas!)"}
+                </span>
+              )}
             </div>
           </div>
         </div>

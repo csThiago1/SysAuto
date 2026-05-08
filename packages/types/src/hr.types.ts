@@ -441,6 +441,84 @@ export interface CreateDeductionPayload {
 export interface GeneratePayslipPayload {
   employee: string;
   reference_month: string;
+  payslip_type?: "regular" | "thirteenth_first" | "thirteenth_second" | "thirteenth_full";
+}
+
+// ─── Vacation ─────────────────────────────────────────────────────────────────
+
+export type VacationStatus = "scheduled" | "active" | "completed" | "cancelled";
+
+export interface Vacation {
+  id: string;
+  employee: string;
+  acquisition_start: string;
+  acquisition_end: string;
+  start_date: string;
+  end_date: string;
+  days_taken: number;
+  days_sold: number;
+  base_salary_snapshot: string;
+  vacation_pay: string;
+  one_third_pay: string;
+  sold_pay: string;
+  total_pay: string;
+  deductions: string;
+  net_pay: string;
+  status: VacationStatus;
+  status_display: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateVacationPayload {
+  employee: string;
+  acquisition_start: string;
+  acquisition_end: string;
+  start_date: string;
+  end_date: string;
+  days_taken: number;
+  days_sold?: number;
+}
+
+export interface VacationPeriod {
+  acquisition_start: string;
+  acquisition_end: string;
+  is_complete: boolean;
+  days_entitled: number;
+  days_used: number;
+  days_remaining: number;
+  is_overdue: boolean;
+}
+
+export interface VacationBalance {
+  employee_id: string;
+  employee_name: string;
+  hire_date: string;
+  periods: VacationPeriod[];
+}
+
+export const VACATION_STATUS_CONFIG: Record<VacationStatus, { label: string; color: string }> = {
+  scheduled: { label: "Agendada", color: "info" },
+  active: { label: "Em gozo", color: "warning" },
+  completed: { label: "Concluída", color: "success" },
+  cancelled: { label: "Cancelada", color: "error" },
+} as const;
+
+export const PAYSLIP_TYPE_LABELS: Record<string, string> = {
+  regular: "Folha mensal",
+  thirteenth_first: "13º — 1ª parcela",
+  thirteenth_second: "13º — 2ª parcela",
+  thirteenth_full: "13º — Integral",
+} as const;
+
+// ─── PJ Payment ──────────────────────────────────────────────────────────────
+
+export interface PJPaymentPayload {
+  amount: number;
+  reference_month: string;
+  description?: string;
+  nf_number?: string;
+  nf_file_key?: string;
 }
 
 // ─── Display config (UI helpers) ──────────────────────────────────────────────

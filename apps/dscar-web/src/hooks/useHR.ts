@@ -28,6 +28,10 @@ import type {
   WorkSchedule,
   Payslip,
   GeneratePayslipPayload,
+  Vacation,
+  CreateVacationPayload,
+  VacationBalance,
+  PJPaymentPayload,
 } from "@paddock/types";
 import { apiFetch } from "@/lib/api";
 
@@ -442,5 +446,82 @@ export function useEmployeePayslips(employeeId: string) {
         `${API}/payslips/?employee=${employeeId}`
       ),
     enabled: Boolean(employeeId),
+  });
+}
+
+// ── Vacation hooks ────────────────────────────────────────────────────────────
+
+export function useVacations(employeeId: string) {
+  return useQuery<Vacation[]>({
+    queryKey: ["hr-vacations", employeeId],
+    queryFn: async () => {
+      const data = await apiFetch<PaginatedResponse<Vacation> | Vacation[]>(
+        `${API}/employees/${employeeId}/vacations/`
+      );
+      if (data && !Array.isArray(data) && "results" in data) return data.results;
+      return data as Vacation[];
+    },
+    enabled: Boolean(employeeId),
+  });
+}
+
+export function useVacationBalance(employeeId: string) {
+  return useQuery<VacationBalance>({
+    queryKey: ["hr-vacation-balance", employeeId],
+    queryFn: () =>
+      apiFetch<VacationBalance>(`${API}/vacations/balance/${employeeId}/`),
+    enabled: Boolean(employeeId),
+  });
+}
+
+export function useCreateVacation() {
+  const qc = useQueryClient();
+  return useMutation<Vacation, Error, CreateVacationPayload>({
+    mutationFn: (payload) =>
+      apiFetch<Vacation>(
+        `${API}/employees/${payload.employee}/vacations/`,
+        { method: "POST", body: JSON.stringify(payload) }
+      ),
+    onSuccess: (_, vars) => {
+      void qc.invalidateQueries({ queryKey: ["hr-vacations", vars.employee] });
+      void qc.invalidateQueries({ queryKey: ["hr-vacation-balance", vars.employee] });
+      toast.success("Férias registradas.");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Erro ao registrar férias.");
+    },
+  });
+}
+
+export function useCancelVacation() {
+  const qc = useQueryClient();
+  return useMutation<Vacation, Error, string>({
+    mutationFn: (id) =>
+      apiFetch<Vacation>(`${API}/vacations/${id}/cancel/`, { method: "POST" }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["hr-vacations"] });
+      void qc.invalidateQueries({ queryKey: ["hr-vacation-balance"] });
+      toast.success("Férias canceladas.");
+    },
+  });
+}
+
+// ── PJ Payment hooks ─────────────────────────────────────────────────────────
+
+export function usePJPayment(employeeId: string) {
+  const qc = useQueryClient();
+  return useMutation<unknown, Error, PJPaymentPayload>({
+    mutationFn: (payload) =>
+      apiFetch(`${API}/pj-payment/${employeeId}/`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["hr-employees"] });
+      toast.success("Pagamento PJ registrado.");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Erro ao registrar pagamento PJ.");
+    },
   });
 }

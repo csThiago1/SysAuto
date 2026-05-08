@@ -20,6 +20,7 @@ import { TabSalario } from "./_components/TabSalario";
 import { TabBonificacoes } from "./_components/TabBonificacoes";
 import { TabVales } from "./_components/TabVales";
 import { TabDescontos } from "./_components/TabDescontos";
+import { TabFerias } from "./_components/TabFerias";
 import { TabAcesso } from "./_components/TabAcesso";
 
 const TABS = [
@@ -29,6 +30,7 @@ const TABS = [
   { id: "bonus", label: "Bonificações" },
   { id: "vales", label: "Vales" },
   { id: "descontos", label: "Descontos" },
+  { id: "ferias", label: "Férias" },
   { id: "acesso", label: "Acesso" },
 ] as const;
 
@@ -163,6 +165,9 @@ export default function EmployeeDetailPage(): React.ReactElement {
             )}
             {activeTab === "descontos" && (
               <TabDescontos employee={employee} />
+            )}
+            {activeTab === "ferias" && (
+              <TabFerias employee={employee} />
             )}
             {activeTab === "acesso" && (
               <TabAcesso employee={employee} />
