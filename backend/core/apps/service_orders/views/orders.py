@@ -1,6 +1,6 @@
 """
-Paddock Solutions — Service Orders Views
-ViewSet completo para OS + endpoint de dashboard stats.
+Paddock Solutions — Service Orders: Main ServiceOrderViewSet
+ViewSet completo para OS com CRUD + 15+ custom actions.
 """
 import logging
 from datetime import timedelta
@@ -16,15 +16,12 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 import httpx
 
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove, _get_role
+from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from .models import (
+from ..models import (
     ChecklistItem,
-    Holiday,
-    ServiceCatalog,
     ServiceOrder,
     ServiceOrderActivityLog,
     ServiceOrderPhoto,
@@ -33,7 +30,7 @@ from .models import (
     ServiceOrderPart,
     ServiceOrderLabor,
 )
-from .serializers import (
+from ..serializers import (
     BudgetSnapshotSerializer,
     ChecklistItemBulkSerializer,
     ChecklistItemSerializer,
@@ -47,10 +44,7 @@ from .serializers import (
     PartCompraInputSerializer,
     PartEstoqueInputSerializer,
     PartSeguradoraInputSerializer,
-    ServiceCatalogListSerializer,
-    ServiceCatalogSerializer,
     ServiceOrderActivityLogSerializer,
-    ServiceOrderCalendarSerializer,
     ServiceOrderCreateSerializer,
     ServiceOrderDetailSerializer,
     ServiceOrderLaborSerializer,
@@ -61,7 +55,6 @@ from .serializers import (
     ServiceOrderStatusTransitionSerializer,
     ServiceOrderSyncSerializer,
     ServiceOrderUpdateSerializer,
-    HolidaySerializer,
     StatusTransitionLogSerializer,
     NotificationFeedSerializer,
     UploadPhotoSerializer,
@@ -69,8 +62,8 @@ from .serializers import (
     VehicleHistoryItemSerializer,
 )
 from apps.accounts_receivable.models import ReceivableDocument
-from .billing import BillingService
-from .services import ServiceOrderDeliveryService, ServiceOrderService
+from ..billing import BillingService
+from ..services import ServiceOrderDeliveryService, ServiceOrderService
 
 logger = logging.getLogger(__name__)
 
@@ -323,8 +316,8 @@ class ServiceOrderViewSet(
         if consultant is not None:
             from apps.authentication.models import GlobalUser
             from django_tenants.utils import get_tenant
-            from .tasks import task_notify_status_change
-            from .models import ServiceOrderStatus as SOS
+            from ..tasks import task_notify_status_change
+            from ..models import ServiceOrderStatus as SOS
 
             status_label = dict(SOS.choices).get(new_status, new_status)
             try:
@@ -460,7 +453,7 @@ class ServiceOrderViewSet(
             if not message and activity_type == "reminder":
                 return Response({"message": ["Este campo é obrigatório."]}, status=status.HTTP_400_BAD_REQUEST)
 
-            from .models import ServiceOrderActivityLog
+            from ..models import ServiceOrderActivityLog
             log = ServiceOrderActivityLog.objects.create(
                 service_order=service_order,
                 user=request.user,
@@ -471,7 +464,7 @@ class ServiceOrderViewSet(
             return Response(ServiceOrderActivityLogSerializer(log).data, status=status.HTTP_201_CREATED)
 
         # GET
-        from .models import ServiceOrderActivityLog
+        from ..models import ServiceOrderActivityLog
         logs = ServiceOrderActivityLog.objects.filter(service_order=service_order)
         serializer = ServiceOrderActivityLogSerializer(logs, many=True)
         return Response(serializer.data)
@@ -526,10 +519,10 @@ class ServiceOrderViewSet(
         sinistro = request.data.get("sinistro")
         orcamento = request.data.get("orcamento")
         versao = request.data.get("versao")
-        
+
         if not sinistro or not orcamento:
             return Response({"erro": "sinistro e orcamento são obrigatórios"}, status=400)
-            
+
         if isinstance(orcamento, str) and "." in orcamento and not versao:
             parts = orcamento.split(".")
             orcamento = parts[0]
@@ -544,25 +537,25 @@ class ServiceOrderViewSet(
         except Exception as e:
             logger.error(f"Erro inesperado no import Cilia: {e}")
             return Response({"erro": "Erro interno ao processar importação."}, status=500)
-            
+
         # Update ServiceOrder
         totals = dados.get("totals", {})
         service_order.parts_total = totals.get("total_pieces_cost", 0)
         service_order.services_total = totals.get("total_workforce_cost", 0)
         service_order.casualty_number = str(sinistro)
-        
-        # Opcional: Atualizar a seguradora se vier no json e quisermos forçar, 
+
+        # Opcional: Atualizar a seguradora se vier no json e quisermos forçar,
         # mas como é update, atualizamos apenas dados financeiros e o ID do sinistro.
         service_order.save(update_fields=["parts_total", "services_total", "casualty_number", "updated_at"])
-        
-        from .models import ServiceOrderActivityLog
+
+        from ..models import ServiceOrderActivityLog
         ServiceOrderActivityLog.objects.create(
             service_order=service_order,
             user=request.user,
             activity_type="updated",
             description=f"Orçamento Cilia (Sinistro {sinistro} / Orçamento {orcamento}) sincronizado com sucesso."
         )
-        
+
         # Save exact payload to OrcamentoCilia backup
         from apps.cilia.models import OrcamentoCilia
         try:
@@ -966,7 +959,7 @@ class ServiceOrderViewSet(
 
         Fotos são imutáveis — soft delete apenas (is_active=False).
         """
-        from .models import ActivityType, OSPhotoFolder
+        from ..models import ActivityType, OSPhotoFolder
 
         service_order: ServiceOrder = self.get_object()
 
@@ -1151,7 +1144,7 @@ class ServiceOrderViewSet(
     @action(detail=True, methods=["get"], url_path="versions")
     def versions(self, request: Request, pk: Optional[str] = None) -> Response:
         """Lista versões de uma OS específica (GET /service-orders/{id}/versions/)."""
-        from .serializers import ServiceOrderVersionSerializer
+        from ..serializers import ServiceOrderVersionSerializer
         os = self.get_object()
         qs = os.versions.prefetch_related("items").order_by("-version_number")
         page = self.paginate_queryset(qs)
@@ -1164,7 +1157,7 @@ class ServiceOrderViewSet(
     @action(detail=True, methods=["get"], url_path="events")
     def events(self, request: Request, pk: Optional[str] = None) -> Response:
         """Lista timeline de eventos de uma OS (GET /service-orders/{id}/events/)."""
-        from .serializers import ServiceOrderEventSerializer
+        from ..serializers import ServiceOrderEventSerializer
         os = self.get_object()
         qs = os.events.order_by("-created_at")
         page = self.paginate_queryset(qs)
@@ -1517,7 +1510,7 @@ class ServiceOrderViewSet(
     @action(detail=True, methods=["post", "get"], url_path="override-request")
     def override_request(self, request: Request, pk: Optional[str] = None) -> Response:
         """POST para criar, GET para listar overrides da OS."""
-        from .models import TransitionOverrideRequest
+        from ..models import TransitionOverrideRequest
 
         service_order = self.get_object()
 
@@ -1543,7 +1536,7 @@ class ServiceOrderViewSet(
         )
 
         # Capturar blocks snapshot
-        from .transition_validator import TransitionValidator
+        from ..transition_validator import TransitionValidator
         result = TransitionValidator.validate(
             service_order, serializer.validated_data["target_status"]
         )
@@ -1551,7 +1544,7 @@ class ServiceOrderViewSet(
         override.save(update_fields=["blocks_snapshot"])
 
         # Log event
-        from .events import OSEventLogger
+        from ..events import OSEventLogger
         OSEventLogger.log_event(
             service_order, "OVERRIDE_REQUESTED",
             actor=request.user.get_full_name() or request.user.email,
@@ -1564,7 +1557,7 @@ class ServiceOrderViewSet(
         )
 
         # Notificar MANAGER+ via push
-        from .tasks import task_notify_override_request
+        from ..tasks import task_notify_override_request
         try:
             from django_tenants.utils import get_tenant
             schema = getattr(get_tenant(request), "schema_name", "public")
@@ -1593,7 +1586,7 @@ class ServiceOrderViewSet(
     )
     def override_resolve(self, request: Request, pk: Optional[str] = None, override_pk: Optional[str] = None) -> Response:
         """POST /service-orders/{id}/override-request/{override_id}/resolve/"""
-        from .models import TransitionOverrideRequest
+        from ..models import TransitionOverrideRequest
         from apps.authentication.permissions import _has_min_role
 
         if not _has_min_role(request, "MANAGER"):
@@ -1621,7 +1614,7 @@ class ServiceOrderViewSet(
         override.save(update_fields=["status", "approved_by", "justification", "resolved_at"])
 
         # Log event
-        from .events import OSEventLogger
+        from ..events import OSEventLogger
         event_type = "OVERRIDE_APPROVED" if action_taken == "approved" else "OVERRIDE_REJECTED"
         OSEventLogger.log_event(
             service_order, event_type,
@@ -1650,7 +1643,7 @@ class ServiceOrderViewSet(
                 )
 
         # Notificar consultor do resultado
-        from .tasks import task_notify_override_resolved
+        from ..tasks import task_notify_override_resolved
         try:
             from django_tenants.utils import get_tenant
             schema = getattr(get_tenant(request), "schema_name", "public")
@@ -1674,7 +1667,7 @@ class ServiceOrderViewSet(
     def pending_overrides(self, request: Request) -> Response:
         """GET /service-orders/pending-overrides/ — overrides pendentes no tenant."""
         from apps.authentication.permissions import _has_min_role
-        from .models import TransitionOverrideRequest
+        from ..models import TransitionOverrideRequest
 
         if not _has_min_role(request, "MANAGER"):
             return Response(
@@ -1689,537 +1682,3 @@ class ServiceOrderViewSet(
             .order_by("-created_at")[:50]
         )
         return Response(OverrideRequestSerializer(overrides, many=True).data)
-
-
-# ── Versioning ViewSets ──────────────────────────────────────────────────────
-
-class ServiceOrderVersionViewSet(viewsets.ReadOnlyModelViewSet):
-    """Lista/detalhe de versões de OS + action approve."""
-
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
-
-    def get_serializer_class(self) -> type:
-        from .serializers import ServiceOrderVersionSerializer
-        return ServiceOrderVersionSerializer
-
-    def get_queryset(self) -> "QuerySet":
-        from .models import ServiceOrderVersion
-        return (
-            ServiceOrderVersion.objects
-            .filter(service_order__is_active=True)
-            .select_related("service_order", "import_attempt")
-            .prefetch_related("items")
-        )
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action == "approve":
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
-
-    @action(detail=True, methods=["post"])
-    def approve(self, request: Request, pk: Optional[str] = None) -> Response:
-        """POST /service-orders/versions/{id}/approve/"""
-        from .serializers import ServiceOrderVersionSerializer
-        version = self.get_object()
-        actor = request.user.email if hasattr(request.user, "email") else "Usuário"
-        updated = ServiceOrderService.approve_version(version=version, approved_by=actor)
-        return Response(ServiceOrderVersionSerializer(updated).data)
-
-
-class ServiceOrderEventViewSet(viewsets.ReadOnlyModelViewSet):
-    """Timeline de eventos de OS (somente leitura)."""
-
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
-
-    def get_serializer_class(self) -> type:
-        from .serializers import ServiceOrderEventSerializer
-        return ServiceOrderEventSerializer
-
-    def get_queryset(self) -> "QuerySet":
-        from .models import ServiceOrderEvent
-        return ServiceOrderEvent.objects.filter(
-            service_order__is_active=True,
-        ).select_related("service_order")
-
-
-class ServiceOrderParecerViewSet(viewsets.ModelViewSet):
-    """CRUD de pareceres (internos). Pareceres importados são read-only."""
-
-    permission_classes = [IsAuthenticated]
-
-    def get_serializer_class(self) -> type:
-        from .serializers import ServiceOrderParecerSerializer
-        return ServiceOrderParecerSerializer
-
-    def get_queryset(self) -> "QuerySet":
-        from .models import ServiceOrderParecer
-        return ServiceOrderParecer.objects.filter(
-            service_order__is_active=True,
-        ).select_related("service_order", "version")
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("destroy",):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
-
-    def _assert_internal(self, instance: "ServiceOrderParecer") -> None:
-        """Garante que apenas pareceres internos podem ser modificados."""
-        if instance.source != "internal":
-            from rest_framework.exceptions import PermissionDenied
-            raise PermissionDenied("Pareceres importados são somente leitura.")
-
-    def perform_update(self, serializer: "BaseSerializer") -> None:  # type: ignore[override]
-        self._assert_internal(serializer.instance)
-        super().perform_update(serializer)
-
-    def perform_destroy(self, instance: "ServiceOrderParecer") -> None:  # type: ignore[override]
-        self._assert_internal(instance)
-        super().perform_destroy(instance)
-
-
-@extend_schema(
-    summary="Dashboard — métricas de OS",
-    responses={
-        200: {
-            "type": "object",
-            "properties": {
-                "total_open": {"type": "integer"},
-                "by_status": {"type": "object"},
-                "today_deliveries": {"type": "integer"},
-            },
-        }
-    },
-)
-class DashboardStatsView(APIView):
-    """
-    Endpoint de métricas do dashboard — retorno varia conforme role.
-
-    ?role=CONSULTANT → dados pessoais
-    ?role=MANAGER|ADMIN|OWNER → KPIs financeiros + equipe
-    Sem parâmetro → legacy (retrocompatibilidade)
-    """
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request: Request) -> Response:
-        """Retorna estatísticas do dashboard conforme role do JWT (não query param)."""
-        role = _get_role(request)
-
-        if role == "CONSULTANT":
-            return Response(self._consultant_stats(request))
-
-        if role in ("MANAGER", "ADMIN", "OWNER"):
-            return Response(self._manager_stats())
-
-        # Legacy — STOREKEEPER e fallback
-        return Response(self._legacy_stats())
-
-    # ── Legacy ────────────────────────────────────────────────────────────────
-
-    def _legacy_stats(self) -> dict:
-        """Retorna métricas no formato legado (compatibilidade)."""
-        open_statuses = [
-            s
-            for s in ServiceOrderStatus.values
-            if s not in (ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED)
-        ]
-        active_qs = ServiceOrder.objects.filter(is_active=True, status__in=open_statuses)
-        total_open: int = active_qs.count()
-        by_status_qs = (
-            active_qs.values("status").annotate(count=Count("id")).order_by("status")
-        )
-        by_status: dict[str, int] = {row["status"]: row["count"] for row in by_status_qs}
-        today = timezone.localdate()
-        today_deliveries: int = ServiceOrder.objects.filter(
-            is_active=True,
-            estimated_delivery_date=today,
-            status__in=open_statuses,
-        ).count()
-        return {
-            "total_open": total_open,
-            "by_status": by_status,
-            "today_deliveries": today_deliveries,
-        }
-
-    # ── Consultor ─────────────────────────────────────────────────────────────
-
-    def _consultant_stats(self, request: Request) -> dict:
-        """Retorna métricas pessoais do consultor."""
-        from datetime import timedelta
-
-        today = timezone.localdate()
-        week_ago = today - timedelta(days=7)
-
-        open_qs = ServiceOrder.objects.filter(
-            is_active=True,
-            created_by=request.user,
-        ).exclude(
-            status__in=(ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED)
-        )
-        my_open: int = open_qs.count()
-
-        deliveries_today: int = open_qs.filter(
-            estimated_delivery_date=today
-        ).count()
-
-        overdue: int = open_qs.filter(
-            estimated_delivery_date__lt=today
-        ).count()
-
-        completed_week: int = ServiceOrder.objects.filter(
-            is_active=True,
-            created_by=request.user,
-            status=ServiceOrderStatus.DELIVERED,
-            delivered_at__date__gte=week_ago,
-        ).count()
-
-        recent_os = ServiceOrder.objects.filter(
-            is_active=True,
-            created_by=request.user,
-        ).exclude(
-            status__in=(ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED)
-        ).order_by("-opened_at")[:5]
-
-        recent_list = [
-            {
-                "id": str(os.id),
-                "number": os.number,
-                "plate": os.plate,
-                "customer_name": os.customer_name,
-                "status": os.status,
-                "status_display": os.get_status_display(),
-                "days_in_shop": (today - os.opened_at.date()).days,
-            }
-            for os in recent_os
-        ]
-
-        return {
-            "role": "consultant",
-            "my_open": my_open,
-            "my_deliveries_today": deliveries_today,
-            "my_overdue": overdue,
-            "my_completed_week": completed_week,
-            "my_recent_os": recent_list,
-        }
-
-    # ── Gerente / Admin / Diretoria ───────────────────────────────────────────
-
-    def _manager_stats(self) -> dict:
-        """Retorna KPIs financeiros e de produtividade para gerentes."""
-        import calendar as cal_mod
-        from decimal import Decimal
-
-        from django.db.models import ExpressionWrapper, F, Sum
-        from django.db.models import DecimalField as DBDecimalField
-
-        today = timezone.localdate()
-        month_start = today.replace(day=1)
-
-        # ── Billing: tenta ReceivableDocument, fallback em OS totais ──────────
-        billing_month = Decimal("0")
-        billing_by_type: dict[str, str] = {"insurer": "0.00", "private": "0.00"}
-        billing_last_6: list[dict] = []
-
-        try:
-            from apps.accounts_receivable.models import ReceivableDocument
-
-            month_docs = ReceivableDocument.objects.filter(
-                competence_date__gte=month_start,
-                competence_date__lte=today,
-            )
-            billing_month = month_docs.aggregate(total=Sum("amount"))["total"] or Decimal("0")
-
-            insurer_total = (
-                month_docs.filter(origin="OS_INSURER").aggregate(t=Sum("amount"))["t"]
-                or Decimal("0")
-            )
-            private_total = (
-                month_docs.filter(origin="OS_PRIVATE").aggregate(t=Sum("amount"))["t"]
-                or Decimal("0")
-            )
-            billing_by_type = {
-                "insurer": str(insurer_total),
-                "private": str(private_total),
-            }
-
-            for i in range(5, -1, -1):
-                year = today.year if today.month - i > 0 else today.year - 1
-                month = (today.month - i - 1) % 12 + 1
-                m_start = today.replace(year=year, month=month, day=1)
-                m_end = m_start.replace(day=cal_mod.monthrange(year, month)[1])
-                total = (
-                    ReceivableDocument.objects.filter(
-                        competence_date__range=(m_start, m_end)
-                    ).aggregate(t=Sum("amount"))["t"]
-                    or Decimal("0")
-                )
-                billing_last_6.append({
-                    "month": m_start.strftime("%b/%y"),
-                    "amount": str(total),
-                })
-
-        except ImportError:
-            # Fallback: soma services_total + parts_total das OS entregues no mês
-            total_expr = ExpressionWrapper(
-                F("services_total") + F("parts_total") - F("discount_total"),
-                output_field=DBDecimalField(),
-            )
-            delivered_qs = ServiceOrder.objects.filter(
-                status=ServiceOrderStatus.DELIVERED,
-                delivered_at__date__gte=month_start,
-            )
-            totals = delivered_qs.aggregate(
-                total=Sum(total_expr),
-                insurer=Sum(
-                    total_expr,
-                    filter=Q(customer_type="insurer"),
-                ),
-                private_t=Sum(
-                    total_expr,
-                    filter=Q(customer_type="private"),
-                ),
-            )
-            billing_month = totals["total"] or Decimal("0")
-            billing_by_type = {
-                "insurer": str(totals["insurer"] or 0),
-                "private": str(totals["private_t"] or 0),
-            }
-
-        # ── Entregas do mês ────────────────────────────────────────────────────
-        delivered_month: int = ServiceOrder.objects.filter(
-            is_active=True,
-            status=ServiceOrderStatus.DELIVERED,
-            delivered_at__date__gte=month_start,
-        ).count()
-
-        avg_ticket = (
-            (billing_month / delivered_month).quantize(Decimal("0.01"))
-            if delivered_month > 0
-            else Decimal("0")
-        )
-
-        # ── OS atrasadas ───────────────────────────────────────────────────────
-        overdue_qs = (
-            ServiceOrder.objects.filter(is_active=True, estimated_delivery_date__lt=today)
-            .exclude(status__in=(ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED))
-            .order_by("estimated_delivery_date")
-        )
-        overdue_count: int = overdue_qs.count()
-        overdue_os = [
-            {
-                "id": str(os.id),
-                "number": os.number,
-                "plate": os.plate,
-                "customer_name": os.customer_name,
-                "estimated_delivery_date": str(os.estimated_delivery_date),
-                "days_overdue": (today - os.estimated_delivery_date).days,
-                "status": os.status,
-                "status_display": os.get_status_display(),
-            }
-            for os in overdue_qs[:10]
-        ]
-
-        # ── Produtividade da equipe (proxy: created_by) ────────────────────────
-        productivity_qs = (
-            ServiceOrder.objects.filter(
-                is_active=True,
-                status=ServiceOrderStatus.DELIVERED,
-                delivered_at__date__gte=month_start,
-            )
-            .values("created_by__email")
-            .annotate(delivered=Count("id"))
-            .order_by("-delivered")[:10]
-        )
-
-        open_by_user = (
-            ServiceOrder.objects.filter(is_active=True)
-            .exclude(
-                status__in=(ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED)
-            )
-            .values("created_by__email")
-            .annotate(open_count=Count("id"))
-        )
-        open_map: dict[str, int] = {
-            row["created_by__email"]: row["open_count"] for row in open_by_user
-        }
-
-        team_productivity = [
-            {
-                "name": (row["created_by__email"] or "")
-                .split("@")[0]
-                .replace(".", " ")
-                .title(),
-                "delivered_month": row["delivered"],
-                "open_count": open_map.get(row["created_by__email"], 0),
-            }
-            for row in productivity_qs
-        ]
-
-        return {
-            "role": "manager",
-            "billing_month": str(billing_month),
-            "delivered_month": delivered_month,
-            "avg_ticket": str(avg_ticket),
-            "overdue_count": overdue_count,
-            "billing_by_type": billing_by_type,
-            "billing_last_6_months": billing_last_6,
-            "team_productivity": team_productivity,
-            "overdue_os": overdue_os,
-        }
-
-
-class CalendarView(APIView):
-    """
-    GET /service-orders/calendar/?date_start=YYYY-MM-DD&date_end=YYYY-MM-DD
-    Retorna OS com scheduling_date ou estimated_delivery_date dentro do range.
-    Exclui OS canceladas.
-    """
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request: Request) -> Response:
-        """Retorna lista de OS no range de datas."""
-        date_start = request.query_params.get("date_start")
-        date_end = request.query_params.get("date_end")
-
-        if not date_start or not date_end:
-            return Response(
-                {"detail": "Parâmetros date_start e date_end são obrigatórios."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        try:
-            from datetime import datetime as _datetime
-            _datetime.strptime(date_start, "%Y-%m-%d")
-            _datetime.strptime(date_end, "%Y-%m-%d")
-        except ValueError:
-            return Response(
-                {"detail": "Formato de data inválido. Use YYYY-MM-DD."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        qs = (
-            ServiceOrder.objects.filter(
-                is_active=True,
-            )
-            .filter(
-                Q(scheduling_date__date__range=(date_start, date_end))
-                | Q(estimated_delivery_date__range=(date_start, date_end))
-                | Q(delivery_date__date__range=(date_start, date_end))
-            )
-            .exclude(status=ServiceOrderStatus.CANCELLED)
-            .select_related("created_by")
-        )
-
-        serializer = ServiceOrderCalendarSerializer(qs, many=True)
-        return Response(serializer.data)
-
-
-class ServiceCatalogViewSet(viewsets.ModelViewSet):
-    """
-    CRUD do catálogo de serviços.
-    Leitura: CONSULTANT+. Escrita: MANAGER+.
-    DELETE faz soft delete (is_active=False).
-    """
-
-    serializer_class = ServiceCatalogSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
-
-    def get_queryset(self) -> QuerySet:
-        """Retorna catálogo ativo, com filtros opcionais de busca e categoria."""
-        qs = ServiceCatalog.objects.filter(is_active=True)
-        search = self.request.query_params.get("search", "")
-        category = self.request.query_params.get("category", "")
-        if search:
-            qs = qs.filter(name__icontains=search)
-        if category:
-            qs = qs.filter(category=category)
-        return qs
-
-    def get_serializer_class(self):  # type: ignore[override]
-        if self.action == "list":
-            return ServiceCatalogListSerializer
-        return ServiceCatalogSerializer
-
-    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """Soft delete: apenas marca is_active=False."""
-        instance = self.get_object()
-        instance.is_active = False
-        instance.save(update_fields=["is_active", "updated_at"])
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class HolidayViewSet(viewsets.ModelViewSet):
-    """
-    CRUD de feriados.
-    Leitura: CONSULTANT+. Escrita: MANAGER+.
-    DELETE faz soft delete (is_active=False).
-    """
-
-    serializer_class = HolidaySerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
-
-    def get_queryset(self) -> QuerySet:
-        qs = Holiday.objects.filter(is_active=True).order_by("date")
-        year = self.request.query_params.get("year")
-        if year:
-            try:
-                qs = qs.filter(date__year=int(year))
-            except (ValueError, TypeError):
-                pass
-        return qs
-
-    def perform_destroy(self, instance: Holiday) -> None:
-        instance.is_active = False
-        instance.save(update_fields=["is_active"])
-
-
-class VehicleHistoryView(APIView):
-    """
-    GET /service-orders/vehicle-history/?plate=ABC1234
-    Busca veículo no histórico de OS por placa.
-    Retorna dados do veículo + último cliente + contagem de visitas.
-    """
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request: Request) -> Response:
-        plate_raw = request.query_params.get("plate", "").upper().replace("-", "").replace(" ", "")
-        if len(plate_raw) < 7:
-            return Response({"found": False, "results": []})
-
-        qs = ServiceOrder.objects.filter(
-            is_active=True,
-            plate__iexact=plate_raw,
-        ).order_by("-created_at")
-
-        if not qs.exists():
-            return Response({"found": False})
-
-        latest = qs.first()
-        assert latest is not None
-        return Response({
-            "found": True,
-            "plate": plate_raw,
-            "make": latest.make,
-            "model": latest.model,
-            "year": latest.year,
-            "vehicle_version": latest.vehicle_version,
-            "color": latest.color,
-            "fuel_type": latest.fuel_type,
-            "fipe_value": str(latest.fipe_value) if latest.fipe_value else None,
-            "last_customer_name": latest.customer_name,
-            "last_customer_uuid": str(latest.customer_uuid) if latest.customer_uuid else None,
-            "visits": qs.count(),
-            "last_visit": latest.created_at.date().isoformat() if latest.created_at else None,
-        })
