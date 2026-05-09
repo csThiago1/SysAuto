@@ -22,6 +22,7 @@ const API = "/api/proxy/accounting";
 // ── Query keys ────────────────────────────────────────────────────────────────
 
 export const accountingKeys = {
+  all: ["accounting"] as const,
   accounts: (filters?: Record<string, string>) =>
     filters ? ["fin-accounts", filters] : ["fin-accounts"],
   account: (id: string) => ["fin-accounts", id],
@@ -202,5 +203,56 @@ export function useDRE(
     queryKey: accountingKeys.dre(startDate, endDate, costCenterId),
     queryFn: () => apiFetch<DREResponse>(`${API}/dre/?${params.toString()}`),
     enabled: Boolean(startDate && endDate),
+  });
+}
+
+// ── Financial Dashboard hooks ────────────────────────────────────────────────
+
+export function useFinancialDashboard(startDate: string, endDate: string) {
+  return useQuery({
+    queryKey: [...accountingKeys.all, "financial-dashboard", startDate, endDate],
+    queryFn: () => apiFetch<{
+      receita_mes: string;
+      despesa_mes: string;
+      saldo: string;
+      ar_vencidos: { count: number; total: string };
+      ap_vencidos: { count: number; total: string };
+      fluxo_caixa_30d: Array<{
+        semana: number; inicio: string; fim: string;
+        entradas: string; saidas: string; saldo: string;
+      }>;
+      notas_emitidas: { total_count: number; total_value: string };
+      notas_recebidas: { count: number; total: string };
+      notas_pendentes: number;
+      aging_ar: Array<{ faixa: string; count: number; total: string }>;
+      aging_ap: Array<{ faixa: string; count: number; total: string }>;
+    }>(`${API}/dashboard/?start_date=${startDate}&end_date=${endDate}`),
+    enabled: Boolean(startDate && endDate),
+  });
+}
+
+export function useFaturamento(startDate: string, endDate: string, groupBy: string = "customer") {
+  return useQuery({
+    queryKey: [...accountingKeys.all, "faturamento", startDate, endDate, groupBy],
+    queryFn: () => apiFetch<{
+      period: { start: string; end: string };
+      group_by: string;
+      items: Array<Record<string, unknown>>;
+      totals: { total: string; received: string };
+    }>(`${API}/faturamento/?start_date=${startDate}&end_date=${endDate}&group_by=${groupBy}`),
+    enabled: Boolean(startDate && endDate),
+  });
+}
+
+export function useInadimplencia() {
+  return useQuery({
+    queryKey: [...accountingKeys.all, "inadimplencia"],
+    queryFn: () => apiFetch<{
+      items: Array<{
+        customer_name: string; customer_id: string;
+        total_amount: string; total_remaining: string; count: number;
+      }>;
+      totals: { total_remaining: string; count: number };
+    }>(`${API}/inadimplencia/`),
   });
 }

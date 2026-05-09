@@ -280,6 +280,22 @@ export function useNfeRecebidaFileUrl(chave: string, fileType: "xml" | "danfe"):
   return `/api/proxy/fiscal/nfe-recebidas/${chave}/file/${fileType}/`
 }
 
+// ─── Resumo Fiscal Mensal ────────────────────────────────────────────────────
+
+export function useResumoFiscal(year: number, month: number) {
+  return useQuery({
+    queryKey: [...fiscalKeys.all, "resumo", year, month],
+    queryFn: () => apiFetch<{
+      year: number; month: number;
+      nfse: { count: number; total: string };
+      nfe: { count: number; total: string };
+      impostos: { iss: string; icms: string; pis: string; cofins: string };
+      total_emitidas: number; total_canceladas: number;
+    }>(`${FISCAL}/resumo-mensal/?year=${year}&month=${month}`),
+    enabled: Boolean(year && month),
+  })
+}
+
 // ─── S4-T4: NF-e Entrada — match e link com Pedido de Compra ─────────────────
 
 export interface PurchaseOrderMatch {
