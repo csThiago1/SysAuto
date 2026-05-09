@@ -35,25 +35,15 @@ export function useAuth(): AuthReturn {
           },
           body: JSON.stringify({ email, password }),
         });
-
         if (!res.ok) return false;
-
         const data = (await res.json()) as { access: string; refresh: string };
         const token = data.access;
-
-        // Decodifica payload para extrair dados do usuário real
         const payloadB64 = token.split('.')[1] ?? '';
         let decoded: JWTPayload = {};
-        try {
-          decoded = JSON.parse(atob(payloadB64)) as JWTPayload;
-        } catch {
-          // fallback
-        }
-
+        try { decoded = JSON.parse(atob(payloadB64)) as JWTPayload; } catch { /* fallback */ }
         const userName = decoded.name ?? email.split('@')[0] ?? email;
         const userRole = decoded.role ?? 'CONSULTANT';
         const userId = decoded.sub ?? email;
-
         setAuth(
           { id: userId, email: decoded.email ?? email, name: userName, role: userRole },
           token,
