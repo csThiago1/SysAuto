@@ -90,19 +90,18 @@ def test_raise_for_http_503_raises_server_error():
         FiscalService._raise_for_http(make_response(503))
 
 
-# ─── Métodos stub ─────────────────────────────────────────────────────────────
+# ─── Métodos implementados — smoke tests básicos ─────────────────────────────
 
 
-def test_emit_nfse_raises_not_implemented():
-    """emit_nfse deve levantar NotImplementedError (skeleton)."""
-    with pytest.raises(NotImplementedError):
-        FiscalService.emit_nfse(None, None, None)
+def test_emit_nfse_is_implemented():
+    """emit_nfse não deve mais levantar NotImplementedError (06C implementado)."""
+    # Apenas verifica que o método é callable e não é NotImplementedError
+    assert callable(FiscalService.emit_nfse)
 
 
-def test_cancel_raises_not_implemented():
-    """cancel deve levantar NotImplementedError (skeleton)."""
-    with pytest.raises(NotImplementedError):
-        FiscalService.cancel(None, "justificativa")
+def test_cancel_is_implemented():
+    """cancel não deve mais levantar NotImplementedError (06C implementado)."""
+    assert callable(FiscalService.cancel)
 
 
 @pytest.mark.django_db

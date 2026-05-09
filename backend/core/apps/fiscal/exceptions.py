@@ -38,3 +38,11 @@ class FocusTimeout(FocusNFeError):
 
 class FocusConflict(FocusNFeError):
     """Conflito de ref — 409. A ref já existe com status diferente de erro."""
+
+
+class FiscalDocumentAlreadyAuthorized(Exception):
+    """Tentativa de reemissão de documento já autorizado."""
+
+
+class FiscalInvalidStatus(Exception):
+    """Operação inválida para o status atual do documento."""
