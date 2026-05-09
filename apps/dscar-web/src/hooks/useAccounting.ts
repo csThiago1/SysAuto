@@ -256,3 +256,20 @@ export function useInadimplencia() {
     }>(`${API}/inadimplencia/`),
   });
 }
+
+export function useFinanceiroAlertas() {
+  return useQuery({
+    queryKey: [...accountingKeys.all, "alertas"],
+    queryFn: () => apiFetch<{
+      alerts: Array<{
+        type: string; label: string; count: number;
+        total: string; due_date: string; days: number; severity: string;
+      }>;
+      overdue: {
+        ap: { count: number; total: string };
+        ar: { count: number; total: string };
+      };
+      total_alerts: number;
+    }>("/api/proxy/accounting/alertas/"),
+  });
+}
