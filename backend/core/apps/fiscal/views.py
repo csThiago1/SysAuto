@@ -220,6 +220,21 @@ class FocusWebhookView(APIView):
             triggered_by="WEBHOOK",
         )
 
+        # nfe_recebida — importar automaticamente como NFeEntrada (sem doc vinculado)
+        if evento == "nfe_recebida":
+            chave = payload.get("chave") or payload.get("chave_nfe", "")
+            if chave:
+                from apps.fiscal.services.auto_import import NFeEntradaAutoImportService  # lazy import
+
+                try:
+                    NFeEntradaAutoImportService.import_from_webhook(chave, payload)
+                except Exception as exc:
+                    logger.error("FocusWebhookView: nfe_recebida auto-import error: %s", exc)
+            else:
+                logger.warning(
+                    "FocusWebhookView: nfe_recebida sem chave no payload — doc=%s", doc.pk
+                )
+
         # Agendar consulta (consulta autoritativa — não confiar 100% no payload do webhook)
         from apps.fiscal.tasks import poll_fiscal_document  # lazy import
 

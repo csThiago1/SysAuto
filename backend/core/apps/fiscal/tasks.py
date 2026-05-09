@@ -194,3 +194,73 @@ def ensure_webhooks_all_tenants(self) -> None:
 
     for company in Company.objects.exclude(schema_name="public"):
         ensure_webhooks_registered.delay(company.schema_name)
+
+
+# ─── S4-T2: Batch auto-import de NF-es recebidas ─────────────────────────────
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def auto_import_nfes_recebidas(self, tenant_schema: str) -> dict:  # type: ignore[type-arg]
+    """Busca NF-es recebidas na Focus e importa automaticamente as novas.
+
+    Complementa o webhook nfe_recebida para recuperar notas que possam ter
+    chegado enquanto o servidor estava fora do ar ou o webhook não estava
+    registrado.
+
+    Args:
+        tenant_schema: Schema do tenant (ex: "tenant_dscar").
+
+    Returns:
+        Dict com status, checked e imported.
+    """
+    from django_tenants.utils import schema_context
+
+    from apps.fiscal.clients.focus_nfe_client import FocusNFeClient
+    from apps.fiscal.models import FiscalConfigModel
+    from apps.fiscal.services.auto_import import NFeEntradaAutoImportService
+
+    with schema_context(tenant_schema):
+        config = FiscalConfigModel.objects.filter(is_active=True).first()
+        if not config or not config.cnpj:
+            logger.info(
+                "auto_import_nfes_recebidas: no active config for %s — skipping.",
+                tenant_schema,
+            )
+            return {"status": "skipped", "reason": "no_config"}
+
+        client = FocusNFeClient(config.focus_token)
+        try:
+            resp = client.listar_nfes_recebidas(config.cnpj, pagina=1)
+            if resp.status_code != 200 or not resp.data:
+                logger.warning(
+                    "auto_import_nfes_recebidas: Focus returned %s for %s.",
+                    resp.status_code,
+                    tenant_schema,
+                )
+                return {"status": "error", "code": resp.status_code}
+
+            nfes = resp.data if isinstance(resp.data, list) else []
+            imported = 0
+            for nfe in nfes:
+                chave = nfe.get("chave") or nfe.get("chave_nfe", "")
+                if chave:
+                    result = NFeEntradaAutoImportService.import_from_webhook(chave, nfe)
+                    if result:
+                        imported += 1
+
+            logger.info(
+                "auto_import_nfes_recebidas: %s — checked=%d imported=%d.",
+                tenant_schema,
+                len(nfes),
+                imported,
+            )
+            return {"status": "ok", "checked": len(nfes), "imported": imported}
+        except Exception as exc:
+            logger.error(
+                "auto_import_nfes_recebidas: unexpected error for %s: %s",
+                tenant_schema,
+                exc,
+            )
+            raise self.retry(exc=exc)
+        finally:
+            client.close()
