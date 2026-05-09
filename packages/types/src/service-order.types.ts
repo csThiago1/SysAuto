@@ -382,6 +382,8 @@ export interface ServiceOrder {
 
   // Transition validation
   transition_requirements: TransitionRequirements | null;
+  /** Indicador leve para listagem/Kanban: true se há hard ou soft blocks para o próximo status */
+  has_transition_blocks: boolean;
 
   opened_at: string;
   created_at: string;
