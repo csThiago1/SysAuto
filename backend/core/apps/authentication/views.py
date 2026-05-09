@@ -114,6 +114,83 @@ class DevTokenView(APIView):
         return Response({"access": token, "refresh": token})
 
 
+class LoginView(APIView):
+    """
+    POST /api/v1/auth/login/
+
+    Endpoint real de autenticação — valida credenciais contra o banco.
+    Aceita login por email OU username, senha é validada via check_password().
+
+    Body: {"email": "...", "password": "..."}
+    Response: {"access": "<jwt>", "refresh": "<jwt>"}
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+
+    def post(self, request: Request) -> Response:
+        """Valida credenciais reais e retorna JWT."""
+        login_input: str = request.data.get("email", "").strip()
+        password: str = request.data.get("password", "")
+
+        if not login_input or not password:
+            return Response(
+                {"detail": "Email/usuário e senha são obrigatórios."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Resolver o GlobalUser — por email ou username
+        user: GlobalUser | None = None
+
+        if "@" in login_input:
+            email_lower = login_input.lower()
+            email_h = hashlib.sha256(email_lower.encode()).hexdigest()
+            try:
+                user = GlobalUser.objects.get(email_hash=email_h, is_active=True)
+            except GlobalUser.DoesNotExist:
+                pass
+        else:
+            username_lower = login_input.lower()
+            try:
+                user = GlobalUser.objects.get(username=username_lower, is_active=True)
+            except GlobalUser.DoesNotExist:
+                pass
+
+        if user is None or not user.check_password(password):
+            return Response(
+                {"detail": "Credenciais inválidas."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        # Buscar role e extra_permissions do Employee (se existir)
+        role = "CONSULTANT"
+        extra_permissions: list[str] = []
+        try:
+            from apps.hr.models import Employee
+
+            emp = Employee.objects.get(user=user, is_active=True)
+            role = emp.role or "CONSULTANT"
+            extra_permissions = emp.extra_permissions or []
+        except Exception:
+            pass
+
+        now = int(time.time())
+        payload: dict = {
+            "sub": str(user.pk),
+            "email": user.email,
+            "name": user.name,
+            "role": role,
+            "extra_permissions": extra_permissions,
+            "active_company": "dscar",
+            "tenant_schema": "tenant_dscar",
+            "client_slug": "grupo-dscar",
+            "iat": now,
+            "exp": now + 86400,
+        }
+        token: str = pyjwt.encode(payload, _DEV_JWT_SECRET, algorithm="HS256")
+        return Response({"access": token, "refresh": token})
+
+
 class MeView(APIView):
     """
     GET /api/v1/auth/me/ — identidade completa do usuário autenticado.

@@ -24,7 +24,8 @@ class UnifiedCustomer(PaddockBaseModel):
     name = models.CharField(max_length=200, verbose_name="Nome")
     cpf = EncryptedCharField(max_length=11, null=True, blank=True, verbose_name="CPF")
     cpf_hash = models.CharField(
-        max_length=64, db_index=True, blank=True, default="", verbose_name="Hash CPF"
+        max_length=64, db_index=True, unique=True, null=True, blank=True,
+        verbose_name="Hash CPF",
     )
     email = EncryptedEmailField(null=True, blank=True, verbose_name="E-mail")
     email_hash = models.CharField(max_length=64, db_index=True, blank=True, default="")
@@ -82,6 +83,8 @@ class UnifiedCustomer(PaddockBaseModel):
         """Gera hashes para busca sem expor dados em texto claro."""
         if self.cpf:
             self.cpf_hash = self._hash(str(self.cpf))
+        else:
+            self.cpf_hash = None
         if self.email:
             self.email_hash = self._hash(str(self.email).lower())
         if self.phone:

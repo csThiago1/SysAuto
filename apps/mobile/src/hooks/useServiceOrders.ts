@@ -174,10 +174,10 @@ export function useServiceOrdersList(filters: OSFilters): UseServiceOrdersListRe
     }
   }, [logout]);
 
+  // Sempre tenta sync no mount — NetInfo pode reportar offline incorretamente
   useEffect(() => {
-    if (!isOnline) return;
     void doSync();
-  }, [isOnline, doSync]);
+  }, [doSync]);
 
   // Polling em foreground: sincroniza a cada 60 s enquanto o app está ativo.
   // Evita bateria desnecessária parando quando backgrounded.
@@ -210,10 +210,9 @@ export function useServiceOrdersList(filters: OSFilters): UseServiceOrdersListRe
   }, [isOnline, doSync]);
 
   const refetch = useCallback((): void => {
-    if (!isOnline) return;
     setIsRefreshing(true);
     void doSync().finally(() => setIsRefreshing(false));
-  }, [isOnline, doSync]);
+  }, [doSync]);
 
   return {
     orders,
@@ -304,25 +303,13 @@ export function useServiceOrder(id: string): UseServiceOrderResult {
   const { data: apiOrder, isLoading: isApiLoading, refetch: refetchQuery } = useQuery({
     queryKey: serviceOrderKeys.detail(id),
     queryFn: () => api.get<ServiceOrderDetailAPI>(`/service-orders/${id}/`),
-    enabled: isOnline && id.length > 0,
+    enabled: id.length > 0,
     staleTime: 1000 * 60 * 2,
   });
 
   const refetch = useCallback(async (): Promise<void> => {
-    if (isOnline) {
-      await refetchQuery();
-    }
-  }, [isOnline, refetchQuery]);
-
-  // ── Offline: apenas WDB ───────────────────────────────────────────────────────
-  if (!isOnline) {
-    return {
-      order: wdbRecord != null ? mapWdbToDetail(wdbRecord) : null,
-      isLoading: isWdbLoading,
-      isOffline: true,
-      refetch: async () => undefined,
-    };
-  }
+    await refetchQuery();
+  }, [refetchQuery]);
 
   // ── Online: merge API (extras) + WDB (status/totais em tempo real) ────────────
   let order: ServiceOrderDetailAPI | null = null;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useConnectivity } from '@/hooks/useConnectivity';
+import { api } from '@/lib/api';
 
 // ─── MMKV (fails silently in Expo Go — JSI unavailable) ───────────────────────
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -33,15 +33,17 @@ interface CacheEntry {
   storedAt: number;
 }
 
-interface PlacaFipeResponse {
-  placa?: string;
-  marca?: string;
-  modelo?: string;
-  submodelo?: string;
-  ano?: string | number;
-  cor?: string;
-  chassi?: string;
-  error?: string;
+/** Resposta do endpoint GET /vehicle-catalog/plate/<plate>/ */
+interface PlateAPIResponse {
+  plate?: string;
+  make?: string;
+  model?: string;
+  version?: string;
+  engine?: string;
+  year?: number | string;
+  color?: string;
+  chassis?: string;
+  detail?: string;
 }
 
 // ─── Cache helpers ────────────────────────────────────────────────────────────
@@ -81,7 +83,6 @@ function setCache(normalizedPlate: string, data: VehicleInfo): void {
     const entry: CacheEntry = { data, storedAt: Date.now() };
     _mmkv.set(cacheKey(normalizedPlate), JSON.stringify(entry));
 
-    // Maintain index (max 50 entries — evict oldest by FIFO)
     const indexRaw: string | undefined = _mmkv.getString(CACHE_INDEX_KEY);
     let index: string[] = [];
     try {
@@ -90,11 +91,9 @@ function setCache(normalizedPlate: string, data: VehicleInfo): void {
       index = [];
     }
 
-    // Remove if already present (re-insert at end)
     const filtered = index.filter((p) => p !== normalizedPlate);
     filtered.push(normalizedPlate);
 
-    // Evict oldest entries if over limit
     while (filtered.length > MAX_CACHE_ENTRIES) {
       const evicted = filtered.shift();
       if (evicted) {
@@ -117,13 +116,11 @@ export function useVehicleByPlate(): {
 } {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const isOnline = useConnectivity();
 
   const lookup = async (plate: string): Promise<VehicleInfo | null> => {
     const normalized = plate.toUpperCase().replace(/[-\s]/g, '').trim();
 
-    if (!normalized) {
-      setIsLoading(false);
+    if (!normalized || normalized.length < 7) {
       setError('Placa inválida');
       return null;
     }
@@ -133,76 +130,38 @@ export function useVehicleByPlate(): {
     // Check fresh cache first
     const cached = getCached(normalized);
     if (cached) {
-      setIsLoading(false);
       return cached;
-    }
-
-    // Offline: return stale cache if available, otherwise null
-    if (!isOnline) {
-      const stale = getCachedStale(normalized);
-      if (stale) {
-        setIsLoading(false);
-        return stale;
-      }
-      setIsLoading(false);
-      setError('Sem conexão');
-      return null;
     }
 
     setIsLoading(true);
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10_000);
+      const data = await api.get<PlateAPIResponse>(`/vehicle-catalog/plate/${normalized}`);
 
-      let res: Response;
-      try {
-        res = await fetch('https://placa-fipe.apibrasil.com.br/placa/consulta', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ placa: normalized }),
-          signal: controller.signal,
-        });
-      } finally {
-        clearTimeout(timeoutId);
-      }
-
-      if (!res.ok) {
-        setError('Erro ao buscar placa');
-        return null;
-      }
-
-      const data = (await res.json()) as PlacaFipeResponse;
-
-      if (data.error || !data.marca || !data.modelo) {
+      if (!data.make && !data.model) {
         setError('Placa não encontrada');
         return null;
       }
 
-      // Parse year — may be "2019/2020", take first 4 chars
-      const yearRaw = String(data.ano ?? '0');
-      const year = parseInt(yearRaw.substring(0, 4), 10) || 0;
+      const year = typeof data.year === 'string'
+        ? parseInt(data.year.substring(0, 4), 10) || 0
+        : data.year ?? 0;
 
       const info: VehicleInfo = {
         plate: normalized,
-        brand: data.marca,
-        model: data.modelo,
-        submodel: data.submodelo ?? '',
+        brand: data.make ?? '',
+        model: [data.model, data.version].filter(Boolean).join(' '),
+        submodel: data.version ?? '',
         year,
-        color: data.cor ?? '',
-        chassi: data.chassi,
+        color: data.color ?? '',
+        chassi: data.chassis,
       };
 
       setCache(normalized, info);
       return info;
-    } catch (err: unknown) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        setError('Erro ao buscar placa');
-      } else {
-        // Offline or network failure — try stale cache
-        const stale = getCachedStale(normalized);
-        if (stale) return stale;
-        setError('Sem conexão');
-      }
+    } catch {
+      const stale = getCachedStale(normalized);
+      if (stale) return stale;
+      setError('Erro ao buscar placa');
       return null;
     } finally {
       setIsLoading(false);

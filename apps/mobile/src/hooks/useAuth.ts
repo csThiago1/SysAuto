@@ -6,8 +6,16 @@ import { API_BASE_URL, DEFAULT_TENANT } from '@/lib/constants';
 
 type AuthUser = NonNullable<ReturnType<typeof useAuthStore.getState>['user']> | null;
 
+interface JWTPayload {
+  sub?: string;
+  email?: string;
+  name?: string;
+  role?: string;
+  extra_permissions?: string[];
+}
+
 interface AuthReturn {
-  loginDev: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   user: AuthUser;
@@ -16,10 +24,10 @@ interface AuthReturn {
 export function useAuth(): AuthReturn {
   const { setAuth, logout: storeLogout, isAuthenticated, user } = useAuthStore();
 
-  const loginDev = useCallback(
+  const login = useCallback(
     async (email: string, password: string): Promise<boolean> => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/v1/auth/dev-token/`, {
+        const res = await fetch(`${API_BASE_URL}/api/v1/auth/login/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -33,18 +41,21 @@ export function useAuth(): AuthReturn {
         const data = (await res.json()) as { access: string; refresh: string };
         const token = data.access;
 
-        // Decodifica payload para extrair name (sem verificar assinatura — já validado pelo backend)
+        // Decodifica payload para extrair dados do usuário real
         const payloadB64 = token.split('.')[1] ?? '';
-        let name = email.split('@')[0] ?? email;
+        let decoded: JWTPayload = {};
         try {
-          const decoded = JSON.parse(atob(payloadB64)) as { name?: string };
-          if (decoded.name) name = decoded.name;
+          decoded = JSON.parse(atob(payloadB64)) as JWTPayload;
         } catch {
-          // mantém name do email
+          // fallback
         }
 
+        const userName = decoded.name ?? email.split('@')[0] ?? email;
+        const userRole = decoded.role ?? 'CONSULTANT';
+        const userId = decoded.sub ?? email;
+
         setAuth(
-          { id: `dev-${email}`, email, name, role: 'ADMIN' },
+          { id: userId, email: decoded.email ?? email, name: userName, role: userRole },
           token,
           data.refresh,
         );
@@ -53,7 +64,7 @@ export function useAuth(): AuthReturn {
         return false;
       }
     },
-    [setAuth]
+    [setAuth],
   );
 
   const logout = useCallback(async (): Promise<void> => {
@@ -63,5 +74,5 @@ export function useAuth(): AuthReturn {
     storeLogout();
   }, [storeLogout]);
 
-  return { loginDev, logout, isAuthenticated, user };
+  return { login, logout, isAuthenticated, user };
 }

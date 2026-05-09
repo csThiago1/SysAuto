@@ -183,10 +183,17 @@ class UnifiedCustomerCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate_cpf(self, value: str) -> str:
-        """Remove formatação e valida comprimento do CPF."""
+        """Remove formatação, valida comprimento e unicidade do CPF."""
         digits = "".join(filter(str.isdigit, value))
         if len(digits) != 11:
             raise serializers.ValidationError("CPF deve ter 11 dígitos.")
+        # Checa duplicidade via hash
+        cpf_hash = UnifiedCustomer._hash(digits)
+        existing = UnifiedCustomer.objects.filter(cpf_hash=cpf_hash, is_active=True)
+        if self.instance:
+            existing = existing.exclude(pk=self.instance.pk)
+        if existing.exists():
+            raise serializers.ValidationError("Já existe um cliente cadastrado com este CPF.")
         return digits
 
     def validate_phone(self, value: str) -> str:

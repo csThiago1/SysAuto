@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
 import { api } from '@/lib/api';
-import { useConnectivity } from '@/hooks/useConnectivity';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -22,17 +21,15 @@ export function useCustomerSearch(): {
   const [results, setResults] = useState<CustomerSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isOnline = useConnectivity();
 
   const search = useCallback(
     (query: string): void => {
-      // Cancel any pending debounce
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
         debounceRef.current = null;
       }
 
-      if (!isOnline || query.trim().length < 3) {
+      if (query.trim().length < 3) {
         setResults([]);
         setIsLoading(false);
         return;
@@ -62,7 +59,7 @@ export function useCustomerSearch(): {
           });
       }, 400);
     },
-    [isOnline],
+    [],
   );
 
   const clear = useCallback((): void => {

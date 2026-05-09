@@ -23,7 +23,7 @@ export function useSync(): UseSyncResult {
   const logout = useAuthStore((s) => s.logout);
 
   const sync = useCallback(async (): Promise<void> => {
-    if (!isOnline || isSyncing) return;
+    if (isSyncing) return;
     try {
       await syncServiceOrders();
     } catch (error) {
@@ -37,7 +37,7 @@ export function useSync(): UseSyncResult {
       // Demais falhas são silenciosas — modo offline continuará funcionando.
       console.warn('Sync failed:', error);
     }
-  }, [isOnline, isSyncing, logout]);
+  }, [isSyncing, logout]);
 
   // Auto-sync quando o app vai para foreground ou quando fica online.
   useEffect(() => {

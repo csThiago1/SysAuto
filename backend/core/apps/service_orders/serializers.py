@@ -687,8 +687,27 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data: dict) -> "ServiceOrder":
+        from apps.vehicles.models import Vehicle
+
         # UUID do UnifiedCustomer não pode ser salvo no FK inteiro de Person — descarta.
         validated_data.pop("customer", None)
+
+        # Persiste veículo na base para lookup futuro (DB-first)
+        plate = (validated_data.get("plate") or "").upper().strip().replace("-", "")
+        if plate:
+            make = validated_data.get("make", "")
+            model = validated_data.get("model", "")
+            description = f"{make} {model}".strip()
+            Vehicle.objects.get_or_create(
+                plate=plate,
+                is_active=True,
+                defaults={
+                    "description": description,
+                    "color": validated_data.get("color", ""),
+                    "year_manufacture": validated_data.get("year"),
+                },
+            )
+
         return super().create(validated_data)
 
 

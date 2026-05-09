@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { database } from '@/db/index';
 import { ServiceOrder } from '@/db/models/ServiceOrder';
 import { api } from '@/lib/api';
-import { useConnectivity } from '@/hooks/useConnectivity';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -51,72 +50,66 @@ export function useCreateServiceOrder(): {
 } {
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const isOnline = useConnectivity();
 
   const create = async (payload: CreateOSPayload): Promise<CreateOSResult | null> => {
     setIsCreating(true);
     setError(null);
 
     try {
-      // ── Online path ────────────────────────────────────────────────────────
-      if (isOnline) {
-        try {
-          const data = await api.post<ServiceOrderApiResponse>('/service-orders/', {
-            customer_name: payload.customerName,
-            customer: payload.customerId ?? null,
-            plate: payload.vehiclePlate,
-            make: payload.vehicleBrand,
-            model: payload.vehicleModel,
-            year: payload.vehicleYear ?? null,
-            color: payload.vehicleColor ?? '',
-            customer_type: payload.customerType,
-            os_type: payload.osType,
-            insurer: payload.insurerId ?? null,
-            insured_type: payload.insuredType ?? null,
-            casualty_number: payload.casualtyNumber ?? '',
-            deductible_amount: payload.deductibleAmount ?? null,
-          });
+      // ── Sempre tenta online primeiro ─────────────────────────────────────
+      try {
+        const data = await api.post<ServiceOrderApiResponse>('/service-orders/', {
+          customer_name: payload.customerName,
+          customer: payload.customerId ?? null,
+          plate: payload.vehiclePlate,
+          make: payload.vehicleBrand,
+          model: payload.vehicleModel,
+          year: payload.vehicleYear ?? null,
+          color: payload.vehicleColor ?? '',
+          customer_type: payload.customerType,
+          os_type: payload.osType,
+          insurer: payload.insurerId ?? null,
+          insured_type: payload.insuredType ?? null,
+          casualty_number: payload.casualtyNumber ?? '',
+          deductible_amount: payload.deductibleAmount ?? null,
+        });
 
-          // Persist to local DB as synced.
-          // Use server UUID as WatermelonDB id so future sync pulls match
-          // the existing record (prevents duplicates when id=server-uuid arrives
-          // in the 'created' bucket).
-          const record = await database.write(async () => {
-            return database
-              .get<ServiceOrder>('service_orders')
-              .create((r) => {
-                r._raw.id = data.id;
-                r.remoteId = data.id;
-                r.number = data.number;
-                r.status = data.status;
-                r.customerName = payload.customerName;
-                r.vehiclePlate = payload.vehiclePlate;
-                r.vehicleBrand = payload.vehicleBrand;
-                r.vehicleModel = payload.vehicleModel;
-                r.vehicleYear = payload.vehicleYear ?? null;
-                r.vehicleColor = payload.vehicleColor ?? null;
-                r.customerType = payload.customerType;
-                r.osType = payload.osType;
-                r.consultantName = null;
-                r.totalParts = 0;
-                r.totalServices = 0;
-                r.createdAtRemote = Date.now();
-                r.updatedAtRemote = Date.now();
-                r.syncedAt = Date.now();
-                r.pushStatus = 'synced';
-                r.insurerId = payload.insurerId ?? null;
-                r.insuredType = payload.insuredType ?? null;
-              });
-          });
-          const localId = record.id;
+        // Persist to local DB as synced.
+        const record = await database.write(async () => {
+          return database
+            .get<ServiceOrder>('service_orders')
+            .create((r) => {
+              r._raw.id = data.id;
+              r.remoteId = data.id;
+              r.number = data.number;
+              r.status = data.status;
+              r.customerName = payload.customerName;
+              r.vehiclePlate = payload.vehiclePlate;
+              r.vehicleBrand = payload.vehicleBrand;
+              r.vehicleModel = payload.vehicleModel;
+              r.vehicleYear = payload.vehicleYear ?? null;
+              r.vehicleColor = payload.vehicleColor ?? null;
+              r.customerType = payload.customerType;
+              r.osType = payload.osType;
+              r.consultantName = null;
+              r.totalParts = 0;
+              r.totalServices = 0;
+              r.createdAtRemote = Date.now();
+              r.updatedAtRemote = Date.now();
+              r.syncedAt = Date.now();
+              r.pushStatus = 'synced';
+              r.insurerId = payload.insurerId ?? null;
+              r.insuredType = payload.insuredType ?? null;
+            });
+        });
+        const localId = record.id;
 
-          return { localId, remoteId: data.id, number: data.number, isOffline: false };
-        } catch {
-          // API failed — fall through to offline path
-        }
+        return { localId, remoteId: data.id, number: data.number, isOffline: false };
+      } catch {
+        // API failed — fall through to offline path
       }
 
-      // ── Offline path (or online POST failed) ──────────────────────────────
+      // ── Offline path (ou POST falhou) ──────────────────────────────────────
       const tempId = generateTempId();
 
       const offlineRecord = await database.write(async () => {

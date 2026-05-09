@@ -261,11 +261,49 @@ def plate_lookup(request: Request, plate: str) -> Response:
     """
     from django.conf import settings
 
-    plate = plate.upper().strip()
+    from apps.vehicles.models import Vehicle
+
+    plate = plate.upper().strip().replace("-", "").replace(" ", "")
     if not (7 <= len(plate) <= 8):
         return Response({"detail": "Placa inválida."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # ── 1. Cache local ────────────────────────────────────────────────────────
+    # ── 0. Veículo já cadastrado no tenant ─────────────────────────────────
+    existing = (
+        Vehicle.objects.filter(plate=plate, is_active=True)
+        .select_related("version__modelo__marca")
+        .first()
+    )
+    if existing:
+        if existing.version:
+            make = existing.version.modelo.marca.nome
+            model = existing.version.modelo.nome
+            version_name = existing.version.nome
+        else:
+            parts = existing.description.split(" ", 1)
+            make = parts[0] if parts else ""
+            model = parts[1] if len(parts) > 1 else ""
+            version_name = ""
+        logger.info("plate_lookup: veículo cadastrado para %s", plate)
+        return Response({
+            "plate":          existing.plate,
+            "make":           make,
+            "model":          model,
+            "version":        version_name,
+            "engine":         "",
+            "year":           existing.year_manufacture,
+            "chassis":        existing.chassis,
+            "renavam":        existing.renavam,
+            "city":           "",
+            "color":          existing.color,
+            "fuel_type":      "",
+            "fipe_value":     None,
+            "situation":      "",
+            "situation_code": 0,
+            "make_logo":      "",
+            "source":         "db",
+        })
+
+    # ── 1. Cache de consulta de placa ──────────────────────────────────────
     cached = PlateCache.objects.filter(plate=plate).first()
     if cached:
         logger.info("plate_lookup: cache hit para %s", plate)

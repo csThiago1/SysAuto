@@ -1,9 +1,10 @@
 from django.conf import settings
 from django.urls import path
 
-from .views import MeView, PushTokenView, StaffDetailView, StaffListView
+from .views import LoginView, MeView, PushTokenView, StaffDetailView, StaffListView
 
 urlpatterns = [
+    path("login/", LoginView.as_view(), name="auth-login"),
     path("me/", MeView.as_view(), name="auth-me"),
     path("push-token/", PushTokenView.as_view(), name="auth-push-token"),
     path("staff/", StaffListView.as_view(), name="auth-staff-list"),

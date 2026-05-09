@@ -18,7 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 const dscarLogo = require('../../assets/dscar-logo.png') as number;
 
 export default function LoginScreen() {
-  const { loginDev } = useAuth();
+  const { login } = useAuth();
   const passwordRef = useRef<TextInput>(null);
 
   const [email, setEmail] = useState('');
@@ -38,7 +38,7 @@ export default function LoginScreen() {
     setError(null);
 
     try {
-      const success = await loginDev(email.trim().toLowerCase(), password);
+      const success = await login(email.trim().toLowerCase(), password);
       if (!success) {
         setError('Credenciais inválidas. Tente novamente.');
       }

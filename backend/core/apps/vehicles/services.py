@@ -35,14 +35,33 @@ class VehicleService:
         """
         plate = plate.upper().strip().replace("-", "").replace(" ", "")
 
-        # 1. DB-first
-        existing = Vehicle.objects.filter(plate=plate, is_active=True).first()
+        # 1. DB-first — veículos já cadastrados no tenant
+        existing = (
+            Vehicle.objects.filter(plate=plate, is_active=True)
+            .select_related("version__modelo__marca")
+            .first()
+        )
         if existing:
+            if existing.version:
+                make = existing.version.modelo.marca.nome
+                model = existing.version.modelo.nome
+                version = existing.version.nome
+            else:
+                # Sem FK FIPE — parsear do campo description (ex: "Chevrolet Onix")
+                parts = existing.description.split(" ", 1)
+                make = parts[0] if parts else ""
+                model = parts[1] if len(parts) > 1 else ""
+                version = ""
             return {
                 "plate": existing.plate,
+                "make": make,
+                "model": model,
+                "version": version,
                 "description": existing.display_name,
                 "color": existing.color,
                 "year": existing.year_manufacture,
+                "chassis": existing.chassis,
+                "renavam": existing.renavam,
                 "version_id": existing.version_id,
                 "source": "db",
             }
