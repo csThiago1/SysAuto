@@ -313,6 +313,7 @@ class FiscalDocumentListSerializer(serializers.ModelSerializer):
             "xml_url",
             "mensagem_sefaz",
             "natureza_rejeicao",
+            "cce_count",
             "created_at",
             "authorized_at",
             "cancelled_at",
@@ -359,6 +360,7 @@ class FiscalDocumentSerializer(serializers.ModelSerializer):
             "cancelled_at",
             "mensagem_sefaz",
             "natureza_rejeicao",
+            "cce_count",
         ]
         read_only_fields = fields
 

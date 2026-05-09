@@ -151,6 +151,55 @@ class FocusNFeClient:
         """Lista NF-es recebidas pelo CNPJ. GET /v2/nfes_recebidas"""
         return self._request("GET", f"/v2/nfes_recebidas?cnpj={cnpj}&pagina={pagina}")
 
+    def get_nfe_recebida_xml(self, chave: str) -> FocusResponse:
+        """Download XML de NF-e recebida. GET /v2/nfes_recebidas/{chave}/xml"""
+        return self._request("GET", f"/v2/nfes_recebidas/{chave}/xml")
+
+    def get_nfe_recebida_danfe(self, chave: str) -> FocusResponse:
+        """Download DANFE de NF-e recebida. GET /v2/nfes_recebidas/{chave}/danfe"""
+        return self._request("GET", f"/v2/nfes_recebidas/{chave}/danfe")
+
+    # ─── Envio por Email ─────────────────────────────────────────────────────
+
+    def send_nfe_email(self, ref: str, emails: list[str]) -> FocusResponse:
+        """Envia NF-e por email. POST /v2/nfe/{ref}/email"""
+        return self._request("POST", f"/v2/nfe/{ref}/email", json={"emails": emails})
+
+    def send_nfse_email(self, ref: str, emails: list[str]) -> FocusResponse:
+        """Envia NFS-e por email. POST /v2/nfsen/{ref}/email"""
+        return self._request("POST", f"/v2/nfsen/{ref}/email", json={"emails": emails})
+
+    # ─── Webhooks ────────────────────────────────────────────────────────────
+
+    def list_webhooks(self) -> FocusResponse:
+        """Lista webhooks configurados. GET /v2/hooks"""
+        return self._request("GET", "/v2/hooks")
+
+    def create_webhook(
+        self,
+        event: str,
+        url: str,
+        cnpj: str = "",
+        authorization: str = "",
+    ) -> FocusResponse:
+        """Cria webhook. POST /v2/hooks"""
+        body: dict[str, Any] = {"event": event, "url": url}
+        if cnpj:
+            body["cnpj"] = cnpj
+        if authorization:
+            body["authorization"] = authorization
+        return self._request("POST", "/v2/hooks", json=body)
+
+    def delete_webhook(self, hook_id: str) -> FocusResponse:
+        """Remove webhook. DELETE /v2/hooks/{id}"""
+        return self._request("DELETE", f"/v2/hooks/{hook_id}")
+
+    # ─── Preview ─────────────────────────────────────────────────────────────
+
+    def danfe_preview(self, payload: dict[str, Any]) -> FocusResponse:
+        """Gera preview do DANFE sem emitir. POST /v2/nfe/danfe"""
+        return self._request("POST", "/v2/nfe/danfe", json=payload)
+
     # ─── Internos ─────────────────────────────────────────────────────────────
 
     def _request(self, method: str, path: str, **kwargs: Any) -> FocusResponse:

@@ -2,16 +2,20 @@ from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
 from apps.fiscal.views import (
+    DanfePreviewView,
     FiscalDocumentViewSet,
     FiscalFileProxyView,
     FocusWebhookView,
     NFeEntradaViewSet,
     NfeEmitManualView,
     NfeEmitView,
+    NfeInutilizacaoListView,
+    NfeInutilizacaoView,
     NfeRecebidaListView,
     NfeRecebidaManifestView,
     NfseEmitManualView,
     NfseEmitView,
+    NfseSubstituirView,
 )
 
 router = SimpleRouter()
@@ -24,6 +28,8 @@ urlpatterns = [
     # 06C: Emissão NFS-e
     path("nfse/emit/", NfseEmitView.as_view(), name="nfse-emit"),
     path("nfse/emit-manual/", NfseEmitManualView.as_view(), name="nfse-emit-manual"),
+    # S3-T5: Substituição NFS-e
+    path("nfse/substituir/", NfseSubstituirView.as_view(), name="nfse-substituir"),
     # 07A: Emissão NF-e de Produto
     path("nfe/emit/", NfeEmitView.as_view(), name="nfe-emit"),
     path("nfe/emit-manual/", NfeEmitManualView.as_view(), name="nfe-emit-manual"),
@@ -32,6 +38,11 @@ urlpatterns = [
     path("nfe-recebidas/<str:chave>/manifesto/", NfeRecebidaManifestView.as_view(), name="nfe-recebidas-manifesto"),
     # Proxy para PDF/XML da Focus (requer auth Focus)
     path("documents/<str:pk>/file/<str:file_type>/", FiscalFileProxyView.as_view(), name="fiscal-file-proxy"),
+    # S3-T3: Inutilização de numeração NF-e
+    path("nfe/inutilizacao/", NfeInutilizacaoView.as_view(), name="nfe-inutilizacao"),
+    path("nfe/inutilizacoes/", NfeInutilizacaoListView.as_view(), name="nfe-inutilizacoes-list"),
+    # S3-T7: DANFE preview (sem emissão)
+    path("nfe/danfe-preview/", DanfePreviewView.as_view(), name="nfe-danfe-preview"),
     # NF-e de entrada (MO-5) + documentos fiscais (06C)
     path("", include(router.urls)),
 ]

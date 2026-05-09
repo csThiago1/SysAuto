@@ -86,6 +86,7 @@ class FiscalService:
         config: "FiscalConfigModel | None" = None,
         triggered_by: str = "USER",
         parts_as_service: bool = False,
+        extra_payload: dict[str, Any] | None = None,
     ) -> "FiscalDocument":
         """Emite NFS-e a partir de uma OS. NFS-e = somente serviços.
 
@@ -149,6 +150,8 @@ class FiscalService:
         payload = ManausNfseBuilder.build(
             service_order, config, ref, parts_as_service=parts_as_service,
         )
+        if extra_payload:
+            payload.update(extra_payload)
         if parts_as_service:
             total_value = (service_order.services_total or 0) + (service_order.parts_total or 0)
         else:
@@ -418,6 +421,43 @@ class FiscalService:
         doc.save(update_fields=["status", "cancelled_at", "ultima_resposta"])
 
         return doc
+
+    # ── CCe — Carta de Correção Eletrônica (Sprint S3) ──────────────────────
+
+    @classmethod
+    def carta_correcao(cls, doc: "FiscalDocument", texto: str) -> dict:
+        """Emite Carta de Correção Eletrônica para NF-e autorizada."""
+        from apps.fiscal.models import FiscalDocument, FiscalEvent
+        from django.db.models import F
+
+        config = doc.config or cls.get_config()
+        client = cls._make_client(config)
+        try:
+            sequencia = doc.cce_count + 1
+            resp = client.cce(doc.ref, sequencia, texto)
+            cls._raise_for_http(resp)
+
+            # Atualizar contador
+            FiscalDocument.objects.filter(pk=doc.pk).update(cce_count=F("cce_count") + 1)
+
+            # Criar evento de auditoria
+            FiscalEvent.objects.create(
+                document=doc,
+                event_type="CCE",
+                triggered_by="USER",
+                payload={"sequencia": sequencia, "texto": texto},
+                response=resp.data or {},
+                http_status=resp.status_code,
+                duration_ms=resp.duration_ms,
+            )
+
+            return {
+                "status": "ok",
+                "sequencia": sequencia,
+                "data": resp.data,
+            }
+        finally:
+            client.close()
 
     # ── NF-e de Produto (Ciclo 07A) ──────────────────────────────────────────
 

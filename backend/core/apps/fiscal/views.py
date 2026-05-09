@@ -294,6 +294,99 @@ class NfseEmitView(APIView):
         return Response(FiscalDocumentSerializer(doc).data, status=status.HTTP_201_CREATED)
 
 
+class NfseSubstituirView(APIView):
+    """Substitui uma NFS-e autorizada emitindo uma nova em seu lugar.
+
+    POST /api/v1/fiscal/nfse/substituir/
+    Body: {
+        "chave_nfse_substituida": "<chave_acesso_da_nota_original>",
+        "service_order_id": "<uuid>",           (obrigatório por ora)
+        "codigo_justificativa": "01"–"05"|"99"  (default "01")
+    }
+    Códigos: 01-Erro cadastral, 02-Erro descrição, 03-Erro tributação,
+             04-Erro valor, 05-Outros, 99-Não especificado.
+    RBAC: ADMIN+
+    """
+
+    permission_classes = [IsAuthenticated, IsAdminOrAbove]
+
+    def post(self, request: Request) -> Response:
+        from apps.fiscal.exceptions import (
+            FiscalDocumentAlreadyAuthorized,
+            FocusNFeError,
+            FiscalValidationError,
+            NfseBuilderError,
+        )
+        from apps.fiscal.services.fiscal_service import FiscalService
+
+        chave = request.data.get("chave_nfse_substituida")
+        if not chave:
+            raise ValidationError(
+                {"chave_nfse_substituida": "Chave da NFS-e a substituir é obrigatória."}
+            )
+
+        codigo = request.data.get("codigo_justificativa", "01")
+        if codigo not in ("01", "02", "03", "04", "05", "99"):
+            raise ValidationError({"codigo_justificativa": "Código inválido. Use 01–05 ou 99."})
+
+        # Localizar documento original
+        try:
+            original = FiscalDocument.objects.get(
+                key=chave, status="authorized", document_type="nfse"
+            )
+        except FiscalDocument.DoesNotExist:
+            raise ValidationError(
+                {"detail": "NFS-e original não encontrada ou não está autorizada."}
+            )
+
+        service_order_id = request.data.get("service_order_id")
+        if not service_order_id:
+            raise ValidationError(
+                {"detail": "Substituição manual ainda não implementada. Use service_order_id."}
+            )
+
+        try:
+            from apps.service_orders.models import ServiceOrder
+
+            so = ServiceOrder.objects.get(pk=service_order_id, is_active=True)
+        except ServiceOrder.DoesNotExist:
+            return Response({"detail": "OS não encontrada."}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            result = FiscalService.emit_nfse(
+                so,
+                extra_payload={
+                    "chave_nfse_substituida": chave,
+                    "codigo_justificativa_substituicao": codigo,
+                },
+            )
+        except FiscalDocumentAlreadyAuthorized as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_409_CONFLICT)
+        except (NfseBuilderError, FiscalValidationError) as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except FocusNFeError as exc:
+            logger.error("NfseSubstituirView: erro Focus para OS %s: %s", service_order_id, exc)
+            return Response(
+                {"detail": "Erro na comunicação com o serviço fiscal."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as exc:
+            logger.error("NfseSubstituirView: erro inesperado: %s", exc)
+            return Response(
+                {"detail": "Erro ao substituir NFS-e."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        # Marcar original como substituída
+        original.substituida_por = result
+        original.save(update_fields=["substituida_por"])
+
+        return Response(
+            {"status": "ok", "nova_ref": result.ref},
+            status=status.HTTP_201_CREATED,
+        )
+
+
 class NfseEmitManualView(APIView):
     """Emite NFS-e manual (ad-hoc, sem OS vinculada).
 
@@ -459,6 +552,61 @@ class FiscalDocumentViewSet(viewsets.ReadOnlyModelViewSet):
             return FiscalDocumentSerializer
         return FiscalDocumentListSerializer
 
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="send-email",
+        permission_classes=[IsAuthenticated, IsConsultantOrAbove],
+    )
+    def send_email(self, request: Request, pk: str | None = None) -> Response:
+        """POST /api/v1/fiscal/documents/{pk}/send-email/
+
+        Body: { "emails": ["addr@example.com", ...] }
+        Max 10 emails.
+        """
+        doc = self.get_object()
+        emails = request.data.get("emails", [])
+        if not emails or not isinstance(emails, list):
+            raise ValidationError({"emails": "Informe ao menos um email."})
+        if len(emails) > 10:
+            raise ValidationError({"emails": "Máximo 10 emails por envio."})
+        if doc.status != "authorized":
+            raise ValidationError({"detail": "Só é possível enviar documentos autorizados."})
+
+        from apps.fiscal.services.fiscal_service import FiscalService
+
+        config = FiscalService.get_config()
+        client = FocusNFeClient(config.focus_token, config.focus_base_url)
+        try:
+            if doc.document_type == "nfse":
+                resp = client.send_nfse_email(doc.ref, emails)
+            else:
+                resp = client.send_nfe_email(doc.ref, emails)
+
+            FiscalEvent.objects.create(
+                document=doc,
+                event_type="CONSULT",
+                triggered_by="USER",
+                payload={"emails": emails},
+                response=resp.data or {},
+                http_status=resp.status_code,
+                duration_ms=resp.duration_ms,
+            )
+
+            if resp.status_code in (200, 201, 202):
+                from django.utils import timezone
+
+                if hasattr(doc, "email_sent_at"):
+                    doc.email_sent_at = timezone.now()
+                    doc.save(update_fields=["email_sent_at"])
+                return Response({"status": "ok", "emails": emails})
+            return Response(
+                {"detail": "Erro ao enviar email."},
+                status=resp.status_code,
+            )
+        finally:
+            client.close()
+
     def destroy(self, request: Request, *args, **kwargs) -> Response:  # type: ignore[override]
         """Cancela documento fiscal autorizado (MANAGER+)."""
         if not IsManagerOrAbove().has_permission(request, self):
@@ -484,6 +632,33 @@ class FiscalDocumentViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
         return Response(FiscalDocumentSerializer(doc).data)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="cce",
+        permission_classes=[IsAuthenticated, IsManagerOrAbove],
+    )
+    def carta_correcao(self, request: Request, pk: str | None = None) -> Response:
+        """POST /api/v1/fiscal/documents/{pk}/cce/
+
+        Body: { "correcao": "texto 15-1000 chars" }
+        """
+        doc = self.get_object()
+        correcao = request.data.get("correcao", "")
+        if not correcao or len(correcao) < 15 or len(correcao) > 1000:
+            raise ValidationError({"correcao": "Texto deve ter entre 15 e 1000 caracteres."})
+        if doc.status != "authorized":
+            raise ValidationError({"detail": "Só é possível emitir CCe para NF-e autorizadas."})
+        if doc.document_type != "nfe":
+            raise ValidationError({"detail": "CCe só é permitida para NF-e (não NFS-e/NFC-e)."})
+        if doc.cce_count >= 20:
+            raise ValidationError({"detail": "Limite de 20 Cartas de Correção atingido."})
+
+        from apps.fiscal.services.fiscal_service import FiscalService
+
+        result = FiscalService.carta_correcao(doc, correcao)
+        return Response(result, status=status.HTTP_200_OK)
 
 
 class NfeRecebidaListView(APIView):
@@ -625,3 +800,90 @@ class FiscalFileProxyView(APIView):
         http_resp = HttpResponse(resp.content, content_type=content_type)
         http_resp["Content-Disposition"] = f'inline; filename="{filename}"'
         return http_resp
+
+
+# ─── S3-T3: Inutilização de Numeração NF-e ──────────────────────────────────
+
+
+class NfeInutilizacaoView(APIView):
+    """POST /api/v1/fiscal/nfe/inutilizacao/
+    Body: { "serie": 1, "numero_inicial": 10, "numero_final": 15, "justificativa": "texto 15+ chars" }
+    """
+    permission_classes = [IsAuthenticated, IsAdminOrAbove]
+
+    def post(self, request: Request) -> Response:
+        serie = request.data.get("serie")
+        numero_inicial = request.data.get("numero_inicial")
+        numero_final = request.data.get("numero_final")
+        justificativa = request.data.get("justificativa", "")
+
+        if not all([serie, numero_inicial, numero_final]):
+            raise ValidationError({"detail": "serie, numero_inicial e numero_final são obrigatórios."})
+        if not justificativa or len(justificativa) < 15:
+            raise ValidationError({"justificativa": "Justificativa deve ter pelo menos 15 caracteres."})
+        if int(numero_final) < int(numero_inicial):
+            raise ValidationError({"detail": "numero_final deve ser >= numero_inicial."})
+
+        from apps.fiscal.services.fiscal_service import FiscalService
+        config = FiscalService.get_config()
+        client = FocusNFeClient(config.focus_token, config.focus_base_url)
+        try:
+            resp = client.inutilizar(int(serie), int(numero_inicial), int(numero_final), justificativa)
+            FiscalEvent.objects.create(
+                event_type="INUTILIZACAO",
+                triggered_by="USER",
+                payload=request.data,
+                response_data=resp.data or {},
+                http_status=resp.status_code,
+                duration_ms=resp.duration_ms,
+            )
+            if resp.status_code in (200, 201):
+                return Response(resp.data, status=status.HTTP_200_OK)
+            return Response(
+                {"detail": resp.data.get("mensagem", "Erro na inutilização.") if resp.data else "Erro na inutilização."},
+                status=resp.status_code,
+            )
+        finally:
+            client.close()
+
+
+class DanfePreviewView(APIView):
+    """POST /api/v1/fiscal/nfe/danfe-preview/
+    Gera preview do DANFE sem emitir a NF-e.
+    Body: payload NF-e completo (mesmo formato de emissão).
+    """
+
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def post(self, request: Request) -> Response:
+        payload = request.data
+        if not payload:
+            raise ValidationError({"detail": "Payload NF-e é obrigatório."})
+
+        from apps.fiscal.services.fiscal_service import FiscalService
+        config = FiscalService.get_config()
+        client = FocusNFeClient(config.focus_token, config.focus_base_url)
+        try:
+            resp = client.danfe_preview(payload)
+            if resp.status_code in (200, 201):
+                return Response(resp.data, status=status.HTTP_200_OK)
+            return Response(
+                {"detail": resp.data.get("mensagem", "Erro ao gerar preview.") if resp.data else "Erro ao gerar preview."},
+                status=resp.status_code,
+            )
+        finally:
+            client.close()
+
+
+class NfeInutilizacaoListView(APIView):
+    """GET /api/v1/fiscal/nfe/inutilizacoes/"""
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get(self, request: Request) -> Response:
+        events = FiscalEvent.objects.filter(
+            event_type="INUTILIZACAO",
+            http_status__in=[200, 201],
+        ).order_by("-created_at").values(
+            "id", "payload", "response_data", "created_at",
+        )[:50]
+        return Response(list(events))

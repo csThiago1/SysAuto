@@ -124,6 +124,24 @@ class FiscalDocument(PaddockBaseModel):
         help_text="Justificativa obrigatória para NFS-e manual (sem OS).",
     )
 
+    # ── Sprint S3: campos adicionais ───────────────────────────────────────
+    cce_count = models.PositiveIntegerField(
+        default=0,
+        help_text="Contador de Cartas de Correção emitidas (máx 20).",
+    )
+    email_sent_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text="Data/hora do último envio por email.",
+    )
+    substituida_por = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="substitui",
+        help_text="Documento que substituiu este (NFS-e).",
+    )
+
     class Meta(PaddockBaseModel.Meta):
         db_table = "fiscal_document"
         verbose_name = "Documento Fiscal"
