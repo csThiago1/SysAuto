@@ -33,6 +33,7 @@ class ServiceOrderSyncSerializer(serializers.ModelSerializer):
     total_parts = serializers.FloatField(source="parts_total")
     total_services = serializers.FloatField(source="services_total")
     make_logo = serializers.SerializerMethodField()
+    cover_photo_url = serializers.SerializerMethodField()
     created_at_remote = serializers.SerializerMethodField()
     updated_at_remote = serializers.SerializerMethodField()
 
@@ -55,6 +56,7 @@ class ServiceOrderSyncSerializer(serializers.ModelSerializer):
             "insurer_id",
             "insured_type",
             "make_logo",
+            "cover_photo_url",
             "total_parts",
             "total_services",
             "created_at_remote",
@@ -86,6 +88,31 @@ class ServiceOrderSyncSerializer(serializers.ModelSerializer):
     def get_make_logo(self, obj: ServiceOrder) -> str:
         """Retorna URL do logo da montadora ou string vazia."""
         return obj.make_logo or ""
+
+    def get_cover_photo_url(self, obj: ServiceOrder) -> str:
+        """Retorna URL da foto de frente (slot='frente', checklist_type='entrada').
+
+        Usa prefetch_related quando disponivel. Fallback para query direta.
+        WatermelonDB exige string nao-nula, retorna string vazia se nao houver foto.
+        """
+        from django.core.files.storage import default_storage
+
+        # Tenta buscar da relacao (prefetch se disponivel)
+        photo = (
+            obj.photos.filter(
+                slot="frente",
+                checklist_type="entrada",
+                is_active=True,
+            )
+            .order_by("-uploaded_at")
+            .first()
+        )
+        if not photo or not photo.s3_key:
+            return ""
+        try:
+            return default_storage.url(photo.s3_key)
+        except Exception:
+            return ""
 
     def get_created_at_remote(self, obj: ServiceOrder) -> int:
         """Retorna opened_at como epoch em milissegundos para o WatermelonDB."""

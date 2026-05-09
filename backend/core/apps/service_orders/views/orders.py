@@ -395,21 +395,36 @@ class ServiceOrderViewSet(
         Colocar tudo em `created` causa o aviso "[Sync] Server wants client to create
         record ... but it already exists locally" no WatermelonDB.
         """
+        from django.db.models import Prefetch
         from django.utils.dateparse import parse_datetime
 
         since_str = request.query_params.get("since")
         since_dt = parse_datetime(since_str) if since_str else None
 
+        # Prefetch foto de frente (cover) para evitar N+1 no serializer
+        cover_prefetch = Prefetch(
+            "photos",
+            queryset=ServiceOrderPhoto.objects.filter(
+                slot="frente", checklist_type="entrada", is_active=True,
+            ).order_by("-uploaded_at"),
+        )
+
         if since_dt is None:
             # Primeiro sync: todos os registros ativos vão em created
-            created_qs = ServiceOrder.objects.filter(is_active=True).select_related("consultant")
+            created_qs = (
+                ServiceOrder.objects.filter(is_active=True)
+                .select_related("consultant")
+                .prefetch_related(cover_prefetch)
+            )
             updated_qs = ServiceOrder.objects.none()
             deleted_ids: list[str] = []
         else:
             # Sync incremental: separa por data de criação vs atualização
-            changed_qs = ServiceOrder.objects.filter(
-                updated_at__gte=since_dt
-            ).select_related("consultant")
+            changed_qs = (
+                ServiceOrder.objects.filter(updated_at__gte=since_dt)
+                .select_related("consultant")
+                .prefetch_related(cover_prefetch)
+            )
 
             created_qs = changed_qs.filter(is_active=True, created_at__gte=since_dt)
             updated_qs = changed_qs.filter(is_active=True, created_at__lt=since_dt)
