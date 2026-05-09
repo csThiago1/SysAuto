@@ -5,6 +5,8 @@ Faturamento de OS: preview de breakdown + execução atômica (títulos + NF).
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass, field
+from datetime import date
 from decimal import Decimal
 from typing import Any
 
@@ -35,6 +37,39 @@ def _d(val: Any) -> Decimal:
     if val is None:
         return ZERO
     return Decimal(str(val))
+
+
+# ── BillingResult ─────────────────────────────────────────────────────────────
+
+
+@dataclass
+class BillingResult:
+    """Resultado intermediário do faturamento, acumulado pelos sub-métodos."""
+
+    receivables: list[Any] = field(default_factory=list)
+    fiscal_documents: list[Any] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
+
+    @property
+    def total_billed(self) -> Decimal:
+        """Soma dos valores dos títulos criados."""
+        return sum(
+            (_d(r.amount) for r in self.receivables if hasattr(r, "amount")),
+            ZERO,
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serializa resultado final para a view."""
+        return {
+            "receivables": self.receivables,
+            "fiscal_documents": self.fiscal_documents,
+            "summary": {
+                "total_billed": str(self.total_billed),
+                "receivables_count": len(self.receivables),
+                "fiscal_documents_count": len(self.fiscal_documents),
+                "fiscal_errors": self.errors,
+            },
+        }
 
 
 class BillingService:
@@ -221,12 +256,25 @@ class BillingService:
         Raises:
             ValueError: se a OS já foi faturada ou está em status inválido.
         """
-        # Lazy imports — evita import circular
-        from apps.accounts_receivable.services import ReceivableDocumentService
-        from apps.fiscal.services.fiscal_service import FiscalService
-        from apps.service_orders.models import ServiceOrderActivityLog
+        cls._validate_billable(order)
 
-        # ── Validações ────────────────────────────────────────────────
+        today = timezone.now().date()
+        result = BillingResult()
+
+        cls._create_receivables_and_emit_fiscal(order, items, user, today, result)
+        cls._mark_order_billed(order, result)
+        cls._post_accounting_entries(order, result)
+        cls._log_activity(order, user, result)
+
+        return result.to_dict()
+
+    @classmethod
+    def _validate_billable(cls, order: Any) -> None:
+        """Valida se a OS pode ser faturada.
+
+        Raises:
+            ValueError: se a OS já foi faturada ou está em status inválido.
+        """
         if order.invoice_issued:
             raise ValueError(f"OS {order.number} já foi faturada.")
 
@@ -237,12 +285,28 @@ class BillingService:
                 f"Status permitidos: {', '.join(sorted(cls.BILLABLE_STATUSES))}"
             )
 
-        today = timezone.now().date()
-        receivables: list[Any] = []
-        fiscal_documents: list[Any] = []
-        errors: list[str] = []
+    @classmethod
+    def _create_receivables_and_emit_fiscal(
+        cls,
+        order: Any,
+        items: list[dict[str, Any]],
+        user: Any,
+        today: date,
+        result: BillingResult,
+    ) -> None:
+        """Cria títulos AR e emite documentos fiscais para cada item.
 
-        # ── Criação de títulos + emissão fiscal ───────────────────────
+        Para cada item com valor > 0:
+        1. Cria o título a receber (receivable)
+        2. Resolve o destinatário (Person) para emissão fiscal
+        3. Emite NFS-e (serviços) ou NF-e (peças) — franquia pula emissão
+
+        Erros de emissão fiscal são capturados e acumulados em result.errors
+        (graceful degradation), mas o receivable já criado é mantido.
+        """
+        from apps.accounts_receivable.services import ReceivableDocumentService
+        from apps.fiscal.services.fiscal_service import FiscalService
+
         for item in items:
             amount = _d(item.get("amount", 0))
             if amount <= ZERO:
@@ -286,7 +350,7 @@ class BillingService:
                 service_order_id=str(order.pk),
                 user=user,
             )
-            receivables.append(receivable)
+            result.receivables.append(receivable)
 
             # Resolve Person destinatário para o FiscalService
             # _get_person_for_os checa destinatario_id (atributo runtime)
@@ -297,7 +361,7 @@ class BillingService:
                     order.destinatario_id = insurer_person.pk
                     order.destinatario = insurer_person
                 else:
-                    errors.append(
+                    result.errors.append(
                         f"Seguradora '{recv_customer_name}' não tem cadastro "
                         f"completo (Person com CNPJ e endereço). "
                         f"Cadastre-a em Cadastros → Pessoas."
@@ -324,7 +388,7 @@ class BillingService:
                     fiscal_doc = FiscalService.emit_nfe(
                         order, config=config,
                     )
-                fiscal_documents.append(fiscal_doc)
+                result.fiscal_documents.append(fiscal_doc)
 
                 # Vincula título ao documento fiscal
                 if hasattr(receivable, "fiscal_document"):
@@ -337,19 +401,29 @@ class BillingService:
                     f"da OS {order.number}: {exc}"
                 )
                 logger.error(error_msg)
-                errors.append(error_msg)
+                result.errors.append(error_msg)
 
-        # ── Marca OS como faturada apenas se teve pelo menos 1 NF emitida ──
-        # Se todas as emissões falharam, não marca como faturada para permitir retry
-        if fiscal_documents:
+    @classmethod
+    def _mark_order_billed(cls, order: Any, result: BillingResult) -> None:
+        """Marca OS como faturada se houve emissão fiscal ou nenhum erro.
+
+        Se todas as emissões falharam, NÃO marca como faturada para permitir retry.
+        Se nenhum item gerou emissão fiscal (ex: todos com valor zero), marca.
+        """
+        if result.fiscal_documents:
             order.invoice_issued = True
             order.save(update_fields=["invoice_issued"])
-        elif not errors:
+        elif not result.errors:
             # Nenhum item gerou emissão fiscal (ex: todos com valor zero)
             order.invoice_issued = True
             order.save(update_fields=["invoice_issued"])
 
-        # ── Lançamento contábil de receita + CMV ────────────────────
+    @classmethod
+    def _post_accounting_entries(cls, order: Any, result: BillingResult) -> None:
+        """Gera lançamento contábil de receita + CMV.
+
+        Erros são capturados e acumulados em result.errors (graceful degradation).
+        """
         try:
             from apps.accounting.services.journal_entry_service import JournalEntryService
 
@@ -359,16 +433,25 @@ class BillingService:
                 f"Erro ao gerar lançamento contábil para OS {order.number}: {exc}"
             )
             logger.error(error_msg)
-            errors.append(error_msg)
+            result.errors.append(error_msg)
 
-        # ── Log de atividade ──────────────────────────────────────────
-        total_billed = sum(_d(r.amount) for r in receivables)
+    @classmethod
+    def _log_activity(
+        cls,
+        order: Any,
+        user: Any,
+        result: BillingResult,
+    ) -> None:
+        """Registra log de atividade do faturamento e loga no logger."""
+        from apps.service_orders.models import ServiceOrderActivityLog
+
+        total_billed = sum(_d(r.amount) for r in result.receivables)
         activity_description = (
-            f"OS faturada — {len(receivables)} título(s), "
+            f"OS faturada — {len(result.receivables)} título(s), "
             f"R$ {total_billed:,.2f}"
         )
-        if errors:
-            activity_description += f" | {len(errors)} erro(s) fiscal"
+        if result.errors:
+            activity_description += f" | {len(result.errors)} erro(s) fiscal"
 
         ServiceOrderActivityLog.objects.create(
             service_order=order,
@@ -376,34 +459,22 @@ class BillingService:
             activity_type="invoice_issued",
             description=activity_description,
             metadata={
-                "receivables_count": len(receivables),
-                "fiscal_docs_count": len(fiscal_documents),
+                "receivables_count": len(result.receivables),
+                "fiscal_docs_count": len(result.fiscal_documents),
                 "total_billed": str(total_billed),
-                "fiscal_errors": errors,
+                "fiscal_errors": result.errors,
             },
         )
 
         logger.info(
             "OS %s faturada: %d título(s), %d NF(s), %d erro(s) fiscal.",
             order.number,
-            len(receivables),
-            len(fiscal_documents),
-            len(errors),
+            len(result.receivables),
+            len(result.fiscal_documents),
+            len(result.errors),
         )
 
-        # ── Resultado ─────────────────────────────────────────────────
-        total_billed = sum(_d(r.amount) for r in receivables if hasattr(r, "amount"))
-
-        return {
-            "receivables": receivables,
-            "fiscal_documents": fiscal_documents,
-            "summary": {
-                "total_billed": str(total_billed),
-                "receivables_count": len(receivables),
-                "fiscal_documents_count": len(fiscal_documents),
-                "fiscal_errors": errors,
-            },
-        }
+    # ── Complement billing ────────────────────────────────────────────────────
 
     @classmethod
     def _resolve_customer_person(cls, order: Any) -> Any | None:
@@ -433,29 +504,70 @@ class BillingService:
         tudo em nome do cliente. Pode ser chamado a qualquer momento,
         independente do status da OS.
         """
-        from apps.service_orders.models import ServiceOrderActivityLog
+        pending_parts, pending_labor = cls._get_pending_complement_items(order)
+        parts_total, labor_total = cls._calc_complement_totals(
+            pending_parts, pending_labor,
+        )
 
-        now = timezone.now()
-        customer_name = order.customer_name or ""
+        if parts_total + labor_total <= ZERO:
+            return {"billed": False, "message": "Nenhum item pendente para faturar."}
 
+        items = cls._build_complement_billing_items(
+            order, parts_total, labor_total,
+        )
+        cls._create_complement_receivables(order, items)
+
+        # Capture counts before update (querysets become empty after update)
+        parts_count = pending_parts.count()
+        labor_count = pending_labor.count()
+
+        cls._mark_complement_items_billed(pending_parts, pending_labor)
+        cls._log_complement_activity(
+            order, parts_total + labor_total, billed_by,
+        )
+
+        return {
+            "billed": True,
+            "parts_total": str(parts_total),
+            "labor_total": str(labor_total),
+            "items_count": parts_count + labor_count,
+        }
+
+    @staticmethod
+    def _get_pending_complement_items(order: Any) -> tuple[Any, Any]:
+        """Retorna querysets de peças e mão-de-obra pendentes do complemento."""
         pending_parts = order.parts.filter(
             source_type="complement", billing_status="pending",
         )
         pending_labor = order.labor_items.filter(
             source_type="complement", billing_status="pending",
         )
+        return pending_parts, pending_labor
 
+    @staticmethod
+    def _calc_complement_totals(
+        pending_parts: Any,
+        pending_labor: Any,
+    ) -> tuple[Decimal, Decimal]:
+        """Calcula totais de peças e mão-de-obra pendentes."""
         parts_total = sum(
             p.quantity * p.unit_price - p.discount for p in pending_parts
         )
         labor_total = sum(
             l.quantity * l.unit_price - l.discount for l in pending_labor
         )
+        return parts_total, labor_total
 
-        if parts_total + labor_total <= ZERO:
-            return {"billed": False, "message": "Nenhum item pendente para faturar."}
+    @staticmethod
+    def _build_complement_billing_items(
+        order: Any,
+        parts_total: Decimal,
+        labor_total: Decimal,
+    ) -> list[dict[str, Any]]:
+        """Monta lista de itens de faturamento do complemento."""
+        customer_name = order.customer_name or ""
+        items: list[dict[str, Any]] = []
 
-        items = []
         if labor_total > ZERO:
             items.append({
                 "recipient_type": "customer",
@@ -475,7 +587,18 @@ class BillingService:
                 "default_payment_term_days": 0,
             })
 
-        # Create receivables if ReceivableDocumentService is available
+        return items
+
+    @classmethod
+    def _create_complement_receivables(
+        cls,
+        order: Any,
+        items: list[dict[str, Any]],
+    ) -> None:
+        """Cria títulos a receber para os itens do complemento.
+
+        Erros são capturados e logados (graceful degradation).
+        """
         try:
             person = cls._resolve_customer_person(order)
             from apps.accounts_receivable.services import ReceivableDocumentService
@@ -486,25 +609,28 @@ class BillingService:
         except (ImportError, AttributeError, Exception) as e:
             logger.warning("Receivable creation skipped for complement: %s", e)
 
-        # Capture counts before update (querysets become empty after update)
-        parts_count = pending_parts.count()
-        labor_count = pending_labor.count()
-
-        # Mark items as billed
+    @staticmethod
+    def _mark_complement_items_billed(
+        pending_parts: Any,
+        pending_labor: Any,
+    ) -> None:
+        """Marca itens de peças e mão-de-obra como faturados."""
+        now = timezone.now()
         pending_parts.update(billing_status="billed", billed_at=now)
         pending_labor.update(billing_status="billed", billed_at=now)
 
-        # Log activity
+    @staticmethod
+    def _log_complement_activity(
+        order: Any,
+        total: Decimal,
+        billed_by: str,
+    ) -> None:
+        """Registra log de atividade do faturamento de complemento."""
+        from apps.service_orders.models import ServiceOrderActivityLog
+
         ServiceOrderActivityLog.objects.create(
             service_order=order,
             activity_type="billing",
-            description=f"Complemento particular faturado: R$ {parts_total + labor_total:.2f}",
+            description=f"Complemento particular faturado: R$ {total:.2f}",
             created_by=billed_by,
         )
-
-        return {
-            "billed": True,
-            "parts_total": str(parts_total),
-            "labor_total": str(labor_total),
-            "items_count": parts_count + labor_count,
-        }
