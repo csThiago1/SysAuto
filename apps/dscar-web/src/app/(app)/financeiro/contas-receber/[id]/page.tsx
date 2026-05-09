@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * Detalhe de Título a Receber — histórico de recebimentos e ações.
- * Sprint 14
+ * Detalhe de Titulo a Receber — historico de recebimentos e acoes.
+ * Sprint 14 — refatorado S2-T3 para usar componentes compartilhados.
  */
 
 import React from "react";
@@ -17,16 +17,12 @@ import {
 import { usePermission } from "@/hooks/usePermission";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import type { ReceivableStatus, PaymentMethod } from "@paddock/types";
+  RecordPaymentDialog,
+  CancelDialog,
+  FinanceiroStatusBadge,
+} from "@/components/financeiro";
+import type { PaymentMethod } from "@paddock/types";
 import {
   RECEIVABLE_STATUS_LABELS,
   RECEIVABLE_STATUS_COLOR,
@@ -41,22 +37,6 @@ const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" 
 
 function formatBRL(value: string): string {
   return brl.format(Number(value));
-}
-
-// ── Status badge ──────────────────────────────────────────────────────────────
-
-function StatusBadge({
-  status,
-}: {
-  status: ReceivableStatus;
-}): React.ReactElement {
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${RECEIVABLE_STATUS_COLOR[status]}`}
-    >
-      {RECEIVABLE_STATUS_LABELS[status]}
-    </span>
-  );
 }
 
 // ── Summary card ──────────────────────────────────────────────────────────────
@@ -117,251 +97,6 @@ function PageSkeleton(): React.ReactElement {
   );
 }
 
-// ── Record Receipt Dialog ─────────────────────────────────────────────────────
-
-interface RecordReceiptDialogProps {
-  documentId: string;
-  amountRemaining: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-function RecordReceiptDialog({
-  documentId,
-  amountRemaining,
-  open,
-  onOpenChange,
-}: RecordReceiptDialogProps): React.ReactElement {
-  const todayStr = new Date().toISOString().split("T")[0] ?? "";
-  const recordReceipt = useRecordReceipt();
-
-  const [amount, setAmount] = React.useState(amountRemaining);
-  const [receiptDate, setReceiptDate] = React.useState(todayStr);
-  const [paymentMethod, setPaymentMethod] = React.useState<PaymentMethod>("pix");
-  const [bankAccount, setBankAccount] = React.useState("");
-  const [notes, setNotes] = React.useState("");
-
-  React.useEffect(() => {
-    if (open) {
-      setAmount(amountRemaining);
-      setReceiptDate(todayStr);
-      setPaymentMethod("pix");
-      setBankAccount("");
-      setNotes("");
-    }
-  }, [open, amountRemaining, todayStr]);
-
-  const maxAmount = parseFloat(amountRemaining);
-
-  const handleSubmit = (e: React.FormEvent): void => {
-    e.preventDefault();
-    recordReceipt.mutate(
-      {
-        documentId,
-        receipt_date: receiptDate,
-        amount,
-        payment_method: paymentMethod,
-        bank_account: bankAccount || undefined,
-        notes: notes || undefined,
-      },
-      {
-        onSuccess: () => {
-          onOpenChange(false);
-        },
-      }
-    );
-  };
-
-  const paymentMethods = Object.entries(PAYMENT_METHOD_LABELS) as [
-    PaymentMethod,
-    string,
-  ][];
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Registrar Recebimento</DialogTitle>
-        </DialogHeader>
-        <p className="text-sm text-muted-foreground -mt-2">
-          Saldo restante: <strong>{formatBRL(amountRemaining)}</strong>
-        </p>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-foreground/70">
-              Valor a receber *
-            </Label>
-            <Input
-              type="number"
-              step="0.01"
-              min="0.01"
-              max={maxAmount}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-foreground/70">
-              Data do recebimento *
-            </Label>
-            <Input
-              type="date"
-              value={receiptDate}
-              onChange={(e) => setReceiptDate(e.target.value)}
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-foreground/70">
-              Forma de recebimento *
-            </Label>
-            <select
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              required
-            >
-              {paymentMethods.map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-foreground/70">
-              Conta bancária
-            </Label>
-            <Input
-              value={bankAccount}
-              onChange={(e) => setBankAccount(e.target.value)}
-              placeholder="Ex: Bradesco C/C 1234-5"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-foreground/70">
-              Observações
-            </Label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Opcional..."
-            />
-          </div>
-
-          {recordReceipt.isError && (
-            <p className="text-xs text-error-400 bg-error-500/10 rounded px-3 py-2">
-              {recordReceipt.error?.message || "Erro ao registrar recebimento."}
-            </p>
-          )}
-
-          <DialogFooter>
-            <button
-              type="button"
-              onClick={() => onOpenChange(false)}
-              className="text-sm text-muted-foreground hover:underline px-3 py-2"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={recordReceipt.isPending}
-              className="rounded-md bg-success-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-success-700 disabled:opacity-50 transition-colors"
-            >
-              {recordReceipt.isPending ? "Salvando..." : "Registrar Recebimento"}
-            </button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ── Cancel Dialog ─────────────────────────────────────────────────────────────
-
-interface CancelDialogProps {
-  documentId: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-function CancelDialog({
-  documentId,
-  open,
-  onOpenChange,
-}: CancelDialogProps): React.ReactElement {
-  const cancelReceivable = useCancelReceivable();
-  const [reason, setReason] = React.useState("");
-
-  React.useEffect(() => {
-    if (open) setReason("");
-  }, [open]);
-
-  const handleSubmit = (e: React.FormEvent): void => {
-    e.preventDefault();
-    cancelReceivable.mutate(
-      { id: documentId, reason },
-      { onSuccess: () => onOpenChange(false) }
-    );
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Cancelar Título</DialogTitle>
-        </DialogHeader>
-        <p className="text-sm text-muted-foreground -mt-2">
-          Esta ação não pode ser desfeita.
-        </p>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-foreground/70">
-              Motivo do cancelamento *
-            </Label>
-            <textarea
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              rows={3}
-              required
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Informe o motivo..."
-            />
-          </div>
-
-          {cancelReceivable.isError && (
-            <p className="text-xs text-error-400 bg-error-500/10 rounded px-3 py-2">
-              {cancelReceivable.error?.message || "Erro ao cancelar título."}
-            </p>
-          )}
-
-          <DialogFooter>
-            <button
-              type="button"
-              onClick={() => onOpenChange(false)}
-              className="text-sm text-muted-foreground hover:underline px-3 py-2"
-            >
-              Voltar
-            </button>
-            <button
-              type="submit"
-              disabled={cancelReceivable.isPending || !reason.trim()}
-              className="rounded-md bg-error-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-red-700 disabled:opacity-50 transition-colors"
-            >
-              {cancelReceivable.isPending
-                ? "Cancelando..."
-                : "Confirmar Cancelamento"}
-            </button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ContaReceberDetailPage(): React.ReactElement {
@@ -370,6 +105,8 @@ export default function ContaReceberDetailPage(): React.ReactElement {
 
   const { data: doc, isLoading, isError, error } = useReceivableDocument(id);
   const isManager = usePermission("MANAGER");
+  const recordReceipt = useRecordReceipt();
+  const cancelReceivable = useCancelReceivable();
 
   const [receiptDialogOpen, setReceiptDialogOpen] = React.useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = React.useState(false);
@@ -388,7 +125,7 @@ export default function ContaReceberDetailPage(): React.ReactElement {
   if (isError || doc === undefined) {
     return (
       <div className="rounded-md bg-error-500/10 border border-error-500/20 px-5 py-4 text-sm text-error-400">
-        {error?.message ?? "Não foi possível carregar o título."}
+        {error?.message ?? "Nao foi possivel carregar o titulo."}
       </div>
     );
   }
@@ -406,7 +143,7 @@ export default function ContaReceberDetailPage(): React.ReactElement {
           items={[
             { label: "Financeiro", href: "/financeiro" },
             { label: "Contas a Receber", href: "/financeiro/contas-receber" },
-            { label: `Título #${doc.document_number || id}` },
+            { label: `Titulo #${doc.document_number || id}` },
           ]}
         />
 
@@ -418,7 +155,11 @@ export default function ContaReceberDetailPage(): React.ReactElement {
                 <h1 className="text-xl font-bold text-foreground truncate">
                   {doc.description}
                 </h1>
-                <StatusBadge status={doc.status} />
+                <FinanceiroStatusBadge
+                  status={doc.status}
+                  labels={RECEIVABLE_STATUS_LABELS}
+                  colors={RECEIVABLE_STATUS_COLOR}
+                />
               </div>
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
                 {doc.document_number && (
@@ -461,7 +202,7 @@ export default function ContaReceberDetailPage(): React.ReactElement {
                   onClick={() => setCancelDialogOpen(true)}
                   className="rounded-md border border-error-500/20 bg-error-500/10 px-4 py-2 text-sm font-medium text-error-400 hover:bg-error-500/20 transition-colors"
                 >
-                  Cancelar Título
+                  Cancelar Titulo
                 </button>
               )}
             </div>
@@ -511,7 +252,7 @@ export default function ContaReceberDetailPage(): React.ReactElement {
         <div className="rounded-md bg-muted/50 shadow-card overflow-hidden">
           <div className="px-5 py-3.5 border-b border-border">
             <h2 className="text-sm font-semibold text-foreground">
-              Histórico de Recebimentos
+              Historico de Recebimentos
             </h2>
           </div>
 
@@ -526,7 +267,7 @@ export default function ContaReceberDetailPage(): React.ReactElement {
                 <span>Data</span>
                 <span className="text-right">Valor</span>
                 <span>Forma</span>
-                <span>Observações</span>
+                <span>Observacoes</span>
               </div>
               <div className="divide-y divide-white/5">
                 {doc.receipts.map((receipt) => {
@@ -560,18 +301,51 @@ export default function ContaReceberDetailPage(): React.ReactElement {
 
       {/* Dialogs */}
       {canReceive && (
-        <RecordReceiptDialog
-          documentId={doc.id}
-          amountRemaining={doc.amount_remaining}
+        <RecordPaymentDialog
+          document={{
+            id: doc.id,
+            amount_remaining: doc.amount_remaining,
+            customer_name: doc.customer_name,
+            description: doc.description,
+          }}
           open={receiptDialogOpen}
           onOpenChange={setReceiptDialogOpen}
+          onSubmit={(data) => {
+            recordReceipt.mutate(
+              {
+                documentId: data.documentId,
+                receipt_date: data.payment_date,
+                amount: data.amount,
+                payment_method: data.payment_method,
+                bank_account: data.bank_account,
+                notes: data.notes,
+              },
+              { onSuccess: () => setReceiptDialogOpen(false) }
+            );
+          }}
+          isPending={recordReceipt.isPending}
+          isError={recordReceipt.isError}
+          errorMessage={recordReceipt.error?.message}
+          title="Registrar Recebimento"
+          submitLabel="Registrar Recebimento"
+          amountLabel="Valor a receber *"
         />
       )}
       {canCancel && isManager && (
         <CancelDialog
-          documentId={doc.id}
+          entityName={doc.customer_name}
+          amount={doc.amount}
           open={cancelDialogOpen}
           onOpenChange={setCancelDialogOpen}
+          onSubmit={(reason) => {
+            cancelReceivable.mutate(
+              { id: doc.id, reason },
+              { onSuccess: () => setCancelDialogOpen(false) }
+            );
+          }}
+          isPending={cancelReceivable.isPending}
+          isError={cancelReceivable.isError}
+          errorMessage={cancelReceivable.error?.message}
         />
       )}
     </ErrorBoundary>

@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * Detalhe de Título a Pagar — histórico de pagamentos e ações.
- * Sprint 14
+ * Detalhe de Titulo a Pagar — historico de pagamentos e acoes.
+ * Sprint 14 — refatorado S2-T3 para usar componentes compartilhados.
  */
 
 import React from "react";
@@ -17,16 +17,12 @@ import {
 import { usePermission } from "@/hooks/usePermission";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import type { PayableStatus, PaymentMethod } from "@paddock/types";
+  RecordPaymentDialog,
+  CancelDialog,
+  FinanceiroStatusBadge,
+} from "@/components/financeiro";
+import type { PaymentMethod } from "@paddock/types";
 import {
   PAYABLE_STATUS_LABELS,
   PAYABLE_STATUS_COLOR,
@@ -41,18 +37,6 @@ const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" 
 
 function formatBRL(value: string): string {
   return brl.format(Number(value));
-}
-
-// ── Status badge ──────────────────────────────────────────────────────────────
-
-function StatusBadge({ status }: { status: PayableStatus }): React.ReactElement {
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${PAYABLE_STATUS_COLOR[status]}`}
-    >
-      {PAYABLE_STATUS_LABELS[status]}
-    </span>
-  );
 }
 
 // ── Summary card ─────────────────────────────────────────────────────────────
@@ -113,249 +97,6 @@ function PageSkeleton(): React.ReactElement {
   );
 }
 
-// ── Record Payment Dialog ─────────────────────────────────────────────────────
-
-interface RecordPaymentDialogProps {
-  documentId: string;
-  amountRemaining: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-function RecordPaymentDialog({
-  documentId,
-  amountRemaining,
-  open,
-  onOpenChange,
-}: RecordPaymentDialogProps): React.ReactElement {
-  const todayStr = new Date().toISOString().split("T")[0] ?? "";
-  const recordPayment = useRecordPayment();
-
-  const [amount, setAmount] = React.useState(amountRemaining);
-  const [paymentDate, setPaymentDate] = React.useState(todayStr);
-  const [paymentMethod, setPaymentMethod] = React.useState<PaymentMethod>("pix");
-  const [bankAccount, setBankAccount] = React.useState("");
-  const [notes, setNotes] = React.useState("");
-
-  React.useEffect(() => {
-    if (open) {
-      setAmount(amountRemaining);
-      setPaymentDate(todayStr);
-      setPaymentMethod("pix");
-      setBankAccount("");
-      setNotes("");
-    }
-  }, [open, amountRemaining, todayStr]);
-
-  const maxAmount = parseFloat(amountRemaining);
-
-  const handleSubmit = (e: React.FormEvent): void => {
-    e.preventDefault();
-    recordPayment.mutate(
-      {
-        documentId,
-        payment_date: paymentDate,
-        amount,
-        payment_method: paymentMethod,
-        bank_account: bankAccount || undefined,
-        notes: notes || undefined,
-      },
-      {
-        onSuccess: () => {
-          onOpenChange(false);
-        },
-      }
-    );
-  };
-
-  const paymentMethods = Object.entries(PAYMENT_METHOD_LABELS) as [
-    PaymentMethod,
-    string,
-  ][];
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Registrar Pagamento</DialogTitle>
-        </DialogHeader>
-        <p className="text-sm text-muted-foreground -mt-2">
-          Saldo restante: <strong>{formatBRL(amountRemaining)}</strong>
-        </p>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-foreground/70">
-              Valor a pagar *
-            </Label>
-            <Input
-              type="number"
-              step="0.01"
-              min="0.01"
-              max={maxAmount}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-foreground/70">
-              Data do pagamento *
-            </Label>
-            <Input
-              type="date"
-              value={paymentDate}
-              onChange={(e) => setPaymentDate(e.target.value)}
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-foreground/70">
-              Forma de pagamento *
-            </Label>
-            <select
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-              required
-            >
-              {paymentMethods.map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-foreground/70">
-              Conta bancária
-            </Label>
-            <Input
-              value={bankAccount}
-              onChange={(e) => setBankAccount(e.target.value)}
-              placeholder="Ex: Bradesco C/C 1234-5"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-foreground/70">
-              Observações
-            </Label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Opcional..."
-            />
-          </div>
-
-          {recordPayment.isError && (
-            <p className="text-xs text-error-400 bg-error-500/10 rounded px-3 py-2">
-              {recordPayment.error?.message || "Erro ao registrar pagamento."}
-            </p>
-          )}
-
-          <DialogFooter>
-            <button
-              type="button"
-              onClick={() => onOpenChange(false)}
-              className="text-sm text-muted-foreground hover:underline px-3 py-2"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={recordPayment.isPending}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
-            >
-              {recordPayment.isPending ? "Salvando..." : "Registrar Pagamento"}
-            </button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// ── Cancel Dialog ─────────────────────────────────────────────────────────────
-
-interface CancelDialogProps {
-  documentId: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-function CancelDialog({
-  documentId,
-  open,
-  onOpenChange,
-}: CancelDialogProps): React.ReactElement {
-  const cancelPayable = useCancelPayable();
-  const [reason, setReason] = React.useState("");
-
-  React.useEffect(() => {
-    if (open) setReason("");
-  }, [open]);
-
-  const handleSubmit = (e: React.FormEvent): void => {
-    e.preventDefault();
-    cancelPayable.mutate(
-      { id: documentId, reason },
-      { onSuccess: () => onOpenChange(false) }
-    );
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Cancelar Título</DialogTitle>
-        </DialogHeader>
-        <p className="text-sm text-muted-foreground -mt-2">
-          Esta ação não pode ser desfeita.
-        </p>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-xs font-medium text-foreground/70">
-              Motivo do cancelamento *
-            </Label>
-            <textarea
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              rows={3}
-              required
-              className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Informe o motivo..."
-            />
-          </div>
-
-          {cancelPayable.isError && (
-            <p className="text-xs text-error-400 bg-error-500/10 rounded px-3 py-2">
-              {cancelPayable.error?.message || "Erro ao cancelar título."}
-            </p>
-          )}
-
-          <DialogFooter>
-            <button
-              type="button"
-              onClick={() => onOpenChange(false)}
-              className="text-sm text-muted-foreground hover:underline px-3 py-2"
-            >
-              Voltar
-            </button>
-            <button
-              type="submit"
-              disabled={cancelPayable.isPending || !reason.trim()}
-              className="rounded-md bg-error-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-red-700 disabled:opacity-50 transition-colors"
-            >
-              {cancelPayable.isPending ? "Cancelando..." : "Confirmar Cancelamento"}
-            </button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ContaPagarDetailPage(): React.ReactElement {
@@ -364,6 +105,8 @@ export default function ContaPagarDetailPage(): React.ReactElement {
 
   const { data: doc, isLoading, isError, error } = usePayableDocument(id);
   const isManager = usePermission("MANAGER");
+  const recordPayment = useRecordPayment();
+  const cancelPayable = useCancelPayable();
 
   const [payDialogOpen, setPayDialogOpen] = React.useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = React.useState(false);
@@ -382,7 +125,7 @@ export default function ContaPagarDetailPage(): React.ReactElement {
   if (isError || doc === undefined) {
     return (
       <div className="rounded-md bg-error-500/10 border border-error-500/20 px-5 py-4 text-sm text-error-400">
-        {error?.message ?? "Não foi possível carregar o título."}
+        {error?.message ?? "Nao foi possivel carregar o titulo."}
       </div>
     );
   }
@@ -400,7 +143,7 @@ export default function ContaPagarDetailPage(): React.ReactElement {
           items={[
             { label: "Financeiro", href: "/financeiro" },
             { label: "Contas a Pagar", href: "/financeiro/contas-pagar" },
-            { label: `Título #${doc.document_number || id}` },
+            { label: `Titulo #${doc.document_number || id}` },
           ]}
         />
 
@@ -412,7 +155,11 @@ export default function ContaPagarDetailPage(): React.ReactElement {
                 <h1 className="text-xl font-bold text-foreground truncate">
                   {doc.description}
                 </h1>
-                <StatusBadge status={doc.status} />
+                <FinanceiroStatusBadge
+                  status={doc.status}
+                  labels={PAYABLE_STATUS_LABELS}
+                  colors={PAYABLE_STATUS_COLOR}
+                />
               </div>
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
                 {doc.document_number && (
@@ -455,7 +202,7 @@ export default function ContaPagarDetailPage(): React.ReactElement {
                   onClick={() => setCancelDialogOpen(true)}
                   className="rounded-md border border-error-500/20 bg-error-500/10 px-4 py-2 text-sm font-medium text-error-400 hover:bg-error-500/20 transition-colors"
                 >
-                  Cancelar Título
+                  Cancelar Titulo
                 </button>
               )}
             </div>
@@ -505,7 +252,7 @@ export default function ContaPagarDetailPage(): React.ReactElement {
         <div className="rounded-md bg-muted/50 shadow-card overflow-hidden">
           <div className="px-5 py-3.5 border-b border-border">
             <h2 className="text-sm font-semibold text-foreground">
-              Histórico de Pagamentos
+              Historico de Pagamentos
             </h2>
           </div>
 
@@ -520,7 +267,7 @@ export default function ContaPagarDetailPage(): React.ReactElement {
                 <span>Data</span>
                 <span className="text-right">Valor</span>
                 <span>Forma</span>
-                <span>Observações</span>
+                <span>Observacoes</span>
               </div>
               <div className="divide-y divide-white/5">
                 {doc.payments.map((payment) => {
@@ -554,17 +301,39 @@ export default function ContaPagarDetailPage(): React.ReactElement {
       {/* Dialogs */}
       {canPay && (
         <RecordPaymentDialog
-          documentId={doc.id}
-          amountRemaining={doc.amount_remaining}
+          document={{
+            id: doc.id,
+            amount_remaining: doc.amount_remaining,
+            supplier_name: doc.supplier_name,
+            description: doc.description,
+          }}
           open={payDialogOpen}
           onOpenChange={setPayDialogOpen}
+          onSubmit={(data) => {
+            recordPayment.mutate(data, {
+              onSuccess: () => setPayDialogOpen(false),
+            });
+          }}
+          isPending={recordPayment.isPending}
+          isError={recordPayment.isError}
+          errorMessage={recordPayment.error?.message}
         />
       )}
       {canCancel && isManager && (
         <CancelDialog
-          documentId={doc.id}
+          entityName={doc.supplier_name}
+          amount={doc.amount}
           open={cancelDialogOpen}
           onOpenChange={setCancelDialogOpen}
+          onSubmit={(reason) => {
+            cancelPayable.mutate(
+              { id: doc.id, reason },
+              { onSuccess: () => setCancelDialogOpen(false) }
+            );
+          }}
+          isPending={cancelPayable.isPending}
+          isError={cancelPayable.isError}
+          errorMessage={cancelPayable.error?.message}
         />
       )}
     </ErrorBoundary>
