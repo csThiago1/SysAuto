@@ -11,6 +11,7 @@ from apps.fiscal.views import (
     NfeEmitView,
     NfeInutilizacaoListView,
     NfeInutilizacaoView,
+    NfeRecebidaFileProxyView,
     NfeRecebidaListView,
     NfeRecebidaManifestView,
     NfseEmitManualView,
@@ -33,9 +34,11 @@ urlpatterns = [
     # 07A: Emissão NF-e de Produto
     path("nfe/emit/", NfeEmitView.as_view(), name="nfe-emit"),
     path("nfe/emit-manual/", NfeEmitManualView.as_view(), name="nfe-emit-manual"),
-    # NF-e recebidas (manifestação de destinatário)
+    # NF-e recebidas (manifestação de destinatário + download XML/DANFE)
     path("nfe-recebidas/", NfeRecebidaListView.as_view(), name="nfe-recebidas-list"),
     path("nfe-recebidas/<str:chave>/manifesto/", NfeRecebidaManifestView.as_view(), name="nfe-recebidas-manifesto"),
+    # S4-T4: proxy XML/DANFE para NF-e recebidas
+    path("nfe-recebidas/<str:chave>/file/<str:file_type>/", NfeRecebidaFileProxyView.as_view(), name="nfe-recebida-file-proxy"),
     # Proxy para PDF/XML da Focus (requer auth Focus)
     path("documents/<str:pk>/file/<str:file_type>/", FiscalFileProxyView.as_view(), name="fiscal-file-proxy"),
     # S3-T3: Inutilização de numeração NF-e

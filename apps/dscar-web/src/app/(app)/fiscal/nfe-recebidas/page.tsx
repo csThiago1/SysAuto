@@ -10,12 +10,13 @@
  */
 
 import { useState } from "react"
-import { Inbox, RefreshCw, CheckCircle2, HelpCircle, XCircle, Eye } from "lucide-react"
+import { Inbox, RefreshCw, CheckCircle2, HelpCircle, XCircle, Eye, FileDown, FileText } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
   useNfeRecebidas,
   useNfeRecebidaManifest,
+  useNfeRecebidaFileUrl,
 } from "@/hooks/useFiscal"
 import type { NfeRecebida } from "@paddock/types"
 import { usePermission } from "@/hooks/usePermission"
@@ -45,6 +46,9 @@ function NfeRecebidaRow({
   onManifest: (chave: string, tipo: string) => void
 }) {
   const cfg = nfe.situacao_manifesto ? MANIFESTO_CONFIG[nfe.situacao_manifesto] : null
+
+  const xmlUrl = useNfeRecebidaFileUrl(nfe.chave_nfe, "xml")
+  const danfeUrl = useNfeRecebidaFileUrl(nfe.chave_nfe, "danfe")
 
   const valorFmt = nfe.valor_total
     ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
@@ -104,34 +108,61 @@ function NfeRecebidaRow({
 
       {/* Ações */}
       <td className="py-3 px-4 text-right">
-        {canManifest && (
-          <div className="flex items-center justify-end gap-2">
-            {!nfe.situacao_manifesto && (
-              <button
-                onClick={() => onManifest(nfe.chave_nfe, "ciencia_operacao")}
-                className="text-xs text-blue-400/70 hover:text-blue-400"
-              >
-                Dar Ciência
-              </button>
-            )}
-            {nfe.situacao_manifesto === "ciencia" && (
-              <>
+        <div className="flex items-center justify-end gap-2">
+          {/* Download XML */}
+          <a
+            href={xmlUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Baixar XML"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+          >
+            <FileText className="h-3.5 w-3.5" />
+            XML
+          </a>
+
+          {/* Download DANFE */}
+          <a
+            href={danfeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Visualizar DANFE"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+          >
+            <FileDown className="h-3.5 w-3.5" />
+            DANFE
+          </a>
+
+          {/* Manifestação */}
+          {canManifest && (
+            <>
+              {!nfe.situacao_manifesto && (
                 <button
-                  onClick={() => onManifest(nfe.chave_nfe, "confirmacao_operacao")}
-                  className="text-xs text-success-400/70 hover:text-success-400"
+                  onClick={() => onManifest(nfe.chave_nfe, "ciencia_operacao")}
+                  className="text-xs text-blue-400/70 hover:text-blue-400"
                 >
-                  Confirmar
+                  Dar Ciência
                 </button>
-                <button
-                  onClick={() => onManifest(nfe.chave_nfe, "desconhecimento_operacao")}
-                  className="text-xs text-warning-400/70 hover:text-warning-400"
-                >
-                  Desconhecer
-                </button>
-              </>
-            )}
-          </div>
-        )}
+              )}
+              {nfe.situacao_manifesto === "ciencia" && (
+                <>
+                  <button
+                    onClick={() => onManifest(nfe.chave_nfe, "confirmacao_operacao")}
+                    className="text-xs text-success-400/70 hover:text-success-400"
+                  >
+                    Confirmar
+                  </button>
+                  <button
+                    onClick={() => onManifest(nfe.chave_nfe, "desconhecimento_operacao")}
+                    className="text-xs text-warning-400/70 hover:text-warning-400"
+                  >
+                    Desconhecer
+                  </button>
+                </>
+              )}
+            </>
+          )}
+        </div>
       </td>
     </tr>
   )

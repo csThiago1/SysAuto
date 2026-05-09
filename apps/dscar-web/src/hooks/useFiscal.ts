@@ -272,3 +272,52 @@ export function useInutilizacoes() {
     }>>(`${FISCAL}/nfe/inutilizacoes/`),
   })
 }
+
+// ─── S4-T4: NF-e Recebida — download XML/DANFE ───────────────────────────────
+
+/** Retorna a URL do proxy para download do XML de NF-e recebida. */
+export function useNfeRecebidaFileUrl(chave: string, fileType: "xml" | "danfe"): string {
+  return `/api/proxy/fiscal/nfe-recebidas/${chave}/file/${fileType}/`
+}
+
+// ─── S4-T4: NF-e Entrada — match e link com Pedido de Compra ─────────────────
+
+export interface PurchaseOrderMatch {
+  id: string
+  number: string
+  supplier_name: string
+  total: string
+  status: string
+  created_at: string
+}
+
+export function useNfeEntradaMatchPO(nfeEntradaId: string) {
+  return useQuery({
+    queryKey: ["nfe-entrada", nfeEntradaId, "match-po"],
+    queryFn: () =>
+      apiFetch<PurchaseOrderMatch[]>(`${FISCAL}/nfe-entrada/${nfeEntradaId}/match-po/`),
+    enabled: Boolean(nfeEntradaId),
+  })
+}
+
+export function useLinkPO() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      nfeEntradaId,
+      purchaseOrderId,
+    }: {
+      nfeEntradaId: string
+      purchaseOrderId: string
+    }) => {
+      return apiFetch(`${FISCAL}/nfe-entrada/${nfeEntradaId}/link-po/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ purchase_order_id: purchaseOrderId }),
+      })
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["nfe-entrada"] })
+    },
+  })
+}
