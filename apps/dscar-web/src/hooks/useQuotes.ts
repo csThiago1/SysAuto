@@ -17,32 +17,9 @@ import type {
   OrcamentoItemAdicional,
   OrcamentoList,
 } from "@paddock/types";
+import { apiFetch, fetchList } from "@/lib/api";
 
 const BASE = "/api/proxy/quotes";
-
-type Paginated<T> = { results: T[]; count: number; next: string | null; previous: string | null };
-
-async function fetchList<T>(url: string): Promise<T[]> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`GET ${url} → ${res.status}`);
-  const data = (await res.json()) as Paginated<T> | T[];
-  if (data && !Array.isArray(data) && "results" in data) return data.results;
-  return data as T[];
-}
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init);
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText })) as Record<string, unknown>;
-    const message =
-      (err.detail as string | undefined) ??
-      (err.erro   as string | undefined) ??
-      (err.non_field_errors as string[] | undefined)?.[0] ??
-      `${init?.method ?? "GET"} ${url} → ${res.status}`;
-    throw new Error(message);
-  }
-  return res.json() as Promise<T>;
-}
 
 // ── Query Keys ────────────────────────────────────────────────────────────────
 

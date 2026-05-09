@@ -13,17 +13,9 @@ import type {
   OrdemCompraDetail,
   PedidoCompra,
 } from "@paddock/types"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, fetchList } from "@/lib/api"
 
 const PURCHASING = "/api/proxy/purchasing"
-
-// ─── fetchList helper (extrai .results do envelope DRF) ───────────────────────
-
-async function fetchList<T>(url: string): Promise<T[]> {
-  const data = await apiFetch<{ results: T[] } | T[]>(url)
-  if (data && !Array.isArray(data) && "results" in data) return data.results
-  return data as T[]
-}
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
 

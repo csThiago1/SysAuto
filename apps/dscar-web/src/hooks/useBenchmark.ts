@@ -10,24 +10,9 @@ import type {
   SugestaoIACreatePayload,
   SugestaoIAResponse,
 } from "@paddock/types"
+import { apiFetch, fetchList } from "@/lib/api"
 
 const BASE = "/api/proxy/pricing"
-
-type Paginated<T> = { results: T[]; count: number; next: string | null; previous: string | null }
-
-async function fetchList<T>(url: string): Promise<T[]> {
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  const data: Paginated<T> | T[] = await res.json()
-  if (data && !Array.isArray(data) && "results" in data) return data.results
-  return data as T[]
-}
-
-async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(url, options)
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return res.json()
-}
 
 export const benchmarkKeys = {
   fontes: () => ["benchmark", "fontes"] as const,

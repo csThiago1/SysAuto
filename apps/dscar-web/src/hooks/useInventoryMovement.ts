@@ -11,17 +11,9 @@ import type {
   PerdaInput,
   TransferenciaInput,
 } from "@paddock/types"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, fetchList } from "@/lib/api"
 
 const INV = "/api/proxy/inventory"
-
-// ─── fetchList helper (extrai .results do envelope DRF) ───────────────────────
-
-async function fetchList<T>(url: string): Promise<T[]> {
-  const data = await apiFetch<{ results: T[] } | T[]>(url)
-  if (data && !Array.isArray(data) && "results" in data) return data.results
-  return data as T[]
-}
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
 

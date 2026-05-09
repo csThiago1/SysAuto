@@ -15,21 +15,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   FiscalDocument,
   FiscalDocumentList,
+  FiscalDocumentParams,
   ManualNfeInput,
   ManualNfseInput,
   NfeEmitFromOsInput,
+  NfeRecebida,
 } from "@paddock/types"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, fetchList } from "@/lib/api"
 
 const FISCAL = "/api/proxy/fiscal"
-
-// ─── fetchList helper ─────────────────────────────────────────────────────────
-
-async function fetchList<T>(url: string): Promise<T[]> {
-  const data = await apiFetch<{ results: T[] } | T[]>(url)
-  if (data && !Array.isArray(data) && "results" in data) return data.results
-  return data as T[]
-}
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
 
@@ -37,14 +31,6 @@ export const fiscalKeys = {
   all: ["fiscal"] as const,
   documents: (params = "") => ["fiscal", "documents", params] as const,
   document: (id: string) => ["fiscal", "documents", id] as const,
-}
-
-// ─── Params ───────────────────────────────────────────────────────────────────
-
-export interface FiscalDocumentParams {
-  service_order?: string
-  document_type?: string
-  status?: string
 }
 
 // ─── Hooks — leitura ─────────────────────────────────────────────────────────
@@ -143,18 +129,6 @@ export function useEmitManualNfe() {
 }
 
 // ─── NF-e Recebidas ───────────────────────────────────────────────────────────
-
-export interface NfeRecebida {
-  chave_nfe: string
-  nome_emitente: string
-  documento_emitente: string
-  data_emissao: string
-  valor_total: string
-  /** situacao da NF-e na SEFAZ */
-  situacao: string
-  /** null = não manifestada ainda */
-  situacao_manifesto: "ciencia" | "confirmada" | "desconhecida" | "nao_realizada" | null
-}
 
 export function useNfeRecebidas(pagina = 1) {
   return useQuery({

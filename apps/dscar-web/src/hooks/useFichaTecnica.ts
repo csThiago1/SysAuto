@@ -10,19 +10,9 @@ import type {
   NovaVersaoPayload,
   ResolverFichaPayload,
 } from "@paddock/types"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, fetchList } from "@/lib/api"
 
 const BASE = "/api/proxy/pricing"
-
-// ─── Helper: extrai .results de envelope DRF paginado ─────────────────────────
-
-type Paginated<T> = { results: T[]; count: number; next: string | null; previous: string | null }
-
-async function fetchList<T>(url: string): Promise<T[]> {
-  const data = await apiFetch<Paginated<T> | T[]>(url)
-  if (data && !Array.isArray(data) && "results" in data) return data.results
-  return data as T[]
-}
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
 

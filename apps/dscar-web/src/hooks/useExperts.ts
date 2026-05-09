@@ -2,18 +2,8 @@
  * useExperts — CRUD hooks for Especialistas / Peritos
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, fetchList } from "@/lib/api"
 import type { Expert } from "@paddock/types"
-
-// ─── Helper: extrai .results de envelope DRF paginado ─────────────────────────
-
-type Paginated<T> = { results: T[]; count: number; next: string | null; previous: string | null }
-
-async function fetchList<T>(url: string): Promise<T[]> {
-  const data = await apiFetch<Paginated<T> | T[]>(url)
-  if (data && !Array.isArray(data) && "results" in data) return data.results
-  return data as T[]
-}
 
 // ─── Keys ─────────────────────────────────────────────────────────────────────
 

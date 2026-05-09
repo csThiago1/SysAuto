@@ -10,7 +10,6 @@ import type {
   MargemOperacaoCreate,
   MarkupPeca,
   MarkupPecaCreate,
-  PaginatedResponse,
   ResultadoPecaDTO,
   ResultadoServicoDTO,
   SimularInput,
@@ -18,17 +17,9 @@ import type {
   Snapshot,
   SnapshotFull,
 } from "@paddock/types"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, fetchList } from "@/lib/api"
 
 const ENGINE_API = "/api/proxy/pricing/engine"
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-async function fetchList<T>(url: string): Promise<T[]> {
-  const data = await apiFetch<PaginatedResponse<T> | T[]>(url)
-  if (data && !Array.isArray(data) && "results" in data) return data.results
-  return data as T[]
-}
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
 

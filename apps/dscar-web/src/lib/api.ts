@@ -82,3 +82,22 @@ export function handleApiFormError(error: unknown, setError?: any): void {
     toast.error("Erro desconhecido.");
   }
 }
+
+// ─── DRF Paginated List Helper ───────────────────────────────────────────────
+
+type PaginatedDRF<T> = {
+  results: T[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+};
+
+/**
+ * Busca lista paginada DRF e extrai .results automaticamente.
+ * Aceita tanto resposta paginada quanto array direto.
+ */
+export async function fetchList<T>(url: string): Promise<T[]> {
+  const data = await apiFetch<PaginatedDRF<T> | T[]>(url);
+  if (data && !Array.isArray(data) && "results" in data) return data.results;
+  return data as T[];
+}

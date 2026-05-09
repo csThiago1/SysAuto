@@ -14,19 +14,9 @@ import type {
   PecaCanonica,
   ServicoCanonico,
 } from "@paddock/types"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, fetchList } from "@/lib/api"
 
 const BASE = "/api/proxy/pricing/catalog"
-
-// ─── Helper: extrai .results de envelope DRF paginado ─────────────────────────
-
-type Paginated<T> = { results: T[]; count: number; next: string | null; previous: string | null }
-
-async function fetchList<T>(url: string): Promise<T[]> {
-  const data = await apiFetch<Paginated<T> | T[]>(url)
-  if (data && !Array.isArray(data) && "results" in data) return data.results
-  return data as T[]
-}
 
 // ─── Query Keys ───────────────────────────────────────────────────────────────
 
@@ -84,7 +74,7 @@ export function useMatchServico(texto: string) {
   })
 }
 
-export interface ServicoCanonicoPaylod {
+export interface ServicoCanonicoPayload {
   codigo: string
   nome: string
   categoria: string
@@ -97,7 +87,7 @@ export interface ServicoCanonicoPaylod {
 export function useCreateServicoCanonico() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: ServicoCanonicoPaylod) =>
+    mutationFn: (data: ServicoCanonicoPayload) =>
       apiFetch<ServicoCanonico>(`${BASE}/servicos/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -110,7 +100,7 @@ export function useCreateServicoCanonico() {
 export function useUpdateServicoCanonico(id: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: Partial<ServicoCanonicoPaylod>) =>
+    mutationFn: (data: Partial<ServicoCanonicoPayload>) =>
       apiFetch<ServicoCanonico>(`${BASE}/servicos/${id}/`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -158,7 +148,7 @@ export function useMatchMaterial(texto: string) {
   })
 }
 
-export interface MaterialCanonicoPaylod {
+export interface MaterialCanonicoPayload {
   codigo: string
   nome: string
   unidade_base: string
@@ -169,7 +159,7 @@ export interface MaterialCanonicoPaylod {
 export function useCreateMaterialCanonico() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: MaterialCanonicoPaylod) =>
+    mutationFn: (data: MaterialCanonicoPayload) =>
       apiFetch<MaterialCanonico>(`${BASE}/materiais/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
