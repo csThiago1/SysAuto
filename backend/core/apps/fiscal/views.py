@@ -84,6 +84,7 @@ class NFeEntradaViewSet(viewsets.ModelViewSet):
             "destroy",
             "reconciliar_item",
             "gerar_estoque",
+            "link_po",
         ):
             return [IsAuthenticated(), IsManagerOrAbove()]
         return [IsAuthenticated(), IsConsultantOrAbove()]
@@ -137,6 +138,43 @@ class NFeEntradaViewSet(viewsets.ModelViewSet):
             )
 
         return Response(resultado, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["get"], url_path="match-po")
+    def match_po(self, request: Request, pk: str | None = None) -> Response:
+        """GET /api/v1/fiscal/nfe-entrada/{id}/match-po/
+        Returns list of matching PurchaseOrders for this NFeEntrada.
+        """
+        nfe = self.get_object()
+        from apps.fiscal.services.matching import PurchaseOrderMatchingService
+
+        matches = PurchaseOrderMatchingService.find_matches(nfe)
+        return Response([
+            {
+                "id": str(po.pk),
+                "number": getattr(po, "number", ""),
+                "supplier_name": po.supplier.name if po.supplier else "",
+                "total": str(getattr(po, "total", 0)),
+                "status": po.status,
+                "created_at": po.created_at.isoformat() if po.created_at else "",
+            }
+            for po in matches
+        ])
+
+    @action(detail=True, methods=["post"], url_path="link-po")
+    def link_po(self, request: Request, pk: str | None = None) -> Response:
+        """POST /api/v1/fiscal/nfe-entrada/{id}/link-po/
+        Body: { "purchase_order_id": "uuid" }
+        """
+        nfe = self.get_object()
+        po_id = request.data.get("purchase_order_id")
+        if not po_id:
+            raise ValidationError({"purchase_order_id": "ID do pedido é obrigatório."})
+        from apps.fiscal.services.matching import PurchaseOrderMatchingService
+
+        success = PurchaseOrderMatchingService.link(nfe, po_id)
+        if success:
+            return Response({"status": "linked"})
+        return Response({"detail": "Erro ao vincular."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # ─── 06B: Webhook Focus NF-e ────────────────────────────────────────────────
@@ -674,6 +712,82 @@ class FiscalDocumentViewSet(viewsets.ReadOnlyModelViewSet):
 
         result = FiscalService.carta_correcao(doc, correcao)
         return Response(result, status=status.HTTP_200_OK)
+
+
+class NfeRecebidaFileProxyView(APIView):
+    """Proxy autenticado para XML/DANFE de NF-e recebida (pass-through Focus).
+
+    GET /fiscal/nfe-recebidas/{chave}/file/xml/
+    GET /fiscal/nfe-recebidas/{chave}/file/danfe/
+
+    A Focus exige HTTP Basic auth. Este proxy baixa com o token e retorna ao browser.
+    RBAC: CONSULTANT+
+    """
+
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get(self, request: Request, chave: str, file_type: str) -> Response:
+        from django.http import HttpResponse
+        import httpx
+
+        if file_type not in ("xml", "danfe"):
+            return Response(
+                {"detail": "Tipo deve ser 'xml' ou 'danfe'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from apps.fiscal.services.fiscal_service import FiscalService
+
+        try:
+            config = FiscalService.get_config()
+        except Exception:
+            return Response(
+                {"detail": "Configuração fiscal não encontrada."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        base_url = getattr(config, "focus_base_url", None) or settings.FOCUS_NFE_BASE_URL
+        token = config.focus_token or settings.FOCUS_NFE_TOKEN
+        path = f"/v2/nfes_recebidas/{chave}/{file_type}"
+
+        try:
+            resp = httpx.get(
+                f"{base_url}{path}",
+                auth=(token, ""),
+                timeout=15.0,
+            )
+        except httpx.TimeoutException:
+            return Response({"detail": "Timeout ao baixar arquivo."}, status=status.HTTP_504_GATEWAY_TIMEOUT)
+        except Exception as exc:
+            logger.error(
+                "NfeRecebidaFileProxyView: erro httpx para chave %s: %s",
+                chave,
+                type(exc).__name__,
+            )
+            return Response({"detail": "Erro interno."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        if resp.status_code != 200:
+            logger.error(
+                "NfeRecebidaFileProxyView: Focus %s para chave %s/%s",
+                resp.status_code,
+                chave,
+                file_type,
+            )
+            return Response(
+                {"detail": "Arquivo não disponível na Focus."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if file_type == "xml":
+            content_type = "application/xml"
+            filename = f"nfe_{chave}.xml"
+        else:
+            content_type = "application/pdf"
+            filename = f"danfe_{chave}.pdf"
+
+        http_resp = HttpResponse(resp.content, content_type=content_type)
+        http_resp["Content-Disposition"] = f'inline; filename="{filename}"'
+        return http_resp
 
 
 class NfeRecebidaListView(APIView):

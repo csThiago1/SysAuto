@@ -10,6 +10,7 @@ P1:  sempre usar item.valor_unitario_com_tributos, nunca valor_unitario_bruto.
 """
 
 import logging
+from datetime import date
 from decimal import Decimal
 
 from django.db import transaction
@@ -130,6 +131,65 @@ class NFeIngestaoService:
             nfe.estoque_gerado = True
             nfe.status = NFeEntrada.Status.ESTOQUE_GERADO
             nfe.save(update_fields=["estoque_gerado", "status"])
+
+        # ── S4: Auto-create Conta a Pagar ─────────────────────────────────
+        if not nfe.payable_document_id:
+            try:
+                from apps.accounts_payable.models import Supplier
+                from apps.accounts_payable.services import PayableDocumentService
+                from apps.authentication.models import GlobalUser
+                from datetime import timedelta
+
+                # Resolve user object (required by PayableDocumentService.create_payable)
+                realizado_por = None
+                if realizado_por_id:
+                    try:
+                        realizado_por = GlobalUser.objects.get(pk=realizado_por_id)
+                    except GlobalUser.DoesNotExist:
+                        pass
+
+                # Get or create supplier by CNPJ (cnpj not unique in DB — use filter/first)
+                supplier = Supplier.objects.filter(cnpj=nfe.emitente_cnpj).first()
+                if supplier is None:
+                    supplier = Supplier.objects.create(
+                        cnpj=nfe.emitente_cnpj,
+                        name=nfe.emitente_nome or nfe.emitente_cnpj,
+                    )
+
+                emissao_date = nfe.data_emissao if nfe.data_emissao else date.today()
+                payable = PayableDocumentService.create_payable(
+                    supplier_id=str(supplier.pk),
+                    description=f"NF-e {nfe.numero}/{nfe.serie} — {nfe.emitente_nome}",
+                    amount=nfe.valor_total,
+                    due_date=emissao_date + timedelta(days=30),
+                    competence_date=emissao_date,
+                    origin="NFE_E",
+                    document_number=nfe.chave_acesso[-8:] if nfe.chave_acesso else (nfe.numero or ""),
+                    user=realizado_por,
+                )
+                nfe.payable_document = payable
+                nfe.save(update_fields=["payable_document"])
+                logger.info(
+                    "Auto-AP created for NFeEntrada %s: AP %s", nfe.pk, payable.pk
+                )
+            except Exception as e:
+                logger.warning(
+                    "Auto-AP creation failed for NFeEntrada %s: %s", nfe.pk, e
+                )
+
+        # ── S4: Auto-match with Purchase Order ────────────────────────────
+        if not nfe.purchase_order_id and nfe.emitente_cnpj:
+            try:
+                from apps.fiscal.services.matching import PurchaseOrderMatchingService
+
+                matches = PurchaseOrderMatchingService.find_matches(nfe)
+                if len(matches) == 1:
+                    # Auto-link only if exactly one match (avoids ambiguity)
+                    PurchaseOrderMatchingService.link(nfe, str(matches[0].pk))
+            except Exception as e:
+                logger.warning(
+                    "Auto PO matching failed for NFeEntrada %s: %s", nfe.pk, e
+                )
 
         logger.info(
             "NF-e %s/%s: %d unidades, %d lotes, %d pendentes",
