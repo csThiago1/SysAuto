@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { Animated, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { SvgUri } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 
@@ -11,11 +12,37 @@ import type { InsurerOption } from '@/hooks/useInsurers';
 import { OS_STATUS_MAP, Colors, Radii, Shadow, Spacing, type OSStatus } from '@/constants/theme';
 import { MonoLabel } from '@/components/ui/MonoLabel';
 
+// Logos de montadoras via CDN público (fallback quando make_logo está vazio)
+const MAKE_LOGO_MAP: Record<string, string> = {
+  chevrolet: 'https://logo.clearbit.com/chevrolet.com',
+  fiat: 'https://logo.clearbit.com/fiat.com',
+  ford: 'https://logo.clearbit.com/ford.com',
+  honda: 'https://logo.clearbit.com/honda.com.br',
+  hyundai: 'https://logo.clearbit.com/hyundai.com.br',
+  toyota: 'https://logo.clearbit.com/toyota.com.br',
+  volkswagen: 'https://logo.clearbit.com/vw.com.br',
+  renault: 'https://logo.clearbit.com/renault.com.br',
+  nissan: 'https://logo.clearbit.com/nissan.com.br',
+  jeep: 'https://logo.clearbit.com/jeep.com.br',
+  bmw: 'https://logo.clearbit.com/bmw.com.br',
+  'mercedes-benz': 'https://logo.clearbit.com/mercedes-benz.com.br',
+  audi: 'https://logo.clearbit.com/audi.com.br',
+  kia: 'https://logo.clearbit.com/kia.com.br',
+  peugeot: 'https://logo.clearbit.com/peugeot.com.br',
+  mitsubishi: 'https://logo.clearbit.com/mitsubishi-motors.com.br',
+  volvo: 'https://logo.clearbit.com/volvocars.com',
+  byd: 'https://logo.clearbit.com/byd.com',
+};
+
+function getMakeLogo(make: string): string {
+  if (!make) return '';
+  return MAKE_LOGO_MAP[make.toLowerCase()] ?? '';
+}
+
 interface OSCardProps {
   order: ServiceOrder;
   insurer?: InsurerOption;
 }
-
 
 function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
   const router = useRouter();
@@ -47,7 +74,10 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
   const vehicleLine = [order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ');
   const borderColor = OS_STATUS_MAP[order.status as OSStatus]?.color ?? '#94a3b8';
   const statusLabel = OS_STATUS_MAP[order.status as OSStatus]?.label ?? order.status;
-  const cardAccessibilityLabel = `OS ${order.number}, ${order.customerName}, ${statusLabel}`;
+  const cardAccessibilityLabel = `OS ${order.number}, ${vehicleLine}, ${statusLabel}`;
+  const makeLogoUrl = getMakeLogo(order.vehicleBrand ?? '');
+
+  const isSvgLogo = insurer?.logoUrl?.endsWith('.svg') ?? false;
 
   return (
     <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
@@ -64,51 +94,58 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
         end={{ x: 0, y: 1 }}
         style={[styles.card, { borderLeftColor: borderColor }]}
       >
-        {/* Glass glint — linha de luz no topo */}
+        {/* Glass glint */}
         <View style={styles.topGlint} />
 
-        {/* Two-column layout: info left, OS number + insurer right */}
         <View style={styles.bodyRow}>
-          {/* Left: plate, customer·vehicle, status */}
+          {/* Left: plate, vehicle, status */}
           <View style={styles.leftCol}>
             <View style={styles.plateBadge}>
               <Text style={styles.plate}>{plateLine}</Text>
             </View>
-            <Text variant="bodySmall" color={Colors.textPrimary} numberOfLines={1}>
-              {order.customerName}
-              {vehicleLine.length > 0 ? ` · ${vehicleLine}` : ''}
-            </Text>
+            {vehicleLine.length > 0 && (
+              <View style={styles.vehicleRow}>
+                {makeLogoUrl.length > 0 && (
+                  <Image
+                    source={{ uri: makeLogoUrl }}
+                    style={styles.makeLogo}
+                    resizeMode="contain"
+                  />
+                )}
+                <Text variant="bodySmall" color={Colors.textPrimary} numberOfLines={1} style={styles.vehicleText}>
+                  {vehicleLine}
+                </Text>
+              </View>
+            )}
             <View style={styles.badgeRow}>
               <OSStatusBadge status={order.status} />
             </View>
           </View>
 
-          {/* Right: OS number on top, insurer avatar below */}
+          {/* Right: OS number + insurer logo */}
           <View style={styles.rightCol}>
             <MonoLabel variant="accent" size="sm">
               {`OS #${order.number}`}
             </MonoLabel>
-            {insurer != null && (
-              insurer.logoUrl ? (
-                // Wrapper externo carrega a sombra (overflow visible).
-                // Inner clip recorta a imagem no círculo sem cancelar a sombra.
-                <View style={styles.insurerLogoShadow}>
-                  <View style={styles.insurerLogoClip}>
-                    <Image
-                      source={{ uri: insurer.logoUrl }}
-                      style={styles.insurerLogo}
-                      resizeMode="contain"
-                    />
-                  </View>
-                </View>
-              ) : (
-                <View style={[styles.insurerAvatar, { backgroundColor: insurer.brandColor + '22', borderColor: insurer.brandColor + '66' }]}>
-                  <Text variant="caption" style={[styles.insurerAbbr, { color: insurer.brandColor }]}>
-                    {insurer.abbreviation}
-                  </Text>
-                </View>
-              )
-            )}
+            {insurer != null && insurer.logoUrl ? (
+              <View style={styles.insurerLogoCircle}>
+                {isSvgLogo ? (
+                  <SvgUri uri={insurer.logoUrl} width={38} height={38} />
+                ) : (
+                  <Image
+                    source={{ uri: insurer.logoUrl }}
+                    style={styles.insurerLogo}
+                    resizeMode="contain"
+                  />
+                )}
+              </View>
+            ) : insurer != null ? (
+              <View style={[styles.insurerAvatar, { backgroundColor: insurer.brandColor + '22', borderColor: insurer.brandColor + '66' }]}>
+                <Text variant="caption" style={[styles.insurerAbbr, { color: insurer.brandColor }]}>
+                  {insurer.abbreviation || insurer.displayName.substring(0, 2).toUpperCase()}
+                </Text>
+              </View>
+            ) : null}
           </View>
         </View>
         </LinearGradient>
@@ -139,7 +176,6 @@ const styles = StyleSheet.create({
     borderRadius: Radii.lg,
     borderLeftWidth: 4,
     borderLeftColor: Colors.textSecondary,
-    // Borda glass: topo claro, laterais e base mais escuras
     borderTopWidth: 1,
     borderRightWidth: 1,
     borderBottomWidth: 1,
@@ -153,7 +189,6 @@ const styles = StyleSheet.create({
     gap: 6,
     overflow: 'hidden',
   },
-  // Linha de luz que simula o reflexo do vidro
   topGlint: {
     position: 'absolute',
     top: 0,
@@ -194,41 +229,51 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontVariant: ['tabular-nums'],
   },
+  vehicleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  vehicleText: {
+    flex: 1,
+  },
+  makeLogo: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+  },
   insurerAvatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: Colors.borderGlintSide,
     backgroundColor: Colors.surfaceLight,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 8,
+    padding: 6,
   },
-  insurerLogoShadow: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    ...Shadow.sm,
-    // backgroundColor mínimo para shadow funcionar no iOS
-    backgroundColor: 'rgba(255,255,255,0.06)',
-  },
-  insurerLogoClip: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+  insurerLogoCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     overflow: 'hidden',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 8,
+    padding: 6,
+    ...Shadow.sm,
   },
   insurerLogo: {
-    width: 48,
-    height: 48,
+    width: 38,
+    height: 38,
   },
   insurerAbbr: {
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 13,
+    textAlign: 'center',
   },
 });
