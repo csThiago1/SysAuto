@@ -10,7 +10,7 @@ import type { Route } from "next";
 import { CheckCircle, RotateCcw } from "lucide-react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { useParams } from "next/navigation";
-import { useJournalEntry, useApproveJournalEntry, useReverseJournalEntry } from "@/hooks";
+import { useJournalEntry, useApproveJournalEntry, useReverseJournalEntry } from "@/hooks/useAccounting";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";

@@ -12,7 +12,7 @@ import { ChevronLeft } from "lucide-react";
 import { z } from "zod";
 import type { AccountType, NatureType } from "@paddock/types";
 import { ACCOUNT_TYPE_LABELS, NATURE_LABELS } from "@paddock/types";
-import { useCreateChartOfAccount } from "@/hooks";
+import { useCreateChartOfAccount } from "@/hooks/useAccounting";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

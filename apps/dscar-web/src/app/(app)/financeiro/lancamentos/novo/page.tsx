@@ -17,7 +17,7 @@ import type {
   CreateJournalEntryLinePayload,
 } from "@paddock/types";
 import { ORIGIN_LABELS } from "@paddock/types";
-import { useCreateJournalEntry, useAnalyticalAccounts } from "@/hooks";
+import { useCreateJournalEntry, useAnalyticalAccounts } from "@/hooks/useAccounting";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

@@ -17,7 +17,8 @@ import {
   ArrowRight,
   PlusCircle,
 } from "lucide-react";
-import { useJournalEntries, useCurrentFiscalPeriod, usePayableDocuments, useReceivableDocuments } from "@/hooks";
+import { useJournalEntries, useCurrentFiscalPeriod } from "@/hooks/useAccounting";
+import { usePayableDocuments, useReceivableDocuments } from "@/hooks/useFinanceiro";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";

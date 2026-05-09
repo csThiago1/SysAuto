@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { formatDate, formatCurrency } from "@paddock/utils"
 
 // ─── Status badge config ────────────────────────────────────────────────────────
 
@@ -133,18 +134,6 @@ function NovaOCDialog({
       </DialogContent>
     </Dialog>
   )
-}
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────────
-
-function formatCurrency(value: string): string {
-  const num = parseFloat(value)
-  if (isNaN(num)) return "R$ 0,00"
-  return num.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("pt-BR")
 }
 
 // ─── Page ────────────────────────────────────────────────────────────────────────

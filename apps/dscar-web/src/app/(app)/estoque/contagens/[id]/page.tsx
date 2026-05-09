@@ -14,6 +14,7 @@ import {
 } from "@/hooks/useInventoryCounting"
 import { usePermission } from "@/hooks/usePermission"
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog"
+import { formatDateTime } from "@paddock/utils"
 
 // ─── Badge maps ─────────────────────────────────────────────────────────────
 
@@ -48,17 +49,6 @@ const TIPO_BADGE: Record<TipoContagem, { label: string; className: string }> = {
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
-
-function formatDate(iso: string | null): string {
-  if (!iso) return "—"
-  return new Date(iso).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-}
 
 function divergenceColor(value: string | null): string {
   if (!value) return "text-muted-foreground"
@@ -269,9 +259,9 @@ export default function ContagemDetailPage({
               </span>
             </div>
             <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-              <span>Aberta em {formatDate(contagem.data_abertura)}</span>
+              <span>Aberta em {formatDateTime(contagem.data_abertura)}</span>
               {contagem.data_fechamento && (
-                <span>Fechada em {formatDate(contagem.data_fechamento)}</span>
+                <span>Fechada em {formatDateTime(contagem.data_fechamento)}</span>
               )}
               <span>por {contagem.iniciado_por_nome}</span>
             </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import type { MovimentacaoEstoque, TipoMovimentacao } from "@paddock/types"
+import { formatDateTime } from "@paddock/utils"
 
 // ─── Dot color by tipo ──────────────────────────────────────────────────────
 
@@ -12,20 +13,6 @@ const DOT_COLORS: Record<TipoMovimentacao, string> = {
   saida_os: "bg-warning-400",
   saida_perda: "bg-error-400",
   ajuste_inventario: "bg-purple-400",
-}
-
-function formatDate(iso: string): string {
-  try {
-    return new Intl.DateTimeFormat("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(iso))
-  } catch {
-    return iso
-  }
 }
 
 function itemLabel(mov: MovimentacaoEstoque): string {
@@ -105,7 +92,7 @@ export default function MovimentacaoTimeline({
             )}
             <div className="text-xs text-muted-foreground mt-1">
               por {mov.realizado_por_nome || "Sistema"} &middot;{" "}
-              {formatDate(mov.created_at)}
+              {formatDateTime(mov.created_at)}
             </div>
           </div>
         )

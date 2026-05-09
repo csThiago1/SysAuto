@@ -18,11 +18,7 @@ import { useCalcularServico } from "@/hooks/usePricingEngine"
 import { useServicosCanonico } from "@/hooks/usePricingCatalog"
 import { useTiposPintura, useMinhaEmpresaId } from "@/hooks/usePricingProfile"
 import type { CalcularServicoInput, ResultadoServicoDTO } from "@paddock/types"
-
-function formatCurrency(val: string) {
-  const n = parseFloat(val)
-  return isNaN(n) ? val : n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-}
+import { formatCurrency } from "@paddock/utils"
 
 function formatMargem(val: string) {
   const n = parseFloat(val)

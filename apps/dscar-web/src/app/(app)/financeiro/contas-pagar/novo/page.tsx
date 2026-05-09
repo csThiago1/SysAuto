@@ -11,7 +11,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { ChevronLeft } from "lucide-react";
 import { z } from "zod";
-import { useCreatePayable, useSuppliers } from "@/hooks";
+import { useCreatePayable, useSuppliers } from "@/hooks/useFinanceiro";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

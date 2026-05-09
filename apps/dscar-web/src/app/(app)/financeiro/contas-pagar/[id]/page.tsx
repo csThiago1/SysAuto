@@ -13,8 +13,8 @@ import {
   usePayableDocument,
   useRecordPayment,
   useCancelPayable,
-  usePermission,
-} from "@/hooks";
+} from "@/hooks/useFinanceiro";
+import { usePermission } from "@/hooks/usePermission";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
@@ -33,6 +33,7 @@ import {
   PAYABLE_ORIGIN_LABELS,
   PAYMENT_METHOD_LABELS,
 } from "@paddock/types";
+import { formatDate, formatDateTime } from "@paddock/utils";
 
 // ── Formatting helpers ────────────────────────────────────────────────────────
 
@@ -40,20 +41,6 @@ const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" 
 
 function formatBRL(value: string): string {
   return brl.format(Number(value));
-}
-
-function formatDate(date: string): string {
-  return new Date(date + "T00:00:00").toLocaleDateString("pt-BR");
-}
-
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 // ── Status badge ──────────────────────────────────────────────────────────────

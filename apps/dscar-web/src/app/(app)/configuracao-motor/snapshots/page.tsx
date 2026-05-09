@@ -24,18 +24,12 @@ import {
 import { useSnapshots } from "@/hooks/usePricingEngine"
 import { useSession } from "next-auth/react"
 import type { Snapshot } from "@paddock/types"
+import { formatCurrency } from "@paddock/utils"
 
 const ORIGEM_LABELS: Record<string, string> = {
   orcamento_linha: "Orçamento",
   os_linha: "OS",
   simulacao: "Simulação",
-}
-
-function formatCurrency(val: string) {
-  const n = parseFloat(val)
-  return isNaN(n)
-    ? val
-    : n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
 }
 
 function SnapshotRow({ snap }: { snap: Snapshot }) {

@@ -8,7 +8,7 @@ import React from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { BookOpen, ChevronRight, ChevronDown, Dot, PlusCircle } from "lucide-react";
-import { useChartOfAccountsTree } from "@/hooks";
+import { useChartOfAccountsTree } from "@/hooks/useAccounting";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";

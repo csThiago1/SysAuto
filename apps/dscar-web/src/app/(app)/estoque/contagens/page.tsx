@@ -5,44 +5,19 @@ import { ClipboardList, Plus } from "lucide-react"
 import Link from "next/link"
 import type { Route } from "next"
 import { toast } from "sonner"
-import type { StatusContagem, TipoContagem } from "@paddock/types"
+import type { TipoContagem } from "@paddock/types"
 import {
   useContagens,
   useContagemCreate,
 } from "@/hooks/useInventoryCounting"
 import { useArmazens, useRuas } from "@/hooks/useInventoryLocation"
-
-// ─── Badge maps ─────────────────────────────────────────────────────────────
-
-const STATUS_BADGE: Record<StatusContagem, { label: string; className: string }> = {
-  aberta: {
-    label: "ABERTA",
-    className: "bg-info-500/10 text-info-400 border border-info-500/20",
-  },
-  em_andamento: {
-    label: "EM ANDAMENTO",
-    className: "bg-warning-500/10 text-warning-400 border border-warning-500/20",
-  },
-  finalizada: {
-    label: "FINALIZADA",
-    className: "bg-success-500/10 text-success-400 border border-success-500/20",
-  },
-  cancelada: {
-    label: "CANCELADA",
-    className: "bg-muted/50 text-muted-foreground border border-border",
-  },
-}
-
-const TIPO_BADGE: Record<TipoContagem, { label: string; className: string }> = {
-  ciclica: {
-    label: "CÍCLICA",
-    className: "bg-info-500/10 text-info-400 border border-info-500/20",
-  },
-  total: {
-    label: "TOTAL",
-    className: "bg-warning-500/10 text-warning-400 border border-warning-500/20",
-  },
-}
+import {
+  formatDateTime,
+  CONTAGEM_STATUS_LABEL,
+  CONTAGEM_STATUS_BADGE,
+  CONTAGEM_TIPO_LABEL,
+  CONTAGEM_TIPO_BADGE,
+} from "@paddock/utils"
 
 export default function ContagensPage() {
   const { data: contagens = [], isLoading } = useContagens()
@@ -84,16 +59,6 @@ export default function ContagensPage() {
     } catch {
       toast.error("Erro ao abrir contagem.")
     }
-  }
-
-  function formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
   }
 
   return (
@@ -257,8 +222,6 @@ export default function ContagensPage() {
             </thead>
             <tbody>
               {contagens.map((c) => {
-                const statusBadge = STATUS_BADGE[c.status] ?? STATUS_BADGE.aberta
-                const tipoBadge = TIPO_BADGE[c.tipo] ?? TIPO_BADGE.ciclica
                 return (
                   <tr key={c.id} className="border-b border-white/5 hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
@@ -266,21 +229,21 @@ export default function ContagensPage() {
                         href={`/estoque/contagens/${c.id}` as Route}
                         className="text-foreground/80 hover:text-foreground transition-colors"
                       >
-                        {formatDate(c.data_abertura)}
+                        {formatDateTime(c.data_abertura)}
                       </Link>
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded ${tipoBadge.className}`}
+                        className={`inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded ${CONTAGEM_TIPO_BADGE[c.tipo] ?? CONTAGEM_TIPO_BADGE.ciclica}`}
                       >
-                        {tipoBadge.label}
+                        {CONTAGEM_TIPO_LABEL[c.tipo] ?? CONTAGEM_TIPO_LABEL.ciclica}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded ${statusBadge.className}`}
+                        className={`inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded ${CONTAGEM_STATUS_BADGE[c.status] ?? CONTAGEM_STATUS_BADGE.aberta}`}
                       >
-                        {statusBadge.label}
+                        {CONTAGEM_STATUS_LABEL[c.status] ?? CONTAGEM_STATUS_LABEL.aberta}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-foreground/60 text-xs">

@@ -8,8 +8,8 @@ import React from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { PlusCircle } from "lucide-react";
-import { useJournalEntries } from "@/hooks";
-import { useDebounce } from "@/hooks";
+import { useJournalEntries } from "@/hooks/useAccounting";
+import { useDebounce } from "@/hooks/useDebounce";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
 import {

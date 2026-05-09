@@ -5,12 +5,7 @@ import { ArrowLeft, Layers, Lock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useSnapshot } from "@/hooks/usePricingEngine"
-
-function formatCurrency(val: string | null | undefined) {
-  if (!val) return "—"
-  const n = parseFloat(val)
-  return isNaN(n) ? val : n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-}
+import { formatCurrency } from "@paddock/utils"
 
 function formatMargem(val: string | null | undefined) {
   if (!val) return "—"

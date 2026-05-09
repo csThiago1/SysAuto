@@ -9,8 +9,8 @@ import React from "react";
 import Link from "next/link";
 import type { Route } from "next";
 import { PlusCircle, TrendingUp, AlertCircle, CheckCircle2, Clock } from "lucide-react";
-import { useReceivableDocuments, useRecordReceipt, useCancelReceivable } from "@/hooks";
-import { useDebounce } from "@/hooks";
+import { useReceivableDocuments, useRecordReceipt, useCancelReceivable } from "@/hooks/useFinanceiro";
+import { useDebounce } from "@/hooks/useDebounce";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +34,7 @@ import {
   RECEIVABLE_ORIGIN_LABELS,
   PAYMENT_METHOD_LABELS,
 } from "@paddock/types";
+import { formatDate } from "@paddock/utils";
 
 // ── Formatting helpers ────────────────────────────────────────────────────────
 
@@ -41,10 +42,6 @@ const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" 
 
 function formatBRL(value: string): string {
   return brl.format(Number(value));
-}
-
-function formatDate(date: string): string {
-  return new Date(date + "T00:00:00").toLocaleDateString("pt-BR");
 }
 
 function isOverdue(dueDate: string, status: ReceivableStatus): boolean {

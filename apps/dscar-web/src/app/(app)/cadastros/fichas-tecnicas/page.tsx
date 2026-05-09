@@ -17,11 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { useFichas } from "@/hooks/useFichaTecnica"
 import type { FichaTecnicaServico } from "@paddock/types"
-
-function formatDate(iso: string): string {
-  const d = new Date(iso)
-  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })
-}
+import { formatDate } from "@paddock/utils"
 
 export default function FichasTecnicasPage() {
   const [search, setSearch] = useState("")

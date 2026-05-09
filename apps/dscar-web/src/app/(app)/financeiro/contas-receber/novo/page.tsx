@@ -11,7 +11,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { ChevronLeft, Search, X } from "lucide-react";
 import { z } from "zod";
-import { useCreateReceivable } from "@/hooks";
+import { useCreateReceivable } from "@/hooks/useFinanceiro";
 import { useCustomers } from "@/hooks/useCustomers";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
@@ -99,7 +99,7 @@ export default function NovoContaReceberPage(): React.ReactElement {
 
   // Customer search
   const [clienteSearch, setClienteSearch] = React.useState("");
-  const [clienteSelecionado, setClienteSelecionado] = React.useState<{ id: string; name: string; document_masked: string } | null>(null);
+  const [clienteSelecionado, setClienteSelecionado] = React.useState<{ id: string; name: string; document_masked?: string } | null>(null);
   const { data: clientesData } = useCustomers(clienteSearch);
   const clientes = clientesData?.results ?? [];
 
