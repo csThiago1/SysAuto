@@ -40,6 +40,7 @@ class ReceivableDocumentService:
         document_number: str = "",
         cost_center_id: str | None = None,
         notes: str = "",
+        fiscal_document: "object | None" = None,
         user: "object",
     ) -> ReceivableDocument:
         """
@@ -61,6 +62,7 @@ class ReceivableDocumentService:
             document_number: Numero do documento fiscal (opcional).
             cost_center_id: UUID do centro de custo (opcional).
             notes: Observacoes (opcional).
+            fiscal_document: FiscalDocument vinculado (opcional).
             user: Usuario criador.
 
         Returns:
@@ -91,6 +93,7 @@ class ReceivableDocumentService:
             cost_center_id=cost_center_id,
             notes=notes,
             status=initial_status,
+            fiscal_document=fiscal_document,
             created_by=user,
         )
 
@@ -109,6 +112,7 @@ class ReceivableDocumentService:
         order: "object",
         person: "object | None",
         billing_item: dict,
+        fiscal_document: "object | None" = None,
     ) -> ReceivableDocument:
         """Cria titulo a receber a partir de um item de faturamento de OS.
 
@@ -120,6 +124,7 @@ class ReceivableDocumentService:
             person: Person do cliente (pode ser None).
             billing_item: Dict com keys: recipient_type, category, label,
                           amount, default_payment_method, default_payment_term_days.
+            fiscal_document: FiscalDocument vinculado (opcional).
 
         Returns:
             ReceivableDocument criado.
@@ -149,6 +154,7 @@ class ReceivableDocumentService:
             competence_date=today,
             origin=origin,
             service_order_id=str(order.pk),
+            fiscal_document=fiscal_document,
             user=getattr(order, "created_by", None),
         )
 
@@ -349,6 +355,43 @@ class ReceivableDocumentService:
             getattr(user, "id", user),
         )
         return document
+
+    @classmethod
+    @transaction.atomic
+    def create_installments(
+        cls, base_data: dict, num_parcelas: int, interval_days: int = 30, user: "object" = None
+    ) -> list:
+        """Cria N titulos a receber com vencimentos escalonados.
+
+        Divide o valor total em parcelas iguais, ajustando centavos
+        na ultima parcela para garantir que a soma bata exatamente.
+
+        Args:
+            base_data: Dict com campos de CreateReceivableDocumentSerializer.validated_data.
+            num_parcelas: Quantidade de parcelas (1-12).
+            interval_days: Intervalo em dias entre vencimentos (default 30).
+            user: Usuario criador.
+
+        Returns:
+            Lista de ReceivableDocument criados.
+        """
+        from datetime import timedelta
+        from decimal import ROUND_HALF_UP
+
+        total = Decimal(str(base_data["amount"]))
+        valor_parcela = (total / num_parcelas).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        valor_ultima = total - (valor_parcela * (num_parcelas - 1))
+
+        parcelas: list = []
+        for i in range(num_parcelas):
+            data = {**base_data}
+            data["amount"] = valor_ultima if i == num_parcelas - 1 else valor_parcela
+            data["due_date"] = base_data["due_date"] + timedelta(days=i * interval_days)
+            data["description"] = f"{base_data['description']} ({i + 1}/{num_parcelas})"
+            doc_number = base_data.get("document_number", "")
+            data["document_number"] = f"{doc_number}-{i + 1}" if doc_number else f"P{i + 1}"
+            parcelas.append(cls.create_receivable(**data, user=user))
+        return parcelas
 
     @classmethod
     def refresh_overdue_status(cls) -> int:
