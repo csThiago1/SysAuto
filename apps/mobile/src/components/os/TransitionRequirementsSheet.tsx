@@ -20,6 +20,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
 import { Button } from '@/components/ui/Button';
@@ -60,14 +61,125 @@ const STATUS_LABELS: Record<string, string> = {
 
 type SheetMode = 'overview' | 'override' | 'manager';
 
-// ─── ValidationItem ───────────────────────────────────────────────────────────
+// ─── Mapeamento: código de validação → ação no app ───────────────────────────
+
+interface BlockAction {
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  /** Retorna os params para router.push, ou null se a ação é inline */
+  route: (osId: string) => { pathname: string; params?: Record<string, string> } | null;
+}
+
+const BLOCK_ACTIONS: Record<string, BlockAction> = {
+  // Fotos de vistoria inicial / checklist de entrada
+  PHOTOS_MIN_12: {
+    label: 'Fazer Vistoria',
+    icon: 'camera',
+    route: (osId) => ({ pathname: '/(app)/vistoria/entrada/[osId]', params: { osId } }),
+  },
+  // Fotos de vistoria final
+  FINAL_PHOTOS_12: {
+    label: 'Fazer Vistoria Final',
+    icon: 'camera',
+    route: (osId) => ({ pathname: '/(app)/vistoria/saida/[osId]', params: { osId } }),
+  },
+  // Fotos de acompanhamento
+  PROGRESS_PHOTO: {
+    label: 'Tirar Foto',
+    icon: 'camera',
+    route: (osId) => ({
+      pathname: '/(app)/camera',
+      params: { osId, folder: 'acompanhamento', slot: 'extra', checklistType: 'acompanhamento' },
+    }),
+  },
+  // Checklist de saída
+  EXIT_CHECKLIST: {
+    label: 'Preencher Checklist',
+    icon: 'checkbox',
+    route: (osId) => ({ pathname: '/(app)/checklist/[osId]', params: { osId } }),
+  },
+  // PDF do orçamento (seguradora)
+  BUDGET_PDF_INSURER: {
+    label: 'Enviar PDF',
+    icon: 'document-attach',
+    route: (osId) => ({
+      pathname: '/(app)/camera',
+      params: { osId, folder: 'orcamentos', slot: 'extra', checklistType: '' },
+    }),
+  },
+  // Peças
+  PARTS_EXIST: {
+    label: 'Adicionar Peças',
+    icon: 'construct',
+    route: () => null, // Ação inline — volta para aba Peças no detalhe
+  },
+  BUDGET_ITEMS_PRIVATE: {
+    label: 'Adicionar Itens',
+    icon: 'add-circle',
+    route: () => null,
+  },
+  PARTS_OR_LABOR_EXIST: {
+    label: 'Adicionar Itens',
+    icon: 'add-circle',
+    route: () => null,
+  },
+  // Assinatura
+  CLIENT_SIGNATURE: {
+    label: 'Capturar Assinatura',
+    icon: 'create',
+    route: () => null, // Inline — modal de assinatura
+  },
+  SIGNATURE_APPROVAL: {
+    label: 'Capturar Assinatura',
+    icon: 'create',
+    route: () => null,
+  },
+  // Apontamento de horas
+  TIMESHEET_CLOSED: {
+    label: 'Ver Apontamentos',
+    icon: 'timer',
+    route: () => null,
+  },
+  // Dados do veículo
+  VEHICLE_BASIC_DATA: {
+    label: 'Editar OS',
+    icon: 'pencil',
+    route: () => null,
+  },
+  CUSTOMER_TYPE_SET: {
+    label: 'Editar OS',
+    icon: 'pencil',
+    route: () => null,
+  },
+  CUSTOMER_LINKED: {
+    label: 'Editar OS',
+    icon: 'pencil',
+    route: () => null,
+  },
+  INSURER_DATA: {
+    label: 'Editar OS',
+    icon: 'pencil',
+    route: () => null,
+  },
+  // KM saída
+  MILEAGE_OUT: {
+    label: 'Editar OS',
+    icon: 'speedometer',
+    route: () => null,
+  },
+};
+
+// ─── ValidationItem (acionável) ──────────────────────────────────────────────
 
 interface ValidationItemProps {
   block: ValidationBlock;
   type: 'hard' | 'soft' | 'warn';
+  onAction?: () => void;
+  actionLabel?: string;
+  actionIcon?: keyof typeof Ionicons.glyphMap;
 }
 
-function ValidationItem({ block, type }: ValidationItemProps): React.JSX.Element {
+function ValidationItem({ block, type, onAction, actionLabel, actionIcon }: ValidationItemProps): React.JSX.Element {
   const config = {
     hard: { icon: 'close-circle'  as const, color: SemanticColors.error.color },
     soft: { icon: 'lock-closed'   as const, color: SemanticColors.warning.color },
@@ -78,12 +190,29 @@ function ValidationItem({ block, type }: ValidationItemProps): React.JSX.Element
   return (
     <View style={styles.validationRow}>
       <Ionicons name={icon} size={16} color={color} style={styles.validationIcon} />
-      <Text variant="bodySmall" style={[styles.validationText, { color }]}>
-        {block.message}
-        {type === 'warn' && (
-          <Text variant="caption" style={styles.optionalLabel}> (opcional)</Text>
+      <View style={styles.validationContent}>
+        <Text variant="bodySmall" style={[styles.validationText, { color }]}>
+          {block.message}
+          {type === 'warn' && (
+            <Text variant="caption" style={styles.optionalLabel}> (opcional)</Text>
+          )}
+        </Text>
+        {onAction && actionLabel && (
+          <TouchableOpacity
+            style={[styles.actionChip, { borderColor: color }]}
+            onPress={onAction}
+            activeOpacity={0.7}
+          >
+            {actionIcon && (
+              <Ionicons name={actionIcon} size={14} color={color} />
+            )}
+            <Text variant="caption" style={{ color, fontWeight: '600' }}>
+              {actionLabel}
+            </Text>
+            <Ionicons name="chevron-forward" size={12} color={color} />
+          </TouchableOpacity>
         )}
-      </Text>
+      </View>
     </View>
   );
 }
@@ -98,6 +227,10 @@ interface Props {
   validation: TransitionValidationResult | undefined;
   /** Called after a successful transition. No-arg signature kept for simplicity. */
   onSuccess: () => void;
+  /** Callbacks para ações inline (sem navegação) */
+  onOpenEditOS?: () => void;
+  onOpenPartsTab?: () => void;
+  onOpenSignature?: (docType: string) => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -109,12 +242,64 @@ export function TransitionRequirementsSheet({
   targetStatus,
   validation,
   onSuccess,
+  onOpenEditOS,
+  onOpenPartsTab,
+  onOpenSignature,
 }: Props): React.JSX.Element {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [mode, setMode] = useState<SheetMode>('overview');
   const [reason, setReason] = useState('');
   const [managerEmail, setManagerEmail] = useState('');
   const [managerPassword, setManagerPassword] = useState('');
+
+  // ── Resolver ação para cada código de validação ─────────────────────────────
+  const getBlockAction = (code: string): { onAction?: () => void; label?: string; icon?: keyof typeof Ionicons.glyphMap } => {
+    const action = BLOCK_ACTIONS[code];
+    if (!action) return {};
+
+    const routeResult = action.route(order.id);
+
+    // Ações com navegação — fecha o sheet e navega
+    if (routeResult) {
+      return {
+        label: action.label,
+        icon: action.icon,
+        onAction: () => {
+          handleClose();
+          router.push(routeResult as any);
+        },
+      };
+    }
+
+    // Ações inline — chama callback do parent
+    const inlineCodes: Record<string, (() => void) | undefined> = {
+      VEHICLE_BASIC_DATA: onOpenEditOS,
+      CUSTOMER_TYPE_SET: onOpenEditOS,
+      CUSTOMER_LINKED: onOpenEditOS,
+      INSURER_DATA: onOpenEditOS,
+      MILEAGE_OUT: onOpenEditOS,
+      PARTS_EXIST: onOpenPartsTab,
+      BUDGET_ITEMS_PRIVATE: onOpenPartsTab,
+      PARTS_OR_LABOR_EXIST: onOpenPartsTab,
+      CLIENT_SIGNATURE: () => onOpenSignature?.('OS_DELIVERY'),
+      SIGNATURE_APPROVAL: () => onOpenSignature?.('BUDGET_APPROVAL'),
+    };
+
+    const inlineHandler = inlineCodes[code];
+    if (inlineHandler) {
+      return {
+        label: action.label,
+        icon: action.icon,
+        onAction: () => {
+          handleClose();
+          inlineHandler();
+        },
+      };
+    }
+
+    return { label: action.label, icon: action.icon };
+  };
 
   const transitionMutation = useTransitionWithValidation(order.id);
   const overrideMutation = useRequestOverride(order.id);
@@ -248,19 +433,49 @@ export function TransitionRequirementsSheet({
             {mode === 'overview' && (
               <>
                 {/* Hard blocks */}
-                {hasHardBlocks && validation?.hard_blocks.map((b) => (
-                  <ValidationItem key={b.code} block={b} type="hard" />
-                ))}
+                {hasHardBlocks && validation?.hard_blocks.map((b) => {
+                  const action = getBlockAction(b.code);
+                  return (
+                    <ValidationItem
+                      key={b.code}
+                      block={b}
+                      type="hard"
+                      onAction={action.onAction}
+                      actionLabel={action.label}
+                      actionIcon={action.icon}
+                    />
+                  );
+                })}
 
                 {/* Soft blocks */}
-                {hasSoftBlocks && validation?.soft_blocks.map((b) => (
-                  <ValidationItem key={b.code} block={b} type="soft" />
-                ))}
+                {hasSoftBlocks && validation?.soft_blocks.map((b) => {
+                  const action = getBlockAction(b.code);
+                  return (
+                    <ValidationItem
+                      key={b.code}
+                      block={b}
+                      type="soft"
+                      onAction={action.onAction}
+                      actionLabel={action.label}
+                      actionIcon={action.icon}
+                    />
+                  );
+                })}
 
                 {/* Warnings */}
-                {hasWarnings && validation?.warnings.map((b) => (
-                  <ValidationItem key={b.code} block={b} type="warn" />
-                ))}
+                {hasWarnings && validation?.warnings.map((b) => {
+                  const action = getBlockAction(b.code);
+                  return (
+                    <ValidationItem
+                      key={b.code}
+                      block={b}
+                      type="warn"
+                      onAction={action.onAction}
+                      actionLabel={action.label}
+                      actionIcon={action.icon}
+                    />
+                  );
+                })}
 
                 {/* All clear indicator */}
                 {canProceed && !hasHardBlocks && !hasSoftBlocks && (
@@ -466,12 +681,26 @@ const styles = StyleSheet.create({
   validationIcon: {
     marginTop: 1,
   },
-  validationText: {
+  validationContent: {
     flex: 1,
+    gap: 6,
+  },
+  validationText: {
     lineHeight: 20,
   },
   optionalLabel: {
     color: Colors.textTertiary,
+  },
+  actionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: Radii.sm,
+    borderWidth: 1,
+    backgroundColor: 'rgba(255,255,255,0.04)',
   },
 
   // All clear

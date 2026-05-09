@@ -1015,6 +1015,20 @@ export default function OSDetailScreen(): React.JSX.Element {
           targetStatus={requirementsTarget}
           validation={order.transition_requirements?.[requirementsTarget]}
           onSuccess={() => handleRequirementsSuccess(requirementsTarget ?? undefined)}
+          onOpenEditOS={() => {
+            setRequirementsTarget(null);
+            setShowEditOS(true);
+          }}
+          onOpenPartsTab={() => {
+            setRequirementsTarget(null);
+            setActiveTab(1); // Aba "Peças"
+          }}
+          onOpenSignature={(docType) => {
+            setRequirementsTarget(null);
+            if (docType === 'OS_DELIVERY') {
+              setShowDeliverySignature(true);
+            }
+          }}
         />
       )}
 
