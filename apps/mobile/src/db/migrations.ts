@@ -35,5 +35,14 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 5,
+      steps: [
+        addColumns({
+          table: 'service_orders',
+          columns: [{ name: 'make_logo', type: 'string', isOptional: true }],
+        }),
+      ],
+    },
   ],
 });

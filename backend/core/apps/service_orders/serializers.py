@@ -687,16 +687,49 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
                 )
         return attrs
 
+    # Mapa de logos de montadoras — fonte: apiplacas.com.br
+    _MAKE_LOGOS: dict[str, str] = {
+        "chevrolet": "https://apiplacas.com.br/logos/logosMarcas/chevrolet.png",
+        "fiat": "https://apiplacas.com.br/logos/logosMarcas/fiat.png",
+        "ford": "https://apiplacas.com.br/logos/logosMarcas/ford.png",
+        "honda": "https://apiplacas.com.br/logos/logosMarcas/honda.png",
+        "hyundai": "https://apiplacas.com.br/logos/logosMarcas/hyundai.png",
+        "toyota": "https://apiplacas.com.br/logos/logosMarcas/toyota.png",
+        "volkswagen": "https://apiplacas.com.br/logos/logosMarcas/volkswagen.png",
+        "renault": "https://apiplacas.com.br/logos/logosMarcas/renault.png",
+        "nissan": "https://apiplacas.com.br/logos/logosMarcas/nissan.png",
+        "jeep": "https://apiplacas.com.br/logos/logosMarcas/jeep.png",
+        "bmw": "https://apiplacas.com.br/logos/logosMarcas/bmw.png",
+        "mercedes-benz": "https://apiplacas.com.br/logos/logosMarcas/mercedes-benz.png",
+        "audi": "https://apiplacas.com.br/logos/logosMarcas/audi.png",
+        "kia": "https://apiplacas.com.br/logos/logosMarcas/kia.png",
+        "peugeot": "https://apiplacas.com.br/logos/logosMarcas/peugeot.png",
+        "mitsubishi": "https://apiplacas.com.br/logos/logosMarcas/mitsubishi.png",
+        "volvo": "https://apiplacas.com.br/logos/logosMarcas/volvo.png",
+        "byd": "https://apiplacas.com.br/logos/logosMarcas/byd.png",
+        "citroën": "https://apiplacas.com.br/logos/logosMarcas/citroen.png",
+        "subaru": "https://apiplacas.com.br/logos/logosMarcas/subaru.png",
+        "dodge": "https://apiplacas.com.br/logos/logosMarcas/dodge.png",
+        "land rover": "https://apiplacas.com.br/logos/logosMarcas/land-rover.png",
+        "caoa chery": "https://apiplacas.com.br/logos/logosMarcas/caoa-chery.png",
+        "jac": "https://apiplacas.com.br/logos/logosMarcas/jac.png",
+        "gwm": "https://apiplacas.com.br/logos/logosMarcas/gwm.png",
+    }
+
     def create(self, validated_data: dict) -> "ServiceOrder":
         from apps.vehicles.models import Vehicle
 
         # UUID do UnifiedCustomer não pode ser salvo no FK inteiro de Person — descarta.
         validated_data.pop("customer", None)
 
+        # Resolve make_logo se não fornecido
+        make = validated_data.get("make", "")
+        if make and not validated_data.get("make_logo"):
+            validated_data["make_logo"] = self._MAKE_LOGOS.get(make.lower(), "")
+
         # Persiste veículo na base para lookup futuro (DB-first)
         plate = (validated_data.get("plate") or "").upper().strip().replace("-", "")
         if plate:
-            make = validated_data.get("make", "")
             model = validated_data.get("model", "")
             description = f"{make} {model}".strip()
             Vehicle.objects.get_or_create(
@@ -908,6 +941,7 @@ class ServiceOrderSyncSerializer(serializers.ModelSerializer):
     # Decimais como float — WatermelonDB schema type: 'number'
     total_parts = serializers.FloatField(source="parts_total")
     total_services = serializers.FloatField(source="services_total")
+    make_logo = serializers.SerializerMethodField()
     created_at_remote = serializers.SerializerMethodField()
     updated_at_remote = serializers.SerializerMethodField()
 
@@ -929,6 +963,7 @@ class ServiceOrderSyncSerializer(serializers.ModelSerializer):
             "consultant_name",
             "insurer_id",
             "insured_type",
+            "make_logo",
             "total_parts",
             "total_services",
             "created_at_remote",
@@ -956,6 +991,10 @@ class ServiceOrderSyncSerializer(serializers.ModelSerializer):
     def get_insured_type(self, obj: ServiceOrder) -> str:
         """Retorna insured_type ou string vazia."""
         return obj.insured_type or ""
+
+    def get_make_logo(self, obj: ServiceOrder) -> str:
+        """Retorna URL do logo da montadora ou string vazia."""
+        return obj.make_logo or ""
 
     def get_created_at_remote(self, obj: ServiceOrder) -> int:
         """Retorna opened_at como epoch em milissegundos para o WatermelonDB."""

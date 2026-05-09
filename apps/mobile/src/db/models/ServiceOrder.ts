@@ -24,4 +24,5 @@ export class ServiceOrder extends Model {
   @field('push_status') pushStatus!: string | null;
   @field('insurer_id') insurerId!: string | null;
   @field('insured_type') insuredType!: string | null;
+  @field('make_logo') makeLogo!: string | null;
 }

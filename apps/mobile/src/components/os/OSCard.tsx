@@ -76,9 +76,14 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
               <Text style={styles.plate}>{plateLine}</Text>
             </View>
             {vehicleLine.length > 0 && (
-              <Text variant="bodySmall" color={Colors.textPrimary} numberOfLines={1}>
-                {vehicleLine}
-              </Text>
+              <View style={styles.vehicleRow}>
+                {order.makeLogo ? (
+                  <Image source={{ uri: order.makeLogo }} style={styles.makeLogo} resizeMode="contain" />
+                ) : null}
+                <Text variant="bodySmall" color={Colors.textPrimary} numberOfLines={1} style={styles.vehicleText}>
+                  {vehicleLine}
+                </Text>
+              </View>
             )}
             <View style={styles.badgeRow}>
               <OSStatusBadge status={order.status} />
@@ -191,6 +196,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: Colors.textPrimary,
     fontVariant: ['tabular-nums'],
+  },
+  vehicleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  vehicleText: {
+    flex: 1,
+  },
+  makeLogo: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.9)',
   },
   insurerAvatar: {
     width: 52,
