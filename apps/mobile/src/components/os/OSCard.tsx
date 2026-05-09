@@ -130,6 +130,7 @@ export const OSCard = React.memo(
     prev.order.totalParts === next.order.totalParts &&
     prev.order.totalServices === next.order.totalServices &&
     prev.order.insurerId === next.order.insurerId &&
+    prev.order.makeLogo === next.order.makeLogo &&
     prev.insurer?.id === next.insurer?.id,
 );
 

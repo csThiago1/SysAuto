@@ -139,7 +139,7 @@ export function useServiceOrdersList(filters: OSFilters): UseServiceOrdersListRe
 
     const subscription = collection
       .query(...conditions)
-      .observeWithColumns(['created_at_remote', 'updated_at_remote', 'number'])
+      .observeWithColumns(['created_at_remote', 'updated_at_remote', 'number', 'make_logo'])
       .subscribe((results) => {
         // Deduplicate by remoteId — prefer synced record over pending (temp).
         // Duplicates arise when an online-created record has a different
