@@ -43,6 +43,8 @@ export interface FiscalDocumentList {
   pdf_url?: string;
   /** URL completa do XML autorizado (Focus) */
   xml_url?: string;
+  /** Contador de Cartas de Correção emitidas (máx 20) */
+  cce_count: number;
   created_at: string;
 }
 

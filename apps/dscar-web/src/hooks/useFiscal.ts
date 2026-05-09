@@ -161,6 +161,67 @@ export function useNfeRecebidaManifest() {
   })
 }
 
+/** Envia documento fiscal autorizado por email (CONSULTANT+). */
+export function useSendFiscalEmail() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      documentId,
+      emails,
+    }: {
+      documentId: string
+      emails: string[]
+    }) => {
+      return apiFetch(`${FISCAL}/documents/${documentId}/send-email/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emails }),
+      })
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: fiscalKeys.all })
+    },
+  })
+}
+
+/** Emite Carta de Correção Eletrônica para NF-e autorizada (MANAGER+). */
+export function useCCe() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ documentId, correcao }: { documentId: string; correcao: string }) => {
+      return apiFetch(`${FISCAL}/documents/${documentId}/cce/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ correcao }),
+      })
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: fiscalKeys.all })
+    },
+  })
+}
+
+/** Substitui NFS-e autorizada emitindo nova em seu lugar (ADMIN+). */
+export function useSubstituirNfse() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: {
+      chave_nfse_substituida: string
+      service_order_id?: string
+      codigo_justificativa?: string
+    }) => {
+      return apiFetch<{ status: string; nova_ref: string }>(`${FISCAL}/nfse/substituir/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: fiscalKeys.all })
+    },
+  })
+}
+
 /** Cancela documento fiscal autorizado (MANAGER+). */
 export function useCancelFiscalDoc() {
   const qc = useQueryClient()
@@ -174,5 +235,40 @@ export function useCancelFiscalDoc() {
       qc.invalidateQueries({ queryKey: fiscalKeys.all })
       qc.invalidateQueries({ queryKey: fiscalKeys.document(id) })
     },
+  })
+}
+
+// ─── S3-T3: Inutilização de Numeração NF-e ──────────────────────────────────
+
+export function useInutilizacao() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: {
+      serie: number;
+      numero_inicial: number;
+      numero_final: number;
+      justificativa: string;
+    }) => {
+      return apiFetch(`${FISCAL}/nfe/inutilizacao/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["inutilizacoes"] })
+    },
+  })
+}
+
+export function useInutilizacoes() {
+  return useQuery({
+    queryKey: ["inutilizacoes"],
+    queryFn: () => apiFetch<Array<{
+      id: string;
+      payload: Record<string, unknown>;
+      response_data: Record<string, unknown>;
+      created_at: string;
+    }>>(`${FISCAL}/nfe/inutilizacoes/`),
   })
 }
