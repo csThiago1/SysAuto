@@ -153,8 +153,8 @@ export function useServiceOrdersList(filters: OSFilters): UseServiceOrdersListRe
             seen.set(order.remoteId, order);
           }
         }
-        // Ordenar por mais recente primeiro (número decrescente)
-        const sorted = [...seen.values()].sort((a, b) => b.number - a.number);
+        // Ordenar por mais recente primeiro (data de criação decrescente)
+        const sorted = [...seen.values()].sort((a, b) => b.createdAtRemote - a.createdAtRemote);
         setOrders(sorted);
         setIsInitialLoad(false);
       });

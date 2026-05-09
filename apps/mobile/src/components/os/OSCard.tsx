@@ -12,33 +12,6 @@ import type { InsurerOption } from '@/hooks/useInsurers';
 import { OS_STATUS_MAP, Colors, Radii, Shadow, Spacing, type OSStatus } from '@/constants/theme';
 import { MonoLabel } from '@/components/ui/MonoLabel';
 
-// Logos de montadoras via CDN público (fallback quando make_logo está vazio)
-const MAKE_LOGO_MAP: Record<string, string> = {
-  chevrolet: 'https://logo.clearbit.com/chevrolet.com',
-  fiat: 'https://logo.clearbit.com/fiat.com',
-  ford: 'https://logo.clearbit.com/ford.com',
-  honda: 'https://logo.clearbit.com/honda.com.br',
-  hyundai: 'https://logo.clearbit.com/hyundai.com.br',
-  toyota: 'https://logo.clearbit.com/toyota.com.br',
-  volkswagen: 'https://logo.clearbit.com/vw.com.br',
-  renault: 'https://logo.clearbit.com/renault.com.br',
-  nissan: 'https://logo.clearbit.com/nissan.com.br',
-  jeep: 'https://logo.clearbit.com/jeep.com.br',
-  bmw: 'https://logo.clearbit.com/bmw.com.br',
-  'mercedes-benz': 'https://logo.clearbit.com/mercedes-benz.com.br',
-  audi: 'https://logo.clearbit.com/audi.com.br',
-  kia: 'https://logo.clearbit.com/kia.com.br',
-  peugeot: 'https://logo.clearbit.com/peugeot.com.br',
-  mitsubishi: 'https://logo.clearbit.com/mitsubishi-motors.com.br',
-  volvo: 'https://logo.clearbit.com/volvocars.com',
-  byd: 'https://logo.clearbit.com/byd.com',
-};
-
-function getMakeLogo(make: string): string {
-  if (!make) return '';
-  return MAKE_LOGO_MAP[make.toLowerCase()] ?? '';
-}
-
 interface OSCardProps {
   order: ServiceOrder;
   insurer?: InsurerOption;
@@ -75,7 +48,6 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
   const borderColor = OS_STATUS_MAP[order.status as OSStatus]?.color ?? '#94a3b8';
   const statusLabel = OS_STATUS_MAP[order.status as OSStatus]?.label ?? order.status;
   const cardAccessibilityLabel = `OS ${order.number}, ${vehicleLine}, ${statusLabel}`;
-  const makeLogoUrl = getMakeLogo(order.vehicleBrand ?? '');
 
   const isSvgLogo = insurer?.logoUrl?.endsWith('.svg') ?? false;
 
@@ -104,18 +76,9 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
               <Text style={styles.plate}>{plateLine}</Text>
             </View>
             {vehicleLine.length > 0 && (
-              <View style={styles.vehicleRow}>
-                {makeLogoUrl.length > 0 && (
-                  <Image
-                    source={{ uri: makeLogoUrl }}
-                    style={styles.makeLogo}
-                    resizeMode="contain"
-                  />
-                )}
-                <Text variant="bodySmall" color={Colors.textPrimary} numberOfLines={1} style={styles.vehicleText}>
-                  {vehicleLine}
-                </Text>
-              </View>
+              <Text variant="bodySmall" color={Colors.textPrimary} numberOfLines={1}>
+                {vehicleLine}
+              </Text>
             )}
             <View style={styles.badgeRow}>
               <OSStatusBadge status={order.status} />
@@ -228,19 +191,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: Colors.textPrimary,
     fontVariant: ['tabular-nums'],
-  },
-  vehicleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  vehicleText: {
-    flex: 1,
-  },
-  makeLogo: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
   },
   insurerAvatar: {
     width: 52,
