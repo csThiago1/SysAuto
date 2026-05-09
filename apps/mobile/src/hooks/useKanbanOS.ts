@@ -11,6 +11,8 @@ interface KanbanOS {
   status: string;
   entry_date: string;
   estimated_delivery_date: string | null;
+  /** Indicador leve: true quando há hard ou soft blocks para o próximo status. */
+  has_transition_blocks?: boolean;
 }
 
 export interface KanbanColumn {

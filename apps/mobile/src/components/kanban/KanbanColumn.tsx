@@ -34,6 +34,7 @@ export function KanbanColumn({ column, onCardPress }: KanbanColumnProps): React.
             model={[item.make, item.model].filter(Boolean).join(' ')}
             customerName={item.customer_name}
             daysInShop={daysAgo(item.entry_date)}
+            hasTransitionBlocks={item.has_transition_blocks ?? false}
             onPress={() => onCardPress(item.id)}
           />
         )}

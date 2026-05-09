@@ -81,6 +81,12 @@ const CardContent = React.memo(function CardContent({
             #{order.number}
           </span>
           <div className="flex items-center gap-1.5">
+            {order.has_transition_blocks && (
+              <span
+                className="h-2 w-2 rounded-full bg-warning-500 shrink-0"
+                title="Requisitos pendentes para avançar"
+              />
+            )}
             <DaysInShopBadge days={order.days_in_shop} />
             <StatusBadge status={order.status as ServiceOrderStatus} variant="dot" />
           </div>

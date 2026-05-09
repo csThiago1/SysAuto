@@ -44,8 +44,9 @@ import { EditOSModal } from '@/components/os/EditOSModal';
 import { useOSParts } from '@/hooks/useOSParts';
 import { useOSLabor } from '@/hooks/useOSLabor';
 import { VALID_TRANSITIONS } from '@paddock/types';
-import type { ServiceOrderStatus } from '@paddock/types';
+import type { ServiceOrderStatus, TransitionRequirements } from '@paddock/types';
 import type { OSStatus } from '@/constants/theme';
+import { TransitionRequirementsSheet } from '@/components/os/TransitionRequirementsSheet';
 
 // ─── Extended detail type (superset of what the hook returns) ─────────────────
 
@@ -94,6 +95,7 @@ interface ServiceOrderDetail {
   parts?: OSLineItem[];
   labor_items?: OSLineItem[];
   transition_logs?: OSTransitionLog[];
+  transition_requirements?: TransitionRequirements;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -582,6 +584,7 @@ export default function OSDetailScreen(): React.JSX.Element {
   const insets = useSafeAreaInsets();
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const [statusModalVisible, setStatusModalVisible] = React.useState<boolean>(false);
+  const [requirementsTarget, setRequirementsTarget] = React.useState<ServiceOrderStatus | null>(null);
   const [activeTab, setActiveTab] = useState<number>(0);
   const tabOpacity = useRef(new Animated.Value(1)).current;
 
@@ -614,7 +617,9 @@ export default function OSDetailScreen(): React.JSX.Element {
     setRefreshing(false);
   }, [refetch]);
 
-  const { update: updateStatus, isUpdating } = useUpdateOSStatus(id ?? '');
+  // isUpdating is passed to StatusUpdateModal to disable re-selection while a
+  // transition is in-flight (via TransitionRequirementsSheet).
+  const { isUpdating } = useUpdateOSStatus(id ?? '');
 
   const signatureCapture = useSignatureCapture();
   const [showDeliverySignature, setShowDeliverySignature] = useState(false);
@@ -672,20 +677,21 @@ export default function OSDetailScreen(): React.JSX.Element {
     [previewUrl],
   );
 
-  const handleSelectStatus = useCallback(async (newStatus: ServiceOrderStatus): Promise<void> => {
-    if (newStatus === 'delivered') {
-      setStatusModalVisible(false);
+  const handleSelectStatus = useCallback((newStatus: ServiceOrderStatus): void => {
+    // Close the status picker and open the requirements sheet for all transitions.
+    // The sheet handles the 'delivered' special case as well (via its own flow).
+    setStatusModalVisible(false);
+    setRequirementsTarget(newStatus);
+  }, []);
+
+  const handleRequirementsSuccess = useCallback((completedTarget?: ServiceOrderStatus): void => {
+    // For 'delivered', offer the signature capture as a post-transition step.
+    if (completedTarget === 'delivered') {
       setShowDeliverySignature(true);
-      return;
     }
-    try {
-      await updateStatus(newStatus);
-      setStatusModalVisible(false);
-      toast.success(`Status atualizado: ${getStatusLabel(newStatus)}`);
-    } catch {
-      toast.error('Erro ao atualizar status');
-    }
-  }, [updateStatus]);
+    setRequirementsTarget(null);
+    void refetch();
+  }, [refetch]);
 
   // ── Loading state ─────────────────────────────────────────────────────────
   if (isLoading) {
@@ -1000,6 +1006,18 @@ export default function OSDetailScreen(): React.JSX.Element {
         isUpdating={isUpdating}
       />
 
+      {/* ── Sheet de pré-requisitos de transição ───────────────────────── */}
+      {requirementsTarget !== null && (
+        <TransitionRequirementsSheet
+          visible
+          onClose={() => setRequirementsTarget(null)}
+          order={order as unknown as import('@paddock/types').ServiceOrder}
+          targetStatus={requirementsTarget}
+          validation={order.transition_requirements?.[requirementsTarget]}
+          onSuccess={() => handleRequirementsSuccess(requirementsTarget ?? undefined)}
+        />
+      )}
+
       {/* ── Modal de assinatura de entrega ─────────────────────────────── */}
       <Modal
         visible={showDeliverySignature}
@@ -1011,15 +1029,8 @@ export default function OSDetailScreen(): React.JSX.Element {
           <View style={{ flex: 1, padding: Spacing.lg, gap: Spacing.lg }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <Text variant="heading3">Assinatura de Entrega</Text>
-              <TouchableOpacity onPress={async () => {
-                setShowDeliverySignature(false);
-                try {
-                  await updateStatus('delivered');
-                  toast.success(`Status atualizado: ${getStatusLabel('delivered')}`);
-                } catch {
-                  toast.error('Erro ao atualizar status');
-                }
-              }}>
+              {/* OS já está em 'delivered' neste ponto — apenas fechar */}
+              <TouchableOpacity onPress={() => setShowDeliverySignature(false)}>
                 <Text variant="body" color={Colors.textTertiary}>Pular</Text>
               </TouchableOpacity>
             </View>
@@ -1042,12 +1053,6 @@ export default function OSDetailScreen(): React.JSX.Element {
                   toast.error('Erro ao registrar assinatura');
                 }
                 setShowDeliverySignature(false);
-                try {
-                  await updateStatus('delivered');
-                  toast.success(`Status atualizado: ${getStatusLabel('delivered')}`);
-                } catch {
-                  toast.error('Erro ao atualizar status');
-                }
               }}
             />
           </View>

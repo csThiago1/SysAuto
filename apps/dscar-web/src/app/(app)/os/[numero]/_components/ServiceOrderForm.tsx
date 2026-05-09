@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import type { ServiceOrder, ServiceOrderStatus } from "@paddock/types"
 import { VALID_TRANSITIONS } from "@paddock/types"
@@ -40,6 +41,7 @@ import { RemindersTab } from "./tabs/RemindersTab"
 import { ServicesTab } from "./tabs/ServicesTab"
 import { EstoqueTab } from "@/components/os/EstoqueTab"
 import { ImportBudgetModal } from "./ImportBudgetModal"
+import { TransitionRequirementsPanel } from "./TransitionRequirementsPanel"
 
 type TabId = "opening" | "parts" | "services" | "notes" | "reminders" | "history" | "closing" | "estoque" | "files"
 
@@ -49,6 +51,7 @@ interface ServiceOrderFormProps {
 
 export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<TabId>("opening")
   const [personDirtyData, setPersonDirtyData] = useState<PersonPatch | null>(null)
   const [importModalOpen, setImportModalOpen] = useState(false)
@@ -258,6 +261,19 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
           </button>
         </div>
       </div>
+
+      {/* Painel de requisitos de transicao */}
+      {order.status !== "delivered" && order.status !== "cancelled" && (
+        <div className="px-6 pt-3">
+          <TransitionRequirementsPanel
+            order={order}
+            onTransitionSuccess={() => {
+              void queryClient.invalidateQueries({ queryKey: ["service-orders", order.id] })
+              router.refresh()
+            }}
+          />
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="border-b bg-muted/50">

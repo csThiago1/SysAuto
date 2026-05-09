@@ -11,6 +11,7 @@ import {
   PopoverContent,
 } from "@/components/ui/popover";
 import { useOverdueOrders } from "@/hooks/useOverdueOrders";
+import { usePendingOverrides } from "@/hooks/useTransitionValidation";
 import type { OverdueServiceOrder } from "@paddock/types";
 
 function BadgeCount({ count }: { count: number }): React.ReactElement | null {
@@ -67,10 +68,13 @@ function OrderItem({ item }: { item: OverdueServiceOrder }): React.ReactElement 
 
 export function NotificationBell(): React.ReactElement {
   const { data, isLoading, isError, refetch } = useOverdueOrders();
+  const { data: pendingOverrides } = usePendingOverrides();
   const orders = data ?? [];
-  const alertCount = orders.filter(
+  const overdueAlertCount = orders.filter(
     (o) => o.urgency === "overdue" || o.urgency === "due_today"
   ).length;
+  const pendingOverrideCount = pendingOverrides?.length ?? 0;
+  const alertCount = overdueAlertCount + pendingOverrideCount;
   const overdue = orders.filter((o) => o.urgency === "overdue");
   const dueToday = orders.filter((o) => o.urgency === "due_today");
 
@@ -117,34 +121,64 @@ export function NotificationBell(): React.ReactElement {
               Tentar novamente
             </button>
           </div>
-        ) : orders.length === 0 ? (
+        ) : orders.length === 0 && pendingOverrideCount === 0 ? (
           <div className="px-4 py-6 text-center flex flex-col items-center gap-2">
             <CheckCircle2 className="h-6 w-6 text-green-500" />
             <p className="text-sm text-muted-foreground">Nenhuma OS vencida ou com entrega hoje.</p>
           </div>
         ) : (
-          <div className="max-h-72 overflow-y-auto px-3 py-2">
-            {overdue.length > 0 && (
+          <>
+            {orders.length > 0 && (
+              <div className="max-h-72 overflow-y-auto px-3 py-2">
+                {overdue.length > 0 && (
+                  <>
+                    <p className="text-xs font-bold text-error-400 uppercase tracking-wide mb-1 px-1">
+                      Atrasadas ({overdue.length})
+                    </p>
+                    {overdue.slice(0, 10).map((o) => (
+                      <OrderItem key={o.id} item={o} />
+                    ))}
+                  </>
+                )}
+                {dueToday.length > 0 && (
+                  <>
+                    <p className="text-xs font-bold text-amber-600 uppercase tracking-wide mt-2 mb-1 px-1">
+                      Entregam hoje ({dueToday.length})
+                    </p>
+                    {dueToday.slice(0, 10).map((o) => (
+                      <OrderItem key={o.id} item={o} />
+                    ))}
+                  </>
+                )}
+              </div>
+            )}
+
+            {pendingOverrides && pendingOverrides.length > 0 && (
               <>
-                <p className="text-xs font-bold text-error-400 uppercase tracking-wide mb-1 px-1">
-                  Atrasadas ({overdue.length})
-                </p>
-                {overdue.slice(0, 10).map((o) => (
-                  <OrderItem key={o.id} item={o} />
-                ))}
+                <div className="px-3 py-1.5 border-t">
+                  <p className="text-xs font-semibold text-warning-600">
+                    Liberações Pendentes ({pendingOverrides.length})
+                  </p>
+                </div>
+                <div className="max-h-48 overflow-y-auto">
+                  {pendingOverrides.map((ov) => (
+                    <Link
+                      key={ov.id}
+                      href={`/os/${ov.os_number}`}
+                      className="block px-3 py-2 hover:bg-muted/50 border-l-2 border-l-warning-500"
+                    >
+                      <p className="text-xs font-medium">
+                        OS #{ov.os_number} — {ov.os_plate}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {ov.requested_by_name}: {ov.request_reason}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
               </>
             )}
-            {dueToday.length > 0 && (
-              <>
-                <p className="text-xs font-bold text-amber-600 uppercase tracking-wide mt-2 mb-1 px-1">
-                  Entregam hoje ({dueToday.length})
-                </p>
-                {dueToday.slice(0, 10).map((o) => (
-                  <OrderItem key={o.id} item={o} />
-                ))}
-              </>
-            )}
-          </div>
+          </>
         )}
 
         {orders.length >= 10 && (
