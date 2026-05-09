@@ -11,6 +11,7 @@ from .views import (
     DREView,
     FaturamentoView,
     FinancialDashboardView,
+    FinanceiroAlertasView,
     FiscalPeriodViewSet,
     FiscalYearViewSet,
     InadimplenciaView,
@@ -30,5 +31,6 @@ urlpatterns = [
     path("dre/", DREView.as_view(), name="dre"),
     path("faturamento/", FaturamentoView.as_view(), name="faturamento"),
     path("inadimplencia/", InadimplenciaView.as_view(), name="inadimplencia"),
+    path("alertas/", FinanceiroAlertasView.as_view(), name="financeiro-alertas"),
     path("", include(router.urls)),
 ]

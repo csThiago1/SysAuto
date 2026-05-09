@@ -10,6 +10,7 @@ from .financial_dashboard import FinancialDashboardView
 from .fiscal_period import FiscalPeriodViewSet, FiscalYearViewSet
 from .inadimplencia import InadimplenciaView
 from .journal_entry import JournalEntryViewSet
+from .alerts import FinanceiroAlertasView
 
 __all__ = [
     "ChartOfAccountViewSet",
@@ -18,6 +19,7 @@ __all__ = [
     "DREView",
     "FaturamentoView",
     "FinancialDashboardView",
+    "FinanceiroAlertasView",
     "FiscalYearViewSet",
     "FiscalPeriodViewSet",
     "InadimplenciaView",
