@@ -128,14 +128,17 @@ class UnifiedCustomerViewSet(
         """
         GET /customers/search/?q=<termo>
 
-        Busca por nome (icontains) e por hash de CPF/telefone (apenas dígitos).
+        Busca unificada: UnifiedCustomer (public) + Person com role CLIENT (tenant).
         Retorna até 20 resultados no formato { count, results }.
         """
         q = request.query_params.get("q", "").strip()
         if len(q) < 3:
             return Response({"count": 0, "results": []})
 
-        # Hash do termo normalizado para CPF/telefone
+        results: list[dict] = []
+        seen_names: set[str] = set()
+
+        # 1. UnifiedCustomer (schema public)
         digits = "".join(filter(str.isdigit, q))
         digits_hash = hashlib.sha256(digits.encode()).hexdigest() if digits else None
 
@@ -148,6 +151,54 @@ class UnifiedCustomerViewSet(
             .filter(lookup)
             .order_by("name")[:20]
         )
-        serializer = UnifiedCustomerListSerializer(qs, many=True)
-        logger.debug("Customer search q=%r → %d resultado(s)", q, len(serializer.data))
-        return Response({"count": len(serializer.data), "results": serializer.data})
+        for c in qs:
+            results.append({
+                "id": str(c.id),
+                "name": c.name,
+                "cpf_masked": self._mask_cpf(str(c.cpf or "")),
+                "phone_masked": self._mask_phone(str(c.phone or "")),
+            })
+            seen_names.add(c.name.lower())
+
+        # 2. Person com role CLIENT (schema tenant)
+        try:
+            from apps.persons.models import Person, PersonRole
+
+            person_ids = PersonRole.objects.filter(
+                role="CLIENT",
+            ).values_list("person_id", flat=True)
+            persons = (
+                Person.objects.filter(
+                    id__in=person_ids,
+                    is_active=True,
+                    full_name__icontains=q,
+                )
+                .order_by("full_name")[:20]
+            )
+            for p in persons:
+                if p.full_name.lower() not in seen_names:
+                    results.append({
+                        "id": str(p.id),
+                        "name": p.full_name,
+                        "cpf_masked": "",
+                        "phone_masked": "",
+                    })
+                    seen_names.add(p.full_name.lower())
+        except Exception:
+            pass
+
+        results = results[:20]
+        logger.debug("Customer search q=%r → %d resultado(s)", q, len(results))
+        return Response({"count": len(results), "results": results})
+
+    @staticmethod
+    def _mask_cpf(cpf: str) -> str:
+        if len(cpf) >= 2:
+            return "***.***.***-" + cpf[-2:]
+        return ""
+
+    @staticmethod
+    def _mask_phone(phone: str) -> str:
+        if len(phone) >= 4:
+            return "(**) *****-" + phone[-4:]
+        return ""

@@ -139,7 +139,7 @@ export function useServiceOrdersList(filters: OSFilters): UseServiceOrdersListRe
 
     const subscription = collection
       .query(...conditions)
-      .observe()
+      .observeWithColumns(['created_at_remote', 'updated_at_remote', 'number'])
       .subscribe((results) => {
         // Deduplicate by remoteId — prefer synced record over pending (temp).
         // Duplicates arise when an online-created record has a different
@@ -153,7 +153,9 @@ export function useServiceOrdersList(filters: OSFilters): UseServiceOrdersListRe
             seen.set(order.remoteId, order);
           }
         }
-        setOrders([...seen.values()]);
+        // Ordenar por mais recente primeiro (número decrescente)
+        const sorted = [...seen.values()].sort((a, b) => b.number - a.number);
+        setOrders(sorted);
         setIsInitialLoad(false);
       });
 

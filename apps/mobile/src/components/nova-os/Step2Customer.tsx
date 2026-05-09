@@ -309,6 +309,13 @@ export function Step2Customer({ onNext, onBack }: Step2CustomerProps): React.JSX
         </View>
       )}
 
+      {/* Nenhum resultado */}
+      {queryText.trim().length >= 3 && !isSearching && results.length === 0 && (
+        <Text variant="bodySmall" color={Colors.textTertiary} style={styles.noResults}>
+          Nenhum cliente encontrado
+        </Text>
+      )}
+
       {/* New customer link — visible while typing */}
       {queryText.trim().length >= 3 && !isSearching && (
         <TouchableOpacity onPress={handleOpenCreate} style={styles.newClientLink} activeOpacity={0.7}>
@@ -389,6 +396,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.divider,
     gap: 2,
+  },
+  noResults: {
+    textAlign: 'center',
+    paddingVertical: 8,
   },
   newClientLink: {
     paddingVertical: 4,

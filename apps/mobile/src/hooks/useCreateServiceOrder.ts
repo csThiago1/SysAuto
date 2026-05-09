@@ -23,6 +23,7 @@ export function useCreateServiceOrder(): { create: (payload: CreateOSPayload) =>
   const create = async (payload: CreateOSPayload): Promise<CreateOSResult | null> => {
     setIsCreating(true); setError(null);
     try {
+      // Sempre tenta online primeiro
       try {
         const data = await api.post<ServiceOrderApiResponse>('/service-orders/', {
           customer_name: payload.customerName, customer: payload.customerId ?? null,
@@ -32,21 +33,30 @@ export function useCreateServiceOrder(): { create: (payload: CreateOSPayload) =>
           insurer: payload.insurerId ?? null, insured_type: payload.insuredType ?? null,
           casualty_number: payload.casualtyNumber ?? '', deductible_amount: payload.deductibleAmount ?? null,
         });
-        const record = await database.write(async () => {
-          return database.get<ServiceOrder>('service_orders').create((r) => {
-            r._raw.id = data.id; r.remoteId = data.id; r.number = data.number; r.status = data.status;
-            r.customerName = payload.customerName; r.vehiclePlate = payload.vehiclePlate;
-            r.vehicleBrand = payload.vehicleBrand; r.vehicleModel = payload.vehicleModel;
-            r.vehicleYear = payload.vehicleYear ?? null; r.vehicleColor = payload.vehicleColor ?? null;
-            r.customerType = payload.customerType; r.osType = payload.osType;
-            r.consultantName = null; r.totalParts = 0; r.totalServices = 0;
-            r.createdAtRemote = Date.now(); r.updatedAtRemote = Date.now();
-            r.syncedAt = Date.now(); r.pushStatus = 'synced';
-            r.insurerId = payload.insurerId ?? null; r.insuredType = payload.insuredType ?? null;
+
+        // API sucesso — salvar localmente (best-effort, não bloqueia navegação)
+        try {
+          await database.write(async () => {
+            return database.get<ServiceOrder>('service_orders').create((r) => {
+              r._raw.id = data.id; r.remoteId = data.id; r.number = data.number; r.status = data.status;
+              r.customerName = payload.customerName; r.vehiclePlate = payload.vehiclePlate;
+              r.vehicleBrand = payload.vehicleBrand; r.vehicleModel = payload.vehicleModel;
+              r.vehicleYear = payload.vehicleYear ?? null; r.vehicleColor = payload.vehicleColor ?? null;
+              r.customerType = payload.customerType; r.osType = payload.osType;
+              r.consultantName = null; r.totalParts = 0; r.totalServices = 0;
+              r.createdAtRemote = Date.now(); r.updatedAtRemote = Date.now();
+              r.syncedAt = Date.now(); r.pushStatus = 'synced';
+              r.insurerId = payload.insurerId ?? null; r.insuredType = payload.insuredType ?? null;
+            });
           });
-        });
-        return { localId: record.id, remoteId: data.id, number: data.number, isOffline: false };
-      } catch { /* API failed — offline fallback */ }
+        } catch {
+          // WDB falhou (ex: ID duplicado) — não bloqueia, sync resolverá
+        }
+
+        return { localId: data.id, remoteId: data.id, number: data.number, isOffline: false };
+      } catch {
+        // API falhou — offline fallback
+      }
 
       const tempId = generateTempId();
       const offlineRecord = await database.write(async () => {

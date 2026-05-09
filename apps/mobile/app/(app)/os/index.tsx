@@ -268,7 +268,7 @@ export default function OSListScreen(): React.JSX.Element {
 
   const renderItem = useCallback(
     ({ item }: { item: ServiceOrder }): React.JSX.Element => (
-      <OSCard order={item} insurer={item.insurerId != null ? insurerMap[item.insurerId] : undefined} />
+      <OSCard order={item} insurer={item.insurerId ? insurerMap[item.insurerId] : undefined} />
     ),
     [insurerMap],
   );
