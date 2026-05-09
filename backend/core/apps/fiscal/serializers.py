@@ -83,6 +83,7 @@ class NFeEntradaListSerializer(serializers.ModelSerializer):
             "valor_total",
             "status",
             "estoque_gerado",
+            "auto_imported",
             "total_itens",
             "created_at",
         ]
