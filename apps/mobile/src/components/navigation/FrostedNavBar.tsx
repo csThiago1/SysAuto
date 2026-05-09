@@ -1,6 +1,6 @@
 // apps/mobile/src/components/navigation/FrostedNavBar.tsx
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import {
   StyleSheet,
   TouchableOpacity,
@@ -16,26 +16,26 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { Colors, Radii } from '@/constants/theme';
-import { QuickActionsSheet } from '@/components/common/QuickActionsSheet';
+import { Colors } from '@/constants/theme';
 
-// ─── Tab configuration ─────────────────────────────────────────────────────
+// ─── Tab configuration (4 tabs, sem central) ─────────────────────────────────
 
 interface TabConfig {
   routeName: string;
   iconActive: keyof typeof Ionicons.glyphMap;
   iconInactive: keyof typeof Ionicons.glyphMap;
   label: string;
-  isCentral?: boolean;
-  badge?: boolean;
 }
 
 const TAB_CONFIG: TabConfig[] = [
   {
-    // Tabs.Screen name="index" — the OS list entry point declared in _layout.tsx.
-    // 'os' is a detail route (href: null) and never appears as a tab route name.
     routeName: 'index',
+    iconActive: 'home',
+    iconInactive: 'home-outline',
+    label: 'Início',
+  },
+  {
+    routeName: 'os/index',
     iconActive: 'list',
     iconInactive: 'list-outline',
     label: 'OS',
@@ -47,31 +47,20 @@ const TAB_CONFIG: TabConfig[] = [
     label: 'Agenda',
   },
   {
-    routeName: 'nova-os/index',
-    iconActive: 'add',
-    iconInactive: 'add',
-    label: 'Nova OS',
-    isCentral: true,
-  },
-  {
-    routeName: 'notificacoes/index',
-    iconActive: 'notifications',
-    iconInactive: 'notifications-outline',
-    label: 'Alertas',
-    badge: true,
-  },
-  {
-    routeName: 'perfil/index',
-    iconActive: 'settings',
-    iconInactive: 'settings-outline',
-    label: 'Config',
+    routeName: 'mais/index',
+    iconActive: 'menu',
+    iconInactive: 'menu-outline',
+    label: 'Mais',
   },
 ];
 
-// Only routes that should completely hide the nav bar (full-screen sub-screens).
-// 'os' is NOT listed here — it is the main OS list screen (app/(app)/os/index.tsx).
-// checklist, camera, photo-editor are full-screen flows that suppress the pill.
-const HIDDEN_ROUTES = new Set(['checklist', 'camera', 'photo-editor']);
+// Routes that completely hide the nav bar (full-screen sub-screens).
+const HIDDEN_ROUTES = new Set(['checklist', 'camera', 'photo-editor', 'vistoria']);
+
+// Routes that map to a tab highlight — e.g. 'os' detail stack → 'os/index' tab.
+const ROUTE_TO_TAB: Record<string, string> = {
+  'os': 'os/index',
+};
 
 // ─── TabItem ───────────────────────────────────────────────────────────────
 
@@ -79,22 +68,20 @@ interface TabItemProps {
   config: TabConfig;
   isActive: boolean;
   onPress: () => void;
-  hasBadge?: boolean;
 }
 
-function TabItem({ config, isActive, onPress, hasBadge = false }: TabItemProps): React.JSX.Element {
+function TabItem({ config, isActive, onPress }: TabItemProps): React.JSX.Element {
   const pressScale = useSharedValue(1);
   const restingScale = useSharedValue(isActive ? 1.05 : 1);
-  const lineOpacity = useSharedValue(isActive && !config.isCentral ? 1 : 0);
+  const lineOpacity = useSharedValue(isActive ? 1 : 0);
 
   useEffect(() => {
     restingScale.value = withTiming(isActive ? 1.05 : 1, { duration: 200 });
   }, [isActive, restingScale]);
 
   useEffect(() => {
-    if (config.isCentral) return;
     lineOpacity.value = withTiming(isActive ? 1 : 0, { duration: 200 });
-  }, [isActive, lineOpacity, config.isCentral]);
+  }, [isActive, lineOpacity]);
 
   const handlePress = useCallback((): void => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -112,23 +99,6 @@ function TabItem({ config, isActive, onPress, hasBadge = false }: TabItemProps):
     opacity: lineOpacity.value,
   }));
 
-  if (config.isCentral) {
-    return (
-      <TouchableOpacity
-        style={styles.centralItem}
-        onPress={handlePress}
-        activeOpacity={1}
-        accessibilityRole="tab"
-        accessibilityLabel={config.label}
-        accessibilityState={{ selected: isActive }}
-      >
-        <Animated.View style={[styles.centralButton, iconAnimStyle]}>
-          <Ionicons name="add" size={22} color={Colors.textPrimary} />
-        </Animated.View>
-      </TouchableOpacity>
-    );
-  }
-
   const iconColor = isActive ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.45)';
   const iconName = isActive ? config.iconActive : config.iconInactive;
 
@@ -139,12 +109,10 @@ function TabItem({ config, isActive, onPress, hasBadge = false }: TabItemProps):
       activeOpacity={1}
       accessibilityRole="tab"
       accessibilityState={{ selected: isActive }}
+      accessibilityLabel={config.label}
     >
       <Animated.View style={[styles.iconWrapper, iconAnimStyle]}>
-        <View>
-          <Ionicons name={iconName} size={22} color={iconColor} />
-          {hasBadge && <View style={styles.badgeDot} />}
-        </View>
+        <Ionicons name={iconName} size={22} color={iconColor} />
         <Animated.View style={[styles.activeLine, lineAnimStyle]} />
       </Animated.View>
     </TouchableOpacity>
@@ -152,12 +120,9 @@ function TabItem({ config, isActive, onPress, hasBadge = false }: TabItemProps):
 }
 
 // ─── FrostedNavBar ─────────────────────────────────────────────────────────
-// Name kept for compatibility with _layout.tsx import.
 
 export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const [showQuickActions, setShowQuickActions] = useState(false);
 
   const visibleRoutes = useMemo(
     () => state.routes.filter((r) => !HIDDEN_ROUTES.has(r.name)),
@@ -165,10 +130,7 @@ export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.J
   );
 
   const rawActiveRoute = state.routes[state.index]?.name;
-  // 'os' is a nested Stack (detail screens) that belongs to the 'index' tab (OS list).
-  // When user navigates to /(app)/os/*, the active route name is 'os' but the tab
-  // that should be highlighted is 'index'.
-  const activeRouteName = rawActiveRoute === 'os' ? 'index' : rawActiveRoute;
+  const activeRouteName = ROUTE_TO_TAB[rawActiveRoute ?? ''] ?? rawActiveRoute;
   const isHiddenRoute = rawActiveRoute !== undefined && HIDDEN_ROUTES.has(rawActiveRoute);
 
   const handleTabPress = useCallback(
@@ -204,27 +166,11 @@ export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.J
               key={route.key}
               config={config}
               isActive={isActive}
-              onPress={
-                config.isCentral
-                  ? () => setShowQuickActions(true)
-                  : () => handleTabPress(route.name, route.key, isActive)
-              }
-              hasBadge={config.badge === true}
+              onPress={() => handleTabPress(route.name, route.key, isActive)}
             />
           );
         })}
       </View>
-      <QuickActionsSheet
-        visible={showQuickActions}
-        onClose={() => setShowQuickActions(false)}
-        actions={[
-          { icon: 'add-circle-outline', label: 'Nova OS', onPress: () => router.push('/(app)/nova-os') },
-          { icon: 'person-add-outline', label: 'Novo Cliente', onPress: () => router.push('/(app)/cadastro/cliente') },
-          { icon: 'car-outline', label: 'Novo Veículo', onPress: () => router.push('/(app)/cadastro/veiculo') },
-          { icon: 'calendar-outline', label: 'Agendar Entrada', onPress: () => router.push('/(app)/agenda') },
-          { icon: 'grid-outline', label: 'Kanban', onPress: () => router.push('/(app)/kanban') },
-        ]}
-      />
     </View>
   );
 }
@@ -278,37 +224,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 6,
   },
-  centralItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 44,
-  },
-  centralButton: {
-    backgroundColor: Colors.brand,
-    borderRadius: Radii.lg,
-    paddingVertical: 9,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: Colors.brand,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.55,
-    shadowRadius: 12,
-    elevation: 6,
-  },
   hiddenPlaceholder: {
     height: 0,
-  },
-  badgeDot: {
-    position: 'absolute',
-    top: -2,
-    right: -4,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.brand,
-    borderWidth: 1.5,
-    borderColor: Colors.bg,
   },
 });
