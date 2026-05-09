@@ -1,9 +1,20 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 
 import { syncServiceOrders } from '@/db/sync';
+import { resetLocalDatabase } from '@/db/index';
 import { useSyncStore } from '@/stores/sync.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useConnectivity } from './useConnectivity';
+
+// One-time DB reset flag — increment when schema adds fields to existing records
+const DB_RESET_VERSION = 'db_reset_v5';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _mmkv: any = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { MMKV } = require('react-native-mmkv');
+  _mmkv = new MMKV({ id: 'sync-meta' });
+} catch { /* Expo Go */ }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -22,8 +33,25 @@ export function useSync(): UseSyncResult {
   const { lastSyncAt, isSyncing, pendingUploads } = useSyncStore();
   const logout = useAuthStore((s) => s.logout);
 
+  const didResetRef = useRef(false);
+
   const sync = useCallback(async (): Promise<void> => {
     if (isSyncing) return;
+
+    // One-time DB reset: garante que campos novos (make_logo etc.) são populados
+    if (!didResetRef.current && _mmkv) {
+      didResetRef.current = true;
+      const done = _mmkv.getBoolean(DB_RESET_VERSION);
+      if (!done) {
+        try {
+          await resetLocalDatabase();
+          _mmkv.set(DB_RESET_VERSION, true);
+        } catch {
+          // Se falhar, segue com o DB existente
+        }
+      }
+    }
+
     try {
       await syncServiceOrders();
     } catch (error) {

@@ -27,3 +27,14 @@ export const database = new Database({
   adapter,
   modelClasses: [ServiceOrder, ServiceOrderPhoto],
 });
+
+/**
+ * Limpa todo o banco local e força re-sync.
+ * Usar quando o schema mudou de forma que as migrations não cobrem
+ * (ex: campo novo adicionado a registros já sincronizados).
+ */
+export async function resetLocalDatabase(): Promise<void> {
+  await database.write(async () => {
+    await database.unsafeResetDatabase();
+  });
+}
