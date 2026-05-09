@@ -65,7 +65,7 @@ export function TransitionRequirementsPanel({
       // Use the pre-loaded transition_requirements from the order to determine
       // block type — ApiError doesn't expose the raw backend body for top-level
       // non-field keys like "transition_blocks".
-      if (err instanceof ApiError && err.status === 422) {
+      if (err instanceof ApiError && (err.status === 400 || err.status === 422)) {
         const targetValidation = requirements[target]
         const targetHardBlocks = (targetValidation?.hard_blocks?.length ?? 0) > 0
         const targetSoftBlocks = (targetValidation?.soft_blocks?.length ?? 0) > 0

@@ -27,6 +27,7 @@ from .models import (
     ServiceOrderPhoto,
     ServiceOrderStatus,
     StatusTransitionLog,
+    TransitionOverrideRequest,
 )
 
 logger = logging.getLogger(__name__)
@@ -1258,8 +1259,6 @@ class OverrideRequestSerializer(serializers.ModelSerializer):
     os_customer_name = serializers.CharField(source="service_order.customer_name", read_only=True)
 
     class Meta:
-        from .models import TransitionOverrideRequest
-
         model = TransitionOverrideRequest
         fields = [
             "id", "os_number", "os_plate", "os_customer_name",

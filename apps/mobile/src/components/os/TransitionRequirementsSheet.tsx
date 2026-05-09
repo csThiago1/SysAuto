@@ -334,14 +334,16 @@ export function TransitionRequirementsSheet({
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      // Inspeciona o erro para identificar soft blocks e oferecer override
-      const apiData = (err as { data?: { transition_blocks?: { type?: string } } })?.data;
-      if (apiData?.transition_blocks?.type === 'soft') {
+      // ApiError.data contém o JSON do response (ex: { transition_blocks: { type: "soft", ... } })
+      const errorData = (err as { data?: Record<string, unknown> })?.data;
+      const blocks = errorData?.transition_blocks as { type?: string } | undefined;
+      if (blocks?.type === 'soft') {
         setMode('override');
-      } else if (!hasHardBlocks) {
+      } else if (blocks?.type === 'hard') {
+        toast.error('Transição bloqueada — preencha os campos obrigatórios');
+      } else {
         toast.error('Erro ao avançar status');
       }
-      // Se hard blocks, o usuário já vê os bloqueios listados — não exibe toast extra
     }
   };
 

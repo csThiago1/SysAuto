@@ -303,6 +303,12 @@ class ServiceOrderViewSet(
         manager_user = data.get("_manager_user")
         changed_by_id = str(manager_user.id) if manager_user else str(request.user.id)
 
+        # Capturar warnings ANTES da transição (depois o status muda e a validação não se aplica)
+        from apps.service_orders.transition_validator import TransitionValidator
+        pre_validation = TransitionValidator.validate(
+            service_order, new_status, justification=data.get("justification", "")
+        )
+
         order = ServiceOrderService.transition(
             order_id=str(service_order.id),
             new_status=new_status,
@@ -322,8 +328,8 @@ class ServiceOrderViewSet(
 
             status_label = dict(SOS.choices).get(new_status, new_status)
             try:
-                tenant = get_tenant(request)
-                schema = getattr(tenant, "schema_name", "public")
+                from django.db import connection
+                schema = getattr(connection.tenant, "schema_name", "public")
             except Exception:
                 schema = "public"
 
@@ -337,11 +343,9 @@ class ServiceOrderViewSet(
 
         detail = ServiceOrderDetailSerializer(order, context={"request": request}).data
 
-        # Incluir warnings no response se a transição foi bem-sucedida e há alertas
-        from apps.service_orders.transition_validator import TransitionValidator
-        validation = TransitionValidator.validate(order, new_status)
-        if validation.warnings:
-            detail["_warnings"] = [w.to_dict() for w in validation.warnings]
+        # Incluir warnings da validação pré-transição no response
+        if pre_validation.warnings:
+            detail["_warnings"] = [w.to_dict() for w in pre_validation.warnings]
 
         return Response(detail)
 
@@ -1641,7 +1645,7 @@ class ServiceOrderViewSet(
             except Exception as e:
                 logger.error("Falha ao executar transição após override: %s", e)
                 return Response(
-                    {"detail": f"Override aprovado, mas transição falhou: {e}"},
+                    {"detail": "Override aprovado, mas a transição falhou. Contate o suporte."},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
 

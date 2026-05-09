@@ -113,26 +113,27 @@ def task_notify_override_request(
         target_status: Status de destino desejado.
     """
     from apps.authentication.models import GlobalUser
-    from apps.authentication.permissions import ROLE_HIERARCHY
 
-    managers = GlobalUser.objects.filter(
+    # GlobalUser não tem campo role (vem do JWT). Enviamos para todos os
+    # is_staff=True (gerentes/admins) que tenham push_token registrado.
+    # Em oficinas pequenas como DS Car, isso é seguro e eficiente.
+    staff_with_token = GlobalUser.objects.filter(
         is_active=True,
+        is_staff=True,
     ).exclude(push_token="")
 
-    for user in managers:
-        role = getattr(user, "role", "STOREKEEPER")
-        if ROLE_HIERARCHY.get(role, 0) >= ROLE_HIERARCHY.get("MANAGER", 3):
-            task_send_push_notification.delay(
-                tenant_schema=tenant_schema,
-                token=user.push_token,
-                title=f"Liberação solicitada — OS #{os_number}",
-                body=f"{requester_name} solicita avançar OS {plate} para '{target_status}'",
-                data={
-                    "type": "override_request",
-                    "override_id": override_id,
-                    "os_number": os_number,
-                },
-            )
+    for user in staff_with_token:
+        task_send_push_notification.delay(
+            tenant_schema=tenant_schema,
+            token=user.push_token,
+            title=f"Liberação solicitada — OS #{os_number}",
+            body=f"{requester_name} solicita avançar OS {plate} para '{target_status}'",
+            data={
+                "type": "override_request",
+                "override_id": override_id,
+                "os_number": os_number,
+            },
+        )
 
 
 @shared_task
