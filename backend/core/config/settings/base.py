@@ -241,6 +241,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.accounts_receivable.tasks.task_refresh_overdue_receivables_all_tenants",
         "schedule": crontab(hour=6, minute=15),  # Todo dia às 06:15
     },
+    # OS — expirar overrides de transição pendentes há mais de 24h
+    "os-expire-overrides": {
+        "task": "apps.service_orders.tasks.task_expire_overrides",
+        "schedule": crontab(minute=0),  # A cada hora cheia
+    },
 }
 
 # ─── Django Channels ─────────────────────────────────────────────────────────
