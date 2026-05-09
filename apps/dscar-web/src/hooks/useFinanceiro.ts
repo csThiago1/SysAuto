@@ -298,3 +298,47 @@ export function useCancelReceivable(): ReturnType<
     },
   });
 }
+
+// ── Installments (Parcelamento) ───────────────────────────────────────────────
+
+export function useCreateReceivableInstallments(): ReturnType<
+  typeof useMutation<ReceivableDocumentListItem[], Error, Record<string, unknown>>
+> {
+  const qc = useQueryClient();
+  return useMutation<ReceivableDocumentListItem[], Error, Record<string, unknown>>({
+    mutationFn: async (data) =>
+      apiFetch<ReceivableDocumentListItem[]>(`${AR}/documents/installments/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: financeiroKeys.receivable.all });
+      toast.success("Parcelas criadas com sucesso.");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Erro ao criar parcelas.");
+    },
+  });
+}
+
+export function useCreatePayableInstallments(): ReturnType<
+  typeof useMutation<PayableDocumentListItem[], Error, Record<string, unknown>>
+> {
+  const qc = useQueryClient();
+  return useMutation<PayableDocumentListItem[], Error, Record<string, unknown>>({
+    mutationFn: async (data) =>
+      apiFetch<PayableDocumentListItem[]>(`${AP}/documents/installments/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: financeiroKeys.payable.all });
+      toast.success("Parcelas criadas com sucesso.");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Erro ao criar parcelas.");
+    },
+  });
+}

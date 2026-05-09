@@ -169,6 +169,50 @@ class PayableDocumentViewSet(ModelViewSet):
         )
 
     @action(
+        detail=False,
+        methods=["post"],
+        url_path="installments",
+        permission_classes=[IsAuthenticated, IsManagerOrAbove],
+    )
+    def create_installments_action(self, request: Request) -> Response:
+        """
+        Cria N titulos a pagar com vencimentos escalonados (parcelamento).
+
+        POST /accounts-payable/documents/installments/
+        Body: campos de CreatePayableDocumentSerializer + num_parcelas + interval_days
+
+        Args:
+            request: Request com dados base do titulo + num_parcelas e interval_days.
+
+        Returns:
+            Response com lista de PayableDocumentListSerializer dos titulos criados.
+        """
+        data = request.data.copy()
+        num_parcelas = int(data.pop("num_parcelas", 1))
+        interval_days = int(data.pop("interval_days", 30))
+
+        if num_parcelas < 1 or num_parcelas > 12:
+            return Response(
+                {"num_parcelas": "Deve ser entre 1 e 12."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = CreatePayableDocumentSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        base_data = serializer.validated_data
+
+        parcelas = PayableDocumentService.create_installments(
+            base_data=base_data,
+            num_parcelas=num_parcelas,
+            interval_days=interval_days,
+            user=request.user,
+        )
+        return Response(
+            PayableDocumentListSerializer(parcelas, many=True).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(
         methods=["post"],
         detail=True,
         url_path="pay",

@@ -11,7 +11,7 @@ import Link from "next/link";
 import type { Route } from "next";
 import { ChevronLeft, Search, X } from "lucide-react";
 import { z } from "zod";
-import { useCreateReceivable } from "@/hooks/useFinanceiro";
+import { useCreateReceivable, useCreateReceivableInstallments } from "@/hooks/useFinanceiro";
 import { useCustomers } from "@/hooks/useCustomers";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
@@ -79,9 +79,34 @@ const ORIGIN_OPTIONS = Object.entries(RECEIVABLE_ORIGIN_LABELS) as [
   string,
 ][];
 
+// ── Installment preview helper ────────────────────────────────────────────────
+
+function computeInstallments(
+  total: number,
+  numParcelas: number,
+  dueDate: string,
+  intervalDays: number
+): Array<{ parcela: number; valor: string; vencimento: string }> {
+  if (numParcelas < 2 || total <= 0 || !dueDate) return [];
+  const valorParcela = Math.floor((total / numParcelas) * 100) / 100;
+  const valorUltima = Math.round((total - valorParcela * (numParcelas - 1)) * 100) / 100;
+
+  const baseDate = new Date(dueDate + "T12:00:00");
+  return Array.from({ length: numParcelas }, (_, i) => {
+    const d = new Date(baseDate);
+    d.setDate(d.getDate() + i * intervalDays);
+    return {
+      parcela: i + 1,
+      valor: (i === numParcelas - 1 ? valorUltima : valorParcela).toFixed(2),
+      vencimento: d.toISOString().split("T")[0] ?? "",
+    };
+  });
+}
+
 export default function NovoContaReceberPage(): React.ReactElement {
   const router = useRouter();
   const createReceivable = useCreateReceivable();
+  const createInstallments = useCreateReceivableInstallments();
 
   const todayStr = new Date().toISOString().split("T")[0] ?? "";
 
@@ -96,6 +121,10 @@ export default function NovoContaReceberPage(): React.ReactElement {
     origin: "MAN",
     notes: "",
   });
+
+  // Installment state
+  const [numParcelas, setNumParcelas] = React.useState(1);
+  const [intervalDays, setIntervalDays] = React.useState(30);
 
   // Customer search
   const [clienteSearch, setClienteSearch] = React.useState("");
@@ -116,6 +145,15 @@ export default function NovoContaReceberPage(): React.ReactElement {
     });
     setErrors((p) => ({ ...p, [key]: undefined }));
   };
+
+  const installmentPreview = React.useMemo(
+    () => computeInstallments(parseFloat(form.amount) || 0, numParcelas, form.due_date, intervalDays),
+    [form.amount, numParcelas, form.due_date, intervalDays]
+  );
+
+  const isSaving = createReceivable.isPending || createInstallments.isPending;
+  const saveError = createReceivable.isError || createInstallments.isError;
+  const saveErrorMessage = createReceivable.error?.message || createInstallments.error?.message;
 
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
@@ -145,24 +183,30 @@ export default function NovoContaReceberPage(): React.ReactElement {
       return;
     }
 
-    createReceivable.mutate(
-      {
-        description: result.data.description,
-        customer_name: result.data.customer_name,
-        customer_id: result.data.customer_id,
-        amount: parseFloat(result.data.amount).toFixed(2),
-        due_date: result.data.due_date,
-        competence_date: result.data.competence_date,
-        document_number: result.data.document_number,
-        origin: result.data.origin,
-        notes: result.data.notes,
-      },
-      {
-        onSuccess: () => {
-          void router.push("/financeiro/contas-receber" as Route);
-        },
-      }
-    );
+    const payload = {
+      description: result.data.description,
+      customer_name: result.data.customer_name,
+      customer_id: result.data.customer_id,
+      amount: parseFloat(result.data.amount).toFixed(2),
+      due_date: result.data.due_date,
+      competence_date: result.data.competence_date,
+      document_number: result.data.document_number,
+      origin: result.data.origin,
+      notes: result.data.notes,
+    };
+
+    const onSuccess = (): void => {
+      void router.push("/financeiro/contas-receber" as Route);
+    };
+
+    if (numParcelas > 1) {
+      createInstallments.mutate(
+        { ...payload, num_parcelas: numParcelas, interval_days: intervalDays },
+        { onSuccess }
+      );
+    } else {
+      createReceivable.mutate(payload, { onSuccess });
+    }
   };
 
   return (
@@ -330,6 +374,63 @@ export default function NovoContaReceberPage(): React.ReactElement {
             </div>
           </section>
 
+          {/* Parcelamento */}
+          <section className="rounded-md bg-muted/50 shadow-card p-5 space-y-4">
+            <h2 className="text-sm font-semibold text-foreground border-b border-border pb-2">
+              Parcelamento
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField label="Parcelas">
+                <Input
+                  type="number"
+                  min={1}
+                  max={12}
+                  value={numParcelas}
+                  onChange={(e) => {
+                    const v = Math.max(1, Math.min(12, parseInt(e.target.value, 10) || 1));
+                    setNumParcelas(v);
+                  }}
+                />
+              </FormField>
+              {numParcelas > 1 && (
+                <FormField label="Intervalo (dias)">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={intervalDays}
+                    onChange={(e) => {
+                      const v = Math.max(1, Math.min(365, parseInt(e.target.value, 10) || 30));
+                      setIntervalDays(v);
+                    }}
+                  />
+                </FormField>
+              )}
+            </div>
+            {installmentPreview.length > 0 && (
+              <div className="mt-3 rounded-md border border-border overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/70">
+                    <tr>
+                      <th className="text-left px-3 py-2 font-medium text-foreground/70">Parcela</th>
+                      <th className="text-right px-3 py-2 font-medium text-foreground/70">Valor (R$)</th>
+                      <th className="text-right px-3 py-2 font-medium text-foreground/70">Vencimento</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {installmentPreview.map((p) => (
+                      <tr key={p.parcela} className="border-t border-border">
+                        <td className="px-3 py-2 text-foreground">{p.parcela}/{numParcelas}</td>
+                        <td className="px-3 py-2 text-right text-foreground">{p.valor}</td>
+                        <td className="px-3 py-2 text-right text-muted-foreground">{p.vencimento}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
           {/* Observações */}
           <section className="rounded-md bg-muted/50 shadow-card p-5 space-y-4">
             <h2 className="text-sm font-semibold text-foreground border-b border-border pb-2">
@@ -347,10 +448,9 @@ export default function NovoContaReceberPage(): React.ReactElement {
           </section>
 
           {/* API error */}
-          {createReceivable.isError && (
+          {saveError && (
             <p className="text-sm text-error-400 bg-error-500/10 rounded-md px-4 py-3">
-              {createReceivable.error?.message ||
-                "Erro ao criar título. Tente novamente."}
+              {saveErrorMessage || "Erro ao criar título. Tente novamente."}
             </p>
           )}
 
@@ -364,10 +464,14 @@ export default function NovoContaReceberPage(): React.ReactElement {
             </Link>
             <button
               type="submit"
-              disabled={createReceivable.isPending}
+              disabled={isSaving}
               className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
-              {createReceivable.isPending ? "Salvando..." : "Salvar Título"}
+              {isSaving
+                ? "Salvando..."
+                : numParcelas > 1
+                  ? `Criar ${numParcelas} Parcelas`
+                  : "Salvar Título"}
             </button>
           </div>
         </form>
