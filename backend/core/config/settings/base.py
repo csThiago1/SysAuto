@@ -246,6 +246,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.service_orders.tasks.task_expire_overrides",
         "schedule": crontab(minute=0),  # A cada hora cheia
     },
+    # Módulo Contábil — geração de despesas recorrentes (AP) no dia 1 de cada mês
+    "accounting-generate-recurring-expenses": {
+        "task": "apps.accounting.tasks.task_generate_recurring_expenses_all_tenants",
+        "schedule": crontab(hour=7, minute=0, day_of_month=1),  # Dia 1 de cada mês às 07:00
+    },
 }
 
 # ─── Django Channels ─────────────────────────────────────────────────────────

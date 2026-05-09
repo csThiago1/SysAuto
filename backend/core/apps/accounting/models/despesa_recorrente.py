@@ -82,6 +82,19 @@ class DespesaRecorrente(PaddockBaseModel):
         related_name="despesas_recorrentes",
         verbose_name=_("Conta contábil"),
     )
+    supplier = models.ForeignKey(
+        "accounts_payable.Supplier",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="despesas_recorrentes",
+        verbose_name=_("Fornecedor"),
+    )
+    dia_vencimento = models.PositiveIntegerField(
+        default=10,
+        help_text=_("Dia do mês para vencimento do título gerado."),
+        verbose_name=_("Dia de vencimento"),
+    )
     observacoes = models.TextField(_("Observações"), blank=True)
 
     class Meta:
