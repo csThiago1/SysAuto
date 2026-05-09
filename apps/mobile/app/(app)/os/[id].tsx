@@ -1,8 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Animated,
-  Image,
   Modal,
   RefreshControl,
   ScrollView,
@@ -17,233 +15,39 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
-import { Card } from '@/components/ui/Card';
-import { Colors, Radii, Spacing } from '@/constants/theme';
-import { SectionDivider } from '@/components/ui/SectionDivider';
 import { Button } from '@/components/ui/Button';
-import { SegmentedControl } from '@/components/ui/SegmentedControl';
-import { InfoRow } from '@/components/ui/InfoRow';
+import { Colors, Radii, Spacing } from '@/constants/theme';
 import { MonoLabel } from '@/components/ui/MonoLabel';
 import { StatusDot } from '@/components/ui/StatusDot';
 import { getStatusLabel, getStatusColor, getStatusBackgroundColor } from '@/components/os/OSStatusBadge';
-import { ShimmerBlock } from '@/components/ui/ShimmerBlock';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useServiceOrder } from '@/hooks/useServiceOrders';
 import { useUpdateOSStatus } from '@/hooks/useUpdateOSStatus';
 import { SignatureCanvas } from '@/components/ui/SignatureCanvas';
 import { useSignatureCapture } from '@/hooks/useSignatureCapture';
-import { useOSDocuments, downloadAndSharePdf } from '@/hooks/useOSDocuments';
 import { useShallow } from 'zustand/react/shallow';
-import { usePhotoStore, uploadPendingPhotos } from '@/stores/photo.store';
+import { usePhotoStore } from '@/stores/photo.store';
 import { useChecklistItemsStore } from '@/stores/checklist-items.store';
-import { useConnectivity } from '@/hooks/useConnectivity';
 import { toast } from '@/stores/toast.store';
 import { PartsTab } from '@/components/os/PartsTab';
 import { LaborTab } from '@/components/os/LaborTab';
-import { FinancialSummary } from '@/components/os/FinancialSummary';
+import { GeneralTab } from '@/components/os/GeneralTab';
+import { PhotosTab } from '@/components/os/PhotosTab';
+import { DocsTab } from '@/components/os/DocsTab';
+import { HistoryTab } from '@/components/os/HistoryTab';
 import { EditOSModal } from '@/components/os/EditOSModal';
 import { useOSParts } from '@/hooks/useOSParts';
 import { useOSLabor } from '@/hooks/useOSLabor';
-import { VALID_TRANSITIONS } from '@paddock/types';
-import type { ServiceOrderStatus, TransitionRequirements } from '@paddock/types';
+import type { ServiceOrderStatus } from '@paddock/types';
 import type { OSStatus } from '@/constants/theme';
 import { TransitionRequirementsSheet } from '@/components/os/TransitionRequirementsSheet';
 
 import {
   TAB_NAMES,
-  OS_TYPE_LABELS,
-  formatDateTime,
-  groupPhotosByFolder,
 } from '@/components/os/os-detail-utils';
-import type { OSPhoto } from '@/components/os/os-detail-utils';
+import type { ServiceOrderDetail } from '@/components/os/os-detail-utils';
 import { StatusUpdateModal } from '@/components/os/StatusUpdateModal';
 import { OSDetailSkeleton } from '@/components/os/OSDetailSkeleton';
-import { PhotoGroup } from '@/components/os/PhotoGroup';
-import { TransitionLogItem } from '@/components/os/TransitionLogItem';
-import { ChecklistProgressRow } from '@/components/os/ChecklistProgressRow';
-import { VistoriaCTACard } from '@/components/os/VistoriaCTACard';
-
-// ─── Extended detail type (superset of what the hook returns) ─────────────────
-
-interface ServiceOrderDetail {
-  id: string;
-  number: number;
-  status: string;
-  customer_name: string;
-  customer_type: string;
-  os_type: string;
-  plate: string;
-  make: string;
-  model: string;
-  year?: number;
-  color?: string;
-  opened_at: string;
-  parts_total: string;
-  services_total: string;
-  consultant?: { id: string; email: string; full_name: string };
-  photos?: OSPhoto[];
-  transition_logs?: Array<{ id: string; from_status: string; to_status: string; created_at: string; changed_by_name?: string }>;
-  transition_requirements?: TransitionRequirements;
-  casualty_number?: string;
-  deductible_amount?: string;
-  estimated_delivery_date?: string;
-  observations?: string;
-}
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const CUSTOMER_TYPE_LABELS: Record<string, string> = {
-  insurer: 'Seguradora',
-  private: 'Particular',
-};
-
-// ─── Acompanhamento Section ───────────────────────────────────────────────────
-
-interface AcompanhamentoSectionProps {
-  osId: string;
-  onAddPhoto: () => void;
-  onPhotoPress: (url: string) => void;
-  remotePhotos: OSPhoto[];
-}
-
-const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
-  osId,
-  onAddPhoto,
-  onPhotoPress,
-  remotePhotos,
-}: AcompanhamentoSectionProps): React.JSX.Element {
-  const isOnline = useConnectivity();
-  const [isUploading, setIsUploading] = useState<boolean>(false);
-
-  const localPhotos = usePhotoStore(
-    useShallow((s) => s.queue.filter((p) => p.osId === osId && p.folder === 'acompanhamento')),
-  );
-
-  const pendingCount = localPhotos.filter((p) => p.uploadStatus === 'pending').length;
-  const errorCount  = localPhotos.filter((p) => p.uploadStatus === 'error').length;
-  // Mostra botão para pending E para retry de erros
-  const showUpload = (pendingCount + errorCount) > 0 && isOnline;
-  const uploadLabel = errorCount > 0 && pendingCount === 0
-    ? `Tentar novamente (${errorCount})`
-    : `Enviar fotos (${pendingCount + errorCount})`;
-
-  const handleUpload = useCallback((): void => {
-    if (isUploading) return;
-    // Recoloca erros como pending para que uploadPendingPhotos os processe
-    const { queue } = usePhotoStore.getState();
-    const errorIds = queue
-      .filter((p) => p.osId === osId && p.folder === 'acompanhamento' && p.uploadStatus === 'error')
-      .map((p) => p.id);
-    errorIds.forEach((pid) => usePhotoStore.getState().retryPhoto(pid));
-    setIsUploading(true);
-    void uploadPendingPhotos()
-      .then(() => { toast.success('Foto enviada'); })
-      .catch(() => { toast.error('Erro ao enviar foto'); })
-      .finally(() => setIsUploading(false));
-  }, [isUploading, osId]);
-
-  return (
-    <View>
-      <View style={styles.acompSectionHeader}>
-        <Text variant="label" color={Colors.textPrimary}>
-          Fotos de Acompanhamento
-        </Text>
-        <TouchableOpacity
-          style={styles.acompAddBtn}
-          onPress={onAddPhoto}
-          activeOpacity={0.75}
-        >
-          <Ionicons name="camera-outline" size={16} color={Colors.brand} />
-          <Text variant="caption" style={styles.acompAddLabel}>
-            Adicionar
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      <Card style={styles.card} padded={false}>
-        {localPhotos.length === 0 && remotePhotos.length === 0 ? (
-          <View style={styles.acompEmpty}>
-            <Ionicons name="images-outline" size={32} color={Colors.skeleton} />
-            <Text variant="bodySmall" color={Colors.textSecondary} style={styles.acompEmptyText}>
-              Nenhuma foto de acompanhamento ainda
-            </Text>
-          </View>
-        ) : (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.photoScroll}
-            contentContainerStyle={styles.acompScrollContent}
-          >
-            {/* Remote (uploaded) photos */}
-            {remotePhotos.map((photo) => (
-              <TouchableOpacity
-                key={photo.id}
-                onPress={() => onPhotoPress(photo.url)}
-                activeOpacity={0.85}
-                style={styles.acompThumb}
-              >
-                <Image source={{ uri: photo.url }} style={styles.acompThumbImg} resizeMode="cover" />
-                <View style={[styles.acompThumbBadge, styles.acompThumbDone]}>
-                  <Ionicons name="checkmark" size={10} color={Colors.textPrimary} />
-                </View>
-              </TouchableOpacity>
-            ))}
-            {/* Local (queued) photos */}
-            {localPhotos.map((photo) => {
-              const uri = photo.annotatedLocalUri ?? photo.localUri;
-              const isDone = photo.uploadStatus === 'done';
-              const isErr = photo.uploadStatus === 'error';
-              return (
-                <TouchableOpacity
-                  key={photo.id}
-                  onPress={() => onPhotoPress(photo.remoteUrl ?? uri)}
-                  activeOpacity={0.85}
-                  style={styles.acompThumb}
-                >
-                  <Image source={{ uri }} style={styles.acompThumbImg} resizeMode="cover" />
-                  <View
-                    style={[
-                      styles.acompThumbBadge,
-                      isDone ? styles.acompThumbDone : isErr ? styles.acompThumbErr : styles.acompThumbPending,
-                    ]}
-                  >
-                    {photo.uploadStatus === 'uploading' ? (
-                      <ActivityIndicator size="small" color={Colors.textPrimary} style={{ width: 10, height: 10 }} />
-                    ) : (
-                      <Ionicons
-                        name={isDone ? 'checkmark' : isErr ? 'alert' : 'time-outline'}
-                        size={10}
-                        color={Colors.textPrimary}
-                      />
-                    )}
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        )}
-
-        {showUpload && (
-          <TouchableOpacity
-            style={styles.acompUploadBtn}
-            onPress={handleUpload}
-            activeOpacity={0.8}
-            disabled={isUploading}
-          >
-            {isUploading ? (
-              <ActivityIndicator size="small" color={Colors.textPrimary} />
-            ) : (
-              <Ionicons name="cloud-upload-outline" size={14} color={Colors.textPrimary} />
-            )}
-            <Text variant="caption" style={styles.acompUploadLabel}>
-              {isUploading ? 'Enviando...' : uploadLabel}
-            </Text>
-          </TouchableOpacity>
-        )}
-      </Card>
-    </View>
-  );
-});
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
@@ -293,7 +97,6 @@ export default function OSDetailScreen(): React.JSX.Element {
   const signatureCapture = useSignatureCapture();
   const [showDeliverySignature, setShowDeliverySignature] = useState(false);
   const [showEditOS, setShowEditOS] = useState(false);
-  const { documents, isLoading: docsLoading, generateDocument, isGenerating } = useOSDocuments(id ?? '');
 
   const osId = id ?? '';
   const photoCount = usePhotoStore(
@@ -307,7 +110,6 @@ export default function OSDetailScreen(): React.JSX.Element {
 
   const partsHookTotal = (parts ?? []).reduce((sum, p) => sum + parseFloat(p.subtotal || '0'), 0);
   const laborHookTotal = (laborItems ?? []).reduce((sum, l) => sum + parseFloat(l.total || '0'), 0);
-  const discountPercent = 0; // TODO: extract from OS data if available
 
   const handleBack = useCallback((): void => {
     router.replace('/(app)');
@@ -389,14 +191,6 @@ export default function OSDetailScreen(): React.JSX.Element {
   }
 
   // ── Computed values ───────────────────────────────────────────────────────
-  const acompanhamentoRemote = (order.photos ?? []).filter((p) => p.folder === 'acompanhamento');
-  const nonAcompanhamenntoPhotos = (order.photos ?? []).filter((p) => p.folder !== 'acompanhamento');
-  const photoGroups = nonAcompanhamenntoPhotos.length > 0
-    ? groupPhotosByFolder(nonAcompanhamenntoPhotos)
-    : [];
-
-  const hasHistory = order.transition_logs != null && order.transition_logs.length > 0;
-
   const vehicleLine = [order.make, order.model, order.year ? String(order.year) : undefined]
     .filter(Boolean)
     .join(' ');
@@ -460,207 +254,33 @@ export default function OSDetailScreen(): React.JSX.Element {
           />
         }
       >
-        {/* ── Tab Geral ──────────────────────────────────────────────────── */}
         {activeTab === 0 && (
-          <>
-            {/* Action buttons */}
-            <View style={styles.actionRow}>
-              {(VALID_TRANSITIONS[order.status as ServiceOrderStatus] ?? []).length > 0 && (
-                <TouchableOpacity
-                  style={[styles.actionBtn, styles.actionBtnSecondary]}
-                  onPress={() => setStatusModalVisible(true)}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons name="swap-horizontal-outline" size={16} color={Colors.brand} />
-                  <Text variant="label" color={Colors.brand}>
-                    Avançar Status
-                  </Text>
-                </TouchableOpacity>
-              )}
-              <TouchableOpacity
-                style={[styles.actionBtn, styles.actionBtnPrimary, (VALID_TRANSITIONS[order.status as ServiceOrderStatus] ?? []).length > 0 && styles.actionBtnFlex]}
-                onPress={handleChecklist}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="camera-outline" size={16} color={Colors.textPrimary} />
-                <Text variant="label" color={Colors.textPrimary}>
-                  Checklist
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <ChecklistProgressRow
-              photoCount={photoCount}
-              ok={itemsOk}
-              attention={itemsAttention}
-              critical={itemsCritical}
-            />
-
-            {/* Vistoria CTAs */}
-            {order.status === 'initial_survey' && (
-              <View style={styles.vstCardWrapper}>
-                <VistoriaCTACard type="entrada" osId={osId} />
-              </View>
-            )}
-            {order.status === 'final_survey' && (
-              <View style={styles.vstCardWrapper}>
-                <VistoriaCTACard type="saida" osId={osId} />
-              </View>
-            )}
-
-            {/* Dados Gerais */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <SectionDivider label="DADOS GERAIS" />
-              <TouchableOpacity onPress={() => setShowEditOS(true)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                <Ionicons name="create-outline" size={20} color={Colors.brand} />
-              </TouchableOpacity>
-            </View>
-            <Card style={styles.card}>
-              <InfoRow label="CLIENTE" value={<Text variant="bodySmall" style={{ fontWeight: '700', color: Colors.textPrimary }}>{order.customer_name}</Text>} noDivider={false} />
-              <InfoRow
-                label="TIPO CLIENTE"
-                value={CUSTOMER_TYPE_LABELS[order.customer_type] ?? order.customer_type}
-                noDivider={false}
-              />
-              <InfoRow
-                label="TIPO OS"
-                value={OS_TYPE_LABELS[order.os_type] ?? order.os_type}
-                noDivider={false}
-              />
-              {order.consultant != null && (
-                <InfoRow label="CONSULTOR" value={order.consultant.full_name} noDivider={false} />
-              )}
-              <InfoRow label="ABERTURA" value={formatDateTime(order.opened_at)} noDivider />
-            </Card>
-
-            {/* Resumo Financeiro */}
-            <FinancialSummary
-              partsTotal={partsHookTotal}
-              laborTotal={laborHookTotal}
-              discountPercent={discountPercent}
-            />
-          </>
+          <GeneralTab
+            order={order}
+            osId={osId}
+            photoCount={photoCount}
+            itemsOk={itemsOk}
+            itemsAttention={itemsAttention}
+            itemsCritical={itemsCritical}
+            partsTotal={partsHookTotal}
+            laborTotal={laborHookTotal}
+            onOpenStatusModal={() => setStatusModalVisible(true)}
+            onOpenChecklist={handleChecklist}
+            onOpenEditOS={() => setShowEditOS(true)}
+          />
         )}
-
-        {/* ── Tab Peças ──────────────────────────────────────────────────── */}
         {activeTab === 1 && <PartsTab osId={id as string} />}
-
-        {/* ── Tab Serviços ───────────────────────────────────────────────── */}
         {activeTab === 2 && <LaborTab osId={id as string} />}
-
-        {/* ── Tab Fotos ──────────────────────────────────────────────────── */}
         {activeTab === 3 && (
-          <>
-            <AcompanhamentoSection
-              osId={osId}
-              onAddPhoto={handleAddAcompanhamento}
-              onPhotoPress={handlePhotoPress}
-              remotePhotos={acompanhamentoRemote}
-            />
-
-            {photoGroups.length > 0 && (
-              <>
-                <SectionDivider label="OUTRAS FOTOS" />
-                <Card style={styles.card} padded={false}>
-                  {photoGroups.map(([folder, photos]) => (
-                    <PhotoGroup
-                      key={folder}
-                      folder={folder}
-                      photos={photos}
-                      onPhotoPress={handlePhotoPress}
-                    />
-                  ))}
-                </Card>
-              </>
-            )}
-
-            {acompanhamentoRemote.length === 0 && photoGroups.length === 0 && (
-              <View style={styles.tabEmpty}>
-                <Ionicons name="images-outline" size={40} color={Colors.skeleton} />
-                <Text variant="bodySmall" color={Colors.textSecondary}>
-                  Nenhuma foto registrada
-                </Text>
-              </View>
-            )}
-          </>
+          <PhotosTab
+            order={order}
+            osId={osId}
+            onAddAcompanhamento={handleAddAcompanhamento}
+            onPhotoPress={handlePhotoPress}
+          />
         )}
-
-        {/* ── Tab Docs ─────────────────────────────────────────────────── */}
-        {activeTab === 4 && (
-          <View style={{ gap: Spacing.md }}>
-            {docsLoading ? (
-              <ShimmerBlock height={80} />
-            ) : documents.length === 0 ? (
-              <Card style={styles.card}>
-                <View style={{ alignItems: 'center', padding: Spacing.xl, gap: Spacing.sm }}>
-                  <Ionicons name="document-text-outline" size={32} color={Colors.textTertiary} />
-                  <Text variant="body" color={Colors.textTertiary}>Nenhum documento gerado</Text>
-                </View>
-              </Card>
-            ) : (
-              documents.map((doc) => (
-                <Card key={doc.id} style={styles.card}>
-                  <View style={{ gap: Spacing.sm }}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text variant="body" color={Colors.textPrimary}>{doc.document_type_display}</Text>
-                      <MonoLabel variant="accent">{`v${doc.version}`}</MonoLabel>
-                    </View>
-                    <Text variant="bodySmall" color={Colors.textTertiary}>
-                      {new Date(doc.generated_at).toLocaleDateString('pt-BR')} · {doc.generated_by_name}
-                    </Text>
-                    <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
-                      <Button
-                        variant="ghost"
-                        label="Compartilhar"
-                        onPress={async () => {
-                          try {
-                            await downloadAndSharePdf(doc.download_url, `${doc.document_type_display}-v${doc.version}`);
-                          } catch {
-                            toast.error('Erro ao compartilhar documento');
-                          }
-                        }}
-                      />
-                    </View>
-                  </View>
-                </Card>
-              ))
-            )}
-            <View style={{ marginHorizontal: 16 }}>
-              <Button
-                variant="secondary"
-                label={isGenerating ? 'Gerando...' : 'Gerar Documento'}
-                loading={isGenerating}
-                onPress={async () => {
-                  try {
-                    await generateDocument('os_report');
-                    toast.success('Documento gerado com sucesso');
-                  } catch {
-                    toast.error('Erro ao gerar documento');
-                  }
-                }}
-              />
-            </View>
-          </View>
-        )}
-
-        {/* ── Tab Histórico ──────────────────────────────────────────────── */}
-        {activeTab === 5 && (
-          <>
-            {hasHistory ? (
-              <Card style={styles.card}>
-                {order.transition_logs!.map((log) => (
-                  <TransitionLogItem key={log.id} log={log} />
-                ))}
-              </Card>
-            ) : (
-              <View style={styles.tabEmpty}>
-                <Ionicons name="time-outline" size={40} color={Colors.skeleton} />
-                <Text variant="bodySmall" color={Colors.textSecondary}>
-                  Nenhuma transição registrada
-                </Text>
-              </View>
-            )}
-          </>
-        )}
+        {activeTab === 4 && <DocsTab osId={osId} />}
+        {activeTab === 5 && <HistoryTab logs={order.transition_logs} />}
 
         <View style={styles.bottomPadding} />
       </ScrollView>
@@ -750,6 +370,7 @@ export default function OSDetailScreen(): React.JSX.Element {
         onRequestClose={handleClosePreview}
         presentationStyle="overFullScreen"
       />
+
       {/* Edit OS Modal */}
       {order && (
         <EditOSModal
@@ -850,131 +471,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: 4,
-  },
-  // Card
-  card: {
-    marginHorizontal: 16,
-    gap: 10,
-  },
-  // Tab empty
-  tabEmpty: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-    gap: 12,
-  },
-  // Action row
-  actionRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginHorizontal: 16,
-    marginTop: 8,
-  },
-  actionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 10,
-    gap: 6,
-  },
-  actionBtnPrimary: {
-    backgroundColor: Colors.brand,
-    flex: 1,
-  },
-  actionBtnSecondary: {
-    flex: 1,
-    backgroundColor: Colors.brandTint,
-    borderWidth: 1,
-    borderColor: Colors.brand,
-  },
-  actionBtnFlex: {
-    flex: 1,
-  },
-  // Vistoria CTA wrapper
-  vstCardWrapper: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-  // Photo scroll (used by AcompanhamentoSection)
-  photoScroll: {
-    paddingLeft: 16,
-  },
-  // Acompanhamento section
-  acompSectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 6,
-  },
-  acompAddBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    backgroundColor: Colors.brandTint,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: Colors.brand,
-  },
-  acompAddLabel: {
-    color: Colors.brand,
-  },
-  acompEmpty: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 24,
-    gap: 8,
-  },
-  acompEmptyText: {
-    textAlign: 'center',
-  },
-  acompScrollContent: {
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    gap: 8,
-  },
-  acompThumb: {
-    width: 90,
-    height: 90,
-    borderRadius: Radii.sm,
-    overflow: 'hidden',
-    marginRight: 8,
-    position: 'relative',
-  },
-  acompThumbImg: {
-    width: '100%',
-    height: '100%',
-  },
-  acompThumbBadge: {
-    position: 'absolute',
-    bottom: 4,
-    right: 4,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  acompThumbDone: { backgroundColor: Colors.success },
-  acompThumbErr: { backgroundColor: Colors.error },
-  acompThumbPending: { backgroundColor: Colors.textSecondary },
-  acompUploadBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: Colors.brand,
-    marginHorizontal: Spacing.md,
-    marginBottom: Spacing.md,
-    paddingVertical: 10,
-    borderRadius: Radii.sm,
-  },
-  acompUploadLabel: {
-    color: Colors.textPrimary,
   },
   // Bottom spacing
   bottomPadding: {
