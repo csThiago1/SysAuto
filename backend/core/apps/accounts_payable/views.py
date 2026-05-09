@@ -13,7 +13,6 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
@@ -244,30 +243,3 @@ class PayableDocumentViewSet(ModelViewSet):
         )
 
         return Response(PayableDocumentSerializer(document).data)
-
-
-class AsaasWebhookView(APIView):
-    """
-    Stub para webhook Asaas — Sprint 15 implementara a logica completa.
-
-    Recebe eventos do Asaas (pagamento confirmado, vencido, etc.) sem
-    autenticacao JWT, pois o Asaas nao envia token de usuario.
-    A verificacao de autenticidade sera feita pelo HMAC no Sprint 15.
-    """
-
-    permission_classes: list = []  # Asaas nao envia token JWT
-
-    def post(self, request: Request) -> Response:
-        """
-        Recebe evento do Asaas e registra no log para processamento futuro.
-
-        Args:
-            request: Request com payload do evento Asaas.
-
-        Returns:
-            Response confirmando o recebimento (200 OK).
-        """
-        event = request.data.get("event", "")
-        logger.info("asaas_webhook_received event=%s", event)
-        # TODO Sprint 15: implementar auto-baixa de ReceivableDocument
-        return Response({"received": True}, status=status.HTTP_200_OK)
