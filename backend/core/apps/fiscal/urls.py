@@ -14,6 +14,7 @@ from apps.fiscal.views import (
     NfeRecebidaFileProxyView,
     NfeRecebidaListView,
     NfeRecebidaManifestView,
+    NfeRecebidaSyncView,
     NfseEmitManualView,
     NfseEmitView,
     NfseSubstituirView,
@@ -37,6 +38,7 @@ urlpatterns = [
     path("nfe/emit-manual/", NfeEmitManualView.as_view(), name="nfe-emit-manual"),
     # NF-e recebidas (manifestação de destinatário + download XML/DANFE)
     path("nfe-recebidas/", NfeRecebidaListView.as_view(), name="nfe-recebidas-list"),
+    path("nfe-recebidas/sync/", NfeRecebidaSyncView.as_view(), name="nfe-recebidas-sync"),
     path("nfe-recebidas/<str:chave>/manifesto/", NfeRecebidaManifestView.as_view(), name="nfe-recebidas-manifesto"),
     # S4-T4: proxy XML/DANFE para NF-e recebidas
     path("nfe-recebidas/<str:chave>/file/<str:file_type>/", NfeRecebidaFileProxyView.as_view(), name="nfe-recebida-file-proxy"),

@@ -830,6 +830,49 @@ class NfeRecebidaListView(APIView):
         )
 
 
+class NfeRecebidaSyncView(APIView):
+    """POST /fiscal/nfe-recebidas/sync/
+    Busca NF-e recebidas na Focus e importa novas para o banco local.
+    RBAC: MANAGER+
+    """
+
+    permission_classes = [IsAuthenticated, IsManagerOrAbove]
+
+    def post(self, request: Request) -> Response:
+        from apps.fiscal.services.fiscal_service import FiscalService
+        from apps.fiscal.services.auto_import import NFeEntradaAutoImportService
+
+        try:
+            config = FiscalService.get_config()
+        except Exception:
+            return Response(
+                {"detail": "Configuração fiscal não encontrada."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        with FocusNFeClient(config.focus_token) as client:
+            resp = client.listar_nfes_recebidas(config.cnpj, pagina=1)
+
+        if resp.status_code != 200 or not resp.data:
+            return Response(
+                {"status": "ok", "checked": 0, "imported": 0},
+            )
+
+        nfes = resp.data if isinstance(resp.data, list) else []
+        imported = 0
+        for nfe in nfes:
+            chave = nfe.get("chave") or nfe.get("chave_nfe", "")
+            if chave:
+                try:
+                    result = NFeEntradaAutoImportService.import_from_webhook(chave, nfe)
+                    if result:
+                        imported += 1
+                except Exception as e:
+                    logger.warning("Sync NF-e recebida %s: %s", chave[-8:], e)
+
+        return Response({"status": "ok", "checked": len(nfes), "imported": imported})
+
+
 class NfeRecebidaManifestView(APIView):
     """Manifesta (ciência/confirmação/desconhecimento) de NF-e recebida.
 

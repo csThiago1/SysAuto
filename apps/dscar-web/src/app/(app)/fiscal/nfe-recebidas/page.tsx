@@ -1,165 +1,174 @@
 "use client"
 
 /**
- * NF-e Recebidas (Manifestação de Destinatário) — CONSULTANT+
- * Ciclo 06C
+ * NF-e Recebidas — Lista de NF-e de entrada (dados locais + sync Focus)
  *
- * Lista as NF-e emitidas por terceiros com o CNPJ da empresa como tomador.
- * Permite manifestar: ciência, confirmação, desconhecimento.
- * Fonte: Focus NF-e /v2/nfes_recebidas (pass-through).
+ * Mostra NFeEntrada do banco local (importadas manualmente ou via webhook).
+ * Botão "Sincronizar" busca novas NF-e na Focus e importa automaticamente.
  */
 
 import { useState } from "react"
-import { Inbox, RefreshCw, CheckCircle2, HelpCircle, XCircle, Eye, FileDown, FileText } from "lucide-react"
+import {
+  Inbox,
+  RefreshCw,
+  Download,
+  CheckCircle2,
+  HelpCircle,
+  XCircle,
+  Eye,
+  FileDown,
+  FileText,
+  CloudDownload,
+} from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { apiFetch, fetchList } from "@/lib/api"
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 import {
-  useNfeRecebidas,
   useNfeRecebidaManifest,
   useNfeRecebidaFileUrl,
 } from "@/hooks/useFiscal"
-import type { NfeRecebida } from "@paddock/types"
 import { usePermission } from "@/hooks/usePermission"
+import { formatDate, formatCurrency } from "@paddock/utils"
+import { NFE_ENTRADA_STATUS_LABEL, NFE_ENTRADA_STATUS_BADGE } from "@paddock/utils"
 import { cn } from "@/lib/utils"
 
-// ─── Manifesto config ─────────────────────────────────────────────────────────
+const FISCAL = "/api/proxy/fiscal"
 
-const MANIFESTO_CONFIG: Record<
-  string,
-  { label: string; icon: React.ElementType; color: string; bg: string }
-> = {
-  ciencia: { label: "Ciência", icon: Eye, color: "text-blue-400", bg: "bg-blue-400/10" },
-  confirmada: { label: "Confirmada", icon: CheckCircle2, color: "text-success-400", bg: "bg-success-400/10" },
-  desconhecida: { label: "Desconhecida", icon: HelpCircle, color: "text-warning-400", bg: "bg-warning-400/10" },
-  nao_realizada: { label: "Não Realizada", icon: XCircle, color: "text-error-400", bg: "bg-red-400/10" },
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+interface NFeEntradaItem {
+  id: string
+  numero_item: number
+  descricao_original: string
+  quantidade: string
+  valor_total_com_tributos: string
 }
 
-// ─── Row ──────────────────────────────────────────────────────────────────────
+interface NFeEntradaLocal {
+  id: string
+  chave_acesso: string
+  numero: string
+  serie: string
+  emitente_cnpj: string
+  emitente_nome: string
+  data_emissao: string | null
+  valor_total: string
+  status: string
+  auto_imported: boolean
+  estoque_gerado: boolean
+  created_at: string
+  itens?: NFeEntradaItem[]
+}
 
-function NfeRecebidaRow({
-  nfe,
-  canManifest,
-  onManifest,
-}: {
-  nfe: NfeRecebida
-  canManifest: boolean
-  onManifest: (chave: string, tipo: string) => void
-}) {
-  const cfg = nfe.situacao_manifesto ? MANIFESTO_CONFIG[nfe.situacao_manifesto] : null
+// ─── Hooks ───────────────────────────────────────────────────────────────────
 
-  const xmlUrl = useNfeRecebidaFileUrl(nfe.chave_nfe, "xml")
-  const danfeUrl = useNfeRecebidaFileUrl(nfe.chave_nfe, "danfe")
+function useNfeEntradas(statusFilter = "") {
+  const params = statusFilter ? `?status=${statusFilter}` : ""
+  return useQuery({
+    queryKey: ["nfe-entrada", statusFilter],
+    queryFn: () => fetchList<NFeEntradaLocal>(`${FISCAL}/nfe-entrada/${params}`),
+  })
+}
 
-  const valorFmt = nfe.valor_total
-    ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-        Number(nfe.valor_total)
-      )
-    : "—"
+function useSyncFocus() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () =>
+      apiFetch<{ status: string; checked: number; imported: number }>(
+        `${FISCAL}/nfe-recebidas/sync/`,
+        { method: "POST" }
+      ),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["nfe-entrada"] })
+      if (data.imported > 0) {
+        toast.success(`${data.imported} nova(s) NF-e importada(s) da Focus.`)
+      } else {
+        toast.info("Nenhuma NF-e nova encontrada na Focus.")
+      }
+    },
+    onError: () => toast.error("Erro ao sincronizar com Focus."),
+  })
+}
 
-  const dateFmt = nfe.data_emissao
-    ? new Date(nfe.data_emissao).toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      })
-    : "—"
+// ─── Row ─────────────────────────────────────────────────────────────────────
 
+function NfeEntradaRow({ nfe }: { nfe: NFeEntradaLocal }) {
   const cnpjFmt = (cnpj: string) =>
-    cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")
+    cnpj.length === 14
+      ? cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5")
+      : cnpj
 
   return (
     <tr className="border-b border-border hover:bg-muted/30 transition-colors">
-      {/* Emitente */}
       <td className="py-3 px-4">
-        <p className="text-xs text-foreground/80 font-medium">{nfe.nome_emitente || "—"}</p>
-        <p className="text-xs text-muted-foreground font-mono mt-0.5">{cnpjFmt(nfe.documento_emitente)}</p>
+        <p className="text-xs text-foreground/80 font-medium">{nfe.emitente_nome || "—"}</p>
+        <p className="text-xs text-muted-foreground font-mono mt-0.5">
+          {nfe.emitente_cnpj ? cnpjFmt(nfe.emitente_cnpj) : "—"}
+        </p>
       </td>
 
-      {/* Chave (truncada) */}
-      <td className="py-3 px-4 text-xs font-mono text-muted-foreground max-w-[140px] truncate" title={nfe.chave_nfe}>
-        {nfe.chave_nfe.slice(0, 10)}…{nfe.chave_nfe.slice(-6)}
+      <td className="py-3 px-4 text-xs text-foreground/60">
+        {nfe.numero}/{nfe.serie}
       </td>
 
-      {/* Valor */}
+      <td
+        className="py-3 px-4 text-xs font-mono text-muted-foreground max-w-[140px] truncate"
+        title={nfe.chave_acesso}
+      >
+        {nfe.chave_acesso
+          ? `${nfe.chave_acesso.slice(0, 10)}…${nfe.chave_acesso.slice(-6)}`
+          : "—"}
+      </td>
+
       <td className="py-3 px-4 text-xs text-foreground/80 text-right tabular-nums">
-        {valorFmt}
+        {formatCurrency(nfe.valor_total)}
       </td>
 
-      {/* Emissão */}
-      <td className="py-3 px-4 text-xs text-muted-foreground">{dateFmt}</td>
+      <td className="py-3 px-4 text-xs text-muted-foreground">
+        {formatDate(nfe.data_emissao)}
+      </td>
 
-      {/* Manifesto */}
       <td className="py-3 px-4">
-        {cfg ? (
-          <span
-            className={cn(
-              "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs",
-              cfg.bg,
-              cfg.color
-            )}
-          >
-            <cfg.icon className="h-3 w-3" />
-            {cfg.label}
+        <span
+          className={cn(
+            "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium",
+            NFE_ENTRADA_STATUS_BADGE[nfe.status] ?? ""
+          )}
+        >
+          {NFE_ENTRADA_STATUS_LABEL[nfe.status] ?? nfe.status}
+        </span>
+        {nfe.auto_imported && (
+          <span className="ml-1.5 text-[10px] text-blue-400/60" title="Importada automaticamente via webhook">
+            auto
           </span>
-        ) : (
-          <span className="text-xs text-muted-foreground/50">Não manifestada</span>
         )}
       </td>
 
-      {/* Ações */}
       <td className="py-3 px-4 text-right">
         <div className="flex items-center justify-end gap-2">
-          {/* Download XML */}
-          <a
-            href={xmlUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Baixar XML"
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
-          >
-            <FileText className="h-3.5 w-3.5" />
-            XML
-          </a>
-
-          {/* Download DANFE */}
-          <a
-            href={danfeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Visualizar DANFE"
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
-          >
-            <FileDown className="h-3.5 w-3.5" />
-            DANFE
-          </a>
-
-          {/* Manifestação */}
-          {canManifest && (
+          {nfe.chave_acesso && (
             <>
-              {!nfe.situacao_manifesto && (
-                <button
-                  onClick={() => onManifest(nfe.chave_nfe, "ciencia_operacao")}
-                  className="text-xs text-blue-400/70 hover:text-blue-400"
-                >
-                  Dar Ciência
-                </button>
-              )}
-              {nfe.situacao_manifesto === "ciencia" && (
-                <>
-                  <button
-                    onClick={() => onManifest(nfe.chave_nfe, "confirmacao_operacao")}
-                    className="text-xs text-success-400/70 hover:text-success-400"
-                  >
-                    Confirmar
-                  </button>
-                  <button
-                    onClick={() => onManifest(nfe.chave_nfe, "desconhecimento_operacao")}
-                    className="text-xs text-warning-400/70 hover:text-warning-400"
-                  >
-                    Desconhecer
-                  </button>
-                </>
-              )}
+              <a
+                href={`${FISCAL}/nfe-recebidas/${nfe.chave_acesso}/file/xml/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Baixar XML"
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+              >
+                <FileText className="h-3.5 w-3.5" />
+                XML
+              </a>
+              <a
+                href={`${FISCAL}/nfe-recebidas/${nfe.chave_acesso}/file/danfe/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Visualizar DANFE"
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+              >
+                <FileDown className="h-3.5 w-3.5" />
+                DANFE
+              </a>
             </>
           )}
         </div>
@@ -168,39 +177,12 @@ function NfeRecebidaRow({
   )
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function NfeRecebidasPage() {
-  const canManifest = usePermission("MANAGER")
-  const [pagina, setPagina] = useState(1)
-
-  const { data: nfes = [], isLoading, refetch } = useNfeRecebidas(pagina)
-  const manifestMutation = useNfeRecebidaManifest()
-
-  async function handleManifest(chave: string, tipo_evento: string) {
-    let justificativa: string | undefined
-    if (tipo_evento === "operacao_nao_realizada") {
-      const j = window.prompt("Justificativa (mín. 15 caracteres):")
-      if (!j || j.trim().length < 15) {
-        toast.error("Justificativa deve ter ao menos 15 caracteres.")
-        return
-      }
-      justificativa = j
-    }
-
-    const labels: Record<string, string> = {
-      ciencia_operacao: "Ciência registrada",
-      confirmacao_operacao: "Operação confirmada",
-      desconhecimento_operacao: "Desconhecimento registrado",
-    }
-
-    try {
-      await manifestMutation.mutateAsync({ chave, tipo_evento, justificativa })
-      toast.success(labels[tipo_evento] ?? "Manifestação registrada.")
-    } catch {
-      toast.error("Erro ao registrar manifestação.")
-    }
-  }
+  const [statusFilter, setStatusFilter] = useState("")
+  const { data: nfes = [], isLoading } = useNfeEntradas(statusFilter)
+  const syncFocus = useSyncFocus()
 
   return (
     <div className="p-6 space-y-6">
@@ -211,33 +193,44 @@ export default function NfeRecebidasPage() {
           <div>
             <h1 className="text-xl font-bold text-foreground">NF-e Recebidas</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
-              NF-e emitidas por fornecedores com o CNPJ da empresa como tomador
+              NF-e de entrada (compras de pecas e insumos)
             </p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => refetch()}
-          className="text-muted-foreground hover:text-foreground"
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => syncFocus.mutate()}
+            disabled={syncFocus.isPending}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <CloudDownload className="h-4 w-4 mr-1.5" />
+            {syncFocus.isPending ? "Sincronizando..." : "Sincronizar Focus"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex gap-3">
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary"
         >
-          <RefreshCw className="h-4 w-4 mr-1.5" />
-          Atualizar
-        </Button>
+          <option value="">Todos os status</option>
+          <option value="importada">Importada</option>
+          <option value="validada">Validada</option>
+          <option value="estoque_gerado">Estoque Gerado</option>
+        </select>
       </div>
 
-      {/* Info */}
-      <div className="rounded-xl bg-blue-950/30 border border-blue-700/20 px-4 py-3 text-xs text-blue-300/70">
-        Para manifestar uma operação, clique em "Dar Ciência" e depois "Confirmar" ou "Desconhecer".
-        A manifestação é obrigatória para NF-e acima de R$&nbsp;300 mil (§ art. 5° Port. SRF 811/2008).
-      </div>
-
-      {/* Tabela */}
+      {/* Table */}
       <div className="rounded-xl bg-muted/30 border border-white/[0.07] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
-              {["Emitente", "Chave", "Valor", "Emissão", "Manifesto", ""].map((h) => (
+              {["Emitente", "Num/Serie", "Chave", "Valor", "Emissao", "Status", ""].map((h) => (
                 <th
                   key={h}
                   className={cn(
@@ -253,58 +246,33 @@ export default function NfeRecebidasPage() {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-xs text-muted-foreground">
-                  Consultando Focus NF-e...
+                <td colSpan={7} className="py-12 text-center text-xs text-muted-foreground">
+                  Carregando...
                 </td>
               </tr>
             ) : nfes.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-xs text-muted-foreground">
-                  Nenhuma NF-e recebida encontrada.{" "}
-                  {pagina > 1 && (
-                    <button
-                      onClick={() => setPagina(1)}
-                      className="underline hover:text-muted-foreground"
-                    >
-                      Voltar à primeira página
-                    </button>
-                  )}
+                <td colSpan={7} className="py-12 text-center text-xs text-muted-foreground">
+                  Nenhuma NF-e de entrada encontrada.
+                  <br />
+                  <button
+                    onClick={() => syncFocus.mutate()}
+                    className="mt-2 underline text-primary/70 hover:text-primary"
+                  >
+                    Sincronizar com Focus
+                  </button>
                 </td>
               </tr>
             ) : (
-              nfes.map((nfe) => (
-                <NfeRecebidaRow
-                  key={`${nfe.chave_nfe}-${nfe.situacao}`}
-                  nfe={nfe}
-                  canManifest={canManifest}
-                  onManifest={handleManifest}
-                />
-              ))
+              nfes.map((nfe) => <NfeEntradaRow key={nfe.id} nfe={nfe} />)
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Paginação */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>{nfes.length} NF-e nesta página</span>
-        <div className="flex gap-2">
-          <button
-            disabled={pagina === 1}
-            onClick={() => setPagina((p) => p - 1)}
-            className="px-3 py-1 rounded border border-border disabled:opacity-30 hover:border-border"
-          >
-            ← Anterior
-          </button>
-          <span className="px-3 py-1">Página {pagina}</span>
-          <button
-            disabled={nfes.length < 50}
-            onClick={() => setPagina((p) => p + 1)}
-            className="px-3 py-1 rounded border border-border disabled:opacity-30 hover:border-border"
-          >
-            Próxima →
-          </button>
-        </div>
+      {/* Footer */}
+      <div className="text-xs text-muted-foreground">
+        {nfes.length} NF-e de entrada
       </div>
     </div>
   )
