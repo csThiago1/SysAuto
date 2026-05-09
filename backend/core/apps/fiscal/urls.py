@@ -17,6 +17,7 @@ from apps.fiscal.views import (
     NfseEmitManualView,
     NfseEmitView,
     NfseSubstituirView,
+    ResumoFiscalView,
 )
 
 router = SimpleRouter()
@@ -46,6 +47,8 @@ urlpatterns = [
     path("nfe/inutilizacoes/", NfeInutilizacaoListView.as_view(), name="nfe-inutilizacoes-list"),
     # S3-T7: DANFE preview (sem emissão)
     path("nfe/danfe-preview/", DanfePreviewView.as_view(), name="nfe-danfe-preview"),
+    # S6-T3: Resumo Fiscal Mensal
+    path("resumo-mensal/", ResumoFiscalView.as_view(), name="resumo-fiscal"),
     # NF-e de entrada (MO-5) + documentos fiscais (06C)
     path("", include(router.urls)),
 ]

@@ -1016,3 +1016,32 @@ class NfeInutilizacaoListView(APIView):
             "id", "payload", "response_data", "created_at",
         )[:50]
         return Response(list(events))
+
+
+# ─── S6-T3: Resumo Fiscal Mensal ─────────────────────────────────────────────
+
+
+class ResumoFiscalView(APIView):
+    """Resumo fiscal mensal — totais de impostos e documentos emitidos.
+
+    GET /api/v1/fiscal/resumo-mensal/?year=2026&month=5
+    RBAC: MANAGER+
+    """
+
+    permission_classes = [IsAuthenticated, IsManagerOrAbove]
+
+    def get(self, request: Request) -> Response:
+        """Retorna resumo fiscal para o mes/ano informados.
+
+        Query params:
+            year (opcional): ano (default: ano corrente)
+            month (opcional): mes 1-12 (default: mes corrente)
+        """
+        from datetime import date
+
+        from apps.fiscal.services.resumo_fiscal import ResumoFiscalService
+
+        year = int(request.query_params.get("year", date.today().year))
+        month = int(request.query_params.get("month", date.today().month))
+        data = ResumoFiscalService.get_monthly_summary(year, month)
+        return Response(data)

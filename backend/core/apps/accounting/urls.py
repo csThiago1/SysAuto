@@ -28,5 +28,7 @@ router.register(r"journal-entries", JournalEntryViewSet, basename="journal-entry
 urlpatterns = [
     path("dashboard/", FinancialDashboardView.as_view(), name="financial-dashboard"),
     path("dre/", DREView.as_view(), name="dre"),
+    path("faturamento/", FaturamentoView.as_view(), name="faturamento"),
+    path("inadimplencia/", InadimplenciaView.as_view(), name="inadimplencia"),
     path("", include(router.urls)),
 ]
