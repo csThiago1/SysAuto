@@ -16,8 +16,8 @@ import { Button } from "@/components/ui/button"
 import {
   useNfeRecebidas,
   useNfeRecebidaManifest,
-  type NfeRecebida,
 } from "@/hooks/useFiscal"
+import type { NfeRecebida } from "@paddock/types"
 import { usePermission } from "@/hooks/usePermission"
 import { cn } from "@/lib/utils"
 

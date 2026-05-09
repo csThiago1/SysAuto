@@ -136,3 +136,28 @@ export interface NfeEmitFromOsInput {
   /** 01=dinheiro, 03=crédito, 04=débito, 99=outros */
   forma_pagamento?: "01" | "03" | "04" | "99";
 }
+
+// ─── NF-e Recebida ───────────────────────────────────────────────────────────
+
+export interface NfeRecebida {
+  chave_nfe: string;
+  nome_emitente: string;
+  documento_emitente: string;
+  data_emissao: string;
+  valor_total: string;
+  situacao: string;
+  situacao_manifesto:
+    | "ciencia"
+    | "confirmada"
+    | "desconhecida"
+    | "nao_realizada"
+    | null;
+}
+
+// ─── Fiscal Document Filters ─────────────────────────────────────────────────
+
+export interface FiscalDocumentParams {
+  document_type?: string;
+  status?: string;
+  service_order?: string;
+}

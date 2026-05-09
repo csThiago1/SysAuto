@@ -1,13 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import type { PaginatedResponse } from "@paddock/types";
+import type { Customer, PaginatedResponse } from "@paddock/types";
 import { apiFetch } from "@/lib/api";
-
-export interface Customer {
-  id: string;
-  name: string;
-  document_masked: string;
-  phone_masked: string;
-}
 
 export function useCustomers(
   search: string
