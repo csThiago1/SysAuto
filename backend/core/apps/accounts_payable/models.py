@@ -129,6 +129,16 @@ class PayableDocument(PaddockBaseModel):
         _("Motivo do cancelamento"), max_length=200, blank=True, default=""
     )
 
+    # ── S4: Vínculo com NF-e de entrada ───────────────────────────────────
+    nfe_entrada = models.ForeignKey(
+        "fiscal.NFeEntrada",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="payable_documents",
+        help_text="NF-e de entrada que originou este título.",
+    )
+
     class Meta:
         ordering = ["due_date", "-created_at"]
         indexes = [

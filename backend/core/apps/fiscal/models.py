@@ -197,6 +197,28 @@ class NFeEntrada(PaddockBaseModel):
     xml_s3_key = models.CharField(max_length=500, blank=True, default="")
     observacoes = models.TextField(blank=True, default="")
 
+    # ── S4: Ciclo de entrada automático ────────────────────────────────────
+    auto_imported = models.BooleanField(
+        default=False,
+        help_text="True se importada automaticamente via webhook nfe_recebida.",
+    )
+    purchase_order = models.ForeignKey(
+        "purchasing.PurchaseOrder",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="nfe_entradas",
+        help_text="Pedido de compra vinculado.",
+    )
+    payable_document = models.ForeignKey(
+        "accounts_payable.PayableDocument",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="nfe_entradas",
+        help_text="Conta a pagar gerada automaticamente.",
+    )
+
     class Meta(PaddockBaseModel.Meta):
         db_table = "fiscal_nfe_entrada"
         verbose_name = "NF-e de Entrada"
