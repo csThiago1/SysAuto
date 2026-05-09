@@ -112,10 +112,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
 
       {/* Inline form */}
       {showForm && (
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="bg-white border border-neutral-200 rounded-lg p-4 shadow-sm space-y-3"
-        >
+        <div className="bg-white border border-neutral-200 rounded-lg p-4 shadow-sm space-y-3">
           <h3 className="text-sm font-medium text-neutral-700">
             {editingId ? "Editar Peça" : "Nova Peça"}
           </h3>
@@ -143,12 +140,12 @@ export function PartsTab({ orderId }: PartsTabProps) {
           </div>
           <div className="flex justify-end gap-2 pt-1">
             <Button type="button" variant="outline" size="sm" onClick={cancelForm}>Cancelar</Button>
-            <Button type="submit" size="sm" disabled={isPending}>
+            <Button type="button" size="sm" disabled={isPending} onClick={() => handleSubmit(onSubmit)()}>
               {isPending && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
               {editingId ? "Salvar" : "Adicionar"}
             </Button>
           </div>
-        </form>
+        </div>
       )}
 
       {/* Table */}

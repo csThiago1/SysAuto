@@ -126,7 +126,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
             )}
           </div>
 
-          <form onSubmit={handleSubmit(onAdd)} className="space-y-2">
+          <div className="space-y-2">
             <div>
               <label className={LABEL}>Descrição *</label>
               <input
@@ -161,7 +161,8 @@ export function ServicesTab({ osId, osStatus }: Props) {
             </div>
             <div className="flex justify-end">
               <Button
-                type="submit"
+                type="button"
+                onClick={() => handleSubmit(onAdd)()}
                 disabled={isSubmitting}
                 size="sm"
                 className="bg-[#ea0e03] hover:bg-red-700 text-white gap-1.5"
@@ -170,7 +171,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                 Adicionar
               </Button>
             </div>
-          </form>
+          </div>
         </div>
       )}
 
