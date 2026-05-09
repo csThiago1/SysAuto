@@ -56,9 +56,9 @@ class DevTenantMiddleware(TenantMainMiddleware):
         if cookie_tenant:
             return cookie_tenant
 
-        # 3. Fallback: localhost → dscar.localhost para evitar schema public
+        # 3. Fallback: localhost/IP local → dscar.localhost para evitar schema public
         hostname = super().hostname_from_request(request)
-        if hostname in ("localhost", "127.0.0.1"):
+        if hostname in ("localhost", "127.0.0.1") or hostname.startswith("192.168."):
             return _DEV_FALLBACK_TENANT
         return hostname
 
