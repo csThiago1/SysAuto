@@ -1,5 +1,6 @@
 """
-Paddock Solutions — Service Orders Serializers
+Paddock Solutions — Service Orders: Core Serializers
+OS CRUD, photo, parts, labor, budget, status transition, checklist, etc.
 """
 import logging
 from typing import Optional
@@ -11,7 +12,7 @@ from apps.experts.serializers import ExpertMinimalSerializer
 from apps.insurers.serializers import InsurerMinimalSerializer
 from apps.persons.models import Person
 
-from .models import (
+from ..models import (
     VALID_TRANSITIONS,
     ActivityType,
     BudgetSnapshot,
@@ -32,7 +33,7 @@ from .models import (
 
 logger = logging.getLogger(__name__)
 
-# Caches construídos uma vez no import — evita recriar dict a cada registro serializado
+# Caches construidos uma vez no import -- evita recriar dict a cada registro serializado
 _STATUS_DISPLAY: dict[str, str] = {}
 _PHOTO_FOLDER_DISPLAY: dict[str, str] = {}
 
@@ -40,7 +41,7 @@ _PHOTO_FOLDER_DISPLAY: dict[str, str] = {}
 def _get_status_display() -> dict[str, str]:
     global _STATUS_DISPLAY
     if not _STATUS_DISPLAY:
-        from .models import ServiceOrderStatus as _SOS
+        from ..models import ServiceOrderStatus as _SOS
         _STATUS_DISPLAY = dict(_SOS.choices)
     return _STATUS_DISPLAY
 
@@ -53,7 +54,7 @@ def _get_folder_display() -> dict[str, str]:
 
 
 class ServiceOrderPhotoSerializer(serializers.ModelSerializer):
-    """Serializer para fotos de OS — inclui URL gerada pelo storage configurado."""
+    """Serializer para fotos de OS -- inclui URL gerada pelo storage configurado."""
 
     url = serializers.SerializerMethodField()
     folder_display = serializers.SerializerMethodField()
@@ -76,7 +77,7 @@ class ServiceOrderPhotoSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "s3_key", "url", "uploaded_at", "original_stage", "folder_display"]
 
     def get_url(self, obj: ServiceOrderPhoto) -> str | None:
-        """Retorna URL pública/presignada via default_storage (S3 em prod, absoluta em dev)."""
+        """Retorna URL publica/presignada via default_storage (S3 em prod, absoluta em dev)."""
         from django.core.files.storage import default_storage
 
         if not obj.s3_key:
@@ -84,7 +85,7 @@ class ServiceOrderPhotoSerializer(serializers.ModelSerializer):
         try:
             url = default_storage.url(obj.s3_key)
             # Em dev o FileSystemStorage retorna caminhos relativos (/media/...).
-            # O app mobile precisa de URL absoluta — usamos request.build_absolute_uri()
+            # O app mobile precisa de URL absoluta -- usamos request.build_absolute_uri()
             # para incluir o host (ex: http://192.168.x.x:8000/media/...).
             if url.startswith("/"):
                 request = self.context.get("request")
@@ -99,7 +100,7 @@ class ServiceOrderPhotoSerializer(serializers.ModelSerializer):
 
 
 class BudgetSnapshotSerializer(serializers.ModelSerializer):
-    """Serializer para snapshots de orçamento — somente leitura."""
+    """Serializer para snapshots de orcamento -- somente leitura."""
 
     trigger_display = serializers.CharField(source="get_trigger_display", read_only=True)
     grand_total = serializers.FloatField(read_only=True)
@@ -129,7 +130,7 @@ class BudgetSnapshotSerializer(serializers.ModelSerializer):
 
 
 class _StatusTransitionMixin:
-    """Métodos compartilhados para serializers de StatusTransitionLog."""
+    """Metodos compartilhados para serializers de StatusTransitionLog."""
 
     def get_changed_by_name(self, obj: StatusTransitionLog) -> str:
         return obj.changed_by.get_full_name() or obj.changed_by.email
@@ -142,7 +143,7 @@ class _StatusTransitionMixin:
 
 
 class StatusTransitionLogSerializer(_StatusTransitionMixin, serializers.ModelSerializer):
-    """Serializer para log de transições de status."""
+    """Serializer para log de transicoes de status."""
 
     changed_by_name = serializers.SerializerMethodField()
     from_status_display = serializers.SerializerMethodField()
@@ -163,7 +164,7 @@ class StatusTransitionLogSerializer(_StatusTransitionMixin, serializers.ModelSer
 
 
 class NotificationFeedSerializer(_StatusTransitionMixin, serializers.ModelSerializer):
-    """Item do feed de notificações — transição de status com contexto da OS."""
+    """Item do feed de notificacoes -- transicao de status com contexto da OS."""
 
     os_id = serializers.UUIDField(source="service_order.id")
     os_number = serializers.IntegerField(source="service_order.number")
@@ -187,7 +188,7 @@ class NotificationFeedSerializer(_StatusTransitionMixin, serializers.ModelSerial
 
 
 class ServiceOrderActivityLogSerializer(serializers.ModelSerializer):
-    """Serializer para histórico detalhado de atividades da OS."""
+    """Serializer para historico detalhado de atividades da OS."""
     user_name = serializers.SerializerMethodField()
     activity_type_display = serializers.CharField(source="get_activity_type_display", read_only=True)
 
@@ -210,7 +211,7 @@ class ServiceOrderActivityLogSerializer(serializers.ModelSerializer):
 
 
 class _LineItemValidationMixin:
-    """Validação compartilhada para itens de linha (peças e mão-de-obra)."""
+    """Validacao compartilhada para itens de linha (pecas e mao-de-obra)."""
 
     def validate(self, attrs: dict) -> dict:
         quantity = attrs.get("quantity")
@@ -222,19 +223,19 @@ class _LineItemValidationMixin:
             )
         if unit_price is not None and unit_price < 0:
             raise serializers.ValidationError(
-                {"unit_price": "O preço unitário não pode ser negativo."}
+                {"unit_price": "O preco unitario nao pode ser negativo."}
             )
         if quantity and unit_price and discount is not None:
             line_total = quantity * unit_price
             if discount > line_total:
                 raise serializers.ValidationError(
-                    {"discount": "O desconto não pode ser maior que o total da linha."}
+                    {"discount": "O desconto nao pode ser maior que o total da linha."}
                 )
         return attrs
 
 
 class ServiceOrderPartSerializer(_LineItemValidationMixin, serializers.ModelSerializer):
-    """Serializer para itens de peça de uma OS."""
+    """Serializer para itens de peca de uma OS."""
 
     total = serializers.FloatField(read_only=True)
     product_name = serializers.SerializerMethodField()
@@ -281,36 +282,36 @@ class ServiceOrderPartSerializer(_LineItemValidationMixin, serializers.ModelSeri
 
 
 class PartEstoqueInputSerializer(serializers.Serializer):
-    """Input para adicionar peça do estoque à OS."""
+    """Input para adicionar peca do estoque a OS."""
 
     unidade_fisica_id = serializers.UUIDField()
     tipo_qualidade = serializers.ChoiceField(choices=["genuina", "reposicao", "similar", "usada"])
-    unit_price = serializers.DecimalField(max_digits=12, decimal_places=2, help_text="Valor cobrado ao cliente — PC-9")
+    unit_price = serializers.DecimalField(max_digits=12, decimal_places=2, help_text="Valor cobrado ao cliente -- PC-9")
     description = serializers.CharField(max_length=300, required=False, default="")
 
 
 class PartCompraInputSerializer(serializers.Serializer):
-    """Input para solicitar compra de peça para OS."""
+    """Input para solicitar compra de peca para OS."""
 
     description = serializers.CharField(max_length=300)
     part_number = serializers.CharField(max_length=100, required=False, default="")
     tipo_qualidade = serializers.ChoiceField(choices=["genuina", "reposicao", "similar", "usada"])
-    unit_price = serializers.DecimalField(max_digits=12, decimal_places=2, help_text="Valor cobrado — PC-9")
+    unit_price = serializers.DecimalField(max_digits=12, decimal_places=2, help_text="Valor cobrado -- PC-9")
     quantity = serializers.DecimalField(max_digits=10, decimal_places=2, default=1)
     observacoes = serializers.CharField(max_length=500, required=False, default="")
 
 
 class PartSeguradoraInputSerializer(serializers.Serializer):
-    """Input para registrar peça de seguradora na OS."""
+    """Input para registrar peca de seguradora na OS."""
 
     description = serializers.CharField(max_length=300)
     tipo_qualidade = serializers.ChoiceField(choices=["genuina", "reposicao", "similar", "usada"])
-    unit_price = serializers.DecimalField(max_digits=12, decimal_places=2, help_text="Valor cobrado — PC-9")
+    unit_price = serializers.DecimalField(max_digits=12, decimal_places=2, help_text="Valor cobrado -- PC-9")
     quantity = serializers.DecimalField(max_digits=10, decimal_places=2, default=1)
 
 
 class ServiceOrderLaborSerializer(_LineItemValidationMixin, serializers.ModelSerializer):
-    """Serializer para itens de mão-de-obra de uma OS."""
+    """Serializer para itens de mao-de-obra de uma OS."""
 
     total = serializers.FloatField(read_only=True)
     service_catalog_name = serializers.CharField(
@@ -337,7 +338,7 @@ class ServiceOrderLaborSerializer(_LineItemValidationMixin, serializers.ModelSer
 
 
 class ServiceCatalogSerializer(serializers.ModelSerializer):
-    """Serializer completo para criação/edição do catálogo."""
+    """Serializer completo para criacao/edicao do catalogo."""
 
     category_display = serializers.CharField(source="get_category_display", read_only=True)
 
@@ -361,7 +362,7 @@ class ServiceCatalogListSerializer(serializers.ModelSerializer):
 
 
 class ServiceOrderOverdueSerializer(serializers.ModelSerializer):
-    """Serializer para OS vencidas/com entrega hoje — endpoint overdue."""
+    """Serializer para OS vencidas/com entrega hoje -- endpoint overdue."""
 
     status_display = serializers.CharField(source="get_status_display", read_only=True)
     days_overdue = serializers.SerializerMethodField()
@@ -381,7 +382,7 @@ class ServiceOrderOverdueSerializer(serializers.ModelSerializer):
         return (timezone.localdate() - obj.estimated_delivery_date).days
 
     def get_urgency(self, obj: ServiceOrder) -> str:
-        """Classifica urgência: overdue / due_today / upcoming."""
+        """Classifica urgencia: overdue / due_today / upcoming."""
         days = self.get_days_overdue(obj)
         if days > 0:
             return "overdue"
@@ -391,7 +392,7 @@ class ServiceOrderOverdueSerializer(serializers.ModelSerializer):
 
 
 class ServiceOrderCalendarSerializer(serializers.ModelSerializer):
-    """Serializer compacto para o endpoint de calendário."""
+    """Serializer compacto para o endpoint de calendario."""
 
     status_display = serializers.CharField(source="get_status_display", read_only=True)
 
@@ -408,7 +409,7 @@ class ServiceOrderCalendarSerializer(serializers.ModelSerializer):
 class ServiceOrderListSerializer(serializers.ModelSerializer):
     """
     Serializer compacto para listagem (Kanban, tabelas).
-    Não inclui nested pesados para reduzir payload.
+    Nao inclui nested pesados para reduzir payload.
     """
 
     total = serializers.FloatField(read_only=True)
@@ -479,8 +480,8 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
     def get_closure_status(self, obj: ServiceOrder) -> Optional[dict]:
         """Retorna o status de encerramento da OS (entregue + faturada + paga).
 
-        Retorna None se a OS não estiver no status delivered.
-        Usa anotações do queryset quando disponíveis; caso contrário faz query direta.
+        Retorna None se a OS nao estiver no status delivered.
+        Usa anotacoes do queryset quando disponiveis; caso contrario faz query direta.
         """
         if obj.status != ServiceOrderStatus.DELIVERED:
             return None
@@ -511,7 +512,7 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
         }
 
     def get_has_transition_blocks(self, obj: ServiceOrder) -> bool:
-        """Indicador leve para Kanban: True se próximo status tem hard ou soft blocks."""
+        """Indicador leve para Kanban: True se proximo status tem hard ou soft blocks."""
         from apps.service_orders.transition_validator import TransitionValidator
 
         allowed = VALID_TRANSITIONS.get(obj.status, [])
@@ -523,7 +524,7 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
 
 
 class ServiceOrderDetailSerializer(serializers.ModelSerializer):
-    """Serializer completo para a tela de abertura/edição da OS."""
+    """Serializer completo para a tela de abertura/edicao da OS."""
 
     total = serializers.FloatField(read_only=True)
     status_display = serializers.CharField(source="get_status_display", read_only=True)
@@ -548,10 +549,10 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
     days_in_shop = serializers.SerializerMethodField()
     consultant_name = serializers.SerializerMethodField()
     # Retorna customer_uuid (UnifiedCustomer) em vez do PK inteiro da Person FK.
-    # O frontend espera UUID ou null neste campo — nunca um inteiro.
+    # O frontend espera UUID ou null neste campo -- nunca um inteiro.
     customer = serializers.SerializerMethodField()
-    # Expõe o PK inteiro da Person FK para que o frontend possa renderizar
-    # dados do cliente mesmo quando customer_uuid é nulo (OS do novo fluxo).
+    # Expoe o PK inteiro da Person FK para que o frontend possa renderizar
+    # dados do cliente mesmo quando customer_uuid e nulo (OS do novo fluxo).
     customer_person_id = serializers.SerializerMethodField()
     closure_status = serializers.SerializerMethodField()
     transition_requirements = serializers.SerializerMethodField()
@@ -561,11 +562,11 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_customer(self, obj: "ServiceOrder") -> str | None:
-        """Retorna customer_uuid para compatibilidade com frontend (não o PK integer da Person)."""
+        """Retorna customer_uuid para compatibilidade com frontend (nao o PK integer da Person)."""
         return str(obj.customer_uuid) if obj.customer_uuid else None
 
     def get_customer_person_id(self, obj: "ServiceOrder") -> int | None:
-        """Retorna o PK inteiro da Person FK (novo fluxo de criação de OS)."""
+        """Retorna o PK inteiro da Person FK (novo fluxo de criacao de OS)."""
         return obj.customer_id  # type: ignore[return-value]
 
     def get_allowed_transitions(self, obj: ServiceOrder) -> list[str]:
@@ -585,8 +586,8 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
     def get_closure_status(self, obj: ServiceOrder) -> Optional[dict]:
         """Retorna o status de encerramento da OS (entregue + faturada + paga).
 
-        Retorna None se a OS não estiver no status delivered.
-        Usa anotações do queryset quando disponíveis; caso contrário faz query direta.
+        Retorna None se a OS nao estiver no status delivered.
+        Usa anotacoes do queryset quando disponiveis; caso contrario faz query direta.
         """
         if obj.status != ServiceOrderStatus.DELIVERED:
             return None
@@ -617,7 +618,7 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
         }
 
     def get_transition_requirements(self, obj: ServiceOrder) -> dict[str, dict]:
-        """Retorna validação de pré-requisitos para cada transição permitida."""
+        """Retorna validacao de pre-requisitos para cada transicao permitida."""
         from apps.service_orders.transition_validator import TransitionValidator
 
         return TransitionValidator.validate_all_targets(obj)
@@ -626,19 +627,19 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
 class ServiceOrderCreateSerializer(serializers.ModelSerializer):
     """
     Serializer para abertura de nova OS.
-    Número é gerado automaticamente pelo ServiceOrderService — não exposto como campo de entrada.
+    Numero e gerado automaticamente pelo ServiceOrderService -- nao exposto como campo de entrada.
     """
 
-    # customer recebe UUID do UnifiedCustomer (schema public) — diferente de Person (tenant FK).
-    # Aceita UUID sem validação FK e descarta no create() para não quebrar o IntegerField do FK.
-    # customer_name (desnormalizado) é a referência real neste fluxo.
+    # customer recebe UUID do UnifiedCustomer (schema public) -- diferente de Person (tenant FK).
+    # Aceita UUID sem validacao FK e descarta no create() para nao quebrar o IntegerField do FK.
+    # customer_name (desnormalizado) e a referencia real neste fluxo.
     customer = serializers.UUIDField(
         required=False,
         allow_null=True,
         write_only=True,
     )
-    # customer_id recebe o ID inteiro de Person (tenant FK) — fluxo CreateOSForm.
-    # Não conflita com o campo customer (UUID) acima pois são campos distintos no serializer.
+    # customer_id recebe o ID inteiro de Person (tenant FK) -- fluxo CreateOSForm.
+    # Nao conflita com o campo customer (UUID) acima pois sao campos distintos no serializer.
     customer_id = serializers.IntegerField(
         required=False,
         allow_null=True,
@@ -648,7 +649,7 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceOrder
         exclude = ["number", "created_by", "invoice_issued", "opened_at"]
-        # Campos calculados ou controlados por endpoints dedicados — não graváveis via POST
+        # Campos calculados ou controlados por endpoints dedicados -- nao gravaveis via POST
         read_only_fields = [
             "status",
             "is_active",
@@ -663,7 +664,7 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
             "client_delivery_date",
         ]
         extra_kwargs = {
-            # Campos opcionais do veículo — model tem default="" mas sem blank=True
+            # Campos opcionais do veiculo -- model tem default="" mas sem blank=True
             "make":            {"required": False, "allow_blank": True},
             "model":           {"required": False, "allow_blank": True},
             "vehicle_version": {"required": False, "allow_blank": True},
@@ -679,15 +680,15 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
         if attrs.get("customer_type") == ServiceOrder.CustomerType.INSURER:
             if not attrs.get("insurer"):
                 raise serializers.ValidationError(
-                    {"insurer": "Seguradora é obrigatória para OS de seguradora."}
+                    {"insurer": "Seguradora e obrigatoria para OS de seguradora."}
                 )
             if not attrs.get("insured_type"):
                 raise serializers.ValidationError(
-                    {"insured_type": "Tipo de segurado é obrigatório para OS de seguradora."}
+                    {"insured_type": "Tipo de segurado e obrigatorio para OS de seguradora."}
                 )
         return attrs
 
-    # Mapa de logos de montadoras — fonte: apiplacas.com.br
+    # Mapa de logos de montadoras -- fonte: apiplacas.com.br
     _MAKE_LOGOS: dict[str, str] = {
         "chevrolet": "https://apiplacas.com.br/logos/logosMarcas/chevrolet.png",
         "fiat": "https://apiplacas.com.br/logos/logosMarcas/fiat.png",
@@ -707,7 +708,7 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
         "mitsubishi": "https://apiplacas.com.br/logos/logosMarcas/mitsubishi.png",
         "volvo": "https://apiplacas.com.br/logos/logosMarcas/volvo.png",
         "byd": "https://apiplacas.com.br/logos/logosMarcas/byd.png",
-        "citroën": "https://apiplacas.com.br/logos/logosMarcas/citroen.png",
+        "citron": "https://apiplacas.com.br/logos/logosMarcas/citroen.png",
         "subaru": "https://apiplacas.com.br/logos/logosMarcas/subaru.png",
         "dodge": "https://apiplacas.com.br/logos/logosMarcas/dodge.png",
         "land rover": "https://apiplacas.com.br/logos/logosMarcas/land-rover.png",
@@ -719,15 +720,15 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data: dict) -> "ServiceOrder":
         from apps.vehicles.models import Vehicle
 
-        # UUID do UnifiedCustomer não pode ser salvo no FK inteiro de Person — descarta.
+        # UUID do UnifiedCustomer nao pode ser salvo no FK inteiro de Person -- descarta.
         validated_data.pop("customer", None)
 
-        # Resolve make_logo se não fornecido
+        # Resolve make_logo se nao fornecido
         make = validated_data.get("make", "")
         if make and not validated_data.get("make_logo"):
             validated_data["make_logo"] = self._MAKE_LOGOS.get(make.lower(), "")
 
-        # Persiste veículo na base para lookup futuro (DB-first)
+        # Persiste veiculo na base para lookup futuro (DB-first)
         plate = (validated_data.get("plate") or "").upper().strip().replace("-", "")
         if plate:
             model = validated_data.get("model", "")
@@ -746,15 +747,15 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
 
 
 class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
-    """Serializer para atualização parcial de OS."""
+    """Serializer para atualizacao parcial de OS."""
 
-    # customer recebe UUID do UnifiedCustomer (schema public) — igual ao create
+    # customer recebe UUID do UnifiedCustomer (schema public) -- igual ao create
     customer = serializers.UUIDField(
         required=False,
         allow_null=True,
         write_only=True,
     )
-    # customer_person_id recebe PK inteiro de Person — novo fluxo de troca de cliente
+    # customer_person_id recebe PK inteiro de Person -- novo fluxo de troca de cliente
     customer_person_id = serializers.IntegerField(
         required=False,
         allow_null=True,
@@ -765,7 +766,7 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceOrder
         exclude = ["number", "created_by", "opened_at"]
-        # Campos calculados ou controlados por endpoints dedicados — não graváveis via PATCH
+        # Campos calculados ou controlados por endpoints dedicados -- nao gravaveis via PATCH
         read_only_fields = [
             "status",
             "is_active",
@@ -793,19 +794,19 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
         }
 
     def update(self, instance: "ServiceOrder", validated_data: dict) -> "ServiceOrder":
-        # UUID do UnifiedCustomer não pode ser salvo no FK inteiro de Person — descarta.
+        # UUID do UnifiedCustomer nao pode ser salvo no FK inteiro de Person -- descarta.
         validated_data.pop("customer", None)
         return super().update(instance, validated_data)
 
     def validate(self, attrs: dict) -> dict:
         """Valida campos de seguradora quando customer_type muda para 'insurer'.
 
-        Em PATCH parcial, só valida se o usuário está alterando customer_type,
-        insurer ou insured_type — não bloqueia edições de campos não-relacionados
-        em OS com dados inconsistentes pré-existentes.
+        Em PATCH parcial, so valida se o usuario esta alterando customer_type,
+        insurer ou insured_type -- nao bloqueia edicoes de campos nao-relacionados
+        em OS com dados inconsistentes pre-existentes.
         """
         instance = self.instance
-        # Só dispara validação se algum campo relevante está sendo alterado
+        # So dispara validacao se algum campo relevante esta sendo alterado
         insurer_fields_in_payload = {"customer_type", "insurer", "insured_type"} & attrs.keys()
         if not insurer_fields_in_payload and instance is not None:
             return attrs
@@ -821,22 +822,22 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
                 getattr(instance, "insured_type", None) if instance else None,
             )
             if not insurer:
-                raise serializers.ValidationError({"insurer": "Seguradora é obrigatória para OS de seguradora."})
+                raise serializers.ValidationError({"insurer": "Seguradora e obrigatoria para OS de seguradora."})
             if not insured_type:
                 raise serializers.ValidationError(
-                    {"insured_type": "Tipo de segurado é obrigatório para OS de seguradora."}
+                    {"insured_type": "Tipo de segurado e obrigatorio para OS de seguradora."}
                 )
         return attrs
 
 
 class ServiceOrderStatusTransitionSerializer(serializers.Serializer):
-    """Serializer para mudança manual de status via ação customizada."""
+    """Serializer para mudanca manual de status via acao customizada."""
 
     new_status = serializers.ChoiceField(choices=ServiceOrderStatus.choices)
     force = serializers.BooleanField(required=False, default=False)
     override_id = serializers.UUIDField(required=False, allow_null=True, default=None)
     justification = serializers.CharField(required=False, allow_blank=True, default="")
-    # Credenciais presenciais do gerente (opcional — para override presencial)
+    # Credenciais presenciais do gerente (opcional -- para override presencial)
     manager_email = serializers.EmailField(required=False, allow_blank=True, default="")
     manager_password = serializers.CharField(required=False, allow_blank=True, default="")
 
@@ -845,7 +846,7 @@ class ServiceOrderStatusTransitionSerializer(serializers.Serializer):
         if not service_order.can_transition_to(value):
             allowed = VALID_TRANSITIONS.get(service_order.status, [])
             raise serializers.ValidationError(
-                f"Transição inválida: '{service_order.status}' → '{value}'. "
+                f"Transicao invalida: '{service_order.status}' -> '{value}'. "
                 f"Permitidas: {allowed}"
             )
         return value
@@ -863,12 +864,12 @@ class ServiceOrderStatusTransitionSerializer(serializers.Serializer):
                 manager = GlobalUser.objects.get(email=email, is_active=True)
             except GlobalUser.DoesNotExist:
                 raise serializers.ValidationError(
-                    {"manager_email": "Credenciais do gerente inválidas."}
+                    {"manager_email": "Credenciais do gerente invalidas."}
                 )
 
             if not manager.check_password(password):
                 raise serializers.ValidationError(
-                    {"manager_password": "Credenciais do gerente inválidas."}
+                    {"manager_password": "Credenciais do gerente invalidas."}
                 )
 
             # Verificar role MANAGER+
@@ -876,7 +877,7 @@ class ServiceOrderStatusTransitionSerializer(serializers.Serializer):
             # Em dev-credentials, role vem da session. Usar default ADMIN.
             if ROLE_HIERARCHY.get(role, 0) < ROLE_HIERARCHY.get("MANAGER", 3):
                 raise serializers.ValidationError(
-                    {"manager_email": "Usuário não tem permissão de gerente."}
+                    {"manager_email": "Usuario nao tem permissao de gerente."}
                 )
 
             # Substituir changed_by pelo gerente autenticado presencialmente
@@ -901,7 +902,7 @@ class DeliverOSSerializer(serializers.Serializer):
             nfse_number = attrs.get("nfse_number") or service_order.nfse_number
             if not nfe_key and not nfse_number:
                 raise serializers.ValidationError(
-                    {"fiscal": "NF-e ou NFS-e obrigatória para clientes particulares."}
+                    {"fiscal": "NF-e ou NFS-e obrigatoria para clientes particulares."}
                 )
         return attrs
 
@@ -916,96 +917,7 @@ class UploadPhotoSerializer(serializers.Serializer):
     checklist_type = serializers.CharField(required=False, allow_blank=True, default="")
 
 
-class ServiceOrderSyncSerializer(serializers.ModelSerializer):
-    """
-    Serializer para sync incremental WatermelonDB.
-
-    Mapeia campos do modelo para o schema do WatermelonDB,
-    expondo timestamps em milissegundos (epoch ms) conforme
-    o protocolo de sync do WatermelonDB.
-    """
-
-    id = serializers.UUIDField()                      # obrigatório pelo protocolo WatermelonDB sync
-    remote_id = serializers.CharField(source="id")   # mantido para o campo remote_id do schema
-    vehicle_brand = serializers.CharField(source="make")
-    vehicle_model = serializers.CharField(source="model")
-    vehicle_year = serializers.IntegerField(source="year", allow_null=True)
-    vehicle_color = serializers.CharField(source="color")
-    vehicle_plate = serializers.CharField(source="plate")
-    # Campos string que podem ser null no DB — WatermelonDB exige string não-nula
-    customer_type = serializers.SerializerMethodField()
-    os_type = serializers.SerializerMethodField()
-    consultant_name = serializers.SerializerMethodField()
-    insurer_id = serializers.SerializerMethodField()
-    insured_type = serializers.SerializerMethodField()
-    # Decimais como float — WatermelonDB schema type: 'number'
-    total_parts = serializers.FloatField(source="parts_total")
-    total_services = serializers.FloatField(source="services_total")
-    make_logo = serializers.SerializerMethodField()
-    created_at_remote = serializers.SerializerMethodField()
-    updated_at_remote = serializers.SerializerMethodField()
-
-    class Meta:
-        model = ServiceOrder
-        fields = [
-            "id",
-            "remote_id",
-            "number",
-            "status",
-            "customer_name",
-            "customer_type",
-            "os_type",
-            "vehicle_plate",
-            "vehicle_brand",
-            "vehicle_model",
-            "vehicle_year",
-            "vehicle_color",
-            "consultant_name",
-            "insurer_id",
-            "insured_type",
-            "make_logo",
-            "total_parts",
-            "total_services",
-            "created_at_remote",
-            "updated_at_remote",
-        ]
-
-    def get_customer_type(self, obj: ServiceOrder) -> str:
-        """Retorna customer_type ou string vazia (WatermelonDB não aceita null em string)."""
-        return obj.customer_type or ""
-
-    def get_os_type(self, obj: ServiceOrder) -> str:
-        """Retorna os_type ou string vazia (WatermelonDB não aceita null em string)."""
-        return obj.os_type or ""
-
-    def get_consultant_name(self, obj: ServiceOrder) -> str:
-        """Retorna nome completo ou email do consultor, ou string vazia."""
-        if obj.consultant:
-            return obj.consultant.get_full_name() or obj.consultant.email
-        return ""
-
-    def get_insurer_id(self, obj: ServiceOrder) -> str:
-        """Retorna UUID da seguradora ou string vazia (WatermelonDB não aceita null em string)."""
-        return str(obj.insurer_id) if obj.insurer_id else ""
-
-    def get_insured_type(self, obj: ServiceOrder) -> str:
-        """Retorna insured_type ou string vazia."""
-        return obj.insured_type or ""
-
-    def get_make_logo(self, obj: ServiceOrder) -> str:
-        """Retorna URL do logo da montadora ou string vazia."""
-        return obj.make_logo or ""
-
-    def get_created_at_remote(self, obj: ServiceOrder) -> int:
-        """Retorna opened_at como epoch em milissegundos para o WatermelonDB."""
-        return int(obj.opened_at.timestamp() * 1000)
-
-    def get_updated_at_remote(self, obj: ServiceOrder) -> int:
-        """Retorna updated_at como epoch em milissegundos para o WatermelonDB."""
-        return int(obj.updated_at.timestamp() * 1000)
-
-
-# ─── ChecklistItem Serializers (Sprint M4) ───────────────────────────────────
+# -- ChecklistItem Serializers (Sprint M4) --
 
 class ChecklistItemSerializer(serializers.ModelSerializer):
     """Serializer para leitura e escrita de itens de checklist."""
@@ -1026,13 +938,13 @@ class ChecklistItemSerializer(serializers.ModelSerializer):
 
 
 class ChecklistItemBulkSerializer(serializers.Serializer):
-    """Aceita lista de itens para upsert em lote — usado pelo app mobile."""
+    """Aceita lista de itens para upsert em lote -- usado pelo app mobile."""
 
     items = ChecklistItemSerializer(many=True)
 
     def validate_items(self, items: list) -> list:
         if not items:
-            raise serializers.ValidationError("Lista de itens não pode ser vazia.")
+            raise serializers.ValidationError("Lista de itens nao pode ser vazia.")
         return items
 
 
@@ -1045,150 +957,10 @@ class HolidaySerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at"]
 
 
-# ── Versionamento de OS ──────────────────────────────────────────────────────
-
-from apps.service_orders.models import (  # noqa: E402
-    ServiceOrderVersion,
-    ServiceOrderVersionItem,
-    ServiceOrderEvent,
-    ServiceOrderParecer,
-)
-
-
-class ServiceOrderVersionItemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ServiceOrderVersionItem
-        fields = [
-            "id", "version",
-            "bucket", "payer_block", "impact_area", "item_type",
-            "description", "external_code", "part_type", "supplier",
-            "quantity", "unit_price", "unit_cost", "discount_pct", "net_price",
-            "flag_abaixo_padrao", "flag_acima_padrao", "flag_inclusao_manual",
-            "flag_codigo_diferente", "flag_servico_manual", "flag_peca_da_conta",
-            "sort_order",
-        ]
-        read_only_fields = [
-            "id", "version",
-            "bucket", "payer_block", "impact_area", "item_type",
-            "description", "external_code", "part_type", "supplier",
-            "quantity", "unit_price", "unit_cost", "discount_pct", "net_price",
-            "flag_abaixo_padrao", "flag_acima_padrao", "flag_inclusao_manual",
-            "flag_codigo_diferente", "flag_servico_manual", "flag_peca_da_conta",
-            "sort_order",
-        ]
-
-
-class ServiceOrderVersionSerializer(serializers.ModelSerializer):
-    items = ServiceOrderVersionItemSerializer(many=True, read_only=True)
-    status_display = serializers.CharField(source="get_status_display", read_only=True)
-
-    class Meta:
-        model = ServiceOrderVersion
-        fields = [
-            "id", "service_order", "version_number",
-            "external_version", "external_numero_vistoria", "external_integration_id",
-            "source", "status", "status_display",
-            "subtotal", "discount_total", "net_total",
-            "labor_total", "parts_total",
-            "total_seguradora", "total_complemento_particular", "total_franquia",
-            "content_hash", "hourly_rates", "global_discount_pct",
-            "created_at", "created_by", "approved_at",
-            "items",
-        ]
-        read_only_fields = [
-            "id", "service_order", "version_number",
-            "external_version", "external_numero_vistoria", "external_integration_id",
-            "source", "status", "status_display",
-            "subtotal", "discount_total", "net_total",
-            "labor_total", "parts_total",
-            "total_seguradora", "total_complemento_particular", "total_franquia",
-            "content_hash", "hourly_rates", "global_discount_pct",
-            "created_at", "created_by", "approved_at",
-        ]
-
-
-class ServiceOrderEventSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ServiceOrderEvent
-        fields = [
-            "id", "service_order", "event_type",
-            "actor", "payload", "from_state", "to_state", "created_at",
-        ]
-        read_only_fields = [
-            "id", "service_order", "event_type",
-            "actor", "payload", "from_state", "to_state", "created_at",
-        ]
-
-
-class ServiceOrderParecerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ServiceOrderParecer
-        fields = [
-            "id", "service_order", "version",
-            "source", "flow_number",
-            "author_external", "author_org", "author_internal",
-            "parecer_type", "body",
-            "created_at_external", "created_at",
-        ]
-        read_only_fields = ["id", "created_at"]
-
-
-# ── Versões: detalhe, diff e complemento ─────────────────────────────────────
-
-class VersionItemCompactSerializer(serializers.ModelSerializer):
-    """Serializer compacto de itens de versão para exibição em detalhe e diff."""
-
-    class Meta:
-        model = ServiceOrderVersionItem
-        fields = [
-            "id", "bucket", "payer_block", "item_type", "description",
-            "external_code", "part_type", "quantity", "unit_price",
-            "discount_pct", "net_price", "flag_inclusao_manual",
-        ]
-
-
-class VersionDetailSerializer(serializers.ModelSerializer):
-    """Serializer completo de uma versão de OS, incluindo itens compactos."""
-
-    items = VersionItemCompactSerializer(many=True, read_only=True)
-    source_display = serializers.CharField(source="get_source_display", read_only=True)
-    status_display = serializers.CharField(source="get_status_display", read_only=True)
-
-    class Meta:
-        model = ServiceOrderVersion
-        fields = [
-            "id", "version_number", "external_version", "source", "source_display",
-            "status", "status_display", "subtotal", "discount_total", "net_total",
-            "labor_total", "parts_total", "total_seguradora",
-            "total_complemento_particular", "total_franquia",
-            "created_at", "approved_at", "items",
-        ]
-
-
-class VersionDiffItemSerializer(serializers.Serializer):
-    """Representa um item na comparação entre duas versões."""
-
-    description = serializers.CharField()
-    item_type = serializers.CharField()
-    old_value = serializers.DecimalField(max_digits=12, decimal_places=2, allow_null=True)
-    new_value = serializers.DecimalField(max_digits=12, decimal_places=2, allow_null=True)
-    change_type = serializers.ChoiceField(choices=["added", "removed", "changed", "unchanged"])
-    is_executed = serializers.BooleanField(default=False)
-
-
-class VersionDiffSerializer(serializers.Serializer):
-    """Resultado da comparação entre a versão atual e uma nova versão."""
-
-    current_version = VersionDetailSerializer()
-    new_version = VersionDetailSerializer()
-    diff_items = VersionDiffItemSerializer(many=True)
-    totals_diff = serializers.DictField()
-
-
-# ── Complemento: criação de peças e mão-de-obra particular ───────────────────
+# -- Complemento: criacao de pecas e mao-de-obra particular --
 
 class ComplementPartCreateSerializer(serializers.ModelSerializer):
-    """Cria peça de complemento (particular) vinculada à OS."""
+    """Cria peca de complemento (particular) vinculada a OS."""
 
     class Meta:
         model = ServiceOrderPart
@@ -1198,27 +970,27 @@ class ComplementPartCreateSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data: dict) -> ServiceOrderPart:
-        """Força payer=customer e source_type=complement ao criar."""
+        """Forca payer=customer e source_type=complement ao criar."""
         validated_data["payer"] = "customer"
         validated_data["source_type"] = "complement"
         return super().create(validated_data)
 
 
 class ComplementLaborCreateSerializer(serializers.ModelSerializer):
-    """Cria mão-de-obra de complemento (particular) vinculada à OS."""
+    """Cria mao-de-obra de complemento (particular) vinculada a OS."""
 
     class Meta:
         model = ServiceOrderLabor
         fields = ["description", "quantity", "unit_price", "discount", "service_catalog"]
 
     def create(self, validated_data: dict) -> ServiceOrderLabor:
-        """Força payer=customer e source_type=complement ao criar."""
+        """Forca payer=customer e source_type=complement ao criar."""
         validated_data["payer"] = "customer"
         validated_data["source_type"] = "complement"
         return super().create(validated_data)
 
 
-# ── Resumo financeiro da OS ───────────────────────────────────────────────────
+# -- Resumo financeiro da OS --
 
 class FinancialSummarySerializer(serializers.Serializer):
     """Resumo financeiro completo da OS, desagregado por origem e pagador."""
@@ -1236,11 +1008,19 @@ class FinancialSummarySerializer(serializers.Serializer):
     customer_owes = serializers.DecimalField(max_digits=14, decimal_places=2)
     insurer_owes = serializers.DecimalField(max_digits=14, decimal_places=2)
     grand_total = serializers.DecimalField(max_digits=14, decimal_places=2)
-    active_version = VersionDetailSerializer(allow_null=True)
+    # Import VersionDetailSerializer lazily to avoid circular import
+    active_version = serializers.SerializerMethodField()
+
+    def get_active_version(self, obj: dict) -> dict | None:
+        version = obj.get("active_version") if isinstance(obj, dict) else getattr(obj, "active_version", None)
+        if version is None:
+            return None
+        from apps.service_orders.serializers.versioning import VersionDetailSerializer
+        return VersionDetailSerializer(version).data
 
 
 class VehicleHistoryItemSerializer(serializers.ModelSerializer):
-    """Serializer compacto para itens do histórico de veículo."""
+    """Serializer compacto para itens do historico de veiculo."""
 
     total = serializers.FloatField(read_only=True)
 
@@ -1261,11 +1041,10 @@ class VehicleHistoryItemSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-# ── Override de Transição — Serializers ──────────────────────────────────────
-
+# -- Override de Transicao -- Serializers --
 
 class TransitionValidationResultSerializer(serializers.Serializer):
-    """Resultado de validação de transição — read-only."""
+    """Resultado de validacao de transicao -- read-only."""
 
     can_proceed = serializers.BooleanField()
     hard_blocks = serializers.ListField(child=serializers.DictField())
@@ -1275,14 +1054,14 @@ class TransitionValidationResultSerializer(serializers.Serializer):
 
 
 class OverrideRequestCreateSerializer(serializers.Serializer):
-    """Criação de solicitação de override."""
+    """Criacao de solicitacao de override."""
 
     target_status = serializers.ChoiceField(choices=ServiceOrderStatus.choices)
     reason = serializers.CharField(max_length=1000)
 
 
 class OverrideResolveSerializer(serializers.Serializer):
-    """Resolução de override (aprovar/rejeitar)."""
+    """Resolucao de override (aprovar/rejeitar)."""
 
     action = serializers.ChoiceField(choices=["approved", "rejected"])
     justification = serializers.CharField(max_length=1000)
