@@ -36,6 +36,7 @@ from .capacity import (
     ApontamentoHoras,
     CapacidadeTecnico,
     BloqueioCapacidade,
+    _dias_semana_default,
 )
 from .parecer import (
     ServiceOrderParecer,

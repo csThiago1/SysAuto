@@ -203,7 +203,7 @@ class NFeEntrada(PaddockBaseModel):
         help_text="True se importada automaticamente via webhook nfe_recebida.",
     )
     purchase_order = models.ForeignKey(
-        "purchasing.PurchaseOrder",
+        "purchasing.OrdemCompra",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
