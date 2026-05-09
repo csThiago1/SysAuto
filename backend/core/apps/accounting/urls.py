@@ -9,8 +9,11 @@ from .views import (
     CostCenterViewSet,
     DespesaRecorrenteViewSet,
     DREView,
+    FaturamentoView,
+    FinancialDashboardView,
     FiscalPeriodViewSet,
     FiscalYearViewSet,
+    InadimplenciaView,
     JournalEntryViewSet,
 )
 
@@ -23,6 +26,7 @@ router.register(r"fiscal-periods", FiscalPeriodViewSet, basename="fiscal-period"
 router.register(r"journal-entries", JournalEntryViewSet, basename="journal-entry")
 
 urlpatterns = [
+    path("dashboard/", FinancialDashboardView.as_view(), name="financial-dashboard"),
     path("dre/", DREView.as_view(), name="dre"),
     path("", include(router.urls)),
 ]
