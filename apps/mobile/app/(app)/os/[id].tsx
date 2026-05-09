@@ -18,7 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
 import { Card } from '@/components/ui/Card';
-import { Colors, Radii, Spacing, SemanticColors } from '@/constants/theme';
+import { Colors, Radii, Spacing } from '@/constants/theme';
 import { SectionDivider } from '@/components/ui/SectionDivider';
 import { Button } from '@/components/ui/Button';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
@@ -48,33 +48,22 @@ import type { ServiceOrderStatus, TransitionRequirements } from '@paddock/types'
 import type { OSStatus } from '@/constants/theme';
 import { TransitionRequirementsSheet } from '@/components/os/TransitionRequirementsSheet';
 
+import {
+  TAB_NAMES,
+  OS_TYPE_LABELS,
+  formatDateTime,
+  groupPhotosByFolder,
+} from '@/components/os/os-detail-utils';
+import type { OSPhoto } from '@/components/os/os-detail-utils';
+import { StatusUpdateModal } from '@/components/os/StatusUpdateModal';
+import { OSDetailSkeleton } from '@/components/os/OSDetailSkeleton';
+import { PhotoGroup } from '@/components/os/PhotoGroup';
+import { TransitionLogItem } from '@/components/os/TransitionLogItem';
+import { ChecklistProgressRow } from '@/components/os/ChecklistProgressRow';
+import { VistoriaCTACard } from '@/components/os/VistoriaCTACard';
+
 // ─── Extended detail type (superset of what the hook returns) ─────────────────
 
-interface OSPhoto {
-  id: string;
-  folder: string;
-  url: string;
-  caption?: string;
-}
-
-interface OSLineItem {
-  id: string;
-  description: string;
-  quantity: number;
-  unit_price: string;
-  total: string;
-}
-
-interface OSTransitionLog {
-  id: string;
-  from_status: string;
-  to_status: string;
-  created_at: string;       // campo real do backend StatusTransitionLog
-  changed_by_name?: string; // campo real do backend (get_full_name ou email)
-}
-
-// The hook's ServiceOrderDetailAPI is the base; we extend it with the rich
-// fields that the real endpoint returns but the offline model doesn't cache.
 interface ServiceOrderDetail {
   id: string;
   number: number;
@@ -92,340 +81,20 @@ interface ServiceOrderDetail {
   services_total: string;
   consultant?: { id: string; email: string; full_name: string };
   photos?: OSPhoto[];
-  parts?: OSLineItem[];
-  labor_items?: OSLineItem[];
-  transition_logs?: OSTransitionLog[];
+  transition_logs?: Array<{ id: string; from_status: string; to_status: string; created_at: string; changed_by_name?: string }>;
   transition_requirements?: TransitionRequirements;
+  casualty_number?: string;
+  deductible_amount?: string;
+  estimated_delivery_date?: string;
+  observations?: string;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const TAB_NAMES = ['Geral', 'Peças', 'Serviços', 'Fotos', 'Docs', 'Histórico'];
-
-const FOLDER_LABELS: Record<string, string> = {
-  checklist_entrada: 'Checklist de Entrada',
-  acompanhamento: 'Acompanhamento',
-  checklist_saida: 'Checklist de Saída',
-  pericia: 'Perícia',
-  outros: 'Outros',
-};
-
-const OS_TYPE_LABELS: Record<string, string> = {
-  bodywork:   'Lataria/Pintura',
-  warranty:   'Garantia',
-  rework:     'Retrabalho',
-  mechanical: 'Mecânica',
-  aesthetic:  'Estética',
-};
 
 const CUSTOMER_TYPE_LABELS: Record<string, string> = {
   insurer: 'Seguradora',
   private: 'Particular',
 };
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function formatCurrency(value: string): string {
-  const num = parseFloat(value);
-  if (isNaN(num)) return 'R$ 0,00';
-  return num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
-function formatDateTime(iso: string): string {
-  try {
-    const date = new Date(iso);
-    return date.toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  } catch {
-    return iso;
-  }
-}
-
-function groupPhotosByFolder(photos: OSPhoto[]): [string, OSPhoto[]][] {
-  const grouped = photos.reduce<Record<string, OSPhoto[]>>((acc, photo) => {
-    const key = photo.folder;
-    if (!acc[key]) {
-      acc[key] = [];
-    }
-    acc[key].push(photo);
-    return acc;
-  }, {});
-  return Object.entries(grouped);
-}
-
-// ─── Status Update Modal ──────────────────────────────────────────────────────
-
-interface StatusUpdateModalProps {
-  visible: boolean;
-  currentStatus: ServiceOrderStatus;
-  onSelect: (status: ServiceOrderStatus) => void;
-  onClose: () => void;
-  isUpdating: boolean;
-}
-
-function StatusUpdateModal({
-  visible,
-  currentStatus,
-  onSelect,
-  onClose,
-  isUpdating,
-}: StatusUpdateModalProps): React.JSX.Element {
-  const insets = useSafeAreaInsets();
-  const nextStatuses = VALID_TRANSITIONS[currentStatus] ?? [];
-
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <TouchableOpacity
-        style={styles.modalOverlay}
-        activeOpacity={1}
-        onPress={onClose}
-      />
-      <View style={[styles.modalSheet, { paddingBottom: insets.bottom + 16 }]}>
-        <View style={styles.modalHandle} />
-        <View style={styles.modalHeader}>
-          <Text variant="label" color={Colors.textPrimary}>
-            Avançar Status
-          </Text>
-          <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={styles.modalClose}>
-            <Ionicons name="close" size={20} color={Colors.textTertiary} />
-          </TouchableOpacity>
-        </View>
-        <Text variant="bodySmall" color={Colors.textTertiary} style={styles.modalSubtitle}>
-          Status atual: <Text variant="bodySmall" color={Colors.textPrimary}>{getStatusLabel(currentStatus)}</Text>
-        </Text>
-        {nextStatuses.length === 0 ? (
-          <Text variant="bodySmall" color={Colors.textSecondary} style={styles.modalEmpty}>
-            Nenhuma transição disponível para este status.
-          </Text>
-        ) : (
-          nextStatuses.map((s) => {
-            const color = getStatusColor(s);
-            const bg = getStatusBackgroundColor(s);
-            return (
-              <TouchableOpacity
-                key={s}
-                activeOpacity={0.75}
-                disabled={isUpdating}
-                onPress={() => onSelect(s)}
-                style={[styles.statusRow, { backgroundColor: bg }]}
-              >
-                <View style={[styles.statusDot, { backgroundColor: color }]} />
-                <Text variant="body" style={[styles.statusRowLabel, { color }]}>
-                  {getStatusLabel(s)}
-                </Text>
-                {isUpdating ? (
-                  <ActivityIndicator size="small" color={color} />
-                ) : (
-                  <Ionicons name="arrow-forward" size={16} color={color} />
-                )}
-              </TouchableOpacity>
-            );
-          })
-        )}
-      </View>
-    </Modal>
-  );
-}
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function LoadingSkeleton(): React.JSX.Element {
-  return (
-    <View style={styles.skeletonContainer}>
-      <ShimmerBlock height={80} />
-      <ShimmerBlock height={140} />
-      <ShimmerBlock height={100} />
-    </View>
-  );
-}
-
-interface PhotoGroupProps {
-  folder: string;
-  photos: OSPhoto[];
-  onPhotoPress: (url: string) => void;
-}
-
-function PhotoGroup({ folder, photos, onPhotoPress }: PhotoGroupProps): React.JSX.Element {
-  const label = FOLDER_LABELS[folder] ?? folder;
-
-  return (
-    <View style={styles.photoGroup}>
-      <Text variant="bodySmall" style={styles.photoGroupTitle}>
-        {label}
-      </Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.photoScroll}>
-        {photos.map((photo) => (
-          <TouchableOpacity
-            key={photo.id}
-            onPress={() => onPhotoPress(photo.url)}
-            activeOpacity={0.85}
-            style={styles.photoWrapper}
-          >
-            <Image
-              source={{ uri: photo.url }}
-              style={styles.photo}
-              resizeMode="cover"
-            />
-            {photo.caption != null && photo.caption.length > 0 && (
-              <Text variant="caption" color={Colors.textTertiary} numberOfLines={1} style={styles.photoCaption}>
-                {photo.caption}
-              </Text>
-            )}
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
-  );
-}
-
-interface LineItemRowProps {
-  item: OSLineItem;
-}
-
-function LineItemRow({ item }: LineItemRowProps): React.JSX.Element {
-  return (
-    <View style={styles.lineItemRow}>
-      <View style={styles.lineItemInfo}>
-        <Text variant="bodySmall" color={Colors.textPrimary} numberOfLines={2}>
-          {item.description}
-        </Text>
-        <Text variant="bodySmall" color={Colors.textPrimary}>
-          {item.quantity}x {formatCurrency(item.unit_price)}
-        </Text>
-      </View>
-      <MonoLabel variant="accent">{formatCurrency(item.total)}</MonoLabel>
-    </View>
-  );
-}
-
-interface TransitionLogItemProps {
-  log: OSTransitionLog;
-}
-
-function TransitionLogItem({ log }: TransitionLogItemProps): React.JSX.Element {
-  const fromLabel = getStatusLabel(log.from_status);
-  const toLabel = getStatusLabel(log.to_status);
-
-  return (
-    <View style={styles.logItem}>
-      <View style={styles.logDot} />
-      <View style={styles.logContent}>
-        <Text variant="bodySmall" color={Colors.textSecondary}>
-          {fromLabel} → {toLabel}
-        </Text>
-        <Text variant="caption" color={Colors.textSecondary}>
-          {formatDateTime(log.created_at)}
-          {log.changed_by_name != null && log.changed_by_name.length > 0
-            ? ` · ${log.changed_by_name}`
-            : ''}
-        </Text>
-      </View>
-    </View>
-  );
-}
-
-// ─── Checklist Progress Row ───────────────────────────────────────────────────
-
-interface ChecklistProgressRowProps {
-  photoCount: number;
-  ok: number;
-  attention: number;
-  critical: number;
-}
-
-function ChecklistProgressRow({ photoCount, ok, attention, critical }: ChecklistProgressRowProps): React.JSX.Element {
-  const hasAny = photoCount > 0 || ok > 0 || attention > 0 || critical > 0;
-  if (!hasAny) return <View style={styles.progressRowEmpty} />;
-
-  return (
-    <View style={styles.progressRow}>
-      {photoCount > 0 && (
-        <View style={styles.progressChip}>
-          <Ionicons name="camera-outline" size={12} color={Colors.textTertiary} />
-          <Text variant="caption" color={Colors.textTertiary}>{photoCount} foto{photoCount !== 1 ? 's' : ''}</Text>
-        </View>
-      )}
-      {ok > 0 && (
-        <View style={[styles.progressChip, styles.progressChipOk]}>
-          <Ionicons name="checkmark-circle" size={12} color={SemanticColors.success.color} />
-          <Text variant="caption" style={{ color: SemanticColors.success.color }}>{ok} OK</Text>
-        </View>
-      )}
-      {attention > 0 && (
-        <View style={[styles.progressChip, styles.progressChipAttention]}>
-          <Ionicons name="warning" size={12} color={Colors.warning} />
-          <Text variant="caption" style={{ color: Colors.warning }}>{attention} Atenção</Text>
-        </View>
-      )}
-      {critical > 0 && (
-        <View style={[styles.progressChip, styles.progressChipCritical]}>
-          <Ionicons name="alert-circle" size={12} color={SemanticColors.error.color} />
-          <Text variant="caption" style={{ color: SemanticColors.error.color }}>{critical} Crítico</Text>
-        </View>
-      )}
-    </View>
-  );
-}
-
-// ─── Vistoria CTA Card ────────────────────────────────────────────────────────
-
-interface VistoriaCTACardProps {
-  type: 'entrada' | 'saida';
-  osId: string;
-}
-
-function VistoriaCTACard({ type, osId }: VistoriaCTACardProps): React.JSX.Element {
-  const router = useRouter();
-  const isEntrada = type === 'entrada';
-  const semantic = isEntrada ? SemanticColors.info : SemanticColors.success;
-  const bg = semantic.bg;
-  const borderColor = semantic.border;
-  const color = isEntrada ? Colors.info : Colors.success;
-  const icon: React.ComponentProps<typeof Ionicons>['name'] = isEntrada ? 'search-outline' : 'checkmark-done-outline';
-  const title = isEntrada ? 'Iniciar Vistoria de Entrada' : 'Iniciar Vistoria de Saída';
-  const description = isEntrada
-    ? 'Registre o estado do veículo na entrada: fotos e checklist completo.'
-    : 'Confirme os reparos realizados com comparativo antes/depois.';
-
-  const handlePress = (): void => {
-    const path = isEntrada
-      ? `/(app)/vistoria/entrada/${osId}`
-      : `/(app)/vistoria/saida/${osId}`;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    router.push(path as any);
-  };
-
-  return (
-    <TouchableOpacity
-      style={[styles.vstCard, { backgroundColor: bg, borderColor }]}
-      onPress={handlePress}
-      activeOpacity={0.85}
-    >
-      <View style={styles.vstCardIcon}>
-        <Ionicons name={icon} size={24} color={color} />
-      </View>
-      <View style={styles.vstCardBody}>
-        <Text variant="label" style={[styles.vstCardTitle, { color }]}>
-          {title}
-        </Text>
-        <Text variant="bodySmall" color={Colors.textTertiary} style={styles.vstCardDesc}>
-          {description}
-        </Text>
-      </View>
-      <Ionicons name="chevron-forward" size={18} color={color} />
-    </TouchableOpacity>
-  );
-}
 
 // ─── Acompanhamento Section ───────────────────────────────────────────────────
 
@@ -697,7 +366,7 @@ export default function OSDetailScreen(): React.JSX.Element {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.safe} edges={['bottom']}>
-        <LoadingSkeleton />
+        <OSDetailSkeleton />
       </SafeAreaView>
     );
   }
@@ -1159,15 +828,6 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 12,
   },
-  // Skeleton
-  skeletonContainer: {
-    padding: Spacing.lg,
-    gap: Spacing.md,
-  },
-  skeleton: {
-    backgroundColor: Colors.skeleton,
-    borderRadius: Radii.md,
-  },
   // Empty state
   emptyContainer: {
     flex: 1,
@@ -1196,93 +856,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     gap: 10,
   },
-  // Divider
-  divider: {
-    height: 1,
-    backgroundColor: Colors.borderSubtle,
-    marginVertical: 4,
-  },
-  // Totals
-  totalsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  totalItem: {
-    alignItems: 'center',
-    gap: 2,
-  },
   // Tab empty
   tabEmpty: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 60,
     gap: 12,
-  },
-  subtotalRowCenter: {
-    alignItems: 'center',
-    paddingVertical: 4,
-  },
-  // Photo groups
-  photoGroup: {
-    paddingTop: 14,
-    paddingBottom: 8,
-  },
-  photoGroupTitle: {
-    fontWeight: '700',
-    paddingHorizontal: 16,
-    marginBottom: 8,
-    color: Colors.textPrimary,
-  },
-  photoScroll: {
-    paddingLeft: 16,
-  },
-  photoWrapper: {
-    marginRight: 10,
-    alignItems: 'center',
-  },
-  photo: {
-    width: 120,
-    height: 120,
-    borderRadius: Radii.sm,
-    backgroundColor: Colors.skeleton,
-  },
-  photoCaption: {
-    marginTop: 4,
-    maxWidth: 120,
-  },
-  // Line items
-  lineItemRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 8,
-    paddingVertical: 4,
-  },
-  lineItemInfo: {
-    flex: 1,
-    gap: 2,
-  },
-  lineItemTotal: {
-    fontWeight: '600',
-    minWidth: 80,
-    textAlign: 'right',
-  },
-  // Transition log
-  logItem: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingVertical: 4,
-  },
-  logDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.brand,
-    marginTop: 6,
-  },
-  logContent: {
-    flex: 1,
-    gap: 2,
   },
   // Action row
   actionRow: {
@@ -1312,124 +891,15 @@ const styles = StyleSheet.create({
   actionBtnFlex: {
     flex: 1,
   },
-
-  // Status update modal
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: Colors.overlayLight,
-  },
-  modalSheet: {
-    backgroundColor: Colors.surface,
-    borderTopLeftRadius: Radii.xl,
-    borderTopRightRadius: Radii.xl,
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-  },
-  modalHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: Colors.border,
-    alignSelf: 'center',
-    marginBottom: Spacing.lg,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  modalClose: {
-    padding: 4,
-  },
-  modalSubtitle: {
-    marginBottom: 12,
-  },
-  modalEmpty: {
-    textAlign: 'center',
-    paddingVertical: 20,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    gap: 10,
-    marginBottom: 4,
-  },
-  statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  statusRowLabel: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  // Checklist progress row
-  progressRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 2,
-  },
-  progressRowEmpty: {
-    height: 8,
-  },
-  progressChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 3,
-    backgroundColor: Colors.borderSubtle,
-    borderRadius: 20,
-  },
-  progressChipOk: {
-    backgroundColor: SemanticColors.success.bg,
-  },
-  progressChipAttention: {
-    backgroundColor: SemanticColors.warning.bg,
-  },
-  progressChipCritical: {
-    backgroundColor: SemanticColors.error.bg,
-  },
-  // Vistoria CTA card
+  // Vistoria CTA wrapper
   vstCardWrapper: {
     paddingHorizontal: 16,
     paddingTop: 12,
   },
-  vstCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    borderWidth: 1.5,
-    borderRadius: 14,
-    padding: 14,
+  // Photo scroll (used by AcompanhamentoSection)
+  photoScroll: {
+    paddingLeft: 16,
   },
-  vstCardIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  vstCardBody: {
-    flex: 1,
-    gap: 2,
-  },
-  vstCardTitle: {
-    fontWeight: '700',
-  },
-  vstCardDesc: {
-    lineHeight: 18,
-  },
-
   // Acompanhamento section
   acompSectionHeader: {
     flexDirection: 'row',
@@ -1506,7 +976,6 @@ const styles = StyleSheet.create({
   acompUploadLabel: {
     color: Colors.textPrimary,
   },
-
   // Bottom spacing
   bottomPadding: {
     height: 32,
