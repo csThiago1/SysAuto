@@ -28,21 +28,7 @@ import {
   useCreateBenchmarkIngestao,
   useAmostrasPorIngestao,
 } from "@/hooks/useBenchmark"
-import type { BenchmarkIngestaoStatus } from "@paddock/types"
-
-const STATUS_LABELS: Record<BenchmarkIngestaoStatus, string> = {
-  recebido: "Recebido",
-  processando: "Processando...",
-  concluido: "Concluído",
-  erro: "Erro",
-}
-
-const STATUS_BADGE_CLS: Record<BenchmarkIngestaoStatus, string> = {
-  recebido: "border-border text-muted-foreground bg-muted/50",
-  processando: "border-blue-500/30 text-blue-400 bg-blue-400/10",
-  concluido: "border-success-500/30 text-success-400 bg-success-400/10",
-  erro: "border-error-500/30 text-error-400 bg-red-400/10",
-}
+import { BENCHMARK_INGESTAO_STATUS_LABEL, BENCHMARK_INGESTAO_STATUS_BADGE } from "@paddock/utils"
 
 export default function BenchmarkIngestoesPage() {
   const { data: ingestoes = [], isLoading, refetch } = useBenchmarkIngestoes()
@@ -168,9 +154,9 @@ export default function BenchmarkIngestoesPage() {
                 <div className="flex items-center gap-3">
                   <Badge
                     variant="outline"
-                    className={STATUS_BADGE_CLS[ing.status]}
+                    className={BENCHMARK_INGESTAO_STATUS_BADGE[ing.status]}
                   >
-                    {STATUS_LABELS[ing.status]}
+                    {BENCHMARK_INGESTAO_STATUS_LABEL[ing.status]}
                   </Badge>
                   <span className="text-sm text-foreground">{ing.fonte_nome}</span>
                   <span className="text-xs text-muted-foreground">

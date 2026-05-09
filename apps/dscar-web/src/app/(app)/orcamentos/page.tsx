@@ -5,27 +5,7 @@ import { FileText, Plus } from "lucide-react"
 import Link from "next/link"
 import type { Route } from "next"
 import { useOrcamentos } from "@/hooks/useQuotes"
-import type { StatusOrcamento } from "@paddock/types"
-
-const STATUS_LABELS: Record<StatusOrcamento, string> = {
-  rascunho:      "Rascunho",
-  enviado:       "Enviado",
-  aprovado:      "Aprovado",
-  aprovado_parc: "Aprovado Parcial",
-  recusado:      "Recusado",
-  expirado:      "Expirado",
-  convertido_os: "Convertido em OS",
-}
-
-const STATUS_COLORS: Record<StatusOrcamento, string> = {
-  rascunho:      "text-muted-foreground bg-muted",
-  enviado:       "text-info-400 bg-info-400/10",
-  aprovado:      "text-success-400 bg-success-400/10",
-  aprovado_parc: "text-warning-400 bg-warning-400/10",
-  recusado:      "text-error-400 bg-error-400/10",
-  expirado:      "text-warning-400 bg-warning-400/10",
-  convertido_os: "text-foreground/60 bg-muted",
-}
+import { ORCAMENTO_STATUS_LABEL, ORCAMENTO_STATUS_BADGE } from "@paddock/utils"
 
 const formatBRL = (v: string | number) =>
   parseFloat(String(v)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
@@ -89,7 +69,7 @@ export default function OrcamentosPage() {
           className="text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
         >
           <option value="">Todos os status</option>
-          {Object.entries(STATUS_LABELS).map(([k, v]) => (
+          {Object.entries(ORCAMENTO_STATUS_LABEL).map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
           ))}
         </select>
@@ -139,8 +119,8 @@ export default function OrcamentosPage() {
                     {new Date(orc.validade).toLocaleDateString("pt-BR")}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[orc.status]}`}>
-                      {STATUS_LABELS[orc.status]}
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${ORCAMENTO_STATUS_BADGE[orc.status]}`}>
+                      {ORCAMENTO_STATUS_LABEL[orc.status]}
                     </span>
                   </td>
                 </tr>

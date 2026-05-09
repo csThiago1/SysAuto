@@ -10,3 +10,4 @@ export * from "./validators";
 export * from "./person.utils";
 export * from "./service-order.utils";
 export * from "./form-styles";
+export * from "./status-labels";
