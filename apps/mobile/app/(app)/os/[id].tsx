@@ -149,11 +149,23 @@ export default function OSDetailScreen(): React.JSX.Element {
   );
 
   const handleSelectStatus = useCallback((newStatus: ServiceOrderStatus): void => {
-    // Close the status picker and open the requirements sheet for all transitions.
-    // The sheet handles the 'delivered' special case as well (via its own flow).
     setStatusModalVisible(false);
-    setRequirementsTarget(newStatus);
-  }, []);
+    const validation = order?.transition_requirements?.[newStatus];
+    const hasBlocks =
+      (validation?.hard_blocks?.length ?? 0) > 0 ||
+      (validation?.soft_blocks?.length ?? 0) > 0;
+
+    if (hasBlocks) {
+      // Navigate to guided wizard
+      router.push({
+        pathname: '/(app)/os/resolver/[osId]',
+        params: { osId: id ?? '', target: newStatus },
+      });
+    } else {
+      // No blocks — open requirements sheet for direct transition
+      setRequirementsTarget(newStatus);
+    }
+  }, [order, router, id]);
 
   const handleRequirementsSuccess = useCallback((completedTarget?: ServiceOrderStatus): void => {
     // For 'delivered', offer the signature capture as a post-transition step.
