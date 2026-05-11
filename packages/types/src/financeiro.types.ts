@@ -45,11 +45,11 @@ export const PAYABLE_STATUS_LABELS: Record<PayableStatus, string> = {
 };
 
 export const PAYABLE_STATUS_COLOR: Record<PayableStatus, string> = {
-  open: "bg-blue-100 text-blue-700 border-blue-200",
-  partial: "bg-amber-100 text-amber-700 border-amber-200",
-  paid: "bg-success-100 text-success-700 border-success-200",
-  overdue: "bg-red-100 text-red-700 border-red-200",
-  cancelled: "bg-neutral-100 text-neutral-500 border-neutral-200",
+  open: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  partial: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  paid: "bg-success-500/10 text-success-400 border-success-500/20",
+  overdue: "bg-error-500/10 text-error-400 border-error-500/20",
+  cancelled: "bg-neutral-500/10 text-neutral-400 border-neutral-500/20",
 };
 
 export interface Supplier {
@@ -154,11 +154,11 @@ export const RECEIVABLE_STATUS_LABELS: Record<ReceivableStatus, string> = {
 };
 
 export const RECEIVABLE_STATUS_COLOR: Record<ReceivableStatus, string> = {
-  open: "bg-blue-100 text-blue-700 border-blue-200",
-  partial: "bg-amber-100 text-amber-700 border-amber-200",
-  received: "bg-success-100 text-success-700 border-success-200",
-  overdue: "bg-red-100 text-red-700 border-red-200",
-  cancelled: "bg-neutral-100 text-neutral-500 border-neutral-200",
+  open: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  partial: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  received: "bg-success-500/10 text-success-400 border-success-500/20",
+  overdue: "bg-error-500/10 text-error-400 border-error-500/20",
+  cancelled: "bg-neutral-500/10 text-neutral-400 border-neutral-500/20",
 };
 
 export interface ReceivableReceipt {

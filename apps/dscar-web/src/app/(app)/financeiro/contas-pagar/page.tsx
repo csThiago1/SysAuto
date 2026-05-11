@@ -95,6 +95,7 @@ export default function ContasPagarPage(): React.ReactElement {
     React.useState<PayableDocumentListItem | null>(null);
   const [cancellingDoc, setCancellingDoc] =
     React.useState<PayableDocumentListItem | null>(null);
+  const [openMenu, setOpenMenu] = React.useState<string | null>(null);
 
   const documents = data?.results ?? [];
 
@@ -280,7 +281,7 @@ export default function ContasPagarPage(): React.ReactElement {
                     <button
                       type="button"
                       onClick={() => setPayingDoc(doc)}
-                      className="rounded-md bg-primary/10 border border-primary/40 px-2.5 py-1 text-xs font-medium text-primary/90 hover:bg-primary/20 transition-colors"
+                      className="rounded px-2 py-0.5 text-[11px] font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
                     >
                       Pagar
                     </button>
@@ -288,7 +289,7 @@ export default function ContasPagarPage(): React.ReactElement {
                       <button
                         type="button"
                         onClick={() => setCancellingDoc(doc)}
-                        className="rounded-md bg-error-500/10 border border-error-500/20 px-2.5 py-1 text-xs font-medium text-error-400 hover:bg-error-500/20 transition-colors"
+                        className="rounded px-2 py-0.5 text-[11px] font-medium bg-muted text-error-400/80 hover:bg-muted/80 transition-colors"
                       >
                         Cancelar
                       </button>
@@ -303,7 +304,7 @@ export default function ContasPagarPage(): React.ReactElement {
         {/* Table */}
         <div className="hidden md:block rounded-md bg-muted/50 shadow-card overflow-hidden overflow-x-auto">
           {/* Table header */}
-          <div className="hidden md:grid grid-cols-[2fr_2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-2.5 bg-muted/30 border-b border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+          <div className="hidden md:grid grid-cols-[2fr_3fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-2.5 bg-muted/30 border-b border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
             <span>Fornecedor</span>
             <span>Descrição</span>
             <span>Vencimento</span>
@@ -311,7 +312,7 @@ export default function ContasPagarPage(): React.ReactElement {
             <span className="text-right">Pago</span>
             <span className="text-right">Restante</span>
             <span>Status</span>
-            <span>Ações</span>
+            <span></span>
           </div>
 
           {isLoading ? (
@@ -325,7 +326,7 @@ export default function ContasPagarPage(): React.ReactElement {
               {documents.map((doc) => (
                 <div
                   key={doc.id}
-                  className="grid grid-cols-1 md:grid-cols-[2fr_2fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-3.5 items-center text-sm hover:bg-muted/30 transition-colors"
+                  className="grid grid-cols-1 md:grid-cols-[2fr_3fr_1fr_1fr_1fr_1fr_1fr_auto] gap-3 px-5 py-3.5 items-center text-sm hover:bg-muted/30 transition-colors"
                 >
                   <span className="font-medium text-foreground truncate">
                     {doc.supplier_name}
@@ -337,23 +338,26 @@ export default function ContasPagarPage(): React.ReactElement {
                         #{doc.document_number}
                       </span>
                     )}
+                    <span className="ml-1.5 text-[10px] text-muted-foreground/60">
+                      {PAYABLE_ORIGIN_LABELS[doc.origin]}
+                    </span>
                   </span>
                   <span
                     className={
                       isOverdue(doc.due_date, doc.status)
-                        ? "text-error-400 font-medium"
-                        : "text-foreground/60"
+                        ? "text-xs text-error-400 font-medium"
+                        : "text-xs text-foreground/60"
                     }
                   >
                     {formatDate(doc.due_date)}
                   </span>
-                  <span className="text-right font-mono text-foreground">
+                  <span className="text-right font-mono text-xs text-foreground">
                     {formatBRL(doc.amount)}
                   </span>
-                  <span className="text-right font-mono text-success-400">
+                  <span className="text-right font-mono text-xs text-success-400">
                     {formatBRL(doc.amount_paid)}
                   </span>
-                  <span className="text-right font-mono text-foreground font-semibold">
+                  <span className="text-right font-mono text-xs text-foreground font-semibold">
                     {formatBRL(doc.amount_remaining)}
                   </span>
                   <div>
@@ -363,26 +367,38 @@ export default function ContasPagarPage(): React.ReactElement {
                       colors={PAYABLE_STATUS_COLOR}
                     />
                   </div>
-                  <div className="flex items-center gap-2">
-                    {(doc.status === "open" ||
-                      doc.status === "partial" ||
-                      doc.status === "overdue") && (
-                      <button
-                        type="button"
-                        onClick={() => setPayingDoc(doc)}
-                        className="rounded-md bg-primary/10 border border-primary/40 px-2.5 py-1 text-xs font-medium text-primary/90 hover:bg-primary/20 transition-colors"
-                      >
-                        Pagar
-                      </button>
-                    )}
-                    {canCancel(doc.status) && (
-                      <button
-                        type="button"
-                        onClick={() => setCancellingDoc(doc)}
-                        className="rounded-md bg-error-500/10 border border-error-500/20 px-2.5 py-1 text-xs font-medium text-error-400 hover:bg-error-500/20 transition-colors"
-                      >
-                        Cancelar
-                      </button>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setOpenMenu(openMenu === doc.id ? null : doc.id)}
+                      className="inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+                    >
+                      &middot;&middot;&middot;
+                    </button>
+                    {openMenu === doc.id && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setOpenMenu(null)} />
+                        <div className="absolute right-0 top-full mt-1 z-50 min-w-[140px] rounded-lg bg-popover border border-border shadow-lg py-1">
+                          {(doc.status === "open" || doc.status === "partial" || doc.status === "overdue") && (
+                            <button
+                              type="button"
+                              onClick={() => { setPayingDoc(doc); setOpenMenu(null); }}
+                              className="w-full text-left px-3 py-1.5 text-xs text-foreground/70 hover:bg-muted/50 transition-colors"
+                            >
+                              Pagar
+                            </button>
+                          )}
+                          {canCancel(doc.status) && (
+                            <button
+                              type="button"
+                              onClick={() => { setCancellingDoc(doc); setOpenMenu(null); }}
+                              className="w-full text-left px-3 py-1.5 text-xs text-error-400/80 hover:bg-muted/50 transition-colors"
+                            >
+                              Cancelar
+                            </button>
+                          )}
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
