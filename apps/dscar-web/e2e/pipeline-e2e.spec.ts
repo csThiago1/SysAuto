@@ -28,6 +28,8 @@ import {
   executeBilling,
   apiPost,
   apiGet,
+  getOsUuid,
+  uploadDummyPhotos,
 } from "./helpers"
 
 // ─── Global Config ────────────────────────────────────────────────────────────
@@ -60,7 +62,8 @@ const STATUS_LABEL: Record<string, string> = {
 
 test.describe("Cenário A — OS Particular (Cliente Novo)", () => {
   let osUrl: string
-  let osId: string
+  let osId: string   // number da OS (aceito pelo ViewSet)
+  let osUuid: string // UUID real (necessário para signatures)
   const clientName = `E2E Particular ${Date.now()}`
   const plate = `PAR${Math.floor(Math.random() * 10)}E${Math.floor(Math.random() * 100)
     .toString()
@@ -154,13 +157,19 @@ test.describe("Cenário A — OS Particular (Cliente Novo)", () => {
       await smartTransition(page, osId, "initial_survey", STATUS_LABEL.initial_survey)
     })
 
-    // ── Step 10: INITIAL_SURVEY → BUDGET (soft block de fotos — pode falhar) ───
+    // ── Step 9b: Buscar UUID real e upload fotos dummy ─────────────────────────
+    await test.step("Step 9b — Buscar UUID + upload 12 fotos dummy", async () => {
+      osUuid = await getOsUuid(page, osId)
+      // Upload 8 fotos na vistoria_inicial + 4 no checklist_entrada = 12 total
+      await uploadDummyPhotos(page, osId, 8, "vistoria_inicial")
+      await uploadDummyPhotos(page, osId, 4, "checklist_entrada")
+    })
+
+    // ── Step 10: INITIAL_SURVEY → BUDGET ─────────────────────────────────────
     await test.step("Step 10 — INITIAL_SURVEY → BUDGET (via API)", async () => {
       const res = await apiTransition(page, osId, "budget")
       if (!res.ok) {
-        // Soft block esperado (PHOTOS_MIN_12) — registrar e continuar
         console.warn(`[E2E] Step 10: ${res.status} ${JSON.stringify(res.body)}`)
-        // Marcar como parcialmente bloqueado — o teste continua para cobrir o que for possível
       }
       await page.reload()
       await page.waitForLoadState("domcontentloaded")
@@ -226,7 +235,7 @@ test.describe("Cenário A — OS Particular (Cliente Novo)", () => {
       await patchOS(page, osId, {
         service_authorization_date: new Date().toISOString(),
       })
-      await createSignature(page, osId, "BUDGET_APPROVAL")
+      await createSignature(page, osUuid, "BUDGET_APPROVAL")
       const res = await apiTransition(page, osId, "authorized")
       if (!res.ok) {
         console.warn(`[E2E] Transição para authorized: ${res.status} — ${JSON.stringify(res.body)}`)
@@ -398,7 +407,7 @@ test.describe("Cenário A — OS Particular (Cliente Novo)", () => {
         mileage_out: 45200,
         client_delivery_date: new Date().toISOString(),
       })
-      await createSignature(page, osId, "OS_DELIVERY")
+      await createSignature(page, osUuid, "OS_DELIVERY")
       await executeBilling(page, osId)
 
       // Documento fiscal (NFC-e) — emite aviso em falha, não lança exceção
@@ -453,6 +462,7 @@ test.describe("Cenário A — OS Particular (Cliente Novo)", () => {
 
 test.describe("Cenário B — OS Seguradora (Cliente Existente)", () => {
   let osUrl: string
+  let osUuid: string
   let osId: string
   const plate = `SEG${Math.floor(Math.random() * 10)}F${Math.floor(Math.random() * 100)
     .toString()
@@ -609,6 +619,13 @@ test.describe("Cenário B — OS Seguradora (Cliente Existente)", () => {
       await page.waitForLoadState("domcontentloaded")
     })
 
+    // ── Step 8b: Buscar UUID + upload fotos ─────────────────────────────────────
+    await test.step("Step 8b — Buscar UUID + upload fotos dummy", async () => {
+      osUuid = await getOsUuid(page, osId)
+      await uploadDummyPhotos(page, osId, 8, "vistoria_inicial")
+      await uploadDummyPhotos(page, osId, 4, "checklist_entrada")
+    })
+
     // ── Step 9: Pipeline completo via API ──────────────────────────────────────
     await test.step("Step 9 — Pipeline completo via API", async () => {
       // Preenche campos obrigatórios antes das transições
@@ -620,9 +637,9 @@ test.describe("Cenário B — OS Seguradora (Cliente Existente)", () => {
         deductible_amount: "500.00",
       })
 
-      // Assinaturas necessárias
-      await createSignature(page, osId, "BUDGET_APPROVAL")
-      await createSignature(page, osId, "OS_DELIVERY")
+      // Assinaturas necessárias (precisam do UUID, não do number)
+      await createSignature(page, osUuid, "BUDGET_APPROVAL")
+      await createSignature(page, osUuid, "OS_DELIVERY")
 
       // Avança por todos os status até delivered
       const pipeline = [

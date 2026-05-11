@@ -220,6 +220,77 @@ export async function smartTransition(
   await page.waitForLoadState("domcontentloaded")
 }
 
+// ─── OS UUID Extraction ──────────────────────────────────────────────────────
+
+/**
+ * Busca o UUID real da OS a partir do number (o ViewSet aceita number na URL).
+ * Necessário para APIs externas (signatures, billing) que usam UUID como FK.
+ */
+export async function getOsUuid(page: Page, osNumber: string): Promise<string> {
+  const res = await apiGet(page, `/api/proxy/service-orders/${osNumber}/`)
+  if (!res.ok) {
+    throw new Error(`GET OS ${osNumber} falhou: ${res.status} ${JSON.stringify(res.body)}`)
+  }
+  const id = (res.body as Record<string, unknown>).id
+  if (!id || typeof id !== "string") {
+    throw new Error(`UUID não encontrado na resposta da OS ${osNumber}`)
+  }
+  return id
+}
+
+// ─── Photo Upload ────────────────────────────────────────────────────────────
+
+/** PNG 200x80 com traço de assinatura — suficiente para validação do backend */
+const SIGNATURE_PNG_BASE64 =
+  "iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAYAAABcbTqwAAABz0lEQVR4nO3c0XKDIBAFUO3//zN97zQtMYJ34ZyXzjhJXGAXUNMcBwAAAAAAAAAAAAAAAAAAAAAAsID24y/c4jzqa4u2iwCVE6kt3DZCfB019WylbLf4WLVZtv3TDtstblUpeXqTX5Fwm3OBVaP3PRXaSpj0pPkk0RUJHzsXWjV6Pye1zQRKTJa7k1qRsMRt3jYomXsv5Fe1U1tvlzKTzpjld1tJ7tqmbu3cbBB3KJLeFWO1dg/xZCc9layrFklPu6wqb3qiYxIGaaUiudKWv1aZqv0wxOzOSErMpFiejD9hwrpTuzP2WZ2QOggVi2RkzKnj9G7spQokPQnT43sizkpbsPbLsRIFUmk2Si6Sp2NrL46fO/SL26m5MafFk1IsU/tlxsO4EedZOSkTYkjcgrWJ5xp6giEXSxN5PpM1KbaBn/2vkdVeYXBTL4ir9l17cfys2i9VB2KG0QMUkQCBW7B24T3DrDIgo4wYrKgECFpVWsdrpns8gM2fWO/W/63zdTH9EhNIOP/6u+ndzriAgr2b6ApjgRs6sYEt9pVy/VyUgXvfqwJQGAsygNf4XeBNGMjrrBhw8ZdYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAI6KvgFBYGUa/S97DgAAAABJRU5ErkJggg=="
+
+/** PNG 1x1 transparente para fotos dummy (menor possível, válido) */
+const TINY_PNG_BASE64 =
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+
+/**
+ * Faz upload de N fotos dummy para a OS via multipart/form-data.
+ * Usado para satisfazer PHOTOS_MIN_12 antes de transições.
+ */
+export async function uploadDummyPhotos(
+  page: Page,
+  osId: string,
+  count: number,
+  folder: string
+): Promise<number> {
+  const cookieHeader = await getCookieHeader(page)
+  const url = `${BASE_URL}/api/proxy/service-orders/${osId}/photos/`
+  let uploaded = 0
+
+  for (let i = 0; i < count; i++) {
+    try {
+      const response = await page.request.post(url, {
+        multipart: {
+          file: {
+            name: `e2e-dummy-${i}.png`,
+            mimeType: "image/png",
+            buffer: Buffer.from(TINY_PNG_BASE64, "base64"),
+          },
+          folder,
+          caption: `E2E dummy photo ${i + 1}/${count}`,
+        },
+        headers: {
+          Cookie: cookieHeader,
+          "X-Tenant-Domain": TENANT_DOMAIN,
+        },
+      })
+      if (response.ok()) uploaded++
+    } catch {
+      // Continua mesmo se uma foto falhar
+    }
+  }
+
+  if (uploaded < count) {
+    console.warn(`[E2E] uploadDummyPhotos: ${uploaded}/${count} fotos em ${folder}`)
+  }
+  return uploaded
+}
+
 // ─── Prerequisite Helpers ─────────────────────────────────────────────────────
 
 /**
@@ -238,16 +309,15 @@ export async function patchOS(
  *
  * @throws Error em qualquer outro status de resposta.
  */
+/**
+ * Cria assinatura dummy para a OS.
+ * @param osUuid — UUID real da OS (não o number). Obter via getOsUuid().
+ */
 export async function createSignature(
   page: Page,
-  osId: string,
+  osUuid: string,
   documentType: string
 ): Promise<void> {
-  // PNG 1x1 transparente em base64
-  const dummySignatureBase64 =
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
-
-  // POST /api/v1/signatures/signatures/capture/ (via proxy)
   const result = await apiPost(
     page,
     `/api/proxy/signatures/signatures/capture/`,
@@ -255,8 +325,8 @@ export async function createSignature(
       document_type: documentType,
       method: "CANVAS_TABLET",
       signer_name: "E2E Test Signer",
-      signature_png_base64: dummySignatureBase64,
-      service_order_id: Number(osId), // PK inteiro
+      signature_png_base64: SIGNATURE_PNG_BASE64,
+      service_order_id: osUuid, // UUID real (PaddockBaseModel.id)
     }
   )
 
@@ -274,7 +344,7 @@ export async function createSignature(
 export async function executeBilling(page: Page, osId: string): Promise<void> {
   const result = await apiPost(
     page,
-    `/api/proxy/service-orders/${osId}/billing-execute/`,
+    `/api/proxy/service-orders/${osId}/billing/`,
     {}
   )
 

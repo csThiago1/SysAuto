@@ -47,7 +47,7 @@ class CaptureSignatureSerializer(serializers.Serializer):
     signer_name = serializers.CharField(max_length=200)
     signature_png_base64 = serializers.CharField()
 
-    service_order_id = serializers.IntegerField(required=False, allow_null=True)
+    service_order_id = serializers.UUIDField(required=False, allow_null=True)
     orcamento_id = serializers.UUIDField(required=False, allow_null=True)
 
     signer_cpf = serializers.CharField(required=False, allow_blank=True, default="")
