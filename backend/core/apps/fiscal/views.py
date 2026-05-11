@@ -1031,8 +1031,15 @@ class FiscalFileProxyView(APIView):
             logger.error("FiscalFileProxyView: Focus %s para %s%s", resp.status_code, base_url, path)
             return Response({"detail": "Arquivo não encontrado na Focus."}, status=status.HTTP_404_NOT_FOUND)
 
-        content_type = "application/pdf" if file_type == "pdf" else "application/xml"
         filename = path.rsplit("/", 1)[-1] if "/" in path else f"documento.{file_type}"
+
+        # NFC-e DANFE is HTML, not PDF
+        if file_type == "pdf" and path.endswith(".html"):
+            content_type = "text/html"
+        elif file_type == "pdf":
+            content_type = "application/pdf"
+        else:
+            content_type = "application/xml"
 
         http_resp = HttpResponse(resp.content, content_type=content_type)
         http_resp["Content-Disposition"] = f'inline; filename="{filename}"'
