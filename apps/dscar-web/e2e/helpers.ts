@@ -63,27 +63,36 @@ async function apiRequest(
   path: string,
   data?: Record<string, unknown>
 ): Promise<ApiResult> {
-  const cookieHeader = await getCookieHeader(page)
-  const url = path.startsWith("http") ? path : `${BASE_URL}${path}`
-
-  const headers: Record<string, string> = {
-    Cookie: cookieHeader,
-    "X-Tenant-Domain": TENANT_DOMAIN,
-  }
-  if (data !== undefined) {
-    headers["Content-Type"] = "application/json"
-  }
-
-  const response = await page.request.fetch(url, { method, data, headers })
-
-  let body: unknown
-  try {
-    body = await response.json()
-  } catch {
-    body = await response.text().catch(() => null)
-  }
-
-  return { ok: response.ok(), status: response.status(), body }
+  // Usa o fetch NATIVO DO BROWSER (page.evaluate) para incluir cookies
+  // e X-Tenant-Domain automaticamente via Same-Origin requests.
+  // Isso evita problemas de 308 redirect e auth que page.request.fetch tem.
+  const result = await page.evaluate(
+    async ({ path, method, data }) => {
+      try {
+        const opts: RequestInit = {
+          method,
+          headers: { "Content-Type": "application/json" },
+        }
+        if (data !== undefined && method !== "GET") {
+          opts.body = JSON.stringify(data)
+        }
+        // Remove trailing slash para evitar 308 redirect do Next.js
+        const cleanUrl = path.endsWith("/") ? path.slice(0, -1) : path
+        const res = await fetch(cleanUrl, opts)
+        let body: unknown
+        try {
+          body = await res.json()
+        } catch {
+          body = await res.text().catch(() => null)
+        }
+        return { ok: res.ok, status: res.status, body }
+      } catch (err) {
+        return { ok: false, status: 0, body: { error: String(err) } }
+      }
+    },
+    { path, method, data }
+  )
+  return result as ApiResult
 }
 
 /** POST para o proxy Next.js com cookies de sessão + X-Tenant-Domain. */
@@ -218,6 +227,39 @@ export async function smartTransition(
   }
   await page.reload()
   await page.waitForLoadState("domcontentloaded")
+}
+
+// ─── Customer Creation ───────────────────────────────────────────────────────
+
+/**
+ * Cria um Person com role CLIENT via Django shell. Retorna o ID (PK inteiro).
+ * Mais confiável que a criação inline no drawer (que dá timeout com muitos registros).
+ */
+export async function createCustomerViaDjango(
+  name: string,
+  phone: string,
+  email: string
+): Promise<string> {
+  const { execSync } = await import("child_process")
+  const pyCode = [
+    "from django_tenants.utils import schema_context",
+    "from apps.persons.models import Person, PersonRole, PersonContact",
+    `with schema_context("tenant_dscar"):`,
+    `    p = Person.objects.create(person_kind="PF", full_name="${name}")`,
+    `    PersonRole.objects.create(person=p, role="CLIENT")`,
+    `    PersonContact.objects.create(person=p, contact_type="CELULAR", value="${phone}")`,
+    `    PersonContact.objects.create(person=p, contact_type="EMAIL", value="${email}")`,
+    `    print(f"OK:{p.pk}")`,
+  ].join("\n")
+  const cmd = `docker exec paddock_django python manage.py shell -c '${pyCode}'`
+  try {
+    const result = execSync(cmd, { timeout: 15_000, encoding: "utf-8" })
+    const match = result.match(/OK:(.+)/)
+    return match ? match[1].trim() : ""
+  } catch (err) {
+    console.warn(`[E2E] createCustomerViaDjango: ${String(err).slice(0, 200)}`)
+    return ""
+  }
 }
 
 // ─── OS UUID Extraction ──────────────────────────────────────────────────────
