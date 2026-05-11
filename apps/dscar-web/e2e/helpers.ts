@@ -388,14 +388,209 @@ export async function setOsFieldViaDjango(
 }
 
 /**
+ * Cria apontamento de horas encerrado para um setor da OS.
+ * Necessário para satisfazer TIMESHEET_CLOSED antes de transições de oficina.
+ */
+/**
+ * Cria um apontamento de horas encerrado para a OS.
+ * O validator _sector_has_timesheet checa qualquer apontamento encerrado.
+ * Basta 1 por OS para satisfazer todas as transições de oficina.
+ */
+export async function ensureClosedTimesheet(
+  osUuid: string
+): Promise<void> {
+  const { execSync } = await import("child_process")
+  const pyCode = [
+    "from django.utils import timezone",
+    "from datetime import timedelta",
+    "from decimal import Decimal",
+    "from django_tenants.utils import schema_context",
+    "from apps.service_orders.models import ServiceOrder",
+    "from apps.service_orders.models.capacity import ApontamentoHoras",
+    "from apps.authentication.models import GlobalUser",
+    `with schema_context("tenant_dscar"):`,
+    `    os_obj = ServiceOrder.objects.get(pk="${osUuid}")`,
+    `    if not os_obj.apontamentos.filter(status="encerrado").exists():`,
+    `        user = GlobalUser.objects.first()`,
+    `        now = timezone.now()`,
+    `        ApontamentoHoras.objects.create(`,
+    `            service_order=os_obj,`,
+    `            tecnico=user,`,
+    `            iniciado_em=now - timedelta(hours=2),`,
+    `            encerrado_em=now,`,
+    `            status="encerrado",`,
+    `            horas_apontadas=Decimal("2.00"),`,
+    `            observacao="E2E pipeline test",`,
+    `        )`,
+    `        print("OK: created")`,
+    `    else:`,
+    `        print("OK: exists")`,
+  ].join("\n")
+  const cmd = `docker exec paddock_django python manage.py shell -c '${pyCode}'`
+  try {
+    const result = execSync(cmd, { timeout: 15_000, encoding: "utf-8" })
+    if (!result.includes("OK")) {
+      console.warn(`[E2E] ensureClosedTimesheet: ${result.trim()}`)
+    }
+  } catch (err) {
+    console.warn(`[E2E] ensureClosedTimesheet: ${String(err).slice(0, 200)}`)
+  }
+}
+
+/**
+ * Cria versão de orçamento autorizada para a OS (necessário para seguradora).
+ */
+export async function createAuthorizedVersion(
+  osUuid: string
+): Promise<void> {
+  const { execSync } = await import("child_process")
+  const pyCode = [
+    "from decimal import Decimal",
+    "from django_tenants.utils import schema_context",
+    "from apps.service_orders.models import ServiceOrder",
+    "from apps.service_orders.models.versioning import ServiceOrderVersion",
+    `with schema_context("tenant_dscar"):`,
+    `    os_obj = ServiceOrder.objects.get(pk="${osUuid}")`,
+    `    if not os_obj.versions.filter(status__in=["autorizado","approved"]).exists():`,
+    `        max_v = os_obj.versions.aggregate(m=__import__("django.db.models",fromlist=["Max"]).Max("version_number"))["m"] or 0`,
+    `        ServiceOrderVersion.objects.create(`,
+    `            service_order=os_obj,`,
+    `            version_number=max_v + 1,`,
+    `            source="manual",`,
+    `            status="autorizado",`,
+    `            subtotal=Decimal("1000"),`,
+    `            net_total=Decimal("1000"),`,
+    `            labor_total=Decimal("500"),`,
+    `            parts_total=Decimal("500"),`,
+    `        )`,
+    `        print("OK")`,
+    `    else:`,
+    `        print("SKIP")`,
+  ].join("\n")
+  const cmd = `docker exec paddock_django python manage.py shell -c '${pyCode}'`
+  try {
+    const result = execSync(cmd, { timeout: 15_000, encoding: "utf-8" })
+    if (result.includes("Traceback")) {
+      console.warn(`[E2E] createAuthorizedVersion: ${result.trim().slice(0, 300)}`)
+    }
+  } catch (err) {
+    console.warn(`[E2E] createAuthorizedVersion: ${String(err).slice(0, 200)}`)
+  }
+}
+
+/**
+ * Cria checklist de saída (EXIT_CHECKLIST) para a OS.
+ */
+export async function createExitChecklist(osUuid: string): Promise<void> {
+  const { execSync } = await import("child_process")
+  const pyCode = [
+    "from django_tenants.utils import schema_context",
+    "from apps.service_orders.models import ServiceOrder",
+    "from apps.service_orders.models.items import ChecklistItem",
+    `with schema_context("tenant_dscar"):`,
+    `    os_obj = ServiceOrder.objects.get(pk="${osUuid}")`,
+    `    if not os_obj.checklist_items.filter(checklist_type="saida").exists():`,
+    `        ChecklistItem.objects.create(service_order=os_obj, checklist_type="saida", category="bodywork", item_key="estado_geral", status="ok", notes="E2E test")`,
+    `        print("OK")`,
+    `    else:`,
+    `        print("SKIP")`,
+  ].join("\n")
+  const cmd = `docker exec paddock_django python manage.py shell -c '${pyCode}'`
+  try {
+    execSync(cmd, { timeout: 15_000, encoding: "utf-8" })
+  } catch (err) {
+    console.warn(`[E2E] createExitChecklist: ${String(err).slice(0, 200)}`)
+  }
+}
+
+/**
+ * Marca todas as peças ativas da OS como "recebida".
+ * Necessário para satisfazer ALL_PARTS_RECEIVED na transição washing → final_survey.
+ */
+export async function markAllPartsReceived(osUuid: string): Promise<void> {
+  const { execSync } = await import("child_process")
+  const pyCode = [
+    "from django_tenants.utils import schema_context",
+    "from apps.service_orders.models import ServiceOrder",
+    `with schema_context("tenant_dscar"):`,
+    `    os_obj = ServiceOrder.objects.get(pk="${osUuid}")`,
+    `    updated = os_obj.parts.filter(is_active=True).exclude(status_peca__in=["bloqueada","recebida"]).update(status_peca="recebida")`,
+    `    print(f"OK: {updated} parts updated")`,
+  ].join("\n")
+  const cmd = `docker exec paddock_django python manage.py shell -c '${pyCode}'`
+  try {
+    const result = execSync(cmd, { timeout: 15_000, encoding: "utf-8" })
+    if (!result.includes("OK")) {
+      console.warn(`[E2E] markAllPartsReceived: ${result.trim()}`)
+    }
+  } catch (err) {
+    console.warn(`[E2E] markAllPartsReceived: ${String(err).slice(0, 200)}`)
+  }
+}
+
+/**
  * Executa o faturamento (billing) da OS. Emite aviso em caso de falha,
  * mas não lança exceção (billing pode não estar disponível em todos os ambientes).
  */
+/**
+ * Cria um ReceivableDocument dummy para a OS.
+ * Necessário para satisfazer RECEIVABLE_CREATED na transição ready → delivered.
+ */
+export async function createReceivable(osUuid: string): Promise<void> {
+  const { execSync } = await import("child_process")
+  const pyCode = [
+    "from decimal import Decimal",
+    "from django.utils import timezone",
+    "from datetime import timedelta",
+    "from django_tenants.utils import schema_context",
+    "from apps.accounts_receivable.models import ReceivableDocument",
+    `with schema_context("tenant_dscar"):`,
+    `    from apps.service_orders.models import ServiceOrder`,
+    `    os_obj = ServiceOrder.objects.get(pk="${osUuid}")`,
+    `    if not ReceivableDocument.objects.filter(service_order_id="${osUuid}", is_active=True).exists():`,
+    `        ReceivableDocument.objects.create(`,
+    `            service_order_id="${osUuid}",`,
+    `            customer_id=os_obj.customer_id,`,
+    `            customer_name=os_obj.customer_name or "E2E Client",`,
+    `            description="Faturamento E2E pipeline test",`,
+    `            document_number="E2E-" + str(os_obj.number),`,
+    `            document_date=timezone.now().date(),`,
+    `            amount=Decimal("1000.00"),`,
+    `            amount_received=Decimal("0"),`,
+    `            due_date=timezone.now().date() + timedelta(days=30),`,
+    `            competence_date=timezone.now().date(),`,
+    `            status="pending",`,
+    `            origin="manual",`,
+    `            is_active=True,`,
+    `        )`,
+    `        print("OK")`,
+    `    else:`,
+    `        print("SKIP")`,
+  ].join("\n")
+  const cmd = `docker exec paddock_django python manage.py shell -c '${pyCode}'`
+  try {
+    const result = execSync(cmd, { timeout: 15_000, encoding: "utf-8" })
+    if (result.includes("Traceback")) {
+      console.warn(`[E2E] createReceivable: ${result.trim().slice(0, 300)}`)
+    }
+  } catch (err) {
+    console.warn(`[E2E] createReceivable: ${String(err).slice(0, 200)}`)
+  }
+}
+
 export async function executeBilling(page: Page, osId: string): Promise<void> {
+  // Primeiro busca o preview para obter os items de billing
+  const preview = await apiGet(page, `/api/proxy/service-orders/${osId}/billing/preview/`)
+  let items: unknown[] = []
+  if (preview.ok && preview.body) {
+    const body = preview.body as Record<string, unknown>
+    items = (body.items ?? body.billing_items ?? []) as unknown[]
+  }
+
   const result = await apiPost(
     page,
     `/api/proxy/service-orders/${osId}/billing/`,
-    {}
+    items.length > 0 ? { items } : {}
   )
 
   if (!result.ok) {
