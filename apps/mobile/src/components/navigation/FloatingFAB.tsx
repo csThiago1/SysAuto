@@ -21,16 +21,16 @@ export function FloatingFAB(): React.JSX.Element {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const pathname = usePathname();
-
-  if (HIDDEN_FAB_ROUTES.some((r) => pathname.includes(r))) {
-    return <></>;
-  }
   const [showActions, setShowActions] = useState(false);
   const scale = useSharedValue(1);
 
   const animStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
+
+  if (HIDDEN_FAB_ROUTES.some((r) => pathname.includes(r))) {
+    return <></>;
+  }
 
   const handlePress = (): void => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
