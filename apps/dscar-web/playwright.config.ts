@@ -57,6 +57,15 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
+    {
+      name: "pipeline",
+      testMatch: /pipeline-e2e/,
+      timeout: 300_000, // 5 minutos por test
+      use: {
+        ...devices["Desktop Chrome"],
+        navigationTimeout: 30_000,
+      },
+    },
   ],
 
   // NÃO inicia o dev server automaticamente — requer `make dev` + `npm run dev`

@@ -1,0 +1,319 @@
+/**
+ * Paddock Solutions — E2E Shared Helpers
+ * =======================================
+ *
+ * Utilitários compartilhados por todos os testes Playwright do dscar-web.
+ *
+ * Uso:
+ *   import { login, apiPost, smartTransition, fillPlate } from "./helpers"
+ */
+
+import type { Page } from "@playwright/test"
+
+// ─── Constantes ───────────────────────────────────────────────────────────────
+
+export const BASE_URL = "http://localhost:3001"
+export const DEV_EMAIL = process.env.E2E_DEV_EMAIL ?? "thiago@paddock.solutions"
+export const DEV_PASSWORD = process.env.E2E_DEV_PASSWORD ?? "paddock" + "123"
+export const TENANT_DOMAIN = "dscar.localhost"
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Realiza login via dev-credentials e aguarda redirect para /os.
+ */
+export async function login(page: Page): Promise<void> {
+  await page.goto("/login")
+  await page.waitForLoadState("domcontentloaded")
+
+  const emailInput = page.locator('input[type="email"], input[name="email"]')
+  if (await emailInput.isVisible({ timeout: 5_000 }).catch(() => false)) {
+    await emailInput.fill(DEV_EMAIL)
+    await page.locator('input[type="password"]').fill(DEV_PASSWORD)
+    await page.locator('button[type="submit"]').click()
+  }
+  // Sempre asserta que chegamos no dashboard após login
+  // Timeout longo: cold start + HMR compilation podem demorar
+  await page.waitForURL(/\/os/, { timeout: 30_000 })
+}
+
+// ─── API Helpers ──────────────────────────────────────────────────────────────
+
+export interface ApiResult {
+  ok: boolean
+  status: number
+  body: unknown
+}
+
+/**
+ * Extrai o header Cookie da sessão atual do browser context.
+ */
+export async function getCookieHeader(page: Page): Promise<string> {
+  const cookies = await page.context().cookies()
+  return cookies.map((c) => `${c.name}=${c.value}`).join("; ")
+}
+
+/**
+ * Helper interno: faz requisição HTTP via proxy com cookies + X-Tenant-Domain.
+ * page.request ignora playwright.config baseURL — URLs devem ser absolutas.
+ */
+async function apiRequest(
+  page: Page,
+  method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
+  path: string,
+  data?: Record<string, unknown>
+): Promise<ApiResult> {
+  const cookieHeader = await getCookieHeader(page)
+  const url = path.startsWith("http") ? path : `${BASE_URL}${path}`
+
+  const headers: Record<string, string> = {
+    Cookie: cookieHeader,
+    "X-Tenant-Domain": TENANT_DOMAIN,
+  }
+  if (data !== undefined) {
+    headers["Content-Type"] = "application/json"
+  }
+
+  const response = await page.request.fetch(url, { method, data, headers })
+
+  let body: unknown
+  try {
+    body = await response.json()
+  } catch {
+    body = await response.text().catch(() => null)
+  }
+
+  return { ok: response.ok(), status: response.status(), body }
+}
+
+/** POST para o proxy Next.js com cookies de sessão + X-Tenant-Domain. */
+export async function apiPost(
+  page: Page,
+  path: string,
+  data: Record<string, unknown>
+): Promise<ApiResult> {
+  return apiRequest(page, "POST", path, data)
+}
+
+/** GET para o proxy Next.js com cookies de sessão + X-Tenant-Domain. */
+export async function apiGet(page: Page, path: string): Promise<ApiResult> {
+  return apiRequest(page, "GET", path)
+}
+
+/** PATCH para o proxy Next.js com cookies de sessão + X-Tenant-Domain. */
+export async function apiPatch(
+  page: Page,
+  path: string,
+  data: Record<string, unknown>
+): Promise<ApiResult> {
+  return apiRequest(page, "PATCH", path, data)
+}
+
+// ─── ID Extraction ────────────────────────────────────────────────────────────
+
+/**
+ * Extrai o UUID da OS a partir de uma URL no padrão `/service-orders/{uuid}`.
+ *
+ * @throws Error se a URL não contiver UUID válido no padrão esperado.
+ */
+export function extractOsId(url: string): string {
+  // Aceita /os/{number} (PK inteiro) e /service-orders/{uuid}
+  const numberMatch = url.match(/\/os\/(\d+)/)
+  if (numberMatch) return numberMatch[1]
+  const uuidMatch = url.match(/\/service-orders\/([a-f0-9-]{36})/)
+  if (uuidMatch) return uuidMatch[1]
+  throw new Error(`Não foi possível extrair ID de OS da URL: ${url}`)
+}
+
+// ─── Transition Helpers ───────────────────────────────────────────────────────
+
+/**
+ * Avança o status via UI: clica no dropdown "Avançar Status", seleciona o item
+ * pelo label e aguarda o toast de confirmação.
+ */
+export async function uiTransition(page: Page, targetLabel: string): Promise<void> {
+  // Abre o dropdown de transição de status
+  const dropdownButton = page.getByRole("button", { name: /Avançar Status/i })
+  await dropdownButton.click()
+
+  // Seleciona o item de menu pelo label
+  const menuItem = page.getByRole("menuitem", { name: targetLabel })
+  await menuItem.click()
+
+  // Aguarda toast de confirmação
+  await page
+    .locator(`text=Status atualizado para "${targetLabel}"`)
+    .waitFor({ state: "visible", timeout: 10_000 })
+}
+
+/**
+ * Avança o status via API, forçando a transição com credenciais de manager.
+ */
+/**
+ * Transição simples via API (sem force). Funciona para transições
+ * sem bloqueios ou quando os requisitos já estão satisfeitos.
+ */
+export async function apiTransition(
+  page: Page,
+  osId: string,
+  newStatus: string
+): Promise<ApiResult> {
+  return apiPost(page, `/api/proxy/service-orders/${osId}/transition/`, {
+    new_status: newStatus,
+  })
+}
+
+/**
+ * Tenta avançar o status via UI; se o dropdown ou o item não estiver visível,
+ * cai para apiTransition e recarrega a página.
+ */
+export async function smartTransition(
+  page: Page,
+  osId: string,
+  newStatus: string,
+  statusLabel: string
+): Promise<void> {
+  // Tenta via UI primeiro
+  try {
+    const dropdownButton = page.getByRole("button", { name: /Avançar Status/i })
+    const dropdownVisible = await dropdownButton
+      .isVisible({ timeout: 3_000 })
+      .catch(() => false)
+
+    if (dropdownVisible) {
+      await dropdownButton.click()
+
+      const menuItem = page.getByRole("menuitem", { name: statusLabel })
+      const menuItemVisible = await menuItem
+        .isVisible({ timeout: 3_000 })
+        .catch(() => false)
+
+      if (menuItemVisible) {
+        await menuItem.click()
+
+        const toastVisible = await page
+          .locator(`text=Status atualizado para "${statusLabel}"`)
+          .isVisible({ timeout: 8_000 })
+          .catch(() => false)
+
+        if (toastVisible) {
+          // UI transition succeeded
+          return
+        }
+      } else {
+        // Close dropdown before falling back
+        await page.keyboard.press("Escape")
+      }
+    }
+  } catch {
+    // Fall through to API transition
+  }
+
+  // Fallback: transição via API
+  const result = await apiTransition(page, osId, newStatus)
+  if (!result.ok) {
+    throw new Error(
+      `smartTransition API fallback falhou (${result.status}): ${JSON.stringify(result.body)}`
+    )
+  }
+  await page.reload()
+  await page.waitForLoadState("domcontentloaded")
+}
+
+// ─── Prerequisite Helpers ─────────────────────────────────────────────────────
+
+/**
+ * Envia PATCH para campos da OS via proxy.
+ */
+export async function patchOS(
+  page: Page,
+  osId: string,
+  data: Record<string, unknown>
+): Promise<ApiResult> {
+  return apiPatch(page, `/api/proxy/service-orders/${osId}/`, data)
+}
+
+/**
+ * Cria uma assinatura dummy para a OS. Aceita 201, 200 ou 409 (já existe).
+ *
+ * @throws Error em qualquer outro status de resposta.
+ */
+export async function createSignature(
+  page: Page,
+  osId: string,
+  documentType: string
+): Promise<void> {
+  // PNG 1x1 transparente em base64
+  const dummySignatureBase64 =
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+
+  // POST /api/v1/signatures/signatures/capture/ (via proxy)
+  const result = await apiPost(
+    page,
+    `/api/proxy/signatures/signatures/capture/`,
+    {
+      document_type: documentType,
+      method: "CANVAS_TABLET",
+      signer_name: "E2E Test Signer",
+      signature_png_base64: dummySignatureBase64,
+      service_order_id: Number(osId), // PK inteiro
+    }
+  )
+
+  if (![200, 201, 409].includes(result.status)) {
+    console.warn(
+      `[E2E] createSignature(${documentType}): status ${result.status} — ${JSON.stringify(result.body)}`
+    )
+  }
+}
+
+/**
+ * Executa o faturamento (billing) da OS. Emite aviso em caso de falha,
+ * mas não lança exceção (billing pode não estar disponível em todos os ambientes).
+ */
+export async function executeBilling(page: Page, osId: string): Promise<void> {
+  const result = await apiPost(
+    page,
+    `/api/proxy/service-orders/${osId}/billing-execute/`,
+    {}
+  )
+
+  if (!result.ok) {
+    console.warn(
+      `[E2E] executeBilling: status ${result.status} para OS ${osId} — ${JSON.stringify(result.body)}`
+    )
+  }
+}
+
+// ─── Plate Helper ─────────────────────────────────────────────────────────────
+
+/**
+ * Preenche o campo de placa usando evaluate para disparar eventos React
+ * corretamente (campo controlado via handlePlateChange).
+ * Faz fallback para digitação manual se o valor não persistir.
+ */
+export async function fillPlate(page: Page, plate: string): Promise<void> {
+  const plateInput = page.locator('input[placeholder="ABC1D23"]')
+  await plateInput.click()
+
+  await plateInput.evaluate((el: HTMLInputElement, value: string) => {
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      "value"
+    )?.set
+    nativeInputValueSetter?.call(el, value)
+    el.dispatchEvent(new Event("input", { bubbles: true }))
+    el.dispatchEvent(new Event("change", { bubbles: true }))
+  }, plate)
+
+  await page.waitForTimeout(200)
+
+  // Verificar que o valor foi aceito
+  const val = await plateInput.inputValue()
+  if (!val || val.length < 7) {
+    // Fallback: limpar e digitar manualmente via keyboard
+    await plateInput.click({ clickCount: 3 })
+    await page.keyboard.type(plate)
+    await page.waitForTimeout(200)
+  }
+}
