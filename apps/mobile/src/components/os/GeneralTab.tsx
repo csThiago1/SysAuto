@@ -9,10 +9,12 @@ import { Colors } from '@/constants/theme';
 import { VALID_TRANSITIONS } from '@paddock/types';
 import type { ServiceOrderStatus } from '@paddock/types';
 import { ChecklistProgressRow } from './ChecklistProgressRow';
+import { PendingRequirements } from './PendingRequirements';
 import { VistoriaCTACard } from './VistoriaCTACard';
 import { FinancialSummary } from './FinancialSummary';
 import { OS_TYPE_LABELS, formatDateTime } from './os-detail-utils';
 import type { ServiceOrderDetail } from './os-detail-utils';
+import { useRouter } from 'expo-router';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -52,6 +54,7 @@ export function GeneralTab({
   onOpenChecklist,
   onOpenEditOS,
 }: GeneralTabProps): React.JSX.Element {
+  const router = useRouter();
   const discountPercent = 0; // TODO: extract from OS data if available
 
   return (
@@ -91,6 +94,18 @@ export function GeneralTab({
         ok={itemsOk}
         attention={itemsAttention}
         critical={itemsCritical}
+      />
+
+      {/* Pending requirements preview */}
+      <PendingRequirements
+        currentStatus={order.status}
+        transitionRequirements={order.transition_requirements ?? undefined}
+        onPress={(targetStatus) => {
+          router.push({
+            pathname: '/(app)/os/resolver/[osId]',
+            params: { osId, target: targetStatus },
+          });
+        }}
       />
 
       {/* Vistoria CTAs */}
