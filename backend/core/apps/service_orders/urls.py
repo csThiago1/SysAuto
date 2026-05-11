@@ -9,6 +9,7 @@ from .views import (
     ServiceCatalogViewSet, ServiceOrderViewSet,
     ServiceOrderVersionViewSet, ServiceOrderEventViewSet, ServiceOrderParecerViewSet,
 )
+from .views.apontamento import ApontamentoViewSet
 
 router = DefaultRouter()
 router.register(r"", ServiceOrderViewSet, basename="service-order")
@@ -28,6 +29,9 @@ events_router.register(r"", ServiceOrderEventViewSet, basename="service-order-ev
 pareceres_router = SimpleRouter()
 pareceres_router.register(r"", ServiceOrderParecerViewSet, basename="service-order-parecer")
 
+apontamento_router = SimpleRouter()
+apontamento_router.register(r"", ApontamentoViewSet, basename="apontamento")
+
 urlpatterns = [
     path("dashboard/stats/", DashboardStatsView.as_view(), name="service-order-dashboard-stats"),
     path("calendar/", CalendarView.as_view(), name="service-order-calendar"),
@@ -37,6 +41,7 @@ urlpatterns = [
     path("versions/", include(versions_router.urls)),
     path("events/", include(events_router.urls)),
     path("pareceres/", include(pareceres_router.urls)),
+    path("<uuid:service_order_pk>/apontamentos/", include(apontamento_router.urls)),
     path("<uuid:service_order_pk>/payments/", include("apps.payments.urls")),
     path("", include(router.urls)),
 ]
