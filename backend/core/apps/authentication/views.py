@@ -274,34 +274,41 @@ class MeView(APIView):
 
 class StaffListView(APIView):
     """
-    GET  /api/v1/auth/staff/             — lista todos os usuários ativos
-    GET  /api/v1/auth/staff/?positions=consultant,manager  — filtra por cargo HR
+    GET  /api/v1/auth/staff/                                — lista todos os usuários ativos
+    GET  /api/v1/auth/staff/?positions=consultant,manager   — filtra por cargo HR
+    GET  /api/v1/auth/staff/?departments=painting,bodywork  — filtra por setor HR
 
-    O parâmetro `positions` faz cross-query com apps.hr.Employee.position,
-    retornando apenas GlobalUsers vinculados a Employees com esses cargos.
-    Múltiplos valores separados por vírgula.
+    Os parâmetros `positions` e `departments` fazem cross-query com
+    apps.hr.Employee, retornando apenas GlobalUsers vinculados a Employees
+    que atendam os filtros. Múltiplos valores separados por vírgula.
     """
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request) -> Response:
         positions_param = request.query_params.get("positions", "").strip()
+        departments_param = request.query_params.get("departments", "").strip()
 
-        if positions_param:
-            positions = [p.strip() for p in positions_param.split(",") if p.strip()]
-            # Cross-query com HR employees no schema do tenant atual
+        if positions_param or departments_param:
             try:
                 from apps.hr.models import Employee
-                employee_user_ids = Employee.objects.filter(
-                    position__in=positions,
-                    is_active=True,
-                ).values_list("user_id", flat=True)
+
+                filters: dict = {"is_active": True}
+                if positions_param:
+                    positions = [p.strip() for p in positions_param.split(",") if p.strip()]
+                    filters["position__in"] = positions
+                if departments_param:
+                    departments = [d.strip() for d in departments_param.split(",") if d.strip()]
+                    filters["department__in"] = departments
+
+                employee_user_ids = Employee.objects.filter(**filters).values_list(
+                    "user_id", flat=True
+                )
                 users = GlobalUser.objects.filter(
                     id__in=employee_user_ids,
                     is_active=True,
                 ).order_by("name")
             except Exception:
-                # Fallback se HR não estiver disponível no schema
                 users = GlobalUser.objects.filter(is_active=True).order_by("name")
         else:
             users = GlobalUser.objects.filter(is_active=True).order_by("name")
