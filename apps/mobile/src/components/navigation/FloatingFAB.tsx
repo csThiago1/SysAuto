@@ -12,9 +12,19 @@ import { useRouter } from 'expo-router';
 import { Colors, Radii } from '@/constants/theme';
 import { QuickActionsSheet } from '@/components/common/QuickActionsSheet';
 
+import { usePathname } from 'expo-router';
+
+// Rotas que escondem o FAB global (telas full-screen com ações próprias).
+const HIDDEN_FAB_ROUTES = ['/os/resolver'];
+
 export function FloatingFAB(): React.JSX.Element {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const pathname = usePathname();
+
+  if (HIDDEN_FAB_ROUTES.some((r) => pathname.includes(r))) {
+    return <></>;
+  }
   const [showActions, setShowActions] = useState(false);
   const scale = useSharedValue(1);
 

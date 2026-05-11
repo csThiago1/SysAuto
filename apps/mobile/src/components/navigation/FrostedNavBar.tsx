@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { usePathname } from 'expo-router';
 import { Colors } from '@/constants/theme';
 
 // ─── Tab configuration (4 tabs, sem central) ─────────────────────────────────
@@ -35,7 +36,7 @@ const TAB_CONFIG: TabConfig[] = [
     label: 'Início',
   },
   {
-    routeName: 'os/index',
+    routeName: 'os',
     iconActive: 'list',
     iconInactive: 'list-outline',
     label: 'OS',
@@ -57,10 +58,8 @@ const TAB_CONFIG: TabConfig[] = [
 // Routes that completely hide the nav bar (full-screen sub-screens).
 const HIDDEN_ROUTES = new Set(['checklist', 'camera', 'photo-editor', 'vistoria']);
 
-// Routes that map to a tab highlight — e.g. 'os' detail stack → 'os/index' tab.
-const ROUTE_TO_TAB: Record<string, string> = {
-  'os': 'os/index',
-};
+// Routes that map to a tab highlight (currently unused but kept for extensibility).
+const ROUTE_TO_TAB: Record<string, string> = {};
 
 // ─── TabItem ───────────────────────────────────────────────────────────────
 
@@ -121,8 +120,12 @@ function TabItem({ config, isActive, onPress }: TabItemProps): React.JSX.Element
 
 // ─── FrostedNavBar ─────────────────────────────────────────────────────────
 
+// Sub-routes (inside Stack navigators) that should also hide the navbar.
+const HIDDEN_SUBPATHS = ['/os/resolver'];
+
 export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
+  const pathname = usePathname();
 
   const visibleRoutes = useMemo(
     () => state.routes.filter((r) => !HIDDEN_ROUTES.has(r.name)),
@@ -131,7 +134,9 @@ export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.J
 
   const rawActiveRoute = state.routes[state.index]?.name;
   const activeRouteName = ROUTE_TO_TAB[rawActiveRoute ?? ''] ?? rawActiveRoute;
-  const isHiddenRoute = rawActiveRoute !== undefined && HIDDEN_ROUTES.has(rawActiveRoute);
+  const isHiddenRoute =
+    (rawActiveRoute !== undefined && HIDDEN_ROUTES.has(rawActiveRoute)) ||
+    HIDDEN_SUBPATHS.some((p) => pathname.includes(p));
 
   const handleTabPress = useCallback(
     (routeName: string, routeKey: string, isFocused: boolean): void => {
