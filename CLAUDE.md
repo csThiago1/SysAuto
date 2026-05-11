@@ -209,6 +209,44 @@ const { dirtyFields } = form.formState
 const isDirty = Object.keys(dirtyFields).length > 0
 ```
 
+### Mobile — Expo Router: Tab name = nome da pasta
+```tsx
+// ERRADO — pasta os/ com _layout.tsx é registrada como "os", não "os/index"
+<Tabs.Screen name="os/index" options={{ title: 'OS' }} />
+// CORRETO
+<Tabs.Screen name="os" options={{ title: 'OS' }} />
+```
+Subrotas dentro do Stack (resolver, apontamento) ficam no `_layout.tsx` da pasta, não no Tabs.
+
+### Mobile — React Hooks SEMPRE antes de early return
+```tsx
+// ERRADO — crash "Rendered fewer hooks than expected"
+export function Component() {
+  const pathname = usePathname();
+  if (shouldHide(pathname)) return <></>;
+  const [state, setState] = useState(false); // ← hook após return condicional
+}
+
+// CORRETO — hooks primeiro, return depois
+export function Component() {
+  const pathname = usePathname();
+  const [state, setState] = useState(false);
+  if (shouldHide(pathname)) return <></>;
+}
+```
+
+### Mobile — Login requer set_password
+`LoginView` usa `check_password()`. GlobalUsers criados por `DevTokenView` não têm senha.
+```python
+# Ao criar usuários de teste, SEMPRE:
+user.set_password('paddock123')
+user.save(update_fields=['password'])
+```
+
+### Mobile — Esconder navbar/FAB em sub-rotas
+FrostedNavBar usa `HIDDEN_ROUTES` (Set) para rotas de tab-level e `HIDDEN_SUBPATHS` (array com `pathname.includes()`) para sub-rotas dentro de Stacks.
+FloatingFAB usa `HIDDEN_FAB_ROUTES` com mesma lógica. Hooks ANTES do early return.
+
 ### Docker Dev — Django usa volume mount
 Alterações em `.py` refletem via hot-reload. Exceções:
 - Novas migrations → `make migrate`
