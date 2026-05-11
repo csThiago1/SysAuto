@@ -463,6 +463,90 @@ function CceDialog({
   )
 }
 
+// ─── Dropdown Actions ────────────────────────────────────────────────────────
+
+function DropdownActions({
+  doc,
+  canCancel,
+  canSubstituir,
+  onSendEmail,
+  onSubstituir,
+  onCCe,
+  onCancel,
+}: {
+  doc: FiscalDocumentList
+  canCancel: boolean
+  canSubstituir: boolean
+  onSendEmail: (doc: FiscalDocumentList) => void
+  onSubstituir: (doc: FiscalDocumentList) => void
+  onCCe: (doc: FiscalDocumentList) => void
+  onCancel: (id: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+
+  const actions: { label: string; onClick: () => void; className: string }[] = []
+
+  actions.push({
+    label: "Enviar por Email",
+    onClick: () => { onSendEmail(doc); setOpen(false) },
+    className: "text-foreground/70 hover:text-foreground",
+  })
+
+  if (canSubstituir && doc.document_type === "nfse") {
+    actions.push({
+      label: "Substituir NFS-e",
+      onClick: () => { onSubstituir(doc); setOpen(false) },
+      className: "text-info-400/80 hover:text-info-400",
+    })
+  }
+
+  if (canCancel && doc.document_type === "nfe" && (doc.cce_count ?? 0) < 20) {
+    actions.push({
+      label: `Carta de Correção${(doc.cce_count ?? 0) > 0 ? ` (${doc.cce_count})` : ""}`,
+      onClick: () => { onCCe(doc); setOpen(false) },
+      className: "text-warning-400/80 hover:text-warning-400",
+    })
+  }
+
+  if (canCancel) {
+    actions.push({
+      label: "Cancelar",
+      onClick: () => { onCancel(doc.id); setOpen(false) },
+      className: "text-error-400/80 hover:text-error-400",
+    })
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+      >
+        ···
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full mt-1 z-50 min-w-[160px] rounded-lg bg-popover border border-border shadow-lg py-1">
+            {actions.map((action) => (
+              <button
+                key={action.label}
+                onClick={action.onClick}
+                className={cn(
+                  "w-full text-left px-3 py-1.5 text-xs hover:bg-muted/50 transition-colors",
+                  action.className,
+                )}
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 // ─── Row ──────────────────────────────────────────────────────────────────────
 
 function FiscalDocRow({
@@ -541,15 +625,16 @@ function FiscalDocRow({
       {/* Data */}
       <td className="py-3 px-4 text-xs text-muted-foreground">{dateFmt}</td>
 
-      {/* Ações */}
+      {/* Ações — downloads inline + menu dropdown para operações */}
       <td className="py-3 px-4 text-right">
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-1.5">
+          {/* Downloads — sempre visíveis */}
           {doc.pdf_url && (
             <a
               href={`/api/proxy${doc.pdf_url.replace("/api/v1/", "/")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-primary hover:text-primary"
+              className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[11px] font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
             >
               PDF
             </a>
@@ -559,43 +644,23 @@ function FiscalDocRow({
               href={`/api/proxy${doc.xml_url.replace("/api/v1/", "/")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-muted-foreground hover:text-foreground/60"
+              className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[11px] font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
             >
               XML
             </a>
           )}
+
+          {/* Operações — dropdown */}
           {doc.status === "authorized" && (
-            <button
-              onClick={() => onSendEmail(doc)}
-              title="Enviar por email"
-              className="text-muted-foreground hover:text-foreground/70 transition-colors"
-            >
-              <Mail className="h-3.5 w-3.5" />
-            </button>
-          )}
-          {canSubstituir && doc.status === "authorized" && doc.document_type === "nfse" && (
-            <button
-              onClick={() => onSubstituir(doc)}
-              className="text-xs text-info-400/70 hover:text-info-400"
-            >
-              Substituir
-            </button>
-          )}
-          {canCancel && doc.status === "authorized" && doc.document_type === "nfe" && doc.cce_count < 20 && (
-            <button
-              onClick={() => onCCe(doc)}
-              className="text-xs text-warning-400/70 hover:text-warning-400"
-            >
-              CCe{doc.cce_count > 0 ? ` (${doc.cce_count})` : ""}
-            </button>
-          )}
-          {canCancel && doc.status === "authorized" && (
-            <button
-              onClick={() => onCancel(doc.id)}
-              className="text-xs text-error-400/70 hover:text-error-400"
-            >
-              Cancelar
-            </button>
+            <DropdownActions
+              doc={doc}
+              canCancel={canCancel}
+              canSubstituir={canSubstituir}
+              onSendEmail={onSendEmail}
+              onSubstituir={onSubstituir}
+              onCCe={onCCe}
+              onCancel={onCancel}
+            />
           )}
         </div>
       </td>
