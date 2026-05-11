@@ -11,6 +11,7 @@ export default function OSLayout() {
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="resolver/[osId]" options={{ headerShown: false }} />
     </Stack>
   );
 }
