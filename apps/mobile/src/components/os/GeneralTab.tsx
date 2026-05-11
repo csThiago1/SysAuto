@@ -74,17 +74,28 @@ export function GeneralTab({
           </TouchableOpacity>
         )}
         <TouchableOpacity
-          style={[
-            styles.actionBtn,
-            styles.actionBtnPrimary,
-            (VALID_TRANSITIONS[order.status as ServiceOrderStatus] ?? []).length > 0 && styles.actionBtnFlex,
-          ]}
+          style={[styles.actionBtn, styles.actionBtnPrimary]}
           onPress={onOpenChecklist}
           activeOpacity={0.8}
         >
           <Ionicons name="camera-outline" size={16} color={Colors.textPrimary} />
           <Text variant="label" color={Colors.textPrimary}>
             Checklist
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.actionBtn, styles.actionBtnSecondary]}
+          onPress={() => {
+            router.push({
+              pathname: '/(app)/os/apontamento/[osId]',
+              params: { osId },
+            });
+          }}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="timer-outline" size={16} color={Colors.brand} />
+          <Text variant="label" color={Colors.brand}>
+            Horas
           </Text>
         </TouchableOpacity>
       </View>

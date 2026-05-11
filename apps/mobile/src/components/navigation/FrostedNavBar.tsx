@@ -121,7 +121,7 @@ function TabItem({ config, isActive, onPress }: TabItemProps): React.JSX.Element
 // ─── FrostedNavBar ─────────────────────────────────────────────────────────
 
 // Sub-routes (inside Stack navigators) that should also hide the navbar.
-const HIDDEN_SUBPATHS = ['/os/resolver'];
+const HIDDEN_SUBPATHS = ['/os/resolver', '/os/apontamento'];
 
 export function FrostedNavBar({ state, navigation }: BottomTabBarProps): React.JSX.Element {
   const insets = useSafeAreaInsets();

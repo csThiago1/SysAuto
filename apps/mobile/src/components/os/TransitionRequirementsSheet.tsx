@@ -136,9 +136,9 @@ const BLOCK_ACTIONS: Record<string, BlockAction> = {
   },
   // Apontamento de horas
   TIMESHEET_CLOSED: {
-    label: 'Ver Apontamentos',
+    label: 'Apontar Horas',
     icon: 'timer',
-    route: () => null,
+    route: (osId) => ({ pathname: '/(app)/os/apontamento/[osId]', params: { osId } }),
   },
   // Dados do veículo
   VEHICLE_BASIC_DATA: {

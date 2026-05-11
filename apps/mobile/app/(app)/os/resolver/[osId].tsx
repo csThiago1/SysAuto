@@ -100,6 +100,11 @@ const NAV_ACTIONS: Record<string, {
       params: { osId, folder: 'orcamentos', slot: 'extra', checklistType: '' },
     }),
   },
+  TIMESHEET_CLOSED: {
+    label: 'Apontar Horas',
+    icon: 'timer',
+    route: (osId) => ({ pathname: '/(app)/os/apontamento/[osId]', params: { osId } }),
+  },
 };
 
 const SIGNATURE_CODES = ['CLIENT_SIGNATURE', 'SIGNATURE_APPROVAL'];
