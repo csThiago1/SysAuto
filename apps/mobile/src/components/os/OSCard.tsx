@@ -1,21 +1,24 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { Animated, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { SvgUri } from 'react-native-svg';
+import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 
 import { ServiceOrder } from '@/db/models/ServiceOrder';
 import { Text } from '@/components/ui/Text';
-import { OSStatusBadge } from './OSStatusBadge';
+import { PipelineBar } from './PipelineBar';
 import type { InsurerOption } from '@/hooks/useInsurers';
 import { OS_STATUS_MAP, Colors, Radii, Shadow, Spacing, type OSStatus } from '@/constants/theme';
-import { MonoLabel } from '@/components/ui/MonoLabel';
+import { timeAgo } from '@/lib/timeAgo';
+
+// ─── Types ──────────────────────────────────────────────────────────────────
 
 interface OSCardProps {
   order: ServiceOrder;
   insurer?: InsurerOption;
 }
+
+// ─── Component ──────────────────────────────────────────────────────────────
 
 function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
   const router = useRouter();
@@ -45,11 +48,11 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
 
   const plateLine = order.vehiclePlate ? order.vehiclePlate.toUpperCase() : '—';
   const vehicleLine = [order.vehicleBrand, order.vehicleModel].filter(Boolean).join(' ');
-  const borderColor = OS_STATUS_MAP[order.status as OSStatus]?.color ?? '#94a3b8';
+  const statusColor = OS_STATUS_MAP[order.status as OSStatus]?.color ?? '#94a3b8';
   const statusLabel = OS_STATUS_MAP[order.status as OSStatus]?.label ?? order.status;
+  const ownerName = insurer?.displayName ?? order.customerName;
+  const relativeTime = timeAgo(order.createdAtRemote);
   const cardAccessibilityLabel = `OS ${order.number}, ${vehicleLine}, ${statusLabel}`;
-
-  const isSvgLogo = insurer?.logoUrl?.endsWith('.svg') ?? false;
 
   return (
     <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
@@ -60,63 +63,44 @@ function OSCardComponent({ order, insurer }: OSCardProps): React.JSX.Element {
         accessibilityRole="button"
         accessibilityLabel={cardAccessibilityLabel}
       >
-        <LinearGradient
-        colors={[Colors.cardTop, Colors.cardBottom]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={[styles.card, { borderLeftColor: borderColor }]}
-      >
-        {/* Glass glint */}
-        <View style={styles.topGlint} />
+        <View style={styles.card}>
+          {/* ── Top row: icon + info + time ──────────────────────────────── */}
+          <View style={styles.topRow}>
+            {/* Colored vehicle icon */}
+            <View style={[styles.vehicleIcon, { backgroundColor: statusColor + '22' }]}>
+              <Ionicons name="car-outline" size={24} color={statusColor} />
+            </View>
 
-        <View style={styles.bodyRow}>
-          {/* Left: plate, vehicle, status */}
-          <View style={styles.leftCol}>
-            <View style={styles.plateBadge}>
-              <Text style={styles.plate}>{plateLine}</Text>
-            </View>
-            {vehicleLine.length > 0 && (
-              <View style={styles.vehicleRow}>
-                {order.makeLogo ? (
-                  <Image source={{ uri: order.makeLogo }} style={styles.makeLogo} resizeMode="contain" />
-                ) : null}
-                <Text variant="bodySmall" color={Colors.textPrimary} numberOfLines={1} style={styles.vehicleText}>
-                  {vehicleLine}
-                </Text>
+            {/* Info column */}
+            <View style={styles.infoCol}>
+              {/* Plate + OS number */}
+              <View style={styles.plateRow}>
+                <Text style={styles.plate}>{plateLine}</Text>
+                <Text style={styles.osNumber}>#{order.number}</Text>
               </View>
-            )}
-            <View style={styles.badgeRow}>
-              <OSStatusBadge status={order.status} />
+              {/* Vehicle */}
+              {vehicleLine.length > 0 && (
+                <Text style={styles.vehicle} numberOfLines={1}>{vehicleLine}</Text>
+              )}
+              {/* Customer / insurer name */}
+              <Text style={styles.owner} numberOfLines={1}>{ownerName}</Text>
             </View>
+
+            {/* Relative time */}
+            <Text style={styles.time}>{relativeTime}</Text>
           </View>
 
-          {/* Right: OS number + insurer logo */}
-          <View style={styles.rightCol}>
-            <MonoLabel variant="accent" size="sm">
-              {`OS #${order.number}`}
-            </MonoLabel>
-            {insurer != null && insurer.logoUrl ? (
-              <View style={styles.insurerLogoCircle}>
-                {isSvgLogo ? (
-                  <SvgUri uri={insurer.logoUrl} width={38} height={38} />
-                ) : (
-                  <Image
-                    source={{ uri: insurer.logoUrl }}
-                    style={styles.insurerLogo}
-                    resizeMode="contain"
-                  />
-                )}
-              </View>
-            ) : insurer != null ? (
-              <View style={[styles.insurerAvatar, { backgroundColor: insurer.brandColor + '22', borderColor: insurer.brandColor + '66' }]}>
-                <Text variant="caption" style={[styles.insurerAbbr, { color: insurer.brandColor }]}>
-                  {insurer.abbreviation || insurer.displayName.substring(0, 2).toUpperCase()}
-                </Text>
-              </View>
-            ) : null}
+          {/* ── Bottom row: status badge + pipeline bar ──────────────────── */}
+          <View style={styles.bottomRow}>
+            <View style={styles.statusBadge}>
+              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+              <Text style={[styles.statusLabel, { color: statusColor }]}>{statusLabel}</Text>
+            </View>
+            <View style={styles.pipelineWrapper}>
+              <PipelineBar status={order.status} />
+            </View>
           </View>
         </View>
-        </LinearGradient>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -131,8 +115,11 @@ export const OSCard = React.memo(
     prev.order.totalServices === next.order.totalServices &&
     prev.order.insurerId === next.order.insurerId &&
     prev.order.makeLogo === next.order.makeLogo &&
+    prev.order.createdAtRemote === next.order.createdAtRemote &&
     prev.insurer?.id === next.insurer?.id,
 );
+
+// ─── Styles ─────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   touchable: {
@@ -142,108 +129,87 @@ const styles = StyleSheet.create({
     ...Shadow.card,
   },
   card: {
+    backgroundColor: Colors.surface,
     borderRadius: Radii.lg,
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.textSecondary,
-    borderTopWidth: 1,
-    borderRightWidth: 1,
-    borderBottomWidth: 1,
-    borderTopColor: Colors.borderGlintTop,
-    borderRightColor: Colors.borderGlintSide,
-    borderBottomColor: Colors.borderGlintBottom,
-    paddingTop: 14,
-    paddingBottom: 14,
-    paddingLeft: Spacing.lg,
-    paddingRight: Spacing.lg,
-    gap: 6,
-    overflow: 'hidden',
-  },
-  topGlint: {
-    position: 'absolute',
-    top: 0,
-    left: Spacing.lg,
-    right: 0,
-    height: 1,
-    backgroundColor: Colors.borderGlintTop,
-  },
-  bodyRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-  },
-  leftCol: {
-    flex: 1,
-    gap: 6,
-  },
-  rightCol: {
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
-  badgeRow: {
-    marginTop: 2,
-  },
-  plateBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255,255,255,0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
-    borderRadius: Radii.sm,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 5,
+    borderColor: Colors.border,
+    borderTopColor: Colors.borderGlintTop,
+    padding: 14,
+    gap: 12,
+  },
+
+  // ── Top row ───────────────────────────────────────────────────────────────
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  vehicleIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoCol: {
+    flex: 1,
+    gap: 2,
+  },
+  plateRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 6,
   },
   plate: {
     fontWeight: '800',
-    letterSpacing: 3,
-    fontSize: 18,
+    letterSpacing: 2,
+    fontSize: 15,
     color: Colors.textPrimary,
     fontVariant: ['tabular-nums'],
   },
-  vehicleRow: {
+  osNumber: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.textTertiary,
+    fontVariant: ['tabular-nums'],
+  },
+  vehicle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+  owner: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+  },
+  time: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.textTertiary,
+    marginTop: 2,
+  },
+
+  // ── Bottom row ────────────────────────────────────────────────────────────
+  bottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 10,
   },
-  vehicleText: {
-    flex: 1,
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
-  makeLogo: {
-    width: 22,
-    height: 22,
+  statusDot: {
+    width: 7,
+    height: 7,
     borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.9)',
   },
-  insurerAvatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: Colors.borderGlintSide,
-    backgroundColor: Colors.surfaceLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 6,
+  statusLabel: {
+    fontSize: 12,
+    fontWeight: '600',
   },
-  insurerLogoCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    overflow: 'hidden',
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 6,
-    ...Shadow.sm,
-  },
-  insurerLogo: {
-    width: 38,
-    height: 38,
-  },
-  insurerAbbr: {
-    fontWeight: '700',
-    fontSize: 13,
-    textAlign: 'center',
+  pipelineWrapper: {
+    flex: 1,
   },
 });

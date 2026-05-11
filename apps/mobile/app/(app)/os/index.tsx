@@ -3,16 +3,13 @@ import {
   ActivityIndicator,
   Animated,
   FlatList,
-  Image,
-  ImageSourcePropType,
-  Modal,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -20,20 +17,17 @@ import { useNavigation } from '@react-navigation/native';
 import { ServiceOrder } from '@/db/models/ServiceOrder';
 import { useServiceOrdersList } from '@/hooks/useServiceOrders';
 import { useInsurers } from '@/hooks/useInsurers';
+import { useStatusCounts } from '@/hooks/useStatusCounts';
+import { useAuthStore } from '@/stores/auth.store';
 import { OSCard } from '@/components/os/OSCard';
-import {
-  getStatusBackgroundColor,
-  getStatusColor,
-  getStatusLabel,
-} from '@/components/os/OSStatusBadge';
+import { getStatusColor, getStatusLabel } from '@/components/os/OSStatusBadge';
 import { Text } from '@/components/ui/Text';
-import { MonoLabel } from '@/components/ui/MonoLabel';
-import { Colors, Radii, Spacing, Shadow } from '@/constants/theme';
+import { Colors, Radii, Spacing } from '@/constants/theme';
 
+// ─── Status list (for chips) ───────────────────────────────────────────────
+// Only show production-relevant statuses as chips (skip terminal ones).
 
-// ─── Status list ───────────────────────────────────────────────────────────
-
-const STATUS_LIST = [
+const CHIP_STATUSES = [
   'reception',
   'initial_survey',
   'budget',
@@ -49,11 +43,18 @@ const STATUS_LIST = [
   'washing',
   'final_survey',
   'ready',
-  'delivered',
-  'cancelled',
 ] as const;
 
-type OSStatus = (typeof STATUS_LIST)[number];
+type ChipStatus = (typeof CHIP_STATUSES)[number];
+
+// ─── Greeting helper ────────────────────────────────────────────────────────
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Bom dia';
+  if (hour < 18) return 'Boa tarde';
+  return 'Boa noite';
+}
 
 // ─── Skeleton placeholder ──────────────────────────────────────────────────
 
@@ -79,145 +80,43 @@ function SkeletonCard(): React.JSX.Element {
       </View>
       <View style={[styles.skeletonBlock, styles.skeletonLine]} />
       <View style={[styles.skeletonBlock, { width: '55%', height: 12 }]} />
-      <View style={styles.skeletonRow}>
-        <View style={[styles.skeletonBlock, { width: '30%', height: 11 }]} />
-        <View style={[styles.skeletonBlock, { width: '25%', height: 11 }]} />
-      </View>
     </Animated.View>
   );
 }
 
-// ─── Status filter modal ───────────────────────────────────────────────────
+// ─── Status chip ────────────────────────────────────────────────────────────
 
-interface StatusFilterModalProps {
-  visible: boolean;
-  activeStatus: OSStatus | undefined;
-  onSelect: (status: OSStatus | undefined) => void;
-  onClose: () => void;
+interface StatusChipProps {
+  label: string;
+  count: number;
+  isActive: boolean;
+  color?: string;
+  onPress: () => void;
 }
 
-function StatusFilterModal({
-  visible,
-  activeStatus,
-  onSelect,
-  onClose,
-}: StatusFilterModalProps): React.JSX.Element {
-  const insets = useSafeAreaInsets();
-
+function StatusChip({ label, count, isActive, color, onPress }: StatusChipProps): React.JSX.Element {
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.75}
+      style={[
+        styles.chip,
+        isActive && styles.chipActive,
+        isActive && color ? { borderColor: color, backgroundColor: color + '18' } : undefined,
+      ]}
+      accessibilityRole="radio"
+      accessibilityState={{ checked: isActive }}
+      accessibilityLabel={`${label} ${count}`}
     >
-      <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={onClose} />
-      <View style={[styles.modalSheet, { paddingBottom: insets.bottom + 16 }]}>
-        {/* Handle bar */}
-        <View style={styles.modalHandle} />
-
-        {/* Header */}
-        <View style={styles.modalHeader}>
-          <Text variant="label" color={Colors.textPrimary}>Filtrar por Status</Text>
-          <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={styles.modalClose}>
-            <Ionicons name="close" size={20} color={Colors.textTertiary} />
-          </TouchableOpacity>
-        </View>
-
-        {/* "Todas" option */}
-        <TouchableOpacity
-          activeOpacity={0.75}
-          onPress={() => { onSelect(undefined); onClose(); }}
-          style={[
-            styles.statusRow,
-            activeStatus === undefined && styles.statusRowActive,
-          ]}
-          accessibilityRole="radio"
-          accessibilityState={{ checked: activeStatus === undefined }}
-          accessibilityLabel="Todas"
-        >
-          <View style={[styles.statusDot, { backgroundColor: Colors.brand }]} />
-          <Text
-            variant="body"
-            style={[styles.statusRowLabel, activeStatus === undefined && { color: Colors.brand, fontWeight: '700' }]}
-          >
-            Todas
-          </Text>
-          {activeStatus === undefined && (
-            <Ionicons name="checkmark" size={18} color={Colors.brand} style={styles.statusCheck} />
-          )}
-        </TouchableOpacity>
-
-        {/* Status rows */}
-        {STATUS_LIST.map((status) => {
-          const color = getStatusColor(status);
-          const bg = getStatusBackgroundColor(status);
-          const isSelected = activeStatus === status;
-          const statusLabel = getStatusLabel(status);
-          return (
-            <TouchableOpacity
-              key={status}
-              activeOpacity={0.75}
-              onPress={() => { onSelect(isSelected ? undefined : status); onClose(); }}
-              style={[styles.statusRow, isSelected && { backgroundColor: bg }]}
-              accessibilityRole="radio"
-              accessibilityState={{ checked: isSelected }}
-              accessibilityLabel={statusLabel}
-            >
-              <View style={[styles.statusDot, { backgroundColor: color }]} />
-              <Text
-                variant="body"
-                style={[styles.statusRowLabel, isSelected && { color, fontWeight: '700' }]}
-              >
-                {statusLabel}
-              </Text>
-              {isSelected && (
-                <Ionicons name="checkmark" size={18} color={color} style={styles.statusCheck} />
-              )}
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    </Modal>
-  );
-}
-
-// ─── OS Header ─────────────────────────────────────────────────────────────
-
-const LOGO: ImageSourcePropType = require('../../../assets/dscar-logo.png');
-
-interface OSHeaderProps {
-  paddingTop: number;
-}
-
-function OSHeader({ paddingTop }: OSHeaderProps): React.JSX.Element {
-  const navigation = useNavigation();
-
-  return (
-    <LinearGradient
-      colors={[Colors.bgHeader, Colors.bg]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={[styles.header, { paddingTop: paddingTop + 8 }]}
-    >
-      <View style={styles.headerRow}>
-        <View style={styles.headerSpacer} />
-
-        <View style={styles.headerLogoWrapper}>
-          <Image source={LOGO} style={styles.headerLogo} resizeMode="cover" />
-        </View>
-
-        <TouchableOpacity
-          style={styles.headerBtn}
-          onPress={() => navigation.navigate('notificacoes' as never)}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="Notificações"
-        >
-          <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
-        </TouchableOpacity>
-      </View>
-    </LinearGradient>
+      <Text
+        style={[
+          styles.chipText,
+          isActive && { color: color ?? Colors.textPrimary, fontWeight: '700' },
+        ]}
+      >
+        {label} ({count})
+      </Text>
+    </TouchableOpacity>
   );
 }
 
@@ -225,24 +124,24 @@ function OSHeader({ paddingTop }: OSHeaderProps): React.JSX.Element {
 
 export default function OSListScreen(): React.JSX.Element {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
+  const userName = useAuthStore((s) => s.user?.name?.split(' ')[0] ?? 'Usuário');
 
   const [search, setSearch] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
-  const [activeStatus, setActiveStatus] = useState<OSStatus | undefined>(undefined);
-  const [filterModalVisible, setFilterModalVisible] = useState<boolean>(false);
-  const [excludeClosed, setExcludeClosed] = useState<boolean>(true);
+  const [activeStatus, setActiveStatus] = useState<ChipStatus | undefined>(undefined);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
     return () => clearTimeout(timer);
   }, [search]);
 
+  const { counts, openTotal } = useStatusCounts();
+
   const filters = {
     status: activeStatus,
     search: debouncedSearch || undefined,
-    // When a specific status is selected, it takes precedence — don't exclude anything.
-    // When no specific status is active, apply the "Na Oficina" filter if toggled on.
-    excludeClosed: activeStatus === undefined ? excludeClosed : false,
+    excludeClosed: activeStatus === undefined,
   };
 
   const {
@@ -262,6 +161,12 @@ export default function OSListScreen(): React.JSX.Element {
     [insurers],
   );
 
+  // Only show chips that have OS in them (+ the active one if selected)
+  const visibleChips = useMemo(
+    () => CHIP_STATUSES.filter((s) => (counts[s] ?? 0) > 0 || s === activeStatus),
+    [counts, activeStatus],
+  );
+
   const handleEndReached = useCallback((): void => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
@@ -274,12 +179,23 @@ export default function OSListScreen(): React.JSX.Element {
   );
 
   const keyExtractor = useCallback((item: ServiceOrder): string => item.id, []);
-  const hasActiveFilter = Boolean(activeStatus) || Boolean(debouncedSearch) || excludeClosed;
 
+  const handleChipPress = useCallback((status: ChipStatus): void => {
+    setActiveStatus((prev) => (prev === status ? undefined : status));
+  }, []);
+
+  // ── Loading state ──────────────────────────────────────────────────────────
   if (isLoading && orders.length === 0) {
     return (
       <View style={styles.safe}>
-        <OSHeader paddingTop={insets.top} />
+        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+          <View style={styles.headerTopRow}>
+            <Text style={styles.brandName}>DSCAR</Text>
+            <View style={styles.headerBtn}>
+              <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
+            </View>
+          </View>
+        </View>
         <View style={styles.skeletonContainer}>
           <SkeletonCard />
           <SkeletonCard />
@@ -293,7 +209,7 @@ export default function OSListScreen(): React.JSX.Element {
     <View style={styles.emptyContainer}>
       <Ionicons name="car-outline" size={48} color={Colors.textTertiary} />
       <Text variant="body" color={Colors.textTertiary} style={styles.emptyText}>
-        {hasActiveFilter ? 'Nenhuma OS encontrada para esta busca' : 'Nenhuma OS disponível'}
+        {activeStatus || debouncedSearch ? 'Nenhuma OS encontrada para esta busca' : 'Nenhuma OS disponível'}
       </Text>
       {isOffline && (
         <Text variant="caption" color={Colors.textSecondary} style={styles.emptyHint}>
@@ -311,13 +227,35 @@ export default function OSListScreen(): React.JSX.Element {
 
   return (
     <View style={styles.safe}>
-      <OSHeader paddingTop={insets.top} />
+      {/* ── Header ────────────────────────────────────────────────────────── */}
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        <View style={styles.headerTopRow}>
+          <Text style={styles.brandName}>DSCAR</Text>
+          <TouchableOpacity
+            style={styles.headerBtn}
+            onPress={() => navigation.navigate('notificacoes' as never)}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Notificações"
+          >
+            <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
+          </TouchableOpacity>
+        </View>
 
-      {/* Search + filter row */}
+        {/* Greeting */}
+        <View style={styles.greetingRow}>
+          <Text style={styles.greetingPrefix}>{getGreeting()},</Text>
+          <Text style={styles.greetingName}>{userName}</Text>
+          <Text style={styles.greetingCount}> · {openTotal} OS abertas</Text>
+        </View>
+      </View>
+
+      {/* ── Search bar ───────────────────────────────────────────────────── */}
       <View style={styles.searchRow}>
+        <Ionicons name="search-outline" size={18} color={Colors.textSecondary} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Buscar por placa, número ou cliente..."
+          placeholder="Placa, OS ou cliente"
           placeholderTextColor={Colors.textSecondary}
           value={search}
           onChangeText={setSearch}
@@ -326,69 +264,45 @@ export default function OSListScreen(): React.JSX.Element {
           autoCapitalize="none"
           autoCorrect={false}
         />
-
         <TouchableOpacity
-          style={[styles.filterBtn, activeStatus !== undefined && styles.filterBtnActive]}
-          onPress={() => setFilterModalVisible(true)}
+          style={styles.filterBtn}
+          onPress={() => {/* Reserved for advanced filters */}}
           activeOpacity={0.75}
           accessibilityRole="button"
-          accessibilityLabel="Filtrar por status"
+          accessibilityLabel="Filtros"
         >
-          <Ionicons
-            name="options-outline"
-            size={20}
-            color={activeStatus !== undefined ? Colors.brand : Colors.textTertiary}
-          />
-          {activeStatus !== undefined && <View style={styles.filterDot} />}
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => setExcludeClosed(!excludeClosed)}
-          style={[
-            styles.naOficinaButton,
-            excludeClosed && styles.naOficinaButtonActive,
-          ]}
-          activeOpacity={0.75}
-          accessibilityRole="button"
-          accessibilityLabel={excludeClosed ? 'Mostrando veículos na oficina' : 'Mostrando todas as OS'}
-        >
-          <Text
-            variant="caption"
-            style={[
-              styles.naOficinaText,
-              excludeClosed && styles.naOficinaTextActive,
-            ]}
-          >
-            {excludeClosed ? 'Na Oficina' : 'Todas'}
-          </Text>
+          <Ionicons name="options-outline" size={18} color={Colors.textTertiary} />
         </TouchableOpacity>
       </View>
 
-      {/* Active filter label */}
-      {activeStatus !== undefined && (
-        <View style={styles.activeFilterBar}>
-          <Text variant="caption" color={Colors.brand} style={styles.activeFilterLabel}>
-            {getStatusLabel(activeStatus)}
-          </Text>
-          <TouchableOpacity
-            onPress={() => setActiveStatus(undefined)}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Limpar filtro"
-          >
-            <Ionicons name="close-circle" size={16} color={Colors.brand} />
-          </TouchableOpacity>
-        </View>
-      )}
+      {/* ── Status chips ─────────────────────────────────────────────────── */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.chipsContainer}
+        style={styles.chipsScroll}
+      >
+        {/* "Todas" chip */}
+        <StatusChip
+          label="Todas"
+          count={openTotal}
+          isActive={activeStatus === undefined}
+          color={Colors.textPrimary}
+          onPress={() => setActiveStatus(undefined)}
+        />
+        {visibleChips.map((status) => (
+          <StatusChip
+            key={status}
+            label={getStatusLabel(status)}
+            count={counts[status] ?? 0}
+            isActive={activeStatus === status}
+            color={getStatusColor(status)}
+            onPress={() => handleChipPress(status)}
+          />
+        ))}
+      </ScrollView>
 
-      {/* Result count */}
-      {!isLoading && orders.length > 0 && (
-        <View style={styles.countBar}>
-          <MonoLabel size="sm">{`${orders.length} OS`}</MonoLabel>
-        </View>
-      )}
-
-      {/* Order list */}
+      {/* ── Order list ───────────────────────────────────────────────────── */}
       <FlatList<ServiceOrder>
         style={styles.list}
         data={orders}
@@ -411,14 +325,6 @@ export default function OSListScreen(): React.JSX.Element {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       />
-
-      {/* Status filter modal */}
-      <StatusFilterModal
-        visible={filterModalVisible}
-        activeStatus={activeStatus}
-        onSelect={setActiveStatus}
-        onClose={() => setFilterModalVisible(false)}
-      />
     </View>
   );
 }
@@ -431,15 +337,21 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bg,
   },
 
-  // Header
+  // ── Header ──────────────────────────────────────────────────────────────
   header: {
-    paddingBottom: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: 8,
   },
-  headerRow: {
+  headerTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  brandName: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    letterSpacing: 1,
   },
   headerBtn: {
     width: 40,
@@ -449,96 +361,89 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerSpacer: {
-    width: 40,
-    height: 40,
+  greetingRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginTop: 4,
   },
-  headerLogoWrapper: {
-    flex: 1,
-    height: 52,
-    marginHorizontal: 12,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
+  greetingPrefix: {
+    fontSize: 14,
+    color: Colors.textSecondary,
   },
-  headerLogo: {
-    width: '100%',
-    height: '100%',
+  greetingName: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    marginLeft: 4,
+  },
+  greetingCount: {
+    fontSize: 14,
+    color: Colors.textSecondary,
   },
 
-  // Search row
+  // ── Search ──────────────────────────────────────────────────────────────
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: 10,
-    gap: Spacing.sm,
-  },
-  searchInput: {
-    flex: 1,
+    marginHorizontal: Spacing.lg,
     backgroundColor: Colors.inputBg,
     borderRadius: Radii.md,
     borderWidth: 1,
     borderColor: Colors.border,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
+    gap: 8,
+  },
+  searchIcon: {
+    marginLeft: 2,
+  },
+  searchInput: {
+    flex: 1,
     paddingVertical: 10,
     fontSize: 15,
     color: Colors.textPrimary,
   },
   filterBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: Radii.md,
-    backgroundColor: Colors.inputBg,
+    padding: 6,
+  },
+
+  // ── Chips ───────────────────────────────────────────────────────────────
+  chipsScroll: {
+    flexGrow: 0,
+    marginTop: 10,
+  },
+  chipsContainer: {
+    paddingHorizontal: Spacing.lg,
+    gap: 8,
+  },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: Radii.full,
     borderWidth: 1,
     borderColor: Colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: 'transparent',
   },
-  filterBtnActive: {
-    borderColor: Colors.brand,
-    backgroundColor: Colors.brandTint,
+  chipActive: {
+    borderColor: Colors.textPrimary,
+    backgroundColor: 'rgba(255,255,255,0.08)',
   },
-  filterDot: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: Colors.brand,
-    borderWidth: 1.5,
-    borderColor: Colors.bg,
+  chipText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: Colors.textSecondary,
   },
 
-  // Count bar
-  countBar: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: 4,
-  },
-
-  // Active filter label bar
-  activeFilterBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 16,
-    paddingBottom: 6,
-  },
-  activeFilterLabel: {
-    fontWeight: '600',
-  },
-
-  // List
+  // ── List ────────────────────────────────────────────────────────────────
   list: {
     flex: 1,
+    marginTop: 10,
   },
   listContent: {
-    paddingTop: 6,
+    paddingTop: 2,
     paddingBottom: 120,
   },
 
-  // Empty state
+  // ── Empty state ─────────────────────────────────────────────────────────
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -554,13 +459,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // Footer spinner
+  // ── Footer spinner ──────────────────────────────────────────────────────
   footerSpinner: {
     paddingVertical: 16,
     alignItems: 'center',
   },
 
-  // Skeleton
+  // ── Skeleton ────────────────────────────────────────────────────────────
   skeletonContainer: {
     paddingTop: 8,
   },
@@ -595,86 +500,5 @@ const styles = StyleSheet.create({
   skeletonLine: {
     width: '75%',
     height: 12,
-  },
-
-  // Filter modal (bottom sheet)
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: Colors.overlayLight,
-  },
-  modalSheet: {
-    backgroundColor: Colors.surface,
-    borderTopLeftRadius: Radii.xl,
-    borderTopRightRadius: Radii.xl,
-    borderTopWidth: 1,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: Colors.border,
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-  },
-  modalHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: Colors.border,
-    alignSelf: 'center',
-    marginBottom: Spacing.lg,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  modalClose: {
-    padding: 4,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    gap: 10,
-    marginBottom: 2,
-  },
-  statusRowActive: {
-    backgroundColor: Colors.brandTint,
-  },
-  statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  statusRowLabel: {
-    flex: 1,
-    fontSize: 15,
-    color: Colors.textPrimary,
-  },
-  statusCheck: {
-    marginLeft: 'auto',
-  },
-
-  // "Na Oficina" toggle
-  naOficinaButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: Radii.full,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: 'transparent',
-  },
-  naOficinaButtonActive: {
-    borderColor: Colors.brand,
-    backgroundColor: Colors.brandTint,
-  },
-  naOficinaText: {
-    color: Colors.textSecondary,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  naOficinaTextActive: {
-    color: Colors.brand,
   },
 });

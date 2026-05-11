@@ -206,9 +206,27 @@ export default function AgendaScreen(): React.JSX.Element {
 
         {/* ─── Events for selected day ─────────────────────────────────── */}
         <View style={styles.eventsSection}>
-          <Text style={styles.eventsSectionTitle}>
-            {selectedDate.getDate()} de {MONTH_NAMES[selectedDate.getMonth()]}
-          </Text>
+          <View style={styles.eventsTitleRow}>
+            <View style={styles.eventsTitleLeft}>
+              <Text style={styles.eventsSectionTitle}>Hoje</Text>
+              <Text style={styles.eventsSectionSub}>
+                {selectedDate.getDate()} de {MONTH_NAMES[selectedDate.getMonth()].toLowerCase().slice(0, 3)}
+                {selectedEvents.length > 0 ? ` · ${selectedEvents.length} evento${selectedEvents.length > 1 ? 's' : ''}` : ''}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.newEventBtn}
+              onPress={() => {
+                setSelectedDateForEvent(selectedDate ?? new Date());
+                setShowCreateEvent(true);
+              }}
+              activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityLabel="Novo evento"
+            >
+              <Text style={styles.newEventBtnText}>+ Novo</Text>
+            </TouchableOpacity>
+          </View>
 
           {selectedEvents.length === 0 ? (
             <View style={styles.emptyEvents}>
@@ -230,18 +248,6 @@ export default function AgendaScreen(): React.JSX.Element {
           )}
         </View>
       </ScrollView>
-
-      {/* FAB */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => {
-          setSelectedDateForEvent(selectedDate ?? new Date());
-          setShowCreateEvent(true);
-        }}
-        activeOpacity={0.8}
-      >
-        <Ionicons name="add" size={28} color={Colors.textPrimary} />
-      </TouchableOpacity>
 
       <CreateEventModal
         visible={showCreateEvent}
@@ -442,11 +448,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
     marginTop: Spacing.lg,
   },
+  eventsTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.md,
+  },
+  eventsTitleLeft: {
+    flex: 1,
+  },
   eventsSectionTitle: {
     fontSize: 17,
     fontWeight: '700',
     color: Colors.textPrimary,
-    marginBottom: Spacing.md,
+  },
+  eventsSectionSub: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginTop: 1,
+  },
+  newEventBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: Radii.full,
+    backgroundColor: Colors.brand,
+  },
+  newEventBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#ffffff',
   },
   emptyEvents: {
     alignItems: 'center',
@@ -511,21 +541,4 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
 
-  // FAB
-  fab: {
-    position: 'absolute',
-    right: Spacing.lg,
-    bottom: 130,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: Colors.brand,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 4,
-    shadowColor: Colors.brand,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
-  },
 });
