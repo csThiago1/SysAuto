@@ -180,8 +180,13 @@ class ServiceOrder(PaddockBaseModel):
     authorization_date = models.DateTimeField(
         null=True,
         blank=True,
-        help_text="Data/hora de autorização — ALTERA STATUS automaticamente",
-        verbose_name="Data de autorização",
+        help_text=(
+            "Data/hora de autorização do orçamento pela SEGURADORA. "
+            "Usado pelo TransitionValidator (AUTH_DATE_SET) para liberar "
+            "a transição waiting_auth → authorized. "
+            "Não confundir com service_authorization_date (particular)."
+        ),
+        verbose_name="Data de autorização (seguradora)",
     )
 
     # ── Particular (customer_type = 'private') ────────────────────────────────
@@ -290,8 +295,12 @@ class ServiceOrder(PaddockBaseModel):
     service_authorization_date = models.DateTimeField(
         null=True,
         blank=True,
-        help_text="Data/hora de autorização do serviço",
-        verbose_name="Autorização do serviço",
+        help_text=(
+            "Data/hora de autorização do serviço pelo CLIENTE PARTICULAR. "
+            "Preenchido quando o cliente aprova o orçamento. "
+            "Não confundir com authorization_date (seguradora)."
+        ),
+        verbose_name="Autorização do serviço (particular)",
     )
 
     # ── Agendamento e previsão ────────────────────────────────────────────────

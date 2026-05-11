@@ -243,6 +243,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
             type="button"
             onClick={handleCreate}
             disabled={!canCreate || createMutation.isPending}
+            data-testid="cadastrar-cliente-btn"
             className="flex items-center gap-1 rounded bg-primary px-2.5 py-1 text-xs font-medium text-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             {createMutation.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
@@ -273,6 +274,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
             onFocus={() => { if (query.length >= 3) setOpen(true) }}
             disabled={disabled}
             autoComplete="off"
+            data-testid="customer-search-input"
           />
           {isFetching && (
             <Loader2 className="absolute right-2.5 top-2 h-3.5 w-3.5 animate-spin text-muted-foreground" />
@@ -281,6 +283,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
         <button
           type="button"
           onClick={() => openCreateForm(query)}
+          data-testid="novo-cliente-btn"
           className="shrink-0 flex items-center gap-1 rounded border border-dashed border-border px-2 py-1 text-xs font-medium text-muted-foreground hover:border-white/30 hover:text-foreground/70 h-8"
         >
           <UserPlus className="h-3 w-3" />

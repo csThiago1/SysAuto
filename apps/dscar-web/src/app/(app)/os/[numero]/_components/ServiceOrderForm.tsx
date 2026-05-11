@@ -184,6 +184,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
                 <button
                   type="button"
                   disabled={transitionMutation.isPending}
+                  data-testid="avancar-status-btn"
                   className="inline-flex items-center gap-1.5 rounded-md border border-primary px-3 py-2 text-sm font-medium text-primary hover:bg-primary/5 disabled:opacity-50 transition-colors"
                 >
                   {transitionMutation.isPending ? (
@@ -239,6 +240,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
             type="button"
             disabled={isPending || !isDirty}
             onClick={form.handleSubmit(onSubmit)}
+            data-testid="salvar-os-btn"
             className={cn(
               "inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-medium transition-all",
               isDirty

@@ -189,6 +189,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
               <input
                 className={errors.description ? `${INPUT} border-red-400` : INPUT}
                 placeholder="Descrição do serviço"
+                data-testid="service-description-input"
                 {...register("description")}
               />
               {errors.description && (
@@ -238,6 +239,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                 onClick={() => handleSubmit(onAdd)()}
                 disabled={isSubmitting}
                 size="sm"
+                data-testid="add-service-btn"
                 className="bg-primary hover:bg-primary/90 text-foreground gap-1.5"
               >
                 <Plus className="h-3.5 w-3.5" />

@@ -146,6 +146,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
         <button
           type="button"
           onClick={() => setEstoqueOpen(true)}
+          data-testid="part-estoque-btn"
           className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors bg-success-500/10 border-success-500/20 text-success-400 hover:bg-success-500/20"
         >
           <Warehouse className="h-4 w-4" />
@@ -154,6 +155,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
         <button
           type="button"
           onClick={() => setCompraOpen(true)}
+          data-testid="part-compra-btn"
           className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors bg-info-500/10 border-info-500/20 text-info-400 hover:bg-info-500/20"
         >
           <ShoppingCart className="h-4 w-4" />
@@ -162,6 +164,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
         <button
           type="button"
           onClick={() => setSeguradoraOpen(true)}
+          data-testid="part-seguradora-btn"
           className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"
         >
           <Shield className="h-4 w-4" />

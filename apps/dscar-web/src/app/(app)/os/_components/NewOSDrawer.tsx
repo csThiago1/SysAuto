@@ -243,6 +243,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                   onChange={handlePlateChange}
                   maxLength={8}
                   autoCapitalize="characters"
+                  data-testid="plate-input"
                 />
                 {plateFetching && (
                   <Loader2 className="absolute right-2 top-2 h-4 w-4 animate-spin text-muted-foreground" />
@@ -262,6 +263,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                 <input
                   className={errors.make ? INPUT_ERROR : INPUT}
                   placeholder="Ex: Honda"
+                  data-testid="make-input"
                   {...register("make")}
                 />
                 {errors.make && (
@@ -275,6 +277,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                 <input
                   className={errors.model ? INPUT_ERROR : INPUT}
                   placeholder="Ex: Civic"
+                  data-testid="model-input"
                   {...register("model")}
                 />
                 {errors.model && (
@@ -346,6 +349,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
             <button
               type="button"
               onClick={handleClose}
+              data-testid="cancelar-os-btn"
               className="rounded border border-border px-4 py-1.5 text-sm font-medium text-foreground/60 hover:bg-muted/30"
             >
               Cancelar
@@ -353,6 +357,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
             <button
               type="submit"
               disabled={isSubmitting}
+              data-testid="criar-os-btn"
               className="flex items-center gap-1.5 rounded bg-primary px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}

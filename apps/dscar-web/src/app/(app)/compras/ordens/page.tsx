@@ -80,18 +80,35 @@ function NovaOCDialog({
   open: boolean
   onClose: () => void
 }) {
-  const [osId, setOsId] = useState("")
+  const [osInput, setOsInput] = useState("")
+  const [error, setError] = useState("")
   const criarOC = useCriarOC()
 
   async function handleCreate() {
-    if (!osId.trim()) {
-      toast.error("Informe o ID da OS.")
+    const value = osInput.trim()
+    if (!value) {
+      setError("Informe o número da OS.")
       return
     }
+    setError("")
+
     try {
-      await criarOC.mutateAsync({ service_order: osId.trim() })
+      let serviceOrderId = value
+
+      // Se o input é um número (não UUID), resolve o UUID via API
+      if (/^\d+$/.test(value)) {
+        const res = await fetch(`/api/proxy/service-orders/${value}/`)
+        if (!res.ok) {
+          setError(`OS #${value} não encontrada.`)
+          return
+        }
+        const data = await res.json()
+        serviceOrderId = data.id
+      }
+
+      await criarOC.mutateAsync({ service_order: serviceOrderId })
       toast.success("Ordem de compra criada.")
-      setOsId("")
+      setOsInput("")
       onClose()
     } catch {
       toast.error("Erro ao criar ordem de compra.")
@@ -99,21 +116,27 @@ function NovaOCDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose() }}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) { onClose(); setError("") } }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Nova Ordem de Compra</DialogTitle>
         </DialogHeader>
         <p className="text-sm text-muted-foreground">
-          Informe o ID da OS para criar uma nova OC vinculada.
+          Informe o numero da OS para criar uma nova OC vinculada.
         </p>
-        <input
-          type="text"
-          placeholder="ID da OS (UUID)"
-          value={osId}
-          onChange={(e) => setOsId(e.target.value)}
-          className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-border"
-        />
+        <div>
+          <input
+            type="text"
+            placeholder="Numero da OS (ex: 42)"
+            data-testid="nova-oc-os-input"
+            value={osInput}
+            onChange={(e) => { setOsInput(e.target.value); setError("") }}
+            className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-border"
+          />
+          {error && (
+            <p className="mt-1 text-xs text-error-500">{error}</p>
+          )}
+        </div>
         <DialogFooter>
           <button
             type="button"
@@ -126,6 +149,7 @@ function NovaOCDialog({
             type="button"
             onClick={handleCreate}
             disabled={criarOC.isPending}
+            data-testid="nova-oc-submit"
             className="px-4 py-2 text-sm font-medium rounded-md bg-primary text-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
             {criarOC.isPending ? "Criando..." : "Criar OC"}
