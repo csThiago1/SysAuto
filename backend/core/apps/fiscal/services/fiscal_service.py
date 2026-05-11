@@ -28,6 +28,7 @@ from apps.fiscal.exceptions import (
     FocusRateLimitError,
     FocusServerError,
     FocusValidationError,
+    NfceBuilderError,
     NfeBuilderError,
     NfseBuilderError,
 )
@@ -331,7 +332,9 @@ class FiscalService:
 
         config = doc.config or cls.get_config()
         with cls._make_client(config) as client:
-            if doc.document_type == "nfe":
+            if doc.document_type == "nfce":
+                resp = client.consult_nfce(doc.ref)
+            elif doc.document_type == "nfe":
                 resp = client.consult_nfe(doc.ref)
             else:
                 resp = client.consult_nfse(doc.ref)
@@ -399,7 +402,9 @@ class FiscalService:
 
         config = doc.config or cls.get_config()
         with cls._make_client(config) as client:
-            if doc.document_type == "nfe":
+            if doc.document_type == "nfce":
+                resp = client.cancel_nfce(doc.ref, justificativa)
+            elif doc.document_type == "nfe":
                 resp = client.cancel_nfe(doc.ref, justificativa)
             else:
                 resp = client.cancel_nfse(doc.ref, justificativa)
@@ -687,6 +692,176 @@ class FiscalService:
             from apps.fiscal.tasks import poll_fiscal_document
             poll_fiscal_document.apply_async(args=[str(doc.pk)], countdown=10)
 
+        return doc
+
+    # ── NFC-e Cupom Fiscal (Modelo 65) ──────────────────────────────────────
+
+    @classmethod
+    @transaction.atomic
+    def emit_nfce(
+        cls,
+        items_data: list[dict],
+        config: "FiscalConfigModel | None" = None,
+        forma_pagamento: str = "01",
+        cpf_destinatario: str = "",
+        nome_destinatario: str = "",
+        observacoes: str = "",
+        triggered_by: str = "USER",
+    ) -> "FiscalDocument":
+        """Emite NFC-e (cupom fiscal eletrônico).
+
+        NFC-e é processada de forma síncrona pela SEFAZ — Focus retorna 201
+        com dados de autorização imediatos (sem polling).
+
+        Args:
+            items_data: lista de dicts com campos do item (descricao, ncm, quantidade, etc.).
+            config: emissor fiscal; se None, usa get_config().
+            forma_pagamento: código Focus (01=dinheiro, 03=crédito, 04=débito, 05=pix).
+            cpf_destinatario: CPF do consumidor (opcional para vendas < R$200).
+            nome_destinatario: nome do consumidor (opcional).
+            observacoes: texto livre.
+            triggered_by: origem da emissão ("USER", "USER_MANUAL").
+
+        Returns:
+            FiscalDocument criado.
+
+        Raises:
+            NfceBuilderError: dados insuficientes para construir payload.
+            FocusValidationError: payload inválido rejeitado pela Focus.
+            FocusAuthError: token Focus inválido.
+            FocusServerError: erro 5xx na Focus.
+        """
+        from decimal import Decimal
+
+        from apps.fiscal.models import FiscalDocument, FiscalEvent
+        from apps.fiscal.services.nfce_builder import NfceBuilder, NfceItem, NfceTaxConfig
+        from apps.fiscal.services.ref_generator import next_fiscal_ref
+
+        if config is None:
+            config = cls.get_config()
+
+        ref, _seq = next_fiscal_ref(config, "NFCE")
+
+        # Montar NfceTaxConfig a partir do FiscalConfigModel
+        tax_config = NfceBuilder.tax_config_from_fiscal_config(config)
+
+        # Construir itens tipados
+        items = [
+            NfceItem(
+                codigo_produto=it.get("codigo_produto", ""),
+                descricao=it["descricao"],
+                ncm=it["ncm"],
+                unidade=it.get("unidade", "UN"),
+                quantidade=Decimal(str(it["quantidade"])),
+                valor_unitario=Decimal(str(it["valor_unitario"])),
+                valor_desconto=Decimal(str(it.get("valor_desconto", 0))),
+            )
+            for it in items_data
+        ]
+
+        payload = NfceBuilder.build(
+            items=items,
+            config=config,
+            tax_config=tax_config,
+            ref=ref,
+            forma_pagamento=forma_pagamento,
+            cpf_destinatario=cpf_destinatario,
+            nome_destinatario=nome_destinatario,
+            observacoes=observacoes,
+        )
+
+        # Calcular total
+        total_value = sum(
+            Decimal(str(it["valor_unitario"])) * Decimal(str(it["quantidade"]))
+            - Decimal(str(it.get("valor_desconto", 0)))
+            for it in items_data
+        )
+
+        doc = FiscalDocument.objects.create(
+            document_type=FiscalDocument.DocumentType.NFCE,
+            status=FiscalDocument.Status.PENDING,
+            ref=ref,
+            config=config,
+            service_order=None,
+            payload_enviado=payload,
+            total_value=total_value,
+            environment=config.environment,
+            manual_reason="NFC-e emissão direta",
+        )
+
+        FiscalEvent.objects.create(
+            document=doc,
+            event_type=FiscalEvent.EventType.EMIT_REQUEST,
+            payload=payload,
+            triggered_by=triggered_by,
+        )
+
+        with cls._make_client(config) as client:
+            resp = client.emit_nfce(ref, payload)
+
+        FiscalEvent.objects.create(
+            document=doc,
+            event_type=FiscalEvent.EventType.EMIT_RESPONSE,
+            http_status=resp.status_code,
+            response=resp.data or {"raw": resp.raw_text},
+            duration_ms=resp.duration_ms,
+            triggered_by=triggered_by,
+        )
+
+        cls._raise_for_http(resp)
+
+        doc.ultima_resposta = resp.data or {}
+        if resp.data:
+            focus_status = resp.data.get("status", "")
+            new_status = _FOCUS_STATUS_MAP.get(focus_status, "")
+            if new_status and new_status != "pending":
+                doc.status = new_status
+                cls._apply_focus_data(doc, resp.data)
+        doc.save(update_fields=["ultima_resposta", "status", "key", "number",
+                                 "caminho_xml", "caminho_pdf", "mensagem_sefaz",
+                                 "authorized_at", "cancelled_at"])
+
+        # NFC-e é síncrona — se 201, já está autorizada. Consultar para confirmar.
+        if doc.status == FiscalDocument.Status.PENDING and resp.status_code == 201:
+            cls.consult(doc)
+
+        return doc
+
+    @classmethod
+    @transaction.atomic
+    def emit_manual_nfce(
+        cls,
+        input_data: dict,
+        user: Any,
+        config: "FiscalConfigModel | None" = None,
+    ) -> "FiscalDocument":
+        """Emite NFC-e manual (ad-hoc, venda avulsa ao consumidor).
+
+        Args:
+            input_data: dict com campos: itens (obrigatório), forma_pagamento, cpf_destinatario,
+                        nome_destinatario, observacoes.
+            user: usuário autenticado — salvo em created_by.
+            config: emissor; se None, usa get_config().
+
+        Returns:
+            FiscalDocument criado.
+
+        Raises:
+            NfceBuilderError: dados insuficientes para construir payload.
+            FiscalValidationError: itens vazio.
+        """
+        doc = cls.emit_nfce(
+            items_data=input_data["itens"],
+            config=config,
+            forma_pagamento=input_data.get("forma_pagamento", "01"),
+            cpf_destinatario=input_data.get("cpf_destinatario", ""),
+            nome_destinatario=input_data.get("nome_destinatario", ""),
+            observacoes=input_data.get("observacoes", ""),
+            triggered_by="USER_MANUAL",
+        )
+        if user:
+            doc.created_by = user
+            doc.save(update_fields=["created_by"])
         return doc
 
     # ── Helpers ──────────────────────────────────────────────────────────────

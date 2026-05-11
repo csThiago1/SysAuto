@@ -180,6 +180,7 @@ export const NAV_SECTIONS: NavSection[] = [
           { id: "fiscal-nfe-recebidas", label: "NF-e Recebidas", href: "/fiscal/nfe-recebidas", icon: Inbox },
           { id: "fiscal-emitir-nfse", label: "Emitir NFS-e Manual", href: "/fiscal/emitir-nfse", icon: FileText },
           { id: "fiscal-emitir-nfe", label: "Emitir NF-e Produto", href: "/fiscal/emitir-nfe", icon: Package },
+          { id: "fiscal-emitir-nfce", label: "Emitir NFC-e", href: "/fiscal/emitir-nfce", icon: ShoppingCart },
           { id: "fiscal-resumo", label: "Resumo Fiscal", href: "/fiscal/resumo", icon: BarChart3 },
           { id: "fiscal-inutilizacao", label: "Inutilizacao", href: "/fiscal/inutilizacao", icon: Ban },
         ],

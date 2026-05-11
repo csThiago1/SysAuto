@@ -296,6 +296,39 @@ export function useResumoFiscal(year: number, month: number) {
   })
 }
 
+// ─── NFC-e (Cupom Fiscal Eletrônico) ─────────────────────────────────────────
+
+/** Emite NFC-e ao consumidor (CONSULTANT+). */
+export function useEmitNfce() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: {
+      itens: Array<{
+        codigo_produto?: string;
+        descricao: string;
+        ncm: string;
+        unidade?: string;
+        quantidade: number;
+        valor_unitario: string;
+        valor_desconto?: string;
+      }>;
+      forma_pagamento?: string;
+      cpf_destinatario?: string;
+      nome_destinatario?: string;
+      observacoes?: string;
+    }) => {
+      return apiFetch(`${FISCAL}/nfce/emit/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: fiscalKeys.all })
+    },
+  })
+}
+
 // ─── S4-T4: NF-e Entrada — match e link com Pedido de Compra ─────────────────
 
 export interface PurchaseOrderMatch {

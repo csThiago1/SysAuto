@@ -6,6 +6,7 @@ from apps.fiscal.views import (
     FiscalDocumentViewSet,
     FiscalFileProxyView,
     FocusWebhookView,
+    NfceEmitView,
     NFeEntradaViewSet,
     NfeEmitManualView,
     NfeEmitView,
@@ -36,6 +37,8 @@ urlpatterns = [
     # 07A: Emissão NF-e de Produto
     path("nfe/emit/", NfeEmitView.as_view(), name="nfe-emit"),
     path("nfe/emit-manual/", NfeEmitManualView.as_view(), name="nfe-emit-manual"),
+    # NFC-e: Cupom Fiscal Eletrônico (Modelo 65)
+    path("nfce/emit/", NfceEmitView.as_view(), name="nfce-emit"),
     # NF-e recebidas (manifestação de destinatário + download XML/DANFE)
     path("nfe-recebidas/", NfeRecebidaListView.as_view(), name="nfe-recebidas-list"),
     path("nfe-recebidas/sync/", NfeRecebidaSyncView.as_view(), name="nfe-recebidas-sync"),

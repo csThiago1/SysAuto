@@ -3,6 +3,7 @@ Paddock Solutions — Fiscal — Views DRF
 Motor de Orçamentos (MO) — Sprint MO-5: NF-e Entrada
 Ciclo 06B: FocusWebhookView
 Ciclo 06C: NfseEmitView, NfseEmitManualView, FiscalDocumentViewSet
+NFC-e: NfceEmitView — cupom fiscal eletrônico (modelo 65)
 
 RBAC:
   - Leitura: CONSULTANT+
@@ -10,6 +11,7 @@ RBAC:
   - Geração de estoque: MANAGER+
   - Emissão NFS-e automática: CONSULTANT+
   - Emissão NFS-e manual: ADMIN+
+  - Emissão NFC-e: CONSULTANT+
   - Cancelamento: MANAGER+
   - Webhook: AllowAny (autenticação via secret no path)
 """
@@ -569,6 +571,69 @@ class NfeEmitManualView(APIView):
             logger.error("NfeEmitManualView: erro ao emitir NF-e manual: %s", exc)
             return Response(
                 {"detail": "Erro ao emitir NF-e manual."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        return Response(FiscalDocumentSerializer(doc).data, status=status.HTTP_201_CREATED)
+
+
+# ─── NFC-e: Cupom Fiscal Eletrônico ──────────────────────────────────────────
+
+
+class NfceEmitView(APIView):
+    """Emite NFC-e (cupom fiscal) para venda ao consumidor final.
+
+    POST /api/v1/fiscal/nfce/emit/
+    Body: {
+        "itens": [{"descricao": "...", "ncm": "12345678", "quantidade": 1, "valor_unitario": 50.00}],
+        "forma_pagamento": "01",
+        "cpf_destinatario": "",
+        "nome_destinatario": "",
+        "observacoes": ""
+    }
+    RBAC: CONSULTANT+
+    """
+
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def post(self, request: Request) -> Response:
+        from apps.fiscal.exceptions import (
+            FocusNFeError,
+            FocusValidationError as FVE,
+            NfceBuilderError,
+        )
+        from apps.fiscal.services.fiscal_service import FiscalService
+
+        itens = request.data.get("itens", [])
+        if not itens:
+            raise ValidationError({"itens": "Informe ao menos 1 item."})
+
+        for i, item in enumerate(itens):
+            if not item.get("descricao"):
+                raise ValidationError({f"itens[{i}].descricao": "Descrição obrigatória."})
+            ncm = str(item.get("ncm", "")).replace(".", "")
+            if not ncm or len(ncm) < 8:
+                raise ValidationError({f"itens[{i}].ncm": "NCM deve ter 8 dígitos."})
+
+        try:
+            doc = FiscalService.emit_manual_nfce(request.data, user=request.user)
+        except NfceBuilderError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except FVE as exc:
+            logger.warning("NfceEmitView: Focus validação: %s", exc)
+            detail = exc.args[0] if exc.args else {}
+            msg = detail.get("mensagem", str(detail)) if isinstance(detail, dict) else str(detail)
+            return Response({"detail": f"Erro de validação fiscal: {msg}"}, status=status.HTTP_400_BAD_REQUEST)
+        except FocusNFeError as exc:
+            logger.error("NfceEmitView: erro Focus: %s", exc)
+            return Response(
+                {"detail": "Erro na comunicação com o serviço fiscal."},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+        except Exception as exc:
+            logger.error("NfceEmitView: erro ao emitir NFC-e: %s", exc)
+            return Response(
+                {"detail": "Erro ao emitir NFC-e."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
