@@ -636,7 +636,7 @@ class ServiceOrderViewSet(
         return Response(ServiceOrderPartSerializer(items, many=True).data)
 
     @extend_schema(summary="Editar/remover peça da OS")
-    @action(detail=True, methods=["patch", "delete"], url_path=r"parts/(?P<part_pk>[^/.]+)")
+    @action(detail=True, methods=["patch", "delete"], url_path=r"parts/(?P<part_pk>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")
     def part_detail(self, request: Request, pk: Optional[str] = None, part_pk: Optional[str] = None) -> Response:
         """
         PATCH  /service-orders/{id}/parts/{part_pk}/  → edita peça
@@ -856,7 +856,7 @@ class ServiceOrderViewSet(
         return Response(ServiceOrderLaborSerializer(items, many=True).data)
 
     @extend_schema(summary="Editar/remover serviço da OS")
-    @action(detail=True, methods=["patch", "delete"], url_path=r"labor/(?P<labor_pk>[^/.]+)")
+    @action(detail=True, methods=["patch", "delete"], url_path=r"labor/(?P<labor_pk>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")
     def labor_detail(self, request: Request, pk: Optional[str] = None, labor_pk: Optional[str] = None) -> Response:
         """
         PATCH  /service-orders/{id}/labor/{labor_pk}/  → edita serviço
@@ -1081,7 +1081,7 @@ class ServiceOrderViewSet(
         return Response(BudgetSnapshotSerializer(snapshots, many=True).data)
 
     @extend_schema(summary="Remover foto da OS (soft delete)")
-    @action(detail=True, methods=["delete"], url_path=r"photos/(?P<photo_pk>[^/.]+)")
+    @action(detail=True, methods=["delete"], url_path=r"photos/(?P<photo_pk>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")
     def photo_detail(
         self, request: Request, pk: Optional[str] = None, photo_pk: Optional[str] = None
     ) -> Response:
@@ -1426,7 +1426,7 @@ class ServiceOrderViewSet(
         )
         return Response(ServiceOrderLaborSerializer(labor).data, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=["patch", "delete"], url_path="complement/items/(?P<item_pk>[^/.]+)")
+    @action(detail=True, methods=["patch", "delete"], url_path=r"complement/items/(?P<item_pk>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")
     def complement_item(self, request: Request, pk: Optional[str] = None, item_pk: Optional[str] = None) -> Response:
         """Edita ou remove item do complemento."""
         order = self.get_object()
