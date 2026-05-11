@@ -994,7 +994,7 @@ class FiscalFileProxyView(APIView):
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
     def get(self, request: Request, pk: str, file_type: str) -> Response:
-        from django.http import HttpResponse
+        from django.http import HttpResponse, StreamingHttpResponse
         import httpx
 
         if file_type not in ("pdf", "xml"):
@@ -1041,7 +1041,11 @@ class FiscalFileProxyView(APIView):
         else:
             content_type = "application/xml"
 
-        http_resp = HttpResponse(resp.content, content_type=content_type)
+        # StreamingHttpResponse for HTML prevents Django Debug Toolbar injection
+        if content_type == "text/html":
+            http_resp = StreamingHttpResponse(iter([resp.content]), content_type=content_type)
+        else:
+            http_resp = HttpResponse(resp.content, content_type=content_type)
         http_resp["Content-Disposition"] = f'inline; filename="{filename}"'
         return http_resp
 
