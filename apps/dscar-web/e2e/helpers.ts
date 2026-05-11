@@ -301,7 +301,11 @@ export async function patchOS(
   osId: string,
   data: Record<string, unknown>
 ): Promise<ApiResult> {
-  return apiPatch(page, `/api/proxy/service-orders/${osId}/`, data)
+  const res = await apiPatch(page, `/api/proxy/service-orders/${osId}/`, data)
+  if (!res.ok) {
+    console.warn(`[E2E] patchOS(${osId}): ${res.status} — ${JSON.stringify(res.body)}`)
+  }
+  return res
 }
 
 /**
@@ -310,30 +314,76 @@ export async function patchOS(
  * @throws Error em qualquer outro status de resposta.
  */
 /**
- * Cria assinatura dummy para a OS.
- * @param osUuid — UUID real da OS (não o number). Obter via getOsUuid().
+ * Cria assinatura dummy para a OS via docker exec (bypassa auth do proxy).
+ * Cria diretamente no Django DB — mais confiável para E2E.
  */
 export async function createSignature(
-  page: Page,
+  _page: Page,
   osUuid: string,
   documentType: string
 ): Promise<void> {
-  const result = await apiPost(
-    page,
-    `/api/proxy/signatures/signatures/capture/`,
-    {
-      document_type: documentType,
-      method: "CANVAS_TABLET",
-      signer_name: "E2E Test Signer",
-      signature_png_base64: SIGNATURE_PNG_BASE64,
-      service_order_id: osUuid, // UUID real (PaddockBaseModel.id)
+  const { execSync } = await import("child_process")
+  const cmd = `docker exec paddock_django python manage.py shell -c "
+from django_tenants.utils import schema_context
+from apps.signatures.models import Signature
+from apps.service_orders.models import ServiceOrder
+with schema_context('tenant_dscar'):
+    try:
+        os_obj = ServiceOrder.objects.get(pk='${osUuid}')
+        if not Signature.objects.filter(service_order=os_obj, document_type='${documentType}').exists():
+            Signature.objects.create(
+                service_order=os_obj,
+                document_type='${documentType}',
+                method='CANVAS_TABLET',
+                signer_name='E2E Test Signer',
+                signature_png_base64='${SIGNATURE_PNG_BASE64}',
+            )
+            print('OK: ${documentType}')
+        else:
+            print('SKIP: already exists')
+    except Exception as e:
+        print(f'ERR: {e}')
+"`
+  try {
+    const result = execSync(cmd, { timeout: 15_000, encoding: "utf-8" })
+    if (result.includes("ERR:")) {
+      console.warn(`[E2E] createSignature(${documentType}): ${result.trim()}`)
     }
-  )
+  } catch (err) {
+    console.warn(`[E2E] createSignature(${documentType}): exec falhou — ${String(err).slice(0, 200)}`)
+  }
+}
 
-  if (![200, 201, 409].includes(result.status)) {
-    console.warn(
-      `[E2E] createSignature(${documentType}): status ${result.status} — ${JSON.stringify(result.body)}`
-    )
+/**
+ * Seta campo da OS diretamente no Django DB (bypassa serializer read_only).
+ * Útil para campos que o PATCH não consegue setar.
+ */
+export async function setOsFieldViaDjango(
+  osUuid: string,
+  field: string,
+  value: string
+): Promise<void> {
+  const { execSync } = await import("child_process")
+  const pyValue = value === "NOW" ? "timezone.now()" : `"${value}"`
+  // Usa single quotes no shell para evitar problemas de escaping
+  const pyCode = [
+    "from django.utils import timezone",
+    "from django_tenants.utils import schema_context",
+    "from apps.service_orders.models import ServiceOrder",
+    `with schema_context("tenant_dscar"):`,
+    `    os_obj = ServiceOrder.objects.get(pk="${osUuid}")`,
+    `    os_obj.${field} = ${pyValue}`,
+    `    os_obj.save(update_fields=["${field}"])`,
+    `    print("OK")`,
+  ].join("\n")
+  const cmd = `docker exec paddock_django python manage.py shell -c '${pyCode}'`
+  try {
+    const result = execSync(cmd, { timeout: 15_000, encoding: "utf-8" })
+    if (!result.includes("OK")) {
+      console.warn(`[E2E] setOsFieldViaDjango(${field}): ${result.trim()}`)
+    }
+  } catch (err) {
+    console.warn(`[E2E] setOsFieldViaDjango(${field}): ${String(err).slice(0, 200)}`)
   }
 }
 
