@@ -300,7 +300,7 @@ test.describe("Cenário A — OS Particular (Cliente Novo)", () => {
         await page.locator("button", { hasText: "Nova OC" }).click()
         await expect(page.locator("text=Nova Ordem de Compra")).toBeVisible({ timeout: 5_000 })
 
-        await page.locator('input[placeholder="ID da OS (UUID)"]').fill(osId)
+        await page.locator('[data-testid="nova-oc-os-input"]').fill(osId)
         await page.locator("button", { hasText: "Criar OC" }).click()
 
         // Aguarda navegação para a OC criada ou erro
