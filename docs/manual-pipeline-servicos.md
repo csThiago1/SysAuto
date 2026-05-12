@@ -1,6 +1,6 @@
 # Manual de Operação — Pipeline de Serviços DS Car ERP
 
-**Versão:** 1.0 · **Data:** Maio 2026 · **Audiência:** Consultores, Chefes de Oficina, Administrativo, Compras e Estoque
+**Versão:** 1.1 · **Data:** Maio 2026 · **Audiência:** Consultores, Chefes de Oficina, Administrativo, Compras e Estoque
 
 ---
 
@@ -288,7 +288,7 @@ Para acompanhar:
 Para formalizar a compra junto ao fornecedor:
 
 1. Acesse **Compras > Ordens**.
-2. Clique em **Nova OC** ou abra uma OC gerada automaticamente a partir de um pedido.
+2. Clique em **Nova OC**. O dialog solicita o **Numero da OS (ex: 42)** — informe o numero da OS diretamente. O sistema localiza automaticamente a OS correspondente e vincula a OC ao pedido gerado por ela.
 3. Preencha:
    - **Fornecedor** — selecione da lista de cadastros.
    - **Itens** — descricao, quantidade, preco unitario e prazo de entrega para cada peça.
@@ -323,6 +323,17 @@ Quando as peças chegam à DS Car, registre a entrada no estoque para que fiquem
 4. Clique em **Registrar Entrada**.
 
 > Toda movimentacao de estoque e imutavel. Entradas nao podem ser editadas apos o registro — em caso de erro, registre um ajuste com aprovacao do gestor.
+
+### Vinculacao com OS
+
+Quando uma peça entra no estoque e existe um Pedido de Compra pendente vinculado a uma OS, o sistema executa a vinculacao automatica:
+
+1. A entrada cria uma **Unidade Fisica** (UnidadeFisica) no armazem — registro que identifica a posicao exata da peca no estoque.
+2. O sistema identifica o item da OS que originou o Pedido de Compra correspondente.
+3. A Unidade Fisica e vinculada ao item da OS, marcando a peca como **recebida** naquele pedido.
+4. Na tela de detalhe da OS, a peca aparece com o indicador "Recebida", sinalizando que esta fisicamente disponivel para o reparo.
+
+> Se a entrada for manual (sem XML), o vinculo precisa ser confirmado pelo almoxarife na tela **Estoque > Entradas > Vincular OS**. Pecas nao vinculadas bloqueiam a transicao para Vistoria Final.
 
 ---
 
@@ -452,6 +463,16 @@ Para emitir cada nota:
 5. O XML e salvo automaticamente — voce pode baixar o DANFE em PDF pelo botao **Baixar DANFE**.
 
 > Aguarde a autorizacao da SEFAZ antes de entregar o veiculo. Em caso de rejeicao, o sistema mostra o codigo de erro e a descricao para correcao.
+
+### Faturamento e Contas a Receber
+
+Ao concluir a emissao fiscal, o sistema executa o **faturamento da OS** automaticamente. Esse processo:
+
+1. Consolida os valores de servicos e pecas da OS.
+2. Cria um **Documento de Recebivel (ReceivableDocument)** no modulo financeiro com o valor total da OS, o cliente ou a seguradora como devedor e as condicoes de pagamento definidas.
+3. O documento fica disponivel em **Financeiro > Contas a Receber** para a equipe administrativa acompanhar, registrar parcelas e baixar os recebimentos.
+
+> Cada parcela (boleto, Pix, cartao, cheque) e registrada individualmente em Contas a Receber. A OS e considerada **quitada** somente quando todas as parcelas forem baixadas com comprovante.
 
 ### Avancando para Entregue
 
