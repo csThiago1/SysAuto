@@ -37,6 +37,7 @@ import {
   createExitChecklist,
   createReceivable,
   createCustomerViaDjango,
+  createStockEntry,
 } from "./helpers"
 
 // ─── Global Config ────────────────────────────────────────────────────────────
@@ -323,50 +324,14 @@ test.describe("Cenário A — OS Particular (Cliente Novo)", () => {
       await page.waitForLoadState("domcontentloaded")
     })
 
-    // ── Step 19: Entrada no estoque ────────────────────────────────────────────
-    await test.step("Step 19 — Entrada no estoque (tentativa UI)", async () => {
-      await page.goto("/estoque/entrada")
+    // ── Step 19: Entrada de estoque + vincular à peça da OS ─────────────────────
+    await test.step("Step 19 — Entrada de estoque via Django", async () => {
+      await createStockEntry(osUuid)
+
+      // Verificar na UI que a página de estoque carrega
+      await page.goto("/estoque")
       await page.waitForLoadState("domcontentloaded")
-
-      const searchInput = page.locator('input[placeholder*="Buscar por nome ou SKU"]')
-      if (
-        await searchInput
-          .isVisible({ timeout: 5_000 })
-          .catch(() => false)
-      ) {
-        await searchInput.fill("para-choque")
-        await page.waitForTimeout(1_000)
-
-        // Tenta encontrar resultado no dropdown
-        const dropdownResult = page.locator('[role="option"]').first()
-        if (
-          await dropdownResult
-            .isVisible({ timeout: 3_000 })
-            .catch(() => false)
-        ) {
-          await dropdownResult.click()
-
-          const valorNfInput = page.locator('input[placeholder*="Valor NF"]').first()
-          if (await valorNfInput.isVisible({ timeout: 2_000 }).catch(() => false)) {
-            await valorNfInput.fill("320")
-          }
-
-          const motivoInput = page.locator('input[placeholder*="Motivo"]').first()
-          if (await motivoInput.isVisible({ timeout: 2_000 }).catch(() => false)) {
-            await motivoInput.fill("Compra para OS E2E")
-          }
-
-          const submitBtn = page.locator("button[type='submit']").first()
-          if (await submitBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
-            await submitBtn.click()
-            await page.waitForTimeout(1_000)
-          }
-        } else {
-          console.warn("[E2E] Step 19: nenhum produto encontrado no dropdown — pulando entrada no estoque")
-        }
-      } else {
-        console.warn("[E2E] Step 19: campo de busca de estoque não encontrado — pulando entrada")
-      }
+      await expect(page.getByRole("heading", { name: /Estoque/i }).first()).toBeVisible({ timeout: 5_000 })
     })
 
     // ── Step 20: WAITING_PARTS → REPAIR ───────────────────────────────────────
@@ -425,7 +390,7 @@ test.describe("Cenário A — OS Particular (Cliente Novo)", () => {
         client_delivery_date: new Date().toISOString(),
       })
       await createSignature(page, osUuid, "OS_DELIVERY")
-      await executeBilling(page, osId)
+      await executeBilling(page, osId, osUuid)
 
       // Documento fiscal (NFC-e) — emite aviso em falha, não lança exceção
       const fiscalRes = await apiPost(page, `/api/proxy/fiscal/documents/`, {
@@ -709,7 +674,7 @@ test.describe("Cenário B — OS Seguradora (Cliente Existente)", () => {
         }
       }
 
-      await executeBilling(page, osId)
+      await executeBilling(page, osId, osUuid)
       await createReceivable(osUuid) // HARD: RECEIVABLE_CREATED
 
       const deliveredRes = await apiTransition(page, osId, "delivered")
