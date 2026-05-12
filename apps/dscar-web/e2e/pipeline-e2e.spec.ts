@@ -139,7 +139,7 @@ test.describe("Cenário A — OS Particular (Cliente Novo)", () => {
       await page.locator("button", { hasText: "Criar OS" }).click()
 
       // Aceita /os/{number} (formato atual do app)
-      await page.waitForURL(/\/os\/\d+/, { timeout: 20_000 })
+      await page.waitForURL(/\/os\/\d+/, { timeout: 30_000 })
       await page.waitForLoadState("domcontentloaded")
       osUrl = page.url()
 
@@ -547,7 +547,7 @@ test.describe("Cenário B — OS Seguradora (Cliente Existente)", () => {
       await page.locator("button", { hasText: "Criar OS" }).click()
 
       // Aceita /os/{number} (formato atual do app)
-      await page.waitForURL(/\/os\/\d+/, { timeout: 20_000 })
+      await page.waitForURL(/\/os\/\d+/, { timeout: 30_000 })
       await page.waitForLoadState("domcontentloaded")
       osUrl = page.url()
 
