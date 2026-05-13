@@ -13,7 +13,7 @@ class ApiError extends Error {
   }
 }
 
-async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+async function apiFetch<T>(path: string, options: RequestInit = {}, timeoutMs = 15_000): Promise<T> {
   const { token, activeCompany } = useAuthStore.getState();
 
   // Garante trailing slash no path (Django APPEND_SLASH=True)
@@ -33,18 +33,25 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(url, { ...options, headers });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-  if (!response.ok) {
-    const data: unknown = await response.json().catch(() => null);
-    if (response.status === 401) {
-      // Token inválido ou expirado — forçar logout para redirecionar ao login.
-      useAuthStore.getState().logout();
+  try {
+    const response = await fetch(url, { ...options, headers, signal: controller.signal });
+
+    if (!response.ok) {
+      const data: unknown = await response.json().catch(() => null);
+      if (response.status === 401) {
+        // Token inválido ou expirado — forçar logout para redirecionar ao login.
+        useAuthStore.getState().logout();
+      }
+      throw new ApiError(response.status, `HTTP ${response.status}`, data);
     }
-    throw new ApiError(response.status, `HTTP ${response.status}`, data);
-  }
 
-  return response.json() as Promise<T>;
+    return response.json() as Promise<T>;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 export const api = {
