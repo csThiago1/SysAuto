@@ -275,10 +275,27 @@ export default function ComprasPage() {
   }, [respostas, pedidos])
 
   function togglePedido(id: string) {
+    const pedido = pedidos?.find((p) => p.id === id)
+    if (!pedido) return
+
     setSelectedPedidoIds((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
+
+      if (next.has(id)) {
+        next.delete(id)
+        return next
+      }
+
+      // Se já tem seleção de outra OS, limpa tudo antes
+      if (next.size > 0) {
+        const firstSelectedId = Array.from(next)[0]
+        const firstSelected = pedidos?.find((p) => p.id === firstSelectedId)
+        if (firstSelected && firstSelected.service_order !== pedido.service_order) {
+          next.clear()
+        }
+      }
+
+      next.add(id)
       return next
     })
   }
@@ -429,19 +446,25 @@ export default function ComprasPage() {
             ) : (
               pedidos.map((p) => {
                 const isSelected = selectedPedidoIds.has(p.id)
+                const isDifferentOS =
+                  activeServiceOrderId != null &&
+                  p.service_order !== activeServiceOrderId &&
+                  !isSelected
                 return (
                   <tr
                     key={p.id}
                     className={`border-b border-white/5 hover:bg-white/[0.02] transition-colors ${
                       actioningId === p.id ? "opacity-50" : ""
-                    } ${isSelected ? "bg-info-500/5" : ""}`}
+                    } ${isSelected ? "bg-info-500/5" : ""} ${isDifferentOS ? "opacity-40" : ""}`}
                   >
                     <td className="px-4 py-3">
                       <input
                         type="checkbox"
                         checked={isSelected}
+                        disabled={isDifferentOS}
                         onChange={() => togglePedido(p.id)}
-                        className="w-3.5 h-3.5 rounded border border-border accent-primary cursor-pointer"
+                        className="w-3.5 h-3.5 rounded border border-border accent-primary cursor-pointer disabled:cursor-not-allowed"
+                        title={isDifferentOS ? "Selecione pedidos da mesma OS" : undefined}
                       />
                     </td>
                     <td className="px-4 py-3">
