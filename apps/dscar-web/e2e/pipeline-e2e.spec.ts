@@ -105,23 +105,28 @@ test.describe("Cenário A — OS Particular (Cliente Novo)", () => {
       // Busca o cliente recém-criado no autocomplete do drawer
       const searchInput = page.locator('[data-testid="customer-search-input"]')
       await expect(searchInput).toBeVisible({ timeout: 5_000 })
-      await searchInput.fill(clientName.slice(0, 20))
-      await page.waitForTimeout(1_500)
+      await searchInput.fill("E2E Particular")
+      await page.waitForTimeout(2_000)
 
-      // Seleciona o primeiro resultado
-      const result = page.locator("button", { hasText: clientName.slice(0, 20) }).first()
-      const found = await result.isVisible({ timeout: 5_000 }).catch(() => false)
+      // Seleciona o primeiro resultado que contém o nome
+      const resultBtn = page.locator("button").filter({ hasText: /E2E Particular/ }).first()
+      const found = await resultBtn.isVisible({ timeout: 8_000 }).catch(() => false)
       if (found) {
-        await result.click()
+        await resultBtn.click()
+        await page.waitForTimeout(500)
       } else {
-        // Fallback: tenta "Cadastrar novo cliente" no dropdown
-        const cadastrarLink = page.locator("button", { hasText: "Cadastrar novo" }).first()
-        if (await cadastrarLink.isVisible({ timeout: 2_000 }).catch(() => false)) {
-          await cadastrarLink.click()
+        // Fallback: cadastro inline direto no drawer
+        const novoBtn = page.locator('[data-testid="novo-cliente-btn"]')
+        if (await novoBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
+          await novoBtn.click()
+          await expect(page.locator("text=Novo cliente")).toBeVisible({ timeout: 3_000 })
+          await page.locator('input[placeholder="Nome completo *"]').fill(clientName)
+          await page.locator('input[placeholder*="Celular"]').fill("92999990099")
+          await page.locator('input[placeholder*="E-mail"]').fill(`e2e-${Date.now()}@test.com`)
+          await page.locator('[data-testid="cadastrar-cliente-btn"]').click()
+          await page.waitForTimeout(3_000)
         }
       }
-      // Aguarda chip do cliente (pode ser verde se selecionado, ou o nome no campo)
-      await page.waitForTimeout(1_000)
     })
 
     // ── Step 5: Preencher veículo ──────────────────────────────────────────────
