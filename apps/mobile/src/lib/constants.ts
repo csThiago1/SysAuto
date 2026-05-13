@@ -1,10 +1,8 @@
-// expo-constants disponivel para uso em funcionalidades futuras (ex: expoConfig.version)
-// import Constants from 'expo-constants';
-
 const isDev = __DEV__;
 
+// Hostname .local é resolvido pelo Bonjour/mDNS — funciona independente do IP
 export const API_BASE_URL = isDev
-  ? 'http://localhost:8000'
+  ? 'http://MacBook-Pro-de-Thiago.local:8000'
   : 'https://api.dscar.paddock.solutions';
 
 export const DEFAULT_TENANT = isDev ? 'dscar.localhost' : 'dscar.paddock.solutions';
