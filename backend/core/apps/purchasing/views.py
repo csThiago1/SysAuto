@@ -45,7 +45,8 @@ class PedidoCompraViewSet(viewsets.ReadOnlyModelViewSet):
         # Filtros opcionais
         status_filter = self.request.query_params.get("status")
         if status_filter:
-            qs = qs.filter(status=status_filter)
+            statuses = [s.strip() for s in status_filter.split(",")]
+            qs = qs.filter(status__in=statuses)
         so_filter = self.request.query_params.get("service_order")
         if so_filter:
             qs = qs.filter(service_order_id=so_filter)
@@ -127,7 +128,8 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
 
         status_filter = self.request.query_params.get("status")
         if status_filter:
-            qs = qs.filter(status=status_filter)
+            statuses = [s.strip() for s in status_filter.split(",")]
+            qs = qs.filter(status__in=statuses)
         so_filter = self.request.query_params.get("service_order")
         if so_filter:
             qs = qs.filter(service_order_id=so_filter)
