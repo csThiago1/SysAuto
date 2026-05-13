@@ -116,7 +116,7 @@ class ReceivableDocument(PaddockBaseModel):
             models.Index(fields=["customer_id", "status"]),
             models.Index(
                 fields=["service_order_id", "is_active", "status"],
-                name="receivable_os_active_status_idx",
+                name="recv_os_active_status_idx",
             ),
         ]
         verbose_name = _("Titulo a Receber")
