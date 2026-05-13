@@ -61,3 +61,7 @@ class FiscalValidationError(Exception):
 
 class NfeBuilderError(FocusNFeError):
     """Dados insuficientes para montar payload NF-e (NCM ausente, sem endereço, etc.)."""
+
+
+class NfceBuilderError(FocusNFeError):
+    """Dados insuficientes para montar payload NFC-e (NCM ausente, config incompleta, etc.)."""
