@@ -21,9 +21,10 @@ urlpatterns = [
     path("api/v1/service-orders/", include("apps.service_orders.urls")),
     path("api/v1/inventory/", include("apps.inventory.urls")),
     path("api/v1/fiscal/", include("apps.fiscal.urls")),
-    path("api/v1/crm/", include("apps.crm.urls")),
-    path("api/v1/store/", include("apps.store.urls")),
-    path("api/v1/ai/", include("apps.ai.urls")),
+    # Post-MVP:
+    # path("api/v1/crm/", include("apps.crm.urls")),
+    # path("api/v1/store/", include("apps.store.urls")),
+    # path("api/v1/ai/", include("apps.ai.urls")),
     path("api/v1/experts/", include("apps.experts.urls")),
     path("api/v1/insurers/", include("apps.insurers.urls")),
     path("api/v1/vehicle-catalog/", include("apps.vehicle_catalog.urls")),
