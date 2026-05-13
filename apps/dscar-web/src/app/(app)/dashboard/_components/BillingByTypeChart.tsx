@@ -4,18 +4,13 @@ import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recha
 import { formatCurrency } from "@paddock/utils"
 import type { BillingMonthPoint } from "@paddock/types"
 
-function formatMonth(month: string): string {
-  // month is already formatted as "abr/26" by the API
-  return month
-}
-
 interface Props {
   data: BillingMonthPoint[]
 }
 
 export function BillingByTypeChart({ data }: Props) {
   const chartData = data.map((d) => ({
-    month: formatMonth(d.month),
+    month: d.month,
     total: parseFloat(String(d.amount ?? 0)),
   }))
 

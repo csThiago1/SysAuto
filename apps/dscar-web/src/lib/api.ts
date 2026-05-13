@@ -1,3 +1,4 @@
+import type { FieldValues, Path, UseFormSetError } from "react-hook-form";
 import { signOut } from "next-auth/react";
 import { toast } from "sonner";
 
@@ -67,11 +68,14 @@ export async function apiFetch<T>(
  * Utilitário para mapear erros disparados pela apiFetch (ApiError) 
  * diretamente para os campos do React Hook Form.
  */
-export function handleApiFormError(error: unknown, setError?: any): void {
+export function handleApiFormError<T extends FieldValues>(
+  error: unknown,
+  setError?: UseFormSetError<T>
+): void {
   if (error instanceof ApiError) {
     if (error.fieldErrors && setError) {
       Object.entries(error.fieldErrors).forEach(([field, messages]) => {
-        setError(field, { type: "server", message: messages[0] });
+        setError(field as Path<T>, { type: "server", message: messages[0] });
       });
     } else {
       toast.error(error.message || "Ocorreu um erro inesperado.");

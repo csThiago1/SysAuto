@@ -803,6 +803,137 @@ class PayslipService:
         }
 
 
+def calculate_termination(employee: "Employee") -> dict:
+    """Calcula ferias proporcionais e 13o proporcional na rescisao."""
+    from dateutil.relativedelta import relativedelta
+
+    today = employee.termination_date or date.today()
+    hire = employee.hire_date
+    salary = employee.base_salary
+    result: dict = {}
+
+    # -- Ferias proporcionais --
+    period_start = hire
+    while period_start + relativedelta(months=12) <= today:
+        period_start = period_start + relativedelta(months=12)
+
+    months_worked = 0
+    cursor = period_start
+    while cursor < today:
+        next_month = cursor + relativedelta(months=1)
+        days_in_period = min((next_month - cursor).days, (today - cursor).days)
+        if days_in_period >= 15:
+            months_worked += 1
+        cursor = next_month
+
+    if months_worked > 0:
+        proportional_days = round(months_worked * 30 / 12)
+        daily = salary / 30
+        vacation_pay = (daily * proportional_days).quantize(Decimal("0.01"))
+        one_third = (vacation_pay / 3).quantize(Decimal("0.01"))
+
+        # Ferias vencidas (periodos completos nao gozados)
+        from .models import Vacation
+
+        vencidas_days = 0
+        check_start = hire
+        while check_start + relativedelta(months=12) <= today:
+            used = Vacation.objects.filter(
+                employee=employee,
+                acquisition_start=check_start,
+                status__in=["scheduled", "active", "completed"],
+                is_active=True,
+            ).values_list("days_taken", flat=True)
+            remaining = 30 - sum(used)
+            if remaining > 0:
+                vencidas_days += remaining
+            check_start = check_start + relativedelta(months=12)
+
+        vencidas_pay = Decimal("0")
+        vencidas_third = Decimal("0")
+        if vencidas_days > 0:
+            vencidas_pay = (daily * vencidas_days).quantize(Decimal("0.01"))
+            vencidas_third = (vencidas_pay / 3).quantize(Decimal("0.01"))
+
+        result["ferias_proporcionais"] = {
+            "months_worked": months_worked,
+            "days": proportional_days,
+            "vacation_pay": float(vacation_pay),
+            "one_third": float(one_third),
+            "total": float(vacation_pay + one_third),
+        }
+        if vencidas_days > 0:
+            result["ferias_vencidas"] = {
+                "days": vencidas_days,
+                "vacation_pay": float(vencidas_pay),
+                "one_third": float(vencidas_third),
+                "total": float(vencidas_pay + vencidas_third),
+            }
+
+    # -- 13o proporcional --
+    prop_months = PayslipService._thirteenth_proportional_months(employee, today.year)
+    if prop_months > 0:
+        thirteenth = (salary * prop_months / Decimal("12")).quantize(Decimal("0.01"))
+
+        from apps.hr.tax_calculator import calcular_impostos
+
+        tributos = calcular_impostos(
+            salario_bruto=thirteenth,
+            dependentes=getattr(employee, "dependents_count", 0),
+        )
+        net_13 = thirteenth - tributos["inss"] - tributos["irrf"]
+
+        result["decimo_terceiro_proporcional"] = {
+            "months": prop_months,
+            "gross": float(thirteenth),
+            "inss": float(tributos["inss"]),
+            "irrf": float(tributos["irrf"]),
+            "net": float(net_13),
+        }
+
+    return result
+
+
+def calculate_vacation(vacation: "Vacation") -> None:
+    """Calcula ferias + 1/3 + abono + descontos e salva no registro."""
+    from apps.hr.tax_calculator import calcular_impostos
+
+    emp = vacation.employee
+    salary = emp.base_salary
+    daily = salary / 30
+
+    vacation_pay = (daily * vacation.days_taken).quantize(Decimal("0.01"))
+    one_third = (vacation_pay / 3).quantize(Decimal("0.01"))
+
+    sold_pay = Decimal("0")
+    if vacation.days_sold > 0:
+        sold_base = (daily * vacation.days_sold).quantize(Decimal("0.01"))
+        sold_third = (sold_base / 3).quantize(Decimal("0.01"))
+        sold_pay = sold_base + sold_third
+
+    taxable = vacation_pay + one_third
+    tributos = calcular_impostos(
+        salario_bruto=taxable,
+        dependentes=getattr(emp, "dependents_count", 0),
+    )
+    deductions_total = tributos["inss"] + tributos["irrf"]
+
+    total = vacation_pay + one_third + sold_pay
+    net = total - deductions_total
+
+    vacation.base_salary_snapshot = salary
+    vacation.vacation_pay = vacation_pay
+    vacation.one_third_pay = one_third
+    vacation.sold_pay = sold_pay
+    vacation.total_pay = total
+    vacation.deductions = deductions_total
+    vacation.net_pay = net
+    vacation.save(update_fields=[
+        "base_salary_snapshot", "vacation_pay", "one_third_pay",
+        "sold_pay", "total_pay", "deductions", "net_pay", "updated_at",
+    ])
+
+
 # ── PDF de Contracheque ────────────────────────────────────────────────────────
 
 
