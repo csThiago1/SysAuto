@@ -91,6 +91,7 @@ PUBLIC_SCHEMA_NAME = "public"
 # ─── Middleware ───────────────────────────────────────────────────────────────
 MIDDLEWARE = [
     "django_tenants.middleware.main.TenantMainMiddleware",  # PRIMEIRO SEMPRE
+    "django.middleware.gzip.GZipMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -200,6 +201,14 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "20/minute",
+        "user": "200/minute",
+    },
 }
 
 # ─── drf-spectacular (Swagger) ────────────────────────────────────────────────
