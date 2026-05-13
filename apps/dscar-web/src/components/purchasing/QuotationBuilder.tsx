@@ -114,6 +114,7 @@ export function QuotationBuilder({ pedido, open, onOpenChange }: QuotationBuilde
   const [toggles, setToggles] = useState<FieldToggles>(PRESETS.concessionaria)
   const [motor, setMotor] = useState(defaultMotor)
   const [cambio, setCambio] = useState(defaultCambio)
+  const [observacoes, setObservacoes] = useState(pedido.observacoes ?? "")
 
   function applyPreset(preset: Preset) {
     setActivePreset(preset)
@@ -134,9 +135,9 @@ export function QuotationBuilder({ pedido, open, onOpenChange }: QuotationBuilde
       const header = [pedido.os_make, pedido.os_model, version, year]
         .filter(Boolean)
         .join(" ")
-      if (header) vehicleLines.push(`🚗 ${header}`)
+      if (header) vehicleLines.push(header)
     } else if (toggles.ano && pedido.os_year) {
-      vehicleLines.push(`🚗 ${pedido.os_year}`)
+      vehicleLines.push(pedido.os_year)
     }
 
     if (toggles.motor && motor) vehicleLines.push(`Motor: ${motor}`)
@@ -150,20 +151,20 @@ export function QuotationBuilder({ pedido, open, onOpenChange }: QuotationBuilde
       lines.push("")
     }
 
-    lines.push(`📋 ${pedido.descricao}`)
+    lines.push(pedido.descricao)
     if (pedido.codigo_referencia) lines.push(`Ref: ${pedido.codigo_referencia}`)
     lines.push(`Qtd: ${pedido.quantidade}`)
 
-    if (toggles.observacoes && pedido.observacoes) {
+    if (toggles.observacoes && observacoes) {
       lines.push("")
-      lines.push(`Obs: ${pedido.observacoes}`)
+      lines.push(`Obs: ${observacoes}`)
     }
 
     lines.push("")
     lines.push("Aguardo retorno. Obrigado!")
 
     return lines.join("\n")
-  }, [toggles, motor, cambio, pedido])
+  }, [toggles, motor, cambio, observacoes, pedido])
 
   async function handleCopy() {
     try {
@@ -256,16 +257,24 @@ export function QuotationBuilder({ pedido, open, onOpenChange }: QuotationBuilde
               </div>
             </div>
 
-            {/* Obs toggle */}
+            {/* Observações */}
             <div>
-              <p className="label-mono text-muted-foreground mb-2">Opcionais</p>
-              <div className="pl-1">
+              <div className="flex items-center gap-2 mb-2">
                 <CheckRow
-                  label="Incluir observações do pedido"
+                  label="Incluir observações"
                   checked={toggles.observacoes}
                   onChange={setToggle("observacoes")}
                 />
               </div>
+              {toggles.observacoes && (
+                <textarea
+                  value={observacoes}
+                  onChange={(e) => setObservacoes(e.target.value)}
+                  placeholder="Ex: Lado direito, sem sensor de estacionamento"
+                  rows={3}
+                  className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                />
+              )}
             </div>
           </div>
 
