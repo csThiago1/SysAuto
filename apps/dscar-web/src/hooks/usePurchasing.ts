@@ -37,10 +37,10 @@ export function usePedidosCompra(params?: Record<string, string>) {
   })
 }
 
-export function useIniciarCotacao(id: string) {
+export function useIniciarCotacao() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: () =>
+    mutationFn: (id: string) =>
       apiFetch<PedidoCompra>(`${PURCHASING}/pedidos/${id}/iniciar-cotacao/`, {
         method: "POST",
       }),
@@ -50,10 +50,10 @@ export function useIniciarCotacao(id: string) {
   })
 }
 
-export function useCancelarPedido(id: string) {
+export function useCancelarPedido() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: () =>
+    mutationFn: (id: string) =>
       apiFetch<PedidoCompra>(`${PURCHASING}/pedidos/${id}/cancelar/`, {
         method: "POST",
       }),

@@ -1,9 +1,10 @@
 "use client"
 
 import { ShoppingCart, ArrowRight } from "lucide-react"
-import { useDashboardCompras, usePedidosCompra, useIniciarCotacao } from "@/hooks/usePurchasing"
+import { useDashboardCompras, usePedidosCompra, useIniciarCotacao, useCancelarPedido } from "@/hooks/usePurchasing"
 import type { PedidoCompra, StatusPedidoCompra } from "@paddock/types"
 import { useState } from "react"
+import { toast } from "sonner"
 
 // ─── Status badge config ────────────────────────────────────────────────────────
 
@@ -178,14 +179,25 @@ export default function ComprasPage() {
     status: "solicitado,em_cotacao,oc_pendente",
   })
 
+  const iniciarCotacao = useIniciarCotacao()
+  const cancelarPedido = useCancelarPedido()
   const [actioningId, setActioningId] = useState<string | null>(null)
 
-  function handleAction(id: string, action: string) {
+  async function handleAction(id: string, action: string) {
     setActioningId(id)
-    // Actions will be wired to mutations in the detail pages
-    // For now we just show visual feedback
-    setTimeout(() => setActioningId(null), 500)
-    void action // placeholder
+    try {
+      if (action === "iniciar-cotacao") {
+        await iniciarCotacao.mutateAsync(id)
+        toast.success("Cotação iniciada com sucesso.")
+      } else if (action === "cancelar") {
+        await cancelarPedido.mutateAsync(id)
+        toast.success("Pedido cancelado.")
+      }
+    } catch {
+      toast.error("Erro ao executar ação. Tente novamente.")
+    } finally {
+      setActioningId(null)
+    }
   }
 
   return (
