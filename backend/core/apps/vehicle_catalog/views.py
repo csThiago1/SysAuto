@@ -5,6 +5,7 @@ import logging
 import re
 
 import httpx
+from django.core.cache import cache
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
@@ -34,6 +35,17 @@ class VehicleColorViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     def get_queryset(self):  # type: ignore[override]
         return VehicleColor.objects.all()
+
+    def list(self, request, *args, **kwargs):  # type: ignore[override]
+        search = request.query_params.get("search", "")
+        if not search:
+            cached = cache.get("vehicle_colors:all")
+            if cached is not None:
+                return Response(cached)
+            response = super().list(request, *args, **kwargs)
+            cache.set("vehicle_colors:all", response.data, timeout=3600)
+            return response
+        return super().list(request, *args, **kwargs)
 
 
 # ── Normalização de montadora ─────────────────────────────────────────────────
@@ -404,6 +416,10 @@ class VehicleMakeViewSet(viewsets.ReadOnlyModelViewSet):
 
         GET /vehicle-catalog/makes/{id}/models/
         """
+        cache_key = f"vehicle_models:make:{pk}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return Response(cached)
         make = self.get_object()
         qs = (
             VehicleModel.objects.filter(marca=make)
@@ -411,6 +427,7 @@ class VehicleMakeViewSet(viewsets.ReadOnlyModelViewSet):
             .order_by("nome")
         )
         serializer = VehicleModelSerializer(qs, many=True)
+        cache.set(cache_key, serializer.data, timeout=3600)
         return Response(serializer.data)
 
 

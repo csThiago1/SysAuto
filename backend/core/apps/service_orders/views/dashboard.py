@@ -10,9 +10,11 @@ import logging
 from datetime import timedelta
 from decimal import Decimal
 
+from django.core.cache import cache
 from django.db.models import Avg, Count, F, Q, Sum
 from django.db.models import DecimalField as DBDecimalField
 from django.db.models import ExpressionWrapper
+from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
@@ -81,11 +83,20 @@ class DashboardStatsView(APIView):
         """Retorna estatísticas do dashboard conforme role do JWT."""
         role = _get_role(request)
 
-        if role == "CONSULTANT":
-            return Response(self._consultant_stats(request))
-
         if role in ("MANAGER", "ADMIN", "OWNER"):
-            return Response(self._manager_stats())
+            cached = cache.get("dashboard:manager")
+            if cached is None:
+                cached = self._manager_stats()
+                cache.set("dashboard:manager", cached, timeout=120)
+            return Response(cached)
+
+        if role == "CONSULTANT":
+            cache_key = f"dashboard:consultant:{request.user.pk}"
+            cached = cache.get(cache_key)
+            if cached is None:
+                cached = self._consultant_stats(request)
+                cache.set(cache_key, cached, timeout=60)
+            return Response(cached)
 
         # STOREKEEPER e fallback — visão de técnico
         return Response(self._technician_stats(request))
@@ -180,8 +191,6 @@ class DashboardStatsView(APIView):
 
     def _manager_stats(self) -> dict:
         """KPIs financeiros, pipeline, produtividade e OS atrasadas."""
-        import calendar as cal_mod
-
         today = timezone.localdate()
         month_start = today.replace(day=1)
 
@@ -220,21 +229,18 @@ class DashboardStatsView(APIView):
                 "private": str(private_total),
             }
 
-            for i in range(5, -1, -1):
-                year = today.year if today.month - i > 0 else today.year - 1
-                month = (today.month - i - 1) % 12 + 1
-                m_start = today.replace(year=year, month=month, day=1)
-                m_end = m_start.replace(day=cal_mod.monthrange(year, month)[1])
-                total = (
-                    ReceivableDocument.objects.filter(
-                        competence_date__range=(m_start, m_end)
-                    ).aggregate(t=Sum("amount"))["t"]
-                    or Decimal("0")
-                )
-                billing_last_6.append({
-                    "month": m_start.strftime("%b/%y"),
-                    "amount": str(total),
-                })
+            billing_raw = (
+                ReceivableDocument.objects
+                .filter(competence_date__gte=month_start - timedelta(days=180))
+                .annotate(month=TruncMonth("competence_date"))
+                .values("month")
+                .annotate(total=Sum("amount"))
+                .order_by("month")
+            )
+            billing_last_6 = [
+                {"month": row["month"].strftime("%b/%y"), "amount": str(row["total"] or 0)}
+                for row in billing_raw
+            ][-6:]
 
         except ImportError:
             total_expr = ExpressionWrapper(

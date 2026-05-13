@@ -6,6 +6,7 @@ import logging
 import os
 import uuid
 
+from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db import connection
@@ -77,6 +78,26 @@ class InsurerViewSet(
             return InsurerMinimalSerializer
         return InsurerSerializer
 
+    def list(self, request, *args, **kwargs):  # type: ignore[override]
+        cached = cache.get("insurers:active")
+        if cached is not None:
+            return Response(cached)
+        response = super().list(request, *args, **kwargs)
+        cache.set("insurers:active", response.data, timeout=300)
+        return response
+
+    def perform_create(self, serializer) -> None:  # type: ignore[override]
+        serializer.save()
+        cache.delete("insurers:active")
+
+    def perform_update(self, serializer) -> None:  # type: ignore[override]
+        serializer.save()
+        cache.delete("insurers:active")
+
+    def perform_destroy(self, instance) -> None:  # type: ignore[override]
+        super().perform_destroy(instance)
+        cache.delete("insurers:active")
+
     @action(
         detail=True,
         methods=["post"],
@@ -132,6 +153,7 @@ class InsurerViewSet(
         insurer.logo_url = new_url
         insurer.save(update_fields=["logo_url", "updated_at"])
         logger.info("Logo atualizado para seguradora %s → %s", insurer.name, new_url)
+        cache.delete("insurers:active")
 
         return Response(InsurerSerializer(insurer).data, status=status.HTTP_200_OK)
 

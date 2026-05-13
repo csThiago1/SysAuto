@@ -3,6 +3,7 @@ Paddock Solutions — Service Orders: ServiceCatalog + Holiday ViewSets
 """
 from typing import Any
 
+from django.core.cache import cache
 from django.db.models import QuerySet
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -36,9 +37,16 @@ class ServiceCatalogViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self) -> QuerySet:
         """Retorna catálogo ativo, com filtros opcionais de busca e categoria."""
-        qs = ServiceCatalog.objects.filter(is_active=True)
         search = self.request.query_params.get("search", "")
         category = self.request.query_params.get("category", "")
+        if not search and not category:
+            cached = cache.get("service_catalog:active")
+            if cached is not None:
+                return cached
+            qs = list(ServiceCatalog.objects.filter(is_active=True))
+            cache.set("service_catalog:active", qs, timeout=300)
+            return qs
+        qs = ServiceCatalog.objects.filter(is_active=True)
         if search:
             qs = qs.filter(name__icontains=search)
         if category:
@@ -55,7 +63,16 @@ class ServiceCatalogViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         instance.is_active = False
         instance.save(update_fields=["is_active", "updated_at"])
+        cache.delete("service_catalog:active")
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def perform_create(self, serializer) -> None:  # type: ignore[override]
+        serializer.save()
+        cache.delete("service_catalog:active")
+
+    def perform_update(self, serializer) -> None:  # type: ignore[override]
+        serializer.save()
+        cache.delete("service_catalog:active")
 
 
 class HolidayViewSet(viewsets.ModelViewSet):

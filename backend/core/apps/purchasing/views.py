@@ -3,6 +3,7 @@ Paddock Solutions — Purchasing — Views
 """
 import logging
 
+from django.core.cache import cache
 from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework import status, viewsets
@@ -351,20 +352,21 @@ class DashboardComprasView(APIView):
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
     def get(self, request: Request) -> Response:
-        hoje = timezone.now().date()
-        data = {
-            "solicitados": PedidoCompra.objects.filter(
-                is_active=True, status="solicitado",
-            ).count(),
-            "em_cotacao": PedidoCompra.objects.filter(
-                is_active=True, status="em_cotacao",
-            ).count(),
-            "aguardando_aprovacao": OrdemCompra.objects.filter(
-                is_active=True, status="pendente_aprovacao",
-            ).count(),
-            "aprovadas_hoje": OrdemCompra.objects.filter(
-                is_active=True, status="aprovada", aprovado_em__date=hoje,
-            ).count(),
-        }
-        serializer = DashboardComprasSerializer(data)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        cached = cache.get("dashboard:compras")
+        if cached:
+            return Response(DashboardComprasSerializer(cached).data)
+
+        pedido_counts = PedidoCompra.objects.filter(is_active=True).aggregate(
+            solicitados=Count("id", filter=Q(status="solicitado")),
+            em_cotacao=Count("id", filter=Q(status="em_cotacao")),
+        )
+        oc_counts = OrdemCompra.objects.filter(is_active=True).aggregate(
+            aguardando_aprovacao=Count("id", filter=Q(status="pendente_aprovacao")),
+            aprovadas_hoje=Count("id", filter=Q(
+                status="aprovada",
+                aprovado_em__date=timezone.now().date(),
+            )),
+        )
+        data = {**pedido_counts, **oc_counts}
+        cache.set("dashboard:compras", data, timeout=60)
+        return Response(DashboardComprasSerializer(data).data, status=status.HTTP_200_OK)

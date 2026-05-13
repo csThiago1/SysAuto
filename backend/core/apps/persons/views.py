@@ -7,11 +7,10 @@ LGPD (Ciclo 06A):
   - GET /persons/{id}/documents/ retorna plain apenas para fiscal_admin
 """
 
-import json
 import logging
-import urllib.error
-import urllib.request
 
+import httpx
+from django.core.cache import cache
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -103,30 +102,34 @@ class PersonViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=False, methods=["get"], url_path="cep/(?P<cep>[0-9]{8})")
+    @action(detail=False, methods=["get"], url_path=r"cep/(?P<cep>\d{8})")
     def cep_lookup(self, request, cep: str = "") -> Response:
         """Consulta endereço pelo CEP via ViaCEP."""
+        cache_key = f"cep:{cep}"
+        cached = cache.get(cache_key)
+        if cached:
+            return Response(cached)
         try:
-            url = f"https://viacep.com.br/ws/{cep}/json/"
-            with urllib.request.urlopen(url, timeout=5) as resp:  # noqa: S310
-                data = json.loads(resp.read().decode())
-            if "erro" in data:
-                return Response({"error": "CEP não encontrado"}, status=404)
-            return Response(
-                {
-                    "zip_code": data.get("cep", ""),
-                    "street": data.get("logradouro", ""),
-                    "neighborhood": data.get("bairro", ""),
-                    "city": data.get("localidade", ""),
-                    "state": data.get("uf", ""),
-                    "complement": data.get("complemento", ""),
-                }
-            )
-        except urllib.error.URLError:
-            return Response({"error": "Erro ao consultar CEP"}, status=400)
-        except Exception:
-            logger.exception("Erro inesperado no lookup de CEP %s", cep)
-            return Response({"error": "Erro interno"}, status=500)
+            with httpx.Client(timeout=5.0) as client:
+                resp = client.get(f"https://viacep.com.br/ws/{cep}/json/")
+            data = resp.json()
+            if data.get("erro"):
+                return Response({"detail": "CEP não encontrado."}, status=404)
+            result = {
+                "cep": data.get("cep", ""),
+                "logradouro": data.get("logradouro", ""),
+                "complemento": data.get("complemento", ""),
+                "bairro": data.get("bairro", ""),
+                "localidade": data.get("localidade", ""),
+                "uf": data.get("uf", ""),
+            }
+            cache.set(cache_key, result, timeout=86400)
+            return Response(result)
+        except httpx.TimeoutException:
+            return Response({"detail": "Timeout na consulta de CEP."}, status=504)
+        except Exception as e:
+            logger.exception("Erro ao consultar CEP %s: %s", cep, e)
+            return Response({"detail": "Erro ao consultar CEP."}, status=500)
 
     @action(detail=False, methods=["get"], url_path="employee-options")
     def employee_options(self, request) -> Response:
