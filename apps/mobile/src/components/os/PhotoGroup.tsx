@@ -1,11 +1,11 @@
 import React from 'react';
 import {
-  Image,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Text } from '@/components/ui/Text';
 import { Colors, Radii } from '@/constants/theme';
 import { FOLDER_LABELS } from '@/components/os/os-detail-utils';
@@ -40,7 +40,9 @@ export function PhotoGroup({ folder, photos, onPhotoPress }: PhotoGroupProps): R
             <Image
               source={{ uri: photo.url }}
               style={styles.photo}
-              resizeMode="cover"
+              contentFit="cover"
+              cachePolicy="disk"
+              transition={150}
             />
             {photo.caption != null && photo.caption.length > 0 && (
               <Text variant="caption" color={Colors.textTertiary} numberOfLines={1} style={styles.photoCaption}>

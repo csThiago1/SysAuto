@@ -16,7 +16,7 @@ interface KanbanCardProps {
   onPress: () => void;
 }
 
-export function KanbanCard({
+export const KanbanCard = React.memo(function KanbanCard({
   number,
   plate,
   model,
@@ -46,7 +46,7 @@ export function KanbanCard({
       </Card>
     </TouchableOpacity>
   );
-}
+})
 
 const styles = StyleSheet.create({
   container: { gap: 2 },

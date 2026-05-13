@@ -286,6 +286,9 @@ export default function OSListScreen(): React.JSX.Element {
         onEndReachedThreshold={0.3}
         ListEmptyComponent={ListEmpty}
         ListFooterComponent={ListFooter}
+        initialNumToRender={12}
+        maxToRenderPerBatch={8}
+        windowSize={7}
         removeClippedSubviews
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -17,6 +17,14 @@ import { usePathname } from 'expo-router';
 // Rotas que escondem o FAB global (telas full-screen com ações próprias).
 const HIDDEN_FAB_ROUTES = ['/os/resolver', '/os/apontamento'];
 
+const QUICK_ACTIONS = [
+  { icon: 'add-circle-outline' as const, label: 'Nova OS', route: '/(app)/nova-os' },
+  { icon: 'person-add-outline' as const, label: 'Novo Cliente', route: '/(app)/cadastro/cliente' },
+  { icon: 'car-outline' as const, label: 'Novo Veículo', route: '/(app)/cadastro/veiculo' },
+  { icon: 'calendar-outline' as const, label: 'Agendar Entrada', route: '/(app)/agenda' },
+  { icon: 'checkbox-outline' as const, label: 'Checklist', route: '/(app)/checklist' },
+] as const;
+
 export function FloatingFAB(): React.JSX.Element {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -27,6 +35,15 @@ export function FloatingFAB(): React.JSX.Element {
   const animStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
+
+  const actions = useMemo(
+    () => QUICK_ACTIONS.map((a) => ({
+      icon: a.icon,
+      label: a.label,
+      onPress: () => router.push(a.route as never),
+    })),
+    [router],
+  );
 
   if (HIDDEN_FAB_ROUTES.some((r) => pathname.includes(r))) {
     return <></>;
@@ -62,13 +79,7 @@ export function FloatingFAB(): React.JSX.Element {
       <QuickActionsSheet
         visible={showActions}
         onClose={() => setShowActions(false)}
-        actions={[
-          { icon: 'add-circle-outline', label: 'Nova OS', onPress: () => router.push('/(app)/nova-os') },
-          { icon: 'person-add-outline', label: 'Novo Cliente', onPress: () => router.push('/(app)/cadastro/cliente') },
-          { icon: 'car-outline', label: 'Novo Veículo', onPress: () => router.push('/(app)/cadastro/veiculo') },
-          { icon: 'calendar-outline', label: 'Agendar Entrada', onPress: () => router.push('/(app)/agenda') },
-          { icon: 'checkbox-outline', label: 'Checklist', onPress: () => router.push('/(app)/checklist') },
-        ]}
+        actions={actions}
       />
     </>
   );

@@ -1,12 +1,12 @@
 import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
 import { Card } from '@/components/ui/Card';
@@ -111,7 +111,7 @@ const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
                 activeOpacity={0.85}
                 style={styles.acompThumb}
               >
-                <Image source={{ uri: photo.url }} style={styles.acompThumbImg} resizeMode="cover" />
+                <Image source={{ uri: photo.url }} style={styles.acompThumbImg} contentFit="cover" cachePolicy="disk" transition={150} />
                 <View style={[styles.acompThumbBadge, styles.acompThumbDone]}>
                   <Ionicons name="checkmark" size={10} color={Colors.textPrimary} />
                 </View>
@@ -129,7 +129,7 @@ const AcompanhamentoSection = React.memo(function AcompanhamentoSection({
                   activeOpacity={0.85}
                   style={styles.acompThumb}
                 >
-                  <Image source={{ uri }} style={styles.acompThumbImg} resizeMode="cover" />
+                  <Image source={{ uri }} style={styles.acompThumbImg} contentFit="cover" cachePolicy="disk" transition={150} />
                   <View
                     style={[
                       styles.acompThumbBadge,

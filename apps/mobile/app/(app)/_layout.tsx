@@ -3,16 +3,14 @@ import { View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { FrostedNavBar } from '@/components/navigation/FrostedNavBar';
 import { FloatingFAB } from '@/components/navigation/FloatingFAB';
-import { OfflineBanner } from '@/components/common/OfflineBanner';
 
 export default function AppLayout() {
 
   return (
     <View style={{ flex: 1 }}>
-      <OfflineBanner />
       <Tabs
         tabBar={(props) => <FrostedNavBar {...props} />}
-        screenOptions={{ headerShown: false }}
+        screenOptions={{ headerShown: false, lazy: true }}
       >
         {/* ── Tabs visíveis (4 itens no pill) ──────────────────────────── */}
         <Tabs.Screen name="index" options={{ title: 'Início' }} />

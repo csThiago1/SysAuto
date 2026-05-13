@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -12,6 +12,11 @@ export default function KanbanScreen(): React.JSX.Element {
   const { columns, isLoading, refetch } = useKanbanOS();
 
   const totalOS = columns.reduce((sum, col) => sum + col.items.length, 0);
+
+  const handleCardPress = useCallback(
+    (osId: string) => router.push(`/(app)/os/${osId}`),
+    [router],
+  );
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -37,7 +42,7 @@ export default function KanbanScreen(): React.JSX.Element {
             <KanbanColumn
               key={column.key}
               column={column}
-              onCardPress={(osId) => router.push(`/(app)/os/${osId}`)}
+              onCardPress={handleCardPress}
             />
           ))}
         </ScrollView>

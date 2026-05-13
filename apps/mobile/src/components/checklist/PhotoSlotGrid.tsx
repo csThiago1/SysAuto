@@ -3,11 +3,11 @@ import React, { useMemo } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
-  Image,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui/Text';
 import { Colors, Radii, Spacing } from '@/constants/theme';
@@ -115,7 +115,9 @@ function SlotCard({ slotKey: _slotKey, label, icon, photo, onPress }: SlotCardPr
         <Image
           source={{ uri: imageUri }}
           style={styles.slotImage}
-          resizeMode="cover"
+          contentFit="cover"
+          cachePolicy="disk"
+          transition={150}
         />
       ) : (
         <View style={styles.slotEmpty}>

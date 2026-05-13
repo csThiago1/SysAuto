@@ -184,56 +184,59 @@ export const usePhotoStore = create<PhotoStoreState>()(
 // ─── uploadPendingPhotos ──────────────────────────────────────────────────────
 // Uses annotatedLocalUri if present (flattened image with annotations baked in),
 // falls back to localUri (original).
+// Uploads in batches of UPLOAD_CONCURRENCY parallel requests.
+
+const UPLOAD_CONCURRENCY = 3;
 
 export async function uploadPendingPhotos(): Promise<void> {
   const { queue, setUploading, setDone, setError } = usePhotoStore.getState();
-  const pending = queue.filter((item) => item.uploadStatus === 'pending');
+  const pending = queue.filter((item) => item.uploadStatus === 'pending' && !!item.osId);
 
-  for (const item of pending) {
-    const { id, osId, localUri, annotatedLocalUri, folder, slot, checklistType, observation } = item;
-    const { token, activeCompany } = useAuthStore.getState();
+  for (let i = 0; i < pending.length; i += UPLOAD_CONCURRENCY) {
+    const batch = pending.slice(i, i + UPLOAD_CONCURRENCY);
+    await Promise.allSettled(
+      batch.map(async (item) => {
+        const { id, osId, localUri, annotatedLocalUri, folder, slot, checklistType, observation } = item;
+        const { token, activeCompany } = useAuthStore.getState();
 
-    // Pula fotos de OS offline ainda não sincronizadas com o servidor.
-    if (!osId) {
-      continue;
-    }
+        setUploading(id);
 
-    setUploading(id);
+        const uploadUri = annotatedLocalUri ?? localUri;
+        const url = `${API_BASE_URL}/api/v1/service-orders/${osId}/photos/`;
 
-    const uploadUri = annotatedLocalUri ?? localUri;
-    const url = `${API_BASE_URL}/api/v1/service-orders/${osId}/photos/`;
+        try {
+          // FormData multipart — abordagem padrão React Native, sem depender de expo-file-system/legacy
+          const body = new FormData();
+          body.append('file', { uri: uploadUri, type: 'image/jpeg', name: 'photo.jpg' } as never);
+          body.append('folder', folder);
+          body.append('slot', slot);
+          body.append('checklist_type', checklistType);
+          body.append('caption', observation ?? '');
 
-    try {
-      // FormData multipart — abordagem padrão React Native, sem depender de expo-file-system/legacy
-      const body = new FormData();
-      body.append('file', { uri: uploadUri, type: 'image/jpeg', name: 'photo.jpg' } as never);
-      body.append('folder', folder);
-      body.append('slot', slot);
-      body.append('checklist_type', checklistType);
-      body.append('caption', observation ?? '');
+          const response = await fetch(url, {
+            method: 'POST',
+            // Não definir Content-Type manualmente — o fetch seta automaticamente
+            // com o boundary correto para multipart/form-data
+            headers: {
+              Authorization: `Bearer ${token ?? ''}`,
+              'X-Tenant-Domain': getTenantDomain(activeCompany),
+            },
+            body,
+          });
 
-      const response = await fetch(url, {
-        method: 'POST',
-        // Não definir Content-Type manualmente — o fetch seta automaticamente
-        // com o boundary correto para multipart/form-data
-        headers: {
-          Authorization: `Bearer ${token ?? ''}`,
-          'X-Tenant-Domain': getTenantDomain(activeCompany),
-        },
-        body,
-      });
+          if (!response.ok) {
+            const text = await response.text().catch(() => '');
+            throw new Error(`HTTP ${response.status}: ${text.slice(0, 200)}`);
+          }
 
-      if (!response.ok) {
-        const text = await response.text().catch(() => '');
-        throw new Error(`HTTP ${response.status}: ${text.slice(0, 200)}`);
-      }
-
-      const parsed = (await response.json()) as PhotoUploadResponse;
-      setDone(id, parsed.url);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Upload failed';
-      console.warn(`[photo upload] id=${id} osId=${osId} folder=${folder} erro:`, message);
-      setError(id, message);
-    }
+          const parsed = (await response.json()) as PhotoUploadResponse;
+          setDone(id, parsed.url);
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Upload failed';
+          console.warn(`[photo upload] id=${id} osId=${osId} folder=${folder} erro:`, message);
+          setError(id, message);
+        }
+      }),
+    );
   }
 }

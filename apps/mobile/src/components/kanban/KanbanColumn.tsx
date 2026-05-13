@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { KanbanCard } from './KanbanCard';
 import { Colors, Spacing, Radii } from '@/constants/theme';
 import type { KanbanColumn as KanbanColumnType } from '@/hooks/useKanbanOS';
+
+type KanbanOS = KanbanColumnType['items'][number];
 
 interface KanbanColumnProps {
   column: KanbanColumnType;
@@ -15,7 +17,21 @@ function daysAgo(dateStr: string): number {
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
 
-export function KanbanColumn({ column, onCardPress }: KanbanColumnProps): React.JSX.Element {
+export const KanbanColumn = React.memo(function KanbanColumn({ column, onCardPress }: KanbanColumnProps): React.JSX.Element {
+  const renderItem = useCallback(({ item }: { item: KanbanOS }) => (
+    <KanbanCard
+      number={item.number}
+      plate={item.plate}
+      model={[item.make, item.model].filter(Boolean).join(' ')}
+      customerName={item.customer_name}
+      daysInShop={daysAgo(item.entry_date)}
+      hasTransitionBlocks={item.has_transition_blocks ?? false}
+      onPress={() => onCardPress(item.id)}
+    />
+  ), [onCardPress]);
+
+  const keyExtractor = useCallback((item: KanbanOS) => item.id, []);
+
   return (
     <View style={styles.column}>
       <View style={styles.header}>
@@ -26,24 +42,18 @@ export function KanbanColumn({ column, onCardPress }: KanbanColumnProps): React.
       </View>
       <FlatList
         data={column.items}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <KanbanCard
-            number={item.number}
-            plate={item.plate}
-            model={[item.make, item.model].filter(Boolean).join(' ')}
-            customerName={item.customer_name}
-            daysInShop={daysAgo(item.entry_date)}
-            hasTransitionBlocks={item.has_transition_blocks ?? false}
-            onPress={() => onCardPress(item.id)}
-          />
-        )}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
+        initialNumToRender={8}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews
       />
     </View>
   );
-}
+})
 
 const styles = StyleSheet.create({
   column: {
