@@ -42,7 +42,20 @@ async function proxyRequest(
         : await req.text()
       : undefined;
 
-  const response = await fetch(backendUrl, { method, headers, body });
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 30_000)
+
+  let response: Response
+  try {
+    response = await fetch(backendUrl, { method, headers, body, signal: controller.signal })
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      return NextResponse.json({ detail: "Backend timeout" }, { status: 504 })
+    }
+    throw err
+  } finally {
+    clearTimeout(timeoutId)
+  }
 
   if (!response.ok) {
     // Não logar o body do request — pode conter CPF, email, telefone (LGPD)
