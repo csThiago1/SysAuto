@@ -69,6 +69,7 @@ export function useAnalyticalAccounts(): ReturnType<
       apiFetch<PaginatedResponse<ChartOfAccount>>(
         `${API}/chart-of-accounts/?is_analytical=true&page_size=500`
       ),
+    staleTime: 30 * 60_000,
   });
 }
 

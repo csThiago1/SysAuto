@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQueryClient } from "@tanstack/react-query"
@@ -14,6 +14,7 @@ import { toast } from "sonner"
 import { ArrowRight, Loader2, ChevronDown, Save } from "lucide-react"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { Skeleton } from "@/components/ui/skeleton"
 
 import { serviceOrderUpdateSchema, type ServiceOrderUpdateInput } from "../_schemas/service-order.schema"
 import { buildFormDefaults, FIELD_LABELS } from "../_utils/form-defaults"
@@ -31,17 +32,18 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { DocumentsDropdown } from "./DocumentsDropdown"
-import { ClosingTab } from "./tabs/ClosingTab"
-import { FilesTab } from "./tabs/FilesTab"
-import { HistoryTab } from "./tabs/HistoryTab"
-import { NotesTab } from "./tabs/NotesTab"
 import { OpeningTab } from "./tabs/OpeningTab"
 import { PartsTab } from "./tabs/PartsTab"
-import { RemindersTab } from "./tabs/RemindersTab"
 import { ServicesTab } from "./tabs/ServicesTab"
-import { EstoqueTab } from "@/components/os/EstoqueTab"
 import { ImportBudgetModal } from "./ImportBudgetModal"
 import { TransitionRequirementsPanel } from "./TransitionRequirementsPanel"
+
+const ClosingTab = lazy(() => import("./tabs/ClosingTab").then(m => ({ default: m.ClosingTab })))
+const FilesTab = lazy(() => import("./tabs/FilesTab").then(m => ({ default: m.FilesTab })))
+const HistoryTab = lazy(() => import("./tabs/HistoryTab").then(m => ({ default: m.HistoryTab })))
+const NotesTab = lazy(() => import("./tabs/NotesTab").then(m => ({ default: m.NotesTab })))
+const RemindersTab = lazy(() => import("./tabs/RemindersTab").then(m => ({ default: m.RemindersTab })))
+const EstoqueTab = lazy(() => import("@/components/os/EstoqueTab").then(m => ({ default: m.EstoqueTab })))
 
 type TabId = "opening" | "parts" | "services" | "notes" | "reminders" | "history" | "closing" | "estoque" | "files"
 
@@ -329,12 +331,14 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
           )}
           {activeTab === "parts" && <PartsTab orderId={order.id} />}
           {activeTab === "services" && <ServicesTab osId={order.id} osStatus={order.status as ServiceOrderStatus} />}
-          {activeTab === "notes" && <NotesTab orderId={order.id} initialNotes={order.notes} />}
-          {activeTab === "reminders" && <RemindersTab orderId={order.id} />}
-          {activeTab === "history" && <HistoryTab order={order} />}
-          {activeTab === "closing" && <ClosingTab order={order} />}
-          {activeTab === "estoque" && <EstoqueTab osId={order.id} />}
-          {activeTab === "files" && <FilesTab order={order} />}
+          <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+            {activeTab === "notes" && <NotesTab orderId={order.id} initialNotes={order.notes} />}
+            {activeTab === "reminders" && <RemindersTab orderId={order.id} />}
+            {activeTab === "history" && <HistoryTab order={order} />}
+            {activeTab === "closing" && <ClosingTab order={order} />}
+            {activeTab === "estoque" && <EstoqueTab osId={order.id} />}
+            {activeTab === "files" && <FilesTab order={order} />}
+          </Suspense>
         </form>
       </div>
 

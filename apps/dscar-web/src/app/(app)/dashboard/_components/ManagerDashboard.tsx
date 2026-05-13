@@ -1,13 +1,19 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import { DollarSign, Truck, TrendingUp, AlertTriangle } from "lucide-react"
 import { formatCurrency } from "@paddock/utils"
 import { StatCard } from "./StatCard"
-import { BillingByTypeChart } from "./BillingByTypeChart"
+import { Skeleton } from "@/components/ui/skeleton"
 import { TeamProductivityTable } from "./TeamProductivityTable"
 import { OverdueOSList } from "./OverdueOSList"
 import type { ManagerDashboardStats } from "@paddock/types"
 import { SectionDivider } from "@/components/ui/section-divider"
+
+const BillingByTypeChart = dynamic(
+  () => import("./BillingByTypeChart").then(m => ({ default: m.BillingByTypeChart })),
+  { ssr: false, loading: () => <Skeleton className="h-[200px] w-full" /> }
+)
 
 interface Props {
   data: ManagerDashboardStats

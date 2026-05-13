@@ -158,6 +158,7 @@ export function useSuppliers(): ReturnType<
       apiFetch<PaginatedResponse<Supplier>>(
         `${AP}/suppliers/?page_size=500`
       ),
+    staleTime: 10 * 60_000,
   });
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -287,22 +288,26 @@ export function getInitials(name: string | null | undefined): string {
 function DSCarLogoInline({ collapsed }: { collapsed: boolean }) {
   if (collapsed) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
+      <Image
         src="/dscar-logo.png"
         alt="DS Car"
-        className="h-9 w-9 object-contain logo-themed"
+        width={36}
+        height={36}
+        className="object-contain logo-themed"
+        priority
         draggable={false}
       />
     );
   }
   return (
     <div className="flex items-center gap-3 animate-fade-in">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src="/dscar-logo.png"
         alt="DS Car"
+        width={120}
+        height={48}
         className="h-12 w-auto object-contain flex-shrink-0 logo-themed"
+        priority
         draggable={false}
       />
       <div className="flex flex-col leading-none">
@@ -406,16 +411,17 @@ export function Sidebar() {
   const userRole = (session?.role ?? "STOREKEEPER") as PaddockRole;
   const userRoleLevel = ROLE_HIERARCHY[userRole] ?? 0;
   const userPerms = (session?.extraPermissions ?? []) as ExtraPermission[];
-  const visibleSections = NAV_SECTIONS.filter((s) => {
-    // Checar role mínimo
-    if (s.minRole && userRoleLevel < (ROLE_HIERARCHY[s.minRole] ?? 0)) return false;
-    // Checar permissão granular — MANAGER+ tem todas automaticamente
-    if (s.requiredPermission) {
-      if (userRoleLevel >= ROLE_HIERARCHY.MANAGER) return true;
-      return userPerms.includes(s.requiredPermission);
-    }
-    return true;
-  });
+  const visibleSections = useMemo(
+    () => NAV_SECTIONS.filter((s) => {
+      if (s.minRole && userRoleLevel < (ROLE_HIERARCHY[s.minRole] ?? 0)) return false;
+      if (s.requiredPermission) {
+        if (userRoleLevel >= ROLE_HIERARCHY.MANAGER) return true;
+        return userPerms.includes(s.requiredPermission);
+      }
+      return true;
+    }),
+    [userRoleLevel, userPerms]
+  );
 
   return (
     <aside

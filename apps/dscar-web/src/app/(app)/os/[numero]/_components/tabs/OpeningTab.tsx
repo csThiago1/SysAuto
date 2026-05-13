@@ -1,6 +1,6 @@
 "use client"
 
-import { type UseFormReturn } from "react-hook-form"
+import { useWatch, type UseFormReturn } from "react-hook-form"
 import type { ServiceOrder } from "@paddock/types"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import type { PersonPatch } from "../../_hooks/useCustomerSearch"
@@ -18,7 +18,7 @@ interface OpeningTabProps {
 }
 
 export function OpeningTab({ form, order, onPersonDataChange }: OpeningTabProps) {
-  const customerType = form.watch("customer_type") ?? "private"
+  const customerType = useWatch({ control: form.control, name: "customer_type" }) ?? "private"
 
   return (
     <div className="space-y-3 py-4">
