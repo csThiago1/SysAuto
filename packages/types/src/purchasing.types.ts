@@ -161,4 +161,5 @@ export interface PecaEstoqueResult {
   estoque_disponivel: number
   posicao: string
   preco_venda_sugerido: string | null
+  unidade_fisica_id: string | null
 }

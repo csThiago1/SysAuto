@@ -12,7 +12,7 @@ export function calcPartsTotals(parts: ServiceOrderPart[]): {
   pendingCount: number
 } {
   const pendingCount = parts.filter(
-    (p) => p.status_peca !== "recebida" && p.status_peca !== "instalada"
+    (p) => p.status_peca !== "recebida"
   ).length
 
   const custoTotal = parts.reduce((acc, p) => {

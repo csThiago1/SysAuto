@@ -42,7 +42,7 @@ export function useIniciarCotacao(id: string) {
   return useMutation({
     mutationFn: () =>
       apiFetch<PedidoCompra>(`${PURCHASING}/pedidos/${id}/iniciar-cotacao/`, {
-        method: "PATCH",
+        method: "POST",
       }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: purchasingKeys.all })
@@ -55,7 +55,7 @@ export function useCancelarPedido(id: string) {
   return useMutation({
     mutationFn: () =>
       apiFetch<PedidoCompra>(`${PURCHASING}/pedidos/${id}/cancelar/`, {
-        method: "PATCH",
+        method: "POST",
       }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: purchasingKeys.all })

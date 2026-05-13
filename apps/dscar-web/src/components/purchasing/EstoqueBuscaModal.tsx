@@ -56,8 +56,12 @@ export function EstoqueBuscaModal({ open, onClose, onSelect }: EstoqueBuscaModal
 
   function handleConfirm() {
     if (!selected || !valorCobrado) return
+    if (!selected.unidade_fisica_id) {
+      alert("Nenhuma unidade fisica disponivel para esta peca.")
+      return
+    }
     onSelect({
-      unidade_fisica_id: selected.id,
+      unidade_fisica_id: selected.unidade_fisica_id,
       tipo_qualidade: tipoQualidade,
       unit_price: valorCobrado,
       description: selected.nome_interno,

@@ -44,7 +44,6 @@ export function useAddPart(orderId: string) {
       }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["os-parts", orderId] })
-      void qc.invalidateQueries({ queryKey: ["service-orders", orderId] })
       toast.success("Peça adicionada.")
     },
   })
@@ -61,7 +60,6 @@ export function useUpdatePart(orderId: string) {
       }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["os-parts", orderId] })
-      void qc.invalidateQueries({ queryKey: ["service-orders", orderId] })
       toast.success("Peça atualizada.")
     },
   })
@@ -74,7 +72,6 @@ export function useDeletePart(orderId: string) {
       apiFetch<void>(`${API}/service-orders/${orderId}/parts/${partId}/`, { method: "DELETE" }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["os-parts", orderId] })
-      void qc.invalidateQueries({ queryKey: ["service-orders", orderId] })
       toast.success("Peça removida.")
     },
   })
@@ -91,7 +88,6 @@ export function useAddPartEstoque(orderId: string) {
       }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["os-parts", orderId] })
-      void qc.invalidateQueries({ queryKey: ["service-orders", orderId] })
     },
   })
 }
@@ -107,7 +103,6 @@ export function useAddPartCompra(orderId: string) {
       }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["os-parts", orderId] })
-      void qc.invalidateQueries({ queryKey: ["service-orders", orderId] })
     },
   })
 }
@@ -123,7 +118,6 @@ export function useAddPartSeguradora(orderId: string) {
       }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["os-parts", orderId] })
-      void qc.invalidateQueries({ queryKey: ["service-orders", orderId] })
     },
   })
 }
@@ -149,7 +143,6 @@ export function useAddLabor(orderId: string) {
       }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["os-labor", orderId] })
-      void qc.invalidateQueries({ queryKey: ["service-orders", orderId] })
       toast.success("Serviço adicionado.")
     },
   })
@@ -166,7 +159,6 @@ export function useUpdateLabor(orderId: string) {
       }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["os-labor", orderId] })
-      void qc.invalidateQueries({ queryKey: ["service-orders", orderId] })
       toast.success("Serviço atualizado.")
     },
   })
@@ -179,7 +171,6 @@ export function useDeleteLabor(orderId: string) {
       apiFetch<void>(`${API}/service-orders/${orderId}/labor/${laborId}/`, { method: "DELETE" }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["os-labor", orderId] })
-      void qc.invalidateQueries({ queryKey: ["service-orders", orderId] })
       toast.success("Serviço removido.")
     },
   })

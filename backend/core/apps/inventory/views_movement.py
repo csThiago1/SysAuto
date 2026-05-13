@@ -575,6 +575,8 @@ class BuscarPecasView(APIView):
             if first_unit and first_unit.nivel:
                 posicao = first_unit.nivel.endereco_completo
 
+            unidade_fisica_id = str(first_unit.id) if first_unit else None
+
             results.append({
                 "id": str(prod.id),
                 "sku_interno": prod.sku_interno,
@@ -587,6 +589,7 @@ class BuscarPecasView(APIView):
                 "estoque_disponivel": disponivel,
                 "posicao": posicao,
                 "preco_venda_sugerido": str(prod.preco_venda_sugerido) if prod.preco_venda_sugerido else None,
+                "unidade_fisica_id": unidade_fisica_id,
             })
 
         return Response(results)
