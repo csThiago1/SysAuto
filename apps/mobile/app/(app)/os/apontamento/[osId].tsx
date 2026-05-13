@@ -228,7 +228,7 @@ export default function ApontamentoScreen(): React.JSX.Element {
           </>
         )}
 
-        <View style={{ height: 100 }} />
+        <View style={{ height: 140 }} />
       </ScrollView>
     </View>
   );

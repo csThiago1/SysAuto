@@ -483,9 +483,10 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: 4,
+    paddingBottom: 120,
   },
   // Bottom spacing
   bottomPadding: {
-    height: 32,
+    height: 0,
   },
 });

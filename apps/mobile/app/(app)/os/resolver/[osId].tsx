@@ -279,7 +279,7 @@ export default function ResolverScreen(): React.JSX.Element {
           </View>
         )}
 
-        <View style={{ height: 100 }} />
+        <View style={{ height: 140 }} />
       </ScrollView>
 
       {/* Footer */}
