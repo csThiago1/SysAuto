@@ -53,6 +53,13 @@ export interface PedidoCompra {
   solicitado_por: string
   solicitado_por_nome: string
   os_number: number | null
+  os_plate: string
+  os_chassis: string
+  os_make: string
+  os_model: string
+  os_vehicle_version: string
+  os_year: string
+  os_fuel_type: string
   veiculo: string
   created_at: string
 }

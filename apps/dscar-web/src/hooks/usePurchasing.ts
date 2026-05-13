@@ -179,6 +179,63 @@ export function useRegistrarRecebimento(ocId: string, itemId: string) {
   })
 }
 
+// ─── Montar OC (Quotation Builder flow) ──────────────────────────────────────
+
+export function useCreateOrdemCompra() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { service_order: string; observacoes?: string }) =>
+      apiFetch<OrdemCompra>(`${PURCHASING}/ordens-compra/`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: purchasingKeys.all })
+    },
+  })
+}
+
+export function useAddItemOC() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      ocId,
+      ...data
+    }: {
+      ocId: string
+      pedido_compra_id: string
+      fornecedor_nome: string
+      fornecedor_cnpj?: string
+      fornecedor_contato?: string
+      descricao: string
+      codigo_referencia?: string
+      tipo_qualidade: string
+      quantidade: string
+      valor_unitario: string
+      prazo_entrega?: string
+      observacoes?: string
+    }) =>
+      apiFetch<ItemOrdemCompra>(`${PURCHASING}/ordens-compra/${ocId}/itens/`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: purchasingKeys.all })
+    },
+  })
+}
+
+export function useOrdensCompraByOS(osId: string | undefined) {
+  return useQuery<OrdemCompra[]>({
+    queryKey: [...purchasingKeys.all, "ordens-by-os", osId],
+    queryFn: () =>
+      fetchList<OrdemCompra>(
+        `${PURCHASING}/ordens-compra/?service_order=${osId}&status=rascunho`,
+      ),
+    enabled: !!osId,
+  })
+}
+
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
 export function useDashboardCompras() {

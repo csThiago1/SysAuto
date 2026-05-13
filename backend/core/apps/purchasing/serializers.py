@@ -21,6 +21,25 @@ class PedidoCompraSerializer(serializers.ModelSerializer):
     os_number = serializers.IntegerField(
         source="service_order.number", read_only=True,
     )
+    os_plate = serializers.CharField(
+        source="service_order.plate", read_only=True, default="",
+    )
+    os_chassis = serializers.CharField(
+        source="service_order.chassis", read_only=True, default="",
+    )
+    os_make = serializers.CharField(
+        source="service_order.make", read_only=True, default="",
+    )
+    os_model = serializers.CharField(
+        source="service_order.model", read_only=True, default="",
+    )
+    os_vehicle_version = serializers.CharField(
+        source="service_order.vehicle_version", read_only=True, default="",
+    )
+    os_year = serializers.SerializerMethodField()
+    os_fuel_type = serializers.CharField(
+        source="service_order.fuel_type", read_only=True, default="",
+    )
     veiculo = serializers.SerializerMethodField()
 
     class Meta:
@@ -41,10 +60,21 @@ class PedidoCompraSerializer(serializers.ModelSerializer):
             "solicitado_por",
             "solicitado_por_nome",
             "os_number",
+            "os_plate",
+            "os_chassis",
+            "os_make",
+            "os_model",
+            "os_vehicle_version",
+            "os_year",
+            "os_fuel_type",
             "veiculo",
             "created_at",
         ]
         read_only_fields = fields
+
+    def get_os_year(self, obj: PedidoCompra) -> str:
+        year = getattr(obj.service_order, "year", None)
+        return str(year) if year else ""
 
     def get_veiculo(self, obj: PedidoCompra) -> str:
         os = obj.service_order

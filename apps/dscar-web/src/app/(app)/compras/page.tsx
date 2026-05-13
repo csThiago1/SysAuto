@@ -1,10 +1,12 @@
 "use client"
 
-import { ShoppingCart, ArrowRight } from "lucide-react"
+import { ShoppingCart, ArrowRight, MessageSquare, ClipboardList } from "lucide-react"
 import { useDashboardCompras, usePedidosCompra, useIniciarCotacao, useCancelarPedido } from "@/hooks/usePurchasing"
 import type { PedidoCompra, StatusPedidoCompra } from "@paddock/types"
 import { useState } from "react"
 import { toast } from "sonner"
+import { QuotationBuilder } from "@/components/purchasing/QuotationBuilder"
+import { MontarOCModal } from "@/components/purchasing/MontarOCModal"
 
 // ─── Status badge config ────────────────────────────────────────────────────────
 
@@ -136,9 +138,13 @@ function KPICard({
 function ActionButton({
   pedido,
   onAction,
+  onCotacaoWhatsApp,
+  onMontarOC,
 }: {
   pedido: PedidoCompra
   onAction: (id: string, action: string) => void
+  onCotacaoWhatsApp: (pedido: PedidoCompra) => void
+  onMontarOC: (pedido: PedidoCompra) => void
 }) {
   if (pedido.status === "solicitado") {
     return (
@@ -156,16 +162,35 @@ function ActionButton({
   }
   if (pedido.status === "em_cotacao") {
     return (
-      <button
-        type="button"
-        onClick={() => onAction(pedido.id, "montar-oc")}
-        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium
-                   bg-info-500/10 text-info-400 border border-info-500/20
-                   hover:bg-info-500/20 transition-colors"
-      >
-        Montar OC
-        <ArrowRight size={12} />
-      </button>
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => onCotacaoWhatsApp(pedido)}
+          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium
+                     bg-success-500/10 text-success-400 border border-success-500/20
+                     hover:bg-success-500/20 transition-colors"
+        >
+          <MessageSquare size={11} />
+          WhatsApp
+        </button>
+        <button
+          type="button"
+          onClick={() => onMontarOC(pedido)}
+          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium
+                     bg-info-500/10 text-info-400 border border-info-500/20
+                     hover:bg-info-500/20 transition-colors"
+        >
+          <ClipboardList size={11} />
+          Montar OC
+        </button>
+      </div>
+    )
+  }
+  if (pedido.status === "oc_pendente") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-muted/50 text-muted-foreground border border-border">
+        OC gerada
+      </span>
     )
   }
   return <span className="text-xs text-muted-foreground/50">--</span>
@@ -182,6 +207,8 @@ export default function ComprasPage() {
   const iniciarCotacao = useIniciarCotacao()
   const cancelarPedido = useCancelarPedido()
   const [actioningId, setActioningId] = useState<string | null>(null)
+  const [quotationPedido, setQuotationPedido] = useState<PedidoCompra | null>(null)
+  const [montarOCPedido, setMontarOCPedido] = useState<PedidoCompra | null>(null)
 
   async function handleAction(id: string, action: string) {
     setActioningId(id)
@@ -304,7 +331,12 @@ export default function ComprasPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <ActionButton pedido={p} onAction={handleAction} />
+                    <ActionButton
+                      pedido={p}
+                      onAction={handleAction}
+                      onCotacaoWhatsApp={setQuotationPedido}
+                      onMontarOC={setMontarOCPedido}
+                    />
                   </td>
                 </tr>
               ))
@@ -312,6 +344,22 @@ export default function ComprasPage() {
           </tbody>
         </table>
       </div>
+
+      {/* ── Modals ── */}
+      {quotationPedido && (
+        <QuotationBuilder
+          pedido={quotationPedido}
+          open={!!quotationPedido}
+          onOpenChange={(open) => { if (!open) setQuotationPedido(null) }}
+        />
+      )}
+      {montarOCPedido && (
+        <MontarOCModal
+          pedido={montarOCPedido}
+          open={!!montarOCPedido}
+          onOpenChange={(open) => { if (!open) setMontarOCPedido(null) }}
+        />
+      )}
     </div>
   )
 }
