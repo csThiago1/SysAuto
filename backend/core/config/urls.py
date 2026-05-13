@@ -6,7 +6,11 @@ from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+from apps.authentication.views_health import healthz
+
 urlpatterns = [
+    # Health check (before API routes, no auth required)
+    path("healthz/", healthz, name="healthz"),
     # Admin
     path("admin/", admin.site.urls),
     # API v1
