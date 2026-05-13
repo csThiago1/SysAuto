@@ -50,11 +50,14 @@ class PedidoCompraViewSet(viewsets.ReadOnlyModelViewSet):
             qs = qs.filter(service_order_id=so_filter)
         return qs
 
-    @action(detail=True, methods=["post"], url_path="iniciar-cotacao")
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="iniciar-cotacao",
+        permission_classes=[IsAuthenticated, IsStorekeeperOrAbove],
+    )
     def iniciar_cotacao(self, request: Request, pk: str = None) -> Response:
         """Mover pedido para status em_cotacao."""
-        self.permission_classes = [IsAuthenticated, IsStorekeeperOrAbove]
-        self.check_permissions(request)
         try:
             pedido = PedidoCompraService.iniciar_cotacao(
                 pedido_id=pk, user_id=request.user.pk,
@@ -74,11 +77,14 @@ class PedidoCompraViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(detail=True, methods=["post"], url_path="cancelar")
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="cancelar",
+        permission_classes=[IsAuthenticated, IsStorekeeperOrAbove],
+    )
     def cancelar(self, request: Request, pk: str = None) -> Response:
         """Cancelar pedido de compra."""
-        self.permission_classes = [IsAuthenticated, IsStorekeeperOrAbove]
-        self.check_permissions(request)
         motivo = request.data.get("motivo", "")
         try:
             PedidoCompraService.cancelar(
@@ -153,11 +159,14 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(detail=True, methods=["post"], url_path="enviar")
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="enviar",
+        permission_classes=[IsAuthenticated, IsStorekeeperOrAbove],
+    )
     def enviar(self, request: Request, pk: str = None) -> Response:
         """Enviar OC para aprovacao."""
-        self.permission_classes = [IsAuthenticated, IsStorekeeperOrAbove]
-        self.check_permissions(request)
         try:
             oc = OrdemCompraService.enviar_para_aprovacao(
                 oc_id=pk, user_id=request.user.pk,
@@ -182,11 +191,14 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(detail=True, methods=["post"], url_path="aprovar")
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="aprovar",
+        permission_classes=[IsAuthenticated, IsManagerOrAbove],
+    )
     def aprovar(self, request: Request, pk: str = None) -> Response:
         """Aprovar OC (MANAGER+)."""
-        self.permission_classes = [IsAuthenticated, IsManagerOrAbove]
-        self.check_permissions(request)
         try:
             oc = OrdemCompraService.aprovar(oc_id=pk, user_id=request.user.pk)
             return Response(
@@ -209,11 +221,14 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(detail=True, methods=["post"], url_path="rejeitar")
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="rejeitar",
+        permission_classes=[IsAuthenticated, IsManagerOrAbove],
+    )
     def rejeitar(self, request: Request, pk: str = None) -> Response:
         """Rejeitar OC (MANAGER+) com motivo obrigatorio."""
-        self.permission_classes = [IsAuthenticated, IsManagerOrAbove]
-        self.check_permissions(request)
         motivo = request.data.get("motivo", "")
         if not motivo:
             return Response(
