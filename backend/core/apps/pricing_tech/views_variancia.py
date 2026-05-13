@@ -69,13 +69,13 @@ class VarianciaFichaViewSet(viewsets.ReadOnlyModelViewSet):
         """POST /variancias/fichas/gerar/ — dispara geração manual (ADMIN+)."""
         from apps.authentication.permissions import IsAdminOrAbove
         if not IsAdminOrAbove().has_permission(request, self):
-            return Response({"erro": "Requer ADMIN."}, status=403)
+            return Response({"detail": "Requer ADMIN."}, status=403)
 
         mes_str = request.data.get("mes_referencia", "")
         try:
             mes_ref = date.fromisoformat(mes_str) if mes_str else date.today().replace(day=1)
         except ValueError:
-            return Response({"erro": "mes_referencia inválido (YYYY-MM-DD)."}, status=400)
+            return Response({"detail": "mes_referencia inválido (YYYY-MM-DD)."}, status=400)
 
         from django.db import connection
         from apps.pricing_tech.tasks import task_gerar_variancias_mensais

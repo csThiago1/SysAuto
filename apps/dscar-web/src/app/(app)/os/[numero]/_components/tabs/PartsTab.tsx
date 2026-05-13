@@ -7,11 +7,11 @@ import { cn } from "@/lib/utils"
 
 import {
   useOSParts,
-  useDeleteOSPart,
+  useDeletePart,
   useAddPartEstoque,
   useAddPartCompra,
   useAddPartSeguradora,
-} from "@/hooks/useServiceOrders"
+} from "@/app/(app)/os/[numero]/_hooks/useOSItems"
 import { usePermission } from "@/hooks/usePermission"
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog"
 import {
@@ -56,7 +56,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
   const isManager = usePermission("MANAGER")
 
   const { data: parts, isLoading } = useOSParts(orderId)
-  const deletePart = useDeleteOSPart(orderId)
+  const deletePart = useDeletePart(orderId)
   const addPartEstoque = useAddPartEstoque(orderId)
   const addPartCompra = useAddPartCompra(orderId)
   const addPartSeguradora = useAddPartSeguradora(orderId)

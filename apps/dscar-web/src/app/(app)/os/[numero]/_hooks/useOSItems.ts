@@ -14,6 +14,9 @@ import type {
   CreateLaborPayload,
   DeliverOSPayload,
   OSPhotoFolder,
+  PartEstoqueInput,
+  PartCompraInput,
+  PartSeguradoraInput,
 } from "@paddock/types"
 import { apiFetch } from "@/lib/api"
 import { toast } from "sonner"
@@ -73,6 +76,54 @@ export function useDeletePart(orderId: string) {
       void qc.invalidateQueries({ queryKey: ["os-parts", orderId] })
       void qc.invalidateQueries({ queryKey: ["service-orders", orderId] })
       toast.success("Peça removida.")
+    },
+  })
+}
+
+export function useAddPartEstoque(orderId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: PartEstoqueInput) =>
+      apiFetch(`${API}/service-orders/${orderId}/parts/estoque/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["os-parts", orderId] })
+      void qc.invalidateQueries({ queryKey: ["service-orders", orderId] })
+    },
+  })
+}
+
+export function useAddPartCompra(orderId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: PartCompraInput) =>
+      apiFetch(`${API}/service-orders/${orderId}/parts/compra/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["os-parts", orderId] })
+      void qc.invalidateQueries({ queryKey: ["service-orders", orderId] })
+    },
+  })
+}
+
+export function useAddPartSeguradora(orderId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: PartSeguradoraInput) =>
+      apiFetch(`${API}/service-orders/${orderId}/parts/seguradora/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["os-parts", orderId] })
+      void qc.invalidateQueries({ queryKey: ["service-orders", orderId] })
     },
   })
 }

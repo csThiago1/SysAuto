@@ -3,14 +3,7 @@ import type {
   PaginatedResponse,
   PlateApiResult,
   ServiceOrder,
-  ServiceOrderPart,
-  ServiceOrderPartPayload,
-  ServiceOrderLabor,
-  ServiceOrderLaborPayload,
   AnyDashboardStats,
-  PartEstoqueInput,
-  PartCompraInput,
-  PartSeguradoraInput,
   PecaEstoqueResult,
   VehicleHistory,
 } from "@paddock/types";
@@ -64,110 +57,6 @@ export function useTransitionStatus(id: string) {
   });
 }
 
-export function useOSParts(osId: string) {
-  return useQuery<ServiceOrderPart[]>({
-    queryKey: ["service-order", osId, "parts"],
-    queryFn: () => apiFetch<ServiceOrderPart[]>(`${API}/service-orders/${osId}/parts/`),
-    enabled: Boolean(osId),
-  });
-}
-
-export function useAddOSPart(osId: string) {
-  const qc = useQueryClient();
-  return useMutation<ServiceOrderPart, Error, ServiceOrderPartPayload>({
-    mutationFn: (payload) =>
-      apiFetch<ServiceOrderPart>(`${API}/service-orders/${osId}/parts/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["service-order", osId, "parts"] });
-      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
-    },
-  });
-}
-
-export function useUpdateOSPart(osId: string) {
-  const qc = useQueryClient();
-  return useMutation<ServiceOrderPart, Error, { partId: string } & Partial<ServiceOrderPartPayload>>({
-    mutationFn: ({ partId, ...payload }) =>
-      apiFetch<ServiceOrderPart>(`${API}/service-orders/${osId}/parts/${partId}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["service-order", osId, "parts"] });
-      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
-    },
-  });
-}
-
-export function useDeleteOSPart(osId: string) {
-  const qc = useQueryClient();
-  return useMutation<void, Error, string>({
-    mutationFn: (partId) =>
-      apiFetch<void>(`${API}/service-orders/${osId}/parts/${partId}/`, {
-        method: "DELETE",
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["service-order", osId, "parts"] });
-      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
-    },
-  });
-}
-
-// ─── 3 Origin Hooks (Estoque / Compra / Seguradora) ─────────────────────────
-
-export function useAddPartEstoque(osId: string) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: PartEstoqueInput) =>
-      apiFetch(`${API}/service-orders/${osId}/parts/estoque/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["service-order", osId, "parts"] });
-      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
-    },
-  });
-}
-
-export function useAddPartCompra(osId: string) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: PartCompraInput) =>
-      apiFetch(`${API}/service-orders/${osId}/parts/compra/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["service-order", osId, "parts"] });
-      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
-    },
-  });
-}
-
-export function useAddPartSeguradora(osId: string) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: PartSeguradoraInput) =>
-      apiFetch(`${API}/service-orders/${osId}/parts/seguradora/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["service-order", osId, "parts"] });
-      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
-    },
-  });
-}
-
 // ─── Buscar Pecas no Estoque ─────────────────────────────────────────────────
 
 export function useBuscarPecas(params?: Record<string, string>) {
@@ -177,62 +66,6 @@ export function useBuscarPecas(params?: Record<string, string>) {
     queryFn: () => apiFetch<PecaEstoqueResult[]>(`/api/proxy/inventory/buscar-pecas/${search}`),
     enabled: !!params?.busca && params.busca.length >= 2,
   })
-}
-
-// ─── OS Labor ────────────────────────────────────────────────────────────────
-
-export function useOSLabor(osId: string) {
-  return useQuery<ServiceOrderLabor[]>({
-    queryKey: ["service-order", osId, "labor"],
-    queryFn: () => apiFetch<ServiceOrderLabor[]>(`${API}/service-orders/${osId}/labor/`),
-    enabled: Boolean(osId),
-  });
-}
-
-export function useAddOSLabor(osId: string) {
-  const qc = useQueryClient();
-  return useMutation<ServiceOrderLabor, Error, ServiceOrderLaborPayload>({
-    mutationFn: (payload) =>
-      apiFetch<ServiceOrderLabor>(`${API}/service-orders/${osId}/labor/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["service-order", osId, "labor"] });
-      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
-    },
-  });
-}
-
-export function useUpdateOSLabor(osId: string) {
-  const qc = useQueryClient();
-  return useMutation<ServiceOrderLabor, Error, { laborId: string } & Partial<ServiceOrderLaborPayload>>({
-    mutationFn: ({ laborId, ...payload }) =>
-      apiFetch<ServiceOrderLabor>(`${API}/service-orders/${osId}/labor/${laborId}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["service-order", osId, "labor"] });
-      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
-    },
-  });
-}
-
-export function useDeleteOSLabor(osId: string) {
-  const qc = useQueryClient();
-  return useMutation<void, Error, string>({
-    mutationFn: (laborId) =>
-      apiFetch<void>(`${API}/service-orders/${osId}/labor/${laborId}/`, {
-        method: "DELETE",
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ["service-order", osId, "labor"] });
-      void qc.invalidateQueries({ queryKey: ["service-orders", osId] });
-    },
-  });
 }
 
 // ─── Vehicle History ──────────────────────────────────────────────────────────

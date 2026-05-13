@@ -67,13 +67,13 @@ class PedidoCompraViewSet(viewsets.ReadOnlyModelViewSet):
             )
         except PedidoCompra.DoesNotExist:
             return Response(
-                {"erro": "Pedido de compra nao encontrado."},
+                {"detail": "Pedido de compra nao encontrado."},
                 status=status.HTTP_404_NOT_FOUND,
             )
         except Exception:
             logger.exception("Erro ao iniciar cotacao do pedido %s", pk)
             return Response(
-                {"erro": "Erro interno ao processar requisicao."},
+                {"detail": "Erro interno ao processar requisicao."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -93,13 +93,13 @@ class PedidoCompraViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except PedidoCompra.DoesNotExist:
             return Response(
-                {"erro": "Pedido de compra nao encontrado."},
+                {"detail": "Pedido de compra nao encontrado."},
                 status=status.HTTP_404_NOT_FOUND,
             )
         except Exception:
             logger.exception("Erro ao cancelar pedido %s", pk)
             return Response(
-                {"erro": "Erro interno ao processar requisicao."},
+                {"detail": "Erro interno ao processar requisicao."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -137,7 +137,7 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
         service_order_id = request.data.get("service_order")
         if not service_order_id:
             return Response(
-                {"erro": "Campo service_order e obrigatorio."},
+                {"detail": "Campo service_order e obrigatorio."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
@@ -149,13 +149,13 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
         except ValueError as e:
             logger.warning("Erro ao criar OC: %s", e)
             return Response(
-                {"erro": "Nao foi possivel criar a ordem de compra."},
+                {"detail": "Nao foi possivel criar a ordem de compra."},
                 status=status.HTTP_409_CONFLICT,
             )
         except Exception:
             logger.exception("Erro ao criar OC para OS %s", service_order_id)
             return Response(
-                {"erro": "Erro interno ao processar requisicao."},
+                {"detail": "Erro interno ao processar requisicao."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -176,18 +176,18 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
             )
         except OrdemCompra.DoesNotExist:
             return Response(
-                {"erro": "Ordem de compra nao encontrada."},
+                {"detail": "Ordem de compra nao encontrada."},
                 status=status.HTTP_404_NOT_FOUND,
             )
         except ValueError:
             return Response(
-                {"erro": "OC sem itens nao pode ser enviada para aprovacao."},
+                {"detail": "OC sem itens nao pode ser enviada para aprovacao."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception:
             logger.exception("Erro ao enviar OC %s para aprovacao", pk)
             return Response(
-                {"erro": "Erro interno ao processar requisicao."},
+                {"detail": "Erro interno ao processar requisicao."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -206,18 +206,18 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
             )
         except OrdemCompra.DoesNotExist:
             return Response(
-                {"erro": "Ordem de compra nao encontrada."},
+                {"detail": "Ordem de compra nao encontrada."},
                 status=status.HTTP_404_NOT_FOUND,
             )
         except ValueError:
             return Response(
-                {"erro": "OC nao esta pendente de aprovacao."},
+                {"detail": "OC nao esta pendente de aprovacao."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception:
             logger.exception("Erro ao aprovar OC %s", pk)
             return Response(
-                {"erro": "Erro interno ao processar requisicao."},
+                {"detail": "Erro interno ao processar requisicao."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -232,7 +232,7 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
         motivo = request.data.get("motivo", "")
         if not motivo:
             return Response(
-                {"erro": "Campo motivo e obrigatorio."},
+                {"detail": "Campo motivo e obrigatorio."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
@@ -244,13 +244,13 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
             )
         except OrdemCompra.DoesNotExist:
             return Response(
-                {"erro": "Ordem de compra nao encontrada."},
+                {"detail": "Ordem de compra nao encontrada."},
                 status=status.HTTP_404_NOT_FOUND,
             )
         except Exception:
             logger.exception("Erro ao rejeitar OC %s", pk)
             return Response(
-                {"erro": "Erro interno ao processar requisicao."},
+                {"detail": "Erro interno ao processar requisicao."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -286,13 +286,13 @@ class AdicionarItemOCView(APIView):
             )
         except OrdemCompra.DoesNotExist:
             return Response(
-                {"erro": "Ordem de compra nao encontrada."},
+                {"detail": "Ordem de compra nao encontrada."},
                 status=status.HTTP_404_NOT_FOUND,
             )
         except Exception:
             logger.exception("Erro ao adicionar item a OC %s", oc_id)
             return Response(
-                {"erro": "Erro interno ao processar requisicao."},
+                {"detail": "Erro interno ao processar requisicao."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -309,7 +309,7 @@ class RemoverItemOCView(APIView):
         except Exception:
             logger.exception("Erro ao remover item %s da OC %s", item_id, oc_id)
             return Response(
-                {"erro": "Erro interno ao processar requisicao."},
+                {"detail": "Erro interno ao processar requisicao."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -323,7 +323,7 @@ class RegistrarRecebimentoView(APIView):
         unidade_fisica_id = request.data.get("unidade_fisica_id")
         if not unidade_fisica_id:
             return Response(
-                {"erro": "Campo unidade_fisica_id e obrigatorio."},
+                {"detail": "Campo unidade_fisica_id e obrigatorio."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
@@ -340,7 +340,7 @@ class RegistrarRecebimentoView(APIView):
                 "Erro ao registrar recebimento do item %s (OC %s)", item_id, oc_id,
             )
             return Response(
-                {"erro": "Erro interno ao processar requisicao."},
+                {"detail": "Erro interno ao processar requisicao."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

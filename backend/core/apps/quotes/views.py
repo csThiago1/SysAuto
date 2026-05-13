@@ -85,7 +85,7 @@ class OrcamentoViewSet(viewsets.ModelViewSet):
             )
         except Exception as exc:
             logger.error("OrcamentoViewSet.create error: %s", exc)
-            return Response({"erro": "Erro interno ao criar orçamento."}, status=500)
+            return Response({"detail": "Erro interno ao criar orçamento."}, status=500)
         return Response(OrcamentoSerializer(orc).data, status=status.HTTP_201_CREATED)
 
     def update(self, request: Request, *args, **kwargs) -> Response:  # type: ignore[override]
@@ -121,12 +121,12 @@ class OrcamentoViewSet(viewsets.ModelViewSet):
                 descricao=d.get("descricao", ""),
             )
         except OrcamentoNaoEditavel as exc:
-            return Response({"erro": str(exc)}, status=status.HTTP_409_CONFLICT)
+            return Response({"detail": str(exc)}, status=status.HTTP_409_CONFLICT)
         except MapeamentoAcaoAusente as exc:
-            return Response({"erro": str(exc)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            return Response({"detail": str(exc)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
         except Exception as exc:
             logger.error("adicionar_intervencao error: %s", exc)
-            return Response({"erro": "Erro interno ao adicionar intervenção."}, status=500)
+            return Response({"detail": "Erro interno ao adicionar intervenção."}, status=500)
         return Response(OrcamentoIntervencaoSerializer(iv).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"], url_path="itens-adicionais")
@@ -146,10 +146,10 @@ class OrcamentoViewSet(viewsets.ModelViewSet):
                 inclusao_manual=d.get("inclusao_manual", False),
             )
         except OrcamentoNaoEditavel as exc:
-            return Response({"erro": str(exc)}, status=status.HTTP_409_CONFLICT)
+            return Response({"detail": str(exc)}, status=status.HTTP_409_CONFLICT)
         except Exception as exc:
             logger.error("adicionar_item_adicional error: %s", exc)
-            return Response({"erro": "Erro interno ao adicionar item."}, status=500)
+            return Response({"detail": "Erro interno ao adicionar item."}, status=500)
         return Response(OrcamentoItemAdicionalSerializer(item).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"])
@@ -158,7 +158,7 @@ class OrcamentoViewSet(viewsets.ModelViewSet):
         try:
             orc = OrcamentoService.enviar(orcamento_id=pk)
         except OrcamentoNaoEditavel as exc:
-            return Response({"erro": str(exc)}, status=status.HTTP_409_CONFLICT)
+            return Response({"detail": str(exc)}, status=status.HTTP_409_CONFLICT)
         return Response(OrcamentoSerializer(orc).data)
 
     @action(detail=True, methods=["post"])
@@ -167,7 +167,7 @@ class OrcamentoViewSet(viewsets.ModelViewSet):
         try:
             orc = OrcamentoService.recusar(orcamento_id=pk)
         except OrcamentoNaoEditavel as exc:
-            return Response({"erro": str(exc)}, status=status.HTTP_409_CONFLICT)
+            return Response({"detail": str(exc)}, status=status.HTTP_409_CONFLICT)
         return Response(OrcamentoSerializer(orc).data)
 
     @action(detail=True, methods=["post"])
@@ -193,12 +193,13 @@ class OrcamentoViewSet(viewsets.ModelViewSet):
                 user_id=str(request.user.id) if request.user else None,
             )
         except OrcamentoNaoEditavel as exc:
-            return Response({"erro": str(exc)}, status=status.HTTP_409_CONFLICT)
+            return Response({"detail": str(exc)}, status=status.HTTP_409_CONFLICT)
         except ValueError as exc:
-            return Response({"erro": str(exc)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            logger.warning("Erro de validação ao aprovar orçamento: %s", exc)
+            return Response({"detail": "Valor inválido."}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
         except Exception as exc:
             logger.error("aprovar error: %s", exc)
-            return Response({"erro": "Erro interno na aprovação."}, status=500)
+            return Response({"detail": "Erro interno na aprovação."}, status=500)
         return Response({"os_id": str(os_.id), "os_number": os_.number}, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"], url_path="nova-versao")
@@ -211,7 +212,7 @@ class OrcamentoViewSet(viewsets.ModelViewSet):
             )
         except Exception as exc:
             logger.error("nova_versao error: %s", exc)
-            return Response({"erro": "Erro interno ao criar nova versão."}, status=500)
+            return Response({"detail": "Erro interno ao criar nova versão."}, status=500)
         return Response(OrcamentoListSerializer(nova).data, status=status.HTTP_201_CREATED)
 
 

@@ -92,7 +92,7 @@ class ContagemViewSet(viewsets.ModelViewSet):
         except Exception as e:
             logger.error("Erro ao abrir contagem: %s", e)
             return Response(
-                {"erro": "Erro ao abrir contagem."},
+                {"detail": "Erro ao abrir contagem."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -113,13 +113,13 @@ class ContagemViewSet(viewsets.ModelViewSet):
             )
         except ValueError as e:
             return Response(
-                {"erro": str(e)},
+                {"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
             logger.error("Erro ao finalizar contagem: %s", e)
             return Response(
-                {"erro": "Erro ao finalizar contagem."},
+                {"detail": "Erro ao finalizar contagem."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -138,13 +138,13 @@ class ContagemViewSet(viewsets.ModelViewSet):
             )
         except ValueError as e:
             return Response(
-                {"erro": str(e)},
+                {"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
             logger.error("Erro ao cancelar contagem: %s", e)
             return Response(
-                {"erro": "Erro ao cancelar contagem."},
+                {"detail": "Erro ao cancelar contagem."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -169,7 +169,7 @@ class RegistrarItemView(APIView):
             )
         except ItemContagem.DoesNotExist:
             return Response(
-                {"erro": "Item de contagem nao encontrado."},
+                {"detail": "Item de contagem nao encontrado."},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -178,7 +178,7 @@ class RegistrarItemView(APIView):
             ContagemInventario.Status.CANCELADA,
         ):
             return Response(
-                {"erro": "Contagem ja finalizada ou cancelada."},
+                {"detail": "Contagem ja finalizada ou cancelada."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -196,7 +196,7 @@ class RegistrarItemView(APIView):
         except Exception as e:
             logger.error("Erro ao registrar item de contagem: %s", e)
             return Response(
-                {"erro": "Erro ao registrar item."},
+                {"detail": "Erro ao registrar item."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

@@ -64,7 +64,7 @@ class EntradaPecaView(APIView):
                 peca_canonica_id = produto.peca_canonica_id
             except ProdutoComercialPeca.DoesNotExist:
                 return Response(
-                    {"erro": "Produto comercial não encontrado."},
+                    {"detail": "Produto comercial não encontrado."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -81,7 +81,7 @@ class EntradaPecaView(APIView):
         except Exception as e:
             logger.error("Erro na entrada manual de peca: %s", e)
             return Response(
-                {"erro": "Erro ao registrar entrada de peça."},
+                {"detail": "Erro ao registrar entrada de peça."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -112,7 +112,7 @@ class EntradaLoteView(APIView):
                 material_canonico_id = produto.material_canonico_id
             except ProdutoComercialInsumo.DoesNotExist:
                 return Response(
-                    {"erro": "Produto comercial insumo não encontrado."},
+                    {"detail": "Produto comercial insumo não encontrado."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -132,7 +132,7 @@ class EntradaLoteView(APIView):
         except Exception as e:
             logger.error("Erro na entrada manual de lote: %s", e)
             return Response(
-                {"erro": "Erro ao registrar entrada de lote."},
+                {"detail": "Erro ao registrar entrada de lote."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -161,13 +161,13 @@ class DevolucaoView(APIView):
             )
         except ValueError as e:
             return Response(
-                {"erro": str(e)},
+                {"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
             logger.error("Erro ao registrar devolucao: %s", e)
             return Response(
-                {"erro": "Erro ao registrar devolucao."},
+                {"detail": "Erro ao registrar devolucao."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -203,7 +203,7 @@ class TransferenciaView(APIView):
         except Exception as e:
             logger.error("Erro na transferencia: %s", e)
             return Response(
-                {"erro": "Erro ao transferir item."},
+                {"detail": "Erro ao transferir item."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -234,7 +234,7 @@ class PerdaView(APIView):
                 quantidade = data.get("quantidade")
                 if quantidade is None:
                     return Response(
-                        {"erro": "Campo 'quantidade' obrigatorio para lotes."},
+                        {"detail": "Campo 'quantidade' obrigatorio para lotes."},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
                 mov = SaidaEstoqueService.registrar_perda_lote(
@@ -245,13 +245,13 @@ class PerdaView(APIView):
                 )
         except ValueError as e:
             return Response(
-                {"erro": str(e)},
+                {"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
             logger.error("Erro ao registrar perda: %s", e)
             return Response(
-                {"erro": "Erro ao registrar perda."},
+                {"detail": "Erro ao registrar perda."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -325,13 +325,13 @@ class AprovarView(APIView):
             )
         except ValueError as e:
             return Response(
-                {"erro": str(e)},
+                {"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
             logger.error("Erro ao aprovar movimentacao: %s", e)
             return Response(
-                {"erro": "Erro ao aprovar movimentacao."},
+                {"detail": "Erro ao aprovar movimentacao."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -355,13 +355,13 @@ class RejeitarView(APIView):
             )
         except ValueError as e:
             return Response(
-                {"erro": str(e)},
+                {"detail": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
             logger.error("Erro ao rejeitar movimentacao: %s", e)
             return Response(
-                {"erro": "Erro ao rejeitar movimentacao."},
+                {"detail": "Erro ao rejeitar movimentacao."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -381,7 +381,7 @@ class MargemOSView(APIView):
             os_obj = ServiceOrder.objects.get(pk=os_id, is_active=True)
         except ServiceOrder.DoesNotExist:
             return Response(
-                {"erro": "Ordem de serviço não encontrada."},
+                {"detail": "Ordem de serviço não encontrada."},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -408,7 +408,7 @@ class MargemOSView(APIView):
         except Exception as e:
             logger.error("Erro ao calcular margem da OS %s: %s", os_id, e)
             return Response(
-                {"erro": "Erro interno ao processar requisição."},
+                {"detail": "Erro interno ao processar requisição."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

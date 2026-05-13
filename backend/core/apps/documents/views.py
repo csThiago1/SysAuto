@@ -38,7 +38,7 @@ class DocumentPreviewView(APIView):
         except Exception as exc:
             logger.error("Erro ao gerar preview: %s", exc)
             return Response(
-                {"error": "Erro ao carregar dados do documento."},
+                {"detail": "Erro ao carregar dados do documento."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -71,11 +71,12 @@ class DocumentGenerateView(APIView):
                 status=status.HTTP_201_CREATED,
             )
         except ValueError as exc:
-            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.warning("Dados inválidos para geração do documento: %s", exc)
+            return Response({"detail": "Dados inválidos para geração do documento."}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as exc:
             logger.error("Erro ao gerar documento: %s", exc)
             return Response(
-                {"error": "Erro interno ao gerar documento."},
+                {"detail": "Erro interno ao gerar documento."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

@@ -165,7 +165,7 @@ class ServicoCanonicoViewSet(viewsets.ModelViewSet):
         except Exception as exc:
             logger.error("Erro no match de serviço para texto=%r: %s", texto[:50], exc)
             return Response(
-                {"erro": "Erro interno ao processar o match de serviço."},
+                {"detail": "Erro interno ao processar o match de serviço."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -246,7 +246,7 @@ class MaterialCanonicoViewSet(viewsets.ModelViewSet):
         except Exception as exc:
             logger.error("Erro no match de material para texto=%r: %s", texto[:50], exc)
             return Response(
-                {"erro": "Erro interno ao processar o match de material."},
+                {"detail": "Erro interno ao processar o match de material."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -332,7 +332,7 @@ class InsumoMaterialViewSet(viewsets.ModelViewSet):
         except Exception as exc:
             logger.error("Erro ao buscar InsumoMaterial por GTIN=%r: %s", gtin, exc)
             return Response(
-                {"erro": "Erro interno ao processar busca por GTIN."},
+                {"detail": "Erro interno ao processar busca por GTIN."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -399,7 +399,7 @@ class PecaCanonicoViewSet(viewsets.ModelViewSet):
         except Exception as exc:
             logger.error("Erro no match de peça para texto=%r: %s", texto[:50], exc)
             return Response(
-                {"erro": "Erro interno ao processar o match de peça."},
+                {"detail": "Erro interno ao processar o match de peça."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -537,7 +537,7 @@ class AliasServicoViewSet(viewsets.ModelViewSet):
         except Exception as exc:
             logger.error("Erro ao aprovar alias %s: %s", pk, exc)
             return Response(
-                {"erro": "Erro interno ao aprovar alias."},
+                {"detail": "Erro interno ao aprovar alias."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -557,7 +557,7 @@ class AliasServicoViewSet(viewsets.ModelViewSet):
         except Exception as exc:
             logger.error("Erro ao rejeitar alias %s: %s", pk, exc)
             return Response(
-                {"erro": "Erro interno ao rejeitar alias."},
+                {"detail": "Erro interno ao rejeitar alias."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

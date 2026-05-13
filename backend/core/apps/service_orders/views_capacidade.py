@@ -91,13 +91,13 @@ class UtilizacaoView(APIView):
         fim_str = request.query_params.get("fim", "")
 
         if not categoria_id:
-            return Response({"erro": "Parâmetro 'categoria' obrigatório."}, status=400)
+            return Response({"detail": "Parâmetro 'categoria' obrigatório."}, status=400)
 
         try:
             inicio = date.fromisoformat(inicio_str) if inicio_str else date.today()
             fim = date.fromisoformat(fim_str) if fim_str else inicio + timedelta(days=6)
         except ValueError:
-            return Response({"erro": "Formato de data inválido (YYYY-MM-DD)."}, status=400)
+            return Response({"detail": "Formato de data inválido (YYYY-MM-DD)."}, status=400)
 
         empresa_id = str(request.user.active_company_id) if hasattr(request.user, "active_company_id") else ""
 
@@ -123,7 +123,7 @@ class HeatmapSemanaView(APIView):
         try:
             semana_inicio = date.fromisoformat(inicio_str) if inicio_str else date.today()
         except ValueError:
-            return Response({"erro": "Formato de data inválido (YYYY-MM-DD)."}, status=400)
+            return Response({"detail": "Formato de data inválido (YYYY-MM-DD)."}, status=400)
 
         empresa_id = str(request.user.active_company_id) if hasattr(request.user, "active_company_id") else ""
 
@@ -149,12 +149,12 @@ class ProximaDataDisponivelView(APIView):
         horas_str = request.query_params.get("horas", "1")
 
         if not categoria_id:
-            return Response({"erro": "Parâmetro 'categoria' obrigatório."}, status=400)
+            return Response({"detail": "Parâmetro 'categoria' obrigatório."}, status=400)
 
         try:
             horas = Decimal(horas_str)
         except InvalidOperation:
-            return Response({"erro": "Parâmetro 'horas' inválido."}, status=400)
+            return Response({"detail": "Parâmetro 'horas' inválido."}, status=400)
 
         data = CapacidadeService.proxima_data_disponivel(
             categoria_mao_obra_id=categoria_id,

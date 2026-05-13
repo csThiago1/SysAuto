@@ -85,7 +85,7 @@ class FichaTecnicaServicoViewSet(viewsets.ReadOnlyModelViewSet):
         except Exception as exc:
             logger.error("Erro ao desativar ficha técnica %s: %s", pk, exc)
             return Response(
-                {"erro": "Erro interno ao desativar a ficha técnica."},
+                {"detail": "Erro interno ao desativar a ficha técnica."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -127,7 +127,7 @@ class FichaTecnicaServicoViewSet(viewsets.ReadOnlyModelViewSet):
                 exc,
             )
             return Response(
-                {"erro": "Erro interno ao resolver a ficha técnica."},
+                {"detail": "Erro interno ao resolver a ficha técnica."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -191,7 +191,7 @@ class FichaTecnicaServicoViewSet(viewsets.ReadOnlyModelViewSet):
         except Exception as exc:
             logger.error("Erro ao criar nova versão da ficha %s: %s", pk, exc)
             return Response(
-                {"erro": "Erro interno ao criar nova versão da ficha técnica."},
+                {"detail": "Erro interno ao criar nova versão da ficha técnica."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

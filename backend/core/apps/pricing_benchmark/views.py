@@ -105,7 +105,7 @@ class BenchmarkAmostraViewSet(viewsets.ReadOnlyModelViewSet):
         except Exception as exc:
             logger.error(f"[benchmark] erro aceitar_match amostra={pk}: {exc}")
             return Response(
-                {"erro": "Erro interno ao aceitar match."},
+                {"detail": "Erro interno ao aceitar match."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -176,12 +176,12 @@ class IAComposicaoViewSet(viewsets.ViewSet):
             resultado = IAComposicaoService.sugerir(briefing, veiculo, servicos_ctx, pecas_ctx)
         except IAComposicaoInvalida as exc:
             return Response(
-                {"erro": str(exc)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY
+                {"detail": str(exc)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY
             )
         except Exception as exc:
             logger.error(f"[ia] erro sugestão: {exc}")
             return Response(
-                {"erro": "Erro interno ao chamar IA."},
+                {"detail": "Erro interno ao chamar IA."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -209,7 +209,7 @@ class IAComposicaoViewSet(viewsets.ViewSet):
         try:
             sugestao = SugestaoIA.objects.get(id=pk)
         except SugestaoIA.DoesNotExist:
-            return Response({"erro": "Sugestão não encontrada."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "Sugestão não encontrada."}, status=status.HTTP_404_NOT_FOUND)
 
         sugestao.avaliacao = ser.validated_data["avaliacao"]
         sugestao.save(update_fields=["avaliacao"])

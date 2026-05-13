@@ -1,7 +1,11 @@
+import logging
+
+import httpx
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-import httpx
+
+logger = logging.getLogger(__name__)
 
 from apps.cilia.client import buscar_orcamento
 from apps.cilia.models import OrcamentoCilia
@@ -24,7 +28,7 @@ def consultar_orcamento(request):
     versao = request.data.get("versao")
 
     if not sinistro or not orcamento:
-        return Response({"erro": "Parâmetros 'sinistro' e 'orcamento' são obrigatórios."}, status=400)
+        return Response({"detail": "Parâmetros 'sinistro' e 'orcamento' são obrigatórios."}, status=400)
 
     # Tratar caso a versão venha embutida no campo orçamento (ex: 1446508.2)
     if isinstance(orcamento, str) and "." in orcamento and not versao:
@@ -37,14 +41,15 @@ def consultar_orcamento(request):
     except httpx.HTTPStatusError as e:
         status_code = e.response.status_code
         if status_code == 401:
-            return Response({"erro": "Não autorizado na API Cilia. Verifique o CILIA_AUTH_TOKEN."}, status=401)
+            return Response({"detail": "Não autorizado na API Cilia. Verifique o CILIA_AUTH_TOKEN."}, status=401)
         elif status_code == 403:
-            return Response({"erro": "Orçamento não encontrado ou não pertence a esta oficina."}, status=403)
-        return Response({"erro": f"Erro HTTP {status_code} da Cilia API."}, status=502)
+            return Response({"detail": "Orçamento não encontrado ou não pertence a esta oficina."}, status=403)
+        return Response({"detail": f"Erro HTTP {status_code} da Cilia API."}, status=502)
     except httpx.RequestError as e:
-        return Response({"erro": "Erro de conexão com a Cilia API."}, status=502)
+        return Response({"detail": "Erro de conexão com a Cilia API."}, status=502)
     except Exception as e:
-        return Response({"erro": str(e)}, status=500)
+        logger.exception("Erro na integração Cilia: %s", e)
+        return Response({"detail": "Erro interno na integração."}, status=500)
 
     # Upsert no banco
     conclusion_dict = dados.get("conclusion") or {}

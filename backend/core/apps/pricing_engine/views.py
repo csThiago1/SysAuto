@@ -162,11 +162,11 @@ class DebugCustoHoraView(APIView):
                 }
             )
         except CustoNaoDefinido as exc:
-            return Response({"erro": str(exc)}, status=404)
+            return Response({"detail": str(exc)}, status=404)
         except Exception as exc:
             logger.error("Erro em debug/custo-hora: %s", exc)
             return Response(
-                {"erro": "Erro interno ao calcular custo/hora."}, status=500
+                {"detail": "Erro interno ao calcular custo/hora."}, status=500
             )
 
 
@@ -203,13 +203,14 @@ class DebugRateioView(APIView):
                 }
             )
         except ParametroRateioNaoDefinido as exc:
-            return Response({"erro": str(exc)}, status=404)
+            return Response({"detail": str(exc)}, status=404)
         except ValueError as exc:
-            return Response({"erro": str(exc)}, status=400)
+            logger.warning("Erro de valor em debug/rateio: %s", exc)
+            return Response({"detail": "Valor inválido."}, status=400)
         except Exception as exc:
             logger.error("Erro em debug/rateio: %s", exc)
             return Response(
-                {"erro": "Erro interno ao calcular rateio."}, status=500
+                {"detail": "Erro interno ao calcular rateio."}, status=500
             )
 
 
@@ -225,16 +226,16 @@ class DebugCustoPecaView(APIView):
         """POST /debug/custo-peca/ body: {peca_canonica_id}."""
         peca_id = request.data.get("peca_canonica_id")
         if not peca_id:
-            return Response({"erro": "peca_canonica_id é obrigatório."}, status=400)
+            return Response({"detail": "peca_canonica_id é obrigatório."}, status=400)
         try:
             custo = CustoPecaService.custo_base(str(peca_id))
             decomposicao = CustoPecaService.decomposicao(str(peca_id))
             return Response({"custo_base": str(custo), "decomposicao": decomposicao})
         except CustoBaseIndisponivel as exc:
-            return Response({"erro": str(exc)}, status=404)
+            return Response({"detail": str(exc)}, status=404)
         except Exception as exc:
             logger.error("Erro em debug/custo-peca: %s", exc)
-            return Response({"erro": "Erro interno."}, status=500)
+            return Response({"detail": "Erro interno."}, status=500)
 
 
 class DebugCustoInsumoView(APIView):
@@ -249,7 +250,7 @@ class DebugCustoInsumoView(APIView):
         """POST /debug/custo-insumo/ body: {material_canonico_id}."""
         material_id = request.data.get("material_canonico_id")
         if not material_id:
-            return Response({"erro": "material_canonico_id é obrigatório."}, status=400)
+            return Response({"detail": "material_canonico_id é obrigatório."}, status=400)
         try:
             custo = CustoInsumoService.custo_base(str(material_id))
             saldo = CustoInsumoService.saldo_disponivel(str(material_id))
@@ -258,10 +259,10 @@ class DebugCustoInsumoView(APIView):
                 {"custo_base": str(custo), "saldo_disponivel": str(saldo), "decomposicao": decomposicao}
             )
         except CustoBaseIndisponivel as exc:
-            return Response({"erro": str(exc)}, status=404)
+            return Response({"detail": str(exc)}, status=404)
         except Exception as exc:
             logger.error("Erro em debug/custo-insumo: %s", exc)
-            return Response({"erro": "Erro interno."}, status=500)
+            return Response({"detail": "Erro interno."}, status=500)
 
 
 # ─── Motor MO-6: MargemOperacao + MarkupPeca ─────────────────────────────────
@@ -386,12 +387,12 @@ class CalcularServicoView(APIView):
             )
         except ErroMotorPrecificacao as exc:
             return Response(
-                {"erro": str(exc), "recurso_faltante": exc.recurso_faltante},
+                {"detail": str(exc), "recurso_faltante": exc.recurso_faltante},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
         except Exception as exc:
             logger.error("Erro interno em calcular-servico: %s", exc)
-            return Response({"erro": "Erro interno ao calcular preço."}, status=500)
+            return Response({"detail": "Erro interno ao calcular preço."}, status=500)
 
         return Response(
             {
@@ -430,12 +431,12 @@ class CalcularPecaView(APIView):
             )
         except ErroMotorPrecificacao as exc:
             return Response(
-                {"erro": str(exc), "recurso_faltante": exc.recurso_faltante},
+                {"detail": str(exc), "recurso_faltante": exc.recurso_faltante},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
         except Exception as exc:
             logger.error("Erro interno em calcular-peca: %s", exc)
-            return Response({"erro": "Erro interno ao calcular preço."}, status=500)
+            return Response({"detail": "Erro interno ao calcular preço."}, status=500)
 
         return Response(
             {
@@ -508,7 +509,7 @@ class SimularView(APIView):
                     {
                         "tipo": tipo,
                         "id": item_id,
-                        "erro": str(exc),
+                        "detail": str(exc),
                         "recurso_faltante": exc.recurso_faltante,
                     }
                 )

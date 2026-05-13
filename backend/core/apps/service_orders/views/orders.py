@@ -536,7 +536,7 @@ class ServiceOrderViewSet(
         versao = request.data.get("versao")
 
         if not sinistro or not orcamento:
-            return Response({"erro": "sinistro e orcamento são obrigatórios"}, status=400)
+            return Response({"detail": "sinistro e orcamento são obrigatórios"}, status=400)
 
         if isinstance(orcamento, str) and "." in orcamento and not versao:
             parts = orcamento.split(".")
@@ -548,10 +548,10 @@ class ServiceOrderViewSet(
             dados = buscar_orcamento(str(sinistro), str(orcamento), str(versao) if versao else None)
         except httpx.HTTPError as e:
             logger.error(f"Erro Cilia API: {e}")
-            return Response({"erro": "Erro ao comunicar com a API Cilia"}, status=502)
+            return Response({"detail": "Erro ao comunicar com a API Cilia"}, status=502)
         except Exception as e:
             logger.error(f"Erro inesperado no import Cilia: {e}")
-            return Response({"erro": "Erro interno ao processar importação."}, status=500)
+            return Response({"detail": "Erro interno ao processar importação."}, status=500)
 
         # Update ServiceOrder
         totals = dados.get("totals", {})
@@ -671,7 +671,7 @@ class ServiceOrderViewSet(
         # PC-1: origem não pode ser alterada após criação
         if "origem" in request.data:
             return Response(
-                {"erro": "Campo 'origem' não pode ser alterado (PC-1)."},
+                {"detail": "Campo 'origem' não pode ser alterado (PC-1)."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -745,10 +745,10 @@ class ServiceOrderViewSet(
             )
             return Response(ServiceOrderPartSerializer(part).data, status=status.HTTP_201_CREATED)
         except UnidadeFisica.DoesNotExist:
-            return Response({"erro": "Peça não encontrada ou indisponível."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Peça não encontrada ou indisponível."}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.error("Erro ao adicionar peça do estoque: %s", e)
-            return Response({"erro": "Erro ao adicionar peça do estoque."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Erro ao adicionar peça do estoque."}, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(summary="Solicitar compra de peça para OS")
     @action(detail=True, methods=["post"], url_path="parts/compra")
@@ -788,7 +788,7 @@ class ServiceOrderViewSet(
             return Response(ServiceOrderPartSerializer(part).data, status=status.HTTP_201_CREATED)
         except Exception as e:
             logger.error("Erro ao solicitar compra: %s", e)
-            return Response({"erro": "Erro ao solicitar compra."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Erro ao solicitar compra."}, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(summary="Registrar peça de seguradora na OS")
     @action(detail=True, methods=["post"], url_path="parts/seguradora")
@@ -813,7 +813,7 @@ class ServiceOrderViewSet(
             return Response(ServiceOrderPartSerializer(part).data, status=status.HTTP_201_CREATED)
         except Exception as e:
             logger.error("Erro ao registrar peça seguradora: %s", e)
-            return Response({"erro": "Erro ao registrar peça."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Erro ao registrar peça."}, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(summary="Listar/adicionar serviços da OS")
     @action(detail=True, methods=["get", "post"], url_path="labor")
@@ -1217,8 +1217,9 @@ class ServiceOrderViewSet(
                     version_number=version_number,
                 )
             except CiliaError as exc:
+                logger.warning("Cilia network error: %s", exc)
                 return Response(
-                    {"error": str(exc), "error_type": "NetworkError"},
+                    {"detail": "Erro de conexão com a Cilia.", "error_type": "NetworkError"},
                     status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 )
 
@@ -1232,9 +1233,9 @@ class ServiceOrderViewSet(
             try:
                 parsed = CiliaParser.parse(response.data)
             except Exception as exc:
-                logger.exception("Cilia parse error")
+                logger.exception("Cilia parse error: %s", exc)
                 return Response(
-                    {"error": f"Erro ao processar orçamento: {exc}", "error_type": "ParseError"},
+                    {"detail": "Erro ao processar orçamento.", "error_type": "ParseError"},
                     status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 )
 
