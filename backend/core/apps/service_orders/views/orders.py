@@ -176,16 +176,26 @@ class ServiceOrderViewSet(
         qs = (
             ServiceOrder.objects.filter(is_active=True)
             .select_related("consultant", "insurer", "expert", "customer", "created_by")
-            .prefetch_related(
-                "transition_logs__changed_by",
+            .order_by("-opened_at")
+        )
+
+        if self.action in ("retrieve", "update", "partial_update", "transition",
+                           "deliver", "billing", "financial_summary"):
+            from django.db.models import Prefetch
+            qs = qs.prefetch_related(
+                Prefetch(
+                    "transition_logs",
+                    queryset=StatusTransitionLog.objects.select_related("changed_by").order_by("-created_at"),
+                ),
                 "photos",
                 "parts",
                 "labor_items",
                 "budget_snapshots",
-                "activities",
+                Prefetch(
+                    "activities",
+                    queryset=ServiceOrderActivityLog.objects.select_related("user").order_by("-created_at")[:50],
+                ),
             )
-            .order_by("-opened_at")
-        )
 
         qs = qs.annotate(
             _has_any_receivables=Exists(
@@ -480,7 +490,12 @@ class ServiceOrderViewSet(
 
         # GET
         from ..models import ServiceOrderActivityLog
-        logs = ServiceOrderActivityLog.objects.filter(service_order=service_order)
+        logs = (
+            ServiceOrderActivityLog.objects
+            .filter(service_order=service_order)
+            .select_related("user")
+            .order_by("-created_at")
+        )
         serializer = ServiceOrderActivityLogSerializer(logs, many=True)
         return Response(serializer.data)
 

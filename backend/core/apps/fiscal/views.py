@@ -649,7 +649,11 @@ class FiscalDocumentViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
     def get_queryset(self):  # type: ignore[override]
-        qs = FiscalDocument.objects.filter(is_active=True).order_by("-created_at")
+        qs = (
+            FiscalDocument.objects.filter(is_active=True)
+            .select_related("config", "service_order", "created_by", "destinatario")
+            .order_by("-created_at")
+        )
 
         os_id = self.request.query_params.get("service_order")
         if os_id:

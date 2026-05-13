@@ -423,7 +423,6 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
     days_in_shop = serializers.SerializerMethodField()
     allowed_transitions = serializers.SerializerMethodField()
     closure_status = serializers.SerializerMethodField()
-    has_transition_blocks = serializers.SerializerMethodField()
 
     class Meta:
         model = ServiceOrder
@@ -459,7 +458,6 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
             "opened_at",
             "created_at",
             "closure_status",
-            "has_transition_blocks",
         ]
         read_only_fields = ["id", "total", "status_display", "days_in_shop", "created_at"]
 
@@ -510,18 +508,6 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
             "is_paid": is_paid,
             "is_closed": is_closed,
         }
-
-    def get_has_transition_blocks(self, obj: ServiceOrder) -> bool:
-        """Indicador leve para Kanban: True se proximo status tem hard ou soft blocks."""
-        from apps.service_orders.transition_validator import TransitionValidator
-
-        allowed = VALID_TRANSITIONS.get(obj.status, [])
-        if not allowed:
-            return False
-        # Checa apenas o primeiro target (caminho feliz) para performance
-        result = TransitionValidator.validate(obj, allowed[0])
-        return bool(result.hard_blocks or result.soft_blocks)
-
 
 class ServiceOrderDetailSerializer(serializers.ModelSerializer):
     """Serializer completo para a tela de abertura/edicao da OS."""
@@ -619,9 +605,15 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
 
     def get_transition_requirements(self, obj: ServiceOrder) -> dict[str, dict]:
         """Retorna validacao de pre-requisitos para cada transicao permitida."""
+        from django.core.cache import cache
+        cache_key = f"transition_reqs:{obj.pk}:{obj.updated_at.timestamp()}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
         from apps.service_orders.transition_validator import TransitionValidator
-
-        return TransitionValidator.validate_all_targets(obj)
+        result = TransitionValidator.validate_all_targets(obj)
+        cache.set(cache_key, result, timeout=60)
+        return result
 
 
 class ServiceOrderCreateSerializer(serializers.ModelSerializer):

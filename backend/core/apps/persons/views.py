@@ -34,9 +34,7 @@ class PersonViewSet(viewsets.ModelViewSet):
     """ViewSet CRUD para pessoas do tenant."""
 
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
-    queryset = Person.objects.prefetch_related(
-        "roles", "contacts", "addresses", "documents"
-    ).order_by("-created_at")
+    queryset = Person.objects.all()
     filterset_fields = ["person_kind", "is_active"]
     search_fields = ["full_name", "fantasy_name", "legacy_code"]
 
@@ -46,17 +44,21 @@ class PersonViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self):  # type: ignore[override]
-        qs = super().get_queryset()
+        base = Person.objects.filter(is_active=True)
+        if self.action in ("retrieve", "update", "partial_update"):
+            base = base.prefetch_related("roles", "contacts", "addresses", "documents")
+        elif self.action == "list":
+            base = base.prefetch_related("roles")
         role = self.request.query_params.get("role")
         if role:
-            qs = qs.filter(roles__role=role)
+            base = base.filter(roles__role=role)
         kind = self.request.query_params.get("kind")
         if kind:
-            qs = qs.filter(person_kind=kind)
+            base = base.filter(person_kind=kind)
         office_id = self.request.query_params.get("office_id")
         if office_id:
-            qs = qs.filter(broker_person__office__person_id=office_id)
-        return qs.filter(is_active=True).distinct()
+            base = base.filter(broker_person__office__person_id=office_id)
+        return base.distinct().order_by("-created_at")
 
     def get_serializer_class(self):  # type: ignore[override]
         if self.action == "list":
