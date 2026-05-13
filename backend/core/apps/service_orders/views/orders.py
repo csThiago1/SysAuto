@@ -193,7 +193,7 @@ class ServiceOrderViewSet(
                 "budget_snapshots",
                 Prefetch(
                     "activities",
-                    queryset=ServiceOrderActivityLog.objects.select_related("user").order_by("-created_at")[:50],
+                    queryset=ServiceOrderActivityLog.objects.select_related("user").order_by("-created_at"),
                 ),
             )
 
