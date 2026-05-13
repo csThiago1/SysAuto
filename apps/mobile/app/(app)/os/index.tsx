@@ -18,7 +18,6 @@ import { ServiceOrder } from '@/db/models/ServiceOrder';
 import { useServiceOrdersList } from '@/hooks/useServiceOrders';
 import { useInsurers } from '@/hooks/useInsurers';
 import { useStatusCounts } from '@/hooks/useStatusCounts';
-import { useAuthStore } from '@/stores/auth.store';
 import { OSCard } from '@/components/os/OSCard';
 import { getStatusColor, getStatusLabel } from '@/components/os/OSStatusBadge';
 import { Text } from '@/components/ui/Text';
@@ -46,15 +45,6 @@ const CHIP_STATUSES = [
 ] as const;
 
 type ChipStatus = (typeof CHIP_STATUSES)[number];
-
-// ─── Greeting helper ────────────────────────────────────────────────────────
-
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Bom dia';
-  if (hour < 18) return 'Boa tarde';
-  return 'Boa noite';
-}
 
 // ─── Skeleton placeholder ──────────────────────────────────────────────────
 
@@ -125,7 +115,6 @@ function StatusChip({ label, count, isActive, color, onPress }: StatusChipProps)
 export default function OSListScreen(): React.JSX.Element {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const userName = useAuthStore((s) => s.user?.name?.split(' ')[0] ?? 'Usuário');
 
   const [search, setSearch] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
@@ -187,13 +176,12 @@ export default function OSListScreen(): React.JSX.Element {
   // ── Loading state ──────────────────────────────────────────────────────────
   if (isLoading && orders.length === 0) {
     return (
-      <View style={styles.safe}>
-        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-          <View style={styles.headerTopRow}>
-            <Text style={styles.brandName}>DSCAR</Text>
-            <View style={styles.headerBtn}>
-              <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
-            </View>
+      <View style={[styles.safe, { paddingTop: insets.top + 12 }]}>
+        <View style={styles.searchRow}>
+          <Ionicons name="search-outline" size={18} color={Colors.textSecondary} style={styles.searchIcon} />
+          <View style={[styles.searchInput, { flex: 1 }]} />
+          <View style={styles.notifBtn}>
+            <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
           </View>
         </View>
         <View style={styles.skeletonContainer}>
@@ -226,31 +214,8 @@ export default function OSListScreen(): React.JSX.Element {
   ) : null;
 
   return (
-    <View style={styles.safe}>
-      {/* ── Header ────────────────────────────────────────────────────────── */}
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <View style={styles.headerTopRow}>
-          <Text style={styles.brandName}>DSCAR</Text>
-          <TouchableOpacity
-            style={styles.headerBtn}
-            onPress={() => navigation.navigate('notificacoes' as never)}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Notificações"
-          >
-            <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Greeting */}
-        <View style={styles.greetingRow}>
-          <Text style={styles.greetingPrefix}>{getGreeting()},</Text>
-          <Text style={styles.greetingName}>{userName}</Text>
-          <Text style={styles.greetingCount}> · {openTotal} OS abertas</Text>
-        </View>
-      </View>
-
-      {/* ── Search bar ───────────────────────────────────────────────────── */}
+    <View style={[styles.safe, { paddingTop: insets.top + 12 }]}>
+      {/* ── Search + notifications ─────────────────────────────────────── */}
       <View style={styles.searchRow}>
         <Ionicons name="search-outline" size={18} color={Colors.textSecondary} style={styles.searchIcon} />
         <TextInput
@@ -265,13 +230,13 @@ export default function OSListScreen(): React.JSX.Element {
           autoCorrect={false}
         />
         <TouchableOpacity
-          style={styles.filterBtn}
-          onPress={() => {/* Reserved for advanced filters */}}
-          activeOpacity={0.75}
+          style={styles.notifBtn}
+          onPress={() => navigation.navigate('notificacoes' as never)}
+          activeOpacity={0.7}
           accessibilityRole="button"
-          accessibilityLabel="Filtros"
+          accessibilityLabel="Notificações"
         >
-          <Ionicons name="options-outline" size={18} color={Colors.textTertiary} />
+          <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
         </TouchableOpacity>
       </View>
 
@@ -337,73 +302,38 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bg,
   },
 
-  // ── Header ──────────────────────────────────────────────────────────────
-  header: {
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: 8,
-  },
-  headerTopRow: {
+  // ── Search ──────────────────────────────────────────────────────────────
+  searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    marginHorizontal: Spacing.lg,
+    gap: 8,
+    marginBottom: 2,
   },
-  brandName: {
-    fontSize: 18,
-    fontWeight: '800',
+  searchIcon: {
+    position: 'absolute',
+    left: 14,
+    zIndex: 1,
+  },
+  searchInput: {
+    flex: 1,
+    backgroundColor: Colors.inputBg,
+    borderRadius: Radii.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    paddingLeft: 36,
+    paddingRight: 12,
+    paddingVertical: 10,
+    fontSize: 15,
     color: Colors.textPrimary,
-    letterSpacing: 1,
   },
-  headerBtn: {
+  notifBtn: {
     width: 40,
     height: 40,
     borderRadius: 10,
     backgroundColor: Colors.inputBg,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  greetingRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginTop: 4,
-  },
-  greetingPrefix: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
-  greetingName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginLeft: 4,
-  },
-  greetingCount: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
-
-  // ── Search ──────────────────────────────────────────────────────────────
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: Spacing.lg,
-    backgroundColor: Colors.inputBg,
-    borderRadius: Radii.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    paddingHorizontal: 12,
-    gap: 8,
-  },
-  searchIcon: {
-    marginLeft: 2,
-  },
-  searchInput: {
-    flex: 1,
-    paddingVertical: 10,
-    fontSize: 15,
-    color: Colors.textPrimary,
-  },
-  filterBtn: {
-    padding: 6,
   },
 
   // ── Chips ───────────────────────────────────────────────────────────────
