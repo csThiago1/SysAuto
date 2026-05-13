@@ -79,9 +79,9 @@ class JournalEntryViewSet(
         try:
             entry = serializer.save()
         except Exception as exc:
-            logger.warning("JournalEntryViewSet.create: %s", exc)
+            logger.exception("JournalEntryViewSet.create: %s", exc)
             return Response(
-                {"detail": str(exc)},
+                {"detail": "Erro ao criar lançamento contábil."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         return Response(
@@ -100,9 +100,9 @@ class JournalEntryViewSet(
         try:
             entry = JournalEntryService.approve_entry(entry, user=request.user)
         except Exception as exc:
-            logger.warning("JournalEntryViewSet.approve: %s", exc)
+            logger.exception("JournalEntryViewSet.approve: %s", exc)
             return Response(
-                {"detail": str(exc)},
+                {"detail": "Erro ao aprovar lançamento."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         logger.info("JournalEntry %s aprovado por %s", entry.number, request.user.id)
@@ -125,9 +125,9 @@ class JournalEntryViewSet(
                 entry, user=request.user, description=description
             )
         except Exception as exc:
-            logger.warning("JournalEntryViewSet.reverse: %s", exc)
+            logger.exception("JournalEntryViewSet.reverse: %s", exc)
             return Response(
-                {"detail": str(exc)},
+                {"detail": "Erro ao estornar lançamento."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         logger.info(

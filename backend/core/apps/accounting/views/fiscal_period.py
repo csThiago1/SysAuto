@@ -93,9 +93,9 @@ class FiscalPeriodViewSet(
         try:
             period = FiscalPeriodService.close_period(period, user=request.user)
         except Exception as exc:
-            logger.warning("FiscalPeriodViewSet.close: %s", exc)
+            logger.exception("FiscalPeriodViewSet.close: %s", exc)
             return Response(
-                {"detail": str(exc)},
+                {"detail": "Erro ao fechar período fiscal."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         serializer = FiscalPeriodDetailSerializer(period, context={"request": request})
