@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { Menu, LogOut, ChevronDown, Building2 } from "lucide-react";
@@ -81,13 +80,11 @@ export function MobileSidebar(): React.ReactElement {
           <Menu size={22} />
         </button>
 
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src="/dscar-logo.png"
           alt="DS Car"
-          width={120}
-          height={32}
           className="h-8 w-auto object-contain logo-themed"
-          priority
           draggable={false}
         />
 
@@ -101,11 +98,10 @@ export function MobileSidebar(): React.ReactElement {
 
           {/* ── Sheet header / logo ── */}
           <div className="flex items-center gap-3 px-5 min-h-[64px] border-b border-border">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/dscar-logo.png"
               alt="DS Car"
-              width={120}
-              height={40}
               className="h-10 w-auto object-contain flex-shrink-0 logo-themed"
               draggable={false}
             />

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -288,26 +287,22 @@ export function getInitials(name: string | null | undefined): string {
 function DSCarLogoInline({ collapsed }: { collapsed: boolean }) {
   if (collapsed) {
     return (
-      <Image
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
         src="/dscar-logo.png"
         alt="DS Car"
-        width={36}
-        height={36}
-        className="object-contain logo-themed"
-        priority
+        className="h-9 w-9 object-contain logo-themed"
         draggable={false}
       />
     );
   }
   return (
     <div className="flex items-center gap-3 animate-fade-in">
-      <Image
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src="/dscar-logo.png"
         alt="DS Car"
-        width={120}
-        height={48}
         className="h-12 w-auto object-contain flex-shrink-0 logo-themed"
-        priority
         draggable={false}
       />
       <div className="flex flex-col leading-none">
