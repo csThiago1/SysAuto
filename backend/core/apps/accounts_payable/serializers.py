@@ -5,7 +5,7 @@ import logging
 
 from rest_framework import serializers
 
-from .models import DocumentStatus, PayableDocument, PayablePayment, Supplier
+from .models import DocumentStatus, PayableDocument, PayablePayment, Supplier, SupplierContact
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +13,17 @@ logger = logging.getLogger(__name__)
 # ── Supplier ──────────────────────────────────────────────────────────────────
 
 
+class SupplierContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SupplierContact
+        fields = ["id", "name", "phone", "role", "is_whatsapp"]
+        read_only_fields = ["id"]
+
+
 class SupplierSerializer(serializers.ModelSerializer):
     """Serializer completo de Fornecedor."""
+
+    contacts = SupplierContactSerializer(many=True, read_only=True)
 
     class Meta:
         model = Supplier
@@ -27,11 +36,12 @@ class SupplierSerializer(serializers.ModelSerializer):
             "phone",
             "contact_name",
             "notes",
+            "contacts",
             "is_active",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "contacts", "created_at", "updated_at"]
 
 
 class SupplierListSerializer(serializers.ModelSerializer):

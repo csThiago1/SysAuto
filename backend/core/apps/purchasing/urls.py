@@ -3,16 +3,20 @@ from rest_framework.routers import SimpleRouter
 
 from apps.purchasing.views import (
     AdicionarItemOCView,
+    CotacaoLogViewSet,
     DashboardComprasView,
     OrdemCompraViewSet,
     PedidoCompraViewSet,
     RegistrarRecebimentoView,
     RemoverItemOCView,
+    RespostaCotacaoViewSet,
 )
 
 router = SimpleRouter()
 router.register(r"pedidos", PedidoCompraViewSet, basename="pedido-compra")
 router.register(r"ordens-compra", OrdemCompraViewSet, basename="ordem-compra")
+router.register(r"cotacao-logs", CotacaoLogViewSet, basename="cotacao-log")
+router.register(r"respostas-cotacao", RespostaCotacaoViewSet, basename="resposta-cotacao")
 
 urlpatterns = [
     path(

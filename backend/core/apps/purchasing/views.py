@@ -6,7 +6,7 @@ import logging
 from django.core.cache import cache
 from django.db.models import Count, Q
 from django.utils import timezone
-from rest_framework import status, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -18,14 +18,16 @@ from apps.authentication.permissions import (
     IsManagerOrAbove,
     IsStorekeeperOrAbove,
 )
-from apps.purchasing.models import OrdemCompra, PedidoCompra
+from apps.purchasing.models import CotacaoLog, OrdemCompra, PedidoCompra, RespostaCotacao
 from apps.purchasing.serializers import (
     AdicionarItemOCInputSerializer,
+    CotacaoLogSerializer,
     DashboardComprasSerializer,
     ItemOrdemCompraSerializer,
     OrdemCompraDetailSerializer,
     OrdemCompraListSerializer,
     PedidoCompraSerializer,
+    RespostaCotacaoSerializer,
 )
 from apps.purchasing.services import OrdemCompraService, PedidoCompraService
 
@@ -346,6 +348,59 @@ class RegistrarRecebimentoView(APIView):
                 {"detail": "Erro interno ao processar requisicao."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+
+class CotacaoLogViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+    serializer_class = CotacaoLogSerializer
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get_queryset(self):  # type: ignore[override]
+        qs = CotacaoLog.objects.filter(is_active=True).select_related(
+            "supplier", "supplier_contact", "enviado_por"
+        )
+        so = self.request.query_params.get("service_order")
+        if so:
+            qs = qs.filter(service_order_id=so)
+        pedido = self.request.query_params.get("pedido_compra")
+        if pedido:
+            qs = qs.filter(pedidos_incluidos=pedido)
+        return qs
+
+    def perform_create(self, serializer: CotacaoLogSerializer) -> None:
+        log = serializer.save(enviado_por=self.request.user)
+        pedido_ids = self.request.data.get("pedido_ids", [])
+        if pedido_ids:
+            log.pedidos_incluidos.set(pedido_ids)
+
+
+class RespostaCotacaoViewSet(viewsets.ModelViewSet):
+    serializer_class = RespostaCotacaoSerializer
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get_queryset(self):  # type: ignore[override]
+        qs = RespostaCotacao.objects.filter(is_active=True).select_related(
+            "supplier", "registrado_por", "pedido_compra"
+        )
+        pedido = self.request.query_params.get("pedido_compra")
+        if pedido:
+            qs = qs.filter(pedido_compra_id=pedido)
+        so = self.request.query_params.get("service_order")
+        if so:
+            qs = qs.filter(pedido_compra__service_order_id=so)
+        return qs
+
+    def perform_create(self, serializer: RespostaCotacaoSerializer) -> None:
+        serializer.save(registrado_por=self.request.user)
+
+    @action(detail=True, methods=["post"], url_path="selecionar")
+    def selecionar(self, request: Request, pk: str | None = None) -> Response:
+        resposta = self.get_object()
+        RespostaCotacao.objects.filter(
+            pedido_compra=resposta.pedido_compra, is_active=True
+        ).update(selecionada=False)
+        resposta.selecionada = True
+        resposta.save(update_fields=["selecionada", "updated_at"])
+        return Response(RespostaCotacaoSerializer(resposta).data)
 
 
 class DashboardComprasView(APIView):

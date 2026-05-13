@@ -231,3 +231,82 @@ class ItemOrdemCompra(PaddockBaseModel):
 
     def __str__(self) -> str:
         return f"{self.descricao[:50]} — {self.fornecedor_nome} (R$ {self.valor_total})"
+
+
+class CotacaoLog(PaddockBaseModel):
+    """Registro de envio de cotação para fornecedor."""
+
+    service_order = models.ForeignKey(
+        "service_orders.ServiceOrder",
+        on_delete=models.CASCADE,
+        related_name="cotacoes_enviadas",
+    )
+    supplier = models.ForeignKey(
+        "accounts_payable.Supplier",
+        on_delete=models.CASCADE,
+        related_name="cotacoes_recebidas",
+    )
+    supplier_contact = models.ForeignKey(
+        "accounts_payable.SupplierContact",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="cotacoes",
+    )
+    enviado_por = models.ForeignKey(
+        "authentication.GlobalUser",
+        on_delete=models.PROTECT,
+        related_name="cotacoes_enviadas",
+    )
+    mensagem = models.TextField(help_text="Texto da mensagem enviada")
+    pedidos_incluidos = models.ManyToManyField(
+        PedidoCompra,
+        related_name="cotacao_logs",
+        blank=True,
+    )
+
+    class Meta(PaddockBaseModel.Meta):
+        db_table = "purchasing_cotacao_log"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"Cotação OS#{self.service_order_id} → {self.supplier} em {self.created_at:%d/%m}"
+
+
+class RespostaCotacao(PaddockBaseModel):
+    """Resposta de fornecedor para um pedido de compra."""
+
+    pedido_compra = models.ForeignKey(
+        PedidoCompra,
+        on_delete=models.CASCADE,
+        related_name="respostas_cotacao",
+    )
+    supplier = models.ForeignKey(
+        "accounts_payable.Supplier",
+        on_delete=models.CASCADE,
+        related_name="respostas_cotacao",
+    )
+    valor_unitario = models.DecimalField(max_digits=12, decimal_places=2)
+    prazo_entrega = models.CharField(max_length=100, blank=True, default="")
+    condicoes_pagamento = models.CharField(max_length=200, blank=True, default="")
+    observacoes = models.TextField(blank=True, default="")
+    selecionada = models.BooleanField(default=False)
+    registrado_por = models.ForeignKey(
+        "authentication.GlobalUser",
+        on_delete=models.PROTECT,
+        related_name="respostas_cotacao_registradas",
+    )
+
+    class Meta(PaddockBaseModel.Meta):
+        db_table = "purchasing_resposta_cotacao"
+        ordering = ["valor_unitario"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["pedido_compra", "supplier"],
+                condition=models.Q(is_active=True),
+                name="unique_resposta_por_fornecedor",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"R$ {self.valor_unitario} — {self.supplier} ({self.pedido_compra})"

@@ -154,6 +154,53 @@ export interface PartSeguradoraInput {
   quantity?: string
 }
 
+// ─── Cotacao / Supplier Contacts ─────────────────────────────────────────────
+
+export interface SupplierContact {
+  id: string
+  name: string
+  phone: string
+  role: string
+  is_whatsapp: boolean
+}
+
+export interface SupplierWithContacts {
+  id: string
+  name: string
+  cnpj: string
+  phone: string
+  email: string
+  contacts: SupplierContact[]
+}
+
+export interface CotacaoLog {
+  id: string
+  service_order: string
+  supplier: string
+  supplier_name: string
+  supplier_contact: string | null
+  contact_name: string
+  enviado_por: string
+  enviado_por_nome: string
+  mensagem: string
+  created_at: string
+}
+
+export interface RespostaCotacao {
+  id: string
+  pedido_compra: string
+  supplier: string
+  supplier_name: string
+  valor_unitario: string
+  prazo_entrega: string
+  condicoes_pagamento: string
+  observacoes: string
+  selecionada: boolean
+  registrado_por: string
+  registrado_por_nome: string
+  created_at: string
+}
+
 // ─── Busca Pecas ────────────────────────────────────────────────────────────────
 
 export interface PecaEstoqueResult {

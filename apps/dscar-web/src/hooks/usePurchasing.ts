@@ -7,11 +7,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   AdicionarItemOCInput,
+  CotacaoLog,
   DashboardComprasStats,
   ItemOrdemCompra,
   OrdemCompra,
   OrdemCompraDetail,
   PedidoCompra,
+  RespostaCotacao,
+  SupplierWithContacts,
 } from "@paddock/types"
 import { apiFetch, fetchList } from "@/lib/api"
 
@@ -233,6 +236,95 @@ export function useOrdensCompraByOS(osId: string | undefined) {
         `${PURCHASING}/ordens-compra/?service_order=${osId}&status=rascunho`,
       ),
     enabled: !!osId,
+  })
+}
+
+// ─── Suppliers with contacts ──────────────────────────────────────────────────
+
+export function useSuppliersWithContacts() {
+  return useQuery<SupplierWithContacts[]>({
+    queryKey: [...purchasingKeys.all, "suppliers-contacts"],
+    queryFn: () => fetchList<SupplierWithContacts>(`/api/proxy/accounts-payable/suppliers/`),
+    staleTime: 5 * 60_000,
+  })
+}
+
+// ─── Cotacao Logs ─────────────────────────────────────────────────────────────
+
+export function useCotacaoLogs(serviceOrderId: string | undefined) {
+  return useQuery<CotacaoLog[]>({
+    queryKey: [...purchasingKeys.all, "cotacao-logs", serviceOrderId],
+    queryFn: () =>
+      fetchList<CotacaoLog>(`${PURCHASING}/cotacao-logs/?service_order=${serviceOrderId}`),
+    enabled: !!serviceOrderId,
+  })
+}
+
+export function useRegistrarCotacao() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: {
+      service_order: string
+      supplier: string
+      supplier_contact?: string | null
+      mensagem: string
+      pedido_ids: string[]
+    }) =>
+      apiFetch<CotacaoLog>(`${PURCHASING}/cotacao-logs/`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: purchasingKeys.all })
+    },
+  })
+}
+
+// ─── Respostas Cotacao ────────────────────────────────────────────────────────
+
+export function useRespostasCotacao(serviceOrderId: string | undefined) {
+  return useQuery<RespostaCotacao[]>({
+    queryKey: [...purchasingKeys.all, "respostas", serviceOrderId],
+    queryFn: () =>
+      fetchList<RespostaCotacao>(
+        `${PURCHASING}/respostas-cotacao/?service_order=${serviceOrderId}`,
+      ),
+    enabled: !!serviceOrderId,
+  })
+}
+
+export function useRegistrarResposta() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: {
+      pedido_compra: string
+      supplier: string
+      valor_unitario: string
+      prazo_entrega?: string
+      condicoes_pagamento?: string
+      observacoes?: string
+    }) =>
+      apiFetch<RespostaCotacao>(`${PURCHASING}/respostas-cotacao/`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: purchasingKeys.all })
+    },
+  })
+}
+
+export function useSelecionarResposta() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (respostaId: string) =>
+      apiFetch<RespostaCotacao>(
+        `${PURCHASING}/respostas-cotacao/${respostaId}/selecionar/`,
+        { method: "POST" },
+      ),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: purchasingKeys.all })
+    },
   })
 }
 

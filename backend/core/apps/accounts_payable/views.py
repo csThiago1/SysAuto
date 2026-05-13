@@ -18,12 +18,13 @@ from rest_framework.viewsets import ModelViewSet
 from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
 
 from .filters import PayableDocumentFilter, SupplierFilter
-from .models import PayableDocument, Supplier
+from .models import PayableDocument, Supplier, SupplierContact
 from .serializers import (
     CreatePayableDocumentSerializer,
     PayableDocumentListSerializer,
     PayableDocumentSerializer,
     RecordPaymentSerializer,
+    SupplierContactSerializer,
     SupplierListSerializer,
     SupplierSerializer,
 )
@@ -72,6 +73,17 @@ class SupplierViewSet(ModelViewSet):
     def perform_update(self, serializer: Any) -> None:
         """Injeta usuario atualizador."""
         serializer.save()
+
+    @action(detail=True, methods=["get", "post"], url_path="contacts")
+    def contacts(self, request: Request, pk: str | None = None) -> Response:
+        supplier = self.get_object()
+        if request.method == "GET":
+            qs = SupplierContact.objects.filter(supplier=supplier, is_active=True)
+            return Response(SupplierContactSerializer(qs, many=True).data)
+        serializer = SupplierContactSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(supplier=supplier)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class PayableDocumentViewSet(ModelViewSet):

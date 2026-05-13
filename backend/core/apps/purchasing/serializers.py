@@ -3,7 +3,7 @@ Paddock Solutions — Purchasing — Serializers
 """
 from rest_framework import serializers
 
-from apps.purchasing.models import ItemOrdemCompra, OrdemCompra, PedidoCompra
+from apps.purchasing.models import CotacaoLog, ItemOrdemCompra, OrdemCompra, PedidoCompra, RespostaCotacao
 
 
 class PedidoCompraSerializer(serializers.ModelSerializer):
@@ -186,6 +186,64 @@ class AdicionarItemOCInputSerializer(serializers.Serializer):
         max_length=100, required=False, default="", allow_blank=True,
     )
     observacoes = serializers.CharField(required=False, default="", allow_blank=True)
+
+
+class CotacaoLogSerializer(serializers.ModelSerializer):
+    enviado_por_nome = serializers.CharField(source="enviado_por.email", read_only=True)
+    supplier_name = serializers.CharField(source="supplier.name", read_only=True)
+    contact_name = serializers.CharField(source="supplier_contact.name", read_only=True, default="")
+
+    class Meta:
+        model = CotacaoLog
+        fields = [
+            "id",
+            "service_order",
+            "supplier",
+            "supplier_name",
+            "supplier_contact",
+            "contact_name",
+            "enviado_por",
+            "enviado_por_nome",
+            "mensagem",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "enviado_por",
+            "enviado_por_nome",
+            "supplier_name",
+            "contact_name",
+            "created_at",
+        ]
+
+
+class RespostaCotacaoSerializer(serializers.ModelSerializer):
+    supplier_name = serializers.CharField(source="supplier.name", read_only=True)
+    registrado_por_nome = serializers.CharField(source="registrado_por.email", read_only=True)
+
+    class Meta:
+        model = RespostaCotacao
+        fields = [
+            "id",
+            "pedido_compra",
+            "supplier",
+            "supplier_name",
+            "valor_unitario",
+            "prazo_entrega",
+            "condicoes_pagamento",
+            "observacoes",
+            "selecionada",
+            "registrado_por",
+            "registrado_por_nome",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "registrado_por",
+            "registrado_por_nome",
+            "supplier_name",
+            "created_at",
+        ]
 
 
 class DashboardComprasSerializer(serializers.Serializer):

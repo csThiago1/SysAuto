@@ -64,6 +64,25 @@ class Supplier(PaddockBaseModel):
         return self.name
 
 
+class SupplierContact(PaddockBaseModel):
+    """Contato de um fornecedor (vendedor, representante)."""
+
+    supplier = models.ForeignKey(
+        Supplier, on_delete=models.CASCADE, related_name="contacts"
+    )
+    name = models.CharField("Nome", max_length=150)
+    phone = models.CharField("Telefone", max_length=20, blank=True, default="")
+    role = models.CharField("Cargo", max_length=100, blank=True, default="")
+    is_whatsapp = models.BooleanField("WhatsApp?", default=True)
+
+    class Meta(PaddockBaseModel.Meta):
+        db_table = "accounts_payable_supplier_contact"
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.supplier.name})"
+
+
 class PayableDocument(PaddockBaseModel):
     """Titulo a pagar — representa uma obrigacao de pagamento."""
 
