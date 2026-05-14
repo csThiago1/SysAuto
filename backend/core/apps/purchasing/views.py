@@ -4,7 +4,9 @@ Paddock Solutions — Purchasing — Views
 import base64
 import datetime
 import logging
+import re
 from collections import defaultdict
+from datetime import timedelta
 
 from django.core.cache import cache
 from django.db.models import Count, Q
@@ -22,21 +24,43 @@ from apps.authentication.permissions import (
     IsManagerOrAbove,
     IsStorekeeperOrAbove,
 )
-from apps.purchasing.models import AprovacaoCotacao, CotacaoLog, ItemOrdemCompra, OrdemCompra, PedidoCompra, RespostaCotacao
+from apps.purchasing.models import AprovacaoCotacao, CondicaoPagamento, CotacaoLog, ItemOrdemCompra, OrdemCompra, PedidoCompra, PrazoEntrega, RespostaCotacao
 from apps.purchasing.serializers import (
     AdicionarItemOCInputSerializer,
     AprovacaoCotacaoSerializer,
+    CondicaoPagamentoSerializer,
     CotacaoLogSerializer,
     DashboardComprasSerializer,
     ItemOrdemCompraSerializer,
     OrdemCompraDetailSerializer,
     OrdemCompraListSerializer,
     PedidoCompraSerializer,
+    PrazoEntregaSerializer,
     RespostaCotacaoSerializer,
 )
 from apps.purchasing.services import OrdemCompraService, PedidoCompraService
 
 logger = logging.getLogger(__name__)
+
+
+class PrazoEntregaViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """GET lista opções de prazo de entrega, POST cria nova opção custom."""
+
+    serializer_class = PrazoEntregaSerializer
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get_queryset(self):  # type: ignore[override]
+        return PrazoEntrega.objects.filter(is_active=True)
+
+
+class CondicaoPagamentoViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """GET lista opções de condição de pagamento, POST cria nova opção custom."""
+
+    serializer_class = CondicaoPagamentoSerializer
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get_queryset(self):  # type: ignore[override]
+        return CondicaoPagamento.objects.filter(is_active=True)
 
 
 class PedidoCompraViewSet(viewsets.ReadOnlyModelViewSet):
@@ -263,6 +287,50 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
                 {"detail": "Erro interno ao processar requisicao."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path=r"itens/(?P<item_id>[^/.]+)/receber",
+        permission_classes=[IsAuthenticated, IsStorekeeperOrAbove],
+    )
+    def receber_item(self, request: Request, pk: str | None = None, item_id: str | None = None) -> Response:
+        """POST /ordens-compra/{oc_id}/itens/{item_id}/receber/
+
+        Body: { "destino": "os_direta" | "estoque_geral", "nfe_entrada_id": "uuid" (optional) }
+        """
+        oc = self.get_object()
+        try:
+            item = oc.itens.get(pk=item_id, is_active=True)
+        except ItemOrdemCompra.DoesNotExist:
+            return Response({"detail": "Item não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        if item.status_entrega == "recebido":
+            return Response({"detail": "Item já recebido."}, status=status.HTTP_400_BAD_REQUEST)
+
+        destino = request.data.get("destino", "estoque_geral")
+        nfe_id = request.data.get("nfe_entrada_id")
+
+        item.status_entrega = "recebido"
+        item.data_recebimento = timezone.now().date()
+        item.destino = destino
+        if nfe_id:
+            item.nfe_entrada_id = nfe_id
+        item.save(update_fields=["status_entrega", "data_recebimento", "destino", "nfe_entrada_id", "updated_at"])
+
+        if item.pedido_compra:
+            item.pedido_compra.status = PedidoCompra.Status.RECEBIDO
+            item.pedido_compra.save(update_fields=["status", "updated_at"])
+
+        all_received = not oc.itens.filter(is_active=True).exclude(status_entrega="recebido").exists()
+        if all_received:
+            oc.status = OrdemCompra.Status.CONCLUIDA
+            oc.save(update_fields=["status", "updated_at"])
+        else:
+            oc.status = OrdemCompra.Status.PARCIAL_RECEBIDA
+            oc.save(update_fields=["status", "updated_at"])
+
+        return Response(ItemOrdemCompraSerializer(item).data)
 
     @action(
         detail=True,
@@ -651,6 +719,13 @@ class AprovacaoCotacaoViewSet(
             )
 
             for resp in respostas:
+                data_prevista = None
+                if resp.prazo_entrega_obj and resp.prazo_entrega_obj.dias_uteis is not None:
+                    data_prevista = timezone.now().date() + timedelta(days=resp.prazo_entrega_obj.dias_uteis)
+                elif resp.prazo_entrega:
+                    match = re.search(r"(\d+)", resp.prazo_entrega)
+                    if match:
+                        data_prevista = timezone.now().date() + timedelta(days=int(match.group(1)))
                 ItemOrdemCompra.objects.create(
                     ordem_compra=oc,
                     pedido_compra=resp.pedido_compra,
@@ -663,6 +738,7 @@ class AprovacaoCotacaoViewSet(
                     valor_unitario=resp.valor_unitario,
                     valor_total=resp.valor_unitario * resp.pedido_compra.quantidade,
                     prazo_entrega=resp.prazo_entrega,
+                    data_prevista=data_prevista,
                     observacoes=resp.observacoes,
                 )
                 resp.pedido_compra.status = PedidoCompra.Status.APROVADO

@@ -3,7 +3,21 @@ Paddock Solutions — Purchasing — Serializers
 """
 from rest_framework import serializers
 
-from apps.purchasing.models import AprovacaoCotacao, CotacaoLog, ItemOrdemCompra, OrdemCompra, PedidoCompra, RespostaCotacao
+from apps.purchasing.models import AprovacaoCotacao, CondicaoPagamento, CotacaoLog, ItemOrdemCompra, OrdemCompra, PedidoCompra, PrazoEntrega, RespostaCotacao
+
+
+class PrazoEntregaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PrazoEntrega
+        fields = ["id", "label", "dias_uteis"]
+        read_only_fields = ["id"]
+
+
+class CondicaoPagamentoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CondicaoPagamento
+        fields = ["id", "label"]
+        read_only_fields = ["id"]
 
 
 class PedidoCompraSerializer(serializers.ModelSerializer):
@@ -111,6 +125,10 @@ class ItemOrdemCompraSerializer(serializers.ModelSerializer):
     tipo_qualidade_display = serializers.CharField(
         source="get_tipo_qualidade_display", read_only=True,
     )
+    status_entrega = serializers.CharField(read_only=True)
+    data_prevista = serializers.DateField(read_only=True)
+    data_recebimento = serializers.DateField(read_only=True)
+    destino = serializers.CharField(read_only=True)
 
     class Meta:
         model = ItemOrdemCompra
@@ -131,9 +149,14 @@ class ItemOrdemCompraSerializer(serializers.ModelSerializer):
             "valor_total",
             "prazo_entrega",
             "observacoes",
+            "status_entrega",
+            "data_prevista",
+            "data_recebimento",
+            "destino",
+            "nfe_entrada",
             "created_at",
         ]
-        read_only_fields = ["id", "valor_total", "created_at"]
+        read_only_fields = ["id", "valor_total", "status_entrega", "data_prevista", "data_recebimento", "destino", "nfe_entrada", "created_at"]
 
 
 class OrdemCompraListSerializer(serializers.ModelSerializer):
@@ -239,6 +262,18 @@ class CotacaoLogSerializer(serializers.ModelSerializer):
 class RespostaCotacaoSerializer(serializers.ModelSerializer):
     supplier_name = serializers.CharField(source="supplier.name", read_only=True)
     registrado_por_nome = serializers.CharField(source="registrado_por.email", read_only=True)
+    prazo_entrega_obj = serializers.PrimaryKeyRelatedField(
+        queryset=PrazoEntrega.objects.all(), required=False, allow_null=True,
+    )
+    condicao_pagamento_obj = serializers.PrimaryKeyRelatedField(
+        queryset=CondicaoPagamento.objects.all(), required=False, allow_null=True,
+    )
+    prazo_entrega_label = serializers.CharField(
+        source="prazo_entrega_obj.label", read_only=True, default="",
+    )
+    condicao_pagamento_label = serializers.CharField(
+        source="condicao_pagamento_obj.label", read_only=True, default="",
+    )
 
     class Meta:
         model = RespostaCotacao
@@ -249,7 +284,11 @@ class RespostaCotacaoSerializer(serializers.ModelSerializer):
             "supplier_name",
             "valor_unitario",
             "prazo_entrega",
+            "prazo_entrega_obj",
+            "prazo_entrega_label",
             "condicoes_pagamento",
+            "condicao_pagamento_obj",
+            "condicao_pagamento_label",
             "observacoes",
             "selecionada",
             "registrado_por",
@@ -261,6 +300,8 @@ class RespostaCotacaoSerializer(serializers.ModelSerializer):
             "registrado_por",
             "registrado_por_nome",
             "supplier_name",
+            "prazo_entrega_label",
+            "condicao_pagamento_label",
             "created_at",
         ]
 

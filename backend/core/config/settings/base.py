@@ -261,6 +261,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.accounting.tasks.task_generate_recurring_expenses_all_tenants",
         "schedule": crontab(hour=7, minute=0, day_of_month=1),  # Dia 1 de cada mês às 07:00
     },
+    # Compras — verificar prazos de entrega e marcar itens atrasados
+    "purchasing-check-deadlines": {
+        "task": "apps.purchasing.tasks.task_check_delivery_deadlines",
+        "schedule": crontab(hour=7, minute=30),  # Todo dia às 07:30
+    },
 }
 
 # ─── Django Channels ─────────────────────────────────────────────────────────

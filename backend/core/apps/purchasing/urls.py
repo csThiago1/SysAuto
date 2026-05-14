@@ -4,10 +4,12 @@ from rest_framework.routers import SimpleRouter
 from apps.purchasing.views import (
     AdicionarItemOCView,
     AprovacaoCotacaoViewSet,
+    CondicaoPagamentoViewSet,
     CotacaoLogViewSet,
     DashboardComprasView,
     OrdemCompraViewSet,
     PedidoCompraViewSet,
+    PrazoEntregaViewSet,
     RegistrarRecebimentoView,
     RemoverItemOCView,
     RespostaCotacaoViewSet,
@@ -19,6 +21,8 @@ router.register(r"ordens-compra", OrdemCompraViewSet, basename="ordem-compra")
 router.register(r"cotacao-logs", CotacaoLogViewSet, basename="cotacao-log")
 router.register(r"respostas-cotacao", RespostaCotacaoViewSet, basename="resposta-cotacao")
 router.register(r"aprovacoes", AprovacaoCotacaoViewSet, basename="aprovacao-cotacao")
+router.register(r"prazos-entrega", PrazoEntregaViewSet, basename="prazo-entrega")
+router.register(r"condicoes-pagamento", CondicaoPagamentoViewSet, basename="condicao-pagamento")
 
 urlpatterns = [
     path(

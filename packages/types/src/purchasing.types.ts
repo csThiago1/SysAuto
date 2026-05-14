@@ -4,6 +4,19 @@
  * Espelha os models do backend purchasing/. Manter em sincronia.
  */
 
+// ─── Opções padronizadas ─────────────────────────────────────────────────────────
+
+export interface PrazoEntrega {
+  id: string
+  label: string
+  dias_uteis: number
+}
+
+export interface CondicaoPagamento {
+  id: string
+  label: string
+}
+
 // ─── Enums ──────────────────────────────────────────────────────────────────────
 
 export type TipoQualidade = "genuina" | "reposicao" | "similar" | "usada"
@@ -67,6 +80,10 @@ export interface PedidoCompra {
   created_at: string
 }
 
+export type StatusEntrega = "aguardando" | "em_transito" | "recebido" | "atrasado"
+
+export type DestinoEntrega = "os_direta" | "estoque_geral" | ""
+
 export interface ItemOrdemCompra {
   id: string
   ordem_compra: string
@@ -84,6 +101,11 @@ export interface ItemOrdemCompra {
   valor_total: string
   prazo_entrega: string
   observacoes: string
+  status_entrega: StatusEntrega
+  data_prevista: string | null
+  data_recebimento: string | null
+  destino: DestinoEntrega
+  nfe_entrada: string | null
   created_at: string
 }
 
@@ -196,7 +218,11 @@ export interface RespostaCotacao {
   supplier_name: string
   valor_unitario: string
   prazo_entrega: string
+  prazo_entrega_obj: string | null
+  prazo_entrega_label: string
   condicoes_pagamento: string
+  condicao_pagamento_obj: string | null
+  condicao_pagamento_label: string
   observacoes: string
   selecionada: boolean
   registrado_por: string

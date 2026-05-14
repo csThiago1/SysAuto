@@ -8,12 +8,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   AdicionarItemOCInput,
   AprovacaoCotacao,
+  CondicaoPagamento,
   CotacaoLog,
   DashboardComprasStats,
+  DestinoEntrega,
   ItemOrdemCompra,
   OrdemCompra,
   OrdemCompraDetail,
   PedidoCompra,
+  PrazoEntrega,
   RespostaCotacao,
   SupplierWithContacts,
 } from "@paddock/types"
@@ -390,6 +393,78 @@ export function useRejeitarCotacao() {
         method: "POST",
         body: JSON.stringify({ motivo_rejeicao }),
       }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: purchasingKeys.all })
+    },
+  })
+}
+
+// ─── Prazos de Entrega e Condições de Pagamento ───────────────────────────────
+
+export function usePrazosEntrega() {
+  return useQuery<PrazoEntrega[]>({
+    queryKey: [...purchasingKeys.all, "prazos-entrega"],
+    queryFn: () => fetchList<PrazoEntrega>(`${PURCHASING}/prazos-entrega/`),
+    staleTime: 30 * 60_000,
+  })
+}
+
+export function useCondicoesPagamento() {
+  return useQuery<CondicaoPagamento[]>({
+    queryKey: [...purchasingKeys.all, "condicoes-pagamento"],
+    queryFn: () => fetchList<CondicaoPagamento>(`${PURCHASING}/condicoes-pagamento/`),
+    staleTime: 30 * 60_000,
+  })
+}
+
+export function useCreatePrazo() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { label: string; dias_uteis: number }) =>
+      apiFetch<PrazoEntrega>(`${PURCHASING}/prazos-entrega/`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [...purchasingKeys.all, "prazos-entrega"] })
+    },
+  })
+}
+
+export function useCreateCondicao() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { label: string }) =>
+      apiFetch<CondicaoPagamento>(`${PURCHASING}/condicoes-pagamento/`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: [...purchasingKeys.all, "condicoes-pagamento"] })
+    },
+  })
+}
+
+export function useReceberItem() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      ocId,
+      itemId,
+      ...data
+    }: {
+      ocId: string
+      itemId: string
+      destino: DestinoEntrega
+      nfe_entrada_id?: string
+    }) =>
+      apiFetch<ItemOrdemCompra>(
+        `${PURCHASING}/ordens-compra/${ocId}/itens/${itemId}/receber/`,
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+        },
+      ),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: purchasingKeys.all })
     },
