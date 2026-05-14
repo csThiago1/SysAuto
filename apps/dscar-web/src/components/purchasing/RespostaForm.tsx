@@ -206,10 +206,12 @@ export function RespostaForm({ pedidos, open, onOpenChange }: RespostaFormProps)
           pedido_compra: pedido.id,
           supplier: supplierId,
           valor_unitario: r.valor_unitario,
-          prazo_entrega: "",
-          condicoes_pagamento: "",
-          ...(r.prazo_entrega_obj ? { prazo_entrega_obj: r.prazo_entrega_obj } : {}),
-          ...(r.condicao_pagamento_obj ? { condicao_pagamento_obj: r.condicao_pagamento_obj } : {}),
+          ...(r.prazo_entrega_obj
+            ? { prazo_entrega_obj: r.prazo_entrega_obj }
+            : { prazo_entrega: r.prazo_entrega ?? "" }),
+          ...(r.condicao_pagamento_obj
+            ? { condicao_pagamento_obj: r.condicao_pagamento_obj }
+            : { condicoes_pagamento: r.condicoes_pagamento ?? "" }),
         })
       }
       toast.success(
