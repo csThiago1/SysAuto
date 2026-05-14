@@ -319,6 +319,15 @@ class Command(BaseCommand):
         for make in VehicleMake.objects.all():
             make_by_name[make.nome.upper()] = make
             make_by_norm[make.nome_normalizado.upper()] = make
+            # Aliases: "GM - Chevrolet" → also match "CHEVROLET"
+            # Split on " - " and register each part
+            for part in make.nome.split(" - "):
+                part_upper = part.strip().upper()
+                if part_upper and part_upper not in make_by_name:
+                    make_by_name[part_upper] = make
+                part_norm = _normalize(part.strip())
+                if part_norm and part_norm not in make_by_norm:
+                    make_by_norm[part_norm] = make
 
         model_by_norm: dict[tuple[int, str], Any] = {}
         for model in VehicleModel.objects.select_related("marca").all():
