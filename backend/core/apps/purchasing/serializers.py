@@ -3,7 +3,7 @@ Paddock Solutions — Purchasing — Serializers
 """
 from rest_framework import serializers
 
-from apps.purchasing.models import CotacaoLog, ItemOrdemCompra, OrdemCompra, PedidoCompra, RespostaCotacao
+from apps.purchasing.models import AprovacaoCotacao, CotacaoLog, ItemOrdemCompra, OrdemCompra, PedidoCompra, RespostaCotacao
 
 
 class PedidoCompraSerializer(serializers.ModelSerializer):
@@ -40,6 +40,11 @@ class PedidoCompraSerializer(serializers.ModelSerializer):
     os_fuel_type = serializers.CharField(
         source="service_order.fuel_type", read_only=True, default="",
     )
+    os_customer_type = serializers.CharField(
+        source="service_order.customer_type", read_only=True, default="",
+    )
+    os_customer_name = serializers.SerializerMethodField()
+    os_insurer_name = serializers.SerializerMethodField()
     veiculo = serializers.SerializerMethodField()
 
     class Meta:
@@ -67,6 +72,9 @@ class PedidoCompraSerializer(serializers.ModelSerializer):
             "os_vehicle_version",
             "os_year",
             "os_fuel_type",
+            "os_customer_type",
+            "os_customer_name",
+            "os_insurer_name",
             "veiculo",
             "created_at",
         ]
@@ -75,6 +83,17 @@ class PedidoCompraSerializer(serializers.ModelSerializer):
     def get_os_year(self, obj: PedidoCompra) -> str:
         year = getattr(obj.service_order, "year", None)
         return str(year) if year else ""
+
+    def get_os_customer_name(self, obj: PedidoCompra) -> str:
+        so = obj.service_order
+        customer = getattr(so, "customer", None)
+        if customer:
+            return getattr(customer, "name", "") or ""
+        return getattr(so, "customer_name", "") or ""
+
+    def get_os_insurer_name(self, obj: PedidoCompra) -> str:
+        insurer = getattr(obj.service_order, "insurer", None)
+        return insurer.name if insurer else ""
 
     def get_veiculo(self, obj: PedidoCompra) -> str:
         os = obj.service_order
@@ -253,3 +272,43 @@ class DashboardComprasSerializer(serializers.Serializer):
     em_cotacao = serializers.IntegerField()
     aguardando_aprovacao = serializers.IntegerField()
     aprovadas_hoje = serializers.IntegerField()
+
+
+class AprovacaoCotacaoSerializer(serializers.ModelSerializer):
+    enviado_por_nome = serializers.CharField(source="enviado_por.email", read_only=True)
+    aprovado_por_nome = serializers.CharField(source="aprovado_por.email", read_only=True, default="")
+    os_number = serializers.IntegerField(source="service_order.number", read_only=True)
+    os_make = serializers.CharField(source="service_order.make", read_only=True)
+    os_model = serializers.CharField(source="service_order.model", read_only=True)
+    os_year = serializers.SerializerMethodField()
+    os_plate = serializers.CharField(source="service_order.plate", read_only=True)
+    os_customer_type = serializers.CharField(source="service_order.customer_type", read_only=True)
+    os_customer_name = serializers.CharField(source="service_order.customer_name", read_only=True)
+    os_insurer_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AprovacaoCotacao
+        fields = [
+            "id", "service_order", "status",
+            "enviado_por", "enviado_por_nome",
+            "aprovado_por", "aprovado_por_nome", "aprovado_em",
+            "observacoes_comprador", "observacoes_financeiro", "motivo_rejeicao",
+            "os_number", "os_make", "os_model", "os_year", "os_plate",
+            "os_customer_type", "os_customer_name", "os_insurer_name",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id", "enviado_por", "enviado_por_nome",
+            "aprovado_por", "aprovado_por_nome", "aprovado_em",
+            "os_number", "os_make", "os_model", "os_year", "os_plate",
+            "os_customer_type", "os_customer_name", "os_insurer_name",
+            "created_at",
+        ]
+
+    def get_os_year(self, obj: AprovacaoCotacao) -> str:
+        year = getattr(obj.service_order, "year", None)
+        return str(year) if year else ""
+
+    def get_os_insurer_name(self, obj: AprovacaoCotacao) -> str:
+        insurer = getattr(obj.service_order, "insurer", None)
+        return insurer.name if insurer else ""

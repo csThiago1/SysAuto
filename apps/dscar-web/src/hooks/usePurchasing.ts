@@ -7,6 +7,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   AdicionarItemOCInput,
+  AprovacaoCotacao,
   CotacaoLog,
   DashboardComprasStats,
   ItemOrdemCompra,
@@ -322,6 +323,73 @@ export function useSelecionarResposta() {
         `${PURCHASING}/respostas-cotacao/${respostaId}/selecionar/`,
         { method: "POST" },
       ),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: purchasingKeys.all })
+    },
+  })
+}
+
+// ─── Aprovacoes Cotacao ───────────────────────────────────────────────────────
+
+export function useAprovacoes(statusFilter?: string) {
+  const qs = statusFilter ? `?status=${statusFilter}` : ""
+  return useQuery<AprovacaoCotacao[]>({
+    queryKey: [...purchasingKeys.all, "aprovacoes", statusFilter],
+    queryFn: () => fetchList<AprovacaoCotacao>(`${PURCHASING}/aprovacoes/${qs}`),
+  })
+}
+
+export function useAprovacao(id: string) {
+  return useQuery<AprovacaoCotacao>({
+    queryKey: [...purchasingKeys.all, "aprovacao", id],
+    queryFn: () => apiFetch<AprovacaoCotacao>(`${PURCHASING}/aprovacoes/${id}/`),
+    enabled: !!id,
+  })
+}
+
+export function useEnviarParaAprovacao() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { service_order: string; observacoes_comprador?: string }) =>
+      apiFetch<AprovacaoCotacao>(`${PURCHASING}/aprovacoes/`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: purchasingKeys.all })
+    },
+  })
+}
+
+export function useAprovarCotacao() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      id,
+      ...data
+    }: {
+      id: string
+      selecoes: { pedido_compra_id: string; resposta_cotacao_id: string }[]
+      observacoes_financeiro?: string
+    }) =>
+      apiFetch<{ detail: string; ordens_compra: { id: string; numero: string }[] }>(
+        `${PURCHASING}/aprovacoes/${id}/aprovar/`,
+        { method: "POST", body: JSON.stringify(data) },
+      ),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: purchasingKeys.all })
+    },
+  })
+}
+
+export function useRejeitarCotacao() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, motivo_rejeicao }: { id: string; motivo_rejeicao?: string }) =>
+      apiFetch<AprovacaoCotacao>(`${PURCHASING}/aprovacoes/${id}/rejeitar/`, {
+        method: "POST",
+        body: JSON.stringify({ motivo_rejeicao }),
+      }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: purchasingKeys.all })
     },

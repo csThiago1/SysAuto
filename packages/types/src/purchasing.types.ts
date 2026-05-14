@@ -60,6 +60,9 @@ export interface PedidoCompra {
   os_vehicle_version: string
   os_year: string
   os_fuel_type: string
+  os_customer_type: string
+  os_customer_name: string
+  os_insurer_name: string
   veiculo: string
   created_at: string
 }
@@ -198,6 +201,29 @@ export interface RespostaCotacao {
   selecionada: boolean
   registrado_por: string
   registrado_por_nome: string
+  created_at: string
+}
+
+export interface AprovacaoCotacao {
+  id: string
+  service_order: string
+  status: "pendente" | "aprovada" | "rejeitada"
+  enviado_por: string
+  enviado_por_nome: string
+  aprovado_por: string | null
+  aprovado_por_nome: string
+  aprovado_em: string | null
+  observacoes_comprador: string
+  observacoes_financeiro: string
+  motivo_rejeicao: string
+  os_number: number
+  os_make: string
+  os_model: string
+  os_year: string
+  os_plate: string
+  os_customer_type: string
+  os_customer_name: string
+  os_insurer_name: string
   created_at: string
 }
 

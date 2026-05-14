@@ -2,92 +2,50 @@
 
 import { use, useState, useMemo } from "react"
 import Link from "next/link"
-import { ArrowRight, MessageSquare, PlusCircle, ClipboardList, CheckSquare, Square } from "lucide-react"
+import { ArrowRight, MessageSquare, PlusCircle, Send } from "lucide-react"
 import { toast } from "sonner"
 import {
   usePedidosCompra,
   useRespostasCotacao,
   useCotacaoLogs,
   useIniciarCotacao,
-  useSelecionarResposta,
+  useAprovacoes,
+  useEnviarParaAprovacao,
 } from "@/hooks/usePurchasing"
-import type { PedidoCompra, RespostaCotacao, StatusPedidoCompra } from "@paddock/types"
+import type { AprovacaoCotacao, PedidoCompra, RespostaCotacao, StatusPedidoCompra } from "@paddock/types"
 import { QuotationBuilder } from "@/components/purchasing/QuotationBuilder"
 import { RespostaForm } from "@/components/purchasing/RespostaForm"
-import { MontarOCModal } from "@/components/purchasing/MontarOCModal"
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; bg: string; text: string; border: string }
-> = {
-  solicitado: {
-    label: "Solicitado",
-    bg: "bg-warning-500/10",
-    text: "text-warning-400",
-    border: "border-warning-500/20",
-  },
-  em_cotacao: {
-    label: "Em Cotacao",
-    bg: "bg-info-500/10",
-    text: "text-info-400",
-    border: "border-info-500/20",
-  },
-  oc_pendente: {
-    label: "OC Pendente",
-    bg: "bg-purple-500/10",
-    text: "text-purple-400",
-    border: "border-purple-500/20",
-  },
-  aprovado: {
-    label: "Aprovado",
-    bg: "bg-success-500/10",
-    text: "text-success-400",
-    border: "border-success-500/20",
-  },
-  comprado: {
-    label: "Comprado",
-    bg: "bg-info-500/10",
-    text: "text-info-400",
-    border: "border-info-500/20",
-  },
-  recebido: {
-    label: "Recebido",
-    bg: "bg-success-500/10",
-    text: "text-success-400",
-    border: "border-success-500/20",
-  },
-  cancelado: {
-    label: "Cancelado",
-    bg: "bg-muted/50",
-    text: "text-muted-foreground",
-    border: "border-border",
-  },
+const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string }> = {
+  solicitado: { label: "Solicitado", bg: "bg-warning-500/10", text: "text-warning-400", border: "border-warning-500/20" },
+  em_cotacao: { label: "Em Cotacao", bg: "bg-info-500/10", text: "text-info-400", border: "border-info-500/20" },
+  oc_pendente: { label: "OC Pendente", bg: "bg-purple-500/10", text: "text-purple-400", border: "border-purple-500/20" },
+  aprovado: { label: "Aprovado", bg: "bg-success-500/10", text: "text-success-400", border: "border-success-500/20" },
+  comprado: { label: "Comprado", bg: "bg-info-500/10", text: "text-info-400", border: "border-info-500/20" },
+  recebido: { label: "Recebido", bg: "bg-success-500/10", text: "text-success-400", border: "border-success-500/20" },
+  cancelado: { label: "Cancelado", bg: "bg-muted/50", text: "text-muted-foreground", border: "border-border" },
 }
 
 function StatusBadge({ status }: { status: StatusPedidoCompra }) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.solicitado
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${cfg.bg} ${cfg.text} ${cfg.border}`}
-    >
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${cfg.bg} ${cfg.text} ${cfg.border}`}>
       <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse-slow" />
       {cfg.label}
     </span>
   )
 }
 
-// ─── Comparativo table ────────────────────────────────────────────────────────
+// ─── Comparativo table (read-only — seleção é feita pelo financeiro) ──────────
 
 function ComparativoTable({
   pedidos,
   respostas,
-  onSelecionar,
 }: {
   pedidos: PedidoCompra[]
   respostas: RespostaCotacao[]
-  onSelecionar: (respostaId: string) => void
 }) {
   const uniqueSuppliers = useMemo(() => {
     const map = new Map<string, string>()
@@ -122,14 +80,9 @@ function ComparativoTable({
                 )}
               </td>
               {uniqueSuppliers.map((s) => {
-                const resp = respostas.find(
-                  (r) => r.pedido_compra === p.id && r.supplier === s.id,
-                )
+                const resp = respostas.find((r) => r.pedido_compra === p.id && r.supplier === s.id)
                 return (
-                  <td
-                    key={s.id}
-                    className={`px-3 py-2 ${resp?.selecionada ? "bg-success-500/5" : ""}`}
-                  >
+                  <td key={s.id} className="px-3 py-2">
                     {resp ? (
                       <div className="space-y-0.5">
                         <p className="font-mono font-semibold text-foreground">
@@ -143,21 +96,6 @@ function ComparativoTable({
                         )}
                         {resp.condicoes_pagamento && (
                           <p className="text-muted-foreground">{resp.condicoes_pagamento}</p>
-                        )}
-                        {resp.selecionada ? (
-                          <span className="inline-flex items-center gap-1 text-success-400 font-medium">
-                            <CheckSquare size={11} />
-                            Selecionado
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => onSelecionar(resp.id)}
-                            className="text-info-400 hover:text-info-300 transition-colors flex items-center gap-1"
-                          >
-                            <Square size={11} />
-                            Selecionar
-                          </button>
                         )}
                       </div>
                     ) : (
@@ -176,23 +114,27 @@ function ComparativoTable({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function CotacaoOSPage({
-  params,
-}: {
-  params: Promise<{ osId: string }>
-}) {
+export default function CotacaoOSPage({ params }: { params: Promise<{ osId: string }> }) {
   const { osId } = use(params)
 
   const { data: pedidos, isLoading } = usePedidosCompra({ service_order: osId })
   const { data: respostas } = useRespostasCotacao(osId)
   const { data: cotacaoLogs } = useCotacaoLogs(osId)
+  const { data: aprovacoes } = useAprovacoes()
   const iniciarCotacao = useIniciarCotacao()
-  const selecionarResposta = useSelecionarResposta()
+  const enviarParaAprovacao = useEnviarParaAprovacao()
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [showQuotation, setShowQuotation] = useState(false)
   const [showResposta, setShowResposta] = useState(false)
-  const [montarOCPedido, setMontarOCPedido] = useState<PedidoCompra | null>(null)
+  const [enviando, setEnviando] = useState(false)
+
+  const aprovacaoPendente = aprovacoes?.find(
+    (a: AprovacaoCotacao) => a.service_order === osId && a.status === "pendente",
+  )
+  const aprovacaoExiste = aprovacoes?.find(
+    (a: AprovacaoCotacao) => a.service_order === osId,
+  )
 
   const selectedPedidos = useMemo(
     () => pedidos?.filter((p) => selectedIds.has(p.id)) ?? [],
@@ -237,19 +179,16 @@ export default function CotacaoOSPage({
     }
   }
 
-  async function handleSelecionar(respostaId: string) {
+  async function handleEnviarParaAprovacao() {
+    setEnviando(true)
     try {
-      await selecionarResposta.mutateAsync(respostaId)
-      toast.success("Resposta selecionada.")
+      await enviarParaAprovacao.mutateAsync({ service_order: osId })
+      toast.success("Cotacao enviada para aprovacao financeira.")
     } catch {
-      toast.error("Erro ao selecionar resposta.")
+      toast.error("Erro ao enviar para aprovacao. Tente novamente.")
+    } finally {
+      setEnviando(false)
     }
-  }
-
-  function handleMontarOC() {
-    const selectedResp = respostas?.find((r) => r.selecionada)
-    const pedido = pedidos?.find((p) => p.id === selectedResp?.pedido_compra)
-    if (pedido) setMontarOCPedido(pedido)
   }
 
   const firstPedido = pedidos?.[0]
@@ -257,9 +196,12 @@ export default function CotacaoOSPage({
     ? `OS #${firstPedido.os_number} · ${firstPedido.os_make} ${firstPedido.os_model} ${firstPedido.os_year}`.trim()
     : "Carregando..."
 
+  const temRespostas = (respostas?.length ?? 0) > 0
+  const podaEnviar = temRespostas && !aprovacaoExiste
+
   return (
     <div className="p-6 space-y-6 max-w-5xl">
-      {/* ── Header com breadcrumb ── */}
+      {/* Header com breadcrumb */}
       <div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
           <Link href="/compras" className="hover:text-foreground transition-colors">
@@ -270,13 +212,25 @@ export default function CotacaoOSPage({
         </div>
         <h1 className="text-xl font-semibold text-foreground">{osTitle}</h1>
         {firstPedido?.os_plate && (
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Placa: {firstPedido.os_plate}
-          </p>
+          <p className="text-sm text-muted-foreground mt-0.5">Placa: {firstPedido.os_plate}</p>
+        )}
+        {aprovacaoPendente && (
+          <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-500/10 text-purple-400 border border-purple-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse-slow" />
+            Aguardando aprovacao financeira
+          </div>
+        )}
+        {aprovacaoExiste && aprovacaoExiste.status === "rejeitada" && (
+          <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-error-500/10 text-error-400 border border-error-500/20">
+            Rejeitada pelo financeiro
+            {aprovacaoExiste.motivo_rejeicao && (
+              <span className="ml-1 text-muted-foreground">— {aprovacaoExiste.motivo_rejeicao}</span>
+            )}
+          </div>
         )}
       </div>
 
-      {/* ── PECAS SOLICITADAS ── */}
+      {/* PECAS SOLICITADAS */}
       <div>
         <div className="flex items-center gap-3 mb-3">
           <div className="section-divider flex-1">PECAS SOLICITADAS</div>
@@ -340,9 +294,7 @@ export default function CotacaoOSPage({
                     <td className="px-3 py-2 text-xs text-muted-foreground font-mono">
                       {p.codigo_referencia || "—"}
                     </td>
-                    <td className="px-3 py-2 text-xs text-foreground/70 font-mono">
-                      {p.quantidade}
-                    </td>
+                    <td className="px-3 py-2 text-xs text-foreground/70 font-mono">{p.quantidade}</td>
                     <td className="px-3 py-2">
                       <StatusBadge status={p.status} />
                     </td>
@@ -353,7 +305,6 @@ export default function CotacaoOSPage({
           </table>
         </div>
 
-        {/* Botoes de acao */}
         <div className="flex items-center gap-2 mt-3">
           {selectedPedidos.length > 0 && (
             <button
@@ -383,7 +334,7 @@ export default function CotacaoOSPage({
         </div>
       </div>
 
-      {/* ── RESPOSTAS DOS FORNECEDORES ── */}
+      {/* RESPOSTAS DOS FORNECEDORES */}
       <div>
         <div className="flex items-center gap-3 mb-3">
           <div className="section-divider flex-1">RESPOSTAS DOS FORNECEDORES</div>
@@ -401,11 +352,7 @@ export default function CotacaoOSPage({
 
         {pedidosComResposta.length > 0 && respostas ? (
           <div className="bg-muted/50 rounded-md border border-border overflow-hidden">
-            <ComparativoTable
-              pedidos={pedidosComResposta}
-              respostas={respostas}
-              onSelecionar={handleSelecionar}
-            />
+            <ComparativoTable pedidos={pedidosComResposta} respostas={respostas} />
           </div>
         ) : (
           <div className="bg-muted/50 rounded-md border border-border p-8 text-center">
@@ -417,16 +364,13 @@ export default function CotacaoOSPage({
         )}
       </div>
 
-      {/* ── HISTORICO DE ENVIOS ── */}
+      {/* HISTORICO DE ENVIOS */}
       {cotacaoLogs && cotacaoLogs.length > 0 && (
         <div>
           <div className="section-divider mb-3">HISTORICO DE ENVIOS</div>
           <div className="space-y-1.5">
             {cotacaoLogs.map((log) => (
-              <div
-                key={log.id}
-                className="flex items-center gap-2 text-xs text-muted-foreground"
-              >
+              <div key={log.id} className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span className="text-foreground/70 font-medium">{log.supplier_name}</span>
                 {log.contact_name && <span>({log.contact_name})</span>}
                 <span>—</span>
@@ -444,22 +388,34 @@ export default function CotacaoOSPage({
         </div>
       )}
 
-      {/* ── ACAO FINAL ── */}
-      {respostas?.some((r) => r.selecionada) && (
-        <div className="flex justify-end pt-2">
+      {/* ACAO FINAL — Enviar para Aprovacao */}
+      <div className="flex justify-end pt-2">
+        {aprovacaoPendente ? (
+          <Link
+            href={`/compras/aprovacao/${aprovacaoPendente.id}`}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium
+                       bg-purple-500/10 text-purple-400 border border-purple-500/20
+                       hover:bg-purple-500/20 transition-colors"
+          >
+            Ver Aprovacao
+            <ArrowRight size={14} />
+          </Link>
+        ) : podaEnviar ? (
           <button
             type="button"
-            onClick={handleMontarOC}
+            onClick={() => void handleEnviarParaAprovacao()}
+            disabled={enviando}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium
-                       bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                       bg-primary text-primary-foreground hover:bg-primary/90 transition-colors
+                       disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ClipboardList size={14} />
-            Montar OC com selecionados
+            <Send size={14} />
+            {enviando ? "Enviando..." : "Enviar para Aprovacao Financeira"}
           </button>
-        </div>
-      )}
+        ) : null}
+      </div>
 
-      {/* ── Modais ── */}
+      {/* Modais */}
       {showQuotation && (
         <QuotationBuilder
           pedidos={selectedPedidos}
@@ -472,15 +428,6 @@ export default function CotacaoOSPage({
           pedidos={pedidosEmCotacao}
           open={showResposta}
           onOpenChange={setShowResposta}
-        />
-      )}
-      {montarOCPedido && (
-        <MontarOCModal
-          pedido={montarOCPedido}
-          open={!!montarOCPedido}
-          onOpenChange={(open) => {
-            if (!open) setMontarOCPedido(null)
-          }}
         />
       )}
     </div>

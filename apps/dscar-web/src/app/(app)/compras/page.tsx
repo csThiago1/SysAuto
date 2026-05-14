@@ -1,68 +1,48 @@
 "use client"
 
-import React, { useState, useMemo } from "react"
+import React, { useMemo } from "react"
 import Link from "next/link"
 import { ShoppingCart, ArrowRight } from "lucide-react"
-import {
-  useDashboardCompras,
-  usePedidosCompra,
-  useIniciarCotacao,
-} from "@/hooks/usePurchasing"
-import type { PedidoCompra, StatusPedidoCompra } from "@paddock/types"
-import { toast } from "sonner"
+import { useDashboardCompras, usePedidosCompra, useAprovacoes } from "@/hooks/usePurchasing"
+import type { AprovacaoCotacao } from "@paddock/types"
 
-// ─── Status badge ─────────────────────────────────────────────────────────────
+// ─── OS-level status config ───────────────────────────────────────────────────
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; bg: string; text: string; border: string }
-> = {
-  solicitado: {
+const OS_STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string }> = {
+  "Solicitado": {
     label: "Solicitado",
     bg: "bg-warning-500/10",
     text: "text-warning-400",
     border: "border-warning-500/20",
   },
-  em_cotacao: {
-    label: "Em Cotacao",
+  "Em cotacao": {
+    label: "Em cotacao",
     bg: "bg-info-500/10",
     text: "text-info-400",
     border: "border-info-500/20",
   },
-  oc_pendente: {
-    label: "OC Pendente",
+  "Aguard. aprovacao": {
+    label: "Aguard. aprovacao",
     bg: "bg-purple-500/10",
     text: "text-purple-400",
     border: "border-purple-500/20",
   },
-  aprovado: {
-    label: "Aprovado",
+  "Aprovada": {
+    label: "Aprovada",
     bg: "bg-success-500/10",
     text: "text-success-400",
     border: "border-success-500/20",
   },
-  comprado: {
-    label: "Comprado",
-    bg: "bg-info-500/10",
-    text: "text-info-400",
-    border: "border-info-500/20",
-  },
-  recebido: {
-    label: "Recebido",
-    bg: "bg-success-500/10",
-    text: "text-success-400",
-    border: "border-success-500/20",
-  },
-  cancelado: {
-    label: "Cancelado",
-    bg: "bg-muted/50",
-    text: "text-muted-foreground",
-    border: "border-border",
+  "Rejeitada": {
+    label: "Rejeitada",
+    bg: "bg-error-500/10",
+    text: "text-error-400",
+    border: "border-error-500/20",
   },
 }
 
-function StatusBadge({ status }: { status: StatusPedidoCompra }) {
-  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.solicitado
+function OSStatusBadge({ label }: { label: string }) {
+  const cfg = OS_STATUS_CONFIG[label] ?? OS_STATUS_CONFIG["Solicitado"]
   return (
     <span
       className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${cfg.bg} ${cfg.text} ${cfg.border}`}
@@ -85,84 +65,95 @@ function KPICard({
   color: "warning" | "info" | "purple" | "success"
 }) {
   const colorMap = {
-    warning: {
-      bg: "bg-warning-500/10",
-      border: "border-warning-500/15",
-      label: "text-warning-400",
-      value: "text-warning-400",
-    },
-    info: {
-      bg: "bg-info-500/10",
-      border: "border-info-500/15",
-      label: "text-info-400",
-      value: "text-info-400",
-    },
-    purple: {
-      bg: "bg-purple-500/10",
-      border: "border-purple-500/15",
-      label: "text-purple-400",
-      value: "text-purple-400",
-    },
-    success: {
-      bg: "bg-success-500/10",
-      border: "border-success-500/15",
-      label: "text-success-400",
-      value: "text-success-400",
-    },
+    warning: { bg: "bg-warning-500/10", border: "border-warning-500/15", text: "text-warning-400" },
+    info: { bg: "bg-info-500/10", border: "border-info-500/15", text: "text-info-400" },
+    purple: { bg: "bg-purple-500/10", border: "border-purple-500/15", text: "text-purple-400" },
+    success: { bg: "bg-success-500/10", border: "border-success-500/15", text: "text-success-400" },
   }
   const c = colorMap[color]
   return (
     <div className={`${c.bg} border ${c.border} rounded-lg p-4`}>
-      <p className={`label-mono ${c.label}`}>{label}</p>
-      <p className={`text-2xl font-bold font-mono mt-1 ${c.value}`}>{value}</p>
+      <p className={`label-mono ${c.text}`}>{label}</p>
+      <p className={`text-2xl font-bold font-mono mt-1 ${c.text}`}>{value}</p>
     </div>
   )
 }
 
+// ─── OS Row types ─────────────────────────────────────────────────────────────
+
+interface OSRow {
+  serviceOrderId: string
+  osNumber: number
+  vehicle: string
+  customerType: string
+  customerName: string
+  insurerName: string
+  totalParts: number
+  statusSummary: string
+  hasEmCotacao: boolean
+  hasSolicitado: boolean
+  aprovacaoId?: string
+  aprovacaoStatus?: string
+}
+
 // ─── Row action ───────────────────────────────────────────────────────────────
 
-function RowAction({
-  pedido,
-  onIniciar,
-  actioningId,
-}: {
-  pedido: PedidoCompra
-  onIniciar: (id: string) => void
-  actioningId: string | null
-}) {
-  if (pedido.status === "solicitado") {
-    return (
-      <button
-        type="button"
-        disabled={actioningId === pedido.id}
-        onClick={() => onIniciar(pedido.id)}
-        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium
-                   bg-warning-500/10 text-warning-400 border border-warning-500/20
-                   hover:bg-warning-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Iniciar Cotacao
-        <ArrowRight size={12} />
-      </button>
-    )
-  }
-  if (pedido.status === "em_cotacao") {
+function RowAction({ row }: { row: OSRow }) {
+  if (row.aprovacaoStatus === "pendente") {
     return (
       <Link
-        href={`/compras/cotacao/${pedido.service_order}`}
+        href={`/compras/aprovacao/${row.aprovacaoId}`}
         className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium
-                   bg-info-500/10 text-info-400 border border-info-500/20
-                   hover:bg-info-500/20 transition-colors"
+                   bg-purple-500/10 text-purple-400 border border-purple-500/20
+                   hover:bg-purple-500/20 transition-colors"
       >
-        Gerenciar Cotacoes
+        Ver Aprovacao
         <ArrowRight size={12} />
       </Link>
     )
   }
-  if (pedido.status === "oc_pendente") {
+  if (row.aprovacaoStatus === "aprovada") {
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-muted/50 text-muted-foreground border border-border">
-        OC gerada
-      </span>
+      <Link
+        href={`/compras/ordens?service_order=${row.serviceOrderId}`}
+        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium
+                   bg-success-500/10 text-success-400 border border-success-500/20
+                   hover:bg-success-500/20 transition-colors"
+      >
+        Ver OCs
+        <ArrowRight size={12} />
+      </Link>
+    )
+  }
+  if (row.aprovacaoStatus === "rejeitada") {
+    return (
+      <div className="flex items-center gap-1.5">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-error-500/10 text-error-400 border border-error-500/20">
+          Rejeitada
+        </span>
+        <Link
+          href={`/compras/cotacao/${row.serviceOrderId}`}
+          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium
+                     bg-warning-500/10 text-warning-400 border border-warning-500/20
+                     hover:bg-warning-500/20 transition-colors"
+        >
+          Reenviar
+          <ArrowRight size={12} />
+        </Link>
+      </div>
+    )
+  }
+  if (row.hasSolicitado || row.hasEmCotacao) {
+    return (
+      <Link
+        href={`/compras/cotacao/${row.serviceOrderId}`}
+        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium
+                   bg-info-500/10 text-info-400 border border-info-500/20
+                   hover:bg-info-500/20 transition-colors"
+      >
+        Gerenciar
+        <ArrowRight size={12} />
+      </Link>
     )
   }
   return <span className="text-xs text-muted-foreground/50">--</span>
@@ -170,74 +161,70 @@ function RowAction({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-interface OSGroup {
-  osNumber: number
-  vehicle: string
-  serviceOrderId: string
-  pedidos: PedidoCompra[]
-}
-
 export default function ComprasPage() {
   const { data: stats, isLoading: statsLoading } = useDashboardCompras()
-  const { data: pedidos, isLoading: pedidosLoading } = usePedidosCompra({
-    status: "solicitado,em_cotacao,oc_pendente",
-  })
-  const iniciarCotacao = useIniciarCotacao()
-  const [actioningId, setActioningId] = useState<string | null>(null)
+  const { data: pedidos, isLoading: pedidosLoading } = usePedidosCompra({})
+  const { data: aprovacoes } = useAprovacoes()
 
-  const pedidosByOS = useMemo<OSGroup[]>(() => {
+  const osRows = useMemo<OSRow[]>(() => {
     if (!pedidos) return []
-    const groups = new Map<string, OSGroup>()
+    const groups = new Map<string, OSRow>()
+
     for (const p of pedidos) {
       const key = p.service_order
       if (!groups.has(key)) {
+        const aprov = aprovacoes?.find((a: AprovacaoCotacao) => a.service_order === key)
         groups.set(key, {
+          serviceOrderId: key,
           osNumber: p.os_number ?? 0,
           vehicle: `${p.os_make ?? ""} ${p.os_model ?? ""} ${p.os_year ?? ""}`.trim(),
-          serviceOrderId: p.service_order,
-          pedidos: [],
+          customerType: p.os_customer_type ?? "private",
+          customerName: p.os_customer_name ?? "",
+          insurerName: p.os_insurer_name ?? "",
+          totalParts: 0,
+          statusSummary: "",
+          hasEmCotacao: false,
+          hasSolicitado: false,
+          aprovacaoId: aprov?.id,
+          aprovacaoStatus: aprov?.status,
         })
       }
-      groups.get(key)!.pedidos.push(p)
+      const row = groups.get(key)!
+      row.totalParts++
+      if (p.status === "em_cotacao") row.hasEmCotacao = true
+      if (p.status === "solicitado") row.hasSolicitado = true
     }
-    return Array.from(groups.values()).sort((a, b) => b.osNumber - a.osNumber)
-  }, [pedidos])
 
-  async function handleIniciar(id: string) {
-    setActioningId(id)
-    try {
-      await iniciarCotacao.mutateAsync(id)
-      toast.success("Cotacao iniciada com sucesso.")
-    } catch {
-      toast.error("Erro ao iniciar cotacao. Tente novamente.")
-    } finally {
-      setActioningId(null)
+    for (const row of groups.values()) {
+      if (row.aprovacaoStatus === "pendente") row.statusSummary = "Aguard. aprovacao"
+      else if (row.aprovacaoStatus === "aprovada") row.statusSummary = "Aprovada"
+      else if (row.aprovacaoStatus === "rejeitada") row.statusSummary = "Rejeitada"
+      else if (row.hasEmCotacao) row.statusSummary = "Em cotacao"
+      else if (row.hasSolicitado) row.statusSummary = "Solicitado"
+      else row.statusSummary = "—"
     }
-  }
+
+    return Array.from(groups.values()).sort((a, b) => b.osNumber - a.osNumber)
+  }, [pedidos, aprovacoes])
 
   return (
     <div className="p-6 space-y-6">
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center">
           <ShoppingCart size={20} className="text-foreground/60" />
         </div>
         <div>
           <h1 className="text-xl font-semibold text-foreground">Compras</h1>
-          <p className="text-sm text-muted-foreground">
-            Pedidos de compra e ordens de compra
-          </p>
+          <p className="text-sm text-muted-foreground">Pedidos de compra e ordens de compra</p>
         </div>
       </div>
 
-      {/* ── KPI Cards ── */}
+      {/* KPI Cards */}
       {statsLoading ? (
         <div className="grid grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="bg-muted/50 border border-border rounded-lg p-4 animate-pulse h-20"
-            />
+            <div key={i} className="bg-muted/50 border border-border rounded-lg p-4 animate-pulse h-20" />
           ))}
         </div>
       ) : (
@@ -249,19 +236,18 @@ export default function ComprasPage() {
         </div>
       )}
 
-      {/* ── Section divider ── */}
-      <div className="section-divider">PEDIDOS PENDENTES</div>
+      {/* Table */}
+      <div className="section-divider">ORDENS DE SERVICO COM PECAS</div>
 
-      {/* ── Table ── */}
       <div className="bg-muted/50 rounded-md border border-border overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
               <th className="label-mono text-muted-foreground text-left px-4 py-3">OS</th>
-              <th className="label-mono text-muted-foreground text-left px-4 py-3">Peca</th>
+              <th className="label-mono text-muted-foreground text-left px-4 py-3">Veiculo</th>
               <th className="label-mono text-muted-foreground text-left px-4 py-3">Tipo</th>
+              <th className="label-mono text-muted-foreground text-left px-4 py-3">Pecas</th>
               <th className="label-mono text-muted-foreground text-left px-4 py-3">Status</th>
-              <th className="label-mono text-muted-foreground text-left px-4 py-3">Data</th>
               <th className="label-mono text-muted-foreground text-left px-4 py-3">Acao</th>
             </tr>
           </thead>
@@ -276,58 +262,47 @@ export default function ComprasPage() {
                   ))}
                 </tr>
               ))
-            ) : !pedidosByOS.length ? (
+            ) : !osRows.length ? (
               <tr>
                 <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground text-sm">
-                  Nenhum pedido pendente
+                  Nenhuma OS com pedidos de compra
                 </td>
               </tr>
             ) : (
-              pedidosByOS.map((group) => (
-                <React.Fragment key={group.serviceOrderId}>
-                  {group.pedidos.map((p) => (
-                    <tr
-                      key={p.id}
-                      className={`border-b border-white/5 hover:bg-white/[0.02] transition-colors ${
-                        actioningId === p.id ? "opacity-50" : ""
-                      }`}
-                    >
-                      <td className="px-4 py-3">
-                        <span className="font-mono text-sm text-primary font-medium">
-                          {p.os_number ? `#${p.os_number}` : "--"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="text-sm text-foreground/70">{p.descricao}</span>
-                        {p.codigo_referencia && (
-                          <span className="ml-1.5 text-xs text-muted-foreground font-mono">
-                            {p.codigo_referencia}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="text-xs text-muted-foreground">
-                          {p.tipo_qualidade_display}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <StatusBadge status={p.status} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="text-xs text-muted-foreground font-mono">
-                          {new Date(p.created_at).toLocaleDateString("pt-BR")}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <RowAction
-                          pedido={p}
-                          onIniciar={handleIniciar}
-                          actioningId={actioningId}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </React.Fragment>
+              osRows.map((row) => (
+                <tr
+                  key={row.serviceOrderId}
+                  className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+                >
+                  <td className="px-4 py-3">
+                    <span className="font-mono text-sm text-primary font-medium">
+                      {row.osNumber ? `#${row.osNumber}` : "--"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-sm text-foreground/80">{row.vehicle || "—"}</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-xs text-muted-foreground">
+                      {row.insurerName ? row.insurerName : "Particular"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted border border-border text-foreground/70">
+                      {row.totalParts} {row.totalParts === 1 ? "peca" : "pecas"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {row.statusSummary !== "—" ? (
+                      <OSStatusBadge label={row.statusSummary} />
+                    ) : (
+                      <span className="text-xs text-muted-foreground/50">—</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <RowAction row={row} />
+                  </td>
+                </tr>
               ))
             )}
           </tbody>

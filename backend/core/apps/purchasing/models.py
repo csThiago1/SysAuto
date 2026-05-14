@@ -310,3 +310,42 @@ class RespostaCotacao(PaddockBaseModel):
 
     def __str__(self) -> str:
         return f"R$ {self.valor_unitario} — {self.supplier} ({self.pedido_compra})"
+
+
+class AprovacaoCotacao(PaddockBaseModel):
+    """Solicitação de aprovação de cotação para o financeiro."""
+
+    class Status(models.TextChoices):
+        PENDENTE = "pendente", "Pendente"
+        APROVADA = "aprovada", "Aprovada"
+        REJEITADA = "rejeitada", "Rejeitada"
+
+    service_order = models.ForeignKey(
+        "service_orders.ServiceOrder",
+        on_delete=models.CASCADE,
+        related_name="aprovacoes_cotacao",
+    )
+    status = models.CharField(max_length=15, choices=Status.choices, default=Status.PENDENTE)
+    enviado_por = models.ForeignKey(
+        "authentication.GlobalUser",
+        on_delete=models.PROTECT,
+        related_name="aprovacoes_enviadas",
+    )
+    aprovado_por = models.ForeignKey(
+        "authentication.GlobalUser",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="aprovacoes_aprovadas",
+    )
+    aprovado_em = models.DateTimeField(null=True, blank=True)
+    observacoes_comprador = models.TextField(blank=True, default="")
+    observacoes_financeiro = models.TextField(blank=True, default="")
+    motivo_rejeicao = models.TextField(blank=True, default="")
+
+    class Meta(PaddockBaseModel.Meta):
+        db_table = "purchasing_aprovacao_cotacao"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"Aprovação OS#{self.service_order_id} — {self.status}"
