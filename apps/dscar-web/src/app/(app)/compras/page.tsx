@@ -285,30 +285,6 @@ export default function ComprasPage() {
             ) : (
               pedidosByOS.map((group) => (
                 <React.Fragment key={group.serviceOrderId}>
-                  {group.pedidos.length > 1 && (
-                    <tr className="bg-muted/30">
-                      <td colSpan={6} className="px-4 py-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium text-foreground/70">
-                            OS #{group.osNumber}
-                            {group.vehicle && ` · ${group.vehicle}`}
-                            <span className="ml-2 text-muted-foreground">
-                              ({group.pedidos.length} pecas)
-                            </span>
-                          </span>
-                          {group.pedidos.some((p) => p.status === "em_cotacao") && (
-                            <Link
-                              href={`/compras/cotacao/${group.serviceOrderId}`}
-                              className="text-xs text-info-400 hover:text-info-300 flex items-center gap-1 transition-colors"
-                            >
-                              Gerenciar Cotacoes
-                              <ArrowRight size={12} />
-                            </Link>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
                   {group.pedidos.map((p) => (
                     <tr
                       key={p.id}
