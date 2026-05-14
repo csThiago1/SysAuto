@@ -538,26 +538,61 @@ class RemoverItemOCView(APIView):
 
 
 class RegistrarRecebimentoView(APIView):
-    """POST /ordens-compra/<oc_id>/itens/<item_id>/receber/ — registra recebimento."""
+    """POST /ordens-compra/<oc_id>/itens/<item_id>/receber/ — registra recebimento.
+
+    Body:
+        destino: "os_direta" | "estoque_geral" (default: estoque_geral)
+        unidade_fisica_id: UUID (opcional — se já existe no estoque)
+        nfe_entrada_id: UUID (opcional — vincula NF-e de entrada)
+    """
 
     permission_classes = [IsAuthenticated, IsStorekeeperOrAbove]
 
     def post(self, request: Request, oc_id: str, item_id: str) -> Response:
         unidade_fisica_id = request.data.get("unidade_fisica_id")
-        if not unidade_fisica_id:
-            return Response(
-                {"detail": "Campo unidade_fisica_id e obrigatorio."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        destino = request.data.get("destino", "estoque_geral")
+        nfe_id = request.data.get("nfe_entrada_id")
+
         try:
-            item = OrdemCompraService.registrar_recebimento_item(
-                item_id=item_id,
-                unidade_fisica_id=unidade_fisica_id,
-                user_id=request.user.pk,
-            )
-            return Response(
-                ItemOrdemCompraSerializer(item).data, status=status.HTTP_200_OK,
-            )
+            oc = OrdemCompra.objects.get(pk=oc_id, is_active=True)
+            item = oc.itens.get(pk=item_id, is_active=True)
+        except (OrdemCompra.DoesNotExist, ItemOrdemCompra.DoesNotExist):
+            return Response({"detail": "Item não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        if item.status_entrega == "recebido":
+            return Response({"detail": "Item já recebido."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Se tem unidade_fisica_id, usa o service completo (integração estoque)
+            if unidade_fisica_id:
+                item = OrdemCompraService.registrar_recebimento_item(
+                    item_id=item_id,
+                    unidade_fisica_id=unidade_fisica_id,
+                    user_id=request.user.pk,
+                )
+            else:
+                # Recebimento simples (peça de compra sem unidade pré-existente)
+                item.status_entrega = "recebido"
+                item.data_recebimento = timezone.now().date()
+                item.destino = destino
+                if nfe_id:
+                    item.nfe_entrada_id = nfe_id
+                item.save(update_fields=["status_entrega", "data_recebimento", "destino", "nfe_entrada_id", "updated_at"])
+
+                if item.pedido_compra:
+                    item.pedido_compra.status = PedidoCompra.Status.RECEBIDO
+                    item.pedido_compra.save(update_fields=["status", "updated_at"])
+
+            # Atualizar status da OC
+            all_received = not oc.itens.filter(is_active=True).exclude(status_entrega="recebido").exists()
+            if all_received:
+                oc.status = OrdemCompra.Status.CONCLUIDA
+            else:
+                oc.status = OrdemCompra.Status.PARCIAL_RECEBIDA
+            oc.save(update_fields=["status", "updated_at"])
+
+            return Response(ItemOrdemCompraSerializer(item).data)
+
         except Exception:
             logger.exception(
                 "Erro ao registrar recebimento do item %s (OC %s)", item_id, oc_id,
