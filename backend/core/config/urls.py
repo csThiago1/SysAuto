@@ -28,6 +28,7 @@ urlpatterns = [
     path("api/v1/experts/", include("apps.experts.urls")),
     path("api/v1/insurers/", include("apps.insurers.urls")),
     path("api/v1/vehicle-catalog/", include("apps.vehicle_catalog.urls")),
+    path("api/v1/parts-catalog/", include("apps.parts_catalog.urls")),
     path("api/v1/pricing/", include("apps.pricing_profile.urls")),
     path("api/v1/pricing/catalog/", include("apps.pricing_catalog.urls")),
     path("api/v1/pricing/fichas/", include("apps.pricing_tech.urls")),
