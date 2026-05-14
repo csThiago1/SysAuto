@@ -272,7 +272,7 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
     )
     def pdf(self, request: Request, pk: str | None = None) -> HttpResponse:
         """GET /ordens-compra/{id}/pdf/ — gera PDF da OC via WeasyPrint."""
-        from apps.pdf_engine.logo import get_logo_black_base64
+        from apps.pdf_engine.logo import get_logo_base64
         from apps.pdf_engine.services import PDFService
 
         oc = self.get_object()
@@ -379,7 +379,7 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
             "prazo_entrega": prazo_entrega,
             "condicao_pagamento": "",
             "observacoes": oc.observacoes,
-            "logo_base64": get_logo_black_base64(),
+            "logo_base64": get_logo_base64(),
             "aprovado_por_nome": aprovado_por_nome,
             "aprovado_por_cargo": aprovado_por_cargo,
             "aprovado_em": aprovado_em,
