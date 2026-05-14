@@ -23,10 +23,16 @@ from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
-# Absolute path resolved relative to this file (5 parents up = repo root).
-XLSX_PATH = (
-    Path(__file__).resolve().parents[6] / "data" / "migrations" / "catalogo_pecas_limpo.xlsx"
-)
+# Default path — works on host. In Docker, pass --file /app/data/migrations/catalogo_pecas_limpo.xlsx
+_DEFAULT_XLSX: Path | None = None
+for n in range(4, 8):
+    try:
+        candidate = Path(__file__).resolve().parents[n] / "data" / "migrations" / "catalogo_pecas_limpo.xlsx"
+        if candidate.exists():
+            _DEFAULT_XLSX = candidate
+            break
+    except IndexError:
+        continue
 
 SHEET_NAME = "Catálogo"
 
@@ -112,6 +118,12 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
+            "--file",
+            type=str,
+            default=None,
+            help="Path to the xlsx file (default: auto-detected).",
+        )
+        parser.add_argument(
             "--dry-run",
             action="store_true",
             default=False,
@@ -143,14 +155,18 @@ class Command(BaseCommand):
             )
             return
 
-        if not XLSX_PATH.exists():
+        xlsx_path = Path(options["file"]) if options["file"] else _DEFAULT_XLSX
+        if not xlsx_path or not xlsx_path.exists():
             self.stderr.write(
-                self.style.ERROR(f"Spreadsheet not found: {XLSX_PATH}")
+                self.style.ERROR(
+                    f"Spreadsheet not found: {xlsx_path}\n"
+                    "Use --file to specify the path explicitly."
+                )
             )
             return
 
-        self.stdout.write(f"Reading {XLSX_PATH} …")
-        df = pd.read_excel(XLSX_PATH, sheet_name=SHEET_NAME, dtype=str)
+        self.stdout.write(f"Reading {xlsx_path} …")
+        df = pd.read_excel(xlsx_path, sheet_name=SHEET_NAME, dtype=str)
 
         # Normalize column names to strip accidental whitespace
         df.columns = [c.strip() for c in df.columns]

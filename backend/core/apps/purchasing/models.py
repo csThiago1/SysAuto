@@ -214,6 +214,36 @@ class ItemOrdemCompra(PaddockBaseModel):
     )
     prazo_entrega = models.CharField(max_length=100, blank=True, default="")
     observacoes = models.TextField(blank=True, default="")
+    status_entrega = models.CharField(
+        max_length=20,
+        choices=[
+            ("aguardando", "Aguardando"),
+            ("em_transito", "Em Trânsito"),
+            ("recebido", "Recebido"),
+            ("atrasado", "Atrasado"),
+        ],
+        default="aguardando",
+    )
+    data_prevista = models.DateField(
+        null=True, blank=True,
+        help_text="Data prevista de entrega (calculada: aprovação + prazo).",
+    )
+    data_recebimento = models.DateField(null=True, blank=True)
+    nfe_entrada = models.ForeignKey(
+        "fiscal.NFeEntrada",
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="itens_oc",
+    )
+    destino = models.CharField(
+        max_length=20,
+        choices=[
+            ("os_direta", "Direto para OS"),
+            ("estoque_geral", "Estoque Geral"),
+        ],
+        blank=True,
+        default="",
+    )
 
     class Meta(PaddockBaseModel.Meta):
         db_table = "purchasing_item_ordem_compra"
@@ -288,7 +318,19 @@ class RespostaCotacao(PaddockBaseModel):
     )
     valor_unitario = models.DecimalField(max_digits=12, decimal_places=2)
     prazo_entrega = models.CharField(max_length=100, blank=True, default="")
+    prazo_entrega_obj = models.ForeignKey(
+        "PrazoEntrega",
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="respostas",
+    )
     condicoes_pagamento = models.CharField(max_length=200, blank=True, default="")
+    condicao_pagamento_obj = models.ForeignKey(
+        "CondicaoPagamento",
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="respostas",
+    )
     observacoes = models.TextField(blank=True, default="")
     selecionada = models.BooleanField(default=False)
     registrado_por = models.ForeignKey(
@@ -310,6 +352,35 @@ class RespostaCotacao(PaddockBaseModel):
 
     def __str__(self) -> str:
         return f"R$ {self.valor_unitario} — {self.supplier} ({self.pedido_compra})"
+
+
+class PrazoEntrega(PaddockBaseModel):
+    """Opções padronizadas de prazo de entrega."""
+
+    label = models.CharField(max_length=50, unique=True)
+    dias_uteis = models.PositiveIntegerField(help_text="Quantidade de dias úteis para cálculo de data prevista.")
+    is_default = models.BooleanField(default=False, help_text="Pré-cadastrado no seed.")
+
+    class Meta(PaddockBaseModel.Meta):
+        db_table = "purchasing_prazo_entrega"
+        ordering = ["dias_uteis"]
+
+    def __str__(self) -> str:
+        return self.label
+
+
+class CondicaoPagamento(PaddockBaseModel):
+    """Opções padronizadas de condição de pagamento."""
+
+    label = models.CharField(max_length=80, unique=True)
+    is_default = models.BooleanField(default=False, help_text="Pré-cadastrado no seed.")
+
+    class Meta(PaddockBaseModel.Meta):
+        db_table = "purchasing_condicao_pagamento"
+        ordering = ["label"]
+
+    def __str__(self) -> str:
+        return self.label
 
 
 class AprovacaoCotacao(PaddockBaseModel):
