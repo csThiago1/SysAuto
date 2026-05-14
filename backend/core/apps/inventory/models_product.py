@@ -221,6 +221,16 @@ class ProdutoComercialPeca(PaddockBaseModel):
         help_text="Peça canônica do catálogo técnico.",
     )
 
+    # Vínculo com catálogo compartilhado (cross-tenant)
+    part_ref = models.ForeignKey(
+        "parts_catalog.PartReference",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="produtos_comerciais",
+        help_text="Referência no catálogo shared de peças (cross-tenant).",
+    )
+
     # Preço e margem
     preco_venda_sugerido = models.DecimalField(
         max_digits=12, decimal_places=2,
