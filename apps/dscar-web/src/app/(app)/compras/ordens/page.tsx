@@ -1,6 +1,6 @@
 "use client"
 
-import { FileCheck, Plus } from "lucide-react"
+import { FileCheck, Plus, FileText } from "lucide-react"
 import { useOrdensCompra, useCriarOC } from "@/hooks/usePurchasing"
 import type { OrdemCompra, StatusOrdemCompra } from "@paddock/types"
 import { useState } from "react"
@@ -207,13 +207,14 @@ export default function OrdensCompraPage() {
               <th className="label-mono text-muted-foreground text-center px-4 py-3">Itens</th>
               <th className="label-mono text-muted-foreground text-left px-4 py-3">Criado por</th>
               <th className="label-mono text-muted-foreground text-left px-4 py-3">Data</th>
+              <th className="label-mono text-muted-foreground text-center px-4 py-3">PDF</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
               [...Array(5)].map((_, i) => (
                 <tr key={i} className="border-b border-white/5">
-                  {[...Array(7)].map((__, j) => (
+                  {[...Array(8)].map((__, j) => (
                     <td key={j} className="px-4 py-3">
                       <div className="h-4 bg-muted/50 rounded animate-pulse w-20" />
                     </td>
@@ -222,7 +223,7 @@ export default function OrdensCompraPage() {
               ))
             ) : !ordens?.length ? (
               <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-muted-foreground text-sm">
+                <td colSpan={8} className="px-4 py-10 text-center text-muted-foreground text-sm">
                   Nenhuma ordem de compra encontrada.
                 </td>
               </tr>
@@ -270,6 +271,19 @@ export default function OrdensCompraPage() {
                     <span className="text-xs text-muted-foreground font-mono">
                       {formatDate(oc.created_at)}
                     </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <a
+                      href={`/api/proxy/purchasing/ordens-compra/${oc.id}/pdf/`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      title="Baixar PDF"
+                      className="inline-flex items-center justify-center p-1.5 rounded text-muted-foreground/50
+                                 hover:text-foreground/70 hover:bg-muted transition-colors"
+                    >
+                      <FileText size={14} />
+                    </a>
                   </td>
                 </tr>
               ))

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Ordem de Compra {{ oc_numero }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+            @bottom-center {
+                content: "Documento gerado pelo ERP Paddock Solutions · DS Car";
+                font-size: 8px;
+                color: #999;
+                font-family: Arial, sans-serif;
+            }
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #000;
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .doc-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 2px solid #c41e1e;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+        .doc-header-logo {
+            background-color: #000;
+            padding: 6px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .doc-header-logo img {
+            height: 42px;
+            width: auto;
+            display: block;
+            vertical-align: middle;
+        }
+        .doc-header-info {
+            flex: 1;
+        }
+        .doc-header-info h1 {
+            color: #c41e1e;
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        .doc-header-info .oc-number {
+            font-size: 12px;
+            color: #555;
+            margin: 2px 0 0;
+        }
+        .doc-header-company {
+            text-align: right;
+            font-size: 9px;
+            color: #555;
+        }
+        .doc-header-company strong {
+            display: block;
+            font-size: 10px;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        /* Section title */
+        .section-title {
+            color: #c41e1e;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin: 20px 0 8px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        /* Info grid (two-column) */
+        .info-grid {
+            display: table;
+            width: 100%;
+            margin: 4px 0 12px;
+        }
+        .info-row {
+            display: table-row;
+        }
+        .info-cell {
+            display: table-cell;
+            width: 50%;
+            padding: 3px 8px 3px 0;
+            vertical-align: top;
+        }
+        .info-label {
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #999;
+            font-weight: 600;
+        }
+        .info-value {
+            font-size: 11px;
+            color: #000;
+            font-weight: 500;
+            margin-top: 1px;
+        }
+
+        /* Items table */
+        table.items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 6px 0 0;
+        }
+        table.items-table th {
+            background-color: #f0f0f0;
+            color: #333;
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 700;
+            text-align: left;
+            padding: 7px 8px;
+            border-bottom: 2px solid #ddd;
+        }
+        table.items-table td {
+            padding: 7px 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 10px;
+            color: #000;
+            vertical-align: middle;
+        }
+        table.items-table tr:nth-child(even) td {
+            background-color: #fafafa;
+        }
+        table.items-table .col-num   { width: 4%; }
+        table.items-table .col-desc  { width: 38%; }
+        table.items-table .col-ref   { width: 14%; }
+        table.items-table .col-tipo  { width: 12%; }
+        table.items-table .col-qtd   { width: 8%; text-align: right; }
+        table.items-table .col-unit  { width: 12%; text-align: right; }
+        table.items-table .col-total { width: 12%; text-align: right; }
+
+        .mono { font-family: 'Courier New', monospace; font-size: 10px; }
+        .bold { font-weight: 700; }
+        .muted { color: #666; }
+        .small { font-size: 9px; }
+
+        /* Total row */
+        .total-row td {
+            background-color: #f5f5f5 !important;
+            font-weight: 700;
+            font-size: 11px;
+            border-top: 2px solid #c41e1e;
+            color: #c41e1e;
+            padding: 10px 8px;
+        }
+
+        /* Conditions box */
+        .conditions-box {
+            margin: 16px 0;
+            padding: 12px 14px;
+            background: #f9f9f9;
+            border-left: 3px solid #c41e1e;
+            font-size: 10px;
+        }
+        .conditions-box p {
+            margin: 4px 0;
+        }
+
+        /* Signature block */
+        .signature-block {
+            margin-top: 48px;
+            text-align: center;
+        }
+        .signature-img {
+            max-height: 64px;
+            max-width: 200px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 4px;
+        }
+        .signature-line {
+            width: 260px;
+            border-top: 1px solid #333;
+            margin: 0 auto 6px;
+            padding-top: 6px;
+        }
+        .signature-name {
+            font-weight: 700;
+            font-size: 12px;
+            color: #000;
+        }
+        .signature-role {
+            font-size: 10px;
+            color: #555;
+            margin-top: 2px;
+        }
+        .signature-date {
+            font-size: 9px;
+            color: #999;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="doc-header">
+        {% if logo_base64 %}
+        <div class="doc-header-logo">
+            <img src="{{ logo_base64 }}" alt="DS Car" />
+        </div>
+        {% endif %}
+        <div class="doc-header-info">
+            <h1>ORDEM DE COMPRA</h1>
+            <div class="oc-number">{{ oc_numero }} &nbsp;·&nbsp; Emitida em {{ data_emissao }}</div>
+        </div>
+        <div class="doc-header-company">
+            <strong>{{ company_razao_social }}</strong>
+            CNPJ: {{ company_cnpj }}<br>
+            {{ company_endereco }}
+        </div>
+    </div>
+
+    <!-- Supplier info -->
+    <div class="section-title">Fornecedor</div>
+    <div class="info-grid">
+        <div class="info-row">
+            <div class="info-cell">
+                <div class="info-label">Razao Social</div>
+                <div class="info-value bold">{{ fornecedor_nome }}</div>
+            </div>
+            <div class="info-cell">
+                <div class="info-label">CNPJ</div>
+                <div class="info-value mono">{{ fornecedor_cnpj|default:"—" }}</div>
+            </div>
+        </div>
+        <div class="info-row">
+            <div class="info-cell">
+                <div class="info-label">Contato</div>
+                <div class="info-value">{{ fornecedor_contato|default:"—" }}</div>
+            </div>
+            <div class="info-cell">
+                <div class="info-label">OS de Referencia</div>
+                <div class="info-value bold">#{{ os_number }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items table -->
+    <div class="section-title">Itens da Ordem</div>
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th class="col-num">#</th>
+                <th class="col-desc">Descricao</th>
+                <th class="col-ref">Referencia</th>
+                <th class="col-tipo">Tipo</th>
+                <th class="col-qtd">Qtd</th>
+                <th class="col-unit">Vlr Unit.</th>
+                <th class="col-total">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in itens %}
+            <tr>
+                <td class="col-num muted">{{ forloop.counter }}</td>
+                <td class="col-desc">{{ item.descricao }}</td>
+                <td class="col-ref mono muted">{{ item.codigo_referencia|default:"—" }}</td>
+                <td class="col-tipo small muted">{{ item.tipo_qualidade_display }}</td>
+                <td class="col-qtd mono">{{ item.quantidade }}</td>
+                <td class="col-unit mono">R$ {{ item.valor_unitario_fmt }}</td>
+                <td class="col-total mono bold">R$ {{ item.valor_total_fmt }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align:center; color:#999; padding:16px;">Nenhum item registrado.</td>
+            </tr>
+            {% endfor %}
+            {% if itens %}
+            <tr class="total-row">
+                <td colspan="6" style="text-align:right; padding-right:8px;">TOTAL GERAL</td>
+                <td class="col-total mono">R$ {{ total_fmt }}</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <!-- Conditions -->
+    {% if condicao_pagamento or prazo_entrega or observacoes %}
+    <div class="section-title">Condicoes e Observacoes</div>
+    <div class="conditions-box">
+        {% if condicao_pagamento %}
+        <p><strong>Pagamento:</strong> {{ condicao_pagamento }}</p>
+        {% endif %}
+        {% if prazo_entrega %}
+        <p><strong>Prazo de entrega:</strong> {{ prazo_entrega }}</p>
+        {% endif %}
+        {% if observacoes %}
+        <p><strong>Observacoes:</strong> {{ observacoes }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Signature -->
+    <div class="signature-block">
+        {% if assinatura_base64 %}
+        <img src="{{ assinatura_base64 }}" class="signature-img" alt="Assinatura" />
+        {% endif %}
+        <div class="signature-line"></div>
+        <div class="signature-name">{{ aprovado_por_nome }}</div>
+        <div class="signature-role">{{ aprovado_por_cargo }}</div>
+        {% if aprovado_em %}
+        <div class="signature-date">Aprovado em {{ aprovado_em }}</div>
+        {% endif %}
+    </div>
+
+</body>
+</html>

@@ -3,7 +3,7 @@
 import { use, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ChevronRight, ShoppingCart, Plus, Trash2, Send } from "lucide-react"
+import { ChevronRight, ShoppingCart, Plus, Trash2, Send, FileText } from "lucide-react"
 import { toast } from "sonner"
 import type { TipoQualidade, AdicionarItemOCInput } from "@paddock/types"
 import { formatCurrency } from "@paddock/utils"
@@ -345,21 +345,34 @@ export default function OrdemCompraPage({
 
   return (
     <div className="p-6 space-y-6">
-      {/* ── Breadcrumb ── */}
-      <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        <Link href="/compras" className="hover:text-muted-foreground transition-colors">
-          Compras
-        </Link>
-        <ChevronRight size={14} />
-        <Link
-          href="/compras"
-          className="hover:text-muted-foreground transition-colors"
+      {/* ── Breadcrumb + PDF ── */}
+      <div className="flex items-center justify-between gap-4">
+        <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <Link href="/compras" className="hover:text-muted-foreground transition-colors">
+            Compras
+          </Link>
+          <ChevronRight size={14} />
+          <Link
+            href="/compras"
+            className="hover:text-muted-foreground transition-colors"
+          >
+            Ordens de Compra
+          </Link>
+          <ChevronRight size={14} />
+          <span className="text-foreground/60 font-mono">{oc.numero}</span>
+        </nav>
+        <a
+          href={`/api/proxy/purchasing/ordens-compra/${id}/pdf/`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium
+                     bg-muted/80 text-foreground/70 border border-border
+                     hover:bg-muted hover:text-foreground transition-colors"
         >
-          Ordens de Compra
-        </Link>
-        <ChevronRight size={14} />
-        <span className="text-foreground/60 font-mono">{oc.numero}</span>
-      </nav>
+          <FileText size={13} />
+          Baixar PDF
+        </a>
+      </div>
 
       {/* ── OC Detail ── */}
       <OrdemCompraDetail

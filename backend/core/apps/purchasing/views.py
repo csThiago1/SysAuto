@@ -1,12 +1,14 @@
 """
 Paddock Solutions — Purchasing — Views
 """
+import base64
 import datetime
 import logging
 from collections import defaultdict
 
 from django.core.cache import cache
 from django.db.models import Count, Q
+from django.http import HttpResponse
 from django.utils import timezone
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
@@ -261,6 +263,151 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
                 {"detail": "Erro interno ao processar requisicao."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="pdf",
+        permission_classes=[IsAuthenticated, IsConsultantOrAbove],
+    )
+    def pdf(self, request: Request, pk: str | None = None) -> HttpResponse:
+        """GET /ordens-compra/{id}/pdf/ — gera PDF da OC via WeasyPrint."""
+        from apps.pdf_engine.logo import get_logo_black_base64
+        from apps.pdf_engine.services import PDFService
+
+        oc = self.get_object()
+        itens_qs = oc.itens.filter(is_active=True).select_related(
+            "pedido_compra",
+        ).order_by("created_at")
+
+        first_item = itens_qs.first()
+        fornecedor_nome = first_item.fornecedor_nome if first_item else "—"
+        fornecedor_cnpj = first_item.fornecedor_cnpj if first_item else ""
+        fornecedor_contato = first_item.fornecedor_contato if first_item else ""
+        prazo_entrega = first_item.prazo_entrega if first_item else ""
+
+        tipo_qualidade_labels = {
+            "genuina": "Genuina",
+            "reposicao": "Reposicao",
+            "similar": "Similar",
+            "usada": "Usada",
+        }
+
+        def _fmt_brl(value: object) -> str:
+            try:
+                return f"{float(value):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            except (TypeError, ValueError):
+                return "0,00"
+
+        itens_data = [
+            {
+                "descricao": item.descricao,
+                "codigo_referencia": item.codigo_referencia,
+                "tipo_qualidade_display": tipo_qualidade_labels.get(item.tipo_qualidade, item.tipo_qualidade),
+                "quantidade": item.quantidade,
+                "valor_unitario_fmt": _fmt_brl(item.valor_unitario),
+                "valor_total_fmt": _fmt_brl(item.valor_total),
+            }
+            for item in itens_qs
+        ]
+
+        # Company info from FiscalConfig
+        company_razao_social = "D S CAR CENTRO AUTOMOTIVO LTDA"
+        company_cnpj = ""
+        company_endereco = "Manaus, AM"
+        try:
+            from apps.fiscal.models import FiscalConfigModel
+            fiscal = FiscalConfigModel.objects.first()
+            if fiscal:
+                company_razao_social = fiscal.razao_social or company_razao_social
+                cnpj_raw = fiscal.cnpj or ""
+                if len(cnpj_raw) == 14:
+                    company_cnpj = (
+                        f"{cnpj_raw[:2]}.{cnpj_raw[2:5]}.{cnpj_raw[5:8]}"
+                        f"/{cnpj_raw[8:12]}-{cnpj_raw[12:]}"
+                    )
+                else:
+                    company_cnpj = cnpj_raw
+                endereco = fiscal.endereco or {}
+                parts = [
+                    endereco.get("logradouro", ""),
+                    endereco.get("numero", ""),
+                    endereco.get("bairro", ""),
+                    endereco.get("municipio", "Manaus"),
+                    endereco.get("uf", "AM"),
+                ]
+                company_endereco = ", ".join(p for p in parts if p) or company_endereco
+        except Exception:
+            logger.debug("FiscalConfig indisponivel para PDF da OC %s", pk)
+
+        # Approver name, role and signature
+        aprovado_por_nome = ""
+        aprovado_por_cargo = "Responsavel Financeiro"
+        assinatura_base64 = ""
+        aprovado_em = ""
+        if oc.aprovado_por:
+            aprovado_por_nome = oc.aprovado_por.get_full_name() or oc.aprovado_por.email
+            if oc.aprovado_em:
+                local_dt = timezone.localtime(oc.aprovado_em)
+                aprovado_em = local_dt.strftime("%d/%m/%Y às %H:%M")
+            try:
+                from apps.hr.models import Employee
+                emp = Employee.objects.filter(
+                    user=oc.aprovado_por, status__iexact="active",
+                ).first()
+                if emp:
+                    aprovado_por_cargo = emp.role or aprovado_por_cargo
+                    if emp.signature_image:
+                        with emp.signature_image.open("rb") as f:
+                            b64 = base64.b64encode(f.read()).decode("utf-8")
+                            assinatura_base64 = f"data:image/png;base64,{b64}"
+            except Exception:
+                logger.debug("Assinatura/cargo indisponivel para aprovador da OC %s", pk)
+
+        context = {
+            "oc_numero": oc.numero,
+            "data_emissao": timezone.localtime(oc.created_at).strftime("%d/%m/%Y"),
+            "company_razao_social": company_razao_social,
+            "company_cnpj": company_cnpj,
+            "company_endereco": company_endereco,
+            "fornecedor_nome": fornecedor_nome,
+            "fornecedor_cnpj": fornecedor_cnpj,
+            "fornecedor_contato": fornecedor_contato,
+            "os_number": oc.service_order.number,
+            "itens": itens_data,
+            "total_fmt": _fmt_brl(oc.valor_total),
+            "prazo_entrega": prazo_entrega,
+            "condicao_pagamento": "",
+            "observacoes": oc.observacoes,
+            "logo_base64": get_logo_black_base64(),
+            "aprovado_por_nome": aprovado_por_nome,
+            "aprovado_por_cargo": aprovado_por_cargo,
+            "aprovado_em": aprovado_em,
+            "assinatura_base64": assinatura_base64,
+        }
+
+        # Payment condition from selected RespostaCotacao
+        if first_item and first_item.pedido_compra_id:
+            try:
+                resp = RespostaCotacao.objects.filter(
+                    pedido_compra=first_item.pedido_compra,
+                    selecionada=True,
+                    is_active=True,
+                ).first()
+                if resp:
+                    context["condicao_pagamento"] = resp.condicoes_pagamento
+            except Exception:
+                logger.debug("RespostaCotacao indisponivel para OC %s", pk)
+
+        try:
+            pdf_bytes = PDFService.render_html("purchasing/ordem_compra_pdf.html", context)
+        except Exception:
+            logger.exception("Erro ao gerar PDF da OC %s", pk)
+            return HttpResponse("Erro ao gerar PDF.", status=500, content_type="text/plain")
+
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        response["Content-Disposition"] = f'inline; filename="OC-{oc.numero}.pdf"'
+        return response
 
 
 class AdicionarItemOCView(APIView):

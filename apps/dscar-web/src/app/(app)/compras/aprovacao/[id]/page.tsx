@@ -3,7 +3,7 @@
 import { use, useState, useMemo } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowRight, CheckSquare, Square, XCircle, CheckCircle2 } from "lucide-react"
+import { ArrowRight, CheckSquare, Square, XCircle, CheckCircle2, FileText } from "lucide-react"
 import { toast } from "sonner"
 import {
   useAprovacao,
@@ -453,9 +453,14 @@ export default function AprovacaoPage({ params }: { params: Promise<{ id: string
         </div>
       )}
 
-      {/* Link para as OCs se ja aprovada */}
+      {/* Links para as OCs se ja aprovada */}
       {aprovacao.status === "aprovada" && (
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-xs text-muted-foreground">
+            As OCs geradas estao disponiveis na listagem. Use o icone
+            <FileText size={12} className="inline mx-1 text-muted-foreground/60" />
+            para baixar cada PDF.
+          </p>
           <Link
             href={`/compras/ordens?service_order=${aprovacao.service_order}`}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium
