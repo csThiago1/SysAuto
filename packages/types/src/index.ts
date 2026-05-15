@@ -37,3 +37,8 @@ export * from "./fiscal.types";
 export * from "./documents.types";
 export * from "./purchasing.types";
 export * from "./customer.types";
+export type {
+  PartCatalogApplication,
+  PartCatalogSupplier,
+  PartCatalogReference,
+} from "./parts-catalog.types";
