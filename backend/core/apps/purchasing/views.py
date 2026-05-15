@@ -7,8 +7,10 @@ import logging
 import re
 from collections import defaultdict
 from datetime import timedelta
+from decimal import Decimal
 
 from django.core.cache import cache
+from django.db import transaction
 from django.db.models import Count, Q
 from django.http import HttpResponse
 from django.utils import timezone
@@ -541,64 +543,150 @@ class RegistrarRecebimentoView(APIView):
     """POST /ordens-compra/<oc_id>/itens/<item_id>/receber/ — registra recebimento.
 
     Body:
+        nivel_id: UUID (obrigatorio — localizacao no armazem)
+        valor_nf: Decimal (obrigatorio — custo real da nota fiscal)
         destino: "os_direta" | "estoque_geral" (default: estoque_geral)
-        unidade_fisica_id: UUID (opcional — se já existe no estoque)
         nfe_entrada_id: UUID (opcional — vincula NF-e de entrada)
+        numero_serie: str (opcional — numero de serie da peca)
     """
 
     permission_classes = [IsAuthenticated, IsStorekeeperOrAbove]
 
+    @transaction.atomic
     def post(self, request: Request, oc_id: str, item_id: str) -> Response:
-        unidade_fisica_id = request.data.get("unidade_fisica_id")
+        from apps.inventory.models_movement import MovimentacaoEstoque
+        from apps.inventory.models_physical import UnidadeFisica
+        from apps.inventory.services.reserva import ReservaUnidadeService
+        from apps.service_orders.models import ServiceOrderPart
+
+        nivel_id = request.data.get("nivel_id")
+        valor_nf_raw = request.data.get("valor_nf")
+        if not nivel_id or not valor_nf_raw:
+            return Response(
+                {"detail": "Campos nivel_id e valor_nf sao obrigatorios."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         destino = request.data.get("destino", "estoque_geral")
-        nfe_id = request.data.get("nfe_entrada_id")
+        nfe_entrada_id = request.data.get("nfe_entrada_id")
+        numero_serie = request.data.get("numero_serie", "")
 
         try:
             oc = OrdemCompra.objects.get(pk=oc_id, is_active=True)
-            item = oc.itens.get(pk=item_id, is_active=True)
+            item = oc.itens.select_for_update().get(pk=item_id, is_active=True)
         except (OrdemCompra.DoesNotExist, ItemOrdemCompra.DoesNotExist):
-            return Response({"detail": "Item não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "Item nao encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
         if item.status_entrega == "recebido":
-            return Response({"detail": "Item já recebido."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Item ja recebido."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Se tem unidade_fisica_id, usa o service completo (integração estoque)
-            if unidade_fisica_id:
-                item = OrdemCompraService.registrar_recebimento_item(
-                    item_id=item_id,
-                    unidade_fisica_id=unidade_fisica_id,
-                    user_id=request.user.pk,
-                )
-            else:
-                # Recebimento simples (peça de compra sem unidade pré-existente)
-                item.status_entrega = "recebido"
-                item.data_recebimento = timezone.now().date()
-                item.destino = destino
-                if nfe_id:
-                    item.nfe_entrada_id = nfe_id
-                item.save(update_fields=["status_entrega", "data_recebimento", "destino", "nfe_entrada_id", "updated_at"])
+            valor_nf = Decimal(str(valor_nf_raw))
+        except Exception:
+            return Response(
+                {"detail": "valor_nf invalido. Informe um numero decimal (ex: 150.00)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-                if item.pedido_compra:
-                    item.pedido_compra.status = PedidoCompra.Status.RECEBIDO
-                    item.pedido_compra.save(update_fields=["status", "updated_at"])
+        try:
+            # 1. Resolver produto_peca a partir do pedido_compra, se disponivel
+            produto_peca_id = None
+            peca_canonica_id = None
+            if item.pedido_compra and item.pedido_compra.service_order_part:
+                sop = item.pedido_compra.service_order_part
+                if hasattr(sop, "produto_peca_id") and sop.produto_peca_id:
+                    produto_peca_id = sop.produto_peca_id
 
-            # Atualizar status da OC
-            all_received = not oc.itens.filter(is_active=True).exclude(status_entrega="recebido").exists()
-            if all_received:
-                oc.status = OrdemCompra.Status.CONCLUIDA
-            else:
-                oc.status = OrdemCompra.Status.PARCIAL_RECEBIDA
+            # 2. Criar UnidadeFisica diretamente com tipo ENTRADA_NF
+            unidade = UnidadeFisica(
+                peca_canonica_id=peca_canonica_id,
+                produto_peca_id=produto_peca_id,
+                valor_nf=valor_nf,
+                nivel_id=nivel_id,
+                numero_serie=numero_serie,
+                status=UnidadeFisica.Status.AVAILABLE,
+                created_by_id=request.user.pk,
+            )
+            if nfe_entrada_id:
+                unidade.nfe_entrada_id = nfe_entrada_id
+            unidade.save()  # gera codigo_barras = P{pk.hex}
+
+            # 3. Criar MovimentacaoEstoque(ENTRADA_NF) — imutavel, apenas INSERT
+            MovimentacaoEstoque(
+                tipo=MovimentacaoEstoque.Tipo.ENTRADA_NF,
+                unidade_fisica=unidade,
+                quantidade=1,
+                nivel_destino_id=nivel_id,
+                motivo=f"Recebimento OC {oc.numero} — {item.descricao}",
+                realizado_por_id=request.user.pk,
+            ).save()
+
+            # 4. Se destino for os_direta, reservar unidade para a OS
+            if destino == "os_direta" and item.pedido_compra:
+                os_id = item.pedido_compra.service_order_id
+                if os_id and unidade.peca_canonica_id:
+                    ReservaUnidadeService.reservar(
+                        peca_canonica_id=unidade.peca_canonica_id,
+                        quantidade=1,
+                        ordem_servico_id=str(os_id),
+                        user_id=request.user.pk,
+                    )
+
+                # Atualizar ServiceOrderPart vinculada
+                if item.pedido_compra.service_order_part_id:
+                    ServiceOrderPart.objects.filter(
+                        pk=item.pedido_compra.service_order_part_id,
+                    ).update(
+                        status_peca="recebida",
+                        unidade_fisica=unidade,
+                        custo_real=unidade.valor_nf,
+                    )
+
+            # 5. Atualizar status do item
+            update_fields = ["status_entrega", "data_recebimento", "destino", "updated_at"]
+            item.status_entrega = "recebido"
+            item.data_recebimento = timezone.now().date()
+            item.destino = destino
+            if nfe_entrada_id:
+                item.nfe_entrada_id = nfe_entrada_id
+                update_fields.append("nfe_entrada_id")
+            item.save(update_fields=update_fields)
+
+            # 6. Atualizar status do pedido_compra
+            if item.pedido_compra:
+                item.pedido_compra.status = PedidoCompra.Status.RECEBIDO
+                item.pedido_compra.save(update_fields=["status", "updated_at"])
+
+            # 7. Atualizar status da OC (parcial ou concluida)
+            all_received = not oc.itens.filter(is_active=True).exclude(
+                status_entrega="recebido"
+            ).exists()
+            oc.status = (
+                OrdemCompra.Status.CONCLUIDA if all_received
+                else OrdemCompra.Status.PARCIAL_RECEBIDA
+            )
             oc.save(update_fields=["status", "updated_at"])
 
-            return Response(ItemOrdemCompraSerializer(item).data)
+            logger.info(
+                "Item %s (OC %s) recebido. UnidadeFisica %s criada no nivel %s por user %s",
+                item_id, oc_id, unidade.codigo_barras, nivel_id, request.user.pk,
+            )
+
+            return Response({
+                "detail": f"Item recebido. Unidade {unidade.codigo_barras} criada no estoque.",
+                "unidade_fisica_id": str(unidade.id),
+                "codigo_barras": unidade.codigo_barras,
+                "status_entrega": item.status_entrega,
+                "destino": item.destino,
+                "data_recebimento": str(item.data_recebimento),
+            })
 
         except Exception:
             logger.exception(
                 "Erro ao registrar recebimento do item %s (OC %s)", item_id, oc_id,
             )
             return Response(
-                {"detail": "Erro interno ao processar requisicao."},
+                {"detail": "Erro ao processar recebimento."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

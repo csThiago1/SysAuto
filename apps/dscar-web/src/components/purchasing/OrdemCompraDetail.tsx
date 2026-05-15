@@ -10,7 +10,7 @@ import type {
 } from "@paddock/types"
 import { formatCurrency } from "@paddock/utils"
 import { usePermission } from "@/hooks/usePermission"
-import { useReceberItem } from "@/hooks/usePurchasing"
+import { useNiveis, useReceberItem } from "@/hooks/usePurchasing"
 import { TipoQualidadeBadge } from "@/components/purchasing/TipoQualidadeBadge"
 import {
   CheckCircle,
@@ -30,6 +30,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 // ─── OC Status config ─────────────────────────────────────────────────────────
@@ -155,12 +156,33 @@ interface ReceberDialogProps {
 
 function ReceberDialog({ ocId, item, open, onOpenChange }: ReceberDialogProps) {
   const [destino, setDestino] = useState<DestinoEntrega>("estoque_geral")
+  const [selectedNivel, setSelectedNivel] = useState("")
+  const [valorNF, setValorNF] = useState(item.valor_unitario ?? "")
+  const [numeroSerie, setNumeroSerie] = useState("")
   const receberItem = useReceberItem()
+  const { data: niveis = [], isLoading: loadingNiveis } = useNiveis()
+
+  const canSubmit = selectedNivel.length > 0 && valorNF.toString().length > 0 && !receberItem.isPending
 
   async function handleConfirmar() {
+    if (!selectedNivel) {
+      toast.error("Selecione a localização no armazém.")
+      return
+    }
+    if (!valorNF) {
+      toast.error("Informe o valor da nota fiscal.")
+      return
+    }
     try {
-      await receberItem.mutateAsync({ ocId, itemId: item.id, destino })
-      toast.success("Recebimento registrado com sucesso.")
+      const result = await receberItem.mutateAsync({
+        ocId,
+        itemId: item.id,
+        nivel_id: selectedNivel,
+        valor_nf: String(valorNF),
+        destino,
+        numero_serie: numeroSerie || undefined,
+      })
+      toast.success(`Recebido! Código: ${result.codigo_barras}`)
       onOpenChange(false)
     } catch {
       toast.error("Erro ao registrar recebimento. Tente novamente.")
@@ -175,6 +197,7 @@ function ReceberDialog({ ocId, item, open, onOpenChange }: ReceberDialogProps) {
         </DialogHeader>
 
         <div className="space-y-5 mt-2">
+          {/* Item summary */}
           <div className="bg-muted/30 border border-border rounded-lg p-3">
             <p className="text-sm text-foreground/80 font-medium">{item.descricao}</p>
             {item.codigo_referencia && (
@@ -187,6 +210,56 @@ function ReceberDialog({ ocId, item, open, onOpenChange }: ReceberDialogProps) {
             </p>
           </div>
 
+          {/* Localização no armazém */}
+          <div className="space-y-2">
+            <Label className="label-mono text-muted-foreground">LOCALIZAÇÃO NO ARMAZÉM *</Label>
+            <select
+              value={selectedNivel}
+              onChange={(e) => setSelectedNivel(e.target.value)}
+              disabled={loadingNiveis}
+              className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground/80 focus:outline-none focus:border-border disabled:opacity-50"
+            >
+              <option value="">
+                {loadingNiveis ? "Carregando localizações..." : "Selecione a localização..."}
+              </option>
+              {niveis.map((nivel) => (
+                <option key={nivel.id} value={nivel.id}>
+                  {nivel.endereco_completo}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Valor NF */}
+          <div className="space-y-2">
+            <Label className="label-mono text-muted-foreground">VALOR NF — CUSTO REAL *</Label>
+            <Input
+              type="number"
+              step="0.01"
+              min="0.01"
+              value={valorNF}
+              onChange={(e) => setValorNF(e.target.value)}
+              placeholder="0,00"
+              className="font-mono"
+            />
+            <p className="text-xs text-muted-foreground">
+              Pré-preenchido com o valor unitário da OC. Ajuste conforme a NF recebida.
+            </p>
+          </div>
+
+          {/* Número de série (opcional) */}
+          <div className="space-y-2">
+            <Label className="label-mono text-muted-foreground">NÚMERO DE SÉRIE (opcional)</Label>
+            <Input
+              type="text"
+              value={numeroSerie}
+              onChange={(e) => setNumeroSerie(e.target.value)}
+              placeholder="Ex: SN-123456"
+              className="font-mono"
+            />
+          </div>
+
+          {/* Destino */}
           <div className="space-y-2">
             <Label className="label-mono text-muted-foreground">DESTINO DO MATERIAL</Label>
             <div className="space-y-2">
@@ -238,7 +311,7 @@ function ReceberDialog({ ocId, item, open, onOpenChange }: ReceberDialogProps) {
             <Button
               type="button"
               size="sm"
-              disabled={receberItem.isPending}
+              disabled={!canSubmit}
               onClick={() => void handleConfirmar()}
               className="bg-success-500/15 text-success-400 border border-success-500/20 hover:bg-success-500/25"
             >

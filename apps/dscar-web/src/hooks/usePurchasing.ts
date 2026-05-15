@@ -445,6 +445,15 @@ export function useCreateCondicao() {
   })
 }
 
+export interface ReceberItemResult {
+  detail: string
+  unidade_fisica_id: string
+  codigo_barras: string
+  status_entrega: string
+  destino: string
+  data_recebimento: string
+}
+
 export function useReceberItem() {
   const qc = useQueryClient()
   return useMutation({
@@ -455,10 +464,13 @@ export function useReceberItem() {
     }: {
       ocId: string
       itemId: string
+      nivel_id: string
+      valor_nf: string
       destino: DestinoEntrega
+      numero_serie?: string
       nfe_entrada_id?: string
     }) =>
-      apiFetch<ItemOrdemCompra>(
+      apiFetch<ReceberItemResult>(
         `${PURCHASING}/ordens-compra/${ocId}/itens/${itemId}/receber/`,
         {
           method: "POST",
@@ -468,6 +480,21 @@ export function useReceberItem() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: purchasingKeys.all })
     },
+  })
+}
+
+// ─── Inventory — Niveis (warehouse locations) ─────────────────────────────────
+
+export interface NivelOption {
+  id: string
+  endereco_completo: string
+}
+
+export function useNiveis() {
+  return useQuery<NivelOption[]>({
+    queryKey: ["inventory", "niveis"],
+    queryFn: () => fetchList<NivelOption>(`/api/proxy/inventory/niveis/`),
+    staleTime: 10 * 60_000,
   })
 }
 
