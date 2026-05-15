@@ -18,6 +18,7 @@ from apps.parts_catalog.serializers import (
     PartCategorySerializer,
     PartReferenceDetailSerializer,
     PartReferenceListSerializer,
+    PartReferenceSearchSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -86,11 +87,49 @@ class PartReferenceViewSet(
                 PartReference.objects.select_related("category")
                 .prefetch_related("applications__make", "applications__model", "suppliers")
             )
-        return PartReference.objects.select_related("category").filter(is_active=True)
+
+        qs = PartReference.objects.select_related("category").filter(is_active=True)
+
+        # Vehicle compatibility annotation
+        vehicle_make_name = self.request.query_params.get("vehicle_make_name")
+        if vehicle_make_name:
+            from django.db.models import Exists, OuterRef
+
+            from apps.vehicle_catalog.models import VehicleMake, VehicleModel
+
+            make = VehicleMake.objects.filter(nome__icontains=vehicle_make_name).first()
+            if make:
+                app_filter = PartApplication.objects.filter(
+                    part_ref=OuterRef("pk"),
+                    make=make,
+                )
+                vehicle_model_name = self.request.query_params.get("vehicle_model_name")
+                if vehicle_model_name:
+                    model_obj = VehicleModel.objects.filter(
+                        marca=make,
+                        nome__icontains=vehicle_model_name,
+                    ).first()
+                    if model_obj:
+                        app_filter = app_filter.filter(model=model_obj)
+
+                qs = qs.annotate(is_compatible=Exists(app_filter))
+                qs = qs.order_by("-is_compatible", "description")
+            else:
+                from django.db.models import Value
+
+                qs = qs.annotate(is_compatible=Value(False))
+
+            qs = qs.prefetch_related(
+                "applications__make", "applications__model", "suppliers"
+            )
+
+        return qs
 
     def get_serializer_class(self):  # type: ignore[override]
         if self.action == "retrieve":
             return PartReferenceDetailSerializer
+        if self.action == "list" and self.request.query_params.get("vehicle_make_name"):
+            return PartReferenceSearchSerializer
         return PartReferenceListSerializer
 
     def perform_create(self, serializer) -> None:  # type: ignore[override]

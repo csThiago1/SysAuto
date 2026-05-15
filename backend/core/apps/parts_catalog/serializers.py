@@ -87,6 +87,34 @@ class PartReferenceListSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "category_name", "updated_at"]
 
 
+class PartReferenceSearchSerializer(serializers.ModelSerializer):
+    """
+    Serializer para busca com compatibilidade veicular.
+    Inclui is_compatible (annotation), applications e suppliers inline.
+    """
+
+    category_name = serializers.CharField(source="category.name", read_only=True)
+    is_compatible = serializers.BooleanField(read_only=True, default=False)
+    applications = PartApplicationSerializer(many=True, read_only=True)
+    suppliers = PartSupplierRefSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = PartReference
+        fields = [
+            "id",
+            "manufacturer_code",
+            "description",
+            "category",
+            "category_name",
+            "unit",
+            "ncm",
+            "ean",
+            "is_compatible",
+            "applications",
+            "suppliers",
+        ]
+
+
 class PartReferenceDetailSerializer(serializers.ModelSerializer):
     """
     Serializer completo para retrieve — inclui aplicações e fornecedores aninhados.
