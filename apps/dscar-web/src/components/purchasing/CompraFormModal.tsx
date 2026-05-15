@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import type { TipoQualidade } from "@paddock/types"
+import { useState, useEffect } from "react"
+import type { TipoQualidade, PartCatalogReference } from "@paddock/types"
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { CatalogSearchCombobox } from "./CatalogSearchCombobox"
+import { CatalogContextCard } from "./CatalogContextCard"
 
 interface CompraFormModalProps {
   open: boolean
@@ -21,6 +23,13 @@ interface CompraFormModalProps {
     quantity: string
     observacoes: string
   }) => void
+  vehicleMakeName?: string
+  vehicleModelName?: string
+  prefill?: {
+    description?: string
+    partNumber?: string
+    catalogRef?: PartCatalogReference
+  }
 }
 
 const TIPO_QUALIDADE_OPTIONS: { value: TipoQualidade; label: string }[] = [
@@ -30,13 +39,29 @@ const TIPO_QUALIDADE_OPTIONS: { value: TipoQualidade; label: string }[] = [
   { value: "usada", label: "Usada" },
 ]
 
-export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProps) {
+export function CompraFormModal({
+  open,
+  onClose,
+  onSubmit,
+  vehicleMakeName,
+  vehicleModelName,
+  prefill,
+}: CompraFormModalProps) {
   const [description, setDescription] = useState("")
   const [partNumber, setPartNumber] = useState("")
   const [tipoQualidade, setTipoQualidade] = useState<TipoQualidade>("genuina")
   const [unitPrice, setUnitPrice] = useState("")
   const [quantity, setQuantity] = useState("1")
   const [observacoes, setObservacoes] = useState("")
+  const [catalogRef, setCatalogRef] = useState<PartCatalogReference | null>(null)
+
+  useEffect(() => {
+    if (open && prefill) {
+      if (prefill.description) setDescription(prefill.description)
+      if (prefill.partNumber) setPartNumber(prefill.partNumber)
+      if (prefill.catalogRef) setCatalogRef(prefill.catalogRef)
+    }
+  }, [open, prefill])
 
   function handleReset() {
     setDescription("")
@@ -45,11 +70,22 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
     setUnitPrice("")
     setQuantity("1")
     setObservacoes("")
+    setCatalogRef(null)
   }
 
   function handleClose() {
     handleReset()
     onClose()
+  }
+
+  function handleCatalogSelect(ref: PartCatalogReference) {
+    setDescription(ref.description)
+    setPartNumber(ref.manufacturer_code)
+    setCatalogRef(ref)
+  }
+
+  function handleClearCatalog() {
+    setCatalogRef(null)
   }
 
   function handleSubmit() {
@@ -76,21 +112,29 @@ export function CompraFormModal({ open, onClose, onSubmit }: CompraFormModalProp
           Um pedido de compra sera criado automaticamente para o setor de compras.
         </p>
 
-        {/* Fields */}
         <div className="space-y-4">
-          {/* Descricao */}
+          {/* Descricao — with catalog search */}
           <div>
             <label className="label-mono text-muted-foreground mb-0.5 block">
               Descricao *
             </label>
-            <input
-              type="text"
+            <CatalogSearchCombobox
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Ex: Parachoque dianteiro, Farol esquerdo..."
-              className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-border"
+              onChange={setDescription}
+              onSelect={handleCatalogSelect}
+              vehicleMakeName={vehicleMakeName}
+              vehicleModelName={vehicleModelName}
+              placeholder="Buscar no catalogo ou digitar descricao..."
             />
           </div>
+
+          {/* Catalog context card */}
+          {catalogRef && (
+            <CatalogContextCard
+              reference={catalogRef}
+              onClear={handleClearCatalog}
+            />
+          )}
 
           {/* Codigo / Referencia */}
           <div>
