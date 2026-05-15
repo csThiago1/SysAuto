@@ -1,5 +1,6 @@
 "use client"
 
+import { use } from "react"
 import { ArrowLeft, CheckCircle, AlertCircle, Package, Layers } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
@@ -57,9 +58,10 @@ function ReconciliacaoSelect({
   )
 }
 
-export default function NFeEntradaDetailPage({ params }: { params: { id: string } }) {
-  const { data: nfe, isLoading } = useNFeEntrada(params.id)
-  const gerarEstoqueMutation = useGerarEstoque(params.id)
+export default function NFeEntradaDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
+  const { data: nfe, isLoading } = useNFeEntrada(id)
+  const gerarEstoqueMutation = useGerarEstoque(id)
 
   const pendentes = nfe?.itens.filter((i) => i.status_reconciliacao === "pendente").length ?? 0
 
@@ -179,7 +181,7 @@ export default function NFeEntradaDetailPage({ params }: { params: { id: string 
                   </td>
                   <td className="px-4 py-3">
                     <ReconciliacaoSelect
-                      nfeId={params.id}
+                      nfeId={id}
                       item={item}
                       disabled={nfe.estoque_gerado}
                     />
