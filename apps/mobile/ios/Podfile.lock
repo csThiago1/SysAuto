@@ -46,7 +46,7 @@ PODS:
     - ExpoModulesCore
   - ExpoHaptics (55.0.14):
     - ExpoModulesCore
-  - ExpoImage (55.0.9):
+  - ExpoImage (55.0.10):
     - ExpoModulesCore
     - libavif/libdav1d
     - SDWebImage (~> 5.21.0)
@@ -2398,7 +2398,7 @@ DEPENDENCIES:
   - ExpoFont (from `../../../node_modules/expo-font/ios`)
   - ExpoGlassEffect (from `../../../node_modules/expo-glass-effect/ios`)
   - ExpoHaptics (from `../../../node_modules/expo-haptics/ios`)
-  - ExpoImage (from `../node_modules/expo-router/node_modules/expo-image/ios`)
+  - ExpoImage (from `../node_modules/expo-image/ios`)
   - ExpoImageManipulator (from `../../../node_modules/expo-image-manipulator/ios`)
   - ExpoKeepAwake (from `../node_modules/expo/node_modules/expo-keep-awake/ios`)
   - ExpoLinearGradient (from `../../../node_modules/expo-linear-gradient/ios`)
@@ -2537,7 +2537,7 @@ EXTERNAL SOURCES:
   ExpoHaptics:
     :path: "../../../node_modules/expo-haptics/ios"
   ExpoImage:
-    :path: "../node_modules/expo-router/node_modules/expo-image/ios"
+    :path: "../node_modules/expo-image/ios"
   ExpoImageManipulator:
     :path: "../../../node_modules/expo-image-manipulator/ios"
   ExpoKeepAwake:
@@ -2751,7 +2751,7 @@ SPEC CHECKSUMS:
   ExpoFont: cdd7a1d574a376fa003c713eff49e0a4df8672c7
   ExpoGlassEffect: 72bcb9dc634262c59897ff7c53c16e2ff03990d0
   ExpoHaptics: 679f09dc37d5981e619bc197732007a3334e80b8
-  ExpoImage: bd9e9c5bc4eff7a6883339be305f8b0bb5a0cf1c
+  ExpoImage: 74d26278507b0b0d85b1e50562412172603f59eb
   ExpoImageManipulator: ae0a562f2d405de275e011915c811564106baa70
   ExpoKeepAwake: 861c66deb0f9f28f87882610195f26c4b88fba6f
   ExpoLinearGradient: c654e92d726a6d64c588a0988bb22bea331d5e79

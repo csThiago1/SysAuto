@@ -49,5 +49,10 @@
     "node": ">=20.0.0",
     "npm": ">=10.0.0"
   },
-  "packageManager": "npm@11.6.2"
+  "packageManager": "npm@11.6.2",
+  "dependencies": {
+    "expo": "~55.0.14",
+    "react": "19.2.0",
+    "react-native": "0.83.4"
+  }
 }
