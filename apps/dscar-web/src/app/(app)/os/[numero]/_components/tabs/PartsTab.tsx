@@ -32,6 +32,8 @@ import { TipoQualidadeBadge } from "@/components/purchasing/TipoQualidadeBadge"
 import { OrigemBadge } from "@/components/purchasing/OrigemBadge"
 import { StatusPecaBadge } from "@/components/purchasing/StatusPecaBadge"
 import { MargemBadge } from "@/components/inventory/MargemBadge"
+import type { PartCatalogReference } from "@paddock/types"
+import { useServiceOrder } from "../../_hooks/useServiceOrder"
 import { EstoqueBuscaModal } from "@/components/purchasing/EstoqueBuscaModal"
 import { CompraFormModal } from "@/components/purchasing/CompraFormModal"
 import { SeguradoraFormModal } from "@/components/purchasing/SeguradoraFormModal"
@@ -54,6 +56,24 @@ export function PartsTab({ orderId }: PartsTabProps) {
   const [sourceFilter, setSourceFilter] = useState<string>("all")
 
   const isManager = usePermission("MANAGER")
+
+  const { data: osData } = useServiceOrder(orderId)
+
+  const [compraModalPrefill, setCompraModalPrefill] = useState<{
+    description?: string
+    partNumber?: string
+    catalogRef?: PartCatalogReference
+  } | undefined>()
+
+  function handleCatalogSelect(ref: PartCatalogReference) {
+    setEstoqueOpen(false)
+    setCompraModalPrefill({
+      description: ref.description,
+      partNumber: ref.manufacturer_code,
+      catalogRef: ref,
+    })
+    setCompraOpen(true)
+  }
 
   const { data: parts, isLoading } = useOSParts(orderId)
   const deletePart = useDeletePart(orderId)
@@ -395,11 +415,21 @@ export function PartsTab({ orderId }: PartsTabProps) {
         onClose={() => setEstoqueOpen(false)}
         osId={orderId}
         onSelect={handleEstoqueSelect}
+        vehicleMakeName={osData?.make}
+        vehicleModelName={osData?.model}
+        vehicleLabel={osData ? `${osData.make} ${osData.model} ${osData.year ?? ""}`.trim() : undefined}
+        onCatalogSelect={handleCatalogSelect}
       />
       <CompraFormModal
         open={compraOpen}
-        onClose={() => setCompraOpen(false)}
+        onClose={() => {
+          setCompraOpen(false)
+          setCompraModalPrefill(undefined)
+        }}
         onSubmit={handleCompraSubmit}
+        vehicleMakeName={osData?.make}
+        vehicleModelName={osData?.model}
+        prefill={compraModalPrefill}
       />
       <SeguradoraFormModal
         open={seguradoraOpen}

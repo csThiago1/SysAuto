@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useBuscarPecas } from "@/hooks/useServiceOrders"
-import type { PecaEstoqueResult, TipoQualidade } from "@paddock/types"
+import type { PecaEstoqueResult, TipoQualidade, PartCatalogReference } from "@paddock/types"
+import { CatalogFallbackSection } from "./CatalogFallbackSection"
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,10 @@ interface EstoqueBuscaModalProps {
     unit_price: string
     description: string
   }) => void
+  vehicleMakeName?: string
+  vehicleModelName?: string
+  vehicleLabel?: string
+  onCatalogSelect?: (ref: PartCatalogReference) => void
 }
 
 const TIPO_QUALIDADE_OPTIONS: { value: TipoQualidade; label: string }[] = [
@@ -29,7 +34,11 @@ const TIPO_QUALIDADE_OPTIONS: { value: TipoQualidade; label: string }[] = [
   { value: "usada", label: "Usada" },
 ]
 
-export function EstoqueBuscaModal({ open, onClose, onSelect }: EstoqueBuscaModalProps) {
+export function EstoqueBuscaModal({
+  open, onClose, onSelect, osId,
+  vehicleMakeName, vehicleModelName, vehicleLabel,
+  onCatalogSelect,
+}: EstoqueBuscaModalProps) {
   const [busca, setBusca] = useState("")
   const [tipoPeca, setTipoPeca] = useState("")
   const [categoria, setCategoria] = useState("")
@@ -141,9 +150,23 @@ export function EstoqueBuscaModal({ open, onClose, onSelect }: EstoqueBuscaModal
           )}
 
           {!isLoading && busca.length >= 2 && resultados?.length === 0 && (
-            <p className="text-sm text-muted-foreground py-4 text-center">
-              Nenhuma peca encontrada.
-            </p>
+            <>
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                Nenhuma peca encontrada no estoque.
+              </p>
+              {onCatalogSelect && (
+                <CatalogFallbackSection
+                  searchTerm={busca}
+                  vehicleMakeName={vehicleMakeName}
+                  vehicleModelName={vehicleModelName}
+                  vehicleLabel={vehicleLabel ?? "este veiculo"}
+                  onSelect={(ref) => {
+                    onCatalogSelect(ref)
+                    handleClose()
+                  }}
+                />
+              )}
+            </>
           )}
 
           {busca.length < 2 && !selected && (
