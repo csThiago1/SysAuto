@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.authentication.permissions import (
+    HasTenantPermission,
     IsAdminOrAbove,
     IsConsultantOrAbove,
     IsManagerOrAbove,
@@ -41,10 +42,12 @@ logger = logging.getLogger(__name__)
 class UnidadeFisicaViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Listagem e detalhe de UnidadeFisica.
-    valor_nf só aparece no detalhe para MANAGER+.
+    valor_nf so aparece no detalhe para MANAGER+.
     """
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+    def get_permissions(self) -> list:  # type: ignore[override]
+        """RBAC: estoque.view for read."""
+        return [IsAuthenticated(), HasTenantPermission("estoque.view")]
 
     def get_queryset(self):  # type: ignore[override]
         qs = UnidadeFisica.objects.filter(is_active=True).select_related(

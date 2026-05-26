@@ -1,104 +1,33 @@
 """
 Paddock Solutions — Authentication Views
-
-Login, Refresh, Me, Staff, PushToken, DevToken.
 """
-import datetime
 import hashlib
-import logging
-import secrets
+import time
 
 import jwt as pyjwt
-from django.conf import settings
+from rest_framework import serializers as drf_serializers
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 
-from .email_service import send_reset_password_email, send_verification_email
-from .jwt_utils import decode_token, generate_access_token, generate_refresh_token
-from .models import (
-    EmailVerificationToken,
-    GlobalUser,
-    PasswordResetToken,
-    RefreshToken,
-)
-from .permissions import IsAdminOrAbove, IsManagerOrAbove
+from .models import GlobalUser
+from .permissions import IsManagerOrAbove
 from .serializers import MeSerializer, StaffUserSerializer
 
-logger = logging.getLogger(__name__)
+_DEV_JWT_SECRET = "dscar-dev-secret-paddock-2025"
+_DEV_ACCESS_CODE = "paddock123"
 
-_DEV_JWT_SECRET = "dscar-dev-secret-" + "paddock-2025"
-_DEV_ACCESS_CODE = "paddock" + "123"
-
-
-# ─── Rate limit for auth endpoints ─────────────────────────────────────────────
-
-class AuthRateThrottle(AnonRateThrottle):
-    """5 requests/min per IP for auth endpoints."""
-    rate = "5/minute"
-
-
-# ─── Helper: resolve user + permissions ─────────────────────────────────────────
-
-def _resolve_user(login_input: str) -> GlobalUser | None:
-    """Resolve GlobalUser by email or username."""
-    if "@" in login_input:
-        email_lower = login_input.lower()
-        email_h = hashlib.sha256(email_lower.encode()).hexdigest()
-        try:
-            return GlobalUser.objects.get(email_hash=email_h, is_active=True)
-        except GlobalUser.DoesNotExist:
-            return None
-    else:
-        username_lower = login_input.lower()
-        try:
-            return GlobalUser.objects.get(username=username_lower, is_active=True)
-        except GlobalUser.DoesNotExist:
-            return None
-
-
-def _get_extra_permissions(user: GlobalUser) -> list[str]:
-    """Get extra permissions from Employee profile, if exists."""
-    try:
-        from apps.hr.models import Employee
-        emp = Employee.objects.get(user=user, is_active=True)
-        return emp.extra_permissions or []
-    except Exception:
-        return []
-
-
-def _issue_tokens(user: GlobalUser) -> dict:
-    """Generate access + refresh tokens and store refresh token hash.
-
-    Returns:
-        Dict with 'access' and 'refresh' JWT strings.
-    """
-    permissions = _get_extra_permissions(user)
-    access = generate_access_token(user, permissions=permissions)
-    refresh = generate_refresh_token(user)
-    # Store refresh token hash for revocation/rotation
-    token_hash = hashlib.sha256(refresh.encode()).hexdigest()
-    RefreshToken.objects.create(
-        user=user,
-        token_hash=token_hash,
-        expires_at=datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=7),
-    )
-    return {"access": access, "refresh": refresh}
-
-
-# ─── DevTokenView (kept for backwards compat during transition) ──────────────
 
 class DevTokenView(APIView):
     """
     POST /api/v1/auth/dev-token/
 
     Emite um JWT HS256 devidamente assinado para uso no ambiente de desenvolvimento.
-    Aceita qualquer e-mail + senha dev. Nao existe em producao.
+    Aceita qualquer e-mail + senha 'paddock123'. Não existe em produção.
 
-    Body: {"email": "...", "password": "..."}
+    Body: {"email": "...", "password": "paddock123"}
     Response: {"access": "<jwt>", "refresh": "<jwt>"}
     """
 
@@ -109,8 +38,8 @@ class DevTokenView(APIView):
         """Valida credenciais dev e retorna JWT HS256 assinado.
 
         Aceita login por email OU username (campo 'email' aceita ambos).
-        - Se contem '@': login por email + senha dev
-        - Senao: login por username + senha do colaborador (CPF)
+        - Se contém '@': login por email + senha dev (paddock123)
+        - Senão: login por username + senha do colaborador (CPF)
         """
         login_input: str = request.data.get("email", "").strip().lower()
         password: str = request.data.get("password", "")
@@ -128,37 +57,87 @@ class DevTokenView(APIView):
             if not user.check_password(password):
                 return Response({"detail": "Credenciais inválidas."}, status=status.HTTP_401_UNAUTHORIZED)
 
-            return Response(_issue_tokens(user))
+            # Ler role e permissões do Employee
+            role = "CONSULTANT"
+            extra_permissions: list[str] = []
+            try:
+                from apps.hr.models import Employee
+                emp = Employee.objects.get(user=user, is_active=True)
+                role = emp.role or "CONSULTANT"
+                extra_permissions = emp.extra_permissions or []
+            except Exception:
+                pass
 
-        # Login por email — senha dev fixa
+            # Resolve effective permissions from RBAC matrix
+            permissions: list[str] = []
+            try:
+                from .permission_service import get_effective_permissions
+                permissions = get_effective_permissions(role)
+            except Exception:
+                pass
+
+            now = int(time.time())
+            payload: dict = {
+                "sub": str(user.pk),
+                "email": user.email,
+                "name": user.name,
+                "role": role,
+                "extra_permissions": extra_permissions,
+                "permissions": permissions,
+                "active_company": "dscar",
+                "tenant_schema": "tenant_dscar",
+                "client_slug": "grupo-dscar",
+                "iat": now,
+                "exp": now + 86400,
+            }
+            token: str = pyjwt.encode(payload, _DEV_JWT_SECRET, algorithm="HS256")
+            return Response({"access": token, "refresh": token})
+
+        # Login por email — senha dev fixa (paddock123)
         email = login_input
         if password != _DEV_ACCESS_CODE:
             return Response({"detail": "Credenciais inválidas."}, status=status.HTTP_401_UNAUTHORIZED)
 
+        # Resolve effective permissions from RBAC matrix
+        dev_permissions: list[str] = []
+        try:
+            from .permission_service import get_effective_permissions
+            dev_permissions = get_effective_permissions("ADMIN")
+        except Exception:
+            pass
+
+        now = int(time.time())
+        payload = {
+            "sub": f"dev-{email}",
+            "email": email,
+            "name": email.split("@")[0],
+            "role": "ADMIN",
+            "permissions": dev_permissions,
+            "active_company": "dscar",
+            "tenant_schema": "tenant_dscar",
+            "client_slug": "grupo-dscar",
+            "iat": now,
+            "exp": now + 86400,  # 24 horas
+        }
+
+        token = pyjwt.encode(payload, _DEV_JWT_SECRET, algorithm="HS256")
+
         # Cria o GlobalUser automaticamente se não existir
         email_hash = hashlib.sha256(email.encode()).hexdigest()
-        user, _created = GlobalUser.objects.get_or_create(
+        GlobalUser.objects.get_or_create(
             email_hash=email_hash,
-            defaults={
-                "email": email,
-                "name": email.split("@")[0],
-                "is_active": True,
-                "role": GlobalUser.Role.ADMIN,
-            },
+            defaults={"email": email, "name": payload["name"], "is_active": True},
         )
 
-        return Response(_issue_tokens(user))
+        return Response({"access": token, "refresh": token})
 
-
-# ─── LoginView ───────────────────────────────────────────────────────────────
 
 class LoginView(APIView):
     """
     POST /api/v1/auth/login/
 
-    Endpoint de autenticação nativo — valida credenciais contra o banco.
+    Endpoint real de autenticação — valida credenciais contra o banco.
     Aceita login por email OU username, senha é validada via check_password().
-    Retorna access token (15min) + refresh token (7 dias).
 
     Body: {"email": "...", "password": "..."}
     Response: {"access": "<jwt>", "refresh": "<jwt>"}
@@ -166,10 +145,9 @@ class LoginView(APIView):
 
     permission_classes = [AllowAny]
     authentication_classes: list = []
-    throttle_classes = [AuthRateThrottle]
 
     def post(self, request: Request) -> Response:
-        """Valida credenciais e retorna JWT par access/refresh."""
+        """Valida credenciais reais e retorna JWT."""
         login_input: str = request.data.get("email", "").strip()
         password: str = request.data.get("password", "")
 
@@ -179,7 +157,22 @@ class LoginView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        user = _resolve_user(login_input)
+        # Resolver o GlobalUser — por email ou username
+        user: GlobalUser | None = None
+
+        if "@" in login_input:
+            email_lower = login_input.lower()
+            email_h = hashlib.sha256(email_lower.encode()).hexdigest()
+            try:
+                user = GlobalUser.objects.get(email_hash=email_h, is_active=True)
+            except GlobalUser.DoesNotExist:
+                pass
+        else:
+            username_lower = login_input.lower()
+            try:
+                user = GlobalUser.objects.get(username=username_lower, is_active=True)
+            except GlobalUser.DoesNotExist:
+                pass
 
         if user is None or not user.check_password(password):
             return Response(
@@ -187,81 +180,43 @@ class LoginView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        logger.info("Login bem-sucedido para user_id=%s", user.pk)
-        return Response(_issue_tokens(user))
-
-
-# ─── RefreshView ─────────────────────────────────────────────────────────────
-
-class RefreshView(APIView):
-    """
-    POST /api/v1/auth/refresh/
-
-    Aceita refresh_token, valida, revoga o antigo (rotação) e emite novo par.
-    Body: {"refresh_token": "<jwt>"}
-    Response: {"access": "<jwt>", "refresh": "<jwt>"}
-    """
-
-    permission_classes = [AllowAny]
-    authentication_classes: list = []
-
-    def post(self, request: Request) -> Response:
-        """Rotaciona refresh token e emite novo par."""
-        raw_refresh: str = request.data.get("refresh_token", "").strip()
-        if not raw_refresh:
-            return Response(
-                {"detail": "Campo 'refresh_token' obrigatório."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Decode and validate
+        # Buscar role e extra_permissions do Employee (se existir)
+        role = "CONSULTANT"
+        extra_permissions: list[str] = []
         try:
-            payload = decode_token(raw_refresh)
-        except pyjwt.ExpiredSignatureError:
-            return Response(
-                {"detail": "Refresh token expirado."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-        except pyjwt.InvalidTokenError:
-            return Response(
-                {"detail": "Refresh token inválido."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
+            from apps.hr.models import Employee
 
-        if payload.get("token_type") != "refresh":
-            return Response(
-                {"detail": "Token não é do tipo refresh."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
+            emp = Employee.objects.get(user=user, is_active=True)
+            role = emp.role or "CONSULTANT"
+            extra_permissions = emp.extra_permissions or []
+        except Exception:
+            pass
 
-        # Find stored token by hash
-        token_hash = hashlib.sha256(raw_refresh.encode()).hexdigest()
+        # Resolve effective permissions from RBAC matrix
+        login_permissions: list[str] = []
         try:
-            stored = RefreshToken.objects.select_related("user").get(
-                token_hash=token_hash, is_revoked=False
-            )
-        except RefreshToken.DoesNotExist:
-            return Response(
-                {"detail": "Refresh token revogado ou inexistente."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
+            from .permission_service import get_effective_permissions
+            login_permissions = get_effective_permissions(role)
+        except Exception:
+            pass
 
-        # Revoke old token (rotation)
-        stored.is_revoked = True
-        stored.save(update_fields=["is_revoked"])
+        now = int(time.time())
+        payload: dict = {
+            "sub": str(user.pk),
+            "email": user.email,
+            "name": user.name,
+            "role": role,
+            "extra_permissions": extra_permissions,
+            "permissions": login_permissions,
+            "active_company": "dscar",
+            "tenant_schema": "tenant_dscar",
+            "client_slug": "grupo-dscar",
+            "iat": now,
+            "exp": now + 86400,
+        }
+        token: str = pyjwt.encode(payload, _DEV_JWT_SECRET, algorithm="HS256")
+        return Response({"access": token, "refresh": token})
 
-        user = stored.user
-        if not user.is_active:
-            return Response(
-                {"detail": "Usuário desativado."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        logger.info("Token refresh para user_id=%s", user.pk)
-        return Response(_issue_tokens(user))
-
-
-# ─── MeView ──────────────────────────────────────────────────────────────────
 
 class MeView(APIView):
     """
@@ -277,15 +232,26 @@ class MeView(APIView):
     def get(self, request: Request) -> Response:
         """Retorna identidade completa do usuário autenticado."""
         user: GlobalUser = request.user  # type: ignore[assignment]
-        # request.auth é o dict de claims do JWT (NativeJWT ou DevJWT)
+        # request.auth é o dict de claims do JWT (DevJWT ou KeycloakJWT)
         payload: dict = request.auth if isinstance(request.auth, dict) else {}
+
+        role_from_jwt = payload.get("role", "STOREKEEPER")
+
+        # Resolve effective permissions from RBAC matrix (fresh, not from JWT cache)
+        effective_permissions: list[str] = []
+        try:
+            from .permission_service import get_effective_permissions
+            effective_permissions = get_effective_permissions(role_from_jwt)
+        except Exception:
+            effective_permissions = payload.get("permissions", [])
 
         data: dict = {
             "id": str(user.pk),
             "name": user.name,
             "email_hash": user.email_hash,
-            "role": user.role or payload.get("role", "STOREKEEPER"),
+            "role": role_from_jwt,
             "extra_permissions": payload.get("extra_permissions", []),
+            "permissions": effective_permissions,
             "active_company": payload.get("active_company", ""),
             "tenant_schema": payload.get("tenant_schema", ""),
             "is_employee": False,
@@ -342,256 +308,6 @@ class MeView(APIView):
         if len(cpf) >= 2:
             return "***.***.***-" + cpf[-2:]
         return ""
-
-
-# ─── ForgotPasswordView ─────────────────────────────────────────────────────
-
-def _get_frontend_url() -> str:
-    """Get frontend base URL from settings."""
-    return getattr(settings, "FRONTEND_URL", "http://localhost:3001")
-
-
-class ForgotPasswordView(APIView):
-    """
-    POST /api/v1/auth/forgot-password/
-
-    Gera token de reset e envia email. SEMPRE retorna 200 para evitar
-    enumeracao de emails (nao revela se o email existe).
-
-    Body: {"email": "user@example.com"}
-    """
-
-    permission_classes = [AllowAny]
-    authentication_classes: list = []
-    throttle_classes = [AuthRateThrottle]
-
-    def post(self, request: Request) -> Response:
-        """Envia email de reset de senha."""
-        email_input: str = request.data.get("email", "").strip().lower()
-        if not email_input:
-            return Response(
-                {"detail": "Campo 'email' obrigatório."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Always return 200 -- no email enumeration
-        email_h = hashlib.sha256(email_input.encode()).hexdigest()
-        try:
-            user = GlobalUser.objects.get(email_hash=email_h, is_active=True)
-        except GlobalUser.DoesNotExist:
-            logger.info("Forgot-password para email nao cadastrado (hash=%s...)", email_h[:8])
-            return Response({"detail": "Se o email existir, um link sera enviado."})
-
-        # Generate token
-        raw_token = secrets.token_urlsafe(48)
-        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
-        PasswordResetToken.objects.create(
-            user=user,
-            token_hash=token_hash,
-            expires_at=datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(hours=1),
-        )
-
-        # Build reset URL and send email
-        frontend_url = _get_frontend_url()
-        reset_url = f"{frontend_url}/auth/reset-password?token={raw_token}"
-        send_reset_password_email(user.email, reset_url)
-
-        return Response({"detail": "Se o email existir, um link sera enviado."})
-
-
-# ─── ResetPasswordView ──────────────────────────────────────────────────────
-
-class ResetPasswordView(APIView):
-    """
-    POST /api/v1/auth/reset-password/
-
-    Valida token de reset, define nova senha e revoga todos os refresh tokens.
-
-    Body: {"token": "<raw_token>", "password": "<new_password>"}
-    """
-
-    permission_classes = [AllowAny]
-    authentication_classes: list = []
-
-    def post(self, request: Request) -> Response:
-        """Valida token e redefine senha."""
-        raw_token: str = request.data.get("token", "").strip()
-        new_password: str = request.data.get("password", "").strip()
-
-        if not raw_token or not new_password:
-            return Response(
-                {"detail": "Campos 'token' e 'password' obrigatórios."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if len(new_password) < 8:
-            return Response(
-                {"detail": "Senha deve ter pelo menos 8 caracteres."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
-        now = datetime.datetime.now(tz=datetime.timezone.utc)
-
-        try:
-            stored = PasswordResetToken.objects.select_related("user").get(
-                token_hash=token_hash,
-                is_used=False,
-                expires_at__gt=now,
-            )
-        except PasswordResetToken.DoesNotExist:
-            return Response(
-                {"detail": "Token inválido ou expirado."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Mark token as used
-        stored.is_used = True
-        stored.save(update_fields=["is_used"])
-
-        # Set new password
-        user = stored.user
-        user.set_password(new_password)
-        user.save(update_fields=["password"])
-
-        # Revoke all refresh tokens (force re-login everywhere)
-        RefreshToken.objects.filter(user=user, is_revoked=False).update(is_revoked=True)
-
-        logger.info("Senha redefinida para user_id=%s", user.pk)
-        return Response({"detail": "Senha redefinida com sucesso."})
-
-
-# ─── VerifyEmailView ────────────────────────────────────────────────────────
-
-class VerifyEmailView(APIView):
-    """
-    POST /api/v1/auth/verify-email/
-
-    Valida token de verificacao de email e ativa a conta.
-
-    Body: {"token": "<raw_token>"}
-    """
-
-    permission_classes = [AllowAny]
-    authentication_classes: list = []
-
-    def post(self, request: Request) -> Response:
-        """Verifica email e ativa conta."""
-        raw_token: str = request.data.get("token", "").strip()
-        if not raw_token:
-            return Response(
-                {"detail": "Campo 'token' obrigatório."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
-        now = datetime.datetime.now(tz=datetime.timezone.utc)
-
-        try:
-            stored = EmailVerificationToken.objects.select_related("user").get(
-                token_hash=token_hash,
-                is_used=False,
-                expires_at__gt=now,
-            )
-        except EmailVerificationToken.DoesNotExist:
-            return Response(
-                {"detail": "Token inválido ou expirado."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Mark token as used
-        stored.is_used = True
-        stored.save(update_fields=["is_used"])
-
-        # Activate account
-        user = stored.user
-        user.email_verified = True
-        user.save(update_fields=["email_verified"])
-
-        logger.info("Email verificado para user_id=%s", user.pk)
-        return Response({"detail": "Email verificado com sucesso."})
-
-
-# ─── RegisterView (admin-only invite) ───────────────────────────────────────
-
-class RegisterView(APIView):
-    """
-    POST /api/v1/auth/register/
-
-    Registro por convite -- apenas admin pode criar novos usuarios.
-    Envia email de verificacao para o usuario criado.
-
-    Body: {"email": "...", "name": "...", "role": "CONSULTANT", "password": "..."}
-    """
-
-    permission_classes = [IsAuthenticated, IsAdminOrAbove]
-
-    def post(self, request: Request) -> Response:
-        """Cria usuario por convite (admin-only)."""
-        email: str = request.data.get("email", "").strip().lower()
-        name: str = request.data.get("name", "").strip()
-        role: str = request.data.get("role", "CONSULTANT").upper()
-        password: str = request.data.get("password", "").strip()
-
-        if not email or not name:
-            return Response(
-                {"detail": "Campos 'email' e 'name' obrigatórios."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if password and len(password) < 8:
-            return Response(
-                {"detail": "Senha deve ter pelo menos 8 caracteres."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Validate role
-        valid_roles = [choice[0] for choice in GlobalUser.Role.choices]
-        if role not in valid_roles:
-            return Response(
-                {"detail": f"Role inválido. Opções: {', '.join(valid_roles)}"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Check if user already exists
-        email_h = hashlib.sha256(email.encode()).hexdigest()
-        if GlobalUser.objects.filter(email_hash=email_h).exists():
-            return Response(
-                {"detail": "Usuário com este email já existe."},
-                status=status.HTTP_409_CONFLICT,
-            )
-
-        # Create user
-        user = GlobalUser.objects.create_user(
-            email=email,
-            password=password or None,
-            name=name,
-            role=role,
-        )
-
-        # Generate verification token and send email
-        raw_token = secrets.token_urlsafe(48)
-        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
-        EmailVerificationToken.objects.create(
-            user=user,
-            token_hash=token_hash,
-            expires_at=datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(hours=24),
-        )
-
-        frontend_url = _get_frontend_url()
-        verify_url = f"{frontend_url}/auth/verify-email?token={raw_token}"
-        send_verification_email(user.email, verify_url)
-
-        logger.info("Usuário registrado por convite: user_id=%s, role=%s", user.pk, role)
-        return Response(
-            {
-                "id": str(user.pk),
-                "email_hash": user.email_hash,
-                "name": user.name,
-                "role": user.role,
-            },
-            status=status.HTTP_201_CREATED,
-        )
 
 
 class StaffListView(APIView):
