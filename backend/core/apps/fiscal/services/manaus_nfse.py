@@ -123,10 +123,11 @@ class ManausNfseBuilder:
             numero_dps = 1
 
         # ── Payload flat /v2/nfsen ──────────────────────────────────────
-        # serie_dps: usar série 2 para não conflitar com Box Empresa (série 1, números 5000+)
+        # A série DPS/RPS vem da configuração fiscal do emissor.
+        serie_dps = str(config.serie_rps or "1")
         payload: dict[str, Any] = {
             "data_emissao": datetime.now(tz=_TZ_MANAUS).isoformat(),
-            "serie_dps": "1",
+            "serie_dps": serie_dps,
             "numero_dps": str(numero_dps),
             "data_competencia": datetime.now(tz=_TZ_MANAUS).strftime("%Y-%m-%d"),
             "cnpj_prestador": config.cnpj,
@@ -399,9 +400,10 @@ class ManualNfseBuilder:
             numero_dps = 1
 
         # Payload flat /v2/nfsen
+        serie_dps = str(config.serie_rps or "1")
         payload: dict[str, Any] = {
             "data_emissao": data_emissao,
-            "serie_dps": "1",
+            "serie_dps": serie_dps,
             "numero_dps": str(numero_dps),
             "data_competencia": datetime.now(tz=_TZ_MANAUS).strftime("%Y-%m-%d"),
             "cnpj_prestador": config.cnpj,

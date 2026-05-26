@@ -6,17 +6,39 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import type { Session } from "next-auth";
 import type { PaddockRole } from "@paddock/types";
 
 export type { MeResponse, MeEmployeeSnapshot, MeCustomerSnapshot } from "@paddock/types";
+
+type PaddockSession = Session & {
+  companies?: string[];
+  activeCompany?: string;
+  tenantSchema?: string;
+  clientSlug?: string;
+  role?: PaddockRole;
+};
+
+interface CompanyAccess {
+  hasAccess: (company: string) => boolean;
+  isMultiCompany: boolean;
+  activeCompany: string;
+  role: PaddockRole;
+  canManage: boolean;
+  canAdmin: boolean;
+  canAccessInventory: boolean;
+  tenantSchema: string;
+  clientSlug: string;
+}
 
 /**
  * Retorna dados de acesso multi-empresa do usuário autenticado.
  * Lê os claims diretamente da sessão next-auth v5 (companies, activeCompany,
  * tenantSchema, clientSlug) — propagados pelo callback session() em auth.ts.
  */
-export function useCompanyAccess() {
-  const { data: session } = useSession();
+export function useCompanyAccess(): CompanyAccess {
+  const { data } = useSession();
+  const session = data as PaddockSession | null;
 
   const companies: string[] = session?.companies ?? [];
   const activeCompany: string = session?.activeCompany ?? "";

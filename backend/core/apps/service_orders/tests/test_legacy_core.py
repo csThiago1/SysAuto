@@ -1,5 +1,5 @@
 """
-Paddock Solutions — Service Orders Tests
+Paddock Solutions — Service Orders Core Tests
 Sprint OS-001 — auto-transitions, validações, multitenancy.
 """
 from datetime import date, timedelta
@@ -115,15 +115,15 @@ class TestAutoTransitionLogic(TestCase):
         self.assertEqual(len(triggered), 1)
         self.assertEqual(triggered[0], ("client_delivery_date", "delivered"))
 
-    def test_entry_date_triggers_initial_survey(self) -> None:
-        """entry_date em reception → deve disparar 'initial_survey'."""
+    def test_scheduling_date_triggers_initial_survey(self) -> None:
+        """scheduling_date em reception → deve disparar 'initial_survey'."""
         triggered = self._detect_transitions(
             "reception",
-            {"entry_date": "2026-04-02T08:00:00Z"},
+            {"scheduling_date": "2026-04-02T08:00:00Z"},
             {f: None for f in AUTO_TRANSITIONS},
         )
         self.assertEqual(len(triggered), 1)
-        self.assertEqual(triggered[0], ("entry_date", "initial_survey"))
+        self.assertEqual(triggered[0], ("scheduling_date", "initial_survey"))
 
     def test_only_one_transition_applied_per_update(self) -> None:
         """Quando múltiplos campos disparam, só o primeiro é aplicado."""

@@ -6,7 +6,7 @@ import { Text } from '@/components/ui/Text';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { SectionDivider } from '@/components/ui/SectionDivider';
-import { useVehicleByPlate } from '@/hooks/useVehicleByPlate';
+import { useVehicleByPlate, type VehicleInfo } from '@/hooks/useVehicleByPlate';
 import { toast } from '@/stores/toast.store';
 import { Colors, Spacing, Radii } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,19 +21,35 @@ export default function CadastroVeiculoScreen(): React.JSX.Element {
   const [color, setColor] = useState('');
   const [chassis, setChassis] = useState('');
   const [km, setKm] = useState('');
+  const [vehicleData, setVehicleData] = useState<VehicleInfo | null>(null);
 
-  const vehicleLookup = useVehicleByPlate(plate.length >= 7 ? plate : '');
+  const vehicleLookup = useVehicleByPlate();
+  const normalizedPlate = plate.toUpperCase().replace(/[-\s]/g, '').trim();
 
   // Auto-fill when placa-fipe returns data
   React.useEffect(() => {
-    if (vehicleLookup.data) {
-      const v = vehicleLookup.data;
-      if (v.make) setMake(v.make);
-      if (v.model) setModel(v.model);
-      if (v.year) setYear(String(v.year));
-      if (v.color) setColor(v.color);
+    let cancelled = false;
+    if (normalizedPlate.length < 7) {
+      setVehicleData(null);
+      return;
     }
-  }, [vehicleLookup.data]);
+
+    void vehicleLookup.lookup(normalizedPlate).then((v) => {
+      if (cancelled) return;
+      setVehicleData(v);
+      if (v) {
+        if (v.brand) setMake(v.brand);
+        if (v.model) setModel(v.model);
+        if (v.year) setYear(String(v.year));
+        if (v.color) setColor(v.color);
+        if (v.chassi) setChassis(v.chassi);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [normalizedPlate, vehicleLookup.lookup]);
 
   const canSave = plate.trim().length >= 7 && make.trim().length > 0;
 
@@ -71,7 +87,7 @@ export default function CadastroVeiculoScreen(): React.JSX.Element {
             {vehicleLookup.isLoading && (
               <Text variant="caption" color={Colors.brand}>Buscando dados do veículo...</Text>
             )}
-            {vehicleLookup.data && (
+            {vehicleData && (
               <Text variant="caption" color={Colors.success}>Dados preenchidos automaticamente</Text>
             )}
           </View>

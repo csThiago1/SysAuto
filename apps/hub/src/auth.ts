@@ -13,7 +13,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         async jwt({ token, account, profile }) {
             // Propagar claims do Keycloak para o JWT interno
             if (account && profile) {
-                token.sub = profile.sub;
+                token.sub = profile.sub ?? undefined;
                 token.email = profile.email;
                 token.name = profile.name;
                 // Claims customizados do Paddock (configurados no Keycloak)

@@ -1,10 +1,14 @@
 """Testes para PedidoCompraService + OrdemCompraService — requer Docker."""
 import hashlib
+import uuid
 from decimal import Decimal
 
 from django_tenants.test.cases import TenantTestCase
 
+from apps.accounts_payable.models import PayableDocument
 from apps.authentication.models import GlobalUser
+from apps.inventory.models_location import Armazem, Nivel, Prateleira, Rua
+from apps.inventory.models_movement import MovimentacaoEstoque
 from apps.purchasing.models import ItemOrdemCompra, OrdemCompra, PedidoCompra
 from apps.purchasing.services import OrdemCompraService, PedidoCompraService
 from apps.service_orders.models import ServiceOrder, ServiceOrderPart
@@ -49,6 +53,14 @@ def make_part(
         tipo_qualidade="genuina",
         status_peca="aguardando_cotacao",
     )
+
+
+def make_nivel() -> Nivel:
+    suffix = uuid.uuid4().hex[:8].upper()
+    armazem = Armazem.objects.create(nome="Galpão Teste", codigo=f"G{suffix[:3]}")
+    rua = Rua.objects.create(armazem=armazem, codigo=f"R{suffix[:3]}")
+    prateleira = Prateleira.objects.create(rua=rua, codigo=f"P{suffix[:3]}")
+    return Nivel.objects.create(prateleira=prateleira, codigo=f"N{suffix[:3]}")
 
 
 class TestPedidoCompraService(TenantTestCase):
@@ -244,3 +256,70 @@ class TestOrdemCompraService(TenantTestCase):
         self.assertFalse(item.is_active)
         oc.refresh_from_db()
         self.assertEqual(oc.valor_total, Decimal("0"))
+
+    def test_compra_recebimento_gera_ap_estoque_e_vincula_os(self) -> None:
+        """Fluxo compra → AP → recebimento → estoque → OS deve ficar rastreável."""
+        user = make_user("purchasing-receive@example.com")
+        os = make_os(8011)
+        part = make_part(os, "Capô", unit_price="900.00")
+        pedido = PedidoCompraService.solicitar(
+            service_order_part_id=part.id,
+            descricao="Capô",
+            tipo_qualidade="genuina",
+            quantidade=Decimal("1"),
+            valor_cobrado_cliente=Decimal("900.00"),
+            user_id=user.id,
+        )
+        oc = OrdemCompraService.criar_oc(os.id, user.id)
+        item = OrdemCompraService.adicionar_item(
+            oc_id=oc.id,
+            pedido_compra_id=pedido.id,
+            fornecedor_nome="Fornecedor Recebimento",
+            fornecedor_cnpj="12345678000190",
+            descricao="Capô",
+            tipo_qualidade="genuina",
+            quantidade=Decimal("1"),
+            valor_unitario=Decimal("650.00"),
+        )
+        OrdemCompraService.enviar_para_aprovacao(oc.id, user.id)
+        OrdemCompraService.aprovar(oc.id, user.id)
+
+        payable = PayableDocument.objects.get(document_number=oc.numero)
+        self.assertEqual(payable.amount, Decimal("650.00"))
+
+        nivel = make_nivel()
+        item, unidade = OrdemCompraService.receber_item_com_estoque(
+            item_id=item.id,
+            nivel_id=nivel.id,
+            valor_nf=Decimal("650.00"),
+            user_id=user.id,
+            destino="os_direta",
+        )
+
+        item.refresh_from_db()
+        pedido.refresh_from_db()
+        part.refresh_from_db()
+        oc.refresh_from_db()
+        unidade.refresh_from_db()
+
+        self.assertEqual(item.status_entrega, "recebido")
+        self.assertEqual(pedido.status, "recebido")
+        self.assertEqual(oc.status, "concluida")
+        self.assertEqual(unidade.status, "reserved")
+        self.assertEqual(unidade.ordem_servico_id, os.id)
+        self.assertEqual(part.status_peca, "recebida")
+        self.assertEqual(part.unidade_fisica_id, unidade.id)
+        self.assertEqual(part.custo_real, Decimal("650.00"))
+        self.assertTrue(
+            MovimentacaoEstoque.objects.filter(
+                unidade_fisica=unidade,
+                tipo=MovimentacaoEstoque.Tipo.ENTRADA_NF,
+            ).exists()
+        )
+        self.assertTrue(
+            MovimentacaoEstoque.objects.filter(
+                unidade_fisica=unidade,
+                tipo=MovimentacaoEstoque.Tipo.SAIDA_OS,
+                ordem_servico=os,
+            ).exists()
+        )

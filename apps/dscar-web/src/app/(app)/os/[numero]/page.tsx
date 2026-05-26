@@ -30,7 +30,7 @@ export default async function ServiceOrderPage({ params }: PageProps) {
   const session = await auth()
   const token = session?.accessToken ?? ""
 
-  const activeCompany = (session as Record<string, unknown>)?.activeCompany as string ?? "dscar"
+  const activeCompany = session?.activeCompany ?? "dscar"
   const order = await getServiceOrder(numero, token, activeCompany)
 
   return (

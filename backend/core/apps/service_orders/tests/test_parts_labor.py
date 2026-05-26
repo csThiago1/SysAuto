@@ -36,9 +36,28 @@ class OSPartsTestCase(TenantTestCase):
         )
 
     def setUp(self) -> None:
+        super().setUp()
+        if not hasattr(self, "user") or not GlobalUser.objects.filter(pk=self.user.pk).exists():
+            email_hash = _sha256("tech@dscar.com")
+            self.user = GlobalUser.objects.filter(email_hash=email_hash).first()
+            if self.user is None:
+                self.user = GlobalUser.objects.create_user(
+                    email="tech@dscar.com",
+                    email_hash=email_hash,
+                    password="x",
+                )
+        if not hasattr(self, "os") or not ServiceOrder.objects.filter(pk=self.os.pk).exists():
+            self.os = ServiceOrder.objects.create(
+                number=9001,
+                plate="ABC1234",
+                customer_name="Teste",
+                status=ServiceOrderStatus.REPAIR,
+                created_by=self.user,
+            )
         self.client = APIClient()
-        self.client.force_authenticate(user=self.user)
-        self.client.defaults["SERVER_NAME"] = "dscar.localhost"
+        self.client.force_authenticate(user=self.user, token={"role": "ADMIN"})
+        self.client.defaults["SERVER_NAME"] = self.domain.domain
+        self.client.defaults["HTTP_HOST"] = self.domain.domain
 
     def _parts_url(self, os_id: str | None = None) -> str:
         oid = os_id or str(self.os.id)
@@ -160,6 +179,24 @@ class OSPartsTestCase(TenantTestCase):
         resp = self.client.post(self._parts_url(str(delivered_os.id)), payload, format="json")
         self.assertEqual(resp.status_code, 422)
 
+    def test_add_part_to_invoiced_os_returns_422(self) -> None:
+        invoiced_os = ServiceOrder.objects.create(
+            number=9006,
+            plate="INV0001",
+            customer_name="Faturada",
+            status=ServiceOrderStatus.REPAIR,
+            invoice_issued=True,
+            created_by=self.user,
+        )
+        payload = {
+            "description": "Tentativa pós-faturamento",
+            "quantity": "1.00",
+            "unit_price": "100.00",
+            "discount": "0.00",
+        }
+        resp = self.client.post(self._parts_url(str(invoiced_os.id)), payload, format="json")
+        self.assertEqual(resp.status_code, 422)
+
     def test_list_parts_returns_all_items(self) -> None:
         from apps.service_orders.models import ServiceOrderPart
 
@@ -197,6 +234,24 @@ class OSPartsTestCase(TenantTestCase):
         self.assertEqual(resp.status_code, 201)
         os5.refresh_from_db()
         self.assertEqual(os5.services_total, Decimal("120.00"))
+
+    def test_add_labor_to_invoiced_os_returns_422(self) -> None:
+        invoiced_os = ServiceOrder.objects.create(
+            number=9007,
+            plate="INV0002",
+            customer_name="Faturada Serviços",
+            status=ServiceOrderStatus.REPAIR,
+            invoice_issued=True,
+            created_by=self.user,
+        )
+        payload = {
+            "description": "Serviço pós-faturamento",
+            "quantity": "1.00",
+            "unit_price": "120.00",
+            "discount": "0.00",
+        }
+        resp = self.client.post(self._labor_url(str(invoiced_os.id)), payload, format="json")
+        self.assertEqual(resp.status_code, 422)
 
     def test_add_part_with_product_link(self) -> None:
         """

@@ -2,6 +2,7 @@
 
 import { use, useState, useMemo } from "react"
 import Link from "next/link"
+import type { Route } from "next"
 import { ArrowRight, MessageSquare, PlusCircle, Send } from "lucide-react"
 import { toast } from "sonner"
 import {
@@ -392,7 +393,7 @@ export default function CotacaoOSPage({ params }: { params: Promise<{ osId: stri
       <div className="flex justify-end pt-2">
         {aprovacaoPendente ? (
           <Link
-            href={`/compras/aprovacao/${aprovacaoPendente.id}`}
+            href={`/compras/aprovacao/${aprovacaoPendente.id}` as Route}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium
                        bg-purple-500/10 text-purple-400 border border-purple-500/20
                        hover:bg-purple-500/20 transition-colors"

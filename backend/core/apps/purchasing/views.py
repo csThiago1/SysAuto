@@ -554,11 +554,6 @@ class RegistrarRecebimentoView(APIView):
 
     @transaction.atomic
     def post(self, request: Request, oc_id: str, item_id: str) -> Response:
-        from apps.inventory.models_movement import MovimentacaoEstoque
-        from apps.inventory.models_physical import UnidadeFisica
-        from apps.inventory.services.reserva import ReservaUnidadeService
-        from apps.service_orders.models import ServiceOrderPart
-
         nivel_id = request.data.get("nivel_id")
         valor_nf_raw = request.data.get("valor_nf")
         if not nivel_id or not valor_nf_raw:
@@ -589,98 +584,17 @@ class RegistrarRecebimentoView(APIView):
             )
 
         try:
-            # 1. Resolver produto_peca a partir do pedido_compra, se disponivel
-            produto_peca_id = None
-            peca_canonica_id = None
-            if item.pedido_compra and item.pedido_compra.service_order_part:
-                sop = item.pedido_compra.service_order_part
-                if hasattr(sop, "produto_peca_id") and sop.produto_peca_id:
-                    produto_peca_id = sop.produto_peca_id
-
-            # 2. Criar UnidadeFisica diretamente com tipo ENTRADA_NF
-            unidade = UnidadeFisica(
-                peca_canonica_id=peca_canonica_id,
-                produto_peca_id=produto_peca_id,
-                valor_nf=valor_nf,
+            item, unidade = OrdemCompraService.receber_item_com_estoque(
+                item_id=item.id,
                 nivel_id=nivel_id,
+                valor_nf=valor_nf,
+                user_id=request.user.pk,
+                destino=destino,
+                nfe_entrada_id=nfe_entrada_id,
                 numero_serie=numero_serie,
-                status=UnidadeFisica.Status.AVAILABLE,
-                created_by_id=request.user.pk,
             )
-            if nfe_entrada_id:
-                unidade.nfe_entrada_id = nfe_entrada_id
-            unidade.save()  # gera codigo_barras = P{pk.hex}
-
-            # 3. Criar MovimentacaoEstoque(ENTRADA_NF) — imutavel, apenas INSERT
-            MovimentacaoEstoque(
-                tipo=MovimentacaoEstoque.Tipo.ENTRADA_NF,
-                unidade_fisica=unidade,
-                quantidade=1,
-                nivel_destino_id=nivel_id,
-                motivo=f"Recebimento OC {oc.numero} — {item.descricao}",
-                realizado_por_id=request.user.pk,
-            ).save()
-
-            # 4. Se destino for os_direta, reservar unidade para a OS
-            if destino == "os_direta" and item.pedido_compra:
-                os_id = item.pedido_compra.service_order_id
-                if os_id and unidade.peca_canonica_id:
-                    ReservaUnidadeService.reservar(
-                        peca_canonica_id=unidade.peca_canonica_id,
-                        quantidade=1,
-                        ordem_servico_id=str(os_id),
-                        user_id=request.user.pk,
-                    )
-
-                # Atualizar ServiceOrderPart vinculada
-                if item.pedido_compra.service_order_part_id:
-                    ServiceOrderPart.objects.filter(
-                        pk=item.pedido_compra.service_order_part_id,
-                    ).update(
-                        status_peca="recebida",
-                        unidade_fisica=unidade,
-                        custo_real=unidade.valor_nf,
-                    )
-
-            # 5. Atualizar status do item
-            update_fields = ["status_entrega", "data_recebimento", "destino", "updated_at"]
-            item.status_entrega = "recebido"
-            item.data_recebimento = timezone.now().date()
-            item.destino = destino
-            if nfe_entrada_id:
-                item.nfe_entrada_id = nfe_entrada_id
-                update_fields.append("nfe_entrada_id")
-            item.save(update_fields=update_fields)
-
-            # 6. Atualizar status do pedido_compra
-            if item.pedido_compra:
-                item.pedido_compra.status = PedidoCompra.Status.RECEBIDO
-                item.pedido_compra.save(update_fields=["status", "updated_at"])
-
-            # 7. Atualizar status da OC (parcial ou concluida)
-            all_received = not oc.itens.filter(is_active=True).exclude(
-                status_entrega="recebido"
-            ).exists()
-            oc.status = (
-                OrdemCompra.Status.CONCLUIDA if all_received
-                else OrdemCompra.Status.PARCIAL_RECEBIDA
-            )
-            oc.save(update_fields=["status", "updated_at"])
-
-            logger.info(
-                "Item %s (OC %s) recebido. UnidadeFisica %s criada no nivel %s por user %s",
-                item_id, oc_id, unidade.codigo_barras, nivel_id, request.user.pk,
-            )
-
-            return Response({
-                "detail": f"Item recebido. Unidade {unidade.codigo_barras} criada no estoque.",
-                "unidade_fisica_id": str(unidade.id),
-                "codigo_barras": unidade.codigo_barras,
-                "status_entrega": item.status_entrega,
-                "destino": item.destino,
-                "data_recebimento": str(item.data_recebimento),
-            })
-
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception:
             logger.exception(
                 "Erro ao registrar recebimento do item %s (OC %s)", item_id, oc_id,
@@ -689,6 +603,20 @@ class RegistrarRecebimentoView(APIView):
                 {"detail": "Erro ao processar recebimento."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+        logger.info(
+            "Item %s (OC %s) recebido. UnidadeFisica %s criada no nivel %s por user %s",
+            item_id, oc_id, unidade.codigo_barras, nivel_id, request.user.pk,
+        )
+
+        return Response({
+            "detail": f"Item recebido. Unidade {unidade.codigo_barras} criada no estoque.",
+            "unidade_fisica_id": str(unidade.id),
+            "codigo_barras": unidade.codigo_barras,
+            "status_entrega": item.status_entrega,
+            "destino": item.destino,
+            "data_recebimento": str(item.data_recebimento),
+        })
 
 
 class CotacaoLogViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):

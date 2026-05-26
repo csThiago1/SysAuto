@@ -6,7 +6,7 @@ COMPOSE = docker compose -f infra/docker/docker-compose.dev.yml
 BACKEND  = cd backend/core
 
 .PHONY: dev dev-stop dev-ps dev-logs dev-web dev-kill-ports migrate shell \
-        test test-backend test-web lint format typecheck help
+        test test-backend test-web lint format typecheck sprint-baseline help
 
 ## ─ Desenvolvimento ──────────────────────────────────────────────────────────
 
@@ -101,6 +101,9 @@ format: ## Black + isort (correção automática)
 typecheck: ## mypy + tsc
 	$(BACKEND) && .venv/bin/mypy .
 	npm run typecheck
+
+sprint-baseline: ## Roda baseline de sprint: Django check, coleta pytest e typecheck
+	@bash scripts/sprint-baseline.sh
 
 ## ─ Setup inicial ────────────────────────────────────────────────────────────
 

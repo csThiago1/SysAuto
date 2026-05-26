@@ -23,7 +23,7 @@ export function CatalogSearchCombobox({
 }: CatalogSearchComboboxProps) {
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>()
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [debouncedSearch, setDebouncedSearch] = useState("")
 
@@ -35,7 +35,7 @@ export function CatalogSearchCombobox({
 
   function handleChange(text: string) {
     onChange(text)
-    clearTimeout(debounceRef.current)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
       setDebouncedSearch(text)
       if (text.length >= 2) setOpen(true)

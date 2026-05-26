@@ -40,7 +40,11 @@ class _ServiceOrderVersioningMixin:
             source=parsed_budget.source,
             external_version=getattr(parsed_budget, "external_version", ""),
             external_numero_vistoria=getattr(parsed_budget, "external_numero_vistoria", ""),
-            external_integration_id=getattr(parsed_budget, "external_integration_id", ""),
+            external_integration_id=str(
+                getattr(parsed_budget, "external_integration_id", "")
+                or getattr(parsed_budget, "external_version_id", "")
+                or ""
+            ),
             status=getattr(parsed_budget, "external_status", None) or "analisado",
             content_hash=getattr(parsed_budget, "raw_hash", ""),
             raw_payload_s3_key=getattr(import_attempt, "raw_payload_s3_key", ""),
@@ -75,8 +79,8 @@ class _ServiceOrderVersioningMixin:
             swallow_errors=True,
         )
 
-        terminal = {"reception", "delivered", "cancelled"}
-        if service_order.status != "budget" and service_order.status not in terminal:
+        import_hold_statuses = {"reception", "waiting_auth", "delivered", "cancelled"}
+        if service_order.status != "budget" and service_order.status not in import_hold_statuses:
             cls.change_status(
                 service_order=service_order,
                 new_status="budget",

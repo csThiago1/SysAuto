@@ -7,7 +7,8 @@ interface GlowEffectProps {
 }
 
 export function GlowEffect({ style }: GlowEffectProps) {
-  return <Animated.View style={[styles.glow, style]} />;
+  const animatedStyle = [styles.glow, style] as unknown as React.ComponentProps<typeof Animated.View>['style'];
+  return <Animated.View style={animatedStyle} />;
 }
 
 const styles = StyleSheet.create({

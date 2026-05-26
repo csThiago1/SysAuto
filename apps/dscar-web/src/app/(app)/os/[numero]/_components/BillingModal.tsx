@@ -25,10 +25,10 @@ import { useBillingPreview, useBillOS } from "../_hooks/useBilling"
 import type {
   ServiceOrder,
   BillingPreviewItem,
-  PaymentMethod,
+  BillingPaymentMethod,
   BillingItemPayload,
 } from "@paddock/types"
-import { PAYMENT_METHOD_LABELS, PAYMENT_TERMS } from "@paddock/types"
+import { BILLING_PAYMENT_METHOD_LABELS, PAYMENT_TERMS } from "@paddock/types"
 
 function formatBRL(value: string | number): string {
   const num = typeof value === "string" ? parseFloat(value) : value
@@ -37,7 +37,7 @@ function formatBRL(value: string | number): string {
 }
 
 interface ItemLocalState {
-  payment_method: PaymentMethod
+  payment_method: BillingPaymentMethod
   payment_term_days: number
 }
 
@@ -68,7 +68,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
   }, [preview])
 
   const updateItem = useCallback(
-    (index: number, field: keyof ItemLocalState, value: PaymentMethod | number) => {
+    (index: number, field: keyof ItemLocalState, value: BillingPaymentMethod | number) => {
       setItemStates((prev) => {
         const next = [...prev]
         next[index] = { ...next[index], [field]: value }
@@ -242,14 +242,14 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
                                     updateItem(
                                       i,
                                       "payment_method",
-                                      e.target.value as PaymentMethod
+                                      e.target.value as BillingPaymentMethod
                                     )
                                   }
                                   className="w-full h-8 rounded border border-border bg-muted/30 text-xs text-foreground/80 px-2 focus:outline-none focus:border-border transition-colors"
                                 >
                                   {(
-                                    Object.entries(PAYMENT_METHOD_LABELS) as [
-                                      PaymentMethod,
+                                    Object.entries(BILLING_PAYMENT_METHOD_LABELS) as [
+                                      BillingPaymentMethod,
                                       string,
                                     ][]
                                   ).map(([key, label]) => (

@@ -1,0 +1,64 @@
+[mcp_servers.cloudflare]
+args = [
+    "-y",
+    "@cloudflare/mcp-server-cloudflare",
+    "run",
+    "SEU_CLOUDFLARE_ACCOUNT_ID",
+]
+command = "npx"
+
+[mcp_servers.expo]
+args = [
+    "-y",
+    "expo-mcp",
+    "--root",
+    "apps/mobile",
+]
+command = "npx"
+
+[mcp_servers.github]
+args = [
+    "-y",
+    "@modelcontextprotocol/server-github",
+]
+command = "npx"
+
+[mcp_servers.playwright]
+args = [
+    "-y",
+    "@playwright/mcp",
+    "--headless",
+]
+command = "npx"
+
+[mcp_servers.postgres]
+args = [
+    "-y",
+    "@modelcontextprotocol/server-postgres",
+    "postgresql://paddock:paddock@localhost:5432/paddock_dev",
+]
+command = "npx"
+
+[mcp_servers.redis]
+args = [
+    "-y",
+    "@modelcontextprotocol/server-redis",
+    "redis://localhost:6379",
+]
+command = "npx"
+
+[mcp_servers.sentry]
+args = [
+    "-y",
+    "@sentry/mcp-server",
+    "--agent",
+]
+command = "npx"
+
+[shell_environment_policy]
+inherit = "core"
+
+[shell_environment_policy.set]
+CLOUDFLARE_API_TOKEN = "PREENCHER"
+GITHUB_PERSONAL_ACCESS_TOKEN = "PREENCHER"
+SENTRY_AUTH_TOKEN = "PREENCHER"

@@ -89,3 +89,5 @@ data/seeds/*.csv
 next
 .expo/
 .superpowers/
+data/migrations/*.xls
+data/migrations/*.xlsx
