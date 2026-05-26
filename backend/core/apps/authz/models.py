@@ -76,3 +76,26 @@ class UserPermission(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user} → {self.permission} ({'grant' if self.granted else 'revoke'})"
+
+
+class TenantPermissionOverride(models.Model):
+    """Override de permissao padrao por role para este tenant.
+
+    Permite que o admin do tenant customize quais permissoes cada role
+    tem, diferindo da matriz padrao definida em permissions_config.py.
+    Vive no schema do tenant (authz e TENANT_APP).
+    """
+
+    role = models.CharField(max_length=20, db_index=True)
+    permission_code = models.CharField(max_length=50)
+    allowed = models.BooleanField()
+
+    class Meta:
+        unique_together = [("role", "permission_code")]
+        db_table = "authz_perm_overrides"
+        verbose_name = "Override de Permissao"
+        verbose_name_plural = "Overrides de Permissao"
+
+    def __str__(self) -> str:
+        status = "permitido" if self.allowed else "bloqueado"
+        return f"{self.role} / {self.permission_code} → {status}"
