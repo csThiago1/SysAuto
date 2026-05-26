@@ -11,6 +11,7 @@ from apps.authentication.views_health import healthz
 urlpatterns = [
     # Health check (before API routes, no auth required)
     path("healthz/", healthz, name="healthz"),
+    path("api/v1/health/", healthz, name="health-check"),
     # Admin
     path("admin/", admin.site.urls),
     # API v1
