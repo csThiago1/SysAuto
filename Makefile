@@ -15,15 +15,11 @@ dev: ## Sobe todos os serviços Docker + apps em modo dev
 	@echo "✅  Serviços Docker subindo..."
 	@echo "   PostgreSQL : http://localhost:5432"
 	@echo "   Redis      : http://localhost:6379"
-	@echo "   Keycloak   : http://localhost:8080"
 	@echo "   Django API : http://localhost:8000 (rode: make dev-api)"
-	@echo "   Hub        : http://localhost:3000 (rode: make dev-hub)"
+	@echo "   DS Car ERP : http://localhost:3001 (rode: make dev-dscar)"
 
 dev-api: ## Inicia o servidor Django
 	$(BACKEND) && .venv/bin/python manage.py runserver --settings=config.settings.dev
-
-dev-hub: ## Inicia o app Hub (Next.js)
-	cd apps/hub && npm run dev
 
 dev-dscar: ## Inicia o app DS Car ERP (Next.js)
 	cd apps/dscar-web && npm run dev
@@ -35,15 +31,15 @@ dev-web: ## Mata portas ocupadas e sobe todos os apps Next.js via Turborepo
 	@$(MAKE) dev-kill-ports
 	npx turbo run dev
 
-dev-kill-ports: ## Mata processos fantasma nas portas 3000-3002
-	@for port in 3000 3001 3002; do \
+dev-kill-ports: ## Mata processos fantasma nas portas 3001-3002
+	@for port in 3001 3002; do \
 		pid=$$(lsof -ti :$$port 2>/dev/null); \
 		if [ -n "$$pid" ]; then \
 			echo "⚠️  Matando processo $$pid na porta $$port"; \
 			kill $$pid 2>/dev/null || true; \
 		fi; \
 	done
-	@echo "✅  Portas 3000-3002 livres"
+	@echo "✅  Portas 3001-3002 livres"
 
 dev-stop: ## Para todos os serviços Docker
 	$(COMPOSE) down
