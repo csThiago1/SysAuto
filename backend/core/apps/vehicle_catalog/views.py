@@ -173,6 +173,28 @@ def _normalize_make(raw: str, fipe_dados: list) -> str:  # type: ignore[type-arg
     return raw.strip().title()
 
 
+def _parse_year(value: object) -> int | None:
+    """Parse year from API response. Handles '2022', '2022/2023', '2022-2023'."""
+    if not value:
+        return None
+    match = re.search(r"\d{4}", str(value))
+    if match:
+        year = int(match.group())
+        if 1900 <= year <= 2100:
+            return year
+    return None
+
+
+def _validate_chassis(value: object) -> str:
+    """Validate chassis is 17 alphanumeric chars, no masking."""
+    if not value:
+        return ""
+    raw = str(value).strip().upper()
+    if re.fullmatch(r"[A-Z0-9]{17}", raw):
+        return raw
+    return ""
+
+
 def _normalize_plate_response(plate: str, data: dict) -> dict:  # type: ignore[type-arg]
     """Normaliza a resposta da wdapi2.com.br para o formato interno."""
     fipe_dados = data.get("fipe", {}).get("dados", [])
@@ -211,9 +233,8 @@ def _normalize_plate_response(plate: str, data: dict) -> dict:  # type: ignore[t
         # Fallback: parsear do campo MODELO concatenado
         model_base, version, engine = _parse_modelo(raw_model)
 
-    # Chassi vem mascarado da API (ex: *****04197) — armazenar vazio para não enganar
-    raw_chassis = data.get("chassi") or ""
-    chassis = raw_chassis if raw_chassis and "*" not in raw_chassis else ""
+    # Chassi: aceita apenas 17 chars alfanuméricos sem mascaramento
+    chassis = _validate_chassis(data.get("chassi"))
 
     # Situação do veículo: 0 = sem restrição, >0 = tem restrição (roubo, bloqueio, etc.)
     situation_code = int(data.get("codigoSituacao") or 0)
@@ -225,7 +246,7 @@ def _normalize_plate_response(plate: str, data: dict) -> dict:  # type: ignore[t
         "model":           model_base,
         "version":         version,
         "engine":          engine,
-        "year":            data.get("anoModelo") or data.get("ano"),
+        "year":            _parse_year(data.get("anoModelo") or data.get("ano")),
         "chassis":         chassis,
         "renavam":         data.get("renavam") or "",
         "city":            data.get("municipio") or "",
@@ -380,24 +401,32 @@ def plate_lookup(request: Request, plate: str) -> Response:
         logger.exception("plate_lookup: erro inesperado para %s", plate)
         return Response({"detail": "Erro interno."}, status=status.HTTP_502_BAD_GATEWAY)
 
-    # ── 3. Salva no cache ─────────────────────────────────────────────────────
+    # ── 3. Salva no cache (somente se resposta tem make e model) ────────────
     normalized = _normalize_plate_response(plate, data)
-    PlateCache.objects.update_or_create(
-        plate=plate,
-        defaults={
-            "make":         normalized["make"],
-            "model":        normalized["model"],
-            "version":      normalized["version"],
-            "engine":       normalized["engine"],
-            "year":         int(normalized["year"]) if normalized["year"] else None,
-            "chassis":      normalized["chassis"],
-            "renavam":      normalized["renavam"],
-            "city":         normalized["city"],
-            "color":        normalized["color"],
-            "fuel_type":    normalized["fuel_type"],
-            "raw_response": data,
-        },
-    )
+    if normalized["make"] and normalized["model"]:
+        PlateCache.objects.update_or_create(
+            plate=plate,
+            defaults={
+                "make":         normalized["make"],
+                "model":        normalized["model"],
+                "version":      normalized["version"],
+                "engine":       normalized["engine"],
+                "year":         normalized["year"],
+                "chassis":      normalized["chassis"],
+                "renavam":      normalized["renavam"],
+                "city":         normalized["city"],
+                "color":        normalized["color"],
+                "fuel_type":    normalized["fuel_type"],
+                "raw_response": data,
+            },
+        )
+    else:
+        logger.warning(
+            "plate_lookup: resposta incompleta para %s (make=%r, model=%r) — nao cacheada",
+            plate,
+            normalized["make"],
+            normalized["model"],
+        )
 
     normalized["cached"] = False
     normalized["source"] = "api"
