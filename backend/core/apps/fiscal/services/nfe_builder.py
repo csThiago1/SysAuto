@@ -305,9 +305,15 @@ class NFeBuilder:
         simples_nacional: bool = False,
     ) -> dict:
         """Monta um item da NF-e com ICMS/PIS/COFINS calculados."""
-        if not item.ncm:
+        codigo_ncm = item.ncm.replace(".", "").strip()
+        if not codigo_ncm:
             raise NfeBuilderError(
                 f"Item '{item.descricao}' sem NCM — preencha o NCM antes de emitir."
+            )
+        if len(codigo_ncm) != 8 or not codigo_ncm.isdigit():
+            raise NfeBuilderError(
+                f"Item '{item.descricao}' com NCM inválido '{item.ncm}'. "
+                "Informe um NCM com 8 dígitos."
             )
 
         cfop = item.cfop or cls._get_cfop(uf_emitente, uf_dest)
@@ -334,7 +340,7 @@ class NFeBuilder:
             "unidade_tributavel": item.unidade,
             "quantidade_tributavel": float(item.quantidade),
             "valor_unitario_tributavel": float(item.valor_unitario),
-            "codigo_ncm": item.ncm.replace(".", ""),
+            "codigo_ncm": codigo_ncm,
             "icms_origem": "0",
         }
 

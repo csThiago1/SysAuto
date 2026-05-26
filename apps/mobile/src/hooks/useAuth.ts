@@ -5,6 +5,9 @@ import { useAuthStore } from '@/stores/auth.store';
 import { API_BASE_URL, DEFAULT_TENANT } from '@/lib/constants';
 
 type AuthUser = NonNullable<ReturnType<typeof useAuthStore.getState>['user']> | null;
+type UserRole = NonNullable<AuthUser>['role'];
+
+const VALID_ROLES: readonly UserRole[] = ['OWNER', 'ADMIN', 'MANAGER', 'CONSULTANT', 'STOREKEEPER'];
 
 interface JWTPayload {
   sub?: string;
@@ -19,6 +22,10 @@ interface AuthReturn {
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   user: AuthUser;
+}
+
+function normalizeRole(role: string | undefined): UserRole {
+  return VALID_ROLES.includes(role as UserRole) ? role as UserRole : 'CONSULTANT';
 }
 
 export function useAuth(): AuthReturn {
@@ -42,7 +49,7 @@ export function useAuth(): AuthReturn {
         let decoded: JWTPayload = {};
         try { decoded = JSON.parse(atob(payloadB64)) as JWTPayload; } catch { /* fallback */ }
         const userName = decoded.name ?? email.split('@')[0] ?? email;
-        const userRole = decoded.role ?? 'CONSULTANT';
+        const userRole = normalizeRole(decoded.role);
         const userId = decoded.sub ?? email;
         setAuth(
           { id: userId, email: decoded.email ?? email, name: userName, role: userRole },

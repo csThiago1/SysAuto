@@ -263,7 +263,9 @@ class JournalEntryService:
     @classmethod
     @transaction.atomic
     def create_from_service_order(
-        cls, service_order: models.Model
+        cls,
+        service_order: models.Model,
+        user: GlobalUser | None = None,
     ) -> JournalEntry:
         """
         Gera lancamento ao fechar Ordem de Servico.
@@ -276,22 +278,49 @@ class JournalEntryService:
           C: Estoque de Pecas (1.1.04.001)      — pelo custo das pecas (se houver)
 
         Args:
-            service_order: Instancia de ServiceOrder com atributos:
-                           total_amount, parts_amount, parts_cost,
-                           service_amount, os_type, competence_date (ou closed_at).
+            service_order: Instancia de ServiceOrder do fluxo atual
+                (`parts_total`, `services_total`, `discount_total` e itens de peça).
+            user: Usuario responsavel pelo lancamento automatico, quando houver.
 
         Returns:
             JournalEntry aprovado automaticamente.
         """
-        # Extrai dados da OS de forma segura
-        total_amount: Decimal = Decimal(str(getattr(service_order, "total_amount", "0.00")))
-        parts_amount: Decimal = Decimal(str(getattr(service_order, "parts_amount", "0.00")))
-        parts_cost: Decimal = Decimal(str(getattr(service_order, "parts_cost", "0.00")))
-        service_amount: Decimal = total_amount - parts_amount
+        parts_amount = Decimal(str(getattr(service_order, "parts_total", "0.00") or "0.00"))
+        service_amount = Decimal(str(getattr(service_order, "services_total", "0.00") or "0.00"))
+        discount_amount = Decimal(str(getattr(service_order, "discount_total", "0.00") or "0.00"))
+
+        if discount_amount > 0:
+            parts_discount = min(discount_amount, parts_amount)
+            parts_amount -= parts_discount
+            service_amount -= max(discount_amount - parts_discount, Decimal("0.00"))
+
+        parts_amount = max(parts_amount, Decimal("0.00"))
+        service_amount = max(service_amount, Decimal("0.00"))
+        total_amount = parts_amount + service_amount
+
+        if total_amount <= 0:
+            raise ValidationError(_("OS sem valor faturavel para lancamento contabil."))
+
+        parts_cost = Decimal("0.00")
+        parts_manager = getattr(service_order, "parts", None)
+        if parts_manager is not None:
+            for part in parts_manager.filter(is_active=True).select_related("unidade_fisica"):
+                unit_cost = getattr(part, "custo_real", None)
+                if unit_cost is None and getattr(part, "unidade_fisica_id", None):
+                    unit_cost = getattr(part.unidade_fisica, "valor_nf", None)
+                if unit_cost is None:
+                    continue
+                quantity = Decimal(str(getattr(part, "quantity", "1") or "1"))
+                parts_cost += Decimal(str(unit_cost)) * quantity
+
         os_type: str = getattr(service_order, "os_type", "")
 
         comp_date: date
-        if hasattr(service_order, "closed_at") and service_order.closed_at:
+        if hasattr(service_order, "delivered_at") and service_order.delivered_at:
+            comp_date = service_order.delivered_at.date()
+        elif hasattr(service_order, "client_delivery_date") and service_order.client_delivery_date:
+            comp_date = service_order.client_delivery_date.date()
+        elif hasattr(service_order, "closed_at") and service_order.closed_at:
             comp_date = service_order.closed_at.date()
         else:
             comp_date = timezone.now().date()
@@ -311,7 +340,12 @@ class JournalEntryService:
         account_cmv = _get_account(_ACCOUNT_CMV_PARTS)
         account_inventory = _get_account(_ACCOUNT_INVENTORY)
 
-        if not account_ar or not account_revenue_svc:
+        if (
+            not account_ar
+            or (service_amount > 0 and not account_revenue_svc)
+            or (parts_amount > 0 and not account_revenue_parts)
+            or (parts_cost > 0 and (not account_cmv or not account_inventory))
+        ):
             raise ValidationError(
                 _(
                     "Contas contábeis padrão não configuradas. "
@@ -386,8 +420,8 @@ class JournalEntryService:
             competence_date=comp_date,
             origin=JournalEntryOrigin.SERVICE_ORDER,
             lines=lines,
-            # origin_object omitido: ServiceOrder PK é UUID mas JournalEntry.object_id
-            # é PositiveIntegerField. Rastreabilidade via description + origin.
+            origin_object=service_order,
+            user=user,
             auto_approve=True,
         )
 

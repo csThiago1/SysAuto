@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 class RolePessoa(models.TextChoices):
     CLIENTE = "CLIENT", "Cliente"
+    SEGURADORA = "INSURER", "Seguradora"
     CORRETOR = "BROKER", "Corretor"
     FUNCIONARIO = "EMPLOYEE", "Funcionário"
     FORNECEDOR = "SUPPLIER", "Fornecedor"

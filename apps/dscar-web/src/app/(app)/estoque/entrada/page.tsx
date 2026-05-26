@@ -164,7 +164,7 @@ export default function EntradaManualPage() {
     }
     try {
       await entradaPeca.mutateAsync({
-        peca_canonica_id: peca.peca_canonica_id || undefined,
+        peca_canonica_id: peca.peca_canonica_id,
         valor_nf: peca.valor_nf,
         nivel_id: peca.nivel_id,
         motivo: peca.motivo,
@@ -195,7 +195,7 @@ export default function EntradaManualPage() {
     }
     try {
       await entradaLote.mutateAsync({
-        material_canonico_id: lote.material_canonico_id || undefined,
+        material_canonico_id: lote.material_canonico_id,
         quantidade_compra: lote.quantidade_compra,
         unidade_compra: lote.unidade_compra,
         fator_conversao: lote.fator_conversao,

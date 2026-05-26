@@ -32,7 +32,7 @@ import { TipoQualidadeBadge } from "@/components/purchasing/TipoQualidadeBadge"
 import { OrigemBadge } from "@/components/purchasing/OrigemBadge"
 import { StatusPecaBadge } from "@/components/purchasing/StatusPecaBadge"
 import { MargemBadge } from "@/components/inventory/MargemBadge"
-import type { PartCatalogReference } from "@paddock/types"
+import type { PartCatalogReference, TipoQualidade } from "@paddock/types"
 import { useServiceOrder } from "../../_hooks/useServiceOrder"
 import { EstoqueBuscaModal } from "@/components/purchasing/EstoqueBuscaModal"
 import { CompraFormModal } from "@/components/purchasing/CompraFormModal"
@@ -92,7 +92,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
 
   async function handleEstoqueSelect(data: {
     unidade_fisica_id: string
-    tipo_qualidade: string
+    tipo_qualidade: TipoQualidade
     unit_price: string
     description: string
   }) {
@@ -108,7 +108,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
   async function handleCompraSubmit(data: {
     description: string
     part_number: string
-    tipo_qualidade: string
+    tipo_qualidade: TipoQualidade
     unit_price: string
     quantity: string
     observacoes: string
@@ -124,7 +124,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
 
   async function handleSeguradoraSubmit(data: {
     description: string
-    tipo_qualidade: string
+    tipo_qualidade: TipoQualidade
     unit_price: string
     quantity: string
   }) {

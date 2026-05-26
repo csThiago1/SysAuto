@@ -18,7 +18,7 @@ interface CompraFormModalProps {
   onSubmit: (data: {
     description: string
     part_number: string
-    tipo_qualidade: string
+    tipo_qualidade: TipoQualidade
     unit_price: string
     quantity: string
     observacoes: string

@@ -13,7 +13,17 @@ import type { PaddockRole } from "@paddock/types";
 
 const mockSession = (role: PaddockRole) => {
   vi.mocked(useSession).mockReturnValue({
-    data: { role, user: { name: "Test", email: "test@test.com" }, expires: "" },
+    data: {
+      role,
+      user: { name: "Test", email: "test@test.com" },
+      expires: "",
+      accessToken: "test-token",
+      extraPermissions: [],
+      companies: ["dscar"],
+      activeCompany: "dscar",
+      tenantSchema: "tenant_dscar",
+      clientSlug: "grupo-dscar",
+    },
     status: "authenticated",
     update: vi.fn(),
   });

@@ -5,6 +5,7 @@ ReceivableDocumentService — criacao, baixa e cancelamento de titulos a receber
 """
 import logging
 from decimal import Decimal
+from uuid import UUID, uuid5
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -14,6 +15,24 @@ from django.utils import timezone
 from .models import ReceivableDocument, ReceivableOrigin, ReceivableReceipt, ReceivableStatus
 
 logger = logging.getLogger(__name__)
+
+FREE_REFERENCE_NAMESPACE = UUID("6b8df08f-b8c0-4a2c-9f8c-1a67d0c1dc0d")
+
+
+def normalize_free_reference_id(value: object, *, kind: str = "ref") -> str:
+    """Normaliza referência livre para UUID.
+
+    `ReceivableDocument.customer_id` é UUID por legado. Fluxos novos usam
+    `Person` com PK inteiro; nesses casos geramos UUIDv5 determinístico para
+    manter rastreabilidade sem alterar schema agora.
+    """
+    text = str(value or "").strip()
+    if not text:
+        return str(uuid5(FREE_REFERENCE_NAMESPACE, f"{kind}:empty"))
+    try:
+        return str(UUID(text))
+    except ValueError:
+        return str(uuid5(FREE_REFERENCE_NAMESPACE, f"{kind}:{text}"))
 
 
 class ReceivableDocumentService:
@@ -81,7 +100,7 @@ class ReceivableDocumentService:
         )
 
         document = ReceivableDocument.objects.create(
-            customer_id=customer_id,
+            customer_id=normalize_free_reference_id(customer_id, kind="customer"),
             customer_name=customer_name,
             description=description,
             amount=amount_decimal,

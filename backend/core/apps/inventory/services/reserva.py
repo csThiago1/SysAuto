@@ -12,6 +12,7 @@ import logging
 from decimal import Decimal
 
 from django.db import transaction
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +115,45 @@ class ReservaUnidadeService:
             u.status = "available"
             u.ordem_servico_id = None
             u.save(update_fields=["status", "ordem_servico_id"])
+
+    @staticmethod
+    def consumir_reservada(
+        unidade_fisica_id: str,
+        ordem_servico_id: str,
+        user_id: str | None = None,
+    ) -> object:
+        """Marca uma peça reservada como consumida pela OS.
+
+        Reserva tira a unidade do estoque disponível. Consumo confirma a
+        utilização física na execução da OS e registra `consumida_em`.
+        """
+        from apps.inventory.models import UnidadeFisica
+
+        with transaction.atomic():
+            unidade = UnidadeFisica.objects.select_for_update().get(
+                pk=unidade_fisica_id,
+                is_active=True,
+            )
+            if unidade.status != UnidadeFisica.Status.RESERVED:
+                raise ReservaIndisponivel(
+                    f"Unidade {unidade.codigo_barras} não está reservada."
+                )
+            if str(unidade.ordem_servico_id) != str(ordem_servico_id):
+                raise ReservaIndisponivel(
+                    f"Unidade {unidade.codigo_barras} reservada para outra OS."
+                )
+
+            unidade.status = UnidadeFisica.Status.CONSUMED
+            unidade.consumida_em = timezone.now()
+            unidade.save(update_fields=["status", "consumida_em", "updated_at"])
+
+        logger.info(
+            "Unidade %s consumida na OS %s por user %s",
+            unidade.codigo_barras,
+            ordem_servico_id,
+            user_id,
+        )
+        return unidade
 
     @staticmethod
     def baixar_por_bipagem(codigo_barras: str, ordem_servico_id: str) -> object:

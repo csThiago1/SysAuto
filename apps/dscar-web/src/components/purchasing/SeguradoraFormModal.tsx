@@ -15,7 +15,7 @@ interface SeguradoraFormModalProps {
   onClose: () => void
   onSubmit: (data: {
     description: string
-    tipo_qualidade: string
+    tipo_qualidade: TipoQualidade
     unit_price: string
     quantity: string
   }) => void

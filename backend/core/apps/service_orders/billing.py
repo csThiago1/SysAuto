@@ -76,6 +76,17 @@ class BillingService:
     """Faturamento de OS: preview + execução."""
 
     @staticmethod
+    def _insurer_display_name(insurer: Any) -> str:
+        """Retorna o nome operacional da seguradora para faturamento."""
+        return (
+            getattr(insurer, "trade_name", "")
+            or getattr(insurer, "name", "")
+            or getattr(insurer, "display_name", "")
+            or getattr(insurer, "full_name", "")
+            or "Seguradora"
+        )
+
+    @staticmethod
     def _resolve_insurer_person(insurer: Any) -> Any | None:
         """Busca Person com role INSURER e CNPJ da seguradora.
 
@@ -83,7 +94,7 @@ class BillingService:
             Person com documents+addresses prefetched, ou None.
         """
         from apps.persons.models import Person, PersonDocument
-        from apps.persons.utils import sha256_hex
+        from apps.persons.utils import sha256_lookup_candidates
 
         cnpj = getattr(insurer, "cnpj", "") or ""
         if not cnpj:
@@ -92,7 +103,8 @@ class BillingService:
         # Busca Person que tenha documento CNPJ com mesmo valor
         doc = PersonDocument.objects.filter(
             doc_type="CNPJ",
-            value_hash=sha256_hex(cnpj),
+            value_hash__in=sha256_lookup_candidates(cnpj),
+            person__roles__role="INSURER",
         ).select_related("person").first()
 
         if doc:
@@ -125,11 +137,7 @@ class BillingService:
         customer_name = order.customer_name or ""
         insurer_name = ""
         if order.customer_type == "insurer" and order.insurer:
-            insurer_name = (
-                getattr(order.insurer, "display_name", None)
-                or getattr(order.insurer, "full_name", "")
-                or "Seguradora"
-            )
+            insurer_name = cls._insurer_display_name(order.insurer)
 
         items: list[dict[str, Any]] = []
 
@@ -263,7 +271,7 @@ class BillingService:
 
         cls._create_receivables_and_emit_fiscal(order, items, user, today, result)
         cls._mark_order_billed(order, result)
-        cls._post_accounting_entries(order, result)
+        cls._post_accounting_entries(order, user, result)
         cls._log_activity(order, user, result)
 
         return result.to_dict()
@@ -320,13 +328,14 @@ class BillingService:
             # Determina customer_id e customer_name para o título
             if recipient_type == "insurer" and order.insurer:
                 recv_customer_id = str(order.insurer.pk)
-                recv_customer_name = (
-                    getattr(order.insurer, "display_name", None)
-                    or getattr(order.insurer, "full_name", "")
-                    or "Seguradora"
-                )
+                recv_customer_name = cls._insurer_display_name(order.insurer)
             else:
-                recv_customer_id = str(order.customer_uuid) if order.customer_uuid else ""
+                if getattr(order, "customer_uuid", None):
+                    recv_customer_id = str(order.customer_uuid)
+                elif getattr(order, "customer_id", None):
+                    recv_customer_id = str(order.customer_id)
+                else:
+                    recv_customer_id = ""
                 recv_customer_name = order.customer_name or ""
 
             # Determina origin e description
@@ -419,15 +428,18 @@ class BillingService:
             order.save(update_fields=["invoice_issued"])
 
     @classmethod
-    def _post_accounting_entries(cls, order: Any, result: BillingResult) -> None:
+    def _post_accounting_entries(cls, order: Any, user: Any, result: BillingResult) -> None:
         """Gera lançamento contábil de receita + CMV.
 
         Erros são capturados e acumulados em result.errors (graceful degradation).
         """
+        if not getattr(order, "invoice_issued", False):
+            return
+
         try:
             from apps.accounting.services.journal_entry_service import JournalEntryService
 
-            JournalEntryService.create_from_service_order(order)
+            JournalEntryService.create_from_service_order(order, user)
         except Exception as exc:
             error_msg = (
                 f"Erro ao gerar lançamento contábil para OS {order.number}: {exc}"

@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react"
 import Link from "next/link"
+import type { Route } from "next"
 import { ShoppingCart, ArrowRight } from "lucide-react"
 import { useDashboardCompras, usePedidosCompra, useAprovacoes } from "@/hooks/usePurchasing"
 import type { AprovacaoCotacao } from "@paddock/types"
@@ -102,7 +103,7 @@ function RowAction({ row }: { row: OSRow }) {
   if (row.aprovacaoStatus === "pendente") {
     return (
       <Link
-        href={`/compras/aprovacao/${row.aprovacaoId}`}
+        href={`/compras/aprovacao/${row.aprovacaoId}` as Route}
         className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium
                    bg-purple-500/10 text-purple-400 border border-purple-500/20
                    hover:bg-purple-500/20 transition-colors"
@@ -115,7 +116,7 @@ function RowAction({ row }: { row: OSRow }) {
   if (row.aprovacaoStatus === "aprovada") {
     return (
       <Link
-        href={`/compras/ordens?service_order=${row.serviceOrderId}`}
+        href={`/compras/ordens?service_order=${row.serviceOrderId}` as Route}
         className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium
                    bg-success-500/10 text-success-400 border border-success-500/20
                    hover:bg-success-500/20 transition-colors"
@@ -132,7 +133,7 @@ function RowAction({ row }: { row: OSRow }) {
           Rejeitada
         </span>
         <Link
-          href={`/compras/cotacao/${row.serviceOrderId}`}
+          href={`/compras/cotacao/${row.serviceOrderId}` as Route}
           className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium
                      bg-warning-500/10 text-warning-400 border border-warning-500/20
                      hover:bg-warning-500/20 transition-colors"
@@ -146,7 +147,7 @@ function RowAction({ row }: { row: OSRow }) {
   if (row.hasSolicitado || row.hasEmCotacao) {
     return (
       <Link
-        href={`/compras/cotacao/${row.serviceOrderId}`}
+        href={`/compras/cotacao/${row.serviceOrderId}` as Route}
         className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium
                    bg-info-500/10 text-info-400 border border-info-500/20
                    hover:bg-info-500/20 transition-colors"

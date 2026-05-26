@@ -19,10 +19,15 @@ export async function GET(
   const tenantDomain = activeCompany
     ? `${activeCompany}.localhost`
     : (process.env.DEFAULT_TENANT_DOMAIN ?? "dscar.localhost")
+  const apiBaseUrl = (
+    process.env.INTERNAL_API_URL ??
+    process.env.NEXT_PUBLIC_API_URL ??
+    "http://localhost:8000"
+  ).replace(/\/$/, "")
 
   try {
     const res = await fetch(
-      `http://localhost:8000/api/v1/vehicle-catalog/plate/${normalized}/`,
+      `${apiBaseUrl}/api/v1/vehicle-catalog/plate/${normalized}/`,
       {
         headers: {
           "X-Tenant-Domain": tenantDomain,

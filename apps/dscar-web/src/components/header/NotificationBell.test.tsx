@@ -1,10 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { NotificationBell } from "./NotificationBell";
 
 // Mock do hook useOverdueOrders
 vi.mock("@/hooks/useOverdueOrders", () => ({
   useOverdueOrders: vi.fn(),
+}));
+
+vi.mock("@/hooks/useTransitionValidation", () => ({
+  usePendingOverrides: vi.fn(() => ({ data: [] })),
 }));
 
 // Mock next/link para evitar erros no jsdom
@@ -29,28 +33,25 @@ vi.mock("@/components/ui/skeleton", () => ({
 
 import { useOverdueOrders } from "@/hooks/useOverdueOrders";
 import type { UseQueryResult } from "@tanstack/react-query";
-import type { PaginatedResponse, ServiceOrder } from "@paddock/types";
+import type { OverdueServiceOrder } from "@paddock/types";
 
-const baseOrder = {
+const baseOrder: OverdueServiceOrder = {
   id: "1",
   number: 101,
   plate: "ABC1D23",
-  make: "Toyota",
-  model: "Corolla",
-  year: 2020,
   customer_name: "João Silva",
-  customer: "cust-1",
   status: "repair",
-  opened_at: "2024-01-01T10:00:00Z",
+  status_display: "Reparo",
   estimated_delivery_date: "2024-01-01",
-  total: 500,
+  days_overdue: 1,
+  urgency: "overdue",
 };
 
-type OverdueQueryResult = UseQueryResult<PaginatedResponse<ServiceOrder>>;
+type OverdueQueryResult = UseQueryResult<OverdueServiceOrder[]>;
 
-function mockHook(results: ServiceOrder[], extra?: Partial<OverdueQueryResult>) {
+function mockHook(results: OverdueServiceOrder[], extra?: Partial<OverdueQueryResult>) {
   vi.mocked(useOverdueOrders).mockReturnValue({
-    data: { count: results.length, results, next: null, previous: null },
+    data: results,
     isLoading: false,
     isError: false,
     error: null,
@@ -86,9 +87,9 @@ describe("NotificationBell", () => {
   it("badge oculto quando count === 0", () => {
     mockHook([]);
 
-    render(<NotificationBell />);
+    const view = render(<NotificationBell />);
     // Badge não deve existir — nenhum texto numérico
-    expect(screen.queryByText(/^\d+$|^99\+$/)).toBeNull();
+    expect(view.queryByText(/^\d+$|^99\+$/)).toBeNull();
   });
 
   it("badge exibe 3 quando hook retorna 3 OS", () => {
@@ -97,10 +98,10 @@ describe("NotificationBell", () => {
       { ...baseOrder, id: "2" },
       { ...baseOrder, id: "3" },
     ];
-    mockHook(orders as unknown as ServiceOrder[]);
+    mockHook(orders);
 
-    render(<NotificationBell />);
-    expect(screen.getByText("3")).toBeTruthy();
+    const view = render(<NotificationBell />);
+    expect(view.getByText("3")).toBeTruthy();
   });
 
   it("badge exibe 99+ quando results.length > 99", () => {
@@ -109,10 +110,10 @@ describe("NotificationBell", () => {
       ...baseOrder,
       id: String(i),
     }));
-    mockHook(orders as unknown as ServiceOrder[]);
+    mockHook(orders);
 
-    render(<NotificationBell />);
-    expect(screen.getByText("99+")).toBeTruthy();
+    const view = render(<NotificationBell />);
+    expect(view.getByText("99+")).toBeTruthy();
   });
 
   it("exibe mensagem vazia quando sem OS pendentes", () => {
@@ -121,7 +122,7 @@ describe("NotificationBell", () => {
     const { container } = render(<NotificationBell />);
     // O componente renderizou sem erro e contém o botão de sino
     expect(container.querySelector("button")).toBeTruthy();
-    expect(screen.getByText("Nenhuma OS com prazo hoje ou vencida.")).toBeTruthy();
+    expect(container.textContent).toContain("Nenhuma OS vencida ou com entrega hoje.");
   });
 
   it("exibe skeletons enquanto carregando", () => {
@@ -137,7 +138,7 @@ describe("NotificationBell", () => {
       isFetching: true,
     } as unknown as OverdueQueryResult);
 
-    render(<NotificationBell />);
-    expect(screen.getAllByTestId("skeleton").length).toBeGreaterThan(0);
+    const view = render(<NotificationBell />);
+    expect(view.getAllByTestId("skeleton").length).toBeGreaterThan(0);
   });
 });

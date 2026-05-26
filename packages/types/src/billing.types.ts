@@ -5,7 +5,7 @@
 export type BillingRecipientType = "customer" | "insurer"
 export type BillingCategory = "deductible" | "services" | "parts" | "full"
 
-export type PaymentMethod =
+export type BillingPaymentMethod =
   | "pix"
   | "cash"
   | "debit"
@@ -14,7 +14,7 @@ export type PaymentMethod =
   | "boleto"
   | "transfer"
 
-export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+export const BILLING_PAYMENT_METHOD_LABELS: Record<BillingPaymentMethod, string> = {
   pix: "Pix",
   cash: "Dinheiro",
   debit: "Débito",
@@ -40,7 +40,7 @@ export interface BillingPreviewItem {
   category: BillingCategory
   label: string
   amount: string
-  default_payment_method: PaymentMethod
+  default_payment_method: BillingPaymentMethod
   default_payment_term_days: number
   note: string | null
 }
@@ -62,7 +62,7 @@ export interface BillingItemPayload {
   recipient_type: BillingRecipientType
   category: BillingCategory
   amount: string
-  payment_method: PaymentMethod
+  payment_method: BillingPaymentMethod
   payment_term_days: number
 }
 

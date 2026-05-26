@@ -114,7 +114,14 @@ export default function NovoOrcamentoPage() {
                     <button
                       key={c.id}
                       type="button"
-                      onClick={() => { setClienteSelecionado(c); setClienteSearch("") }}
+                      onClick={() => {
+                        setClienteSelecionado({
+                          id: c.id,
+                          name: c.name,
+                          document_masked: c.document_masked ?? "",
+                        })
+                        setClienteSearch("")
+                      }}
                       className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-muted/50 border-b border-white/5 last:border-0 transition-colors"
                     >
                       <span className="text-sm text-foreground">{c.name}</span>

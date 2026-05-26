@@ -168,6 +168,7 @@ class FiscalService:
             destinatario=person,
             payload_enviado=payload,
             total_value=total_value,
+            series=str(payload.get("serie_dps", "")),
             environment=config.environment,
         )
 
@@ -203,6 +204,7 @@ class FiscalService:
                 cls._apply_focus_data(doc, resp.data)
         doc.save(update_fields=["ultima_resposta", "status", "key", "number",
                                  "caminho_xml", "caminho_pdf", "mensagem_sefaz",
+                                 "natureza_rejeicao",
                                  "authorized_at", "cancelled_at"])
 
         # Agendar polling se ainda pendente
@@ -272,6 +274,7 @@ class FiscalService:
             manual_reason=manual_reason,
             payload_enviado=payload,
             total_value=total_value,
+            series=str(payload.get("serie_dps", "")),
             environment=config.environment,
             created_by=user,
         )
@@ -306,6 +309,7 @@ class FiscalService:
                 cls._apply_focus_data(doc, resp.data)
         doc.save(update_fields=["ultima_resposta", "status", "key", "number",
                                  "caminho_xml", "caminho_pdf", "mensagem_sefaz",
+                                 "natureza_rejeicao",
                                  "authorized_at", "cancelled_at"])
 
         if doc.status == FiscalDocument.Status.PENDING:
@@ -566,6 +570,7 @@ class FiscalService:
                 cls._apply_focus_data(doc, resp.data)
         doc.save(update_fields=["ultima_resposta", "status", "key", "number",
                                  "caminho_xml", "caminho_pdf", "mensagem_sefaz",
+                                 "natureza_rejeicao",
                                  "authorized_at", "cancelled_at"])
 
         if doc.status == FiscalDocument.Status.PENDING:
@@ -686,6 +691,7 @@ class FiscalService:
                 cls._apply_focus_data(doc, resp.data)
         doc.save(update_fields=["ultima_resposta", "status", "key", "number",
                                  "caminho_xml", "caminho_pdf", "mensagem_sefaz",
+                                 "natureza_rejeicao",
                                  "authorized_at", "cancelled_at"])
 
         if doc.status == FiscalDocument.Status.PENDING:
@@ -819,6 +825,7 @@ class FiscalService:
                 cls._apply_focus_data(doc, resp.data)
         doc.save(update_fields=["ultima_resposta", "status", "key", "number",
                                  "caminho_xml", "caminho_pdf", "mensagem_sefaz",
+                                 "natureza_rejeicao",
                                  "authorized_at", "cancelled_at"])
 
         # NFC-e é síncrona — se 201, já está autorizada. Consultar para confirmar.
@@ -884,18 +891,27 @@ class FiscalService:
                 .get(pk=service_order.destinatario_id)
             )
 
+        # Fluxo novo de OS: ServiceOrder.customer já é Person.
+        if getattr(service_order, "customer_id", None):
+            return (
+                Person.objects.prefetch_related("documents", "addresses")
+                .get(pk=service_order.customer_id)
+            )
+
         # Fallback: customer_uuid → UnifiedCustomer → Person via CPF hash
         if service_order.customer_uuid:
             try:
                 from apps.customers.models import UnifiedCustomer
                 from apps.persons.models import PersonDocument
-                from apps.persons.utils import sha256_hex
+                from apps.persons.utils import sha256_lookup_candidates
 
                 uc = UnifiedCustomer.objects.get(id=service_order.customer_uuid)
                 if uc.cpf:
-                    cpf_hash = sha256_hex(str(uc.cpf).replace(".", "").replace("-", ""))
                     doc_qs = (
-                        PersonDocument.objects.filter(value_hash=cpf_hash, is_primary=True)
+                        PersonDocument.objects.filter(
+                            value_hash__in=sha256_lookup_candidates(str(uc.cpf)),
+                            is_primary=True,
+                        )
                         .select_related("person")
                     )
                     if doc_qs.exists():
@@ -989,14 +1005,13 @@ class FiscalService:
 
         items = []
         for part in parts:
-            # NCM: tenta product.ncm → part.ncm → part_number (fallback)
+            # NCM fiscal: somente catálogo ou campo fiscal da peça.
+            # Nunca usar part_number como fallback: código comercial não é NCM.
             ncm = ""
             if part.product_id:
                 ncm = getattr(part.product, "ncm", "") or ""
             if not ncm:
                 ncm = getattr(part, "ncm", "") or ""
-            if not ncm:
-                ncm = part.part_number or ""
 
             # Unidade vem do Product vinculado, se houver
             unidade = "UN"

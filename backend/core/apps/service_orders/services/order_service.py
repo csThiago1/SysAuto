@@ -251,6 +251,31 @@ class _ServiceOrderCoreMixin:
         # Aplicar transicao (maximo 1 por update)
         if triggered_transitions:
             field_trigger, new_status = triggered_transitions[0]
+            from apps.service_orders.transition_validator import TransitionValidator
+
+            result = TransitionValidator.validate(order, new_status)
+            if result.hard_blocks:
+                raise ValidationError({
+                    "transition_blocks": {
+                        "type": "hard",
+                        "can_override": False,
+                        "blocks": [b.to_dict() for b in result.hard_blocks],
+                        "warnings": [w.to_dict() for w in result.warnings],
+                    }
+                })
+            if result.soft_blocks:
+                raise ValidationError({
+                    "transition_blocks": {
+                        "type": "soft",
+                        "can_override": True,
+                        "blocks": [b.to_dict() for b in result.soft_blocks],
+                        "warnings": [w.to_dict() for w in result.warnings],
+                        "has_pending_override": TransitionValidator._has_pending_override(
+                            order, new_status
+                        ),
+                    }
+                })
+
             old_status = order.status
             order.status = new_status
             logger.info(

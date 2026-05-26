@@ -7,6 +7,12 @@ import { Colors, Spacing, Radii } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import type { OSPart } from '@/hooks/useOSParts';
 
+type TipoQualidade = 'replacement' | 'other';
+
+function normalizeTipoQualidade(value: string): TipoQualidade {
+  return value === 'other' ? 'other' : 'replacement';
+}
+
 interface AddPartModalProps {
   visible: boolean;
   editingPart?: OSPart | null;
@@ -26,7 +32,7 @@ export function AddPartModal({
   const [panel, setPanel] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [unitPrice, setUnitPrice] = useState('');
-  const [tipoQualidade, setTipoQualidade] = useState<'replacement' | 'other'>('replacement');
+  const [tipoQualidade, setTipoQualidade] = useState<TipoQualidade>('replacement');
 
   useEffect(() => {
     if (editingPart) {
@@ -34,7 +40,7 @@ export function AddPartModal({
       setPanel(editingPart.panel ?? '');
       setQuantity(String(editingPart.quantity));
       setUnitPrice(editingPart.unit_price);
-      setTipoQualidade(editingPart.tipo_qualidade);
+      setTipoQualidade(normalizeTipoQualidade(editingPart.tipo_qualidade));
     } else {
       setDescription('');
       setPanel('');

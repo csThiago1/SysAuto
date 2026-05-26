@@ -160,7 +160,7 @@ class ImportService:
 
         Returns:
             ImportAttempt (sempre — mesmo em erro). Se sucesso, tem
-            service_order e version_created preenchidos.
+            service_order preenchido.
         """
         from .models import ImportAttempt
         from .client import CiliaClient, CiliaError
@@ -262,7 +262,7 @@ class ImportService:
 
         # Persist
         try:
-            os_instance, version = cls._persist_cilia_budget(parsed=parsed, attempt=attempt)
+            os_instance, _version = cls._persist_cilia_budget(parsed=parsed, attempt=attempt)
         except Exception as exc:  # noqa: BLE001
             logger.exception("Cilia persist error")
             attempt.error_message = f"Persist error: {exc}"
@@ -272,11 +272,8 @@ class ImportService:
             return attempt
 
         attempt.service_order = os_instance
-        attempt.version_created = version
         attempt.parsed_ok = True
-        attempt.save(
-            update_fields=["service_order", "version_created", "parsed_ok"],
-        )
+        attempt.save(update_fields=["service_order", "parsed_ok"])
         return attempt
 
     @classmethod
@@ -287,8 +284,9 @@ class ImportService:
         """Encontra/cria OS (por insurer+casualty), depois cria version via
         ServiceOrderService.create_new_version_from_import.
         """
-        from apps.items.services import NumberAllocator
-        from apps.persons.models import Person
+        from django.db.models import Q
+
+        from apps.persons.models import Person, PersonRole, RolePessoa, TipoPessoa
         from apps.insurers.models import Insurer
         from apps.service_orders.models import ServiceOrder
         from apps.service_orders.services import ServiceOrderService
@@ -306,30 +304,51 @@ class ImportService:
         ).first()
 
         if os_instance is None:
-            # Cria cliente — Person tem só full_name + person_type + phone
+            document_digits = "".join(ch for ch in parsed.segurado_cpf if ch.isdigit())
             customer = Person.objects.create(
                 full_name=parsed.segurado_name or "Cliente Importado Cilia",
-                person_type="CLIENT",
-                phone=parsed.segurado_phone or "",
+                person_kind=(
+                    TipoPessoa.JURIDICA
+                    if len(document_digits) > 11
+                    else TipoPessoa.FISICA
+                ),
             )
+            PersonRole.objects.get_or_create(person=customer, role=RolePessoa.CLIENTE)
+
+            model = parsed.vehicle_description or "Veículo importado Cilia"
+            make = parsed.vehicle_brand or (model.split()[0] if model else "")
+            mileage_in = None
+            if parsed.vehicle_km:
+                try:
+                    mileage_in = int(Decimal(str(parsed.vehicle_km).replace(",", ".")))
+                except (ArithmeticError, ValueError):
+                    mileage_in = None
 
             os_instance = ServiceOrder.objects.create(
-                os_number=NumberAllocator.allocate("SERVICE_ORDER"),
+                number=ServiceOrderService.get_next_number(),
                 customer=customer,
-                customer_type="SEGURADORA",
+                customer_name=customer.full_name,
+                customer_type="insurer",
                 insurer=insurer,
+                insured_type="insured" if parsed.franchise_amount else "third",
                 casualty_number=parsed.casualty_number,
-                external_budget_number=parsed.external_budget_number,
-                franchise_amount=parsed.franchise_amount,
-                vehicle_plate=parsed.vehicle_plate,
-                vehicle_description=parsed.vehicle_description,
-                status="reception",
+                deductible_amount=parsed.franchise_amount or None,
+                plate=parsed.vehicle_plate,
+                make=make,
+                model=model,
+                year=parsed.vehicle_year,
+                color=parsed.vehicle_color or "",
+                chassis=parsed.vehicle_chassis or "",
+                mileage_in=mileage_in,
+                status="waiting_auth",
             )
 
         # Idempotência: se já existe version com mesmo external_version_id, retorna ela
-        if parsed.external_version_id:
+        external_version_id = str(parsed.external_version_id or "")
+        if external_version_id or parsed.external_version:
             existing = os_instance.versions.filter(
-                external_version_id=parsed.external_version_id,
+                Q(external_integration_id=external_version_id)
+                | Q(external_version=parsed.external_version)
             ).first()
             if existing:
                 return os_instance, existing
@@ -412,7 +431,7 @@ class ImportService:
 
         # Persist — reutiliza mesma lógica do Cilia (parser-agnóstico)
         try:
-            os_instance, version = cls._persist_cilia_budget(
+            os_instance, _version = cls._persist_cilia_budget(
                 parsed=parsed, attempt=attempt,
             )
         except Exception as exc:  # noqa: BLE001
@@ -424,9 +443,6 @@ class ImportService:
             return attempt
 
         attempt.service_order = os_instance
-        attempt.version_created = version
         attempt.parsed_ok = True
-        attempt.save(update_fields=[
-            "service_order", "version_created", "parsed_ok",
-        ])
+        attempt.save(update_fields=["service_order", "parsed_ok"])
         return attempt

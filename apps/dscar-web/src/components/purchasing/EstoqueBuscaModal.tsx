@@ -17,7 +17,7 @@ interface EstoqueBuscaModalProps {
   osId: string
   onSelect: (data: {
     unidade_fisica_id: string
-    tipo_qualidade: string
+    tipo_qualidade: TipoQualidade
     unit_price: string
     description: string
   }) => void

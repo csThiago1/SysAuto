@@ -2,12 +2,16 @@
 Paddock Solutions — Service Orders Integration Tests
 Sprint OS-001 — Testes de integração (persistência, transições e auto-incremento de tenant).
 """
-import pytest
+import uuid
+
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 from django_tenants.test.cases import TenantTestCase
 
 from apps.authentication.models import GlobalUser
+from apps.persons.models import Person, PersonRole, RolePessoa, TipoPessoa
 from apps.service_orders.models import ServiceOrder, StatusTransitionLog
-from apps.tenants.models import Company, Domain
+from apps.service_orders.services import ServiceOrderService
 
 class ServiceOrderIntegrationTestCase(TenantTestCase):
     @classmethod
@@ -18,31 +22,44 @@ class ServiceOrderIntegrationTestCase(TenantTestCase):
         return tenant
 
     @classmethod
-    def setup_domain(cls, domain, tenant):
+    def setup_domain(cls, domain):
         domain.domain = "test.paddock.solutions"
-        domain.tenant = tenant
         domain.is_primary = True
         return domain
 
     def setUp(self):
         super().setUp()
         self.user = GlobalUser.objects.create(
-            email="os_integration@paddock.solutions",
-            first_name="Test",
-            last_name="User",
+            email=f"os_integration_{uuid.uuid4()}@paddock.solutions",
+            name="Test User",
         )
+        self.customer = Person.objects.create(
+            full_name="Cliente Integração",
+            person_kind=TipoPessoa.FISICA,
+        )
+        PersonRole.objects.create(person=self.customer, role=RolePessoa.CLIENTE)
+
+    def _create_order(self, **kwargs) -> ServiceOrder:
+        data = {
+            "customer_id": self.customer.pk,
+            "customer_type": "private",
+            "plate": "ABC1234",
+            "make": "Honda",
+            "model": "Civic",
+        }
+        data.update(kwargs)
+        return ServiceOrderService.create(data=data, created_by_id=str(self.user.id))
 
     def test_auto_increment_number_per_tenant(self):
-        """O número (number) da OS deve ser auto-incrementado per-tenant na base."""
-        # Não passamos 'number', ele é gerado no ServiceOrder.save() via Signals ou overriden save
-        os1 = ServiceOrder.objects.create(
+        """O número (number) da OS deve ser auto-incrementado per-tenant no service."""
+        os1 = self._create_order(
             plate="ABC1234",
             make="Honda",
             model="Civic",
         )
         self.assertIsNotNone(os1.number)
 
-        os2 = ServiceOrder.objects.create(
+        os2 = self._create_order(
             plate="ABC1235",
             make="Honda",
             model="HR-V",
@@ -50,51 +67,72 @@ class ServiceOrderIntegrationTestCase(TenantTestCase):
         self.assertGreater(os2.number, os1.number)
         self.assertEqual(os2.number, os1.number + 1)
 
-    def test_auto_transition_on_save(self):
-        """Salvar uma OS preenchendo um campo gatilho deve alterar o status e gerar log."""
-        os = ServiceOrder.objects.create(
+    def test_scheduling_date_auto_transition_via_service_update(self):
+        """Atualizar um campo gatilho via service deve alterar o status e gerar log."""
+        os = self._create_order(
             plate="ABC1234",
             make="VW",
             model="Golf",
             status="reception",
         )
-        initial_status = os.status
 
-        # Update entry_date (which triggers 'initial_survey' globally/on wait stage)
-        os.entry_date = "2026-04-02T10:00:00Z"
-        os.save()
+        ServiceOrderService.update(
+            order_id=str(os.id),
+            data={"scheduling_date": timezone.now()},
+            updated_by_id=str(self.user.id),
+        )
 
-        # Reload for safety
         os.refresh_from_db()
-        
-        # Test if status actually transitioned
         self.assertEqual(os.status, "initial_survey")
 
-        # Verify a transition log was created
         logs = StatusTransitionLog.objects.filter(service_order=os).order_by("-created_at")
         self.assertTrue(logs.exists())
         log = logs.first()
         self.assertEqual(log.from_status, "reception")
         self.assertEqual(log.to_status, "initial_survey")
-        self.assertEqual(log.triggered_by_field, "entry_date")
+        self.assertEqual(log.triggered_by_field, "scheduling_date")
 
     def test_manual_status_transition_generates_log(self):
-        """Mudar o status manualmente deve gerar um log correto."""
-        os = ServiceOrder.objects.create(
+        """Transição manual via service deve gerar um log correto."""
+        os = self._create_order(
             plate="XYZ9876",
             make="Fiat",
             status="initial_survey",
+            entry_date=timezone.now(),
         )
 
-        os.status = "budget"
-        os.save()
+        ServiceOrderService.transition(
+            order_id=str(os.id),
+            new_status="budget",
+            changed_by_id=str(self.user.id),
+            force=True,
+            justification="Teste de integração",
+        )
 
         os.refresh_from_db()
         self.assertEqual(os.status, "budget")
 
-        # Verifica log
         log = StatusTransitionLog.objects.filter(service_order=os).first()
         self.assertIsNotNone(log)
         self.assertEqual(log.from_status, "initial_survey")
         self.assertEqual(log.to_status, "budget")
         self.assertEqual(log.triggered_by_field, "")
+
+    def test_status_transition_log_is_immutable(self):
+        """StatusTransitionLog não deve aceitar edição após criação."""
+        os = self._create_order(
+            plate="LOG1234",
+            make="Honda",
+            status="reception",
+        )
+        log = StatusTransitionLog.objects.create(
+            service_order=os,
+            from_status="reception",
+            to_status="initial_survey",
+            triggered_by_field="scheduling_date",
+            changed_by=self.user,
+        )
+
+        log.triggered_by_field = "manual_edit"
+        with self.assertRaises(ValidationError):
+            log.save()

@@ -351,3 +351,122 @@ class OrdemCompraService:
 
         item.refresh_from_db()
         return item
+
+    @staticmethod
+    @transaction.atomic
+    def receber_item_com_estoque(
+        *,
+        item_id: UUID,
+        nivel_id: UUID,
+        valor_nf: Decimal,
+        user_id: UUID,
+        destino: str = "estoque_geral",
+        nfe_entrada_id: UUID | None = None,
+        numero_serie: str = "",
+    ) -> tuple[ItemOrdemCompra, "object"]:
+        """Recebe item da OC, cria UnidadeFisica e vincula ao estoque/OS.
+
+        Fluxos:
+        - `estoque_geral`: entrada NF-e/manual cria unidade disponível.
+        - `os_direta`: entrada cria unidade e já reserva para a OS do PedidoCompra.
+        """
+        from apps.inventory.models_movement import MovimentacaoEstoque
+        from apps.inventory.models_physical import UnidadeFisica
+        from apps.service_orders.models import ServiceOrderPart
+
+        if destino not in {"estoque_geral", "os_direta"}:
+            raise ValueError("Destino inválido.")
+
+        item = ItemOrdemCompra.objects.select_for_update().get(
+            pk=item_id,
+            is_active=True,
+        )
+        if item.status_entrega == "recebido":
+            raise ValueError("Item já recebido.")
+
+        valor_nf_decimal = Decimal(str(valor_nf))
+        if valor_nf_decimal <= 0:
+            raise ValueError("valor_nf deve ser maior que zero.")
+
+        unidade = UnidadeFisica.objects.create(
+            valor_nf=valor_nf_decimal,
+            nivel_id=nivel_id,
+            numero_serie=numero_serie,
+            nfe_entrada_id=nfe_entrada_id,
+            status=UnidadeFisica.Status.AVAILABLE,
+            created_by_id=user_id,
+        )
+
+        MovimentacaoEstoque.objects.create(
+            tipo=MovimentacaoEstoque.Tipo.ENTRADA_NF,
+            unidade_fisica=unidade,
+            quantidade=1,
+            nivel_destino_id=nivel_id,
+            nfe_entrada_id=nfe_entrada_id,
+            motivo=f"Recebimento OC {item.ordem_compra.numero} — {item.descricao}",
+            realizado_por_id=user_id,
+        )
+
+        if destino == "os_direta":
+            if not item.pedido_compra_id:
+                raise ValueError("Destino os_direta exige PedidoCompra vinculado.")
+
+            unidade.status = UnidadeFisica.Status.RESERVED
+            unidade.ordem_servico_id = item.pedido_compra.service_order_id
+            unidade.save(update_fields=["status", "ordem_servico_id", "updated_at"])
+
+            MovimentacaoEstoque.objects.create(
+                tipo=MovimentacaoEstoque.Tipo.SAIDA_OS,
+                unidade_fisica=unidade,
+                quantidade=1,
+                nivel_origem_id=nivel_id,
+                ordem_servico_id=item.pedido_compra.service_order_id,
+                motivo=f"Reserva direta para OS via OC {item.ordem_compra.numero}",
+                realizado_por_id=user_id,
+            )
+
+            if item.pedido_compra.service_order_part_id:
+                ServiceOrderPart.objects.filter(
+                    pk=item.pedido_compra.service_order_part_id,
+                ).update(
+                    status_peca="recebida",
+                    unidade_fisica=unidade,
+                    custo_real=unidade.valor_nf,
+                )
+
+        item.status_entrega = "recebido"
+        item.data_recebimento = timezone.now().date()
+        item.destino = destino
+        item.nfe_entrada_id = nfe_entrada_id
+        item.save(
+            update_fields=[
+                "status_entrega",
+                "data_recebimento",
+                "destino",
+                "nfe_entrada_id",
+                "updated_at",
+            ]
+        )
+
+        if item.pedido_compra_id:
+            PedidoCompra.objects.filter(pk=item.pedido_compra_id).update(
+                status=PedidoCompra.Status.RECEBIDO,
+                updated_at=timezone.now(),
+            )
+
+        oc = item.ordem_compra
+        all_received = not oc.itens.filter(is_active=True).exclude(
+            status_entrega="recebido"
+        ).exists()
+        OrdemCompra.objects.filter(pk=oc.pk).update(
+            status=(
+                OrdemCompra.Status.CONCLUIDA
+                if all_received
+                else OrdemCompra.Status.PARCIAL_RECEBIDA
+            ),
+            updated_at=timezone.now(),
+        )
+
+        item.refresh_from_db()
+        unidade.refresh_from_db()
+        return item, unidade

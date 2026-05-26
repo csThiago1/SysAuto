@@ -181,7 +181,9 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
                       <DollarSign className="h-4 w-4" />
                     </button>
                   ) : order.invoice_issued ? (
-                    <CheckCircle className="h-4 w-4 text-success-400 mx-auto" title="OS faturada" />
+                    <span className="inline-flex w-full justify-center" title="OS faturada">
+                      <CheckCircle className="h-4 w-4 text-success-400" />
+                    </span>
                   ) : null}
                 </TableCell>
 

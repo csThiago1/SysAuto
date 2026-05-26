@@ -163,3 +163,27 @@ class TestReservaUnidadeService(TenantTestCase):
         u.refresh_from_db()
         self.assertEqual(u.status, "reserved")
         self.assertEqual(resultado.pk, u.pk)
+
+    def test_reserva_pode_ser_consumida_na_os(self) -> None:
+        """Fluxo estoque → reserva → utilização deve finalizar como consumed."""
+        user = make_user("inv-consumo@example.com")
+        peca = make_peca_canonica("peca-consumo-001")
+        unidade = make_unidade(peca, "100.00")
+
+        reservadas = ReservaUnidadeService.reservar(
+            peca_canonica_id=str(peca.pk),
+            quantidade=1,
+            ordem_servico_id=self.os_id,
+            user_id=str(user.id),
+        )
+        consumida = ReservaUnidadeService.consumir_reservada(
+            unidade_fisica_id=str(reservadas[0].pk),
+            ordem_servico_id=self.os_id,
+            user_id=str(user.id),
+        )
+
+        unidade.refresh_from_db()
+        self.assertEqual(consumida.pk, unidade.pk)
+        self.assertEqual(unidade.status, "consumed")
+        self.assertEqual(str(unidade.ordem_servico_id), self.os_id)
+        self.assertIsNotNone(unidade.consumida_em)

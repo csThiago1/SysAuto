@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import uuid
 from decimal import Decimal
+from typing import Any
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
@@ -465,6 +467,12 @@ class StatusTransitionLog(PaddockBaseModel):
 
     def __str__(self) -> str:
         return f"OS #{self.service_order.number}: {self.from_status} → {self.to_status}"
+
+    def save(self, *args: Any, **kwargs: Any) -> None:  # type: ignore[override]
+        """Bloqueia edições após a criação do registro de auditoria."""
+        if self.pk and not self._state.adding:
+            raise ValidationError("StatusTransitionLog é imutável após criação.")
+        super().save(*args, **kwargs)
 
 
 class ServiceOrderPhoto(models.Model):

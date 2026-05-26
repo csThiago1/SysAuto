@@ -103,6 +103,16 @@ LABOR_FIELD_MAP: dict[str, str] = {
 }
 
 
+def _financial_locked_response(order: ServiceOrder) -> Response | None:
+    """Bloqueia alterações financeiras de itens após faturamento da OS."""
+    if not order.invoice_issued:
+        return None
+    return Response(
+        {"detail": "Não é possível modificar itens financeiros de uma OS faturada."},
+        status=422,
+    )
+
+
 @extend_schema_view(
     list=extend_schema(
         summary="Listar ordens de serviço",
@@ -620,6 +630,9 @@ class ServiceOrderViewSet(
         service_order: ServiceOrder = self.get_object()
 
         if request.method == "POST":
+            locked_response = _financial_locked_response(service_order)
+            if locked_response is not None:
+                return locked_response
             if service_order.status in (
                 ServiceOrderStatus.READY,
                 ServiceOrderStatus.DELIVERED,
@@ -662,6 +675,10 @@ class ServiceOrderViewSet(
             part = service_order.parts.get(pk=part_pk)
         except ServiceOrderPart.DoesNotExist:
             return Response({"detail": "Peça não encontrada."}, status=status.HTTP_404_NOT_FOUND)
+
+        locked_response = _financial_locked_response(service_order)
+        if locked_response is not None:
+            return locked_response
 
         if request.method == "DELETE":
             # PC-3: liberar estoque se bloqueada
@@ -720,6 +737,9 @@ class ServiceOrderViewSet(
     def parts_estoque(self, request: Request, pk: Optional[str] = None) -> Response:
         """Adicionar peça do estoque — bloqueia imediatamente (PC-2)."""
         os = self.get_object()
+        locked_response = _financial_locked_response(os)
+        if locked_response is not None:
+            return locked_response
         serializer = PartEstoqueInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         d = serializer.validated_data
@@ -770,6 +790,9 @@ class ServiceOrderViewSet(
     def parts_compra(self, request: Request, pk: Optional[str] = None) -> Response:
         """Solicitar compra — gera PedidoCompra automaticamente."""
         os = self.get_object()
+        locked_response = _financial_locked_response(os)
+        if locked_response is not None:
+            return locked_response
         serializer = PartCompraInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         d = serializer.validated_data
@@ -810,6 +833,9 @@ class ServiceOrderViewSet(
     def parts_seguradora(self, request: Request, pk: Optional[str] = None) -> Response:
         """Registrar peça de seguradora (complemento manual — PC-11)."""
         os = self.get_object()
+        locked_response = _financial_locked_response(os)
+        if locked_response is not None:
+            return locked_response
         serializer = PartSeguradoraInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         d = serializer.validated_data
@@ -840,6 +866,9 @@ class ServiceOrderViewSet(
         service_order: ServiceOrder = self.get_object()
 
         if request.method == "POST":
+            locked_response = _financial_locked_response(service_order)
+            if locked_response is not None:
+                return locked_response
             if service_order.status in (
                 ServiceOrderStatus.READY,
                 ServiceOrderStatus.DELIVERED,
@@ -882,6 +911,10 @@ class ServiceOrderViewSet(
             item = service_order.labor_items.get(pk=labor_pk)
         except ServiceOrderLabor.DoesNotExist:
             return Response({"detail": "Serviço não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        locked_response = _financial_locked_response(service_order)
+        if locked_response is not None:
+            return locked_response
 
         if request.method == "DELETE":
             desc = item.description

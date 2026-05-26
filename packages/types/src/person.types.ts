@@ -5,6 +5,7 @@
 
 export type PersonRole =
   | "CLIENT"
+  | "INSURER"
   | "BROKER"
   | "EMPLOYEE"
   | "SUPPLIER";

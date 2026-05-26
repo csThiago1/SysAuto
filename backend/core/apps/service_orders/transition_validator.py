@@ -19,6 +19,7 @@ Uso:
 from __future__ import annotations
 
 import logging
+import uuid
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -212,8 +213,15 @@ class TransitionValidator:
         """
         from apps.signatures.models import Signature
 
+        order_id = getattr(order, "pk", None) or getattr(order, "id", None)
+        if not isinstance(order_id, uuid.UUID):
+            try:
+                order_id = uuid.UUID(str(order_id))
+            except (TypeError, ValueError, AttributeError):
+                return False
+
         return Signature.objects.filter(
-            service_order=order,
+            service_order_id=order_id,
             document_type=doc_type,
         ).exists()
 

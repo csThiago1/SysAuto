@@ -305,7 +305,9 @@ export function useRegistrarResposta() {
       supplier: string
       valor_unitario: string
       prazo_entrega?: string
+      prazo_entrega_obj?: string
       condicoes_pagamento?: string
+      condicao_pagamento_obj?: string
       observacoes?: string
     }) =>
       apiFetch<RespostaCotacao>(`${PURCHASING}/respostas-cotacao/`, {

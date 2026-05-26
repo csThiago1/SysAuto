@@ -289,7 +289,7 @@ def plate_lookup(request: Request, plate: str) -> Response:
         if existing.version:
             make = existing.version.modelo.marca.nome
             model = existing.version.modelo.nome
-            version_name = existing.version.nome
+            version_name = existing.version.descricao
         else:
             parts = existing.description.split(" ", 1)
             make = parts[0] if parts else ""
@@ -318,6 +318,11 @@ def plate_lookup(request: Request, plate: str) -> Response:
     # ── 1. Cache de consulta de placa ──────────────────────────────────────
     cached = PlateCache.objects.filter(plate=plate).first()
     if cached:
+        cache_details = (
+            _normalize_plate_response(cached.plate, cached.raw_response)
+            if cached.raw_response
+            else {}
+        )
         logger.info("plate_lookup: cache hit para %s", plate)
         return Response({
             "plate":          cached.plate,
@@ -331,11 +336,12 @@ def plate_lookup(request: Request, plate: str) -> Response:
             "city":           cached.city,
             "color":          cached.color,
             "fuel_type":      cached.fuel_type,
-            "fipe_value":     None,
-            "situation":      "",
-            "situation_code": 0,
-            "make_logo":      (cached.raw_response or {}).get("logo", ""),
+            "fipe_value":     cache_details.get("fipe_value"),
+            "situation":      cache_details.get("situation", ""),
+            "situation_code": cache_details.get("situation_code", 0),
+            "make_logo":      cache_details.get("make_logo", ""),
             "cached":         True,
+            "source":         "cache",
         })
 
     # ── 2. Consulta API externa ───────────────────────────────────────────────
@@ -394,6 +400,7 @@ def plate_lookup(request: Request, plate: str) -> Response:
     )
 
     normalized["cached"] = False
+    normalized["source"] = "api"
     return Response(normalized)
 
 

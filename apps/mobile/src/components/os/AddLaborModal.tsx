@@ -39,8 +39,8 @@ export function AddLaborModal({
   useEffect(() => {
     if (editingItem) {
       setDescription(editingItem.description);
-      setCategory(editingItem.category ?? 'bodywork');
-      setUnitPrice(editingItem.value);
+      setCategory('bodywork');
+      setUnitPrice(editingItem.unit_price);
     } else {
       setDescription('');
       setCategory('bodywork');

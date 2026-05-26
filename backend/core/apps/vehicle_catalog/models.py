@@ -130,3 +130,16 @@ class VehicleYearVersion(models.Model):
 
     def __str__(self) -> str:
         return f"{self.modelo} ({self.ano}) — {self.combustivel}"
+
+    @property
+    def full_name(self) -> str:
+        """Nome completo para exibição de um veículo com versão FIPE."""
+        return " ".join(
+            part
+            for part in (
+                self.modelo.marca.nome,
+                self.modelo.nome,
+                self.descricao,
+            )
+            if part
+        )

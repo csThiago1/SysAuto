@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { api } from '@/lib/api';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,7 +49,7 @@ export function useVehicleByPlate(): { lookup: (plate: string) => Promise<Vehicl
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const lookup = async (plate: string): Promise<VehicleInfo | null> => {
+  const lookup = useCallback(async (plate: string): Promise<VehicleInfo | null> => {
     const normalized = plate.toUpperCase().replace(/[-\s]/g, '').trim();
     if (!normalized || normalized.length < 7) { setError('Placa inválida'); return null; }
     setError(null);
@@ -70,7 +70,7 @@ export function useVehicleByPlate(): { lookup: (plate: string) => Promise<Vehicl
       setError('Erro ao buscar placa');
       return null;
     } finally { setIsLoading(false); }
-  };
+  }, []);
 
   return { lookup, isLoading, error };
 }

@@ -112,6 +112,27 @@ class AccountingTestCase(TenantTestCase):
             nature="D",
             is_analytical=True,
         )
+        self.account_bank_bradesco = make_account(
+            code="1.1.01.002",
+            name="Banco Bradesco C/C",
+            account_type="A",
+            nature="D",
+            is_analytical=True,
+        )
+        self.account_payroll_payable = make_account(
+            code="2.1.03.001",
+            name="Salarios e Ordenados a Pagar",
+            account_type="L",
+            nature="C",
+            is_analytical=True,
+        )
+        self.account_suppliers_payable = make_account(
+            code="2.1.04.001",
+            name="Fornecedores a Pagar",
+            account_type="L",
+            nature="C",
+            is_analytical=True,
+        )
         self.account_revenue_parts = make_account(
             code="4.1.03.001",
             name="Receita Bruta Pecas",
