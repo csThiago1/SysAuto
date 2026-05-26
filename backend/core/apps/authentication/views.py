@@ -6,9 +6,10 @@ Login, Refresh, Me, Staff, PushToken, DevToken.
 import datetime
 import hashlib
 import logging
-import time
+import secrets
 
 import jwt as pyjwt
+from django.conf import settings
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
@@ -16,9 +17,15 @@ from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 
+from .email_service import send_reset_password_email, send_verification_email
 from .jwt_utils import decode_token, generate_access_token, generate_refresh_token
-from .models import GlobalUser, RefreshToken
-from .permissions import IsManagerOrAbove
+from .models import (
+    EmailVerificationToken,
+    GlobalUser,
+    PasswordResetToken,
+    RefreshToken,
+)
+from .permissions import IsAdminOrAbove, IsManagerOrAbove
 from .serializers import MeSerializer, StaffUserSerializer
 
 logger = logging.getLogger(__name__)
@@ -335,6 +342,256 @@ class MeView(APIView):
         if len(cpf) >= 2:
             return "***.***.***-" + cpf[-2:]
         return ""
+
+
+# ─── ForgotPasswordView ─────────────────────────────────────────────────────
+
+def _get_frontend_url() -> str:
+    """Get frontend base URL from settings."""
+    return getattr(settings, "FRONTEND_URL", "http://localhost:3001")
+
+
+class ForgotPasswordView(APIView):
+    """
+    POST /api/v1/auth/forgot-password/
+
+    Gera token de reset e envia email. SEMPRE retorna 200 para evitar
+    enumeracao de emails (nao revela se o email existe).
+
+    Body: {"email": "user@example.com"}
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+    throttle_classes = [AuthRateThrottle]
+
+    def post(self, request: Request) -> Response:
+        """Envia email de reset de senha."""
+        email_input: str = request.data.get("email", "").strip().lower()
+        if not email_input:
+            return Response(
+                {"detail": "Campo 'email' obrigatório."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Always return 200 -- no email enumeration
+        email_h = hashlib.sha256(email_input.encode()).hexdigest()
+        try:
+            user = GlobalUser.objects.get(email_hash=email_h, is_active=True)
+        except GlobalUser.DoesNotExist:
+            logger.info("Forgot-password para email nao cadastrado (hash=%s...)", email_h[:8])
+            return Response({"detail": "Se o email existir, um link sera enviado."})
+
+        # Generate token
+        raw_token = secrets.token_urlsafe(48)
+        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+        PasswordResetToken.objects.create(
+            user=user,
+            token_hash=token_hash,
+            expires_at=datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(hours=1),
+        )
+
+        # Build reset URL and send email
+        frontend_url = _get_frontend_url()
+        reset_url = f"{frontend_url}/auth/reset-password?token={raw_token}"
+        send_reset_password_email(user.email, reset_url)
+
+        return Response({"detail": "Se o email existir, um link sera enviado."})
+
+
+# ─── ResetPasswordView ──────────────────────────────────────────────────────
+
+class ResetPasswordView(APIView):
+    """
+    POST /api/v1/auth/reset-password/
+
+    Valida token de reset, define nova senha e revoga todos os refresh tokens.
+
+    Body: {"token": "<raw_token>", "password": "<new_password>"}
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+
+    def post(self, request: Request) -> Response:
+        """Valida token e redefine senha."""
+        raw_token: str = request.data.get("token", "").strip()
+        new_password: str = request.data.get("password", "").strip()
+
+        if not raw_token or not new_password:
+            return Response(
+                {"detail": "Campos 'token' e 'password' obrigatórios."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if len(new_password) < 8:
+            return Response(
+                {"detail": "Senha deve ter pelo menos 8 caracteres."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+        now = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        try:
+            stored = PasswordResetToken.objects.select_related("user").get(
+                token_hash=token_hash,
+                is_used=False,
+                expires_at__gt=now,
+            )
+        except PasswordResetToken.DoesNotExist:
+            return Response(
+                {"detail": "Token inválido ou expirado."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Mark token as used
+        stored.is_used = True
+        stored.save(update_fields=["is_used"])
+
+        # Set new password
+        user = stored.user
+        user.set_password(new_password)
+        user.save(update_fields=["password"])
+
+        # Revoke all refresh tokens (force re-login everywhere)
+        RefreshToken.objects.filter(user=user, is_revoked=False).update(is_revoked=True)
+
+        logger.info("Senha redefinida para user_id=%s", user.pk)
+        return Response({"detail": "Senha redefinida com sucesso."})
+
+
+# ─── VerifyEmailView ────────────────────────────────────────────────────────
+
+class VerifyEmailView(APIView):
+    """
+    POST /api/v1/auth/verify-email/
+
+    Valida token de verificacao de email e ativa a conta.
+
+    Body: {"token": "<raw_token>"}
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+
+    def post(self, request: Request) -> Response:
+        """Verifica email e ativa conta."""
+        raw_token: str = request.data.get("token", "").strip()
+        if not raw_token:
+            return Response(
+                {"detail": "Campo 'token' obrigatório."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+        now = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        try:
+            stored = EmailVerificationToken.objects.select_related("user").get(
+                token_hash=token_hash,
+                is_used=False,
+                expires_at__gt=now,
+            )
+        except EmailVerificationToken.DoesNotExist:
+            return Response(
+                {"detail": "Token inválido ou expirado."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Mark token as used
+        stored.is_used = True
+        stored.save(update_fields=["is_used"])
+
+        # Activate account
+        user = stored.user
+        user.email_verified = True
+        user.save(update_fields=["email_verified"])
+
+        logger.info("Email verificado para user_id=%s", user.pk)
+        return Response({"detail": "Email verificado com sucesso."})
+
+
+# ─── RegisterView (admin-only invite) ───────────────────────────────────────
+
+class RegisterView(APIView):
+    """
+    POST /api/v1/auth/register/
+
+    Registro por convite -- apenas admin pode criar novos usuarios.
+    Envia email de verificacao para o usuario criado.
+
+    Body: {"email": "...", "name": "...", "role": "CONSULTANT", "password": "..."}
+    """
+
+    permission_classes = [IsAuthenticated, IsAdminOrAbove]
+
+    def post(self, request: Request) -> Response:
+        """Cria usuario por convite (admin-only)."""
+        email: str = request.data.get("email", "").strip().lower()
+        name: str = request.data.get("name", "").strip()
+        role: str = request.data.get("role", "CONSULTANT").upper()
+        password: str = request.data.get("password", "").strip()
+
+        if not email or not name:
+            return Response(
+                {"detail": "Campos 'email' e 'name' obrigatórios."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if password and len(password) < 8:
+            return Response(
+                {"detail": "Senha deve ter pelo menos 8 caracteres."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Validate role
+        valid_roles = [choice[0] for choice in GlobalUser.Role.choices]
+        if role not in valid_roles:
+            return Response(
+                {"detail": f"Role inválido. Opções: {', '.join(valid_roles)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Check if user already exists
+        email_h = hashlib.sha256(email.encode()).hexdigest()
+        if GlobalUser.objects.filter(email_hash=email_h).exists():
+            return Response(
+                {"detail": "Usuário com este email já existe."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        # Create user
+        user = GlobalUser.objects.create_user(
+            email=email,
+            password=password or None,
+            name=name,
+            role=role,
+        )
+
+        # Generate verification token and send email
+        raw_token = secrets.token_urlsafe(48)
+        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+        EmailVerificationToken.objects.create(
+            user=user,
+            token_hash=token_hash,
+            expires_at=datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(hours=24),
+        )
+
+        frontend_url = _get_frontend_url()
+        verify_url = f"{frontend_url}/auth/verify-email?token={raw_token}"
+        send_verification_email(user.email, verify_url)
+
+        logger.info("Usuário registrado por convite: user_id=%s, role=%s", user.pk, role)
+        return Response(
+            {
+                "id": str(user.pk),
+                "email_hash": user.email_hash,
+                "name": user.name,
+                "role": user.role,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class StaffListView(APIView):

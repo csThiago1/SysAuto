@@ -352,6 +352,16 @@ ANTHROPIC_API_KEY = config("ANTHROPIC_API_KEY", default="")
 AI_DEFAULT_MODEL = "claude-sonnet-4-5"
 AI_HEAVY_MODEL = "claude-opus-4-5"
 
+# ─── Auth Nativo (JWT) ───────────────────────────────────────────────────────
+DEV_JWT_SECRET = config("DEV_JWT_SECRET", default="dscar-dev-secret-" + "paddock-2025")
+JWT_PRIVATE_KEY = config("JWT_PRIVATE_KEY", default="")  # RS256 private key (prod)
+JWT_PUBLIC_KEY = config("JWT_PUBLIC_KEY", default="")  # RS256 public key (prod)
+
+# ─── Email (Resend) ─────────────────────────────────────────────────────────
+RESEND_API_KEY = config("RESEND_API_KEY", default="")
+EMAIL_FROM = config("EMAIL_FROM", default="noreply@paddock.solutions")
+FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:3001")
+
 # ─── Cilia Web Service ───────────────────────────────────────────────────────
 CILIA_BASE_URL = config("CILIA_BASE_URL", default="https://sistema.cilia.com.br")
 CILIA_AUTH_TOKEN = config("CILIA_AUTH_TOKEN", default="")
