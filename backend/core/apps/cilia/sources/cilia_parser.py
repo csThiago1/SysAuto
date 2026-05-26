@@ -14,7 +14,8 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from decimal import Decimal
+import re
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from apps.cilia.dtos import (
@@ -124,7 +125,15 @@ class CiliaParser:
         phone = client.get("phone") or {}
         ddd = phone.get("ddd") or ""
         number = phone.get("number") or ""
-        pb.segurado_phone = f"{ddd}{number}".strip()
+        raw_phone = f"{ddd}{number}".strip()
+        phone_digits = re.sub(r"\D", "", raw_phone) if raw_phone else ""
+        if phone_digits and not (10 <= len(phone_digits) <= 11):
+            logger.warning(
+                "import_parse: telefone '%s' tem %d digitos",
+                raw_phone,
+                len(phone_digits),
+            )
+        pb.segurado_phone = phone_digits
 
         # --- Veículo ---
         vehicle = payload.get("vehicle") or {}
@@ -133,8 +142,20 @@ class CiliaParser:
         pb.vehicle_chassis = vehicle.get("body") or ""
         pb.vehicle_color = vehicle.get("color") or ""
         pb.vehicle_km = str(vehicle.get("mileage") or "")
-        pb.vehicle_year = vehicle.get("model_year")
         pb.vehicle_brand = vehicle.get("brand") or ""
+
+        # Year validation
+        raw_year = vehicle.get("model_year")
+        if raw_year is not None:
+            try:
+                year_int = int(raw_year)
+                if not (1900 <= year_int <= 2100):
+                    logger.warning("import_parse: vehicle_year %s fora do range", raw_year)
+                    raw_year = None
+            except (ValueError, TypeError):
+                logger.warning("import_parse: vehicle_year '%s' nao e inteiro", raw_year)
+                raw_year = None
+        pb.vehicle_year = raw_year
 
         # --- Seguradora ---
         insurer = payload.get("insurer") or {}
@@ -143,7 +164,7 @@ class CiliaParser:
 
         # --- Financeiro ---
         totals = payload.get("totals") or {}
-        pb.franchise_amount = cls._dec(totals.get("franchise", 0))
+        pb.franchise_amount = cls._dec(totals.get("franchise", 0), "totals.franchise")
 
         # Tabela de MO (standard_labor)
         labor = payload.get("standard_labor") or {}
@@ -156,7 +177,7 @@ class CiliaParser:
             "ELETRICA": str(labor.get("workforce_cost", 0)),
             "TAPECARIA": str(labor.get("workforce_cost", 0)),
         }
-        pb.global_discount_pct = cls._dec(labor.get("discount", 0))
+        pb.global_discount_pct = cls._dec(labor.get("discount", 0), "standard_labor.discount")
 
         # --- Items ---
         # remove_install_hours por item inclui horas de desmontagem para
@@ -215,13 +236,13 @@ class CiliaParser:
         raw_by_type: dict[str, Decimal] = {}
         for entry in budgetings:
             ri_type = entry.get("remove_install_type") or ""
-            hours = cls._dec(entry.get("remove_install_hours", 0))
+            hours = cls._dec(entry.get("remove_install_hours", 0), "remove_install_hours")
             raw_by_type[ri_type] = raw_by_type.get(ri_type, Decimal("0")) + hours
 
         # Calcular fator por tipo
         corrections: dict[str, Decimal] = {}
         for ri_type, total_key in cls.RI_TYPE_TO_TOTAL_KEY.items():
-            cilia_hours = cls._dec(totals.get(total_key, 0))
+            cilia_hours = cls._dec(totals.get(total_key, 0), total_key)
             raw_hours = raw_by_type.get(ri_type, Decimal("0"))
             corrections[ri_type] = (
                 cilia_hours / raw_hours if raw_hours > 0 else Decimal("1")
@@ -266,9 +287,9 @@ class CiliaParser:
 
         # ── 1. PEÇA (troca) ──────────────────────────────────────────────
         if entry.get("exchange_used"):
-            piece_price = cls._dec(entry.get("piece_selling_cost", 0))
-            piece_final = cls._dec(entry.get("piece_selling_cost_final", 0))
-            discount_pct = cls._dec(entry.get("piece_discount_percentage", 0))
+            piece_price = cls._dec(entry.get("piece_selling_cost", 0), "piece_selling_cost")
+            piece_final = cls._dec(entry.get("piece_selling_cost_final", 0), "piece_selling_cost_final")
+            discount_pct = cls._dec(entry.get("piece_discount_percentage", 0), "piece_discount_percentage")
 
             items.append(ParsedItemDTO(
                 bucket=bucket,
@@ -279,7 +300,7 @@ class CiliaParser:
                 external_code=external_code,
                 part_type=part_type,
                 supplier=supplier,
-                quantity=cls._dec(entry.get("quantity", 1)),
+                quantity=cls._dec(entry.get("quantity", 1), "quantity"),
                 unit_price=piece_price,
                 discount_pct=discount_pct,
                 net_price=piece_final if piece_final else piece_price,
@@ -288,20 +309,20 @@ class CiliaParser:
 
         # ── 2. SERVIÇOS (uma linha por operação) ─────────────────────────
         # Tarifas
-        workforce_rate = cls._dec(hourly_rates.get("FUNILARIA", "0"))
-        paint_rate = cls._dec(hourly_rates.get("PINTURA", "0"))
-        repair_rate = cls._dec(hourly_rates.get("REPARACAO", "0"))
+        workforce_rate = cls._dec(hourly_rates.get("FUNILARIA", "0"), "hourly_rate.FUNILARIA")
+        paint_rate = cls._dec(hourly_rates.get("PINTURA", "0"), "hourly_rate.PINTURA")
+        repair_rate = cls._dec(hourly_rates.get("REPARACAO", "0"), "hourly_rate.REPARACAO")
 
         # R&I hours corrigidas pelo fator do tipo (evita double-counting)
-        raw_ri = cls._dec(entry.get("remove_install_hours", 0))
+        raw_ri = cls._dec(entry.get("remove_install_hours", 0), "remove_install_hours")
         ri_type = entry.get("remove_install_type") or ""
         ri_factor = ri_correction_by_type.get(ri_type, Decimal("1"))
         corrected_ri = (raw_ri * ri_factor).quantize(Decimal("0.01"))
 
         operations = [
             ("R_I", corrected_ri, workforce_rate),
-            ("PINTURA", cls._dec(entry.get("paint_hours", 0)), paint_rate),
-            ("RECUPERACAO", cls._dec(entry.get("repair_hours", 0)), repair_rate),
+            ("PINTURA", cls._dec(entry.get("paint_hours", 0), "paint_hours"), paint_rate),
+            ("RECUPERACAO", cls._dec(entry.get("repair_hours", 0), "repair_hours"), repair_rate),
         ]
 
         for op_type, hours, rate in operations:
@@ -326,7 +347,7 @@ class CiliaParser:
         # ── 3. Serviço com valor fixo (sem horas, sem troca) ─────────────
         has_labor = any(h > 0 for _, h, _ in operations)
         if not entry.get("exchange_used") and not has_labor:
-            selling_cost = cls._dec(entry.get("selling_cost", 0))
+            selling_cost = cls._dec(entry.get("selling_cost", 0), "selling_cost")
             if selling_cost > 0:
                 items.append(ParsedItemDTO(
                     bucket=bucket,
@@ -393,13 +414,19 @@ class CiliaParser:
         return " ".join(parts).strip()
 
     @staticmethod
-    def _dec(value: Any) -> Decimal:
-        """Conversão segura para Decimal. Retorna Decimal('0') em falha."""
+    def _dec(value: Any, field_name: str = "unknown") -> Decimal:
+        """Convert value to Decimal. Logs warning instead of silent zero."""
         if value is None or value == "":
             return Decimal("0")
         try:
             return Decimal(str(value))
-        except Exception:
+        except (InvalidOperation, TypeError, ValueError) as exc:
+            logger.warning(
+                "import_parse: falha ao converter '%s' para Decimal no campo %s: %s",
+                value,
+                field_name,
+                exc,
+            )
             return Decimal("0")
 
     @staticmethod
