@@ -2,11 +2,12 @@ from .base import *  # noqa: F401, F403
 
 DEBUG = False
 
-# Produção: apenas Keycloak RS256 — sem DevJWTAuthentication
+# Produção: NativeJWT (RS256) como primário, Keycloak como fallback de migração
 REST_FRAMEWORK = {
     **REST_FRAMEWORK,  # type: ignore[name-defined]
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "apps.authentication.backends.KeycloakJWTAuthentication",
+        "apps.authentication.backends.NativeJWTAuthentication",
+        "apps.authentication.backends.KeycloakJWTAuthentication",  # migration fallback
     ],
 }
 
