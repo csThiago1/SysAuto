@@ -123,6 +123,45 @@ export function useCategoriasMaoObra() {
   })
 }
 
+// ─── Categorias de Mão de Obra: CRUD ─────────────────────────────────────────
+
+export interface CategoriaMaoObraPayload {
+  codigo: string
+  nome: string
+  ordem?: number
+  is_active?: boolean
+}
+
+export function useCreateCategoriaMaoObra() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: CategoriaMaoObraPayload) =>
+      apiFetch<CategoriaMaoObra>(`${BASE}/categorias-mao-obra/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: catalogKeys.categoriasMaoObra })
+    },
+  })
+}
+
+export function useUpdateCategoriaMaoObra(id: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: Partial<CategoriaMaoObraPayload>) =>
+      apiFetch<CategoriaMaoObra>(`${BASE}/categorias-mao-obra/${id}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: catalogKeys.categoriasMaoObra })
+    },
+  })
+}
+
 // ─── Materiais Canônicos ──────────────────────────────────────────────────────
 
 export function useMateriaisCanonico(search?: string) {
@@ -166,6 +205,23 @@ export function useCreateMaterialCanonico() {
         body: JSON.stringify(data),
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: catalogKeys.materiais() }),
+  })
+}
+
+// ─── Material Canônico: Update ───────────────────────────────────────────────
+
+export function useUpdateMaterialCanonico(id: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: Partial<MaterialCanonicoPayload>) =>
+      apiFetch<MaterialCanonico>(`${BASE}/materiais/${id}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: catalogKeys.materiais() })
+    },
   })
 }
 
@@ -215,6 +271,23 @@ export function useCreateInsumoMaterial() {
         body: JSON.stringify(data),
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: catalogKeys.insumos() }),
+  })
+}
+
+// ─── Insumo Material: Update ─────────────────────────────────────────────────
+
+export function useUpdateInsumoMaterial(id: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: Partial<InsumoMaterialPayload>) =>
+      apiFetch<InsumoMaterial>(`${BASE}/insumos/${id}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: catalogKeys.insumos() })
+    },
   })
 }
 
