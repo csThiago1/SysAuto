@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 
 export default function LoginPage(): React.ReactElement {
   const router = useRouter();
@@ -18,17 +17,12 @@ export default function LoginPage(): React.ReactElement {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleKeycloak(): Promise<void> {
-    setIsLoading(true);
-    await signIn("keycloak", { callbackUrl: "/os" });
-  }
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
-    const result = await signIn("dev-credentials", {
+    const result = await signIn("credentials", {
       email,
       password,
       redirect: false,
@@ -111,24 +105,14 @@ export default function LoginPage(): React.ReactElement {
               </Button>
             </form>
 
-            {process.env.NODE_ENV !== "production" && (
-              <>
-                <div className="my-6 flex items-center gap-3">
-                  <Separator className="flex-1 bg-secondary-700" />
-                  <span className="text-xs text-secondary-500">ou SSO</span>
-                  <Separator className="flex-1 bg-secondary-700" />
-                </div>
-
-                <Button
-                  variant="outline"
-                  className="w-full border-secondary-700 bg-transparent text-secondary-200 hover:bg-secondary-800 hover:text-foreground"
-                  onClick={() => void handleKeycloak()}
-                  disabled={isLoading}
-                >
-                  Entrar com conta corporativa
-                </Button>
-              </>
-            )}
+            <div className="mt-4 text-center">
+              <a
+                href="/esqueci-senha"
+                className="text-sm text-primary hover:underline"
+              >
+                Esqueceu sua senha?
+              </a>
+            </div>
           </CardContent>
         </Card>
 
