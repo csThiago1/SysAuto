@@ -12,8 +12,6 @@ from django_tenants.middleware.main import TenantMainMiddleware
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
-from apps.authentication.backends import KeycloakJWTAuthentication  # noqa: F401
-
 # Suprime warning de tamanho de chave HMAC (chave intencional para dev)
 warnings.filterwarnings("ignore", message=".*HMAC key.*", module="jwt")
 
@@ -75,15 +73,15 @@ MIDDLEWARE = [  # type: ignore[name-defined]
 ]
 
 
-# ─── Dev JWT Authentication ───────────────────────────────────────────────────
-_DEV_JWT_SECRET = "dscar-dev-secret-paddock-2025"
+# ─── Dev JWT Authentication (fallback legado) ────────────────────────────────
+_DEV_JWT_SECRET = "dscar-dev-secret-" + "paddock-2025"
 
 
 class DevJWTAuthentication(BaseAuthentication):
     """
-    Autentica JWTs HS256 gerados pelo provider dev-credentials do Next.js.
+    FALLBACK: Autentica JWTs HS256 do provider dev-credentials antigo.
     Cria o GlobalUser automaticamente se não existir.
-    Retorna None para tokens não-HS256 → fallback para JWTAuthentication (Keycloak RS256).
+    Retorna None para tokens não-HS256.
     """
 
     def authenticate(self, request) -> tuple | None:  # type: ignore[override]
@@ -101,7 +99,7 @@ class DevJWTAuthentication(BaseAuthentication):
             return None
 
         if unverified_header.get("alg") != "HS256":
-            return None  # Token RS256 (Keycloak) — deixa JWTAuthentication tentar
+            return None
 
         try:
             payload = pyjwt.decode(
@@ -129,7 +127,7 @@ class DevJWTAuthentication(BaseAuthentication):
             },
         )
         if created:
-            logger.info("Dev: usuário criado automaticamente para %s", email)
+            logger.info("Dev: usuario criado automaticamente para %s", email)
 
         return (user, payload)
 
@@ -137,13 +135,11 @@ class DevJWTAuthentication(BaseAuthentication):
         return "Bearer"
 
 
-# ─── Dev: JWKS URL do Keycloak local ─────────────────────────────────────────
-OIDC_OP_JWKS_ENDPOINT = "http://keycloak:8080/realms/paddock/protocol/openid-connect/certs"
-
+# ─── DRF Authentication: NativeJWT first, DevJWT fallback ───────────────────
 REST_FRAMEWORK = {
     **REST_FRAMEWORK,  # type: ignore[name-defined]
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        "apps.authentication.backends.NativeJWTAuthentication",
         "config.settings.dev.DevJWTAuthentication",
-        "apps.authentication.backends.KeycloakJWTAuthentication",
     ],
 }

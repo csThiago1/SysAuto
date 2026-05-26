@@ -1,57 +1,28 @@
 /**
- * next-auth v5 — Configuração de autenticação do DS Car ERP
+ * next-auth v5 — Configuracao de autenticacao do DS Car ERP
  *
- * Suporta dois providers:
- * 1. dev-credentials: e-mail + senha "paddock123" → JWT HS256 (apenas dev)
- * 2. keycloak: OIDC com Keycloak 24 → JWT RS256 (prod)
- *
- * Claims propagados à sessão:
- *   accessToken, role, companies, activeCompany, tenantSchema, clientSlug
+ * Provider unico: credentials (e-mail + senha) -> JWT via Django backend.
+ * O backend retorna access_token + refresh_token (RS256).
+ * Claims propagados a sessao:
+ *   accessToken, role, permissions, companies, activeCompany, tenantSchema, clientSlug
  */
 import NextAuth from "next-auth";
-import Keycloak from "next-auth/providers/keycloak";
 import Credentials from "next-auth/providers/credentials";
-import { SignJWT } from "jose";
 import type { PaddockRole } from "@paddock/types";
 
-function getDevJWTSecret(): Uint8Array {
-  const secret = process.env.DEV_JWT_SECRET;
-  if (!secret) throw new Error("DEV_JWT_SECRET não está definido — configure no .env.local");
-  return new TextEncoder().encode(secret);
-}
-
-/** Gera JWT HS256 para o provider dev-credentials. */
-async function makeDevToken(email: string): Promise<string> {
-  return new SignJWT({
-    email,
-    role: "ADMIN",
-    // Claims de tenant padrão em dev — tenant DS Car
-    active_company: "dscar",
-    tenant_schema: "tenant_dscar",
-    client_slug: "grupo-dscar",
-    companies: ["dscar"],
-    token_type: "access",
-    jti: crypto.randomUUID(),
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("8h")
-    .sign(getDevJWTSecret());
-}
-
-const KNOWN_ROLES: PaddockRole[] = ["OWNER", "ADMIN", "MANAGER", "CONSULTANT", "STOREKEEPER"];
-
-// ─── Augmentações de tipo do next-auth ───────────────────────────────────────
+// ── Augmentacoes de tipo do next-auth ─────────────────────────────────────
 
 declare module "next-auth" {
   interface Session {
-    /** JWT de acesso — HS256 (dev) ou RS256 (Keycloak). Enviado ao backend via Authorization. */
+    /** JWT de acesso — RS256 emitido pelo Django. Enviado ao backend via Authorization. */
     accessToken: string;
-    /** Role RBAC do usuário — extraído do JWT. */
+    /** Role RBAC do usuario — extraido do JWT. */
     role: PaddockRole;
-    /** Permissões granulares do colaborador. */
+    /** Permissoes granulares do colaborador. */
+    permissions: string[];
+    /** @deprecated Alias para permissions — manter compatibilidade temporaria. */
     extraPermissions: string[];
-    /** Empresas às quais o usuário tem acesso. */
+    /** Empresas as quais o usuario tem acesso. */
     companies: string[];
     /** Empresa ativa no momento do login. */
     activeCompany: string;
@@ -64,7 +35,7 @@ declare module "next-auth" {
   interface User {
     accessToken?: string;
     role?: string;
-    extraPermissions?: string[];
+    permissions?: string[];
     companies?: string[];
     activeCompany?: string;
     tenantSchema?: string;
@@ -74,7 +45,7 @@ declare module "next-auth" {
   interface JWT {
     accessToken?: string;
     role?: string;
-    extraPermissions?: string[];
+    permissions?: string[];
     companies?: string[];
     activeCompany?: string;
     tenantSchema?: string;
@@ -82,88 +53,80 @@ declare module "next-auth" {
   }
 }
 
-// ─── Exportação principal ────────────────────────────────────────────────────
+// ── Exportacao principal ──────────────────────────────────────────────────
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   providers: [
-    Keycloak({
-      clientId: process.env.KEYCLOAK_CLIENT_ID ?? "paddock-frontend",
-      clientSecret: process.env.KEYCLOAK_CLIENT_SECRET ?? "",
-      issuer: process.env.KEYCLOAK_ISSUER ?? "http://localhost:8080/realms/paddock",
-    }),
     Credentials({
-      id: "dev-credentials",
-      name: "Dev (mock)",
+      id: "credentials",
+      name: "Email & Senha",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (credentials?.email && credentials?.password === "paddock123") {
-          const token = await makeDevToken(credentials.email as string);
-          return {
-            id: "dev-user-id",
-            email: credentials.email as string,
-            name: "Dev User",
-            accessToken: token,
-            role: "ADMIN",
-            companies: ["dscar"],
-            activeCompany: "dscar",
-            tenantSchema: "tenant_dscar",
-            clientSlug: "grupo-dscar",
-          };
-        }
-        return null;
+        if (!credentials?.email || !credentials?.password) return null;
+
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const res = await fetch(`${apiUrl}/api/v1/auth/login/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: credentials.email,
+            password: credentials.password,
+          }),
+        });
+
+        if (!res.ok) return null;
+
+        const data = await res.json();
+        // data has: access_token, refresh_token, token_type, expires_in
+
+        // Decode the JWT payload to extract claims (without verification — backend already verified)
+        const payload = JSON.parse(
+          Buffer.from(data.access_token.split(".")[1], "base64").toString()
+        );
+
+        return {
+          id: payload.sub,
+          email: payload.email,
+          name: payload.name || payload.email,
+          accessToken: data.access_token,
+          role: payload.role,
+          permissions: payload.permissions || [],
+          companies: ["dscar"],
+          activeCompany: "dscar",
+          tenantSchema: "tenant_dscar",
+          clientSlug: "grupo-dscar",
+        };
       },
     }),
   ],
 
   callbacks: {
-    async jwt({ token, account, user, profile }) {
-      // ── Dev-credentials: propaga claims do User retornado pelo authorize() ──
+    async jwt({ token, user }) {
+      // Propaga claims do User retornado pelo authorize() para o JWT do next-auth
       if (user) {
-        if ("accessToken" in user && user.accessToken) token.accessToken = user.accessToken;
-        if ("role" in user && user.role) token.role = user.role;
-        if ("extraPermissions" in user) token.extraPermissions = user.extraPermissions;
-        if ("companies" in user) token.companies = user.companies;
-        if ("activeCompany" in user) token.activeCompany = user.activeCompany;
-        if ("tenantSchema" in user) token.tenantSchema = user.tenantSchema;
-        if ("clientSlug" in user) token.clientSlug = user.clientSlug;
-      }
-
-      // ── Keycloak: extrai access_token RS256 e claims do profile OIDC ──
-      if (account?.provider === "keycloak" && account.access_token) {
-        token.accessToken = account.access_token;
-
-        // Profile contém os claims customizados (Protocol Mappers configurados no Keycloak)
-        const p = (profile ?? {}) as Record<string, unknown>;
-
-        // Role: claim direto (Protocol Mapper "role") tem precedência sobre realm_access.roles
-        if (typeof p.role === "string" && KNOWN_ROLES.includes(p.role as PaddockRole)) {
-          token.role = p.role;
-        } else {
-          // Fallback: realm_access.roles (claim padrão do Keycloak)
-          const realmRoles = (p.realm_access as { roles?: string[] } | undefined)?.roles ?? [];
-          const found = realmRoles.find((r) => KNOWN_ROLES.includes(r as PaddockRole));
-          if (found) token.role = found;
-        }
-
-        // Claims de tenant — enviados via Protocol Mappers
-        if (Array.isArray(p.companies)) token.companies = p.companies as string[];
-        if (typeof p.active_company === "string") token.activeCompany = p.active_company;
-        if (typeof p.tenant_schema === "string") token.tenantSchema = p.tenant_schema;
-        if (typeof p.client_slug === "string") token.clientSlug = p.client_slug;
+        if (user.accessToken) token.accessToken = user.accessToken;
+        if (user.role) token.role = user.role;
+        if (user.permissions) token.permissions = user.permissions;
+        if (user.companies) token.companies = user.companies;
+        if (user.activeCompany) token.activeCompany = user.activeCompany;
+        if (user.tenantSchema) token.tenantSchema = user.tenantSchema;
+        if (user.clientSlug) token.clientSlug = user.clientSlug;
       }
 
       return token;
     },
 
     async session({ session, token }) {
-      // Propaga claims do JWT para a sessão acessível no cliente
+      // Propaga claims do JWT para a sessao acessivel no cliente
       session.accessToken = (token.accessToken as string) ?? "";
       session.role = (token.role as PaddockRole) ?? "STOREKEEPER";
-      session.extraPermissions = (token.extraPermissions as string[]) ?? [];
+      const perms = (token.permissions as string[]) ?? [];
+      session.permissions = perms;
+      session.extraPermissions = perms; // alias backward-compat
       session.companies = (token.companies as string[]) ?? ["dscar"];
       session.activeCompany = (token.activeCompany as string) ?? "dscar";
       session.tenantSchema = (token.tenantSchema as string) ?? "tenant_dscar";

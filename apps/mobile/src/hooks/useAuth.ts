@@ -14,7 +14,15 @@ interface JWTPayload {
   email?: string;
   name?: string;
   role?: string;
-  extra_permissions?: string[];
+  permissions?: string[];
+}
+
+/** Response from POST /api/v1/auth/login/ */
+interface LoginResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in: number;
 }
 
 interface AuthReturn {
@@ -43,18 +51,30 @@ export function useAuth(): AuthReturn {
           body: JSON.stringify({ email, password }),
         });
         if (!res.ok) return false;
-        const data = (await res.json()) as { access: string; refresh: string };
-        const token = data.access;
+
+        const data = (await res.json()) as LoginResponse;
+        const token = data.access_token;
+        const refreshToken = data.refresh_token;
+
+        // Store tokens securely on native platforms
+        if (Platform.OS !== 'web') {
+          await SecureStore.setItemAsync('access_token', token);
+          await SecureStore.setItemAsync('refresh_token', refreshToken);
+        }
+
+        // Decode JWT payload (no verification needed — backend already verified)
         const payloadB64 = token.split('.')[1] ?? '';
         let decoded: JWTPayload = {};
         try { decoded = JSON.parse(atob(payloadB64)) as JWTPayload; } catch { /* fallback */ }
+
         const userName = decoded.name ?? email.split('@')[0] ?? email;
         const userRole = normalizeRole(decoded.role);
         const userId = decoded.sub ?? email;
+
         setAuth(
           { id: userId, email: decoded.email ?? email, name: userName, role: userRole },
           token,
-          data.refresh,
+          refreshToken,
         );
         return true;
       } catch {
@@ -67,6 +87,8 @@ export function useAuth(): AuthReturn {
   const logout = useCallback(async (): Promise<void> => {
     if (Platform.OS !== 'web') {
       await SecureStore.deleteItemAsync('auth-storage');
+      await SecureStore.deleteItemAsync('access_token');
+      await SecureStore.deleteItemAsync('refresh_token');
     }
     storeLogout();
   }, [storeLogout]);

@@ -1,6 +1,6 @@
 """
 Paddock Solutions — Authentication App
-GlobalUser + PaddockBaseModel (abstract)
+GlobalUser + PaddockBaseModel (abstract) + Auth Token Models
 """
 import hashlib
 import uuid
@@ -83,8 +83,15 @@ class GlobalUser(AbstractBaseUser, PermissionsMixin):
     """
     Usuário global do sistema Paddock Solutions.
     Reside no schema public — compartilhado entre todos os tenants.
-    Autenticado via OIDC (Keycloak) ou JWT local.
+    Autenticado via JWT nativo (HS256 dev / RS256 prod).
     """
+
+    class Role(models.TextChoices):
+        OWNER = "OWNER", "Proprietário"
+        ADMIN = "ADMIN", "Administrador"
+        MANAGER = "MANAGER", "Gerente"
+        CONSULTANT = "CONSULTANT", "Consultor"
+        STOREKEEPER = "STOREKEEPER", "Almoxarife"
 
     class JobTitle(models.TextChoices):
         RECEPTION = "reception", "Recepção"
@@ -100,8 +107,17 @@ class GlobalUser(AbstractBaseUser, PermissionsMixin):
     email = EncryptedEmailField(unique=True)
     email_hash = models.CharField(max_length=64, unique=True, db_index=True)  # para busca
     name = models.CharField(max_length=200)
-    # Keycloak subject (sub) — vazio para usuários locais
+    # Keycloak subject (sub) — mantido para migração, nullable
     keycloak_id = models.UUIDField(null=True, blank=True, unique=True)
+
+    role = models.CharField(
+        max_length=20,
+        choices=Role.choices,
+        default=Role.CONSULTANT,
+        verbose_name="Papel",
+    )
+    email_verified = models.BooleanField(default=False)
+
     job_title = models.CharField(
         max_length=20,
         choices=JobTitle.choices,
@@ -156,3 +172,65 @@ class GlobalUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self) -> str:
         return f"{self.name} ({self.id})"
+
+
+# ─── Auth Token Models ────────────────────────────────────────────────────────
+
+
+class RefreshToken(models.Model):
+    """Token de refresh armazenado como hash — suporta rotação e revogação."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        GlobalUser, on_delete=models.CASCADE, related_name="refresh_tokens"
+    )
+    token_hash = models.CharField(max_length=64, unique=True, db_index=True)
+    is_revoked = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        db_table = "auth_refresh_tokens"
+        verbose_name = "Refresh Token"
+        verbose_name_plural = "Refresh Tokens"
+
+    def __str__(self) -> str:
+        return f"RefreshToken({self.user_id}, revoked={self.is_revoked})"
+
+
+class PasswordResetToken(models.Model):
+    """Token de reset de senha — uso único, com expiração."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(GlobalUser, on_delete=models.CASCADE)
+    token_hash = models.CharField(max_length=64, unique=True)
+    is_used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        db_table = "auth_password_reset_tokens"
+        verbose_name = "Password Reset Token"
+        verbose_name_plural = "Password Reset Tokens"
+
+    def __str__(self) -> str:
+        return f"PasswordResetToken({self.user_id}, used={self.is_used})"
+
+
+class EmailVerificationToken(models.Model):
+    """Token de verificação de email — uso único, com expiração."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(GlobalUser, on_delete=models.CASCADE)
+    token_hash = models.CharField(max_length=64, unique=True)
+    is_used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        db_table = "auth_email_verify_tokens"
+        verbose_name = "Email Verification Token"
+        verbose_name_plural = "Email Verification Tokens"
+
+    def __str__(self) -> str:
+        return f"EmailVerificationToken({self.user_id}, used={self.is_used})"
