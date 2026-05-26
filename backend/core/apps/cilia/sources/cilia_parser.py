@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from decimal import Decimal
 from typing import Any
 
@@ -21,6 +22,8 @@ from apps.cilia.dtos import (
     ParsedItemDTO,
     ParsedParecerDTO,
 )
+
+logger = logging.getLogger(__name__)
 
 
 # Mapeamento Cilia `insurer.trade` → nosso `Insurer.code`.
@@ -136,7 +139,7 @@ class CiliaParser:
         # --- Seguradora ---
         insurer = payload.get("insurer") or {}
         trade = insurer.get("trade") or ""
-        pb.insurer_code = INSURER_TRADE_TO_CODE.get(trade, "")
+        pb.insurer_code = cls._resolve_insurer_code(trade)
 
         # --- Financeiro ---
         totals = payload.get("totals") or {}
@@ -357,6 +360,27 @@ class CiliaParser:
             body=conclusion.get("description") or "",
             created_at_external=conclusion.get("created_at"),
         )
+
+    @staticmethod
+    def _resolve_insurer_code(trade_name: str) -> str:
+        """Resolve insurer code: DB first, hardcoded fallback.
+
+        Looks up the Insurer model by trade_names ArrayField.
+        Falls back to INSURER_TRADE_TO_CODE dict if DB is unavailable
+        or no match is found.
+        """
+        if not trade_name:
+            return ""
+        try:
+            from apps.insurers.models import Insurer
+            insurer = Insurer.objects.filter(
+                trade_names__contains=[trade_name],
+            ).first()
+            if insurer and insurer.code:
+                return insurer.code
+        except Exception:
+            pass  # DB not available, use fallback
+        return INSURER_TRADE_TO_CODE.get(trade_name, "")
 
     @staticmethod
     def _build_vehicle_description(vehicle: dict[str, Any]) -> str:
