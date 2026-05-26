@@ -1,11 +1,21 @@
 from django.conf import settings
 from django.urls import path
 
-from .views import LoginView, MeView, PushTokenView, StaffDetailView, StaffListView
+from .views import (
+    LoginView,
+    MeView,
+    PushTokenView,
+    RefreshView,
+    StaffDetailView,
+    StaffListView,
+)
 
 urlpatterns = [
+    # Auth endpoints (native JWT)
     path("login/", LoginView.as_view(), name="auth-login"),
+    path("refresh/", RefreshView.as_view(), name="auth-refresh"),
     path("me/", MeView.as_view(), name="auth-me"),
+    # Staff management
     path("push-token/", PushTokenView.as_view(), name="auth-push-token"),
     path("staff/", StaffListView.as_view(), name="auth-staff-list"),
     path("staff/<str:pk>/", StaffDetailView.as_view(), name="auth-staff-detail"),
