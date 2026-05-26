@@ -22,6 +22,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.authentication.permissions import (
+    HasTenantPermission,
     IsConsultantOrAbove,
     IsManagerOrAbove,
     IsStorekeeperOrAbove,
@@ -66,10 +67,15 @@ class CondicaoPagamentoViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, v
 
 
 class PedidoCompraViewSet(viewsets.ReadOnlyModelViewSet):
-    """Pedidos de compra — leitura + ações de fluxo."""
+    """Pedidos de compra — leitura + acoes de fluxo."""
 
     serializer_class = PedidoCompraSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        """RBAC: compras.view for read, compras.create for flow actions."""
+        if self.action in ("iniciar_cotacao", "cancelar"):
+            return [IsAuthenticated(), HasTenantPermission("compras.create")]
+        return [IsAuthenticated(), HasTenantPermission("compras.view")]
 
     def get_queryset(self):  # type: ignore[override]
         qs = PedidoCompra.objects.filter(is_active=True).select_related(
@@ -85,12 +91,7 @@ class PedidoCompraViewSet(viewsets.ReadOnlyModelViewSet):
             qs = qs.filter(service_order_id=so_filter)
         return qs
 
-    @action(
-        detail=True,
-        methods=["post"],
-        url_path="iniciar-cotacao",
-        permission_classes=[IsAuthenticated, IsStorekeeperOrAbove],
-    )
+    @action(detail=True, methods=["post"], url_path="iniciar-cotacao")
     def iniciar_cotacao(self, request: Request, pk: str = None) -> Response:
         """Mover pedido para status em_cotacao."""
         try:
@@ -112,12 +113,7 @@ class PedidoCompraViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(
-        detail=True,
-        methods=["post"],
-        url_path="cancelar",
-        permission_classes=[IsAuthenticated, IsStorekeeperOrAbove],
-    )
+    @action(detail=True, methods=["post"], url_path="cancelar")
     def cancelar(self, request: Request, pk: str = None) -> Response:
         """Cancelar pedido de compra."""
         motivo = request.data.get("motivo", "")
@@ -140,14 +136,17 @@ class PedidoCompraViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class OrdemCompraViewSet(viewsets.ModelViewSet):
-    """Ordens de compra — CRUD + ações de fluxo."""
-
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+    """Ordens de compra — CRUD + acoes de fluxo."""
 
     def get_permissions(self) -> list:  # type: ignore[override]
+        """RBAC: compras.create for write, compras.approve for approval actions."""
         if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsStorekeeperOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+            return [IsAuthenticated(), HasTenantPermission("compras.create")]
+        if self.action in ("aprovar", "rejeitar"):
+            return [IsAuthenticated(), HasTenantPermission("compras.approve")]
+        if self.action in ("enviar", "receber_item", "adicionar_item"):
+            return [IsAuthenticated(), HasTenantPermission("compras.create")]
+        return [IsAuthenticated(), HasTenantPermission("compras.view")]
 
     def get_serializer_class(self):  # type: ignore[override]
         if self.action == "retrieve":
@@ -195,12 +194,7 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(
-        detail=True,
-        methods=["post"],
-        url_path="enviar",
-        permission_classes=[IsAuthenticated, IsStorekeeperOrAbove],
-    )
+    @action(detail=True, methods=["post"], url_path="enviar")
     def enviar(self, request: Request, pk: str = None) -> Response:
         """Enviar OC para aprovacao."""
         try:
@@ -227,12 +221,7 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(
-        detail=True,
-        methods=["post"],
-        url_path="aprovar",
-        permission_classes=[IsAuthenticated, IsManagerOrAbove],
-    )
+    @action(detail=True, methods=["post"], url_path="aprovar")
     def aprovar(self, request: Request, pk: str = None) -> Response:
         """Aprovar OC (MANAGER+)."""
         try:
@@ -257,12 +246,7 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(
-        detail=True,
-        methods=["post"],
-        url_path="rejeitar",
-        permission_classes=[IsAuthenticated, IsManagerOrAbove],
-    )
+    @action(detail=True, methods=["post"], url_path="rejeitar")
     def rejeitar(self, request: Request, pk: str = None) -> Response:
         """Rejeitar OC (MANAGER+) com motivo obrigatorio."""
         motivo = request.data.get("motivo", "")
@@ -290,12 +274,7 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @action(
-        detail=True,
-        methods=["post"],
-        url_path=r"itens/(?P<item_id>[^/.]+)/receber",
-        permission_classes=[IsAuthenticated, IsStorekeeperOrAbove],
-    )
+    @action(detail=True, methods=["post"], url_path=r"itens/(?P<item_id>[^/.]+)/receber")
     def receber_item(self, request: Request, pk: str | None = None, item_id: str | None = None) -> Response:
         """POST /ordens-compra/{oc_id}/itens/{item_id}/receber/
 
@@ -334,12 +313,7 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
 
         return Response(ItemOrdemCompraSerializer(item).data)
 
-    @action(
-        detail=True,
-        methods=["get"],
-        url_path="pdf",
-        permission_classes=[IsAuthenticated, IsConsultantOrAbove],
-    )
+    @action(detail=True, methods=["get"], url_path="pdf")
     def pdf(self, request: Request, pk: str | None = None) -> HttpResponse:
         """GET /ordens-compra/{id}/pdf/ — gera PDF da OC via WeasyPrint."""
         from apps.pdf_engine.logo import get_logo_black_base64
@@ -678,10 +652,17 @@ class AprovacaoCotacaoViewSet(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
 ):
-    """Aprovações de cotação — financeiro aprova e gera OCs por fornecedor."""
+    """Aprovacoes de cotacao — financeiro aprova e gera OCs por fornecedor."""
 
     serializer_class = AprovacaoCotacaoSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        """RBAC: compras.approve for approval, compras.create for create."""
+        if self.action in ("aprovar", "rejeitar"):
+            return [IsAuthenticated(), HasTenantPermission("compras.approve")]
+        if self.action == "create":
+            return [IsAuthenticated(), HasTenantPermission("compras.create")]
+        return [IsAuthenticated(), HasTenantPermission("compras.view")]
 
     def get_queryset(self):  # type: ignore[override]
         qs = AprovacaoCotacao.objects.filter(is_active=True).select_related(
@@ -696,12 +677,7 @@ class AprovacaoCotacaoViewSet(
     def perform_create(self, serializer: AprovacaoCotacaoSerializer) -> None:
         serializer.save(enviado_por=self.request.user)
 
-    @action(
-        detail=True,
-        methods=["post"],
-        url_path="aprovar",
-        permission_classes=[IsAuthenticated, IsManagerOrAbove],
-    )
+    @action(detail=True, methods=["post"], url_path="aprovar")
     def aprovar(self, request: Request, pk: str | None = None) -> Response:
         """Financeiro seleciona fornecedores e aprova, gerando uma OC por fornecedor.
 
@@ -809,14 +785,9 @@ class AprovacaoCotacaoViewSet(
             "ordens_compra": [{"id": str(oc.id), "numero": oc.numero} for oc in created_ocs],
         })
 
-    @action(
-        detail=True,
-        methods=["post"],
-        url_path="rejeitar",
-        permission_classes=[IsAuthenticated, IsManagerOrAbove],
-    )
+    @action(detail=True, methods=["post"], url_path="rejeitar")
     def rejeitar(self, request: Request, pk: str | None = None) -> Response:
-        """Financeiro rejeita cotação e devolve para o comprador."""
+        """Financeiro rejeita cotacao e devolve para o comprador."""
         aprovacao = self.get_object()
         if aprovacao.status != AprovacaoCotacao.Status.PENDENTE:
             return Response(

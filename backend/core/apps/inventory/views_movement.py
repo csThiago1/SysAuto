@@ -20,6 +20,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.authentication.permissions import (
+    HasTenantPermission,
     IsConsultantOrAbove,
     IsManagerOrAbove,
     IsStorekeeperOrAbove,
@@ -44,9 +45,9 @@ logger = logging.getLogger(__name__)
 
 
 class EntradaPecaView(APIView):
-    """POST — Entrada manual de peca. STOREKEEPER+."""
+    """POST — Entrada manual de peca. estoque.move."""
 
-    permission_classes = [IsAuthenticated, IsStorekeeperOrAbove]
+    permission_classes = [IsAuthenticated, HasTenantPermission("estoque.move")]
 
     def post(self, request: Request) -> Response:
         serializer = EntradaPecaInputSerializer(data=request.data)
@@ -92,9 +93,9 @@ class EntradaPecaView(APIView):
 
 
 class EntradaLoteView(APIView):
-    """POST — Entrada manual de lote de insumo. STOREKEEPER+."""
+    """POST — Entrada manual de lote de insumo. estoque.move."""
 
-    permission_classes = [IsAuthenticated, IsStorekeeperOrAbove]
+    permission_classes = [IsAuthenticated, HasTenantPermission("estoque.move")]
 
     def post(self, request: Request) -> Response:
         serializer = EntradaLoteInputSerializer(data=request.data)
@@ -143,9 +144,9 @@ class EntradaLoteView(APIView):
 
 
 class DevolucaoView(APIView):
-    """POST /{unidade_id}/ — Devolucao de peca consumida. STOREKEEPER+."""
+    """POST /{unidade_id}/ — Devolucao de peca consumida. estoque.move."""
 
-    permission_classes = [IsAuthenticated, IsStorekeeperOrAbove]
+    permission_classes = [IsAuthenticated, HasTenantPermission("estoque.move")]
 
     def post(self, request: Request, unidade_id: str) -> Response:
         serializer = DevolucaoInputSerializer(data=request.data)
@@ -178,9 +179,9 @@ class DevolucaoView(APIView):
 
 
 class TransferenciaView(APIView):
-    """POST — Transferencia de item entre niveis. STOREKEEPER+."""
+    """POST — Transferencia de item entre niveis. estoque.move."""
 
-    permission_classes = [IsAuthenticated, IsStorekeeperOrAbove]
+    permission_classes = [IsAuthenticated, HasTenantPermission("estoque.move")]
 
     def post(self, request: Request) -> Response:
         serializer = TransferenciaInputSerializer(data=request.data)
@@ -214,9 +215,9 @@ class TransferenciaView(APIView):
 
 
 class PerdaView(APIView):
-    """POST — Registro de perda/avaria. STOREKEEPER+."""
+    """POST — Registro de perda/avaria. estoque.move."""
 
-    permission_classes = [IsAuthenticated, IsStorekeeperOrAbove]
+    permission_classes = [IsAuthenticated, HasTenantPermission("estoque.move")]
 
     def post(self, request: Request) -> Response:
         serializer = PerdaInputSerializer(data=request.data)
@@ -262,9 +263,9 @@ class PerdaView(APIView):
 
 
 class MovimentacaoViewSet(viewsets.ReadOnlyModelViewSet):
-    """Listagem de movimentacoes. CONSULTANT+. Filtravel por tipo, OS, user, data."""
+    """Listagem de movimentacoes. estoque.view."""
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+    permission_classes = [IsAuthenticated, HasTenantPermission("estoque.view")]
     serializer_class = MovimentacaoEstoqueSerializer
 
     def get_queryset(self):  # type: ignore[override]
