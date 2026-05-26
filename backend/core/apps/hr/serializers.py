@@ -401,31 +401,6 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
 
             employee = Employee.objects.create(user=user, person=person, **validated_data)
 
-        # Provisionar no Keycloak (fora da transaction — não bloqueia o DB)
-        if cpf and user.username:
-            try:
-                from apps.authentication.keycloak_admin import create_keycloak_user
-
-                parts = name.split(maxsplit=1)
-                first = parts[0]
-                last = parts[1] if len(parts) > 1 else ""
-
-                kc_id = create_keycloak_user(
-                    username=user.username,
-                    email=email,
-                    first_name=first,
-                    last_name=last,
-                    password=cpf,
-                )
-                if kc_id:
-                    user.keycloak_id = kc_id
-                    user.save(update_fields=["keycloak_id", "updated_at"])
-            except Exception as exc:
-                logger.warning(
-                    "Keycloak provisioning failed for %s — %s (employee created OK)",
-                    user.username, exc,
-                )
-
         return employee
 
     class Meta:

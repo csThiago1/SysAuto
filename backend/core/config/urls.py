@@ -50,8 +50,6 @@ urlpatterns = [
     # MO-9: Capacidade + Variâncias
     path("api/v1/capacidade/", include("apps.service_orders.urls_capacidade")),
     path("api/v1/pricing/variancias/", include("apps.pricing_tech.urls_variancia")),
-    # OIDC
-    path("oidc/", include("mozilla_django_oidc.urls")),
     # API Docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(

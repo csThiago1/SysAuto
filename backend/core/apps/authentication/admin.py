@@ -26,7 +26,7 @@ class GlobalUserAdmin(UserAdmin):
     ordering = ["name"]
     fieldsets = (
         (None, {"fields": ("email_hash", "password")}),
-        ("Dados pessoais", {"fields": ("name", "job_title", "keycloak_id")}),
+        ("Dados pessoais", {"fields": ("name", "role", "job_title")}),
         ("Permissões", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
         ("Datas", {"fields": ("last_login", "created_at", "updated_at")}),
     )

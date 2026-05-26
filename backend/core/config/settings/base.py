@@ -30,7 +30,6 @@ SHARED_APPS = [
     # Third-party
     "rest_framework",
     "rest_framework_simplejwt",
-    "mozilla_django_oidc",
     "corsheaders",
     "drf_spectacular",
     "django_filters",
@@ -148,26 +147,11 @@ DATABASE_ROUTERS = ("django_tenants.routers.TenantSyncRouter",)
 AUTH_USER_MODEL = "authentication.GlobalUser"
 
 AUTHENTICATION_BACKENDS = [
-    "mozilla_django_oidc.auth.OIDCAuthenticationBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
 
-# ─── OIDC / Keycloak ─────────────────────────────────────────────────────────
-OIDC_RP_CLIENT_ID = config("KEYCLOAK_CLIENT_ID", default="paddock-backend")
-OIDC_RP_CLIENT_SECRET = config("KEYCLOAK_CLIENT_SECRET", default="")
+# ─── OIDC (deprecated — kept for KeycloakJWT migration fallback) ─────────────
 OIDC_OP_JWKS_ENDPOINT = config("OIDC_OP_JWKS_ENDPOINT", default="")
-OIDC_OP_AUTHORIZATION_ENDPOINT = config("OIDC_OP_AUTHORIZATION_ENDPOINT", default="")
-OIDC_OP_TOKEN_ENDPOINT = config("OIDC_OP_TOKEN_ENDPOINT", default="")
-OIDC_OP_USER_ENDPOINT = config("OIDC_OP_USER_ENDPOINT", default="")
-OIDC_RP_SIGN_ALGO = "RS256"
-OIDC_STORE_ACCESS_TOKEN = True
-OIDC_STORE_ID_TOKEN = True
-
-# ─── Keycloak Admin API (provisionamento de usuários) ────────────────────────
-KEYCLOAK_BASE_URL = config("KEYCLOAK_BASE_URL", default="http://keycloak:8080")
-KEYCLOAK_REALM = config("KEYCLOAK_REALM", default="paddock")
-KEYCLOAK_ADMIN_USER = config("KEYCLOAK_ADMIN_USER", default="admin")
-KEYCLOAK_ADMIN_PASSWORD = config("KEYCLOAK_ADMIN_PASSWORD", default="admin")
 
 # ─── JWT (simplejwt) ─────────────────────────────────────────────────────────
 from datetime import timedelta  # noqa: E402
