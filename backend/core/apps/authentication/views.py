@@ -68,6 +68,14 @@ class DevTokenView(APIView):
             except Exception:
                 pass
 
+            # Resolve effective permissions from RBAC matrix
+            permissions: list[str] = []
+            try:
+                from .permission_service import get_effective_permissions
+                permissions = get_effective_permissions(role)
+            except Exception:
+                pass
+
             now = int(time.time())
             payload: dict = {
                 "sub": str(user.pk),
@@ -75,6 +83,7 @@ class DevTokenView(APIView):
                 "name": user.name,
                 "role": role,
                 "extra_permissions": extra_permissions,
+                "permissions": permissions,
                 "active_company": "dscar",
                 "tenant_schema": "tenant_dscar",
                 "client_slug": "grupo-dscar",
@@ -89,12 +98,21 @@ class DevTokenView(APIView):
         if password != _DEV_ACCESS_CODE:
             return Response({"detail": "Credenciais inválidas."}, status=status.HTTP_401_UNAUTHORIZED)
 
+        # Resolve effective permissions from RBAC matrix
+        dev_permissions: list[str] = []
+        try:
+            from .permission_service import get_effective_permissions
+            dev_permissions = get_effective_permissions("ADMIN")
+        except Exception:
+            pass
+
         now = int(time.time())
         payload = {
             "sub": f"dev-{email}",
             "email": email,
             "name": email.split("@")[0],
             "role": "ADMIN",
+            "permissions": dev_permissions,
             "active_company": "dscar",
             "tenant_schema": "tenant_dscar",
             "client_slug": "grupo-dscar",
@@ -174,6 +192,14 @@ class LoginView(APIView):
         except Exception:
             pass
 
+        # Resolve effective permissions from RBAC matrix
+        login_permissions: list[str] = []
+        try:
+            from .permission_service import get_effective_permissions
+            login_permissions = get_effective_permissions(role)
+        except Exception:
+            pass
+
         now = int(time.time())
         payload: dict = {
             "sub": str(user.pk),
@@ -181,6 +207,7 @@ class LoginView(APIView):
             "name": user.name,
             "role": role,
             "extra_permissions": extra_permissions,
+            "permissions": login_permissions,
             "active_company": "dscar",
             "tenant_schema": "tenant_dscar",
             "client_slug": "grupo-dscar",
@@ -208,12 +235,23 @@ class MeView(APIView):
         # request.auth é o dict de claims do JWT (DevJWT ou KeycloakJWT)
         payload: dict = request.auth if isinstance(request.auth, dict) else {}
 
+        role_from_jwt = payload.get("role", "STOREKEEPER")
+
+        # Resolve effective permissions from RBAC matrix (fresh, not from JWT cache)
+        effective_permissions: list[str] = []
+        try:
+            from .permission_service import get_effective_permissions
+            effective_permissions = get_effective_permissions(role_from_jwt)
+        except Exception:
+            effective_permissions = payload.get("permissions", [])
+
         data: dict = {
             "id": str(user.pk),
             "name": user.name,
             "email_hash": user.email_hash,
-            "role": payload.get("role", "STOREKEEPER"),
+            "role": role_from_jwt,
             "extra_permissions": payload.get("extra_permissions", []),
+            "permissions": effective_permissions,
             "active_company": payload.get("active_company", ""),
             "tenant_schema": payload.get("tenant_schema", ""),
             "is_employee": False,
