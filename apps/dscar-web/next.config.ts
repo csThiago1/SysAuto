@@ -1,6 +1,10 @@
 import path from "path";
 import type { NextConfig } from "next";
 
+const withBundleAnalyzer = process.env.ANALYZE === "true"
+    ? require("@next/bundle-analyzer")({ enabled: true })
+    : (config: NextConfig) => config;
+
 // R2_PUBLIC_URL pode ser domínio custom (media.homolog.paddock.solutions)
 // ou URL pública R2 padrão (pub-xxxxx.r2.dev). Nunca incluir "https://".
 const r2Hostname = process.env.R2_PUBLIC_URL?.replace(/^https?:\/\//, "") ?? "";
@@ -38,4 +42,4 @@ const nextConfig: NextConfig = {
     },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);
