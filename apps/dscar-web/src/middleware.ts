@@ -10,26 +10,40 @@ export default auth((req) => {
   const request = req as unknown as NextRequest;
   const { pathname } = request.nextUrl;
   const isLoggedIn = !!req.auth;
-  const isAuthPage = pathname.startsWith("/login");
+  const isAuthPage =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/esqueci-senha") ||
+    pathname.startsWith("/redefinir-senha") ||
+    pathname.startsWith("/confirmar-email");
 
   if (!isLoggedIn && !isAuthPage) {
     return Response.redirect(new URL("/login", request.url));
   }
 
-  if (!isLoggedIn) return; // não autenticado em /login — ok
+  if (!isLoggedIn) return; // nao autenticado em pagina de auth — ok
 
-  // Usuário já autenticado tentando acessar /login → redireciona para OS
+  // Usuario ja autenticado tentando acessar pagina de auth -> redireciona para OS
   if (isLoggedIn && isAuthPage) {
     return Response.redirect(new URL("/os", request.url));
   }
 
   const role = req.auth?.role as string | undefined;
+  const permissions: string[] =
+    (req.auth as Record<string, unknown> | undefined)?.permissions as string[] ?? [];
 
-  // Admin e configurações: MANAGER ou superior
+  // Admin e configuracoes: MANAGER ou superior
   const isAdminRoute =
     pathname.startsWith("/admin") || pathname.startsWith("/configuracoes");
   if (isAdminRoute && !hasMinRole(role, "MANAGER")) {
     return Response.redirect(new URL("/", request.url));
+  }
+
+  // Pagina de permissoes: requer admin.permissions
+  if (
+    pathname.startsWith("/configuracoes/permissoes") &&
+    !permissions.includes("admin.permissions")
+  ) {
+    return Response.redirect(new URL("/configuracoes", request.url));
   }
 
   // Criar nova OS: CONSULTANT ou superior

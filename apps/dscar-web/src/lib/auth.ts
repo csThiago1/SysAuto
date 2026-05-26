@@ -47,11 +47,13 @@ declare module "next-auth" {
   interface Session {
     /** JWT de acesso — HS256 (dev) ou RS256 (Keycloak). Enviado ao backend via Authorization. */
     accessToken: string;
-    /** Role RBAC do usuário — extraído do JWT. */
+    /** Role RBAC do usuario — extraido do JWT. */
     role: PaddockRole;
-    /** Permissões granulares do colaborador. */
+    /** Permissoes granulares do colaborador (legado). */
     extraPermissions: string[];
-    /** Empresas às quais o usuário tem acesso. */
+    /** Permissoes efetivas da matriz RBAC configuravel. */
+    permissions: string[];
+    /** Empresas as quais o usuario tem acesso. */
     companies: string[];
     /** Empresa ativa no momento do login. */
     activeCompany: string;
@@ -65,6 +67,7 @@ declare module "next-auth" {
     accessToken?: string;
     role?: string;
     extraPermissions?: string[];
+    permissions?: string[];
     companies?: string[];
     activeCompany?: string;
     tenantSchema?: string;
@@ -75,6 +78,7 @@ declare module "next-auth" {
     accessToken?: string;
     role?: string;
     extraPermissions?: string[];
+    permissions?: string[];
     companies?: string[];
     activeCompany?: string;
     tenantSchema?: string;
@@ -126,6 +130,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if ("accessToken" in user && user.accessToken) token.accessToken = user.accessToken;
         if ("role" in user && user.role) token.role = user.role;
         if ("extraPermissions" in user) token.extraPermissions = user.extraPermissions;
+        if ("permissions" in user) token.permissions = user.permissions;
         if ("companies" in user) token.companies = user.companies;
         if ("activeCompany" in user) token.activeCompany = user.activeCompany;
         if ("tenantSchema" in user) token.tenantSchema = user.tenantSchema;
@@ -160,10 +165,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     async session({ session, token }) {
-      // Propaga claims do JWT para a sessão acessível no cliente
+      // Propaga claims do JWT para a sessao acessivel no cliente
       session.accessToken = (token.accessToken as string) ?? "";
       session.role = (token.role as PaddockRole) ?? "STOREKEEPER";
       session.extraPermissions = (token.extraPermissions as string[]) ?? [];
+      session.permissions = (token.permissions as string[]) ?? [];
       session.companies = (token.companies as string[]) ?? ["dscar"];
       session.activeCompany = (token.activeCompany as string) ?? "dscar";
       session.tenantSchema = (token.tenantSchema as string) ?? "tenant_dscar";
