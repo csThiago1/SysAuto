@@ -13,7 +13,7 @@ export function usePermission(minRole: PaddockRole): boolean {
 export function useHasPermission(code: string): boolean {
   const { data: session, status } = useSession();
   if (status !== "authenticated") return false;
-  const permissions: string[] = (session as Record<string, unknown>).permissions as string[] ?? [];
+  const permissions: string[] = session.permissions ?? [];
   return permissions.includes(code);
 }
 
@@ -21,6 +21,6 @@ export function useHasPermission(code: string): boolean {
 export function usePermissions(): string[] {
   const { data: session, status } = useSession();
   if (status !== "authenticated") return [];
-  return (session as Record<string, unknown>).permissions as string[] ?? [];
+  return session.permissions ?? [];
 }
 

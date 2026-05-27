@@ -20,7 +20,6 @@ const mockSession = (role: PaddockRole, permissions: string[] = []) => {
       accessToken: "test-token",
       permissions: [],
       extraPermissions: [],
-      permissions,
       companies: ["dscar"],
       activeCompany: "dscar",
       tenantSchema: "tenant_dscar",

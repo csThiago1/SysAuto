@@ -28,8 +28,7 @@ export default auth((req) => {
   }
 
   const role = req.auth?.role as string | undefined;
-  const permissions: string[] =
-    (req.auth as Record<string, unknown> | undefined)?.permissions as string[] ?? [];
+  const permissions: string[] = req.auth?.permissions ?? [];
 
   // Admin e configuracoes: MANAGER ou superior
   const isAdminRoute =
