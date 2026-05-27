@@ -3,8 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
-import { DsCarLogo } from "@/components/DsCarLogo";
+import { Loader2, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -212,10 +211,14 @@ export default function LoginPage(): React.ReactElement {
             <div className="w-full max-w-sm">
               {/* Logo */}
               <div className="mb-6 flex justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/logo-dscar.png"
                   alt="DS Car Centro Automotivo"
+                  width={280}
+                  height={70}
                   className="h-16 w-auto brightness-0 invert"
+                  style={{ maxWidth: "75%" }}
                 />
               </div>
 
@@ -309,11 +312,15 @@ export default function LoginPage(): React.ReactElement {
             </div>
           </div>
 
-          {/* Left panel footer */}
-          <div className="relative z-10 px-8 pb-6 text-center">
-            <p className="text-xs text-secondary-600">
-              Paddock Solutions &middot; Sistema Interno DS Car
-            </p>
+          {/* Left panel footer — Powered by Paddock */}
+          <div className="relative z-10 px-8 pb-6 flex items-center justify-center gap-2">
+            <span className="text-xs text-secondary-600">Powered by</span>
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center justify-center rounded-sm bg-primary/80 shrink-0" style={{ width: 18, height: 18 }}>
+                <Wrench size={11} strokeWidth={2.5} className="text-white" />
+              </div>
+              <span className="text-xs font-semibold text-secondary-500 tracking-wide">Paddock Solutions</span>
+            </div>
           </div>
         </div>
 
