@@ -213,12 +213,11 @@ export default function LoginPage(): React.ReactElement {
               <div className="mb-6 flex justify-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/logo-dscar.png"
+                  src="/logo-dscar-white.png"
                   alt="DS Car Centro Automotivo"
-                  width={280}
-                  height={70}
-                  className="h-32 w-auto brightness-0 invert"
-                  style={{ maxWidth: "90%" }}
+                  width={320}
+                  height={167}
+                  className="w-64 h-auto"
                 />
               </div>
 
