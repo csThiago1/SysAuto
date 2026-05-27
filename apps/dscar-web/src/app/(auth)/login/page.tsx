@@ -217,8 +217,8 @@ export default function LoginPage(): React.ReactElement {
                   alt="DS Car Centro Automotivo"
                   width={280}
                   height={70}
-                  className="h-24 w-auto brightness-0 invert"
-                  style={{ maxWidth: "85%" }}
+                  className="h-32 w-auto brightness-0 invert"
+                  style={{ maxWidth: "90%" }}
                 />
               </div>
 
@@ -317,7 +317,7 @@ export default function LoginPage(): React.ReactElement {
             <span className="text-xs text-secondary-600">Powered by</span>
             <div className="flex items-center gap-1.5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-paddock.svg" alt="Paddock" width={18} height={18} className="shrink-0" />
+              <img src="/logo-paddock.png" alt="Paddock" width={20} height={20} className="shrink-0 rounded-full" />
               <span className="text-xs font-semibold text-secondary-500 tracking-wide">Paddock Solutions</span>
             </div>
           </div>
