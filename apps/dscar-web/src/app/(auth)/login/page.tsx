@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Loader2, Wrench } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -316,9 +316,8 @@ export default function LoginPage(): React.ReactElement {
           <div className="relative z-10 px-8 pb-6 flex items-center justify-center gap-2">
             <span className="text-xs text-secondary-600">Powered by</span>
             <div className="flex items-center gap-1.5">
-              <div className="flex items-center justify-center rounded-sm bg-primary/80 shrink-0" style={{ width: 18, height: 18 }}>
-                <Wrench size={11} strokeWidth={2.5} className="text-white" />
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-paddock.svg" alt="Paddock" width={18} height={18} className="shrink-0" />
               <span className="text-xs font-semibold text-secondary-500 tracking-wide">Paddock Solutions</span>
             </div>
           </div>
