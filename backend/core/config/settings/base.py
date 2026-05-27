@@ -338,8 +338,10 @@ AI_HEAVY_MODEL = "claude-opus-4-5"
 
 # ─── Auth Nativo (JWT) ───────────────────────────────────────────────────────
 DEV_JWT_SECRET = config("DEV_JWT_SECRET", default="dscar-dev-secret-" + "paddock-2025")
-JWT_PRIVATE_KEY = config("JWT_PRIVATE_KEY", default="")  # RS256 private key (prod)
-JWT_PUBLIC_KEY = config("JWT_PUBLIC_KEY", default="")  # RS256 public key (prod)
+JWT_PRIVATE_KEY = config("JWT_PRIVATE_KEY", default="")  # RS256 private key inline
+JWT_PUBLIC_KEY = config("JWT_PUBLIC_KEY", default="")  # RS256 public key inline
+JWT_PRIVATE_KEY_FILE = config("JWT_PRIVATE_KEY_FILE", default="")  # Path to PEM file
+JWT_PUBLIC_KEY_FILE = config("JWT_PUBLIC_KEY_FILE", default="")  # Path to PEM file
 
 # ─── Email (Resend) ─────────────────────────────────────────────────────────
 RESEND_API_KEY = config("RESEND_API_KEY", default="")

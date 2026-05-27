@@ -13,21 +13,40 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 
+def _read_key_file(path: str) -> str | None:
+    """Read PEM key from file path, return None if not found."""
+    if not path:
+        return None
+    try:
+        with open(path) as f:
+            return f.read()
+    except (FileNotFoundError, PermissionError):
+        return None
+
+
 def _get_secret() -> str:
     """Get JWT signing secret -- RS256 private key if available, else HS256 dev secret."""
-    return getattr(settings, "JWT_PRIVATE_KEY", None) or getattr(
-        settings, "DEV_JWT_SECRET", "dscar-dev-secret-" + "paddock-2025"
-    )
+    # Try inline key first, then file path
+    key = getattr(settings, "JWT_PRIVATE_KEY", None)
+    if not key:
+        key = _read_key_file(getattr(settings, "JWT_PRIVATE_KEY_FILE", ""))
+    return key or getattr(settings, "DEV_JWT_SECRET", "dscar-dev-secret-" + "paddock-2025")
 
 
 def _get_algorithm() -> str:
     """Return RS256 if private key is configured, else HS256."""
-    return "RS256" if getattr(settings, "JWT_PRIVATE_KEY", None) else "HS256"
+    key = getattr(settings, "JWT_PRIVATE_KEY", None) or _read_key_file(
+        getattr(settings, "JWT_PRIVATE_KEY_FILE", "")
+    )
+    return "RS256" if key else "HS256"
 
 
 def _get_verify_key() -> str:
     """Get key for verification -- RS256 public key or HS256 shared secret."""
-    return getattr(settings, "JWT_PUBLIC_KEY", None) or _get_secret()
+    key = getattr(settings, "JWT_PUBLIC_KEY", None)
+    if not key:
+        key = _read_key_file(getattr(settings, "JWT_PUBLIC_KEY_FILE", ""))
+    return key or _get_secret()
 
 
 def generate_access_token(
