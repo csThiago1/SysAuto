@@ -32,7 +32,7 @@ export default function LoginPage(): React.ReactElement {
       setError("E-mail ou senha incorretos.");
       setIsLoading(false);
     } else {
-      router.push("/os");
+      router.push("/dashboard");
     }
   }
 
