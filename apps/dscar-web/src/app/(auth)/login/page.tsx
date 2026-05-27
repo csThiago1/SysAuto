@@ -217,8 +217,8 @@ export default function LoginPage(): React.ReactElement {
                   alt="DS Car Centro Automotivo"
                   width={280}
                   height={70}
-                  className="h-16 w-auto brightness-0 invert"
-                  style={{ maxWidth: "75%" }}
+                  className="h-24 w-auto brightness-0 invert"
+                  style={{ maxWidth: "85%" }}
                 />
               </div>
 
