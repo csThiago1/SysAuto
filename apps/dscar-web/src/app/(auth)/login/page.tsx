@@ -211,8 +211,12 @@ export default function LoginPage(): React.ReactElement {
           <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-8 sm:px-12 lg:px-16">
             <div className="w-full max-w-sm">
               {/* Logo */}
-              <div className="mb-6">
-                <DsCarLogo variant="light" size={28} />
+              <div className="mb-6 flex justify-center">
+                <img
+                  src="/logo-dscar.png"
+                  alt="DS Car Centro Automotivo"
+                  className="h-16 w-auto brightness-0 invert"
+                />
               </div>
 
               {/* Red gradient divider */}
