@@ -64,7 +64,7 @@ def _get_extra_permissions(user: GlobalUser) -> list[str]:
     """Get effective permissions from RBAC matrix + Employee profile."""
     try:
         from .permission_service import get_effective_permissions
-        return get_effective_permissions(user)
+        return get_effective_permissions(user.role or "STOREKEEPER")
     except Exception:
         # Fallback: try Employee extra_permissions
         try:
