@@ -566,6 +566,10 @@ class RegisterView(APIView):
                 status=status.HTTP_409_CONFLICT,
             )
 
+        # Optional employee fields
+        department: str = request.data.get("department", "").strip()
+        position: str = request.data.get("position", "").strip()
+
         # Create user
         user = GlobalUser.objects.create_user(
             email=email,
@@ -573,6 +577,37 @@ class RegisterView(APIView):
             name=name,
             role=role,
         )
+
+        # Auto-create Employee profile in current tenant
+        try:
+            from apps.hr.models import Employee
+            from django.utils import timezone as tz
+
+            # Generate registration number: EMP-YYYYMM-NNN
+            now = tz.now()
+            prefix = f"EMP-{now.strftime('%Y%m')}"
+            last = Employee.objects.filter(
+                registration_number__startswith=prefix
+            ).order_by("-registration_number").first()
+            if last:
+                seq = int(last.registration_number.split("-")[-1]) + 1
+            else:
+                seq = 1
+            reg_number = f"{prefix}-{seq:03d}"
+
+            Employee.objects.create(
+                user=user,
+                department=department or "reception",
+                position=position or "consultant",
+                role=role,
+                registration_number=reg_number,
+                hire_date=now.date(),
+                status="active",
+            )
+            logger.info("Employee criado automaticamente: %s, matricula=%s", user.name, reg_number)
+        except Exception as exc:
+            # Nao bloqueia o cadastro se Employee falhar (ex: app HR nao migrado)
+            logger.warning("Falha ao criar Employee automaticamente: %s", exc)
 
         # Generate verification token and send email
         raw_token = secrets.token_urlsafe(48)

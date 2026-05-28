@@ -95,10 +95,23 @@ const ALL_ROLES: RoleKey[] = ["OWNER", "ADMIN", "MANAGER", "CONSULTANT", "STOREK
 
 // ─── Zod Schemas ────────────────────────────────────────────────────────────
 
+const DEPARTMENTS = [
+  { value: "reception", label: "Recepcao" },
+  { value: "painting", label: "Pintura" },
+  { value: "bodywork", label: "Funilaria" },
+  { value: "mechanical", label: "Mecanica" },
+  { value: "polishing", label: "Polimento" },
+  { value: "washing", label: "Lavagem" },
+  { value: "admin", label: "Administracao" },
+  { value: "inventory", label: "Estoque" },
+  { value: "purchasing", label: "Compras" },
+] as const
+
 const inviteSchema = z.object({
   name: z.string().min(1, "Nome obrigatorio"),
   email: z.string().email("Email invalido"),
   role: z.enum(["OWNER", "ADMIN", "MANAGER", "CONSULTANT", "STOREKEEPER"]),
+  department: z.string().default("reception"),
   password: z.union([
     z.string().min(8, "Minimo 8 caracteres"),
     z.string().length(0),
@@ -414,7 +427,7 @@ function InviteSheet({
 }) {
   const form = useForm<InviteFormValues>({
     resolver: zodResolver(inviteSchema),
-    defaultValues: { name: "", email: "", role: "CONSULTANT", password: "" },
+    defaultValues: { name: "", email: "", role: "CONSULTANT", department: "reception", password: "" },
   })
 
   async function handleSave(data: InviteFormValues) {
@@ -478,6 +491,21 @@ function InviteSheet({
                   <SelectItem key={r} value={r}>
                     {ROLE_LABELS[r]}
                   </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">Setor</Label>
+            <Select
+              value={form.watch("department")}
+              onValueChange={(v) => form.setValue("department", v, { shouldDirty: true })}
+            >
+              <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+              <SelectContent>
+                {DEPARTMENTS.map((d) => (
+                  <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
