@@ -601,20 +601,27 @@ class RegisterView(APIView):
 
 class StaffListView(APIView):
     """
-    GET  /api/v1/auth/staff/                                — lista todos os usuários ativos
+    GET  /api/v1/auth/staff/                                — lista todos os usuarios
     GET  /api/v1/auth/staff/?positions=consultant,manager   — filtra por cargo HR
     GET  /api/v1/auth/staff/?departments=painting,bodywork  — filtra por setor HR
+    GET  /api/v1/auth/staff/?include_inactive=true          — inclui usuarios inativos
 
-    Os parâmetros `positions` e `departments` fazem cross-query com
+    Os parametros `positions` e `departments` fazem cross-query com
     apps.hr.Employee, retornando apenas GlobalUsers vinculados a Employees
-    que atendam os filtros. Múltiplos valores separados por vírgula.
+    que atendam os filtros. Multiplos valores separados por virgula.
     """
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request) -> Response:
+        """Lista usuarios com filtros opcionais."""
         positions_param = request.query_params.get("positions", "").strip()
         departments_param = request.query_params.get("departments", "").strip()
+        include_inactive = request.query_params.get("include_inactive", "").lower() == "true"
+
+        base_filter: dict = {}
+        if not include_inactive:
+            base_filter["is_active"] = True
 
         if positions_param or departments_param:
             try:
@@ -633,12 +640,12 @@ class StaffListView(APIView):
                 )
                 users = GlobalUser.objects.filter(
                     id__in=employee_user_ids,
-                    is_active=True,
+                    **base_filter,
                 ).order_by("name")
             except Exception:
-                users = GlobalUser.objects.filter(is_active=True).order_by("name")
+                users = GlobalUser.objects.filter(**base_filter).order_by("name")
         else:
-            users = GlobalUser.objects.filter(is_active=True).order_by("name")
+            users = GlobalUser.objects.filter(**base_filter).order_by("name")
 
         return Response(StaffUserSerializer(users, many=True).data)
 
@@ -667,16 +674,19 @@ class PushTokenView(APIView):
 
 class StaffDetailView(APIView):
     """
-    PATCH /api/v1/auth/staff/<pk>/ — atualiza job_title do usuário
+    PATCH /api/v1/auth/staff/<pk>/ — atualiza role, job_title ou is_active do usuario.
+
+    Requer permissao admin.users (ADMIN ou OWNER).
     """
 
-    permission_classes = [IsAuthenticated, IsManagerOrAbove]
+    permission_classes = [IsAuthenticated, IsAdminOrAbove]
 
     def patch(self, request: Request, pk: str) -> Response:
+        """Atualiza campos editaveis do usuario (role, job_title, is_active)."""
         try:
-            user = GlobalUser.objects.get(pk=pk, is_active=True)
+            user = GlobalUser.objects.get(pk=pk)
         except GlobalUser.DoesNotExist:
-            return Response({"detail": "Não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "Nao encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = StaffUserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
