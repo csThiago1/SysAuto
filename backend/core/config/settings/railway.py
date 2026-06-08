@@ -3,6 +3,8 @@ Paddock Solutions — Django Settings Railway (staging gratuito)
 Herda de base.py. Sem R2, sem debug_toolbar. WhiteNoise para estáticos.
 """
 
+from django_tenants.middleware.main import TenantMainMiddleware
+
 from .base import *  # noqa: F401, F403
 
 DEBUG = False
@@ -23,8 +25,20 @@ DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 STATIC_ROOT = BASE_DIR / "staticfiles"  # type: ignore[name-defined]
 
+
+# ─── Tenant Middleware — resolve via X-Tenant-Domain header ────────────────
+class RailwayTenantMiddleware(TenantMainMiddleware):
+    """Resolve tenant pelo header X-Tenant-Domain (enviado pelo proxy Next.js)."""
+
+    def hostname_from_request(self, request) -> str:  # type: ignore[override]
+        x_tenant = request.META.get("HTTP_X_TENANT_DOMAIN", "")
+        if x_tenant:
+            return x_tenant
+        return "dscar.localhost"
+
+
 MIDDLEWARE = [
-    "django_tenants.middleware.main.TenantMainMiddleware",
+    "config.settings.railway.RailwayTenantMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",

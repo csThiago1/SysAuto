@@ -11,4 +11,4 @@ gunicorn==23.0.0
 uvicorn[standard]==0.32.1
 
 # ─── Healthcheck ─────────────────────────────────────────────────────────────
-django-health-check==3.18.4
+django-health-check==3.18.3

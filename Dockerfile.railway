@@ -1,0 +1,27 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Dependências do sistema
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Dependências Python (layer cacheável)
+COPY backend/core/requirements/base.txt requirements/base.txt
+COPY backend/core/requirements/prod.txt requirements/prod.txt
+RUN pip install --no-cache-dir -r requirements/prod.txt
+
+# Código da aplicação
+COPY backend/core/ .
+
+ENV PYTHONUNBUFFERED=1
+ENV DJANGO_SETTINGS_MODULE=config.settings.railway
+
+EXPOSE 8000
+
+CMD python manage.py collectstatic --noinput && \
+    python manage.py migrate_schemas --noinput && \
+    python setup_tenant.py && \
+    gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120
