@@ -7,13 +7,15 @@ interface PageProps {
 }
 
 async function getServiceOrder(numero: string, token: string, tenant: string): Promise<ServiceOrder> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"
+  const baseUrl = process.env.BACKEND_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"
+  const defaultDomain = process.env.DEFAULT_TENANT_DOMAIN ?? "dscar.localhost"
+  const domainSuffix = defaultDomain.split(".").slice(1).join(".")
   const res = await fetch(
     `${baseUrl}/api/v1/service-orders/${numero}/`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
-        "X-Tenant-Domain": `${tenant}.localhost`,
+        "X-Tenant-Domain": `${tenant}.${domainSuffix}`,
         "Content-Type": "application/json",
       },
       cache: "no-store",
