@@ -145,7 +145,18 @@ export default function LoginPage(): React.ReactElement {
         }
       `}</style>
 
-      <div className="relative flex h-screen w-screen overflow-hidden">
+      {/* Força tema escuro na tela de login independente do tema do app */}
+      <div className="relative flex h-screen w-screen overflow-hidden"
+        style={{
+          // Override CSS variables para garantir dark mode na login
+          // mesmo quando o app está em modo claro (.light)
+          "--foreground": "0 0% 95%",
+          "--primary": "0 82% 42%",
+          "--primary-foreground": "0 0% 100%",
+          "--border": "0 0% 18%",
+          "--input": "0 0% 18%",
+          "--ring": "0 82% 42%",
+        } as React.CSSProperties}>
         {/* Neon animated background */}
         <div
           className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
