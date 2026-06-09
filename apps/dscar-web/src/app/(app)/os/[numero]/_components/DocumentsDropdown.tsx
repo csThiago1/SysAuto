@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import dynamic from "next/dynamic"
 import { FileText, ShieldCheck, CheckCircle, Receipt, ChevronDown } from "lucide-react"
 import type { ServiceOrder, PDFDocumentType } from "@paddock/types"
 import { useDocumentHistory } from "@/hooks/useDocuments"
@@ -12,7 +13,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { DocumentPreviewDrawer } from "./DocumentPreviewDrawer"
+
+const DocumentPreviewDrawer = dynamic(
+  () => import("./DocumentPreviewDrawer").then((m) => ({ default: m.DocumentPreviewDrawer })),
+  { ssr: false },
+)
 
 const DOC_ITEMS: {
   type: PDFDocumentType

@@ -17,8 +17,13 @@ import {
   StatusBadge,
   ClosureDots,
 } from "@/components/ui"
+import dynamic from "next/dynamic"
 import { cn } from "@/lib/utils"
-import { BillingModal } from "../[numero]/_components/BillingModal"
+
+const BillingModal = dynamic(
+  () => import("../[numero]/_components/BillingModal").then((m) => ({ default: m.BillingModal })),
+  { ssr: false },
+)
 
 interface ServiceOrderTableProps {
   orders: ServiceOrder[]

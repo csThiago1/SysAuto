@@ -15,6 +15,14 @@ const nextConfig: NextConfig = {
     transpilePackages: ["@paddock/types", "@paddock/auth", "@paddock/utils"],
     experimental: {
         typedRoutes: true,
+        optimizePackageImports: [
+            "lucide-react",
+            "recharts",
+            "date-fns",
+            "@dnd-kit/core",
+            "@dnd-kit/sortable",
+            "@dnd-kit/utilities",
+        ],
     },
     images: {
         remotePatterns: [

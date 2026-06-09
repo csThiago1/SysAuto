@@ -1,15 +1,27 @@
 "use client";
 
 import React, { useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { AlertCircle, CheckCircle, LayoutList, Plus, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { useServiceOrders } from "@/hooks/useServiceOrders";
-import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { cn } from "@/lib/utils";
 import { NewOSDrawer } from "../_components/NewOSDrawer";
+
+const KanbanBoard = dynamic(
+  () => import("@/components/kanban/KanbanBoard").then((m) => ({ default: m.KanbanBoard })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+        Carregando quadro…
+      </div>
+    ),
+  },
+);
 
 export default function KanbanPage(): React.ReactElement {
   const [drawerOpen, setDrawerOpen] = useState(false);

@@ -4,6 +4,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQueryClient } from "@tanstack/react-query"
+import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
 import type { ServiceOrder, ServiceOrderStatus } from "@paddock/types"
 import { VALID_TRANSITIONS } from "@paddock/types"
@@ -35,8 +36,12 @@ import { DocumentsDropdown } from "./DocumentsDropdown"
 import { OpeningTab } from "./tabs/OpeningTab"
 import { PartsTab } from "./tabs/PartsTab"
 import { ServicesTab } from "./tabs/ServicesTab"
-import { ImportBudgetModal } from "./ImportBudgetModal"
 import { TransitionRequirementsPanel } from "./TransitionRequirementsPanel"
+
+const ImportBudgetModal = dynamic(
+  () => import("./ImportBudgetModal").then((m) => ({ default: m.ImportBudgetModal })),
+  { ssr: false },
+)
 
 const ClosingTab = lazy(() => import("./tabs/ClosingTab").then(m => ({ default: m.ClosingTab })))
 const FilesTab = lazy(() => import("./tabs/FilesTab").then(m => ({ default: m.FilesTab })))
