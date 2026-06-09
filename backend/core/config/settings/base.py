@@ -134,6 +134,8 @@ DATABASES = {
         "PORT": config("DB_PORT", default="5432"),
         # Mantém conexões abertas por até 10 min — evita handshake TCP a cada request
         "CONN_MAX_AGE": config("DB_CONN_MAX_AGE", default=600, cast=int),
+        # Detecta conexões fechadas pelo Neon (idle timeout) antes de usar — evita 5xx
+        "CONN_HEALTH_CHECKS": config("DB_CONN_HEALTH_CHECKS", default=True, cast=bool),
         "OPTIONS": {
             "sslmode": config("DB_SSLMODE", default="disable"),
             "connect_timeout": 10,

@@ -24,9 +24,11 @@ COPY backend/core/ .
 ENV PYTHONUNBUFFERED=1
 ENV DJANGO_SETTINGS_MODULE=config.settings.railway
 
+# collectstatic roda em build (não a cada boot) — economiza 5-10s de cold start.
+# Vars dummy só para satisfazer o config(); collectstatic não toca DB.
+RUN DJANGO_SECRET_KEY=build-time DB_NAME=build DB_USER=build DB_PASSWORD=build \
+    DB_HOST=build DB_PORT=5432 python manage.py collectstatic --noinput
+
 EXPOSE 8000
 
-CMD python manage.py collectstatic --noinput && \
-    python manage.py migrate_schemas --noinput && \
-    python setup_tenant.py && \
-    gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120
+CMD ["sh", "start.sh"]
