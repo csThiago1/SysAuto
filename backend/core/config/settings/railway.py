@@ -50,11 +50,31 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# ─── CORS — permitir frontend Vercel ────────────────────────────────────────
-CORS_ALLOW_ALL_ORIGINS = True
+# ─── CORS — frontend Vercel (production + preview URLs) ───────────────────
+# Remove o wildcard de antes; usa regex específicos para evitar CSRF.
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    *CORS_ALLOWED_ORIGIN_REGEXES,  # type: ignore[name-defined]  # herda paddock.solutions + localhost
+    r"^https://sys-auto-dscar-web.*\.vercel\.app$",  # production + preview deploys
+]
 
 # ─── Email — console (sem Resend em staging gratuito) ──────────────────────
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-# ─── Sentry — desativado ───────────────────────────────────────────────────
-SENTRY_DSN = None
+# ─── Sentry — ativado via env var SENTRY_DSN ───────────────────────────────
+# Sem o DSN configurado, init() é no-op — não impede o boot.
+# send_default_pii=False mantém o app dentro de LGPD (sem IP/email/body em error reports).
+SENTRY_DSN = config("SENTRY_DSN", default="")  # type: ignore[name-defined]
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.celery import CeleryIntegration
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration(), CeleryIntegration()],
+        traces_sample_rate=config("SENTRY_TRACES_SAMPLE_RATE", default=0.1, cast=float),  # type: ignore[name-defined]
+        profiles_sample_rate=0.0,  # profiling tem custo extra — manter off
+        send_default_pii=False,  # LGPD — não enviar email/IP/body do request
+        environment=config("SENTRY_ENVIRONMENT", default="production"),  # type: ignore[name-defined]
+    )

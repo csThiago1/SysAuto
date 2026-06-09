@@ -12,3 +12,7 @@ uvicorn[standard]==0.32.1
 
 # ─── Healthcheck ─────────────────────────────────────────────────────────────
 django-health-check==3.18.3
+
+# ─── Observability ────────────────────────────────────────────────────────────
+# Ativado em runtime via SENTRY_DSN env var (railway.py); init é no-op sem o DSN.
+sentry-sdk[django,celery]==2.18.0
