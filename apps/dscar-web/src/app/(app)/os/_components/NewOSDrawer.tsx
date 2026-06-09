@@ -241,7 +241,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
 
           {/* Tipo OS */}
           <div>
-            <label className={LABEL}>Tipo OS</label>
+            <label className={LABEL}>Tipo OS <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
             <select className={SELECT} {...register("os_type")}>
               <option value="">Selecionar...</option>
               {OS_TYPES.map((t) => (
@@ -317,7 +317,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
             {/* Versão | Ano */}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className={LABEL}>Versão</label>
+                <label className={LABEL}>Versão <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
                 <input
                   className={INPUT}
                   placeholder="Ex: EX"
@@ -325,7 +325,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                 />
               </div>
               <div>
-                <label className={LABEL}>Ano</label>
+                <label className={LABEL}>Ano <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
                 <input
                   className={INPUT}
                   type="number"
@@ -338,7 +338,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
             {/* Cor | Combustível */}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className={LABEL}>Cor</label>
+                <label className={LABEL}>Cor <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
                 <Controller
                   name="color"
                   control={control}
@@ -351,7 +351,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                 />
               </div>
               <div>
-                <label className={LABEL}>Combustível</label>
+                <label className={LABEL}>Combustível <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
                 <select className={SELECT} {...register("fuel_type")}>
                   <option value="">Selecionar...</option>
                   <option value="flex">Flex</option>

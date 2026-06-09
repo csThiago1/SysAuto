@@ -118,12 +118,12 @@ class PersonViewSet(viewsets.ModelViewSet):
             if data.get("erro"):
                 return Response({"detail": "CEP não encontrado."}, status=404)
             result = {
-                "cep": data.get("cep", ""),
-                "logradouro": data.get("logradouro", ""),
-                "complemento": data.get("complemento", ""),
-                "bairro": data.get("bairro", ""),
-                "localidade": data.get("localidade", ""),
-                "uf": data.get("uf", ""),
+                "zip_code": data.get("cep", ""),
+                "street": data.get("logradouro", ""),
+                "complement": data.get("complemento", ""),
+                "neighborhood": data.get("bairro", ""),
+                "city": data.get("localidade", ""),
+                "state": data.get("uf", ""),
             }
             cache.set(cache_key, result, timeout=86400)
             return Response(result)

@@ -92,7 +92,7 @@ export default function OrcamentosParticularesPage() {
           </div>
         </div>
         <Link href={"/orcamentos-particulares/novo" as Route}>
-          <Button size="sm" className="gap-2">
+          <Button className="gap-2">
             <Plus className="h-4 w-4" />
             Novo Orçamento
           </Button>

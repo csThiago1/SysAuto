@@ -46,12 +46,24 @@ export function EntrySection({ form, order }: EntrySectionProps) {
           )}
         </div>
         <div>
-          <label className={FORM_LABEL}>KM entrada</label>
+          <label className={FORM_LABEL}>KM entrada <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
           <input
             className={cn(errors.mileage_in ? FORM_INPUT_ERROR : FORM_INPUT)}
-            type="number"
+            type="text"
+            inputMode="numeric"
             placeholder="0"
-            {...register("mileage_in", { valueAsNumber: true })}
+            {...register("mileage_in", {
+              setValueAs: (v: string) => {
+                const n = parseInt(String(v).replace(/\D/g, ""), 10)
+                return isNaN(n) ? undefined : n
+              },
+            })}
+            onChange={(e) => {
+              const raw = e.target.value.replace(/\D/g, "")
+              const num = parseInt(raw, 10)
+              e.target.value = isNaN(num) ? "" : num.toLocaleString("pt-BR")
+              register("mileage_in").onChange(e)
+            }}
           />
           {errors.mileage_in && (
             <p className={FORM_ERROR}>{errors.mileage_in.message}</p>
