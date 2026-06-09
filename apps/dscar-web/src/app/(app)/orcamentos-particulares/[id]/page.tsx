@@ -4,9 +4,10 @@ import { useParams } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useBudget } from "@/hooks/useBudgets"
-import { BudgetHeader }   from "./_components/BudgetHeader"
-import { ItemsTable }     from "./_components/ItemsTable"
-import { VersionHistory } from "./_components/VersionHistory"
+import { BudgetHeader }      from "./_components/BudgetHeader"
+import { ItemsTable }        from "./_components/ItemsTable"
+import { VersionHistory }    from "./_components/VersionHistory"
+import { PaymentTermsCard }  from "./_components/PaymentTermsCard"
 
 export default function BudgetDetailPage() {
   const { id }                               = useParams<{ id: string }>()
@@ -45,6 +46,12 @@ export default function BudgetDetailPage() {
             Itens
           </TabsTrigger>
           <TabsTrigger
+            value="condicoes"
+            className="data-[state=active]:bg-muted text-foreground/60 data-[state=active]:text-foreground"
+          >
+            Condições
+          </TabsTrigger>
+          <TabsTrigger
             value="versoes"
             className="data-[state=active]:bg-muted text-foreground/60 data-[state=active]:text-foreground"
           >
@@ -55,6 +62,14 @@ export default function BudgetDetailPage() {
         <TabsContent value="itens" className="mt-4">
           {version ? (
             <ItemsTable budgetId={budget.id} version={version} />
+          ) : (
+            <p className="text-muted-foreground text-sm">Nenhuma versão ativa.</p>
+          )}
+        </TabsContent>
+
+        <TabsContent value="condicoes" className="mt-4">
+          {version ? (
+            <PaymentTermsCard budgetId={budget.id} version={version} />
           ) : (
             <p className="text-muted-foreground text-sm">Nenhuma versão ativa.</p>
           )}

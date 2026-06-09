@@ -299,14 +299,28 @@ export function PersonFormModal({
           <div className="space-y-3">
             <div>
               <Label className="text-sm font-medium">Tipo de Pessoa</Label>
-              <div className="flex gap-3 mt-1.5">
-                {(["PF", "PJ"] as const).map((kind) => (
-                  <label key={kind} className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" value={kind} {...register("person_kind")} className="accent-primary" />
-                    <span className="text-sm">{kind === "PF" ? "Pessoa Física" : "Pessoa Jurídica"}</span>
-                  </label>
-                ))}
-              </div>
+              <Controller
+                name="person_kind"
+                control={control}
+                render={({ field }) => (
+                  <div className="flex rounded-lg border border-border bg-muted/50 p-0.5 w-fit mt-1.5">
+                    {(["PF", "PJ"] as const).map((kind) => (
+                      <button
+                        key={kind}
+                        type="button"
+                        onClick={() => field.onChange(kind)}
+                        className={`rounded-md px-4 py-1.5 text-xs font-semibold transition-colors ${
+                          field.value === kind
+                            ? "bg-primary text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground/70"
+                        }`}
+                      >
+                        {kind === "PF" ? "Pessoa Física (CPF)" : "Pessoa Jurídica (CNPJ)"}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              />
             </div>
             <div>
               <Label className="text-sm font-medium">Categorias</Label>

@@ -100,6 +100,23 @@ class BudgetVersion(models.Model):
         max_digits=14, decimal_places=2, default=Decimal("0"),
     )
 
+    validity_days = models.IntegerField(
+        null=True, blank=True, default=30,
+        help_text="Prazo de validade do orçamento em dias",
+    )
+    payment_terms = models.TextField(
+        blank=True, default="",
+        help_text="Condições de pagamento ex: 50% entrada + 50% na entrega",
+    )
+    payment_methods = models.CharField(
+        max_length=200, blank=True, default="",
+        help_text="Formas aceitas ex: PIX, Cartão, Boleto",
+    )
+    estimated_days = models.IntegerField(
+        null=True, blank=True,
+        help_text="Prazo estimado de execução em dias úteis",
+    )
+
     content_hash = models.CharField(max_length=64, blank=True, default="")
     pdf_s3_key = models.CharField(max_length=500, blank=True, default="")
 

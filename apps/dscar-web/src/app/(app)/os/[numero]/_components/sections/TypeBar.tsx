@@ -15,11 +15,11 @@ interface TypeBarProps {
 }
 
 const OS_TYPES = [
-  { value: "bodywork", label: "Chapeação" },
-  { value: "warranty", label: "Garantia" },
-  { value: "rework", label: "Retrabalho" },
-  { value: "mechanical", label: "Mecânica" },
-  { value: "aesthetic", label: "Estética" },
+  { value: "bodywork", label: "Chapeação", desc: "Reparo de lataria e estrutura" },
+  { value: "warranty", label: "Garantia", desc: "Coberto pela garantia de serviço anterior" },
+  { value: "rework", label: "Retrabalho", desc: "Correção de serviço que não ficou conforme" },
+  { value: "mechanical", label: "Mecânica", desc: "Serviço mecânico geral" },
+  { value: "aesthetic", label: "Estética", desc: "Polimento, higienização, estética veicular" },
 ] as const
 
 export function TypeBar({ form, customerType }: TypeBarProps) {
@@ -62,15 +62,15 @@ export function TypeBar({ form, customerType }: TypeBarProps) {
         <select className={SELECT} {...register("os_type")}>
           <option value="">Selecionar...</option>
           {OS_TYPES.map((t) => (
-            <option key={t.value} value={t.value}>{t.label}</option>
+            <option key={t.value} value={t.value} title={t.desc}>{t.label} — {t.desc}</option>
           ))}
         </select>
       </div>
 
       {/* Consultor */}
       <div className="min-w-[180px]">
-        <label className={LABEL}>
-          Consultor
+        <label className={LABEL} title="Responsável pelo acompanhamento da OS junto ao cliente">
+          Consultor (Responsável)
           {loadingConsultants && (
             <Loader2 className="inline ml-1 h-2.5 w-2.5 animate-spin text-muted-foreground" />
           )}

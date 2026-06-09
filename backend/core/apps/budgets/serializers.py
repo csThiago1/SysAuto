@@ -78,6 +78,7 @@ class BudgetVersionReadSerializer(serializers.ModelSerializer):
             "id", "version_number", "status", "status_display",
             "valid_until", "subtotal", "discount_total", "net_total",
             "labor_total", "parts_total", "pdf_s3_key",
+            "validity_days", "payment_terms", "payment_methods", "estimated_days",
             "sent_at", "approved_at", "approved_by", "approval_evidence_s3_key",
             "created_by", "created_at", "items",
         ]

@@ -42,11 +42,11 @@ const INPUT_ERROR =
 const SELECT = INPUT
 
 const OS_TYPES = [
-  { value: "bodywork", label: "Chapeação" },
-  { value: "warranty", label: "Garantia" },
-  { value: "rework", label: "Retrabalho" },
-  { value: "mechanical", label: "Mecânica" },
-  { value: "aesthetic", label: "Estética" },
+  { value: "bodywork", label: "Chapeação", desc: "Reparo de lataria e estrutura" },
+  { value: "warranty", label: "Garantia", desc: "Coberto pela garantia de serviço anterior" },
+  { value: "rework", label: "Retrabalho", desc: "Correção de serviço que não ficou conforme" },
+  { value: "mechanical", label: "Mecânica", desc: "Serviço mecânico geral" },
+  { value: "aesthetic", label: "Estética", desc: "Polimento, higienização, estética veicular" },
 ] as const
 
 interface NewOSDrawerProps {
@@ -245,8 +245,8 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
             <select className={SELECT} {...register("os_type")}>
               <option value="">Selecionar...</option>
               {OS_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
+                <option key={t.value} value={t.value} title={t.desc}>
+                  {t.label} — {t.desc}
                 </option>
               ))}
             </select>
