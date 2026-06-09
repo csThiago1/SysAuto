@@ -7,9 +7,13 @@ import logging
 from datetime import date, timedelta
 from decimal import Decimal
 
+from django.core.cache import cache
+from django.db import connection
 from django.db.models import Count, F, Sum
 
 logger = logging.getLogger(__name__)
+
+DASHBOARD_CACHE_TTL = 60  # segundos — eventual consistency aceitável para summary
 
 
 class FinancialDashboardService:
@@ -17,8 +21,14 @@ class FinancialDashboardService:
 
     @classmethod
     def get_summary(cls, start_date: date, end_date: date) -> dict:
-        """Return all dashboard KPIs for the given period."""
-        return {
+        """Return all dashboard KPIs for the given period (cached por tenant + período)."""
+        schema = getattr(connection, "schema_name", "public")
+        cache_key = f"financial_dashboard:{schema}:{start_date.isoformat()}:{end_date.isoformat()}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+
+        summary = {
             "receita_mes": cls._total_received(start_date, end_date),
             "despesa_mes": cls._total_paid(start_date, end_date),
             "ar_vencidos": cls._overdue_summary("AR"),
@@ -30,6 +40,8 @@ class FinancialDashboardService:
             "aging_ar": cls._aging_report("AR"),
             "aging_ap": cls._aging_report("AP"),
         }
+        cache.set(cache_key, summary, timeout=DASHBOARD_CACHE_TTL)
+        return summary
 
     @classmethod
     def _total_received(cls, start_date: date, end_date: date) -> str:

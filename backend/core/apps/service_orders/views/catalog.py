@@ -37,21 +37,26 @@ class ServiceCatalogViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self) -> QuerySet:
         """Retorna catálogo ativo, com filtros opcionais de busca e categoria."""
+        qs = ServiceCatalog.objects.filter(is_active=True)
         search = self.request.query_params.get("search", "")
         category = self.request.query_params.get("category", "")
-        if not search and not category:
-            cached = cache.get("service_catalog:active")
-            if cached is not None:
-                return cached
-            qs = list(ServiceCatalog.objects.filter(is_active=True))
-            cache.set("service_catalog:active", qs, timeout=300)
-            return qs
-        qs = ServiceCatalog.objects.filter(is_active=True)
         if search:
             qs = qs.filter(name__icontains=search)
         if category:
             qs = qs.filter(category=category)
         return qs
+
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Cache de resposta serializada quando não há filtros (caso quente)."""
+        if request.query_params.get("search") or request.query_params.get("category"):
+            return super().list(request, *args, **kwargs)
+        cached = cache.get("service_catalog:active")
+        if cached is not None:
+            return Response(cached)
+        response = super().list(request, *args, **kwargs)
+        if response.status_code == 200:
+            cache.set("service_catalog:active", response.data, timeout=300)
+        return response
 
     def get_serializer_class(self):  # type: ignore[override]
         if self.action == "list":
