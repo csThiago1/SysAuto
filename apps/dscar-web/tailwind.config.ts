@@ -35,10 +35,11 @@ const config: Config = {
           foreground: "hsl(var(--destructive-foreground))",
         },
         // PRIMARY — Vermelho automotivo / vinho
-        // Inspirado na identidade de centros automotivos premium.
-        // 500 é o tom base para CTAs e destaques.
-        // 700–900 para sidebar escura e headers.
+        // DEFAULT e foreground seguem as CSS variables (tema claro/escuro).
+        // Escala 50–950 fixa para uso explícito (e.g. primary-500).
         primary: {
+          DEFAULT:    "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
           "50":  "#fff1f1",
           "100": "#ffe1e1",
           "200": "#ffc7c7",

@@ -55,6 +55,27 @@ def setup():
     else:
         print(f"[setup] Usuário {email} já existe")
 
+    # 4. Usuários operacionais
+    seed_users = [
+        {"email": "gabriel@paddock.solutions",   "name": "Gabriel",   "role": "OWNER"},
+        {"email": "chrystyan@paddock.solutions", "name": "Chrystyan", "role": "OWNER"},
+    ]
+    for u in seed_users:
+        eh = hashlib.sha256(u["email"].lower().encode()).hexdigest()
+        if not GlobalUser.objects.filter(email_hash=eh).exists():
+            user = GlobalUser(
+                email=u["email"],
+                email_hash=eh,
+                name=u["name"],
+                is_active=True,
+                role=u["role"],
+            )
+            user.set_password("paddock123")
+            user.save()
+            print(f"[setup] Usuário {u['email']} criado (role: {u['role']})")
+        else:
+            print(f"[setup] Usuário {u['email']} já existe")
+
     print("[setup] Concluído!")
 
 

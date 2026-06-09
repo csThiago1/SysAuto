@@ -74,6 +74,7 @@ type ServicoFormData = z.infer<typeof servicoSchema>
 export default function ServicosCanonicoPage() {
   // State
   const [search, setSearch] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState("")
   const [showInactive, setShowInactive] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editing, setEditing] = useState<ServicoCanonico | null>(null)
@@ -122,10 +123,12 @@ export default function ServicosCanonicoPage() {
     }
   }, [sheetOpen, editing, reset])
 
-  // Filter: show/hide inactive
-  const filtered = showInactive
-    ? servicos
-    : servicos.filter((s: ServicoCanonico) => s.is_active)
+  // Filter: category + show/hide inactive
+  const filtered = servicos.filter((s: ServicoCanonico) => {
+    if (!showInactive && !s.is_active) return false
+    if (categoryFilter && s.categoria !== categoryFilter) return false
+    return true
+  })
 
   // ─── Handlers ────────────────────────────────────────────────────────────────
 
@@ -202,6 +205,19 @@ export default function ServicosCanonicoPage() {
             className="pl-9 bg-muted/50 h-9"
           />
         </div>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-48 bg-muted/50 h-9">
+            <SelectValue placeholder="Todas categorias" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Todas</SelectItem>
+            {categorias.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id}>
+                {cat.nome}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none">
           <Checkbox
             checked={showInactive}

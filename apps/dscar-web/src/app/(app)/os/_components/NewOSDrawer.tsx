@@ -19,7 +19,21 @@ import { CustomerSearch } from "../[numero]/_components/shared/CustomerSearch"
 import { InsurerSelect } from "../[numero]/_components/shared/InsurerSelect"
 import { ColorSelect } from "../[numero]/_components/shared/ColorSelect"
 import { usePlateLookup } from "../[numero]/_hooks/useVehicleCatalog"
+import { VehicleFipeFields } from "@/components/vehicle/VehicleFipeFields"
 import { ApiError, handleApiFormError } from "@/lib/api"
+
+const FUEL_TYPE_PT: Record<string, string> = {
+  gasoline: "Gasolina", Gasoline: "Gasolina",
+  ethanol: "Etanol", Ethanol: "Etanol",
+  diesel: "Diesel", Diesel: "Diesel",
+  flex: "Flex", Flex: "Flex",
+  electric: "Elétrico", Electric: "Elétrico",
+  hybrid: "Híbrido", Hybrid: "Híbrido",
+  gas: "GNV", Gas: "GNV",
+}
+function translateFuelType(raw: string): string {
+  return FUEL_TYPE_PT[raw] ?? raw
+}
 
 const LABEL = "block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-0.5"
 const INPUT =
@@ -29,11 +43,11 @@ const INPUT_ERROR =
 const SELECT = INPUT
 
 const OS_TYPES = [
-  { value: "bodywork", label: "Chapeação" },
-  { value: "warranty", label: "Garantia" },
-  { value: "rework", label: "Retrabalho" },
-  { value: "mechanical", label: "Mecânica" },
-  { value: "aesthetic", label: "Estética" },
+  { value: "bodywork", label: "Chapeação", desc: "Reparo de lataria e estrutura" },
+  { value: "warranty", label: "Garantia", desc: "Coberto pela garantia de serviço anterior" },
+  { value: "rework", label: "Retrabalho", desc: "Correção de serviço que não ficou conforme" },
+  { value: "mechanical", label: "Mecânica", desc: "Serviço mecânico geral" },
+  { value: "aesthetic", label: "Estética", desc: "Polimento, higienização, estética veicular" },
 ] as const
 
 interface NewOSDrawerProps {
@@ -56,7 +70,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
     handleSubmit,
     reset,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, dirtyFields },
   } = useForm<NewOSInput>({
     resolver: zodResolver(newOSSchema),
     defaultValues: {
@@ -74,6 +88,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
   })
 
   const customerType = watch("customer_type")
+  const hasDirtyFields = Object.keys(dirtyFields).length > 0
 
   function handleClose() {
     onOpenChange(false)
@@ -81,6 +96,12 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
       reset()
       setServerError(null)
     }, 300)
+  }
+
+  /** Previne fechamento acidental do Sheet quando tem dados preenchidos ou erro */
+  function handleOpenChange(v: boolean) {
+    if (!v && (isSubmitting || serverError || hasDirtyFields || plateQuery)) return
+    onOpenChange(v)
   }
 
   // Auto-preenche campos do veículo ao consultar placa
@@ -91,6 +112,12 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
       setValue("make", plateData.make)
       setValue("model", plateData.model ?? "")
       if (plateData.year) setValue("year", plateData.year)
+      if (plateData.version) setValue("vehicle_version", plateData.version)
+      if (plateData.color) setValue("color", plateData.color)
+      if (plateData.fuel_type) setValue("fuel_type", translateFuelType(plateData.fuel_type))
+      if (plateData.chassis && !plateData.chassis.includes("*")) {
+        setValue("chassis", plateData.chassis)
+      }
       toast.success("Dados do veículo preenchidos pela placa.")
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -119,7 +146,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent
         side="right"
         className="w-full max-w-[420px] overflow-y-auto"
@@ -215,12 +242,12 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
 
           {/* Tipo OS */}
           <div>
-            <label className={LABEL}>Tipo OS</label>
+            <label className={LABEL}>Tipo OS <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
             <select className={SELECT} {...register("os_type")}>
               <option value="">Selecionar...</option>
               {OS_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
+                <option key={t.value} value={t.value} title={t.desc}>
+                  {t.label} — {t.desc}
                 </option>
               ))}
             </select>
@@ -256,63 +283,31 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
               )}
             </div>
 
-            {/* Montadora | Modelo */}
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className={LABEL}>Montadora *</label>
-                <input
-                  className={errors.make ? INPUT_ERROR : INPUT}
-                  placeholder="Ex: Honda"
-                  data-testid="make-input"
-                  {...register("make")}
-                />
-                {errors.make && (
-                  <p className="mt-0.5 text-xs text-error-400">
-                    {errors.make.message}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className={LABEL}>Modelo *</label>
-                <input
-                  className={errors.model ? INPUT_ERROR : INPUT}
-                  placeholder="Ex: Civic"
-                  data-testid="model-input"
-                  {...register("model")}
-                />
-                {errors.model && (
-                  <p className="mt-0.5 text-xs text-error-400">
-                    {errors.model.message}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Versão | Ano */}
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className={LABEL}>Versão</label>
-                <input
-                  className={INPUT}
-                  placeholder="Ex: EX"
-                  {...register("vehicle_version")}
-                />
-              </div>
-              <div>
-                <label className={LABEL}>Ano</label>
-                <input
-                  className={INPUT}
-                  type="number"
-                  placeholder="Ex: 2022"
-                  {...register("year", { valueAsNumber: true })}
-                />
-              </div>
-            </div>
+            {/* Montadora / Modelo / Versão — FIPE autocomplete */}
+            <VehicleFipeFields
+              initialMake={watch("make")}
+              initialModel={watch("model")}
+              initialYear={watch("year")}
+              initialVersion={watch("vehicle_version")}
+              onFieldChange={(fields) => {
+                setValue("make", fields.make)
+                setValue("model", fields.model)
+                if (fields.vehicle_version) setValue("vehicle_version", fields.vehicle_version)
+                if (fields.year) setValue("year", fields.year)
+                if (fields.fuel_type) setValue("fuel_type", translateFuelType(fields.fuel_type))
+              }}
+              labelClass={LABEL}
+            />
+            {(errors.make || errors.model) && (
+              <p className="text-xs text-error-400">
+                {errors.make?.message || errors.model?.message}
+              </p>
+            )}
 
             {/* Cor | Combustível */}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className={LABEL}>Cor</label>
+                <label className={LABEL}>Cor <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
                 <Controller
                   name="color"
                   control={control}
@@ -325,7 +320,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                 />
               </div>
               <div>
-                <label className={LABEL}>Combustível</label>
+                <label className={LABEL}>Combustível <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
                 <select className={SELECT} {...register("fuel_type")}>
                   <option value="">Selecionar...</option>
                   <option value="flex">Flex</option>
