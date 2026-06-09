@@ -2,10 +2,15 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Dependências do sistema
+# Dependências do sistema (inclui libs WeasyPrint para geração de PDF)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf-2.0-0 \
+    libffi-dev \
+    shared-mime-info \
     && rm -rf /var/lib/apt/lists/*
 
 # Dependências Python (layer cacheável)

@@ -21,6 +21,19 @@ import { ColorSelect } from "../[numero]/_components/shared/ColorSelect"
 import { usePlateLookup } from "../[numero]/_hooks/useVehicleCatalog"
 import { ApiError, handleApiFormError } from "@/lib/api"
 
+const FUEL_TYPE_PT: Record<string, string> = {
+  gasoline: "Gasolina", Gasoline: "Gasolina",
+  ethanol: "Etanol", Ethanol: "Etanol",
+  diesel: "Diesel", Diesel: "Diesel",
+  flex: "Flex", Flex: "Flex",
+  electric: "Elétrico", Electric: "Elétrico",
+  hybrid: "Híbrido", Hybrid: "Híbrido",
+  gas: "GNV", Gas: "GNV",
+}
+function translateFuelType(raw: string): string {
+  return FUEL_TYPE_PT[raw] ?? raw
+}
+
 const LABEL = "block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-0.5"
 const INPUT =
   "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
@@ -56,7 +69,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
     handleSubmit,
     reset,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, dirtyFields },
   } = useForm<NewOSInput>({
     resolver: zodResolver(newOSSchema),
     defaultValues: {
@@ -74,6 +87,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
   })
 
   const customerType = watch("customer_type")
+  const hasDirtyFields = Object.keys(dirtyFields).length > 0
 
   function handleClose() {
     onOpenChange(false)
@@ -81,6 +95,12 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
       reset()
       setServerError(null)
     }, 300)
+  }
+
+  /** Previne fechamento acidental do Sheet quando tem dados preenchidos ou erro */
+  function handleOpenChange(v: boolean) {
+    if (!v && (isSubmitting || serverError || hasDirtyFields || plateQuery)) return
+    onOpenChange(v)
   }
 
   // Auto-preenche campos do veículo ao consultar placa
@@ -91,6 +111,12 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
       setValue("make", plateData.make)
       setValue("model", plateData.model ?? "")
       if (plateData.year) setValue("year", plateData.year)
+      if (plateData.version) setValue("vehicle_version", plateData.version)
+      if (plateData.color) setValue("color", plateData.color)
+      if (plateData.fuel_type) setValue("fuel_type", translateFuelType(plateData.fuel_type))
+      if (plateData.chassis && !plateData.chassis.includes("*")) {
+        setValue("chassis", plateData.chassis)
+      }
       toast.success("Dados do veículo preenchidos pela placa.")
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -119,7 +145,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent
         side="right"
         className="w-full max-w-[420px] overflow-y-auto"

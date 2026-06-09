@@ -17,7 +17,7 @@ export const DateTimeNow = forwardRef<HTMLInputElement, DateTimeNowProps>(
   function DateTimeNow({ label, onSetNow, className, onChange, error, ...props }, ref) {
     function handleSetNow() {
       const now = new Date()
-      // datetime-local espera formato YYYY-MM-DDTHH:mm
+      // datetime-local espera formato YYYY-MM-DDTHH:mm (hora local do browser)
       const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
         .toISOString()
         .slice(0, 16)
@@ -26,7 +26,8 @@ export const DateTimeNow = forwardRef<HTMLInputElement, DateTimeNowProps>(
       nativeInput.value = local
       const event = { target: nativeInput } as React.ChangeEvent<HTMLInputElement>
       onChange?.(event)
-      onSetNow?.(now.toISOString())
+      // Emitir formato local (sem Z) — o backend interpreta como TIME_ZONE (America/Manaus)
+      onSetNow?.(local)
     }
 
     return (

@@ -11,6 +11,16 @@ import { FORM_SECTION_TITLE, FORM_LABEL, FORM_INPUT, FORM_ERROR, FORM_WARN } fro
 import { ColorSelect } from "../shared/ColorSelect"
 import { VehicleHistorySheet } from "../shared/VehicleHistorySheet"
 
+const FUEL_TYPE_PT: Record<string, string> = {
+  gasoline: "Gasolina", Gasoline: "Gasolina",
+  ethanol: "Etanol", Ethanol: "Etanol",
+  diesel: "Diesel", Diesel: "Diesel",
+  flex: "Flex", Flex: "Flex",
+  electric: "Elétrico", Electric: "Elétrico",
+  hybrid: "Híbrido", Hybrid: "Híbrido",
+  gas: "GNV", Gas: "GNV",
+}
+
 interface VehicleSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
   osId?: string
@@ -44,7 +54,7 @@ export function VehicleSection({ form, osId }: VehicleSectionProps) {
       if (plateData.year) setValue("year", plateData.year)
       if (plateData.chassis) setValue("chassis", plateData.chassis)
       if (plateData.color) setValue("color", plateData.color)
-      if (plateData.fuel_type) setValue("fuel_type", plateData.fuel_type)
+      if (plateData.fuel_type) setValue("fuel_type", FUEL_TYPE_PT[plateData.fuel_type] ?? plateData.fuel_type)
       toast.success("Dados do veículo preenchidos pela placa!")
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
