@@ -1,69 +1,39 @@
 /**
- * next-auth v5 — Configuração de autenticação do DS Car ERP
+ * next-auth v5 — Configuracao de autenticacao do DS Car ERP
  *
- * Suporta dois providers:
- * 1. dev-credentials: e-mail + senha "paddock123" → JWT HS256 (apenas dev)
- * 2. keycloak: OIDC com Keycloak 24 → JWT RS256 (prod)
+ * Auth nativo: Credentials provider chama Django /api/v1/auth/login/ diretamente.
+ * Keycloak removido da stack.
  *
- * Claims propagados à sessão:
- *   accessToken, role, companies, activeCompany, tenantSchema, clientSlug
+ * Claims propagados a sessao:
+ *   accessToken, refreshToken, role, permissions, companies, activeCompany, tenantSchema, clientSlug
+ *
+ * Auto-refresh: o callback jwt verifica se o access token expirou e usa o refresh
+ * token para obter um novo par access+refresh automaticamente.
  */
 import NextAuth from "next-auth";
-import Keycloak from "next-auth/providers/keycloak";
 import Credentials from "next-auth/providers/credentials";
-import { SignJWT } from "jose";
 import type { PaddockRole } from "@paddock/types";
 
-function getDevJWTSecret(): Uint8Array {
-  const secret = process.env.DEV_JWT_SECRET;
-  if (!secret) throw new Error("DEV_JWT_SECRET não está definido — configure no .env.local");
-  return new TextEncoder().encode(secret);
-}
-
-/** Gera JWT HS256 para o provider dev-credentials. */
-async function makeDevToken(email: string): Promise<string> {
-  return new SignJWT({
-    email,
-    role: "ADMIN",
-    // Claims de tenant padrão em dev — tenant DS Car
-    active_company: "dscar",
-    tenant_schema: "tenant_dscar",
-    client_slug: "grupo-dscar",
-    companies: ["dscar"],
-    token_type: "access",
-    jti: crypto.randomUUID(),
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("8h")
-    .sign(getDevJWTSecret());
-}
-
-const KNOWN_ROLES: PaddockRole[] = ["OWNER", "ADMIN", "MANAGER", "CONSULTANT", "STOREKEEPER"];
-
-// ─── Augmentações de tipo do next-auth ───────────────────────────────────────
+// ─── Augmentacoes de tipo do next-auth ───────────────────────────────────────
 
 declare module "next-auth" {
   interface Session {
-    /** JWT de acesso — HS256 (dev) ou RS256 (Keycloak). Enviado ao backend via Authorization. */
     accessToken: string;
-    /** Role RBAC do usuário — extraído do JWT. */
     role: PaddockRole;
-    /** Permissões granulares do colaborador. */
+    permissions: string[];
     extraPermissions: string[];
-    /** Empresas às quais o usuário tem acesso. */
     companies: string[];
-    /** Empresa ativa no momento do login. */
     activeCompany: string;
-    /** Schema PostgreSQL do tenant ativo (ex: "tenant_dscar"). */
     tenantSchema: string;
-    /** Slug do cliente/grupo (ex: "grupo-dscar"). */
     clientSlug: string;
   }
 
   interface User {
     accessToken?: string;
+    refreshToken?: string;
+    accessTokenExpires?: number;
     role?: string;
+    permissions?: string[];
     extraPermissions?: string[];
     companies?: string[];
     activeCompany?: string;
@@ -71,98 +41,168 @@ declare module "next-auth" {
     clientSlug?: string;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface JWT {
     accessToken?: string;
+    refreshToken?: string;
+    accessTokenExpires?: number;
     role?: string;
+    permissions?: string[];
     extraPermissions?: string[];
     companies?: string[];
     activeCompany?: string;
     tenantSchema?: string;
     clientSlug?: string;
+    error?: string;
   }
 }
 
-// ─── Exportação principal ────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const BACKEND_URL =
+  process.env.BACKEND_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:8000";
+
+function decodeJwtPayload(jwt: string): Record<string, unknown> {
+  const payloadB64 = jwt.split(".")[1];
+  return JSON.parse(Buffer.from(payloadB64, "base64").toString("utf-8"));
+}
+
+/**
+ * Chama /api/v1/auth/refresh/ para obter novo par access+refresh.
+ * Retorna null se falhar (refresh expirado → força re-login).
+ */
+async function refreshAccessToken(
+  refreshToken: string
+): Promise<{ access: string; refresh: string } | null> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/v1/auth/refresh/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh: refreshToken }),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+// ─── Exportacao principal ────────────────────────────────────────────────────
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   providers: [
-    Keycloak({
-      clientId: process.env.KEYCLOAK_CLIENT_ID ?? "paddock-frontend",
-      clientSecret: process.env.KEYCLOAK_CLIENT_SECRET ?? "",
-      issuer: process.env.KEYCLOAK_ISSUER ?? "http://localhost:8080/realms/paddock",
-    }),
     Credentials({
-      id: "dev-credentials",
-      name: "Dev (mock)",
+      id: "credentials",
+      name: "Email & Senha",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
-        if (credentials?.email && credentials?.password === "paddock123") {
-          const token = await makeDevToken(credentials.email as string);
+        if (!credentials?.email || !credentials?.password) return null;
+
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/v1/auth/login/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
+          });
+
+          if (!res.ok) return null;
+
+          const data = await res.json();
+          // data: { access: "<jwt>", refresh: "<jwt>" }
+
+          const payload = decodeJwtPayload(data.access);
+
           return {
-            id: "dev-user-id",
-            email: credentials.email as string,
-            name: "Dev User",
-            accessToken: token,
-            role: "ADMIN",
-            companies: ["dscar"],
-            activeCompany: "dscar",
-            tenantSchema: "tenant_dscar",
-            clientSlug: "grupo-dscar",
+            id: payload.sub as string,
+            email: payload.email as string,
+            name: (payload.name as string) || (payload.email as string),
+            accessToken: data.access,
+            refreshToken: data.refresh,
+            accessTokenExpires: (payload.exp as number) * 1000, // ms
+            role: payload.role as string,
+            permissions: (payload.permissions as string[]) || [],
+            extraPermissions: (payload.extra_permissions as string[]) || [],
+            companies: (payload.companies as string[]) || ["dscar"],
+            activeCompany: (payload.active_company as string) || "dscar",
+            tenantSchema: (payload.tenant_schema as string) || "tenant_dscar",
+            clientSlug: (payload.client_slug as string) || "grupo-dscar",
           };
+        } catch (error) {
+          console.error("Auth error:", error);
+          return null;
         }
-        return null;
       },
     }),
   ],
 
   callbacks: {
-    async jwt({ token, account, user, profile }) {
-      // ── Dev-credentials: propaga claims do User retornado pelo authorize() ──
+    async jwt({ token, user }) {
+      // 1. Login inicial — propaga tudo do authorize()
       if (user) {
-        if ("accessToken" in user && user.accessToken) token.accessToken = user.accessToken;
-        if ("role" in user && user.role) token.role = user.role;
-        if ("extraPermissions" in user) token.extraPermissions = user.extraPermissions;
-        if ("companies" in user) token.companies = user.companies;
-        if ("activeCompany" in user) token.activeCompany = user.activeCompany;
-        if ("tenantSchema" in user) token.tenantSchema = user.tenantSchema;
-        if ("clientSlug" in user) token.clientSlug = user.clientSlug;
+        token.accessToken = user.accessToken;
+        token.refreshToken = user.refreshToken;
+        token.accessTokenExpires = user.accessTokenExpires;
+        token.role = user.role;
+        token.permissions = user.permissions;
+        token.extraPermissions = user.extraPermissions;
+        token.companies = user.companies;
+        token.activeCompany = user.activeCompany;
+        token.tenantSchema = user.tenantSchema;
+        token.clientSlug = user.clientSlug;
+        return token;
       }
 
-      // ── Keycloak: extrai access_token RS256 e claims do profile OIDC ──
-      if (account?.provider === "keycloak" && account.access_token) {
-        token.accessToken = account.access_token;
-
-        // Profile contém os claims customizados (Protocol Mappers configurados no Keycloak)
-        const p = (profile ?? {}) as Record<string, unknown>;
-
-        // Role: claim direto (Protocol Mapper "role") tem precedência sobre realm_access.roles
-        if (typeof p.role === "string" && KNOWN_ROLES.includes(p.role as PaddockRole)) {
-          token.role = p.role;
-        } else {
-          // Fallback: realm_access.roles (claim padrão do Keycloak)
-          const realmRoles = (p.realm_access as { roles?: string[] } | undefined)?.roles ?? [];
-          const found = realmRoles.find((r) => KNOWN_ROLES.includes(r as PaddockRole));
-          if (found) token.role = found;
-        }
-
-        // Claims de tenant — enviados via Protocol Mappers
-        if (Array.isArray(p.companies)) token.companies = p.companies as string[];
-        if (typeof p.active_company === "string") token.activeCompany = p.active_company;
-        if (typeof p.tenant_schema === "string") token.tenantSchema = p.tenant_schema;
-        if (typeof p.client_slug === "string") token.clientSlug = p.client_slug;
+      // 2. Token ainda válido — retorna sem refresh
+      const expires = token.accessTokenExpires as number | undefined;
+      if (expires && Date.now() < expires - 60_000) {
+        // 60s de margem para evitar race condition
+        return token;
       }
+
+      // 3. Token expirou — tenta refresh
+      const refreshToken = token.refreshToken as string | undefined;
+      if (!refreshToken) {
+        token.error = "RefreshTokenMissing";
+        return token;
+      }
+
+      const refreshed = await refreshAccessToken(refreshToken);
+      if (!refreshed) {
+        token.error = "RefreshTokenExpired";
+        return token;
+      }
+
+      // Atualiza token com novo access + refresh
+      const payload = decodeJwtPayload(refreshed.access);
+      token.accessToken = refreshed.access;
+      token.refreshToken = refreshed.refresh;
+      token.accessTokenExpires = (payload.exp as number) * 1000;
+      token.role = payload.role as string;
+      token.permissions = payload.permissions as string[];
+      token.error = undefined;
 
       return token;
     },
 
     async session({ session, token }) {
-      // Propaga claims do JWT para a sessão acessível no cliente
+      // Se houve erro de refresh, força logout no client
+      if (token.error) {
+        session.accessToken = "";
+        return session;
+      }
+
       session.accessToken = (token.accessToken as string) ?? "";
       session.role = (token.role as PaddockRole) ?? "STOREKEEPER";
+      session.permissions = (token.permissions as string[]) ?? [];
       session.extraPermissions = (token.extraPermissions as string[]) ?? [];
       session.companies = (token.companies as string[]) ?? ["dscar"];
       session.activeCompany = (token.activeCompany as string) ?? "dscar";

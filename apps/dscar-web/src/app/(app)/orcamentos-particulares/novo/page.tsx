@@ -12,6 +12,19 @@ import { Label } from "@/components/ui/label"
 import { useQuery } from "@tanstack/react-query"
 import { useCreateBudget } from "@/hooks/useBudgets"
 
+const FUEL_TYPE_PT: Record<string, string> = {
+  gasoline: "Gasolina", Gasoline: "Gasolina",
+  ethanol: "Etanol", Ethanol: "Etanol",
+  diesel: "Diesel", Diesel: "Diesel",
+  flex: "Flex", Flex: "Flex",
+  electric: "Elétrico", Electric: "Elétrico",
+  hybrid: "Híbrido", Hybrid: "Híbrido",
+  gas: "GNV", Gas: "GNV",
+}
+function translateFuelType(raw: string): string {
+  return FUEL_TYPE_PT[raw] ?? raw
+}
+
 interface PersonResult {
   id: number
   full_name: string
@@ -92,7 +105,7 @@ export default function NovoBudgetPage() {
     if (plateData.model)     setModelo(plateData.model)
     if (plateData.version)   setVersao(plateData.version)
     if (plateData.engine)    setMotorizacao(plateData.engine)
-    if (plateData.fuel_type) setCombustivel(plateData.fuel_type)
+    if (plateData.fuel_type) setCombustivel(translateFuelType(plateData.fuel_type))
     if (plateData.color)     setCor(plateData.color)
     if (plateData.year)      setAno(String(plateData.year))
     // Chassi vem mascarado da API — não preencher automaticamente

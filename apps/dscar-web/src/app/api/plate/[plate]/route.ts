@@ -15,11 +15,13 @@ export async function GET(
   const session = await auth()
   const token = session?.accessToken as string | undefined
 
+  const defaultDomain = process.env.DEFAULT_TENANT_DOMAIN ?? "dscar.localhost"
   const activeCompany = session?.activeCompany ?? ""
   const tenantDomain = activeCompany
-    ? `${activeCompany}.localhost`
-    : (process.env.DEFAULT_TENANT_DOMAIN ?? "dscar.localhost")
+    ? `${activeCompany}.${defaultDomain.split(".").slice(1).join(".")}`
+    : defaultDomain
   const apiBaseUrl = (
+    process.env.BACKEND_URL ??
     process.env.INTERNAL_API_URL ??
     process.env.NEXT_PUBLIC_API_URL ??
     "http://localhost:8000"

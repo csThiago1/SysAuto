@@ -88,7 +88,7 @@ def _has_extra_permission(request: Request, perm: str) -> bool:
 
 
 class HasPermission(BasePermission):
-    """Permission class genérica para permissões granulares.
+    """Permission class genérica para permissões granulares (legado).
 
     Uso nos ViewSets:
         permission_classes = [IsAuthenticated, HasPermission("can_close_os")]
@@ -104,3 +104,24 @@ class HasPermission(BasePermission):
             and request.user.is_authenticated
             and _has_extra_permission(request, self.perm)
         )
+
+
+class HasTenantPermission(BasePermission):
+    """DRF permission check using tenant permission matrix.
+
+    Resolves permissions via the configurable RBAC matrix:
+    role defaults + tenant-level overrides (TenantPermissionOverride).
+
+    Uso nos ViewSets:
+        permission_classes = [IsAuthenticated, HasTenantPermission("os.create")]
+    """
+
+    def __init__(self, code: str) -> None:
+        self.code = code
+        self.message = f"Você não tem a permissão '{code}'."
+
+    def has_permission(self, request: Request, view: APIView) -> bool:
+        if not request.user or not request.user.is_authenticated:
+            return False
+        from .permission_service import has_permission_from_request
+        return has_permission_from_request(request, self.code)

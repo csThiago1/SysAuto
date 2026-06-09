@@ -16,7 +16,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 import httpx
 
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
+from apps.authentication.permissions import HasTenantPermission, IsConsultantOrAbove, IsManagerOrAbove
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -147,7 +147,6 @@ class ServiceOrderViewSet(
 
     lookup_field = "pk"
     lookup_value_regex = r"[0-9a-f-]+"
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
         "status": ["exact", "in"],
@@ -163,6 +162,21 @@ class ServiceOrderViewSet(
     search_fields = ["number", "casualty_number", "customer_name", "plate"]
     ordering_fields = ["number", "created_at", "entry_date", "estimated_delivery_date", "opened_at"]
     ordering = ["-opened_at"]
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        """RBAC: permission check using tenant permission matrix."""
+        if self.action == "create":
+            return [IsAuthenticated(), HasTenantPermission("os.create")]
+        if self.action in ("update", "partial_update"):
+            return [IsAuthenticated(), HasTenantPermission("os.edit")]
+        if self.action == "transition":
+            return [IsAuthenticated(), HasTenantPermission("os.transition")]
+        if self.action in ("billing", "billing_preview", "complement_bill"):
+            return [IsAuthenticated(), HasTenantPermission("os.billing")]
+        if self.action == "deliver":
+            return [IsAuthenticated(), HasTenantPermission("os.transition")]
+        # Default: read access (list, retrieve, sync, etc.)
+        return [IsAuthenticated(), HasTenantPermission("os.view")]
 
     def get_object(self) -> ServiceOrder:
         """Aceita tanto UUID quanto número da OS na URL."""

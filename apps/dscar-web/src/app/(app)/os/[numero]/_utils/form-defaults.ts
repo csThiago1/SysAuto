@@ -11,6 +11,18 @@
 import type { ServiceOrder } from "@paddock/types"
 import type { ServiceOrderUpdateInput } from "../_schemas/service-order.schema"
 
+/** Converte ISO UTC (ex: "2026-06-09T14:00:00Z") para formato local "YYYY-MM-DDTHH:mm". */
+function toLocalDatetime(iso: string | null | undefined): string | undefined {
+  if (!iso) return undefined
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return iso // já é local ou inválido — retorna como está
+  // Se já é formato local (sem Z/offset), retorna como está
+  if (!iso.includes("Z") && !iso.includes("+") && !/\d{2}:\d{2}:\d{2}[+-]/.test(iso)) {
+    return iso.slice(0, 16)
+  }
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+}
+
 export const FIELD_LABELS: Record<string, string> = {
   customer_name: "Nome do cliente",
   plate: "Placa",
@@ -47,9 +59,9 @@ export function buildFormDefaults(o: ServiceOrder): ServiceOrderUpdateInput {
     deductible_amount: o.deductible_amount ? parseFloat(o.deductible_amount) : undefined,
     broker_name: o.broker_name ?? "",
     expert: o.expert ?? undefined,
-    expert_date: o.expert_date ?? undefined,
-    survey_date: o.survey_date ?? undefined,
-    authorization_date: o.authorization_date ?? undefined,
+    expert_date: toLocalDatetime(o.expert_date),
+    survey_date: toLocalDatetime(o.survey_date),
+    authorization_date: toLocalDatetime(o.authorization_date),
     quotation_date: o.quotation_date ?? undefined,
     customer: o.customer_uuid ?? undefined,
     customer_person_id: o.customer_person_id ?? undefined,
@@ -66,13 +78,13 @@ export function buildFormDefaults(o: ServiceOrder): ServiceOrderUpdateInput {
     fipe_value: o.fipe_value ? parseFloat(o.fipe_value) : undefined,
     mileage_in: o.mileage_in ?? undefined,
     vehicle_location: o.vehicle_location ?? "workshop",
-    entry_date: o.entry_date ?? undefined,
-    service_authorization_date: o.service_authorization_date ?? undefined,
-    scheduling_date: o.scheduling_date ?? undefined,
+    entry_date: toLocalDatetime(o.entry_date),
+    service_authorization_date: toLocalDatetime(o.service_authorization_date),
+    scheduling_date: toLocalDatetime(o.scheduling_date),
     repair_days: o.repair_days ?? undefined,
     estimated_delivery_date: o.estimated_delivery_date ?? undefined,
-    delivery_date: o.delivery_date ?? undefined,
-    final_survey_date: o.final_survey_date ?? undefined,
-    client_delivery_date: o.client_delivery_date ?? undefined,
+    delivery_date: toLocalDatetime(o.delivery_date),
+    final_survey_date: toLocalDatetime(o.final_survey_date),
+    client_delivery_date: toLocalDatetime(o.client_delivery_date),
   }
 }

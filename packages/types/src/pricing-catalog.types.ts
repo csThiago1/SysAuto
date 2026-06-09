@@ -55,6 +55,7 @@ export interface MaterialCanonico {
 export interface InsumoMaterial {
   id: string
   material_canonico: string  // UUID
+  material_canonico_nome?: string  // SerializerMethodField
   sku_interno: string
   gtin: string
   descricao: string

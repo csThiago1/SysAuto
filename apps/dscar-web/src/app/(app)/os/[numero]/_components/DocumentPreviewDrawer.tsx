@@ -75,7 +75,15 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
 
   async function openDocument(docId: string) {
     const res = await fetch(`/api/proxy/documents/${docId}/download/`)
+    if (!res.ok) {
+      toast.error("Erro ao baixar o documento. Tente novamente.")
+      return
+    }
     const blob = await res.blob()
+    if (!blob.type.includes("pdf") && blob.size < 500) {
+      toast.error("Erro na geração do PDF. Contate o suporte.")
+      return
+    }
     const url = URL.createObjectURL(blob)
     window.open(url, "_blank")
     // Libera memória após um tempo

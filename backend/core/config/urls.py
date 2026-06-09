@@ -11,6 +11,7 @@ from apps.authentication.views_health import healthz
 urlpatterns = [
     # Health check (before API routes, no auth required)
     path("healthz/", healthz, name="healthz"),
+    path("api/v1/health/", healthz, name="health-check"),
     # Admin
     path("admin/", admin.site.urls),
     # API v1
@@ -50,8 +51,6 @@ urlpatterns = [
     # MO-9: Capacidade + Variâncias
     path("api/v1/capacidade/", include("apps.service_orders.urls_capacidade")),
     path("api/v1/pricing/variancias/", include("apps.pricing_tech.urls_variancia")),
-    # OIDC
-    path("oidc/", include("mozilla_django_oidc.urls")),
     # API Docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(

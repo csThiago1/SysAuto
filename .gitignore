@@ -91,3 +91,4 @@ next
 .superpowers/
 data/migrations/*.xls
 data/migrations/*.xlsx
+.vercel

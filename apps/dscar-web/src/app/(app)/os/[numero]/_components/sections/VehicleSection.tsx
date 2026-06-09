@@ -10,6 +10,17 @@ import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schem
 import { FORM_SECTION_TITLE, FORM_LABEL, FORM_INPUT, FORM_ERROR, FORM_WARN } from "@paddock/utils"
 import { ColorSelect } from "../shared/ColorSelect"
 import { VehicleHistorySheet } from "../shared/VehicleHistorySheet"
+import { VehicleFipeFields } from "@/components/vehicle/VehicleFipeFields"
+
+const FUEL_TYPE_PT: Record<string, string> = {
+  gasoline: "Gasolina", Gasoline: "Gasolina",
+  ethanol: "Etanol", Ethanol: "Etanol",
+  diesel: "Diesel", Diesel: "Diesel",
+  flex: "Flex", Flex: "Flex",
+  electric: "Elétrico", Electric: "Elétrico",
+  hybrid: "Híbrido", Hybrid: "Híbrido",
+  gas: "GNV", Gas: "GNV",
+}
 
 interface VehicleSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
@@ -44,7 +55,7 @@ export function VehicleSection({ form, osId }: VehicleSectionProps) {
       if (plateData.year) setValue("year", plateData.year)
       if (plateData.chassis) setValue("chassis", plateData.chassis)
       if (plateData.color) setValue("color", plateData.color)
-      if (plateData.fuel_type) setValue("fuel_type", plateData.fuel_type)
+      if (plateData.fuel_type) setValue("fuel_type", FUEL_TYPE_PT[plateData.fuel_type] ?? plateData.fuel_type)
       toast.success("Dados do veículo preenchidos pela placa!")
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -105,34 +116,23 @@ export function VehicleSection({ form, osId }: VehicleSectionProps) {
         </div>
       </div>
 
-      {/* Grid campos */}
-      <div className="grid grid-cols-3 gap-2">
-        <div>
-          <label className={FORM_LABEL}>Montadora</label>
-          <input className={FORM_INPUT} type="text" placeholder="Honda" {...register("make")} />
-        </div>
-        <div>
-          <label className={FORM_LABEL}>Modelo</label>
-          <input className={FORM_INPUT} type="text" placeholder="Civic" {...register("model")} />
-        </div>
-        <div>
-          <label className={FORM_LABEL}>Versão</label>
-          <input className={FORM_INPUT} type="text" placeholder="EX 2.0" {...register("vehicle_version")} />
-        </div>
-      </div>
+      {/* Montadora / Modelo / Versão — FIPE autocomplete */}
+      <VehicleFipeFields
+        initialMake={watch("make") ?? ""}
+        initialModel={watch("model") ?? ""}
+        initialYear={watch("year")}
+        initialVersion={watch("vehicle_version") ?? ""}
+        onFieldChange={(fields) => {
+          setValue("make", fields.make, { shouldDirty: true })
+          setValue("model", fields.model, { shouldDirty: true })
+          if (fields.vehicle_version) setValue("vehicle_version", fields.vehicle_version, { shouldDirty: true })
+          if (fields.year) setValue("year", fields.year, { shouldDirty: true })
+          if (fields.fuel_type) setValue("fuel_type", FUEL_TYPE_PT[fields.fuel_type] ?? fields.fuel_type, { shouldDirty: true })
+        }}
+        labelClass={FORM_LABEL}
+      />
 
       <div className="grid grid-cols-3 gap-2">
-        <div>
-          <label className={FORM_LABEL}>Ano</label>
-          <input
-            className={FORM_INPUT}
-            type="number"
-            min={1900}
-            max={2100}
-            placeholder="2024"
-            {...register("year", { valueAsNumber: true })}
-          />
-        </div>
         <div>
           <label className={FORM_LABEL}>Cor</label>
           <Controller
@@ -146,6 +146,17 @@ export function VehicleSection({ form, osId }: VehicleSectionProps) {
         <div>
           <label className={FORM_LABEL}>Combustível</label>
           <input className={FORM_INPUT} type="text" placeholder="Flex, Gasolina..." {...register("fuel_type")} />
+        </div>
+        <div>
+          <label className={FORM_LABEL}>Ano</label>
+          <input
+            className={FORM_INPUT}
+            type="number"
+            min={1900}
+            max={2100}
+            placeholder="2024"
+            {...register("year", { valueAsNumber: true })}
+          />
         </div>
       </div>
 

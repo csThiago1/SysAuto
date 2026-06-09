@@ -7,14 +7,19 @@ from .models import GlobalUser
 
 
 class StaffUserSerializer(serializers.ModelSerializer):
-    """Serializer para listagem e atualização de job_title de funcionários."""
+    """Serializer para listagem e gestao de usuarios."""
 
     job_title_display = serializers.CharField(source="get_job_title_display", read_only=True)
+    role_display = serializers.CharField(source="get_role_display", read_only=True)
 
     class Meta:
         model = GlobalUser
-        fields = ["id", "name", "job_title", "job_title_display"]
-        read_only_fields = ["id", "name"]
+        fields = [
+            "id", "name", "email_hash", "role", "role_display",
+            "job_title", "job_title_display", "is_active", "email_verified",
+            "created_at",
+        ]
+        read_only_fields = ["id", "email_hash", "email_verified", "created_at"]
 
 
 class EmployeeSnapshotSerializer(serializers.Serializer):

@@ -1,6 +1,7 @@
 """VehicleService: lookup de placa com DB-first e fallback canônico de placa."""
 from __future__ import annotations
 
+import json
 import logging
 from typing import Any
 
@@ -138,11 +139,53 @@ class VehicleService:
 
         timeout = getattr(settings, "APIPLACAS_TIMEOUT", 8.0)
         try:
-            response = httpx.get(f"{url}/{plate}/{token}", headers={"Accept": "application/json"}, timeout=timeout)
+            response = httpx.get(
+                f"{url}/{plate}/{token}",
+                headers={"Accept": "application/json"},
+                timeout=timeout,
+            )
+            if response.status_code == 429:
+                logger.warning(
+                    "plate_lookup: rate limit atingido para placa %s***", plate[:3],
+                )
+                return None
             response.raise_for_status()
             raw_data = response.json()
+            if not isinstance(raw_data, dict):
+                logger.warning(
+                    "plate_lookup: API retornou tipo inesperado %s para %s***",
+                    type(raw_data).__name__,
+                    plate[:3],
+                )
+                return None
+        except httpx.TimeoutException:
+            logger.warning("plate_lookup: timeout para placa %s***", plate[:3])
+            return None
+        except httpx.HTTPStatusError as exc:
+            logger.warning(
+                "plate_lookup: HTTP %d para placa %s***",
+                exc.response.status_code,
+                plate[:3],
+            )
+            return None
+        except httpx.ConnectError:
+            logger.warning(
+                "plate_lookup: erro de conexao para placa %s***", plate[:3],
+            )
+            return None
+        except (ValueError, json.JSONDecodeError) as exc:
+            logger.warning(
+                "plate_lookup: JSON invalido para placa %s***: %s",
+                plate[:3],
+                exc,
+            )
+            return None
         except Exception as exc:
-            logger.warning("Lookup de placa %s*** falhou: %s", plate[:3], exc)
+            logger.exception(
+                "plate_lookup: erro inesperado para placa %s***: %s",
+                plate[:3],
+                exc,
+            )
             return None
 
         from apps.vehicle_catalog.views import _normalize_plate_response

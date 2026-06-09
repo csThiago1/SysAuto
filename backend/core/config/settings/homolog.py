@@ -9,11 +9,11 @@ from .base import *  # noqa: F401, F403
 
 DEBUG = False
 
-# ─── Auth — apenas Keycloak RS256 em homolog ─────────────────────────────────
+# ─── Auth — NativeJWT em homolog ─────────────────────────────────────────────
 REST_FRAMEWORK = {
     **REST_FRAMEWORK,  # type: ignore[name-defined]
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "apps.authentication.backends.KeycloakJWTAuthentication",
+        "apps.authentication.backends.NativeJWTAuthentication",
     ],
 }
 

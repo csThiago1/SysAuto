@@ -65,6 +65,10 @@ export interface BudgetVersion {
   labor_total: string
   parts_total: string
   pdf_s3_key: string
+  validity_days: number | null
+  payment_terms: string
+  payment_methods: string
+  estimated_days: number | null
   sent_at: string | null
   approved_at: string | null
   approved_by: string

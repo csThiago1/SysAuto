@@ -168,13 +168,10 @@ class EmployeeViewSet(ModelViewSet):
         # Calcular verbas rescisórias
         termination_extras = calculate_termination(employee)
 
-        # Desativar acesso no Keycloak (se provisionado)
-        if employee.user and employee.user.keycloak_id:
-            try:
-                from apps.authentication.keycloak_admin import disable_keycloak_user
-                disable_keycloak_user(str(employee.user.keycloak_id))
-            except Exception as exc:
-                logger.warning("Keycloak disable failed for %s: %s", pk, exc)
+        # Desativar acesso do usuário
+        if employee.user:
+            employee.user.is_active = False
+            employee.user.save(update_fields=["is_active", "updated_at"])
 
         logger.info("Employee terminated: %s (extras: %s)", pk, termination_extras)
         data = EmployeeDetailSerializer(employee, context={"request": request}).data

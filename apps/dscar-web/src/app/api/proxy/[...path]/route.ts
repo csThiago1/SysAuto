@@ -1,6 +1,11 @@
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 
+const BACKEND_BASE =
+  process.env.BACKEND_URL ??
+  process.env.NEXT_PUBLIC_API_URL ??
+  "http://localhost:8000";
+
 async function proxyRequest(
   req: NextRequest,
   pathSegments: string[],
@@ -9,17 +14,18 @@ async function proxyRequest(
   const session = await auth();
   const joined = pathSegments.join("/");
   const withSlash = joined.endsWith("/") ? joined : `${joined}/`;
-  const backendUrl = `http://localhost:8000/api/v1/${withSlash}${req.nextUrl.search}`;
+  const backendUrl = `${BACKEND_BASE}/api/v1/${withSlash}${req.nextUrl.search}`;
 
   const incomingContentType = req.headers.get("Content-Type") ?? ""
   const isMultipart = incomingContentType.startsWith("multipart/form-data")
 
-  // Constrói X-Tenant-Domain dinamicamente a partir da empresa ativa na sessão.
-  // Fallback para variável de ambiente DEFAULT_TENANT_DOMAIN ou "dscar.localhost".
+  // Constrói X-Tenant-Domain a partir da empresa ativa na sessão.
+  // DEFAULT_TENANT_DOMAIN define o sufixo (ex: "dscar.localhost" em dev, "dscar.paddock.solutions" em prod).
+  const defaultDomain = process.env.DEFAULT_TENANT_DOMAIN ?? "dscar.localhost";
   const activeCompany = session?.activeCompany ?? "";
   const tenantDomain = activeCompany
-    ? `${activeCompany}.localhost`
-    : (process.env.DEFAULT_TENANT_DOMAIN ?? "dscar.localhost");
+    ? `${activeCompany}.${defaultDomain.split(".").slice(1).join(".")}`
+    : defaultDomain;
 
   const headers: HeadersInit = {
     // Preserva Content-Type do client (multipart ou application/json).

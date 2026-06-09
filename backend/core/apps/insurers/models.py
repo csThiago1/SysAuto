@@ -5,6 +5,7 @@ Seguradoras — schema público, compartilhado entre todos os tenants.
 import logging
 import uuid
 
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 logger = logging.getLogger(__name__)
@@ -45,6 +46,13 @@ class Insurer(models.Model):
         default="",
         help_text="Abreviação para avatar/logo (ex: BR, PS, AZ)",
         verbose_name="Abreviação",
+    )
+    trade_names = ArrayField(
+        models.CharField(max_length=200),
+        default=list,
+        blank=True,
+        verbose_name="Nomes comerciais (importacao)",
+        help_text="Nomes usados por sistemas externos (Cilia, Soma, Audatex) para identificar esta seguradora.",
     )
     logo_url = models.CharField(
         max_length=500, blank=True, default="", verbose_name="URL do logo"

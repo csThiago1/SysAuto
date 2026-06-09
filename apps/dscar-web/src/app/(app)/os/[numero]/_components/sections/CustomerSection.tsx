@@ -11,6 +11,7 @@ import {
 } from "../../_hooks/useCustomerSearch"
 import { useDebounce } from "@/hooks/useDebounce"
 import { useCepLookup } from "@/hooks"
+import { formatPhone } from "@/components/ui/masked-input"
 
 const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-muted-foreground"
 const LABEL = "block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-0.5"
@@ -207,9 +208,10 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange }: PersonI
     } catch { /* usuário preenche manualmente */ }
   }
 
-  const phone = person?.contacts.find(
+  const phoneContact = person?.contacts.find(
     (c) => c.contact_type === "PHONE" || c.contact_type === "CELULAR"
-  )?.value
+  )
+  const phone = phoneContact?.value_masked ?? (phoneContact?.value ? formatPhone(phoneContact.value) : undefined)
 
   if (isLoading) {
     return (
