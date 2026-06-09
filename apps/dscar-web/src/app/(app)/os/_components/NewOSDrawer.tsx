@@ -19,6 +19,7 @@ import { CustomerSearch } from "../[numero]/_components/shared/CustomerSearch"
 import { InsurerSelect } from "../[numero]/_components/shared/InsurerSelect"
 import { ColorSelect } from "../[numero]/_components/shared/ColorSelect"
 import { usePlateLookup } from "../[numero]/_hooks/useVehicleCatalog"
+import { VehicleFipeFields } from "@/components/vehicle/VehicleFipeFields"
 import { ApiError, handleApiFormError } from "@/lib/api"
 
 const FUEL_TYPE_PT: Record<string, string> = {
@@ -282,58 +283,26 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
               )}
             </div>
 
-            {/* Montadora | Modelo */}
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className={LABEL}>Montadora *</label>
-                <input
-                  className={errors.make ? INPUT_ERROR : INPUT}
-                  placeholder="Ex: Honda"
-                  data-testid="make-input"
-                  {...register("make")}
-                />
-                {errors.make && (
-                  <p className="mt-0.5 text-xs text-error-400">
-                    {errors.make.message}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className={LABEL}>Modelo *</label>
-                <input
-                  className={errors.model ? INPUT_ERROR : INPUT}
-                  placeholder="Ex: Civic"
-                  data-testid="model-input"
-                  {...register("model")}
-                />
-                {errors.model && (
-                  <p className="mt-0.5 text-xs text-error-400">
-                    {errors.model.message}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Versão | Ano */}
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className={LABEL}>Versão <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
-                <input
-                  className={INPUT}
-                  placeholder="Ex: EX"
-                  {...register("vehicle_version")}
-                />
-              </div>
-              <div>
-                <label className={LABEL}>Ano <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
-                <input
-                  className={INPUT}
-                  type="number"
-                  placeholder="Ex: 2022"
-                  {...register("year", { valueAsNumber: true })}
-                />
-              </div>
-            </div>
+            {/* Montadora / Modelo / Versão — FIPE autocomplete */}
+            <VehicleFipeFields
+              initialMake={watch("make")}
+              initialModel={watch("model")}
+              initialYear={watch("year")}
+              initialVersion={watch("vehicle_version")}
+              onFieldChange={(fields) => {
+                setValue("make", fields.make)
+                setValue("model", fields.model)
+                if (fields.vehicle_version) setValue("vehicle_version", fields.vehicle_version)
+                if (fields.year) setValue("year", fields.year)
+                if (fields.fuel_type) setValue("fuel_type", translateFuelType(fields.fuel_type))
+              }}
+              labelClass={LABEL}
+            />
+            {(errors.make || errors.model) && (
+              <p className="text-xs text-error-400">
+                {errors.make?.message || errors.model?.message}
+              </p>
+            )}
 
             {/* Cor | Combustível */}
             <div className="grid grid-cols-2 gap-2">
