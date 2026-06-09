@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { Search, FilterX, Plus, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 
@@ -21,7 +22,8 @@ const SELECT_CLS = "h-9 rounded-md border border-border bg-muted/50 px-3 py-1 te
 const PAGE_SIZE = 20
 
 export default function ServiceOrdersPage() {
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  const searchParams = useSearchParams()
+  const [drawerOpen, setDrawerOpen] = useState(searchParams.get("nova") === "1")
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState<string>("ALL")
   const [customerType, setCustomerType] = useState<string>("ALL")

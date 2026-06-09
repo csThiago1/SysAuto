@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation"
 import { ServiceOrderForm } from "./_components/ServiceOrderForm"
 import { auth } from "@/lib/auth"
 import type { ServiceOrder } from "@paddock/types"
@@ -29,6 +30,12 @@ async function getServiceOrder(numero: string, token: string, tenant: string): P
 
 export default async function ServiceOrderPage({ params }: PageProps) {
   const { numero } = await params
+
+  // "nova" não é um número de OS — redireciona para lista com drawer de criação
+  if (numero === "nova") {
+    redirect("/os?nova=1")
+  }
+
   const session = await auth()
   const token = session?.accessToken ?? ""
 
@@ -44,5 +51,6 @@ export default async function ServiceOrderPage({ params }: PageProps) {
 
 export async function generateMetadata({ params }: PageProps) {
   const { numero } = await params
+  if (numero === "nova") return { title: "Nova OS — DS Car" }
   return { title: `OS #${numero} — DS Car` }
 }
