@@ -53,7 +53,7 @@ def generate_access_token(
     user: "GlobalUser",  # noqa: F821
     permissions: list[str] | None = None,
 ) -> str:
-    """Generate access token with 15-min TTL.
+    """Generate access token with 1-hour TTL.
 
     Args:
         user: GlobalUser instance.
@@ -73,7 +73,7 @@ def generate_access_token(
         "tenant_schema": "tenant_dscar",
         "client_slug": "grupo-dscar",
         "iat": now,
-        "exp": now + datetime.timedelta(minutes=15),
+        "exp": now + datetime.timedelta(hours=1),
         "token_type": "access",
     }
     return pyjwt.encode(payload, _get_secret(), algorithm=_get_algorithm())

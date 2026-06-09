@@ -5,7 +5,10 @@
  * Keycloak removido da stack.
  *
  * Claims propagados a sessao:
- *   accessToken, role, permissions, companies, activeCompany, tenantSchema, clientSlug
+ *   accessToken, refreshToken, role, permissions, companies, activeCompany, tenantSchema, clientSlug
+ *
+ * Auto-refresh: o callback jwt verifica se o access token expirou e usa o refresh
+ * token para obter um novo par access+refresh automaticamente.
  */
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
@@ -27,6 +30,8 @@ declare module "next-auth" {
 
   interface User {
     accessToken?: string;
+    refreshToken?: string;
+    accessTokenExpires?: number;
     role?: string;
     permissions?: string[];
     extraPermissions?: string[];
@@ -39,6 +44,8 @@ declare module "next-auth" {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface JWT {
     accessToken?: string;
+    refreshToken?: string;
+    accessTokenExpires?: number;
     role?: string;
     permissions?: string[];
     extraPermissions?: string[];
@@ -46,12 +53,43 @@ declare module "next-auth" {
     activeCompany?: string;
     tenantSchema?: string;
     clientSlug?: string;
+    error?: string;
+  }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const BACKEND_URL =
+  process.env.BACKEND_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "http://localhost:8000";
+
+function decodeJwtPayload(jwt: string): Record<string, unknown> {
+  const payloadB64 = jwt.split(".")[1];
+  return JSON.parse(Buffer.from(payloadB64, "base64").toString("utf-8"));
+}
+
+/**
+ * Chama /api/v1/auth/refresh/ para obter novo par access+refresh.
+ * Retorna null se falhar (refresh expirado → força re-login).
+ */
+async function refreshAccessToken(
+  refreshToken: string
+): Promise<{ access: string; refresh: string } | null> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/v1/auth/refresh/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh: refreshToken }),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
   }
 }
 
 // ─── Exportacao principal ────────────────────────────────────────────────────
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
@@ -67,7 +105,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          const res = await fetch(`${API_URL}/api/v1/auth/login/`, {
+          const res = await fetch(`${BACKEND_URL}/api/v1/auth/login/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -81,24 +119,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const data = await res.json();
           // data: { access: "<jwt>", refresh: "<jwt>" }
 
-          // Decode JWT payload to extract claims (backend already validated)
-          const payloadB64 = data.access.split(".")[1];
-          const payload = JSON.parse(
-            Buffer.from(payloadB64, "base64").toString("utf-8")
-          );
+          const payload = decodeJwtPayload(data.access);
 
           return {
-            id: payload.sub,
-            email: payload.email,
-            name: payload.name || payload.email,
+            id: payload.sub as string,
+            email: payload.email as string,
+            name: (payload.name as string) || (payload.email as string),
             accessToken: data.access,
-            role: payload.role,
-            permissions: payload.permissions || [],
-            extraPermissions: payload.extra_permissions || [],
-            companies: payload.companies || ["dscar"],
-            activeCompany: payload.active_company || "dscar",
-            tenantSchema: payload.tenant_schema || "tenant_dscar",
-            clientSlug: payload.client_slug || "grupo-dscar",
+            refreshToken: data.refresh,
+            accessTokenExpires: (payload.exp as number) * 1000, // ms
+            role: payload.role as string,
+            permissions: (payload.permissions as string[]) || [],
+            extraPermissions: (payload.extra_permissions as string[]) || [],
+            companies: (payload.companies as string[]) || ["dscar"],
+            activeCompany: (payload.active_company as string) || "dscar",
+            tenantSchema: (payload.tenant_schema as string) || "tenant_dscar",
+            clientSlug: (payload.client_slug as string) || "grupo-dscar",
           };
         } catch (error) {
           console.error("Auth error:", error);
@@ -110,21 +146,60 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   callbacks: {
     async jwt({ token, user }) {
-      // Propaga claims do User retornado pelo authorize()
+      // 1. Login inicial — propaga tudo do authorize()
       if (user) {
-        if (user.accessToken) token.accessToken = user.accessToken;
-        if (user.role) token.role = user.role;
-        if (user.permissions) token.permissions = user.permissions;
-        if (user.extraPermissions) token.extraPermissions = user.extraPermissions;
-        if (user.companies) token.companies = user.companies;
-        if (user.activeCompany) token.activeCompany = user.activeCompany;
-        if (user.tenantSchema) token.tenantSchema = user.tenantSchema;
-        if (user.clientSlug) token.clientSlug = user.clientSlug;
+        token.accessToken = user.accessToken;
+        token.refreshToken = user.refreshToken;
+        token.accessTokenExpires = user.accessTokenExpires;
+        token.role = user.role;
+        token.permissions = user.permissions;
+        token.extraPermissions = user.extraPermissions;
+        token.companies = user.companies;
+        token.activeCompany = user.activeCompany;
+        token.tenantSchema = user.tenantSchema;
+        token.clientSlug = user.clientSlug;
+        return token;
       }
+
+      // 2. Token ainda válido — retorna sem refresh
+      const expires = token.accessTokenExpires as number | undefined;
+      if (expires && Date.now() < expires - 60_000) {
+        // 60s de margem para evitar race condition
+        return token;
+      }
+
+      // 3. Token expirou — tenta refresh
+      const refreshToken = token.refreshToken as string | undefined;
+      if (!refreshToken) {
+        token.error = "RefreshTokenMissing";
+        return token;
+      }
+
+      const refreshed = await refreshAccessToken(refreshToken);
+      if (!refreshed) {
+        token.error = "RefreshTokenExpired";
+        return token;
+      }
+
+      // Atualiza token com novo access + refresh
+      const payload = decodeJwtPayload(refreshed.access);
+      token.accessToken = refreshed.access;
+      token.refreshToken = refreshed.refresh;
+      token.accessTokenExpires = (payload.exp as number) * 1000;
+      token.role = payload.role as string;
+      token.permissions = payload.permissions as string[];
+      token.error = undefined;
+
       return token;
     },
 
     async session({ session, token }) {
+      // Se houve erro de refresh, força logout no client
+      if (token.error) {
+        session.accessToken = "";
+        return session;
+      }
+
       session.accessToken = (token.accessToken as string) ?? "";
       session.role = (token.role as PaddockRole) ?? "STOREKEEPER";
       session.permissions = (token.permissions as string[]) ?? [];
