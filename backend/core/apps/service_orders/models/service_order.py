@@ -377,6 +377,25 @@ class ServiceOrder(PaddockBaseModel):
     # ── Financeiro ────────────────────────────────────────────────────────────
     invoice_issued = models.BooleanField(default=False, verbose_name="NF emitida")
 
+    # ── NF emitida fora do sistema (uso temporário enquanto Focus NF-e não está disponível) ──
+    external_invoice_number = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        help_text=(
+            "Número da NF emitida fora do sistema (uso temporário enquanto Focus "
+            "não está disponível). Quando preenchido junto com external_invoice_date, "
+            "a OS é considerada faturada para fins de fechamento."
+        ),
+        verbose_name="Nº NF externa",
+    )
+    external_invoice_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Data da NF emitida fora do sistema.",
+        verbose_name="Data NF externa",
+    )
+
     # ── IA ────────────────────────────────────────────────────────────────────
     ai_recommendations = models.JSONField(default=list, blank=True)
 

@@ -484,7 +484,13 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
         if obj.status != ServiceOrderStatus.DELIVERED:
             return None
 
-        is_invoiced: bool = bool(obj.invoice_issued)
+        # Faturada quando: NF foi emitida pelo sistema (invoice_issued=True)
+        # OU possui NF emitida fora do sistema (number + date preenchidos).
+        # Uso temporário enquanto Focus NF-e não está disponível.
+        has_external_invoice: bool = bool(
+            (obj.external_invoice_number or "").strip()
+        ) and obj.external_invoice_date is not None
+        is_invoiced: bool = bool(obj.invoice_issued) or has_external_invoice
 
         has_any = getattr(obj, "_has_any_receivables", None)
         has_pending = getattr(obj, "_has_pending_receivables", None)
@@ -578,7 +584,13 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
         if obj.status != ServiceOrderStatus.DELIVERED:
             return None
 
-        is_invoiced: bool = bool(obj.invoice_issued)
+        # Faturada quando: NF foi emitida pelo sistema (invoice_issued=True)
+        # OU possui NF emitida fora do sistema (number + date preenchidos).
+        # Uso temporário enquanto Focus NF-e não está disponível.
+        has_external_invoice: bool = bool(
+            (obj.external_invoice_number or "").strip()
+        ) and obj.external_invoice_date is not None
+        is_invoiced: bool = bool(obj.invoice_issued) or has_external_invoice
 
         has_any = getattr(obj, "_has_any_receivables", None)
         has_pending = getattr(obj, "_has_pending_receivables", None)
@@ -669,6 +681,26 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, attrs: dict) -> dict:
+        # Proteção RBAC: apenas MANAGER+ pode setar campos de NF externa no create.
+        external_invoice_fields = {"external_invoice_number", "external_invoice_date"} & attrs.keys()
+        if external_invoice_fields:
+            # Ignora valores vazios (string vazia / None) -- só bloqueia se tem valor real.
+            has_real_value = bool(
+                (attrs.get("external_invoice_number") or "").strip()
+                or attrs.get("external_invoice_date")
+            )
+            if has_real_value:
+                from apps.authentication.permissions import _has_min_role
+                request = self.context.get("request")
+                if request is None or not _has_min_role(request, "MANAGER"):
+                    raise serializers.ValidationError(
+                        {
+                            "external_invoice_number": (
+                                "Apenas Gerentes ou superiores podem registrar NF emitida fora do sistema."
+                            )
+                        }
+                    )
+
         if attrs.get("customer_type") == ServiceOrder.CustomerType.INSURER:
             if not attrs.get("insurer"):
                 raise serializers.ValidationError(
@@ -796,7 +828,24 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
         Em PATCH parcial, so valida se o usuario esta alterando customer_type,
         insurer ou insured_type -- nao bloqueia edicoes de campos nao-relacionados
         em OS com dados inconsistentes pre-existentes.
+
+        Tambem garante que apenas MANAGER+ pode alterar os campos de NF emitida
+        fora do sistema (external_invoice_number / external_invoice_date).
         """
+        # Proteção RBAC: apenas MANAGER+ pode editar campos de NF externa.
+        external_invoice_fields = {"external_invoice_number", "external_invoice_date"} & attrs.keys()
+        if external_invoice_fields:
+            from apps.authentication.permissions import _has_min_role
+            request = self.context.get("request")
+            if request is None or not _has_min_role(request, "MANAGER"):
+                raise serializers.ValidationError(
+                    {
+                        "external_invoice_number": (
+                            "Apenas Gerentes ou superiores podem registrar NF emitida fora do sistema."
+                        )
+                    }
+                )
+
         instance = self.instance
         # So dispara validacao se algum campo relevante esta sendo alterado
         insurer_fields_in_payload = {"customer_type", "insurer", "insured_type"} & attrs.keys()
