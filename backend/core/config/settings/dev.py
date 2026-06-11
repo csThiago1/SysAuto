@@ -143,3 +143,11 @@ REST_FRAMEWORK = {
         "config.settings.dev.DevJWTAuthentication",
     ],
 }
+
+# ─── drf-spectacular: Swagger aberto em dev ──────────────────────────────────
+# Em base.py o Swagger e restrito a IsAdminUser para producao.
+# Em dev, liberamos para AllowAny para facilitar exploracao da API.
+SPECTACULAR_SETTINGS = {  # type: ignore[name-defined]
+    **SPECTACULAR_SETTINGS,  # type: ignore[name-defined]
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
+}

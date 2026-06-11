@@ -11,6 +11,9 @@ async function proxyRequest(
   pathSegments: string[],
   method: string
 ): Promise<NextResponse> {
+  if (pathSegments.some((s) => s.includes("..") || s.startsWith("/"))) {
+    return NextResponse.json({ detail: "Path inválido" }, { status: 400 });
+  }
   const session = await auth();
   const joined = pathSegments.join("/");
   const withSlash = joined.endsWith("/") ? joined : `${joined}/`;

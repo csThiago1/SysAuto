@@ -30,10 +30,6 @@ urlpatterns = [
     path("api/v1/insurers/", include("apps.insurers.urls")),
     path("api/v1/vehicle-catalog/", include("apps.vehicle_catalog.urls")),
     path("api/v1/parts-catalog/", include("apps.parts_catalog.urls")),
-    path("api/v1/pricing/", include("apps.pricing_profile.urls")),
-    path("api/v1/pricing/catalog/", include("apps.pricing_catalog.urls")),
-    path("api/v1/pricing/fichas/", include("apps.pricing_tech.urls")),
-    path("api/v1/pricing/engine/", include("apps.pricing_engine.urls")),
     path("api/v1/cilia/", include("apps.cilia.urls")),
     path("api/v1/imports/", include("apps.imports.urls")),
     path("api/v1/hr/", include("apps.hr.urls")),
@@ -41,16 +37,14 @@ urlpatterns = [
     path("api/v1/accounts-payable/", include("apps.accounts_payable.urls")),
     path("api/v1/accounts-receivable/", include("apps.accounts_receivable.urls")),
     path("api/v1/quotes/", include("apps.quotes.urls")),
-    path("api/v1/pricing/", include("apps.pricing_benchmark.urls")),
     path("api/v1/signatures/", include("apps.signatures.urls")),
     path("api/v1/authz/", include("apps.authz.urls")),
     path("api/v1/vehicles/", include("apps.vehicles.urls")),
     path("api/v1/budgets/", include("apps.budgets.urls")),
     path("api/v1/documents/", include("apps.documents.urls")),
     path("api/v1/purchasing/", include("apps.purchasing.urls")),
-    # MO-9: Capacidade + Variâncias
+    # MO-9: Capacidade
     path("api/v1/capacidade/", include("apps.service_orders.urls_capacidade")),
-    path("api/v1/pricing/variancias/", include("apps.pricing_tech.urls_variancia")),
     # API Docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
@@ -64,5 +58,16 @@ if settings.DEBUG:
     import debug_toolbar
     from django.conf.urls.static import static
 
+    # PRD §9: Motor de precificação (pricing_*) está fora do MVP — só exposto
+    # em dev. Quando o motor for reativado em prod, mover para o bloco
+    # principal acima.
+    urlpatterns += [
+        path("api/v1/pricing/", include("apps.pricing_profile.urls")),
+        path("api/v1/pricing/catalog/", include("apps.pricing_catalog.urls")),
+        path("api/v1/pricing/fichas/", include("apps.pricing_tech.urls")),
+        path("api/v1/pricing/engine/", include("apps.pricing_engine.urls")),
+        path("api/v1/pricing/", include("apps.pricing_benchmark.urls")),
+        path("api/v1/pricing/variancias/", include("apps.pricing_tech.urls_variancia")),
+    ]
     urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

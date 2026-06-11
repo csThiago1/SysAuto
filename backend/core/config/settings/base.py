@@ -205,6 +205,9 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SCHEMA_PATH_PREFIX": r"/api/v[0-9]",
+    # Restringe acesso ao Swagger/OpenAPI em producao a usuarios admin.
+    # Em dev, dev.py sobrescreve para AllowAny.
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
 }
 
 # ─── Celery ───────────────────────────────────────────────────────────────────
@@ -344,6 +347,7 @@ JWT_PRIVATE_KEY = config("JWT_PRIVATE_KEY", default="")  # RS256 private key inl
 JWT_PUBLIC_KEY = config("JWT_PUBLIC_KEY", default="")  # RS256 public key inline
 JWT_PRIVATE_KEY_FILE = config("JWT_PRIVATE_KEY_FILE", default="")  # Path to PEM file
 JWT_PUBLIC_KEY_FILE = config("JWT_PUBLIC_KEY_FILE", default="")  # Path to PEM file
+JWT_AUDIENCE = config("JWT_AUDIENCE", default="dscar-erp")  # claim 'aud' nos tokens emitidos
 
 # ─── Email (Resend) ─────────────────────────────────────────────────────────
 RESEND_API_KEY = config("RESEND_API_KEY", default="")

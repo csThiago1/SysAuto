@@ -241,19 +241,27 @@ class ServiceOrderViewSet(
                 status__in=[ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED]
             )
 
+        # Considera "faturada" tanto a OS com invoice_issued=True quanto a OS
+        # com NF emitida fora do sistema (external_invoice_number preenchido +
+        # external_invoice_date definido). Uso temporário enquanto Focus NF-e
+        # não está disponível.
+        invoiced_q = Q(invoice_issued=True) | (
+            ~Q(external_invoice_number="") & Q(external_invoice_date__isnull=False)
+        )
+
         closure = self.request.query_params.get("closure")
         if closure == "closed":
             qs = qs.filter(
+                invoiced_q,
                 status=ServiceOrderStatus.DELIVERED,
-                invoice_issued=True,
                 _has_any_receivables=True,
                 _has_pending_receivables=False,
             )
         elif closure == "pending":
             qs = qs.filter(status=ServiceOrderStatus.DELIVERED).exclude(
-                invoice_issued=True,
-                _has_any_receivables=True,
-                _has_pending_receivables=False,
+                invoiced_q
+                & Q(_has_any_receivables=True)
+                & Q(_has_pending_receivables=False),
             )
 
         return qs
@@ -1045,6 +1053,23 @@ class ServiceOrderViewSet(
             serializer.is_valid(raise_exception=True)
 
             file = serializer.validated_data["file"]
+            # Limite 10MB + MIME image/* — evita DoS por upload gigante e
+            # exfiltração de outros tipos (PDFs, executáveis).
+            MAX_PHOTO_BYTES = 10 * 1024 * 1024
+            ALLOWED_TYPES = {
+                "image/jpeg", "image/png", "image/webp",
+                "image/heic", "image/heif",
+            }
+            if file.size > MAX_PHOTO_BYTES:
+                return Response(
+                    {"detail": "Arquivo excede 10MB."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if file.content_type not in ALLOWED_TYPES:
+                return Response(
+                    {"detail": f"Tipo não suportado: {file.content_type}."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             folder = serializer.validated_data["folder"]
             caption = serializer.validated_data.get("caption", "")
             slot = serializer.validated_data.get("slot", "")

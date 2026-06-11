@@ -204,6 +204,14 @@ class FocusWebhookView(APIView):
             200 em qualquer caso válido (Focus reprocessa se não receber 2xx).
             403 se secret inválido.
         """
+        # Webhook desabilitado se secret não configurado — evita aceitar
+        # qualquer POST quando settings.FOCUS_NFE_WEBHOOK_SECRET=="".
+        if not getattr(settings, "FOCUS_NFE_WEBHOOK_SECRET", ""):
+            logger.error("FocusWebhookView: FOCUS_NFE_WEBHOOK_SECRET não configurado.")
+            return Response(
+                {"detail": "Webhook desabilitado."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         # Validar secret no path
         if secret != settings.FOCUS_NFE_WEBHOOK_SECRET:
             logger.warning("FocusWebhookView: secret inválido recebido.")

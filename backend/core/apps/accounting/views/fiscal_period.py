@@ -19,6 +19,7 @@ from apps.accounting.serializers.fiscal_period import (
     FiscalYearSerializer,
 )
 from apps.accounting.services.fiscal_period_service import FiscalPeriodService
+from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
 
 logger = logging.getLogger(__name__)
 
@@ -32,12 +33,18 @@ class FiscalYearViewSet(ModelViewSet):
     create   POST /accounting/fiscal-years/
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     serializer_class = FiscalYearSerializer
     http_method_names = ["get", "post", "head", "options"]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = {"is_closed": ["exact"]}
     ordering_fields = ["year"]
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        """Leitura: CONSULTANT+. Escrita: MANAGER+."""
+        if self.action in ("create", "update", "partial_update", "destroy"):
+            return [IsAuthenticated(), IsManagerOrAbove()]
+        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> Any:
         return FiscalYear.objects.filter(is_active=True).order_by("-year")
@@ -62,10 +69,16 @@ class FiscalPeriodViewSet(
     current  GET  /accounting/fiscal-periods/current/
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = {"is_closed": ["exact"], "fiscal_year": ["exact"]}
     ordering_fields = ["fiscal_year__year", "number"]
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        """Leitura: CONSULTANT+. Escrita/fechamento: MANAGER+."""
+        if self.action in ("create", "update", "partial_update", "destroy", "close"):
+            return [IsAuthenticated(), IsManagerOrAbove()]
+        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> Any:
         return (

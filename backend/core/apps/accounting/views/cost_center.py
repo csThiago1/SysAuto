@@ -15,6 +15,7 @@ from apps.accounting.serializers.cost_center import (
     CostCenterDetailSerializer,
     CostCenterListSerializer,
 )
+from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
 
 logger = logging.getLogger(__name__)
 
@@ -29,12 +30,18 @@ class CostCenterViewSet(ModelViewSet):
     update   PATCH /accounting/cost-centers/{id}/
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     http_method_names = ["get", "post", "put", "patch", "head", "options"]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {"is_active": ["exact"]}
     search_fields = ["code", "name"]
     ordering_fields = ["code", "name"]
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        """Leitura: CONSULTANT+. Escrita: MANAGER+."""
+        if self.action in ("create", "update", "partial_update", "destroy"):
+            return [IsAuthenticated(), IsManagerOrAbove()]
+        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> Any:
         return (

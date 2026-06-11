@@ -13,6 +13,9 @@ export async function GET(
   }
 
   const session = await auth()
+  if (!session?.user) {
+    return NextResponse.json({ detail: "Não autenticado" }, { status: 401 })
+  }
   const token = session?.accessToken as string | undefined
 
   const defaultDomain = process.env.DEFAULT_TENANT_DOMAIN ?? "dscar.localhost"

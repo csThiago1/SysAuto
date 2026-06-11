@@ -22,6 +22,7 @@ from apps.accounting.serializers.chart_of_accounts import (
     ChartOfAccountTreeSerializer,
 )
 from apps.accounting.services.balance_service import AccountBalanceService
+from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
 
 logger = logging.getLogger(__name__)
 
@@ -36,12 +37,18 @@ class ChartOfAccountViewSet(ModelViewSet):
     balance  GET  /accounting/chart-of-accounts/{id}/balance/?start=&end=
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     http_method_names = ["get", "post", "put", "patch", "head", "options"]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = ChartOfAccountFilter
     search_fields = ["code", "name"]
     ordering_fields = ["code", "name", "level"]
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        """Leitura: CONSULTANT+. Escrita: MANAGER+."""
+        if self.action in ("create", "update", "partial_update", "destroy"):
+            return [IsAuthenticated(), IsManagerOrAbove()]
+        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> Any:
         """Retorna contas com select_related para parent."""

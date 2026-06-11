@@ -72,6 +72,7 @@ def generate_access_token(
         "active_company": "dscar",
         "tenant_schema": "tenant_dscar",
         "client_slug": "grupo-dscar",
+        "aud": getattr(settings, "JWT_AUDIENCE", "dscar-erp"),
         "iat": now,
         "exp": now + datetime.timedelta(hours=1),
         "token_type": "access",
@@ -91,6 +92,7 @@ def generate_refresh_token(user: "GlobalUser") -> str:  # noqa: F821
     now = datetime.datetime.now(tz=datetime.timezone.utc)
     payload: dict = {
         "sub": str(user.pk),
+        "aud": getattr(settings, "JWT_AUDIENCE", "dscar-erp"),
         "iat": now,
         "exp": now + datetime.timedelta(days=7),
         "token_type": "refresh",
@@ -111,6 +113,9 @@ def decode_token(token: str) -> dict:
         jwt.ExpiredSignatureError: If token is expired.
         jwt.InvalidTokenError: If token is invalid.
     """
+    # TODO 2026-06-18 (após D+7 — janela em que tokens emitidos antes do claim
+    # 'aud' já terão expirado): trocar para verify_aud=True e passar
+    # audience=settings.JWT_AUDIENCE. Aplicar também em backends.py:99 e dev.py:109.
     return pyjwt.decode(
         token,
         _get_verify_key(),

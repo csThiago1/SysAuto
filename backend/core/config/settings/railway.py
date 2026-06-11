@@ -8,7 +8,12 @@ from django_tenants.middleware.main import TenantMainMiddleware
 from .base import *  # noqa: F401, F403
 
 DEBUG = False
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    ".up.railway.app",
+    ".paddock.solutions",
+    ".vercel.app",
+    "localhost",
+]
 
 # ─── Auth — NativeJWT ──────────────────────────────────────────────────────
 REST_FRAMEWORK = {
@@ -56,6 +61,25 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGIN_REGEXES = [
     *CORS_ALLOWED_ORIGIN_REGEXES,  # type: ignore[name-defined]  # herda paddock.solutions + localhost
     r"^https://sys-auto-dscar-web.*\.vercel\.app$",  # production + preview deploys
+]
+
+# ─── Security headers — Railway termina TLS no edge ───────────────────────
+# Sem SECURE_PROXY_SSL_HEADER o Django acha que está em HTTP e nunca emite
+# redirect/cookies Secure. Com Railway, o header é injetado pelo edge.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = 31536000  # 1 ano
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+X_FRAME_OPTIONS = "DENY"
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.up.railway.app",
+    "https://*.paddock.solutions",
+    "https://*.vercel.app",
 ]
 
 # ─── Email — console (sem Resend em staging gratuito) ──────────────────────

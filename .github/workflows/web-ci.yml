@@ -1,0 +1,60 @@
+name: Web CI
+
+on:
+  pull_request:
+    paths:
+      - 'apps/dscar-web/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'turbo.json'
+      - '.github/workflows/web-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/dscar-web/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'turbo.json'
+      - '.github/workflows/web-ci.yml'
+
+jobs:
+  typecheck-build:
+    name: Typecheck & Build
+    runs-on: ubuntu-latest
+
+    env:
+      # Next-auth v5 exige AUTH_SECRET no build
+      AUTH_SECRET: ci-dummy-auth-secret-for-build-only
+      NEXTAUTH_SECRET: ci-dummy-auth-secret-for-build-only
+      NEXTAUTH_URL: http://localhost:3001
+      # Mocks p/ vars públicas usadas no build
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_APP_URL: http://localhost:3001
+      NEXT_PUBLIC_SENTRY_DSN: ''
+      BACKEND_URL: http://localhost:8000
+      # OIDC mocks (build não precisa validar)
+      KEYCLOAK_CLIENT_ID: dummy
+      KEYCLOAK_CLIENT_SECRET: dummy
+      KEYCLOAK_ISSUER: http://localhost:8080/realms/dummy
+      DEV_JWT_SECRET: ci-dummy-jwt-secret
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: apps/dscar-web
+        run: npm run typecheck
+
+      - name: Build
+        working-directory: apps/dscar-web
+        run: npm run build
