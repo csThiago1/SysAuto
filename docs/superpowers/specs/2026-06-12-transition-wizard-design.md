@@ -261,13 +261,20 @@ Já vem hoje em `order.transition_requirements: Record<ServiceOrderStatus, Valid
 
 ---
 
-## 9. Open questions (a confirmar antes da implementação)
+## 9. Decisões resolvidas (eram open questions)
 
-1. **`SignatureCanvas`** — está em `apps/mobile/` (React Native) ou já existe versão web em `packages/ui/`? Se for só mobile, vamos portar pra `apps/dscar-web/src/components/ui/SignatureCanvas.tsx`.
-2. **"Tela completa"** das fotos — preferimos navegar pra `/os/[numero]?tab=files` (mesma página, troca de tab) ou rota dedicada `/os/[numero]/arquivos`? A primeira preserva contexto e estado do form.
-3. **Watermark** — backend já aplica nas fotos uploadadas via mobile? Se sim, mesma rota; se não, fica como débito separado.
-4. **`SIGNATURE_APPROVAL`** — onde está armazenada a assinatura do funcionário hoje no backend? `Employee.signature_url`? Confirmar campo antes de implementar.
-5. **Apontamento de horas no web** — não existe interface dedicada (só mobile). O `TimesheetResolver` vai ser **a primeira UI web pra apontamento**. Decisão: implementar listagem + ação "encerrar" mínima dentro do wizard agora, e em V2 fazer uma aba dedicada `/os/[numero]?tab=apontamentos` se for necessário. Vai exigir tipos `Apontamento` em `@paddock/types` (mobile já tem).
+1. **`SignatureCanvas` no web** — versão web ainda não existe. Vamos criar `apps/dscar-web/src/components/ui/SignatureCanvas.tsx` baseado no mobile, mas adaptado pra DOM (HTML5 canvas + pointer events). Precisa funcionar bem em mobile-web (touch, área maior, suporte a `prevent-default` pra não scrollar enquanto desenha). Componente vai pra **fase 3** do plano (com `SignatureResolver`).
+
+2. **"Tela completa" das fotos** — navegar pra `/os/[numero]?tab=files` (troca de tab interna, preserva contexto). Quando o resolver inline tem botão "abrir tela completa", chama `setActiveTab("files")` via prop callback OU `router.push` com search param `?tab=files&folder=vistoria_entrada`. Sem rotas novas.
+
+3. **Watermark** — **mobile aplica client-side** antes de upload; backend recebe pronto. Pro web vamos precisar de uma das duas abordagens:
+   - **Server-side com Pillow** *(recomendado)*: backend estampa `OS #{n} | {data} | {usuário}` no upload via `useUploadPhoto`. ~50ms por foto, consistente, código central. Backend ganha módulo `apps/service_orders/services/photo_watermark.py`.
+   - Client-side com canvas: replica lógica do mobile. Funciona offline mas duplica código e exige sincronização de fonte/posição.
+   - **Decisão V1:** server-side. Trata como débito paralelo ao wizard (backend pode entregar antes); enquanto não tem, foto sobe sem watermark e fica marcada com flag pra reprocessamento depois.
+
+4. **`SIGNATURE_APPROVAL`** — assinatura do funcionário está salva **nas configurações de usuário** (provavelmente `User.signature_image` ou `Employee.signature_url` — confirmar campo exato no `apps/users/models.py` durante a implementação da fase 3). `SignatureResolver` para este code não abre canvas — mostra preview da assinatura salva e botão "Confirmar com minha assinatura" que faz POST `/os/:id/signatures/` com `{ code: "SIGNATURE_APPROVAL", source: "saved" }`.
+
+5. **Apontamento de horas no web** — UI web não existe ainda e o desenho dedicado não está claro. Decisão de V1: **`TimesheetResolver` faz o mínimo necessário dentro do wizard** — lista apontamentos abertos da OS via `GET /service-orders/:id/apontamentos/` (endpoint mobile reaproveitado) e tem botão "Encerrar todos" que dispara `POST /apontamentos/:id/encerrar/` em loop. Sem timer, sem criação manual no web. Quando o desenho da aba completa estiver pronto, este resolver ganha o link "Tela completa" apontando pra ela. **Bloqueio possível:** tipo `Apontamento` precisa ser exposto em `@paddock/types` (mobile já tem internamente).
 
 ---
 
