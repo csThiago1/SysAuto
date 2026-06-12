@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Loader2, Plus, Pencil, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, fetchList } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@paddock/utils"
 import type { ServiceOrderPart, ServiceOrderLabor } from "@paddock/types"
@@ -21,14 +21,14 @@ export function ComplementTab({ orderId }: Props) {
 
   const { data: parts = [] } = useQuery({
     queryKey: [...queryKey, "parts"],
-    queryFn: () => apiFetch<ServiceOrderPart[]>(
+    queryFn: () => fetchList<ServiceOrderPart>(
       `/api/proxy/service-orders/${orderId}/complement/parts/`,
     ),
   })
 
   const { data: services = [] } = useQuery({
     queryKey: [...queryKey, "services"],
-    queryFn: () => apiFetch<ServiceOrderLabor[]>(
+    queryFn: () => fetchList<ServiceOrderLabor>(
       `/api/proxy/service-orders/${orderId}/complement/services/`,
     ),
   })

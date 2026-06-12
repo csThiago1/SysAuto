@@ -9,7 +9,7 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, fetchList } from "@/lib/api"
 
 interface ActivityLog {
   id: string
@@ -29,7 +29,7 @@ export function RemindersTab({ orderId }: RemindersTabProps) {
 
   const { data: allLogs, isLoading } = useQuery<ActivityLog[]>({
     queryKey: ["service-order-history", orderId],
-    queryFn: () => apiFetch<ActivityLog[]>(`/api/proxy/service-orders/${orderId}/history/`),
+    queryFn: () => fetchList<ActivityLog>(`/api/proxy/service-orders/${orderId}/history/`),
     enabled: !!orderId,
   })
 

@@ -18,7 +18,7 @@ import type {
   PartCompraInput,
   PartSeguradoraInput,
 } from "@paddock/types"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, fetchList } from "@/lib/api"
 import { toast } from "sonner"
 
 const API = "/api/proxy"
@@ -28,7 +28,7 @@ const API = "/api/proxy"
 export function useOSParts(orderId: string | undefined) {
   return useQuery<ServiceOrderPart[]>({
     queryKey: ["os-parts", orderId],
-    queryFn: () => apiFetch<ServiceOrderPart[]>(`${API}/service-orders/${orderId}/parts/`),
+    queryFn: () => fetchList<ServiceOrderPart>(`${API}/service-orders/${orderId}/parts/`),
     enabled: !!orderId,
   })
 }
@@ -127,7 +127,7 @@ export function useAddPartSeguradora(orderId: string) {
 export function useOSLabor(orderId: string | undefined) {
   return useQuery<ServiceOrderLabor[]>({
     queryKey: ["os-labor", orderId],
-    queryFn: () => apiFetch<ServiceOrderLabor[]>(`${API}/service-orders/${orderId}/labor/`),
+    queryFn: () => fetchList<ServiceOrderLabor>(`${API}/service-orders/${orderId}/labor/`),
     enabled: !!orderId,
   })
 }
@@ -182,7 +182,7 @@ export function useOSPhotos(orderId: string | undefined) {
   return useQuery<ServiceOrderPhoto[]>({
     queryKey: ["os-photos", orderId],
     queryFn: () =>
-      apiFetch<ServiceOrderPhoto[]>(`${API}/service-orders/${orderId}/photos/`),
+      fetchList<ServiceOrderPhoto>(`${API}/service-orders/${orderId}/photos/`),
     enabled: !!orderId,
   })
 }
@@ -226,7 +226,7 @@ export function useOSBudgetSnapshots(orderId: string | undefined) {
   return useQuery<BudgetSnapshot[]>({
     queryKey: ["os-budget-snapshots", orderId],
     queryFn: () =>
-      apiFetch<BudgetSnapshot[]>(`${API}/service-orders/${orderId}/budget-snapshots/`),
+      fetchList<BudgetSnapshot>(`${API}/service-orders/${orderId}/budget-snapshots/`),
     enabled: !!orderId,
   })
 }

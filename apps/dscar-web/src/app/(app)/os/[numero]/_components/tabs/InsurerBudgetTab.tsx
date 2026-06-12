@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { apiFetch } from "@/lib/api"
+import { fetchList } from "@/lib/api"
 import type { ServiceOrder, ServiceOrderVersion } from "@paddock/types"
 
 interface Props {
@@ -14,7 +14,7 @@ interface Props {
 export function InsurerBudgetTab({ order, onOpenImport }: Props) {
   const { data: versions, isLoading } = useQuery({
     queryKey: ["service-order-versions", order.id],
-    queryFn: () => apiFetch<ServiceOrderVersion[]>(
+    queryFn: () => fetchList<ServiceOrderVersion>(
       `/api/proxy/service-orders/versions/?service_order=${order.id}`,
     ),
   })

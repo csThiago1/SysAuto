@@ -5,7 +5,7 @@
  * Sprint 16 — SC-3
  */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, fetchList } from "@/lib/api"
 import type {
   PaginatedResponse,
   ServiceCatalogItem,
@@ -90,7 +90,7 @@ export function useOSLaborItems(
 ): ReturnType<typeof useQuery<ServiceLaborItem[]>> {
   return useQuery<ServiceLaborItem[]>({
     queryKey: catalogKeys.labor(osId),
-    queryFn: () => apiFetch<ServiceLaborItem[]>(`${OS_API}/${osId}/labor/`),
+    queryFn: () => fetchList<ServiceLaborItem>(`${OS_API}/${osId}/labor/`),
     enabled: Boolean(osId),
   })
 }

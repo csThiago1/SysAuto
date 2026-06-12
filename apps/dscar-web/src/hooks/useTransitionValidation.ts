@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, fetchList } from "@/lib/api"
 import type {
   TransitionOverrideRequest,
   CreateOverridePayload,
@@ -54,7 +54,7 @@ export function useRequestOverride(osId: string) {
 export function usePendingOverrides() {
   return useQuery<TransitionOverrideRequest[]>({
     queryKey: ["pending-overrides"],
-    queryFn: () => apiFetch<TransitionOverrideRequest[]>(`${API}/pending-overrides/`),
+    queryFn: () => fetchList<TransitionOverrideRequest>(`${API}/pending-overrides/`),
     refetchInterval: 30000,
   })
 }
