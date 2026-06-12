@@ -16,7 +16,7 @@ import type {
   CreateReceivablePayload,
   RecordReceiptPayload,
 } from "@paddock/types";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, fetchList } from "@/lib/api";
 
 const AP = "/api/proxy/accounts-payable";
 const AR = "/api/proxy/accounts-receivable";
@@ -308,7 +308,7 @@ export function useCreateReceivableInstallments(): ReturnType<
   const qc = useQueryClient();
   return useMutation<ReceivableDocumentListItem[], Error, Record<string, unknown>>({
     mutationFn: async (data) =>
-      apiFetch<ReceivableDocumentListItem[]>(`${AR}/documents/installments/`, {
+      fetchList<ReceivableDocumentListItem>(`${AR}/documents/installments/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -329,7 +329,7 @@ export function useCreatePayableInstallments(): ReturnType<
   const qc = useQueryClient();
   return useMutation<PayableDocumentListItem[], Error, Record<string, unknown>>({
     mutationFn: async (data) =>
-      apiFetch<PayableDocumentListItem[]>(`${AP}/documents/installments/`, {
+      fetchList<PayableDocumentListItem>(`${AP}/documents/installments/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

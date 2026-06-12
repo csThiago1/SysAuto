@@ -55,7 +55,7 @@ export function useArmazemOcupacao(id: string) {
   return useQuery<OcupacaoRua[]>({
     queryKey: locationKeys.armazemOcupacao(id),
     queryFn: () =>
-      apiFetch<OcupacaoRua[]>(`${INV}/armazens/${id}/ocupacao/`),
+      fetchList<OcupacaoRua>(`${INV}/armazens/${id}/ocupacao/`),
     enabled: !!id,
   })
 }

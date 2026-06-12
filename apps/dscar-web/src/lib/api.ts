@@ -97,11 +97,13 @@ type PaginatedDRF<T> = {
 };
 
 /**
- * Busca lista paginada DRF e extrai .results automaticamente.
+ * Busca lista DRF e extrai .results automaticamente.
  * Aceita tanto resposta paginada quanto array direto.
+ * Aceita init opcional (POST, headers, body) — útil pra endpoints de
+ * match/search que mandam payload mas retornam lista.
  */
-export async function fetchList<T>(url: string): Promise<T[]> {
-  const data = await apiFetch<PaginatedDRF<T> | T[]>(url);
+export async function fetchList<T>(url: string, init?: RequestInit): Promise<T[]> {
+  const data = await apiFetch<PaginatedDRF<T> | T[]>(url, init);
   if (data && !Array.isArray(data) && "results" in data) return data.results;
   return data as T[];
 }

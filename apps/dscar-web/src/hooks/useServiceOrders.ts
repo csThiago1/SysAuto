@@ -7,7 +7,7 @@ import type {
   PecaEstoqueResult,
   VehicleHistory,
 } from "@paddock/types";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, fetchList } from "@/lib/api";
 
 const API = "/api/proxy";
 
@@ -63,7 +63,7 @@ export function useBuscarPecas(params?: Record<string, string>) {
   const search = params ? "?" + new URLSearchParams(params).toString() : ""
   return useQuery<PecaEstoqueResult[]>({
     queryKey: ["inventory", "buscar-pecas", params],
-    queryFn: () => apiFetch<PecaEstoqueResult[]>(`/api/proxy/inventory/buscar-pecas/${search}`),
+    queryFn: () => fetchList<PecaEstoqueResult>(`/api/proxy/inventory/buscar-pecas/${search}`),
     enabled: !!params?.busca && params.busca.length >= 2,
   })
 }

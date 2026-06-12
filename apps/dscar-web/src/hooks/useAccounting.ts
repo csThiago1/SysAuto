@@ -15,7 +15,7 @@ import type {
   CreateChartOfAccountPayload,
   DREResponse,
 } from "@paddock/types";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, fetchList } from "@/lib/api";
 
 const API = "/api/proxy/accounting";
 
@@ -56,7 +56,7 @@ export function useChartOfAccountsTree(): ReturnType<
   return useQuery<ChartOfAccountNode[]>({
     queryKey: accountingKeys.accountTree(),
     queryFn: () =>
-      apiFetch<ChartOfAccountNode[]>(`${API}/chart-of-accounts/tree/`),
+      fetchList<ChartOfAccountNode>(`${API}/chart-of-accounts/tree/`),
   });
 }
 

@@ -134,7 +134,7 @@ export function useNfeRecebidas(pagina = 1) {
   return useQuery({
     queryKey: ["fiscal", "nfe-recebidas", pagina],
     queryFn: () =>
-      apiFetch<NfeRecebida[]>(`/api/proxy/fiscal/nfe-recebidas/?pagina=${pagina}`),
+      fetchList<NfeRecebida>(`/api/proxy/fiscal/nfe-recebidas/?pagina=${pagina}`),
     staleTime: 1000 * 60 * 5, // 5 min
   })
 }
@@ -344,7 +344,7 @@ export function useNfeEntradaMatchPO(nfeEntradaId: string) {
   return useQuery({
     queryKey: ["nfe-entrada", nfeEntradaId, "match-po"],
     queryFn: () =>
-      apiFetch<PurchaseOrderMatch[]>(`${FISCAL}/nfe-entrada/${nfeEntradaId}/match-po/`),
+      fetchList<PurchaseOrderMatch>(`${FISCAL}/nfe-entrada/${nfeEntradaId}/match-po/`),
     enabled: Boolean(nfeEntradaId),
   })
 }

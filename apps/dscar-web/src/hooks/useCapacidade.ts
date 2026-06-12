@@ -101,7 +101,7 @@ export function useHeatmapSemana(inicio: string) {
     queryKey: ["capacidade-heatmap", inicio],
     enabled: !!inicio,
     queryFn: () =>
-      apiFetch<HeatmapDia[]>(`${BASE_CAP}/heatmap-semana/?inicio=${inicio}`),
+      fetchList<HeatmapDia>(`${BASE_CAP}/heatmap-semana/?inicio=${inicio}`),
   })
 }
 

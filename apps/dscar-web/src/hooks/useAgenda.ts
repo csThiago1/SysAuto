@@ -1,7 +1,7 @@
 "use client"
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, fetchList } from "@/lib/api"
 import { format } from "date-fns"
 import type { CalendarOS, CalendarEvent, SchedulingPayload } from "@paddock/types"
 
@@ -19,7 +19,7 @@ export function useCalendar(dateStart: Date, dateEnd: Date) {
   return useQuery({
     queryKey: agendaKeys.calendar(start, end),
     queryFn: () =>
-      apiFetch<CalendarOS[]>(`${API}/calendar/?date_start=${start}&date_end=${end}`),
+      fetchList<CalendarOS>(`${API}/calendar/?date_start=${start}&date_end=${end}`),
     staleTime: 60_000,
   })
 }

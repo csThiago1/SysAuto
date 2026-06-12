@@ -64,7 +64,7 @@ export function useMatchServico(texto: string) {
   return useQuery<AliasMatch[]>({
     queryKey: catalogKeys.matchServico(texto),
     queryFn: () =>
-      apiFetch<AliasMatch[]>(`${BASE}/servicos/match/`, {
+      fetchList<AliasMatch>(`${BASE}/servicos/match/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ texto }),
@@ -177,7 +177,7 @@ export function useMatchMaterial(texto: string) {
   return useQuery<AliasMatch[]>({
     queryKey: catalogKeys.matchMaterial(texto),
     queryFn: () =>
-      apiFetch<AliasMatch[]>(`${BASE}/materiais/match/`, {
+      fetchList<AliasMatch>(`${BASE}/materiais/match/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ texto }),
@@ -306,7 +306,7 @@ export function useMatchPeca(texto: string) {
   return useQuery<AliasMatch[]>({
     queryKey: catalogKeys.matchPeca(texto),
     queryFn: () =>
-      apiFetch<AliasMatch[]>(`${BASE}/pecas/match/`, {
+      fetchList<AliasMatch>(`${BASE}/pecas/match/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ texto }),
