@@ -1,6 +1,5 @@
 import path from "path";
 import type { NextConfig } from "next";
-import { withSentryConfig } from "@sentry/nextjs";
 
 const withBundleAnalyzer = process.env.ANALYZE === "true"
     ? require("@next/bundle-analyzer")({ enabled: true })
@@ -90,18 +89,10 @@ const nextConfig: NextConfig = {
     },
 };
 
-// Sentry wrapper.
-// Defina SENTRY_ORG e SENTRY_PROJECT no ambiente (ex: Vercel, .env.local) para
-// que o upload de source maps funcione. Sem essas variáveis, o build segue
-// normalmente, apenas sem upload automático para o Sentry.
-export default withSentryConfig(
-    withBundleAnalyzer(nextConfig),
-    {
-        silent: true,
-        org: process.env.SENTRY_ORG,
-        project: process.env.SENTRY_PROJECT,
-        widenClientFileUpload: true,
-        tunnelRoute: "/monitoring",
-        disableLogger: true,
-    },
-);
+// withSentryConfig removido temporariamente: @sentry/nextjs hoisted pra raiz
+// do monorepo + next em apps/dscar-web/node_modules causa "Cannot find module
+// 'next/constants'" no build. Captura de erros segue funcionando via
+// instrumentation-client.ts + NEXT_PUBLIC_SENTRY_DSN — só não há upload
+// automático de source maps (stack trace minificado em produção).
+// TODO: voltar com withSentryConfig depois de resolver hoisting do monorepo.
+export default withBundleAnalyzer(nextConfig);
