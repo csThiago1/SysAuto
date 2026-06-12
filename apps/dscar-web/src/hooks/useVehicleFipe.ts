@@ -5,7 +5,7 @@
 
 import { useQuery } from "@tanstack/react-query"
 import type { VehicleMake, VehicleModel, VehicleYearVersion } from "@paddock/types"
-import { apiFetch } from "@/lib/api"
+import { fetchList } from "@/lib/api"
 
 const FIPE_BASE = "/api/proxy/vehicle-catalog"
 
@@ -22,7 +22,7 @@ export const fipeKeys = {
 export function useFipeMakes() {
   return useQuery<VehicleMake[]>({
     queryKey: fipeKeys.makes,
-    queryFn: () => apiFetch<VehicleMake[]>(`${FIPE_BASE}/makes/`),
+    queryFn: () => fetchList<VehicleMake>(`${FIPE_BASE}/makes/`),
     staleTime: 24 * 60 * 60 * 1000, // 24h
   })
 }
@@ -30,7 +30,7 @@ export function useFipeMakes() {
 export function useFipeModels(makeId: number | null) {
   return useQuery<VehicleModel[]>({
     queryKey: fipeKeys.models(makeId ?? 0),
-    queryFn: () => apiFetch<VehicleModel[]>(`${FIPE_BASE}/makes/${makeId!}/models/`),
+    queryFn: () => fetchList<VehicleModel>(`${FIPE_BASE}/makes/${makeId!}/models/`),
     enabled: makeId !== null,
     staleTime: 24 * 60 * 60 * 1000, // 24h
   })
@@ -39,7 +39,7 @@ export function useFipeModels(makeId: number | null) {
 export function useFipeYears(modelId: number | null) {
   return useQuery<VehicleYearVersion[]>({
     queryKey: fipeKeys.years(modelId ?? 0),
-    queryFn: () => apiFetch<VehicleYearVersion[]>(`${FIPE_BASE}/models/${modelId!}/years/`),
+    queryFn: () => fetchList<VehicleYearVersion>(`${FIPE_BASE}/models/${modelId!}/years/`),
     enabled: modelId !== null,
     staleTime: 24 * 60 * 60 * 1000, // 24h
   })

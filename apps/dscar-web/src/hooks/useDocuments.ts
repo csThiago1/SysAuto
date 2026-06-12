@@ -10,7 +10,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, fetchList } from "@/lib/api"
 import type {
   DocumentGeneration,
   DocumentPreviewData,
@@ -41,7 +41,7 @@ export function useDocumentHistory(osId: string) {
   return useQuery({
     queryKey: docKeys.history(osId),
     queryFn: () =>
-      apiFetch<DocumentGeneration[]>(`${BASE}/os/${osId}/history/`),
+      fetchList<DocumentGeneration>(`${BASE}/os/${osId}/history/`),
     enabled: !!osId,
   })
 }
