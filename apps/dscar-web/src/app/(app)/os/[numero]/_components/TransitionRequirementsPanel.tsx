@@ -7,14 +7,7 @@ import { ApiError } from "@/lib/api"
 import type { ServiceOrder, ServiceOrderStatus } from "@paddock/types"
 import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog"
+import { OverrideRequestModal, ManagerCredentialsModal } from "@/components/transition-wizard"
 import {
   useTransitionWithValidation,
   useRequestOverride,
@@ -224,145 +217,41 @@ export function TransitionRequirementsPanel({
         </div>
       )}
 
-      {/* Modal de solicitacao de override */}
-      <Dialog open={overrideModalOpen} onOpenChange={setOverrideModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Solicitar Liberação — OS #{order.number}</DialogTitle>
-            <DialogDescription>
-              Transição:{" "}
-              {SERVICE_ORDER_STATUS_CONFIG[order.status as ServiceOrderStatus]?.label ??
-                order.status}{" "}
-              → {primaryTargetLabel}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-3">
-            <div>
-              <p className="text-sm font-medium mb-2">Bloqueios pendentes:</p>
-              <ul className="space-y-1">
-                {validation?.soft_blocks?.map((b) => (
-                  <li
-                    key={b.code}
-                    className="flex items-start gap-2 text-sm text-warning-500"
-                  >
-                    <Lock className="h-4 w-4 mt-0.5 shrink-0" aria-hidden="true" />
-                    {b.message}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <label htmlFor="override-reason" className="text-sm font-medium">
-                Motivo da solicitação{" "}
-                <span className="text-error-500" aria-hidden="true">*</span>
-              </label>
-              <textarea
-                id="override-reason"
-                aria-required="true"
-                className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
-                rows={3}
-                placeholder="Explique por que a transição deve ser liberada..."
-                value={overrideReason}
-                onChange={(e) => setOverrideReason(e.target.value)}
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <p className="text-sm font-medium">Como liberar:</p>
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (!overrideReason.trim()) {
-                      toast.error("Preencha o motivo da solicitação")
-                      return
-                    }
-                    setManagerModalOpen(true)
-                  }}
-                >
-                  Gerente presente
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={!overrideReason.trim() || overrideMutation.isPending}
-                  onClick={() => void handleRequestRemoteOverride()}
-                >
-                  {overrideMutation.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-1" aria-hidden="true" />
-                  ) : null}
-                  Aprovacao remota
-                </Button>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Modal de solicitação de override */}
+      <OverrideRequestModal
+        open={overrideModalOpen}
+        onOpenChange={setOverrideModalOpen}
+        orderNumber={String(order.number)}
+        currentStatusLabel={
+          SERVICE_ORDER_STATUS_CONFIG[order.status as ServiceOrderStatus]?.label ??
+          order.status
+        }
+        targetStatusLabel={primaryTargetLabel}
+        softBlocks={validation?.soft_blocks ?? []}
+        reason={overrideReason}
+        onReasonChange={setOverrideReason}
+        isSubmittingRemote={overrideMutation.isPending}
+        onManagerPresentClick={() => {
+          if (!overrideReason.trim()) {
+            toast.error("Preencha o motivo da solicitação")
+            return
+          }
+          setManagerModalOpen(true)
+        }}
+        onRemoteSubmit={() => void handleRequestRemoteOverride()}
+      />
 
       {/* Modal de credenciais do gerente */}
-      <Dialog open={managerModalOpen} onOpenChange={setManagerModalOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Credenciais do Gerente</DialogTitle>
-            <DialogDescription>
-              O gerente deve digitar suas credenciais para autorizar a transição.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <label htmlFor="manager-email" className="text-sm font-medium">
-                Email
-              </label>
-              <input
-                id="manager-email"
-                type="email"
-                autoComplete="username"
-                className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="gerente@dscar.com"
-                value={managerEmail}
-                onChange={(e) => setManagerEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="manager-password" className="text-sm font-medium">
-                Senha
-              </label>
-              <input
-                id="manager-password"
-                type="password"
-                autoComplete="current-password"
-                className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                value={managerPassword}
-                onChange={(e) => setManagerPassword(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setManagerModalOpen(false)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              size="sm"
-              disabled={
-                !managerEmail || !managerPassword || transitionMutation.isPending
-              }
-              onClick={() => void handleForceWithCredentials()}
-            >
-              {transitionMutation.isPending && (
-                <Loader2 className="h-4 w-4 animate-spin mr-1" aria-hidden="true" />
-              )}
-              Autorizar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ManagerCredentialsModal
+        open={managerModalOpen}
+        onOpenChange={setManagerModalOpen}
+        email={managerEmail}
+        onEmailChange={setManagerEmail}
+        password={managerPassword}
+        onPasswordChange={setManagerPassword}
+        isAuthorizing={transitionMutation.isPending}
+        onAuthorize={() => void handleForceWithCredentials()}
+      />
     </div>
   )
 }
