@@ -2,6 +2,7 @@ import type React from "react"
 import type { ValidationBlock, ServiceOrder } from "@paddock/types"
 import { FallbackResolver } from "./FallbackResolver"
 import { DataResolver } from "./DataResolver"
+import "./PhotoResolver" // registra PHOTOS_MIN_12, FINAL_PHOTOS_12, PROGRESS_PHOTO
 
 export interface ResolverProps {
   block: ValidationBlock
