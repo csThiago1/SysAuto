@@ -1,6 +1,7 @@
 import type React from "react"
 import type { ValidationBlock, ServiceOrder } from "@paddock/types"
 import { FallbackResolver } from "./FallbackResolver"
+import { DataResolver } from "./DataResolver"
 
 export interface ResolverProps {
   block: ValidationBlock
@@ -24,3 +25,5 @@ export function getResolver(code: string): React.ComponentType<ResolverProps> {
 export function hasResolverFor(code: string): boolean {
   return REGISTRY.has(code)
 }
+
+registerResolver(["VEHICLE_BASIC_DATA", "CUSTOMER_TYPE_SET", "MILEAGE_OUT"], DataResolver)
