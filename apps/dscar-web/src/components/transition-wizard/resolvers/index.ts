@@ -1,28 +1,26 @@
 import type React from "react"
 import type { ValidationBlock, ServiceOrder } from "@paddock/types"
+import { FallbackResolver } from "./FallbackResolver"
 
 export interface ResolverProps {
   block: ValidationBlock
   order: ServiceOrder
-  onResolved: (code: string) => void
+  onResolved: () => void
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const REGISTRY: Record<string, React.ComponentType<ResolverProps>> = {}
+const REGISTRY = new Map<string, React.ComponentType<ResolverProps>>()
 
 export function registerResolver(
-  codes: string[],
-  component: React.ComponentType<ResolverProps>
+  codes: readonly string[],
+  component: React.ComponentType<ResolverProps>,
 ): void {
-  for (const code of codes) {
-    REGISTRY[code] = component
-  }
+  for (const code of codes) REGISTRY.set(code, component)
 }
 
 export function getResolver(code: string): React.ComponentType<ResolverProps> {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { FallbackResolver } = require("./FallbackResolver") as {
-    FallbackResolver: React.ComponentType<ResolverProps>
-  }
-  return REGISTRY[code] ?? FallbackResolver
+  return REGISTRY.get(code) ?? FallbackResolver
+}
+
+export function hasResolverFor(code: string): boolean {
+  return REGISTRY.has(code)
 }
