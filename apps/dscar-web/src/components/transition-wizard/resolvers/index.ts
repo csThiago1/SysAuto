@@ -26,4 +26,7 @@ export function hasResolverFor(code: string): boolean {
   return REGISTRY.has(code)
 }
 
-registerResolver(["VEHICLE_BASIC_DATA", "CUSTOMER_TYPE_SET", "MILEAGE_OUT"], DataResolver)
+registerResolver(
+  ["VEHICLE_BASIC_DATA", "CUSTOMER_TYPE_SET", "MILEAGE_OUT", "FUEL_TYPE", "MILEAGE_IN", "CUSTOMER_LINKED"],
+  DataResolver,
+)
