@@ -43,12 +43,11 @@ export function WizardItem({ block, severity, isResolved, order, onResolved }: W
           <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${colorClass}`} aria-hidden="true" />
           <span className="text-sm">{block.message}</span>
         </div>
-        {!isResolved && (
+        {!isResolved && hasResolver && (
           <Button
             variant="ghost"
             size="sm"
             className="h-6 px-2 text-xs shrink-0"
-            disabled={!hasResolver}
             onClick={() => setExpanded((p) => !p)}
             aria-label={expanded ? "Recolher resolver" : "Resolver aqui"}
           >
@@ -61,7 +60,8 @@ export function WizardItem({ block, severity, isResolved, order, onResolved }: W
         )}
       </div>
 
-      {expanded && !isResolved && (
+      {/* Code com resolver: expande/colapsa via botão */}
+      {hasResolver && expanded && !isResolved && (
         <Resolver
           block={block}
           order={order}
@@ -70,6 +70,11 @@ export function WizardItem({ block, severity, isResolved, order, onResolved }: W
             setExpanded(false)
           }}
         />
+      )}
+
+      {/* Code sem resolver: mostra FallbackResolver inline, sem interação */}
+      {!hasResolver && !isResolved && (
+        <Resolver block={block} order={order} onResolved={onResolved} />
       )}
     </li>
   )
