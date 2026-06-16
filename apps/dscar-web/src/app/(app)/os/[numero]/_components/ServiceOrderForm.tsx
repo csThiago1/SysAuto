@@ -37,6 +37,7 @@ import { OpeningTab } from "./tabs/OpeningTab"
 import { PartsTab } from "./tabs/PartsTab"
 import { ServicesTab } from "./tabs/ServicesTab"
 import { TransitionRequirementsPanel } from "./TransitionRequirementsPanel"
+import { TransitionWizard } from "@/components/transition-wizard"
 
 const ImportBudgetModal = dynamic(
   () => import("./ImportBudgetModal").then((m) => ({ default: m.ImportBudgetModal })),
@@ -97,6 +98,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
   const updateMutation = useServiceOrderUpdate(order.id)
   const personUpdateMutation = usePersonUpdate(order.customer_person_id ?? null)
   const transitionMutation = useTransitionStatus(order.id)
+  const [wizardTarget, setWizardTarget] = useState<ServiceOrderStatus | null>(null)
   useAutoTransition({ order })
 
   useEffect(() => {
@@ -122,6 +124,11 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
     : (VALID_TRANSITIONS[order.status as ServiceOrderStatus] ?? [])
 
   async function handleTransition(newStatus: ServiceOrderStatus) {
+    const req = order.transition_requirements?.[newStatus]
+    if (req && req.can_proceed === false) {
+      setWizardTarget(newStatus)
+      return
+    }
     try {
       await transitionMutation.mutateAsync(newStatus)
       toast.success(`Status atualizado para "${SERVICE_ORDER_STATUS_CONFIG[newStatus].label}"`)
@@ -384,6 +391,19 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
             ))}
           </ul>
         </div>
+      )}
+
+      {/* Transition Wizard */}
+      {wizardTarget && (
+        <TransitionWizard
+          orderId={order.id}
+          target={wizardTarget}
+          onClose={() => setWizardTarget(null)}
+          onSuccess={() => {
+            setWizardTarget(null)
+            router.refresh()
+          }}
+        />
       )}
     </div>
   )
