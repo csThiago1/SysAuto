@@ -32,6 +32,7 @@ function VehicleDataForm({ order, onResolved }: ResolverProps) {
     try {
       await patchOrder(order.id, { plate, make, model })
       void qc.invalidateQueries({ queryKey: ["service-orders", order.id] })
+      void qc.invalidateQueries({ queryKey: ["service-orders"] })
       onResolved()
     } catch {
       toast.error("Erro ao salvar dados do veículo")
@@ -90,6 +91,7 @@ function CustomerTypeForm({ order, onResolved }: ResolverProps) {
     try {
       await patchOrder(order.id, { customer_type: type })
       void qc.invalidateQueries({ queryKey: ["service-orders", order.id] })
+      void qc.invalidateQueries({ queryKey: ["service-orders"] })
       onResolved()
     } catch {
       toast.error("Erro ao definir tipo de OS")
@@ -127,7 +129,7 @@ function MileageOutForm({ order, onResolved }: ResolverProps) {
 
   async function handleSave(): Promise<void> {
     const val = parseInt(km, 10)
-    if (isNaN(val) || val < 0) {
+    if (isNaN(val) || val <= 0) {
       toast.error("KM inválido")
       return
     }
@@ -135,6 +137,7 @@ function MileageOutForm({ order, onResolved }: ResolverProps) {
     try {
       await patchOrder(order.id, { mileage_out: val })
       void qc.invalidateQueries({ queryKey: ["service-orders", order.id] })
+      void qc.invalidateQueries({ queryKey: ["service-orders"] })
       onResolved()
     } catch {
       toast.error("Erro ao salvar KM de saída")

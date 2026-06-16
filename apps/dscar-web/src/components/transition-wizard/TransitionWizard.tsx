@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"
+import { ApiError } from "@/lib/api"
 import { useServiceOrder } from "@/app/(app)/os/[numero]/_hooks/useServiceOrder"
 import {
   useTransitionWithValidation,
@@ -56,8 +57,8 @@ export function TransitionWizard({ orderId, target, onClose, onSuccess }: Transi
       toast.success(`Status atualizado para "${targetLabel}"`)
       reset()
       onSuccess()
-    } catch {
-      toast.error("Erro ao avançar status — tente novamente")
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Erro ao avançar status — tente novamente")
     }
   }
 
@@ -75,8 +76,11 @@ export function TransitionWizard({ orderId, target, onClose, onSuccess }: Transi
       setOverrideModalOpen(false)
       reset()
       onSuccess()
-    } catch {
-      toast.error("Credenciais inválidas ou permissão insuficiente")
+      setManagerEmail("")
+      setManagerPassword("")
+      setOverrideReason("")
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Credenciais inválidas ou permissão insuficiente")
     }
   }
 
