@@ -4,6 +4,7 @@ import { FallbackResolver } from "./FallbackResolver"
 import { DataResolver } from "./DataResolver"
 import { PhotoResolver } from "./PhotoResolver"
 import { InsurerResolver } from "./InsurerResolver"
+import { FileResolver } from "./FileResolver"
 
 export interface ResolverProps {
   block: ValidationBlock
@@ -34,3 +35,4 @@ registerResolver(
 )
 registerResolver(["PHOTOS_MIN_12", "FINAL_PHOTOS_12", "PROGRESS_PHOTO"], PhotoResolver)
 registerResolver(["INSURER_DATA"], InsurerResolver)
+registerResolver(["BUDGET_PDF_INSURER"], FileResolver)
