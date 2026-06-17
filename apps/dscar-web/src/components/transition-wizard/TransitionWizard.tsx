@@ -23,6 +23,7 @@ import { WizardChecklist } from "./WizardChecklist"
 import { WizardFooter } from "./WizardFooter"
 import { OverrideRequestModal } from "./OverrideRequestModal"
 import { ManagerCredentialsModal } from "./ManagerCredentialsModal"
+import { JustificationProvider } from "./JustificationContext"
 
 interface TransitionWizardProps {
   orderId: string
@@ -42,6 +43,7 @@ export function TransitionWizard({ orderId, target, onClose, onSuccess }: Transi
   const [overrideReason, setOverrideReason] = useState("")
   const [managerEmail, setManagerEmail] = useState("")
   const [managerPassword, setManagerPassword] = useState("")
+  const [justification, setJustification] = useState("")
 
   const validation = order?.transition_requirements?.[target]
   const hardBlocks = validation?.hard_blocks ?? []
@@ -97,11 +99,12 @@ export function TransitionWizard({ orderId, target, onClose, onSuccess }: Transi
 
   function handleClose(): void {
     reset()
+    setJustification("")
     onClose()
   }
 
   return (
-    <>
+    <JustificationProvider value={{ justification, setJustification }}>
       <Dialog open onOpenChange={(open) => { if (!open) handleClose() }}>
         <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col">
           <DialogHeader>
@@ -181,6 +184,6 @@ export function TransitionWizard({ orderId, target, onClose, onSuccess }: Transi
         isAuthorizing={transitionMutation.isPending}
         onAuthorize={() => void handleForceWithCredentials()}
       />
-    </>
+    </JustificationProvider>
   )
 }
