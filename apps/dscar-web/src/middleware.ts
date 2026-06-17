@@ -6,7 +6,7 @@ function hasMinRole(role: string | undefined, minRole: PaddockRole): boolean {
   return (ROLE_HIERARCHY[role as PaddockRole] ?? 0) >= (ROLE_HIERARCHY[minRole] ?? 0);
 }
 
-export default auth((req) => {
+export default auth((req: Parameters<Parameters<typeof auth>[0]>[0]) => {
   const request = req as unknown as NextRequest;
   const { pathname } = request.nextUrl;
   const isLoggedIn = !!req.auth;
