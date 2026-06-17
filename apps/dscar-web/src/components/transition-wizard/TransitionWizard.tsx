@@ -23,6 +23,7 @@ import { WizardChecklist } from "./WizardChecklist"
 import { WizardFooter } from "./WizardFooter"
 import { OverrideRequestModal } from "./OverrideRequestModal"
 import { ManagerCredentialsModal } from "./ManagerCredentialsModal"
+import { JustificationProvider } from "./JustificationContext"
 
 interface TransitionWizardProps {
   orderId: string
@@ -42,6 +43,7 @@ export function TransitionWizard({ orderId, target, onClose, onSuccess }: Transi
   const [overrideReason, setOverrideReason] = useState("")
   const [managerEmail, setManagerEmail] = useState("")
   const [managerPassword, setManagerPassword] = useState("")
+  const [justification, setJustification] = useState("")
 
   const validation = order?.transition_requirements?.[target]
   const hardBlocks = validation?.hard_blocks ?? []
@@ -52,10 +54,22 @@ export function TransitionWizard({ orderId, target, onClose, onSuccess }: Transi
   const targetLabel = SERVICE_ORDER_STATUS_CONFIG[target]?.label ?? target
 
   async function handleAdvance(): Promise<void> {
+    // Guard: cancelamento exige justificativa de ≥10 chars (espelha o validator client-side
+    // do CancelJustificationResolver). Evita que markResolved (monotônico) deixe o user
+    // avançar após apagar o texto resolvido.
+    if (target === "cancelled" && justification.trim().length < 10) {
+      toast.error("Justificativa do cancelamento deve ter pelo menos 10 caracteres")
+      return
+    }
     try {
-      await transitionMutation.mutateAsync({ new_status: target })
+      const payload: { new_status: ServiceOrderStatus; justification?: string } = { new_status: target }
+      if (target === "cancelled") {
+        payload.justification = justification.trim()
+      }
+      await transitionMutation.mutateAsync(payload)
       toast.success(`Status atualizado para "${targetLabel}"`)
       reset()
+      setJustification("")
       onSuccess()
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Erro ao avançar status — tente novamente")
@@ -97,11 +111,12 @@ export function TransitionWizard({ orderId, target, onClose, onSuccess }: Transi
 
   function handleClose(): void {
     reset()
+    setJustification("")
     onClose()
   }
 
   return (
-    <>
+    <JustificationProvider value={{ justification, setJustification }}>
       <Dialog open onOpenChange={(open) => { if (!open) handleClose() }}>
         <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col">
           <DialogHeader>
@@ -181,6 +196,6 @@ export function TransitionWizard({ orderId, target, onClose, onSuccess }: Transi
         isAuthorizing={transitionMutation.isPending}
         onAuthorize={() => void handleForceWithCredentials()}
       />
-    </>
+    </JustificationProvider>
   )
 }

@@ -12,7 +12,7 @@ import type { ServiceOrder } from "@paddock/types"
 import type { ServiceOrderUpdateInput } from "../_schemas/service-order.schema"
 
 /** Converte ISO UTC (ex: "2026-06-09T14:00:00Z") para formato local "YYYY-MM-DDTHH:mm". */
-function toLocalDatetime(iso: string | null | undefined): string | undefined {
+export function toLocalDatetime(iso: string | null | undefined): string | undefined {
   if (!iso) return undefined
   const d = new Date(iso)
   if (isNaN(d.getTime())) return iso // já é local ou inválido — retorna como está
