@@ -30,11 +30,18 @@ export function hasResolverFor(code: string): boolean {
   return REGISTRY.has(code)
 }
 
+// Fase 2 (entregue)
 registerResolver(
   ["VEHICLE_BASIC_DATA", "CUSTOMER_TYPE_SET", "MILEAGE_OUT", "FUEL_TYPE", "MILEAGE_IN", "CUSTOMER_LINKED"],
   DataResolver,
 )
 registerResolver(["PHOTOS_MIN_12", "FINAL_PHOTOS_12", "PROGRESS_PHOTO"], PhotoResolver)
+
+// Fase 4 — 9 novos codes
+registerResolver(
+  ["VEHICLE_COLOR", "VEHICLE_YEAR", "DEDUCTIBLE_SET", "CASUALTY_NUMBER", "AUTH_DATE_SET", "ENTRY_DATE_SET"],
+  DataResolver,
+)
 registerResolver(["INSURER_DATA"], InsurerResolver)
 registerResolver(["BUDGET_PDF_INSURER"], FileResolver)
 registerResolver(["CANCEL_JUSTIFICATION"], CancelJustificationResolver)
