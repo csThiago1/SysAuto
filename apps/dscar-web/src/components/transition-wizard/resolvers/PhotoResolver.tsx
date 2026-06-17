@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { useUploadPhoto } from "@/app/(app)/os/[numero]/_hooks/useOSItems"
 import type { OSPhotoFolder } from "@paddock/types"
 import type { ResolverProps } from "./index"
-import { registerResolver } from "./index"
 
 const CODE_TO_FOLDER: Record<string, OSPhotoFolder> = {
   PHOTOS_MIN_12: "vistoria_inicial",
@@ -106,4 +105,3 @@ export function PhotoResolver({ block, order }: ResolverProps) {
   )
 }
 
-registerResolver(["PHOTOS_MIN_12", "FINAL_PHOTOS_12", "PROGRESS_PHOTO"], PhotoResolver)

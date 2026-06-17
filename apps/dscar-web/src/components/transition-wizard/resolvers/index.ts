@@ -2,7 +2,7 @@ import type React from "react"
 import type { ValidationBlock, ServiceOrder } from "@paddock/types"
 import { FallbackResolver } from "./FallbackResolver"
 import { DataResolver } from "./DataResolver"
-import "./PhotoResolver" // registra PHOTOS_MIN_12, FINAL_PHOTOS_12, PROGRESS_PHOTO
+import { PhotoResolver } from "./PhotoResolver"
 
 export interface ResolverProps {
   block: ValidationBlock
@@ -31,3 +31,4 @@ registerResolver(
   ["VEHICLE_BASIC_DATA", "CUSTOMER_TYPE_SET", "MILEAGE_OUT", "FUEL_TYPE", "MILEAGE_IN", "CUSTOMER_LINKED"],
   DataResolver,
 )
+registerResolver(["PHOTOS_MIN_12", "FINAL_PHOTOS_12", "PROGRESS_PHOTO"], PhotoResolver)

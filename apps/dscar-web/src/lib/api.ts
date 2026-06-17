@@ -2,6 +2,9 @@ import type { FieldValues, Path, UseFormSetError } from "react-hook-form";
 import { signOut } from "next-auth/react";
 import { toast } from "sonner";
 
+// Garante que apenas um signOut seja disparado, mesmo com múltiplas chamadas 401 paralelas
+let signingOut = false;
+
 export class ApiError extends Error {
   public status: number;
   public fieldErrors?: Record<string, string[]>;
@@ -43,8 +46,15 @@ export async function apiFetch<T>(
   }
 
   if (res.status === 401) {
-    toast.error("Sessão expirada. Fazendo logout...");
-    await signOut({ callbackUrl: "/login" });
+    if (!signingOut) {
+      signingOut = true;
+      toast.error("Sessão expirada. Fazendo logout...");
+      // redirect: false evita que o signOut navegue sozinho e causa loop
+      // quando o endpoint /api/auth/signout falha
+      signOut({ redirect: false }).finally(() => {
+        window.location.href = "/login";
+      });
+    }
     throw new Error("unauthorized");
   }
 
