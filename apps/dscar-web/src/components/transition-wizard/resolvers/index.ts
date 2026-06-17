@@ -3,6 +3,7 @@ import type { ValidationBlock, ServiceOrder } from "@paddock/types"
 import { FallbackResolver } from "./FallbackResolver"
 import { DataResolver } from "./DataResolver"
 import { PhotoResolver } from "./PhotoResolver"
+import { InsurerResolver } from "./InsurerResolver"
 
 export interface ResolverProps {
   block: ValidationBlock
@@ -32,3 +33,4 @@ registerResolver(
   DataResolver,
 )
 registerResolver(["PHOTOS_MIN_12", "FINAL_PHOTOS_12", "PROGRESS_PHOTO"], PhotoResolver)
+registerResolver(["INSURER_DATA"], InsurerResolver)
