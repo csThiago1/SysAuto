@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, it, expect, vi } from "vitest"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -25,13 +25,15 @@ const mockOrder: Partial<ServiceOrder> = {
   },
 }
 
+const mockUseServiceOrder = vi.fn(() => ({ data: mockOrder, isLoading: false }))
 vi.mock("@/app/(app)/os/[numero]/_hooks/useServiceOrder", () => ({
-  useServiceOrder: () => ({ data: mockOrder, isLoading: false }),
+  useServiceOrder: (...args: unknown[]) => mockUseServiceOrder(...args),
 }))
 
+const mockTransitionMutate = vi.fn().mockResolvedValue({})
 vi.mock("@/hooks/useTransitionValidation", () => ({
   useTransitionWithValidation: () => ({
-    mutateAsync: vi.fn().mockResolvedValue({}),
+    mutateAsync: mockTransitionMutate,
     isPending: false,
   }),
   useRequestOverride: () => ({
@@ -94,5 +96,48 @@ describe("TransitionWizard", () => {
     const closeBtn = screen.getByRole("button", { name: /fechar/i })
     await user.click(closeBtn)
     expect(onClose).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("TransitionWizard — cancelamento com justificativa", () => {
+  it("injeta justification no payload quando target=cancelled", async () => {
+    mockTransitionMutate.mockClear()
+
+    const cancelOrder = {
+      id: "os-c",
+      number: 99,
+      status: "reception",
+      transition_requirements: {
+        cancelled: {
+          can_proceed: false,
+          hard_blocks: [{ code: "CANCEL_JUSTIFICATION", message: "Justificativa obrigatória" }],
+          soft_blocks: [],
+          warnings: [],
+          has_pending_override: false,
+        },
+      },
+    }
+    mockUseServiceOrder.mockReturnValueOnce({ data: cancelOrder, isLoading: false })
+
+    const user = userEvent.setup()
+    wrap(<TransitionWizard orderId="os-c" target="cancelled" onClose={vi.fn()} onSuccess={vi.fn()} />)
+
+    // Expande o resolver clicando em "Resolver aqui"
+    await user.click(await screen.findByRole("button", { name: /resolver aqui/i }))
+
+    // Preenche justificativa via fireEvent.change para definir o valor completo de uma vez
+    const textarea = await screen.findByRole("textbox", { name: /motivo do cancelamento/i })
+    fireEvent.change(textarea, { target: { value: "Cliente desistiu do serviço" } })
+
+    // Clica em Avançar (label exato pode variar conforme SERVICE_ORDER_STATUS_CONFIG.cancelled.label)
+    const advanceBtn = await screen.findByRole("button", { name: /avançar para/i })
+    await user.click(advanceBtn)
+
+    expect(mockTransitionMutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        new_status: "cancelled",
+        justification: expect.stringContaining("Cliente desistiu"),
+      })
+    )
   })
 })

@@ -55,9 +55,14 @@ export function TransitionWizard({ orderId, target, onClose, onSuccess }: Transi
 
   async function handleAdvance(): Promise<void> {
     try {
-      await transitionMutation.mutateAsync({ new_status: target })
+      const payload: { new_status: ServiceOrderStatus; justification?: string } = { new_status: target }
+      if (target === "cancelled" && justification.trim()) {
+        payload.justification = justification.trim()
+      }
+      await transitionMutation.mutateAsync(payload)
       toast.success(`Status atualizado para "${targetLabel}"`)
       reset()
+      setJustification("")
       onSuccess()
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "Erro ao avançar status — tente novamente")
