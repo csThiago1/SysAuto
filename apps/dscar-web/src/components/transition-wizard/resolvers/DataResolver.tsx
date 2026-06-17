@@ -17,21 +17,52 @@ async function patchOrder(id: string, data: Record<string, unknown>): Promise<vo
   })
 }
 
-function VehicleDataForm({ order, onResolved }: ResolverProps) {
+function VehicleDataForm({ block, order, onResolved }: ResolverProps) {
   const qc = useQueryClient()
+  const code = block.code
   const [plate, setPlate] = useState(order.plate ?? "")
   const [make, setMake] = useState(order.make ?? "")
   const [model, setModel] = useState(order.model ?? "")
+  const [color, setColor] = useState(order.color ?? "")
+  const [year, setYear] = useState(order.year?.toString() ?? "")
   const [saving, setSaving] = useState(false)
 
+  // Quais campos cada code precisa
+  const needsBasic = code === "VEHICLE_BASIC_DATA"
+  const needsColor = code === "VEHICLE_COLOR"
+  const needsYear = code === "VEHICLE_YEAR"
+
   async function handleSave(): Promise<void> {
-    if (!plate || !make || !model) {
-      toast.error("Preencha placa, montadora e modelo")
-      return
+    const payload: Record<string, unknown> = {}
+
+    if (needsBasic) {
+      if (!plate || !make || !model) {
+        toast.error("Preencha placa, montadora e modelo")
+        return
+      }
+      payload.plate = plate
+      payload.make = make
+      payload.model = model
     }
+    if (needsColor) {
+      if (!color.trim()) {
+        toast.error("Informe a cor do veículo")
+        return
+      }
+      payload.color = color.trim()
+    }
+    if (needsYear) {
+      const parsed = parseInt(year, 10)
+      if (isNaN(parsed) || parsed < 1900 || parsed > 2100) {
+        toast.error("Ano inválido (1900-2100)")
+        return
+      }
+      payload.year = parsed
+    }
+
     setSaving(true)
     try {
-      await patchOrder(order.id, { plate, make, model })
+      await patchOrder(order.id, payload)
       void qc.invalidateQueries({ queryKey: ["service-orders", order.id] })
       void qc.invalidateQueries({ queryKey: ["service-orders"] })
       onResolved()
@@ -44,37 +75,71 @@ function VehicleDataForm({ order, onResolved }: ResolverProps) {
 
   return (
     <div className="mt-2 space-y-2">
-      <div>
-        <label htmlFor="dv-plate" className="text-xs font-medium">Placa</label>
-        <input
-          id="dv-plate"
-          className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-          value={plate}
-          onChange={(e) => setPlate(e.target.value.toUpperCase())}
-          placeholder="ABC1234"
-          maxLength={8}
-        />
-      </div>
-      <div>
-        <label htmlFor="dv-make" className="text-xs font-medium">Montadora</label>
-        <input
-          id="dv-make"
-          className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-          value={make}
-          onChange={(e) => setMake(e.target.value)}
-          placeholder="Fiat"
-        />
-      </div>
-      <div>
-        <label htmlFor="dv-model" className="text-xs font-medium">Modelo</label>
-        <input
-          id="dv-model"
-          className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-          value={model}
-          onChange={(e) => setModel(e.target.value)}
-          placeholder="Uno"
-        />
-      </div>
+      {needsBasic && (
+        <>
+          <div>
+            <label htmlFor="dv-plate" className="text-xs font-medium">Placa</label>
+            <input
+              id="dv-plate"
+              className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+              value={plate}
+              onChange={(e) => setPlate(e.target.value.toUpperCase())}
+              placeholder="ABC1234"
+              maxLength={8}
+            />
+          </div>
+          <div>
+            <label htmlFor="dv-make" className="text-xs font-medium">Montadora</label>
+            <input
+              id="dv-make"
+              className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+              value={make}
+              onChange={(e) => setMake(e.target.value)}
+              placeholder="Fiat"
+            />
+          </div>
+          <div>
+            <label htmlFor="dv-model" className="text-xs font-medium">Modelo</label>
+            <input
+              id="dv-model"
+              className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              placeholder="Uno"
+            />
+          </div>
+        </>
+      )}
+
+      {needsColor && (
+        <div>
+          <label htmlFor="dv-color" className="text-xs font-medium">Cor</label>
+          <input
+            id="dv-color"
+            className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+            value={color}
+            onChange={(e) => setColor(e.target.value)}
+            placeholder="Vermelho"
+          />
+        </div>
+      )}
+
+      {needsYear && (
+        <div>
+          <label htmlFor="dv-year" className="text-xs font-medium">Ano</label>
+          <input
+            id="dv-year"
+            type="number"
+            min="1900"
+            max="2100"
+            className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+            value={year}
+            onChange={(e) => setYear(e.target.value)}
+            placeholder="2023"
+          />
+        </div>
+      )}
+
       <Button size="sm" disabled={saving} onClick={() => void handleSave()}>
         {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}
         Salvar
@@ -319,11 +384,14 @@ function CustomerLinkedForm({ order, onResolved }: ResolverProps) {
 }
 
 export function DataResolver(props: ResolverProps) {
-  if (props.block.code === "VEHICLE_BASIC_DATA") return <VehicleDataForm {...props} />
-  if (props.block.code === "CUSTOMER_TYPE_SET") return <CustomerTypeForm {...props} />
-  if (props.block.code === "MILEAGE_OUT") return <MileageOutForm {...props} />
-  if (props.block.code === "FUEL_TYPE") return <FuelTypeForm {...props} />
-  if (props.block.code === "MILEAGE_IN") return <MileageInForm {...props} />
-  if (props.block.code === "CUSTOMER_LINKED") return <CustomerLinkedForm {...props} />
+  const code = props.block.code
+  if (code === "VEHICLE_BASIC_DATA" || code === "VEHICLE_COLOR" || code === "VEHICLE_YEAR") {
+    return <VehicleDataForm {...props} />
+  }
+  if (code === "CUSTOMER_TYPE_SET") return <CustomerTypeForm {...props} />
+  if (code === "MILEAGE_OUT") return <MileageOutForm {...props} />
+  if (code === "FUEL_TYPE") return <FuelTypeForm {...props} />
+  if (code === "MILEAGE_IN") return <MileageInForm {...props} />
+  if (code === "CUSTOMER_LINKED") return <CustomerLinkedForm {...props} />
   return null
 }

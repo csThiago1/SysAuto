@@ -104,3 +104,52 @@ describe("DataResolver — MILEAGE_OUT", () => {
     expect(onResolved).not.toHaveBeenCalled()
   })
 })
+
+describe("DataResolver — VEHICLE_COLOR", () => {
+  it("renderiza input de cor quando code=VEHICLE_COLOR", () => {
+    wrap(<DataResolver block={block("VEHICLE_COLOR")} order={ORDER} onResolved={vi.fn()} />)
+    expect(screen.getByLabelText(/cor/i)).toBeInTheDocument()
+  })
+
+  it("chama onResolved após salvar cor", async () => {
+    const user = userEvent.setup()
+    const onResolved = vi.fn()
+    wrap(<DataResolver block={block("VEHICLE_COLOR")} order={ORDER} onResolved={onResolved} />)
+    await user.type(screen.getByLabelText(/cor/i), "Vermelho")
+    await user.click(screen.getByRole("button", { name: /salvar/i }))
+    await waitFor(() => expect(onResolved).toHaveBeenCalledTimes(1))
+  })
+
+  it("não chama onResolved com cor vazia", async () => {
+    const user = userEvent.setup()
+    const onResolved = vi.fn()
+    wrap(<DataResolver block={block("VEHICLE_COLOR")} order={ORDER} onResolved={onResolved} />)
+    await user.click(screen.getByRole("button", { name: /salvar/i }))
+    expect(onResolved).not.toHaveBeenCalled()
+  })
+})
+
+describe("DataResolver — VEHICLE_YEAR", () => {
+  it("renderiza input de ano quando code=VEHICLE_YEAR", () => {
+    wrap(<DataResolver block={block("VEHICLE_YEAR")} order={ORDER} onResolved={vi.fn()} />)
+    expect(screen.getByLabelText(/ano/i)).toBeInTheDocument()
+  })
+
+  it("chama onResolved após salvar ano válido", async () => {
+    const user = userEvent.setup()
+    const onResolved = vi.fn()
+    wrap(<DataResolver block={block("VEHICLE_YEAR")} order={ORDER} onResolved={onResolved} />)
+    await user.type(screen.getByLabelText(/ano/i), "2023")
+    await user.click(screen.getByRole("button", { name: /salvar/i }))
+    await waitFor(() => expect(onResolved).toHaveBeenCalledTimes(1))
+  })
+
+  it("não chama onResolved com ano inválido (<1900)", async () => {
+    const user = userEvent.setup()
+    const onResolved = vi.fn()
+    wrap(<DataResolver block={block("VEHICLE_YEAR")} order={ORDER} onResolved={onResolved} />)
+    await user.type(screen.getByLabelText(/ano/i), "1899")
+    await user.click(screen.getByRole("button", { name: /salvar/i }))
+    expect(onResolved).not.toHaveBeenCalled()
+  })
+})
