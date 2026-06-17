@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { apiFetch } from "@/lib/api"
 import { usePersonSearch } from "@/app/(app)/os/[numero]/_hooks/useCustomerSearch"
+import { toLocalDatetime } from "@/app/(app)/os/[numero]/_utils/form-defaults"
 import type { ResolverProps } from "./index"
 
 async function patchOrder(id: string, data: Record<string, unknown>): Promise<void> {
@@ -383,6 +384,183 @@ function CustomerLinkedForm({ order, onResolved }: ResolverProps) {
   )
 }
 
+function DeductibleSetForm({ order, onResolved }: ResolverProps) {
+  const qc = useQueryClient()
+  const [val, setVal] = useState(order.deductible_amount ?? "")
+  const [saving, setSaving] = useState(false)
+
+  async function handleSave(): Promise<void> {
+    const parsed = parseFloat(val.toString().replace(",", "."))
+    if (isNaN(parsed) || parsed <= 0) {
+      toast.error("Valor inválido")
+      return
+    }
+    setSaving(true)
+    try {
+      await patchOrder(order.id, { deductible_amount: parsed.toFixed(2) })
+      void qc.invalidateQueries({ queryKey: ["service-orders", order.id] })
+      void qc.invalidateQueries({ queryKey: ["service-orders"] })
+      onResolved()
+    } catch {
+      toast.error("Erro ao salvar franquia")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="mt-2 flex items-end gap-2">
+      <div className="flex-1">
+        <label htmlFor="dv-deductible" className="text-xs font-medium">Valor da Franquia (R$)</label>
+        <input
+          id="dv-deductible"
+          type="number"
+          min="0"
+          step="0.01"
+          className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+          value={val.toString()}
+          onChange={(e) => setVal(e.target.value)}
+          placeholder="1500.00"
+        />
+      </div>
+      <Button size="sm" disabled={saving} onClick={() => void handleSave()}>
+        {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}
+        Salvar
+      </Button>
+    </div>
+  )
+}
+
+function CasualtyNumberForm({ order, onResolved }: ResolverProps) {
+  const qc = useQueryClient()
+  const [val, setVal] = useState(order.casualty_number ?? "")
+  const [saving, setSaving] = useState(false)
+
+  async function handleSave(): Promise<void> {
+    const trimmed = val.trim()
+    if (!trimmed) {
+      toast.error("Informe o número do sinistro")
+      return
+    }
+    setSaving(true)
+    try {
+      await patchOrder(order.id, { casualty_number: trimmed })
+      void qc.invalidateQueries({ queryKey: ["service-orders", order.id] })
+      void qc.invalidateQueries({ queryKey: ["service-orders"] })
+      onResolved()
+    } catch {
+      toast.error("Erro ao salvar número do sinistro")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="mt-2 flex items-end gap-2">
+      <div className="flex-1">
+        <label htmlFor="dv-casualty" className="text-xs font-medium">Número do Sinistro</label>
+        <input
+          id="dv-casualty"
+          className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          placeholder="SIN-12345"
+        />
+      </div>
+      <Button size="sm" disabled={saving} onClick={() => void handleSave()}>
+        {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}
+        Salvar
+      </Button>
+    </div>
+  )
+}
+
+function AuthDateForm({ order, onResolved }: ResolverProps) {
+  const qc = useQueryClient()
+  const [val, setVal] = useState(toLocalDatetime(order.authorization_date) ?? "")
+  const [saving, setSaving] = useState(false)
+
+  async function handleSave(): Promise<void> {
+    if (!val) {
+      toast.error("Informe a data de autorização")
+      return
+    }
+    setSaving(true)
+    try {
+      await patchOrder(order.id, { authorization_date: val })
+      void qc.invalidateQueries({ queryKey: ["service-orders", order.id] })
+      void qc.invalidateQueries({ queryKey: ["service-orders"] })
+      onResolved()
+    } catch {
+      toast.error("Erro ao salvar data de autorização")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="mt-2 flex items-end gap-2">
+      <div className="flex-1">
+        <label htmlFor="dv-auth-date" className="text-xs font-medium">Data de Autorização</label>
+        <input
+          id="dv-auth-date"
+          type="datetime-local"
+          className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+        />
+      </div>
+      <Button size="sm" disabled={saving} onClick={() => void handleSave()}>
+        {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}
+        Salvar
+      </Button>
+    </div>
+  )
+}
+
+function EntryDateForm({ order, onResolved }: ResolverProps) {
+  const qc = useQueryClient()
+  const [val, setVal] = useState(toLocalDatetime(order.entry_date) ?? "")
+  const [saving, setSaving] = useState(false)
+
+  async function handleSave(): Promise<void> {
+    if (!val) {
+      toast.error("Informe a data de entrada")
+      return
+    }
+    setSaving(true)
+    try {
+      await patchOrder(order.id, { entry_date: val })
+      void qc.invalidateQueries({ queryKey: ["service-orders", order.id] })
+      void qc.invalidateQueries({ queryKey: ["service-orders"] })
+      onResolved()
+    } catch {
+      toast.error("Erro ao salvar data de entrada")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="mt-2 flex items-end gap-2">
+      <div className="flex-1">
+        <label htmlFor="dv-entry-date" className="text-xs font-medium">Data de Entrada</label>
+        <input
+          id="dv-entry-date"
+          type="datetime-local"
+          className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+        />
+      </div>
+      <Button size="sm" disabled={saving} onClick={() => void handleSave()}>
+        {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}
+        Salvar
+      </Button>
+    </div>
+  )
+}
+
 export function DataResolver(props: ResolverProps) {
   const code = props.block.code
   if (code === "VEHICLE_BASIC_DATA" || code === "VEHICLE_COLOR" || code === "VEHICLE_YEAR") {
@@ -393,5 +571,9 @@ export function DataResolver(props: ResolverProps) {
   if (code === "FUEL_TYPE") return <FuelTypeForm {...props} />
   if (code === "MILEAGE_IN") return <MileageInForm {...props} />
   if (code === "CUSTOMER_LINKED") return <CustomerLinkedForm {...props} />
+  if (code === "DEDUCTIBLE_SET") return <DeductibleSetForm {...props} />
+  if (code === "CASUALTY_NUMBER") return <CasualtyNumberForm {...props} />
+  if (code === "AUTH_DATE_SET") return <AuthDateForm {...props} />
+  if (code === "ENTRY_DATE_SET") return <EntryDateForm {...props} />
   return null
 }

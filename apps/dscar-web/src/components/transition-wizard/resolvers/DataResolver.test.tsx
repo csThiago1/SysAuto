@@ -153,3 +153,78 @@ describe("DataResolver — VEHICLE_YEAR", () => {
     expect(onResolved).not.toHaveBeenCalled()
   })
 })
+
+describe("DataResolver — DEDUCTIBLE_SET", () => {
+  it("renderiza input de franquia", () => {
+    wrap(<DataResolver block={block("DEDUCTIBLE_SET")} order={ORDER} onResolved={vi.fn()} />)
+    expect(screen.getByLabelText(/franquia/i)).toBeInTheDocument()
+  })
+
+  it("chama onResolved após salvar valor válido", async () => {
+    const user = userEvent.setup()
+    const onResolved = vi.fn()
+    wrap(<DataResolver block={block("DEDUCTIBLE_SET")} order={ORDER} onResolved={onResolved} />)
+    await user.type(screen.getByLabelText(/franquia/i), "1500.50")
+    await user.click(screen.getByRole("button", { name: /salvar/i }))
+    await waitFor(() => expect(onResolved).toHaveBeenCalledTimes(1))
+  })
+
+  it("não chama onResolved com valor inválido (zero)", async () => {
+    const user = userEvent.setup()
+    const onResolved = vi.fn()
+    wrap(<DataResolver block={block("DEDUCTIBLE_SET")} order={ORDER} onResolved={onResolved} />)
+    await user.type(screen.getByLabelText(/franquia/i), "0")
+    await user.click(screen.getByRole("button", { name: /salvar/i }))
+    expect(onResolved).not.toHaveBeenCalled()
+  })
+})
+
+describe("DataResolver — CASUALTY_NUMBER", () => {
+  it("renderiza input do número de sinistro", () => {
+    wrap(<DataResolver block={block("CASUALTY_NUMBER")} order={ORDER} onResolved={vi.fn()} />)
+    expect(screen.getByLabelText(/sinistro/i)).toBeInTheDocument()
+  })
+
+  it("chama onResolved após salvar número", async () => {
+    const user = userEvent.setup()
+    const onResolved = vi.fn()
+    wrap(<DataResolver block={block("CASUALTY_NUMBER")} order={ORDER} onResolved={onResolved} />)
+    await user.type(screen.getByLabelText(/sinistro/i), "SIN-12345")
+    await user.click(screen.getByRole("button", { name: /salvar/i }))
+    await waitFor(() => expect(onResolved).toHaveBeenCalledTimes(1))
+  })
+})
+
+describe("DataResolver — AUTH_DATE_SET", () => {
+  it("renderiza input datetime de autorização", () => {
+    wrap(<DataResolver block={block("AUTH_DATE_SET")} order={ORDER} onResolved={vi.fn()} />)
+    expect(screen.getByLabelText(/data de autorização/i)).toBeInTheDocument()
+  })
+
+  it("chama onResolved após salvar data", async () => {
+    const user = userEvent.setup()
+    const onResolved = vi.fn()
+    wrap(<DataResolver block={block("AUTH_DATE_SET")} order={ORDER} onResolved={onResolved} />)
+    const input = screen.getByLabelText(/data de autorização/i) as HTMLInputElement
+    await user.type(input, "2026-06-17T10:00")
+    await user.click(screen.getByRole("button", { name: /salvar/i }))
+    await waitFor(() => expect(onResolved).toHaveBeenCalledTimes(1))
+  })
+})
+
+describe("DataResolver — ENTRY_DATE_SET", () => {
+  it("renderiza input datetime de entrada", () => {
+    wrap(<DataResolver block={block("ENTRY_DATE_SET")} order={ORDER} onResolved={vi.fn()} />)
+    expect(screen.getByLabelText(/data de entrada/i)).toBeInTheDocument()
+  })
+
+  it("chama onResolved após salvar data", async () => {
+    const user = userEvent.setup()
+    const onResolved = vi.fn()
+    wrap(<DataResolver block={block("ENTRY_DATE_SET")} order={ORDER} onResolved={onResolved} />)
+    const input = screen.getByLabelText(/data de entrada/i) as HTMLInputElement
+    await user.type(input, "2026-06-15T08:30")
+    await user.click(screen.getByRole("button", { name: /salvar/i }))
+    await waitFor(() => expect(onResolved).toHaveBeenCalledTimes(1))
+  })
+})
