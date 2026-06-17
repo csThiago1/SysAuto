@@ -7,3 +7,6 @@ export {
   ManagerCredentialsModal,
   type ManagerCredentialsModalProps,
 } from "./ManagerCredentialsModal"
+
+export { TransitionWizard } from "./TransitionWizard"
+export { useWizard } from "./useWizard"

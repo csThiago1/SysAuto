@@ -22,7 +22,8 @@ import {
   KANBAN_PHASE_GROUPS,
   SERVICE_ORDER_STATUS_CONFIG,
 } from "@paddock/utils";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, ApiError } from "@/lib/api";
+import { TransitionWizard } from "@/components/transition-wizard";
 import { KanbanColumn, KanbanColumnSkeleton } from "./KanbanColumn";
 import { KanbanCardOverlay } from "./KanbanCard";
 
@@ -63,6 +64,10 @@ export function KanbanBoard({
   >({});
   // Tracks in-flight POSTs — prevents double-submit if user drags before refetch
   const pendingIds = useRef(new Set<string>());
+  const [wizardState, setWizardState] = useState<{
+    orderId: string
+    target: ServiceOrderStatus
+  } | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -138,6 +143,13 @@ export function KanbanBoard({
         return;
       }
 
+      // Se temos dados de transition_requirements e can_proceed é false, abre wizard sem chamar API
+      const req = order.transition_requirements?.[newStatus]
+      if (req?.can_proceed === false) {
+        setWizardState({ orderId, target: newStatus })
+        return
+      }
+
       // Optimistic update — move card immediately
       setOptimisticMoves((prev) => ({ ...prev, [orderId]: newStatus }));
       pendingIds.current.add(orderId);
@@ -161,6 +173,11 @@ export function KanbanBoard({
           delete next[orderId];
           return next;
         });
+        // 400 = bloqueio de transição → abre wizard
+        if (err instanceof ApiError && err.status === 400) {
+          setWizardState({ orderId, target: newStatus })
+          return
+        }
         toast.error(
           err instanceof Error ? err.message : "Erro ao mover OS"
         );
@@ -229,6 +246,18 @@ export function KanbanBoard({
       <DragOverlay dropAnimation={null}>
         {activeOrder ? <KanbanCardOverlay order={activeOrder} /> : null}
       </DragOverlay>
+
+      {wizardState && (
+        <TransitionWizard
+          orderId={wizardState.orderId}
+          target={wizardState.target}
+          onClose={() => setWizardState(null)}
+          onSuccess={() => {
+            setWizardState(null)
+            void qc.invalidateQueries({ queryKey: ["service-orders"] })
+          }}
+        />
+      )}
     </DndContext>
   );
 }
