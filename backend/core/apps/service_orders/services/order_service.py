@@ -369,16 +369,32 @@ class _ServiceOrderCoreMixin:
             order, new_status, justification=justification
         )
 
-        # Hard blocks: SEMPRE bloqueiam
+        # Hard blocks: bloqueiam sem force; com force presencial do gerente, cria auditoria
         if result.hard_blocks:
-            raise ValidationError({
-                "transition_blocks": {
-                    "type": "hard",
-                    "can_override": False,
-                    "blocks": [b.to_dict() for b in result.hard_blocks],
-                    "warnings": [w.to_dict() for w in result.warnings],
-                }
-            })
+            if not force:
+                raise ValidationError({
+                    "transition_blocks": {
+                        "type": "hard",
+                        "can_override": True,
+                        "blocks": [b.to_dict() for b in result.hard_blocks],
+                        "warnings": [w.to_dict() for w in result.warnings],
+                    }
+                })
+            # force=True: registra auditoria e permite avançar
+            from django.utils import timezone as tz
+            TransitionOverrideRequest.objects.create(
+                service_order=order,
+                from_status=order.status,
+                to_status=new_status,
+                requested_by_id=changed_by_id,
+                approved_by_id=changed_by_id,
+                status="approved",
+                blocks_snapshot=[b.to_dict() for b in result.hard_blocks],
+                request_reason=justification or "Override presencial — hard blocks",
+                justification=justification or "Override presencial — hard blocks",
+                resolved_at=tz.now(),
+                expires_at=tz.now(),
+            )
 
         # Soft blocks: bloqueiam exceto com force/override aprovado
         if result.soft_blocks:

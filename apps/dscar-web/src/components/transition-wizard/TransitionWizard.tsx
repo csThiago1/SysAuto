@@ -136,7 +136,7 @@ export function TransitionWizard({ orderId, target, onClose, onSuccess }: Transi
                 <WizardFooter
                   targetLabel={targetLabel}
                   allBlockingResolved={allBlockingResolved}
-                  hasSoftBlocks={softBlocks.length > 0}
+                  hasSoftBlocks={softBlocks.length > 0 || hardBlocks.length > 0}
                   isAdvancing={transitionMutation.isPending}
                   onAdvance={() => void handleAdvance()}
                   onRequestOverride={() => setOverrideModalOpen(true)}
@@ -157,7 +157,7 @@ export function TransitionWizard({ orderId, target, onClose, onSuccess }: Transi
             : ""
         }
         targetStatusLabel={targetLabel}
-        softBlocks={softBlocks}
+        softBlocks={[...hardBlocks, ...softBlocks]}
         reason={overrideReason}
         onReasonChange={setOverrideReason}
         isSubmittingRemote={overrideMutation.isPending}
