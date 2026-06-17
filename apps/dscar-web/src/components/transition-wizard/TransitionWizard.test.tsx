@@ -25,7 +25,7 @@ const mockOrder: Partial<ServiceOrder> = {
   },
 }
 
-const mockUseServiceOrder = vi.fn(() => ({ data: mockOrder, isLoading: false }))
+const mockUseServiceOrder = vi.fn<(...args: unknown[]) => { data: Partial<ServiceOrder> | undefined; isLoading: boolean }>(() => ({ data: mockOrder, isLoading: false }))
 vi.mock("@/app/(app)/os/[numero]/_hooks/useServiceOrder", () => ({
   useServiceOrder: (...args: unknown[]) => mockUseServiceOrder(...args),
 }))
@@ -117,7 +117,7 @@ describe("TransitionWizard — cancelamento com justificativa", () => {
         },
       },
     }
-    mockUseServiceOrder.mockReturnValueOnce({ data: cancelOrder, isLoading: false })
+    mockUseServiceOrder.mockReturnValueOnce({ data: cancelOrder as Partial<ServiceOrder>, isLoading: false })
 
     const user = userEvent.setup()
     wrap(<TransitionWizard orderId="os-c" target="cancelled" onClose={vi.fn()} onSuccess={vi.fn()} />)

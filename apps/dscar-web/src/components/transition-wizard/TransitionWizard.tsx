@@ -54,9 +54,16 @@ export function TransitionWizard({ orderId, target, onClose, onSuccess }: Transi
   const targetLabel = SERVICE_ORDER_STATUS_CONFIG[target]?.label ?? target
 
   async function handleAdvance(): Promise<void> {
+    // Guard: cancelamento exige justificativa de ≥10 chars (espelha o validator client-side
+    // do CancelJustificationResolver). Evita que markResolved (monotônico) deixe o user
+    // avançar após apagar o texto resolvido.
+    if (target === "cancelled" && justification.trim().length < 10) {
+      toast.error("Justificativa do cancelamento deve ter pelo menos 10 caracteres")
+      return
+    }
     try {
       const payload: { new_status: ServiceOrderStatus; justification?: string } = { new_status: target }
-      if (target === "cancelled" && justification.trim()) {
+      if (target === "cancelled") {
         payload.justification = justification.trim()
       }
       await transitionMutation.mutateAsync(payload)

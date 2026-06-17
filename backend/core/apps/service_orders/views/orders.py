@@ -1053,24 +1053,36 @@ class ServiceOrderViewSet(
             serializer.is_valid(raise_exception=True)
 
             file = serializer.validated_data["file"]
-            # Limite 10MB + MIME image/* — evita DoS por upload gigante e
-            # exfiltração de outros tipos (PDFs, executáveis).
+            folder = serializer.validated_data["folder"]
+            # Imagens (10MB max) — vistoria, acompanhamento etc.
+            # PDFs (20MB max) — permitido APENAS na pasta 'orcamentos'
+            # (orçamento da seguradora). Evita DoS e exfiltração de outros tipos.
             MAX_PHOTO_BYTES = 10 * 1024 * 1024
-            ALLOWED_TYPES = {
+            MAX_PDF_BYTES = 20 * 1024 * 1024
+            ALLOWED_IMAGE_TYPES = {
                 "image/jpeg", "image/png", "image/webp",
                 "image/heic", "image/heif",
             }
-            if file.size > MAX_PHOTO_BYTES:
-                return Response(
-                    {"detail": "Arquivo excede 10MB."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            if file.content_type not in ALLOWED_TYPES:
-                return Response(
-                    {"detail": f"Tipo não suportado: {file.content_type}."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            folder = serializer.validated_data["folder"]
+            is_pdf_in_budget = (
+                folder == "orcamentos" and file.content_type == "application/pdf"
+            )
+            if is_pdf_in_budget:
+                if file.size > MAX_PDF_BYTES:
+                    return Response(
+                        {"detail": "PDF excede 20MB."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            else:
+                if file.size > MAX_PHOTO_BYTES:
+                    return Response(
+                        {"detail": "Arquivo excede 10MB."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                if file.content_type not in ALLOWED_IMAGE_TYPES:
+                    return Response(
+                        {"detail": f"Tipo não suportado: {file.content_type}."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
             caption = serializer.validated_data.get("caption", "")
             slot = serializer.validated_data.get("slot", "")
             checklist_type = serializer.validated_data.get("checklist_type", "")
