@@ -1,8 +1,9 @@
 """
-Paddock Solutions — Django Settings Railway (staging gratuito)
-Herda de base.py. Sem R2, sem debug_toolbar. WhiteNoise para estáticos.
+Paddock Solutions — Django Settings Railway (production)
+Herda de base.py. R2 para media, WhiteNoise para estáticos.
 """
 
+from django.core.exceptions import ImproperlyConfigured
 from django_tenants.middleware.main import TenantMainMiddleware
 
 from .base import *  # noqa: F401, F403
@@ -11,6 +12,7 @@ DEBUG = False
 ALLOWED_HOSTS = [
     ".up.railway.app",
     ".paddock.solutions",
+    ".oficinadscar.com.br",
     ".vercel.app",
     "localhost",
 ]
@@ -23,8 +25,21 @@ REST_FRAMEWORK = {
     ],
 }
 
-# ─── Storage — local (sem R2 em staging gratuito) ──────────────────────────
-DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+# ─── Storage — Cloudflare R2 ───────────────────────────────────────────────
+_R2_ACCOUNT_ID = config("R2_ACCOUNT_ID", default="")  # type: ignore[name-defined]
+_R2_PUBLIC_URL = config("R2_PUBLIC_URL", default="")  # type: ignore[name-defined]
+
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+AWS_S3_ENDPOINT_URL = f"https://{_R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+AWS_ACCESS_KEY_ID = config("R2_ACCESS_KEY_ID", default="")  # type: ignore[name-defined]
+AWS_SECRET_ACCESS_KEY = config("R2_SECRET_ACCESS_KEY", default="")  # type: ignore[name-defined]
+AWS_STORAGE_BUCKET_NAME = config("R2_BUCKET_NAME", default="")  # type: ignore[name-defined]
+AWS_S3_CUSTOM_DOMAIN = _R2_PUBLIC_URL.removeprefix("https://").removeprefix("http://").rstrip("/")
+AWS_DEFAULT_ACL = None          # R2 não suporta ACLs
+AWS_QUERYSTRING_AUTH = False    # URLs públicas servidas via custom domain
+AWS_S3_FILE_OVERWRITE = False   # nunca sobrescrever uploads
+AWS_S3_REGION_NAME = "auto"     # R2 ignora region mas boto3 exige
+AWS_S3_SIGNATURE_VERSION = "s3v4"
 
 # ─── Static files — WhiteNoise ──────────────────────────────────────────────
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
@@ -102,3 +117,17 @@ if SENTRY_DSN:
         send_default_pii=False,  # LGPD — não enviar email/IP/body do request
         environment=config("SENTRY_ENVIRONMENT", default="production"),  # type: ignore[name-defined]
     )
+
+# ─── Guards — falha imediata se vars críticas estiverem ausentes ──────────────
+_REQUIRED_R2_VARS = {
+    "R2_ACCOUNT_ID": _R2_ACCOUNT_ID,
+    "R2_ACCESS_KEY_ID": AWS_ACCESS_KEY_ID,
+    "R2_SECRET_ACCESS_KEY": AWS_SECRET_ACCESS_KEY,
+    "R2_BUCKET_NAME": AWS_STORAGE_BUCKET_NAME,
+    "R2_PUBLIC_URL": _R2_PUBLIC_URL,
+}
+for _var, _val in _REQUIRED_R2_VARS.items():
+    if not _val:
+        raise ImproperlyConfigured(
+            f"[railway] Variável obrigatória não configurada: {_var}"
+        )
