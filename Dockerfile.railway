@@ -29,6 +29,8 @@ ENV DJANGO_SETTINGS_MODULE=config.settings.railway
 RUN DJANGO_SECRET_KEY=build-time DB_NAME=build DB_USER=build DB_PASSWORD=build \
     DB_HOST=build DB_PORT=5432 \
     FIELD_ENCRYPTION_KEY=YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE= \
+    R2_ACCOUNT_ID=build R2_ACCESS_KEY_ID=build R2_SECRET_ACCESS_KEY=build \
+    R2_BUCKET_NAME=build R2_PUBLIC_URL=https://build.example.com \
     python manage.py collectstatic --noinput
 
 EXPOSE 8000
