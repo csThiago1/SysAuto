@@ -18,6 +18,12 @@ async function patchOrder(id: string, data: Record<string, unknown>): Promise<vo
   })
 }
 
+// "YYYY-MM-DDTHH:mm" no fuso local — formato aceito por <input type="datetime-local">
+function nowLocalDatetime(): string {
+  const d = new Date()
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+}
+
 function VehicleDataForm({ block, order, onResolved }: ResolverProps) {
   const qc = useQueryClient()
   const code = block.code
@@ -510,6 +516,15 @@ function AuthDateForm({ order, onResolved }: ResolverProps) {
           onChange={(e) => setVal(e.target.value)}
         />
       </div>
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        disabled={saving}
+        onClick={() => setVal(nowLocalDatetime())}
+      >
+        Agora
+      </Button>
       <Button size="sm" disabled={saving} onClick={() => void handleSave()}>
         {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}
         Salvar
@@ -553,6 +568,15 @@ function EntryDateForm({ order, onResolved }: ResolverProps) {
           onChange={(e) => setVal(e.target.value)}
         />
       </div>
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        disabled={saving}
+        onClick={() => setVal(nowLocalDatetime())}
+      >
+        Agora
+      </Button>
       <Button size="sm" disabled={saving} onClick={() => void handleSave()}>
         {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}
         Salvar

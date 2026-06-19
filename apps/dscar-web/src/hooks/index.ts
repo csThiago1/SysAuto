@@ -118,6 +118,13 @@ export {
   type InsurerPayload,
 } from "./useInsurers";
 
+// ── Assinaturas Digitais ──────────────────────────────────────────────────────
+export {
+  useSignatureExists,
+  signatureKeys,
+} from "./useSignatureExists";
+export { useSignatureCapture } from "./useSignatureCapture";
+
 // ── Motor de Orçamentos — Catálogo FIPE ───────────────────────────────────────
 export {
   useFipeMakes,

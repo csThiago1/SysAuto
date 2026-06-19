@@ -210,6 +210,18 @@ describe("DataResolver — AUTH_DATE_SET", () => {
     await user.click(screen.getByRole("button", { name: /salvar/i }))
     await waitFor(() => expect(onResolved).toHaveBeenCalledTimes(1))
   })
+
+  it('botão "Agora" preenche o input com datetime local atual', async () => {
+    const user = userEvent.setup()
+    wrap(<DataResolver block={block("AUTH_DATE_SET")} order={ORDER} onResolved={vi.fn()} />)
+    const input = screen.getByLabelText(/data de autorização/i) as HTMLInputElement
+    expect(input.value).toBe("")
+    await user.click(screen.getByRole("button", { name: /agora/i }))
+    // Formato "YYYY-MM-DDTHH:mm" (16 chars), recente (últimos 5s)
+    expect(input.value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/)
+    const diffMs = Date.now() - new Date(input.value).getTime()
+    expect(Math.abs(diffMs)).toBeLessThan(5 * 60_000) // tolera fuso de teste
+  })
 })
 
 describe("DataResolver — ENTRY_DATE_SET", () => {
@@ -224,6 +236,17 @@ describe("DataResolver — ENTRY_DATE_SET", () => {
     wrap(<DataResolver block={block("ENTRY_DATE_SET")} order={ORDER} onResolved={onResolved} />)
     const input = screen.getByLabelText(/data de entrada/i) as HTMLInputElement
     await user.type(input, "2026-06-15T08:30")
+    await user.click(screen.getByRole("button", { name: /salvar/i }))
+    await waitFor(() => expect(onResolved).toHaveBeenCalledTimes(1))
+  })
+
+  it('botão "Agora" preenche o input e permite salvar em seguida', async () => {
+    const user = userEvent.setup()
+    const onResolved = vi.fn()
+    wrap(<DataResolver block={block("ENTRY_DATE_SET")} order={ORDER} onResolved={onResolved} />)
+    const input = screen.getByLabelText(/data de entrada/i) as HTMLInputElement
+    await user.click(screen.getByRole("button", { name: /agora/i }))
+    expect(input.value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/)
     await user.click(screen.getByRole("button", { name: /salvar/i }))
     await waitFor(() => expect(onResolved).toHaveBeenCalledTimes(1))
   })

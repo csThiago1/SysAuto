@@ -6,6 +6,8 @@ import { PhotoResolver } from "./PhotoResolver"
 import { InsurerResolver } from "./InsurerResolver"
 import { FileResolver } from "./FileResolver"
 import { CancelJustificationResolver } from "./CancelJustificationResolver"
+import { SignatureResolver } from "./SignatureResolver"
+import { SIGNATURE_CODE_MAP } from "@/components/signatures/signatureCodeMap"
 
 export interface ResolverProps {
   block: ValidationBlock
@@ -45,3 +47,6 @@ registerResolver(
 registerResolver(["INSURER_DATA"], InsurerResolver)
 registerResolver(["BUDGET_PDF_INSURER"], FileResolver)
 registerResolver(["CANCEL_JUSTIFICATION"], CancelJustificationResolver)
+
+// Sprint B — Signature (data-driven: todos os codes do mapa apontam pro mesmo resolver)
+registerResolver(Object.keys(SIGNATURE_CODE_MAP), SignatureResolver)
