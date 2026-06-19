@@ -19,7 +19,7 @@ describe("useSignatureCapture", () => {
 
   it("faz POST /signatures/capture/ com method CANVAS_TABLET injetado", async () => {
     const signature: Signature = {
-      id: 1,
+      id: "1",
       document_type: "BUDGET_APPROVAL",
       method: "CANVAS_TABLET",
       signer_name: "João",
@@ -32,7 +32,7 @@ describe("useSignatureCapture", () => {
     const { result } = renderHook(() => useSignatureCapture(), { wrapper: wrap() })
 
     const payload: CapturePayload = {
-      service_order_id: 42,
+      service_order_id: "42",
       document_type: "BUDGET_APPROVAL",
       signer_name: "João",
       signature_png_base64: "iVBORw0KGgo=",

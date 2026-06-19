@@ -8,12 +8,12 @@ interface SignatureListResponse {
 }
 
 export const signatureKeys = {
-  exists: (orderId: number, docType: SignatureDocumentType) =>
+  exists: (orderId: string, docType: SignatureDocumentType) =>
     ["signatures", orderId, docType, "exists"] as const,
 }
 
 export function useSignatureExists(
-  serviceOrderId: number,
+  serviceOrderId: string,
   documentType: SignatureDocumentType,
 ) {
   return useQuery({

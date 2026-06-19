@@ -52,7 +52,7 @@ function wrap(ui: React.ReactElement) {
 const baseProps = {
   open: true,
   onOpenChange: vi.fn(),
-  serviceOrderId: 42,
+  serviceOrderId: "42",
   documentType: "BUDGET_APPROVAL" as const,
   title: "Aprovação do orçamento",
   defaultSignerName: "João Silva",
@@ -105,7 +105,7 @@ describe("SignatureSheet", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false)
     expect(captureMutate).toHaveBeenCalledWith(
       expect.objectContaining({
-        service_order_id: 42,
+        service_order_id: "42",
         document_type: "BUDGET_APPROVAL",
         signer_name: "João Silva",
         signature_png_base64: "BASE64",

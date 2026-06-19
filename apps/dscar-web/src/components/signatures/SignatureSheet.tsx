@@ -20,7 +20,7 @@ import type { Signature, SignatureDocumentType } from "./types"
 interface SignatureSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  serviceOrderId: number
+  serviceOrderId: string
   documentType: SignatureDocumentType
   title: string
   defaultSignerName?: string

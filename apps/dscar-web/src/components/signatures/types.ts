@@ -9,7 +9,7 @@ export type SignatureDocumentType =
 export type SignatureMethod = "CANVAS_TABLET" | "REMOTE_LINK" | "SCAN_PDF"
 
 export interface CapturePayload {
-  service_order_id: number
+  service_order_id: string
   document_type: SignatureDocumentType
   signer_name: string
   signature_png_base64: string
@@ -18,7 +18,7 @@ export interface CapturePayload {
 }
 
 export interface Signature {
-  id: number
+  id: string
   document_type: SignatureDocumentType
   method: SignatureMethod
   signer_name: string

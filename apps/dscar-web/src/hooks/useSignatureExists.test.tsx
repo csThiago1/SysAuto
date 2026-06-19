@@ -19,7 +19,7 @@ describe("useSignatureExists", () => {
   it("retorna true quando count > 0", async () => {
     apiFetchMock.mockResolvedValueOnce({ count: 1, results: [] })
     const { result } = renderHook(
-      () => useSignatureExists(42, "BUDGET_APPROVAL"),
+      () => useSignatureExists("42", "BUDGET_APPROVAL"),
       { wrapper: wrap() },
     )
     await waitFor(() => expect(result.current.data).toBe(true))
@@ -31,7 +31,7 @@ describe("useSignatureExists", () => {
   it("retorna false quando count === 0", async () => {
     apiFetchMock.mockResolvedValueOnce({ count: 0, results: [] })
     const { result } = renderHook(
-      () => useSignatureExists(42, "OS_DELIVERY"),
+      () => useSignatureExists("42", "OS_DELIVERY"),
       { wrapper: wrap() },
     )
     await waitFor(() => expect(result.current.data).toBe(false))
@@ -39,7 +39,7 @@ describe("useSignatureExists", () => {
 
   it("não dispara query quando serviceOrderId é 0/falsy", () => {
     const { result } = renderHook(
-      () => useSignatureExists(0, "BUDGET_APPROVAL"),
+      () => useSignatureExists("", "BUDGET_APPROVAL"),
       { wrapper: wrap() },
     )
     expect(result.current.fetchStatus).toBe("idle")
