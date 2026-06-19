@@ -41,22 +41,22 @@ export function SignatureSheet({
   const canvasRef = useRef<SignatureCanvasHandle>(null)
   const [signerName, setSignerName] = useState(defaultSignerName)
   const [signerCpf, setSignerCpf] = useState(defaultSignerCpf)
-  const [, forceRender] = useState(0)
+  const [hasInk, setHasInk] = useState(false)
   const capture = useSignatureCapture()
 
   useEffect(() => {
     if (open) {
       setSignerName(defaultSignerName)
       setSignerCpf(defaultSignerCpf)
+      setHasInk(false)
     }
   }, [open, defaultSignerName, defaultSignerCpf])
 
   const nameOk = signerName.trim().length >= 3
-  const canSubmit = nameOk && !(canvasRef.current?.isEmpty() ?? true) && !capture.isPending
+  const canSubmit = nameOk && hasInk && !capture.isPending
 
   async function handleConfirm(): Promise<void> {
-    if (!canvasRef.current) return
-    if (canvasRef.current.isEmpty()) return
+    if (!canvasRef.current || !hasInk) return
     try {
       const sig = await capture.mutateAsync({
         service_order_id: serviceOrderId,
@@ -74,7 +74,7 @@ export function SignatureSheet({
   }
 
   function handleOpenChange(next: boolean): void {
-    if (!next && !canvasRef.current?.isEmpty()) {
+    if (!next && hasInk) {
       const ok = window.confirm("Descartar assinatura?")
       if (!ok) return
     }
@@ -119,7 +119,7 @@ export function SignatureSheet({
           <SignatureCanvas
             ref={canvasRef}
             className="bg-white"
-            onEnd={() => forceRender((n) => n + 1)}
+            onEnd={() => setHasInk(true)}
           />
         </div>
 
@@ -129,7 +129,7 @@ export function SignatureSheet({
             variant="outline"
             onClick={() => {
               canvasRef.current?.clear()
-              forceRender((n) => n + 1)
+              setHasInk(false)
             }}
           >
             Limpar

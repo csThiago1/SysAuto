@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { CheckCircle2 } from "lucide-react"
 import type { ServiceOrder } from "@paddock/types"
 import { Button } from "@/components/ui/button"
 import { SignatureSheet } from "@/components/signatures/SignatureSheet"
@@ -35,9 +36,15 @@ function KnownSignatureResolver({ config, order, onResolved }: KnownProps) {
   const [open, setOpen] = useState(false)
   const exists = useSignatureExists(order.id, config.documentType)
   const customer = useCustomer(order.customer_uuid ?? "")
+  const resolvedFired = useRef(false)
 
+  // Dispara onResolved no máximo uma vez por instância — onResolved do pai
+  // pode mudar de identidade a cada re-render sem useCallback.
   useEffect(() => {
-    if (exists.data === true) onResolved()
+    if (exists.data === true && !resolvedFired.current) {
+      resolvedFired.current = true
+      onResolved()
+    }
   }, [exists.data, onResolved])
 
   if (exists.isLoading) {
@@ -45,7 +52,12 @@ function KnownSignatureResolver({ config, order, onResolved }: KnownProps) {
   }
 
   if (exists.data === true) {
-    return <div className="text-sm text-success-600">✓ Assinatura já capturada</div>
+    return (
+      <div className="text-sm text-success-600 inline-flex items-center gap-1">
+        <CheckCircle2 className="h-3.5 w-3.5" />
+        Assinatura já capturada
+      </div>
+    )
   }
 
   return (
