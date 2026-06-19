@@ -39,7 +39,7 @@
 
 **Files:**
 - Modify: `apps/dscar-web/package.json`
-- Modify: `pnpm-lock.yaml`
+- Modify: `package-lock.json`
 
 - [ ] **Step 1: (Opcional) Criar worktree isolado**
 
@@ -55,9 +55,9 @@ Caso contrário, trabalhar no branch atual (criar branch novo): `git switch -c f
 - [ ] **Step 2: Instalar `react-signature-canvas`**
 
 ```bash
-cd apps/dscar-web
-pnpm add react-signature-canvas
-pnpm add -D @types/react-signature-canvas
+
+npm install --workspace=dscar-web react-signature-canvas
+npm install --save-dev --workspace=dscar-web @types/react-signature-canvas
 ```
 
 - [ ] **Step 3: Verificar versão instalada**
@@ -70,7 +70,7 @@ Esperado em `apps/dscar-web/package.json`:
 - [ ] **Step 4: Rodar typecheck para validar peer deps**
 
 ```bash
-pnpm --filter dscar-web typecheck
+npm run typecheck --workspace=dscar-web
 ```
 
 Esperado: PASS sem erros relacionados a `react-signature-canvas`.
@@ -78,7 +78,7 @@ Esperado: PASS sem erros relacionados a `react-signature-canvas`.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add apps/dscar-web/package.json pnpm-lock.yaml
+git add apps/dscar-web/package.json package-lock.json
 git commit -m "chore(dscar-web): adiciona react-signature-canvas para Sprint B"
 ```
 
@@ -127,7 +127,7 @@ export interface Signature {
 - [ ] **Step 2: Rodar typecheck**
 
 ```bash
-pnpm --filter dscar-web typecheck
+npm run typecheck --workspace=dscar-web
 ```
 
 Esperado: PASS.
@@ -186,7 +186,7 @@ describe("signatureCodeMap", () => {
 - [ ] **Step 2: Rodar testes (devem falhar — arquivo não existe)**
 
 ```bash
-pnpm --filter dscar-web test src/components/signatures/__tests__/signatureCodeMap.test.ts
+cd apps/dscar-web && npx vitest run src/components/signatures/__tests__/signatureCodeMap.test.ts
 ```
 
 Esperado: FAIL com "Cannot find module".
@@ -226,7 +226,7 @@ export function getSignatureCodeConfig(code: string): SignatureCodeConfig | null
 - [ ] **Step 4: Rodar testes**
 
 ```bash
-pnpm --filter dscar-web test src/components/signatures/__tests__/signatureCodeMap.test.ts
+cd apps/dscar-web && npx vitest run src/components/signatures/__tests__/signatureCodeMap.test.ts
 ```
 
 Esperado: PASS — 4 tests.
@@ -304,7 +304,7 @@ describe("useSignatureExists", () => {
 - [ ] **Step 2: Rodar testes (devem falhar)**
 
 ```bash
-pnpm --filter dscar-web test src/hooks/useSignatureExists.test.ts
+cd apps/dscar-web && npx vitest run src/hooks/useSignatureExists.test.ts
 ```
 
 Esperado: FAIL com "Cannot find module './useSignatureExists'".
@@ -348,7 +348,7 @@ export function useSignatureExists(
 - [ ] **Step 4: Rodar testes**
 
 ```bash
-pnpm --filter dscar-web test src/hooks/useSignatureExists.test.ts
+cd apps/dscar-web && npx vitest run src/hooks/useSignatureExists.test.ts
 ```
 
 Esperado: PASS — 3 tests.
@@ -433,7 +433,7 @@ describe("useSignatureCapture", () => {
 - [ ] **Step 2: Rodar testes (devem falhar)**
 
 ```bash
-pnpm --filter dscar-web test src/hooks/useSignatureCapture.test.ts
+cd apps/dscar-web && npx vitest run src/hooks/useSignatureCapture.test.ts
 ```
 
 Esperado: FAIL.
@@ -461,7 +461,7 @@ export function useSignatureCapture() {
 - [ ] **Step 4: Rodar testes**
 
 ```bash
-pnpm --filter dscar-web test src/hooks/useSignatureCapture.test.ts
+cd apps/dscar-web && npx vitest run src/hooks/useSignatureCapture.test.ts
 ```
 
 Esperado: PASS.
@@ -555,7 +555,7 @@ describe("SignatureCanvas", () => {
 - [ ] **Step 2: Rodar testes (devem falhar)**
 
 ```bash
-pnpm --filter dscar-web test src/components/signatures/__tests__/SignatureCanvas.test.tsx
+cd apps/dscar-web && npx vitest run src/components/signatures/__tests__/SignatureCanvas.test.tsx
 ```
 
 Esperado: FAIL.
@@ -616,7 +616,7 @@ export const SignatureCanvas = forwardRef<SignatureCanvasHandle, SignatureCanvas
 - [ ] **Step 4: Rodar testes**
 
 ```bash
-pnpm --filter dscar-web test src/components/signatures/__tests__/SignatureCanvas.test.tsx
+cd apps/dscar-web && npx vitest run src/components/signatures/__tests__/SignatureCanvas.test.tsx
 ```
 
 Esperado: PASS — 4 tests.
@@ -775,7 +775,7 @@ describe("SignatureSheet", () => {
 - [ ] **Step 2: Rodar testes (devem falhar)**
 
 ```bash
-pnpm --filter dscar-web test src/components/signatures/__tests__/SignatureSheet.test.tsx
+cd apps/dscar-web && npx vitest run src/components/signatures/__tests__/SignatureSheet.test.tsx
 ```
 
 Esperado: FAIL.
@@ -940,7 +940,7 @@ export function SignatureSheet({
 - [ ] **Step 4: Rodar testes**
 
 ```bash
-pnpm --filter dscar-web test src/components/signatures/__tests__/SignatureSheet.test.tsx
+cd apps/dscar-web && npx vitest run src/components/signatures/__tests__/SignatureSheet.test.tsx
 ```
 
 Esperado: PASS — 6 tests. Se algum teste falhar por timing (`waitFor`), revisar o mock de `useSignatureCapture` e o `forceRender`.
@@ -1085,7 +1085,7 @@ describe("SignatureResolver", () => {
 - [ ] **Step 2: Rodar testes (devem falhar)**
 
 ```bash
-pnpm --filter dscar-web test src/components/transition-wizard/resolvers/SignatureResolver.test.tsx
+cd apps/dscar-web && npx vitest run src/components/transition-wizard/resolvers/SignatureResolver.test.tsx
 ```
 
 Esperado: FAIL.
@@ -1167,7 +1167,7 @@ function KnownSignatureResolver({ config, order, onResolved }: KnownProps) {
 - [ ] **Step 4: Rodar testes**
 
 ```bash
-pnpm --filter dscar-web test src/components/transition-wizard/resolvers/SignatureResolver.test.tsx
+cd apps/dscar-web && npx vitest run src/components/transition-wizard/resolvers/SignatureResolver.test.tsx
 ```
 
 Esperado: PASS — 5 cenários (2 parametrizados + 3 individuais).
@@ -1226,7 +1226,7 @@ registerResolver(Object.keys(SIGNATURE_CODE_MAP), SignatureResolver)
 - [ ] **Step 2: Validar typecheck**
 
 ```bash
-pnpm --filter dscar-web typecheck
+npm run typecheck --workspace=dscar-web
 ```
 
 Esperado: PASS.
@@ -1234,7 +1234,7 @@ Esperado: PASS.
 - [ ] **Step 3: Rodar a suíte completa do wizard**
 
 ```bash
-pnpm --filter dscar-web test src/components/transition-wizard
+cd apps/dscar-web && npx vitest run src/components/transition-wizard
 ```
 
 Esperado: PASS — todos os testes da Fase 2 e 4 continuam verdes + novos.
@@ -1317,8 +1317,8 @@ gh pr create --title "feat(wizard): Sprint B — SignatureCanvas web + resolver 
 - `SignatureSheet` (Sheet shadcn fullscreen + `react-signature-canvas`) faz POST `/signatures/capture/`. Pré-existência detectada via GET filtrado por `service_order` + `document_type`.
 
 ## Test plan
-- [ ] `pnpm --filter dscar-web test` — todos os novos testes passam (≥ 90% cobertura nos arquivos novos).
-- [ ] `pnpm --filter dscar-web typecheck` — sem erros.
+- [ ] `cd apps/dscar-web && npx vitest run` — todos os novos testes passam (≥ 90% cobertura nos arquivos novos).
+- [ ] `npm run typecheck --workspace=dscar-web` — sem erros.
 - [ ] Smoke OS particular em `waiting_auth → authorized`: cliente assina, status muda.
 - [ ] Smoke OS `ready → delivered`: cliente assina entrega, status muda.
 - [ ] Pré-existência: reabrir OS já assinada → item nasce ✓.
@@ -1334,7 +1334,7 @@ EOF
 ## Critérios de aceite global
 
 - [ ] `SIGNATURE_APPROVAL` e `CLIENT_SIGNATURE` NÃO mostram mais `FallbackResolver`.
-- [ ] `pnpm --filter dscar-web test` verde, com ≥ 90% cobertura nos arquivos novos.
-- [ ] `pnpm --filter dscar-web typecheck` verde.
+- [ ] `cd apps/dscar-web && npx vitest run` verde, com ≥ 90% cobertura nos arquivos novos.
+- [ ] `npm run typecheck --workspace=dscar-web` verde.
 - [ ] Sem regressão nos testes existentes do wizard (Fase 2 + 4).
 - [ ] Adicionar um novo code (ex.: `SIGNATURE_INSURANCE`) é literalmente uma linha em `signatureCodeMap.ts` — verificável por inspeção visual do diff hipotético.
