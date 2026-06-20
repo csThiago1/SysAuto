@@ -1300,7 +1300,7 @@ class ServiceOrderViewSet(
 
             if not casualty_number or not budget_number:
                 return Response(
-                    {"error": "casualty_number e budget_number são obrigatórios."},
+                    {"detail": "Informe sinistro e orçamento."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -1323,8 +1323,17 @@ class ServiceOrderViewSet(
                 )
 
             if response.status_code != 200:
+                detail_by_status = {
+                    401: "Token Cilia inválido ou ausente. Verifique CILIA_AUTH_TOKEN no servidor.",
+                    403: "Sem permissão para acessar este orçamento na Cilia.",
+                    404: "Orçamento não encontrado na Cilia. Confira sinistro, orçamento e versão.",
+                }
+                detail = detail_by_status.get(
+                    response.status_code,
+                    f"Cilia retornou HTTP {response.status_code}.",
+                )
                 return Response(
-                    {"error": f"Cilia retornou HTTP {response.status_code}", "error_type": f"HTTP{response.status_code}"},
+                    {"detail": detail, "error_type": f"HTTP{response.status_code}"},
                     status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 )
 
@@ -1367,18 +1376,43 @@ class ServiceOrderViewSet(
                 update_fields.append("year")
 
             # Seguradora: vincular se não tiver
-            if not order.insurer_id and parsed.insurer_code:
-                from apps.insurers.models import Insurer
-                insurer = Insurer.objects.filter(code=parsed.insurer_code).first()
-                if insurer:
-                    order.insurer = insurer
+            if parsed.insurer_code:
+                # OS importada da Cilia é sempre de seguradora — força mesmo sem Insurer row.
+                if order.customer_type != "insurer":
                     order.customer_type = "insurer"
-                    update_fields.extend(["insurer_id", "customer_type"])
+                    update_fields.append("customer_type")
+                if not order.insurer_id:
+                    from apps.insurers.models import Insurer
+                    insurer = Insurer.objects.filter(code=parsed.insurer_code).first()
+                    if insurer:
+                        order.insurer = insurer
+                        update_fields.append("insurer_id")
+                    else:
+                        logger.warning(
+                            "Insurer code='%s' não cadastrado no catálogo — OS %s "
+                            "fica como 'insurer' mas sem FK. Seed a seguradora.",
+                            parsed.insurer_code, order.pk,
+                        )
 
             # Franquia: sempre atualizar (pode mudar entre versões)
             if parsed.franchise_amount:
                 order.deductible_amount = parsed.franchise_amount
                 update_fields.append("deductible_amount")
+
+            # Observações técnicas: popula com pareceres se vazio
+            if not order.notes and parsed.pareceres:
+                obs_lines = []
+                for parecer in parsed.pareceres:
+                    parts = [
+                        parecer.parecer_type.replace("_", " ").title() if parecer.parecer_type else "",
+                        parecer.body or "",
+                    ]
+                    line = " — ".join(p for p in parts if p)
+                    if line:
+                        obs_lines.append(line)
+                if obs_lines:
+                    order.notes = "\n".join(obs_lines)
+                    update_fields.append("notes")
 
             if update_fields:
                 order.save(update_fields=update_fields)
@@ -1444,12 +1478,12 @@ class ServiceOrderViewSet(
 
         elif source in ("soma", "audatex"):
             return Response(
-                {"error": "Importação Soma/Audatex será implementada em breve."},
+                {"detail": "Importação Soma/Audatex será implementada em breve."},
                 status=status.HTTP_501_NOT_IMPLEMENTED,
             )
 
         return Response(
-            {"error": f"Fonte '{source}' não suportada."},
+            {"detail": f"Fonte '{source}' não suportada."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
