@@ -425,10 +425,18 @@ class OSDataLoader:
             if part.part_number and not parts_by_key[key]["code"]:
                 parts_by_key[key]["code"] = part.part_number
 
+        # Categorias ocultas no PDF de OS (regra de negócio DS Car):
+        # - "ri" (R&I): operação implícita em qualquer troca/reparação; polui visualmente.
+        # - "estetica" (Polimento): implícito em toda peça que pinta. Exceções avulsas
+        #   ficam na seção de Observações.
+        HIDDEN_CATEGORIES = {"ri", "estetica"}
+
         # 2. Coletar serviços por painel (normalizado) + categoria
         services_by_key: OrderedDict[str, set[str]] = OrderedDict()
         for labor in order.labor_items.filter(is_active=True).order_by("created_at"):
             category = cls._resolve_category(labor)
+            if category in HIDDEN_CATEGORIES:
+                continue
             panel_raw = cls._extract_panel_name(labor.description)
             key = _register(panel_raw)
             if key not in services_by_key:
@@ -547,7 +555,7 @@ class OSDataLoader:
             "matrix": matrix,
             "services": cls._services_list(order),
             "parts": cls._parts_list(order),
-            "observations": "",
+            "observations": order.notes or "",
             "location_date": _location_date_str(),
             "consultant_signature_base64": _get_employee_signature_base64(order.consultant),
             "consultant_name": (
