@@ -25,10 +25,11 @@ type TabId = "ALL" | PersonRole;
 const TABS: { id: TabId; label: string }[] = [
   { id: "ALL",      label: "Todos" },
   { id: "CLIENT",   label: "Clientes" },
+  { id: "SUPPLIER", label: "Fornecedores" },
+  { id: "EMPLOYEE", label: "Funcionários" },
+  { id: "EXPERT",   label: "Peritos" },
   { id: "INSURER",  label: "Seguradoras" },
   { id: "BROKER",   label: "Corretores" },
-  { id: "EMPLOYEE", label: "Funcionários" },
-  { id: "SUPPLIER", label: "Fornecedores" },
 ];
 
 // ─── Componente principal ─────────────────────────────────────────────────────
