@@ -139,10 +139,11 @@ class CiliaParser:
         vehicle = payload.get("vehicle") or {}
         pb.vehicle_plate = (vehicle.get("license_plate") or "").upper()
         pb.vehicle_description = cls._build_vehicle_description(vehicle)
-        pb.vehicle_chassis = vehicle.get("body") or ""
-        pb.vehicle_color = vehicle.get("color") or ""
+        pb.vehicle_chassis = (vehicle.get("body") or "").strip().upper()
+        pb.vehicle_color = cls._normalize_color(vehicle.get("color") or "")
         pb.vehicle_km = str(vehicle.get("mileage") or "")
-        pb.vehicle_brand = vehicle.get("brand") or ""
+        pb.vehicle_brand = cls._normalize_brand(vehicle.get("brand") or "")
+        pb.vehicle_model = cls._normalize_model(vehicle.get("model") or "")
 
         # Year validation
         raw_year = vehicle.get("model_year")
@@ -490,6 +491,43 @@ class CiliaParser:
         color = vehicle.get("color") or ""
         parts = [p for p in [brand, model, str(year) if year else "", color] if p]
         return " ".join(parts).strip()
+
+    # ------------------------------------------------------------------ normalizers
+    # Cilia retorna dados do veículo em formatos irregulares (cor com prefixo "-",
+    # marca/cor em CAPS, model com range de anos entre parênteses). Os helpers
+    # abaixo padronizam pra que a OS e o PDF mostrem texto limpo.
+
+    _COR_PREFIX_RE = re.compile(r"^[-\s]+")
+    _MODEL_YEAR_RANGE_RE = re.compile(r"\s*\([^)]*\d{4}[^)]*\)\s*")
+
+    @classmethod
+    def _normalize_color(cls, raw: str) -> str:
+        """'-PRETA' → 'Preta'; '  BRANCA PEROLA  ' → 'Branca Perola'."""
+        if not raw:
+            return ""
+        cleaned = cls._COR_PREFIX_RE.sub("", raw).strip()
+        return cleaned.title() if cleaned else ""
+
+    @classmethod
+    def _normalize_brand(cls, raw: str) -> str:
+        """'CHEVROLET' → 'Chevrolet'. Mantém sigla curta em CAPS (BMW, VW, GM)."""
+        if not raw:
+            return ""
+        cleaned = raw.strip()
+        if len(cleaned) <= 3 and cleaned.isalpha():
+            return cleaned.upper()
+        return cleaned.title()
+
+    @classmethod
+    def _normalize_model(cls, raw: str) -> str:
+        """Remove range de anos entre parênteses.
+
+        'ONIX PLUS (2020 A 2025) PREMIER 1.0' → 'ONIX PLUS PREMIER 1.0'
+        """
+        if not raw:
+            return ""
+        cleaned = cls._MODEL_YEAR_RANGE_RE.sub(" ", raw)
+        return re.sub(r"\s+", " ", cleaned).strip()
 
     @staticmethod
     def _dec(value: Any, field_name: str = "unknown") -> Decimal:
