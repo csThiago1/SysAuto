@@ -404,7 +404,12 @@ class BrokerPerson(models.Model):
 
 
 class SupplierProfile(models.Model):
-    """Dados contábeis/operacionais do fornecedor — OneToOne Person."""
+    """Dados contábeis/operacionais do fornecedor — OneToOne Person.
+
+    Tenant isolation: este profile não carrega FK tenant próprio.
+    Isolamento vem via Person parent (mesmo padrão de ClientProfile,
+    BrokerOffice, BrokerPerson neste app).
+    """
 
     class Categoria(models.TextChoices):
         PARTS    = "PARTS",    "Peças"
@@ -464,7 +469,11 @@ class SupplierProfile(models.Model):
 
 
 class ExpertProfile(models.Model):
-    """Perfil de perito — OneToOne Person, substitui experts.Expert."""
+    """Perfil de perito — OneToOne Person, substitui experts.Expert.
+
+    Tenant isolation via Person parent (mesmo padrão dos demais profiles
+    deste app — ClientProfile, BrokerOffice, BrokerPerson).
+    """
 
     person = models.OneToOneField(
         Person, on_delete=models.CASCADE, related_name="expert_profile",
