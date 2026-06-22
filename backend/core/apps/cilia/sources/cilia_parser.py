@@ -189,7 +189,12 @@ class CiliaParser:
         ri_correction_by_type = cls._compute_ri_corrections(budgetings, totals)
 
         for entry in budgetings:
-            pb.items.extend(cls._parse_budgeting(entry, pb.hourly_rates, ri_correction_by_type))
+            pb.items.extend(cls._parse_budgeting(
+                entry,
+                pb.hourly_rates,
+                ri_correction_by_type,
+                pb.global_discount_pct,
+            ))
 
         # --- Parecer / conclusion (1 por versão) ---
         if conclusion_raw:
@@ -256,16 +261,22 @@ class CiliaParser:
         entry: dict[str, Any],
         hourly_rates: dict[str, str],
         ri_correction_by_type: dict[str, Decimal],
+        global_discount_pct: Decimal = Decimal("0"),
     ) -> list[ParsedItemDTO]:
         """Converte um `budgetings[]` em N ParsedItemDTOs.
 
         Lógica do centro automotivo:
         - exchange_used=True → 1 item PART com preço da peça (desconto aplicado)
         - Cada operação com horas > 0 (R&I, pintura, reparação) → 1 item SERVICE
-          separado, com horas × tarifa.
+          separado, com horas × tarifa × (1 - global_discount_pct/100).
         - R&I usa fator de correção por tipo para evitar double-counting.
         - Itens sem troca e sem horas → 1 item SERVICE com selling_cost fixo
+          (também sujeito ao desconto global de MO).
         """
+        # Fator multiplicativo do desconto global de MO da seguradora.
+        # Aplicado a TODOS os SERVICE (horas × rate e selling_cost fixo).
+        # Peças têm seu próprio piece_discount_percentage e não usam este.
+        service_factor = Decimal("1") - (global_discount_pct / Decimal("100"))
         items: list[ParsedItemDTO] = []
 
         # Dados comuns
@@ -348,6 +359,7 @@ class CiliaParser:
         for op_type, hours, rate in operations:
             if hours > 0:
                 op_label = cls.OP_LABELS.get(op_type, op_type)
+                gross = hours * rate
                 items.append(ParsedItemDTO(
                     bucket=bucket,
                     payer_block="SEGURADORA",
@@ -359,8 +371,8 @@ class CiliaParser:
                     supplier=supplier,
                     quantity=hours,
                     unit_price=rate,
-                    discount_pct=Decimal("0"),
-                    net_price=hours * rate,
+                    discount_pct=global_discount_pct,
+                    net_price=gross * service_factor,
                     flag_inclusao_manual=is_manual,
                 ))
 
@@ -380,8 +392,8 @@ class CiliaParser:
                     supplier=supplier,
                     quantity=Decimal("1"),
                     unit_price=selling_cost,
-                    discount_pct=Decimal("0"),
-                    net_price=selling_cost,
+                    discount_pct=global_discount_pct,
+                    net_price=selling_cost * service_factor,
                     flag_inclusao_manual=is_manual,
                 ))
 
