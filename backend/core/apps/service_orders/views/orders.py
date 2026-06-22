@@ -1350,30 +1350,44 @@ class ServiceOrderViewSet(
             # 3. Atualizar dados da OS com informações do Cilia (preenche campos vazios)
             update_fields: list[str] = []
 
-            field_mapping = {
+            # Campos só preenchidos se vazios (não sobrescreve digitação do consultor)
+            fill_if_empty = {
                 "casualty_number": parsed.casualty_number,
                 "plate": parsed.vehicle_plate,
-                "make": parsed.vehicle_brand,
-                "color": parsed.vehicle_color,
                 "chassis": parsed.vehicle_chassis,
                 "customer_name": parsed.segurado_name,
             }
-            for field, value in field_mapping.items():
+            for field, value in fill_if_empty.items():
                 if value and not getattr(order, field, None):
                     setattr(order, field, value)
                     update_fields.append(field)
 
-            # Veículo: descrição pode conter marca + modelo
-            if not order.model and parsed.vehicle_description:
-                # vehicle_description = "brand model year color" — tentar extrair modelo
-                desc_parts = parsed.vehicle_description.split()
-                if len(desc_parts) >= 2:
-                    order.model = " ".join(desc_parts[1:3])  # pega model + version
-                    update_fields.append("model")
+            # Dados normalizados do veículo: sobrescreve mesmo se já tinha algo
+            # pra padronizar (CAPS → Title-case, model sem range de anos).
+            normalized_vehicle = {
+                "make": parsed.vehicle_brand,
+                "model": parsed.vehicle_model,
+                "color": parsed.vehicle_color,
+            }
+            for field, value in normalized_vehicle.items():
+                if value and getattr(order, field, "") != value:
+                    setattr(order, field, value)
+                    update_fields.append(field)
 
             if parsed.vehicle_year and not order.year:
                 order.year = parsed.vehicle_year
                 update_fields.append("year")
+
+            # Último orçamento Cilia importado — guarda na OS pra busca/UI
+            # sem JOIN com ServiceOrderVersion.
+            if str(budget_number) and order.cilia_budget_number != str(budget_number):
+                order.cilia_budget_number = str(budget_number)
+                update_fields.append("cilia_budget_number")
+            if version_number is not None and str(version_number) and (
+                order.cilia_budget_version != str(version_number)
+            ):
+                order.cilia_budget_version = str(version_number)
+                update_fields.append("cilia_budget_version")
 
             # Seguradora: vincular se não tiver
             if parsed.insurer_code:

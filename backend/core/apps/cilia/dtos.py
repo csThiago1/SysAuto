@@ -97,6 +97,7 @@ class ParsedBudget:
     vehicle_km: str = ""
     vehicle_year: int | None = None
     vehicle_brand: str = ""
+    vehicle_model: str = ""  # Modelo normalizado (sem range de anos do Cilia)
 
     # Sinistro / apólice
     casualty_number: str = ""

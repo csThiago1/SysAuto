@@ -139,10 +139,11 @@ class CiliaParser:
         vehicle = payload.get("vehicle") or {}
         pb.vehicle_plate = (vehicle.get("license_plate") or "").upper()
         pb.vehicle_description = cls._build_vehicle_description(vehicle)
-        pb.vehicle_chassis = vehicle.get("body") or ""
-        pb.vehicle_color = vehicle.get("color") or ""
+        pb.vehicle_chassis = (vehicle.get("body") or "").strip().upper()
+        pb.vehicle_color = cls._normalize_color(vehicle.get("color") or "")
         pb.vehicle_km = str(vehicle.get("mileage") or "")
-        pb.vehicle_brand = vehicle.get("brand") or ""
+        pb.vehicle_brand = cls._normalize_brand(vehicle.get("brand") or "")
+        pb.vehicle_model = cls._normalize_model(vehicle.get("model") or "")
 
         # Year validation
         raw_year = vehicle.get("model_year")
@@ -187,6 +188,12 @@ class CiliaParser:
         budgetings = payload.get("budgetings") or []
 
         ri_correction_by_type = cls._compute_ri_corrections(budgetings, totals)
+        paint_factor = cls._compute_hours_factor(
+            budgetings, totals, "paint_hours", "total_paint_hours",
+        )
+        repair_factor = cls._compute_hours_factor(
+            budgetings, totals, "repair_hours", "total_repair_hours",
+        )
 
         for entry in budgetings:
             pb.items.extend(cls._parse_budgeting(
@@ -194,6 +201,8 @@ class CiliaParser:
                 pb.hourly_rates,
                 ri_correction_by_type,
                 pb.global_discount_pct,
+                paint_factor=paint_factor,
+                repair_factor=repair_factor,
             ))
 
         # --- Parecer / conclusion (1 por versão) ---
@@ -256,12 +265,43 @@ class CiliaParser:
         return corrections
 
     @classmethod
+    def _compute_hours_factor(
+        cls,
+        budgetings: list[dict[str, Any]],
+        totals: dict[str, Any],
+        item_key: str,
+        total_key: str,
+    ) -> Decimal:
+        """Fator de correção global p/ paint_hours OU repair_hours.
+
+        Mesmo padrão do _compute_ri_corrections, mas SEM dividir por tipo
+        (paint/repair não têm subtipos). A Cilia reporta horas "reais"
+        agregadas em totals.{total_paint_hours, total_repair_hours} já
+        descontando double-counting entre peças relacionadas; somar
+        budgeting[].paint_hours direto infla o subtotal.
+
+        Args:
+            item_key: "paint_hours" ou "repair_hours"
+            total_key: "total_paint_hours" ou "total_repair_hours"
+        """
+        raw_sum = Decimal("0")
+        for entry in budgetings:
+            raw_sum += cls._dec(entry.get(item_key, 0), item_key)
+        if raw_sum <= 0:
+            return Decimal("1")
+        cilia_hours = cls._dec(totals.get(total_key, 0), total_key)
+        return cilia_hours / raw_sum
+
+    @classmethod
     def _parse_budgeting(
         cls,
         entry: dict[str, Any],
         hourly_rates: dict[str, str],
         ri_correction_by_type: dict[str, Decimal],
         global_discount_pct: Decimal = Decimal("0"),
+        *,
+        paint_factor: Decimal = Decimal("1"),
+        repair_factor: Decimal = Decimal("1"),
     ) -> list[ParsedItemDTO]:
         """Converte um `budgetings[]` em N ParsedItemDTOs.
 
@@ -350,10 +390,17 @@ class CiliaParser:
         ri_factor = ri_correction_by_type.get(ri_type, Decimal("1"))
         corrected_ri = (raw_ri * ri_factor).quantize(Decimal("0.01"))
 
+        # Paint/repair também usam fator de correção global (mesma razão do R&I:
+        # Cilia desconta double-counting entre peças relacionadas no agregado).
+        raw_paint = cls._dec(entry.get("paint_hours", 0), "paint_hours")
+        raw_repair = cls._dec(entry.get("repair_hours", 0), "repair_hours")
+        corrected_paint = (raw_paint * paint_factor).quantize(Decimal("0.01"))
+        corrected_repair = (raw_repair * repair_factor).quantize(Decimal("0.01"))
+
         operations = [
             ("R_I", corrected_ri, workforce_rate),
-            ("PINTURA", cls._dec(entry.get("paint_hours", 0), "paint_hours"), paint_rate),
-            ("RECUPERACAO", cls._dec(entry.get("repair_hours", 0), "repair_hours"), repair_rate),
+            ("PINTURA", corrected_paint, paint_rate),
+            ("RECUPERACAO", corrected_repair, repair_rate),
         ]
 
         for op_type, hours, rate in operations:
@@ -444,6 +491,43 @@ class CiliaParser:
         color = vehicle.get("color") or ""
         parts = [p for p in [brand, model, str(year) if year else "", color] if p]
         return " ".join(parts).strip()
+
+    # ------------------------------------------------------------------ normalizers
+    # Cilia retorna dados do veículo em formatos irregulares (cor com prefixo "-",
+    # marca/cor em CAPS, model com range de anos entre parênteses). Os helpers
+    # abaixo padronizam pra que a OS e o PDF mostrem texto limpo.
+
+    _COR_PREFIX_RE = re.compile(r"^[-\s]+")
+    _MODEL_YEAR_RANGE_RE = re.compile(r"\s*\([^)]*\d{4}[^)]*\)\s*")
+
+    @classmethod
+    def _normalize_color(cls, raw: str) -> str:
+        """'-PRETA' → 'Preta'; '  BRANCA PEROLA  ' → 'Branca Perola'."""
+        if not raw:
+            return ""
+        cleaned = cls._COR_PREFIX_RE.sub("", raw).strip()
+        return cleaned.title() if cleaned else ""
+
+    @classmethod
+    def _normalize_brand(cls, raw: str) -> str:
+        """'CHEVROLET' → 'Chevrolet'. Mantém sigla curta em CAPS (BMW, VW, GM)."""
+        if not raw:
+            return ""
+        cleaned = raw.strip()
+        if len(cleaned) <= 3 and cleaned.isalpha():
+            return cleaned.upper()
+        return cleaned.title()
+
+    @classmethod
+    def _normalize_model(cls, raw: str) -> str:
+        """Remove range de anos entre parênteses.
+
+        'ONIX PLUS (2020 A 2025) PREMIER 1.0' → 'ONIX PLUS PREMIER 1.0'
+        """
+        if not raw:
+            return ""
+        cleaned = cls._MODEL_YEAR_RANGE_RE.sub(" ", raw)
+        return re.sub(r"\s+", " ", cleaned).strip()
 
     @staticmethod
     def _dec(value: Any, field_name: str = "unknown") -> Decimal:
