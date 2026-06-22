@@ -87,9 +87,10 @@ class PayableDocument(PaddockBaseModel):
     """Titulo a pagar — representa uma obrigacao de pagamento."""
 
     supplier = models.ForeignKey(
-        Supplier,
+        "persons.Person",
         on_delete=models.PROTECT,
         related_name="payables",
+        limit_choices_to={"roles__role": "SUPPLIER"},
         verbose_name=_("Fornecedor"),
     )
     description = models.CharField(_("Descricao"), max_length=300)
