@@ -291,21 +291,41 @@ class CiliaParser:
             piece_final = cls._dec(entry.get("piece_selling_cost_final", 0), "piece_selling_cost_final")
             discount_pct = cls._dec(entry.get("piece_discount_percentage", 0), "piece_discount_percentage")
 
-            items.append(ParsedItemDTO(
-                bucket=bucket,
-                payer_block="SEGURADORA",
-                impact_area=impact_area,
-                item_type="PART",
-                description=description,
-                external_code=external_code,
-                part_type=part_type,
-                supplier=supplier,
-                quantity=cls._dec(entry.get("quantity", 1), "quantity"),
-                unit_price=piece_price,
-                discount_pct=discount_pct,
-                net_price=piece_final if piece_final else piece_price,
-                flag_inclusao_manual=is_manual,
-            ))
+            # Peça fornecida pela seguradora: não compramos nem cobramos.
+            # Mantém quantity pra rastreio mas zera os valores — assim o snapshot
+            # da versão e os totais da OS refletem só o que a DS Car movimenta.
+            if supplier == "SEGURADORA":
+                items.append(ParsedItemDTO(
+                    bucket=bucket,
+                    payer_block="SEGURADORA",
+                    impact_area=impact_area,
+                    item_type="PART",
+                    description=description,
+                    external_code=external_code,
+                    part_type=part_type,
+                    supplier=supplier,
+                    quantity=cls._dec(entry.get("quantity", 1), "quantity"),
+                    unit_price=Decimal("0"),
+                    discount_pct=Decimal("0"),
+                    net_price=Decimal("0"),
+                    flag_inclusao_manual=is_manual,
+                ))
+            else:
+                items.append(ParsedItemDTO(
+                    bucket=bucket,
+                    payer_block="SEGURADORA",
+                    impact_area=impact_area,
+                    item_type="PART",
+                    description=description,
+                    external_code=external_code,
+                    part_type=part_type,
+                    supplier=supplier,
+                    quantity=cls._dec(entry.get("quantity", 1), "quantity"),
+                    unit_price=piece_price,
+                    discount_pct=discount_pct,
+                    net_price=piece_final if piece_final else piece_price,
+                    flag_inclusao_manual=is_manual,
+                ))
 
         # ── 2. SERVIÇOS (uma linha por operação) ─────────────────────────
         # Tarifas
