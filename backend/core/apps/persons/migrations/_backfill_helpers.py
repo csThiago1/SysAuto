@@ -108,14 +108,14 @@ def find_or_create_person_from_supplier(apps_registry: Any, supplier: Any) -> An
     return person
 
 
-def backfill_suppliers_to_persons(apps_registry: Any) -> dict[int, int]:
+def backfill_suppliers_to_persons(apps_registry: Any) -> dict[str, str]:
     """Migra TODOS os accounts_payable.Supplier para Person + SupplierProfile.
 
     Returns:
         dict {legacy_supplier_id: person_id}
     """
     Supplier = apps_registry.get_model("accounts_payable", "Supplier")
-    mapping: dict[int, int] = {}
+    mapping: dict[str, str] = {}
     for sup in Supplier.objects.all():
         person = find_or_create_person_from_supplier(apps_registry, sup)
         mapping[sup.id] = person.id
@@ -191,14 +191,14 @@ def find_or_create_person_from_expert(apps_registry: Any, expert: Any) -> Any:
     return person
 
 
-def backfill_experts_to_persons(apps_registry: Any) -> dict[int, int]:
+def backfill_experts_to_persons(apps_registry: Any) -> dict[str, str]:
     """Migra TODOS os experts.Expert para Person + ExpertProfile.
 
     Returns:
         dict {legacy_expert_id: person_id}
     """
     Expert = apps_registry.get_model("experts", "Expert")
-    mapping: dict[int, int] = {}
+    mapping: dict[str, str] = {}
     for exp in Expert.objects.all():
         person = find_or_create_person_from_expert(apps_registry, exp)
         mapping[exp.id] = person.id
