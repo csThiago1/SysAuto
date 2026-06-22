@@ -16,11 +16,13 @@ from .models import (
     BrokerOffice,
     BrokerPerson,
     ClientProfile,
+    ExpertProfile,
     Person,
     PersonAddress,
     PersonContact,
     PersonDocument,
     PersonRole,
+    SupplierProfile,
 )
 from .utils import sha256_hex
 
@@ -169,6 +171,32 @@ class ClientProfileSerializer(serializers.ModelSerializer):
             "group_sharing_consent",
         ]
         read_only_fields = ["lgpd_consent_date", "lgpd_consent_ip"]
+
+
+class SupplierProfileSerializer(serializers.ModelSerializer):
+    """Perfil contábil/operacional do fornecedor — dados bancários criptografados."""
+
+    class Meta:
+        model = SupplierProfile
+        fields = [
+            "category",
+            "default_payment_days",
+            "default_payment_method",
+            "bank_name",
+            "bank_agency",
+            "bank_account",
+            "pix_key",
+            "pix_key_type",
+            "notes",
+        ]
+
+
+class ExpertProfileSerializer(serializers.ModelSerializer):
+    """Perfil de perito — registro profissional e seguradoras."""
+
+    class Meta:
+        model = ExpertProfile
+        fields = ["registration_number", "insurers"]
 
 
 class PersonRoleSerializer(serializers.ModelSerializer):

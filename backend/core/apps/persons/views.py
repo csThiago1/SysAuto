@@ -18,13 +18,17 @@ from rest_framework.response import Response
 
 from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
 
-from .models import CargoPessoa, Person, PersonDocument, SetorPessoa
+from .models import (
+    CargoPessoa, ExpertProfile, Person, PersonDocument, SetorPessoa, SupplierProfile,
+)
 from .serializers import (
+    ExpertProfileSerializer,
     PersonCreateUpdateSerializer,
     PersonDetailSerializer,
     PersonDocumentMaskedSerializer,
     PersonDocumentPlainSerializer,
     PersonListSerializer,
+    SupplierProfileSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -132,6 +136,34 @@ class PersonViewSet(viewsets.ModelViewSet):
         except Exception as e:
             logger.exception("Erro ao consultar CEP %s: %s", cep, e)
             return Response({"detail": "Erro ao consultar CEP."}, status=500)
+
+    @action(detail=True, methods=["get", "patch"], url_path="supplier-profile")
+    def supplier_profile(self, request, pk: str | None = None) -> Response:
+        """GET/PATCH SupplierProfile da pessoa (auto-cria se não existir)."""
+        person = self.get_object()
+        profile, _ = SupplierProfile.objects.get_or_create(person=person)
+        if request.method == "PATCH":
+            serializer = SupplierProfileSerializer(
+                profile, data=request.data, partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        return Response(SupplierProfileSerializer(profile).data)
+
+    @action(detail=True, methods=["get", "patch"], url_path="expert-profile")
+    def expert_profile(self, request, pk: str | None = None) -> Response:
+        """GET/PATCH ExpertProfile da pessoa (auto-cria se não existir)."""
+        person = self.get_object()
+        profile, _ = ExpertProfile.objects.get_or_create(person=person)
+        if request.method == "PATCH":
+            serializer = ExpertProfileSerializer(
+                profile, data=request.data, partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        return Response(ExpertProfileSerializer(profile).data)
 
     @action(detail=False, methods=["get"], url_path="employee-options")
     def employee_options(self, request) -> Response:
