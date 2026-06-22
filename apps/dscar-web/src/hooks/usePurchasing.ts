@@ -245,10 +245,46 @@ export function useOrdensCompraByOS(osId: string | undefined) {
 
 // ─── Suppliers with contacts ──────────────────────────────────────────────────
 
+/**
+ * @deprecated /accounts-payable/suppliers/ retornou 410.
+ * Agora delega para /persons?role=SUPPLIER e mapeia para o shape SupplierWithContacts.
+ */
 export function useSuppliersWithContacts() {
   return useQuery<SupplierWithContacts[]>({
     queryKey: [...purchasingKeys.all, "suppliers-contacts"],
-    queryFn: () => fetchList<SupplierWithContacts>(`/api/proxy/accounts-payable/suppliers/`),
+    queryFn: async () => {
+      type PersonItem = {
+        id: string
+        full_name: string
+        documents?: Array<{ doc_type: string; value: string }>
+        contacts?: Array<{
+          id: number
+          contact_type: string
+          value: string
+          label: string
+          is_primary: boolean
+        }>
+      }
+      const persons = await fetchList<PersonItem>(
+        `/api/proxy/persons/?role=SUPPLIER&page_size=500`,
+      )
+      return persons.map<SupplierWithContacts>((p) => ({
+        id: p.id,
+        name: p.full_name,
+        cnpj: p.documents?.find((d) => d.doc_type === "CNPJ")?.value ?? "",
+        phone: p.contacts?.find((c) => c.contact_type === "CELULAR")?.value ?? "",
+        email: p.contacts?.find((c) => c.contact_type === "EMAIL")?.value ?? "",
+        contacts: (p.contacts ?? [])
+          .filter((c) => c.contact_type === "CELULAR" || c.contact_type === "WHATSAPP")
+          .map((c) => ({
+            id: String(c.id),
+            name: c.label || "Contato",
+            phone: c.value,
+            role: "",
+            is_whatsapp: c.contact_type === "WHATSAPP",
+          })),
+      }))
+    },
     staleTime: 5 * 60_000,
   })
 }
