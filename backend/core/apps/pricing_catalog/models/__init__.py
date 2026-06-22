@@ -13,7 +13,7 @@ from .canonical import (
     PecaCanonica,
     ServicoCanonico,
 )
-from .supplier import CodigoFornecedorPeca, Fornecedor
+from .supplier import CodigoFornecedorPeca
 
 __all__ = [
     # canonical
@@ -25,7 +25,6 @@ __all__ = [
     "PecaCanonica",
     "CompatibilidadePeca",
     # supplier
-    "Fornecedor",
     "CodigoFornecedorPeca",
     # aliases
     "AliasServico",
