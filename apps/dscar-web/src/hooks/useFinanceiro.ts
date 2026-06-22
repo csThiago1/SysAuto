@@ -149,19 +149,50 @@ export function useCancelPayable(): ReturnType<
   });
 }
 
+/**
+ * @deprecated /accounts-payable/suppliers/ retorna 410.
+ * Use usePersons({ role: 'SUPPLIER' }) ou esse alias que delega pra /persons.
+ * Mantém o shape de Supplier (name/cnpj/email/phone) por retro-compat.
+ */
 export function useSuppliers(): ReturnType<
   typeof useQuery<PaginatedResponse<Supplier>>
 > {
   return useQuery<PaginatedResponse<Supplier>>({
     queryKey: financeiroKeys.payable.suppliers(),
-    queryFn: () =>
-      apiFetch<PaginatedResponse<Supplier>>(
-        `${AP}/suppliers/?page_size=500`
-      ),
+    queryFn: async () => {
+      type PersonItem = {
+        id: string;
+        full_name: string;
+        documents?: Array<{ doc_type: string; value: string }>;
+        contacts?: Array<{ contact_type: string; value: string }>;
+        is_active: boolean;
+      };
+      const raw = await apiFetch<PaginatedResponse<PersonItem>>(
+        `/api/proxy/persons/?role=SUPPLIER&page_size=500`,
+      );
+      return {
+        ...raw,
+        results: raw.results.map((p) => ({
+          id: p.id as unknown as Supplier["id"],
+          name: p.full_name,
+          cnpj: p.documents?.find((d) => d.doc_type === "CNPJ")?.value ?? "",
+          cpf: p.documents?.find((d) => d.doc_type === "CPF")?.value ?? "",
+          email: p.contacts?.find((c) => c.contact_type === "EMAIL")?.value ?? "",
+          phone: p.contacts?.find((c) => c.contact_type === "CELULAR")?.value ?? "",
+          contact_name: "",
+          notes: "",
+          is_active: p.is_active,
+        })) as Supplier[],
+      };
+    },
     staleTime: 10 * 60_000,
   });
 }
 
+/**
+ * @deprecated Use /cadastros pra criar Person+role=SUPPLIER.
+ * Mantido como compat — cria Person via /persons (POST).
+ */
 export function useCreateSupplier(): ReturnType<
   typeof useMutation<
     Supplier,
@@ -171,11 +202,42 @@ export function useCreateSupplier(): ReturnType<
 > {
   const qc = useQueryClient();
   return useMutation<Supplier, Error, Omit<Supplier, "id" | "is_active">>({
-    mutationFn: (payload) =>
-      apiFetch<Supplier>(`${AP}/suppliers/`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      }),
+    mutationFn: async (payload) => {
+      const isPj = !!payload.cnpj;
+      const personPayload = {
+        person_kind: isPj ? "PJ" : "PF",
+        full_name: payload.name,
+        roles: [{ role: "SUPPLIER" }],
+        documents: payload.cnpj
+          ? [{ doc_type: "CNPJ", value: payload.cnpj, is_primary: true }]
+          : payload.cpf
+          ? [{ doc_type: "CPF", value: payload.cpf, is_primary: true }]
+          : [],
+        contacts: [
+          ...(payload.email
+            ? [{ contact_type: "EMAIL", value: payload.email, is_primary: true }]
+            : []),
+          ...(payload.phone
+            ? [{ contact_type: "CELULAR", value: payload.phone, is_primary: true }]
+            : []),
+        ],
+      };
+      const person = await apiFetch<{ id: string; full_name: string }>(
+        `/api/proxy/persons/`,
+        { method: "POST", body: JSON.stringify(personPayload) },
+      );
+      return {
+        id: person.id as unknown as Supplier["id"],
+        name: person.full_name,
+        cnpj: payload.cnpj ?? "",
+        cpf: payload.cpf ?? "",
+        email: payload.email ?? "",
+        phone: payload.phone ?? "",
+        contact_name: payload.contact_name ?? "",
+        notes: payload.notes ?? "",
+        is_active: true,
+      } as Supplier;
+    },
     onSuccess: () => {
       void qc.invalidateQueries({
         queryKey: financeiroKeys.payable.suppliers(),

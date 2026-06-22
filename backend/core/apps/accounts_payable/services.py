@@ -11,7 +11,7 @@ from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
 
-from .models import DocumentStatus, PayableDocument, PayableOrigin, PayablePayment, Supplier
+from .models import DocumentStatus, PayableDocument, PayableOrigin, PayablePayment
 
 logger = logging.getLogger(__name__)
 
@@ -70,10 +70,13 @@ class PayableDocumentService:
         if amount_decimal <= 0:
             raise ValidationError({"amount": "O valor do titulo deve ser maior que zero."})
 
+        from apps.persons.models import Person
         try:
-            supplier = Supplier.objects.get(id=supplier_id)
-        except Supplier.DoesNotExist:
-            raise ValidationError({"supplier_id": f"Fornecedor {supplier_id} nao encontrado."})
+            supplier = Person.objects.get(id=supplier_id, roles__role="SUPPLIER")
+        except Person.DoesNotExist:
+            raise ValidationError(
+                {"supplier_id": f"Fornecedor {supplier_id} nao encontrado."}
+            )
 
         today = timezone.now().date()
         initial_status = (
@@ -98,7 +101,7 @@ class PayableDocumentService:
         logger.info(
             "PayableDocumentService.create_payable: titulo %s criado para %s — R$%s",
             document.id,
-            supplier.name,
+            supplier.full_name,
             amount_decimal,
         )
 

@@ -20,7 +20,6 @@ from apps.pricing_catalog.models import (
     CategoriaMaoObra,
     CategoriaServico,
     CompatibilidadePeca,
-    Fornecedor,
     InsumoMaterial,
     MaterialCanonico,
     PecaCanonica,
@@ -391,78 +390,8 @@ class CompatibilidadePecaSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
 
-# ────────────────────────────────────────────────────────────────────────────
-# Fornecedor
-# ────────────────────────────────────────────────────────────────────────────
-
-
-class FornecedorListSerializer(serializers.ModelSerializer):
-    """Serializer resumido para listagens de Fornecedor."""
-
-    nome = serializers.CharField(source="pessoa.full_name", read_only=True)
-
-    class Meta:
-        model = Fornecedor
-        fields = [
-            "id",
-            "pessoa",
-            "nome",
-            "condicoes_pagamento",
-            "prazo_entrega_dias",
-            "avaliacao",
-            "is_active",
-        ]
-        read_only_fields = ["id", "nome"]
-
-
-class FornecedorDetailSerializer(serializers.ModelSerializer):
-    """Serializer de detalhe para Fornecedor."""
-
-    nome = serializers.CharField(source="pessoa.full_name", read_only=True)
-
-    class Meta:
-        model = Fornecedor
-        fields = [
-            "id",
-            "pessoa",
-            "nome",
-            "condicoes_pagamento",
-            "prazo_entrega_dias",
-            "avaliacao",
-            "is_active",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = ["id", "nome", "created_at", "updated_at"]
-
-
-class FornecedorCreateSerializer(serializers.ModelSerializer):
-    """Serializer de criação para Fornecedor."""
-
-    class Meta:
-        model = Fornecedor
-        fields = ["pessoa", "condicoes_pagamento", "prazo_entrega_dias", "avaliacao"]
-
-
-class FornecedorUpdateSerializer(serializers.ModelSerializer):
-    """Serializer de atualização para Fornecedor.
-
-    pessoa é read_only — OneToOne imutável após criação.
-    """
-
-    class Meta:
-        model = Fornecedor
-        fields = [
-            "id",
-            "pessoa",
-            "condicoes_pagamento",
-            "prazo_entrega_dias",
-            "avaliacao",
-            "is_active",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = ["id", "pessoa", "created_at", "updated_at"]
+# Fornecedor removido: consolidado em persons.Person + SupplierProfile.
+# Endpoint /api/v1/pricing_catalog/fornecedores/ retorna 410 Gone — ver views.FornecedorViewSet.
 
 
 # ────────────────────────────────────────────────────────────────────────────

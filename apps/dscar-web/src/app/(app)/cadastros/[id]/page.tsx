@@ -50,6 +50,8 @@ import type {
   PersonAddress,
 } from "@paddock/types";
 import { ClientHistoryTab } from "./_components/ClientHistoryTab";
+import { SupplierProfileTab } from "./_components/SupplierProfileTab";
+import { ExpertProfileTab } from "./_components/ExpertProfileTab";
 import { cn } from "@/lib/utils";
 import { PersonFormModal } from "@/components/Cadastros/PersonFormModal";
 
@@ -162,6 +164,12 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
       <Tabs defaultValue="dados" className="space-y-6">
         <TabsList>
           <TabsTrigger value="dados">Dados</TabsTrigger>
+          {roles.includes("SUPPLIER") && (
+            <TabsTrigger value="fornecedor">Fornecedor</TabsTrigger>
+          )}
+          {roles.includes("EXPERT") && (
+            <TabsTrigger value="perito">Perito</TabsTrigger>
+          )}
           <TabsTrigger value="historico">Histórico</TabsTrigger>
         </TabsList>
 
@@ -257,6 +265,18 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
             )}
           </div>
         </TabsContent>
+
+        {roles.includes("SUPPLIER") && (
+          <TabsContent value="fornecedor">
+            <SupplierProfileTab personId={id} />
+          </TabsContent>
+        )}
+
+        {roles.includes("EXPERT") && (
+          <TabsContent value="perito">
+            <ExpertProfileTab personId={id} />
+          </TabsContent>
+        )}
 
         <TabsContent value="historico">
           <ClientHistoryTab

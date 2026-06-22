@@ -693,8 +693,8 @@ class PayslipService:
         # Criar titulo a pagar para o salario liquido (Contas a Pagar)
         try:
             from apps.authentication.models import GlobalUser as _GlobalUser
-            from apps.accounts_payable.models import Supplier
             from apps.accounts_payable.services import PayableDocumentService
+            from apps.persons.models import Person, PersonRole, RolePessoa, TipoPessoa
 
             _ap_user: _GlobalUser | None = None
             if closed_by_id:
@@ -703,10 +703,22 @@ class PayslipService:
                 except _GlobalUser.DoesNotExist:
                     pass
 
-            supplier, _ = Supplier.objects.get_or_create(
-                name="Colaboradores DS Car",
-                defaults={"notes": "Fornecedor interno para folha de pagamento"},
+            supplier = (
+                Person.objects.filter(
+                    full_name="Colaboradores DS Car",
+                    roles__role=RolePessoa.FORNECEDOR,
+                )
+                .first()
             )
+            if not supplier:
+                supplier = Person.objects.create(
+                    person_kind=TipoPessoa.JURIDICA,
+                    full_name="Colaboradores DS Car",
+                    notes="Fornecedor interno para folha de pagamento",
+                )
+                PersonRole.objects.create(
+                    person=supplier, role=RolePessoa.FORNECEDOR
+                )
             ref = payslip.reference_month
             if ref.month < 12:
                 pay_due = ref.replace(day=5, month=ref.month + 1)

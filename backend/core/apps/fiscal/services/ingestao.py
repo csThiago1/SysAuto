@@ -135,9 +135,12 @@ class NFeIngestaoService:
         # ── S4: Auto-create Conta a Pagar ─────────────────────────────────
         if not nfe.payable_document_id:
             try:
-                from apps.accounts_payable.models import Supplier
                 from apps.accounts_payable.services import PayableDocumentService
                 from apps.authentication.models import GlobalUser
+                from apps.persons.models import (
+                    Person, PersonRole, PersonDocument, RolePessoa, TipoPessoa,
+                )
+                from apps.persons.utils import sha256_hex
                 from datetime import timedelta
 
                 # Resolve user object (required by PayableDocumentService.create_payable)
@@ -148,13 +151,31 @@ class NFeIngestaoService:
                     except GlobalUser.DoesNotExist:
                         pass
 
-                # Get or create supplier by CNPJ (cnpj not unique in DB — use filter/first)
-                supplier = Supplier.objects.filter(cnpj=nfe.emitente_cnpj).first()
+                # Get or create supplier Person by CNPJ
+                cnpj_hash = sha256_hex(nfe.emitente_cnpj) if nfe.emitente_cnpj else ""
+                supplier = None
+                if cnpj_hash:
+                    doc = PersonDocument.objects.filter(
+                        doc_type="CNPJ", value_hash=cnpj_hash
+                    ).first()
+                    if doc:
+                        supplier = doc.person
                 if supplier is None:
-                    supplier = Supplier.objects.create(
-                        cnpj=nfe.emitente_cnpj,
-                        name=nfe.emitente_nome or nfe.emitente_cnpj,
+                    supplier = Person.objects.create(
+                        person_kind=TipoPessoa.JURIDICA,
+                        full_name=nfe.emitente_nome or nfe.emitente_cnpj,
                     )
+                    PersonRole.objects.create(
+                        person=supplier, role=RolePessoa.FORNECEDOR
+                    )
+                    if nfe.emitente_cnpj:
+                        PersonDocument.objects.create(
+                            person=supplier,
+                            doc_type="CNPJ",
+                            value=nfe.emitente_cnpj,
+                            value_hash=cnpj_hash,
+                            is_primary=True,
+                        )
 
                 emissao_date = nfe.data_emissao if nfe.data_emissao else date.today()
                 payable = PayableDocumentService.create_payable(

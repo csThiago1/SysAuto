@@ -25,7 +25,6 @@ from apps.pricing_catalog.models import (
     AliasServico,
     CategoriaMaoObra,
     CategoriaServico,
-    Fornecedor,
     InsumoMaterial,
     MaterialCanonico,
     PecaCanonica,
@@ -40,10 +39,6 @@ from apps.pricing_catalog.serializers import (
     AliasServicoUpdateSerializer,
     CategoriaMaoObraSerializer,
     CategoriaServicoSerializer,
-    FornecedorCreateSerializer,
-    FornecedorDetailSerializer,
-    FornecedorListSerializer,
-    FornecedorUpdateSerializer,
     InsumoByGtinInputSerializer,
     InsumoMaterialCreateSerializer,
     InsumoMaterialDetailSerializer,
@@ -426,35 +421,43 @@ class PecaCanonicoViewSet(viewsets.ModelViewSet):
 
 
 # ────────────────────────────────────────────────────────────────────────────
-# Fornecedor
+# Fornecedor — DEPRECATED (consolidado em persons.Person + SupplierProfile)
 # ────────────────────────────────────────────────────────────────────────────
 
 
-class FornecedorViewSet(viewsets.ModelViewSet):
-    """CRUD de Fornecedores.
+class FornecedorViewSet(viewsets.ViewSet):
+    """Endpoint deprecated — fornecedores agora em /api/v1/persons/?role=SUPPLIER."""
 
-    Leitura e escrita: MANAGER+ (dados comerciais sensíveis — preços, condições, avaliações).
-    """
+    authentication_classes: list = []
+    permission_classes: list = []
 
-    def get_queryset(self):  # type: ignore[override]
-        return (
-            Fornecedor.objects.filter(is_active=True)
-            .select_related("pessoa")
-            .order_by("pessoa__full_name")
+    def list(self, request):
+        return self._gone()
+
+    def retrieve(self, request, pk=None):
+        return self._gone()
+
+    def create(self, request):
+        return self._gone()
+
+    def update(self, request, pk=None):
+        return self._gone()
+
+    def partial_update(self, request, pk=None):
+        return self._gone()
+
+    def destroy(self, request, pk=None):
+        return self._gone()
+
+    @staticmethod
+    def _gone():
+        from rest_framework.response import Response
+        from rest_framework import status
+        return Response(
+            {"detail": "Endpoint movido. Use /api/v1/persons/?role=SUPPLIER"},
+            status=status.HTTP_410_GONE,
+            headers={"Link": "</api/v1/persons/?role=SUPPLIER>; rel=successor-version"},
         )
-
-    def get_serializer_class(self):  # type: ignore[override]
-        if self.action == "list":
-            return FornecedorListSerializer
-        if self.action == "create":
-            return FornecedorCreateSerializer
-        if self.action in ("update", "partial_update"):
-            return FornecedorUpdateSerializer
-        return FornecedorDetailSerializer
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        # Leitura e escrita ambas requerem MANAGER+ (dados comerciais sensíveis)
-        return [IsAuthenticated(), IsManagerOrAbove()]
 
 
 # ────────────────────────────────────────────────────────────────────────────

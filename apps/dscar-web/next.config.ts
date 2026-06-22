@@ -73,6 +73,21 @@ const nextConfig: NextConfig = {
             },
         ];
     },
+    // Redirects de rotas consolidadas (pessoas/fornecedores/peritos) — 2026-06-22.
+    async redirects() {
+        return [
+            {
+                source: "/cadastros/catalogo/fornecedores",
+                destination: "/cadastros?role=SUPPLIER",
+                permanent: true,
+            },
+            {
+                source: "/cadastros/especialistas",
+                destination: "/cadastros?role=EXPERT",
+                permanent: true,
+            },
+        ];
+    },
     // Em dev: proxia /media/* para Django (uploads locais de logos, fotos, etc.)
     // Em prod: URLs de mídia são absolutas (S3/R2), então este rewrite não é
     // necessário — e expor um proxy para localhost:8000 em produção é inseguro.

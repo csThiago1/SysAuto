@@ -1,12 +1,13 @@
 """
-Paddock Solutions — Pricing Catalog — Modelos de Fornecedor
+Paddock Solutions — Pricing Catalog — Códigos de Fornecedor / Peça
 Motor de Orçamentos (MO) — Sprint 02: Catálogo Técnico
 
-Representa fornecedores de peças e seus códigos/preços de referência.
+Pricing_catalog.Fornecedor foi removido em favor de persons.SupplierProfile
+(consolidação de pessoas, 2026-06-22). CodigoFornecedorPeca agora aponta
+diretamente para persons.Person com role=SUPPLIER.
 """
 import logging
 
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from apps.authentication.models import PaddockBaseModel
@@ -16,52 +17,9 @@ from .canonical import PecaCanonica
 logger = logging.getLogger(__name__)
 
 
-class Fornecedor(PaddockBaseModel):
-    """
-    Perfil de fornecedor vinculado a uma Person do tenant.
-
-    A entidade Person (apps.persons) centraliza dados de contato e endereço.
-    Fornecedor adiciona atributos comerciais específicos.
-    """
-
-    pessoa = models.OneToOneField(
-        "persons.Person",
-        on_delete=models.CASCADE,
-        related_name="perfil_fornecedor",
-        verbose_name="Pessoa",
-    )
-    condicoes_pagamento = models.CharField(
-        max_length=100,
-        blank=True,
-        verbose_name="Condições de pagamento",
-        help_text='Ex: "30/60/90 dias", "À vista 5% desconto".',
-    )
-    prazo_entrega_dias = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-        verbose_name="Prazo de entrega (dias)",
-    )
-    avaliacao = models.PositiveSmallIntegerField(
-        null=True,
-        blank=True,
-        validators=[MinValueValidator(1), MaxValueValidator(5)],
-        verbose_name="Avaliação",
-        help_text="Nota de 1 a 5 estrelas.",
-    )
-    # is_active herdado de PaddockBaseModel
-
-    class Meta:
-        verbose_name = "Fornecedor"
-        verbose_name_plural = "Fornecedores"
-        ordering = ["pessoa__full_name"]
-
-    def __str__(self) -> str:
-        return str(self.pessoa)
-
-
 class CodigoFornecedorPeca(PaddockBaseModel):
     """
-    Código e preço de referência de uma PecaCanonica para um Fornecedor.
+    Código e preço de referência de uma PecaCanonica para um fornecedor (Person).
 
     Permite que o Motor de Orçamentos consulte o preço de referência
     mais recente de cada fornecedor para uma peça canônica.
@@ -75,9 +33,10 @@ class CodigoFornecedorPeca(PaddockBaseModel):
         verbose_name="Peça canônica",
     )
     fornecedor = models.ForeignKey(
-        Fornecedor,
+        "persons.Person",
         on_delete=models.CASCADE,
         related_name="codigos_peca",
+        limit_choices_to={"roles__role": "SUPPLIER"},
         verbose_name="Fornecedor",
     )
     sku_fornecedor = models.CharField(

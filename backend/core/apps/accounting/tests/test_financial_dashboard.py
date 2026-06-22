@@ -50,10 +50,16 @@ class TestFinancialDashboard(TenantTestCase):
             created_by=self.user,
         )
 
-        # Create test AP document
-        from apps.accounts_payable.models import PayableDocument, Supplier
+        # Create test AP document — supplier agora é Person+role=SUPPLIER
+        from apps.accounts_payable.models import PayableDocument
+        from apps.persons.models import (
+            Person, PersonRole, RolePessoa, TipoPessoa,
+        )
 
-        supplier = Supplier.objects.create(name="Supplier 1", cnpj="11111111000111")
+        supplier = Person.objects.create(
+            person_kind=TipoPessoa.JURIDICA, full_name="Supplier 1"
+        )
+        PersonRole.objects.create(person=supplier, role=RolePessoa.FORNECEDOR)
         PayableDocument.objects.create(
             supplier=supplier,
             description="Test AP",

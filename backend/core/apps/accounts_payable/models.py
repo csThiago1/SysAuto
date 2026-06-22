@@ -2,16 +2,17 @@
 Paddock Solutions — Contas a Pagar
 
 Models:
-  Supplier         — Fornecedor
   PayableDocument  — Titulo a pagar (nota fiscal de fornecedor, salario, etc.)
   PayablePayment   — Baixa de pagamento (parcial ou total)
+
+Supplier/SupplierContact foram consolidados em persons.Person + PersonContact
+(2026-06-22). PayableDocument.supplier agora aponta para persons.Person.
 """
 import logging
 from decimal import Decimal
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from encrypted_model_fields.fields import EncryptedCharField
 
 from apps.accounting.models.chart_of_accounts import CostCenter
 from apps.authentication.models import GlobalUser, PaddockBaseModel
@@ -44,52 +45,14 @@ class PaymentMethod(models.TextChoices):
     DEBIT_CARD = "debit_card", "Cartao de Debito"
 
 
-class Supplier(PaddockBaseModel):
-    """Fornecedor cadastrado no sistema."""
-
-    name = models.CharField(_("Nome"), max_length=200, db_index=True)
-    cnpj = models.CharField(_("CNPJ"), max_length=14, blank=True, default="")
-    cpf = EncryptedCharField(_("CPF"), max_length=11, blank=True, default="")
-    email = models.EmailField(_("E-mail"), blank=True, default="")
-    phone = models.CharField(_("Telefone"), max_length=20, blank=True, default="")
-    contact_name = models.CharField(_("Contato"), max_length=200, blank=True, default="")
-    notes = models.TextField(_("Observacoes"), blank=True, default="")
-
-    class Meta:
-        ordering = ["name"]
-        verbose_name = _("Fornecedor")
-        verbose_name_plural = _("Fornecedores")
-
-    def __str__(self) -> str:
-        return self.name
-
-
-class SupplierContact(PaddockBaseModel):
-    """Contato de um fornecedor (vendedor, representante)."""
-
-    supplier = models.ForeignKey(
-        Supplier, on_delete=models.CASCADE, related_name="contacts"
-    )
-    name = models.CharField("Nome", max_length=150)
-    phone = models.CharField("Telefone", max_length=20, blank=True, default="")
-    role = models.CharField("Cargo", max_length=100, blank=True, default="")
-    is_whatsapp = models.BooleanField("WhatsApp?", default=True)
-
-    class Meta(PaddockBaseModel.Meta):
-        db_table = "accounts_payable_supplier_contact"
-        ordering = ["name"]
-
-    def __str__(self) -> str:
-        return f"{self.name} ({self.supplier.name})"
-
-
 class PayableDocument(PaddockBaseModel):
     """Titulo a pagar — representa uma obrigacao de pagamento."""
 
     supplier = models.ForeignKey(
-        Supplier,
+        "persons.Person",
         on_delete=models.PROTECT,
         related_name="payables",
+        limit_choices_to={"roles__role": "SUPPLIER"},
         verbose_name=_("Fornecedor"),
     )
     description = models.CharField(_("Descricao"), max_length=300)

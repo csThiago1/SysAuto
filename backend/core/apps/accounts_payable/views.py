@@ -17,16 +17,13 @@ from rest_framework.viewsets import ModelViewSet
 
 from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
 
-from .filters import PayableDocumentFilter, SupplierFilter
-from .models import PayableDocument, Supplier, SupplierContact
+from .filters import PayableDocumentFilter
+from .models import PayableDocument
 from .serializers import (
     CreatePayableDocumentSerializer,
     PayableDocumentListSerializer,
     PayableDocumentSerializer,
     RecordPaymentSerializer,
-    SupplierContactSerializer,
-    SupplierListSerializer,
-    SupplierSerializer,
 )
 from .services import PayableDocumentService
 
@@ -34,56 +31,42 @@ logger = logging.getLogger(__name__)
 
 
 class SupplierViewSet(ModelViewSet):
-    """
-    CRUD de fornecedores.
+    """Endpoint deprecated — use /api/v1/persons/?role=SUPPLIER."""
 
-    list     GET  /accounts-payable/suppliers/       → SupplierListSerializer
-    retrieve GET  /accounts-payable/suppliers/{id}/  → SupplierSerializer
-    create   POST /accounts-payable/suppliers/       → SupplierSerializer
-    update   PUT  /accounts-payable/suppliers/{id}/  → SupplierSerializer
-    destroy  DEL  /accounts-payable/suppliers/{id}/  → 204
-    """
+    authentication_classes: list = []
+    permission_classes: list = []
+    queryset = PayableDocument.objects.none()
+    serializer_class = PayableDocumentSerializer  # nunca usado, 410 antes
 
-    queryset = Supplier.objects.filter(is_active=True)
-    serializer_class = SupplierSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_class = SupplierFilter
-    search_fields = ["name"]
-    ordering_fields = ["name", "created_at"]
-    ordering = ["name"]
+    def list(self, request, *args, **kwargs):
+        return self._gone()
 
-    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """Soft delete — nunca hard delete em fornecedores."""
-        instance = self.get_object()
-        instance.is_active = False
-        instance.save(update_fields=["is_active", "updated_at"])
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def retrieve(self, request, *args, **kwargs):
+        return self._gone()
 
-    def get_serializer_class(self) -> type:
-        """Retorna serializer adequado para cada acao."""
-        if self.action == "list":
-            return SupplierListSerializer
-        return SupplierSerializer
+    def create(self, request, *args, **kwargs):
+        return self._gone()
 
-    def perform_create(self, serializer: Any) -> None:
-        """Injeta usuario criador."""
-        serializer.save(created_by=self.request.user)
+    def update(self, request, *args, **kwargs):
+        return self._gone()
 
-    def perform_update(self, serializer: Any) -> None:
-        """Injeta usuario atualizador."""
-        serializer.save()
+    def partial_update(self, request, *args, **kwargs):
+        return self._gone()
+
+    def destroy(self, request, *args, **kwargs):
+        return self._gone()
 
     @action(detail=True, methods=["get", "post"], url_path="contacts")
-    def contacts(self, request: Request, pk: str | None = None) -> Response:
-        supplier = self.get_object()
-        if request.method == "GET":
-            qs = SupplierContact.objects.filter(supplier=supplier, is_active=True)
-            return Response(SupplierContactSerializer(qs, many=True).data)
-        serializer = SupplierContactSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(supplier=supplier)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def contacts(self, request, pk: str | None = None):
+        return self._gone()
+
+    @staticmethod
+    def _gone() -> Response:
+        return Response(
+            {"detail": "Endpoint movido. Use /api/v1/persons/?role=SUPPLIER"},
+            status=status.HTTP_410_GONE,
+            headers={"Link": "</api/v1/persons/?role=SUPPLIER>; rel=successor-version"},
+        )
 
 
 class PayableDocumentViewSet(ModelViewSet):
@@ -108,7 +91,7 @@ class PayableDocumentViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = PayableDocumentFilter
-    search_fields = ["description", "document_number", "supplier__name"]
+    search_fields = ["description", "document_number", "supplier__full_name"]
     ordering_fields = ["due_date", "amount", "status", "created_at"]
     ordering = ["due_date"]
 

@@ -206,9 +206,9 @@ class OrdemCompraService:
         Além de aprovar a OC e atualizar pedidos/peças, gera títulos
         a pagar (PayableDocument) agrupados por fornecedor.
         """
-        from apps.accounts_payable.models import Supplier
         from apps.accounts_payable.services import PayableDocumentService
         from apps.authentication.models import GlobalUser
+        from apps.persons.models import Person, PersonRole, RolePessoa, TipoPessoa
 
         oc = OrdemCompra.objects.select_for_update().get(pk=oc_id, is_active=True)
         if oc.status != "pendente_aprovacao":
@@ -246,17 +246,23 @@ class OrdemCompraService:
             if total <= 0:
                 continue
 
-            # Busca ou cria Supplier pelo nome (e CNPJ se disponível)
+            # Busca ou cria Person (role=SUPPLIER) pelo nome
             cnpj = forn_itens[0].fornecedor_cnpj or ""
-            contato = forn_itens[0].fornecedor_contato or ""
-            supplier = Supplier.objects.filter(name=forn_nome).first()
-            if not supplier:
-                supplier = Supplier.objects.create(
-                    name=forn_nome,
-                    cnpj=cnpj,
-                    contact_name=contato,
-                    created_by=user,
+            supplier = (
+                Person.objects.filter(
+                    full_name=forn_nome, roles__role=RolePessoa.FORNECEDOR
                 )
+                .first()
+            )
+            if not supplier:
+                supplier = Person.objects.create(
+                    person_kind=TipoPessoa.JURIDICA if cnpj else TipoPessoa.FISICA,
+                    full_name=forn_nome,
+                )
+                PersonRole.objects.create(
+                    person=supplier, role=RolePessoa.FORNECEDOR
+                )
+                # signal cria SupplierProfile vazio automaticamente
 
             # Prazo de entrega como vencimento (default 30 dias)
             due_date = today + timezone.timedelta(days=30)

@@ -189,11 +189,12 @@ class ItemOrdemCompra(PaddockBaseModel):
     )
     # Fornecedor — PC-7: FK ou ad-hoc
     fornecedor = models.ForeignKey(
-        "pricing_catalog.Fornecedor",
+        "persons.Person",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name="itens_oc",
+        limit_choices_to={"roles__role": "SUPPLIER"},
     )
     fornecedor_nome = models.CharField(max_length=150)
     fornecedor_cnpj = models.CharField(max_length=20, blank=True, default="")
@@ -272,12 +273,13 @@ class CotacaoLog(PaddockBaseModel):
         related_name="cotacoes_enviadas",
     )
     supplier = models.ForeignKey(
-        "accounts_payable.Supplier",
+        "persons.Person",
         on_delete=models.CASCADE,
         related_name="cotacoes_recebidas",
+        limit_choices_to={"roles__role": "SUPPLIER"},
     )
     supplier_contact = models.ForeignKey(
-        "accounts_payable.SupplierContact",
+        "persons.PersonContact",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -312,9 +314,10 @@ class RespostaCotacao(PaddockBaseModel):
         related_name="respostas_cotacao",
     )
     supplier = models.ForeignKey(
-        "accounts_payable.Supplier",
+        "persons.Person",
         on_delete=models.CASCADE,
         related_name="respostas_cotacao",
+        limit_choices_to={"roles__role": "SUPPLIER"},
     )
     valor_unitario = models.DecimalField(max_digits=12, decimal_places=2)
     prazo_entrega = models.CharField(max_length=100, blank=True, default="")

@@ -14,7 +14,6 @@ from .models import (
     CategoriaServico,
     CompatibilidadePeca,
     CodigoFornecedorPeca,
-    Fornecedor,
     InsumoMaterial,
     MaterialCanonico,
     PecaCanonica,
@@ -107,21 +106,7 @@ class CompatibilidadePecaAdmin(admin.ModelAdmin):
     ordering = ["peca", "marca", "modelo"]
 
 
-# ─── Fornecedores ─────────────────────────────────────────────────────────────
-
-
-@admin.register(Fornecedor)
-class FornecedorAdmin(admin.ModelAdmin):
-    list_display = [
-        "pessoa",
-        "prazo_entrega_dias",
-        "avaliacao",
-        "is_active",
-    ]
-    list_filter = ["is_active", "avaliacao"]
-    search_fields = ["pessoa__full_name"]
-    readonly_fields = ["id", "created_at", "updated_at", "created_by"]
-    ordering = ["pessoa__full_name"]
+# ─── Códigos Fornecedor/Peça ──────────────────────────────────────────────────
 
 
 @admin.register(CodigoFornecedorPeca)
@@ -136,7 +121,7 @@ class CodigoFornecedorPecaAdmin(admin.ModelAdmin):
         "is_active",
     ]
     list_filter = ["is_active", "fornecedor"]
-    search_fields = ["sku_fornecedor", "peca_canonica__nome", "fornecedor__pessoa__full_name"]
+    search_fields = ["sku_fornecedor", "peca_canonica__nome", "fornecedor__full_name"]
     readonly_fields = ["id", "created_at", "updated_at", "created_by"]
     autocomplete_fields = ["peca_canonica", "fornecedor"]
     ordering = ["peca_canonica", "prioridade"]

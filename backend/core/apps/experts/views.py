@@ -1,57 +1,45 @@
 """
-Paddock Solutions — Experts Views
+Paddock Solutions — Experts Views (DEPRECATED)
+
+Endpoint /api/v1/experts/ retorna 410 Gone — peritos agora em
+/api/v1/persons/?role=EXPERT (consolidação 2026-06-22).
 """
 import logging
 
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, viewsets
-from rest_framework.permissions import IsAuthenticated
-
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
-from apps.experts.models import Expert
-from apps.experts.serializers import ExpertCreateUpdateSerializer, ExpertSerializer
+from rest_framework import status, viewsets
+from rest_framework.response import Response
 
 logger = logging.getLogger(__name__)
 
 
-class ExpertViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet para Peritos.
+class ExpertViewSet(viewsets.ViewSet):
+    """Endpoint deprecated — use /api/v1/persons/?role=EXPERT."""
 
-    Não expõe destroy — soft delete via is_active.
-    Filtro por seguradora: ?insurers=<uuid>
-    """
+    authentication_classes: list = []
+    permission_classes: list = []
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    def list(self, request):
+        return self._gone()
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "partial_update", "update"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
-    filterset_fields = {"insurers": ["exact"], "is_active": ["exact"]}
-    search_fields = ["name", "registration_number"]
-    http_method_names = ["get", "post", "patch", "head", "options"]
+    def retrieve(self, request, pk=None):
+        return self._gone()
 
-    def get_queryset(self):  # type: ignore[override]
-        return (
-            Expert.objects.filter(is_active=True)
-            .prefetch_related("insurers")
-            .select_related("created_by")
+    def create(self, request):
+        return self._gone()
+
+    def update(self, request, pk=None):
+        return self._gone()
+
+    def partial_update(self, request, pk=None):
+        return self._gone()
+
+    def destroy(self, request, pk=None):
+        return self._gone()
+
+    @staticmethod
+    def _gone():
+        return Response(
+            {"detail": "Endpoint movido. Use /api/v1/persons/?role=EXPERT"},
+            status=status.HTTP_410_GONE,
+            headers={"Link": "</api/v1/persons/?role=EXPERT>; rel=successor-version"},
         )
-
-    def get_serializer_class(self):  # type: ignore[override]
-        if self.action in ["create", "partial_update", "update"]:
-            return ExpertCreateUpdateSerializer
-        return ExpertSerializer
-
-    def perform_create(self, serializer: ExpertCreateUpdateSerializer) -> None:
-        serializer.save(created_by=self.request.user)
-
-    def perform_update(self, serializer: ExpertCreateUpdateSerializer) -> None:
-        logger.info(
-            "Atualizando Perito id=%s por user_id=%s",
-            self.get_object().id,
-            self.request.user.id,
-        )
-        serializer.save()
