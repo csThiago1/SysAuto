@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { Loader2, Upload, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { apiFetch } from "@/lib/api"
+import { apiFetch, ApiError } from "@/lib/api"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -77,7 +77,12 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
         onClose()
       }
     },
-    onError: () => toast.error("Erro ao importar orçamento. Tente novamente."),
+    onError: (error) => {
+      const message = error instanceof ApiError
+        ? error.message
+        : "Erro ao importar orçamento. Tente novamente."
+      toast.error(message)
+    },
   })
 
   const applyMutation = useMutation({
