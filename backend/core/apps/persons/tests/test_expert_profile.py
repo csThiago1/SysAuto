@@ -11,10 +11,11 @@ class TestExpertProfile(TenantTestCase):
         person = Person.objects.create(
             person_kind=TipoPessoa.FISICA, full_name="João Perito"
         )
+        # Signal cria ExpertProfile vazio ao adicionar role EXPERT.
         PersonRole.objects.create(person=person, role=RolePessoa.PERITO)
-        profile = ExpertProfile.objects.create(
-            person=person, registration_number="CREA-12345"
-        )
+        profile = ExpertProfile.objects.get(person=person)
+        profile.registration_number = "CREA-12345"
+        profile.save()
         assert profile.registration_number == "CREA-12345"
         assert profile.person == person
 

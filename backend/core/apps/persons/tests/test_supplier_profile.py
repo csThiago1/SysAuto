@@ -13,13 +13,14 @@ class TestSupplierProfile(TenantTestCase):
         person = Person.objects.create(
             person_kind=TipoPessoa.JURIDICA, full_name="Auto Peças MAO"
         )
+        # Adicionar role dispara signal que cria SupplierProfile vazio.
         PersonRole.objects.create(person=person, role=RolePessoa.FORNECEDOR)
 
-        profile = SupplierProfile.objects.create(
-            person=person,
-            category=SupplierProfile.Categoria.PARTS,
-            default_payment_days=30,
-        )
+        # Atualizar o profile já criado pelo signal.
+        profile = SupplierProfile.objects.get(person=person)
+        profile.category = SupplierProfile.Categoria.PARTS
+        profile.default_payment_days = 30
+        profile.save()
 
         assert profile.person == person
         assert profile.category == "PARTS"

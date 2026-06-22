@@ -1,4 +1,12 @@
-"""Testes para helpers de backfill (Supplier/Expert → Person + Profiles)."""
+"""Testes para helpers de backfill (Supplier/Expert → Person + Profiles).
+
+DEPRECATED: accounts_payable.Supplier e experts.Expert foram removidos em
+2026-06-22. Os helpers ainda funcionam em migrations históricas (modelos
+historical via apps_registry), mas em runtime pós-drop retornam dict vazio.
+Testes que dependiam desses models estão marcados como skip — comportamento
+de runtime é coberto por test_backfill_skipped_when_no_model.
+"""
+import pytest
 from django.apps import apps as django_apps
 from django_tenants.test.cases import TenantTestCase
 
@@ -10,6 +18,21 @@ from apps.persons.migrations._backfill_helpers import (
 )
 
 
+def test_backfill_suppliers_returns_empty_when_no_model() -> None:
+    """Pós-drop, backfill retorna dict vazio em vez de levantar."""
+    # accounts_payable.Supplier foi removido — helper deve tolerar.
+    assert backfill_suppliers_to_persons(django_apps) == {}
+
+
+def test_backfill_experts_returns_empty_when_no_model() -> None:
+    """Pós-drop, backfill retorna dict vazio em vez de levantar."""
+    assert backfill_experts_to_persons(django_apps) == {}
+
+
+@pytest.mark.skip(
+    reason="accounts_payable.Supplier removido em 2026-06-22; backfill "
+    "validado por testes em context de migration (modelos históricos)."
+)
 class TestBackfillSuppliers(TenantTestCase):
     """Testes para backfill de accounts_payable.Supplier → persons.Person + SupplierProfile."""
 
@@ -109,8 +132,15 @@ class TestBackfillSuppliers(TenantTestCase):
         assert contacts.filter(contact_type="CELULAR").exists()
 
 
+import pytest
+
+
+@pytest.mark.skip(
+    reason="experts.Expert foi removido. Backfill seguro contra Expert "
+    "inexistente é coberto por test_backfill_experts_skipped_when_no_app."
+)
 class TestBackfillExperts(TenantTestCase):
-    """Testes para backfill de experts.Expert → persons.Person + ExpertProfile."""
+    """DEPRECATED: experts.Expert removido em 2026-06-22."""
 
     def test_expert_creates_pf_person(self) -> None:
         """Expert cria Person(kind=PF) com PersonContact e ExpertProfile."""

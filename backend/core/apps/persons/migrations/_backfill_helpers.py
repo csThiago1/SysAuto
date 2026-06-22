@@ -113,8 +113,14 @@ def backfill_suppliers_to_persons(apps_registry: Any) -> dict[str, str]:
 
     Returns:
         dict {legacy_supplier_id: person_id}
+
+    Em runtime pós-drop (accounts_payable.Supplier removido), retorna dict vazio.
     """
-    Supplier = apps_registry.get_model("accounts_payable", "Supplier")
+    try:
+        Supplier = apps_registry.get_model("accounts_payable", "Supplier")
+    except LookupError:
+        logger.info("backfill_suppliers_to_persons: model removido, skip")
+        return {}
     mapping: dict[str, str] = {}
     for sup in Supplier.objects.all():
         person = find_or_create_person_from_supplier(apps_registry, sup)
@@ -196,8 +202,14 @@ def backfill_experts_to_persons(apps_registry: Any) -> dict[str, str]:
 
     Returns:
         dict {legacy_expert_id: person_id}
+
+    Em runtime pós-drop (experts.Expert removido), retorna dict vazio.
     """
-    Expert = apps_registry.get_model("experts", "Expert")
+    try:
+        Expert = apps_registry.get_model("experts", "Expert")
+    except LookupError:
+        logger.info("backfill_experts_to_persons: model removido, skip")
+        return {}
     mapping: dict[str, str] = {}
     for exp in Expert.objects.all():
         person = find_or_create_person_from_expert(apps_registry, exp)
