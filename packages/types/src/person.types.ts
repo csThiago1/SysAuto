@@ -8,7 +8,17 @@ export type PersonRole =
   | "INSURER"
   | "BROKER"
   | "EMPLOYEE"
-  | "SUPPLIER";
+  | "SUPPLIER"
+  | "EXPERT";
+
+export const PERSON_ROLE_LABELS: Record<PersonRole, string> = {
+  CLIENT: "Cliente",
+  INSURER: "Seguradora",
+  BROKER: "Corretor",
+  EMPLOYEE: "Funcionário",
+  SUPPLIER: "Fornecedor",
+  EXPERT: "Perito",
+};
 
 export type PersonKind = "PF" | "PJ";
 
