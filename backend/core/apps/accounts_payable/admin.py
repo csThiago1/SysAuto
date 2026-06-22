@@ -3,18 +3,9 @@ Paddock Solutions — Accounts Payable Admin
 """
 from django.contrib import admin
 
-from .models import PayableDocument, PayablePayment, Supplier
+from .models import PayableDocument, PayablePayment
 
-
-@admin.register(Supplier)
-class SupplierAdmin(admin.ModelAdmin):
-    """Admin de fornecedores."""
-
-    list_display = ["name", "cnpj", "cpf", "email", "phone", "is_active", "created_at"]
-    list_filter = ["is_active"]
-    search_fields = ["name", "cnpj", "cpf", "email"]
-    ordering = ["name"]
-    readonly_fields = ["id", "created_at", "updated_at", "created_by"]
+# Supplier removido — fornecedores agora em /admin/persons/person/ (role=SUPPLIER)
 
 
 class PayablePaymentInline(admin.TabularInline):
@@ -48,7 +39,7 @@ class PayableDocumentAdmin(admin.ModelAdmin):
         "created_at",
     ]
     list_filter = ["status", "origin", "is_active"]
-    search_fields = ["description", "document_number", "supplier__name"]
+    search_fields = ["description", "document_number", "supplier__full_name"]
     ordering = ["due_date"]
     readonly_fields = [
         "id",

@@ -3,17 +3,7 @@ Paddock Solutions — Accounts Payable Filters
 """
 import django_filters
 
-from .models import PayableDocument, Supplier
-
-
-class SupplierFilter(django_filters.FilterSet):
-    """Filtros para listagem de fornecedores."""
-
-    search = django_filters.CharFilter(field_name="name", lookup_expr="icontains")
-
-    class Meta:
-        model = Supplier
-        fields = ["search", "is_active"]
+from .models import PayableDocument
 
 
 class PayableDocumentFilter(django_filters.FilterSet):

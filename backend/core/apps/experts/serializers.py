@@ -1,58 +1,33 @@
 """
-Paddock Solutions — Experts Serializers
+Paddock Solutions — Experts Serializers (DEPRECATED)
+
+Expert foi consolidado em persons.Person + ExpertProfile (2026-06-22).
+Mantemos apenas ExpertMinimalSerializer pra retro-compat de ServiceOrder.expert_detail.
 """
 from rest_framework import serializers
 
-from apps.experts.models import Expert
-from apps.insurers.models import Insurer
-from apps.insurers.serializers import InsurerMinimalSerializer
-
-
-class ExpertSerializer(serializers.ModelSerializer):
-    """Serializer completo para peritos."""
-
-    insurers_detail = InsurerMinimalSerializer(source="insurers", many=True, read_only=True)
-    insurer_ids = serializers.PrimaryKeyRelatedField(
-        source="insurers",
-        many=True,
-        read_only=True,
-    )
-
-    class Meta:
-        model = Expert
-        fields = [
-            "id",
-            "name",
-            "registration_number",
-            "phone",
-            "email",
-            "insurer_ids",
-            "insurers_detail",
-            "is_active",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+from apps.persons.models import Person
 
 
 class ExpertMinimalSerializer(serializers.ModelSerializer):
-    """Serializer compacto para uso em nested (exibição em OS)."""
+    """Serializer compacto para perito (Person + role=EXPERT).
+
+    Usado em ServiceOrderSerializer.expert_detail para retorno aninhado.
+    Campos espelham a antiga estrutura experts.Expert.
+    """
+
+    name = serializers.CharField(source="full_name", read_only=True)
+    registration_number = serializers.SerializerMethodField()
+    phone = serializers.SerializerMethodField()
 
     class Meta:
-        model = Expert
+        model = Person
         fields = ["id", "name", "registration_number", "phone"]
 
+    def get_registration_number(self, obj: Person) -> str:
+        profile = getattr(obj, "expert_profile", None)
+        return profile.registration_number if profile else ""
 
-class ExpertCreateUpdateSerializer(serializers.ModelSerializer):
-    """Serializer para criação e atualização de peritos."""
-
-    insurer_ids = serializers.PrimaryKeyRelatedField(
-        source="insurers",
-        many=True,
-        queryset=Insurer.objects.all(),
-        required=False,
-    )
-
-    class Meta:
-        model = Expert
-        fields = ["name", "registration_number", "phone", "email", "insurer_ids", "is_active"]
+    def get_phone(self, obj: Person) -> str:
+        contact = obj.contacts.filter(contact_type="CELULAR").first()
+        return contact.value if contact else ""

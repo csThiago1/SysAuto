@@ -5,52 +5,29 @@ import logging
 
 from rest_framework import serializers
 
-from .models import DocumentStatus, PayableDocument, PayablePayment, Supplier, SupplierContact
+from .models import DocumentStatus, PayableDocument, PayablePayment
 
 logger = logging.getLogger(__name__)
 
 
-# ── Supplier ──────────────────────────────────────────────────────────────────
+# Supplier serializers removidos — usar persons.PersonSerializer (?role=SUPPLIER).
+# Mantemos SupplierListSerializer mínimo pra retro-compat em PayableDocumentSerializer.
 
 
-class SupplierContactSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SupplierContact
-        fields = ["id", "name", "phone", "role", "is_whatsapp"]
-        read_only_fields = ["id"]
+class SupplierListSerializer(serializers.Serializer):
+    """Serializer minimo de fornecedor — agora aponta para Person.
 
+    Usado apenas em PayableDocumentSerializer.supplier (read_only).
+    """
 
-class SupplierSerializer(serializers.ModelSerializer):
-    """Serializer completo de Fornecedor."""
+    id = serializers.UUIDField(read_only=True)
+    name = serializers.CharField(source="full_name", read_only=True)
+    cnpj = serializers.SerializerMethodField()
+    is_active = serializers.BooleanField(read_only=True)
 
-    contacts = SupplierContactSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Supplier
-        fields = [
-            "id",
-            "name",
-            "cnpj",
-            "cpf",
-            "email",
-            "phone",
-            "contact_name",
-            "notes",
-            "contacts",
-            "is_active",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = ["id", "contacts", "created_at", "updated_at"]
-
-
-class SupplierListSerializer(serializers.ModelSerializer):
-    """Serializer de listagem de Fornecedor — campos minimos."""
-
-    class Meta:
-        model = Supplier
-        fields = ["id", "name", "cnpj", "is_active"]
-        read_only_fields = ["id"]
+    def get_cnpj(self, obj) -> str:
+        doc = obj.documents.filter(doc_type="CNPJ", is_primary=True).first()
+        return doc.value if doc else ""
 
 
 # ── PayablePayment ─────────────────────────────────────────────────────────────

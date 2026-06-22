@@ -675,12 +675,26 @@ class PJPaymentViewSet(GenericViewSet):
         nf_file_key = data.get("nf_file_key", "")
 
         # Criar conta a pagar
-        from apps.accounts_payable.models import PayableDocument, Supplier
-        # Reutilizar ou criar fornecedor "Colaboradores DS Car"
-        supplier, _ = Supplier.objects.get_or_create(
-            name=employee.user.get_full_name(),
-            defaults={"notes": f"Colaborador PJ — {employee.registration_number}"},
+        from apps.accounts_payable.models import PayableDocument
+        from apps.persons.models import Person, PersonRole, RolePessoa, TipoPessoa
+
+        # Reutilizar ou criar Person fornecedor pro PJ
+        full_name = employee.user.get_full_name()
+        supplier = (
+            Person.objects.filter(
+                full_name=full_name, roles__role=RolePessoa.FORNECEDOR
+            )
+            .first()
         )
+        if not supplier:
+            supplier = Person.objects.create(
+                person_kind=TipoPessoa.JURIDICA,
+                full_name=full_name,
+                notes=f"Colaborador PJ — {employee.registration_number}",
+            )
+            PersonRole.objects.create(
+                person=supplier, role=RolePessoa.FORNECEDOR
+            )
         due = date(ref.year, ref.month + 1, 5) if ref.month < 12 else date(ref.year + 1, 1, 5)
         payable = PayableDocument.objects.create(
             supplier=supplier,
