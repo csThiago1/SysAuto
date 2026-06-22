@@ -150,6 +150,21 @@ class ServiceOrder(PaddockBaseModel):
         help_text="Número do sinistro",
         verbose_name="Número do sinistro",
     )
+    cilia_budget_number = models.CharField(
+        max_length=40,
+        blank=True,
+        default="",
+        db_index=True,
+        help_text="Número do orçamento Cilia (último importado)",
+        verbose_name="Orçamento Cilia",
+    )
+    cilia_budget_version = models.CharField(
+        max_length=10,
+        blank=True,
+        default="",
+        help_text="Versão do orçamento Cilia (último importado)",
+        verbose_name="Versão Cilia",
+    )
     deductible_amount = models.DecimalField(
         max_digits=10,
         decimal_places=2,
