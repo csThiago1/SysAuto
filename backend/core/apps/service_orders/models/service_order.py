@@ -166,11 +166,12 @@ class ServiceOrder(PaddockBaseModel):
         verbose_name="Corretor",
     )
     expert = models.ForeignKey(
-        "experts.Expert",
+        "persons.Person",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="service_orders",
+        related_name="service_orders_as_expert",
+        limit_choices_to={"roles__role": "EXPERT"},
         verbose_name="Perito",
     )
     expert_date = models.DateField(
