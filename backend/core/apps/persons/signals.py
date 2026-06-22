@@ -12,7 +12,12 @@ logger = logging.getLogger(__name__)
 
 
 @receiver(post_save, sender=PersonRole)
-def auto_create_profile_for_role(sender, instance: PersonRole, created: bool, **kwargs) -> None:
+def auto_create_profile_for_role(
+    sender: type[PersonRole],
+    instance: PersonRole,
+    created: bool,
+    **kwargs,
+) -> None:
     """Cria perfil OneToOne vazio quando role é adicionado à Person.
     Idempotente — get_or_create evita duplicatas.
     """
