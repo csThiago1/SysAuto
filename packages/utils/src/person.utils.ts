@@ -25,6 +25,7 @@ export const PERSON_ROLE_LABEL: Record<PersonRole, string> = {
   BROKER:   "Corretor",
   EMPLOYEE: "Funcionário",
   SUPPLIER: "Fornecedor",
+  EXPERT:   "Perito",
 } as const;
 
 export const CONTACT_TYPE_LABEL: Record<ContactType, string> = {
@@ -56,6 +57,7 @@ export const PERSON_ROLE_BADGE: Record<PersonRole, string> = {
   BROKER:   "bg-amber-50 text-amber-700 border-amber-200",
   EMPLOYEE: "bg-green-50 text-green-700 border-green-200",
   SUPPLIER: "bg-orange-50 text-orange-700 border-orange-200",
+  EXPERT:   "bg-cyan-50 text-cyan-700 border-cyan-200",
 } as const;
 
 // ─── Choices de Funcionário ───────────────────────────────────────────────────
