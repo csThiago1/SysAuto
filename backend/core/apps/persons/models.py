@@ -23,6 +23,7 @@ class RolePessoa(models.TextChoices):
     CORRETOR = "BROKER", "Corretor"
     FUNCIONARIO = "EMPLOYEE", "Funcionário"
     FORNECEDOR = "SUPPLIER", "Fornecedor"
+    PERITO = "EXPERT", "Perito"
 
 
 class TipoPessoa(models.TextChoices):
@@ -400,3 +401,94 @@ class BrokerPerson(models.Model):
 
     def __str__(self) -> str:
         return f"Corretor — {self.person.full_name}"
+
+
+class SupplierProfile(models.Model):
+    """Dados contábeis/operacionais do fornecedor — OneToOne Person."""
+
+    class Categoria(models.TextChoices):
+        PARTS    = "PARTS",    "Peças"
+        SERVICE  = "SERVICE",  "Serviços"
+        MATERIAL = "MATERIAL", "Material"
+        GENERAL  = "GENERAL",  "Geral"
+
+    class FormaPagamento(models.TextChoices):
+        BANK_TRANSFER = "bank_transfer", "Transferência"
+        PIX           = "pix",           "PIX"
+        BOLETO        = "boleto",        "Boleto"
+        CHECK         = "check",         "Cheque"
+        CASH          = "cash",          "Dinheiro"
+
+    class TipoPix(models.TextChoices):
+        CPF    = "CPF",    "CPF"
+        CNPJ   = "CNPJ",   "CNPJ"
+        EMAIL  = "EMAIL",  "E-mail"
+        PHONE  = "PHONE",  "Telefone"
+        RANDOM = "RANDOM", "Aleatória"
+
+    person = models.OneToOneField(
+        Person, on_delete=models.CASCADE, related_name="supplier_profile",
+        verbose_name="Pessoa",
+    )
+    category = models.CharField(
+        max_length=10, choices=Categoria.choices, default=Categoria.GENERAL,
+        verbose_name="Categoria",
+    )
+    default_payment_days = models.PositiveIntegerField(
+        default=30, verbose_name="Prazo padrão (dias)",
+    )
+    default_payment_method = models.CharField(
+        max_length=20, choices=FormaPagamento.choices, blank=True, default="",
+        verbose_name="Forma de pagamento padrão",
+    )
+    bank_name    = models.CharField(max_length=100, blank=True, default="", verbose_name="Banco")
+    bank_agency  = models.CharField(max_length=20,  blank=True, default="", verbose_name="Agência")
+    bank_account = EncryptedCharField(max_length=50, blank=True, default="", verbose_name="Conta")
+    pix_key      = EncryptedCharField(max_length=200, blank=True, default="", verbose_name="Chave PIX")
+    pix_key_type = models.CharField(
+        max_length=10, choices=TipoPix.choices, blank=True, default="",
+        verbose_name="Tipo de chave PIX",
+    )
+    notes = models.TextField(blank=True, default="", verbose_name="Observações")
+    legacy_supplier_id = models.IntegerField(
+        null=True, blank=True, db_index=True,
+        help_text="ID original em accounts_payable.Supplier — preenchido na migração",
+    )
+
+    class Meta:
+        verbose_name = "Perfil de Fornecedor"
+        verbose_name_plural = "Perfis de Fornecedor"
+
+    def __str__(self) -> str:
+        return f"Fornecedor — {self.person.full_name}"
+
+
+class ExpertProfile(models.Model):
+    """Perfil de perito — OneToOne Person, substitui experts.Expert."""
+
+    person = models.OneToOneField(
+        Person, on_delete=models.CASCADE, related_name="expert_profile",
+        verbose_name="Pessoa",
+    )
+    registration_number = models.CharField(
+        max_length=50, blank=True, default="",
+        help_text="CREA ou registro profissional",
+        verbose_name="Número de registro",
+    )
+    insurers = models.ManyToManyField(
+        "insurers.Insurer", related_name="experts_as_person",
+        blank=True,
+        help_text="Seguradoras para as quais este perito atua",
+        verbose_name="Seguradoras",
+    )
+    legacy_expert_id = models.IntegerField(
+        null=True, blank=True, db_index=True,
+        help_text="ID original em experts.Expert — preenchido na migração",
+    )
+
+    class Meta:
+        verbose_name = "Perfil de Perito"
+        verbose_name_plural = "Perfis de Perito"
+
+    def __str__(self) -> str:
+        return f"Perito — {self.person.full_name}"
