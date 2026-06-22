@@ -83,11 +83,12 @@ class DespesaRecorrente(PaddockBaseModel):
         verbose_name=_("Conta contábil"),
     )
     supplier = models.ForeignKey(
-        "accounts_payable.Supplier",
+        "persons.Person",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name="despesas_recorrentes",
+        limit_choices_to={"roles__role": "SUPPLIER"},
         verbose_name=_("Fornecedor"),
     )
     dia_vencimento = models.PositiveIntegerField(
