@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("experts", "0002_alter_expert_created_by_alter_expert_is_active"),
-        ("service_orders", "0032_swap_expert_fk"),
+        ("service_orders", "0033_swap_expert_fk"),
         ("persons", "0013_backfill_persons_from_legacy"),
     ]
 

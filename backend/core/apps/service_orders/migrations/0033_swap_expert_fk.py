@@ -21,7 +21,7 @@ def backfill(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("service_orders", "0031_add_external_invoice"),
+        ("service_orders", "0032_add_cilia_budget_fields"),
         ("persons", "0013_backfill_persons_from_legacy"),
     ]
 
