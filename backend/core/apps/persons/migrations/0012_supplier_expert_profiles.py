@@ -50,10 +50,11 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "legacy_expert_id",
-                    models.IntegerField(
+                    models.CharField(
                         blank=True,
                         db_index=True,
-                        help_text="ID original em experts.Expert — preenchido na migração",
+                        help_text="ID original em experts.Expert — UUID preenchido na migração",
+                        max_length=36,
                         null=True,
                     ),
                 ),
@@ -164,10 +165,11 @@ class Migration(migrations.Migration):
                 ("notes", models.TextField(blank=True, default="", verbose_name="Observações")),
                 (
                     "legacy_supplier_id",
-                    models.IntegerField(
+                    models.CharField(
                         blank=True,
                         db_index=True,
-                        help_text="ID original em accounts_payable.Supplier — preenchido na migração",
+                        help_text="ID original em accounts_payable.Supplier — UUID preenchido na migração",
+                        max_length=36,
                         null=True,
                     ),
                 ),

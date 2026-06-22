@@ -455,9 +455,9 @@ class SupplierProfile(models.Model):
         verbose_name="Tipo de chave PIX",
     )
     notes = models.TextField(blank=True, default="", verbose_name="Observações")
-    legacy_supplier_id = models.IntegerField(
-        null=True, blank=True, db_index=True,
-        help_text="ID original em accounts_payable.Supplier — preenchido na migração",
+    legacy_supplier_id = models.CharField(
+        max_length=36, null=True, blank=True, db_index=True,
+        help_text="ID original em accounts_payable.Supplier — UUID preenchido na migração",
     )
 
     class Meta:
@@ -490,9 +490,9 @@ class ExpertProfile(models.Model):
         help_text="Seguradoras para as quais este perito atua",
         verbose_name="Seguradoras",
     )
-    legacy_expert_id = models.IntegerField(
-        null=True, blank=True, db_index=True,
-        help_text="ID original em experts.Expert — preenchido na migração",
+    legacy_expert_id = models.CharField(
+        max_length=36, null=True, blank=True, db_index=True,
+        help_text="ID original em experts.Expert — UUID preenchido na migração",
     )
 
     class Meta:
