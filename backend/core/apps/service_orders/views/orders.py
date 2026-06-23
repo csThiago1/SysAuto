@@ -13,6 +13,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 import httpx
 
@@ -1281,12 +1282,155 @@ class ServiceOrderViewSet(
             )
         return Response(ServiceOrderEventSerializer(qs, many=True).data)
 
-    @action(detail=True, methods=["post"], url_path="import-budget")
-    def import_budget(self, request: Request, pk: Optional[str] = None) -> Response:
-        """Importa orçamento via Cilia (webservice), Soma (XML) ou Audatex (HTML).
+    def _apply_parsed_budget_to_order(
+        self,
+        order: Any,
+        parsed: Any,
+        budget_number: Optional[str] = None,
+        version_number: Optional[str] = None,
+    ) -> list[str]:
+        """Aplica os campos do ParsedBudget na OS. Retorna update_fields."""
+        update_fields: list[str] = []
 
-        Para Cilia: faz fetch → parse → cria versão diretamente na OS atual.
-        Para Soma/Audatex: TODO — upload de arquivo.
+        # Campos só preenchidos se vazios
+        fill_if_empty = {
+            "casualty_number": parsed.casualty_number,
+            "plate": parsed.vehicle_plate,
+            "chassis": parsed.vehicle_chassis,
+            "customer_name": parsed.segurado_name,
+        }
+        for field, value in fill_if_empty.items():
+            if value and not getattr(order, field, None):
+                setattr(order, field, value)
+                update_fields.append(field)
+
+        # Dados normalizados do veículo: sobrescreve mesmo se já tinha algo
+        normalized_vehicle = {
+            "make": parsed.vehicle_brand,
+            "model": getattr(parsed, "vehicle_model", "") or "",
+            "color": parsed.vehicle_color,
+        }
+        for field, value in normalized_vehicle.items():
+            if value and getattr(order, field, "") != value:
+                setattr(order, field, value)
+                update_fields.append(field)
+
+        if parsed.vehicle_year and not order.year:
+            order.year = parsed.vehicle_year
+            update_fields.append("year")
+
+        # Orçamento Cilia (só se fonte for Cilia/IFX/HDI com budget_number)
+        if budget_number and order.cilia_budget_number != str(budget_number):
+            order.cilia_budget_number = str(budget_number)
+            update_fields.append("cilia_budget_number")
+        if version_number is not None and str(version_number) and (
+            order.cilia_budget_version != str(version_number)
+        ):
+            order.cilia_budget_version = str(version_number)
+            update_fields.append("cilia_budget_version")
+
+        # Seguradora
+        if parsed.insurer_code:
+            if order.customer_type != "insurer":
+                order.customer_type = "insurer"
+                update_fields.append("customer_type")
+            if not order.insurer_id:
+                from apps.insurers.models import Insurer
+                insurer = Insurer.objects.filter(code=parsed.insurer_code).first()
+                if insurer:
+                    order.insurer = insurer
+                    update_fields.append("insurer_id")
+                else:
+                    import logging
+                    logging.getLogger(__name__).warning(
+                        "Insurer code='%s' não cadastrado — OS %s fica sem FK.",
+                        parsed.insurer_code, order.pk,
+                    )
+
+        # Franquia
+        if parsed.franchise_amount:
+            order.deductible_amount = parsed.franchise_amount
+            update_fields.append("deductible_amount")
+
+        # Observações técnicas
+        if not order.notes and parsed.pareceres:
+            obs_lines = []
+            for parecer in parsed.pareceres:
+                parts = [
+                    parecer.parecer_type.replace("_", " ").title() if parecer.parecer_type else "",
+                    parecer.body or "",
+                ]
+                line = " — ".join(p for p in parts if p)
+                if line:
+                    obs_lines.append(line)
+            if obs_lines:
+                order.notes = "\n".join(obs_lines)
+                update_fields.append("notes")
+
+        return update_fields
+
+    def _create_version_and_respond(
+        self,
+        order: Any,
+        parsed: Any,
+        attempt: Any,
+        request: Request,
+    ) -> Response:
+        """Cria ServiceOrderVersion e retorna diff ou applied."""
+        # Dedup por content_hash
+        existing_version = order.versions.filter(content_hash=parsed.raw_hash).first()
+        if existing_version:
+            return Response({
+                "action": "applied",
+                "version": VersionDetailSerializer(existing_version).data,
+                "message": "Versão já importada (mesmo conteúdo).",
+            })
+
+        version = ServiceOrderService.create_new_version_from_import(
+            service_order=order,
+            parsed_budget=parsed,
+            import_attempt=attempt,
+        )
+        ServiceOrderService.recalculate_version_totals(version)
+
+        # Diff se já tinha versão anterior
+        previous = order.versions.exclude(pk=version.pk).order_by("-version_number").first()
+        if previous:
+            diff = ServiceOrderService.compute_version_diff(
+                current_version=previous,
+                new_version=version,
+                service_order=order,
+            )
+            return Response({
+                "action": "diff",
+                "current_version": VersionDetailSerializer(previous).data,
+                "new_version": VersionDetailSerializer(version).data,
+                **diff,
+            })
+
+        # Primeira importação — aplicar direto
+        ServiceOrderService.apply_version_override(
+            service_order=order, new_version=version,
+            applied_by=request.user.email or "user",
+        )
+        return Response({
+            "action": "applied",
+            "version": VersionDetailSerializer(version).data,
+        }, status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="import-budget",
+        parser_classes=[JSONParser, MultiPartParser],
+    )
+    def import_budget(self, request: Request, pk: Optional[str] = None) -> Response:
+        """Importa orçamento de seguradora.
+
+        Fontes suportadas:
+        - `cilia`: webservice (JSON body: casualty_number, budget_number, version_number)
+        - `xml_porto`, `xml_azul`, `xml_itau`, `soma`: upload XML IFX (multipart: file, source)
+        - `hdi`: upload HTML do portal HDI (multipart: file, source=hdi)
         """
         import logging
         order = self.get_object()
@@ -1347,93 +1491,16 @@ class ServiceOrderViewSet(
                     status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 )
 
-            # 3. Atualizar dados da OS com informações do Cilia (preenche campos vazios)
-            update_fields: list[str] = []
-
-            # Campos só preenchidos se vazios (não sobrescreve digitação do consultor)
-            fill_if_empty = {
-                "casualty_number": parsed.casualty_number,
-                "plate": parsed.vehicle_plate,
-                "chassis": parsed.vehicle_chassis,
-                "customer_name": parsed.segurado_name,
-            }
-            for field, value in fill_if_empty.items():
-                if value and not getattr(order, field, None):
-                    setattr(order, field, value)
-                    update_fields.append(field)
-
-            # Dados normalizados do veículo: sobrescreve mesmo se já tinha algo
-            # pra padronizar (CAPS → Title-case, model sem range de anos).
-            normalized_vehicle = {
-                "make": parsed.vehicle_brand,
-                "model": parsed.vehicle_model,
-                "color": parsed.vehicle_color,
-            }
-            for field, value in normalized_vehicle.items():
-                if value and getattr(order, field, "") != value:
-                    setattr(order, field, value)
-                    update_fields.append(field)
-
-            if parsed.vehicle_year and not order.year:
-                order.year = parsed.vehicle_year
-                update_fields.append("year")
-
-            # Último orçamento Cilia importado — guarda na OS pra busca/UI
-            # sem JOIN com ServiceOrderVersion.
-            if str(budget_number) and order.cilia_budget_number != str(budget_number):
-                order.cilia_budget_number = str(budget_number)
-                update_fields.append("cilia_budget_number")
-            if version_number is not None and str(version_number) and (
-                order.cilia_budget_version != str(version_number)
-            ):
-                order.cilia_budget_version = str(version_number)
-                update_fields.append("cilia_budget_version")
-
-            # Seguradora: vincular se não tiver
-            if parsed.insurer_code:
-                # OS importada da Cilia é sempre de seguradora — força mesmo sem Insurer row.
-                if order.customer_type != "insurer":
-                    order.customer_type = "insurer"
-                    update_fields.append("customer_type")
-                if not order.insurer_id:
-                    from apps.insurers.models import Insurer
-                    insurer = Insurer.objects.filter(code=parsed.insurer_code).first()
-                    if insurer:
-                        order.insurer = insurer
-                        update_fields.append("insurer_id")
-                    else:
-                        logger.warning(
-                            "Insurer code='%s' não cadastrado no catálogo — OS %s "
-                            "fica como 'insurer' mas sem FK. Seed a seguradora.",
-                            parsed.insurer_code, order.pk,
-                        )
-
-            # Franquia: sempre atualizar (pode mudar entre versões)
-            if parsed.franchise_amount:
-                order.deductible_amount = parsed.franchise_amount
-                update_fields.append("deductible_amount")
-
-            # Observações técnicas: popula com pareceres se vazio
-            if not order.notes and parsed.pareceres:
-                obs_lines = []
-                for parecer in parsed.pareceres:
-                    parts = [
-                        parecer.parecer_type.replace("_", " ").title() if parecer.parecer_type else "",
-                        parecer.body or "",
-                    ]
-                    line = " — ".join(p for p in parts if p)
-                    if line:
-                        obs_lines.append(line)
-                if obs_lines:
-                    order.notes = "\n".join(obs_lines)
-                    update_fields.append("notes")
-
+            # 3. Aplica dados na OS e cria versão
+            update_fields = self._apply_parsed_budget_to_order(
+                order, parsed,
+                budget_number=str(budget_number),
+                version_number=str(version_number) if version_number else None,
+            )
             if update_fields:
                 order.save(update_fields=update_fields)
 
-            # 4. Criar versão via ImportAttempt + ServiceOrderService
             from apps.cilia.models import ImportAttempt
-
             attempt = ImportAttempt.objects.create(
                 source="cilia",
                 trigger="user_requested",
@@ -1448,53 +1515,106 @@ class ServiceOrderViewSet(
                 parsed_ok=True,
                 service_order=order,
             )
+            return self._create_version_and_respond(order, parsed, attempt, request)
 
-            # Dedup: se já existe versão com mesmo hash, não criar nova
-            existing_version = order.versions.filter(content_hash=parsed.raw_hash).first()
-            if existing_version:
-                return Response({
-                    "action": "applied",
-                    "version": VersionDetailSerializer(existing_version).data,
-                    "message": "Versão já importada (mesmo conteúdo).",
-                })
-
-            version = ServiceOrderService.create_new_version_from_import(
-                service_order=order,
-                parsed_budget=parsed,
-                import_attempt=attempt,
-            )
-            ServiceOrderService.recalculate_version_totals(version)
-
-            # 5. Se já existia versão anterior, retornar diff
-            previous = order.versions.exclude(pk=version.pk).order_by("-version_number").first()
-            if previous:
-                diff = ServiceOrderService.compute_version_diff(
-                    current_version=previous,
-                    new_version=version,
-                    service_order=order,
+        # ─────────────────────────────────────────────────── XML IFX (Soma/Porto/Azul/Itaú)
+        XML_SOURCES = {"soma", "xml_porto", "xml_azul", "xml_itau"}
+        if source in XML_SOURCES:
+            file = request.FILES.get("file")
+            if not file:
+                return Response(
+                    {"detail": "Envie o arquivo XML do orçamento."},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
-                return Response({
-                    "action": "diff",
-                    "current_version": VersionDetailSerializer(previous).data,
-                    "new_version": VersionDetailSerializer(version).data,
-                    **diff,
-                })
+            insurer_code = request.data.get("insurer_code", "")
+            if not insurer_code:
+                return Response(
+                    {"detail": "Informe insurer_code (porto/azul/itau/soma)."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-            # Primeira importação — aplicar direto
-            ServiceOrderService.apply_version_override(
-                service_order=order, new_version=version,
-                applied_by=request.user.email or "user",
-            )
-            return Response({
-                "action": "applied",
-                "version": VersionDetailSerializer(version).data,
-            }, status=status.HTTP_201_CREATED)
+            from apps.cilia.sources.xml_ifx_parser import XmlIfxParser
+            from apps.cilia.models import ImportAttempt
+            import hashlib
 
-        elif source in ("soma", "audatex"):
-            return Response(
-                {"detail": "Importação Soma/Audatex será implementada em breve."},
-                status=status.HTTP_501_NOT_IMPLEMENTED,
+            xml_bytes = file.read()
+            try:
+                parsed = XmlIfxParser.parse(xml_bytes, insurer_code=insurer_code)
+            except Exception as exc:
+                logger.exception("XML IFX parse error: %s", exc)
+                return Response(
+                    {"detail": f"Erro ao processar XML: {exc}", "error_type": "ParseError"},
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
+
+            source_normalized = source if source.startswith("xml_") else f"xml_{insurer_code.lower()}"
+            if source_normalized not in {"xml_porto", "xml_azul", "xml_itau"}:
+                source_normalized = "xml_porto"  # default seguro
+
+            update_fields = self._apply_parsed_budget_to_order(
+                order, parsed,
+                budget_number=parsed.external_budget_number,
+                version_number=parsed.external_version.split(".")[-1] if "." in parsed.external_version else None,
             )
+            if update_fields:
+                order.save(update_fields=update_fields)
+
+            attempt = ImportAttempt.objects.create(
+                source=source_normalized,
+                trigger="upload_manual",
+                created_by=request.user.email or "user",
+                casualty_number=parsed.casualty_number,
+                budget_number=parsed.external_budget_number,
+                raw_payload=parsed.raw_payload or {},
+                raw_hash=parsed.raw_hash or hashlib.sha256(xml_bytes).hexdigest(),
+                parsed_ok=True,
+                service_order=order,
+            )
+            return self._create_version_and_respond(order, parsed, attempt, request)
+
+        # ─────────────────────────────────────────────────── HDI HTML
+        if source == "hdi":
+            file = request.FILES.get("file")
+            if not file:
+                return Response(
+                    {"detail": "Envie o arquivo HTML exportado do portal HDI."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            from apps.cilia.sources.hdi_html_parser import HdiHtmlParser
+            from apps.cilia.models import ImportAttempt
+            import hashlib
+
+            html_bytes = file.read()
+            try:
+                parsed = HdiHtmlParser.parse(html_bytes)
+            except Exception as exc:
+                logger.exception("HDI HTML parse error: %s", exc)
+                return Response(
+                    {"detail": f"Erro ao processar HTML HDI: {exc}", "error_type": "ParseError"},
+                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                )
+
+            update_fields = self._apply_parsed_budget_to_order(
+                order, parsed,
+                budget_number=parsed.external_budget_number,
+                version_number=parsed.external_version.split(".")[-1] if "." in parsed.external_version else None,
+            )
+            if update_fields:
+                order.save(update_fields=update_fields)
+
+            attempt = ImportAttempt.objects.create(
+                source="hdi",
+                trigger="upload_manual",
+                created_by=request.user.email or "user",
+                casualty_number=parsed.casualty_number,
+                budget_number=parsed.external_budget_number,
+                raw_payload=parsed.raw_payload or {},
+                raw_hash=parsed.raw_hash or hashlib.sha256(html_bytes).hexdigest(),
+                parsed_ok=True,
+                service_order=order,
+            )
+            return self._create_version_and_respond(order, parsed, attempt, request)
 
         return Response(
             {"detail": f"Fonte '{source}' não suportada."},

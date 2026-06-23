@@ -82,6 +82,7 @@ class ImportAttempt(models.Model):
         ("xml_porto", "XML Porto"),
         ("xml_azul", "XML Azul"),
         ("xml_itau", "XML Itaú"),
+        ("xml_soma", "XML Soma"),
     ]
 
     TRIGGER_CHOICES = [
