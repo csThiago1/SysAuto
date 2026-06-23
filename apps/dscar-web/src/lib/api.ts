@@ -9,17 +9,19 @@ export class ApiError extends Error {
   public status: number;
   public fieldErrors?: Record<string, string[]>;
   public nonFieldErrors?: string[];
+  public body?: Record<string, unknown>;
 
   constructor(message: string, status: number, rawBody?: Record<string, unknown>) {
     super(message);
     this.name = "ApiError";
     this.status = status;
-    
+    this.body = rawBody;
+
     if (rawBody) {
       if (Array.isArray(rawBody.non_field_errors)) {
          this.nonFieldErrors = rawBody.non_field_errors as string[];
       }
-      
+
       const fields: Record<string, string[]> = {};
       Object.entries(rawBody).forEach(([k, v]) => {
          if (k !== "detail" && k !== "non_field_errors" && Array.isArray(v)) {

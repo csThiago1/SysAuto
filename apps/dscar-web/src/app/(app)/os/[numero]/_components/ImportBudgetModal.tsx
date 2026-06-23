@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import type { ImportBudgetResponse, ServiceOrder } from "@paddock/types"
 import { ImportDiffView } from "./ImportDiffView"
+import { ImportReconcileModal, type ReconcilePayload } from "./ImportReconcileModal"
 
 const SOURCES = [
   { id: "cilia", label: "Cilia", sub: "Webservice" },
@@ -51,6 +52,7 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
   const [file, setFile] = useState<File | null>(null)
   const [xmlInsurer, setXmlInsurer] = useState<typeof XML_INSURERS[number]["code"]>("porto")
   const [diffResult, setDiffResult] = useState<ImportBudgetResponse | null>(null)
+  const [reconcilePayload, setReconcilePayload] = useState<ReconcilePayload | null>(null)
 
   const importMutation = useMutation({
     mutationFn: async () => {
@@ -95,6 +97,11 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
       }
     },
     onError: (error) => {
+      // 409 com action=reconcile → abre modal de conciliação
+      if (error instanceof ApiError && error.status === 409 && error.body?.action === "reconcile") {
+        setReconcilePayload(error.body as unknown as ReconcilePayload)
+        return
+      }
       const message = error instanceof ApiError
         ? error.message
         : "Erro ao importar orçamento. Tente novamente."
@@ -115,6 +122,15 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
 
   return (
     <>
+      {reconcilePayload && (
+        <ImportReconcileModal
+          orderId={order.id}
+          payload={reconcilePayload}
+          open={!!reconcilePayload}
+          onClose={() => { setReconcilePayload(null); onClose() }}
+          onApplied={() => { setReconcilePayload(null); onClose() }}
+        />
+      )}
       <Dialog open={!!diffResult && diffResult.action === "diff"} onOpenChange={(v) => { if (!v) setDiffResult(null) }}>
         <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto p-0">
           {diffResult?.action === "diff" && (
@@ -128,7 +144,7 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
         </DialogContent>
       </Dialog>
 
-      <Dialog open={open && !diffResult} onOpenChange={(v) => { if (!v) onClose() }}>
+      <Dialog open={open && !diffResult && !reconcilePayload} onOpenChange={(v) => { if (!v) onClose() }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Importar Orçamento</DialogTitle>
