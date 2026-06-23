@@ -21,11 +21,19 @@ import { ImportDiffView } from "./ImportDiffView"
 
 const SOURCES = [
   { id: "cilia", label: "Cilia", sub: "Webservice" },
-  { id: "soma", label: "Soma", sub: "Upload XML" },
-  { id: "audatex", label: "Audatex", sub: "Upload HTML" },
+  { id: "xml_ifx", label: "Soma / XML", sub: "Upload XML" },
+  { id: "hdi", label: "HDI", sub: "Upload HTML" },
 ] as const
 
 type SourceId = (typeof SOURCES)[number]["id"]
+
+// Seguradoras suportadas pelo formato XML IFX (Soma)
+const XML_INSURERS = [
+  { code: "porto", label: "Porto Seguro" },
+  { code: "azul", label: "Azul Seguros" },
+  { code: "itau", label: "Itaú Seguros" },
+  { code: "soma", label: "Soma (genérico)" },
+] as const
 
 interface Props {
   order: ServiceOrder
@@ -41,6 +49,7 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
   const [budgetNumber, setBudgetNumber] = useState("")
   const [versionNumber, setVersionNumber] = useState("")
   const [file, setFile] = useState<File | null>(null)
+  const [xmlInsurer, setXmlInsurer] = useState<typeof XML_INSURERS[number]["code"]>("porto")
   const [diffResult, setDiffResult] = useState<ImportBudgetResponse | null>(null)
 
   const importMutation = useMutation({
@@ -60,8 +69,16 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
           },
         )
       }
+      // Upload de arquivo (XML IFX/Soma ou HDI HTML)
       const formData = new FormData()
-      formData.append("source", source)
+      if (source === "xml_ifx") {
+        // Backend espera source=xml_porto/xml_azul/xml_itau/soma + insurer_code
+        formData.append("source", xmlInsurer === "soma" ? "soma" : `xml_${xmlInsurer}`)
+        formData.append("insurer_code", xmlInsurer)
+      } else {
+        // HDI
+        formData.append("source", "hdi")
+      }
       if (file) formData.append("file", file)
       return apiFetch<ImportBudgetResponse>(
         `/api/proxy/service-orders/${order.id}/import-budget/`,
@@ -153,10 +170,35 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
             </div>
           )}
 
-          {source !== "cilia" && (
+          {source === "xml_ifx" && (
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="xml-insurer">Seguradora</Label>
+                <select
+                  id="xml-insurer"
+                  value={xmlInsurer}
+                  onChange={(e) => setXmlInsurer(e.target.value as typeof xmlInsurer)}
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors"
+                >
+                  {XML_INSURERS.map((ins) => (
+                    <option key={ins.code} value={ins.code}>{ins.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="xml-file">Arquivo XML</Label>
+                <Input id="xml-file" type="file" accept=".xml"
+                  onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+              </div>
+            </div>
+          )}
+
+          {source === "hdi" && (
             <div className="space-y-1.5">
-              <Label>Arquivo {source === "soma" ? "XML" : "HTML"}</Label>
-              <Input type="file" accept={source === "soma" ? ".xml" : ".html,.htm"}
+              <Label htmlFor="hdi-file">
+                Arquivo HTML <span className="text-muted-foreground">(exportar do portal HDI)</span>
+              </Label>
+              <Input id="hdi-file" type="file" accept=".html,.htm"
                 onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
             </div>
           )}
