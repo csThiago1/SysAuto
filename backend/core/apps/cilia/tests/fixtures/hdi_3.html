@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<!-- saved from url=(0090)https://www.hdi.com.br/scripts/cgiip.exe/WService=wsbroker2/dsp_rel_orcamento_sinistro.htm -->
+<html lang="pt-br" class="no-js"><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<!-- E4GL Disabled: meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" / -->
+<title>Exibir Sinistro</title>
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="">
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    
+    <!--[if lt IE 9]> <link rel="stylesheet" href="/css/hdidigital/ie/ie.css" media="screen" /> <![endif]-->
+    
+    <link rel="icon" href="https://www.hdi.com.br/images/hdidigital/favicon.png">
+    <link rel="stylesheet" href="./Exibir Sinistro3_files/styles.css" media="all">
+    <script src="./Exibir Sinistro3_files/plugins.js" type="text/javascript"></script>
+<!--[if lt IE 9]>
+   <script src="/js/hdidigital/libs/selectivizr-min.js"></script>
+   <script src="/js/hdidigital/libs/json2.js"></script>
+<![endif]-->
+<script src="./Exibir Sinistro3_files/application.js" type="text/javascript"></script>
+<script type="text/javascript">
+   /*  Envia a altura da janela para a home redimencional o tamanho do Iframe */
+   function enviarAlturaPagina4GLVoltarTopo(e)
+   {
+      var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
+      if (typeof target != "undefined" && typeof getMinDocHeight == "function")
+      target.postMessage(getMinDocHeight() + ";VoltarTopo", "*");
+   }
+   function enviarAlturaPagina4GLManterScroll(e)
+   {
+      var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
+      if (typeof target != "undefined" && typeof getMinDocHeight == "function")
+      target.postMessage(getMinDocHeight() + ";ManterScroll", "*");
+   }
+   /* Evita que a sessao expire ao acessar 4GL - Jean - MKT0296 - 11/06/2014 */
+   function manterSessao()
+   {
+     var target = parent.postMessage ? parent : (parent.document.postMessage ? parent.document : undefined);
+     if (typeof target != "undefined" )
+     target.postMessage("ManterAtivo", "*");
+   }
+   //adiciona o evento para depois do carregamento da tela informar a altura a home
+   var sEventName = "load";
+   if ( window.addEventListener )
+   {
+      window.addEventListener( sEventName, enviarAlturaPagina4GLVoltarTopo, false );
+      window.addEventListener( sEventName, manterSessao, false );
+   } else {
+      var sOnEvent = "on" + sEventName;
+      if ( window.attachEvent ) {
+         window.attachEvent( sOnEvent, enviarAlturaPagina4GLVoltarTopo );
+         window.attachEvent( sOnEvent, manterSessao );
+      }
+   }
+</script>
+   <link rel="stylesheet" type="text/css" href="./Exibir Sinistro3_files/bootstrap.min.css">
+   <script type="text/javascript" src="./Exibir Sinistro3_files/bootstrap.min.js" charset="utf-8"></script>
+   <script type="text/javascript" src="./Exibir Sinistro3_files/global.js"></script>
+   <script type="text/javascript" src="./Exibir Sinistro3_files/biblioteca.js"></script>
+   <script type="text/javascript" src="./Exibir Sinistro3_files/jquery.rotate.js"></script>
+      <link rel="stylesheet" type="text/css" href="./Exibir Sinistro3_files/padraomo.css"> <!-- estilo portal segurado -->
+      <link rel="stylesheet" type="text/css" href="./Exibir Sinistro3_files/padraomoprint.css" media="print">
+<script type="text/javascript">
+        $(function(){
+$('.table-mo-orcamento .destacar').hover(
+    function(){
+        $(this).addClass('destaque');
+    },
+    function(){
+        $(this).removeClass('destaque');
+    }
+    );
+})
+   function f_alinha(){
+      var v_divs = document.getElementsByTagName("div");
+      for(var i in v_divs){
+         if(v_divs[i].className=="setaCaixa"||v_divs[i].className=="divBotao") v_divs[i].style.visibility="hidden";
+         else if(v_divs[i].align=="") v_divs[i].align="left";
+      }
+      var v_textarea = document.getElementsByTagName("textarea");
+      for(i in v_textarea){
+         if(v_textarea[i]&&v_textarea[i].style) v_textarea[i].style.overflow="visible";
+      }
+      window.print();
+      window.setTimeout("window.close()",0);
+   }
+   function f_menu_srv(){
+      window.setTimeout("window.close()",0);
+   }
+    function printDiv(){
+      var conteudo = document.getElementById(DivGeral).innerHTML;
+      tela_impressao = window.open('about:blank');
+      tela_impressao.document.write(conteudo);
+      tela_impressao.window.print();
+      tela_impressao.window.close();
+   }
+   function PrintPreview() {
+       var toPrint = document.getElementById('printarea');
+       var popupWin = window.open('', '_blank', 'width=1200,height=900,location=no,left=200px,toolbar=no,locationbar=0,status=1,scrollbars=1,resizable=1~');
+       popupWin.document.open();
+       /* popupWin.document.write('<html><title>::Orçamento HDI::</title><link rel="stylesheet" type="text/css" href="/css/padraomoprint.css" /></head><body onload="window.print()">') */        /* FernandoMS - SW-2024 */
+       popupWin.document.write('<html><title>::Orçamento HDI::</title><link rel="stylesheet" type="text/css" href="/css/padraomoprint.css" /></head><body onload="window.print()">')              /* FernandoMS - SW-2024 */
+       popupWin.document.write(toPrint.innerHTML);
+       popupWin.document.write('</body></html>');
+       popupWin.document.close();
+   }
+  function FecharJanela() {
+      if ( navigator.appName.match("Microsoft") )
+      {
+         window.open("", "_parent");
+         window.opener = "";
+      }
+      window.close();
+  }
+   function funcLibCancReparos ( obj, DesLibRep ) {
+      var emailValido = true;
+      var l_msg = '';
+      if ($(obj).val()=='C') l_msg = 'Confirma a desautorização de reparos?';
+      else if ($(obj).val()=='L') l_msg = 'Confirma a liberação de reparos?';
+      else l_msg = 'Confirma o reenvio da liberação de reparos?';
+                if(DesLibRep != ''){
+       if(DesLibRep.indexOf('Deseja seguir com a liberação de reparos?') != -1){
+        if($(obj).val()!='C'){
+         if(!confirm(DesLibRep)){
+          return;
+         }
+        }
+       }
+       else{
+         alert(DesLibRep);
+         return;               
+       }
+                }
+      if ($('#vCodConclusao').val() == 27 || $('#vCodConclusao').val() == 28 || $('#vCodConclusao').val() == 29){
+         l_msg = 'Conclusão: ' + $('#vConclusao').val() + '\n' + l_msg;
+      }
+      if(confirm(l_msg)){
+         if($(obj).val()!='C'){
+            $('#emailpara,#emailcc').each(function () {
+               var email = $(this).val().split(';');
+               if (email == '' && $(this).attr("id") == "emailcc"){
+                  return;
+               }
+               for ( var i = 0; i <= email.length - 1; i++){
+                  var re = /[A-Z0-9._%+-]+@[A-Z0-9.-]+.[A-Z]{2,4}/igm;
+                  if (!re.test(email[i].trim())) {
+                     alert("email invalido " + email[i].trim());
+                     $(this).focus();
+                     emailValido = false;
+                     return;
+                  }
+               }
+            });
+         }
+         if(!emailValido) return;
+         $(obj).text('Processando...');
+         $('.btn').attr("disabled","disabled");
+         $.ajax ( { url: 'act_lib_reparos.htm',
+                    data: { p_idlaudo: $("#p_idlaudo").val(),
+                            emailpara: $("#emailpara").val(),
+                            emailcc: $("#emailcc").val(),
+                            comment: $("#comment").val(),
+                            m_login: "10362513000104",
+                            m_tipocanoulib: $(obj).val() },
+                    method: 'POST',
+                    dataType: "json" } ).
+               done(function(data){
+                  alert(data.retorno);
+               } ).
+               always(function() {
+                  $("#myModal .close").click();
+                  location.reload();
+               } );
+      }
+   }
+</script>
+   <meta id="dcngeagmmhegagicpcmpinaoklddcgon"></head><body id="printarea">
+      <form id="f_entrada" name="f_entrada" action="https://www.hdi.com.br/scripts/cgiip.exe/WService=wsbroker2/dsp_rel_orcamento_sinistro.htm" method="post">
+         <input type="hidden" name="p_idlaudo" id="p_idlaudo" value="202606015750005">
+         <input type="hidden" name="p_versaohdi" id="p_versaohdi" value="2">
+         <input type="hidden" name="p_seq_siniuss" id="p_seq_siniuss" value="MDEwMzM1MzUxNTMzOTcz">
+         <input type="hidden" name="m_login" id="m_login" value="MTAzNjI1MTMwMDAxMDQ%3D">
+         <input type="hidden" name="ref" id="ref" value="1">
+         <input type="hidden" name="p_visao" id="p_visao" value="026">
+         <input type="hidden" name="vConclusao" id="vConclusao" value="AUTORIZADO">
+         <input type="hidden" name="vCodConclusao" id="vCodConclusao" value="1">
+      </form>
+      <div class="box-metade geral-formulario">
+         <div class="lateral" style="top: 46px; margin-left: 910px; position: fixed;">
+            <div class="painel-funcionalidades right"> <h3>PAINEL OPÇÕES</h3>
+               <ul>
+                  <li>
+                     <a onclick="window.open(&#39;dsp_lupa_fornece_pecas.htm?idlaudo=202606015750005&amp;m_login=10362513000104&#39;,&#39;FornecePecas&#39;,&#39;stop=50,left=320,height=800,width=800,toolbar=no,locationbar=0,status=1,scrollbars=1,resizable=1~&#39;)" href="https://www.hdi.com.br/scripts/cgiip.exe/WService=wsbroker2/dsp_rel_orcamento_sinistro.htm#"><i class="icone icone-doc cinza"></i>
+                        Fornecimento de Peças
+                     </a>
+                  </li>
+                    <!--  21/02/2018 ThaisFs - comentado condição  "ORCLM_IncluirNF" que habilitava m_url_consulta_web da Audatex -->
+                  <li>
+                   <!-- IF v_nf_orcamentacao THEN 
+                     <a onclick="window.open('https://hdi.cilia.com.br','top=0,left=0,status=0,scrollbars=1,toolbar=0,title=0,width=795,height=580');" href="#"> -->
+                     <!-- ELSE -->
+                     <a onclick="window.open(&#39;dsp_sin_cad_nf_prest.htm?m_sinuss=010335351533973&amp;m_numseq_cp=1250096264&amp;m_recusa_nf=nao&amp;m_us=10362513000104&amp;m_cod_tipusu=026&amp;m_incluir_nf=sim&#39;,&#39;NotaFiscal&#39;,&#39;top=50,stop=50,left=320,height=860,width=800,toolbar=no,locationbar=0,status=1,scrollbars=1,resizable=1~&#39;);" href="https://www.hdi.com.br/scripts/cgiip.exe/WService=wsbroker2/dsp_rel_orcamento_sinistro.htm#">
+                        <i class="icone icone-doc cinza"></i>
+                        Incluir Nota Fiscal
+                     </a>
+                  </li>
+                  <li>
+                     <a onclick="window.open(&#39;dsp_fotos_orcamento_sinistro.htm?p_seq_siniuss=010335351533973&#39;,&#39;Fotos&#39;,&#39;top=80,left=220,height=730,width=1200,toolbar=no,locationbar=0,status=1,scrollbars=1,resizable=1~&#39;)" href="https://www.hdi.com.br/scripts/cgiip.exe/WService=wsbroker2/dsp_rel_orcamento_sinistro.htm#">
+                        <i class="icone icone-maquina-foto cinza"></i>
+                        Imagens
+                     </a>
+                  </li>
+                  <li>
+                     <a onclick="window.open(&#39;mrsicv01.htm?m_sinuss=010335351533973&amp;m_reguladora=sim&amp;p_origem=portal_oficina&amp;usuario=10362513000104&#39;,&#39;Complemento&#39;,&#39;top=50,left=320,height=400,width=800,toolbar=no,locationbar=0,status=1,scrollbars=1,resizable=1~&#39;);" href="https://www.hdi.com.br/scripts/cgiip.exe/WService=wsbroker2/dsp_rel_orcamento_sinistro.htm#">
+                        <i class="icone icone-circulo-voltar cinza"></i>
+                        Complemento
+                     </a>
+                  </li>
+                  <li>
+                     <a onclick="window.print()" href="https://www.hdi.com.br/scripts/cgiip.exe/WService=wsbroker2/dsp_rel_orcamento_sinistro.htm#"><i class="icone icone-impressora cinza"></i>Imprimir</a>
+                  </li>
+               </ul>
+            </div>
+         </div>
+         <div class="conteudo-etapa printable" style="margin-top: 25px; margin-bottom: 25px">
+            <div class="carimbo">
+               <div id="watermark" style="color: green; border-color: green;">AUTORIZADO</div>
+            </div>
+            <!-- <img src="/../images/logo.gif" class="logo-topo-padrao"> -->             <!-- FernandoMS - SW-2024 -->
+                              <img src="./Exibir Sinistro3_files/logo.gif" style="" class="logo-topo-padrao">       <!-- FernandoMS - SW-2024 -->
+            <div class="conteudo-form">
+               <div class="topo-fieldset" id="div_dados_gerais">
+                  <p>Dados Gerais</p>
+                  <i class="btn-toggle-form icone icone-seta-form abrir"></i>
+               </div>
+               <fieldset id="box_dados_gerais">
+                  <table class="table-mo">
+                                                 <tbody><tr style="background-color: rgb(241, 238, 235);">
+                                                        <td nowrap="" class="td-title"></td>
+                                                        <td nowrap="" class="td-label-nome" colspan="2"></td>
+                                                        <td nowrap="" class="td-title"><strong>Regulador:</strong></td>
+                                                        <td nowrap="" class="td-label" colspan="2">(GUSTAVOCP) - GUSTAVO CARDOSO PRESIBELLA</td>
+                                                 </tr>                                   
+                     <tr style="background-color: rgb(246, 244, 242);">
+                        <td nowrap="" class="td-title"><strong>Sinistro:</strong></td>
+                        <td nowrap="" class="td-label">010335351533973</td>
+                        <td nowrap="" class="td-title"><strong>Divisão:</strong></td>
+                        <td nowrap="" class="td-label">
+Principal                        </td>
+                        <td nowrap="" class="td-label hidden-print"></td>
+                     </tr>
+                     <tr style="background-color: rgb(241, 238, 235);">
+                        <td nowrap="" class="td-title" title="Laudo/Versão"><strong>Laudo:</strong></td>
+                        <td nowrap="" class="td-label" title="Laudo/Versão">
+                           <table>
+                              <tbody><tr style="background-color: rgb(246, 244, 242);">
+                                 <td>
+202606015750005                                 </td>
+                                 <td>/</td>
+                                 <td>
+                                       <select class="select-laudo" onchange="document.f_entrada.p_versaohdi.value = this.value; document.f_entrada.ref.value = &#39;&#39;; document.f_entrada.submit();">
+                                          <option value="1">0.0  -  11/06/2026</option>
+                                          <option value="2" selected="">0.1  -  11/06/2026</option>
+                                       </select>
+                                    <span class="span-laudo">0.1 - 11/06/2026</span>
+                                 </td>
+                              </tr>
+                           </tbody></table>
+                        </td>
+                        <td nowrap="" class="td-title" title="Orçamento / Versão"><strong>Orçamento:</strong></td>
+                        <td nowrap="" class="td-label" title="Orçamento / Versão">859248 / 0</td>
+                        <td nowrap="" class="td-title"><strong>Status:</strong></td>
+                        <td nowrap="" class="td-label">AUTORIZADO</td>
+                     </tr>
+                  </tbody></table>
+               </fieldset>
+            </div>
+            <div class="conteudo-form">
+               <div class="topo-fieldset" id="div_dados_cliente">
+                  <p>Emissão Nota Fiscal</p>
+                  <i class="btn-toggle-form icone icone-seta-form abrir"></i>
+               </div>
+               <fieldset id="box_dados_cliente">
+                  <table class="table-mo">
+                     <tbody>
+                        <tr style="background-color: rgb(241, 238, 235);">
+                           <td nowrap="" class="td-title"><strong>Razão:</strong></td>
+                           <!-- /* *** INICIO *** 11/03/2019 - FernandoMS - SW-1321 - Apresentar dados conforme nome da empresa */ -->
+                           <!-- <td nowrap class="td-label-nome">HDI SEGUROS S.A.</td> -->
+                           <td nowrap="" class="td-label-nome">HDI SEGUROS</td>
+                           <!-- /* *** FIM *** 11/03/2019 - FernandoMS - SW-1321 - Apresentar dados conforme nome da empresa */ -->
+                           <td nowrap="" class="td-title"><strong>CNPJ:</strong></td>
+                           <td nowrap="" class="td-label">29.980.158/0001-57</td>
+                           <td nowrap="" class="td-title"><strong>Inc. Municipal:</strong></td>
+                           <td nowrap="" class="td-label">000000085460150</td>
+                        </tr>
+                        <tr style="background-color: rgb(246, 244, 242);">
+                           <td nowrap="" class="td-title"><strong>End:</strong></td>
+                           <td class="td-label-nome">RUA DOUTOR GERALDO CAMPOS MOREIRA, 110 - 12º ANDAR - CONJUNT</td>
+                           <td nowrap="" class="td-title"><strong>Cidade:</strong></td>
+                           <td nowrap="" class="td-label">SAO PAULO - SP</td>
+                           <td nowrap="" class="td-title"><strong>CEP:</strong></td>
+                           <td nowrap="" class="td-label">04571-020</td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </fieldset>
+            </div>
+            <div class="conteudo-form">
+               <div class="topo-fieldset" id="div_dados_cliente">
+                  <p>Dados do Cliente</p>
+                  <i class="btn-toggle-form icone icone-seta-form abrir"></i>
+               </div>
+               <fieldset id="box_dados_cliente">
+                  <table class="table-mo">
+                     <tbody>
+                        <tr style="background-color: rgb(241, 238, 235);">
+                           <td nowrap="" class="td-title"><strong>Nome: CLIENTE EXEMPLO</strong></td>
+                           <td class="td-label">CLEBSON RAMOS DA ENCARNACAO</td>
+                           <td nowrap="" class="td-title"><strong>Telefone: </strong></td>
+                           <td nowrap="" class="td-label"></td>
+                           <td nowrap="" class="td-title"><strong></strong></td>
+                           <td nowrap="" class="td-label"></td>
+                        </tr>
+                        <tr style="background-color: rgb(246, 244, 242);">
+                           <td nowrap="" class="td-title"><strong>Veiculo:</strong></td>
+                           <td class="td-label-nome">0003793 - VOLKSWAGEN VIRTUS 1.6 MSI Flex 16V 5p Mec. 2018</td>
+                           <td nowrap="" class="td-title"><strong>Placa:</strong></td>
+                           <td nowrap="" class="td-label">PHL3744</td>
+                           <td nowrap="" class="td-title"><strong>Cor:</strong></td>
+                           <td nowrap="" class="td-label">PRATA</td>
+                        </tr>
+                        <tr style="background-color: rgb(241, 238, 235);">
+                           <td nowrap="" class="td-title"><strong>Endereço:</strong></td>
+                           <td class="td-label-nome">RUA GUAPOREMA 51 - </td>
+                           <td nowrap="" class="td-title"><strong>Chassis:</strong></td>
+                           <td nowrap="" class="td-label">9BWDL5BZ2JP030018</td>
+                           <td nowrap="" class="td-title"><strong>KM:</strong></td>
+                           <td nowrap="" class="td-label">     84.374</td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </fieldset>
+            </div>
+            <div class="conteudo-form">
+               <div class="topo-fieldset" id="div_dados_cliente">
+                  <p>Dados da Oficina</p>
+                  <i class="btn-toggle-form icone icone-seta-form abrir"></i>
+               </div>
+               <fieldset id="box_dados_cliente">
+                  <table class="table-mo">
+                     <tbody><tr style="background-color: rgb(246, 244, 242);">
+                        <td nowrap="" class="td-title"><strong>Nome: CLIENTE EXEMPLO</strong></td>
+                        <td class="td-label-nome">DS CAR</td>
+                        <td nowrap="" class="td-title"><strong>CNPJ:</strong></td>
+                        <td nowrap="" class="td-label">10.362.513/0001-04</td>
+                        <td nowrap="" class="td-title"><strong>Inc. Municipal:</strong></td>
+                        <td nowrap="" class="td-label"></td>
+                     </tr>
+                     <tr style="background-color: rgb(241, 238, 235);">
+                        <td nowrap="" class="td-title"><strong>End:</strong></td>
+                        <td class="td-label-nome">AVENIDA SAMAUMA 2212</td>
+                        <td nowrap="" class="td-title"><strong>Cidade:</strong></td>
+                        <td nowrap="" class="td-label">MANAUS / AM</td>
+                        <td nowrap="" class="td-title"><strong>CEP:</strong></td>
+                        <td nowrap="" class="td-label">69093-132</td>
+                     </tr>
+                     <tr style="background-color: rgb(246, 244, 242);">
+                        <td nowrap="" class="td-title"><strong>Contato:</strong></td>
+                        <td class="td-label-nome">GABRIEL</td>
+                        <td nowrap="" class="td-title"><strong>Telefone: </strong></td>
+                        <td nowrap="" class="td-label">(92) 3345-7864</td>
+                        <td nowrap="" class="td-title"><strong>E-mail:</strong></td>
+                        <td nowrap="" class="td-label">SINISTROS@OFICINADSCAR.COM</td>
+                     </tr>
+                  </tbody></table>
+               </fieldset>
+            </div>
+               <div class="conteudo-form">
+                  <div class="topo-fieldset" id="div_dados_cliente">
+                     <p>Peças Fornecidas pela HDI</p>
+                     <i class="btn-toggle-form icone icone-seta-form abrir"></i>
+                  </div>
+                  <fieldset id="box_dados_cliente">
+                     <table class="table-mo">
+                        <tbody><tr style="background-color: rgb(241, 238, 235);">
+                           <td nowrap="" class="td-title"><strong>Partnumber</strong></td>
+                           <td nowrap="" class="td-title"><strong>Descrição</strong></td>
+                           <td nowrap="" class="td-title" style="text-align: center;"><strong>Qtd</strong></td>
+                           <td nowrap="" class="td-title" style="text-align: center;"><strong>Preço Unit. (R$)</strong></td>
+                           <td nowrap="" class="td-title" style="text-align: center;"><strong>Total (R$)</strong></td>
+                           <td nowrap="" class="td-title" style="width: 2%; text-align: center;"><strong>Desconto (%)</strong></td>
+                        </tr>
+                     <tr style="background-color: rgb(246, 244, 242);">
+                        <td nowrap="" class="td-label" style="color: black;">6EC807417CGRU</td>
+                        <td class="td-label-nome" style="color: black;" title="PARACHOQUE TRASEIRO"> PARACHOQUE TRASEIRO</td>
+                        <td nowrap="" class="td-label" style="color: black;">1</td>
+                        <td nowrap="" class="td-valor" style="color: black;">   2.369,08</td>
+                        <td nowrap="" class="td-valor" style="color: black;">   2.369,08</td>
+                        <td nowrap="" class="td-label" style="color: black; text-align: right;">  23,60</td>
+                     </tr>
+                     <tr style="background-color: rgb(241, 238, 235);">
+                        <td nowrap="" class="td-label" style="color: black;">6EC945096</td>
+                        <td class="td-label-nome" style="color: black;" title="LANTERNA TRASEIRA DIR"> LANTERNA TRASEIRA DIR</td>
+                        <td nowrap="" class="td-label" style="color: black;">1</td>
+                        <td nowrap="" class="td-valor" style="color: black;">     913,27</td>
+                        <td nowrap="" class="td-valor" style="color: black;">     913,27</td>
+                        <td nowrap="" class="td-label" style="color: black; text-align: right;">  27,51</td>
+                     </tr>
+                     <tr style="background-color: rgb(246, 244, 242);">
+                        <td nowrap="" class="td-label" style="color: black;">6EC945095</td>
+                        <td class="td-label-nome" style="color: black;" title="LANTERNA TRASEIRA ESQ"> LANTERNA TRASEIRA ESQ</td>
+                        <td nowrap="" class="td-label" style="color: black;">1</td>
+                        <td nowrap="" class="td-valor" style="color: black;">     913,27</td>
+                        <td nowrap="" class="td-valor" style="color: black;">     913,27</td>
+                        <td nowrap="" class="td-label" style="color: black; text-align: right;">  27,51</td>
+                     </tr>
+                     <tr style="background-color: rgb(241, 238, 235);">
+                        <td nowrap="" class="td-label" style="color: black;">6EC945094</td>
+                        <td class="td-label-nome" style="color: black;" title="LANTERNA DIR DA TAMPA TRAS"> LANTERNA DIR DA TAMPA TRAS</td>
+                        <td nowrap="" class="td-label" style="color: black;">1</td>
+                        <td nowrap="" class="td-valor" style="color: black;">     474,12</td>
+                        <td nowrap="" class="td-valor" style="color: black;">     474,12</td>
+                        <td nowrap="" class="td-label" style="color: black; text-align: right;">  27,44</td>
+                     </tr>
+                     <tr style="background-color: rgb(246, 244, 242);">
+                        <td nowrap="" class="td-label" style="color: black;">6EC945093</td>
+                        <td class="td-label-nome" style="color: black;" title="LANTERNA ESQ DA TAMPA TRAS"> LANTERNA ESQ DA TAMPA TRAS</td>
+                        <td nowrap="" class="td-label" style="color: black;">1</td>
+                        <td nowrap="" class="td-valor" style="color: black;">     474,12</td>
+                        <td nowrap="" class="td-valor" style="color: black;">     474,12</td>
+                        <td nowrap="" class="td-label" style="color: black; text-align: right;">  27,44</td>
+                     </tr>
+                     <tr style="background-color: rgb(241, 238, 235);">
+                        <td nowrap="" class="td-label" style="color: black;">6EC827025AGRU</td>
+                        <td class="td-label-nome" style="color: black;" title="TAMPA TRASEIRA"> TAMPA TRASEIRA</td>
+                        <td nowrap="" class="td-label" style="color: black;">1</td>
+                        <td nowrap="" class="td-valor" style="color: black;">   3.024,56</td>
+                        <td nowrap="" class="td-valor" style="color: black;">   3.024,56</td>
+                        <td nowrap="" class="td-label" style="color: black; text-align: right;">  24,98</td>
+                     </tr>
+                     <tr style="background-color: rgb(246, 244, 242);">
+                        <td nowrap="" class="td-label" style="color: black;">6EC807305A</td>
+                        <td class="td-label-nome" style="color: black;" title="PARACHOQUE TRAS INTERNO"> PARACHOQUE TRAS INTERNO</td>
+                        <td nowrap="" class="td-label" style="color: black;">1</td>
+                        <td nowrap="" class="td-valor" style="color: black;">   1.034,34</td>
+                        <td nowrap="" class="td-valor" style="color: black;">   1.034,34</td>
+                        <td nowrap="" class="td-label" style="color: black; text-align: right;">  27,49</td>
+                     </tr>
+                     <tr style="background-color: rgb(241, 238, 235);">
+                        <td nowrap="" class="td-label" style="color: black;">6EC807863</td>
+                        <td class="td-label-nome" style="color: black;" title="GUIA CENTRAL DO PARACHOQUE TRAS"> GUIA CENTRAL DO PARACHOQUE TRAS</td>
+                        <td nowrap="" class="td-label" style="color: black;">1</td>
+                        <td nowrap="" class="td-valor" style="color: black;">     103,19</td>
+                        <td nowrap="" class="td-valor" style="color: black;">     103,19</td>
+                        <td nowrap="" class="td-label" style="color: black; text-align: right;">  27,32</td>
+                     </tr>
+                     <tr style="background-color: rgb(246, 244, 242);">
+                        <td nowrap="" class="td-label" style="color: black;">6EC807394</td>
+                        <td class="td-label-nome" style="color: black;" title="SUPORTE DIR DO PARACHOQUE TRAS"> SUPORTE DIR DO PARACHOQUE TRAS</td>
+                        <td nowrap="" class="td-label" style="color: black;">1</td>
+                        <td nowrap="" class="td-valor" style="color: black;">      46,90</td>
+                        <td nowrap="" class="td-valor" style="color: black;">      46,90</td>
+                        <td nowrap="" class="td-label" style="color: black; text-align: right;">  27,51</td>
+                     </tr>
+                     <tr style="background-color: rgb(241, 238, 235);">
+                        <td nowrap="" class="td-label" style="color: black;">6EC807393</td>
+                        <td class="td-label-nome" style="color: black;" title="SUPORTE ESQ DO PARACHOQUE TRAS"> SUPORTE ESQ DO PARACHOQUE TRAS</td>
+                        <td nowrap="" class="td-label" style="color: black;">1</td>
+                        <td nowrap="" class="td-valor" style="color: black;">      44,42</td>
+                        <td nowrap="" class="td-valor" style="color: black;">      44,42</td>
+                        <td nowrap="" class="td-label" style="color: black; text-align: right;">  23,46</td>
+                     </tr>
+                     <tr style="background-color: rgb(246, 244, 242);">
+                        <td nowrap="" class="td-label" style="color: black;">5U5853675739</td>
+                        <td class="td-label-nome" style="color: black;" title="EMBLEMA MODELO"> EMBLEMA MODELO</td>
+                        <td nowrap="" class="td-label" style="color: black;">1</td>
+                        <td nowrap="" class="td-valor" style="color: black;">      39,77</td>
+                        <td nowrap="" class="td-valor" style="color: black;">      39,77</td>
+                        <td nowrap="" class="td-label" style="color: black; text-align: right;">  24,57</td>
+                     </tr>
+                     <tr style="background-color: rgb(241, 238, 235);">
+                        <td nowrap="" class="td-label" style="color: black;">6EC8536872ZZ</td>
+                        <td class="td-label-nome" style="color: black;" title="EMBLEMA VEÍCULO"> EMBLEMA VEÍCULO</td>
+                        <td nowrap="" class="td-label" style="color: black;">1</td>
+                        <td nowrap="" class="td-valor" style="color: black;">      65,74</td>
+                        <td nowrap="" class="td-valor" style="color: black;">      65,74</td>
+                        <td nowrap="" class="td-label" style="color: black; text-align: right;">  26,99</td>
+                     </tr>
+                     <tr style="background-color: rgb(246, 244, 242);">
+                        <td nowrap="" class="td-label" style="color: black;">6EC8075689B9</td>
+                        <td class="td-label-nome" style="color: black;" title="SPOILER DO PARACHOQUE TRAS"> SPOILER DO PARACHOQUE TRAS</td>
+                        <td nowrap="" class="td-label" style="color: black;">1</td>
+                        <td nowrap="" class="td-valor" style="color: black;">     314,18</td>
+                        <td nowrap="" class="td-valor" style="color: black;">     314,18</td>
+                        <td nowrap="" class="td-label" style="color: black; text-align: right;">  27,75</td>
+                     </tr>
+                     <tr style="background-color: rgb(241, 238, 235);">
+                        <td nowrap="" class="td-label" style="color: black;">6EC863459B82V</td>
+                        <td class="td-label-nome" style="color: black;" title="RECOBRIMENTO DO PAINEL TRAS"> RECOBRIMENTO DO PAINEL TRAS</td>
+                        <td nowrap="" class="td-label" style="color: black;">1</td>
+                        <td nowrap="" class="td-valor" style="color: black;">     198,44</td>
+                        <td nowrap="" class="td-valor" style="color: black;">     198,44</td>
+                        <td nowrap="" class="td-label" style="color: black; text-align: right;">  24,91</td>
+                     </tr>
+                  </tbody></table>
+               </fieldset>
+            </div>
+            <div class="conteudo-form">
+               <div class="topo-fieldset" id="div_dados_cliente">
+                  <p>                        Peças Fornecidas pela Oficina 
+ </p>
+                  <i class="btn-toggle-form icone icone-seta-form abrir"></i>
+               </div>
+               <fieldset id="box_dados_gerais">
+                  <table class="table-mo">
+                     <tbody><tr style="background-color: rgb(246, 244, 242);">
+                        <td nowrap="" class="td-title" style="width: 1%"><strong>Partnumber</strong></td>
+                        <td nowrap="" class="td-title" style="width: 93%"><strong>Descrição</strong></td>
+                        <td nowrap="" class="td-title" style="width: 1%"><strong>Qtd</strong></td>
+                        <td nowrap="" class="td-title" style="width: 2%; text-align: center;"><strong>Preço Unit (R$)</strong></td>
+                        <td nowrap="" class="td-title" style="width: 2%; text-align: center;"><strong>Total (R$)</strong></td>
+                        <td nowrap="" class="td-title" style="width: 2%; text-align: center;"><strong>Desconto (%)</strong></td>
+                     </tr>
+                  </tbody></table>
+               </fieldset>
+            </div>
+            <div class="conteudo-form">
+               <div class="topo-fieldset-operacoes" id="div_dados_cliente" style="background-color: #00A252;">    <!-- SW-2024 - FernandoMS -->
+                  <p>Operações</p>
+                  <i class="btn-toggle-form icone icone-seta-form abrir"></i>
+               </div>
+               <fieldset id="box_dados_cliente">
+                  <table class="table-mo-operacoes" style="text-align: right;">
+                     <tbody><tr style="background-color: rgb(241, 238, 235);">
+                        <td nowrap="" class="td-title"><strong>Descrição</strong></td>
+                        <td nowrap="" class="td-title"><strong>Recuperar</strong></td>
+                        <td nowrap="" class="td-title"><strong>Pintar</strong></td>
+                        <td nowrap="" class="td-title"><strong>Rem. e Inst.</strong></td>
+                        <td nowrap="" class="td-title"><strong>Alinhar</strong></td>
+                     </tr>
+      <tr style="background-color: rgb(246, 244, 242);">
+         <td nowrap="" class="td-label-nome-operacoes" style="color: black; " title="SENSORES DE ESTACIONAMENTO"> SENSORES DE ESTACIONAMENTO</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black;">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">  1,00</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">     1,00</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+      </tr>
+      <tr style="background-color: rgb(241, 238, 235);">
+         <td nowrap="" class="td-label-nome-operacoes" style="color: black; " title="LANTERNA DA PLACA TRAS"> LANTERNA DA PLACA TRAS</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black;">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">     0,20</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+      </tr>
+      <tr style="background-color: rgb(246, 244, 242);">
+         <td nowrap="" class="td-label-nome-operacoes" style="color: black; " title="FORRO DA TAMPA TRASEIRA"> FORRO DA TAMPA TRASEIRA</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black;">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">     0,25</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+      </tr>
+      <tr style="background-color: rgb(241, 238, 235);">
+         <td nowrap="" class="td-label-nome-operacoes" style="color: black; " title="REM/INST COMPONENTES DA TAMPA TRASEIRA"> REM/INST COMPONENTES DA TAMPA TRASEIRA</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black;">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">     0,50</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+      </tr>
+      <tr style="background-color: rgb(246, 244, 242);">
+         <td nowrap="" class="td-label-nome-operacoes" style="color: black; " title="GUARNIÇÃO DA TAMPA TRAS"> GUARNIÇÃO DA TAMPA TRAS</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black;">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">     0,25</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+      </tr>
+      <tr style="background-color: rgb(241, 238, 235);">
+         <td nowrap="" class="td-label-nome-operacoes" style="color: black; " title="REM/INST COMPONENTES DO PAINEL TRASEIRO"> REM/INST COMPONENTES DO PAINEL TRASEIRO</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black;">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">     0,20</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+      </tr>
+      <tr style="background-color: rgb(246, 244, 242);">
+         <td nowrap="" class="td-label-nome-operacoes" style="color: black; " title="REVESTIMENTO DA CAIXA DE RODA TRAS DIR"> REVESTIMENTO DA CAIXA DE RODA TRAS DIR</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black;">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">     0,25</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+      </tr>
+      <tr style="background-color: rgb(241, 238, 235);">
+         <td nowrap="" class="td-label-nome-operacoes" style="color: black; " title="REVESTIMENTO DA CAIXA DE RODA TRAS ESQ"> REVESTIMENTO DA CAIXA DE RODA TRAS ESQ</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black;">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">     0,25</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+      </tr>
+      <tr style="background-color: rgb(246, 244, 242);">
+         <td nowrap="" class="td-label-nome-operacoes" style="color: black; " title="DOBRADIÇA DIR DA TAMPA TRAS"> DOBRADIÇA DIR DA TAMPA TRAS</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black;">  1,00</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">  1,00</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+      </tr>
+      <tr style="background-color: rgb(241, 238, 235);">
+         <td nowrap="" class="td-label-nome-operacoes" style="color: black; " title="DOBRADIÇA ESQ DA TAMPA TRAS"> DOBRADIÇA ESQ DA TAMPA TRAS</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black;">  1,00</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">  1,00</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+      </tr>
+      <tr style="background-color: rgb(246, 244, 242);">
+         <td nowrap="" class="td-label-nome-operacoes" style="color: black; " title="EMBLEMA LOGOTIPO"> EMBLEMA LOGOTIPO</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black;">  0,50</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+      </tr>
+      <tr style="background-color: rgb(241, 238, 235);">
+         <td nowrap="" class="td-label-nome-operacoes" style="color: black; " title="PAINEL TRASEIRO"> PAINEL TRASEIRO</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black;">  9,00</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">  3,00</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+         <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+      </tr>
+                             <tr style="background-color: rgb(246, 244, 242);">
+                                <td nowrap="" class="td-label-nome-operacoes" style="color: black;" title=" PARACHOQUE TRASEIRO">PARACHOQUE TRASEIRO</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">  4,00 </td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">  1,00</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                             </tr>
+                             <tr style="background-color: rgb(241, 238, 235);">
+                                <td nowrap="" class="td-label-nome-operacoes" style="color: black;" title=" LANTERNA TRASEIRA DIR">LANTERNA TRASEIRA DIR</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">- </td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">  0,30</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                             </tr>
+                             <tr style="background-color: rgb(246, 244, 242);">
+                                <td nowrap="" class="td-label-nome-operacoes" style="color: black;" title=" LANTERNA TRASEIRA ESQ">LANTERNA TRASEIRA ESQ</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">- </td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">  0,30</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                             </tr>
+                             <tr style="background-color: rgb(241, 238, 235);">
+                                <td nowrap="" class="td-label-nome-operacoes" style="color: black;" title=" LANTERNA DIR DA TAMPA TRAS">LANTERNA DIR DA TAMPA TRAS</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">- </td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">  0,30</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                             </tr>
+                             <tr style="background-color: rgb(246, 244, 242);">
+                                <td nowrap="" class="td-label-nome-operacoes" style="color: black;" title=" LANTERNA ESQ DA TAMPA TRAS">LANTERNA ESQ DA TAMPA TRAS</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">- </td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">  0,30</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                             </tr>
+                             <tr style="background-color: rgb(241, 238, 235);">
+                                <td nowrap="" class="td-label-nome-operacoes" style="color: black;" title=" TAMPA TRASEIRA">TAMPA TRASEIRA</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">  6,00 </td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">  1,00</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                             </tr>
+                             <tr style="background-color: rgb(246, 244, 242);">
+                                <td nowrap="" class="td-label-nome-operacoes" style="color: black;" title=" PARACHOQUE TRAS INTERNO">PARACHOQUE TRAS INTERNO</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">- </td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">  0,50</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                             </tr>
+                             <tr style="background-color: rgb(241, 238, 235);">
+                                <td nowrap="" class="td-label-nome-operacoes" style="color: black;" title=" SPOILER DO PARACHOQUE TRAS">SPOILER DO PARACHOQUE TRAS</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">- </td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">  0,30</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                             </tr>
+                             <tr style="background-color: rgb(246, 244, 242);">
+                                <td nowrap="" class="td-label-nome-operacoes" style="color: black;" title=" RECOBRIMENTO DO PAINEL TRAS">RECOBRIMENTO DO PAINEL TRAS</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">- </td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">  0,20</td>
+                                <td nowrap="" class="td-label-operacoes" style="color: black; ">-</td>
+                             </tr>
+                  </tbody></table>
+               </fieldset>
+            </div>
+            <div class="conteudo-form">
+               <div class="topo-fieldset" id="div_dados_cliente">
+                  <p>Resumo Mão de Obra</p>
+                  <i class="btn-toggle-form icone icone-seta-form abrir"></i>
+               </div>
+               <fieldset id="box_dados_cliente">
+                  <table class="table-mo">
+                     <tbody><tr style="background-color: rgb(241, 238, 235);">
+                        <th nowrap="" class="td-resumo-label" style="padding-left: 70px;"></th>
+                        <th nowrap="" class="td-resumo" title="Funilaria"><strong>Funilaria</strong></th>
+                        <th nowrap="" class="td-resumo" title="Tap./Vidracaria"><strong>Tap./Vidracaria</strong></th>
+                        <th nowrap="" class="td-resumo" title="Eletrica"><strong>Eletrica</strong></th>
+                        <th nowrap="" class="td-resumo" title="Mecanica"><strong>Mecanica</strong></th>
+                        <th nowrap="" class="td-resumo" title="Pintura"><strong>Pintura</strong></th>
+                        <th nowrap="" class="td-resumo" title="Recuperacao por peca"><strong>Recuperacao</strong></th>
+                        <th nowrap="" class="td-resumo"><strong>Total</strong></th>
+                     </tr>
+                     <tr style="background-color: rgb(246, 244, 242);">
+                        <td nowrap="" class="td-resumo-label"><strong>Qtd. hora</strong></td>
+                        <td nowrap="" class="td-resumo">    1,50</td>
+                        <td nowrap="" class="td-resumo">    3,20</td>
+                        <td nowrap="" class="td-resumo">    2,40</td>
+                        <td nowrap="" class="td-resumo"></td>
+                        <td nowrap="" class="td-resumo">   16,00</td>
+                        <td nowrap="" class="td-resumo">   11,50</td>
+                        <td nowrap="" class="td-resumo"><strong> 34,60</strong></td>
+                     </tr>
+                     <tr style="background-color: rgb(241, 238, 235);">
+                        <td nowrap="" class="td-resumo-label"><strong>Vlr. hora (R$)</strong></td>
+                        <td nowrap="" class="td-resumo">      41,00</td>
+                        <td nowrap="" class="td-resumo">      41,00</td>
+                        <td nowrap="" class="td-resumo">      41,00</td>
+                        <td nowrap="" class="td-resumo">      41,00</td>
+                        <td nowrap="" class="td-resumo">      53,00</td>
+                        <td nowrap="" class="td-resumo">      50,00</td>
+                        <td nowrap="" class="td-resumo"></td>
+                     </tr>
+                     <tr style="background-color: rgb(246, 244, 242);">
+                        <td nowrap="" class="td-resumo-label"><strong>Total (R$)</strong></td>
+                        <td nowrap="" class="td-resumo">      61,50</td>
+                        <td nowrap="" class="td-resumo">     131,20</td>
+                        <td nowrap="" class="td-resumo">      98,40</td>
+                        <td nowrap="" class="td-resumo">       0,00</td>
+                        <td nowrap="" class="td-resumo">     848,00</td>
+                        <td nowrap="" class="td-resumo">     575,00</td>
+                        <td nowrap="" class="td-resumo"><strong>   1.714,10</strong></td>
+                     </tr>
+                  </tbody></table>
+               </fieldset>
+            </div>
+            <div class="conteudo-form">
+               <div class="topo-fieldset" id="div_dados_cliente">
+                  <p>Serviços adicionais</p>
+                  <i class="btn-toggle-form icone icone-seta-form abrir"></i>
+               </div>
+               <fieldset id="box_dados_cliente">
+                  <table class="table-mo">
+                  <tbody>
+                     <tr style="background-color: rgb(241, 238, 235);">
+                        <td nowrap="" class="td-label-nome"><strong>Descrição</strong></td>
+                        <td nowrap="" class="td-valor"><strong>Valor (R$)</strong></td>
+                     </tr>
+                     <tr style="background-color: rgb(246, 244, 242);">
+                        <td class="td-label-nome">KIT BUCHAS/PRESILHAS</td>
+                        <td nowrap="" class="td-valor">      35,00</td>
+                     </tr>
+                     <tr style="background-color: rgb(241, 238, 235);">
+                        <td class="td-label-nome">TAXA DE ASSESSORIA</td>
+                        <td nowrap="" class="td-valor">      70,00</td>
+                     </tr>
+                     <tr style="background-color: rgb(246, 244, 242);">
+                       <td nowrap="" class="td-label-nome"><strong>Total (R$)</strong></td>
+                       <td nowrap="" class="td-valor"><strong>     105,00</strong></td>
+                     </tr>
+                  </tbody></table>
+               </fieldset>
+            </div>
+            <div class="conteudo-form-orcamento-geral">
+               <div class="conteudo-form-orcamento">
+                  <div class="topo-fieldset-orcamento" id="div_resumo_orcamento" style="background-color: #00A252;">     <!-- SW-2024 - FernandoMS -->
+                     <p>Resumo Orçamento (R$)</p>
+                     <i class="btn-toggle-form icone icone-seta-form abrir"></i>
+                  </div>
+                  <fieldset class="table-mo-orcamento">
+                     <table class="table-mo-orcamento" id="resumovalores">
+                        <tbody><tr style="background-color: rgb(241, 238, 235);">
+                           <td nowrap="" class="td-title-orcamento"><strong>Serviços</strong>&nbsp;(Serviços adicionais + Mão de obra)</td>
+                           <td nowrap="" class="td-valor"><strong>   1.819,10</strong></td>
+                        </tr>
+                        <tr class="destacar" style="background-color: rgb(246, 244, 242);">
+                           <td nowrap="" class="td-title-orcamento" title="Valor Bruto R$0,00 - Valor do desconto R$0,00">
+                                <strong>
+                                        Peças Oficina
+                                </strong>
+                                &nbsp;(<font>       0,00</font><font class="red"> -        0,00</font>&nbsp;)
+                                </td>
+                           <td nowrap="" class="td-valor" title="Valor Bruto R$0,00 - Valor do desconto R$0,00"><strong>       0,00</strong></td>
+                        </tr>
+                        <tr class="destacar" style="background-color: rgb(241, 238, 235);">
+                           <td nowrap="" class="td-title-orcamento" title="Valor Bruto R$10.015,40 - Valor do desconto R$2.577,40">
+                                <strong>
+                                    Peças HDI
+                                </strong>
+                                &nbsp;(<font>  10.015,40</font><font class="red"> -    2.577,40</font>&nbsp;)
+                                </td>
+                           <td nowrap="" class="td-valor" title="Valor Bruto R$10.015,40 - Valor do desconto R$2.577,40"><strong>   7.438,00</strong></td>
+                        </tr>
+                        <tr style="background-color: rgb(246, 244, 242);">
+                           <td nowrap="" class="td-title-orcamento"><strong>Franquia</strong></td>
+                           <td nowrap="" class="td-valor"><strong class="red">       0,00</strong></td>
+                         </tr>
+                        <tr style="background-color: rgb(241, 238, 235);">
+                           <td nowrap="" class="td-title-orcamento"><strong>Avarias</strong></td>
+                           <td nowrap="" class="td-valor"><strong class="red">       0,00</strong></td>
+                        </tr>
+                         <tr class="destacar" style="background-color: rgb(246, 244, 242);">
+                           <td nowrap="" class="td-title-orcamento" title="Serviços + Peças Oficina + Peças HDI - Avarias - Franquia"><strong>Total Orçamento</strong></td>
+                           <td nowrap="" class="td-valor" title="Serviços + Peças Oficina + Peças HDI - Avarias - Franquia"><strong>   9.257,10</strong></td>
+                        </tr>
+                     </tbody></table>
+                  </fieldset>
+               </div>
+               <div class="conteudo-form-fatura">
+                  <div class="topo-fieldset-fatura" style="background-color: #00A252;">      <!-- SW-2024 - FernandoMS -->
+                     <p>Á Faturar cliente (R$)</p>
+                     <i class="btn-toggle-form icone icone-seta-form abrir"></i>
+                  </div>
+                  <fieldset id="box_dados_gerais">
+                     <table class="table-mo-fatura">
+                        <tbody><tr style="background-color: rgb(241, 238, 235);">
+                           <td nowrap="" class="td-label-fatura"><strong>Franquia<strong></strong></strong></td>
+                           <td nowrap="" class="td-valor"><strong>       0,00</strong></td>
+                        </tr>
+                        <tr style="background-color: rgb(246, 244, 242);">
+                           <td nowrap="" class="td-label-fatura"><strong>Avarias<strong></strong></strong></td>
+                           <td nowrap="" class="td-valor"><strong>       0,00</strong></td>
+                        </tr>
+                        <tr style="background-color: rgb(241, 238, 235);">
+                           <td nowrap="" class="td-label-fatura"><strong>Total<strong></strong></strong></td>
+                           <td nowrap="" class="td-valor"><strong>       0,00</strong></td>
+                        </tr>
+                     </tbody></table>
+                  </fieldset>
+               </div>
+               <div class="conteudo-form-fatura" style="padding-left: 50px">
+                  <div class="topo-fieldset-fatura" style="background-color: #00A252;">     <!-- SW-2024 - FernandoMS -->
+                     <p>Á Faturar HDI (R$)</p>
+                     <i class="btn-toggle-form icone icone-seta-form abrir"></i>
+                  </div>
+                  <fieldset id="box_dados_gerais">
+                     <table class="table-mo-fatura">
+                        <tbody><tr style="background-color: rgb(246, 244, 242);">
+                           <td nowrap="" class="td-label"><strong>NF Serviço<strong></strong></strong></td>
+                           <td nowrap="" class="td-valor"><strong>   1.819,10</strong></td>
+                        </tr>
+                        <tr style="background-color: rgb(241, 238, 235);">
+                           <td nowrap="" class="td-label-fatura"><strong>NF Peças<strong></strong></strong></td>
+                           <td nowrap="" class="td-valor"><strong>0,00</strong></td>
+                        </tr>
+                        <tr style="background-color: rgb(246, 244, 242);">
+                           <td nowrap="" class="td-label-fatura"><strong>Total<strong></strong></strong></td>
+                           <td nowrap="" class="td-valor"><strong>   1.819,10</strong></td>
+                        </tr>
+                        <tr style="background-color: rgb(241, 238, 235);">
+                     </tr></tbody></table>
+                  </fieldset>
+                  <div style="text-align: right; margin-top: 130px; font-size: 70%;">
+                  <font> Sistema de orçamentação CILIA </font>
+                                                </div>
+               </div>
+            </div>
+         </div>
+         <div class="conteudo-form">
+            <div class="topo-fieldset">
+               <p>PARECER</p>
+               <i class="btn-toggle-form icone icone-seta-form abrir"></i>
+            </div>
+            <fieldset id="box_dados_gerais">
+               <table class="table-mo">
+                  <tbody><tr style="background-color: rgb(246, 244, 242);">
+                     <td class="td-title" style="width: 90%"><strong>Parecer<strong></strong></strong></td>
+                    <!-- <td nowrap class="td-title" style="width: 5%"><strong>Usuario<strong></td> -->
+                     <td nowrap="" class="td-title" style="width: 5%"><strong>Data<strong></strong></strong></td>
+                  </tr>
+                  <tr style="background-color: rgb(241, 238, 235);">
+                     <td class="td-label-nome">ATENDIMENTO VISTORIA DIGITAL, REGULADOR GUSTAVO C. PRESIBELLA - E-MAIL gustavo.presibella@hdi-yelum.com.br - FONE: 41 - 3312-4612.
+
+PARA INFORMAÇÕES SOBRE O PROCESSO, ORÇAMENTOS, AUTORIZAÇÃO DE REPAROS, INCLUSÃO DE IMAGENS COMPLEMENTARES, CADASTRAMENTO, EMISSÃO E LOCAL DE ENVIO DE NOTAS FISCAIS, ACESSE O SITE: HTTPS: WWW.HDI.COM.BR "Orçamentos HDI são processados de forma automática sem ação alguma deste regulador. A oficina deve acompanhar a liberação de reparos e publicação do orçamento no Portal de Prestadores HDI https://www.hdi.com.br/hdiprestador/ e não deve proceder na compra de peças sem a liberação em sistema. Qualquer alteração no presente orçamento deve ser solicitada antecipadamente a CIA. Após a execução da funilaria nos enviar fotos de acompanhamento de reparos, fotos do veículo após a preparação de pintura e por fim, fotos do veículo concluído ilustrando o campo reparado bem como as respectivas sucatas, A FALTA DESTE PROCEDIMENTO PODERÁ IMPLICAR NA NÃO LIQUIDAÇÃO DO SINISTRO.
+</td>
+                     <!--<td nowrap class="td-label">06773405912</td>-->
+                     <td nowrap="" class="td-label">11/06/2026 12:54:12</td>
+                  </tr>
+               </tbody></table>
+            </fieldset>
+         </div>
+      </div>
+      <div class="div_espaco hidden-print">
+      </div>
+      <!-- Modal -->
+      <div class="modal fade" id="myModal" role="dialog">
+         <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+               <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal">×</button>
+                  <h4 class="modal-title">Liberação de Reparos</h4>
+               </div>
+               <div class="modal-body">
+                  <table class="table-mo-fatura" style="width: 100%">
+                     <tbody><tr style="background-color: rgb(246, 244, 242);">
+                        <td nowrap="" width="5%"><strong>Sinistro:</strong></td>
+                        <td nowrap="">010335351533973</td>
+                        <td nowrap="" style="text-align: right;"><strong>Placa:</strong></td>
+                        <td nowrap="">PHL3744</td>
+                     </tr>
+                     <tr style="background-color: rgb(241, 238, 235);">
+                       <td><strong>Cliente:</strong></td>
+                       <td colspan="3">CLEBSON RAMOS DA ENCARNACAO</td>
+                     </tr>
+                     <tr style="background-color: rgb(246, 244, 242);">
+                        <td><strong>Veiculo:</strong></td>
+                        <td colspan="3">0003793 - VOLKSWAGEN VIRTUS 1.6 MSI Flex 16V 5p Mec. 2018</td>
+                     </tr>
+                     <tr style="background-color: rgb(241, 238, 235);">
+                        <td><strong>Para:</strong></td>
+                        <td colspan="3"><input class="form-control required" style="font-family: arial;" type="email" id="emailpara" name="emailpara" maxlength="100" value="SINISTROS@OFICINADSCAR.COM" placeholder="email@dominio.com"></td>
+                     </tr>
+                     <tr style="background-color: rgb(246, 244, 242);">
+                        <td><strong>cc:</strong></td>
+                        <td colspan="3"><input class="form-control" style="font-family: arial;" type="email" id="emailcc" name="emailcc" maxlength="100" value="" placeholder="email@dominio.com"></td>
+                     </tr>
+                     <tr style="background-color: rgb(241, 238, 235);">
+                       <td colspan="4"><strong>Parecer: </strong><br>
+                       <textarea class="form-control" name="comment" id="comment" rows="4"></textarea></td>
+                     </tr>
+                  </tbody></table>
+               </div>
+               <div class="hidden" id="msgemail"></div>
+               <div class="modal-footer">
+                  <button type="button" class="btn btn-default" onclick="funcLibCancReparos(this,&#39;&#39;)" value="LR">Reenviar Lib. Reparos</button>
+                  <button type="button" class="btn btn-default" onclick="funcLibCancReparos(this,&#39;&#39;)" value="C">Desautorizar Reparos</button>
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+               </div>
+            </div>
+         </div>
+      </div>
+   <script type="text/javascript" src="./Exibir Sinistro3_files/gcqBkwB"></script>
+
+
+
+
+</body></html>
