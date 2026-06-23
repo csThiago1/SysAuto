@@ -120,6 +120,25 @@ class XmlIfxParser:
             for svc in svc_node.findall("servico"):
                 pb.items.append(cls._parse_servico_terceiro(svc))
 
+        # --- Totais oficiais IFX (pra reconciliação) ---
+        if faturamento is not None:
+            pb.source_grand_total = cls._dec_br(cls._text(faturamento, "valorTotal"))
+            mo_total = (
+                cls._dec_br(cls._text(faturamento, "valorMaoObraFunilaria"))
+                + cls._dec_br(cls._text(faturamento, "valorMaoObraMecanica"))
+                + cls._dec_br(cls._text(faturamento, "valorMaoObraPintura"))
+                + cls._dec_br(cls._text(faturamento, "valorServicoTerceiros"))
+            )
+            pb.source_services_total = mo_total
+            # Peças líquido total (das pecasTrocadas)
+            tg = root.find("totalGeralPecasTrocadas")
+            if tg is not None:
+                pb.source_parts_total = cls._dec_br(
+                    cls._text(tg, "totalPrLiquidoPecasTrocadas"),
+                )
+            else:
+                pb.source_parts_total = pb.source_grand_total - pb.source_services_total
+
         # --- Snapshot ---
         pb.raw_payload = cls._xml_to_dict(root)
         pb.raw_hash = hashlib.sha256(xml_bytes).hexdigest()

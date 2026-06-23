@@ -307,9 +307,36 @@ class HdiHtmlParser:
 
     @classmethod
     def _parse_resumo(cls, pb: ParsedBudget, table_html: str) -> None:
-        """Tabela 10 (resumovalores): só pra validação. Não cria itens."""
-        # Já temos tudo via items. Tabela só pra cross-check no test.
-        pass
+        """Tabela 10 (resumovalores): totais oficiais HDI pra reconciliação.
+
+        Formato esperado:
+            Serviços (Serviços adicionais + Mão de obra) 1.956,00
+            Peças Oficina ( 0,00 - 0,00 ) 0,00
+            Peças HDI ( 3.585,19 - 541,19 ) 3.044,00
+            Franquia 0,00
+            Avarias 0,00
+            Total Orçamento 5.000,00
+        """
+        text = cls._flatten(table_html)
+        # Captura "Serviços ... X,XX"
+        m = re.search(r"Serviços[^0-9]*([\d\.]+,\d{2})", text)
+        if m:
+            pb.source_services_total = _br_dec(m.group(1))
+        # Peças Oficina + Peças HDI = source_parts_total
+        # DS Car cobra ambas (Oficina = compra direto, HDI = compra da seguradora com desconto)
+        # Peças Oficina (X - Y) Z → pega o Z (líquido)
+        oficina_m = re.search(r"Peças Oficina[^)]*\)\s*([\d\.]+,\d{2})", text)
+        hdi_m = re.search(r"Peças HDI[^)]*\)\s*([\d\.]+,\d{2})", text)
+        parts_total = Decimal("0")
+        if oficina_m:
+            parts_total += _br_dec(oficina_m.group(1))
+        if hdi_m:
+            parts_total += _br_dec(hdi_m.group(1))
+        pb.source_parts_total = parts_total
+        # Total Orçamento (verdade absoluta)
+        m = re.search(r"Total Orçamento\s*([\d\.]+,\d{2})", text)
+        if m:
+            pb.source_grand_total = _br_dec(m.group(1))
 
     @classmethod
     def _parse_franquia(cls, pb: ParsedBudget, table_html: str) -> None:
