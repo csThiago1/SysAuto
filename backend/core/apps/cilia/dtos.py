@@ -108,6 +108,13 @@ class ParsedBudget:
     global_discount_pct: Decimal = Decimal("0")
     hourly_rates: dict[str, str] = field(default_factory=dict)
 
+    # Totais oficiais da fonte (Cilia/IFX/HDI) — usados pra reconciliação
+    # contra a soma dos items. Se diff > tolerância, o backend exige conciliação
+    # manual antes de aplicar na OS.
+    source_parts_total: Decimal = Decimal("0")
+    source_services_total: Decimal = Decimal("0")
+    source_grand_total: Decimal = Decimal("0")
+
     # Dados
     items: list[ParsedItemDTO] = field(default_factory=list)
     pareceres: list[ParsedParecerDTO] = field(default_factory=list)

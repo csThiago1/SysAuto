@@ -167,6 +167,24 @@ class CiliaParser:
         totals = payload.get("totals") or {}
         pb.franchise_amount = cls._dec(totals.get("franchise", 0), "totals.franchise")
 
+        # Totais oficiais da Cilia — verdade absoluta pra reconciliação.
+        # Quando peças do insurer não entram no que DS Car cobra (já zeradas nos items),
+        # ajustamos source_parts_total descontando essas peças do total_pieces_cost.
+        cilia_pieces = cls._dec(totals.get("total_pieces_cost", 0), "totals.total_pieces_cost")
+        pb.source_services_total = cls._dec(totals.get("total_workforce_cost", 0), "totals.total_workforce_cost")
+
+        # Subtraimos as peças com supplier!=workshop do total Cilia (DS Car não cobra delas)
+        insurer_pieces_value = Decimal("0")
+        for entry in (payload.get("budgetings") or []):
+            if entry.get("exchange_used") and entry.get("supplier_type") != "workshop":
+                piece_final = cls._dec(entry.get("piece_selling_cost_final", 0), "")
+                piece_price = cls._dec(entry.get("piece_selling_cost", 0), "")
+                qty = cls._dec(entry.get("quantity", 1), "")
+                insurer_pieces_value += (piece_final if piece_final else piece_price) * qty
+
+        pb.source_parts_total = cilia_pieces - insurer_pieces_value
+        pb.source_grand_total = pb.source_parts_total + pb.source_services_total
+
         # Tabela de MO (standard_labor)
         labor = payload.get("standard_labor") or {}
         pb.hourly_rates = {

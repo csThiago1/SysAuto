@@ -1376,7 +1376,13 @@ class ServiceOrderViewSet(
         attempt: Any,
         request: Request,
     ) -> Response:
-        """Cria ServiceOrderVersion e retorna diff ou applied."""
+        """Cria ServiceOrderVersion e retorna diff ou applied.
+
+        Antes de criar versão, valida reconciliação: se a soma dos items do
+        parser divergir dos totais oficiais da fonte por mais que R$ 0,10,
+        retorna action='reconcile' e NÃO persiste a versão. Frontend mostra
+        tela de conciliação manual.
+        """
         # Dedup por content_hash
         existing_version = order.versions.filter(content_hash=parsed.raw_hash).first()
         if existing_version:
@@ -1385,6 +1391,24 @@ class ServiceOrderViewSet(
                 "version": VersionDetailSerializer(existing_version).data,
                 "message": "Versão já importada (mesmo conteúdo).",
             })
+
+        # Reconciliação obrigatória — se diff > tolerância, exige conciliação manual
+        from apps.cilia.reconciliation import (
+            compute_reconciliation_state,
+            serialize_items_for_reconciliation,
+        )
+        state = compute_reconciliation_state(parsed)
+        if state.needs_reconciliation:
+            return Response({
+                "action": "reconcile",
+                "import_attempt_id": attempt.id,
+                "totals": state.to_dict(),
+                "items": serialize_items_for_reconciliation(parsed.items),
+                "message": (
+                    "Divergência detectada entre o orçamento da fonte e os items "
+                    "calculados. Revise os items antes de aplicar."
+                ),
+            }, status=status.HTTP_409_CONFLICT)
 
         version = ServiceOrderService.create_new_version_from_import(
             service_order=order,
@@ -1620,6 +1644,141 @@ class ServiceOrderViewSet(
             {"detail": f"Fonte '{source}' não suportada."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+    @action(detail=True, methods=["post"], url_path="import-budget/reconcile")
+    def import_budget_reconcile(self, request: Request, pk: Optional[str] = None) -> Response:
+        """Aplica items editados pelo consultor após conciliação manual.
+
+        Body:
+            import_attempt_id: ID do ImportAttempt criado pelo /import-budget/
+            items: lista de items finais (mesma estrutura do parser, com
+                quantity/unit_price/net_price editados)
+
+        Valida que a soma dos items aceitos não tem diff > R$ 0,10 contra
+        os totais oficiais salvos no ImportAttempt. Se OK, cria
+        ServiceOrderVersion. Se ainda há diff, retorna 422 com novo estado.
+        """
+        from decimal import Decimal
+        from apps.cilia.models import ImportAttempt
+        from apps.cilia.dtos import ParsedBudget, ParsedItemDTO
+        from apps.cilia.reconciliation import (
+            compute_reconciliation_state,
+            serialize_items_for_reconciliation,
+            TOLERANCE,
+        )
+
+        order = self.get_object()
+        attempt_id = request.data.get("import_attempt_id")
+        raw_items = request.data.get("items", [])
+
+        if not attempt_id:
+            return Response(
+                {"detail": "import_attempt_id é obrigatório."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not isinstance(raw_items, list) or not raw_items:
+            return Response(
+                {"detail": "Envie pelo menos 1 item para aplicar."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            attempt = ImportAttempt.objects.get(pk=attempt_id, service_order=order)
+        except ImportAttempt.DoesNotExist:
+            return Response(
+                {"detail": "Tentativa de importação não encontrada."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Reconstrói ParsedBudget a partir do raw_payload + items editados
+        # (mantém os mesmos source totals pra validação final).
+        # IMPORTANT: aqui usamos o ParsedBudget só pra compute_reconciliation_state
+        # — a criação da versão usa o objeto reconstruído.
+        pb = ParsedBudget(source=attempt.source)
+        pb.raw_payload = attempt.raw_payload or {}
+        pb.raw_hash = attempt.raw_hash or ""
+        pb.casualty_number = attempt.casualty_number or ""
+        pb.external_budget_number = attempt.budget_number or ""
+        if attempt.version_number is not None:
+            pb.external_version = f"{pb.external_budget_number}.{attempt.version_number}"
+
+        # Re-parsear pra restaurar source totals (precisa do raw_payload)
+        # Reusa cada parser conforme attempt.source
+        try:
+            if attempt.source == "cilia":
+                from apps.cilia.sources.cilia_parser import CiliaParser
+                tmp = CiliaParser.parse(attempt.raw_payload)
+                pb.source_parts_total = tmp.source_parts_total
+                pb.source_services_total = tmp.source_services_total
+                pb.source_grand_total = tmp.source_grand_total
+                pb.insurer_code = tmp.insurer_code
+                pb.segurado_name = tmp.segurado_name
+                pb.vehicle_plate = tmp.vehicle_plate
+                pb.vehicle_brand = tmp.vehicle_brand
+                pb.vehicle_model = tmp.vehicle_model
+                pb.vehicle_chassis = tmp.vehicle_chassis
+                pb.vehicle_color = tmp.vehicle_color
+                pb.vehicle_year = tmp.vehicle_year
+                pb.franchise_amount = tmp.franchise_amount
+                pb.hourly_rates = tmp.hourly_rates
+                pb.pareceres = tmp.pareceres
+            else:
+                return Response(
+                    {"detail": f"Reconciliação para fonte '{attempt.source}' ainda não implementada."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except Exception as exc:
+            return Response(
+                {"detail": f"Erro ao restaurar contexto: {exc}"},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
+        # Reconstrói items do payload do frontend
+        for raw in raw_items:
+            try:
+                pb.items.append(ParsedItemDTO(
+                    item_type=raw.get("item_type", "PART"),
+                    description=str(raw.get("description", ""))[:300],
+                    external_code=str(raw.get("external_code", ""))[:80],
+                    part_type=str(raw.get("part_type", "")),
+                    supplier=str(raw.get("supplier", "OFICINA")),
+                    quantity=Decimal(str(raw.get("quantity", "1"))),
+                    unit_price=Decimal(str(raw.get("unit_price", "0"))),
+                    discount_pct=Decimal(str(raw.get("discount_pct", "0"))),
+                    net_price=Decimal(str(raw.get("net_price", "0"))),
+                    payer_block="SEGURADORA",
+                ))
+            except Exception as exc:
+                return Response(
+                    {"detail": f"Item inválido: {exc}", "raw_item": raw},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        # Valida — se ainda há diff, devolve estado pra correção
+        state = compute_reconciliation_state(pb)
+        if state.needs_reconciliation:
+            return Response({
+                "action": "still_diverged",
+                "import_attempt_id": attempt.id,
+                "totals": state.to_dict(),
+                "items": serialize_items_for_reconciliation(pb.items),
+                "message": (
+                    f"Ainda diverge: peças R$ {state.parts_diff:+.2f}, "
+                    f"serviços R$ {state.services_diff:+.2f}. "
+                    f"Tolerância R$ {TOLERANCE}."
+                ),
+            }, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        # OK — cria versão
+        update_fields = self._apply_parsed_budget_to_order(
+            order, pb,
+            budget_number=pb.external_budget_number,
+            version_number=str(attempt.version_number) if attempt.version_number else None,
+        )
+        if update_fields:
+            order.save(update_fields=update_fields)
+
+        return self._create_version_and_respond(order, pb, attempt, request)
 
     @action(detail=True, methods=["post"], url_path="versions/(?P<version_pk>[^/.]+)/apply")
     def apply_version(self, request: Request, pk: Optional[str] = None, version_pk: Optional[str] = None) -> Response:
