@@ -136,9 +136,25 @@ class _ServiceOrderVersioningMixin:
         return version
 
     @classmethod
-    def recalculate_version_totals(cls, version: "ServiceOrderVersion") -> None:
+    def recalculate_version_totals(
+        cls,
+        version: "ServiceOrderVersion",
+        source_grand_total: "Decimal | None" = None,
+    ) -> None:
         """
-        Recalcula os totais de uma ServiceOrderVersion a partir dos itens e operacoes.
+        Recalcula os totais de uma ServiceOrderVersion a partir dos itens.
+
+        Args:
+            version: a versão a recalcular
+            source_grand_total: opcional. Quando preenchido (vindo do
+                ParsedBudget.source_grand_total das fontes Cilia/IFX/HDI),
+                SOBRESCREVE `total_seguradora` com esse valor oficial em vez
+                de somar os items. Regra de negócio: cobrança seguradora
+                deve bater EXATO com o que a fonte (Cilia) diz, mesmo se a
+                soma dos items detalhados divergir por algum motivo de
+                cálculo unitário. Items continuam servindo de detalhamento;
+                o complemento particular (payer_block=COMPLEMENTO_PARTICULAR)
+                continua sendo somado normalmente.
         """
         from decimal import Decimal as D
 
@@ -170,6 +186,10 @@ class _ServiceOrderVersioningMixin:
                 total_complemento += item_net
             elif item.payer_block == "FRANQUIA":
                 total_franquia += item_net
+
+        # OVERRIDE: cobrança seguradora vem da fonte oficial, não da soma items
+        if source_grand_total and source_grand_total > 0:
+            total_seguradora = source_grand_total
 
         version.labor_total = labor
         version.parts_total = parts
@@ -327,6 +347,17 @@ class _ServiceOrderVersioningMixin:
         )
 
         service_order.recalculate_totals()
+
+        # OVERRIDE: total da seguradora vem da Version (fonte oficial Cilia/IFX/HDI),
+        # não da soma dos items recém-criados. Items detalham COMO chegou no total
+        # mas não definem ele. Mantém parts_total e services_total da soma dos items
+        # pra detalhamento, mas sobrescreve total_seguradora.
+        from apps.service_orders.models import ServiceOrder
+        if new_version.total_seguradora and new_version.total_seguradora > 0:
+            ServiceOrder.objects.filter(pk=service_order.pk).update(
+                total_seguradora_oficial=new_version.total_seguradora,
+            )
+
         return new_version
 
     @staticmethod

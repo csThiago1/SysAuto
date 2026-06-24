@@ -379,9 +379,42 @@ class ServiceOrder(PaddockBaseModel):
     services_total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     discount_total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
+    # Total cobrado da SEGURADORA conforme orçamento oficial da fonte
+    # (Cilia/IFX/HDI). Preenchido apenas em OSs importadas. Quando setado,
+    # PREVALECE sobre a soma dos items pra cobrança da seguradora — items
+    # detalham mas o valor oficial é este. Se NULL, OS é particular ou
+    # importação sem fonte (legacy) e cobrança = parts_total + services_total.
+    total_seguradora_oficial = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True,
+        help_text="Total oficial da seguradora (Cilia/IFX/HDI) — verdade absoluta",
+    )
+
     @property
     def total(self) -> float:
-        """Total da OS = peças + serviços - descontos."""
+        """Total da OS.
+
+        Se há `total_seguradora_oficial` (OS importada), retorna ele +
+        complemento particular (items com payer != insurer). Caso contrário,
+        retorna soma normal de peças + serviços - descontos.
+        """
+        if self.total_seguradora_oficial is not None and self.total_seguradora_oficial > 0:
+            # Complemento particular = items que NÃO são da seguradora
+            from decimal import Decimal
+            from django.db.models import Sum, F, ExpressionWrapper
+            from django.db.models import DecimalField as DjDecimalField
+            complemento = self.parts.exclude(payer="insurer").aggregate(
+                total=Sum(ExpressionWrapper(
+                    F("quantity") * F("unit_price") - F("discount"),
+                    output_field=DjDecimalField(max_digits=14, decimal_places=2),
+                )),
+            )["total"] or Decimal("0")
+            complemento += self.labor_items.exclude(payer="insurer").aggregate(
+                total=Sum(ExpressionWrapper(
+                    F("quantity") * F("unit_price") - F("discount"),
+                    output_field=DjDecimalField(max_digits=14, decimal_places=2),
+                )),
+            )["total"] or Decimal("0")
+            return float(self.total_seguradora_oficial + complemento)
         return float(self.parts_total + self.services_total - self.discount_total)
 
     # ── NF-e ──────────────────────────────────────────────────────────────────
