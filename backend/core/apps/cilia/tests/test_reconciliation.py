@@ -51,15 +51,16 @@ class ReconciliationPerfectMatchTest(SimpleTestCase):
         self.assertEqual(state.parts_diff, Decimal("0.00"))
         self.assertEqual(state.services_diff, Decimal("0.00"))
 
-    def test_diff_within_tolerance_is_ok(self) -> None:
-        """Diff de R$ 0,05 (abaixo de R$ 0,10) não exige reconciliação."""
+    def test_one_cent_diff_triggers(self) -> None:
+        """Tolerância zero: até R$ 0,01 dispara conciliação."""
         pb = ParsedBudget(source="cilia")
-        pb.items = [_make_part("100.05")]
+        pb.items = [_make_part("100.01")]
         pb.source_parts_total = Decimal("100.00")
         pb.source_services_total = Decimal("0")
         pb.source_grand_total = Decimal("100.00")
         state = compute_reconciliation_state(pb)
-        self.assertFalse(state.needs_reconciliation)
+        self.assertTrue(state.needs_reconciliation)
+        self.assertEqual(state.parts_diff, Decimal("0.01"))
 
 
 class ReconciliationDivergenceTest(SimpleTestCase):
@@ -124,5 +125,6 @@ class ReconciliationSerializationTest(SimpleTestCase):
 
 
 class ToleranceTest(SimpleTestCase):
-    def test_tolerance_is_10_cents(self) -> None:
-        self.assertEqual(TOLERANCE, Decimal("0.10"))
+    def test_tolerance_is_zero(self) -> None:
+        """Regra de negócio: cobrança seguradora exige 100% exatidão."""
+        self.assertEqual(TOLERANCE, Decimal("0"))

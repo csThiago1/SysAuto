@@ -1,11 +1,11 @@
 """Reconciliação entre items do parser e totais oficiais da fonte.
 
-Política: se o total do parser (soma de items) divergir dos totais oficiais
-(Cilia/IFX/HDI) por mais que TOLERANCE, o backend NÃO cria a ServiceOrderVersion.
-Retorna `action="reconcile"` pra o frontend mostrar tela de conciliação
-manual antes de aplicar.
+Política: cobrança de seguradora exige EXATIDÃO ABSOLUTA. Qualquer divergência
+entre o total do parser e os totais oficiais (Cilia/IFX/HDI) — mesmo R$ 0,01 —
+bloqueia a importação. Backend NÃO cria a ServiceOrderVersion e retorna
+`action="reconcile"` pra o frontend mostrar tela de conciliação manual.
 
-Critério aplicado: peças workshop + serviços = total Cilia ±R$ 0,10.
+Critério aplicado: peças workshop + serviços = total Cilia EXATAMENTE.
 Peças supplier=insurer NÃO entram no comparativo (DS Car não cobra delas).
 """
 from __future__ import annotations
@@ -18,8 +18,9 @@ if TYPE_CHECKING:
     from apps.cilia.dtos import ParsedBudget, ParsedItemDTO
 
 
-# R$ 0,10 — qualquer divergência acima exige conciliação manual.
-TOLERANCE = Decimal("0.10")
+# ZERO — qualquer divergência (até R$ 0,01) exige conciliação manual.
+# Regra de negócio inegociável: cobrança de seguradora deve ser 100% exata.
+TOLERANCE = Decimal("0")
 
 
 @dataclass
