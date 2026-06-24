@@ -58,7 +58,9 @@ interface Props {
   onApplied: () => void
 }
 
-const TOLERANCE = 0.10
+// ZERO — cobrança de seguradora deve bater exato (regra de negócio).
+// Mesmo R$ 0,01 de divergência bloqueia "Aplicar".
+const TOLERANCE = 0
 
 function formatBRL(n: number): string {
   return n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
