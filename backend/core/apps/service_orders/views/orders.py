@@ -1378,10 +1378,12 @@ class ServiceOrderViewSet(
     ) -> Response:
         """Cria ServiceOrderVersion e retorna diff ou applied.
 
-        Antes de criar versão, valida reconciliação: se a soma dos items do
-        parser divergir dos totais oficiais da fonte por mais que R$ 0,10,
-        retorna action='reconcile' e NÃO persiste a versão. Frontend mostra
-        tela de conciliação manual.
+        Regra: cobrança da seguradora vem da FONTE OFICIAL (Cilia/IFX/HDI),
+        não da soma dos items calculados pelo parser. Items detalham COMO
+        chegou no total, mas o total_seguradora final = source_grand_total
+        do payload (verdade absoluta). Complemento particular continua sendo
+        somado normalmente a partir dos items com payer_block=
+        COMPLEMENTO_PARTICULAR.
         """
         # Dedup por content_hash
         existing_version = order.versions.filter(content_hash=parsed.raw_hash).first()
@@ -1392,30 +1394,14 @@ class ServiceOrderViewSet(
                 "message": "Versão já importada (mesmo conteúdo).",
             })
 
-        # Reconciliação obrigatória — se diff > tolerância, exige conciliação manual
-        from apps.cilia.reconciliation import (
-            compute_reconciliation_state,
-            serialize_items_for_reconciliation,
-        )
-        state = compute_reconciliation_state(parsed)
-        if state.needs_reconciliation:
-            return Response({
-                "action": "reconcile",
-                "import_attempt_id": attempt.id,
-                "totals": state.to_dict(),
-                "items": serialize_items_for_reconciliation(parsed.items),
-                "message": (
-                    "Divergência detectada entre o orçamento da fonte e os items "
-                    "calculados. Revise os items antes de aplicar."
-                ),
-            }, status=status.HTTP_409_CONFLICT)
-
         version = ServiceOrderService.create_new_version_from_import(
             service_order=order,
             parsed_budget=parsed,
             import_attempt=attempt,
         )
-        ServiceOrderService.recalculate_version_totals(version)
+        # Passa source_grand_total pra forçar total_seguradora = valor oficial
+        source_total = getattr(parsed, "source_grand_total", None) or None
+        ServiceOrderService.recalculate_version_totals(version, source_grand_total=source_total)
 
         # Diff se já tinha versão anterior
         previous = order.versions.exclude(pk=version.pk).order_by("-version_number").first()
