@@ -1292,26 +1292,22 @@ class ServiceOrderViewSet(
         """Aplica os campos do ParsedBudget na OS. Retorna update_fields."""
         update_fields: list[str] = []
 
-        # Campos só preenchidos se vazios
+        # Campos só preenchidos se vazios — nunca sobrescreve digitação do consultor.
+        # Veículo (make/model/color/year) entra aqui: o usuário prefere preencher
+        # manualmente porque a normalização do parser Cilia não fica boa (descrição
+        # completa do modelo é difícil de quebrar em make+model). Se a OS já tinha
+        # esses campos preenchidos, mantém o que o consultor digitou.
         fill_if_empty = {
             "casualty_number": parsed.casualty_number,
             "plate": parsed.vehicle_plate,
             "chassis": parsed.vehicle_chassis,
             "customer_name": parsed.segurado_name,
+            "make": parsed.vehicle_brand,
+            "model": getattr(parsed, "vehicle_model", "") or parsed.vehicle_description or "",
+            "color": parsed.vehicle_color,
         }
         for field, value in fill_if_empty.items():
             if value and not getattr(order, field, None):
-                setattr(order, field, value)
-                update_fields.append(field)
-
-        # Dados normalizados do veículo: sobrescreve mesmo se já tinha algo
-        normalized_vehicle = {
-            "make": parsed.vehicle_brand,
-            "model": getattr(parsed, "vehicle_model", "") or "",
-            "color": parsed.vehicle_color,
-        }
-        for field, value in normalized_vehicle.items():
-            if value and getattr(order, field, "") != value:
                 setattr(order, field, value)
                 update_fields.append(field)
 
