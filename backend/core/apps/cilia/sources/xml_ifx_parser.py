@@ -120,6 +120,38 @@ class XmlIfxParser:
             for svc in svc_node.findall("servico"):
                 pb.items.append(cls._parse_servico_terceiro(svc))
 
+        # Mão de obra por categoria (igual HDI: 1 SERVICE item por categoria)
+        # XML IFX agrega MO em `maoDeObra` com horas e valores. Geramos items
+        # SERVICE pra detalhamento na aba Serviços da OS.
+        mo = root.find("maoDeObra")
+        if mo is not None:
+            MO_CATEGORIES = [
+                ("Funilaria", "qtdeHorasMaoObraFunilaria", "valorMaoObraFunilaria"),
+                ("Pintura", "qtdeHorasMaoObraPintura", "valorMaoObraPintura"),
+                ("Mecânica", "qtdeHorasMaoObraMecanica", "valorMaoObraMecanica"),
+                ("Elétrica", "qtdeHorasMaoObraEletrica", "valorMaoObraEletrica"),
+                ("Tapeçaria", "qtdeHorasMaoObraTapecaria", "valorMaoObraTapecaria"),
+                ("Acabamento", "qtdeHorasMaoObraAcabamento", "valorMaoObraAcabamento"),
+            ]
+            for label, qty_tag, val_tag in MO_CATEGORIES:
+                horas = cls._dec_br(cls._text(mo, qty_tag))
+                valor = cls._dec_br(cls._text(mo, val_tag))
+                if horas <= 0 and valor <= 0:
+                    continue
+                rate = (valor / horas) if horas > 0 else Decimal("0")
+                pb.items.append(ParsedItemDTO(
+                    item_type="SERVICE",
+                    description=label,
+                    external_code=f"MO:{label.upper()}",
+                    part_type=label,
+                    supplier="OFICINA",
+                    quantity=horas if horas > 0 else Decimal("1"),
+                    unit_price=rate if horas > 0 else valor,
+                    discount_pct=Decimal("0"),
+                    net_price=valor,
+                    payer_block="SEGURADORA",
+                ))
+
         # --- Totais oficiais IFX (pra reconciliação) ---
         if faturamento is not None:
             pb.source_grand_total = cls._dec_br(cls._text(faturamento, "valorTotal"))
@@ -169,6 +201,11 @@ class XmlIfxParser:
             pb.vehicle_year = int(model_year_str)
         pb.vehicle_description = (cls._text(dados, "descricaoModelo") or "").strip()
         pb.vehicle_brand = ""  # XML não separa brand — vem tudo em descricaoModelo
+        pb.vehicle_model = pb.vehicle_description  # IFX só tem descrição completa
+        # corVeiculo no IFX (ex: "VERMELHA")
+        cor = (cls._text(dados, "corVeiculo") or "").strip()
+        if cor:
+            pb.vehicle_color = cor.title()
 
         # Status — XML é sempre "finalizado" (chega no final do fluxo)
         pb.external_status = "autorizado"
