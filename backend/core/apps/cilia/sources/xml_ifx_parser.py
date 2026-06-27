@@ -1,3 +1,4 @@
+# Build trigger: 2026-06-27 PR #21 fix (valorFaturar). Force cache invalidation.
 """Parser do XML IFX (Porto/Azul/Itaú) → `ParsedBudget` DTO.
 
 Schema: `IFX xsi:type="finalizacaoOrcamentoVO"` com seções:
