@@ -19,6 +19,8 @@ COPY backend/core/requirements/prod.txt requirements/prod.txt
 RUN pip install --no-cache-dir -r requirements/prod.txt
 
 # Código da aplicação
+# Build trigger: 2026-06-27T20:00 — força reconstrução do layer pra PR #21 vigorar
+ARG CACHE_BUST=2026-06-27T20:00
 COPY backend/core/ .
 
 ENV PYTHONUNBUFFERED=1
