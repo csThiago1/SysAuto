@@ -152,24 +152,29 @@ class XmlIfxParser:
                     payer_block="SEGURADORA",
                 ))
 
-        # --- Totais oficiais IFX (pra reconciliação) ---
+        # --- Totais oficiais IFX (pra cobrança DS Car) ---
+        # IMPORTANTE: NÃO usar `valorTotal` (R$ 25.801,51) — esse inclui peças
+        # FORNECIDAS pela seguradora (valorFornecimento*) que DS Car não cobra.
+        # O valor correto é `valorFaturar` (R$ 16.792,20) = o que DS Car
+        # efetivamente cobra. NF Peças = soma das peças não-fornecidas; NF
+        # Serviços = valorFaturar - NF Peças.
         if faturamento is not None:
-            pb.source_grand_total = cls._dec_br(cls._text(faturamento, "valorTotal"))
-            mo_total = (
-                cls._dec_br(cls._text(faturamento, "valorMaoObraFunilaria"))
-                + cls._dec_br(cls._text(faturamento, "valorMaoObraMecanica"))
-                + cls._dec_br(cls._text(faturamento, "valorMaoObraPintura"))
-                + cls._dec_br(cls._text(faturamento, "valorServicoTerceiros"))
-            )
-            pb.source_services_total = mo_total
-            # Peças líquido total (das pecasTrocadas)
-            tg = root.find("totalGeralPecasTrocadas")
-            if tg is not None:
-                pb.source_parts_total = cls._dec_br(
-                    cls._text(tg, "totalPrLiquidoPecasTrocadas"),
-                )
-            else:
-                pb.source_parts_total = pb.source_grand_total - pb.source_services_total
+            pb.source_grand_total = cls._dec_br(cls._text(faturamento, "valorFaturar"))
+
+            # Peças que DS Car cobra = só as não-fornecidas pela seguradora
+            # (soma precoLiquido das pecasTrocadas com pecaFornecida=false)
+            parts_dscar = Decimal("0")
+            trocadas_node = root.find("pecasTrocadas")
+            if trocadas_node is not None:
+                for peca in trocadas_node.findall("peca"):
+                    fornecida = (cls._text(peca, "pecaFornecida") or "").lower() == "true"
+                    if not fornecida:
+                        parts_dscar += cls._dec_br(cls._text(peca, "precoLiquido"))
+            pb.source_parts_total = parts_dscar
+
+            # Serviços = total faturar - peças (inclui MO + servicos terceiros
+            # com descontos aplicados pela seguradora)
+            pb.source_services_total = pb.source_grand_total - pb.source_parts_total
 
         # --- Snapshot ---
         pb.raw_payload = cls._xml_to_dict(root)
