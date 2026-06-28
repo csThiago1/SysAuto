@@ -1,0 +1,35 @@
+# Python bytecode — Python prioriza .pyc sobre .py, então bytecode stale do
+# build context impede que mudanças no .py tenham efeito em prod. Excluir.
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Ambientes virtuais
+**/.venv/
+**/venv/
+**/env/
+
+# IDE
+**/.vscode/
+**/.idea/
+
+# Testes / coverage local
+**/.pytest_cache/
+**/.coverage
+**/htmlcov/
+
+# Logs e temp
+*.log
+*.tmp
+**/node_modules/
+
+# Git
+.git/
+.gitignore
+
+# Frontend (não vai pro container Django)
+apps/
+packages/
+docs/
+infra/
