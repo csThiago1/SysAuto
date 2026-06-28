@@ -177,14 +177,6 @@ class XmlIfxParser:
             # com descontos aplicados pela seguradora)
             pb.source_services_total = pb.source_grand_total - pb.source_parts_total
 
-            logger.warning(
-                "[XML_IFX_DEBUG] valorFaturar=%s parts_dscar=%s services=%s grand_total=%s",
-                pb.source_grand_total, pb.source_parts_total, pb.source_services_total,
-                pb.source_grand_total,
-            )
-        else:
-            logger.warning("[XML_IFX_DEBUG] faturamento element NOT FOUND in XML")
-
         # --- Snapshot ---
         pb.raw_payload = cls._xml_to_dict(root)
         pb.raw_hash = hashlib.sha256(xml_bytes).hexdigest()
