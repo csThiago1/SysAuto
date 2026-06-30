@@ -88,7 +88,7 @@ export function ProdutoPecaDialog({
   const { data: tipos = [] } = useTiposPeca()
   const { data: categorias = [] } = useCategoriasProduto()
   const createMut = useProdutoPecaCreate()
-  const updateMut = useProdutoPecaUpdate(produto?.id ?? "")
+  const updateMut = useProdutoPecaUpdate()
 
   const [form, setForm] = useState<FormState>(EMPTY)
 
@@ -149,7 +149,10 @@ export function ProdutoPecaDialog({
 
     try {
       if (isEdit) {
-        await updateMut.mutateAsync(payload as Partial<ProdutoComercialPeca>)
+        await updateMut.mutateAsync({
+          id: produto!.id,
+          data: payload as Partial<ProdutoComercialPeca>,
+        })
         toast.success("Peca atualizada.")
       } else {
         await createMut.mutateAsync(payload as Partial<ProdutoComercialPeca>)

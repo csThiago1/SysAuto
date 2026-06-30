@@ -21,7 +21,6 @@ export default function ProdutosPecasPage() {
   const [catFilter, setCatFilter] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editItem, setEditItem] = useState<ProdutoComercialPeca | null>(null)
-  const [deleteId, setDeleteId] = useState("")
 
   const params = useMemo(() => {
     const p: Record<string, string> = {}
@@ -34,7 +33,7 @@ export default function ProdutosPecasPage() {
   const { data: produtos = [], isLoading } = useProdutosPeca(params)
   const { data: tipos = [] } = useTiposPeca()
   const { data: categorias = [] } = useCategoriasProduto()
-  const deleteMut = useProdutoPecaDelete(deleteId)
+  const deleteMut = useProdutoPecaDelete()
 
   function handleEdit(p: ProdutoComercialPeca) {
     setEditItem(p)
@@ -47,9 +46,8 @@ export default function ProdutosPecasPage() {
   }
 
   async function handleDelete(p: ProdutoComercialPeca) {
-    setDeleteId(p.id)
     try {
-      await deleteMut.mutateAsync()
+      await deleteMut.mutateAsync(p.id)
       toast.success(`"${p.nome_interno}" removida.`)
     } catch {
       toast.error("Erro ao remover. Tente novamente.")

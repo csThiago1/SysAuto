@@ -71,7 +71,7 @@ export function ProdutoInsumoDialog({
   const isEdit = !!produto
   const { data: categorias = [] } = useCategoriasInsumo()
   const createMut = useProdutoInsumoCreate()
-  const updateMut = useProdutoInsumoUpdate(produto?.id ?? "")
+  const updateMut = useProdutoInsumoUpdate()
 
   const [form, setForm] = useState<FormState>(EMPTY)
 
@@ -125,9 +125,10 @@ export function ProdutoInsumoDialog({
 
     try {
       if (isEdit) {
-        await updateMut.mutateAsync(
-          payload as Partial<ProdutoComercialInsumo>
-        )
+        await updateMut.mutateAsync({
+          id: produto!.id,
+          data: payload as Partial<ProdutoComercialInsumo>,
+        })
         toast.success("Insumo atualizado.")
       } else {
         await createMut.mutateAsync(

@@ -19,7 +19,6 @@ export default function ProdutosInsumosPage() {
   const [catFilter, setCatFilter] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editItem, setEditItem] = useState<ProdutoComercialInsumo | null>(null)
-  const [deleteId, setDeleteId] = useState("")
 
   const params = useMemo(() => {
     const p: Record<string, string> = {}
@@ -30,7 +29,7 @@ export default function ProdutosInsumosPage() {
 
   const { data: produtos = [], isLoading } = useProdutosInsumo(params)
   const { data: categorias = [] } = useCategoriasInsumo()
-  const deleteMut = useProdutoInsumoDelete(deleteId)
+  const deleteMut = useProdutoInsumoDelete()
 
   function handleEdit(p: ProdutoComercialInsumo) {
     setEditItem(p)
@@ -43,9 +42,8 @@ export default function ProdutosInsumosPage() {
   }
 
   async function handleDelete(p: ProdutoComercialInsumo) {
-    setDeleteId(p.id)
     try {
-      await deleteMut.mutateAsync()
+      await deleteMut.mutateAsync(p.id)
       toast.success(`"${p.nome_interno}" removido.`)
     } catch {
       toast.error("Erro ao remover. Tente novamente.")

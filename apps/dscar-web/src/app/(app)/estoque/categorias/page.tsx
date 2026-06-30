@@ -3,7 +3,6 @@
 import { useState, useCallback, type KeyboardEvent } from "react"
 import { Tags, Plus, Pencil, Trash2, Check, X } from "lucide-react"
 import { toast } from "sonner"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type {
   TipoPeca,
   CategoriaProduto,
@@ -12,15 +11,17 @@ import type {
 import {
   useTiposPeca,
   useTipoPecaCreate,
+  useTipoPecaUpdate,
+  useTipoPecaDelete,
   useCategoriasProduto,
   useCategoriaProdutoCreate,
+  useCategoriaProdutoUpdate,
+  useCategoriaProdutoDelete,
   useCategoriasInsumo,
   useCategoriaInsumoCreate,
-  productKeys,
+  useCategoriaInsumoUpdate,
+  useCategoriaInsumoDelete,
 } from "@/hooks/useInventoryProduct"
-import { apiFetch } from "@/lib/api"
-
-const INV = "/api/proxy/inventory"
 
 // ─── Input class tokens ─────────────────────────────────────────────────────
 
@@ -36,28 +37,14 @@ type Tab = "tipos" | "cat_produto" | "cat_insumo"
 function TiposPecaTab() {
   const { data: items = [], isLoading } = useTiposPeca()
   const createMut = useTipoPecaCreate()
-  const qc = useQueryClient()
+  const updateMut = useTipoPecaUpdate()
+  const deleteMut = useTipoPecaDelete()
 
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ codigo: "", nome: "", ordem: 0 })
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState({ codigo: "", nome: "", ordem: 0 })
-
-  const updateMut = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<TipoPeca> }) =>
-      apiFetch<TipoPeca>(`${INV}/tipos-peca/${id}/`, {
-        method: "PATCH",
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: productKeys.tiposPeca() }),
-  })
-
-  const deleteMut = useMutation({
-    mutationFn: (id: string) =>
-      apiFetch<void>(`${INV}/tipos-peca/${id}/`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: productKeys.tiposPeca() }),
-  })
 
   async function handleCreate() {
     if (!form.nome.trim() || !form.codigo.trim()) {
@@ -682,30 +669,8 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
 function CategoriaProdutoTab() {
   const { data: items = [], isLoading } = useCategoriasProduto()
   const createMut = useCategoriaProdutoCreate()
-  const qc = useQueryClient()
-
-  const updateMut = useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: string
-      data: Partial<CategoriaProduto>
-    }) =>
-      apiFetch<CategoriaProduto>(`${INV}/categorias-produto/${id}/`, {
-        method: "PATCH",
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: productKeys.categoriasProduto() }),
-  })
-
-  const deleteMut = useMutation({
-    mutationFn: (id: string) =>
-      apiFetch<void>(`${INV}/categorias-produto/${id}/`, { method: "DELETE" }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: productKeys.categoriasProduto() }),
-  })
+  const updateMut = useCategoriaProdutoUpdate()
+  const deleteMut = useCategoriaProdutoDelete()
 
   const handleCreate = useCallback(
     async (data: {
@@ -759,30 +724,8 @@ function CategoriaProdutoTab() {
 function CategoriaInsumoTab() {
   const { data: items = [], isLoading } = useCategoriasInsumo()
   const createMut = useCategoriaInsumoCreate()
-  const qc = useQueryClient()
-
-  const updateMut = useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: string
-      data: Partial<CategoriaInsumo>
-    }) =>
-      apiFetch<CategoriaInsumo>(`${INV}/categorias-insumo/${id}/`, {
-        method: "PATCH",
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: productKeys.categoriasInsumo() }),
-  })
-
-  const deleteMut = useMutation({
-    mutationFn: (id: string) =>
-      apiFetch<void>(`${INV}/categorias-insumo/${id}/`, { method: "DELETE" }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: productKeys.categoriasInsumo() }),
-  })
+  const updateMut = useCategoriaInsumoUpdate()
+  const deleteMut = useCategoriaInsumoDelete()
 
   const handleCreate = useCallback(
     async (data: {

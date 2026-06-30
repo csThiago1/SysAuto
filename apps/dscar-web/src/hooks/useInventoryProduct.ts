@@ -1,9 +1,10 @@
 /**
  * Paddock Solutions — dscar-web
  * WMS: Hooks TanStack Query v5 para Produtos Comerciais
- * TipoPeca, CategoriaProduto, CategoriaInsumo, ProdutoComercialPeca, ProdutoComercialInsumo
+ * TipoPeca, CategoriaProduto, CategoriaInsumo, ProdutoComercialPeca,
+ * ProdutoComercialInsumo
  */
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import type {
   CategoriaInsumo,
   CategoriaProduto,
@@ -11,7 +12,9 @@ import type {
   ProdutoComercialPeca,
   TipoPeca,
 } from "@paddock/types"
+
 import { apiFetch, fetchList } from "@/lib/api"
+import { useCreate, useDelete, useUpdate } from "@/lib/crud-mutations"
 
 const INV = "/api/proxy/inventory"
 
@@ -40,40 +43,13 @@ export function useTiposPeca() {
   })
 }
 
-export function useTipoPecaCreate() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<TipoPeca>) =>
-      apiFetch<TipoPeca>(`${INV}/tipos-peca/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: productKeys.tiposPeca() }),
-  })
-}
-
-export function useTipoPecaUpdate(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<TipoPeca>) =>
-      apiFetch<TipoPeca>(`${INV}/tipos-peca/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: productKeys.tiposPeca() }),
-  })
-}
-
-export function useTipoPecaDelete(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: () =>
-      apiFetch<void>(`${INV}/tipos-peca/${id}/`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: productKeys.tiposPeca() }),
-  })
-}
+const TIPO_PECA_OPTS = { invalidateKey: productKeys.tiposPeca() }
+export const useTipoPecaCreate = () =>
+  useCreate<TipoPeca, Partial<TipoPeca>>("inventory/tipos-peca", TIPO_PECA_OPTS)
+export const useTipoPecaUpdate = () =>
+  useUpdate<TipoPeca, Partial<TipoPeca>>("inventory/tipos-peca", TIPO_PECA_OPTS)
+export const useTipoPecaDelete = () =>
+  useDelete("inventory/tipos-peca", TIPO_PECA_OPTS)
 
 // ─── CategoriaProduto ─────────────────────────────────────────────────────────
 
@@ -84,43 +60,13 @@ export function useCategoriasProduto() {
   })
 }
 
-export function useCategoriaProdutoCreate() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<CategoriaProduto>) =>
-      apiFetch<CategoriaProduto>(`${INV}/categorias-produto/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: productKeys.categoriasProduto() }),
-  })
-}
-
-export function useCategoriaProdutoUpdate(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<CategoriaProduto>) =>
-      apiFetch<CategoriaProduto>(`${INV}/categorias-produto/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: productKeys.categoriasProduto() }),
-  })
-}
-
-export function useCategoriaProdutoDelete(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: () =>
-      apiFetch<void>(`${INV}/categorias-produto/${id}/`, { method: "DELETE" }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: productKeys.categoriasProduto() }),
-  })
-}
+const CAT_PROD_OPTS = { invalidateKey: productKeys.categoriasProduto() }
+export const useCategoriaProdutoCreate = () =>
+  useCreate<CategoriaProduto, Partial<CategoriaProduto>>("inventory/categorias-produto", CAT_PROD_OPTS)
+export const useCategoriaProdutoUpdate = () =>
+  useUpdate<CategoriaProduto, Partial<CategoriaProduto>>("inventory/categorias-produto", CAT_PROD_OPTS)
+export const useCategoriaProdutoDelete = () =>
+  useDelete("inventory/categorias-produto", CAT_PROD_OPTS)
 
 // ─── CategoriaInsumo ──────────────────────────────────────────────────────────
 
@@ -131,43 +77,13 @@ export function useCategoriasInsumo() {
   })
 }
 
-export function useCategoriaInsumoCreate() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<CategoriaInsumo>) =>
-      apiFetch<CategoriaInsumo>(`${INV}/categorias-insumo/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: productKeys.categoriasInsumo() }),
-  })
-}
-
-export function useCategoriaInsumoUpdate(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<CategoriaInsumo>) =>
-      apiFetch<CategoriaInsumo>(`${INV}/categorias-insumo/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: productKeys.categoriasInsumo() }),
-  })
-}
-
-export function useCategoriaInsumoDelete(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: () =>
-      apiFetch<void>(`${INV}/categorias-insumo/${id}/`, { method: "DELETE" }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: productKeys.categoriasInsumo() }),
-  })
-}
+const CAT_INS_OPTS = { invalidateKey: productKeys.categoriasInsumo() }
+export const useCategoriaInsumoCreate = () =>
+  useCreate<CategoriaInsumo, Partial<CategoriaInsumo>>("inventory/categorias-insumo", CAT_INS_OPTS)
+export const useCategoriaInsumoUpdate = () =>
+  useUpdate<CategoriaInsumo, Partial<CategoriaInsumo>>("inventory/categorias-insumo", CAT_INS_OPTS)
+export const useCategoriaInsumoDelete = () =>
+  useDelete("inventory/categorias-insumo", CAT_INS_OPTS)
 
 // ─── ProdutoComercialPeca ─────────────────────────────────────────────────────
 
@@ -191,45 +107,19 @@ export function useProdutoPeca(id: string) {
   })
 }
 
-export function useProdutoPecaCreate() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<ProdutoComercialPeca>) =>
-      apiFetch<ProdutoComercialPeca>(`${INV}/produtos-peca/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: productKeys.produtosPeca() }),
-  })
-}
-
-export function useProdutoPecaUpdate(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<ProdutoComercialPeca>) =>
-      apiFetch<ProdutoComercialPeca>(`${INV}/produtos-peca/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: productKeys.produtosPeca() })
-      qc.invalidateQueries({ queryKey: productKeys.produtoPeca(id) })
-    },
-  })
-}
-
-export function useProdutoPecaDelete(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: () =>
-      apiFetch<void>(`${INV}/produtos-peca/${id}/`, { method: "DELETE" }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: productKeys.produtosPeca() }),
-  })
-}
+const PROD_PECA_OPTS = { invalidateKey: ["inventory-product", "produtos-peca"] }
+export const useProdutoPecaCreate = () =>
+  useCreate<ProdutoComercialPeca, Partial<ProdutoComercialPeca>>(
+    "inventory/produtos-peca",
+    PROD_PECA_OPTS,
+  )
+export const useProdutoPecaUpdate = () =>
+  useUpdate<ProdutoComercialPeca, Partial<ProdutoComercialPeca>>(
+    "inventory/produtos-peca",
+    PROD_PECA_OPTS,
+  )
+export const useProdutoPecaDelete = () =>
+  useDelete("inventory/produtos-peca", PROD_PECA_OPTS)
 
 // ─── ProdutoComercialInsumo ───────────────────────────────────────────────────
 
@@ -253,42 +143,16 @@ export function useProdutoInsumo(id: string) {
   })
 }
 
-export function useProdutoInsumoCreate() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<ProdutoComercialInsumo>) =>
-      apiFetch<ProdutoComercialInsumo>(`${INV}/produtos-insumo/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: productKeys.produtosInsumo() }),
-  })
-}
-
-export function useProdutoInsumoUpdate(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<ProdutoComercialInsumo>) =>
-      apiFetch<ProdutoComercialInsumo>(`${INV}/produtos-insumo/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: productKeys.produtosInsumo() })
-      qc.invalidateQueries({ queryKey: productKeys.produtoInsumo(id) })
-    },
-  })
-}
-
-export function useProdutoInsumoDelete(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: () =>
-      apiFetch<void>(`${INV}/produtos-insumo/${id}/`, { method: "DELETE" }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: productKeys.produtosInsumo() }),
-  })
-}
+const PROD_INS_OPTS = { invalidateKey: ["inventory-product", "produtos-insumo"] }
+export const useProdutoInsumoCreate = () =>
+  useCreate<ProdutoComercialInsumo, Partial<ProdutoComercialInsumo>>(
+    "inventory/produtos-insumo",
+    PROD_INS_OPTS,
+  )
+export const useProdutoInsumoUpdate = () =>
+  useUpdate<ProdutoComercialInsumo, Partial<ProdutoComercialInsumo>>(
+    "inventory/produtos-insumo",
+    PROD_INS_OPTS,
+  )
+export const useProdutoInsumoDelete = () =>
+  useDelete("inventory/produtos-insumo", PROD_INS_OPTS)
