@@ -106,6 +106,32 @@ class HasPermission(BasePermission):
         )
 
 
+class PermissionsByActionMixin:
+    """ViewSet mixin: aplica permissão diferente para write vs read actions.
+
+    Padrão default: write (create/update/partial_update/destroy) exige
+    MANAGER+; read (list/retrieve e qualquer outra action) exige CONSULTANT+.
+
+    Override via class attrs:
+        class Foo(PermissionsByActionMixin, ModelViewSet):
+            write_permission = IsAdminOrAbove
+            read_permission = IsManagerOrAbove
+            write_actions = ("create",)  # opcional, default cobre os 4
+    """
+
+    write_permission: type[BasePermission]
+    read_permission: type[BasePermission]
+    write_actions: tuple[str, ...] = ("create", "update", "partial_update", "destroy")
+
+    def get_permissions(self) -> list[BasePermission]:
+        from rest_framework.permissions import IsAuthenticated
+
+        write_cls = getattr(self, "write_permission", IsManagerOrAbove)
+        read_cls = getattr(self, "read_permission", IsConsultantOrAbove)
+        perm_cls = write_cls if self.action in self.write_actions else read_cls
+        return [IsAuthenticated(), perm_cls()]
+
+
 class HasTenantPermission(BasePermission):
     """DRF permission check using tenant permission matrix.
 
