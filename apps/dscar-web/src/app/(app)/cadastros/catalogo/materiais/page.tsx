@@ -92,7 +92,7 @@ export default function MateriaisCanonicoPage() {
   const queryClient = useQueryClient()
   const { data: materiais = [], isLoading } = useMateriaisCanonico(search || undefined)
   const createMutation = useCreateMaterialCanonico()
-  const updateMutation = useUpdateMaterialCanonico(editing?.id ?? "")
+  const updateMutation = useUpdateMaterialCanonico()
 
   // Form
   const {
@@ -147,7 +147,7 @@ export default function MateriaisCanonicoPage() {
     try {
       if (editing) {
         const { codigo: _codigo, unidade_base: _unidade, ...updateData } = data
-        await updateMutation.mutateAsync(updateData)
+        await updateMutation.mutateAsync({ id: editing.id, data: updateData })
         toast.success("Material atualizado.")
       } else {
         await createMutation.mutateAsync(data)

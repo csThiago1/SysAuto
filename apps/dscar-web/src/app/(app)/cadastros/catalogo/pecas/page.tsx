@@ -127,7 +127,7 @@ export default function PecasCanonicoPage() {
 
     try {
       if (editTarget) {
-        await atualizar({ ...payload, id: editTarget.id })
+        await atualizar({ id: editTarget.id, data: payload })
         toast.success("Peca atualizada com sucesso.")
       } else {
         await criar({ ...payload, is_active: true })

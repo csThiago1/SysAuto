@@ -85,7 +85,7 @@ export default function ServicosCanonicoPage() {
   const { data: servicos = [], isLoading } = useServicosCanonico(search || undefined)
   const { data: categorias = [] } = useCategoriasServico()
   const createMutation = useCreateServicoCanonico()
-  const updateMutation = useUpdateServicoCanonico(editing?.id ?? "")
+  const updateMutation = useUpdateServicoCanonico()
 
   // Form
   const {
@@ -146,7 +146,7 @@ export default function ServicosCanonicoPage() {
     try {
       if (editing) {
         const { codigo: _codigo, ...updateData } = data
-        await updateMutation.mutateAsync(updateData)
+        await updateMutation.mutateAsync({ id: editing.id, data: updateData })
         toast.success("Servico atualizado.")
       } else {
         await createMutation.mutateAsync(data)

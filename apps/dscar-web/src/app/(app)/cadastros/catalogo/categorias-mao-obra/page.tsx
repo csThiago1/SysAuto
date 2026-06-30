@@ -71,7 +71,7 @@ export default function CategoriasMaoObraPage() {
   const queryClient = useQueryClient()
   const { data: categorias = [], isLoading } = useCategoriasMaoObra()
   const createMutation = useCreateCategoriaMaoObra()
-  const updateMutation = useUpdateCategoriaMaoObra(editing?.id ?? "")
+  const updateMutation = useUpdateCategoriaMaoObra()
 
   // Form
   const {
@@ -124,7 +124,7 @@ export default function CategoriasMaoObraPage() {
     try {
       if (editing) {
         const { codigo: _codigo, ...updateData } = data
-        await updateMutation.mutateAsync(updateData)
+        await updateMutation.mutateAsync({ id: editing.id, data: updateData })
         toast.success("Categoria atualizada.")
       } else {
         await createMutation.mutateAsync(data)

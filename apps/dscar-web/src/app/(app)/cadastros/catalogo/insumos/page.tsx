@@ -87,7 +87,7 @@ export default function InsumosPage() {
   const { data: insumos = [], isLoading } = useInsumosMaterial()
   const { data: materiais = [] } = useMateriaisCanonico()
   const createMutation = useCreateInsumoMaterial()
-  const updateMutation = useUpdateInsumoMaterial(editing?.id ?? "")
+  const updateMutation = useUpdateInsumoMaterial()
 
   // Form
   const {
@@ -148,7 +148,7 @@ export default function InsumosPage() {
     try {
       if (editing) {
         const { material_canonico: _mat, sku_interno: _sku, ...updateData } = data
-        await updateMutation.mutateAsync(updateData)
+        await updateMutation.mutateAsync({ id: editing.id, data: updateData })
         toast.success("Insumo atualizado.")
       } else {
         await createMutation.mutateAsync(data)

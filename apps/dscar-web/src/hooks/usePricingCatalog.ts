@@ -14,7 +14,9 @@ import type {
   PecaCanonica,
   ServicoCanonico,
 } from "@paddock/types"
+
 import { apiFetch, fetchList } from "@/lib/api"
+import { useCreate, useUpdate } from "@/lib/crud-mutations"
 
 const BASE = "/api/proxy/pricing/catalog"
 
@@ -84,34 +86,11 @@ export interface ServicoCanonicoPayload {
   is_active?: boolean
 }
 
-export function useCreateServicoCanonico() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: ServicoCanonicoPayload) =>
-      apiFetch<ServicoCanonico>(`${BASE}/servicos/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: catalogKeys.servicos() }),
-  })
-}
-
-export function useUpdateServicoCanonico(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<ServicoCanonicoPayload>) =>
-      apiFetch<ServicoCanonico>(`${BASE}/servicos/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: catalogKeys.servicos() })
-      qc.invalidateQueries({ queryKey: catalogKeys.servico(id) })
-    },
-  })
-}
+const SERVICOS_OPTS = { invalidateKey: ["catalog", "servicos"] }
+export const useCreateServicoCanonico = () =>
+  useCreate<ServicoCanonico, ServicoCanonicoPayload>("pricing/catalog/servicos", SERVICOS_OPTS)
+export const useUpdateServicoCanonico = () =>
+  useUpdate<ServicoCanonico, Partial<ServicoCanonicoPayload>>("pricing/catalog/servicos", SERVICOS_OPTS)
 
 // ─── Categorias de Mão de Obra ────────────────────────────────────────────────
 
@@ -132,35 +111,17 @@ export interface CategoriaMaoObraPayload {
   is_active?: boolean
 }
 
-export function useCreateCategoriaMaoObra() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: CategoriaMaoObraPayload) =>
-      apiFetch<CategoriaMaoObra>(`${BASE}/categorias-mao-obra/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: catalogKeys.categoriasMaoObra })
-    },
-  })
-}
-
-export function useUpdateCategoriaMaoObra(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<CategoriaMaoObraPayload>) =>
-      apiFetch<CategoriaMaoObra>(`${BASE}/categorias-mao-obra/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: catalogKeys.categoriasMaoObra })
-    },
-  })
-}
+const CATEGORIAS_MO_OPTS = { invalidateKey: catalogKeys.categoriasMaoObra }
+export const useCreateCategoriaMaoObra = () =>
+  useCreate<CategoriaMaoObra, CategoriaMaoObraPayload>(
+    "pricing/catalog/categorias-mao-obra",
+    CATEGORIAS_MO_OPTS,
+  )
+export const useUpdateCategoriaMaoObra = () =>
+  useUpdate<CategoriaMaoObra, Partial<CategoriaMaoObraPayload>>(
+    "pricing/catalog/categorias-mao-obra",
+    CATEGORIAS_MO_OPTS,
+  )
 
 // ─── Materiais Canônicos ──────────────────────────────────────────────────────
 
@@ -195,35 +156,11 @@ export interface MaterialCanonicoPayload {
   is_active?: boolean
 }
 
-export function useCreateMaterialCanonico() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: MaterialCanonicoPayload) =>
-      apiFetch<MaterialCanonico>(`${BASE}/materiais/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: catalogKeys.materiais() }),
-  })
-}
-
-// ─── Material Canônico: Update ───────────────────────────────────────────────
-
-export function useUpdateMaterialCanonico(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<MaterialCanonicoPayload>) =>
-      apiFetch<MaterialCanonico>(`${BASE}/materiais/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: catalogKeys.materiais() })
-    },
-  })
-}
+const MATERIAIS_OPTS = { invalidateKey: ["catalog", "materiais"] }
+export const useCreateMaterialCanonico = () =>
+  useCreate<MaterialCanonico, MaterialCanonicoPayload>("pricing/catalog/materiais", MATERIAIS_OPTS)
+export const useUpdateMaterialCanonico = () =>
+  useUpdate<MaterialCanonico, Partial<MaterialCanonicoPayload>>("pricing/catalog/materiais", MATERIAIS_OPTS)
 
 // ─── Insumos de Material ──────────────────────────────────────────────────────
 
@@ -261,35 +198,11 @@ export interface InsumoMaterialPayload {
   is_active?: boolean
 }
 
-export function useCreateInsumoMaterial() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: InsumoMaterialPayload) =>
-      apiFetch<InsumoMaterial>(`${BASE}/insumos/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: catalogKeys.insumos() }),
-  })
-}
-
-// ─── Insumo Material: Update ─────────────────────────────────────────────────
-
-export function useUpdateInsumoMaterial(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<InsumoMaterialPayload>) =>
-      apiFetch<InsumoMaterial>(`${BASE}/insumos/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: catalogKeys.insumos() })
-    },
-  })
-}
+const INSUMOS_OPTS = { invalidateKey: ["catalog", "insumos"] }
+export const useCreateInsumoMaterial = () =>
+  useCreate<InsumoMaterial, InsumoMaterialPayload>("pricing/catalog/insumos", INSUMOS_OPTS)
+export const useUpdateInsumoMaterial = () =>
+  useUpdate<InsumoMaterial, Partial<InsumoMaterialPayload>>("pricing/catalog/insumos", INSUMOS_OPTS)
 
 // ─── Peças Canônicas ──────────────────────────────────────────────────────────
 
@@ -325,31 +238,11 @@ export interface PecaCanonicoPayload {
   is_active?: boolean
 }
 
-export function useCreatePecaCanonica() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: PecaCanonicoPayload) =>
-      apiFetch<PecaCanonica>(`${BASE}/pecas/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: catalogKeys.pecas() }),
-  })
-}
-
-export function useUpdatePecaCanonica() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: ({ id, ...data }: PecaCanonicoPayload & { id: string }) =>
-      apiFetch<PecaCanonica>(`${BASE}/pecas/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: catalogKeys.pecas() }),
-  })
-}
+const PECAS_OPTS = { invalidateKey: ["catalog", "pecas"] }
+export const useCreatePecaCanonica = () =>
+  useCreate<PecaCanonica, PecaCanonicoPayload>("pricing/catalog/pecas", PECAS_OPTS)
+export const useUpdatePecaCanonica = () =>
+  useUpdate<PecaCanonica, Partial<PecaCanonicoPayload>>("pricing/catalog/pecas", PECAS_OPTS)
 
 // ─── Fornecedores ─────────────────────────────────────────────────────────────
 
