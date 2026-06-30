@@ -5,14 +5,17 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
-
+from apps.authentication.permissions import (
+    IsConsultantOrAbove,
+    IsManagerOrAbove,
+    PermissionsByActionMixin,
+)
 from .models import Vehicle
 from .serializers import VehicleSerializer
 from .services import VehicleService
 
 
-class VehicleViewSet(viewsets.ModelViewSet):
+class VehicleViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de veículos físicos + lookup de placa."""
 
     serializer_class = VehicleSerializer
@@ -21,10 +24,6 @@ class VehicleViewSet(viewsets.ModelViewSet):
     def get_queryset(self):  # type: ignore[override]
         return Vehicle.objects.filter(is_active=True).select_related("version")
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     @action(detail=False, methods=["get"], url_path="lookup")
     def lookup(self, request: Request) -> Response:

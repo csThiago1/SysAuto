@@ -15,7 +15,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
+from apps.authentication.permissions import (
+    IsConsultantOrAbove,
+    IsManagerOrAbove,
+    PermissionsByActionMixin,
+)
 from apps.inventory.models_location import Armazem, Nivel, Prateleira, Rua
 from apps.inventory.serializers_location import (
     ArmazemSerializer,
@@ -27,16 +31,12 @@ from apps.inventory.serializers_location import (
 logger = logging.getLogger(__name__)
 
 
-class ArmazemViewSet(viewsets.ModelViewSet):
+class ArmazemViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Armazéns. Leitura CONSULTANT+, escrita MANAGER+."""
 
     serializer_class = ArmazemSerializer
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> QuerySet[Armazem]:
         return (
@@ -93,16 +93,12 @@ class ArmazemViewSet(viewsets.ModelViewSet):
         return Response(resultado)
 
 
-class RuaViewSet(viewsets.ModelViewSet):
+class RuaViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Ruas. Filtro por ?armazem={id}."""
 
     serializer_class = RuaSerializer
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> QuerySet[Rua]:
         qs = (
@@ -126,16 +122,12 @@ class RuaViewSet(viewsets.ModelViewSet):
         instance.soft_delete()
 
 
-class PrateleiraViewSet(viewsets.ModelViewSet):
+class PrateleiraViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Prateleiras. Filtro por ?rua={id}."""
 
     serializer_class = PrateleiraSerializer
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> QuerySet[Prateleira]:
         qs = (
@@ -157,16 +149,12 @@ class PrateleiraViewSet(viewsets.ModelViewSet):
         instance.soft_delete()
 
 
-class NivelViewSet(viewsets.ModelViewSet):
+class NivelViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Níveis. Ponto terminal do endereçamento WMS."""
 
     serializer_class = NivelSerializer
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> QuerySet[Nivel]:
         # TODO: total_unidades/total_lotes depende da FK nivel em

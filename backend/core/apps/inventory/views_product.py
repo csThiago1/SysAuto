@@ -12,7 +12,11 @@ from django.db.models import Q, QuerySet
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
+from apps.authentication.permissions import (
+    IsConsultantOrAbove,
+    IsManagerOrAbove,
+    PermissionsByActionMixin,
+)
 from apps.inventory.models_product import (
     CategoriaInsumo,
     CategoriaProduto,
@@ -31,16 +35,12 @@ from apps.inventory.serializers_product import (
 logger = logging.getLogger(__name__)
 
 
-class TipoPecaViewSet(viewsets.ModelViewSet):
+class TipoPecaViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Tipos de Peça. Leitura CONSULTANT+, escrita MANAGER+."""
 
     serializer_class = TipoPecaSerializer
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> QuerySet[TipoPeca]:
         return TipoPeca.objects.filter(is_active=True).order_by("ordem", "nome")
@@ -49,16 +49,12 @@ class TipoPecaViewSet(viewsets.ModelViewSet):
         instance.soft_delete()
 
 
-class CategoriaProdutoViewSet(viewsets.ModelViewSet):
+class CategoriaProdutoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Categorias de Produto (Peça). Leitura CONSULTANT+, escrita MANAGER+."""
 
     serializer_class = CategoriaProdutoSerializer
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> QuerySet[CategoriaProduto]:
         return CategoriaProduto.objects.filter(is_active=True).order_by("ordem", "nome")
@@ -67,16 +63,12 @@ class CategoriaProdutoViewSet(viewsets.ModelViewSet):
         instance.soft_delete()
 
 
-class CategoriaInsumoViewSet(viewsets.ModelViewSet):
+class CategoriaInsumoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Categorias de Insumo. Leitura CONSULTANT+, escrita MANAGER+."""
 
     serializer_class = CategoriaInsumoSerializer
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> QuerySet[CategoriaInsumo]:
         return CategoriaInsumo.objects.filter(is_active=True).order_by("ordem", "nome")
@@ -85,16 +77,12 @@ class CategoriaInsumoViewSet(viewsets.ModelViewSet):
         instance.soft_delete()
 
 
-class ProdutoComercialPecaViewSet(viewsets.ModelViewSet):
+class ProdutoComercialPecaViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Produtos Comerciais (Peça). Filtro por ?tipo_peca=, ?categoria=, ?busca=."""
 
     serializer_class = ProdutoComercialPecaSerializer
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> QuerySet[ProdutoComercialPeca]:
         qs = (
@@ -123,16 +111,12 @@ class ProdutoComercialPecaViewSet(viewsets.ModelViewSet):
         instance.soft_delete()
 
 
-class ProdutoComercialInsumoViewSet(viewsets.ModelViewSet):
+class ProdutoComercialInsumoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Produtos Comerciais (Insumo). Filtro por ?categoria_insumo=, ?busca=."""
 
     serializer_class = ProdutoComercialInsumoSerializer
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> QuerySet[ProdutoComercialInsumo]:
         qs = (

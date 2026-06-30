@@ -10,8 +10,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
-
+from apps.authentication.permissions import (
+    IsConsultantOrAbove,
+    IsManagerOrAbove,
+    PermissionsByActionMixin,
+)
 from ..models import Holiday, ServiceCatalog
 from ..serializers import (
     HolidaySerializer,
@@ -20,7 +23,7 @@ from ..serializers import (
 )
 
 
-class ServiceCatalogViewSet(viewsets.ModelViewSet):
+class ServiceCatalogViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """
     CRUD do catálogo de serviços.
     Leitura: CONSULTANT+. Escrita: MANAGER+.
@@ -30,10 +33,6 @@ class ServiceCatalogViewSet(viewsets.ModelViewSet):
     serializer_class = ServiceCatalogSerializer
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> QuerySet:
         """Retorna catálogo ativo, com filtros opcionais de busca e categoria."""
@@ -80,7 +79,7 @@ class ServiceCatalogViewSet(viewsets.ModelViewSet):
         cache.delete("service_catalog:active")
 
 
-class HolidayViewSet(viewsets.ModelViewSet):
+class HolidayViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """
     CRUD de feriados.
     Leitura: CONSULTANT+. Escrita: MANAGER+.
@@ -90,10 +89,6 @@ class HolidayViewSet(viewsets.ModelViewSet):
     serializer_class = HolidaySerializer
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> QuerySet:
         qs = Holiday.objects.filter(is_active=True).order_by("date")

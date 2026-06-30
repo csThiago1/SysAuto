@@ -13,10 +13,9 @@ import httpx
 from django.core.cache import cache
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
+from apps.authentication.permissions import PermissionsByActionMixin
 
 from .models import (
     CargoPessoa, ExpertProfile, Person, PersonDocument, SetorPessoa, SupplierProfile,
@@ -34,18 +33,12 @@ from .serializers import (
 logger = logging.getLogger(__name__)
 
 
-class PersonViewSet(viewsets.ModelViewSet):
+class PersonViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """ViewSet CRUD para pessoas do tenant."""
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     queryset = Person.objects.all()
     filterset_fields = ["person_kind", "is_active"]
     search_fields = ["full_name", "fantasy_name", "legacy_code"]
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self):  # type: ignore[override]
         base = Person.objects.filter(is_active=True)
