@@ -16,9 +16,9 @@ from apps.accounts_payable.models import (
     DocumentStatus,
     PayableDocument,
     PayablePayment,
-    Supplier,
 )
 from apps.accounts_payable.services import PayableDocumentService
+from apps.persons.models import Person, PersonRole, RolePessoa
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -41,10 +41,8 @@ class APServiceTestCase(TenantTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.user = make_user()
-        self.supplier = Supplier.objects.create(
-            name="Fornecedor Teste",
-            created_by=self.user,
-        )
+        self.supplier = Person.objects.create(full_name="Fornecedor Teste")
+        PersonRole.objects.create(person=self.supplier, role=RolePessoa.FORNECEDOR)
 
     def _create_payable(
         self,

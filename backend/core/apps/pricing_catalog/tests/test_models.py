@@ -14,7 +14,6 @@ from apps.pricing_catalog.models import (
     CategoriaMaoObra,
     CategoriaServico,
     CodigoFornecedorPeca,
-    Fornecedor,
     InsumoMaterial,
     MaterialCanonico,
     PecaCanonica,
