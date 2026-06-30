@@ -31,6 +31,7 @@ from apps.authentication.permissions import (
     IsAdminOrAbove,
     IsConsultantOrAbove,
     IsManagerOrAbove,
+    PermissionsByActionMixin,
 )
 from apps.fiscal.clients.focus_nfe_client import FocusNFeClient
 from apps.fiscal.models import FiscalDocument, FiscalEvent, NFeEntrada, NFeEntradaItem
@@ -49,7 +50,7 @@ from apps.fiscal.services.ingestao import EstoqueJaGerado, NFeIngestaoService
 logger = logging.getLogger(__name__)
 
 
-class NFeEntradaViewSet(viewsets.ModelViewSet):
+class NFeEntradaViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de NF-e de Entrada + ações: reconciliar item e gerar estoque."""
 
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
@@ -78,18 +79,15 @@ class NFeEntradaViewSet(viewsets.ModelViewSet):
             return NFeEntradaCreateSerializer
         return NFeEntradaListSerializer
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in (
-            "create",
-            "update",
-            "partial_update",
-            "destroy",
-            "reconciliar_item",
-            "gerar_estoque",
-            "link_po",
-        ):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+    write_actions = (
+        "create",
+        "update",
+        "partial_update",
+        "destroy",
+        "reconciliar_item",
+        "gerar_estoque",
+        "link_po",
+    )
 
     @action(detail=True, methods=["post"], url_path=r"itens/(?P<item_pk>[^/.]+)/reconciliar")
     def reconciliar_item(

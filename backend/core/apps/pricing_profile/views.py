@@ -11,6 +11,7 @@ from apps.authentication.permissions import (
     IsAdminOrAbove,
     IsConsultantOrAbove,
     IsManagerOrAbove,
+    PermissionsByActionMixin,
 )
 from apps.pricing_profile.models import (
     CategoriaTamanho,
@@ -34,55 +35,44 @@ from apps.pricing_profile.services import EnquadramentoService
 logger = logging.getLogger(__name__)
 
 
-class EmpresaViewSet(viewsets.ModelViewSet):
+class EmpresaViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Empresas do tenant."""
 
     queryset = Empresa.objects.filter(is_active=True).order_by("nome_fantasia")
     serializer_class = EmpresaSerializer
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsAdminOrAbove()]
-        return [IsAuthenticated(), IsManagerOrAbove()]
+    write_permission = IsAdminOrAbove
+    read_permission = IsManagerOrAbove
 
 
-class SegmentoVeicularViewSet(viewsets.ModelViewSet):
+class SegmentoVeicularViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Segmentos Veiculares."""
 
     queryset = SegmentoVeicular.objects.filter(is_active=True).order_by("ordem")
     serializer_class = SegmentoVeicularSerializer
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsAdminOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+    write_permission = IsAdminOrAbove
 
 
-class CategoriaTamanhoViewSet(viewsets.ModelViewSet):
+class CategoriaTamanhoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Categorias de Tamanho."""
 
     queryset = CategoriaTamanho.objects.filter(is_active=True).order_by("ordem")
     serializer_class = CategoriaTamanhoSerializer
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsAdminOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+    write_permission = IsAdminOrAbove
 
 
-class TipoPinturaViewSet(viewsets.ModelViewSet):
+class TipoPinturaViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Tipos de Pintura."""
 
     queryset = TipoPintura.objects.filter(is_active=True).order_by("complexidade")
     serializer_class = TipoPinturaSerializer
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsAdminOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+    write_permission = IsAdminOrAbove
 
 
-class EnquadramentoVeiculoViewSet(viewsets.ModelViewSet):
+class EnquadramentoVeiculoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Enquadramentos Veiculares + endpoint POST /resolver/."""
 
     serializer_class = EnquadramentoVeiculoSerializer
@@ -98,10 +88,6 @@ class EnquadramentoVeiculoViewSet(viewsets.ModelViewSet):
             qs = qs.filter(marca__icontains=marca)
         return qs
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     @action(detail=False, methods=["post"], url_path="resolver")
     def resolver(self, request: Request) -> Response:
@@ -153,7 +139,7 @@ class EnquadramentoVeiculoViewSet(viewsets.ModelViewSet):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
-class EnquadramentoFaltanteViewSet(viewsets.ReadOnlyModelViewSet):
+class EnquadramentoFaltanteViewSet(PermissionsByActionMixin, viewsets.ReadOnlyModelViewSet):
     """Lista read-only de enquadramentos faltantes para painel de curadoria."""
 
     queryset = EnquadramentoFaltante.objects.all().order_by("-ocorrencias")

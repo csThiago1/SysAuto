@@ -20,7 +20,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.authentication.permissions import IsAdminOrAbove, IsManagerOrAbove
+from apps.authentication.permissions import (
+    IsAdminOrAbove,
+    IsManagerOrAbove,
+    PermissionsByActionMixin,
+)
 from apps.pricing_tech.models import FichaTecnicaServico
 from apps.pricing_tech.serializers import (
     FichaTecnicaServicoDetailSerializer,
@@ -33,7 +37,7 @@ from apps.pricing_tech.services import FichaNaoEncontrada, FichaTecnicaService
 logger = logging.getLogger(__name__)
 
 
-class FichaTecnicaServicoViewSet(viewsets.ReadOnlyModelViewSet):
+class FichaTecnicaServicoViewSet(PermissionsByActionMixin, viewsets.ReadOnlyModelViewSet):
     """ViewSet de FichaTecnicaServico — somente leitura + actions de negócio.
 
     Fichas técnicas são imutáveis após criação. Mudanças devem criar nova
@@ -66,11 +70,9 @@ class FichaTecnicaServicoViewSet(viewsets.ReadOnlyModelViewSet):
             return FichaTecnicaServicoListSerializer
         return FichaTecnicaServicoDetailSerializer
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action == "destroy":
-            return [IsAuthenticated(), IsAdminOrAbove()]
-        # list, retrieve, resolver, nova_versao — MANAGER+
-        return [IsAuthenticated(), IsManagerOrAbove()]
+    write_actions = ("destroy",)
+    write_permission = IsAdminOrAbove
+    read_permission = IsManagerOrAbove
 
     def destroy(self, request: Request, pk: str | None = None) -> Response:
         """Soft-delete de ficha técnica (ADMIN+).

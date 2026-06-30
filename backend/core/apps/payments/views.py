@@ -7,7 +7,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
+from apps.authentication.permissions import (
+    IsConsultantOrAbove,
+    IsManagerOrAbove,
+    PermissionsByActionMixin,
+)
 from apps.service_orders.models import ServiceOrder
 
 from .models import Payment
@@ -17,15 +21,11 @@ from .services import PaymentService
 logger = logging.getLogger(__name__)
 
 
-class PaymentViewSet(viewsets.GenericViewSet):
+class PaymentViewSet(PermissionsByActionMixin, viewsets.GenericViewSet):
     """Pagamentos aninhados sob uma OS específica."""
 
     serializer_class = PaymentSerializer
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action == "create":
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+    write_actions = ("create",)
 
     def list(self, request: Request, service_order_pk: str | None = None) -> Response:
         """Lista pagamentos da OS especificada."""

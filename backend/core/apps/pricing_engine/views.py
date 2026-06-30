@@ -20,6 +20,7 @@ from apps.authentication.permissions import (
     IsAdminOrAbove,
     IsConsultantOrAbove,
     IsManagerOrAbove,
+    PermissionsByActionMixin,
     _get_role,
 )
 from apps.pricing_engine.models import (
@@ -67,7 +68,7 @@ logger = logging.getLogger(__name__)
 # ─── ViewSets de Parâmetros ───────────────────────────────────────────────────
 
 
-class ParametroRateioViewSet(viewsets.ModelViewSet):
+class ParametroRateioViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de ParametroRateio — parâmetros de rateio de despesas recorrentes."""
 
     serializer_class = ParametroRateioSerializer
@@ -79,14 +80,11 @@ class ParametroRateioViewSet(viewsets.ModelViewSet):
             "-vigente_desde"
         )
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        """Leitura: MANAGER+ | Escrita: ADMIN+."""
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsAdminOrAbove()]
-        return [IsAuthenticated(), IsManagerOrAbove()]
+    write_permission = IsAdminOrAbove
+    read_permission = IsManagerOrAbove
 
 
-class ParametroCustoHoraViewSet(viewsets.ModelViewSet):
+class ParametroCustoHoraViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de ParametroCustoHora — encargos para cálculo de custo/hora."""
 
     serializer_class = ParametroCustoHoraSerializer
@@ -98,14 +96,11 @@ class ParametroCustoHoraViewSet(viewsets.ModelViewSet):
             "-vigente_desde"
         )
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        """Leitura: MANAGER+ | Escrita: ADMIN+."""
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsAdminOrAbove()]
-        return [IsAuthenticated(), IsManagerOrAbove()]
+    write_permission = IsAdminOrAbove
+    read_permission = IsManagerOrAbove
 
 
-class CustoHoraFallbackViewSet(viewsets.ModelViewSet):
+class CustoHoraFallbackViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de CustoHoraFallback — valor direto de custo/hora por categoria."""
 
     serializer_class = CustoHoraFallbackSerializer
@@ -119,11 +114,8 @@ class CustoHoraFallbackViewSet(viewsets.ModelViewSet):
             .order_by("-vigente_desde")
         )
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        """Leitura: MANAGER+ | Escrita: ADMIN+."""
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsAdminOrAbove()]
-        return [IsAuthenticated(), IsManagerOrAbove()]
+    write_permission = IsAdminOrAbove
+    read_permission = IsManagerOrAbove
 
 
 # ─── APIViews de Debug ────────────────────────────────────────────────────────
@@ -268,7 +260,7 @@ class DebugCustoInsumoView(APIView):
 # ─── Motor MO-6: MargemOperacao + MarkupPeca ─────────────────────────────────
 
 
-class MargemOperacaoViewSet(viewsets.ModelViewSet):
+class MargemOperacaoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de MargemOperacao — margem base por segmento × tipo de operação."""
 
     serializer_class = MargemOperacaoSerializer
@@ -280,13 +272,11 @@ class MargemOperacaoViewSet(viewsets.ModelViewSet):
             .order_by("segmento__codigo", "tipo_operacao", "-vigente_desde")
         )
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsAdminOrAbove()]
-        return [IsAuthenticated(), IsManagerOrAbove()]
+    write_permission = IsAdminOrAbove
+    read_permission = IsManagerOrAbove
 
 
-class MarkupPecaViewSet(viewsets.ModelViewSet):
+class MarkupPecaViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de MarkupPeca — override fino de margem por peça ou faixa de custo."""
 
     serializer_class = MarkupPecaSerializer
@@ -298,16 +288,14 @@ class MarkupPecaViewSet(viewsets.ModelViewSet):
             .order_by("-vigente_desde")
         )
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsAdminOrAbove()]
-        return [IsAuthenticated(), IsManagerOrAbove()]
+    write_permission = IsAdminOrAbove
+    read_permission = IsManagerOrAbove
 
 
 # ─── Motor MO-6: Snapshots ────────────────────────────────────────────────────
 
 
-class CalculoCustoSnapshotViewSet(viewsets.ReadOnlyModelViewSet):
+class CalculoCustoSnapshotViewSet(PermissionsByActionMixin, viewsets.ReadOnlyModelViewSet):
     """Lista e detalhe de snapshots de custo — imutável (sem POST/PATCH/DELETE).
 
     RBAC em get_serializer_class() — serializer distinto por role (P10).
@@ -333,8 +321,7 @@ class CalculoCustoSnapshotViewSet(viewsets.ReadOnlyModelViewSet):
 
         return qs
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
     def get_serializer_class(self):  # type: ignore[override]
         """Serializer distinto por role — dados sensíveis nunca vazam (P10)."""

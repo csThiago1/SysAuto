@@ -12,7 +12,11 @@ from apps.authentication.permission_service import (
     has_permission_from_request,
     invalidate_permission_cache,
 )
-from apps.authentication.permissions import IsAdminOrAbove, IsConsultantOrAbove
+from apps.authentication.permissions import (
+    IsAdminOrAbove,
+    IsConsultantOrAbove,
+    PermissionsByActionMixin,
+)
 from apps.authentication.permissions_config import DEFAULT_PERMISSIONS, PERMISSION_CODES
 
 from .models import Permission, Role, TenantPermissionOverride, UserPermission, UserRole
@@ -42,28 +46,20 @@ class RoleViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
 
-class UserRoleViewSet(viewsets.ModelViewSet):
+class UserRoleViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """Atribui/remove roles de usuários (ADMIN+ para escrita)."""
 
     queryset = UserRole.objects.select_related("user", "role").all()
     serializer_class = UserRoleSerializer
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsAdminOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+    write_permission = IsAdminOrAbove
 
 
-class UserPermissionViewSet(viewsets.ModelViewSet):
+class UserPermissionViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """Overrides individuais de permissão (ADMIN+ para escrita)."""
 
     queryset = UserPermission.objects.select_related("user", "permission").all()
     serializer_class = UserPermissionSerializer
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsAdminOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+    write_permission = IsAdminOrAbove
 
 
 # ── RBAC Matrix API ──────────────────────────────────────────────────────────

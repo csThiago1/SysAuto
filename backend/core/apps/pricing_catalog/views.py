@@ -20,6 +20,7 @@ from apps.authentication.permissions import (
     IsAdminOrAbove,
     IsConsultantOrAbove,
     IsManagerOrAbove,
+    PermissionsByActionMixin,
 )
 from apps.pricing_catalog.models import (
     AliasServico,
@@ -67,7 +68,7 @@ logger = logging.getLogger(__name__)
 # ────────────────────────────────────────────────────────────────────────────
 
 
-class CategoriaServicoViewSet(viewsets.ModelViewSet):
+class CategoriaServicoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Categorias de Serviço.
 
     Leitura: CONSULTANT+ · Escrita: ADMIN+ (taxonomia compartilhada — alto impacto).
@@ -76,10 +77,7 @@ class CategoriaServicoViewSet(viewsets.ModelViewSet):
     queryset = CategoriaServico.objects.filter(is_active=True).order_by("ordem", "nome")
     serializer_class = CategoriaServicoSerializer
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsAdminOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+    write_permission = IsAdminOrAbove
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -87,7 +85,7 @@ class CategoriaServicoViewSet(viewsets.ModelViewSet):
 # ────────────────────────────────────────────────────────────────────────────
 
 
-class CategoriaMaoObraViewSet(viewsets.ModelViewSet):
+class CategoriaMaoObraViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Categorias de Mão de Obra.
 
     Leitura: CONSULTANT+ · Escrita: ADMIN+ (taxonomia compartilhada — alto impacto).
@@ -96,10 +94,7 @@ class CategoriaMaoObraViewSet(viewsets.ModelViewSet):
     queryset = CategoriaMaoObra.objects.filter(is_active=True).order_by("ordem", "nome")
     serializer_class = CategoriaMaoObraSerializer
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsAdminOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+    write_permission = IsAdminOrAbove
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -107,7 +102,7 @@ class CategoriaMaoObraViewSet(viewsets.ModelViewSet):
 # ────────────────────────────────────────────────────────────────────────────
 
 
-class ServicoCanonicoViewSet(viewsets.ModelViewSet):
+class ServicoCanonicoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Serviços Canônicos + endpoint POST /match/.
 
     Leitura: CONSULTANT+ · Escrita: MANAGER+.
@@ -136,10 +131,6 @@ class ServicoCanonicoViewSet(viewsets.ModelViewSet):
             return ServicoCanonicoUpdateSerializer
         return ServicoCanonicoDetailSerializer
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     @action(detail=False, methods=["post"], url_path="match")
     def match(self, request: Request) -> Response:
@@ -192,7 +183,7 @@ class ServicoCanonicoViewSet(viewsets.ModelViewSet):
 # ────────────────────────────────────────────────────────────────────────────
 
 
-class MaterialCanonicoViewSet(viewsets.ModelViewSet):
+class MaterialCanonicoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Materiais Canônicos + endpoint POST /match/.
 
     Leitura: CONSULTANT+ · Escrita: MANAGER+.
@@ -217,10 +208,6 @@ class MaterialCanonicoViewSet(viewsets.ModelViewSet):
             return MaterialCanonicoUpdateSerializer
         return MaterialCanonicoDetailSerializer
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     @action(detail=False, methods=["post"], url_path="match")
     def match(self, request: Request) -> Response:
@@ -272,7 +259,7 @@ class MaterialCanonicoViewSet(viewsets.ModelViewSet):
 # ────────────────────────────────────────────────────────────────────────────
 
 
-class InsumoMaterialViewSet(viewsets.ModelViewSet):
+class InsumoMaterialViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Insumos/Materiais + endpoint POST /by-gtin/.
 
     Leitura: CONSULTANT+ · Escrita: MANAGER+.
@@ -301,10 +288,6 @@ class InsumoMaterialViewSet(viewsets.ModelViewSet):
             return InsumoMaterialUpdateSerializer
         return InsumoMaterialDetailSerializer
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     @action(detail=False, methods=["post"], url_path="by-gtin")
     def by_gtin(self, request: Request) -> Response:
@@ -345,7 +328,7 @@ class InsumoMaterialViewSet(viewsets.ModelViewSet):
 # ────────────────────────────────────────────────────────────────────────────
 
 
-class PecaCanonicoViewSet(viewsets.ModelViewSet):
+class PecaCanonicoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Peças Canônicas + endpoint POST /match/.
 
     Leitura: CONSULTANT+ · Escrita: MANAGER+.
@@ -370,10 +353,6 @@ class PecaCanonicoViewSet(viewsets.ModelViewSet):
             return PecaCanonicoUpdateSerializer
         return PecaCanonicoDetailSerializer
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     @action(detail=False, methods=["post"], url_path="match")
     def match(self, request: Request) -> Response:
@@ -425,7 +404,7 @@ class PecaCanonicoViewSet(viewsets.ModelViewSet):
 # ────────────────────────────────────────────────────────────────────────────
 
 
-class FornecedorViewSet(viewsets.ViewSet):
+class FornecedorViewSet(PermissionsByActionMixin, viewsets.ViewSet):
     """Endpoint deprecated — fornecedores agora em /api/v1/persons/?role=SUPPLIER."""
 
     authentication_classes: list = []
@@ -465,7 +444,7 @@ class FornecedorViewSet(viewsets.ViewSet):
 # ────────────────────────────────────────────────────────────────────────────
 
 
-class AliasServicoViewSet(viewsets.ModelViewSet):
+class AliasServicoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Aliases de Serviço + ações de revisão/aprovação.
 
     Leitura: CONSULTANT+ · Escrita: MANAGER+.
@@ -498,10 +477,7 @@ class AliasServicoViewSet(viewsets.ModelViewSet):
             return AliasServicoUpdateSerializer
         return AliasServicoDetailSerializer
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy", "approve", "reject"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+    write_actions = ("create", "update", "partial_update", "destroy", "approve", "reject")
 
     @action(detail=False, methods=["get"], url_path="revisao")
     def revisao(self, request: Request) -> Response:

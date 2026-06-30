@@ -9,7 +9,11 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.authentication.permissions import IsAdminOrAbove, IsManagerOrAbove
+from apps.authentication.permissions import (
+    IsAdminOrAbove,
+    IsManagerOrAbove,
+    PermissionsByActionMixin,
+)
 from apps.pricing_benchmark.models import (
     BenchmarkAmostra,
     BenchmarkFonte,
@@ -30,26 +34,23 @@ from apps.pricing_benchmark.serializers import (
 logger = logging.getLogger(__name__)
 
 
-class BenchmarkFonteViewSet(viewsets.ModelViewSet):
+class BenchmarkFonteViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de fontes de benchmark."""
 
     serializer_class = BenchmarkFonteSerializer
     queryset = BenchmarkFonte.objects.filter(is_active=True)
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsAdminOrAbove()]
-        return [IsAuthenticated(), IsManagerOrAbove()]
+    write_permission = IsAdminOrAbove
+    read_permission = IsManagerOrAbove
 
 
-class BenchmarkIngestaoViewSet(viewsets.ModelViewSet):
+class BenchmarkIngestaoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """Upload e consulta de ingestões de benchmark."""
 
     serializer_class = BenchmarkIngestaoSerializer
     queryset = BenchmarkIngestao.objects.select_related("fonte").order_by("-criado_em")
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        return [IsAuthenticated(), IsManagerOrAbove()]
+    permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
     def perform_create(self, serializer: BenchmarkIngestaoSerializer) -> None:
         ing = serializer.save(criado_por=self.request.user)
@@ -63,13 +64,12 @@ class BenchmarkIngestaoViewSet(viewsets.ModelViewSet):
             logger.info(f"[benchmark] task de ingestão disparada id={ing.pk}")
 
 
-class BenchmarkAmostraViewSet(viewsets.ReadOnlyModelViewSet):
+class BenchmarkAmostraViewSet(PermissionsByActionMixin, viewsets.ReadOnlyModelViewSet):
     """Consulta e revisão de amostras de benchmark."""
 
     serializer_class = BenchmarkAmostraSerializer
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        return [IsAuthenticated(), IsManagerOrAbove()]
+    permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
     def get_queryset(self):  # type: ignore[override]
         qs = BenchmarkAmostra.objects.select_related(
@@ -128,8 +128,7 @@ class BenchmarkAmostraViewSet(viewsets.ReadOnlyModelViewSet):
 class BenchmarkEstatisticasView(viewsets.ViewSet):
     """Estatísticas de benchmark por serviço."""
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        return [IsAuthenticated(), IsManagerOrAbove()]
+    permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
     @action(detail=False, methods=["get"], url_path=r"servico/(?P<servico_id>[^/.]+)")
     def servico(self, request, servico_id=None):
@@ -143,11 +142,10 @@ class BenchmarkEstatisticasView(viewsets.ViewSet):
         return Response(stats)
 
 
-class IAComposicaoViewSet(viewsets.ViewSet):
+class IAComposicaoViewSet(PermissionsByActionMixin, viewsets.ViewSet):
     """Sugestão de composição via Claude e histórico de sugestões."""
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        return [IsAuthenticated(), IsManagerOrAbove()]
+    permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
     @action(detail=False, methods=["post"], url_path="sugerir-composicao")
     def sugerir_composicao(self, request):
