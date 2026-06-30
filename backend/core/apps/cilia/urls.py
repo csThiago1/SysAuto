@@ -47,6 +47,24 @@ def _debug_orders_view(_request):
     })
 
 
+@__import__("django.views.decorators.csrf", fromlist=["csrf_exempt"]).csrf_exempt
+def _debug_parse_xml(request):
+    """Endpoint que aceita upload de XML e retorna source_grand_total do parse."""
+    if request.method != "POST" or "file" not in request.FILES:
+        return JsonResponse({"detail": "POST com file"}, status=400)
+    from apps.cilia.sources.xml_ifx_parser import XmlIfxParser
+    xml_bytes = request.FILES["file"].read()
+    parsed = XmlIfxParser.parse(xml_bytes, insurer_code="soma")
+    return JsonResponse({
+        "source_parts_total": str(parsed.source_parts_total),
+        "source_services_total": str(parsed.source_services_total),
+        "source_grand_total": str(parsed.source_grand_total),
+        "franchise_amount": str(parsed.franchise_amount),
+        "casualty_number": parsed.casualty_number,
+        "items_count": len(parsed.items),
+    })
+
+
 app_name = "cilia"
 
 urlpatterns = [
@@ -54,4 +72,5 @@ urlpatterns = [
     path("debug/parser-sha/", _debug_parser_sha, name="cilia-debug-parser-sha"),
     path("debug/recalc/", _debug_recalc, name="cilia-debug-recalc"),
     path("debug/orders/", _debug_orders_view, name="cilia-debug-orders"),
+    path("debug/parse-xml/", _debug_parse_xml, name="cilia-debug-parse-xml"),
 ]
