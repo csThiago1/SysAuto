@@ -14,7 +14,7 @@ const isProd = process.env.NODE_ENV === "production";
 const nextConfig: NextConfig = {
     output: "standalone",
     outputFileTracingRoot: path.join(__dirname, "../../"),
-    transpilePackages: ["@paddock/types", "@paddock/auth", "@paddock/utils"],
+    transpilePackages: ["@paddock/types", "@paddock/utils"],
     experimental: {
         typedRoutes: true,
         optimizePackageImports: [
