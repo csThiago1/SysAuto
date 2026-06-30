@@ -316,8 +316,8 @@ class OrdemCompraViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["get"], url_path="pdf")
     def pdf(self, request: Request, pk: str | None = None) -> HttpResponse:
         """GET /ordens-compra/{id}/pdf/ — gera PDF da OC via WeasyPrint."""
-        from apps.pdf_engine.logo import get_logo_black_base64
-        from apps.pdf_engine.services import PDFService
+        from apps.documents.pdf_logo import get_logo_black_base64
+        from apps.documents.pdf_service import PDFService
 
         oc = self.get_object()
         itens_qs = oc.itens.filter(is_active=True).select_related(

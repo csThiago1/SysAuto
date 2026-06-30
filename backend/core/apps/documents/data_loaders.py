@@ -18,7 +18,7 @@ from apps.documents.constants import (
     DEFAULT_WARRANTY_EXCLUSIONS,
     WARRANTY_MONTHS_BY_CATEGORY,
 )
-from apps.pdf_engine.logo import get_logo_base64, get_logo_black_base64
+from apps.documents.pdf_logo import get_logo_base64, get_logo_black_base64
 
 logger = logging.getLogger(__name__)
 

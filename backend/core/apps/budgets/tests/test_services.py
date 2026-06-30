@@ -8,7 +8,7 @@ from django_tenants.test.cases import TenantTestCase
 from apps.items.models import NumberSequence
 from apps.persons.models import Person
 from apps.budgets.models import Budget, BudgetVersion, BudgetVersionItem
-from apps.pdf_engine.services import PDFService
+from apps.documents.pdf_service import PDFService
 
 
 # ── Task 3: PDFService + create_from_budget ───────────────────────────────────

@@ -68,7 +68,6 @@ TENANT_APPS = [
     "apps.quotes",
     "apps.pricing_benchmark",
     "apps.signatures",
-    "apps.pdf_engine",
     "apps.documents",
     "apps.items",
     "apps.authz",

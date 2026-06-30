@@ -18,7 +18,7 @@ from rest_framework.exceptions import ValidationError
 
 from apps.items.services import NumberAllocator
 from apps.persons.models import Person
-from apps.pdf_engine.services import PDFService
+from apps.documents.pdf_service import PDFService
 
 from .models import Budget, BudgetVersion, BudgetVersionItem
 

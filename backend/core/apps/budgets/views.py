@@ -153,7 +153,7 @@ class BudgetVersionViewSet(viewsets.ReadOnlyModelViewSet):
         self, request, budget_pk: str | None = None, pk: str | None = None,
     ) -> HttpResponse:
         """Download do PDF do orçamento."""
-        from apps.pdf_engine.services import PDFService
+        from apps.documents.pdf_service import PDFService
 
         version = self.get_object()
         pdf_bytes = PDFService.render_budget(version)

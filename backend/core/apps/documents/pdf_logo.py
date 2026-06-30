@@ -14,7 +14,7 @@ _HERE = Path(__file__).resolve().parent
 def _find_logo(filename: str) -> str:
     """Busca logo por nome em caminhos candidatos e retorna data URI base64."""
     candidates: list[Path] = []
-    # Local dev: backend/core/apps/pdf_engine/ → parents[4] = grupo-dscar/
+    # Local dev: backend/core/apps/documents/ → parents[3] = grupo-dscar/
     try:
         candidates.append(_HERE.parents[3] / "apps" / "dscar-web" / "public" / filename)
     except IndexError:

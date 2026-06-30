@@ -14,7 +14,7 @@ from django.db.models import Max
 from apps.documents.constants import DOCUMENT_S3_PREFIX
 from apps.documents.data_loaders import OSDataLoader
 from apps.documents.models import DocumentGeneration, DocumentType
-from apps.pdf_engine.services import PDFService
+from apps.documents.pdf_service import PDFService
 
 logger = logging.getLogger(__name__)
 
