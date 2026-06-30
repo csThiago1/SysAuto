@@ -8,7 +8,11 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
+from apps.authentication.permissions import (
+    IsConsultantOrAbove,
+    IsManagerOrAbove,
+    PermissionsByActionMixin,
+)
 from apps.persons.models import Person
 
 from .models import Budget, BudgetVersion, BudgetVersionItem
@@ -26,6 +30,7 @@ from .services import BudgetService
 class BudgetViewSet(viewsets.ReadOnlyModelViewSet):
     """Listagem/detalhe de Budgets + criação via POST + clone."""
 
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     serializer_class = BudgetReadSerializer
     filterset_fields = ["is_active"]
     search_fields = ["number", "vehicle_plate", "customer__full_name"]
@@ -38,9 +43,6 @@ class BudgetViewSet(viewsets.ReadOnlyModelViewSet):
             "versions__items__operations__operation_type",
             "versions__items__operations__labor_category",
         )
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def create(self, request) -> Response:  # type: ignore[override]
         ser = BudgetCreateSerializer(data=request.data)
@@ -79,9 +81,10 @@ class BudgetViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
 
-class BudgetVersionViewSet(viewsets.ReadOnlyModelViewSet):
+class BudgetVersionViewSet(PermissionsByActionMixin, viewsets.ReadOnlyModelViewSet):
     """Versões de um Budget: listagem + actions de fluxo."""
 
+    write_actions = ("approve", "reject", "revision")
     serializer_class = BudgetVersionReadSerializer
     pagination_class = None  # recurso aninhado — retorna lista direta
 
@@ -92,11 +95,6 @@ class BudgetVersionViewSet(viewsets.ReadOnlyModelViewSet):
             "items__operations__operation_type",
             "items__operations__labor_category",
         )
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("approve", "reject", "revision"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     @action(detail=True, methods=["post"])
     def send(self, request, budget_pk: str | None = None, pk: str | None = None) -> Response:
@@ -168,6 +166,8 @@ class BudgetVersionViewSet(viewsets.ReadOnlyModelViewSet):
 class BudgetVersionItemViewSet(viewsets.ModelViewSet):
     """Items de uma BudgetVersion. Writes bloqueados se status != draft."""
 
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
     def get_queryset(self):  # type: ignore[override]
         return BudgetVersionItem.objects.filter(
             version_id=self.kwargs["version_pk"],
@@ -179,9 +179,6 @@ class BudgetVersionItemViewSet(viewsets.ModelViewSet):
         if self.action in ("create", "update", "partial_update"):
             return BudgetVersionItemWriteSerializer
         return BudgetVersionItemReadSerializer
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def perform_create(self, serializer) -> None:  # type: ignore[override]
         version = get_object_or_404(

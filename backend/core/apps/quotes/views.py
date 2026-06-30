@@ -10,7 +10,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
+from apps.authentication.permissions import (
+    IsConsultantOrAbove,
+    IsManagerOrAbove,
+    PermissionsByActionMixin,
+)
 from apps.quotes.models import AreaImpacto, Orcamento, OrcamentoIntervencao, OrcamentoItemAdicional
 from apps.quotes.serializers import (
     AprovarSerializer,
@@ -32,7 +36,7 @@ from apps.quotes.services import (
 logger = logging.getLogger(__name__)
 
 
-class OrcamentoViewSet(viewsets.ModelViewSet):
+class OrcamentoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD + fluxo de aprovação de orçamentos.
 
     Permissões:
@@ -41,10 +45,7 @@ class OrcamentoViewSet(viewsets.ModelViewSet):
       - Aprovação / recusa: MANAGER+
     """
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("aprovar", "recusar"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+    write_actions = ("aprovar", "recusar")
 
     def get_queryset(self):  # type: ignore[override]
         qs = Orcamento.objects.filter(is_active=True).select_related(

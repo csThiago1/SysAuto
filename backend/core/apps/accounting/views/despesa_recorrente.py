@@ -14,12 +14,15 @@ from apps.accounting.serializers.despesa_recorrente import (
     DespesaRecorrenteListSerializer,
     DespesaRecorrenteSerializer,
 )
-from apps.authentication.permissions import IsAdminOrAbove, IsManagerOrAbove
-
+from apps.authentication.permissions import (
+    IsAdminOrAbove,
+    IsManagerOrAbove,
+    PermissionsByActionMixin,
+)
 logger = logging.getLogger(__name__)
 
 
-class DespesaRecorrenteViewSet(ModelViewSet):
+class DespesaRecorrenteViewSet(PermissionsByActionMixin, ModelViewSet):
     """
     CRUD de despesas recorrentes.
 
@@ -57,10 +60,8 @@ class DespesaRecorrenteViewSet(ModelViewSet):
             return DespesaRecorrenteSerializer
         return DespesaRecorrenteListSerializer
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsAdminOrAbove()]
-        return [IsAuthenticated(), IsManagerOrAbove()]
+    write_permission = IsAdminOrAbove
+    read_permission = IsManagerOrAbove
 
     def perform_create(self, serializer: DespesaRecorrenteSerializer) -> None:  # type: ignore[override]
         serializer.save(created_by=self.request.user)

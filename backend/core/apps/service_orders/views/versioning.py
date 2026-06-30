@@ -11,14 +11,18 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
+from apps.authentication.permissions import (
+    IsConsultantOrAbove,
+    IsManagerOrAbove,
+    PermissionsByActionMixin,
+)
 from ..services import ServiceOrderService
 
 
-class ServiceOrderVersionViewSet(viewsets.ReadOnlyModelViewSet):
+class ServiceOrderVersionViewSet(PermissionsByActionMixin, viewsets.ReadOnlyModelViewSet):
     """Lista/detalhe de versões de OS + action approve."""
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+    write_actions = ("approve",)
 
     def get_serializer_class(self) -> type:
         from ..serializers import ServiceOrderVersionSerializer
@@ -32,11 +36,6 @@ class ServiceOrderVersionViewSet(viewsets.ReadOnlyModelViewSet):
             .select_related("service_order", "import_attempt")
             .prefetch_related("items")
         )
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action == "approve":
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     @action(detail=True, methods=["post"])
     def approve(self, request: Request, pk: Optional[str] = None) -> Response:
@@ -64,10 +63,10 @@ class ServiceOrderEventViewSet(viewsets.ReadOnlyModelViewSet):
         ).select_related("service_order")
 
 
-class ServiceOrderParecerViewSet(viewsets.ModelViewSet):
+class ServiceOrderParecerViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de pareceres (internos). Pareceres importados são read-only."""
 
-    permission_classes = [IsAuthenticated]
+    write_actions = ("destroy",)
 
     def get_serializer_class(self) -> type:
         from ..serializers import ServiceOrderParecerSerializer
@@ -78,11 +77,6 @@ class ServiceOrderParecerViewSet(viewsets.ModelViewSet):
         return ServiceOrderParecer.objects.filter(
             service_order__is_active=True,
         ).select_related("service_order", "version")
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("destroy",):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def _assert_internal(self, instance: "ServiceOrderParecer") -> None:
         """Garante que apenas pareceres internos podem ser modificados."""

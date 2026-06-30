@@ -15,12 +15,15 @@ from apps.accounting.serializers.cost_center import (
     CostCenterDetailSerializer,
     CostCenterListSerializer,
 )
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
-
+from apps.authentication.permissions import (
+    IsConsultantOrAbove,
+    IsManagerOrAbove,
+    PermissionsByActionMixin,
+)
 logger = logging.getLogger(__name__)
 
 
-class CostCenterViewSet(ModelViewSet):
+class CostCenterViewSet(PermissionsByActionMixin, ModelViewSet):
     """
     CRUD de centros de custo.
 
@@ -37,11 +40,6 @@ class CostCenterViewSet(ModelViewSet):
     search_fields = ["code", "name"]
     ordering_fields = ["code", "name"]
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        """Leitura: CONSULTANT+. Escrita: MANAGER+."""
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> Any:
         return (

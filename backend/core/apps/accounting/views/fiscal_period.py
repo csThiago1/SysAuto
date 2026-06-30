@@ -19,12 +19,15 @@ from apps.accounting.serializers.fiscal_period import (
     FiscalYearSerializer,
 )
 from apps.accounting.services.fiscal_period_service import FiscalPeriodService
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
-
+from apps.authentication.permissions import (
+    IsConsultantOrAbove,
+    IsManagerOrAbove,
+    PermissionsByActionMixin,
+)
 logger = logging.getLogger(__name__)
 
 
-class FiscalYearViewSet(ModelViewSet):
+class FiscalYearViewSet(PermissionsByActionMixin, ModelViewSet):
     """
     CRUD de exercicios fiscais.
 
@@ -40,11 +43,6 @@ class FiscalYearViewSet(ModelViewSet):
     filterset_fields = {"is_closed": ["exact"]}
     ordering_fields = ["year"]
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        """Leitura: CONSULTANT+. Escrita: MANAGER+."""
-        if self.action in ("create", "update", "partial_update", "destroy"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> Any:
         return FiscalYear.objects.filter(is_active=True).order_by("-year")
@@ -53,7 +51,7 @@ class FiscalYearViewSet(ModelViewSet):
         serializer.save(created_by=self.request.user)
 
 
-class FiscalPeriodViewSet(
+class FiscalPeriodViewSet(PermissionsByActionMixin, 
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
@@ -74,11 +72,7 @@ class FiscalPeriodViewSet(
     filterset_fields = {"is_closed": ["exact"], "fiscal_year": ["exact"]}
     ordering_fields = ["fiscal_year__year", "number"]
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        """Leitura: CONSULTANT+. Escrita/fechamento: MANAGER+."""
-        if self.action in ("create", "update", "partial_update", "destroy", "close"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+    write_actions = ("create", "update", "partial_update", "destroy", "close")
 
     def get_queryset(self) -> Any:
         return (

@@ -33,7 +33,11 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
+from apps.authentication.permissions import (
+    IsConsultantOrAbove,
+    IsManagerOrAbove,
+    PermissionsByActionMixin,
+)
 
 from .models import (
     Allowance,
@@ -86,7 +90,8 @@ from .services import (
 logger = logging.getLogger(__name__)
 
 
-class EmployeeViewSet(ModelViewSet):
+class EmployeeViewSet(PermissionsByActionMixin, ModelViewSet):
+    write_actions = ("terminate",)
     """
     CRUD de colaboradores.
 
@@ -103,11 +108,6 @@ class EmployeeViewSet(ModelViewSet):
     filterset_fields = {"status": ["exact"], "department": ["exact"], "contract_type": ["exact"]}
     search_fields = ["registration_number", "user__name"]
     ordering_fields = ["hire_date", "registration_number"]
-
-    def get_permissions(self) -> list[Any]:
-        if self.action in ["terminate"]:
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> Any:
         return (
@@ -316,6 +316,7 @@ class GoalTargetViewSet(ModelViewSet):
 
 
 class AllowanceViewSet(
+    PermissionsByActionMixin,
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -323,14 +324,9 @@ class AllowanceViewSet(
 ):
     """Vales e benefícios — fluxo solicitação→aprovação→pagamento."""
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+    write_actions = ("approve", "pay")
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {"status": ["exact"], "allowance_type": ["exact"]}
-
-    def get_permissions(self) -> list[Any]:
-        if self.action in ["approve", "pay"]:
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
 
     def get_queryset(self) -> Any:
         qs = Allowance.objects.filter(is_active=True).select_related("employee__user", "approved_by")
@@ -395,6 +391,7 @@ class DeductionViewSet(
 
 
 class TimeClockViewSet(
+    PermissionsByActionMixin,
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -402,12 +399,7 @@ class TimeClockViewSet(
 ):
     """Registro de ponto — sequência validada pelo TimeClockService."""
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
-
-    def get_permissions(self) -> list[Any]:
-        if self.action in ["approve"]:
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+    write_actions = ("approve",)
 
     def get_queryset(self) -> Any:
         return TimeClockEntry.objects.filter(is_active=True).select_related("employee__user")
@@ -527,6 +519,7 @@ class PayslipViewSet(
 
 
 class VacationViewSet(
+    PermissionsByActionMixin,
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -534,12 +527,7 @@ class VacationViewSet(
 ):
     """Férias — agendamento, cálculo e controle de saldo."""
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
-
-    def get_permissions(self) -> list[Any]:
-        if self.action in ["create", "complete", "cancel"]:
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+    write_actions = ("create", "complete", "cancel")
 
     def get_queryset(self) -> Any:
         qs = Vacation.objects.filter(is_active=True).select_related("employee__user")

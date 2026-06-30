@@ -25,12 +25,15 @@ from apps.accounting.serializers.journal_entry import (
     JournalEntryListSerializer,
 )
 from apps.accounting.services.journal_entry_service import JournalEntryService
-from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
-
+from apps.authentication.permissions import (
+    IsConsultantOrAbove,
+    IsManagerOrAbove,
+    PermissionsByActionMixin,
+)
 logger = logging.getLogger(__name__)
 
 
-class JournalEntryViewSet(
+class JournalEntryViewSet(PermissionsByActionMixin, 
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -53,11 +56,7 @@ class JournalEntryViewSet(
     search_fields = ["number", "description"]
     ordering_fields = ["competence_date", "number"]
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        """Leitura: CONSULTANT+. Escrita/aprovacao/estorno: MANAGER+."""
-        if self.action in ("create", "update", "partial_update", "destroy", "approve", "reverse"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated(), IsConsultantOrAbove()]
+    write_actions = ("create", "update", "partial_update", "destroy", "approve", "reverse")
 
     def get_queryset(self) -> Any:
         return (
