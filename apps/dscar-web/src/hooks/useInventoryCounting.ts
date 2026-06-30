@@ -10,7 +10,9 @@ import type {
   ContagemInventarioDetail,
   RegistrarItemInput,
 } from "@paddock/types"
+
 import { apiFetch, fetchList } from "@/lib/api"
+import { useCreate } from "@/lib/crud-mutations"
 
 const INV = "/api/proxy/inventory"
 
@@ -41,19 +43,10 @@ export function useContagem(id: string) {
   })
 }
 
-export function useContagemCreate() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: AbrirContagemInput) =>
-      apiFetch<ContagemInventario>(`${INV}/contagens/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: countingKeys.contagens() }),
+export const useContagemCreate = () =>
+  useCreate<ContagemInventario, AbrirContagemInput>("inventory/contagens", {
+    invalidateKey: countingKeys.contagens(),
   })
-}
 
 export function useRegistrarItem(contagemId: string, itemId: string) {
   const qc = useQueryClient()

@@ -3,7 +3,7 @@
  * WMS: Hooks TanStack Query v5 para Hierarquia de Localização
  * Armazem, Rua, Prateleira, Nivel
  */
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import type {
   Armazem,
   Nivel,
@@ -12,7 +12,9 @@ import type {
   Prateleira,
   Rua,
 } from "@paddock/types"
+
 import { apiFetch, fetchList } from "@/lib/api"
+import { useCreate, useDelete, useUpdate } from "@/lib/crud-mutations"
 
 const INV = "/api/proxy/inventory"
 
@@ -33,6 +35,12 @@ export const locationKeys = {
   nivelConteudo: (id: string) =>
     [...locationKeys.all, "nivel-conteudo", id] as const,
 }
+
+// Toda mutation invalida `locationKeys.all` — todo cache de location
+// já é prefixado por essa key, então invalida tudo de uma vez (rua afeta
+// ocupação do armazém, etc). Custo: refetches a mais, ganho: zero risco
+// de cache stale em hierarquias aninhadas.
+const LOC_OPTS = { invalidateKey: locationKeys.all }
 
 // ─── Armazem ──────────────────────────────────────────────────────────────────
 
@@ -60,43 +68,12 @@ export function useArmazemOcupacao(id: string) {
   })
 }
 
-export function useArmazemCreate() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<Armazem>) =>
-      apiFetch<Armazem>(`${INV}/armazens/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: locationKeys.armazens() }),
-  })
-}
-
-export function useArmazemUpdate(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<Armazem>) =>
-      apiFetch<Armazem>(`${INV}/armazens/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: locationKeys.armazens() })
-      qc.invalidateQueries({ queryKey: locationKeys.armazem(id) })
-    },
-  })
-}
-
-export function useArmazemDelete(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: () =>
-      apiFetch<void>(`${INV}/armazens/${id}/`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: locationKeys.armazens() }),
-  })
-}
+export const useArmazemCreate = () =>
+  useCreate<Armazem, Partial<Armazem>>("inventory/armazens", LOC_OPTS)
+export const useArmazemUpdate = () =>
+  useUpdate<Armazem, Partial<Armazem>>("inventory/armazens", LOC_OPTS)
+export const useArmazemDelete = () =>
+  useDelete("inventory/armazens", LOC_OPTS)
 
 // ─── Rua ──────────────────────────────────────────────────────────────────────
 
@@ -108,21 +85,8 @@ export function useRuas(armazemId?: string) {
   })
 }
 
-export function useRuaCreate() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<Rua>) =>
-      apiFetch<Rua>(`${INV}/ruas/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: locationKeys.ruas() })
-      qc.invalidateQueries({ queryKey: locationKeys.armazens() })
-    },
-  })
-}
+export const useRuaCreate = () =>
+  useCreate<Rua, Partial<Rua>>("inventory/ruas", LOC_OPTS)
 
 // ─── Prateleira ───────────────────────────────────────────────────────────────
 
@@ -134,21 +98,8 @@ export function usePrateleiras(ruaId?: string) {
   })
 }
 
-export function usePrateleiraCreate() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<Prateleira>) =>
-      apiFetch<Prateleira>(`${INV}/prateleiras/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: locationKeys.prateleiras() })
-      qc.invalidateQueries({ queryKey: locationKeys.ruas() })
-    },
-  })
-}
+export const usePrateleiraCreate = () =>
+  useCreate<Prateleira, Partial<Prateleira>>("inventory/prateleiras", LOC_OPTS)
 
 // ─── Nivel ────────────────────────────────────────────────────────────────────
 
@@ -160,21 +111,8 @@ export function useNiveis(prateleiraId?: string) {
   })
 }
 
-export function useNivelCreate() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<Nivel>) =>
-      apiFetch<Nivel>(`${INV}/niveis/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: locationKeys.niveis() })
-      qc.invalidateQueries({ queryKey: locationKeys.prateleiras() })
-    },
-  })
-}
+export const useNivelCreate = () =>
+  useCreate<Nivel, Partial<Nivel>>("inventory/niveis", LOC_OPTS)
 
 export function useNivelConteudo(id: string) {
   return useQuery<NivelConteudo>({

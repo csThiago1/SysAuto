@@ -10,7 +10,9 @@ import type {
   SugestaoIACreatePayload,
   SugestaoIAResponse,
 } from "@paddock/types"
+
 import { apiFetch, fetchList } from "@/lib/api"
+import { useCreate } from "@/lib/crud-mutations"
 
 const BASE = "/api/proxy/pricing"
 
@@ -33,18 +35,10 @@ export function useBenchmarkFontes() {
   })
 }
 
-export function useCreateBenchmarkFonte() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<BenchmarkFonte>) =>
-      apiFetch<BenchmarkFonte>(`${BASE}/benchmark/fontes/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: benchmarkKeys.fontes() }),
+export const useCreateBenchmarkFonte = () =>
+  useCreate<BenchmarkFonte, Partial<BenchmarkFonte>>("pricing/benchmark/fontes", {
+    invalidateKey: benchmarkKeys.fontes(),
   })
-}
 
 // ─── Ingestões ────────────────────────────────────────────────────────────────
 
@@ -141,18 +135,10 @@ export function useBenchmarkEstatisticas(
 
 // ─── IA Composição ────────────────────────────────────────────────────────────
 
-export function useSugerirComposicao() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (payload: SugestaoIACreatePayload) =>
-      apiFetch<SugestaoIAResponse>(`${BASE}/ia/sugerir-composicao/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: benchmarkKeys.sugestoes() }),
+export const useSugerirComposicao = () =>
+  useCreate<SugestaoIAResponse, SugestaoIACreatePayload>("pricing/ia/sugerir-composicao", {
+    invalidateKey: benchmarkKeys.sugestoes(),
   })
-}
 
 export function useAvaliarSugestao(sugestaoId: string) {
   return useMutation({

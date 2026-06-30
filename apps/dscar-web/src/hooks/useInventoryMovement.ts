@@ -11,7 +11,9 @@ import type {
   PerdaInput,
   TransferenciaInput,
 } from "@paddock/types"
+
 import { apiFetch, fetchList } from "@/lib/api"
+import { useCreate } from "@/lib/crud-mutations"
 
 const INV = "/api/proxy/inventory"
 
@@ -26,6 +28,8 @@ export const movementKeys = {
   aprovacoesPendentes: () =>
     [...movementKeys.all, "aprovacoes-pendentes"] as const,
 }
+
+const MOV_OPTS = { invalidateKey: movementKeys.all }
 
 // ─── Movimentacoes ────────────────────────────────────────────────────────────
 
@@ -49,39 +53,19 @@ export function useMovimentacao(id: string) {
   })
 }
 
-// ─── Entrada ──────────────────────────────────────────────────────────────────
+// ─── Movimentações que postam payload JSON ────────────────────────────────────
 
-export function useEntradaPeca() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: EntradaPecaInput) =>
-      apiFetch<MovimentacaoEstoque>(`${INV}/entrada/peca/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: movementKeys.all })
-    },
-  })
-}
+export const useEntradaPeca = () =>
+  useCreate<MovimentacaoEstoque, EntradaPecaInput>("inventory/entrada/peca", MOV_OPTS)
+export const useEntradaLote = () =>
+  useCreate<MovimentacaoEstoque, EntradaLoteInput>("inventory/entrada/lote", MOV_OPTS)
+export const useTransferir = () =>
+  useCreate<MovimentacaoEstoque, TransferenciaInput>("inventory/transferir", MOV_OPTS)
+export const usePerda = () =>
+  useCreate<MovimentacaoEstoque, PerdaInput>("inventory/perda", MOV_OPTS)
 
-export function useEntradaLote() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: EntradaLoteInput) =>
-      apiFetch<MovimentacaoEstoque>(`${INV}/entrada/lote/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: movementKeys.all })
-    },
-  })
-}
-
-// ─── Devolucao ────────────────────────────────────────────────────────────────
+// ─── Ações sem body (id já vai na URL) ────────────────────────────────────────
+// Estas não fitam no useCreate (que sempre stringify-a body). Mantidas à mão.
 
 export function useDevolucao(unidadeId: string) {
   const qc = useQueryClient()
@@ -90,43 +74,7 @@ export function useDevolucao(unidadeId: string) {
       apiFetch<MovimentacaoEstoque>(`${INV}/devolucao/${unidadeId}/`, {
         method: "POST",
       }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: movementKeys.all })
-    },
-  })
-}
-
-// ─── Transferencia ────────────────────────────────────────────────────────────
-
-export function useTransferir() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: TransferenciaInput) =>
-      apiFetch<MovimentacaoEstoque>(`${INV}/transferir/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: movementKeys.all })
-    },
-  })
-}
-
-// ─── Perda ────────────────────────────────────────────────────────────────────
-
-export function usePerda() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: PerdaInput) =>
-      apiFetch<MovimentacaoEstoque>(`${INV}/perda/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: movementKeys.all })
-    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: movementKeys.all }),
   })
 }
 
@@ -147,9 +95,7 @@ export function useAprovar(id: string) {
       apiFetch<MovimentacaoEstoque>(`${INV}/aprovacoes/${id}/aprovar/`, {
         method: "POST",
       }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: movementKeys.all })
-    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: movementKeys.all }),
   })
 }
 
@@ -160,8 +106,6 @@ export function useRejeitar(id: string) {
       apiFetch<MovimentacaoEstoque>(`${INV}/aprovacoes/${id}/rejeitar/`, {
         method: "POST",
       }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: movementKeys.all })
-    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: movementKeys.all }),
   })
 }
