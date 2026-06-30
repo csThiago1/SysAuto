@@ -21,7 +21,9 @@ import type {
   NfeEmitFromOsInput,
   NfeRecebida,
 } from "@paddock/types"
+
 import { apiFetch, fetchList } from "@/lib/api"
+import { useCreate } from "@/lib/crud-mutations"
 
 const FISCAL = "/api/proxy/fiscal"
 
@@ -79,19 +81,10 @@ export function useEmitNfse() {
 }
 
 /** Emite NFS-e manual ad-hoc sem OS vinculada (ADMIN+). */
-export function useEmitManualNfse() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (input: ManualNfseInput) =>
-      apiFetch<FiscalDocument>(`${FISCAL}/nfse/emit-manual/`, {
-        method: "POST",
-        body: JSON.stringify(input),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: fiscalKeys.all })
-    },
+export const useEmitManualNfse = () =>
+  useCreate<FiscalDocument, ManualNfseInput>("fiscal/nfse/emit-manual", {
+    invalidateKey: fiscalKeys.all,
   })
-}
 
 // ─── Hooks NF-e de Produto (07A) ─────────────────────────────────────────────
 
@@ -114,19 +107,10 @@ export function useEmitNfe() {
 }
 
 /** Emite NF-e de produto manual ad-hoc sem OS vinculada (ADMIN+). */
-export function useEmitManualNfe() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (input: ManualNfeInput) =>
-      apiFetch<FiscalDocument>(`${FISCAL}/nfe/emit-manual/`, {
-        method: "POST",
-        body: JSON.stringify(input),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: fiscalKeys.all })
-    },
+export const useEmitManualNfe = () =>
+  useCreate<FiscalDocument, ManualNfeInput>("fiscal/nfe/emit-manual", {
+    invalidateKey: fiscalKeys.all,
   })
-}
 
 // ─── NF-e Recebidas ───────────────────────────────────────────────────────────
 
@@ -202,25 +186,15 @@ export function useCCe() {
 }
 
 /** Substitui NFS-e autorizada emitindo nova em seu lugar (ADMIN+). */
-export function useSubstituirNfse() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: async (data: {
+export const useSubstituirNfse = () =>
+  useCreate<
+    { status: string; nova_ref: string },
+    {
       chave_nfse_substituida: string
       service_order_id?: string
       codigo_justificativa?: string
-    }) => {
-      return apiFetch<{ status: string; nova_ref: string }>(`${FISCAL}/nfse/substituir/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      })
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: fiscalKeys.all })
-    },
-  })
-}
+    }
+  >("fiscal/nfse/substituir", { invalidateKey: fiscalKeys.all })
 
 /** Cancela documento fiscal autorizado (MANAGER+). */
 export function useCancelFiscalDoc() {
@@ -240,26 +214,16 @@ export function useCancelFiscalDoc() {
 
 // ─── S3-T3: Inutilização de Numeração NF-e ──────────────────────────────────
 
-export function useInutilizacao() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: async (data: {
-      serie: number;
-      numero_inicial: number;
-      numero_final: number;
-      justificativa: string;
-    }) => {
-      return apiFetch(`${FISCAL}/nfe/inutilizacao/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      })
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["inutilizacoes"] })
-    },
-  })
-}
+export const useInutilizacao = () =>
+  useCreate<
+    unknown,
+    {
+      serie: number
+      numero_inicial: number
+      numero_final: number
+      justificativa: string
+    }
+  >("fiscal/nfe/inutilizacao", { invalidateKey: ["inutilizacoes"] })
 
 export function useInutilizacoes() {
   return useQuery({
