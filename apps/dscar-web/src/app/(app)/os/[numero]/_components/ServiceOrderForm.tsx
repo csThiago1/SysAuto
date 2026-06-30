@@ -23,7 +23,7 @@ import { useServiceOrderUpdate } from "../_hooks/useServiceOrder"
 import { useAutoTransition } from "../_hooks/useAutoTransition"
 import { usePersonUpdate, type PersonPatch } from "../_hooks/useCustomerSearch"
 import { useTransitionStatus } from "@/hooks/useServiceOrders"
-import { StatusBadge } from "./shared/StatusBadge"
+import { StatusBadge } from "@/components/ui"
 import {
   DropdownMenu,
   DropdownMenuContent,
