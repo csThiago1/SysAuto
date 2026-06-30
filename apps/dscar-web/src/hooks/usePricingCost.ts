@@ -2,7 +2,7 @@
  * Paddock Solutions — Motor de Orçamentos (MO-3: Adapters de Custo)
  * Hooks TanStack Query v5 para parâmetros de custo/hora, rateio e debug.
  */
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import type {
   CustoHoraFallback,
   CustoHoraFallbackCreate,
@@ -16,7 +16,9 @@ import type {
   PaginatedResponse,
   RateioResult,
 } from "@paddock/types"
+
 import { apiFetch } from "@/lib/api"
+import { useCreate, useDelete, useUpdate } from "@/lib/crud-mutations"
 
 const ENGINE_API = "/api/proxy/pricing/engine"
 
@@ -31,6 +33,8 @@ const pricingCostKeys = {
   custosHoraFallback: (empresaId?: string) =>
     ["pricing-cost", "custos-hora-fallback", empresaId ?? "all"] as const,
 }
+
+const COST_OPTS = { invalidateKey: pricingCostKeys.all }
 
 // ─── Parâmetros de Rateio ─────────────────────────────────────────────────────
 
@@ -48,33 +52,16 @@ export function useParametrosRateio(empresaId?: string) {
   })
 }
 
-export function useCreateParametroRateio() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: ParametroRateioCreate) =>
-      apiFetch<ParametroRateio>(`${ENGINE_API}/parametros/rateio/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: pricingCostKeys.all }),
-  })
-}
-
-export function useUpdateParametroRateio(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<ParametroRateioCreate>) =>
-      apiFetch<ParametroRateio>(`${ENGINE_API}/parametros/rateio/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: pricingCostKeys.all }),
-  })
-}
+export const useCreateParametroRateio = () =>
+  useCreate<ParametroRateio, ParametroRateioCreate>(
+    "pricing/engine/parametros/rateio",
+    COST_OPTS,
+  )
+export const useUpdateParametroRateio = () =>
+  useUpdate<ParametroRateio, Partial<ParametroRateioCreate>>(
+    "pricing/engine/parametros/rateio",
+    COST_OPTS,
+  )
 
 // ─── Parâmetros de Custo Hora ─────────────────────────────────────────────────
 
@@ -92,36 +79,16 @@ export function useParametrosCustoHora(empresaId?: string) {
   })
 }
 
-export function useCreateParametroCustoHora() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: ParametroCustoHoraCreate) =>
-      apiFetch<ParametroCustoHora>(`${ENGINE_API}/parametros/custo-hora/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: pricingCostKeys.all }),
-  })
-}
-
-export function useUpdateParametroCustoHora(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<ParametroCustoHoraCreate>) =>
-      apiFetch<ParametroCustoHora>(
-        `${ENGINE_API}/parametros/custo-hora/${id}/`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        }
-      ),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: pricingCostKeys.all }),
-  })
-}
+export const useCreateParametroCustoHora = () =>
+  useCreate<ParametroCustoHora, ParametroCustoHoraCreate>(
+    "pricing/engine/parametros/custo-hora",
+    COST_OPTS,
+  )
+export const useUpdateParametroCustoHora = () =>
+  useUpdate<ParametroCustoHora, Partial<ParametroCustoHoraCreate>>(
+    "pricing/engine/parametros/custo-hora",
+    COST_OPTS,
+  )
 
 // ─── Custos Hora Fallback ─────────────────────────────────────────────────────
 
@@ -139,58 +106,23 @@ export function useCustosHoraFallback(empresaId?: string) {
   })
 }
 
-export function useCreateCustoHoraFallback() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: CustoHoraFallbackCreate) =>
-      apiFetch<CustoHoraFallback>(
-        `${ENGINE_API}/parametros/custo-hora-fallback/`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        }
-      ),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: pricingCostKeys.all }),
-  })
-}
-
-export function useUpdateCustoHoraFallback(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<CustoHoraFallbackCreate>) =>
-      apiFetch<CustoHoraFallback>(
-        `${ENGINE_API}/parametros/custo-hora-fallback/${id}/`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        }
-      ),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: pricingCostKeys.all }),
-  })
-}
-
-export function useDeleteCustoHoraFallback() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (id: string) =>
-      apiFetch<void>(`${ENGINE_API}/parametros/custo-hora-fallback/${id}/`, {
-        method: "DELETE",
-      }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: pricingCostKeys.all }),
-  })
-}
+export const useCreateCustoHoraFallback = () =>
+  useCreate<CustoHoraFallback, CustoHoraFallbackCreate>(
+    "pricing/engine/parametros/custo-hora-fallback",
+    COST_OPTS,
+  )
+export const useUpdateCustoHoraFallback = () =>
+  useUpdate<CustoHoraFallback, Partial<CustoHoraFallbackCreate>>(
+    "pricing/engine/parametros/custo-hora-fallback",
+    COST_OPTS,
+  )
+export const useDeleteCustoHoraFallback = () =>
+  useDelete("pricing/engine/parametros/custo-hora-fallback", COST_OPTS)
 
 // ─── Debug Mutations ──────────────────────────────────────────────────────────
+// Não invalidam cache (cálculo on-demand, sem efeito colateral).
 
-/**
- * Mutation para calcular custo/hora via endpoint de debug.
- * Apenas ADMIN+ pode usar — retorna CustoHoraResult com decomposição.
- */
+/** Mutation para calcular custo/hora via endpoint de debug. ADMIN+. */
 export function useDebugCustoHora() {
   return useMutation({
     mutationFn: (input: DebugCustoHoraInput) =>
@@ -202,10 +134,7 @@ export function useDebugCustoHora() {
   })
 }
 
-/**
- * Mutation para calcular rateio/hora via endpoint de debug.
- * Apenas ADMIN+ pode usar — retorna RateioResult com decomposição de despesas.
- */
+/** Mutation para calcular rateio/hora via endpoint de debug. ADMIN+. */
 export function useDebugRateio() {
   return useMutation({
     mutationFn: (input: DebugRateioInput) =>

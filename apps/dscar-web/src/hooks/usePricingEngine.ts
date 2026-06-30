@@ -2,7 +2,7 @@
  * Paddock Solutions — Motor de Orçamentos (MO-6: Motor de Precificação)
  * Hooks TanStack Query v5 para motor de preços, margens, markup e snapshots.
  */
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import type {
   CalcularPecaInput,
   CalcularServicoInput,
@@ -17,7 +17,9 @@ import type {
   Snapshot,
   SnapshotFull,
 } from "@paddock/types"
+
 import { apiFetch, fetchList } from "@/lib/api"
+import { useCreate, useDelete } from "@/lib/crud-mutations"
 
 const ENGINE_API = "/api/proxy/pricing/engine"
 
@@ -46,30 +48,14 @@ export function useMargens(empresaId?: string) {
   })
 }
 
-export function useMargemCreate() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (payload: MargemOperacaoCreate) =>
-      apiFetch<MargemOperacao>(`${ENGINE_API}/margens/`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["pricing-engine", "margens"] })
-    },
-  })
-}
-
-export function useMargemDelete() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (id: string) =>
-      apiFetch<void>(`${ENGINE_API}/margens/${id}/`, { method: "DELETE" }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["pricing-engine", "margens"] })
-    },
-  })
-}
+const MARGENS_OPTS = { invalidateKey: ["pricing-engine", "margens"] }
+export const useMargemCreate = () =>
+  useCreate<MargemOperacao, MargemOperacaoCreate>(
+    "pricing/engine/margens",
+    MARGENS_OPTS,
+  )
+export const useMargemDelete = () =>
+  useDelete("pricing/engine/margens", MARGENS_OPTS)
 
 // ─── Markup por Peça ─────────────────────────────────────────────────────────
 
@@ -83,30 +69,14 @@ export function useMarkupsPeca(empresaId?: string) {
   })
 }
 
-export function useMarkupPecaCreate() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (payload: MarkupPecaCreate) =>
-      apiFetch<MarkupPeca>(`${ENGINE_API}/markup-peca/`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["pricing-engine", "markups-peca"] })
-    },
-  })
-}
-
-export function useMarkupPecaDelete() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (id: string) =>
-      apiFetch<void>(`${ENGINE_API}/markup-peca/${id}/`, { method: "DELETE" }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["pricing-engine", "markups-peca"] })
-    },
-  })
-}
+const MARKUP_OPTS = { invalidateKey: ["pricing-engine", "markups-peca"] }
+export const useMarkupPecaCreate = () =>
+  useCreate<MarkupPeca, MarkupPecaCreate>(
+    "pricing/engine/markup-peca",
+    MARKUP_OPTS,
+  )
+export const useMarkupPecaDelete = () =>
+  useDelete("pricing/engine/markup-peca", MARKUP_OPTS)
 
 // ─── Snapshots ───────────────────────────────────────────────────────────────
 
@@ -130,7 +100,7 @@ export function useSnapshot(id: string) {
   })
 }
 
-// ─── Cálculo (mutations) ─────────────────────────────────────────────────────
+// ─── Cálculo (mutations sem invalidação — efeito puro) ───────────────────────
 
 export function useCalcularServico() {
   return useMutation({

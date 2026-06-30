@@ -4,7 +4,7 @@
  * e Enquadramentos de Veículo.
  */
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import type {
   Empresa,
   SegmentoVeicular,
@@ -12,7 +12,9 @@ import type {
   TipoPintura,
   EnquadramentoVeiculo,
 } from "@paddock/types"
+
 import { apiFetch, fetchList } from "@/lib/api"
+import { useCreate, useDelete, useUpdate } from "@/lib/crud-mutations"
 
 const BASE = "/api/proxy/pricing"
 
@@ -64,31 +66,11 @@ export interface EmpresaPayload {
   is_active?: boolean
 }
 
-export function useCreateEmpresa() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: EmpresaPayload) =>
-      apiFetch<Empresa>(`${BASE}/empresas/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: pricingKeys.empresas }),
-  })
-}
-
-export function useUpdateEmpresa(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<EmpresaPayload>) =>
-      apiFetch<Empresa>(`${BASE}/empresas/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: pricingKeys.empresas }),
-  })
-}
+const EMPRESAS_OPTS = { invalidateKey: pricingKeys.empresas }
+export const useCreateEmpresa = () =>
+  useCreate<Empresa, EmpresaPayload>("pricing/empresas", EMPRESAS_OPTS)
+export const useUpdateEmpresa = () =>
+  useUpdate<Empresa, Partial<EmpresaPayload>>("pricing/empresas", EMPRESAS_OPTS)
 
 // ─── Segmentos Veiculares ─────────────────────────────────────────────────────
 
@@ -117,31 +99,11 @@ export interface SegmentoPayload {
   is_active?: boolean
 }
 
-export function useCreateSegmento() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: SegmentoPayload) =>
-      apiFetch<SegmentoVeicular>(`${BASE}/segmentos/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: pricingKeys.segmentos }),
-  })
-}
-
-export function useUpdateSegmento(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<SegmentoPayload>) =>
-      apiFetch<SegmentoVeicular>(`${BASE}/segmentos/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: pricingKeys.segmentos }),
-  })
-}
+const SEGMENTOS_OPTS = { invalidateKey: pricingKeys.segmentos }
+export const useCreateSegmento = () =>
+  useCreate<SegmentoVeicular, SegmentoPayload>("pricing/segmentos", SEGMENTOS_OPTS)
+export const useUpdateSegmento = () =>
+  useUpdate<SegmentoVeicular, Partial<SegmentoPayload>>("pricing/segmentos", SEGMENTOS_OPTS)
 
 // ─── Categorias de Tamanho ────────────────────────────────────────────────────
 
@@ -170,31 +132,11 @@ export interface TamanhoPayload {
   is_active?: boolean
 }
 
-export function useCreateTamanho() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: TamanhoPayload) =>
-      apiFetch<CategoriaTamanho>(`${BASE}/tamanhos/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: pricingKeys.tamanhos }),
-  })
-}
-
-export function useUpdateTamanho(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<TamanhoPayload>) =>
-      apiFetch<CategoriaTamanho>(`${BASE}/tamanhos/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: pricingKeys.tamanhos }),
-  })
-}
+const TAMANHOS_OPTS = { invalidateKey: pricingKeys.tamanhos }
+export const useCreateTamanho = () =>
+  useCreate<CategoriaTamanho, TamanhoPayload>("pricing/tamanhos", TAMANHOS_OPTS)
+export const useUpdateTamanho = () =>
+  useUpdate<CategoriaTamanho, Partial<TamanhoPayload>>("pricing/tamanhos", TAMANHOS_OPTS)
 
 // ─── Tipos de Pintura ─────────────────────────────────────────────────────────
 
@@ -221,31 +163,11 @@ export interface TipoPinturaPayload {
   is_active?: boolean
 }
 
-export function useCreateTipoPintura() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: TipoPinturaPayload) =>
-      apiFetch<TipoPintura>(`${BASE}/tipos-pintura/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: pricingKeys.tiposPintura }),
-  })
-}
-
-export function useUpdateTipoPintura(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<TipoPinturaPayload>) =>
-      apiFetch<TipoPintura>(`${BASE}/tipos-pintura/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: pricingKeys.tiposPintura }),
-  })
-}
+const TIPOS_PINTURA_OPTS = { invalidateKey: pricingKeys.tiposPintura }
+export const useCreateTipoPintura = () =>
+  useCreate<TipoPintura, TipoPinturaPayload>("pricing/tipos-pintura", TIPOS_PINTURA_OPTS)
+export const useUpdateTipoPintura = () =>
+  useUpdate<TipoPintura, Partial<TipoPinturaPayload>>("pricing/tipos-pintura", TIPOS_PINTURA_OPTS)
 
 // ─── Enquadramentos de Veículo ────────────────────────────────────────────────
 
@@ -279,40 +201,10 @@ export interface EnquadramentoPayload {
   is_active?: boolean
 }
 
-export function useCreateEnquadramento() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: EnquadramentoPayload) =>
-      apiFetch<EnquadramentoVeiculo>(`${BASE}/enquadramentos/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: pricingKeys.enquadramentos() }),
-  })
-}
-
-export function useUpdateEnquadramento(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<EnquadramentoPayload>) =>
-      apiFetch<EnquadramentoVeiculo>(`${BASE}/enquadramentos/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: pricingKeys.enquadramentos() }),
-  })
-}
-
-export function useDeleteEnquadramento() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (id: string) =>
-      apiFetch<void>(`${BASE}/enquadramentos/${id}/`, { method: "DELETE" }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: pricingKeys.enquadramentos() }),
-  })
-}
+const ENQUADRAMENTOS_OPTS = { invalidateKey: ["pricing", "enquadramentos"] }
+export const useCreateEnquadramento = () =>
+  useCreate<EnquadramentoVeiculo, EnquadramentoPayload>("pricing/enquadramentos", ENQUADRAMENTOS_OPTS)
+export const useUpdateEnquadramento = () =>
+  useUpdate<EnquadramentoVeiculo, Partial<EnquadramentoPayload>>("pricing/enquadramentos", ENQUADRAMENTOS_OPTS)
+export const useDeleteEnquadramento = () =>
+  useDelete("pricing/enquadramentos", ENQUADRAMENTOS_OPTS)
