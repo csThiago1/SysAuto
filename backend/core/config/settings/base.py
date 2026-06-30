@@ -218,8 +218,6 @@ CELERY_TIMEZONE = "America/Manaus"
 CELERY_TASK_ALWAYS_EAGER = False
 CELERY_TASK_ROUTES = {
     "apps.fiscal.*": {"queue": "fiscal"},
-    "apps.crm.*": {"queue": "crm"},
-    "apps.ai.*": {"queue": "ai"},
 }
 
 CELERY_BEAT_SCHEDULE = {
