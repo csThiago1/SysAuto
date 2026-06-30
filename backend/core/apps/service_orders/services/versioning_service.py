@@ -293,7 +293,14 @@ class _ServiceOrderVersioningMixin:
             status__in=["approved", "rejected", "autorizado", "negado", "superseded"],
         ).update(status="superseded")
 
-        cls.recalculate_version_totals(new_version)
+        # Preserva o total_seguradora atual ANTES do recalc — se foi setado
+        # pelo override de _create_version_and_respond (com source_grand_total
+        # da fonte oficial Cilia/IFX/HDI), passamos como override pra
+        # recalculate_version_totals não sobrescrever com soma dos items.
+        preserved_source_total = new_version.total_seguradora or None
+        cls.recalculate_version_totals(
+            new_version, source_grand_total=preserved_source_total,
+        )
 
         service_order.parts.filter(
             source_type="import",
