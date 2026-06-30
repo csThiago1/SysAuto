@@ -21,6 +21,7 @@ import type {
   SupplierWithContacts,
 } from "@paddock/types"
 import { apiFetch, fetchList } from "@/lib/api"
+import { useCreate } from "@/lib/crud-mutations"
 
 const PURCHASING = "/api/proxy/purchasing"
 
@@ -87,20 +88,11 @@ export function useOrdemCompra(id: string) {
   })
 }
 
-export function useCriarOC() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: { service_order: string }) =>
-      apiFetch<OrdemCompra>(`${PURCHASING}/ordens-compra/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: purchasingKeys.ordensCompra() })
-    },
-  })
-}
+export const useCriarOC = () =>
+  useCreate<OrdemCompra, { service_order: string }>(
+    "purchasing/ordens-compra",
+    { invalidateKey: purchasingKeys.ordensCompra() },
+  )
 
 export function useAdicionarItemOC(ocId: string) {
   const qc = useQueryClient()
@@ -188,19 +180,11 @@ export function useRegistrarRecebimento(ocId: string, itemId: string) {
 
 // ─── Montar OC (Quotation Builder flow) ──────────────────────────────────────
 
-export function useCreateOrdemCompra() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: { service_order: string; observacoes?: string }) =>
-      apiFetch<OrdemCompra>(`${PURCHASING}/ordens-compra/`, {
-        method: "POST",
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: purchasingKeys.all })
-    },
-  })
-}
+export const useCreateOrdemCompra = () =>
+  useCreate<OrdemCompra, { service_order: string; observacoes?: string }>(
+    "purchasing/ordens-compra",
+    { invalidateKey: purchasingKeys.all },
+  )
 
 export function useAddItemOC() {
   const qc = useQueryClient()
@@ -300,25 +284,17 @@ export function useCotacaoLogs(serviceOrderId: string | undefined) {
   })
 }
 
-export function useRegistrarCotacao() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: {
+export const useRegistrarCotacao = () =>
+  useCreate<
+    CotacaoLog,
+    {
       service_order: string
       supplier: string
       supplier_contact?: string | null
       mensagem: string
       pedido_ids: string[]
-    }) =>
-      apiFetch<CotacaoLog>(`${PURCHASING}/cotacao-logs/`, {
-        method: "POST",
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: purchasingKeys.all })
-    },
-  })
-}
+    }
+  >("purchasing/cotacao-logs", { invalidateKey: purchasingKeys.all })
 
 // ─── Respostas Cotacao ────────────────────────────────────────────────────────
 
@@ -333,10 +309,10 @@ export function useRespostasCotacao(serviceOrderId: string | undefined) {
   })
 }
 
-export function useRegistrarResposta() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: {
+export const useRegistrarResposta = () =>
+  useCreate<
+    RespostaCotacao,
+    {
       pedido_compra: string
       supplier: string
       valor_unitario: string
@@ -345,16 +321,8 @@ export function useRegistrarResposta() {
       condicoes_pagamento?: string
       condicao_pagamento_obj?: string
       observacoes?: string
-    }) =>
-      apiFetch<RespostaCotacao>(`${PURCHASING}/respostas-cotacao/`, {
-        method: "POST",
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: purchasingKeys.all })
-    },
-  })
-}
+    }
+  >("purchasing/respostas-cotacao", { invalidateKey: purchasingKeys.all })
 
 export function useSelecionarResposta() {
   const qc = useQueryClient()
@@ -388,19 +356,11 @@ export function useAprovacao(id: string) {
   })
 }
 
-export function useEnviarParaAprovacao() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: { service_order: string; observacoes_comprador?: string }) =>
-      apiFetch<AprovacaoCotacao>(`${PURCHASING}/aprovacoes/`, {
-        method: "POST",
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: purchasingKeys.all })
-    },
-  })
-}
+export const useEnviarParaAprovacao = () =>
+  useCreate<AprovacaoCotacao, { service_order: string; observacoes_comprador?: string }>(
+    "purchasing/aprovacoes",
+    { invalidateKey: purchasingKeys.all },
+  )
 
 export function useAprovarCotacao() {
   const qc = useQueryClient()
@@ -455,33 +415,17 @@ export function useCondicoesPagamento() {
   })
 }
 
-export function useCreatePrazo() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: { label: string; dias_uteis: number }) =>
-      apiFetch<PrazoEntrega>(`${PURCHASING}/prazos-entrega/`, {
-        method: "POST",
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: [...purchasingKeys.all, "prazos-entrega"] })
-    },
-  })
-}
+export const useCreatePrazo = () =>
+  useCreate<PrazoEntrega, { label: string; dias_uteis: number }>(
+    "purchasing/prazos-entrega",
+    { invalidateKey: [...purchasingKeys.all, "prazos-entrega"] },
+  )
 
-export function useCreateCondicao() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: { label: string }) =>
-      apiFetch<CondicaoPagamento>(`${PURCHASING}/condicoes-pagamento/`, {
-        method: "POST",
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: [...purchasingKeys.all, "condicoes-pagamento"] })
-    },
-  })
-}
+export const useCreateCondicao = () =>
+  useCreate<CondicaoPagamento, { label: string }>(
+    "purchasing/condicoes-pagamento",
+    { invalidateKey: [...purchasingKeys.all, "condicoes-pagamento"] },
+  )
 
 export interface ReceberItemResult {
   detail: string
