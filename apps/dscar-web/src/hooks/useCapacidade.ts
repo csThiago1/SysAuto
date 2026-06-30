@@ -1,6 +1,8 @@
 "use client"
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+
+import { useCreate, useDelete } from "@/lib/crud-mutations"
 import type {
   AuditoriaMotor,
   BloqueioCapacidade,
@@ -27,26 +29,12 @@ export function useCapacidades() {
   })
 }
 
-export function useCreateCapacidade() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (payload: Partial<CapacidadeTecnico>) =>
-      apiFetch<CapacidadeTecnico>(`${BASE_CAP}/capacidades/`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["capacidades"] }),
+export const useCreateCapacidade = () =>
+  useCreate<CapacidadeTecnico, Partial<CapacidadeTecnico>>("capacidade/capacidades", {
+    invalidateKey: ["capacidades"],
   })
-}
-
-export function useDeleteCapacidade() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (id: string) =>
-      apiFetch<void>(`${BASE_CAP}/capacidades/${id}/`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["capacidades"] }),
-  })
-}
+export const useDeleteCapacidade = () =>
+  useDelete("capacidade/capacidades", { invalidateKey: ["capacidades"] })
 
 // ── Bloqueios ───────────────────────────────────────────────────────────────
 
@@ -57,26 +45,12 @@ export function useBloqueios() {
   })
 }
 
-export function useCreateBloqueio() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (payload: Partial<BloqueioCapacidade>) =>
-      apiFetch<BloqueioCapacidade>(`${BASE_CAP}/bloqueios/`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["bloqueios-capacidade"] }),
+export const useCreateBloqueio = () =>
+  useCreate<BloqueioCapacidade, Partial<BloqueioCapacidade>>("capacidade/bloqueios", {
+    invalidateKey: ["bloqueios-capacidade"],
   })
-}
-
-export function useDeleteBloqueio() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (id: string) =>
-      apiFetch<void>(`${BASE_CAP}/bloqueios/${id}/`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["bloqueios-capacidade"] }),
-  })
-}
+export const useDeleteBloqueio = () =>
+  useDelete("capacidade/bloqueios", { invalidateKey: ["bloqueios-capacidade"] })
 
 // ── Cálculos ────────────────────────────────────────────────────────────────
 
