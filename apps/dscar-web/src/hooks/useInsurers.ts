@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import type { Insurer, InsurerFull, InsurerTenantProfile, PaginatedResponse } from "@paddock/types"
+
 import { apiFetch } from "@/lib/api"
+import { useCreate, useDelete, useUpdate } from "@/lib/crud-mutations"
 
 const API = "/api/proxy/insurers"
 
@@ -44,40 +46,9 @@ export interface InsurerPayload {
   is_active?: boolean
 }
 
-export function useInsurerCreate() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: InsurerPayload) =>
-      apiFetch<InsurerFull>(`${API}/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: insurerKeys.all }),
-  })
-}
-
-export function useInsurerUpdate(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<InsurerPayload>) =>
-      apiFetch<InsurerFull>(`${API}/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: insurerKeys.all }),
-  })
-}
-
-export function useInsurerDelete() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (id: string) =>
-      apiFetch<void>(`${API}/${id}/`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: insurerKeys.all }),
-  })
-}
+export const useInsurerCreate = () => useCreate<InsurerFull, InsurerPayload>("insurers")
+export const useInsurerUpdate = () => useUpdate<InsurerFull, Partial<InsurerPayload>>("insurers")
+export const useInsurerDelete = () => useDelete("insurers")
 
 export function useInsurerUploadLogo() {
   const qc = useQueryClient()

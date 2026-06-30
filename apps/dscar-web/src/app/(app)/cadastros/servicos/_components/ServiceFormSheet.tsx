@@ -45,7 +45,7 @@ interface Props {
 
 export function ServiceFormSheet({ open, onOpenChange, editing }: Props) {
   const create = useServiceCatalogCreate()
-  const update = useServiceCatalogUpdate(editing?.id ?? "")
+  const update = useServiceCatalogUpdate()
 
   const {
     register,
@@ -72,7 +72,7 @@ export function ServiceFormSheet({ open, onOpenChange, editing }: Props) {
   async function onSubmit(data: FormData) {
     try {
       if (editing) {
-        await update.mutateAsync(data)
+        await update.mutateAsync({ id: editing.id, data })
         toast.success("Serviço atualizado.")
       } else {
         await create.mutateAsync(data)

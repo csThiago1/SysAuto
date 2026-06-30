@@ -53,7 +53,7 @@ const LABEL = "block text-xs font-bold uppercase tracking-wide text-muted-foregr
 
 export function InsurerDialog({ open, onOpenChange, editing }: Props) {
   const create = useInsurerCreate()
-  const update = useInsurerUpdate(editing?.id ?? "")
+  const update = useInsurerUpdate()
   const uploadLogo = useInsurerUploadLogo()
   // InsurerFull not used here; editing is Insurer which has all required fields
 
@@ -120,7 +120,7 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
       let targetId: string
 
       if (editing) {
-        await update.mutateAsync(data)
+        await update.mutateAsync({ id: editing.id, data })
         targetId = editing.id
       } else {
         const created = await create.mutateAsync(data)

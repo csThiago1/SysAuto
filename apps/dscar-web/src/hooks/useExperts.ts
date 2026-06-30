@@ -1,18 +1,17 @@
 /**
- * useExperts — CRUD hooks for Especialistas / Peritos
+ * useExperts — CRUD hooks for Especialistas / Peritos.
+ * CRUD genérico via @/lib/crud-mutations.
  */
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { apiFetch, fetchList } from "@/lib/api"
+import { useQuery } from "@tanstack/react-query"
 import type { Expert } from "@paddock/types"
 
-// ─── Keys ─────────────────────────────────────────────────────────────────────
+import { fetchList } from "@/lib/api"
+import { useCreate, useUpdate } from "@/lib/crud-mutations"
 
 const expertsKeys = {
   all: ["experts"] as const,
   list: (params: object) => ["experts", "list", params] as const,
 }
-
-// ─── Hooks ────────────────────────────────────────────────────────────────────
 
 export function useExperts(params?: { search?: string }) {
   const query = new URLSearchParams()
@@ -23,28 +22,7 @@ export function useExperts(params?: { search?: string }) {
   })
 }
 
-export function useCreateExpert() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: { name: string; email: string; phone: string; is_active: boolean }) =>
-      apiFetch<Expert>("/api/proxy/experts/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: expertsKeys.all }),
-  })
-}
+type ExpertPayload = { name: string; email: string; phone: string; is_active: boolean }
 
-export function useUpdateExpert() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Expert> }) =>
-      apiFetch<Expert>(`/api/proxy/experts/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: expertsKeys.all }),
-  })
-}
+export const useCreateExpert = () => useCreate<Expert, ExpertPayload>("experts")
+export const useUpdateExpert = () => useUpdate<Expert, Partial<Expert>>("experts")

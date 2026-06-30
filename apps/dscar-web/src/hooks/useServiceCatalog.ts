@@ -5,7 +5,9 @@
  * Sprint 16 — SC-3
  */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+
 import { apiFetch, fetchList } from "@/lib/api"
+import { useCreate, useDelete, useUpdate } from "@/lib/crud-mutations"
 import type {
   PaginatedResponse,
   ServiceCatalogItem,
@@ -44,44 +46,14 @@ export function useServiceCatalog(
   })
 }
 
-export function useServiceCatalogCreate(): ReturnType<
-  typeof useMutation<ServiceCatalogDetail, Error, ServiceCatalogCreatePayload>
-> {
-  const qc = useQueryClient()
-  return useMutation<ServiceCatalogDetail, Error, ServiceCatalogCreatePayload>({
-    mutationFn: (payload: ServiceCatalogCreatePayload) =>
-      apiFetch<ServiceCatalogDetail>(`${CATALOG_API}/`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: catalogKeys.all }),
-  })
-}
+const CATALOG_RESOURCE = "service-orders/service-catalog"
+const CATALOG_OPTS = { invalidateKey: catalogKeys.all }
 
-export function useServiceCatalogUpdate(
-  id: string
-): ReturnType<typeof useMutation<ServiceCatalogDetail, Error, ServiceCatalogUpdatePayload>> {
-  const qc = useQueryClient()
-  return useMutation<ServiceCatalogDetail, Error, ServiceCatalogUpdatePayload>({
-    mutationFn: (payload: ServiceCatalogUpdatePayload) =>
-      apiFetch<ServiceCatalogDetail>(`${CATALOG_API}/${id}/`, {
-        method: "PATCH",
-        body: JSON.stringify(payload),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: catalogKeys.all }),
-  })
-}
-
-export function useServiceCatalogDelete(): ReturnType<
-  typeof useMutation<void, Error, string>
-> {
-  const qc = useQueryClient()
-  return useMutation<void, Error, string>({
-    mutationFn: (id: string) =>
-      apiFetch<void>(`${CATALOG_API}/${id}/`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: catalogKeys.all }),
-  })
-}
+export const useServiceCatalogCreate = () =>
+  useCreate<ServiceCatalogDetail, ServiceCatalogCreatePayload>(CATALOG_RESOURCE, CATALOG_OPTS)
+export const useServiceCatalogUpdate = () =>
+  useUpdate<ServiceCatalogDetail, ServiceCatalogUpdatePayload>(CATALOG_RESOURCE, CATALOG_OPTS)
+export const useServiceCatalogDelete = () => useDelete(CATALOG_RESOURCE, CATALOG_OPTS)
 
 // ─── OS Labor Items ───────────────────────────────────────────────────────────
 
