@@ -95,6 +95,13 @@ typecheck: ## mypy + tsc
 	$(BACKEND) && .venv/bin/mypy .
 	npm run typecheck
 
+gen-api-types: ## Gera tipos TS do schema OpenAPI (Django → dscar-web/src/types/api.d.ts)
+	@echo "🔧  Extraindo schema OpenAPI do Django..."
+	@$(COMPOSE) exec -T django python manage.py spectacular --format openapi-json 2>/dev/null > /tmp/paddock-schema.json
+	@echo "🔧  Gerando tipos TypeScript..."
+	@cd apps/dscar-web && npm run gen-api-types
+	@echo "✅  Tipos gerados em apps/dscar-web/src/types/api.d.ts"
+
 sprint-baseline: ## Roda baseline de sprint: Django check, coleta pytest e typecheck
 	@bash scripts/sprint-baseline.sh
 

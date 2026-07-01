@@ -159,6 +159,14 @@ class FooViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     ...
 ```
 
+**Tipos TypeScript gerados do Django** — `apps/dscar-web/src/types/api.d.ts` é gerado do schema OpenAPI via `make gen-api-types`. Acesse via helper:
+```ts
+import type { ApiSchema } from "@/types"
+type Insurer = ApiSchema<"InsurerMinimal">
+type Person = ApiSchema<"Person">
+```
+Regerar quando: adicionar novo serializer, mudar campos existentes, ou serializer_class de viewset. `@paddock/types` continua válido pros tipos manuais que ainda não migraram — migração é incremental, não obrigatória. NUNCA editar `api.d.ts` à mão.
+
 **Campos monetários (DecimalField)** — usar constantes de `apps.accounting.constants`:
 ```python
 from apps.accounting.constants import MONEY_FIELD_KWARGS
