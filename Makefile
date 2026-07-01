@@ -24,22 +24,19 @@ dev-api: ## Inicia o servidor Django
 dev-dscar: ## Inicia o app DS Car ERP (Next.js)
 	cd apps/dscar-web && npm run dev
 
-dev-store: ## Inicia o app Store (Next.js)
-	cd apps/store-web && npm run dev
-
 dev-web: ## Mata portas ocupadas e sobe todos os apps Next.js via Turborepo
 	@$(MAKE) dev-kill-ports
 	npx turbo run dev
 
-dev-kill-ports: ## Mata processos fantasma nas portas 3001-3002
-	@for port in 3001 3002; do \
+dev-kill-ports: ## Mata processos fantasma na porta 3001
+	@for port in 3001; do \
 		pid=$$(lsof -ti :$$port 2>/dev/null); \
 		if [ -n "$$pid" ]; then \
 			echo "⚠️  Matando processo $$pid na porta $$port"; \
 			kill $$pid 2>/dev/null || true; \
 		fi; \
 	done
-	@echo "✅  Portas 3001-3002 livres"
+	@echo "✅  Porta 3001 livre"
 
 dev-stop: ## Para todos os serviços Docker
 	$(COMPOSE) down
