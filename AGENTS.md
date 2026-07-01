@@ -159,6 +159,15 @@ class FooViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     ...
 ```
 
+**Campos monetários (DecimalField)** — usar constantes de `apps.accounting.constants`:
+```python
+from apps.accounting.constants import MONEY_FIELD_KWARGS
+
+class Foo(models.Model):
+    amount = models.DecimalField(**MONEY_FIELD_KWARGS)  # 14,2
+```
+Também disponíveis: `QUANTITY_FIELD_KWARGS` (12,4 pra peças/litros/horas), `PERCENT_FIELD_KWARGS` (6,2 pra % de margem/imposto). Campos existentes usam valores diversos (10/12/14/18) por herança — não migrar sem motivo.
+
 **Frontend hooks CRUD** — usar `useCreate/useUpdate/useDelete` de `@/lib/crud-mutations` no dscar-web. URL `/api/proxy/{resource}/`, invalida `[resource]` (override via `invalidateKey`). **NÃO** escrever `useMutation` inline com `apiFetch(POST/PATCH/DELETE)` em hook novo.
 
 ```ts
