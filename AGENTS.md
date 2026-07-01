@@ -22,9 +22,8 @@ grupo-dscar/
 ├── package.json
 ├── apps/
 │   ├── dscar-web/          ← ERP DS Car (Next.js 15)
-│   ├── mobile/             ← App React Native + Expo
-│   ├── hub/                ← Portal SSO (Next.js 15) [fora do MVP]
-│   └── store-web/          ← PDV + E-commerce lojas [fora do MVP]
+│   ├── mobile/             ← App React Native + Expo [pausado — PWA em avaliação]
+│   └── hub/                ← Portal SSO (Next.js 15) [fora do MVP]
 ├── backend/
 │   ├── core/               ← Django 5 — API principal
 │   │   ├── apps/           ← Apps Django (ver seção Backend)
@@ -67,13 +66,15 @@ grupo-dscar/
 - `insurers/` — Seguradoras (SHARED_APP)
 - `experts/` — Especialistas/peritos (TENANT_APP)
 - `signatures/` — Assinaturas digitais
-- `documents/` — Documentos PDF (WeasyPrint)
+- `documents/` — Documentos PDF (WeasyPrint + PDFService + logo helpers)
 
 **Fora do MVP (não deletar, apenas inativo):**
 - `pricing_engine/`, `pricing_catalog/`, `pricing_profile/`, `pricing_tech/`, `pricing_benchmark/` — Motor de Precificação
-- `ai/` — Codex API + RAG
-- `crm/` — CRM + WhatsApp
-- `store/` — PDV + E-commerce
+
+**Deletados em 2026-06-30 (cleanup sprint):**
+- `ai/`, `crm/`, `store/` — scaffolds Django sem code path ativo. Não recriar sem discussão.
+- `apps.pdf_engine` mergeado em `apps.documents` — templates preservados no namespace `pdf_engine/` dentro de `documents/templates/`.
+- `apps/store-web/` e `packages/auth` — workspaces npm sem uso real.
 
 ---
 
@@ -146,6 +147,27 @@ chore(infra): atualiza terraform ECS Fargate
 - Nunca raw SQL — usar ORM Django
 - `select_related/prefetch_related` obrigatórios quando há relações
 - `logger = logging.getLogger(__name__)` — nunca `print()`
+
+### Padrões canônicos do projeto
+
+**Backend ViewSets com RBAC write/read** — usar `PermissionsByActionMixin` de `apps.authentication.permissions`. Defaults: write=`IsManagerOrAbove`, read=`IsConsultantOrAbove`. Override via class attrs `write_permission`, `read_permission`, `write_actions`. **NÃO** escrever `def get_permissions(self)` com if-action-in-tuple em código novo.
+
+```python
+class FooViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
+    write_actions = ("approve",)          # opcional
+    write_permission = IsAdminOrAbove      # opcional (default Manager+)
+    ...
+```
+
+**Frontend hooks CRUD** — usar `useCreate/useUpdate/useDelete` de `@/lib/crud-mutations` no dscar-web. URL `/api/proxy/{resource}/`, invalida `[resource]` (override via `invalidateKey`). **NÃO** escrever `useMutation` inline com `apiFetch(POST/PATCH/DELETE)` em hook novo.
+
+```ts
+export const useCreateFoo = () => useCreate<Foo, FooPayload>("foos")
+export const useUpdateFoo = () => useUpdate<Foo, Partial<FooPayload>>("foos")
+export const useDeleteFoo = () => useDelete("foos")
+```
+
+Casos que NÃO fitam o factory (mantém `useMutation` inline): toast custom em onSuccess/onError, FormData, URL aninhada com id no path, invalidação múltipla independente, invalidação callback-based.
 
 ---
 
