@@ -4,6 +4,13 @@
 # ─── Expo prebuild artifacts (root-level leftover) ──────────────────────────
 /ios/
 
+# ─── Screenshots ao rodar browser tools ─────────────────────────────────────
+# Não capturar PNGs/JPGs no root (mockups, playwright, evidências ad-hoc).
+# Assets legítimos ficam em apps/*/public, apps/*/assets, etc.
+/*.png
+/*.jpg
+/*.jpeg
+
 # ─── Node.js ────────────────────────────────────────────────────────────────
 node_modules/
 .next/
