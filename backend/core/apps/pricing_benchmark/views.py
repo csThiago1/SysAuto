@@ -50,7 +50,6 @@ class BenchmarkIngestaoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     serializer_class = BenchmarkIngestaoSerializer
     queryset = BenchmarkIngestao.objects.select_related("fonte").order_by("-criado_em")
 
-    permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
     def perform_create(self, serializer: BenchmarkIngestaoSerializer) -> None:
         ing = serializer.save(criado_por=self.request.user)
@@ -69,7 +68,6 @@ class BenchmarkAmostraViewSet(PermissionsByActionMixin, viewsets.ReadOnlyModelVi
 
     serializer_class = BenchmarkAmostraSerializer
 
-    permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
     def get_queryset(self):  # type: ignore[override]
         qs = BenchmarkAmostra.objects.select_related(
@@ -145,7 +143,6 @@ class BenchmarkEstatisticasView(viewsets.ViewSet):
 class IAComposicaoViewSet(PermissionsByActionMixin, viewsets.ViewSet):
     """Sugestão de composição via Claude e histórico de sugestões."""
 
-    permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
     @action(detail=False, methods=["post"], url_path="sugerir-composicao")
     def sugerir_composicao(self, request):

@@ -40,7 +40,6 @@ class ChartOfAccountViewSet(PermissionsByActionMixin, ModelViewSet):
     balance  GET  /accounting/chart-of-accounts/{id}/balance/?start=&end=
     """
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     http_method_names = ["get", "post", "put", "patch", "head", "options"]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = ChartOfAccountFilter

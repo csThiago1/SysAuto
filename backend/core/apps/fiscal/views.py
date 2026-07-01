@@ -53,7 +53,6 @@ logger = logging.getLogger(__name__)
 class NFeEntradaViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de NF-e de Entrada + ações: reconciliar item e gerar estoque."""
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
     def get_queryset(self):  # type: ignore[override]
         qs = (

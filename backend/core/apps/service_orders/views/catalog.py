@@ -31,7 +31,6 @@ class ServiceCatalogViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """
 
     serializer_class = ServiceCatalogSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
 
     def get_queryset(self) -> QuerySet:
@@ -87,7 +86,6 @@ class HolidayViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """
 
     serializer_class = HolidaySerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
 
     def get_queryset(self) -> QuerySet:

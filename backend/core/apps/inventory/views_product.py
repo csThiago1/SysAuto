@@ -39,7 +39,6 @@ class TipoPecaViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Tipos de Peça. Leitura CONSULTANT+, escrita MANAGER+."""
 
     serializer_class = TipoPecaSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
 
     def get_queryset(self) -> QuerySet[TipoPeca]:
@@ -53,7 +52,6 @@ class CategoriaProdutoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Categorias de Produto (Peça). Leitura CONSULTANT+, escrita MANAGER+."""
 
     serializer_class = CategoriaProdutoSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
 
     def get_queryset(self) -> QuerySet[CategoriaProduto]:
@@ -67,7 +65,6 @@ class CategoriaInsumoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Categorias de Insumo. Leitura CONSULTANT+, escrita MANAGER+."""
 
     serializer_class = CategoriaInsumoSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
 
     def get_queryset(self) -> QuerySet[CategoriaInsumo]:
@@ -81,7 +78,6 @@ class ProdutoComercialPecaViewSet(PermissionsByActionMixin, viewsets.ModelViewSe
     """CRUD de Produtos Comerciais (Peça). Filtro por ?tipo_peca=, ?categoria=, ?busca=."""
 
     serializer_class = ProdutoComercialPecaSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
 
     def get_queryset(self) -> QuerySet[ProdutoComercialPeca]:
@@ -115,7 +111,6 @@ class ProdutoComercialInsumoViewSet(PermissionsByActionMixin, viewsets.ModelView
     """CRUD de Produtos Comerciais (Insumo). Filtro por ?categoria_insumo=, ?busca=."""
 
     serializer_class = ProdutoComercialInsumoSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
 
     def get_queryset(self) -> QuerySet[ProdutoComercialInsumo]:

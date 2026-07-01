@@ -19,7 +19,6 @@ class VehicleViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de veículos físicos + lookup de placa."""
 
     serializer_class = VehicleSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
     def get_queryset(self):  # type: ignore[override]
         return Vehicle.objects.filter(is_active=True).select_related("version")

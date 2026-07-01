@@ -72,7 +72,6 @@ class ParametroRateioViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de ParametroRateio — parâmetros de rateio de despesas recorrentes."""
 
     serializer_class = ParametroRateioSerializer
-    permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
     def get_queryset(self):  # type: ignore[override]
         """Retorna parâmetros ativos, mais recente primeiro."""
@@ -88,7 +87,6 @@ class ParametroCustoHoraViewSet(PermissionsByActionMixin, viewsets.ModelViewSet)
     """CRUD de ParametroCustoHora — encargos para cálculo de custo/hora."""
 
     serializer_class = ParametroCustoHoraSerializer
-    permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
     def get_queryset(self):  # type: ignore[override]
         """Retorna parâmetros ativos, mais recente primeiro."""
@@ -104,7 +102,6 @@ class CustoHoraFallbackViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de CustoHoraFallback — valor direto de custo/hora por categoria."""
 
     serializer_class = CustoHoraFallbackSerializer
-    permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
     def get_queryset(self):  # type: ignore[override]
         """Retorna fallbacks ativos com categoria pré-carregada, mais recente primeiro."""
@@ -321,7 +318,6 @@ class CalculoCustoSnapshotViewSet(PermissionsByActionMixin, viewsets.ReadOnlyMod
 
         return qs
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
     def get_serializer_class(self):  # type: ignore[override]
         """Serializer distinto por role — dados sensíveis nunca vazam (P10)."""

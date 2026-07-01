@@ -35,7 +35,6 @@ class ArmazemViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Armazéns. Leitura CONSULTANT+, escrita MANAGER+."""
 
     serializer_class = ArmazemSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
 
     def get_queryset(self) -> QuerySet[Armazem]:
@@ -97,7 +96,6 @@ class RuaViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Ruas. Filtro por ?armazem={id}."""
 
     serializer_class = RuaSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
 
     def get_queryset(self) -> QuerySet[Rua]:
@@ -126,7 +124,6 @@ class PrateleiraViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Prateleiras. Filtro por ?rua={id}."""
 
     serializer_class = PrateleiraSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
 
     def get_queryset(self) -> QuerySet[Prateleira]:
@@ -153,7 +150,6 @@ class NivelViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
     """CRUD de Níveis. Ponto terminal do endereçamento WMS."""
 
     serializer_class = NivelSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
 
     def get_queryset(self) -> QuerySet[Nivel]:

@@ -33,7 +33,6 @@ class CostCenterViewSet(PermissionsByActionMixin, ModelViewSet):
     update   PATCH /accounting/cost-centers/{id}/
     """
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     http_method_names = ["get", "post", "put", "patch", "head", "options"]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {"is_active": ["exact"]}

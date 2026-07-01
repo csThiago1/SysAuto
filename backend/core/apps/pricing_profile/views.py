@@ -144,4 +144,3 @@ class EnquadramentoFaltanteViewSet(PermissionsByActionMixin, viewsets.ReadOnlyMo
 
     queryset = EnquadramentoFaltante.objects.all().order_by("-ocorrencias")
     serializer_class = EnquadramentoFaltanteSerializer
-    permission_classes = [IsAuthenticated, IsManagerOrAbove]

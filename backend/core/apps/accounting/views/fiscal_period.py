@@ -36,7 +36,6 @@ class FiscalYearViewSet(PermissionsByActionMixin, ModelViewSet):
     create   POST /accounting/fiscal-years/
     """
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     serializer_class = FiscalYearSerializer
     http_method_names = ["get", "post", "head", "options"]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
@@ -67,7 +66,6 @@ class FiscalPeriodViewSet(PermissionsByActionMixin,
     current  GET  /accounting/fiscal-periods/current/
     """
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = {"is_closed": ["exact"], "fiscal_year": ["exact"]}
     ordering_fields = ["fiscal_year__year", "number"]

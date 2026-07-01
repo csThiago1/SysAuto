@@ -50,7 +50,6 @@ class JournalEntryViewSet(PermissionsByActionMixin,
     DELETE: HTTP 405 — lancamentos sao imutaveis
     """
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = JournalEntryFilter
     search_fields = ["number", "description"]
