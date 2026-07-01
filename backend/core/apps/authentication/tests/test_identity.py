@@ -149,3 +149,49 @@ class TestPermissionsByActionMixin(SimpleTestCase):
             vs = self._make_viewset(action)
             perms = vs.get_permissions()
             assert any(isinstance(p, IsAuthenticated) for p in perms)
+
+
+class TestHasTenantPermission(SimpleTestCase):
+    """HasTenantPermission suporta 2 padrões DRF: instância e factory."""
+
+    def test_instance_pattern_from_get_permissions(self) -> None:
+        """`HasTenantPermission("code")` retorna instância com code no self."""
+        from apps.authentication.permissions import HasTenantPermission
+
+        perm = HasTenantPermission("compras.view")
+        assert perm.code == "compras.view"
+        assert hasattr(perm, "has_permission")
+        assert "compras.view" in perm.message
+
+    def test_factory_creates_class_with_baked_code(self) -> None:
+        """`.factory("code")` retorna subclass com code como class attr."""
+        from apps.authentication.permissions import HasTenantPermission
+
+        cls = HasTenantPermission.factory("estoque.move")
+        assert isinstance(cls, type)
+        assert issubclass(cls, HasTenantPermission)
+        assert cls.code == "estoque.move"
+
+    def test_factory_class_instantiates_without_args(self) -> None:
+        """Subclass da factory é instanciável sem args — o padrão DRF."""
+        from apps.authentication.permissions import HasTenantPermission
+
+        cls = HasTenantPermission.factory("estoque.move")
+        instance = cls()  # DRF chama assim em get_permissions default
+        assert instance.code == "estoque.move"
+
+    def test_drf_iteration_pattern_works(self) -> None:
+        """Simula o loop DRF `[p() for p in permission_classes]`."""
+        from rest_framework.permissions import IsAuthenticated
+
+        from apps.authentication.permissions import HasTenantPermission
+
+        permission_classes = [
+            IsAuthenticated,
+            HasTenantPermission.factory("estoque.move"),
+        ]
+        # Isso é o que DRF faz em rest_framework/views.py:278
+        instances = [p() for p in permission_classes]
+        assert isinstance(instances[0], IsAuthenticated)
+        assert isinstance(instances[1], HasTenantPermission)
+        assert instances[1].code == "estoque.move"

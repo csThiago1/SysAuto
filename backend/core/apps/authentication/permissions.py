@@ -133,21 +133,54 @@ class PermissionsByActionMixin:
 
 
 class HasTenantPermission(BasePermission):
-    """DRF permission check using tenant permission matrix.
+    """DRF permission check via matriz de permissões do tenant.
 
-    Resolves permissions via the configurable RBAC matrix:
-    role defaults + tenant-level overrides (TenantPermissionOverride).
+    Resolve permissões via RBAC configurável: defaults por role + overrides
+    por tenant (TenantPermissionOverride).
 
-    Uso nos ViewSets:
-        permission_classes = [IsAuthenticated, HasTenantPermission("os.create")]
+    Dois padrões de uso, ambos idiomáticos DRF:
+
+    1) INSTÂNCIA em get_permissions() (RBAC dinâmica por action):
+
+        def get_permissions(self):
+            if self.action == "create":
+                return [IsAuthenticated(), HasTenantPermission("compras.create")]
+            return [IsAuthenticated(), HasTenantPermission("compras.view")]
+
+    2) FACTORY em permission_classes (RBAC estática pela view):
+
+        class MyView(APIView):
+            permission_classes = [
+                IsAuthenticated, HasTenantPermission.factory("estoque.move")
+            ]
+
+    Passar a instância direto em permission_classes NÃO funciona — DRF
+    instancia cada entrada chamando `permission()`, e instâncias não são
+    callable. Use .factory() nesse caso.
     """
 
-    def __init__(self, code: str) -> None:
-        self.code = code
-        self.message = f"Você não tem a permissão '{code}'."
+    code: str = ""
+
+    def __init__(self, code: str = "") -> None:
+        if code:
+            self.code = code
+        self.message = f"Você não tem a permissão '{self.code}'."
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         if not request.user or not request.user.is_authenticated:
             return False
         from .permission_service import has_permission_from_request
         return has_permission_from_request(request, self.code)
+
+    @classmethod
+    def factory(cls, code: str) -> type["HasTenantPermission"]:
+        """Cria subclass com `code` como class attribute.
+
+        DRF pode instanciar a subclass via `permission()` sem argumentos —
+        o código vem do class attr, não do __init__ arg.
+        """
+        return type(
+            f"HasTenantPermission_{code.replace('.', '_')}",
+            (cls,),
+            {"code": code},
+        )
