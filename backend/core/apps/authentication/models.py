@@ -177,17 +177,32 @@ class GlobalUser(AbstractBaseUser, PermissionsMixin):
 # ─── Auth Token Models ────────────────────────────────────────────────────────
 
 
-class RefreshToken(models.Model):
-    """Token de refresh armazenado como hash — suporta rotação e revogação."""
+class _AbstractToken(models.Model):
+    """Base pra tokens auth (refresh, password reset, email verify).
+
+    Todo token guarda hash (nunca o valor puro), tem TTL e vive por usuário.
+    Subclasses adicionam apenas o campo de estado próprio (is_revoked /
+    is_used) porque é a única semântica diferente entre eles.
+    """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(GlobalUser, on_delete=models.CASCADE)
+    token_hash = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        abstract = True
+
+
+class RefreshToken(_AbstractToken):
+    """Token de refresh armazenado como hash — suporta rotação e revogação."""
+
     user = models.ForeignKey(
         GlobalUser, on_delete=models.CASCADE, related_name="refresh_tokens"
     )
     token_hash = models.CharField(max_length=64, unique=True, db_index=True)
     is_revoked = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
 
     class Meta:
         db_table = "auth_refresh_tokens"
@@ -198,15 +213,10 @@ class RefreshToken(models.Model):
         return f"RefreshToken({self.user_id}, revoked={self.is_revoked})"
 
 
-class PasswordResetToken(models.Model):
+class PasswordResetToken(_AbstractToken):
     """Token de reset de senha — uso único, com expiração."""
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(GlobalUser, on_delete=models.CASCADE)
-    token_hash = models.CharField(max_length=64, unique=True)
     is_used = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
 
     class Meta:
         db_table = "auth_password_reset_tokens"
@@ -217,15 +227,10 @@ class PasswordResetToken(models.Model):
         return f"PasswordResetToken({self.user_id}, used={self.is_used})"
 
 
-class EmailVerificationToken(models.Model):
+class EmailVerificationToken(_AbstractToken):
     """Token de verificação de email — uso único, com expiração."""
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(GlobalUser, on_delete=models.CASCADE)
-    token_hash = models.CharField(max_length=64, unique=True)
     is_used = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
 
     class Meta:
         db_table = "auth_email_verify_tokens"
