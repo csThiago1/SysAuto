@@ -1,8 +1,11 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import type { StaffUser } from "@paddock/types"
+
 import { fetchList } from "@/lib/api"
+import type { ApiSchema } from "@/types"
+
+type StaffUser = ApiSchema<"StaffUser">
 
 /** Todos os usuários ativos */
 export function useStaff() {

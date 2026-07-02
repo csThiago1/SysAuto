@@ -12075,7 +12075,9 @@ export interface components {
             id: string;
             name: string;
             email_hash: string;
-            role: string;
+            role: components["schemas"]["RoleAa5Enum"];
+            /** @description Overrides individuais vindos do JWT (permission_service). */
+            extra_permissions: string[];
             active_company: string;
             tenant_schema: string;
             is_employee: boolean;
@@ -17630,18 +17632,9 @@ export interface components {
             /** Format: email */
             email: string;
             name: string;
-            role: components["schemas"]["RegisterRequestRoleEnum"];
+            role: components["schemas"]["RoleAa5Enum"];
             password: string;
         };
-        /**
-         * @description * `OWNER` - OWNER
-         *     * `ADMIN` - ADMIN
-         *     * `MANAGER` - MANAGER
-         *     * `CONSULTANT` - CONSULTANT
-         *     * `STOREKEEPER` - STOREKEEPER
-         * @enum {string}
-         */
-        RegisterRequestRoleEnum: "OWNER" | "ADMIN" | "MANAGER" | "CONSULTANT" | "STOREKEEPER";
         /** @description Body de POST /auth/reset-password/. */
         ResetPasswordRequest: {
             /** @description Token raw enviado por email */
@@ -17690,6 +17683,15 @@ export interface components {
          * @enum {string}
          */
         Role377Enum: "STOREKEEPER" | "CONSULTANT" | "MANAGER" | "ADMIN" | "OWNER";
+        /**
+         * @description * `OWNER` - OWNER
+         *     * `ADMIN` - ADMIN
+         *     * `MANAGER` - MANAGER
+         *     * `CONSULTANT` - CONSULTANT
+         *     * `STOREKEEPER` - STOREKEEPER
+         * @enum {string}
+         */
+        RoleAa5Enum: "OWNER" | "ADMIN" | "MANAGER" | "CONSULTANT" | "STOREKEEPER";
         /**
          * @description * `CLIENT` - CLIENT
          *     * `INSURER` - INSURER

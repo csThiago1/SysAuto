@@ -67,6 +67,9 @@ class CustomerSnapshotSerializer(serializers.Serializer):
         return ""
 
 
+PADDOCK_ROLE_CHOICES = ["OWNER", "ADMIN", "MANAGER", "CONSULTANT", "STOREKEEPER"]
+
+
 class MeSerializer(serializers.Serializer):
     """
     Serializer para o endpoint /me — identidade completa do usuário autenticado.
@@ -76,7 +79,11 @@ class MeSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     name = serializers.CharField()
     email_hash = serializers.CharField()
-    role = serializers.CharField()
+    role = serializers.ChoiceField(choices=PADDOCK_ROLE_CHOICES)
+    extra_permissions = serializers.ListField(
+        child=serializers.CharField(),
+        help_text="Overrides individuais vindos do JWT (permission_service).",
+    )
     active_company = serializers.CharField()
     tenant_schema = serializers.CharField()
     is_employee = serializers.BooleanField()
