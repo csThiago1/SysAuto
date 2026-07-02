@@ -1,7 +1,8 @@
 """authz.views — ViewSets para permissoes e roles granulares + RBAC matrix API."""
 import logging
 
-from rest_framework import viewsets
+from drf_spectacular.utils import extend_schema
+from rest_framework import serializers, viewsets
 from rest_framework.decorators import api_view, permission_classes as perm_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -12,6 +13,40 @@ from apps.authentication.permission_service import (
     has_permission_from_request,
     invalidate_permission_cache,
 )
+
+
+class _MatrixResponseSerializer(serializers.Serializer):
+    """Resposta de GET /authz/matrix/."""
+
+    permissions = serializers.ListField(child=serializers.CharField())
+    matrix = serializers.DictField(
+        child=serializers.DictField(child=serializers.BooleanField()),
+    )
+
+
+class _MatrixOverrideSerializer(serializers.Serializer):
+    """Item do body de PUT /authz/matrix/update/."""
+
+    role = serializers.CharField()
+    permission_code = serializers.CharField()
+    allowed = serializers.BooleanField()
+
+
+class _MatrixUpdateRequestSerializer(serializers.Serializer):
+    """Body de PUT /authz/matrix/update/."""
+
+    overrides = _MatrixOverrideSerializer(many=True)
+
+
+class _MyPermissionsResponseSerializer(serializers.Serializer):
+    """Resposta de GET /authz/my-permissions/."""
+
+    role = serializers.CharField()
+    permissions = serializers.ListField(child=serializers.CharField())
+
+
+class _DetailSerializer(serializers.Serializer):
+    detail = serializers.CharField()
 from apps.authentication.permissions import (
     IsAdminOrAbove,
     IsConsultantOrAbove,
@@ -65,6 +100,7 @@ class UserPermissionViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
 # ── RBAC Matrix API ──────────────────────────────────────────────────────────
 
 
+@extend_schema(responses={200: _MatrixResponseSerializer, 403: _DetailSerializer})
 @api_view(["GET"])
 @perm_classes([IsAuthenticated])
 def permission_matrix_view(request: Request) -> Response:
@@ -95,6 +131,10 @@ def permission_matrix_view(request: Request) -> Response:
     return Response({"permissions": PERMISSION_CODES, "matrix": matrix})
 
 
+@extend_schema(
+    request=_MatrixUpdateRequestSerializer,
+    responses={200: _DetailSerializer, 400: _DetailSerializer, 403: _DetailSerializer},
+)
 @api_view(["PUT"])
 @perm_classes([IsAuthenticated])
 def permission_matrix_update_view(request: Request) -> Response:
@@ -144,6 +184,7 @@ def permission_matrix_update_view(request: Request) -> Response:
     return Response({"detail": "Permissoes atualizadas."})
 
 
+@extend_schema(responses={200: _MyPermissionsResponseSerializer})
 @api_view(["GET"])
 @perm_classes([IsAuthenticated])
 def my_permissions_view(request: Request) -> Response:

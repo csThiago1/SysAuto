@@ -15,11 +15,45 @@ from django.db.models import Count, Q
 from django.http import HttpResponse
 from django.utils import timezone
 from rest_framework import mixins, status, viewsets
+from drf_spectacular.utils import extend_schema
+from rest_framework import serializers as drf_serializers
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+
+class _DetailSerializer(drf_serializers.Serializer):
+    detail = drf_serializers.CharField()
+
+
+class _RegistrarRecebimentoRequestSerializer(drf_serializers.Serializer):
+    nivel_id = drf_serializers.UUIDField()
+    valor_nf = drf_serializers.DecimalField(max_digits=14, decimal_places=2)
+    destino = drf_serializers.ChoiceField(
+        choices=["os_direta", "estoque_geral"], required=False, default="estoque_geral"
+    )
+    nfe_entrada_id = drf_serializers.UUIDField(required=False)
+    numero_serie = drf_serializers.CharField(required=False)
+
+
+class _RecebimentoResponseSerializer(drf_serializers.Serializer):
+    """Retorno {item_id, unidade_fisica_id, codigo_barras}."""
+
+    item_id = drf_serializers.UUIDField()
+    unidade_fisica_id = drf_serializers.UUIDField()
+    codigo_barras = drf_serializers.CharField()
+
+
+class _DashboardComprasResponseSerializer(drf_serializers.Serializer):
+    """Snapshot do dashboard: totais + counts."""
+
+    ocs_rascunho = drf_serializers.IntegerField()
+    ocs_pendentes_aprovacao = drf_serializers.IntegerField()
+    ocs_aprovadas = drf_serializers.IntegerField()
+    total_pedidos_abertos = drf_serializers.IntegerField()
+    valor_total_ocs_mes = drf_serializers.DecimalField(max_digits=14, decimal_places=2)
 
 from apps.authentication.permissions import (
     HasTenantPermission,
@@ -459,6 +493,10 @@ class AdicionarItemOCView(APIView):
 
     permission_classes = [IsAuthenticated, IsStorekeeperOrAbove]
 
+    @extend_schema(
+        request=AdicionarItemOCInputSerializer,
+        responses={201: ItemOrdemCompraSerializer, 404: _DetailSerializer},
+    )
     def post(self, request: Request, oc_id: str) -> Response:
         serializer = AdicionarItemOCInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -501,6 +539,7 @@ class RemoverItemOCView(APIView):
 
     permission_classes = [IsAuthenticated, IsStorekeeperOrAbove]
 
+    @extend_schema(responses={204: None, 500: _DetailSerializer})
     def delete(self, request: Request, oc_id: str, item_id: str) -> Response:
         try:
             OrdemCompraService.remover_item(item_id=item_id)
@@ -526,6 +565,10 @@ class RegistrarRecebimentoView(APIView):
 
     permission_classes = [IsAuthenticated, IsStorekeeperOrAbove]
 
+    @extend_schema(
+        request=_RegistrarRecebimentoRequestSerializer,
+        responses={200: _RecebimentoResponseSerializer, 400: _DetailSerializer, 404: _DetailSerializer},
+    )
     @transaction.atomic
     def post(self, request: Request, oc_id: str, item_id: str) -> Response:
         nivel_id = request.data.get("nivel_id")
@@ -807,6 +850,7 @@ class DashboardComprasView(APIView):
 
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(responses={200: DashboardComprasSerializer})
     def get(self, request: Request) -> Response:
         cached = cache.get("dashboard:compras")
         if cached:

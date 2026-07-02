@@ -4,6 +4,8 @@ MO-9: Endpoints de auditoria do motor e healthcheck.
 """
 import logging
 
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -63,6 +65,7 @@ class HealthcheckMotorView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(responses={200: OpenApiTypes.OBJECT, 503: OpenApiTypes.OBJECT})
     def get(self, request: Request) -> Response:
         resultado = AuditoriaService.healthcheck()
         http_status = 200 if resultado.get("status") == "ok" else 503

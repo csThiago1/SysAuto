@@ -13,6 +13,7 @@ from decimal import Decimal
 
 from django.db import models as db_models
 from django.db.models import Count, Q, Sum
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers as drf_serializers
 from rest_framework import status, viewsets
@@ -418,6 +419,7 @@ class MargemOSView(APIView):
 
     permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
+    @extend_schema(responses={200: OpenApiTypes.OBJECT})
     def get(self, request: Request, os_id: str) -> Response:
         from apps.inventory.models_physical import ConsumoInsumo
         from apps.service_orders.models import ServiceOrder
@@ -559,6 +561,7 @@ class DashboardStatsView(APIView):
 
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(responses={200: OpenApiTypes.OBJECT})
     def get(self, request: Request) -> Response:
         unidades_qs = UnidadeFisica.objects.filter(is_active=True)
 
@@ -589,6 +592,7 @@ class BuscarPecasView(APIView):
 
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(responses={200: OpenApiTypes.OBJECT})
     def get(self, request: Request) -> Response:
         from apps.inventory.models_product import ProdutoComercialPeca
 

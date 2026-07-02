@@ -3,6 +3,9 @@ import logging
 from datetime import date, timedelta
 
 from django.db.models import F, Sum, Count
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,12 +15,19 @@ from apps.authentication.permissions import IsConsultantOrAbove
 logger = logging.getLogger(__name__)
 
 
+class _DetailSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+
+
 class FinanceiroAlertasView(APIView):
     """GET /api/v1/accounting/alertas/
     Returns upcoming due dates and overdue counts for AP and AR.
     """
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(
+        responses={200: OpenApiTypes.OBJECT, 400: _DetailSerializer},
+    )
     def get(self, request):
         today = date.today()
         alerts = []

@@ -6,6 +6,7 @@ import logging
 from datetime import date, timedelta
 
 from django.db import transaction
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -37,6 +38,29 @@ class BloqueioCapacidadeSerializer(serializers.ModelSerializer):
     class Meta:
         model = BloqueioCapacidade
         fields = ["id", "tecnico", "data_inicio", "data_fim", "motivo", "is_active"]
+
+
+class _DetailSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+
+
+class _UtilizacaoResponseSerializer(serializers.Serializer):
+    """Dict resposta de /capacidade/utilizacao/."""
+
+    horas_disponiveis = serializers.DecimalField(max_digits=10, decimal_places=2)
+    horas_comprometidas = serializers.DecimalField(max_digits=10, decimal_places=2)
+    percentual_utilizacao = serializers.DecimalField(max_digits=5, decimal_places=2)
+
+
+class _HeatmapDiaSerializer(serializers.Serializer):
+    """Dia individual do heatmap."""
+
+    data = serializers.DateField()
+    utilizacao_geral = serializers.DecimalField(max_digits=5, decimal_places=2)
+
+
+class _ProximaDataResponseSerializer(serializers.Serializer):
+    proxima_data = serializers.DateField(allow_null=True)
 
 
 # ── ViewSets ──────────────────────────────────────────────────────────────────
@@ -85,6 +109,14 @@ class UtilizacaoView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("categoria", str, description="UUID CategoriaMaoObra"),
+            OpenApiParameter("inicio", str, description="YYYY-MM-DD (default: hoje)"),
+            OpenApiParameter("fim", str, description="YYYY-MM-DD (default: +6 dias)"),
+        ],
+        responses={200: _UtilizacaoResponseSerializer, 400: _DetailSerializer},
+    )
     def get(self, request: Request) -> Response:
         categoria_id = request.query_params.get("categoria", "")
         inicio_str = request.query_params.get("inicio", "")
@@ -118,6 +150,10 @@ class HeatmapSemanaView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        parameters=[OpenApiParameter("inicio", str, description="YYYY-MM-DD")],
+        responses={200: _HeatmapDiaSerializer(many=True), 400: _DetailSerializer},
+    )
     def get(self, request: Request) -> Response:
         inicio_str = request.query_params.get("inicio", "")
         try:
@@ -142,6 +178,13 @@ class ProximaDataDisponivelView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("categoria", str, description="UUID CategoriaMaoObra"),
+            OpenApiParameter("horas", str, description="Horas necessárias (decimal)"),
+        ],
+        responses={200: _ProximaDataResponseSerializer, 400: _DetailSerializer},
+    )
     def get(self, request: Request) -> Response:
         from decimal import Decimal, InvalidOperation
 

@@ -6,7 +6,9 @@ GET /api/v1/accounting/dre/?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&cost_cente
 import logging
 from datetime import date, datetime
 
-from rest_framework import status
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -14,6 +16,10 @@ from rest_framework.views import APIView
 
 from apps.accounting.services.dre_service import DREService
 from apps.authentication.permissions import IsManagerOrAbove
+
+
+class _DetailSerializer(serializers.Serializer):
+    detail = serializers.CharField()
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +29,14 @@ class DREView(APIView):
 
     permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("start_date", str, description="YYYY-MM-DD"),
+            OpenApiParameter("end_date", str, description="YYYY-MM-DD"),
+            OpenApiParameter("cost_center_id", str, required=False, description="UUID"),
+        ],
+        responses={200: OpenApiTypes.OBJECT, 400: _DetailSerializer},
+    )
     def get(self, request: Request) -> Response:
         """Retorna DRE para o período informado.
 

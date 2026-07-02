@@ -154,3 +154,9 @@ class DetailResponseSerializer(serializers.Serializer):
     """Resposta genérica {"detail": "mensagem"} — usada em muitos endpoints."""
 
     detail = serializers.CharField()
+
+
+class PushTokenRequestSerializer(serializers.Serializer):
+    """Body de PATCH /auth/push-token/."""
+
+    token = serializers.CharField(help_text="Expo push token ExponentPushToken[...]")

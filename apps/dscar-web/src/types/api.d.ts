@@ -1727,7 +1727,7 @@ export interface paths {
          * @description GET /api/v1/capacidade/heatmap-semana/?inicio=YYYY-MM-DD
          *     Retorna lista de 7 dias com utilização geral e por categoria.
          */
-        get: operations["capacidade_heatmap_semana_retrieve"];
+        get: operations["capacidade_heatmap_semana_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1965,10 +1965,16 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT. */
-        get: operations["experts_retrieve"];
+        /**
+         * @deprecated
+         * @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT.
+         */
+        get: operations["experts_list"];
         put?: never;
-        /** @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT. */
+        /**
+         * @deprecated
+         * @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT.
+         */
         post: operations["experts_create"];
         delete?: never;
         options?: never;
@@ -1983,16 +1989,28 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT. */
-        get: operations["experts_retrieve_2"];
-        /** @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT. */
+        /**
+         * @deprecated
+         * @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT.
+         */
+        get: operations["experts_retrieve"];
+        /**
+         * @deprecated
+         * @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT.
+         */
         put: operations["experts_update"];
         post?: never;
-        /** @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT. */
+        /**
+         * @deprecated
+         * @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT.
+         */
         delete: operations["experts_destroy"];
         options?: never;
         head?: never;
-        /** @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT. */
+        /**
+         * @deprecated
+         * @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT.
+         */
         patch: operations["experts_partial_update"];
         trace?: never;
     };
@@ -2054,31 +2072,6 @@ export interface paths {
          *     Body: { "correcao": "texto 15-1000 chars" }
          */
         post: operations["fiscal_documents_cce_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/fiscal/documents/{id}/file/{file_type}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * @description Proxy autenticado para PDF/XML da Focus NF-e.
-         *
-         *     GET /fiscal/documents/{pk}/file/pdf/
-         *     GET /fiscal/documents/{pk}/file/xml/
-         *
-         *     A Focus exige HTTP Basic auth para acessar os arquivos.
-         *     Este proxy faz o download com o token e retorna ao browser.
-         */
-        get: operations["fiscal_documents_file_retrieve"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2252,53 +2245,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/fiscal/nfe-recebidas/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * @description Lista NF-e recebidas pelo CNPJ do emissor fiscal (pass-through Focus).
-         *
-         *     GET  /fiscal/nfe-recebidas/?pagina=1
-         *     RBAC: CONSULTANT+
-         */
-        get: operations["fiscal_nfe_recebidas_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/fiscal/nfe-recebidas/{chave}/file/{file_type}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * @description Proxy autenticado para XML/DANFE de NF-e recebida (pass-through Focus).
-         *
-         *     GET /fiscal/nfe-recebidas/{chave}/file/xml/
-         *     GET /fiscal/nfe-recebidas/{chave}/file/danfe/
-         *
-         *     A Focus exige HTTP Basic auth. Este proxy baixa com o token e retorna ao browser.
-         *     RBAC: CONSULTANT+
-         */
-        get: operations["fiscal_nfe_recebidas_file_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/fiscal/nfe-recebidas/{chave}/manifesto/": {
         parameters: {
             query?: never;
@@ -2337,27 +2283,6 @@ export interface paths {
          *     RBAC: MANAGER+
          */
         post: operations["fiscal_nfe_recebidas_sync_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/fiscal/nfe/danfe-preview/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * @description POST /api/v1/fiscal/nfe/danfe-preview/
-         *     Gera preview do DANFE sem emitir a NF-e.
-         *     Body: payload NF-e completo (mesmo formato de emissão).
-         */
-        post: operations["fiscal_nfe_danfe_preview_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2535,31 +2460,6 @@ export interface paths {
         get: operations["fiscal_resumo_mensal_retrieve"];
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/fiscal/webhooks/focus/{secret}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * @description Processa evento de webhook da Focus.
-         *
-         *     Valida secret, registra FiscalEvent e agenda poll_fiscal_document.
-         *
-         *     Returns:
-         *         200 em qualquer caso válido (Focus reprocessa se não receber 2xx).
-         *         403 se secret inválido.
-         */
-        post: operations["fiscal_webhooks_focus_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5074,10 +4974,16 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Endpoint deprecated — fornecedores agora em /api/v1/persons/?role=SUPPLIER. */
-        get: operations["pricing_catalog_fornecedores_retrieve"];
+        /**
+         * @deprecated
+         * @description Endpoint deprecated — fornecedores agora em /api/v1/persons/?role=SUPPLIER.
+         */
+        get: operations["pricing_catalog_fornecedores_list"];
         put?: never;
-        /** @description Endpoint deprecated — fornecedores agora em /api/v1/persons/?role=SUPPLIER. */
+        /**
+         * @deprecated
+         * @description Endpoint deprecated — fornecedores agora em /api/v1/persons/?role=SUPPLIER.
+         */
         post: operations["pricing_catalog_fornecedores_create"];
         delete?: never;
         options?: never;
@@ -5092,16 +4998,28 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Endpoint deprecated — fornecedores agora em /api/v1/persons/?role=SUPPLIER. */
-        get: operations["pricing_catalog_fornecedores_retrieve_2"];
-        /** @description Endpoint deprecated — fornecedores agora em /api/v1/persons/?role=SUPPLIER. */
+        /**
+         * @deprecated
+         * @description Endpoint deprecated — fornecedores agora em /api/v1/persons/?role=SUPPLIER.
+         */
+        get: operations["pricing_catalog_fornecedores_retrieve"];
+        /**
+         * @deprecated
+         * @description Endpoint deprecated — fornecedores agora em /api/v1/persons/?role=SUPPLIER.
+         */
         put: operations["pricing_catalog_fornecedores_update"];
         post?: never;
-        /** @description Endpoint deprecated — fornecedores agora em /api/v1/persons/?role=SUPPLIER. */
+        /**
+         * @deprecated
+         * @description Endpoint deprecated — fornecedores agora em /api/v1/persons/?role=SUPPLIER.
+         */
         delete: operations["pricing_catalog_fornecedores_destroy"];
         options?: never;
         head?: never;
-        /** @description Endpoint deprecated — fornecedores agora em /api/v1/persons/?role=SUPPLIER. */
+        /**
+         * @deprecated
+         * @description Endpoint deprecated — fornecedores agora em /api/v1/persons/?role=SUPPLIER.
+         */
         patch: operations["pricing_catalog_fornecedores_partial_update"];
         trace?: never;
     };
@@ -6118,7 +6036,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description Histórico de sugestões IA. */
-        get: operations["pricing_ia_retrieve"];
+        get: operations["pricing_ia_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -7854,7 +7772,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description Retorna lista de OS no range de datas. */
-        get: operations["service_orders_calendar_retrieve"];
+        get: operations["service_orders_calendar_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -8631,6 +8549,30 @@ export interface components {
          * @enum {string}
          */
         AddressTypeEnum: "PRINCIPAL" | "COBRANCA" | "ENTREGA";
+        /** @description Input para adicionar item a uma OC. */
+        AdicionarItemOCInput: {
+            /** Format: uuid */
+            pedido_compra_id?: string | null;
+            /** Format: uuid */
+            fornecedor_id?: string | null;
+            fornecedor_nome: string;
+            /** @default  */
+            fornecedor_cnpj: string;
+            /** @default  */
+            fornecedor_contato: string;
+            descricao: string;
+            /** @default  */
+            codigo_referencia: string;
+            tipo_qualidade: components["schemas"]["TipoQualidadeEnum"];
+            /** Format: decimal */
+            quantidade: string;
+            /** Format: decimal */
+            valor_unitario: string;
+            /** @default  */
+            prazo_entrega: string;
+            /** @default  */
+            observacoes: string;
+        };
         /** @description Serializer de criação para AliasServico. */
         AliasServicoCreate: {
             /**
@@ -9446,6 +9388,30 @@ export interface components {
          * @enum {string}
          */
         BudgetVersionReadStatusEnum: "draft" | "sent" | "approved" | "rejected" | "expired" | "revision" | "superseded";
+        /** @description Input para POST /calcular-peca/. */
+        CalcularPecaInput: {
+            contexto: components["schemas"]["ContextoCalculo"];
+            /**
+             * Format: uuid
+             * @description UUID da PecaCanonica.
+             */
+            peca_canonica_id: string;
+            /** @default 1 */
+            quantidade: number;
+            /** @default simulacao */
+            origem: components["schemas"]["OrigemA17Enum"];
+        };
+        /** @description Input para POST /calcular-servico/. */
+        CalcularServicoInput: {
+            contexto: components["schemas"]["ContextoCalculo"];
+            /**
+             * Format: uuid
+             * @description UUID do ServicoCanonico.
+             */
+            servico_canonico_id: string;
+            /** @default simulacao */
+            origem: components["schemas"]["OrigemA17Enum"];
+        };
         CapacidadeTecnico: {
             /** Format: uuid */
             readonly id: string;
@@ -9888,6 +9854,23 @@ export interface components {
             readonly created_at: string;
             readonly itens: components["schemas"]["ItemContagem"][];
         };
+        /** @description Input de contexto de cálculo — obrigatório em calcular-servico e calcular-peca. */
+        ContextoCalculo: {
+            /**
+             * Format: uuid
+             * @description UUID da Empresa (pricing_profile.Empresa). Obrigatório — P9.
+             */
+            empresa_id: string;
+            veiculo_marca: string;
+            veiculo_modelo: string;
+            veiculo_ano: number;
+            veiculo_versao?: string;
+            tipo_pintura_codigo?: string;
+            /** @default cliente */
+            quem_paga: components["schemas"]["QuemPagaEnum"];
+            /** @default true */
+            aplica_multiplicador_tamanho: boolean;
+        };
         /**
          * @description * `clt` - CLT
          *     * `pj` - PJ / Prestador
@@ -10086,6 +10069,41 @@ export interface components {
          * @enum {string}
          */
         CustomerTypeEnum: "insurer" | "private";
+        /** @description Serializer para dashboard de compras. */
+        DashboardCompras: {
+            solicitados: number;
+            em_cotacao: number;
+            aguardando_aprovacao: number;
+            aprovadas_hoje: number;
+        };
+        /** @description Input do endpoint POST /debug/custo-hora/. */
+        DebugCustoHoraInput: {
+            /** @description Código da CategoriaMaoObra (ex: 'funileiro'). */
+            categoria_codigo: string;
+            /**
+             * Format: date
+             * @description Data de referência para busca de vigência (YYYY-MM-DD).
+             */
+            data: string;
+            /**
+             * Format: uuid
+             * @description UUID da Empresa (pricing_profile.Empresa).
+             */
+            empresa_id: string;
+        };
+        /** @description Input do endpoint POST /debug/rateio/. */
+        DebugRateioInput: {
+            /**
+             * Format: date
+             * @description Data de referência para busca de vigência (YYYY-MM-DD).
+             */
+            data: string;
+            /**
+             * Format: uuid
+             * @description UUID da Empresa (pricing_profile.Empresa).
+             */
+            empresa_id: string;
+        };
         Deduction: {
             /** Format: uuid */
             readonly id: string;
@@ -10224,6 +10242,12 @@ export interface components {
             vigente_ate?: string | null;
             is_active?: boolean;
         };
+        /**
+         * @description * `os_direta` - os_direta
+         *     * `estoque_geral` - estoque_geral
+         * @enum {string}
+         */
+        DestinoEnum: "os_direta" | "estoque_geral";
         /** @description Resposta genérica {"detail": "mensagem"} — usada em muitos endpoints. */
         DetailResponse: {
             detail: string;
@@ -12626,6 +12650,60 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
+        /** @description Serializer com todos os campos + peças puxadas dinamicamente. */
+        OrcamentoCiliaDetalhe: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly itens: unknown[];
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+            is_active?: boolean;
+            /** Format: int64 */
+            budget_id: number;
+            /** Format: int64 */
+            budget_version_id: number;
+            /** Número do sinistro */
+            casualty_number: string;
+            /** Número do Orçamento */
+            budget_number: number;
+            /** Versão do Orçamento */
+            version_number?: number;
+            status: string;
+            license_plate: string;
+            vehicle_model: string;
+            vehicle_brand: string;
+            vehicle_year?: number | null;
+            vehicle_chassi?: string;
+            vehicle_color?: string;
+            client_name: string;
+            client_document?: string;
+            client_phone?: string;
+            insurer_name: string;
+            insurer_cnpj?: string;
+            conclusion_key?: string;
+            conclusion_title?: string;
+            /** Format: date-time */
+            conclusion_at?: string | null;
+            /** Format: decimal */
+            total_liquid?: string;
+            /** Format: decimal */
+            total_pieces?: string;
+            /** Format: decimal */
+            total_workforce?: string;
+            /** Format: decimal */
+            total_hours?: string;
+            /** Format: decimal */
+            franchise?: string;
+            /** Format: date-time */
+            budget_created_at?: string | null;
+            /** Format: date-time */
+            version_created_at?: string | null;
+            raw_data?: unknown;
+            /** Format: uuid */
+            created_by?: string | null;
+        };
         /** @description Payload para OrcamentoService.criar(). */
         OrcamentoCreate: {
             /** Format: uuid */
@@ -12853,6 +12931,13 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        /**
+         * @description * `orcamento_linha` - orcamento_linha
+         *     * `os_linha` - os_linha
+         *     * `simulacao` - simulacao
+         * @enum {string}
+         */
+        OrigemA17Enum: "orcamento_linha" | "os_linha" | "simulacao";
         /**
          * @description * `import` - Importação
          *     * `manual` - Cadastro manual
@@ -16047,6 +16132,11 @@ export interface components {
             /** Format: date-time */
             readonly updated_at?: string;
         };
+        /** @description Body de PATCH /auth/push-token/. */
+        PatchedPushTokenRequest: {
+            /** @description Expo push token ExponentPushToken[...] */
+            token?: string;
+        };
         /** @description Serializer completo de titulo a receber — inclui recebimentos. */
         PatchedReceivableDocument: {
             /** Format: uuid */
@@ -16886,6 +16976,10 @@ export interface components {
             /** Format: date-time */
             readonly updated_at?: string;
         };
+        /** @description 410 Gone — endpoint deprecated. */
+        Patched_Gone: {
+            detail?: string;
+        };
         /**
          * @description * `monthly` - Mensal
          *     * `biweekly` - Quinzenal
@@ -17724,6 +17818,12 @@ export interface components {
          * @enum {string}
          */
         QualificadorPecaEnum: "PPO" | "PRO" | "PR" | "PREC";
+        /**
+         * @description * `cliente` - cliente
+         *     * `seguradora` - seguradora
+         * @enum {string}
+         */
+        QuemPagaEnum: "cliente" | "seguradora";
         /** @description Serializer completo de titulo a receber — inclui recebimentos. */
         ReceivableDocument: {
             /** Format: uuid */
@@ -18130,6 +18230,42 @@ export interface components {
             readonly user_name: string;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        /** @description Serializer compacto para o endpoint de calendario. */
+        ServiceOrderCalendar: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Número da OS */
+            number: number;
+            /** Placa */
+            plate: string;
+            /** Marca */
+            make?: string;
+            /** Modelo */
+            model?: string;
+            /** Nome do cliente */
+            customer_name: string;
+            /** Tipo de atendimento */
+            customer_type?: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            status?: components["schemas"]["Status5e2Enum"];
+            readonly status_display: string;
+            /**
+             * Data de agendamento
+             * Format: date-time
+             */
+            scheduling_date?: string | null;
+            /**
+             * Previsão de entrega
+             * Format: date
+             * @description Previsão de entrega (calculada: entry + repair_days)
+             */
+            estimated_delivery_date?: string | null;
+            /**
+             * Data de entrega
+             * Format: date-time
+             * @description Data/hora real de entrega
+             */
+            delivery_date?: string | null;
         };
         /**
          * @description Serializer para abertura de nova OS.
@@ -19454,6 +19590,28 @@ export interface components {
             readonly signed_at: string;
             readonly notes: string;
         };
+        /** @description Input para POST /simular/ — múltiplos itens em lote. */
+        SimularInput: {
+            contexto: components["schemas"]["ContextoCalculo"];
+            itens: components["schemas"]["SimularItem"][];
+        };
+        /** @description Item de simulação — serviço ou peça. */
+        SimularItem: {
+            tipo: components["schemas"]["SimularItemTipoEnum"];
+            /**
+             * Format: uuid
+             * @description UUID do ServicoCanonico ou PecaCanonica.
+             */
+            id: string;
+            /** @default 1 */
+            quantidade: number;
+        };
+        /**
+         * @description * `servico` - servico
+         *     * `peca` - peca
+         * @enum {string}
+         */
+        SimularItemTipoEnum: "servico" | "peca";
         /** @description CONSULTANT+ — apenas preço final e contexto. */
         SnapshotMin: {
             /** Format: uuid */
@@ -19678,6 +19836,14 @@ export interface components {
             readonly changed_by_name: string;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        SugestaoIACreate: {
+            briefing: string;
+            /** Format: uuid */
+            orcamento_id?: string | null;
+            veiculo: {
+                [key: string]: unknown;
+            };
         };
         /**
          * @description * `OFICINA` - Oficina
@@ -20366,6 +20532,19 @@ export interface components {
         _BaixarInsumoResponse: {
             consumos_criados: number;
         };
+        _ConsultarOrcamentoRequest: {
+            sinistro: string;
+            orcamento: string;
+            versao?: string;
+        };
+        _CustoInsumoRequest: {
+            /** Format: uuid */
+            material_canonico_id: string;
+        };
+        _CustoPecaRequest: {
+            /** Format: uuid */
+            peca_canonica_id: string;
+        };
         _Detail: {
             detail: string;
         };
@@ -20375,11 +20554,85 @@ export interface components {
             /** Format: uuid */
             order_id: string;
         };
+        /** @description 410 Gone — endpoint deprecated. */
+        _Gone: {
+            detail: string;
+        };
+        /** @description Retorno de /healthz — mapa serviço → status. */
+        _HealthzResponse: {
+            database: string;
+            cache: string;
+            placas_api?: string;
+            email?: string;
+        };
+        /** @description Dia individual do heatmap. */
+        _HeatmapDia: {
+            /** Format: date */
+            data: string;
+            /** Format: decimal */
+            utilizacao_geral: string;
+        };
+        /** @description Item do body de PUT /authz/matrix/update/. */
+        _MatrixOverride: {
+            role: string;
+            permission_code: string;
+            allowed: boolean;
+        };
+        /** @description Resposta de GET /authz/matrix/. */
+        _MatrixResponse: {
+            permissions: string[];
+            matrix: {
+                [key: string]: {
+                    [key: string]: boolean;
+                };
+            };
+        };
+        /** @description Body de PUT /authz/matrix/update/. */
+        _MatrixUpdateRequest: {
+            overrides: components["schemas"]["_MatrixOverride"][];
+        };
         /** @description Resposta padrão dos endpoints de movimentação: {id, codigo_barras}. */
         _MovimentacaoIdResponse: {
             /** Format: uuid */
             id: string;
             codigo_barras: string;
+        };
+        /** @description Resposta de GET /authz/my-permissions/. */
+        _MyPermissionsResponse: {
+            role: string;
+            permissions: string[];
+        };
+        _ProximaDataResponse: {
+            /** Format: date */
+            proxima_data: string | null;
+        };
+        /** @description Retorno {item_id, unidade_fisica_id, codigo_barras}. */
+        _RecebimentoResponse: {
+            /** Format: uuid */
+            item_id: string;
+            /** Format: uuid */
+            unidade_fisica_id: string;
+            codigo_barras: string;
+        };
+        _RegistrarRecebimentoRequest: {
+            /** Format: uuid */
+            nivel_id: string;
+            /** Format: decimal */
+            valor_nf: string;
+            /** @default estoque_geral */
+            destino: components["schemas"]["DestinoEnum"];
+            /** Format: uuid */
+            nfe_entrada_id?: string;
+            numero_serie?: string;
+        };
+        /** @description Dict resposta de /capacidade/utilizacao/. */
+        _UtilizacaoResponse: {
+            /** Format: decimal */
+            horas_disponiveis: string;
+            /** Format: decimal */
+            horas_comprometidas: string;
+            /** Format: decimal */
+            percentual_utilizacao: string;
         };
     };
     responses: never;
@@ -20399,12 +20652,23 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -20730,19 +20994,35 @@ export interface operations {
     };
     accounting_dashboard_retrieve: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description YYYY-MM-DD */
+                end_date?: string;
+                /** @description YYYY-MM-DD */
+                start_date?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -20920,37 +21200,73 @@ export interface operations {
     };
     accounting_dre_retrieve: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description UUID */
+                cost_center_id?: string;
+                /** @description YYYY-MM-DD */
+                end_date?: string;
+                /** @description YYYY-MM-DD */
+                start_date?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
     accounting_faturamento_retrieve: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description YYYY-MM-DD */
+                end_date?: string;
+                /** @description customer|origin|month */
+                group_by?: string;
+                /** @description YYYY-MM-DD */
+                start_date?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -21159,12 +21475,23 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -22031,14 +22358,21 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["LoginRequest"];
+                "multipart/form-data": components["schemas"]["LoginRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TokenPair"];
+                };
             };
         };
     };
@@ -22118,14 +22452,21 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedPushTokenRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedPushTokenRequest"];
+                "multipart/form-data": components["schemas"]["PatchedPushTokenRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -22307,12 +22648,21 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_MatrixResponse"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -22323,14 +22673,37 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["_MatrixUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["_MatrixUpdateRequest"];
+                "multipart/form-data": components["schemas"]["_MatrixUpdateRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -22343,12 +22716,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_MyPermissionsResponse"];
+                };
             };
         };
     };
@@ -23508,57 +23882,99 @@ export interface operations {
             };
         };
     };
-    capacidade_heatmap_semana_retrieve: {
+    capacidade_heatmap_semana_list: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description YYYY-MM-DD */
+                inicio?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_HeatmapDia"][];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
     capacidade_proxima_data_retrieve: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description UUID CategoriaMaoObra */
+                categoria?: string;
+                /** @description Horas necessárias (decimal) */
+                horas?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_ProximaDataResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
     capacidade_utilizacao_retrieve: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description UUID CategoriaMaoObra */
+                categoria?: string;
+                /** @description YYYY-MM-DD (default: +6 dias) */
+                fim?: string;
+                /** @description YYYY-MM-DD (default: hoje) */
+                inicio?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_UtilizacaoResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -23569,14 +23985,37 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["_ConsultarOrcamentoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["_ConsultarOrcamentoRequest"];
+                "multipart/form-data": components["schemas"]["_ConsultarOrcamentoRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["OrcamentoCiliaDetalhe"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -23859,7 +24298,7 @@ export interface operations {
             };
         };
     };
-    experts_retrieve: {
+    experts_list: {
         parameters: {
             query?: never;
             header?: never;
@@ -23868,12 +24307,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
-            200: {
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_Gone"];
+                };
             };
         };
     };
@@ -23884,18 +24324,25 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["_Gone"];
+                "application/x-www-form-urlencoded": components["schemas"]["_Gone"];
+                "multipart/form-data": components["schemas"]["_Gone"];
+            };
+        };
         responses: {
-            /** @description No response body */
-            201: {
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_Gone"];
+                };
             };
         };
     };
-    experts_retrieve_2: {
+    experts_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -23906,12 +24353,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
-            200: {
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_Gone"];
+                };
             };
         };
     };
@@ -23924,14 +24372,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["_Gone"];
+                "application/x-www-form-urlencoded": components["schemas"]["_Gone"];
+                "multipart/form-data": components["schemas"]["_Gone"];
+            };
+        };
         responses: {
-            /** @description No response body */
-            200: {
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_Gone"];
+                };
             };
         };
     };
@@ -23946,12 +24401,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
-            204: {
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_Gone"];
+                };
             };
         };
     };
@@ -23964,14 +24420,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["Patched_Gone"];
+                "application/x-www-form-urlencoded": components["schemas"]["Patched_Gone"];
+                "multipart/form-data": components["schemas"]["Patched_Gone"];
+            };
+        };
         responses: {
-            /** @description No response body */
-            200: {
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_Gone"];
+                };
             };
         };
     };
@@ -24071,27 +24534,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["FiscalDocumentList"];
                 };
-            };
-        };
-    };
-    fiscal_documents_file_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                file_type: string;
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };
@@ -24415,45 +24857,6 @@ export interface operations {
             };
         };
     };
-    fiscal_nfe_recebidas_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    fiscal_nfe_recebidas_file_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                chave: string;
-                file_type: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     fiscal_nfe_recebidas_manifesto_create: {
         parameters: {
             query?: never;
@@ -24503,24 +24906,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["DetailResponse"];
                 };
-            };
-        };
-    };
-    fiscal_nfe_danfe_preview_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };
@@ -24760,26 +25145,6 @@ export interface operations {
             };
         };
     };
-    fiscal_webhooks_focus_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                secret: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     health_retrieve: {
         parameters: {
             query?: never;
@@ -24789,12 +25154,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_HealthzResponse"];
+                };
             };
         };
     };
@@ -26727,12 +27093,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
@@ -27295,12 +27664,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
@@ -27674,12 +28046,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
@@ -29515,7 +29890,10 @@ export interface operations {
     };
     pricing_benchmark_estatisticas_servico_retrieve: {
         parameters: {
-            query?: never;
+            query?: {
+                segmento?: string;
+                tamanho?: string;
+            };
             header?: never;
             path: {
                 servico_id: string;
@@ -29524,12 +29902,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
@@ -30368,7 +30749,7 @@ export interface operations {
             };
         };
     };
-    pricing_catalog_fornecedores_retrieve: {
+    pricing_catalog_fornecedores_list: {
         parameters: {
             query?: never;
             header?: never;
@@ -30377,12 +30758,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
-            200: {
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_Gone"];
+                };
             };
         };
     };
@@ -30393,18 +30775,25 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["_Gone"];
+                "application/x-www-form-urlencoded": components["schemas"]["_Gone"];
+                "multipart/form-data": components["schemas"]["_Gone"];
+            };
+        };
         responses: {
-            /** @description No response body */
-            201: {
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_Gone"];
+                };
             };
         };
     };
-    pricing_catalog_fornecedores_retrieve_2: {
+    pricing_catalog_fornecedores_retrieve: {
         parameters: {
             query?: never;
             header?: never;
@@ -30415,12 +30804,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
-            200: {
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_Gone"];
+                };
             };
         };
     };
@@ -30433,14 +30823,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["_Gone"];
+                "application/x-www-form-urlencoded": components["schemas"]["_Gone"];
+                "multipart/form-data": components["schemas"]["_Gone"];
+            };
+        };
         responses: {
-            /** @description No response body */
-            200: {
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_Gone"];
+                };
             };
         };
     };
@@ -30455,12 +30852,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
-            204: {
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_Gone"];
+                };
             };
         };
     };
@@ -30473,14 +30871,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["Patched_Gone"];
+                "application/x-www-form-urlencoded": components["schemas"]["Patched_Gone"];
+                "multipart/form-data": components["schemas"]["Patched_Gone"];
+            };
+        };
         responses: {
-            /** @description No response body */
-            200: {
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_Gone"];
+                };
             };
         };
     };
@@ -31401,14 +31806,31 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalcularPecaInput"];
+                "application/x-www-form-urlencoded": components["schemas"]["CalcularPecaInput"];
+                "multipart/form-data": components["schemas"]["CalcularPecaInput"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -31419,14 +31841,31 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalcularServicoInput"];
+                "application/x-www-form-urlencoded": components["schemas"]["CalcularServicoInput"];
+                "multipart/form-data": components["schemas"]["CalcularServicoInput"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -31437,14 +31876,31 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DebugCustoHoraInput"];
+                "application/x-www-form-urlencoded": components["schemas"]["DebugCustoHoraInput"];
+                "multipart/form-data": components["schemas"]["DebugCustoHoraInput"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -31455,14 +31911,31 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["_CustoInsumoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["_CustoInsumoRequest"];
+                "multipart/form-data": components["schemas"]["_CustoInsumoRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -31473,14 +31946,31 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["_CustoPecaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["_CustoPecaRequest"];
+                "multipart/form-data": components["schemas"]["_CustoPecaRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -31491,14 +31981,31 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DebugRateioInput"];
+                "application/x-www-form-urlencoded": components["schemas"]["DebugRateioInput"];
+                "multipart/form-data": components["schemas"]["DebugRateioInput"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -31511,12 +32018,25 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
@@ -32287,14 +32807,31 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimularInput"];
+                "application/x-www-form-urlencoded": components["schemas"]["SimularInput"];
+                "multipart/form-data": components["schemas"]["SimularInput"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -32699,7 +33236,7 @@ export interface operations {
             };
         };
     };
-    pricing_ia_retrieve: {
+    pricing_ia_list: {
         parameters: {
             query?: never;
             header?: never;
@@ -32708,12 +33245,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SugestaoIACreate"][];
+                };
             };
         };
     };
@@ -32726,14 +33264,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SugestaoIACreate"];
+                "application/x-www-form-urlencoded": components["schemas"]["SugestaoIACreate"];
+                "multipart/form-data": components["schemas"]["SugestaoIACreate"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SugestaoIACreate"];
+                };
             };
         };
     };
@@ -32744,14 +33289,23 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SugestaoIACreate"];
+                "application/x-www-form-urlencoded": components["schemas"]["SugestaoIACreate"];
+                "multipart/form-data": components["schemas"]["SugestaoIACreate"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };
@@ -33582,12 +34136,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DashboardCompras"];
+                };
             };
         };
     };
@@ -33653,14 +34208,29 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdicionarItemOCInput"];
+                "application/x-www-form-urlencoded": components["schemas"]["AdicionarItemOCInput"];
+                "multipart/form-data": components["schemas"]["AdicionarItemOCInput"];
+            };
+        };
         responses: {
-            /** @description No response body */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ItemOrdemCompra"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -33683,6 +34253,14 @@ export interface operations {
                 };
                 content?: never;
             };
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
+            };
         };
     };
     purchasing_ordens_compra_itens_receber_create_2: {
@@ -33695,14 +34273,37 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["_RegistrarRecebimentoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["_RegistrarRecebimentoRequest"];
+                "multipart/form-data": components["schemas"]["_RegistrarRecebimentoRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_RecebimentoResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -36242,21 +36843,35 @@ export interface operations {
             };
         };
     };
-    service_orders_calendar_retrieve: {
+    service_orders_calendar_list: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description YYYY-MM-DD */
+                date_end?: string;
+                /** @description YYYY-MM-DD */
+                date_start?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ServiceOrderCalendar"][];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -37529,12 +38144,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_HealthzResponse"];
+                };
             };
         };
     };

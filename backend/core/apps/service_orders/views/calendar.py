@@ -1,16 +1,21 @@
 """
 Paddock Solutions — Service Orders: Calendar View
 """
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import serializers, status
 
 from django.db.models import Q
 
 from ..models import ServiceOrder, ServiceOrderStatus
 from ..serializers import ServiceOrderCalendarSerializer
+
+
+class _DetailSerializer(serializers.Serializer):
+    detail = serializers.CharField()
 
 
 class CalendarView(APIView):
@@ -22,6 +27,16 @@ class CalendarView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("date_start", str, description="YYYY-MM-DD"),
+            OpenApiParameter("date_end", str, description="YYYY-MM-DD"),
+        ],
+        responses={
+            200: ServiceOrderCalendarSerializer(many=True),
+            400: _DetailSerializer,
+        },
+    )
     def get(self, request: Request) -> Response:
         """Retorna lista de OS no range de datas."""
         date_start = request.query_params.get("date_start")

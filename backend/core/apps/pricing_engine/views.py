@@ -10,11 +10,26 @@ ViewSets com RBAC via get_permissions():
 """
 import logging
 
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
+from rest_framework import serializers as drf_serializers
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+
+class _DetailSerializer(drf_serializers.Serializer):
+    detail = drf_serializers.CharField()
+
+
+class _CustoPecaRequestSerializer(drf_serializers.Serializer):
+    peca_canonica_id = drf_serializers.UUIDField()
+
+
+class _CustoInsumoRequestSerializer(drf_serializers.Serializer):
+    material_canonico_id = drf_serializers.UUIDField()
 
 from apps.authentication.permissions import (
     IsAdminOrAbove,
@@ -127,6 +142,10 @@ class DebugCustoHoraView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminOrAbove]
 
+    @extend_schema(
+        request=DebugCustoHoraInputSerializer,
+        responses={200: OpenApiTypes.OBJECT, 400: _DetailSerializer},
+    )
     def post(self, request: Request) -> Response:
         """POST /debug/custo-hora/ — retorna decomposição do custo/hora."""
         ser = DebugCustoHoraInputSerializer(data=request.data)
@@ -168,6 +187,10 @@ class DebugRateioView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminOrAbove]
 
+    @extend_schema(
+        request=DebugRateioInputSerializer,
+        responses={200: OpenApiTypes.OBJECT, 400: _DetailSerializer},
+    )
     def post(self, request: Request) -> Response:
         """POST /debug/rateio/ — retorna rateio/hora e decomposição de despesas."""
         ser = DebugRateioInputSerializer(data=request.data)
@@ -211,6 +234,10 @@ class DebugCustoPecaView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminOrAbove]
 
+    @extend_schema(
+        request=_CustoPecaRequestSerializer,
+        responses={200: OpenApiTypes.OBJECT, 400: _DetailSerializer},
+    )
     def post(self, request: Request) -> Response:
         """POST /debug/custo-peca/ body: {peca_canonica_id}."""
         peca_id = request.data.get("peca_canonica_id")
@@ -235,6 +262,10 @@ class DebugCustoInsumoView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminOrAbove]
 
+    @extend_schema(
+        request=_CustoInsumoRequestSerializer,
+        responses={200: OpenApiTypes.OBJECT, 400: _DetailSerializer},
+    )
     def post(self, request: Request) -> Response:
         """POST /debug/custo-insumo/ body: {material_canonico_id}."""
         material_id = request.data.get("material_canonico_id")
@@ -355,6 +386,10 @@ class CalcularServicoView(APIView):
 
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(
+        request=CalcularServicoInputSerializer,
+        responses={200: OpenApiTypes.OBJECT, 400: _DetailSerializer},
+    )
     def post(self, request: Request) -> Response:
         ser = CalcularServicoInputSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
@@ -398,6 +433,10 @@ class CalcularPecaView(APIView):
 
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(
+        request=CalcularPecaInputSerializer,
+        responses={200: OpenApiTypes.OBJECT, 400: _DetailSerializer},
+    )
     def post(self, request: Request) -> Response:
         ser = CalcularPecaInputSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
@@ -442,6 +481,10 @@ class SimularView(APIView):
 
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(
+        request=SimularInputSerializer,
+        responses={200: OpenApiTypes.OBJECT, 400: _DetailSerializer},
+    )
     def post(self, request: Request) -> Response:
         ser = SimularInputSerializer(data=request.data)
         ser.is_valid(raise_exception=True)

@@ -1,6 +1,8 @@
 import logging
 
 import httpx
+from drf_spectacular.utils import extend_schema
+from rest_framework import serializers
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -11,6 +13,21 @@ from apps.cilia.client import buscar_orcamento
 from apps.cilia.models import OrcamentoCilia
 from apps.cilia.serializers import OrcamentoCiliaDetalheSerializer
 
+
+class _ConsultarOrcamentoRequestSerializer(serializers.Serializer):
+    sinistro = serializers.CharField()
+    orcamento = serializers.CharField()
+    versao = serializers.CharField(required=False)
+
+
+class _DetailSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+
+
+@extend_schema(
+    request=_ConsultarOrcamentoRequestSerializer,
+    responses={200: OrcamentoCiliaDetalheSerializer, 400: _DetailSerializer, 404: _DetailSerializer},
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def consultar_orcamento(request):

@@ -6,15 +6,31 @@ Endpoint /api/v1/experts/ retorna 410 Gone — peritos agora em
 """
 import logging
 
-from rest_framework import status, viewsets
+from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework import serializers, status, viewsets
 from rest_framework.response import Response
 
 logger = logging.getLogger(__name__)
 
 
+class _GoneSerializer(serializers.Serializer):
+    """410 Gone — endpoint deprecated."""
+
+    detail = serializers.CharField()
+
+
+@extend_schema_view(
+    list=extend_schema(responses={410: _GoneSerializer}, deprecated=True),
+    retrieve=extend_schema(responses={410: _GoneSerializer}, deprecated=True),
+    create=extend_schema(responses={410: _GoneSerializer}, deprecated=True),
+    update=extend_schema(responses={410: _GoneSerializer}, deprecated=True),
+    partial_update=extend_schema(responses={410: _GoneSerializer}, deprecated=True),
+    destroy=extend_schema(responses={410: _GoneSerializer}, deprecated=True),
+)
 class ExpertViewSet(viewsets.ViewSet):
     """Endpoint deprecated — use /api/v1/persons/?role=EXPERT."""
 
+    serializer_class = _GoneSerializer  # pra drf-spectacular parar de avisar
     authentication_classes: list = []
     permission_classes: list = []
 

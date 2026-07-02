@@ -204,6 +204,7 @@ class FocusWebhookView(APIView):
     permission_classes = [AllowAny]
     authentication_classes: list = []  # Autenticação via secret no path
 
+    @extend_schema(exclude=True)
     def post(self, request: Request, secret: str) -> Response:
         """Processa evento de webhook da Focus.
 
@@ -836,6 +837,7 @@ class NfeRecebidaFileProxyView(APIView):
 
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(exclude=True)
     def get(self, request: Request, chave: str, file_type: str) -> Response:
         from django.http import HttpResponse
         import httpx
@@ -909,6 +911,7 @@ class NfeRecebidaListView(APIView):
 
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(exclude=True)
     def get(self, request: Request) -> Response:
         from apps.fiscal.services.fiscal_service import FiscalService
 
@@ -1046,6 +1049,7 @@ class FiscalFileProxyView(APIView):
 
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(exclude=True)
     def get(self, request: Request, pk: str, file_type: str) -> Response:
         from django.http import HttpResponse, StreamingHttpResponse
         import httpx
@@ -1160,6 +1164,7 @@ class DanfePreviewView(APIView):
 
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(exclude=True)
     def post(self, request: Request) -> Response:
         payload = request.data
         if not payload:

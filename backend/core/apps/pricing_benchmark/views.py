@@ -4,6 +4,8 @@ Motor de Orçamentos (MO) — Sprint MO-8
 """
 import logging
 
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -128,6 +130,13 @@ class BenchmarkEstatisticasView(viewsets.ViewSet):
 
     permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("segmento", str, required=False),
+            OpenApiParameter("tamanho", str, required=False),
+        ],
+        responses={200: OpenApiTypes.OBJECT},
+    )
     @action(detail=False, methods=["get"], url_path=r"servico/(?P<servico_id>[^/.]+)")
     def servico(self, request, servico_id=None):
         """Estatísticas de um serviço: p50, p90, min, max, count."""
@@ -143,7 +152,12 @@ class BenchmarkEstatisticasView(viewsets.ViewSet):
 class IAComposicaoViewSet(PermissionsByActionMixin, viewsets.ViewSet):
     """Sugestão de composição via Claude e histórico de sugestões."""
 
+    serializer_class = SugestaoIACreateSerializer
 
+    @extend_schema(
+        request=SugestaoIACreateSerializer,
+        responses={200: OpenApiTypes.OBJECT},
+    )
     @action(detail=False, methods=["post"], url_path="sugerir-composicao")
     def sugerir_composicao(self, request):
         """Chama Claude Sonnet 4.6 e retorna composição sugerida."""

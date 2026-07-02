@@ -33,6 +33,7 @@ from .serializers import (
     ForgotPasswordRequestSerializer,
     LoginRequestSerializer,
     MeSerializer,
+    PushTokenRequestSerializer,
     RefreshRequestSerializer,
     RegisterRequestSerializer,
     ResetPasswordRequestSerializer,
@@ -123,6 +124,11 @@ class DevTokenView(APIView):
     permission_classes = [AllowAny]
     authentication_classes: list = []
 
+    @extend_schema(
+        request=LoginRequestSerializer,
+        responses={200: TokenPairSerializer},
+        auth=[],
+    )
     def post(self, request: Request) -> Response:
         """Valida credenciais dev e retorna JWT HS256 assinado.
 
@@ -752,6 +758,10 @@ class PushTokenView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        request=PushTokenRequestSerializer,
+        responses={200: DetailResponseSerializer},
+    )
     def patch(self, request: Request) -> Response:
         """Salva push token no GlobalUser autenticado."""
         token: str = request.data.get("token", "").strip()

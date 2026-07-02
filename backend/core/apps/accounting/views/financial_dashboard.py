@@ -8,6 +8,9 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from rest_framework import status
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -19,11 +22,22 @@ from apps.authentication.permissions import IsManagerOrAbove
 logger = logging.getLogger(__name__)
 
 
+class _DetailSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+
+
 class FinancialDashboardView(APIView):
     """Consolidated financial dashboard with KPIs, cash flow, and aging."""
 
     permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("start_date", str, description="YYYY-MM-DD"),
+            OpenApiParameter("end_date", str, description="YYYY-MM-DD"),
+        ],
+        responses={200: OpenApiTypes.OBJECT, 400: _DetailSerializer},
+    )
     def get(self, request: Request) -> Response:
         """Return dashboard data for the given period.
 

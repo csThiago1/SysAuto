@@ -10,11 +10,17 @@ ViewSets com RBAC via get_permissions():
 import logging
 
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework import serializers as drf_serializers
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+
+
+class _GoneSerializer(drf_serializers.Serializer):
+    detail = drf_serializers.CharField()
 
 from apps.authentication.permissions import (
     IsAdminOrAbove,
@@ -404,9 +410,18 @@ class PecaCanonicoViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
 # ────────────────────────────────────────────────────────────────────────────
 
 
+@extend_schema_view(
+    list=extend_schema(responses={410: _GoneSerializer}, deprecated=True),
+    retrieve=extend_schema(responses={410: _GoneSerializer}, deprecated=True),
+    create=extend_schema(responses={410: _GoneSerializer}, deprecated=True),
+    update=extend_schema(responses={410: _GoneSerializer}, deprecated=True),
+    partial_update=extend_schema(responses={410: _GoneSerializer}, deprecated=True),
+    destroy=extend_schema(responses={410: _GoneSerializer}, deprecated=True),
+)
 class FornecedorViewSet(PermissionsByActionMixin, viewsets.ViewSet):
     """Endpoint deprecated — fornecedores agora em /api/v1/persons/?role=SUPPLIER."""
 
+    serializer_class = _GoneSerializer
     authentication_classes: list = []
     permission_classes: list = []
 

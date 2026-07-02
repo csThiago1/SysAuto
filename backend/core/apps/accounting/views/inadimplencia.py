@@ -7,6 +7,9 @@ Lista clientes com titulos vencidos, ordenados por saldo restante.
 import logging
 
 from django.db.models import Count, F, Sum
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -17,11 +20,18 @@ from apps.authentication.permissions import IsManagerOrAbove
 logger = logging.getLogger(__name__)
 
 
+class _DetailSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+
+
 class InadimplenciaView(APIView):
     """Clientes inadimplentes — titulos vencidos agrupados por cliente."""
 
     permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
+    @extend_schema(
+        responses={200: OpenApiTypes.OBJECT, 400: _DetailSerializer},
+    )
     def get(self, request: Request) -> Response:
         """Retorna lista de clientes com titulos vencidos.
 
