@@ -4,16 +4,17 @@
  * Entrada, Devolucao, Transferencia, Perda, Aprovacoes
  */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import type {
-  EntradaLoteInput,
-  EntradaPecaInput,
-  MovimentacaoEstoque,
-  PerdaInput,
-  TransferenciaInput,
-} from "@paddock/types"
 
 import { apiFetch, fetchList } from "@/lib/api"
 import { useCreate } from "@/lib/crud-mutations"
+import type { ApiSchema } from "@/types"
+
+// Gerados dos serializers Django — inputs usam variantes *Request.
+export type MovimentacaoEstoque = ApiSchema<"MovimentacaoEstoque">
+export type EntradaPecaInput = ApiSchema<"EntradaPecaInputRequest">
+export type EntradaLoteInput = ApiSchema<"EntradaLoteInputRequest">
+export type TransferenciaInput = ApiSchema<"TransferenciaInputRequest">
+export type PerdaInput = ApiSchema<"PerdaInputRequest">
 
 const INV = "/api/proxy/inventory"
 

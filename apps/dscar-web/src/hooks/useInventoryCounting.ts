@@ -4,15 +4,17 @@
  * ContagemInventario, ItemContagem
  */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import type {
-  AbrirContagemInput,
-  ContagemInventario,
-  ContagemInventarioDetail,
-  RegistrarItemInput,
-} from "@paddock/types"
 
 import { apiFetch, fetchList } from "@/lib/api"
 import { useCreate } from "@/lib/crud-mutations"
+import type { ApiSchema } from "@/types"
+
+// Gerados dos serializers Django — inputs usam variantes *Request.
+export type ContagemInventario = ApiSchema<"ContagemInventario">
+export type ContagemInventarioDetail = ApiSchema<"ContagemInventarioDetail">
+export type ItemContagem = ApiSchema<"ItemContagem">
+export type AbrirContagemInput = ApiSchema<"AbrirContagemInputRequest">
+export type RegistrarItemInput = ApiSchema<"PatchedRegistrarItemInputRequest">
 
 const INV = "/api/proxy/inventory"
 

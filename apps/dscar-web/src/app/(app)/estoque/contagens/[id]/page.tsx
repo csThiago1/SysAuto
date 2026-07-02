@@ -5,7 +5,8 @@ import Link from "next/link"
 import type { Route } from "next"
 import { ClipboardList, ChevronRight } from "lucide-react"
 import { toast } from "sonner"
-import type { StatusContagem, TipoContagem, ItemContagem } from "@paddock/types"
+import type { StatusContagem, TipoContagem } from "@paddock/types"
+import type { ItemContagem } from "@/hooks/useInventoryCounting"
 import {
   useContagem,
   useRegistrarItem,

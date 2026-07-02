@@ -4,9 +4,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { useCreate, useDelete } from "@/lib/crud-mutations"
 import type {
-  AuditoriaMotor,
-  BloqueioCapacidade,
-  CapacidadeTecnico,
   HeatmapDia,
   MotorHealthcheck,
   ProximaDataDisponivel,
@@ -14,7 +11,15 @@ import type {
   VarianciaFicha,
   VarianciaPecaCusto,
 } from "@paddock/types"
+
 import { apiFetch, fetchList } from "@/lib/api"
+import type { ApiSchema } from "@/types"
+
+// Gerados dos serializers Django. Os tipos de cálculo (Utilizacao,
+// Heatmap etc.) ficam manuais — backend responde OBJECT dinâmico.
+export type CapacidadeTecnico = ApiSchema<"CapacidadeTecnico">
+export type BloqueioCapacidade = ApiSchema<"BloqueioCapacidade">
+export type AuditoriaMotor = ApiSchema<"AuditoriaMotor">
 
 const BASE_CAP = "/api/proxy/capacidade"
 const BASE_VAR = "/api/proxy/pricing/variancias"

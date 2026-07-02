@@ -77,6 +77,10 @@ class ContagemViewSet(viewsets.ModelViewSet):
             .order_by("-data_abertura")
         )
 
+    @extend_schema(
+        request=AbrirContagemInputSerializer,
+        responses={201: ContagemInventarioSerializer},
+    )
     def create(self, request: Request, *args: object, **kwargs: object) -> Response:
         """Abre nova contagem via ContagemService."""
         serializer = AbrirContagemInputSerializer(data=request.data)

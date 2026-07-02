@@ -8498,6 +8498,20 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Input para abertura de contagem. */
+        AbrirContagemInputRequest: {
+            tipo: components["schemas"]["AbrirContagemInputTipoEnum"];
+            /** Format: uuid */
+            armazem_id?: string | null;
+            /** Format: uuid */
+            rua_id?: string | null;
+        };
+        /**
+         * @description * `ciclica` - ciclica
+         *     * `total` - total
+         * @enum {string}
+         */
+        AbrirContagemInputTipoEnum: "ciclica" | "total";
         /**
          * @description * `trocar` - Trocar
          *     * `reparar` - Reparar
@@ -30310,9 +30324,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ContagemInventarioRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["ContagemInventarioRequest"];
-                "multipart/form-data": components["schemas"]["ContagemInventarioRequest"];
+                "application/json": components["schemas"]["AbrirContagemInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AbrirContagemInputRequest"];
+                "multipart/form-data": components["schemas"]["AbrirContagemInputRequest"];
             };
         };
         responses: {
