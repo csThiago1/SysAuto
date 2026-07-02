@@ -2436,7 +2436,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description GET /api/v1/fiscal/nfe/inutilizacoes/ */
-        get: operations["fiscal_nfe_inutilizacoes_retrieve"];
+        get: operations["fiscal_nfe_inutilizacoes_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -11133,6 +11133,14 @@ export interface components {
             email: string;
         };
         /**
+         * @description * `01` - 01
+         *     * `03` - 03
+         *     * `04` - 04
+         *     * `99` - 99
+         * @enum {string}
+         */
+        FormaPagamentoEnum: "01" | "03" | "04" | "99";
+        /**
          * @description * `oficina` - Oficina
          *     * `seguradora` - Seguradora
          *     * `cliente` - Cliente
@@ -11929,6 +11937,87 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        /** @description Item individual de uma NFS-e manual. */
+        ManualItemInput: {
+            descricao: string;
+            /**
+             * Format: decimal
+             * @default 1.0000
+             */
+            quantidade: string;
+            /** Format: decimal */
+            valor_unitario: string;
+            /**
+             * Format: decimal
+             * @default 0.00
+             */
+            valor_desconto: string;
+        };
+        /** @description Payload de emissão manual de NF-e de produto (ADMIN+). */
+        ManualNfeInput: {
+            destinatario_id: number;
+            itens: components["schemas"]["ManualNfeItemInput"][];
+            /**
+             * @description 01=dinheiro, 03=crédito, 04=débito, 99=outros.
+             *
+             *     * `01` - 01
+             *     * `03` - 03
+             *     * `04` - 04
+             *     * `99` - 99
+             * @default 01
+             */
+            forma_pagamento: components["schemas"]["FormaPagamentoEnum"];
+            /** @default  */
+            observacoes: string;
+            manual_reason: string;
+            /** @default  */
+            cst_icms: string;
+            /** Format: decimal */
+            icms_aliquota?: string | null;
+        };
+        /** @description Item de NF-e de produto para emissão manual. */
+        ManualNfeItemInput: {
+            /** @default  */
+            codigo_produto: string;
+            descricao: string;
+            ncm: string;
+            /** @default UN */
+            unidade: string;
+            /** Format: decimal */
+            quantidade: string;
+            /** Format: decimal */
+            valor_unitario: string;
+            /**
+             * Format: decimal
+             * @default 0.00
+             */
+            valor_desconto: string;
+        };
+        /**
+         * @description Entrada de emissão NFS-e manual (sem OS vinculada).
+         *
+         *     Requer permissão ADMIN+ (fiscal_admin / OWNER).
+         *     manual_reason é obrigatório — justificativa auditável.
+         */
+        ManualNfseInput: {
+            destinatario_id: number;
+            itens: components["schemas"]["ManualItemInput"][];
+            discriminacao: string;
+            /** @default 14.01 */
+            codigo_servico_lc116: string;
+            /** Format: decimal */
+            aliquota_iss?: string | null;
+            /** @default false */
+            iss_retido: boolean;
+            /**
+             * Format: date-time
+             * @description None = agora. Se informada, deve ser ≤ 30 dias no passado.
+             */
+            data_emissao?: string | null;
+            /** @default  */
+            observacoes_contribuinte: string;
+            manual_reason: string;
+        };
         /** @description Serializer para MargemOperacao — margem base por segmento × tipo. */
         MargemOperacao: {
             /** Format: uuid */
@@ -12273,6 +12362,68 @@ export interface components {
          * @enum {string}
          */
         NatureEnum: "D" | "C";
+        /** @description Body de POST /fiscal/nfce/emit/ — emite NFC-e (cupom fiscal). */
+        NfceEmitRequest: {
+            /** Format: uuid */
+            service_order_id: string;
+            /** @default 01 */
+            forma_pagamento: string;
+        };
+        /** @description Body de POST /fiscal/nfe/emit/ — emite NF-e de produto a partir de uma OS. */
+        NfeEmitRequest: {
+            /** Format: uuid */
+            service_order_id: string;
+            /**
+             * @description Código forma pagamento SEFAZ (01=dinheiro, 03=cartão etc)
+             * @default 01
+             */
+            forma_pagamento: string;
+        };
+        /** @description Body de POST /fiscal/nfe/inutilizacao/ — inutiliza faixa de numeração. */
+        NfeInutilizacaoRequest: {
+            serie: number;
+            numero_inicial: number;
+            numero_final: number;
+            justificativa: string;
+        };
+        /** @description Registro de inutilização retornado por list/create. */
+        NfeInutilizacaoResponse: {
+            /** Format: uuid */
+            id: string;
+            payload: {
+                [key: string]: unknown;
+            };
+            response_data: {
+                [key: string]: unknown;
+            };
+            /** Format: date-time */
+            created_at: string;
+        };
+        /** @description Body de POST /fiscal/nfe-recebidas/{chave}/manifesto/. */
+        NfeRecebidaManifestRequest: {
+            tipo_evento: components["schemas"]["TipoEventoEnum"];
+            justificativa?: string;
+        };
+        /** @description Body de POST /fiscal/nfe-recebidas/sync/ — força sync com Focus. */
+        NfeRecebidaSyncRequest: {
+            /**
+             * @description Dias atrás pra buscar
+             * @default 30
+             */
+            days: number;
+        };
+        /** @description Body de POST /fiscal/nfse/emit/ — emite NFS-e a partir de uma OS. */
+        NfseEmitRequest: {
+            /** Format: uuid */
+            service_order_id: string;
+        };
+        /** @description Body de POST /fiscal/nfse/substituir/ — substitui NFS-e autorizada. */
+        NfseSubstituirRequest: {
+            chave_nfse_substituida: string;
+            /** Format: uuid */
+            service_order_id?: string;
+            codigo_justificativa?: string;
+        };
         /** @description CRUD de Nível — ponto terminal do endereçamento WMS. */
         Nivel: {
             /** Format: uuid */
@@ -17668,6 +17819,16 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        /** @description Resposta de /fiscal/resumo/{year}/{month}/. */
+        ResumoFiscalResponse: {
+            year: number;
+            month: number;
+            nfse_authorized: number;
+            nfe_authorized: number;
+            nfce_authorized: number;
+            /** Format: decimal */
+            total_emitido: string;
+        };
         Role: {
             readonly id: number;
             code: string;
@@ -19486,6 +19647,14 @@ export interface components {
          * @enum {string}
          */
         Tipo7faEnum: "aluguel" | "energia" | "agua" | "internet" | "software" | "folha_admin" | "contabilidade" | "marketing" | "depreciacao" | "seguro" | "limpeza" | "outros";
+        /**
+         * @description * `confirmacao` - confirmacao
+         *     * `ciencia` - ciencia
+         *     * `desconhecimento` - desconhecimento
+         *     * `nao_realizada` - nao_realizada
+         * @enum {string}
+         */
+        TipoEventoEnum: "confirmacao" | "ciencia" | "desconhecimento" | "nao_realizada";
         /**
          * @description * `servico` - Serviço
          *     * `peca` - Peça
@@ -23764,14 +23933,29 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NfceEmitRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NfceEmitRequest"];
+                "multipart/form-data": components["schemas"]["NfceEmitRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FiscalDocument"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -24082,14 +24266,21 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NfeRecebidaManifestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NfeRecebidaManifestRequest"];
+                "multipart/form-data": components["schemas"]["NfeRecebidaManifestRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -24100,14 +24291,21 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["NfeRecebidaSyncRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NfeRecebidaSyncRequest"];
+                "multipart/form-data": components["schemas"]["NfeRecebidaSyncRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -24136,14 +24334,29 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NfeEmitRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NfeEmitRequest"];
+                "multipart/form-data": components["schemas"]["NfeEmitRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FiscalDocument"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -24154,14 +24367,29 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManualNfeInput"];
+                "application/x-www-form-urlencoded": components["schemas"]["ManualNfeInput"];
+                "multipart/form-data": components["schemas"]["ManualNfeInput"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FiscalDocument"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -24172,18 +24400,33 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NfeInutilizacaoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NfeInutilizacaoRequest"];
+                "multipart/form-data": components["schemas"]["NfeInutilizacaoRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
-    fiscal_nfe_inutilizacoes_retrieve: {
+    fiscal_nfe_inutilizacoes_list: {
         parameters: {
             query?: never;
             header?: never;
@@ -24192,12 +24435,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["NfeInutilizacaoResponse"][];
+                };
             };
         };
     };
@@ -24208,14 +24452,29 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NfseEmitRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NfseEmitRequest"];
+                "multipart/form-data": components["schemas"]["NfseEmitRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FiscalDocument"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -24226,14 +24485,29 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManualNfseInput"];
+                "application/x-www-form-urlencoded": components["schemas"]["ManualNfseInput"];
+                "multipart/form-data": components["schemas"]["ManualNfseInput"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FiscalDocument"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -24244,14 +24518,29 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NfseSubstituirRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NfseSubstituirRequest"];
+                "multipart/form-data": components["schemas"]["NfseSubstituirRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -24264,12 +24553,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ResumoFiscalResponse"];
+                };
             };
         };
     };

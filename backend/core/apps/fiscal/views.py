@@ -24,6 +24,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
+from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -36,14 +37,25 @@ from apps.authentication.permissions import (
 from apps.fiscal.clients.focus_nfe_client import FocusNFeClient
 from apps.fiscal.models import FiscalDocument, FiscalEvent, NFeEntrada, NFeEntradaItem
 from apps.fiscal.serializers import (
+    DetailResponseSerializer,
     FiscalDocumentListSerializer,
     FiscalDocumentSerializer,
+    ManualNfeInputSerializer,
     ManualNfseInputSerializer,
     NFeEntradaCreateSerializer,
     NFeEntradaDetailSerializer,
     NFeEntradaItemReconciliarSerializer,
     NFeEntradaItemSerializer,
     NFeEntradaListSerializer,
+    NfceEmitRequestSerializer,
+    NfeEmitRequestSerializer,
+    NfeInutilizacaoRequestSerializer,
+    NfeInutilizacaoResponseSerializer,
+    NfeRecebidaManifestRequestSerializer,
+    NfeRecebidaSyncRequestSerializer,
+    NfseEmitRequestSerializer,
+    NfseSubstituirRequestSerializer,
+    ResumoFiscalResponseSerializer,
 )
 from apps.fiscal.services.ingestao import EstoqueJaGerado, NFeIngestaoService
 
@@ -306,6 +318,10 @@ class NfseEmitView(APIView):
 
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(
+        request=NfseEmitRequestSerializer,
+        responses={200: FiscalDocumentSerializer, 400: DetailResponseSerializer},
+    )
     def post(self, request: Request) -> Response:
         from apps.fiscal.exceptions import FiscalDocumentAlreadyAuthorized
         from apps.fiscal.services.fiscal_service import FiscalService
@@ -370,6 +386,10 @@ class NfseSubstituirView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminOrAbove]
 
+    @extend_schema(
+        request=NfseSubstituirRequestSerializer,
+        responses={200: DetailResponseSerializer, 400: DetailResponseSerializer},
+    )
     def post(self, request: Request) -> Response:
         from apps.fiscal.exceptions import (
             FiscalDocumentAlreadyAuthorized,
@@ -455,6 +475,10 @@ class NfseEmitManualView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminOrAbove]
 
+    @extend_schema(
+        request=ManualNfseInputSerializer,
+        responses={200: FiscalDocumentSerializer, 400: DetailResponseSerializer},
+    )
     def post(self, request: Request) -> Response:
         from apps.fiscal.exceptions import FiscalValidationError, NfseBuilderError
         from apps.fiscal.services.fiscal_service import FiscalService
@@ -494,6 +518,10 @@ class NfeEmitView(APIView):
 
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(
+        request=NfeEmitRequestSerializer,
+        responses={200: FiscalDocumentSerializer, 400: DetailResponseSerializer},
+    )
     def post(self, request: Request) -> Response:
         from apps.fiscal.exceptions import (
             FiscalDocumentAlreadyAuthorized,
@@ -549,6 +577,10 @@ class NfeEmitManualView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminOrAbove]
 
+    @extend_schema(
+        request=ManualNfeInputSerializer,
+        responses={200: FiscalDocumentSerializer, 400: DetailResponseSerializer},
+    )
     def post(self, request: Request) -> Response:
         from apps.fiscal.exceptions import FiscalValidationError, NfeBuilderError
         from apps.fiscal.serializers import ManualNfeInputSerializer
@@ -601,6 +633,10 @@ class NfceEmitView(APIView):
 
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(
+        request=NfceEmitRequestSerializer,
+        responses={200: FiscalDocumentSerializer, 400: DetailResponseSerializer},
+    )
     def post(self, request: Request) -> Response:
         from apps.fiscal.exceptions import (
             FocusNFeError,
@@ -912,6 +948,10 @@ class NfeRecebidaSyncView(APIView):
 
     permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
+    @extend_schema(
+        request=NfeRecebidaSyncRequestSerializer,
+        responses={200: DetailResponseSerializer},
+    )
     def post(self, request: Request) -> Response:
         from apps.fiscal.services.fiscal_service import FiscalService
         from apps.fiscal.services.auto_import import NFeEntradaAutoImportService
@@ -957,6 +997,10 @@ class NfeRecebidaManifestView(APIView):
 
     permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
+    @extend_schema(
+        request=NfeRecebidaManifestRequestSerializer,
+        responses={200: DetailResponseSerializer},
+    )
     def post(self, request: Request, chave: str) -> Response:
         tipo_evento = request.data.get("tipo_evento", "")
         if tipo_evento not in (
@@ -1068,6 +1112,10 @@ class NfeInutilizacaoView(APIView):
     """
     permission_classes = [IsAuthenticated, IsAdminOrAbove]
 
+    @extend_schema(
+        request=NfeInutilizacaoRequestSerializer,
+        responses={200: DetailResponseSerializer, 400: DetailResponseSerializer},
+    )
     def post(self, request: Request) -> Response:
         serie = request.data.get("serie")
         numero_inicial = request.data.get("numero_inicial")
@@ -1136,6 +1184,7 @@ class NfeInutilizacaoListView(APIView):
     """GET /api/v1/fiscal/nfe/inutilizacoes/"""
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(responses={200: NfeInutilizacaoResponseSerializer(many=True)})
     def get(self, request: Request) -> Response:
         events = FiscalEvent.objects.filter(
             event_type="INUTILIZACAO",
@@ -1158,6 +1207,7 @@ class ResumoFiscalView(APIView):
 
     permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
+    @extend_schema(responses={200: ResumoFiscalResponseSerializer})
     def get(self, request: Request) -> Response:
         """Retorna resumo fiscal para o mes/ano informados.
 

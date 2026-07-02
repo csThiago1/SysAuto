@@ -374,3 +374,89 @@ class FiscalDocumentSerializer(serializers.ModelSerializer):
         if not obj.caminho_xml:
             return ""
         return f"/api/v1/fiscal/documents/{obj.pk}/file/xml/"
+
+
+# ── Serializers de documentação OpenAPI (emit endpoints não têm body model) ──
+
+
+class NfseEmitRequestSerializer(serializers.Serializer):
+    """Body de POST /fiscal/nfse/emit/ — emite NFS-e a partir de uma OS."""
+
+    service_order_id = serializers.UUIDField()
+
+
+class NfeEmitRequestSerializer(serializers.Serializer):
+    """Body de POST /fiscal/nfe/emit/ — emite NF-e de produto a partir de uma OS."""
+
+    service_order_id = serializers.UUIDField()
+    forma_pagamento = serializers.CharField(
+        required=False, default="01",
+        help_text="Código forma pagamento SEFAZ (01=dinheiro, 03=cartão etc)"
+    )
+
+
+class NfceEmitRequestSerializer(serializers.Serializer):
+    """Body de POST /fiscal/nfce/emit/ — emite NFC-e (cupom fiscal)."""
+
+    service_order_id = serializers.UUIDField()
+    forma_pagamento = serializers.CharField(required=False, default="01")
+
+
+class NfseSubstituirRequestSerializer(serializers.Serializer):
+    """Body de POST /fiscal/nfse/substituir/ — substitui NFS-e autorizada."""
+
+    chave_nfse_substituida = serializers.CharField()
+    service_order_id = serializers.UUIDField(required=False)
+    codigo_justificativa = serializers.CharField(required=False)
+
+
+class NfeInutilizacaoRequestSerializer(serializers.Serializer):
+    """Body de POST /fiscal/nfe/inutilizacao/ — inutiliza faixa de numeração."""
+
+    serie = serializers.IntegerField()
+    numero_inicial = serializers.IntegerField()
+    numero_final = serializers.IntegerField()
+    justificativa = serializers.CharField(min_length=15)
+
+
+class NfeInutilizacaoResponseSerializer(serializers.Serializer):
+    """Registro de inutilização retornado por list/create."""
+
+    id = serializers.UUIDField()
+    payload = serializers.DictField()
+    response_data = serializers.DictField()
+    created_at = serializers.DateTimeField()
+
+
+class NfeRecebidaSyncRequestSerializer(serializers.Serializer):
+    """Body de POST /fiscal/nfe-recebidas/sync/ — força sync com Focus."""
+
+    days = serializers.IntegerField(
+        required=False, default=30, help_text="Dias atrás pra buscar"
+    )
+
+
+class NfeRecebidaManifestRequestSerializer(serializers.Serializer):
+    """Body de POST /fiscal/nfe-recebidas/{chave}/manifesto/."""
+
+    tipo_evento = serializers.ChoiceField(
+        choices=["confirmacao", "ciencia", "desconhecimento", "nao_realizada"],
+    )
+    justificativa = serializers.CharField(required=False)
+
+
+class ResumoFiscalResponseSerializer(serializers.Serializer):
+    """Resposta de /fiscal/resumo/{year}/{month}/."""
+
+    year = serializers.IntegerField()
+    month = serializers.IntegerField()
+    nfse_authorized = serializers.IntegerField()
+    nfe_authorized = serializers.IntegerField()
+    nfce_authorized = serializers.IntegerField()
+    total_emitido = serializers.DecimalField(max_digits=14, decimal_places=2)
+
+
+class DetailResponseSerializer(serializers.Serializer):
+    """Resposta genérica {"detail": "mensagem"}."""
+
+    detail = serializers.CharField()
