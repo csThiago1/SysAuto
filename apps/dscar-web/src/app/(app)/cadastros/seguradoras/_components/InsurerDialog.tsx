@@ -11,8 +11,7 @@ import {
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useInsurerCreate, useInsurerUpdate, useInsurerUploadLogo } from "@/hooks/useInsurers"
-import type { Insurer, InsurerFull } from "@paddock/types"
+import { useInsurerCreate, useInsurerUpdate, useInsurerUploadLogo, type InsurerListItem } from "@/hooks/useInsurers"
 
 function formatCNPJ(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 14)
@@ -46,7 +45,7 @@ type FormData = z.infer<typeof schema>
 interface Props {
   open: boolean
   onOpenChange: (v: boolean) => void
-  editing: Insurer | null
+  editing: InsurerListItem | null
 }
 
 const LABEL = "block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-0.5"
@@ -55,7 +54,7 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
   const create = useInsurerCreate()
   const update = useInsurerUpdate()
   const uploadLogo = useInsurerUploadLogo()
-  // InsurerFull not used here; editing is Insurer which has all required fields
+  // editing usa InsurerListItem (gerado do InsurerMinimalSerializer)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)

@@ -16,33 +16,32 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useInsurers, useInsurerDelete, useInsurerUploadLogo } from "@/hooks/useInsurers"
+import { useInsurers, useInsurerDelete, useInsurerUploadLogo, type InsurerListItem } from "@/hooks/useInsurers"
 import { InsurerDialog } from "./_components/InsurerDialog"
-import type { Insurer } from "@paddock/types"
 
 export default function SeguradorasPage() {
   const [search, setSearch] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [editing, setEditing] = useState<Insurer | null>(null)
+  const [editing, setEditing] = useState<InsurerListItem | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const { data, isLoading } = useInsurers(search)
   const deleteMutation = useInsurerDelete()
   const uploadLogo = useInsurerUploadLogo()
 
-  const insurers: Insurer[] = data?.results ?? []
+  const insurers: InsurerListItem[] = data?.results ?? []
 
   function handleNew() {
     setEditing(null)
     setDialogOpen(true)
   }
 
-  function handleEdit(insurer: Insurer) {
+  function handleEdit(insurer: InsurerListItem) {
     setEditing(insurer)
     setDialogOpen(true)
   }
 
-  async function handleDelete(insurer: Insurer): Promise<void> {
+  async function handleDelete(insurer: InsurerListItem): Promise<void> {
     if (!confirm(`Remover "${insurer.trade_name || insurer.name}"?`)) return
     setDeletingId(insurer.id)
     try {
@@ -55,7 +54,7 @@ export default function SeguradorasPage() {
     }
   }
 
-  async function handleLogoUpload(insurer: Insurer, e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleLogoUpload(insurer: InsurerListItem, e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
     const ext = file.name.split(".").pop()?.toLowerCase()

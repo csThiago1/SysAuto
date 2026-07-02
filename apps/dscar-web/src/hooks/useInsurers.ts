@@ -1,9 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
-import type { Insurer, InsurerFull, InsurerTenantProfile, PaginatedResponse } from "@paddock/types"
+import type { InsurerTenantProfile, PaginatedResponse } from "@paddock/types"
 
 import { apiFetch } from "@/lib/api"
 import { useCreate, useDelete, useUpdate } from "@/lib/crud-mutations"
+import type { ApiSchema } from "@/types"
+
+// Insurer minimal (list) vs completo (detail) — nomes espelham o Django.
+// Exportados pra callers usarem sem re-importar de @/types.
+export type InsurerListItem = ApiSchema<"InsurerMinimal">
+export type Insurer = ApiSchema<"Insurer">
 
 const API = "/api/proxy/insurers"
 
@@ -18,17 +24,18 @@ const insurerKeys = {
 
 export function useInsurers(search = "") {
   const params = search ? `?search=${encodeURIComponent(search)}` : ""
-  return useQuery<PaginatedResponse<Insurer>>({
+  return useQuery<PaginatedResponse<InsurerListItem>>({
     queryKey: insurerKeys.list(search),
-    queryFn: () => apiFetch<PaginatedResponse<Insurer>>(`${API}/${params}`),
+    queryFn: () =>
+      apiFetch<PaginatedResponse<InsurerListItem>>(`${API}/${params}`),
     staleTime: 5 * 60 * 1000,
   })
 }
 
 export function useInsurer(id: string) {
-  return useQuery<InsurerFull>({
+  return useQuery<Insurer>({
     queryKey: insurerKeys.detail(id),
-    queryFn: () => apiFetch<InsurerFull>(`${API}/${id}/`),
+    queryFn: () => apiFetch<Insurer>(`${API}/${id}/`),
     enabled: !!id,
   })
 }
@@ -46,8 +53,8 @@ export interface InsurerPayload {
   is_active?: boolean
 }
 
-export const useInsurerCreate = () => useCreate<InsurerFull, InsurerPayload>("insurers")
-export const useInsurerUpdate = () => useUpdate<InsurerFull, Partial<InsurerPayload>>("insurers")
+export const useInsurerCreate = () => useCreate<Insurer, InsurerPayload>("insurers")
+export const useInsurerUpdate = () => useUpdate<Insurer, Partial<InsurerPayload>>("insurers")
 export const useInsurerDelete = () => useDelete("insurers")
 
 export function useInsurerUploadLogo() {
@@ -56,7 +63,7 @@ export function useInsurerUploadLogo() {
     mutationFn: ({ id, file }: { id: string; file: File }) => {
       const formData = new FormData()
       formData.append("logo", file)
-      return apiFetch<InsurerFull>(`${API}/${id}/upload_logo/`, {
+      return apiFetch<Insurer>(`${API}/${id}/upload_logo/`, {
         method: "POST",
         body: formData,
       })
