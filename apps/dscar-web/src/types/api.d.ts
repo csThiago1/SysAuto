@@ -10060,6 +10060,19 @@ export interface components {
             is_active?: boolean;
         };
         /**
+         * @description Snapshot resumido do perfil de cliente do usuário.
+         *     Retornado apenas quando o GlobalUser tem UnifiedCustomer vinculado.
+         */
+        CustomerSnapshot: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @description Retorna telefone mascarado: (**) *****-XXXX. */
+            readonly phone_masked: string;
+            /** @description Retorna CPF mascarado: ***.***.***-XX. */
+            readonly cpf_masked: string;
+        };
+        /**
          * @description * `insurer` - Seguradora
          *     * `private` - Particular
          * @enum {string}
@@ -10567,6 +10580,18 @@ export interface components {
              *     * `weekly` - Semanal
              */
             readonly pay_frequency: components["schemas"]["PayFrequencyEnum"];
+        };
+        /**
+         * @description Snapshot resumido do perfil de colaborador do usuário.
+         *     Retornado apenas quando o GlobalUser tem Employee no tenant atual.
+         */
+        EmployeeSnapshot: {
+            /** Format: uuid */
+            id: string;
+            department: string;
+            position: string;
+            status: string;
+            registration_number: string;
         };
         /** @description Serializer de atualização — não permite alterar user nem matrícula. */
         EmployeeUpdate: {
@@ -11843,6 +11868,12 @@ export interface components {
          * @enum {string}
          */
         LadoEnum: "esquerdo" | "direito" | "central" | "na";
+        /** @description Body de POST /auth/login/. */
+        LoginRequest: {
+            /** @description Email OU username do usuário */
+            email: string;
+            password: string;
+        };
         LoteInsumoList: {
             /** Format: uuid */
             readonly id: string;
@@ -12014,6 +12045,23 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        /**
+         * @description Serializer para o endpoint /me — identidade completa do usuário autenticado.
+         *     Agrega GlobalUser + Employee (se existir no tenant) + UnifiedCustomer (se vinculado).
+         */
+        Me: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            email_hash: string;
+            role: string;
+            active_company: string;
+            tenant_schema: string;
+            is_employee: boolean;
+            is_customer: boolean;
+            employee: components["schemas"]["EmployeeSnapshot"] | null;
+            customer: components["schemas"]["CustomerSnapshot"] | null;
         };
         /**
          * @description * `CANVAS_TABLET` - Canvas em Tablet
@@ -17536,6 +17584,10 @@ export interface components {
             /** @default  */
             notes: string;
         };
+        /** @description Body de POST /auth/refresh/. */
+        RefreshRequest: {
+            refresh: string;
+        };
         RespostaCotacao: {
             /** Format: uuid */
             readonly id: string;
@@ -19408,6 +19460,13 @@ export interface components {
          * @enum {string}
          */
         TipoResponsabilidadeB50Enum: "cliente" | "seguradora" | "rcf";
+        /** @description Retornado por /auth/login/ e /auth/refresh/. */
+        TokenPair: {
+            /** @description JWT access token (TTL curto) */
+            access: string;
+            /** @description JWT refresh token (TTL longo) */
+            refresh: string;
+        };
         /** @description Lista pública — sem valor_nf para roles abaixo de MANAGER. */
         UnidadeFisicaList: {
             /** Format: uuid */
@@ -21598,14 +21657,21 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["LoginRequest"];
+                "multipart/form-data": components["schemas"]["LoginRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TokenPair"];
+                };
             };
         };
     };
@@ -21618,12 +21684,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
             };
         };
     };
@@ -21652,14 +21719,21 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefreshRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["RefreshRequest"];
+                "multipart/form-data": components["schemas"]["RefreshRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TokenPair"];
+                };
             };
         };
     };

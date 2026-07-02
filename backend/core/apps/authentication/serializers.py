@@ -83,3 +83,29 @@ class MeSerializer(serializers.Serializer):
     is_customer = serializers.BooleanField()
     employee = EmployeeSnapshotSerializer(allow_null=True)
     customer = CustomerSnapshotSerializer(allow_null=True)
+
+
+# ── Serializers apenas pra documentação OpenAPI ──────────────────────────────
+# Os endpoints correspondentes aceitam/retornam dicts — estes serializers
+# NÃO validam dados (as views fazem isso à mão), só descrevem shape pro
+# drf-spectacular e pro codegen de tipos TS.
+
+
+class LoginRequestSerializer(serializers.Serializer):
+    """Body de POST /auth/login/."""
+
+    email = serializers.CharField(help_text="Email OU username do usuário")
+    password = serializers.CharField(style={"input_type": "password"})
+
+
+class TokenPairSerializer(serializers.Serializer):
+    """Retornado por /auth/login/ e /auth/refresh/."""
+
+    access = serializers.CharField(help_text="JWT access token (TTL curto)")
+    refresh = serializers.CharField(help_text="JWT refresh token (TTL longo)")
+
+
+class RefreshRequestSerializer(serializers.Serializer):
+    """Body de POST /auth/refresh/."""
+
+    refresh = serializers.CharField()

@@ -25,8 +25,16 @@ from .models import (
     PasswordResetToken,
     RefreshToken,
 )
+from drf_spectacular.utils import extend_schema
+
 from .permissions import IsAdminOrAbove, IsManagerOrAbove
-from .serializers import MeSerializer, StaffUserSerializer
+from .serializers import (
+    LoginRequestSerializer,
+    MeSerializer,
+    RefreshRequestSerializer,
+    StaffUserSerializer,
+    TokenPairSerializer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -173,6 +181,11 @@ class LoginView(APIView):
     authentication_classes: list = []
     throttle_classes = [AuthRateThrottle]
 
+    @extend_schema(
+        request=LoginRequestSerializer,
+        responses={200: TokenPairSerializer},
+        auth=[],
+    )
     def post(self, request: Request) -> Response:
         """Valida credenciais e retorna JWT par access/refresh."""
         login_input: str = request.data.get("email", "").strip()
@@ -210,6 +223,11 @@ class RefreshView(APIView):
     permission_classes = [AllowAny]
     authentication_classes: list = []
 
+    @extend_schema(
+        request=RefreshRequestSerializer,
+        responses={200: TokenPairSerializer},
+        auth=[],
+    )
     def post(self, request: Request) -> Response:
         """Rotaciona refresh token e emite novo par."""
         raw_refresh: str = request.data.get("refresh_token", "").strip()
@@ -279,6 +297,7 @@ class MeView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(responses={200: MeSerializer})
     def get(self, request: Request) -> Response:
         """Retorna identidade completa do usuário autenticado."""
         user: GlobalUser = request.user  # type: ignore[assignment]
