@@ -10220,6 +10220,12 @@ export interface components {
         DetailResponse: {
             detail: string;
         };
+        /** @description Input para devolucao de peca. */
+        DevolucaoInput: {
+            /** Format: uuid */
+            nivel_destino_id: string;
+            motivo: string;
+        };
         /**
          * @description * `fixed` - Valor Fixo
          *     * `percentage` - Percentual do Salário
@@ -10750,6 +10756,39 @@ export interface components {
             /** @description Quanto menor, mais específico. Match exato (marca+modelo+ano) = 10; só marca = 100. */
             prioridade?: number;
             is_active?: boolean;
+        };
+        /** @description Input para entrada manual de lote. produto_insumo_id OU material_canonico_id obrigatório. */
+        EntradaLoteInput: {
+            /** Format: uuid */
+            material_canonico_id?: string | null;
+            /** Format: decimal */
+            quantidade_compra: string;
+            unidade_compra: string;
+            /** Format: decimal */
+            fator_conversao: string;
+            /** Format: decimal */
+            valor_total_nf: string;
+            /** Format: uuid */
+            nivel_id: string;
+            motivo: string;
+            /** Format: uuid */
+            produto_insumo_id?: string | null;
+            /** Format: date */
+            validade?: string | null;
+        };
+        /** @description Input para entrada manual de peca. produto_peca_id OU peca_canonica_id obrigatório. */
+        EntradaPecaInput: {
+            /** Format: uuid */
+            peca_canonica_id?: string | null;
+            /** Format: decimal */
+            valor_nf: string;
+            /** Format: uuid */
+            nivel_id: string;
+            motivo: string;
+            /** Format: uuid */
+            produto_peca_id?: string | null;
+            /** @default  */
+            numero_serie: string;
         };
         /**
          * @description * `clock_in` - Entrada
@@ -11709,6 +11748,12 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        /**
+         * @description * `unidade` - unidade
+         *     * `lote` - lote
+         * @enum {string}
+         */
+        ItemTipoEnum: "unidade" | "lote";
         /**
          * @description * `PART` - Peça
          *     * `SERVICE` - Serviço
@@ -17234,6 +17279,18 @@ export interface components {
          * @enum {string}
          */
         PedidoCompraStatusEnum: "solicitado" | "em_cotacao" | "oc_pendente" | "aprovado" | "comprado" | "recebido" | "cancelado";
+        /** @description Input para registro de perda/avaria. */
+        PerdaInput: {
+            item_tipo: components["schemas"]["ItemTipoEnum"];
+            /** Format: uuid */
+            item_id: string;
+            motivo: string;
+            /**
+             * Format: decimal
+             * @description Obrigatorio para lotes (quantidade perdida em unidade_base).
+             */
+            quantidade?: string | null;
+        };
         Permission: {
             readonly id: number;
             code: string;
@@ -19724,6 +19781,14 @@ export interface components {
             /** @description JWT refresh token (TTL longo) */
             refresh: string;
         };
+        /** @description Input para transferencia de item entre niveis. */
+        TransferenciaInput: {
+            item_tipo: components["schemas"]["ItemTipoEnum"];
+            /** Format: uuid */
+            item_id: string;
+            /** Format: uuid */
+            nivel_destino_id: string;
+        };
         /** @description Lista pública — sem valor_nf para roles abaixo de MANAGER. */
         UnidadeFisicaList: {
             /** Format: uuid */
@@ -20232,6 +20297,16 @@ export interface components {
             effective_until?: string | null;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        /** @description Resposta genérica {"detail": "mensagem"}. */
+        _Detail: {
+            detail: string;
+        };
+        /** @description Resposta padrão dos endpoints de movimentação: {id, codigo_barras}. */
+        _MovimentacaoIdResponse: {
+            /** Format: uuid */
+            id: string;
+            codigo_barras: string;
         };
     };
     responses: never;
@@ -27060,14 +27135,29 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DevolucaoInput"];
+                "application/x-www-form-urlencoded": components["schemas"]["DevolucaoInput"];
+                "multipart/form-data": components["schemas"]["DevolucaoInput"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -27078,14 +27168,29 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntradaLoteInput"];
+                "application/x-www-form-urlencoded": components["schemas"]["EntradaLoteInput"];
+                "multipart/form-data": components["schemas"]["EntradaLoteInput"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_MovimentacaoIdResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -27096,14 +27201,29 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntradaPecaInput"];
+                "application/x-www-form-urlencoded": components["schemas"]["EntradaPecaInput"];
+                "multipart/form-data": components["schemas"]["EntradaPecaInput"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_MovimentacaoIdResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -27616,14 +27736,29 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PerdaInput"];
+                "application/x-www-form-urlencoded": components["schemas"]["PerdaInput"];
+                "multipart/form-data": components["schemas"]["PerdaInput"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -28394,14 +28529,29 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferenciaInput"];
+                "application/x-www-form-urlencoded": components["schemas"]["TransferenciaInput"];
+                "multipart/form-data": components["schemas"]["TransferenciaInput"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };

@@ -13,11 +13,26 @@ from decimal import Decimal
 
 from django.db import models as db_models
 from django.db.models import Count, Q, Sum
+from drf_spectacular.utils import extend_schema
+from rest_framework import serializers as drf_serializers
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+
+class _MovimentacaoIdResponseSerializer(drf_serializers.Serializer):
+    """Resposta padrão dos endpoints de movimentação: {id, codigo_barras}."""
+
+    id = drf_serializers.UUIDField()
+    codigo_barras = drf_serializers.CharField()
+
+
+class _DetailSerializer(drf_serializers.Serializer):
+    """Resposta genérica {"detail": "mensagem"}."""
+
+    detail = drf_serializers.CharField()
 
 from apps.authentication.permissions import (
     HasTenantPermission,
@@ -49,6 +64,10 @@ class EntradaPecaView(APIView):
 
     permission_classes = [IsAuthenticated, HasTenantPermission.factory("estoque.move")]
 
+    @extend_schema(
+        request=EntradaPecaInputSerializer,
+        responses={200: _MovimentacaoIdResponseSerializer, 400: _DetailSerializer},
+    )
     def post(self, request: Request) -> Response:
         serializer = EntradaPecaInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -97,6 +116,10 @@ class EntradaLoteView(APIView):
 
     permission_classes = [IsAuthenticated, HasTenantPermission.factory("estoque.move")]
 
+    @extend_schema(
+        request=EntradaLoteInputSerializer,
+        responses={200: _MovimentacaoIdResponseSerializer, 400: _DetailSerializer},
+    )
     def post(self, request: Request) -> Response:
         serializer = EntradaLoteInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -148,6 +171,10 @@ class DevolucaoView(APIView):
 
     permission_classes = [IsAuthenticated, HasTenantPermission.factory("estoque.move")]
 
+    @extend_schema(
+        request=DevolucaoInputSerializer,
+        responses={200: _DetailSerializer, 400: _DetailSerializer},
+    )
     def post(self, request: Request, unidade_id: str) -> Response:
         serializer = DevolucaoInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -183,6 +210,10 @@ class TransferenciaView(APIView):
 
     permission_classes = [IsAuthenticated, HasTenantPermission.factory("estoque.move")]
 
+    @extend_schema(
+        request=TransferenciaInputSerializer,
+        responses={200: _DetailSerializer, 400: _DetailSerializer},
+    )
     def post(self, request: Request) -> Response:
         serializer = TransferenciaInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -219,6 +250,10 @@ class PerdaView(APIView):
 
     permission_classes = [IsAuthenticated, HasTenantPermission.factory("estoque.move")]
 
+    @extend_schema(
+        request=PerdaInputSerializer,
+        responses={200: _DetailSerializer, 400: _DetailSerializer},
+    )
     def post(self, request: Request) -> Response:
         serializer = PerdaInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
