@@ -109,3 +109,41 @@ class RefreshRequestSerializer(serializers.Serializer):
     """Body de POST /auth/refresh/."""
 
     refresh = serializers.CharField()
+
+
+class RegisterRequestSerializer(serializers.Serializer):
+    """Body de POST /auth/register/ (admin cria usuário)."""
+
+    email = serializers.EmailField()
+    name = serializers.CharField()
+    role = serializers.ChoiceField(
+        choices=["OWNER", "ADMIN", "MANAGER", "CONSULTANT", "STOREKEEPER"]
+    )
+    password = serializers.CharField(style={"input_type": "password"})
+
+
+class ForgotPasswordRequestSerializer(serializers.Serializer):
+    """Body de POST /auth/forgot-password/."""
+
+    email = serializers.EmailField()
+
+
+class ResetPasswordRequestSerializer(serializers.Serializer):
+    """Body de POST /auth/reset-password/."""
+
+    token = serializers.CharField(help_text="Token raw enviado por email")
+    password = serializers.CharField(
+        style={"input_type": "password"}, min_length=8
+    )
+
+
+class VerifyEmailRequestSerializer(serializers.Serializer):
+    """Body de POST /auth/verify-email/."""
+
+    token = serializers.CharField(help_text="Token raw enviado por email")
+
+
+class DetailResponseSerializer(serializers.Serializer):
+    """Resposta genérica {"detail": "mensagem"} — usada em muitos endpoints."""
+
+    detail = serializers.CharField()

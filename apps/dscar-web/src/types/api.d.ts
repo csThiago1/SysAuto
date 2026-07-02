@@ -1176,7 +1176,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description Lista usuarios com filtros opcionais. */
-        get: operations["auth_staff_retrieve"];
+        get: operations["auth_staff_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -10216,6 +10216,10 @@ export interface components {
             vigente_ate?: string | null;
             is_active?: boolean;
         };
+        /** @description Resposta genérica {"detail": "mensagem"} — usada em muitos endpoints. */
+        DetailResponse: {
+            detail: string;
+        };
         /**
          * @description * `fixed` - Valor Fixo
          *     * `percentage` - Percentual do Salário
@@ -11123,6 +11127,11 @@ export interface components {
          * @enum {string}
          */
         FolderEnum: "vistoria_inicial" | "complemento" | "checklist_entrada" | "checklist_saida" | "documentos" | "orcamentos" | "acompanhamento" | "vistoria_final" | "pericia" | "outros" | "financeiro";
+        /** @description Body de POST /auth/forgot-password/. */
+        ForgotPasswordRequest: {
+            /** Format: email */
+            email: string;
+        };
         /**
          * @description * `oficina` - Oficina
          *     * `seguradora` - Seguradora
@@ -11701,6 +11710,17 @@ export interface components {
          * @enum {string}
          */
         ItemTypeEnum: "PART" | "SERVICE" | "EXTERNAL_SERVICE" | "FEE" | "DISCOUNT";
+        /**
+         * @description * `reception` - Recepção
+         *     * `painting` - Pintura
+         *     * `mechanical` - Mecânica
+         *     * `admin` - Administração
+         *     * `inventory` - Estoque
+         *     * `sales` - Vendas
+         *     * `purchasing` - Compras
+         * @enum {string}
+         */
+        JobTitleEnum: "reception" | "painting" | "mechanical" | "admin" | "inventory" | "sales" | "purchasing";
         /**
          * @description Serializer de criacao de lancamento.
          *
@@ -16501,6 +16521,23 @@ export interface components {
             /** Format: date-time */
             readonly updated_at?: string;
         };
+        /** @description Serializer para listagem e gestao de usuarios. */
+        PatchedStaffUser: {
+            /** Format: uuid */
+            readonly id?: string;
+            name?: string;
+            readonly email_hash?: string;
+            /** Papel */
+            role?: components["schemas"]["StaffUserRoleEnum"];
+            readonly role_display?: string;
+            /** Setor / Cargo */
+            job_title?: components["schemas"]["JobTitleEnum"] | components["schemas"]["BlankEnum"];
+            readonly job_title_display?: string;
+            is_active?: boolean;
+            readonly email_verified?: boolean;
+            /** Format: date-time */
+            readonly created_at?: string;
+        };
         /** @description CRUD de Tipo de Peça. */
         PatchedTipoPeca: {
             /** Format: uuid */
@@ -17587,6 +17624,29 @@ export interface components {
         /** @description Body de POST /auth/refresh/. */
         RefreshRequest: {
             refresh: string;
+        };
+        /** @description Body de POST /auth/register/ (admin cria usuário). */
+        RegisterRequest: {
+            /** Format: email */
+            email: string;
+            name: string;
+            role: components["schemas"]["RegisterRequestRoleEnum"];
+            password: string;
+        };
+        /**
+         * @description * `OWNER` - OWNER
+         *     * `ADMIN` - ADMIN
+         *     * `MANAGER` - MANAGER
+         *     * `CONSULTANT` - CONSULTANT
+         *     * `STOREKEEPER` - STOREKEEPER
+         * @enum {string}
+         */
+        RegisterRequestRoleEnum: "OWNER" | "ADMIN" | "MANAGER" | "CONSULTANT" | "STOREKEEPER";
+        /** @description Body de POST /auth/reset-password/. */
+        ResetPasswordRequest: {
+            /** @description Token raw enviado por email */
+            token: string;
+            password: string;
         };
         RespostaCotacao: {
             /** Format: uuid */
@@ -19171,6 +19231,32 @@ export interface components {
          * @enum {string}
          */
         SourceTypeEnum: "import" | "complement" | "manual";
+        /** @description Serializer para listagem e gestao de usuarios. */
+        StaffUser: {
+            /** Format: uuid */
+            readonly id: string;
+            name: string;
+            readonly email_hash: string;
+            /** Papel */
+            role?: components["schemas"]["StaffUserRoleEnum"];
+            readonly role_display: string;
+            /** Setor / Cargo */
+            job_title?: components["schemas"]["JobTitleEnum"] | components["schemas"]["BlankEnum"];
+            readonly job_title_display: string;
+            is_active?: boolean;
+            readonly email_verified: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
+        /**
+         * @description * `OWNER` - Proprietário
+         *     * `ADMIN` - Administrador
+         *     * `MANAGER` - Gerente
+         *     * `CONSULTANT` - Consultor
+         *     * `STOREKEEPER` - Almoxarife
+         * @enum {string}
+         */
+        StaffUserRoleEnum: "OWNER" | "ADMIN" | "MANAGER" | "CONSULTANT" | "STOREKEEPER";
         /**
          * @description * `importada` - Importada
          *     * `validada` - Validada
@@ -19916,6 +20002,11 @@ export interface components {
             nome_normalizado: string;
             marca: number;
             readonly marca_nome: string;
+        };
+        /** @description Body de POST /auth/verify-email/. */
+        VerifyEmailRequest: {
+            /** @description Token raw enviado por email */
+            token: string;
         };
         /**
          * @description * `0` - Segunda-feira
@@ -21639,14 +21730,21 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForgotPasswordRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ForgotPasswordRequest"];
+                "multipart/form-data": components["schemas"]["ForgotPasswordRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -21744,14 +21842,21 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["RegisterRequest"];
+                "multipart/form-data": components["schemas"]["RegisterRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -21762,32 +21867,47 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPasswordRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ResetPasswordRequest"];
+                "multipart/form-data": components["schemas"]["ResetPasswordRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
-    auth_staff_retrieve: {
+    auth_staff_list: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description CSV de setores HR (filtro cross-query com Employee) */
+                departments?: string;
+                /** @description Inclui usuários com is_active=False */
+                include_inactive?: boolean;
+                /** @description CSV de cargos HR (filtro cross-query com Employee) */
+                positions?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["StaffUser"][];
+                };
             };
         };
     };
@@ -21800,14 +21920,37 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedStaffUser"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedStaffUser"];
+                "multipart/form-data": components["schemas"]["PatchedStaffUser"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["StaffUser"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };
@@ -21818,14 +21961,21 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerifyEmailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["VerifyEmailRequest"];
+                "multipart/form-data": components["schemas"]["VerifyEmailRequest"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DetailResponse"];
+                };
             };
         };
     };

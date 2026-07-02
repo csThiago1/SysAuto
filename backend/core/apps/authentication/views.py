@@ -25,15 +25,20 @@ from .models import (
     PasswordResetToken,
     RefreshToken,
 )
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 
 from .permissions import IsAdminOrAbove, IsManagerOrAbove
 from .serializers import (
+    DetailResponseSerializer,
+    ForgotPasswordRequestSerializer,
     LoginRequestSerializer,
     MeSerializer,
     RefreshRequestSerializer,
+    RegisterRequestSerializer,
+    ResetPasswordRequestSerializer,
     StaffUserSerializer,
     TokenPairSerializer,
+    VerifyEmailRequestSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -389,6 +394,11 @@ class ForgotPasswordView(APIView):
     authentication_classes: list = []
     throttle_classes = [AuthRateThrottle]
 
+    @extend_schema(
+        request=ForgotPasswordRequestSerializer,
+        responses={200: DetailResponseSerializer},
+        auth=[],
+    )
     def post(self, request: Request) -> Response:
         """Envia email de reset de senha."""
         email_input: str = request.data.get("email", "").strip().lower()
@@ -437,6 +447,11 @@ class ResetPasswordView(APIView):
     permission_classes = [AllowAny]
     authentication_classes: list = []
 
+    @extend_schema(
+        request=ResetPasswordRequestSerializer,
+        responses={200: DetailResponseSerializer},
+        auth=[],
+    )
     def post(self, request: Request) -> Response:
         """Valida token e redefine senha."""
         raw_token: str = request.data.get("token", "").strip()
@@ -499,6 +514,11 @@ class VerifyEmailView(APIView):
     permission_classes = [AllowAny]
     authentication_classes: list = []
 
+    @extend_schema(
+        request=VerifyEmailRequestSerializer,
+        responses={200: DetailResponseSerializer},
+        auth=[],
+    )
     def post(self, request: Request) -> Response:
         """Verifica email e ativa conta."""
         raw_token: str = request.data.get("token", "").strip()
@@ -550,6 +570,10 @@ class RegisterView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminOrAbove]
 
+    @extend_schema(
+        request=RegisterRequestSerializer,
+        responses={201: DetailResponseSerializer},
+    )
     def post(self, request: Request) -> Response:
         """Cria usuario por convite (admin-only)."""
         email: str = request.data.get("email", "").strip().lower()
@@ -667,6 +691,20 @@ class StaffListView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "positions", str, description="CSV de cargos HR (filtro cross-query com Employee)"
+            ),
+            OpenApiParameter(
+                "departments", str, description="CSV de setores HR (filtro cross-query com Employee)"
+            ),
+            OpenApiParameter(
+                "include_inactive", bool, description="Inclui usuários com is_active=False"
+            ),
+        ],
+        responses={200: StaffUserSerializer(many=True)},
+    )
     def get(self, request: Request) -> Response:
         """Lista usuarios com filtros opcionais."""
         positions_param = request.query_params.get("positions", "").strip()
@@ -735,6 +773,10 @@ class StaffDetailView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdminOrAbove]
 
+    @extend_schema(
+        request=StaffUserSerializer,
+        responses={200: StaffUserSerializer, 400: DetailResponseSerializer, 404: DetailResponseSerializer},
+    )
     def patch(self, request: Request, pk: str) -> Response:
         """Atualiza campos editaveis do usuario (role, job_title, is_active)."""
         try:
