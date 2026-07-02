@@ -207,6 +207,12 @@ SPECTACULAR_SETTINGS = {
     # Schemas de request separados dos de response — campos com default
     # ficam opcionais no request (essencial pro codegen TS de forms).
     "COMPONENT_SPLIT_REQUEST": True,
+    # Hooks: enum dedup (default do spectacular) + nosso hook que marca
+    # campos com default como required nos componentes de RESPONSE.
+    "POSTPROCESSING_HOOKS": [
+        "drf_spectacular.hooks.postprocess_schema_enums",
+        "apps.authentication.schema_extensions.response_fields_are_required",
+    ],
 }
 
 # ─── Celery ───────────────────────────────────────────────────────────────────

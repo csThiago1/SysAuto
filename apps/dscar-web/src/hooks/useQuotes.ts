@@ -6,23 +6,24 @@
  */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-// NOTA codegen: Orcamento* NÃO migrado pra ApiSchema — os ModelSerializers
-// têm muitos campos com default e o drf-spectacular não os marca como
-// required nem no response, gerando `campo?: string` pra campos que sempre
-// vêm. Null-guardar os callsites seria pior que manter o tipo manual.
 import type {
   AdicionarIntervencaoPayload,
   AdicionarItemAdicionalPayload,
   AprovarOrcamentoPayload,
   AprovarOrcamentoResponse,
-  Orcamento,
-  OrcamentoCreatePayload,
-  OrcamentoIntervencao,
-  OrcamentoItemAdicional,
-  OrcamentoList,
 } from "@paddock/types";
 
 import { apiFetch, fetchList } from "@/lib/api";
+import type { ApiSchema } from "@/types";
+
+// Gerados dos serializers de quotes (responses required via
+// response_fields_are_required hook). Payloads de action nested
+// (aprovar, intervenção) ficam manuais.
+export type Orcamento = ApiSchema<"Orcamento">;
+export type OrcamentoList = ApiSchema<"OrcamentoList">;
+export type OrcamentoCreatePayload = ApiSchema<"OrcamentoCreateRequest">;
+export type OrcamentoIntervencao = ApiSchema<"OrcamentoIntervencao">;
+export type OrcamentoItemAdicional = ApiSchema<"OrcamentoItemAdicional">;
 
 const BASE = "/api/proxy/quotes";
 

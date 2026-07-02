@@ -89,6 +89,11 @@ class BudgetReadSerializer(serializers.ModelSerializer):
     customer_name = serializers.CharField(
         source="customer.full_name", read_only=True,
     )
+    # Número da OS vinculada — o pk (service_order) é UUID e não serve
+    # pra montar o link /os/{numero} no frontend.
+    service_order_number = serializers.IntegerField(
+        source="service_order.number", read_only=True, allow_null=True, default=None,
+    )
 
     class Meta:
         model = Budget
@@ -97,7 +102,7 @@ class BudgetReadSerializer(serializers.ModelSerializer):
             "vehicle_plate", "vehicle_description",
             "vehicle_chassis", "vehicle_version", "vehicle_engine",
             "vehicle_color", "vehicle_fuel_type", "vehicle_make_logo", "vehicle_year",
-            "cloned_from", "service_order", "active_version",
+            "cloned_from", "service_order", "service_order_number", "active_version",
             "is_active", "created_at", "updated_at",
         ]
 

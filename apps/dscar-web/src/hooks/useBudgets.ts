@@ -6,15 +6,20 @@
  */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
-  Budget,
   BudgetApprovePayload,
   BudgetCreatePayload,
   BudgetItemCreatePayload,
   BudgetListItem,
-  BudgetVersion,
-  BudgetVersionItem,
 } from "@paddock/types"
+
 import { apiFetch, fetchList } from "@/lib/api"
+import type { ApiSchema } from "@/types"
+
+// Gerados dos serializers de budgets. Payloads (create/approve/item) e
+// BudgetListItem (refinamento Omit/Pick do frontend) ficam manuais.
+export type Budget = ApiSchema<"BudgetRead">
+export type BudgetVersion = ApiSchema<"BudgetVersionRead">
+export type BudgetVersionItem = ApiSchema<"BudgetVersionItemRead">
 
 const BASE = "/api/proxy/budgets"
 

@@ -17,7 +17,8 @@ import {
   useRequestRevision,
   useSendBudget,
 } from "@/hooks/useBudgets"
-import type { Budget, BudgetVersionStatus } from "@paddock/types"
+import type { BudgetVersionStatus } from "@paddock/types"
+import type { Budget } from "@/hooks/useBudgets"
 
 const STATUS_LABELS: Record<BudgetVersionStatus, string> = {
   draft:      "Rascunho",
@@ -158,8 +159,8 @@ export function BudgetHeader({ budget }: Props) {
           )}
 
           {/* OS vinculada */}
-          {status === "approved" && budget.service_order && (
-            <Link href={`/os/${budget.service_order}` as Route}>
+          {status === "approved" && budget.service_order_number && (
+            <Link href={`/os/${budget.service_order_number}` as Route}>
               <Button variant="outline" size="sm" className="gap-1.5 border-success-400/30 text-success-400 hover:bg-success-400/10">
                 <ExternalLink className="h-4 w-4" />
                 Ver OS

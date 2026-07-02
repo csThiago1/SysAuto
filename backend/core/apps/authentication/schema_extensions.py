@@ -38,3 +38,29 @@ class KeycloakJWTScheme(_BearerJWTScheme):
 class DevJWTScheme(_BearerJWTScheme):
     target_class = "config.settings.dev.DevJWTAuthentication"
     name = "devJWT"
+
+
+def response_fields_are_required(result, generator, request, public):
+    """Postprocessing hook: marca TODAS as properties como required nos responses.
+
+    DRF sempre serializa todos os campos declarados num serializer de leitura —
+    campo "ausente" não existe; o que pode acontecer é vir null (e aí o schema
+    já marca nullable). Mas o drf-spectacular monta `required` a partir de
+    `field.required`, que é False pra qualquer campo com default no model —
+    semântica de REQUEST vazando pro RESPONSE. Sem este hook, o codegen TS
+    gera `subtotal?: string` pra campos que sempre vêm na resposta.
+
+    Com COMPONENT_SPLIT_REQUEST=True os componentes de request têm sufixo
+    "Request" (inclui "PatchedXxxRequest") e ficam intactos — lá a
+    opcionalidade é correta e desejada.
+    Registrado em SPECTACULAR_SETTINGS["POSTPROCESSING_HOOKS"].
+    """
+    schemas = result.get("components", {}).get("schemas", {})
+    for name, schema in schemas.items():
+        if name.endswith("Request"):
+            continue
+        props = schema.get("properties")
+        if not props:
+            continue
+        schema["required"] = sorted(props.keys())
+    return result

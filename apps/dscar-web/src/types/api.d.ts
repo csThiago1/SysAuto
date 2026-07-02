@@ -8602,12 +8602,12 @@ export interface components {
              * Format: double
              * @description Score de confiança do mapeamento automático (0.0–1.0).
              */
-            confianca?: number | null;
+            confianca: number | null;
             /**
              * Ocorrências
              * @description Quantas vezes este texto apareceu nas OS.
              */
-            ocorrencias?: number;
+            ocorrencias: number;
         };
         /** @description Serializer de criação para AliasServico. */
         AliasServicoCreateRequest: {
@@ -8651,19 +8651,19 @@ export interface components {
              * Format: double
              * @description Score de confiança do mapeamento automático (0.0–1.0).
              */
-            confianca?: number | null;
+            confianca: number | null;
             /**
              * Ocorrências
              * @description Quantas vezes este texto apareceu nas OS.
              */
-            ocorrencias?: number;
+            ocorrencias: number;
             /** Format: date-time */
             readonly confirmado_em: string | null;
             /** Format: uuid */
             readonly confirmado_por: string | null;
             /** @description Retorna o email do usuário que confirmou o alias. */
             readonly confirmado_por_nome: string | null;
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -8710,15 +8710,15 @@ export interface components {
              * Format: double
              * @description Score de confiança do mapeamento automático (0.0–1.0).
              */
-            confianca?: number | null;
+            confianca: number | null;
             /**
              * Ocorrências
              * @description Quantas vezes este texto apareceu nas OS.
              */
-            ocorrencias?: number;
+            ocorrencias: number;
             /** Format: date-time */
             readonly confirmado_em: string | null;
-            is_active?: boolean;
+            is_active: boolean;
         };
         /**
          * @description Serializer de atualização para AliasServico.
@@ -8745,17 +8745,17 @@ export interface components {
              * Format: double
              * @description Score de confiança do mapeamento automático (0.0–1.0).
              */
-            confianca?: number | null;
+            confianca: number | null;
             /**
              * Ocorrências
              * @description Quantas vezes este texto apareceu nas OS.
              */
-            ocorrencias?: number;
+            ocorrencias: number;
             /** Format: date-time */
             readonly confirmado_em: string | null;
             /** Format: uuid */
             readonly confirmado_por: string | null;
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -8808,10 +8808,10 @@ export interface components {
             /** Format: date-time */
             readonly paid_at: string | null;
             /** @description Recibo assinado no R2/S3 — gerado ao pagar */
-            receipt_file_key?: string;
-            notes?: string;
+            receipt_file_key: string;
+            notes: string;
             /** @description Se True, gera automaticamente nos próximos meses */
-            is_recurring?: boolean;
+            is_recurring: boolean;
             readonly is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
@@ -8828,9 +8828,9 @@ export interface components {
              * @description Primeiro dia do mês (ex: 2026-04-01)
              */
             reference_month: string;
-            notes?: string;
+            notes: string;
             /** @description Se True, gera automaticamente nos próximos meses */
-            is_recurring?: boolean;
+            is_recurring: boolean;
         };
         AllowanceCreateRequest: {
             /** Format: uuid */
@@ -8916,7 +8916,7 @@ export interface components {
             readonly id: string;
             /** Format: uuid */
             service_order: string;
-            status?: components["schemas"]["AprovacaoCotacaoStatusEnum"];
+            status: components["schemas"]["AprovacaoCotacaoStatusEnum"];
             /** Format: uuid */
             readonly enviado_por: string;
             readonly enviado_por_nome: string;
@@ -8926,9 +8926,9 @@ export interface components {
             readonly aprovado_por_nome: string;
             /** Format: date-time */
             readonly aprovado_em: string | null;
-            observacoes_comprador?: string;
-            observacoes_financeiro?: string;
-            motivo_rejeicao?: string;
+            observacoes_comprador: string;
+            observacoes_financeiro: string;
+            motivo_rejeicao: string;
             readonly os_number: number;
             readonly os_make: string;
             readonly os_model: string;
@@ -8960,10 +8960,10 @@ export interface components {
             readonly id: string;
             /** Título */
             titulo: string;
-            ordem?: number;
-            status?: components["schemas"]["AreaImpactoStatusEnum"];
+            ordem: number;
+            status: components["schemas"]["AreaImpactoStatusEnum"];
             /** Observação do regulador */
-            observacao_regulador?: string;
+            observacao_regulador: string;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -8993,13 +8993,13 @@ export interface components {
             nome: string;
             /** @description Código curto: G1, G2, PT1. */
             codigo: string;
-            tipo?: components["schemas"]["ArmazemTipoEnum"];
-            endereco?: string;
+            tipo: components["schemas"]["ArmazemTipoEnum"];
+            endereco: string;
             /** Format: uuid */
-            responsavel?: string | null;
-            observacoes?: string;
+            responsavel: string | null;
+            observacoes: string;
             readonly total_ruas: number;
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -9072,30 +9072,30 @@ export interface components {
             readonly fonte: string;
             tipo_item: components["schemas"]["TipoItemEnum"];
             /** Format: uuid */
-            servico_canonico?: string | null;
+            servico_canonico: string | null;
             readonly servico_nome: string | null;
             /** Format: uuid */
-            peca_canonica?: string | null;
+            peca_canonica: string | null;
             readonly peca_nome: string | null;
             descricao_bruta: string;
             /** Format: decimal */
-            alias_match_confianca?: string | null;
+            alias_match_confianca: string | null;
             /** Format: uuid */
-            segmento?: string | null;
+            segmento: string | null;
             /** Format: uuid */
-            tamanho?: string | null;
-            veiculo_marca?: string;
-            veiculo_modelo?: string;
-            veiculo_ano?: number | null;
+            tamanho: string | null;
+            veiculo_marca: string;
+            veiculo_modelo: string;
+            veiculo_ano: number | null;
             /** Format: decimal */
             valor_praticado: string;
-            moeda?: string;
+            moeda: string;
             /** Format: date */
             data_referencia: string;
             readonly metadados: unknown;
             readonly revisado: boolean;
-            descartada?: boolean;
-            motivo_descarte?: string;
+            descartada: boolean;
+            motivo_descarte: string;
         };
         BenchmarkAmostraRequest: {
             tipo_item: components["schemas"]["TipoItemEnum"];
@@ -9129,13 +9129,13 @@ export interface components {
             nome: string;
             tipo: components["schemas"]["BenchmarkFonteTipoEnum"];
             /** @description Seguradora ou parceiro que forneceu o dado. */
-            fornecedor?: number | null;
+            fornecedor: number | null;
             /**
              * Format: decimal
              * @description Peso da fonte no cálculo de p90 (0-1).
              */
-            confiabilidade?: string;
-            is_active?: boolean;
+            confiabilidade: string;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -9169,8 +9169,8 @@ export interface components {
             readonly fonte_nome: string;
             readonly fonte_tipo: string;
             /** Format: uri */
-            arquivo?: string | null;
-            metadados?: unknown;
+            arquivo: string | null;
+            metadados: unknown;
             readonly status: components["schemas"]["BenchmarkIngestaoStatusEnum"];
             /** Format: date-time */
             readonly iniciado_em: string | null;
@@ -9223,7 +9223,7 @@ export interface components {
             /** Format: date */
             data_fim: string;
             motivo: string;
-            is_active?: boolean;
+            is_active: boolean;
         };
         BloqueioCapacidadeRequest: {
             /**
@@ -9312,27 +9312,28 @@ export interface components {
             readonly customer_name: string;
             vehicle_plate: string;
             vehicle_description: string;
-            vehicle_chassis?: string;
+            vehicle_chassis: string;
             /** @description Versão/trim ex: LT1, EXL */
-            vehicle_version?: string;
+            vehicle_version: string;
             /** @description Motorização ex: 1.0T, 2.0 */
-            vehicle_engine?: string;
+            vehicle_engine: string;
             /** @description Cor do veículo */
-            vehicle_color?: string;
+            vehicle_color: string;
             /** @description Combustível ex: Flex, Gasolina */
-            vehicle_fuel_type?: string;
+            vehicle_fuel_type: string;
             /**
              * Format: uri
              * @description URL da logo da montadora
              */
-            vehicle_make_logo?: string;
+            vehicle_make_logo: string;
             /** @description Ano modelo do veículo */
-            vehicle_year?: number | null;
-            cloned_from?: number | null;
+            vehicle_year: number | null;
+            cloned_from: number | null;
             /** Format: uuid */
-            service_order?: string | null;
+            service_order: string | null;
+            readonly service_order_number: number | null;
             readonly active_version: components["schemas"]["BudgetVersionRead"];
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -9397,23 +9398,23 @@ export interface components {
         BudgetSnapshotTriggerEnum: "cilia_import" | "manual_save" | "delivery" | "part_change";
         BudgetVersionItemRead: {
             readonly id: number;
-            bucket?: components["schemas"]["BucketEnum"];
+            bucket: components["schemas"]["BucketEnum"];
             /** Bloco Pagador */
-            payer_block?: components["schemas"]["PayerBlock498Enum"];
+            payer_block: components["schemas"]["PayerBlock498Enum"];
             /**
              * Área de Impacto
              * @description ID da área de impacto do veículo (ex: capô, porta dianteira esquerda).
              */
-            impact_area?: number | null;
+            impact_area: number | null;
             /** Tipo de Item */
-            item_type?: components["schemas"]["ItemTypeEnum"];
+            item_type: components["schemas"]["ItemTypeEnum"];
             /** Descrição */
             description: string;
             /**
              * Código Externo
              * @description Código da peça/serviço no sistema da seguradora ou fornecedor.
              */
-            external_code?: string;
+            external_code: string;
             /**
              * Tipo de Peça
              * @description Aplicável apenas quando item_type=PART.
@@ -9423,69 +9424,69 @@ export interface components {
              *     * `OUTRAS_FONTES` - Outras Fontes
              *     * `VERDE` - Verde (Reciclada)
              */
-            part_type?: components["schemas"]["PartTypeEnum"] | components["schemas"]["BlankEnum"];
+            part_type: components["schemas"]["PartTypeEnum"] | components["schemas"]["BlankEnum"];
             /** Fornecedor */
-            supplier?: components["schemas"]["SupplierEnum"];
+            supplier: components["schemas"]["SupplierEnum"];
             /**
              * Quantidade
              * Format: decimal
              */
-            quantity?: string;
+            quantity: string;
             /**
              * Preço Unitário
              * Format: decimal
              */
-            unit_price?: string;
+            unit_price: string;
             /**
              * Custo Unitário
              * Format: decimal
              * @description Custo de aquisição da peça/insumo. Pode ser null para serviços.
              */
-            unit_cost?: string | null;
+            unit_cost: string | null;
             /**
              * Desconto (%)
              * Format: decimal
              * @description Percentual de desconto sobre o preço unitário.
              */
-            discount_pct?: string;
+            discount_pct: string;
             /**
              * Preço Líquido
              * Format: decimal
              * @description Preço unitário após desconto × quantidade.
              */
-            net_price?: string;
+            net_price: string;
             /**
              * Abaixo do Padrão
              * @description Item precificado abaixo da tabela de referência.
              */
-            flag_abaixo_padrao?: boolean;
+            flag_abaixo_padrao: boolean;
             /**
              * Acima do Padrão
              * @description Item precificado acima da tabela de referência.
              */
-            flag_acima_padrao?: boolean;
+            flag_acima_padrao: boolean;
             /**
              * Inclusão Manual
              * @description Item incluído manualmente (não gerado pelo motor de orçamento).
              */
-            flag_inclusao_manual?: boolean;
+            flag_inclusao_manual: boolean;
             /**
              * Código Diferente
              * @description Código do item difere do código da seguradora.
              */
-            flag_codigo_diferente?: boolean;
+            flag_codigo_diferente: boolean;
             /**
              * Serviço Manual
              * @description Serviço inserido manualmente sem catálogo canônico.
              */
-            flag_servico_manual?: boolean;
+            flag_servico_manual: boolean;
             /**
              * Peça da Conta
              * @description Peça cujo custo é responsabilidade da seguradora (da conta do sinistro).
              */
-            flag_peca_da_conta?: boolean;
+            flag_peca_da_conta: boolean;
             /** Ordem de Exibição */
-            sort_order?: number;
+            sort_order: number;
             readonly operations: components["schemas"]["ItemOperationRead"][];
         };
         BudgetVersionItemReadRequest: {
@@ -9581,23 +9582,23 @@ export interface components {
         };
         /** @description Write: aceita campos do item. Operations aninhadas como lista. */
         BudgetVersionItemWrite: {
-            bucket?: components["schemas"]["BucketEnum"];
+            bucket: components["schemas"]["BucketEnum"];
             /** Bloco Pagador */
-            payer_block?: components["schemas"]["PayerBlock498Enum"];
+            payer_block: components["schemas"]["PayerBlock498Enum"];
             /**
              * Área de Impacto
              * @description ID da área de impacto do veículo (ex: capô, porta dianteira esquerda).
              */
-            impact_area?: number | null;
+            impact_area: number | null;
             /** Tipo de Item */
-            item_type?: components["schemas"]["ItemTypeEnum"];
+            item_type: components["schemas"]["ItemTypeEnum"];
             /** Descrição */
             description: string;
             /**
              * Código Externo
              * @description Código da peça/serviço no sistema da seguradora ou fornecedor.
              */
-            external_code?: string;
+            external_code: string;
             /**
              * Tipo de Peça
              * @description Aplicável apenas quando item_type=PART.
@@ -9607,69 +9608,69 @@ export interface components {
              *     * `OUTRAS_FONTES` - Outras Fontes
              *     * `VERDE` - Verde (Reciclada)
              */
-            part_type?: components["schemas"]["PartTypeEnum"] | components["schemas"]["BlankEnum"];
+            part_type: components["schemas"]["PartTypeEnum"] | components["schemas"]["BlankEnum"];
             /** Fornecedor */
-            supplier?: components["schemas"]["SupplierEnum"];
+            supplier: components["schemas"]["SupplierEnum"];
             /**
              * Quantidade
              * Format: decimal
              */
-            quantity?: string;
+            quantity: string;
             /**
              * Preço Unitário
              * Format: decimal
              */
-            unit_price?: string;
+            unit_price: string;
             /**
              * Custo Unitário
              * Format: decimal
              * @description Custo de aquisição da peça/insumo. Pode ser null para serviços.
              */
-            unit_cost?: string | null;
+            unit_cost: string | null;
             /**
              * Desconto (%)
              * Format: decimal
              * @description Percentual de desconto sobre o preço unitário.
              */
-            discount_pct?: string;
+            discount_pct: string;
             /**
              * Preço Líquido
              * Format: decimal
              * @description Preço unitário após desconto × quantidade.
              */
-            net_price?: string;
+            net_price: string;
             /**
              * Abaixo do Padrão
              * @description Item precificado abaixo da tabela de referência.
              */
-            flag_abaixo_padrao?: boolean;
+            flag_abaixo_padrao: boolean;
             /**
              * Acima do Padrão
              * @description Item precificado acima da tabela de referência.
              */
-            flag_acima_padrao?: boolean;
+            flag_acima_padrao: boolean;
             /**
              * Inclusão Manual
              * @description Item incluído manualmente (não gerado pelo motor de orçamento).
              */
-            flag_inclusao_manual?: boolean;
+            flag_inclusao_manual: boolean;
             /**
              * Código Diferente
              * @description Código do item difere do código da seguradora.
              */
-            flag_codigo_diferente?: boolean;
+            flag_codigo_diferente: boolean;
             /**
              * Serviço Manual
              * @description Serviço inserido manualmente sem catálogo canônico.
              */
-            flag_servico_manual?: boolean;
+            flag_servico_manual: boolean;
             /**
              * Peça da Conta
              * @description Peça cujo custo é responsabilidade da seguradora (da conta do sinistro).
              */
-            flag_peca_da_conta?: boolean;
+            flag_peca_da_conta: boolean;
             /** Ordem de Exibição */
-            sort_order?: number;
+            sort_order: number;
         };
         /** @description Write: aceita campos do item. Operations aninhadas como lista. */
         BudgetVersionItemWriteRequest: {
@@ -9769,36 +9770,36 @@ export interface components {
         BudgetVersionRead: {
             readonly id: number;
             version_number: number;
-            status?: components["schemas"]["BudgetVersionReadStatusEnum"];
+            status: components["schemas"]["BudgetVersionReadStatusEnum"];
             readonly status_display: string;
             /** Format: date-time */
-            valid_until?: string | null;
+            valid_until: string | null;
             /** Format: decimal */
-            subtotal?: string;
+            subtotal: string;
             /** Format: decimal */
-            discount_total?: string;
+            discount_total: string;
             /** Format: decimal */
-            net_total?: string;
+            net_total: string;
             /** Format: decimal */
-            labor_total?: string;
+            labor_total: string;
             /** Format: decimal */
-            parts_total?: string;
-            pdf_s3_key?: string;
+            parts_total: string;
+            pdf_s3_key: string;
             /** @description Prazo de validade do orçamento em dias */
-            validity_days?: number | null;
+            validity_days: number | null;
             /** @description Condições de pagamento ex: 50% entrada + 50% na entrega */
-            payment_terms?: string;
+            payment_terms: string;
             /** @description Formas aceitas ex: PIX, Cartão, Boleto */
-            payment_methods?: string;
+            payment_methods: string;
             /** @description Prazo estimado de execução em dias úteis */
-            estimated_days?: number | null;
+            estimated_days: number | null;
             /** Format: date-time */
-            sent_at?: string | null;
+            sent_at: string | null;
             /** Format: date-time */
-            approved_at?: string | null;
-            approved_by?: string;
-            approval_evidence_s3_key?: string;
-            created_by?: string;
+            approved_at: string | null;
+            approved_by: string;
+            approval_evidence_s3_key: string;
+            created_by: string;
             /** Format: date-time */
             readonly created_at: string;
             readonly items: components["schemas"]["BudgetVersionItemRead"][];
@@ -9887,19 +9888,19 @@ export interface components {
              * Horas por dia útil
              * Format: decimal
              */
-            horas_dia_util?: string;
+            horas_dia_util: string;
             /**
              * Dias de trabalho
              * @description Lista ISO weekdays (1=seg, 7=dom) em que o técnico trabalha.
              */
-            dias_semana?: unknown;
+            dias_semana: unknown;
             /** Format: date */
             vigente_desde: string;
             /**
              * Vigente até
              * Format: date
              */
-            vigente_ate?: string | null;
+            vigente_ate: string | null;
         };
         CapacidadeTecnicoRequest: {
             /**
@@ -9941,9 +9942,9 @@ export interface components {
              * Format: decimal
              * @description Margem padrão (%) para insumos desta categoria.
              */
-            margem_padrao_pct?: string;
-            ordem?: number;
-            is_active?: boolean;
+            margem_padrao_pct: string;
+            ordem: number;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -9974,8 +9975,8 @@ export interface components {
              * Ordem de exibição
              * @description Menor valor aparece primeiro.
              */
-            ordem?: number;
-            is_active?: boolean;
+            ordem: number;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -10007,9 +10008,9 @@ export interface components {
              * Format: decimal
              * @description Margem padrão (%) para produtos desta categoria.
              */
-            margem_padrao_pct?: string;
-            ordem?: number;
-            is_active?: boolean;
+            margem_padrao_pct: string;
+            ordem: number;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -10040,8 +10041,8 @@ export interface components {
              * Ordem de exibição
              * @description Menor valor aparece primeiro.
              */
-            ordem?: number;
-            is_active?: boolean;
+            ordem: number;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -10088,7 +10089,7 @@ export interface components {
              * @description Fator aplicado às horas de mão de obra. Intervalo: 0.1–5.0.
              */
             multiplicador_horas: string;
-            is_active?: boolean;
+            is_active: boolean;
         };
         CategoriaTamanhoRequest: {
             /**
@@ -10143,14 +10144,14 @@ export interface components {
              * Analítica
              * @description Contas analíticas aceitam lançamentos diretos.
              */
-            is_analytical?: boolean;
+            is_analytical: boolean;
             /**
              * Código SPED ECD
              * @description Código referencial SPED ECD para exportação fiscal.
              */
-            sped_code?: string;
+            sped_code: string;
             /** Aceita centro de custo */
-            accepts_cost_center?: boolean;
+            accepts_cost_center: boolean;
         };
         /** @description Serializer de criação — valida código único e nível derivado do parent. */
         ChartOfAccountCreateRequest: {
@@ -10189,7 +10190,7 @@ export interface components {
              * Conta pai
              * Format: uuid
              */
-            parent?: string | null;
+            parent: string | null;
             /** @description Retorna o código da conta pai. */
             readonly parent_code: string | null;
             /** Tipo */
@@ -10202,7 +10203,7 @@ export interface components {
              * Analítica
              * @description Contas analíticas aceitam lançamentos diretos.
              */
-            is_analytical?: boolean;
+            is_analytical: boolean;
             /**
              * Nível
              * @description Nível na hierarquia (1 a 5).
@@ -10212,10 +10213,10 @@ export interface components {
              * Código SPED ECD
              * @description Código referencial SPED ECD para exportação fiscal.
              */
-            sped_code?: string;
+            sped_code: string;
             /** Aceita centro de custo */
-            accepts_cost_center?: boolean;
-            is_active?: boolean;
+            accepts_cost_center: boolean;
+            is_active: boolean;
             /** @description Retorna o caminho completo da conta na hierarquia. */
             readonly full_path: string;
             readonly children: components["schemas"]["ChartOfAccountList"][];
@@ -10271,13 +10272,13 @@ export interface components {
              * Analítica
              * @description Contas analíticas aceitam lançamentos diretos.
              */
-            is_analytical?: boolean;
+            is_analytical: boolean;
             /**
              * Nível
              * @description Nível na hierarquia (1 a 5).
              */
             level: number;
-            is_active?: boolean;
+            is_active: boolean;
             /** @description Retorna filhos da conta de forma recursiva. */
             readonly children: unknown[];
         };
@@ -10286,7 +10287,7 @@ export interface components {
             /** Format: uuid */
             readonly id: string;
             /** Tipo de Checklist */
-            checklist_type?: components["schemas"]["ChecklistTypeEnum"];
+            checklist_type: components["schemas"]["ChecklistTypeEnum"];
             /** Categoria */
             category: components["schemas"]["ChecklistItemCategoryEnum"];
             /**
@@ -10294,9 +10295,9 @@ export interface components {
              * @description Identificador único do item dentro da categoria (ex: arranhoes)
              */
             item_key: string;
-            status?: components["schemas"]["ChecklistItemStatusEnum"];
+            status: components["schemas"]["ChecklistItemStatusEnum"];
             /** Observações */
-            notes?: string;
+            notes: string;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -10350,7 +10351,7 @@ export interface components {
         /** @description Serializer do perfil de cliente — dados de consentimento LGPD. */
         ClientProfile: {
             /** Versão do consentimento LGPD */
-            lgpd_consent_version?: string;
+            lgpd_consent_version: string;
             /**
              * Data do consentimento LGPD
              * Format: date-time
@@ -10362,7 +10363,7 @@ export interface components {
              * Consentimento de compartilhamento no grupo
              * @description Opt-in EXPLÍCITO — verificar antes de cross-sell entre empresas do grupo.
              */
-            group_sharing_consent?: boolean;
+            group_sharing_consent: boolean;
         };
         /** @description Serializer do perfil de cliente — dados de consentimento LGPD. */
         ClientProfileRequest: {
@@ -10405,12 +10406,12 @@ export interface components {
              * Format: uuid
              * @description Contagem total = armazém inteiro.
              */
-            armazem?: string | null;
+            armazem: string | null;
             /**
              * Format: uuid
              * @description Contagem cíclica = por rua.
              */
-            rua?: string | null;
+            rua: string | null;
             /** Format: date-time */
             readonly data_abertura: string;
             /** Format: date-time */
@@ -10423,7 +10424,7 @@ export interface components {
             readonly fechado_por: string | null;
             /** @default  */
             readonly fechado_por_nome: string;
-            observacoes?: string;
+            observacoes: string;
             /** @default 0 */
             readonly total_itens: number;
             /** @default 0 */
@@ -10445,12 +10446,12 @@ export interface components {
              * Format: uuid
              * @description Contagem total = armazém inteiro.
              */
-            armazem?: string | null;
+            armazem: string | null;
             /**
              * Format: uuid
              * @description Contagem cíclica = por rua.
              */
-            rua?: string | null;
+            rua: string | null;
             /** Format: date-time */
             readonly data_abertura: string;
             /** Format: date-time */
@@ -10463,7 +10464,7 @@ export interface components {
             readonly fechado_por: string | null;
             /** @default  */
             readonly fechado_por_nome: string;
-            observacoes?: string;
+            observacoes: string;
             /** @default 0 */
             readonly total_itens: number;
             /** @default 0 */
@@ -10525,12 +10526,12 @@ export interface components {
              * CC pai
              * Format: uuid
              */
-            parent?: string | null;
+            parent: string | null;
             /**
              * Código tipo OS
              * @description Mapeamento para ServiceOrder.os_type.
              */
-            os_type_code?: string;
+            os_type_code: string;
         };
         /** @description Serializer de criação e atualização. */
         CostCenterCreateRequest: {
@@ -10561,14 +10562,14 @@ export interface components {
              * CC pai
              * Format: uuid
              */
-            parent?: string | null;
+            parent: string | null;
             readonly parent_code: string | null;
             /**
              * Código tipo OS
              * @description Mapeamento para ServiceOrder.os_type.
              */
-            os_type_code?: string;
-            is_active?: boolean;
+            os_type_code: string;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -10601,7 +10602,7 @@ export interface components {
             service_order: string;
             supplier: number;
             readonly supplier_name: string;
-            supplier_contact?: number | null;
+            supplier_contact: number | null;
             /** @default  */
             readonly contact_name: string;
             /** Format: uuid */
@@ -10632,15 +10633,15 @@ export interface components {
             /** Format: date */
             competence_date: string;
             /** @default  */
-            document_number?: string;
+            document_number: string;
             /** @default MAN */
-            origin?: components["schemas"]["CreatePayableDocumentOriginEnum"];
+            origin: components["schemas"]["CreatePayableDocumentOriginEnum"];
             /** Format: uuid */
-            cost_center_id?: string | null;
+            cost_center_id: string | null;
             /** Format: uuid */
-            expense_account_id?: string | null;
+            expense_account_id: string | null;
             /** @default  */
-            notes?: string;
+            notes: string;
         };
         /**
          * @description * `MAN` - MAN
@@ -10685,15 +10686,15 @@ export interface components {
             /** Format: date */
             competence_date: string;
             /** @default MAN */
-            origin?: components["schemas"]["CreateReceivableDocumentOriginEnum"];
+            origin: components["schemas"]["CreateReceivableDocumentOriginEnum"];
             /** Format: uuid */
-            service_order_id?: string | null;
+            service_order_id: string | null;
             /** @default  */
-            document_number?: string;
+            document_number: string;
             /** Format: uuid */
-            cost_center_id?: string | null;
+            cost_center_id: string | null;
             /** @default  */
-            notes?: string;
+            notes: string;
         };
         /**
          * @description * `MAN` - MAN
@@ -10745,15 +10746,15 @@ export interface components {
              * Vigente até
              * Format: date
              */
-            vigente_ate?: string | null;
+            vigente_ate: string | null;
             /**
              * Valor por hora (R$)
              * Format: decimal
              */
             valor_hora: string;
             /** @description Razão para uso do fallback (ex: 'aguardando integração RH'). */
-            motivo?: string;
-            is_active?: boolean;
+            motivo: string;
+            is_active: boolean;
         };
         /** @description Serializer para CustoHoraFallback — valor direto enquanto RH não está disponível. */
         CustoHoraFallbackRequest: {
@@ -10842,20 +10843,20 @@ export interface components {
             deduction_type: components["schemas"]["DeductionTypeEnum"];
             readonly deduction_type_display: string;
             /** Descrição */
-            description?: string;
+            description: string;
             /**
              * Format: decimal
              * @description Sempre positivo — o sinal é dado pelo tipo (desconto)
              */
-            amount?: string | null;
+            amount: string | null;
             /** Tipo de desconto */
-            discount_type?: components["schemas"]["DiscountTypeEnum"];
+            discount_type: components["schemas"]["DiscountTypeEnum"];
             /**
              * Percentual
              * Format: decimal
              * @description Usado quando discount_type=percentage. Ex: 11.0 = 11% do salário base.
              */
-            rate?: string | null;
+            rate: string | null;
             /**
              * Mês de referência
              * Format: date
@@ -10868,20 +10869,20 @@ export interface components {
         DeductionCreate: {
             deduction_type: components["schemas"]["DeductionTypeEnum"];
             /** Descrição */
-            description?: string;
+            description: string;
             /**
              * Format: decimal
              * @description Sempre positivo — o sinal é dado pelo tipo (desconto)
              */
-            amount?: string | null;
+            amount: string | null;
             /** Tipo de desconto */
-            discount_type?: components["schemas"]["DiscountTypeEnum"];
+            discount_type: components["schemas"]["DiscountTypeEnum"];
             /**
              * Percentual
              * Format: decimal
              * @description Usado quando discount_type=percentage. Ex: 11.0 = 11% do salário base.
              */
-            rate?: string | null;
+            rate: string | null;
             /**
              * Mês de referência
              * Format: date
@@ -10959,15 +10960,15 @@ export interface components {
              * Format: date
              * @description Null indica que a despesa está vigente até nova versão.
              */
-            vigente_ate?: string | null;
+            vigente_ate: string | null;
             /**
              * Conta contábil
              * Format: uuid
              */
-            conta_contabil?: string | null;
+            conta_contabil: string | null;
             /** Observações */
-            observacoes?: string;
-            is_active?: boolean;
+            observacoes: string;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -10992,8 +10993,8 @@ export interface components {
              * Format: date
              * @description Null indica que a despesa está vigente até nova versão.
              */
-            vigente_ate?: string | null;
-            is_active?: boolean;
+            vigente_ate: string | null;
+            is_active: boolean;
         };
         /** @description Serializer de detalhe — todos os campos para create/retrieve/update. */
         DespesaRecorrenteRequest: {
@@ -11129,7 +11130,7 @@ export interface components {
             /** Matrícula */
             registration_number: string;
             /** Tipo de contrato */
-            contract_type?: components["schemas"]["ContractTypeEnum"];
+            contract_type: components["schemas"]["ContractTypeEnum"];
             /**
              * Data de admissão
              * Format: date
@@ -11139,49 +11140,49 @@ export interface components {
              * Data de nascimento
              * Format: date
              */
-            birth_date?: string | null;
+            birth_date: string | null;
             /** Estado civil */
-            marital_status?: string;
+            marital_status: string;
             /** Escolaridade */
-            education_level?: string;
+            education_level: string;
             /** Nacionalidade */
-            nationality?: string;
+            nationality: string;
             /** Contato emergência — nome */
-            emergency_contact_name?: string;
+            emergency_contact_name: string;
             /** Logradouro */
-            address_street?: string;
+            address_street: string;
             /** Número */
-            address_number?: string;
+            address_number: string;
             /** Complemento */
-            address_complement?: string;
+            address_complement: string;
             /** Bairro */
-            address_neighborhood?: string;
+            address_neighborhood: string;
             /** Cidade */
-            address_city?: string;
+            address_city: string;
             /** Estado */
-            address_state?: string;
+            address_state: string;
             /** CEP */
-            address_zip?: string;
+            address_zip: string;
             /**
              * Salário base
              * Format: decimal
              */
-            base_salary?: string;
+            base_salary: string;
             /**
              * Tipo de chave PIX
              * @description cpf | email | phone | random | cnpj
              */
-            pix_key_type?: string;
+            pix_key_type: string;
             /**
              * Carga horária semanal
              * Format: decimal
              */
-            weekly_hours?: string;
+            weekly_hours: string;
             /**
              * Escala
              * @description 6x1 (padrão DS Car), 5x2, 12x36, custom
              */
-            work_schedule?: string;
+            work_schedule: string;
             /**
              * Frequência de pagamento
              * @description Define o ciclo de pagamento do colaborador.
@@ -11190,9 +11191,9 @@ export interface components {
              *     * `biweekly` - Quinzenal
              *     * `weekly` - Semanal
              */
-            pay_frequency?: components["schemas"]["PayFrequencyEnum"];
+            pay_frequency: components["schemas"]["PayFrequencyEnum"];
             /** @description ID no Box Empresa para rastreabilidade de migração */
-            legacy_databox_id?: number | null;
+            legacy_databox_id: number | null;
         };
         /**
          * @description Admissão de colaborador.
@@ -11300,10 +11301,10 @@ export interface components {
             /** Cargo */
             position: components["schemas"]["PositionEnum"];
             readonly position_display: string;
-            status?: components["schemas"]["Status984Enum"];
+            status: components["schemas"]["Status984Enum"];
             readonly status_display: string;
             /** Tipo de contrato */
-            contract_type?: components["schemas"]["ContractTypeEnum"];
+            contract_type: components["schemas"]["ContractTypeEnum"];
             readonly contract_type_display: string;
             /**
              * Data de admissão
@@ -11314,7 +11315,7 @@ export interface components {
              * Data de desligamento
              * Format: date
              */
-            termination_date?: string | null;
+            termination_date: string | null;
             /** @description Dias de empresa — usa termination_date se desligado, caso contrário hoje. */
             readonly tenure_days: number;
             /** @description Retorna CPF parcialmente mascarado — LGPD: nunca expor em claro. */
@@ -11322,80 +11323,80 @@ export interface components {
             /** @description Return full URL for the signature image, or None. */
             readonly signature_url: string | null;
             /** Órgão emissor RG */
-            rg_issuer?: string;
+            rg_issuer: string;
             /**
              * Data de nascimento
              * Format: date
              */
-            birth_date?: string | null;
+            birth_date: string | null;
             /** Estado civil */
-            marital_status?: string;
+            marital_status: string;
             /** Escolaridade */
-            education_level?: string;
+            education_level: string;
             /** Nacionalidade */
-            nationality?: string;
+            nationality: string;
             readonly rg: string | null;
             readonly mother_name: string | null;
             readonly father_name: string | null;
             /** Contato emergência — nome */
-            emergency_contact_name?: string;
+            emergency_contact_name: string;
             /** Contato emergência — telefone */
-            emergency_contact_phone?: string;
+            emergency_contact_phone: string;
             /**
              * Contato emergência — parentesco
              * @description Ex: Esposa, Pai, Filho
              */
-            emergency_contact_relationship?: string;
+            emergency_contact_relationship: string;
             /** Banco */
-            bank_name?: string;
+            bank_name: string;
             /** Agência */
-            bank_agency?: string;
+            bank_agency: string;
             /** Conta */
-            bank_account?: string;
+            bank_account: string;
             /**
              * Tipo de conta
              * @description corrente ou poupanca
              */
-            bank_account_type?: string;
+            bank_account_type: string;
             /** Logradouro */
-            address_street?: string;
+            address_street: string;
             /** Número */
-            address_number?: string;
+            address_number: string;
             /** Complemento */
-            address_complement?: string;
+            address_complement: string;
             /** Bairro */
-            address_neighborhood?: string;
+            address_neighborhood: string;
             /** Cidade */
-            address_city?: string;
+            address_city: string;
             /** Estado */
-            address_state?: string;
+            address_state: string;
             /** CEP */
-            address_zip?: string;
+            address_zip: string;
             /**
              * Salário base
              * Format: decimal
              */
-            base_salary?: string;
+            base_salary: string;
             /**
              * Nº de dependentes
              * @description Dependentes para dedução de IRRF (R$ 189,59/dependente).
              */
-            dependents_count?: number;
+            dependents_count: number;
             /**
              * Tipo de chave PIX
              * @description cpf | email | phone | random | cnpj
              */
-            pix_key_type?: string;
+            pix_key_type: string;
             /**
              * Carga horária semanal
              * Format: decimal
              */
-            weekly_hours?: string;
+            weekly_hours: string;
             /**
              * Escala
              * @description 6x1 (padrão DS Car), 5x2, 12x36, custom
              */
-            work_schedule?: string;
+            work_schedule: string;
             /**
              * Frequência de pagamento
              * @description Define o ciclo de pagamento do colaborador.
@@ -11404,7 +11405,7 @@ export interface components {
              *     * `biweekly` - Quinzenal
              *     * `weekly` - Semanal
              */
-            pay_frequency?: components["schemas"]["PayFrequencyEnum"];
+            pay_frequency: components["schemas"]["PayFrequencyEnum"];
             /**
              * Role RBAC
              * @description Nível de acesso do colaborador no sistema.
@@ -11415,18 +11416,18 @@ export interface components {
              *     * `ADMIN` - Administrador
              *     * `OWNER` - Proprietário
              */
-            role?: components["schemas"]["Role377Enum"];
+            role: components["schemas"]["Role377Enum"];
             /**
              * Permissões extras
              * @description Lista de permissões granulares além da role base. Ex: ['can_close_os', 'can_approve_purchase']
              */
-            extra_permissions?: unknown;
+            extra_permissions: unknown;
             /** @description Retorna lista de permissões disponíveis com código e label. */
             readonly available_permissions: {
                 [key: string]: string;
             }[];
             /** @description ID no Box Empresa para rastreabilidade de migração */
-            legacy_databox_id?: number | null;
+            legacy_databox_id: number | null;
             readonly is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
@@ -11576,19 +11577,19 @@ export interface components {
              */
             file_size: number;
             /** Tipo MIME */
-            mime_type?: string;
+            mime_type: string;
             /**
              * Data de emissão
              * Format: date
              */
-            issue_date?: string | null;
+            issue_date: string | null;
             /**
              * Data de validade
              * Format: date
              */
-            expiry_date?: string | null;
+            expiry_date: string | null;
             /** Observações */
-            notes?: string;
+            notes: string;
             readonly is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
@@ -11693,61 +11694,61 @@ export interface components {
             /** Cargo */
             position: components["schemas"]["PositionEnum"];
             /** Tipo de contrato */
-            contract_type?: components["schemas"]["ContractTypeEnum"];
+            contract_type: components["schemas"]["ContractTypeEnum"];
             /** Órgão emissor RG */
-            rg_issuer?: string;
+            rg_issuer: string;
             /**
              * Data de nascimento
              * Format: date
              */
-            birth_date?: string | null;
+            birth_date: string | null;
             /** Estado civil */
-            marital_status?: string;
+            marital_status: string;
             /** Escolaridade */
-            education_level?: string;
+            education_level: string;
             /** Nacionalidade */
-            nationality?: string;
+            nationality: string;
             /** Contato emergência — nome */
-            emergency_contact_name?: string;
+            emergency_contact_name: string;
             /** Logradouro */
-            address_street?: string;
+            address_street: string;
             /** Número */
-            address_number?: string;
+            address_number: string;
             /** Complemento */
-            address_complement?: string;
+            address_complement: string;
             /** Bairro */
-            address_neighborhood?: string;
+            address_neighborhood: string;
             /** Cidade */
-            address_city?: string;
+            address_city: string;
             /** Estado */
-            address_state?: string;
+            address_state: string;
             /** CEP */
-            address_zip?: string;
+            address_zip: string;
             /**
              * Salário base
              * Format: decimal
              */
-            base_salary?: string;
+            base_salary: string;
             /**
              * Nº de dependentes
              * @description Dependentes para dedução de IRRF (R$ 189,59/dependente).
              */
-            dependents_count?: number;
+            dependents_count: number;
             /**
              * Tipo de chave PIX
              * @description cpf | email | phone | random | cnpj
              */
-            pix_key_type?: string;
+            pix_key_type: string;
             /**
              * Carga horária semanal
              * Format: decimal
              */
-            weekly_hours?: string;
+            weekly_hours: string;
             /**
              * Escala
              * @description 6x1 (padrão DS Car), 5x2, 12x36, custom
              */
-            work_schedule?: string;
+            work_schedule: string;
             /**
              * Frequência de pagamento
              * @description Define o ciclo de pagamento do colaborador.
@@ -11756,7 +11757,7 @@ export interface components {
              *     * `biweekly` - Quinzenal
              *     * `weekly` - Semanal
              */
-            pay_frequency?: components["schemas"]["PayFrequencyEnum"];
+            pay_frequency: components["schemas"]["PayFrequencyEnum"];
             /**
              * Role RBAC
              * @description Nível de acesso do colaborador no sistema.
@@ -11767,12 +11768,12 @@ export interface components {
              *     * `ADMIN` - Administrador
              *     * `OWNER` - Proprietário
              */
-            role?: components["schemas"]["Role377Enum"];
+            role: components["schemas"]["Role377Enum"];
             /**
              * Permissões extras
              * @description Lista de permissões granulares além da role base. Ex: ['can_close_os', 'can_approve_purchase']
              */
-            extra_permissions?: unknown;
+            extra_permissions: unknown;
         };
         Empresa: {
             /** Format: uuid */
@@ -11783,8 +11784,8 @@ export interface components {
             /** Razão social */
             razao_social: string;
             /** Inscrição estadual */
-            inscricao_estadual?: string;
-            is_active?: boolean;
+            inscricao_estadual: string;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -11803,7 +11804,7 @@ export interface components {
             marca: string;
             modelo: string;
             /** Ocorrências */
-            ocorrencias?: number;
+            ocorrencias: number;
             /**
              * Primeira ocorrência
              * Format: date-time
@@ -11820,14 +11821,14 @@ export interface components {
             readonly id: string;
             marca: string;
             /** @description Deixar em branco para regra que cobre toda a marca. */
-            modelo?: string;
+            modelo: string;
             /**
              * Ano início
              * @description Ano de fabricação inicial do intervalo (inclusive). Null = sem limite.
              */
-            ano_inicio?: number | null;
+            ano_inicio: number | null;
             /** @description Ano de fabricação final do intervalo (inclusive). Null = sem limite. */
-            ano_fim?: number | null;
+            ano_fim: number | null;
             /**
              * Código
              * @description Slug único, ex: "popular", "premium".
@@ -11842,13 +11843,13 @@ export interface components {
              * Código
              * @description Slug único, ex: "solida", "metalica", "perolizada", "tricoat".
              */
-            tipo_pintura_codigo?: string | null;
+            tipo_pintura_codigo: string | null;
             readonly segmento: components["schemas"]["SegmentoVeicular"];
             readonly tamanho: components["schemas"]["CategoriaTamanho"];
             readonly tipo_pintura_default: components["schemas"]["TipoPintura"];
             /** @description Quanto menor, mais específico. Match exato (marca+modelo+ano) = 10; só marca = 100. */
-            prioridade?: number;
-            is_active?: boolean;
+            prioridade: number;
+            is_active: boolean;
         };
         EnquadramentoVeiculoRequest: {
             marca: string;
@@ -11987,9 +11988,9 @@ export interface components {
             /** @description Deve corresponder à unidade_base do material canônico. */
             unidade: string;
             /** @description TRUE para insumos que variam com porte (tinta, massa). FALSE para itens fixos (esponja, lixa). */
-            afetado_por_tamanho?: boolean;
+            afetado_por_tamanho: boolean;
             /** Observação */
-            observacao?: string;
+            observacao: string;
         };
         /**
          * @description Serializer de FichaTecnicaInsumo — somente leitura e criação.
@@ -12037,9 +12038,9 @@ export interface components {
              */
             horas: string;
             /** @description TRUE para mão de obra que varia com porte (pintura, funilaria). FALSE para elétrica/diagnóstico/configuração. */
-            afetada_por_tamanho?: boolean;
+            afetada_por_tamanho: boolean;
             /** Observação */
-            observacao?: string;
+            observacao: string;
         };
         /**
          * @description Serializer de FichaTecnicaMaoObra — somente leitura e criação.
@@ -12236,12 +12237,12 @@ export interface components {
              */
             end_date: string;
             /** Fechado */
-            is_closed?: boolean;
+            is_closed: boolean;
             /**
              * Período de ajuste
              * @description 13° período anual de ajuste.
              */
-            is_adjustment?: boolean;
+            is_adjustment: boolean;
             readonly can_post: boolean;
             readonly label: string;
             readonly is_active: boolean;
@@ -12390,7 +12391,7 @@ export interface components {
              * Format: uuid
              * @description Null = meta de setor
              */
-            employee?: string | null;
+            employee: string | null;
             /**
              * Setor
              * @description Preenchido quando meta é do setor inteiro
@@ -12408,11 +12409,11 @@ export interface components {
              *     * `management` - Gerência
              *     * `direction` - Diretoria
              */
-            department?: (components["schemas"]["DepartmentEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            department: (components["schemas"]["DepartmentEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             /** Título */
             title: string;
             /** Descrição */
-            description?: string;
+            description: string;
             /**
              * Valor alvo
              * Format: decimal
@@ -12423,18 +12424,18 @@ export interface components {
              * Valor atual
              * Format: decimal
              */
-            current_value?: string;
+            current_value: string;
             /**
              * Unidade
              * @description unit | currency | percentage | hours
              */
-            unit?: string;
+            unit: string;
             /**
              * Bônus ao atingir
              * Format: decimal
              * @description Valor da bonificação ao atingir 100%
              */
-            bonus_amount?: string;
+            bonus_amount: string;
             /**
              * Início
              * Format: date
@@ -12445,7 +12446,7 @@ export interface components {
              * Format: date
              */
             end_date: string;
-            status?: components["schemas"]["Status525Enum"];
+            status: components["schemas"]["Status525Enum"];
             readonly status_display: string;
             /** Format: double */
             readonly progress_pct: number;
@@ -12458,17 +12459,17 @@ export interface components {
              * Meta recorrente
              * @description Se True, será clonada automaticamente no próximo ciclo mensal.
              */
-            is_recurring?: boolean;
+            is_recurring: boolean;
             /**
              * Dia de reinício
              * @description Dia do mês para criar a próxima instância (1-28).
              */
-            recurrence_day?: number;
+            recurrence_day: number;
             /**
              * Format: uuid
              * @description Meta original que gerou esta instância recorrente.
              */
-            parent_goal?: string | null;
+            parent_goal: string | null;
             readonly is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
@@ -12478,7 +12479,7 @@ export interface components {
              * Format: uuid
              * @description Null = meta de setor
              */
-            employee?: string | null;
+            employee: string | null;
             /**
              * Setor
              * @description Preenchido quando meta é do setor inteiro
@@ -12496,11 +12497,11 @@ export interface components {
              *     * `management` - Gerência
              *     * `direction` - Diretoria
              */
-            department?: (components["schemas"]["DepartmentEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            department: (components["schemas"]["DepartmentEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             /** Título */
             title: string;
             /** Descrição */
-            description?: string;
+            description: string;
             /**
              * Valor alvo
              * Format: decimal
@@ -12511,13 +12512,13 @@ export interface components {
              * Unidade
              * @description unit | currency | percentage | hours
              */
-            unit?: string;
+            unit: string;
             /**
              * Bônus ao atingir
              * Format: decimal
              * @description Valor da bonificação ao atingir 100%
              */
-            bonus_amount?: string;
+            bonus_amount: string;
             /**
              * Início
              * Format: date
@@ -12532,12 +12533,12 @@ export interface components {
              * Meta recorrente
              * @description Se True, será clonada automaticamente no próximo ciclo mensal.
              */
-            is_recurring?: boolean;
+            is_recurring: boolean;
             /**
              * Dia de reinício
              * @description Dia do mês para criar a próxima instância (1-28).
              */
-            recurrence_day?: number;
+            recurrence_day: number;
         };
         GoalTargetCreateRequest: {
             /**
@@ -12687,20 +12688,20 @@ export interface components {
              * Valor atual
              * Format: decimal
              */
-            current_value?: string;
-            status?: components["schemas"]["Status525Enum"];
+            current_value: string;
+            status: components["schemas"]["Status525Enum"];
             /** Descrição */
-            description?: string;
+            description: string;
             /**
              * Meta recorrente
              * @description Se True, será clonada automaticamente no próximo ciclo mensal.
              */
-            is_recurring?: boolean;
+            is_recurring: boolean;
             /**
              * Dia de reinício
              * @description Dia do mês para criar a próxima instância (1-28).
              */
-            recurrence_day?: number;
+            recurrence_day: number;
         };
         /** @description Serializer para Feriados. */
         Holiday: {
@@ -12713,7 +12714,7 @@ export interface components {
             date: string;
             /** Nome */
             name: string;
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -12769,13 +12770,13 @@ export interface components {
             /** Format: uuid */
             readonly id: string;
             nome: string;
-            modelo?: components["schemas"]["ModeloEnum"];
+            modelo: components["schemas"]["ModeloEnum"];
             readonly modelo_display: string;
             /** @description Ex: http://10.0.0.15:9100 (Zebra direct print). */
             endpoint: string;
-            largura_mm?: number;
-            altura_mm?: number;
-            is_active?: boolean;
+            largura_mm: number;
+            altura_mm: number;
+            is_active: boolean;
         };
         ImpressoraEtiquetaRequest: {
             nome: string;
@@ -12802,10 +12803,10 @@ export interface components {
             material_canonico: string;
             sku_interno: string;
             /** GTIN/EAN */
-            gtin?: string;
+            gtin: string;
             /** Descrição */
             descricao: string;
-            marca?: string;
+            marca: string;
             /**
              * Unidade de compra
              * @description Ex: galão, caixa, rolo.
@@ -12856,10 +12857,10 @@ export interface components {
             readonly material_canonico_unidade_base: string;
             sku_interno: string;
             /** GTIN/EAN */
-            gtin?: string;
+            gtin: string;
             /** Descrição */
             descricao: string;
-            marca?: string;
+            marca: string;
             /**
              * Unidade de compra
              * @description Ex: galão, caixa, rolo.
@@ -12871,7 +12872,7 @@ export interface components {
              * @description Quantas unidades_base vêm em uma unidade_compra. Ex: galão 3.6L → 3.6 se unidade_base=L.
              */
             fator_conversao: string;
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -12915,10 +12916,10 @@ export interface components {
             readonly material_canonico_nome: string;
             sku_interno: string;
             /** GTIN/EAN */
-            gtin?: string;
+            gtin: string;
             /** Descrição */
             descricao: string;
-            marca?: string;
+            marca: string;
             /**
              * Unidade de compra
              * @description Ex: galão, caixa, rolo.
@@ -12930,7 +12931,7 @@ export interface components {
              * @description Quantas unidades_base vêm em uma unidade_compra. Ex: galão 3.6L → 3.6 se unidade_base=L.
              */
             fator_conversao: string;
-            is_active?: boolean;
+            is_active: boolean;
         };
         /**
          * @description Serializer de atualização para InsumoMaterial.
@@ -12948,10 +12949,10 @@ export interface components {
             readonly material_canonico: string;
             readonly sku_interno: string;
             /** GTIN/EAN */
-            gtin?: string;
+            gtin: string;
             /** Descrição */
             descricao: string;
-            marca?: string;
+            marca: string;
             /**
              * Unidade de compra
              * @description Ex: galão, caixa, rolo.
@@ -12963,7 +12964,7 @@ export interface components {
              * @description Quantas unidades_base vêm em uma unidade_compra. Ex: galão 3.6L → 3.6 se unidade_base=L.
              */
             fator_conversao: string;
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -13007,27 +13008,27 @@ export interface components {
             /** Razão social */
             name: string;
             /** Nome fantasia */
-            trade_name?: string;
+            trade_name: string;
             cnpj: string;
             /**
              * Cor da marca
              * @description Cor hex da marca para exibição na UI (ex: #003DA5)
              */
-            brand_color?: string;
+            brand_color: string;
             /**
              * Abreviação
              * @description Abreviação para avatar/logo (ex: BR, PS, AZ)
              */
-            abbreviation?: string;
+            abbreviation: string;
             /** URL do logo */
-            logo_url?: string;
+            logo_url: string;
             /** Ativo */
-            is_active?: boolean;
+            is_active: boolean;
             /**
              * Utiliza Cilia?
              * @description Marque se a seguradora envia orçamentos pelo sistema Cilia
              */
-            uses_cilia?: boolean;
+            uses_cilia: boolean;
         };
         /** @description Serializer padrão para lista e uso nested em OS. */
         InsurerMinimal: {
@@ -13036,18 +13037,18 @@ export interface components {
             /** Razão social */
             name: string;
             /** Nome fantasia */
-            trade_name?: string;
+            trade_name: string;
             cnpj: string;
             /**
              * Cor da marca
              * @description Cor hex da marca para exibição na UI (ex: #003DA5)
              */
-            brand_color?: string;
+            brand_color: string;
             /**
              * Abreviação
              * @description Abreviação para avatar/logo (ex: BR, PS, AZ)
              */
-            abbreviation?: string;
+            abbreviation: string;
             readonly display_name: string;
             /**
              * @description Return logo_url from Insurer model.
@@ -13057,14 +13058,14 @@ export interface components {
              */
             readonly logo: string;
             /** URL do logo */
-            logo_url?: string;
+            logo_url: string;
             /**
              * Utiliza Cilia?
              * @description Marque se a seguradora envia orçamentos pelo sistema Cilia
              */
-            uses_cilia?: boolean;
+            uses_cilia: boolean;
             /** Ativo */
-            is_active?: boolean;
+            is_active: boolean;
         };
         /** @description Serializer padrão para lista e uso nested em OS. */
         InsurerMinimalRequest: {
@@ -13145,17 +13146,17 @@ export interface components {
              * Format: decimal
              * @description Quantidade contada pelo operador.
              */
-            quantidade_contada?: string | null;
+            quantidade_contada: string | null;
             /**
              * Format: decimal
              * @description contada - sistema. Computado no save().
              */
             readonly divergencia: string;
             /** Format: uuid */
-            contado_por?: string | null;
+            contado_por: string | null;
             /** @default  */
             readonly contado_por_nome: string;
-            observacao?: string;
+            observacao: string;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -13206,11 +13207,11 @@ export interface components {
             code: string;
             label: string;
             /** Descricao */
-            description?: string;
+            description: string;
             /** Ativo */
-            is_active?: boolean;
+            is_active: boolean;
             /** Ordem */
-            sort_order?: number;
+            sort_order: number;
         };
         ItemOperationTypeRequest: {
             /** Codigo */
@@ -13230,17 +13231,17 @@ export interface components {
             /** Format: uuid */
             ordem_compra: string;
             /** Format: uuid */
-            pedido_compra?: string | null;
-            fornecedor?: number | null;
+            pedido_compra: string | null;
+            fornecedor: number | null;
             fornecedor_nome: string;
-            fornecedor_cnpj?: string;
-            fornecedor_contato?: string;
+            fornecedor_cnpj: string;
+            fornecedor_contato: string;
             descricao: string;
-            codigo_referencia?: string;
+            codigo_referencia: string;
             tipo_qualidade: components["schemas"]["TipoQualidadeEnum"];
             readonly tipo_qualidade_display: string;
             /** Format: decimal */
-            quantidade?: string;
+            quantidade: string;
             /** Format: decimal */
             valor_unitario: string;
             /**
@@ -13248,8 +13249,8 @@ export interface components {
              * @description qty × unit — computed no save().
              */
             readonly valor_total: string;
-            prazo_entrega?: string;
-            observacoes?: string;
+            prazo_entrega: string;
+            observacoes: string;
             readonly status_entrega: string;
             /** Format: date */
             readonly data_prevista: string;
@@ -13297,7 +13298,7 @@ export interface components {
             /** Format: date */
             competence_date: string;
             /** Format: date */
-            document_date?: string | null;
+            document_date: string | null;
             origin: components["schemas"]["OriginE18Enum"];
             lines: components["schemas"]["JournalEntryLineCreate"][];
         };
@@ -13399,21 +13400,21 @@ export interface components {
              * Format: uuid
              * @description UUID do centro de custo (opcional).
              */
-            cost_center_id?: string | null;
+            cost_center_id: string | null;
             /**
              * Format: decimal
              * @default 0.00
              */
-            debit_amount?: string;
+            debit_amount: string;
             /**
              * Format: decimal
              * @default 0.00
              */
-            credit_amount?: string;
+            credit_amount: string;
             /** @default  */
-            description?: string;
+            description: string;
             /** @default  */
-            document_number?: string;
+            document_number: string;
         };
         /** @description Serializer de criacao de linha — aceita UUIDs para FK. */
         JournalEntryLineCreateRequest: {
@@ -13481,11 +13482,11 @@ export interface components {
             code: string;
             label: string;
             /** Descricao */
-            description?: string;
+            description: string;
             /** Ativo */
-            is_active?: boolean;
+            is_active: boolean;
             /** Ordem */
-            sort_order?: number;
+            sort_order: number;
         };
         LaborCategoryRequest: {
             /** Codigo */
@@ -13655,8 +13656,8 @@ export interface components {
              * Vigente até
              * Format: date
              */
-            vigente_ate?: string | null;
-            is_active?: boolean;
+            vigente_ate: string | null;
+            is_active: boolean;
         };
         /** @description Serializer para MargemOperacao — margem base por segmento × tipo. */
         MargemOperacaoRequest: {
@@ -13693,18 +13694,18 @@ export interface components {
              * Peça canônica
              * Format: uuid
              */
-            peca_canonica?: string | null;
+            peca_canonica: string | null;
             readonly peca_nome: string;
             /**
              * Faixa custo mín (R$)
              * Format: decimal
              */
-            faixa_custo_min?: string | null;
+            faixa_custo_min: string | null;
             /**
              * Faixa custo máx (R$)
              * Format: decimal
              */
-            faixa_custo_max?: string | null;
+            faixa_custo_max: string | null;
             /** Format: decimal */
             margem_percentual: string;
             /** Format: date */
@@ -13713,10 +13714,10 @@ export interface components {
              * Vigente até
              * Format: date
              */
-            vigente_ate?: string | null;
+            vigente_ate: string | null;
             /** Observação */
-            observacao?: string;
-            is_active?: boolean;
+            observacao: string;
+            is_active: boolean;
         };
         /** @description Serializer para MarkupPeca — override fino por peça ou faixa de custo. */
         MarkupPecaRequest: {
@@ -13760,7 +13761,7 @@ export interface components {
             nome: string;
             /** @description Unidade de medida principal: L, kg, m, un, m2. */
             unidade_base: string;
-            tipo?: components["schemas"]["Tipo1d6Enum"];
+            tipo: components["schemas"]["Tipo1d6Enum"];
         };
         /** @description Serializer de criação para MaterialCanonico. */
         MaterialCanonicoCreateRequest: {
@@ -13786,10 +13787,10 @@ export interface components {
             nome: string;
             /** @description Unidade de medida principal: L, kg, m, un, m2. */
             unidade_base: string;
-            tipo?: components["schemas"]["Tipo1d6Enum"];
+            tipo: components["schemas"]["Tipo1d6Enum"];
             /** @description Indica se o embedding já foi gerado. */
             readonly tem_embedding: boolean;
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -13820,8 +13821,8 @@ export interface components {
             nome: string;
             /** @description Unidade de medida principal: L, kg, m, un, m2. */
             unidade_base: string;
-            tipo?: components["schemas"]["Tipo1d6Enum"];
-            is_active?: boolean;
+            tipo: components["schemas"]["Tipo1d6Enum"];
+            is_active: boolean;
         };
         /**
          * @description Serializer de atualização para MaterialCanonico.
@@ -13840,8 +13841,8 @@ export interface components {
             nome: string;
             /** @description Unidade de medida principal: L, kg, m, un, m2. */
             readonly unidade_base: string;
-            tipo?: components["schemas"]["Tipo1d6Enum"];
-            is_active?: boolean;
+            tipo: components["schemas"]["Tipo1d6Enum"];
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -13973,16 +13974,16 @@ export interface components {
         /** @description Criação manual de NF-e de entrada (sem XML — para importação simplificada). */
         NFeEntradaCreate: {
             /** @description Chave de 44 dígitos SEFAZ. */
-            chave_acesso?: string;
-            numero?: string;
-            serie?: string;
-            emitente_cnpj?: string;
-            emitente_nome?: string;
+            chave_acesso: string;
+            numero: string;
+            serie: string;
+            emitente_cnpj: string;
+            emitente_nome: string;
             /** Format: date */
-            data_emissao?: string | null;
+            data_emissao: string | null;
             /** Format: decimal */
-            valor_total?: string;
-            observacoes?: string;
+            valor_total: string;
+            observacoes: string;
         };
         /** @description Criação manual de NF-e de entrada (sem XML — para importação simplificada). */
         NFeEntradaCreateRequest: {
@@ -14150,15 +14151,15 @@ export interface components {
             readonly prateleira_codigo: string;
             /** @description N1, N2. */
             codigo: string;
-            descricao?: string;
-            altura_cm?: number | null;
-            largura_cm?: number | null;
-            profundidade_cm?: number | null;
-            ordem?: number;
+            descricao: string;
+            altura_cm: number | null;
+            largura_cm: number | null;
+            profundidade_cm: number | null;
+            ordem: number;
             readonly endereco_completo: string;
             readonly total_unidades: number;
             readonly total_lotes: number;
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -14196,7 +14197,7 @@ export interface components {
              * @default 1
              */
             readonly versao: number;
-            status?: components["schemas"]["Status9f8Enum"];
+            status: components["schemas"]["Status9f8Enum"];
             /** Format: uuid */
             empresa: string;
             /**
@@ -14209,12 +14210,12 @@ export interface components {
              * Seguradora
              * Format: uuid
              */
-            insurer?: string | null;
+            insurer: string | null;
             readonly seguradora: string;
             /** Tipo de responsabilidade */
-            tipo_responsabilidade?: components["schemas"]["TipoResponsabilidadeB50Enum"];
+            tipo_responsabilidade: components["schemas"]["TipoResponsabilidadeB50Enum"];
             /** Número do sinistro */
-            sinistro_numero?: string;
+            sinistro_numero: string;
             /** Marca */
             veiculo_marca: string;
             /** Modelo */
@@ -14222,15 +14223,15 @@ export interface components {
             /** Ano */
             veiculo_ano: number;
             /** Versão */
-            veiculo_versao?: string;
+            veiculo_versao: string;
             /** Placa */
-            veiculo_placa?: string;
+            veiculo_placa: string;
             /** @description {segmento_codigo, tamanho_codigo, fator_resp, tipo_pintura_codigo} */
             readonly enquadramento_snapshot: unknown;
             /** Format: decimal */
             readonly subtotal: string;
             /** Format: decimal */
-            desconto?: string;
+            desconto: string;
             /** Format: decimal */
             readonly total: string;
             /**
@@ -14239,7 +14240,7 @@ export interface components {
              */
             validade: string;
             /** Observações */
-            observacoes?: string;
+            observacoes: string;
             /** Format: date-time */
             readonly enviado_em: string | null;
             /** Format: date-time */
@@ -14266,7 +14267,7 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: int64 */
             budget_id: number;
             /** Format: int64 */
@@ -14276,40 +14277,40 @@ export interface components {
             /** Número do Orçamento */
             budget_number: number;
             /** Versão do Orçamento */
-            version_number?: number;
+            version_number: number;
             status: string;
             license_plate: string;
             vehicle_model: string;
             vehicle_brand: string;
-            vehicle_year?: number | null;
-            vehicle_chassi?: string;
-            vehicle_color?: string;
+            vehicle_year: number | null;
+            vehicle_chassi: string;
+            vehicle_color: string;
             client_name: string;
-            client_document?: string;
-            client_phone?: string;
+            client_document: string;
+            client_phone: string;
             insurer_name: string;
-            insurer_cnpj?: string;
-            conclusion_key?: string;
-            conclusion_title?: string;
+            insurer_cnpj: string;
+            conclusion_key: string;
+            conclusion_title: string;
             /** Format: date-time */
-            conclusion_at?: string | null;
+            conclusion_at: string | null;
             /** Format: decimal */
-            total_liquid?: string;
+            total_liquid: string;
             /** Format: decimal */
-            total_pieces?: string;
+            total_pieces: string;
             /** Format: decimal */
-            total_workforce?: string;
+            total_workforce: string;
             /** Format: decimal */
-            total_hours?: string;
+            total_hours: string;
             /** Format: decimal */
-            franchise?: string;
+            franchise: string;
             /** Format: date-time */
-            budget_created_at?: string | null;
+            budget_created_at: string | null;
             /** Format: date-time */
-            version_created_at?: string | null;
-            raw_data?: unknown;
+            version_created_at: string | null;
+            raw_data: unknown;
             /** Format: uuid */
-            created_by?: string | null;
+            created_by: string | null;
         };
         /** @description Payload para OrcamentoService.criar(). */
         OrcamentoCreate: {
@@ -14318,16 +14319,16 @@ export interface components {
             /** Format: uuid */
             customer_id: string;
             /** Format: uuid */
-            insurer_id?: string | null;
+            insurer_id: string | null;
             /** @default cliente */
-            tipo_responsabilidade?: components["schemas"]["OrcamentoCreateTipoResponsabilidadeEnum"];
+            tipo_responsabilidade: components["schemas"]["OrcamentoCreateTipoResponsabilidadeEnum"];
             /** @default  */
-            sinistro_numero?: string;
+            sinistro_numero: string;
             veiculo: {
                 [key: string]: unknown;
             };
             /** @default  */
-            observacoes?: string;
+            observacoes: string;
         };
         /** @description Payload para OrcamentoService.criar(). */
         OrcamentoCreateRequest: {
@@ -14384,11 +14385,11 @@ export interface components {
              */
             readonly ficha_tecnica: string | null;
             /** Qualificador de peça */
-            qualificador_peca?: components["schemas"]["QualificadorPecaEnum"] | components["schemas"]["BlankEnum"];
-            fornecimento?: components["schemas"]["FornecimentoEnum"];
+            qualificador_peca: components["schemas"]["QualificadorPecaEnum"] | components["schemas"]["BlankEnum"];
+            fornecimento: components["schemas"]["FornecimentoEnum"];
             /** Código da peça */
-            codigo_peca?: string;
-            quantidade?: number;
+            codigo_peca: string;
+            quantidade: number;
             /**
              * Horas MO
              * Format: decimal
@@ -14417,14 +14418,14 @@ export interface components {
              */
             readonly snapshot: string;
             /** Status Cilia */
-            status?: components["schemas"]["StatusC95Enum"];
-            abaixo_padrao?: boolean;
-            acima_padrao?: boolean;
-            inclusao_manual?: boolean;
-            codigo_diferente?: boolean;
-            ordem?: number;
-            descricao_visivel?: string;
-            observacao?: string;
+            status: components["schemas"]["StatusC95Enum"];
+            abaixo_padrao: boolean;
+            acima_padrao: boolean;
+            inclusao_manual: boolean;
+            codigo_diferente: boolean;
+            ordem: number;
+            descricao_visivel: string;
+            observacao: string;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -14468,7 +14469,7 @@ export interface components {
              */
             service_catalog: string;
             readonly servico_nome: string;
-            quantidade?: number;
+            quantidade: number;
             /**
              * Preço unitário
              * Format: decimal
@@ -14484,14 +14485,14 @@ export interface components {
              * Format: uuid
              */
             readonly snapshot: string;
-            status?: components["schemas"]["StatusC95Enum"];
-            fornecimento?: components["schemas"]["FornecimentoEnum"];
-            inclusao_manual?: boolean;
-            abaixo_padrao?: boolean;
-            acima_padrao?: boolean;
-            ordem?: number;
-            descricao_visivel?: string;
-            observacao?: string;
+            status: components["schemas"]["StatusC95Enum"];
+            fornecimento: components["schemas"]["FornecimentoEnum"];
+            inclusao_manual: boolean;
+            abaixo_padrao: boolean;
+            acima_padrao: boolean;
+            ordem: number;
+            descricao_visivel: string;
+            observacao: string;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -14520,8 +14521,8 @@ export interface components {
             /** Número */
             numero: string;
             /** Versão */
-            versao?: number;
-            status?: components["schemas"]["Status9f8Enum"];
+            versao: number;
+            status: components["schemas"]["Status9f8Enum"];
             readonly customer_nome: string;
             readonly seguradora: string;
             /** Marca */
@@ -14531,15 +14532,15 @@ export interface components {
             /** Ano */
             veiculo_ano: number;
             /** Placa */
-            veiculo_placa?: string;
+            veiculo_placa: string;
             /** Tipo de responsabilidade */
-            tipo_responsabilidade?: components["schemas"]["TipoResponsabilidadeB50Enum"];
+            tipo_responsabilidade: components["schemas"]["TipoResponsabilidadeB50Enum"];
             /** Format: decimal */
-            subtotal?: string;
+            subtotal: string;
             /** Format: decimal */
-            desconto?: string;
+            desconto: string;
             /** Format: decimal */
-            total?: string;
+            total: string;
             /**
              * Válido até
              * Format: date
@@ -14596,13 +14597,13 @@ export interface components {
             /** Format: uuid */
             service_order: string;
             readonly os_number: number;
-            status?: components["schemas"]["Status25dEnum"];
+            status: components["schemas"]["Status25dEnum"];
             readonly status_display: string;
             /**
              * Format: decimal
              * @description Soma dos itens — recomputado no save().
              */
-            valor_total?: string;
+            valor_total: string;
             /** Format: uuid */
             criado_por: string;
             /** @default  */
@@ -14623,13 +14624,13 @@ export interface components {
             /** Format: uuid */
             service_order: string;
             readonly os_number: number;
-            status?: components["schemas"]["Status25dEnum"];
+            status: components["schemas"]["Status25dEnum"];
             readonly status_display: string;
             /**
              * Format: decimal
              * @description Soma dos itens — recomputado no save().
              */
-            valor_total?: string;
+            valor_total: string;
             /** Format: uuid */
             criado_por: string;
             /** @default  */
@@ -14724,11 +14725,11 @@ export interface components {
              */
             reference_month: string;
             /** @default  */
-            description?: string;
+            description: string;
             /** @default  */
-            nf_number?: string;
+            nf_number: string;
             /** @default  */
-            nf_file_key?: string;
+            nf_file_key: string;
         };
         /** @description Payload para registrar pagamento de colaborador PJ. */
         PJPaymentRequest: {
@@ -14753,12 +14754,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["AliasServicoList"][];
         };
         PaginatedAllowanceList: {
@@ -14768,12 +14769,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["Allowance"][];
         };
         PaginatedApontamentoList: {
@@ -14783,12 +14784,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["Apontamento"][];
         };
         PaginatedAprovacaoCotacaoList: {
@@ -14798,12 +14799,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["AprovacaoCotacao"][];
         };
         PaginatedAreaImpactoList: {
@@ -14813,12 +14814,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["AreaImpacto"][];
         };
         PaginatedArmazemList: {
@@ -14828,12 +14829,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["Armazem"][];
         };
         PaginatedAuditoriaMotorList: {
@@ -14843,12 +14844,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["AuditoriaMotor"][];
         };
         PaginatedBenchmarkAmostraList: {
@@ -14858,12 +14859,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["BenchmarkAmostra"][];
         };
         PaginatedBenchmarkFonteList: {
@@ -14873,12 +14874,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["BenchmarkFonte"][];
         };
         PaginatedBenchmarkIngestaoList: {
@@ -14888,12 +14889,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["BenchmarkIngestao"][];
         };
         PaginatedBloqueioCapacidadeList: {
@@ -14903,12 +14904,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["BloqueioCapacidade"][];
         };
         PaginatedBonusList: {
@@ -14918,12 +14919,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["Bonus"][];
         };
         PaginatedBudgetReadList: {
@@ -14933,12 +14934,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["BudgetRead"][];
         };
         PaginatedBudgetVersionItemReadList: {
@@ -14948,12 +14949,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["BudgetVersionItemRead"][];
         };
         PaginatedCapacidadeTecnicoList: {
@@ -14963,12 +14964,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["CapacidadeTecnico"][];
         };
         PaginatedCategoriaInsumoList: {
@@ -14978,12 +14979,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["CategoriaInsumo"][];
         };
         PaginatedCategoriaMaoObraList: {
@@ -14993,12 +14994,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["CategoriaMaoObra"][];
         };
         PaginatedCategoriaProdutoList: {
@@ -15008,12 +15009,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["CategoriaProduto"][];
         };
         PaginatedCategoriaServicoList: {
@@ -15023,12 +15024,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["CategoriaServico"][];
         };
         PaginatedCategoriaTamanhoList: {
@@ -15038,12 +15039,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["CategoriaTamanho"][];
         };
         PaginatedChartOfAccountListList: {
@@ -15053,12 +15054,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ChartOfAccountList"][];
         };
         PaginatedChecklistItemList: {
@@ -15068,12 +15069,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ChecklistItem"][];
         };
         PaginatedCondicaoPagamentoList: {
@@ -15083,12 +15084,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["CondicaoPagamento"][];
         };
         PaginatedContagemInventarioList: {
@@ -15098,12 +15099,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ContagemInventario"][];
         };
         PaginatedCostCenterListList: {
@@ -15113,12 +15114,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["CostCenterList"][];
         };
         PaginatedCotacaoLogList: {
@@ -15128,12 +15129,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["CotacaoLog"][];
         };
         PaginatedCustoHoraFallbackList: {
@@ -15143,12 +15144,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["CustoHoraFallback"][];
         };
         PaginatedDeductionList: {
@@ -15158,12 +15159,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["Deduction"][];
         };
         PaginatedDespesaRecorrenteListList: {
@@ -15173,12 +15174,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["DespesaRecorrenteList"][];
         };
         PaginatedEmployeeDocumentList: {
@@ -15188,12 +15189,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["EmployeeDocument"][];
         };
         PaginatedEmployeeListList: {
@@ -15203,12 +15204,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["EmployeeList"][];
         };
         PaginatedEmpresaList: {
@@ -15218,12 +15219,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["Empresa"][];
         };
         PaginatedEnquadramentoFaltanteList: {
@@ -15233,12 +15234,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["EnquadramentoFaltante"][];
         };
         PaginatedEnquadramentoVeiculoList: {
@@ -15248,12 +15249,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["EnquadramentoVeiculo"][];
         };
         PaginatedFichaTecnicaServicoListList: {
@@ -15263,12 +15264,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["FichaTecnicaServicoList"][];
         };
         PaginatedFiscalDocumentListList: {
@@ -15278,12 +15279,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["FiscalDocumentList"][];
         };
         PaginatedFiscalPeriodListList: {
@@ -15293,12 +15294,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["FiscalPeriodList"][];
         };
         PaginatedFiscalYearList: {
@@ -15308,12 +15309,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["FiscalYear"][];
         };
         PaginatedGoalTargetList: {
@@ -15323,12 +15324,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["GoalTarget"][];
         };
         PaginatedHolidayList: {
@@ -15338,12 +15339,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["Holiday"][];
         };
         PaginatedImportAttemptList: {
@@ -15353,12 +15354,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ImportAttempt"][];
         };
         PaginatedImpressoraEtiquetaList: {
@@ -15368,12 +15369,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ImpressoraEtiqueta"][];
         };
         PaginatedInsumoMaterialListList: {
@@ -15383,12 +15384,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["InsumoMaterialList"][];
         };
         PaginatedInsurerMinimalList: {
@@ -15398,12 +15399,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["InsurerMinimal"][];
         };
         PaginatedJournalEntryListList: {
@@ -15413,12 +15414,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["JournalEntryList"][];
         };
         PaginatedLoteInsumoListList: {
@@ -15428,12 +15429,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["LoteInsumoList"][];
         };
         PaginatedMargemOperacaoList: {
@@ -15443,12 +15444,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["MargemOperacao"][];
         };
         PaginatedMarkupPecaList: {
@@ -15458,12 +15459,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["MarkupPeca"][];
         };
         PaginatedMaterialCanonicoListList: {
@@ -15473,12 +15474,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["MaterialCanonicoList"][];
         };
         PaginatedMovimentacaoEstoqueList: {
@@ -15488,12 +15489,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["MovimentacaoEstoque"][];
         };
         PaginatedNFeEntradaListList: {
@@ -15503,12 +15504,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["NFeEntradaList"][];
         };
         PaginatedNivelList: {
@@ -15518,12 +15519,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["Nivel"][];
         };
         PaginatedOrcamentoListList: {
@@ -15533,12 +15534,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["OrcamentoList"][];
         };
         PaginatedOrdemCompraListList: {
@@ -15548,12 +15549,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["OrdemCompraList"][];
         };
         PaginatedParametroCustoHoraList: {
@@ -15563,12 +15564,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ParametroCustoHora"][];
         };
         PaginatedParametroRateioList: {
@@ -15578,12 +15579,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ParametroRateio"][];
         };
         PaginatedPartApplicationList: {
@@ -15593,12 +15594,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["PartApplication"][];
         };
         PaginatedPartCategoryList: {
@@ -15608,12 +15609,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["PartCategory"][];
         };
         PaginatedPartReferenceListList: {
@@ -15623,12 +15624,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["PartReferenceList"][];
         };
         PaginatedPayableDocumentList: {
@@ -15638,12 +15639,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["PayableDocument"][];
         };
         PaginatedPayableDocumentListList: {
@@ -15653,12 +15654,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["PayableDocumentList"][];
         };
         PaginatedPaymentList: {
@@ -15668,12 +15669,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["Payment"][];
         };
         PaginatedPayslipList: {
@@ -15683,12 +15684,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["Payslip"][];
         };
         PaginatedPecaCanonicoListList: {
@@ -15698,12 +15699,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["PecaCanonicoList"][];
         };
         PaginatedPedidoCompraList: {
@@ -15713,12 +15714,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["PedidoCompra"][];
         };
         PaginatedPermissionList: {
@@ -15728,12 +15729,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["Permission"][];
         };
         PaginatedPersonListList: {
@@ -15743,12 +15744,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["PersonList"][];
         };
         PaginatedPrateleiraList: {
@@ -15758,12 +15759,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["Prateleira"][];
         };
         PaginatedPrazoEntregaList: {
@@ -15773,12 +15774,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["PrazoEntrega"][];
         };
         PaginatedProdutoComercialInsumoList: {
@@ -15788,12 +15789,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ProdutoComercialInsumo"][];
         };
         PaginatedProdutoComercialPecaList: {
@@ -15803,12 +15804,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ProdutoComercialPeca"][];
         };
         PaginatedReceivableDocumentListList: {
@@ -15818,12 +15819,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ReceivableDocumentList"][];
         };
         PaginatedRespostaCotacaoList: {
@@ -15833,12 +15834,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["RespostaCotacao"][];
         };
         PaginatedRoleList: {
@@ -15848,12 +15849,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["Role"][];
         };
         PaginatedRuaList: {
@@ -15863,12 +15864,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["Rua"][];
         };
         PaginatedSalaryHistoryList: {
@@ -15878,12 +15879,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["SalaryHistory"][];
         };
         PaginatedSegmentoVeicularList: {
@@ -15893,12 +15894,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["SegmentoVeicular"][];
         };
         PaginatedServiceCatalogListList: {
@@ -15908,12 +15909,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ServiceCatalogList"][];
         };
         PaginatedServiceOrderActivityLogList: {
@@ -15923,12 +15924,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ServiceOrderActivityLog"][];
         };
         PaginatedServiceOrderEventList: {
@@ -15938,12 +15939,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ServiceOrderEvent"][];
         };
         PaginatedServiceOrderListList: {
@@ -15953,12 +15954,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ServiceOrderList"][];
         };
         PaginatedServiceOrderOverdueList: {
@@ -15968,12 +15969,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ServiceOrderOverdue"][];
         };
         PaginatedServiceOrderParecerList: {
@@ -15983,12 +15984,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ServiceOrderParecer"][];
         };
         PaginatedServiceOrderVersionList: {
@@ -15998,12 +15999,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ServiceOrderVersion"][];
         };
         PaginatedServicoCanicoListList: {
@@ -16013,12 +16014,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["ServicoCanicoList"][];
         };
         PaginatedSignatureReadList: {
@@ -16028,12 +16029,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["SignatureRead"][];
         };
         PaginatedSnapshotMinList: {
@@ -16043,12 +16044,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["SnapshotMin"][];
         };
         PaginatedTimeClockEntryList: {
@@ -16058,12 +16059,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["TimeClockEntry"][];
         };
         PaginatedTipoPecaList: {
@@ -16073,12 +16074,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["TipoPeca"][];
         };
         PaginatedTipoPinturaList: {
@@ -16088,12 +16089,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["TipoPintura"][];
         };
         PaginatedUnidadeFisicaListList: {
@@ -16103,12 +16104,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["UnidadeFisicaList"][];
         };
         PaginatedUnifiedCustomerListList: {
@@ -16118,12 +16119,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["UnifiedCustomerList"][];
         };
         PaginatedUserPermissionList: {
@@ -16133,12 +16134,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["UserPermission"][];
         };
         PaginatedUserRoleList: {
@@ -16148,12 +16149,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["UserRole"][];
         };
         PaginatedVacationList: {
@@ -16163,12 +16164,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["Vacation"][];
         };
         PaginatedVarianciaFichaList: {
@@ -16178,12 +16179,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["VarianciaFicha"][];
         };
         PaginatedVarianciaPecaCustoList: {
@@ -16193,12 +16194,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["VarianciaPecaCusto"][];
         };
         PaginatedVehicleColorList: {
@@ -16208,12 +16209,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["VehicleColor"][];
         };
         PaginatedVehicleList: {
@@ -16223,12 +16224,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["Vehicle"][];
         };
         PaginatedVehicleMakeList: {
@@ -16238,12 +16239,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["VehicleMake"][];
         };
         PaginatedVehicleModelList: {
@@ -16253,12 +16254,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["VehicleModel"][];
         };
         PaginatedWorkScheduleList: {
@@ -16268,12 +16269,12 @@ export interface components {
              * Format: uri
              * @example http://api.example.org/accounts/?page=4
              */
-            next?: string | null;
+            next: string | null;
             /**
              * Format: uri
              * @example http://api.example.org/accounts/?page=2
              */
-            previous?: string | null;
+            previous: string | null;
             results: components["schemas"]["WorkSchedule"][];
         };
         /** @description Serializer para ParametroCustoHora — encargos sobre salário bruto. */
@@ -16288,34 +16289,34 @@ export interface components {
              * Vigente até
              * Format: date
              */
-            vigente_ate?: string | null;
+            vigente_ate: string | null;
             /**
              * Provisão 13º + férias
              * Format: decimal
              * @description Provisão de 13º + férias como fração do bruto. Padrão: 0.1389 (13.89%)
              */
-            provisao_13_ferias?: string;
+            provisao_13_ferias: string;
             /**
              * Multa FGTS rescisão
              * Format: decimal
              * @description Multa FGTS rescisão como fração. Padrão: 0.0320 (3.20%)
              */
-            multa_fgts_rescisao?: string;
+            multa_fgts_rescisao: string;
             /**
              * Benefícios por funcionário (R$)
              * Format: decimal
              * @description VT + VA + plano de saúde etc por funcionário/mês em R$.
              */
-            beneficios_por_funcionario?: string;
+            beneficios_por_funcionario: string;
             /**
              * Horas produtivas individuais/mês
              * Format: decimal
              * @description Horas produtivas individuais por mês. Padrão: 168h (8h × 21 dias).
              */
-            horas_produtivas_mes?: string;
+            horas_produtivas_mes: string;
             /** Observações */
-            observacoes?: string;
-            is_active?: boolean;
+            observacoes: string;
+            is_active: boolean;
         };
         /** @description Serializer para ParametroCustoHora — encargos sobre salário bruto. */
         ParametroCustoHoraRequest: {
@@ -16368,7 +16369,7 @@ export interface components {
              * Vigente até
              * Format: date
              */
-            vigente_ate?: string | null;
+            vigente_ate: string | null;
             /**
              * Horas produtivas/mês
              * Format: decimal
@@ -16376,10 +16377,10 @@ export interface components {
              */
             horas_produtivas_mes: string;
             /** Método de rateio */
-            metodo?: components["schemas"]["MetodoEnum"];
+            metodo: components["schemas"]["MetodoEnum"];
             /** Observações */
-            observacoes?: string;
-            is_active?: boolean;
+            observacoes: string;
+            is_active: boolean;
         };
         /** @description Serializer para ParametroRateio — parâmetros de rateio de despesas. */
         ParametroRateioRequest: {
@@ -16438,19 +16439,19 @@ export interface components {
             /** @description Retorna o nome do modelo ou None quando a aplicação cobre toda a marca. */
             readonly model_nome: string | null;
             /** Ano início */
-            year_start?: number | null;
+            year_start: number | null;
             /** Ano fim */
-            year_end?: number | null;
+            year_end: number | null;
             /**
              * Origem
              * @default manual
              */
-            source?: components["schemas"]["PartApplicationSourceEnum"];
+            source: components["schemas"]["PartApplicationSourceEnum"];
             /**
              * Confiança (%)
              * @description 0-100. seed=50, api=80, os_auto=90, manual=100.
              */
-            confidence_score?: number;
+            confidence_score: number;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -16506,10 +16507,10 @@ export interface components {
             /** Nome */
             name: string;
             /** Descrição */
-            description?: string;
+            description: string;
             /** Ordem */
-            order?: number;
-            is_active?: boolean;
+            order: number;
+            is_active: boolean;
         };
         /**
          * @description Serializer completo para retrieve — inclui aplicações e fornecedores aninhados.
@@ -16527,7 +16528,7 @@ export interface components {
             /** Descrição normalizada */
             description: string;
             /** Descrição original (legado) */
-            description_original?: string;
+            description_original: string;
             /** Categoria */
             category: number;
             readonly category_name: string;
@@ -16535,12 +16536,12 @@ export interface components {
              * Unidade
              * @description PC, UN, LT, JG, KT, etc.
              */
-            unit?: string;
+            unit: string;
             /** @description Código NCM 8 dígitos — obrigatório para NF-e. */
-            ncm?: string;
+            ncm: string;
             /** EAN/GTIN */
-            ean?: string;
-            is_active?: boolean;
+            ean: string;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -16570,12 +16571,12 @@ export interface components {
              * Unidade
              * @description PC, UN, LT, JG, KT, etc.
              */
-            unit?: string;
+            unit: string;
             /** @description Código NCM 8 dígitos — obrigatório para NF-e. */
-            ncm?: string;
+            ncm: string;
             /** EAN/GTIN */
-            ean?: string;
-            is_active?: boolean;
+            ean: string;
+            is_active: boolean;
             /** Format: date-time */
             readonly updated_at: string;
         };
@@ -16615,7 +16616,7 @@ export interface components {
              */
             supplier_name: string;
             /** Código no fornecedor */
-            supplier_code?: string;
+            supplier_code: string;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -18373,12 +18374,12 @@ export interface components {
             /** Descricao */
             description: string;
             /** No Documento */
-            document_number?: string;
+            document_number: string;
             /**
              * Data do documento
              * Format: date
              */
-            document_date?: string | null;
+            document_date: string | null;
             /**
              * Valor
              * Format: decimal
@@ -18404,21 +18405,21 @@ export interface components {
             readonly status: components["schemas"]["Status2c7Enum"];
             readonly status_display: string;
             /** Origem */
-            origin?: components["schemas"]["Origin627Enum"];
+            origin: components["schemas"]["Origin627Enum"];
             readonly origin_display: string;
             /**
              * Centro de Custo
              * Format: uuid
              */
-            cost_center?: string | null;
+            cost_center: string | null;
             /**
              * Conta de Despesa
              * Format: uuid
              * @description Conta contábil para reconhecimento da despesa (6.x). Se vazio, não gera lançamento de despesa.
              */
-            expense_account?: string | null;
+            expense_account: string | null;
             /** Observacoes */
-            notes?: string;
+            notes: string;
             /**
              * Cancelado em
              * Format: date-time
@@ -18432,9 +18433,9 @@ export interface components {
             /** @description Retorna nome do usuario que cancelou, se houver. */
             readonly cancelled_by_name: string | null;
             /** Motivo do cancelamento */
-            cancel_reason?: string;
+            cancel_reason: string;
             readonly payments: components["schemas"]["PayablePayment"][];
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -18533,12 +18534,12 @@ export interface components {
              */
             amount: string;
             /** Forma de pagamento */
-            payment_method?: components["schemas"]["PaymentMethod53eEnum"];
+            payment_method: components["schemas"]["PaymentMethod53eEnum"];
             readonly payment_method_display: string;
             /** Conta bancaria */
-            bank_account?: string;
+            bank_account: string;
             /** Observacoes */
-            notes?: string;
+            notes: string;
             /**
              * Lancamento contabil
              * Format: uuid
@@ -18588,11 +18589,11 @@ export interface components {
             /** Format: decimal */
             amount: string;
             method: components["schemas"]["PaymentMethodEnum"];
-            reference?: string;
+            reference: string;
             /** Format: date-time */
             readonly received_at: string | null;
-            received_by?: string;
-            fiscal_doc_ref?: string;
+            received_by: string;
+            fiscal_doc_ref: string;
             readonly status: components["schemas"]["PaymentStatusEnum"];
             /** Format: date-time */
             readonly created_at: string;
@@ -18668,7 +18669,7 @@ export interface components {
              * Tipo
              * @default regular
              */
-            payslip_type?: components["schemas"]["PayslipTypeEnum"];
+            payslip_type: components["schemas"]["PayslipTypeEnum"];
             /**
              * Salário base
              * Format: decimal
@@ -18678,27 +18679,27 @@ export interface components {
              * Total bonificações
              * Format: decimal
              */
-            total_bonuses?: string;
+            total_bonuses: string;
             /**
              * Total vales
              * Format: decimal
              */
-            total_allowances?: string;
+            total_allowances: string;
             /**
              * Horas extras
              * Format: decimal
              */
-            total_overtime_hours?: string;
+            total_overtime_hours: string;
             /**
              * Valor horas extras
              * Format: decimal
              */
-            total_overtime_value?: string;
+            total_overtime_value: string;
             /**
              * Total descontos
              * Format: decimal
              */
-            total_deductions?: string;
+            total_deductions: string;
             /**
              * Salário bruto
              * Format: decimal
@@ -18712,22 +18713,22 @@ export interface components {
              */
             net_pay: string;
             /** Dias trabalhados */
-            worked_days?: number;
+            worked_days: number;
             /**
              * Horas trabalhadas
              * Format: decimal
              */
-            worked_hours?: string;
+            worked_hours: string;
             /** Faltas */
-            total_absences?: number;
+            total_absences: number;
             /** Minutos de atraso */
-            total_late_minutes?: number;
+            total_late_minutes: number;
             /** @description [{"type": "goal", "description": "...", "amount": 500.00}] */
-            bonus_breakdown?: unknown;
+            bonus_breakdown: unknown;
             /** @description [{"type": "food", "amount": 600.00}] */
-            allowance_breakdown?: unknown;
+            allowance_breakdown: unknown;
             /** @description [{"type": "inss", "amount": 150.00}] */
-            deduction_breakdown?: unknown;
+            deduction_breakdown: unknown;
             /** Fechado */
             readonly is_closed: boolean;
             /** Format: date-time */
@@ -18736,7 +18737,7 @@ export interface components {
             readonly closed_by: string | null;
             /** @description PDF do contracheque no R2/S3 */
             readonly pdf_file_key: string;
-            notes?: string;
+            notes: string;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -18834,9 +18835,9 @@ export interface components {
             codigo: string;
             nome: string;
             /** Tipo de peça */
-            tipo_peca?: components["schemas"]["TipoPecaEnum"];
+            tipo_peca: components["schemas"]["TipoPecaEnum"];
             /** @description Código NCM/SH (8 dígitos). Ex: 87089990. Obrigatório para emissão de NF-e. */
-            ncm?: string;
+            ncm: string;
         };
         /** @description Serializer de criação para PecaCanonica. */
         PecaCanonicoCreateRequest: {
@@ -18862,13 +18863,13 @@ export interface components {
             codigo: string;
             nome: string;
             /** Tipo de peça */
-            tipo_peca?: components["schemas"]["TipoPecaEnum"];
+            tipo_peca: components["schemas"]["TipoPecaEnum"];
             readonly tipo_peca_display: string;
             /** @description Código NCM/SH (8 dígitos). Ex: 87089990. Obrigatório para emissão de NF-e. */
-            ncm?: string;
+            ncm: string;
             /** @description Indica se o embedding já foi gerado. */
             readonly tem_embedding: boolean;
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -18899,10 +18900,10 @@ export interface components {
             codigo: string;
             nome: string;
             /** Tipo de peça */
-            tipo_peca?: components["schemas"]["TipoPecaEnum"];
+            tipo_peca: components["schemas"]["TipoPecaEnum"];
             /** @description Código NCM/SH (8 dígitos). Ex: 87089990. Obrigatório para emissão de NF-e. */
-            ncm?: string;
-            is_active?: boolean;
+            ncm: string;
+            is_active: boolean;
         };
         /**
          * @description Serializer de atualização para PecaCanonica.
@@ -18919,10 +18920,10 @@ export interface components {
             readonly codigo: string;
             nome: string;
             /** Tipo de peça */
-            tipo_peca?: components["schemas"]["TipoPecaEnum"];
+            tipo_peca: components["schemas"]["TipoPecaEnum"];
             /** @description Código NCM/SH (8 dígitos). Ex: 87089990. Obrigatório para emissão de NF-e. */
-            ncm?: string;
-            is_active?: boolean;
+            ncm: string;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -19021,28 +19022,28 @@ export interface components {
         PersonAddress: {
             readonly id: number;
             /** Tipo */
-            address_type?: components["schemas"]["AddressTypeEnum"];
+            address_type: components["schemas"]["AddressTypeEnum"];
             /** CEP */
-            zip_code?: string;
+            zip_code: string;
             /** Logradouro */
-            street?: string;
+            street: string;
             /** Número */
-            number?: string;
+            number: string;
             /** Complemento */
-            complement?: string;
+            complement: string;
             /** Bairro */
-            neighborhood?: string;
+            neighborhood: string;
             /** Cidade */
-            city?: string;
+            city: string;
             /** UF */
-            state?: string;
+            state: string;
             /**
              * Código IBGE do município
              * @description 7 dígitos IBGE. Obrigatório para NFS-e Manaus (1302603).
              */
-            municipio_ibge?: string;
+            municipio_ibge: string;
             /** Principal */
-            is_primary?: boolean;
+            is_primary: boolean;
         };
         PersonAddressRequest: {
             /** Tipo */
@@ -19095,9 +19096,9 @@ export interface components {
             /** Valor */
             value: string;
             /** Rótulo */
-            label?: string;
+            label: string;
             /** Principal */
-            is_primary?: boolean;
+            is_primary: boolean;
         };
         /** @description Serializer de escrita para PersonContact — popula value_hash automaticamente. */
         PersonContactWriteRequest: {
@@ -19113,33 +19114,33 @@ export interface components {
         /** @description Serializer de escrita com sync de roles, contatos, endereços e documentos. */
         PersonCreateUpdate: {
             /** Tipo de pessoa */
-            person_kind?: components["schemas"]["PersonKindEnum"];
+            person_kind: components["schemas"]["PersonKindEnum"];
             /** Nome / Razão social */
             full_name: string;
             /** Nome fantasia */
-            fantasy_name?: string;
+            fantasy_name: string;
             /** RG / IE */
-            secondary_document?: string;
+            secondary_document: string;
             /** IM */
-            municipal_registration?: string;
+            municipal_registration: string;
             /** Simples Nacional */
-            is_simples_nacional?: boolean;
+            is_simples_nacional: boolean;
             /** Tipo de inscrição */
-            inscription_type?: components["schemas"]["InscriptionTypeEnum"] | components["schemas"]["BlankEnum"];
+            inscription_type: components["schemas"]["InscriptionTypeEnum"] | components["schemas"]["BlankEnum"];
             /**
              * Data de nascimento
              * Format: date
              */
-            birth_date?: string | null;
+            birth_date: string | null;
             /** Sexo */
-            gender?: components["schemas"]["GenderEnum"] | components["schemas"]["BlankEnum"];
+            gender: components["schemas"]["GenderEnum"] | components["schemas"]["BlankEnum"];
             /** Ativo */
-            is_active?: boolean;
+            is_active: boolean;
             /** Observações */
-            notes?: string;
-            contacts?: components["schemas"]["PersonContactWrite"][];
-            addresses?: components["schemas"]["PersonAddress"][];
-            documents?: components["schemas"]["PersonDocumentWrite"][];
+            notes: string;
+            contacts: components["schemas"]["PersonContactWrite"][];
+            addresses: components["schemas"]["PersonAddress"][];
+            documents: components["schemas"]["PersonDocumentWrite"][];
         };
         /** @description Serializer de escrita com sync de roles, contatos, endereços e documentos. */
         PersonCreateUpdateRequest: {
@@ -19177,36 +19178,36 @@ export interface components {
         PersonDetail: {
             readonly id: number;
             /** Tipo de pessoa */
-            person_kind?: components["schemas"]["PersonKindEnum"];
+            person_kind: components["schemas"]["PersonKindEnum"];
             /** Nome / Razão social */
             full_name: string;
             /** Nome fantasia */
-            fantasy_name?: string;
+            fantasy_name: string;
             /** RG / IE */
-            secondary_document?: string;
+            secondary_document: string;
             /** IM */
-            municipal_registration?: string;
+            municipal_registration: string;
             /** Simples Nacional */
-            is_simples_nacional?: boolean;
+            is_simples_nacional: boolean;
             /** Tipo de inscrição */
-            inscription_type?: components["schemas"]["InscriptionTypeEnum"] | components["schemas"]["BlankEnum"];
+            inscription_type: components["schemas"]["InscriptionTypeEnum"] | components["schemas"]["BlankEnum"];
             /**
              * Data de nascimento
              * Format: date
              */
-            birth_date?: string | null;
+            birth_date: string | null;
             /** Sexo */
-            gender?: components["schemas"]["GenderEnum"] | components["schemas"]["BlankEnum"];
+            gender: components["schemas"]["GenderEnum"] | components["schemas"]["BlankEnum"];
             /** Ativo */
-            is_active?: boolean;
+            is_active: boolean;
             /** Observações */
-            notes?: string;
+            notes: string;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
-            legacy_code?: string;
-            legacy_category?: string;
+            legacy_code: string;
+            legacy_category: string;
             readonly roles: components["schemas"]["PersonRole"][];
             readonly documents: components["schemas"]["PersonDocumentMasked"][];
             readonly contacts: components["schemas"]["PersonContact"][];
@@ -19244,19 +19245,19 @@ export interface components {
             /** Valor */
             value: string;
             /** Principal */
-            is_primary?: boolean;
+            is_primary: boolean;
             /** Órgão emissor */
-            issued_by?: string;
+            issued_by: string;
             /**
              * Data de emissão
              * Format: date
              */
-            issued_at?: string | null;
+            issued_at: string | null;
             /**
              * Data de validade
              * Format: date
              */
-            expires_at?: string | null;
+            expires_at: string | null;
         };
         /** @description Serializer de escrita para PersonDocument — popula value_hash automaticamente. */
         PersonDocumentWriteRequest: {
@@ -19356,15 +19357,15 @@ export interface components {
             readonly rua_codigo: string;
             /** @description P01, P02. */
             codigo: string;
-            descricao?: string;
+            descricao: string;
             /**
              * Format: decimal
              * @description Peso máximo suportado (kg).
              */
-            capacidade_kg?: string | null;
-            ordem?: number;
+            capacidade_kg: string | null;
+            ordem: number;
             readonly total_niveis: number;
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -19404,34 +19405,34 @@ export interface components {
             /** @description Nome comercial do insumo (ex: Verniz PU Lazzuril 900ml). */
             nome_interno: string;
             /** @description Part number do fabricante. */
-            codigo_fabricante?: string;
+            codigo_fabricante: string;
             /** @description Código EAN/GTIN (8 ou 13 dígitos). */
-            codigo_ean?: string;
+            codigo_ean: string;
             /** @description Nome do fabricante (ex: Lazzuril, Sikkens). */
-            nome_fabricante?: string;
+            nome_fabricante: string;
             /** @description Unidade de medida base (L, ml, kg, un). */
-            unidade_base?: string;
+            unidade_base: string;
             /** Format: uuid */
-            categoria_insumo?: string | null;
+            categoria_insumo: string | null;
             /** @default  */
             readonly categoria_insumo_nome: string;
             /**
              * Format: uuid
              * @description Material canônico do catálogo técnico.
              */
-            material_canonico?: string | null;
+            material_canonico: string | null;
             /**
              * Format: decimal
              * @description Preço de venda sugerido (R$).
              */
-            preco_venda_sugerido?: string | null;
+            preco_venda_sugerido: string | null;
             /**
              * Format: decimal
              * @description Margem (%) — sobrescreve a da categoria se preenchida.
              */
-            margem_padrao_pct?: string | null;
-            observacoes?: string;
-            is_active?: boolean;
+            margem_padrao_pct: string | null;
+            observacoes: string;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -19480,42 +19481,42 @@ export interface components {
             /** @description Nome comercial da peça (ex: Para-choque Gol G5 Dianteiro). */
             nome_interno: string;
             /** @description Part number do fabricante. */
-            codigo_fabricante?: string;
+            codigo_fabricante: string;
             /** @description Código EAN/GTIN (8 ou 13 dígitos). */
-            codigo_ean?: string;
+            codigo_ean: string;
             /** @description Código do distribuidor/atacadista. */
-            codigo_distribuidor?: string;
+            codigo_distribuidor: string;
             /** @description Nome do fabricante (ex: Volkswagen, Cibie). */
-            nome_fabricante?: string;
+            nome_fabricante: string;
             /** Format: uuid */
-            tipo_peca?: string | null;
+            tipo_peca: string | null;
             /** @default  */
             readonly tipo_peca_nome: string;
-            posicao_veiculo?: components["schemas"]["PosicaoVeiculoEnum"];
+            posicao_veiculo: components["schemas"]["PosicaoVeiculoEnum"];
             readonly posicao_veiculo_display: string;
-            lado?: components["schemas"]["LadoEnum"];
+            lado: components["schemas"]["LadoEnum"];
             readonly lado_display: string;
             /** Format: uuid */
-            categoria?: string | null;
+            categoria: string | null;
             /** @default  */
             readonly categoria_nome: string;
             /**
              * Format: uuid
              * @description Peça canônica do catálogo técnico.
              */
-            peca_canonica?: string | null;
+            peca_canonica: string | null;
             /**
              * Format: decimal
              * @description Preço de venda sugerido (R$).
              */
-            preco_venda_sugerido?: string | null;
+            preco_venda_sugerido: string | null;
             /**
              * Format: decimal
              * @description Margem (%) — sobrescreve a da categoria se preenchida.
              */
-            margem_padrao_pct?: string | null;
-            observacoes?: string;
-            is_active?: boolean;
+            margem_padrao_pct: string | null;
+            observacoes: string;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -19587,12 +19588,12 @@ export interface components {
             /** Descricao */
             description: string;
             /** No Documento */
-            document_number?: string;
+            document_number: string;
             /**
              * Data do documento
              * Format: date
              */
-            document_date?: string | null;
+            document_date: string | null;
             /**
              * Valor
              * Format: decimal
@@ -19618,20 +19619,20 @@ export interface components {
             readonly status: components["schemas"]["StatusFb6Enum"];
             readonly status_display: string;
             /** Origem */
-            origin?: components["schemas"]["Origin1f1Enum"];
+            origin: components["schemas"]["Origin1f1Enum"];
             readonly origin_display: string;
             /**
              * ID da OS
              * Format: uuid
              */
-            service_order_id?: string | null;
+            service_order_id: string | null;
             /**
              * Centro de Custo
              * Format: uuid
              */
-            cost_center?: string | null;
+            cost_center: string | null;
             /** Observacoes */
-            notes?: string;
+            notes: string;
             /**
              * Cancelado em
              * Format: date-time
@@ -19645,9 +19646,9 @@ export interface components {
             /** @description Retorna nome do usuario que cancelou, se houver. */
             readonly cancelled_by_name: string | null;
             /** Motivo do cancelamento */
-            cancel_reason?: string;
+            cancel_reason: string;
             readonly receipts: components["schemas"]["ReceivableReceipt"][];
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -19752,12 +19753,12 @@ export interface components {
              */
             amount: string;
             /** Forma de pagamento */
-            payment_method?: components["schemas"]["PaymentMethod53eEnum"];
+            payment_method: components["schemas"]["PaymentMethod53eEnum"];
             readonly payment_method_display: string;
             /** Conta bancaria */
-            bank_account?: string;
+            bank_account: string;
             /** Observacoes */
-            notes?: string;
+            notes: string;
             /**
              * Lancamento contabil
              * Format: uuid
@@ -19792,11 +19793,11 @@ export interface components {
             /** Format: decimal */
             amount: string;
             /** @default bank_transfer */
-            payment_method?: components["schemas"]["PaymentMethodEffEnum"];
+            payment_method: components["schemas"]["PaymentMethodEffEnum"];
             /** @default  */
-            bank_account?: string;
+            bank_account: string;
             /** @default  */
-            notes?: string;
+            notes: string;
         };
         /** @description Serializer de escrita para registro de pagamento. */
         RecordPaymentRequest: {
@@ -19818,11 +19819,11 @@ export interface components {
             /** Format: decimal */
             amount: string;
             /** @default pix */
-            payment_method?: components["schemas"]["PaymentMethodEffEnum"];
+            payment_method: components["schemas"]["PaymentMethodEffEnum"];
             /** @default  */
-            bank_account?: string;
+            bank_account: string;
             /** @default  */
-            notes?: string;
+            notes: string;
         };
         /** @description Serializer de escrita para registro de recebimento. */
         RecordReceiptRequest: {
@@ -19868,18 +19869,18 @@ export interface components {
             readonly supplier_name: string;
             /** Format: decimal */
             valor_unitario: string;
-            prazo_entrega?: string;
+            prazo_entrega: string;
             /** Format: uuid */
-            prazo_entrega_obj?: string | null;
+            prazo_entrega_obj: string | null;
             /** @default  */
             readonly prazo_entrega_label: string;
-            condicoes_pagamento?: string;
+            condicoes_pagamento: string;
             /** Format: uuid */
-            condicao_pagamento_obj?: string | null;
+            condicao_pagamento_obj: string | null;
             /** @default  */
             readonly condicao_pagamento_label: string;
-            observacoes?: string;
-            selecionada?: boolean;
+            observacoes: string;
+            selecionada: boolean;
             /** Format: uuid */
             readonly registrado_por: string;
             readonly registrado_por_nome: string;
@@ -19915,7 +19916,7 @@ export interface components {
             readonly id: number;
             code: string;
             label: string;
-            description?: string;
+            description: string;
         };
         /**
          * @description * `STOREKEEPER` - Almoxarife
@@ -19953,10 +19954,10 @@ export interface components {
             readonly armazem_codigo: string;
             /** @description R01, R02. */
             codigo: string;
-            descricao?: string;
-            ordem?: number;
+            descricao: string;
+            ordem: number;
             readonly total_prateleiras: number;
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -19995,7 +19996,7 @@ export interface components {
              * Motivo
              * @description Promoção, dissídio, mérito, etc.
              */
-            reason?: string;
+            reason: string;
             /** Format: uuid */
             readonly authorized_by: string | null;
             readonly authorized_by_name: string;
@@ -20023,7 +20024,7 @@ export interface components {
              * Motivo
              * @description Promoção, dissídio, mérito, etc.
              */
-            reason?: string;
+            reason: string;
         };
         /** @description Criação de reajuste — injeta employee e authorized_by na view. */
         SalaryHistoryCreateRequest: {
@@ -20068,8 +20069,8 @@ export interface components {
              */
             fator_responsabilidade: string;
             /** Descrição */
-            descricao?: string;
-            is_active?: boolean;
+            descricao: string;
+            is_active: boolean;
         };
         SegmentoVeicularRequest: {
             /**
@@ -20099,17 +20100,17 @@ export interface components {
             /** Nome do serviço */
             name: string;
             /** Descrição / observação */
-            description?: string;
+            description: string;
             /** Categoria */
-            category?: components["schemas"]["Category48eEnum"];
+            category: components["schemas"]["Category48eEnum"];
             readonly category_display: string;
             /**
              * Preço sugerido
              * Format: decimal
              */
-            suggested_price?: string;
+            suggested_price: string;
             /** Ativo */
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -20122,13 +20123,13 @@ export interface components {
             /** Nome do serviço */
             name: string;
             /** Categoria */
-            category?: components["schemas"]["Category48eEnum"];
+            category: components["schemas"]["Category48eEnum"];
             readonly category_display: string;
             /**
              * Preço sugerido
              * Format: decimal
              */
-            suggested_price?: string;
+            suggested_price: string;
         };
         /** @description Serializer completo para criacao/edicao do catalogo. */
         ServiceCatalogRequest: {
@@ -20170,32 +20171,32 @@ export interface components {
             /** Placa */
             plate: string;
             /** Marca */
-            make?: string;
+            make: string;
             /** Modelo */
-            model?: string;
+            model: string;
             /** Nome do cliente */
             customer_name: string;
             /** Tipo de atendimento */
-            customer_type?: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
-            status?: components["schemas"]["Status5e2Enum"];
+            customer_type: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            status: components["schemas"]["Status5e2Enum"];
             readonly status_display: string;
             /**
              * Data de agendamento
              * Format: date-time
              */
-            scheduling_date?: string | null;
+            scheduling_date: string | null;
             /**
              * Previsão de entrega
              * Format: date
              * @description Previsão de entrega (calculada: entry + repair_days)
              */
-            estimated_delivery_date?: string | null;
+            estimated_delivery_date: string | null;
             /**
              * Data de entrega
              * Format: date-time
              * @description Data/hora real de entrega
              */
-            delivery_date?: string | null;
+            delivery_date: string | null;
         };
         /**
          * @description Serializer para abertura de nova OS.
@@ -20210,9 +20211,9 @@ export interface components {
             readonly updated_at: string;
             readonly is_active: boolean;
             /** Tipo de atendimento */
-            customer_type?: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            customer_type: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             /** Tipo de OS */
-            os_type?: (components["schemas"]["OsTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            os_type: (components["schemas"]["OsTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             /**
              * Tipo de segurado
              * @description Segurado ou Terceiro — só quando customer_type='insurer'
@@ -20220,146 +20221,146 @@ export interface components {
              *     * `insured` - Segurado
              *     * `third` - Terceiro
              */
-            insured_type?: (components["schemas"]["InsuredTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            insured_type: (components["schemas"]["InsuredTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             /**
              * Número do sinistro
              * @description Número do sinistro
              */
-            casualty_number?: string;
+            casualty_number: string;
             /**
              * Orçamento Cilia
              * @description Número do orçamento Cilia (último importado)
              */
-            cilia_budget_number?: string;
+            cilia_budget_number: string;
             /**
              * Versão Cilia
              * @description Versão do orçamento Cilia (último importado)
              */
-            cilia_budget_version?: string;
+            cilia_budget_version: string;
             /**
              * Franquia
              * Format: decimal
              * @description Valor da franquia — só quando insured_type='insured'
              */
-            deductible_amount?: string | null;
+            deductible_amount: string | null;
             /**
              * Corretor
              * @description Nome do corretor (opcional)
              */
-            broker_name?: string;
+            broker_name: string;
             /**
              * Data do perito
              * Format: date
              * @description Data de visita do perito
              */
-            expert_date?: string | null;
+            expert_date: string | null;
             /**
              * Data da vistoria
              * Format: date
              * @description Data da vistoria (seguradora)
              */
-            survey_date?: string | null;
+            survey_date: string | null;
             /**
              * Data de autorização (seguradora)
              * Format: date-time
              * @description Data/hora de autorização do orçamento pela SEGURADORA. Usado pelo TransitionValidator (AUTH_DATE_SET) para liberar a transição waiting_auth → authorized. Não confundir com service_authorization_date (particular).
              */
-            authorization_date?: string | null;
+            authorization_date: string | null;
             /**
              * Data do orçamento
              * Format: date
              * @description Data de orçamentação (particular)
              */
-            quotation_date?: string | null;
+            quotation_date: string | null;
             /**
              * UUID do cliente
              * Format: uuid
              */
-            customer_uuid?: string | null;
+            customer_uuid: string | null;
             /** Nome do cliente */
-            customer_name?: string;
+            customer_name: string;
             /** Placa */
             plate: string;
             /** Marca */
-            make?: string;
+            make: string;
             /**
              * Logo da montadora
              * Format: uri
              */
-            make_logo?: string;
+            make_logo: string;
             /** Modelo */
-            model?: string;
+            model: string;
             /** Versão */
-            vehicle_version?: string;
+            vehicle_version: string;
             /** Ano */
-            year?: number | null;
+            year: number | null;
             /** Cor */
-            color?: string;
+            color: string;
             /** Chassi */
-            chassis?: string;
+            chassis: string;
             /** Combustível */
-            fuel_type?: string;
+            fuel_type: string;
             /**
              * Valor FIPE
              * Format: decimal
              */
-            fipe_value?: string | null;
+            fipe_value: string | null;
             /** KM entrada */
-            mileage_in?: number | null;
+            mileage_in: number | null;
             /** KM saída */
-            mileage_out?: number | null;
+            mileage_out: number | null;
             /** @description fipe_id da marca — referência solta a vehicle_catalog.VehicleMake */
-            vehicle_make_id?: string;
+            vehicle_make_id: string;
             /** @description fipe_id do modelo — referência solta a vehicle_catalog.VehicleModel */
-            vehicle_model_id?: string;
+            vehicle_model_id: string;
             /** @description fipe_id do ano/versão — referência solta a vehicle_catalog.VehicleYearVersion */
-            vehicle_year_version_id?: string;
+            vehicle_year_version_id: string;
             /**
              * Format: decimal
              * @description Valor FIPE congelado no momento de criação da OS (R$).
              */
-            vehicle_fipe_value_snapshot?: string | null;
+            vehicle_fipe_value_snapshot: string | null;
             /** @description Código do SegmentoVeicular resolvido pelo EnquadramentoService. */
-            segmento_codigo?: string;
+            segmento_codigo: string;
             /** @description Código da CategoriaTamanho resolvida pelo EnquadramentoService. */
-            tamanho_codigo?: string;
+            tamanho_codigo: string;
             /** @description Código do TipoPintura resolvido pelo EnquadramentoService. */
-            tipo_pintura_codigo?: string;
+            tipo_pintura_codigo: string;
             /**
              * Format: uuid
              * @description UUID da Empresa (pricing_profile.Empresa) — referência solta, igual ao customer_uuid.
              */
-            empresa_id?: string | null;
+            empresa_id: string | null;
             /** Local do veículo */
-            vehicle_location?: components["schemas"]["VehicleLocationEnum"];
+            vehicle_location: components["schemas"]["VehicleLocationEnum"];
             /**
              * Data de entrada
              * Format: date-time
              * @description Data/hora de entrada do veículo na oficina
              */
-            entry_date?: string | null;
+            entry_date: string | null;
             /**
              * Autorização do serviço (particular)
              * Format: date-time
              * @description Data/hora de autorização do serviço pelo CLIENTE PARTICULAR. Preenchido quando o cliente aprova o orçamento. Não confundir com authorization_date (seguradora).
              */
-            service_authorization_date?: string | null;
+            service_authorization_date: string | null;
             /**
              * Data de agendamento
              * Format: date-time
              */
-            scheduling_date?: string | null;
+            scheduling_date: string | null;
             /**
              * Dias de reparo
              * @description Dias estimados de reparo
              */
-            repair_days?: number | null;
+            repair_days: number | null;
             /**
              * Previsão de entrega
              * Format: date
              * @description Previsão de entrega (calculada: entry + repair_days)
              */
-            estimated_delivery_date?: string | null;
+            estimated_delivery_date: string | null;
             /**
              * Data de entrega
              * Format: date-time
@@ -20371,7 +20372,7 @@ export interface components {
              * Format: date-time
              * @description Data/hora da vistoria final — ALTERA STATUS automaticamente
              */
-            final_survey_date?: string | null;
+            final_survey_date: string | null;
             /**
              * Entrega ao cliente
              * Format: date-time
@@ -20383,11 +20384,11 @@ export interface components {
              * Status anterior
              * @description Status antes de entrar em 'budget' (auto-Kanban). Restaurado ao aprovar versão.
              */
-            previous_status?: string;
+            previous_status: string;
             /** Format: date-time */
             readonly delivered_at: string | null;
             /** Format: date-time */
-            estimated_delivery?: string | null;
+            estimated_delivery: string | null;
             /** Format: decimal */
             readonly parts_total: string;
             /** Format: decimal */
@@ -20398,7 +20399,7 @@ export interface components {
              * Format: decimal
              * @description Total oficial da seguradora (Cilia/IFX/HDI) — verdade absoluta
              */
-            total_seguradora_oficial?: string | null;
+            total_seguradora_oficial: string | null;
             /** Chave NF-e */
             readonly nfe_key: string;
             /** Número NFS-e */
@@ -20407,28 +20408,28 @@ export interface components {
              * Nº NF externa
              * @description Número da NF emitida fora do sistema (uso temporário enquanto Focus não está disponível). Quando preenchido junto com external_invoice_date, a OS é considerada faturada para fins de fechamento.
              */
-            external_invoice_number?: string;
+            external_invoice_number: string;
             /**
              * Data NF externa
              * Format: date
              * @description Data da NF emitida fora do sistema.
              */
-            external_invoice_date?: string | null;
+            external_invoice_date: string | null;
             readonly ai_recommendations: unknown;
             /** Observações gerais */
-            notes?: string;
+            notes: string;
             /**
              * Consultor
              * Format: uuid
              */
-            consultant?: string | null;
+            consultant: string | null;
             /**
              * Seguradora
              * Format: uuid
              */
-            insurer?: string | null;
+            insurer: string | null;
             /** Perito */
-            expert?: number | null;
+            expert: number | null;
         };
         /**
          * @description Serializer para abertura de nova OS.
@@ -20677,13 +20678,13 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
-            is_active?: boolean;
+            is_active: boolean;
             /** Número da OS */
             number: number;
             /** Tipo de atendimento */
-            customer_type?: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            customer_type: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             /** Tipo de OS */
-            os_type?: (components["schemas"]["OsTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            os_type: (components["schemas"]["OsTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             /**
              * Tipo de segurado
              * @description Segurado ou Terceiro — só quando customer_type='insurer'
@@ -20691,221 +20692,221 @@ export interface components {
              *     * `insured` - Segurado
              *     * `third` - Terceiro
              */
-            insured_type?: (components["schemas"]["InsuredTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            insured_type: (components["schemas"]["InsuredTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             /**
              * Número do sinistro
              * @description Número do sinistro
              */
-            casualty_number?: string;
+            casualty_number: string;
             /**
              * Orçamento Cilia
              * @description Número do orçamento Cilia (último importado)
              */
-            cilia_budget_number?: string;
+            cilia_budget_number: string;
             /**
              * Versão Cilia
              * @description Versão do orçamento Cilia (último importado)
              */
-            cilia_budget_version?: string;
+            cilia_budget_version: string;
             /**
              * Franquia
              * Format: decimal
              * @description Valor da franquia — só quando insured_type='insured'
              */
-            deductible_amount?: string | null;
+            deductible_amount: string | null;
             /**
              * Corretor
              * @description Nome do corretor (opcional)
              */
-            broker_name?: string;
+            broker_name: string;
             /**
              * Data do perito
              * Format: date
              * @description Data de visita do perito
              */
-            expert_date?: string | null;
+            expert_date: string | null;
             /**
              * Data da vistoria
              * Format: date
              * @description Data da vistoria (seguradora)
              */
-            survey_date?: string | null;
+            survey_date: string | null;
             /**
              * Data de autorização (seguradora)
              * Format: date-time
              * @description Data/hora de autorização do orçamento pela SEGURADORA. Usado pelo TransitionValidator (AUTH_DATE_SET) para liberar a transição waiting_auth → authorized. Não confundir com service_authorization_date (particular).
              */
-            authorization_date?: string | null;
+            authorization_date: string | null;
             /**
              * Data do orçamento
              * Format: date
              * @description Data de orçamentação (particular)
              */
-            quotation_date?: string | null;
+            quotation_date: string | null;
             /**
              * UUID do cliente
              * Format: uuid
              */
-            customer_uuid?: string | null;
+            customer_uuid: string | null;
             /** Nome do cliente */
             customer_name: string;
             /** Placa */
             plate: string;
             /** Marca */
-            make?: string;
+            make: string;
             /**
              * Logo da montadora
              * Format: uri
              */
-            make_logo?: string;
+            make_logo: string;
             /** Modelo */
-            model?: string;
+            model: string;
             /** Versão */
-            vehicle_version?: string;
+            vehicle_version: string;
             /** Ano */
-            year?: number | null;
+            year: number | null;
             /** Cor */
-            color?: string;
+            color: string;
             /** Chassi */
-            chassis?: string;
+            chassis: string;
             /** Combustível */
-            fuel_type?: string;
+            fuel_type: string;
             /**
              * Valor FIPE
              * Format: decimal
              */
-            fipe_value?: string | null;
+            fipe_value: string | null;
             /** KM entrada */
-            mileage_in?: number | null;
+            mileage_in: number | null;
             /** KM saída */
-            mileage_out?: number | null;
+            mileage_out: number | null;
             /** @description fipe_id da marca — referência solta a vehicle_catalog.VehicleMake */
-            vehicle_make_id?: string;
+            vehicle_make_id: string;
             /** @description fipe_id do modelo — referência solta a vehicle_catalog.VehicleModel */
-            vehicle_model_id?: string;
+            vehicle_model_id: string;
             /** @description fipe_id do ano/versão — referência solta a vehicle_catalog.VehicleYearVersion */
-            vehicle_year_version_id?: string;
+            vehicle_year_version_id: string;
             /**
              * Format: decimal
              * @description Valor FIPE congelado no momento de criação da OS (R$).
              */
-            vehicle_fipe_value_snapshot?: string | null;
+            vehicle_fipe_value_snapshot: string | null;
             /** @description Código do SegmentoVeicular resolvido pelo EnquadramentoService. */
-            segmento_codigo?: string;
+            segmento_codigo: string;
             /** @description Código da CategoriaTamanho resolvida pelo EnquadramentoService. */
-            tamanho_codigo?: string;
+            tamanho_codigo: string;
             /** @description Código do TipoPintura resolvido pelo EnquadramentoService. */
-            tipo_pintura_codigo?: string;
+            tipo_pintura_codigo: string;
             /**
              * Format: uuid
              * @description UUID da Empresa (pricing_profile.Empresa) — referência solta, igual ao customer_uuid.
              */
-            empresa_id?: string | null;
+            empresa_id: string | null;
             /** Local do veículo */
-            vehicle_location?: components["schemas"]["VehicleLocationEnum"];
+            vehicle_location: components["schemas"]["VehicleLocationEnum"];
             /**
              * Data de entrada
              * Format: date-time
              * @description Data/hora de entrada do veículo na oficina
              */
-            entry_date?: string | null;
+            entry_date: string | null;
             /**
              * Autorização do serviço (particular)
              * Format: date-time
              * @description Data/hora de autorização do serviço pelo CLIENTE PARTICULAR. Preenchido quando o cliente aprova o orçamento. Não confundir com authorization_date (seguradora).
              */
-            service_authorization_date?: string | null;
+            service_authorization_date: string | null;
             /**
              * Data de agendamento
              * Format: date-time
              */
-            scheduling_date?: string | null;
+            scheduling_date: string | null;
             /**
              * Dias de reparo
              * @description Dias estimados de reparo
              */
-            repair_days?: number | null;
+            repair_days: number | null;
             /**
              * Previsão de entrega
              * Format: date
              * @description Previsão de entrega (calculada: entry + repair_days)
              */
-            estimated_delivery_date?: string | null;
+            estimated_delivery_date: string | null;
             /**
              * Data de entrega
              * Format: date-time
              * @description Data/hora real de entrega
              */
-            delivery_date?: string | null;
+            delivery_date: string | null;
             /**
              * Vistoria final
              * Format: date-time
              * @description Data/hora da vistoria final — ALTERA STATUS automaticamente
              */
-            final_survey_date?: string | null;
+            final_survey_date: string | null;
             /**
              * Entrega ao cliente
              * Format: date-time
              * @description Data/hora de entrega ao cliente — ALTERA STATUS automaticamente
              */
-            client_delivery_date?: string | null;
-            status?: components["schemas"]["Status5e2Enum"];
+            client_delivery_date: string | null;
+            status: components["schemas"]["Status5e2Enum"];
             /**
              * Status anterior
              * @description Status antes de entrar em 'budget' (auto-Kanban). Restaurado ao aprovar versão.
              */
-            previous_status?: string;
+            previous_status: string;
             /** Format: date-time */
             readonly opened_at: string;
             /** Format: date-time */
-            delivered_at?: string | null;
+            delivered_at: string | null;
             /** Format: date-time */
-            estimated_delivery?: string | null;
+            estimated_delivery: string | null;
             /** Format: decimal */
-            parts_total?: string;
+            parts_total: string;
             /** Format: decimal */
-            services_total?: string;
+            services_total: string;
             /** Format: decimal */
-            discount_total?: string;
+            discount_total: string;
             /**
              * Format: decimal
              * @description Total oficial da seguradora (Cilia/IFX/HDI) — verdade absoluta
              */
-            total_seguradora_oficial?: string | null;
+            total_seguradora_oficial: string | null;
             /** Chave NF-e */
-            nfe_key?: string;
+            nfe_key: string;
             /** Número NFS-e */
-            nfse_number?: string;
+            nfse_number: string;
             /** NF emitida */
-            invoice_issued?: boolean;
+            invoice_issued: boolean;
             /**
              * Nº NF externa
              * @description Número da NF emitida fora do sistema (uso temporário enquanto Focus não está disponível). Quando preenchido junto com external_invoice_date, a OS é considerada faturada para fins de fechamento.
              */
-            external_invoice_number?: string;
+            external_invoice_number: string;
             /**
              * Data NF externa
              * Format: date
              * @description Data da NF emitida fora do sistema.
              */
-            external_invoice_date?: string | null;
-            ai_recommendations?: unknown;
+            external_invoice_date: string | null;
+            ai_recommendations: unknown;
             /** Observações gerais */
-            notes?: string;
+            notes: string;
             /** Format: uuid */
-            created_by?: string | null;
+            created_by: string | null;
             /**
              * Consultor
              * Format: uuid
              */
-            consultant?: string | null;
+            consultant: string | null;
             /**
              * Seguradora
              * Format: uuid
              */
-            insurer?: string | null;
+            insurer: string | null;
             /** Perito */
-            expert?: number | null;
+            expert: number | null;
         };
         /** @description Serializer completo para a tela de abertura/edicao da OS. */
         ServiceOrderDetailRequest: {
@@ -21157,7 +21158,7 @@ export interface components {
              * Serviço do catálogo
              * Format: uuid
              */
-            service_catalog?: string | null;
+            service_catalog: string | null;
             readonly service_catalog_name: string | null;
             /** Descrição do serviço */
             description: string;
@@ -21165,7 +21166,7 @@ export interface components {
              * Quantidade / Horas
              * Format: decimal
              */
-            quantity?: string;
+            quantity: string;
             /**
              * Valor unitário / Hora
              * Format: decimal
@@ -21175,20 +21176,20 @@ export interface components {
              * Desconto
              * Format: decimal
              */
-            discount?: string;
+            discount: string;
             /** Format: double */
             readonly total: number;
             /** Pagador */
-            payer?: components["schemas"]["PayerEnum"];
+            payer: components["schemas"]["PayerEnum"];
             /** Origem do item */
-            source_type?: components["schemas"]["SourceTypeEnum"];
+            source_type: components["schemas"]["SourceTypeEnum"];
             /** Status de faturamento */
-            billing_status?: components["schemas"]["BillingStatusEnum"];
+            billing_status: components["schemas"]["BillingStatusEnum"];
             /**
              * Data do faturamento
              * Format: date-time
              */
-            billed_at?: string | null;
+            billed_at: string | null;
             readonly payer_display: string;
             readonly source_type_display: string;
             readonly billing_status_display: string;
@@ -21242,34 +21243,34 @@ export interface components {
             readonly id: string;
             /** Número da OS */
             number: number;
-            status?: components["schemas"]["Status5e2Enum"];
+            status: components["schemas"]["Status5e2Enum"];
             readonly status_display: string;
             readonly allowed_transitions: string[];
             /** Tipo de atendimento */
-            customer_type?: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            customer_type: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             readonly customer_type_display: string;
             /** Tipo de OS */
-            os_type?: (components["schemas"]["OsTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            os_type: (components["schemas"]["OsTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             readonly os_type_display: string;
             /** Nome do cliente */
             customer_name: string;
             /** Placa */
             plate: string;
             /** Marca */
-            make?: string;
+            make: string;
             /**
              * Logo da montadora
              * Format: uri
              */
-            make_logo?: string;
+            make_logo: string;
             /** Modelo */
-            model?: string;
+            model: string;
             /** Versão */
-            vehicle_version?: string;
+            vehicle_version: string;
             /** Ano */
-            year?: number | null;
+            year: number | null;
             /** Cor */
-            color?: string;
+            color: string;
             readonly insurer_detail: components["schemas"]["InsurerMinimal"];
             readonly consultant_name: string;
             /**
@@ -21277,25 +21278,25 @@ export interface components {
              * Format: date-time
              * @description Data/hora de entrada do veículo na oficina
              */
-            entry_date?: string | null;
+            entry_date: string | null;
             /**
              * Previsão de entrega
              * Format: date
              * @description Previsão de entrega (calculada: entry + repair_days)
              */
-            estimated_delivery_date?: string | null;
+            estimated_delivery_date: string | null;
             /** Format: date-time */
-            delivered_at?: string | null;
+            delivered_at: string | null;
             readonly days_in_shop: number | null;
             /** Format: decimal */
-            parts_total?: string;
+            parts_total: string;
             /** Format: decimal */
-            services_total?: string;
+            services_total: string;
             /** Format: decimal */
-            discount_total?: string;
+            discount_total: string;
             /** Format: double */
             readonly total: number;
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly opened_at: string;
             /** Format: date-time */
@@ -21320,14 +21321,14 @@ export interface components {
             plate: string;
             /** Nome do cliente */
             customer_name: string;
-            status?: components["schemas"]["Status5e2Enum"];
+            status: components["schemas"]["Status5e2Enum"];
             readonly status_display: string;
             /**
              * Previsão de entrega
              * Format: date
              * @description Previsão de entrega (calculada: entry + repair_days)
              */
-            estimated_delivery_date?: string | null;
+            estimated_delivery_date: string | null;
             /** @description Retorna dias de atraso (positivo = vencida, 0 = hoje, negativo = no prazo). */
             readonly days_overdue: number;
             /** @description Classifica urgencia: overdue / due_today / upcoming. */
@@ -21337,16 +21338,16 @@ export interface components {
             readonly id: number;
             /** Format: uuid */
             service_order: string;
-            version?: number | null;
+            version: number | null;
             source: components["schemas"]["ServiceOrderParecerSourceEnum"];
-            flow_number?: number | null;
-            author_external?: string;
-            author_org?: string;
-            author_internal?: string;
-            parecer_type?: components["schemas"]["ParecerTypeEnum"] | components["schemas"]["BlankEnum"];
+            flow_number: number | null;
+            author_external: string;
+            author_org: string;
+            author_internal: string;
+            parecer_type: components["schemas"]["ParecerTypeEnum"] | components["schemas"]["BlankEnum"];
             body: string;
             /** Format: date-time */
-            created_at_external?: string | null;
+            created_at_external: string | null;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -21382,18 +21383,18 @@ export interface components {
              * Produto do catálogo
              * Format: uuid
              */
-            product?: string | null;
+            product: string | null;
             /** @description Retorna o nome do produto vinculado, se houver. */
             readonly product_name: string | null;
             /** Descrição */
             description: string;
             /** Código da peça */
-            part_number?: string;
+            part_number: string;
             /**
              * Quantidade
              * Format: decimal
              */
-            quantity?: string;
+            quantity: string;
             /**
              * Preço unitário
              * Format: decimal
@@ -21403,7 +21404,7 @@ export interface components {
              * Desconto
              * Format: decimal
              */
-            discount?: string;
+            discount: string;
             /** Format: double */
             readonly total: number;
             readonly origem: string;
@@ -21417,16 +21418,16 @@ export interface components {
             /** Format: uuid */
             readonly unidade_fisica_id: string | null;
             /** Pagador */
-            payer?: components["schemas"]["PayerEnum"];
+            payer: components["schemas"]["PayerEnum"];
             /** Origem do item */
-            source_type?: components["schemas"]["SourceTypeEnum"];
+            source_type: components["schemas"]["SourceTypeEnum"];
             /** Status de faturamento */
-            billing_status?: components["schemas"]["BillingStatusEnum"];
+            billing_status: components["schemas"]["BillingStatusEnum"];
             /**
              * Data do faturamento
              * Format: date-time
              */
-            billed_at?: string | null;
+            billed_at: string | null;
             readonly payer_display: string;
             readonly source_type_display: string;
             readonly billing_status_display: string;
@@ -21478,17 +21479,17 @@ export interface components {
             /** Format: uuid */
             readonly id: string;
             /** Pasta */
-            folder?: components["schemas"]["FolderEnum"];
+            folder: components["schemas"]["FolderEnum"];
             readonly folder_display: string;
             /** @description Slot de vistoria (ex: frente, traseira, lateral_esq) */
-            slot?: string;
+            slot: string;
             /**
              * Tipo de checklist
              * @description Tipo de checklist: entrada, saida ou acompanhamento
              */
-            checklist_type?: string;
+            checklist_type: string;
             /** Legenda */
-            caption?: string;
+            caption: string;
             /**
              * Stage original
              * @description Valor original do campo stage (legado, para retrocompatibilidade)
@@ -21499,7 +21500,7 @@ export interface components {
             readonly url: string | null;
             /** Format: date-time */
             readonly uploaded_at: string;
-            is_active?: boolean;
+            is_active: boolean;
         };
         /** @description Serializer para fotos de OS -- inclui URL gerada pelo storage configurado. */
         ServiceOrderPhotoRequest: {
@@ -21526,9 +21527,9 @@ export interface components {
             readonly updated_at: string;
             readonly is_active: boolean;
             /** Tipo de atendimento */
-            customer_type?: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            customer_type: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             /** Tipo de OS */
-            os_type?: (components["schemas"]["OsTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            os_type: (components["schemas"]["OsTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             /**
              * Tipo de segurado
              * @description Segurado ou Terceiro — só quando customer_type='insurer'
@@ -21536,174 +21537,174 @@ export interface components {
              *     * `insured` - Segurado
              *     * `third` - Terceiro
              */
-            insured_type?: (components["schemas"]["InsuredTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            insured_type: (components["schemas"]["InsuredTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             /**
              * Número do sinistro
              * @description Número do sinistro
              */
-            casualty_number?: string;
+            casualty_number: string;
             /**
              * Orçamento Cilia
              * @description Número do orçamento Cilia (último importado)
              */
-            cilia_budget_number?: string;
+            cilia_budget_number: string;
             /**
              * Versão Cilia
              * @description Versão do orçamento Cilia (último importado)
              */
-            cilia_budget_version?: string;
+            cilia_budget_version: string;
             /**
              * Franquia
              * Format: decimal
              * @description Valor da franquia — só quando insured_type='insured'
              */
-            deductible_amount?: string | null;
+            deductible_amount: string | null;
             /**
              * Corretor
              * @description Nome do corretor (opcional)
              */
-            broker_name?: string;
+            broker_name: string;
             /**
              * Data do perito
              * Format: date
              * @description Data de visita do perito
              */
-            expert_date?: string | null;
+            expert_date: string | null;
             /**
              * Data da vistoria
              * Format: date
              * @description Data da vistoria (seguradora)
              */
-            survey_date?: string | null;
+            survey_date: string | null;
             /**
              * Data de autorização (seguradora)
              * Format: date-time
              * @description Data/hora de autorização do orçamento pela SEGURADORA. Usado pelo TransitionValidator (AUTH_DATE_SET) para liberar a transição waiting_auth → authorized. Não confundir com service_authorization_date (particular).
              */
-            authorization_date?: string | null;
+            authorization_date: string | null;
             /**
              * Data do orçamento
              * Format: date
              * @description Data de orçamentação (particular)
              */
-            quotation_date?: string | null;
+            quotation_date: string | null;
             /**
              * UUID do cliente
              * Format: uuid
              */
-            customer_uuid?: string | null;
+            customer_uuid: string | null;
             /** Nome do cliente */
-            customer_name?: string;
+            customer_name: string;
             /** Placa */
-            plate?: string;
+            plate: string;
             /** Marca */
-            make?: string;
+            make: string;
             /**
              * Logo da montadora
              * Format: uri
              */
-            make_logo?: string;
+            make_logo: string;
             /** Modelo */
-            model?: string;
+            model: string;
             /** Versão */
-            vehicle_version?: string;
+            vehicle_version: string;
             /** Ano */
-            year?: number | null;
+            year: number | null;
             /** Cor */
-            color?: string;
+            color: string;
             /** Chassi */
-            chassis?: string;
+            chassis: string;
             /** Combustível */
-            fuel_type?: string;
+            fuel_type: string;
             /**
              * Valor FIPE
              * Format: decimal
              */
-            fipe_value?: string | null;
+            fipe_value: string | null;
             /** KM entrada */
-            mileage_in?: number | null;
+            mileage_in: number | null;
             /** KM saída */
-            mileage_out?: number | null;
+            mileage_out: number | null;
             /** @description fipe_id da marca — referência solta a vehicle_catalog.VehicleMake */
-            vehicle_make_id?: string;
+            vehicle_make_id: string;
             /** @description fipe_id do modelo — referência solta a vehicle_catalog.VehicleModel */
-            vehicle_model_id?: string;
+            vehicle_model_id: string;
             /** @description fipe_id do ano/versão — referência solta a vehicle_catalog.VehicleYearVersion */
-            vehicle_year_version_id?: string;
+            vehicle_year_version_id: string;
             /**
              * Format: decimal
              * @description Valor FIPE congelado no momento de criação da OS (R$).
              */
-            vehicle_fipe_value_snapshot?: string | null;
+            vehicle_fipe_value_snapshot: string | null;
             /** @description Código do SegmentoVeicular resolvido pelo EnquadramentoService. */
-            segmento_codigo?: string;
+            segmento_codigo: string;
             /** @description Código da CategoriaTamanho resolvida pelo EnquadramentoService. */
-            tamanho_codigo?: string;
+            tamanho_codigo: string;
             /** @description Código do TipoPintura resolvido pelo EnquadramentoService. */
-            tipo_pintura_codigo?: string;
+            tipo_pintura_codigo: string;
             /**
              * Format: uuid
              * @description UUID da Empresa (pricing_profile.Empresa) — referência solta, igual ao customer_uuid.
              */
-            empresa_id?: string | null;
+            empresa_id: string | null;
             /** Local do veículo */
-            vehicle_location?: components["schemas"]["VehicleLocationEnum"];
+            vehicle_location: components["schemas"]["VehicleLocationEnum"];
             /**
              * Data de entrada
              * Format: date-time
              * @description Data/hora de entrada do veículo na oficina
              */
-            entry_date?: string | null;
+            entry_date: string | null;
             /**
              * Autorização do serviço (particular)
              * Format: date-time
              * @description Data/hora de autorização do serviço pelo CLIENTE PARTICULAR. Preenchido quando o cliente aprova o orçamento. Não confundir com authorization_date (seguradora).
              */
-            service_authorization_date?: string | null;
+            service_authorization_date: string | null;
             /**
              * Data de agendamento
              * Format: date-time
              */
-            scheduling_date?: string | null;
+            scheduling_date: string | null;
             /**
              * Dias de reparo
              * @description Dias estimados de reparo
              */
-            repair_days?: number | null;
+            repair_days: number | null;
             /**
              * Previsão de entrega
              * Format: date
              * @description Previsão de entrega (calculada: entry + repair_days)
              */
-            estimated_delivery_date?: string | null;
+            estimated_delivery_date: string | null;
             /**
              * Data de entrega
              * Format: date-time
              * @description Data/hora real de entrega
              */
-            delivery_date?: string | null;
+            delivery_date: string | null;
             /**
              * Vistoria final
              * Format: date-time
              * @description Data/hora da vistoria final — ALTERA STATUS automaticamente
              */
-            final_survey_date?: string | null;
+            final_survey_date: string | null;
             /**
              * Entrega ao cliente
              * Format: date-time
              * @description Data/hora de entrega ao cliente — ALTERA STATUS automaticamente
              */
-            client_delivery_date?: string | null;
+            client_delivery_date: string | null;
             readonly status: components["schemas"]["Status5e2Enum"];
             /**
              * Status anterior
              * @description Status antes de entrar em 'budget' (auto-Kanban). Restaurado ao aprovar versão.
              */
-            previous_status?: string;
+            previous_status: string;
             /** Format: date-time */
             readonly delivered_at: string | null;
             /** Format: date-time */
-            estimated_delivery?: string | null;
+            estimated_delivery: string | null;
             /** Format: decimal */
             readonly parts_total: string;
             /** Format: decimal */
@@ -21714,7 +21715,7 @@ export interface components {
              * Format: decimal
              * @description Total oficial da seguradora (Cilia/IFX/HDI) — verdade absoluta
              */
-            total_seguradora_oficial?: string | null;
+            total_seguradora_oficial: string | null;
             /** Chave NF-e */
             readonly nfe_key: string;
             /** Número NFS-e */
@@ -21725,28 +21726,28 @@ export interface components {
              * Nº NF externa
              * @description Número da NF emitida fora do sistema (uso temporário enquanto Focus não está disponível). Quando preenchido junto com external_invoice_date, a OS é considerada faturada para fins de fechamento.
              */
-            external_invoice_number?: string;
+            external_invoice_number: string;
             /**
              * Data NF externa
              * Format: date
              * @description Data da NF emitida fora do sistema.
              */
-            external_invoice_date?: string | null;
+            external_invoice_date: string | null;
             readonly ai_recommendations: unknown;
             /** Observações gerais */
-            notes?: string;
+            notes: string;
             /**
              * Consultor
              * Format: uuid
              */
-            consultant?: string | null;
+            consultant: string | null;
             /**
              * Seguradora
              * Format: uuid
              */
-            insurer?: string | null;
+            insurer: string | null;
             /** Perito */
-            expert?: number | null;
+            expert: number | null;
         };
         /** @description Serializer para atualizacao parcial de OS. */
         ServiceOrderUpdateRequest: {
@@ -22130,13 +22131,13 @@ export interface components {
             categoria: string;
             readonly categoria_nome: string;
             /** @description Unidade de cobrança: "un", "h", "m2", etc. */
-            unidade?: string;
+            unidade: string;
             /**
              * Aplica multiplicador de tamanho
              * @description TRUE para serviços que dependem do tamanho do veículo (pintura, funilaria, polimento). FALSE para serviços independentes de tamanho (elétrica, alinhamento, diagnóstico).
              */
-            aplica_multiplicador_tamanho?: boolean;
-            is_active?: boolean;
+            aplica_multiplicador_tamanho: boolean;
+            is_active: boolean;
         };
         /** @description Serializer de criação para ServicoCanônico. */
         ServicoCanonicoCreate: {
@@ -22149,14 +22150,14 @@ export interface components {
             /** Format: uuid */
             categoria: string;
             /** @description Unidade de cobrança: "un", "h", "m2", etc. */
-            unidade?: string;
+            unidade: string;
             /** Descrição */
-            descricao?: string;
+            descricao: string;
             /**
              * Aplica multiplicador de tamanho
              * @description TRUE para serviços que dependem do tamanho do veículo (pintura, funilaria, polimento). FALSE para serviços independentes de tamanho (elétrica, alinhamento, diagnóstico).
              */
-            aplica_multiplicador_tamanho?: boolean;
+            aplica_multiplicador_tamanho: boolean;
         };
         /** @description Serializer de criação para ServicoCanônico. */
         ServicoCanonicoCreateRequest: {
@@ -22192,17 +22193,17 @@ export interface components {
             categoria: string;
             readonly categoria_nome: string;
             /** @description Unidade de cobrança: "un", "h", "m2", etc. */
-            unidade?: string;
+            unidade: string;
             /** Descrição */
-            descricao?: string;
+            descricao: string;
             /**
              * Aplica multiplicador de tamanho
              * @description TRUE para serviços que dependem do tamanho do veículo (pintura, funilaria, polimento). FALSE para serviços independentes de tamanho (elétrica, alinhamento, diagnóstico).
              */
-            aplica_multiplicador_tamanho?: boolean;
+            aplica_multiplicador_tamanho: boolean;
             /** @description Indica se o embedding já foi gerado. */
             readonly tem_embedding: boolean;
-            is_active?: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -22246,15 +22247,15 @@ export interface components {
             /** Format: uuid */
             categoria: string;
             /** @description Unidade de cobrança: "un", "h", "m2", etc. */
-            unidade?: string;
+            unidade: string;
             /** Descrição */
-            descricao?: string;
+            descricao: string;
             /**
              * Aplica multiplicador de tamanho
              * @description TRUE para serviços que dependem do tamanho do veículo (pintura, funilaria, polimento). FALSE para serviços independentes de tamanho (elétrica, alinhamento, diagnóstico).
              */
-            aplica_multiplicador_tamanho?: boolean;
-            is_active?: boolean;
+            aplica_multiplicador_tamanho: boolean;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -22414,12 +22415,12 @@ export interface components {
             name: string;
             readonly email_hash: string;
             /** Papel */
-            role?: components["schemas"]["StaffUserRoleEnum"];
+            role: components["schemas"]["StaffUserRoleEnum"];
             readonly role_display: string;
             /** Setor / Cargo */
-            job_title?: components["schemas"]["JobTitleEnum"] | components["schemas"]["BlankEnum"];
+            job_title: components["schemas"]["JobTitleEnum"] | components["schemas"]["BlankEnum"];
             readonly job_title_display: string;
-            is_active?: boolean;
+            is_active: boolean;
             readonly email_verified: boolean;
             /** Format: date-time */
             readonly created_at: string;
@@ -22565,7 +22566,7 @@ export interface components {
              * Campo gatilho
              * @description Campo que disparou a transição automática (vazio = manual)
              */
-            triggered_by_field?: string;
+            triggered_by_field: string;
             readonly changed_by_name: string;
             /** Format: date-time */
             readonly created_at: string;
@@ -22585,7 +22586,7 @@ export interface components {
         SugestaoIACreate: {
             briefing: string;
             /** Format: uuid */
-            orcamento_id?: string | null;
+            orcamento_id: string | null;
             veiculo: {
                 [key: string]: unknown;
             };
@@ -22635,17 +22636,17 @@ export interface components {
              * Format: date-time
              */
             readonly timestamp: string;
-            source?: components["schemas"]["Source72fEnum"];
+            source: components["schemas"]["Source72fEnum"];
             readonly source_display: string;
             readonly ip_address: string | null;
-            device_info?: string;
+            device_info: string;
             readonly is_approved: boolean;
             /** Format: uuid */
             readonly approved_by: string | null;
             /** Format: date-time */
             readonly approved_at: string | null;
             /** @description Obrigatório para ajuste manual */
-            justification?: string;
+            justification: string;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -22664,11 +22665,11 @@ export interface components {
             employee: string;
             entry_type: components["schemas"]["EntryTypeEnum"];
             /** @default system */
-            source?: components["schemas"]["Source72fEnum"];
+            source: components["schemas"]["Source72fEnum"];
             /** @default  */
-            device_info?: string;
+            device_info: string;
             /** @default  */
-            justification?: string;
+            justification: string;
         };
         TimeClockRegisterRequest: {
             /** Format: uuid */
@@ -22737,8 +22738,8 @@ export interface components {
             nome: string;
             /** @description Código curto único (ex: PCHQ, FAROL). */
             codigo: string;
-            ordem?: number;
-            is_active?: boolean;
+            ordem: number;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -22770,7 +22771,7 @@ export interface components {
             nome: string;
             /** @description Nível de complexidade da pintura: 1 (Sólida) a 4 (Tricoat). */
             complexidade: number;
-            is_active?: boolean;
+            is_active: boolean;
         };
         TipoPinturaRequest: {
             /**
@@ -22864,21 +22865,21 @@ export interface components {
              * Data de nascimento
              * Format: date
              */
-            birth_date?: string | null;
+            birth_date: string | null;
             /** CEP */
-            zip_code?: string;
+            zip_code: string;
             /** Rua / Av. */
-            street?: string;
+            street: string;
             /** Número */
-            street_number?: string;
+            street_number: string;
             /** Complemento */
-            complement?: string;
+            complement: string;
             /** Bairro */
-            neighborhood?: string;
+            neighborhood: string;
             /** Cidade */
-            city?: string;
+            city: string;
             /** UF */
-            state?: string;
+            state: string;
         };
         /**
          * @description Serializer para criação de cliente com validação LGPD.
@@ -22934,26 +22935,26 @@ export interface components {
              * E-mail
              * Format: email
              */
-            email?: string | null;
+            email: string | null;
             /**
              * Data de nascimento
              * Format: date
              */
-            birth_date?: string | null;
+            birth_date: string | null;
             /** CEP */
-            zip_code?: string;
+            zip_code: string;
             /** Rua / Av. */
-            street?: string;
+            street: string;
             /** Número */
-            street_number?: string;
+            street_number: string;
             /** Complemento */
-            complement?: string;
+            complement: string;
             /** Bairro */
-            neighborhood?: string;
+            neighborhood: string;
             /** Cidade */
-            city?: string;
+            city: string;
             /** UF */
-            state?: string;
+            state: string;
             readonly lgpd_consent_version: string;
             /** Format: date-time */
             readonly lgpd_consent_date: string | null;
@@ -22962,7 +22963,7 @@ export interface components {
              * Consentimento de compartilhamento no grupo
              * @description Opt-in EXPLÍCITO — verificar antes de qualquer cross-sell
              */
-            group_sharing_consent?: boolean;
+            group_sharing_consent: boolean;
             readonly is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
@@ -23003,31 +23004,31 @@ export interface components {
         UnifiedCustomerUpdate: {
             /** Nome */
             name: string;
-            phone?: string;
+            phone: string;
             /**
              * E-mail
              * Format: email
              */
-            email?: string | null;
+            email: string | null;
             /**
              * Data de nascimento
              * Format: date
              */
-            birth_date?: string | null;
+            birth_date: string | null;
             /** CEP */
-            zip_code?: string;
+            zip_code: string;
             /** Rua / Av. */
-            street?: string;
+            street: string;
             /** Número */
-            street_number?: string;
+            street_number: string;
             /** Complemento */
-            complement?: string;
+            complement: string;
             /** Bairro */
-            neighborhood?: string;
+            neighborhood: string;
             /** Cidade */
-            city?: string;
+            city: string;
             /** UF */
-            state?: string;
+            state: string;
         };
         /** @description Representação mínima de GlobalUser — sem dados LGPD. */
         UserMinimal: {
@@ -23041,7 +23042,7 @@ export interface components {
             /** Format: uuid */
             user: string;
             permission: number;
-            granted?: boolean;
+            granted: boolean;
         };
         UserPermissionRequest: {
             /** Format: uuid */
@@ -23094,7 +23095,7 @@ export interface components {
              * Abono pecuniário
              * @description Dias vendidos (0 a 10)
              */
-            days_sold?: number;
+            days_sold: number;
             /**
              * Salário base na data
              * Format: decimal
@@ -23130,7 +23131,7 @@ export interface components {
              * Format: decimal
              */
             readonly net_pay: string;
-            status?: components["schemas"]["VacationStatusEnum"];
+            status: components["schemas"]["VacationStatusEnum"];
             readonly status_display: string;
             /** Format: date-time */
             readonly created_at: string;
@@ -23169,7 +23170,7 @@ export interface components {
              * Abono pecuniário
              * @description Dias vendidos (0 a 10)
              */
-            days_sold?: number;
+            days_sold: number;
         };
         VacationCreateRequest: {
             /** Format: uuid */
@@ -23331,15 +23332,15 @@ export interface components {
         Vehicle: {
             readonly id: number;
             plate: string;
-            version?: number | null;
-            description?: string;
+            version: number | null;
+            description: string;
             /** @description Nome para exibição: catálogo FIPE ou descrição livre. */
             readonly display_name: string;
-            color?: string;
-            year_manufacture?: number | null;
-            chassis?: string;
-            renavam?: string;
-            is_active?: boolean;
+            color: string;
+            year_manufacture: number | null;
+            chassis: string;
+            renavam: string;
+            is_active: boolean;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -23414,24 +23415,24 @@ export interface components {
              * Entrada
              * Format: time
              */
-            start_time?: string | null;
+            start_time: string | null;
             /**
              * Início intervalo
              * Format: time
              */
-            break_start?: string | null;
+            break_start: string | null;
             /**
              * Fim intervalo
              * Format: time
              */
-            break_end?: string | null;
+            break_end: string | null;
             /**
              * Saída
              * Format: time
              */
-            end_time?: string | null;
+            end_time: string | null;
             /** Folga */
-            is_day_off?: boolean;
+            is_day_off: boolean;
             /**
              * Vigente a partir de
              * Format: date
@@ -23441,7 +23442,7 @@ export interface components {
              * Vigente até
              * Format: date
              */
-            effective_until?: string | null;
+            effective_until: string | null;
             /** Format: date-time */
             readonly created_at: string;
         };
@@ -23518,8 +23519,8 @@ export interface components {
         _HealthzResponse: {
             database: string;
             cache: string;
-            placas_api?: string;
-            email?: string;
+            placas_api: string;
+            email: string;
         };
         /** @description Dia individual do heatmap. */
         _HeatmapDia: {
