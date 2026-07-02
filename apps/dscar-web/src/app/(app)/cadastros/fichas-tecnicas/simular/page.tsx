@@ -23,7 +23,8 @@ import { PermissionGate } from "@/components/PermissionGate"
 import { useServicosCanonico } from "@/hooks/usePricingCatalog"
 import { useTiposPintura, useTamanhos } from "@/hooks/usePricingProfile"
 import { useFichaResolver } from "@/hooks/useFichaTecnica"
-import type { CategoriaTamanho, FichaResolvida } from "@paddock/types"
+import type { FichaResolvida } from "@paddock/types"
+import type { CategoriaTamanho } from "@/hooks/usePricingProfile"
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

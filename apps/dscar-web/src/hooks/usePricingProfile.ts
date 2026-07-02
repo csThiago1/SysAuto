@@ -5,16 +5,17 @@
  */
 
 import { useQuery } from "@tanstack/react-query"
-import type {
-  Empresa,
-  SegmentoVeicular,
-  CategoriaTamanho,
-  TipoPintura,
-  EnquadramentoVeiculo,
-} from "@paddock/types"
 
 import { apiFetch, fetchList } from "@/lib/api"
 import { useCreate, useDelete, useUpdate } from "@/lib/crud-mutations"
+import type { ApiSchema } from "@/types"
+
+// Gerados dos ModelSerializers do pricing_profile.
+export type Empresa = ApiSchema<"Empresa">
+export type SegmentoVeicular = ApiSchema<"SegmentoVeicular">
+export type CategoriaTamanho = ApiSchema<"CategoriaTamanho">
+export type TipoPintura = ApiSchema<"TipoPintura">
+export type EnquadramentoVeiculo = ApiSchema<"EnquadramentoVeiculo">
 
 const BASE = "/api/proxy/pricing"
 
