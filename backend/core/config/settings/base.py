@@ -204,6 +204,9 @@ SPECTACULAR_SETTINGS = {
     # Restringe acesso ao Swagger/OpenAPI em producao a usuarios admin.
     # Em dev, dev.py sobrescreve para AllowAny.
     "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
+    # Schemas de request separados dos de response — campos com default
+    # ficam opcionais no request (essencial pro codegen TS de forms).
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 # ─── Celery ───────────────────────────────────────────────────────────────────

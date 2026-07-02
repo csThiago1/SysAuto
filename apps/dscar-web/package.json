@@ -9,7 +9,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "gen-api-types": "openapi-typescript /tmp/paddock-schema.json -o src/types/api.d.ts"
+    "gen-api-types": "openapi-typescript /tmp/paddock-schema.json -o src/types/api.d.ts --default-non-nullable=false"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

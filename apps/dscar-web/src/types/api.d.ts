@@ -8550,31 +8550,53 @@ export interface components {
          */
         AddressTypeEnum: "PRINCIPAL" | "COBRANCA" | "ENTREGA";
         /** @description Input para adicionar item a uma OC. */
-        AdicionarItemOCInput: {
+        AdicionarItemOCInputRequest: {
             /** Format: uuid */
             pedido_compra_id?: string | null;
             /** Format: uuid */
             fornecedor_id?: string | null;
             fornecedor_nome: string;
             /** @default  */
-            fornecedor_cnpj: string;
+            fornecedor_cnpj?: string;
             /** @default  */
-            fornecedor_contato: string;
+            fornecedor_contato?: string;
             descricao: string;
             /** @default  */
-            codigo_referencia: string;
+            codigo_referencia?: string;
             tipo_qualidade: components["schemas"]["TipoQualidadeEnum"];
             /** Format: decimal */
             quantidade: string;
             /** Format: decimal */
             valor_unitario: string;
             /** @default  */
-            prazo_entrega: string;
+            prazo_entrega?: string;
             /** @default  */
-            observacoes: string;
+            observacoes?: string;
         };
         /** @description Serializer de criação para AliasServico. */
         AliasServicoCreate: {
+            /**
+             * Serviço canônico
+             * Format: uuid
+             */
+            canonico: string;
+            /** Texto original */
+            texto: string;
+            origem: components["schemas"]["OrigemFcfEnum"];
+            /**
+             * Confiança
+             * Format: double
+             * @description Score de confiança do mapeamento automático (0.0–1.0).
+             */
+            confianca?: number | null;
+            /**
+             * Ocorrências
+             * @description Quantas vezes este texto apareceu nas OS.
+             */
+            ocorrencias?: number;
+        };
+        /** @description Serializer de criação para AliasServico. */
+        AliasServicoCreateRequest: {
             /**
              * Serviço canônico
              * Format: uuid
@@ -8632,6 +8654,29 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        /** @description Serializer de detalhe para AliasServico. */
+        AliasServicoDetailRequest: {
+            /**
+             * Serviço canônico
+             * Format: uuid
+             */
+            canonico: string;
+            /** Texto original */
+            texto: string;
+            origem: components["schemas"]["OrigemFcfEnum"];
+            /**
+             * Confiança
+             * Format: double
+             * @description Score de confiança do mapeamento automático (0.0–1.0).
+             */
+            confianca?: number | null;
+            /**
+             * Ocorrências
+             * @description Quantas vezes este texto apareceu nas OS.
+             */
+            ocorrencias?: number;
+            is_active?: boolean;
         };
         /** @description Serializer resumido para listagens de AliasServico. */
         AliasServicoList: {
@@ -8702,6 +8747,28 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
+        /**
+         * @description Serializer de atualização para AliasServico.
+         *
+         *     canonico, texto e texto_normalizado são read_only — alterar quebra integridade
+         *     do pipeline de match. Use delete + create para corrigir o mapeamento.
+         *     confirmado_em e confirmado_por são preenchidos pelos actions approve/reject.
+         */
+        AliasServicoUpdateRequest: {
+            origem: components["schemas"]["OrigemFcfEnum"];
+            /**
+             * Confiança
+             * Format: double
+             * @description Score de confiança do mapeamento automático (0.0–1.0).
+             */
+            confianca?: number | null;
+            /**
+             * Ocorrências
+             * @description Quantas vezes este texto apareceu nas OS.
+             */
+            ocorrencias?: number;
+            is_active?: boolean;
+        };
         Allowance: {
             /** Format: uuid */
             readonly id: string;
@@ -8747,6 +8814,40 @@ export interface components {
              * @description Primeiro dia do mês (ex: 2026-04-01)
              */
             reference_month: string;
+            notes?: string;
+            /** @description Se True, gera automaticamente nos próximos meses */
+            is_recurring?: boolean;
+        };
+        AllowanceCreateRequest: {
+            /** Format: uuid */
+            employee: string;
+            allowance_type: components["schemas"]["AllowanceTypeEnum"];
+            /** Format: decimal */
+            amount: string;
+            /**
+             * Mês de referência
+             * Format: date
+             * @description Primeiro dia do mês (ex: 2026-04-01)
+             */
+            reference_month: string;
+            notes?: string;
+            /** @description Se True, gera automaticamente nos próximos meses */
+            is_recurring?: boolean;
+        };
+        AllowanceRequest: {
+            /** Format: uuid */
+            employee: string;
+            allowance_type: components["schemas"]["AllowanceTypeEnum"];
+            /** Format: decimal */
+            amount: string;
+            /**
+             * Mês de referência
+             * Format: date
+             * @description Primeiro dia do mês (ex: 2026-04-01)
+             */
+            reference_month: string;
+            /** @description Recibo assinado no R2/S3 — gerado ao pagar */
+            receipt_file_key?: string;
             notes?: string;
             /** @description Se True, gera automaticamente nos próximos meses */
             is_recurring?: boolean;
@@ -8825,6 +8926,14 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        AprovacaoCotacaoRequest: {
+            /** Format: uuid */
+            service_order: string;
+            status?: components["schemas"]["AprovacaoCotacaoStatusEnum"];
+            observacoes_comprador?: string;
+            observacoes_financeiro?: string;
+            motivo_rejeicao?: string;
+        };
         /**
          * @description * `pendente` - Pendente
          *     * `aprovada` - Aprovada
@@ -8845,6 +8954,14 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        AreaImpactoRequest: {
+            /** Título */
+            titulo: string;
+            ordem?: number;
+            status?: components["schemas"]["AreaImpactoStatusEnum"];
+            /** Observação do regulador */
+            observacao_regulador?: string;
         };
         /**
          * @description * `aberta` - Aberta
@@ -8873,6 +8990,18 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        /** @description CRUD de Armazém — total_ruas vem via annotate na view. */
+        ArmazemRequest: {
+            nome: string;
+            /** @description Código curto: G1, G2, PT1. */
+            codigo: string;
+            tipo?: components["schemas"]["ArmazemTipoEnum"];
+            endereco?: string;
+            /** Format: uuid */
+            responsavel?: string | null;
+            observacoes?: string;
+            is_active?: boolean;
         };
         /**
          * @description * `galpao` - Galpão
@@ -8912,7 +9041,7 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
-        BaixaInsumoInput: {
+        BaixaInsumoInputRequest: {
             /** Format: uuid */
             material_canonico_id: string;
             /** Format: decimal */
@@ -8954,6 +9083,30 @@ export interface components {
             descartada?: boolean;
             motivo_descarte?: string;
         };
+        BenchmarkAmostraRequest: {
+            tipo_item: components["schemas"]["TipoItemEnum"];
+            /** Format: uuid */
+            servico_canonico?: string | null;
+            /** Format: uuid */
+            peca_canonica?: string | null;
+            descricao_bruta: string;
+            /** Format: decimal */
+            alias_match_confianca?: string | null;
+            /** Format: uuid */
+            segmento?: string | null;
+            /** Format: uuid */
+            tamanho?: string | null;
+            veiculo_marca?: string;
+            veiculo_modelo?: string;
+            veiculo_ano?: number | null;
+            /** Format: decimal */
+            valor_praticado: string;
+            moeda?: string;
+            /** Format: date */
+            data_referencia: string;
+            descartada?: boolean;
+            motivo_descarte?: string;
+        };
         BenchmarkFonte: {
             /** Format: uuid */
             readonly id: string;
@@ -8971,6 +9124,20 @@ export interface components {
             is_active?: boolean;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        BenchmarkFonteRequest: {
+            /** Format: uuid */
+            empresa: string;
+            nome: string;
+            tipo: components["schemas"]["BenchmarkFonteTipoEnum"];
+            /** @description Seguradora ou parceiro que forneceu o dado. */
+            fornecedor?: number | null;
+            /**
+             * Format: decimal
+             * @description Peso da fonte no cálculo de p90 (0-1).
+             */
+            confiabilidade?: string;
+            is_active?: boolean;
         };
         /**
          * @description * `seguradora_pdf` - Relatório PDF de seguradora
@@ -9003,6 +9170,13 @@ export interface components {
             /** Format: date-time */
             readonly criado_em: string;
         };
+        BenchmarkIngestaoRequest: {
+            /** Format: uuid */
+            fonte: string;
+            /** Format: binary */
+            arquivo?: string | null;
+            metadados?: unknown;
+        };
         /**
          * @description * `recebido` - Recebido
          *     * `processando` - Processando
@@ -9022,6 +9196,22 @@ export interface components {
         BloqueioCapacidade: {
             /** Format: uuid */
             readonly id: string;
+            /**
+             * Técnico
+             * Format: uuid
+             */
+            tecnico: string;
+            /**
+             * Data início
+             * Format: date
+             */
+            data_inicio: string;
+            /** Format: date */
+            data_fim: string;
+            motivo: string;
+            is_active?: boolean;
+        };
+        BloqueioCapacidadeRequest: {
             /**
              * Técnico
              * Format: uuid
@@ -9059,6 +9249,19 @@ export interface components {
             readonly created_at: string;
         };
         BonusCreate: {
+            bonus_type: components["schemas"]["BonusTypeEnum"];
+            /** Descrição */
+            description: string;
+            /** Format: decimal */
+            amount: string;
+            /**
+             * Mês de referência
+             * Format: date
+             * @description Primeiro dia do mês (ex: 2026-04-01)
+             */
+            reference_month: string;
+        };
+        BonusCreateRequest: {
             bonus_type: components["schemas"]["BonusTypeEnum"];
             /** Descrição */
             description: string;
@@ -9120,6 +9323,32 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        BudgetReadRequest: {
+            number: string;
+            customer: number;
+            vehicle_plate: string;
+            vehicle_description: string;
+            vehicle_chassis?: string;
+            /** @description Versão/trim ex: LT1, EXL */
+            vehicle_version?: string;
+            /** @description Motorização ex: 1.0T, 2.0 */
+            vehicle_engine?: string;
+            /** @description Cor do veículo */
+            vehicle_color?: string;
+            /** @description Combustível ex: Flex, Gasolina */
+            vehicle_fuel_type?: string;
+            /**
+             * Format: uri
+             * @description URL da logo da montadora
+             */
+            vehicle_make_logo?: string;
+            /** @description Ano modelo do veículo */
+            vehicle_year?: number | null;
+            cloned_from?: number | null;
+            /** Format: uuid */
+            service_order?: string | null;
+            is_active?: boolean;
         };
         /** @description Serializer para snapshots de orcamento -- somente leitura. */
         BudgetSnapshot: {
@@ -9245,8 +9474,191 @@ export interface components {
             sort_order?: number;
             readonly operations: components["schemas"]["ItemOperationRead"][];
         };
+        BudgetVersionItemReadRequest: {
+            bucket?: components["schemas"]["BucketEnum"];
+            /** Bloco Pagador */
+            payer_block?: components["schemas"]["PayerBlock498Enum"];
+            /**
+             * Área de Impacto
+             * @description ID da área de impacto do veículo (ex: capô, porta dianteira esquerda).
+             */
+            impact_area?: number | null;
+            /** Tipo de Item */
+            item_type?: components["schemas"]["ItemTypeEnum"];
+            /** Descrição */
+            description: string;
+            /**
+             * Código Externo
+             * @description Código da peça/serviço no sistema da seguradora ou fornecedor.
+             */
+            external_code?: string;
+            /**
+             * Tipo de Peça
+             * @description Aplicável apenas quando item_type=PART.
+             *
+             *     * `GENUINA` - Genuína
+             *     * `ORIGINAL` - Original
+             *     * `OUTRAS_FONTES` - Outras Fontes
+             *     * `VERDE` - Verde (Reciclada)
+             */
+            part_type?: components["schemas"]["PartTypeEnum"] | components["schemas"]["BlankEnum"];
+            /** Fornecedor */
+            supplier?: components["schemas"]["SupplierEnum"];
+            /**
+             * Quantidade
+             * Format: decimal
+             */
+            quantity?: string;
+            /**
+             * Preço Unitário
+             * Format: decimal
+             */
+            unit_price?: string;
+            /**
+             * Custo Unitário
+             * Format: decimal
+             * @description Custo de aquisição da peça/insumo. Pode ser null para serviços.
+             */
+            unit_cost?: string | null;
+            /**
+             * Desconto (%)
+             * Format: decimal
+             * @description Percentual de desconto sobre o preço unitário.
+             */
+            discount_pct?: string;
+            /**
+             * Preço Líquido
+             * Format: decimal
+             * @description Preço unitário após desconto × quantidade.
+             */
+            net_price?: string;
+            /**
+             * Abaixo do Padrão
+             * @description Item precificado abaixo da tabela de referência.
+             */
+            flag_abaixo_padrao?: boolean;
+            /**
+             * Acima do Padrão
+             * @description Item precificado acima da tabela de referência.
+             */
+            flag_acima_padrao?: boolean;
+            /**
+             * Inclusão Manual
+             * @description Item incluído manualmente (não gerado pelo motor de orçamento).
+             */
+            flag_inclusao_manual?: boolean;
+            /**
+             * Código Diferente
+             * @description Código do item difere do código da seguradora.
+             */
+            flag_codigo_diferente?: boolean;
+            /**
+             * Serviço Manual
+             * @description Serviço inserido manualmente sem catálogo canônico.
+             */
+            flag_servico_manual?: boolean;
+            /**
+             * Peça da Conta
+             * @description Peça cujo custo é responsabilidade da seguradora (da conta do sinistro).
+             */
+            flag_peca_da_conta?: boolean;
+            /** Ordem de Exibição */
+            sort_order?: number;
+        };
         /** @description Write: aceita campos do item. Operations aninhadas como lista. */
         BudgetVersionItemWrite: {
+            bucket?: components["schemas"]["BucketEnum"];
+            /** Bloco Pagador */
+            payer_block?: components["schemas"]["PayerBlock498Enum"];
+            /**
+             * Área de Impacto
+             * @description ID da área de impacto do veículo (ex: capô, porta dianteira esquerda).
+             */
+            impact_area?: number | null;
+            /** Tipo de Item */
+            item_type?: components["schemas"]["ItemTypeEnum"];
+            /** Descrição */
+            description: string;
+            /**
+             * Código Externo
+             * @description Código da peça/serviço no sistema da seguradora ou fornecedor.
+             */
+            external_code?: string;
+            /**
+             * Tipo de Peça
+             * @description Aplicável apenas quando item_type=PART.
+             *
+             *     * `GENUINA` - Genuína
+             *     * `ORIGINAL` - Original
+             *     * `OUTRAS_FONTES` - Outras Fontes
+             *     * `VERDE` - Verde (Reciclada)
+             */
+            part_type?: components["schemas"]["PartTypeEnum"] | components["schemas"]["BlankEnum"];
+            /** Fornecedor */
+            supplier?: components["schemas"]["SupplierEnum"];
+            /**
+             * Quantidade
+             * Format: decimal
+             */
+            quantity?: string;
+            /**
+             * Preço Unitário
+             * Format: decimal
+             */
+            unit_price?: string;
+            /**
+             * Custo Unitário
+             * Format: decimal
+             * @description Custo de aquisição da peça/insumo. Pode ser null para serviços.
+             */
+            unit_cost?: string | null;
+            /**
+             * Desconto (%)
+             * Format: decimal
+             * @description Percentual de desconto sobre o preço unitário.
+             */
+            discount_pct?: string;
+            /**
+             * Preço Líquido
+             * Format: decimal
+             * @description Preço unitário após desconto × quantidade.
+             */
+            net_price?: string;
+            /**
+             * Abaixo do Padrão
+             * @description Item precificado abaixo da tabela de referência.
+             */
+            flag_abaixo_padrao?: boolean;
+            /**
+             * Acima do Padrão
+             * @description Item precificado acima da tabela de referência.
+             */
+            flag_acima_padrao?: boolean;
+            /**
+             * Inclusão Manual
+             * @description Item incluído manualmente (não gerado pelo motor de orçamento).
+             */
+            flag_inclusao_manual?: boolean;
+            /**
+             * Código Diferente
+             * @description Código do item difere do código da seguradora.
+             */
+            flag_codigo_diferente?: boolean;
+            /**
+             * Serviço Manual
+             * @description Serviço inserido manualmente sem catálogo canônico.
+             */
+            flag_servico_manual?: boolean;
+            /**
+             * Peça da Conta
+             * @description Peça cujo custo é responsabilidade da seguradora (da conta do sinistro).
+             */
+            flag_peca_da_conta?: boolean;
+            /** Ordem de Exibição */
+            sort_order?: number;
+        };
+        /** @description Write: aceita campos do item. Operations aninhadas como lista. */
+        BudgetVersionItemWriteRequest: {
             bucket?: components["schemas"]["BucketEnum"];
             /** Bloco Pagador */
             payer_block?: components["schemas"]["PayerBlock498Enum"];
@@ -9377,6 +9789,38 @@ export interface components {
             readonly created_at: string;
             readonly items: components["schemas"]["BudgetVersionItemRead"][];
         };
+        BudgetVersionReadRequest: {
+            version_number: number;
+            status?: components["schemas"]["BudgetVersionReadStatusEnum"];
+            /** Format: date-time */
+            valid_until?: string | null;
+            /** Format: decimal */
+            subtotal?: string;
+            /** Format: decimal */
+            discount_total?: string;
+            /** Format: decimal */
+            net_total?: string;
+            /** Format: decimal */
+            labor_total?: string;
+            /** Format: decimal */
+            parts_total?: string;
+            pdf_s3_key?: string;
+            /** @description Prazo de validade do orçamento em dias */
+            validity_days?: number | null;
+            /** @description Condições de pagamento ex: 50% entrada + 50% na entrega */
+            payment_terms?: string;
+            /** @description Formas aceitas ex: PIX, Cartão, Boleto */
+            payment_methods?: string;
+            /** @description Prazo estimado de execução em dias úteis */
+            estimated_days?: number | null;
+            /** Format: date-time */
+            sent_at?: string | null;
+            /** Format: date-time */
+            approved_at?: string | null;
+            approved_by?: string;
+            approval_evidence_s3_key?: string;
+            created_by?: string;
+        };
         /**
          * @description * `draft` - Rascunho
          *     * `sent` - Enviado ao cliente
@@ -9389,32 +9833,61 @@ export interface components {
          */
         BudgetVersionReadStatusEnum: "draft" | "sent" | "approved" | "rejected" | "expired" | "revision" | "superseded";
         /** @description Input para POST /calcular-peca/. */
-        CalcularPecaInput: {
-            contexto: components["schemas"]["ContextoCalculo"];
+        CalcularPecaInputRequest: {
+            contexto: components["schemas"]["ContextoCalculoRequest"];
             /**
              * Format: uuid
              * @description UUID da PecaCanonica.
              */
             peca_canonica_id: string;
             /** @default 1 */
-            quantidade: number;
+            quantidade?: number;
             /** @default simulacao */
-            origem: components["schemas"]["OrigemA17Enum"];
+            origem?: components["schemas"]["OrigemA17Enum"];
         };
         /** @description Input para POST /calcular-servico/. */
-        CalcularServicoInput: {
-            contexto: components["schemas"]["ContextoCalculo"];
+        CalcularServicoInputRequest: {
+            contexto: components["schemas"]["ContextoCalculoRequest"];
             /**
              * Format: uuid
              * @description UUID do ServicoCanonico.
              */
             servico_canonico_id: string;
             /** @default simulacao */
-            origem: components["schemas"]["OrigemA17Enum"];
+            origem?: components["schemas"]["OrigemA17Enum"];
         };
         CapacidadeTecnico: {
             /** Format: uuid */
             readonly id: string;
+            /**
+             * Técnico
+             * Format: uuid
+             */
+            tecnico: string;
+            /**
+             * Categoria de Mão de Obra
+             * Format: uuid
+             */
+            categoria_mao_obra: string;
+            /**
+             * Horas por dia útil
+             * Format: decimal
+             */
+            horas_dia_util?: string;
+            /**
+             * Dias de trabalho
+             * @description Lista ISO weekdays (1=seg, 7=dom) em que o técnico trabalha.
+             */
+            dias_semana?: unknown;
+            /** Format: date */
+            vigente_desde: string;
+            /**
+             * Vigente até
+             * Format: date
+             */
+            vigente_ate?: string | null;
+        };
+        CapacidadeTecnicoRequest: {
             /**
              * Técnico
              * Format: uuid
@@ -9460,6 +9933,19 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        /** @description CRUD de Categoria de Insumo. */
+        CategoriaInsumoRequest: {
+            nome: string;
+            /** @description Código curto único (ex: TINT, VERN). */
+            codigo: string;
+            /**
+             * Format: decimal
+             * @description Margem padrão (%) para insumos desta categoria.
+             */
+            margem_padrao_pct?: string;
+            ordem?: number;
+            is_active?: boolean;
+        };
         /** @description Serializer completo para CategoriaMaoObra (lista + detalhe + CRUD). */
         CategoriaMaoObra: {
             /** Format: uuid */
@@ -9481,6 +9967,21 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
+        /** @description Serializer completo para CategoriaMaoObra (lista + detalhe + CRUD). */
+        CategoriaMaoObraRequest: {
+            /**
+             * Código
+             * @description Slug único, ex: "funileiro-senior", "pintor".
+             */
+            codigo: string;
+            nome: string;
+            /**
+             * Ordem de exibição
+             * @description Menor valor aparece primeiro.
+             */
+            ordem?: number;
+            is_active?: boolean;
+        };
         /** @description CRUD de Categoria de Produto (Peça). */
         CategoriaProduto: {
             /** Format: uuid */
@@ -9497,6 +9998,19 @@ export interface components {
             is_active?: boolean;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        /** @description CRUD de Categoria de Produto (Peça). */
+        CategoriaProdutoRequest: {
+            nome: string;
+            /** @description Código curto único (ex: FUN, PINT). */
+            codigo: string;
+            /**
+             * Format: decimal
+             * @description Margem padrão (%) para produtos desta categoria.
+             */
+            margem_padrao_pct?: string;
+            ordem?: number;
+            is_active?: boolean;
         };
         /** @description Serializer completo para CategoriaServico (lista + detalhe + CRUD). */
         CategoriaServico: {
@@ -9519,9 +10033,50 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
+        /** @description Serializer completo para CategoriaServico (lista + detalhe + CRUD). */
+        CategoriaServicoRequest: {
+            /**
+             * Código
+             * @description Slug único, ex: "funilaria", "pintura".
+             */
+            codigo: string;
+            nome: string;
+            /**
+             * Ordem de exibição
+             * @description Menor valor aparece primeiro.
+             */
+            ordem?: number;
+            is_active?: boolean;
+        };
         CategoriaTamanho: {
             /** Format: uuid */
             readonly id: string;
+            /**
+             * Código
+             * @description Slug único, ex: "compacto", "suv-grande".
+             */
+            codigo: string;
+            nome: string;
+            /**
+             * Ordem de exibição
+             * @description Menor valor aparece primeiro.
+             */
+            ordem: number;
+            /**
+             * Multiplicador de insumos
+             * Format: decimal
+             * @description Fator aplicado ao custo de insumos (tintas, produtos). Intervalo: 0.1–5.0.
+             */
+            multiplicador_insumos: string;
+            /**
+             * Multiplicador de horas
+             * Format: decimal
+             * @description Fator aplicado às horas de mão de obra. Intervalo: 0.1–5.0.
+             */
+            multiplicador_horas: string;
+            is_active?: boolean;
+        };
+        CategoriaTamanhoRequest: {
             /**
              * Código
              * @description Slug único, ex: "compacto", "suv-grande".
@@ -9562,6 +10117,29 @@ export interface components {
         Category48eEnum: "funilaria" | "pintura" | "mecanica" | "eletrica" | "estetica" | "alinhamento" | "revisao" | "lavagem" | "outros";
         /** @description Serializer de criação — valida código único e nível derivado do parent. */
         ChartOfAccountCreate: {
+            /** Código */
+            code: string;
+            /** Nome */
+            name: string;
+            /** Tipo */
+            account_type: components["schemas"]["AccountTypeEnum"];
+            /** Natureza */
+            nature: components["schemas"]["NatureEnum"];
+            /**
+             * Analítica
+             * @description Contas analíticas aceitam lançamentos diretos.
+             */
+            is_analytical?: boolean;
+            /**
+             * Código SPED ECD
+             * @description Código referencial SPED ECD para exportação fiscal.
+             */
+            sped_code?: string;
+            /** Aceita centro de custo */
+            accepts_cost_center?: boolean;
+        };
+        /** @description Serializer de criação — valida código único e nível derivado do parent. */
+        ChartOfAccountCreateRequest: {
             /** Código */
             code: string;
             /** Nome */
@@ -9711,8 +10289,8 @@ export interface components {
             readonly updated_at: string;
         };
         /** @description Aceita lista de itens para upsert em lote -- usado pelo app mobile. */
-        ChecklistItemBulk: {
-            items: components["schemas"]["ChecklistItem"][];
+        ChecklistItemBulkRequest: {
+            items: components["schemas"]["ChecklistItemRequest"][];
         };
         /**
          * @description * `bodywork` - Lataria / Pintura
@@ -9725,6 +10303,21 @@ export interface components {
          * @enum {string}
          */
         ChecklistItemCategoryEnum: "bodywork" | "glass" | "lighting" | "tires" | "interior" | "accessories" | "mechanical";
+        /** @description Serializer para leitura e escrita de itens de checklist. */
+        ChecklistItemRequest: {
+            /** Tipo de Checklist */
+            checklist_type?: components["schemas"]["ChecklistTypeEnum"];
+            /** Categoria */
+            category: components["schemas"]["ChecklistItemCategoryEnum"];
+            /**
+             * Chave do Item
+             * @description Identificador único do item dentro da categoria (ex: arranhoes)
+             */
+            item_key: string;
+            status?: components["schemas"]["ChecklistItemStatusEnum"];
+            /** Observações */
+            notes?: string;
+        };
         /**
          * @description * `ok` - OK
          *     * `attention` - Atenção
@@ -9757,9 +10350,22 @@ export interface components {
              */
             group_sharing_consent?: boolean;
         };
+        /** @description Serializer do perfil de cliente — dados de consentimento LGPD. */
+        ClientProfileRequest: {
+            /** Versão do consentimento LGPD */
+            lgpd_consent_version?: string;
+            /**
+             * Consentimento de compartilhamento no grupo
+             * @description Opt-in EXPLÍCITO — verificar antes de cross-sell entre empresas do grupo.
+             */
+            group_sharing_consent?: boolean;
+        };
         CondicaoPagamento: {
             /** Format: uuid */
             readonly id: string;
+            label: string;
+        };
+        CondicaoPagamentoRequest: {
             label: string;
         };
         /**
@@ -9854,8 +10460,23 @@ export interface components {
             readonly created_at: string;
             readonly itens: components["schemas"]["ItemContagem"][];
         };
+        /** @description Serializer para listagem de contagens. */
+        ContagemInventarioRequest: {
+            tipo: components["schemas"]["Tipo046Enum"];
+            /**
+             * Format: uuid
+             * @description Contagem total = armazém inteiro.
+             */
+            armazem?: string | null;
+            /**
+             * Format: uuid
+             * @description Contagem cíclica = por rua.
+             */
+            rua?: string | null;
+            observacoes?: string;
+        };
         /** @description Input de contexto de cálculo — obrigatório em calcular-servico e calcular-peca. */
-        ContextoCalculo: {
+        ContextoCalculoRequest: {
             /**
              * Format: uuid
              * @description UUID da Empresa (pricing_profile.Empresa). Obrigatório — P9.
@@ -9867,9 +10488,9 @@ export interface components {
             veiculo_versao?: string;
             tipo_pintura_codigo?: string;
             /** @default cliente */
-            quem_paga: components["schemas"]["QuemPagaEnum"];
+            quem_paga?: components["schemas"]["QuemPagaEnum"];
             /** @default true */
-            aplica_multiplicador_tamanho: boolean;
+            aplica_multiplicador_tamanho?: boolean;
         };
         /**
          * @description * `clt` - CLT
@@ -9882,6 +10503,23 @@ export interface components {
         ContractTypeEnum: "clt" | "pj" | "intern" | "temp" | "apprentice";
         /** @description Serializer de criação e atualização. */
         CostCenterCreate: {
+            /** Código */
+            code: string;
+            /** Nome */
+            name: string;
+            /**
+             * CC pai
+             * Format: uuid
+             */
+            parent?: string | null;
+            /**
+             * Código tipo OS
+             * @description Mapeamento para ServiceOrder.os_type.
+             */
+            os_type_code?: string;
+        };
+        /** @description Serializer de criação e atualização. */
+        CostCenterCreateRequest: {
             /** Código */
             code: string;
             /** Nome */
@@ -9960,6 +10598,14 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        CotacaoLogRequest: {
+            /** Format: uuid */
+            service_order: string;
+            supplier: number;
+            supplier_contact?: number | null;
+            /** @description Texto da mensagem enviada */
+            mensagem: string;
+        };
         /** @description Serializer de escrita para criacao de titulo a pagar. */
         CreatePayableDocument: {
             /** Format: uuid */
@@ -9972,15 +10618,15 @@ export interface components {
             /** Format: date */
             competence_date: string;
             /** @default  */
-            document_number: string;
+            document_number?: string;
             /** @default MAN */
-            origin: components["schemas"]["CreatePayableDocumentOriginEnum"];
+            origin?: components["schemas"]["CreatePayableDocumentOriginEnum"];
             /** Format: uuid */
             cost_center_id?: string | null;
             /** Format: uuid */
             expense_account_id?: string | null;
             /** @default  */
-            notes: string;
+            notes?: string;
         };
         /**
          * @description * `MAN` - MAN
@@ -9990,6 +10636,28 @@ export interface components {
          * @enum {string}
          */
         CreatePayableDocumentOriginEnum: "MAN" | "FOLHA" | "NFE_E" | "AUTO";
+        /** @description Serializer de escrita para criacao de titulo a pagar. */
+        CreatePayableDocumentRequest: {
+            /** Format: uuid */
+            supplier_id: string;
+            description: string;
+            /** Format: decimal */
+            amount: string;
+            /** Format: date */
+            due_date: string;
+            /** Format: date */
+            competence_date: string;
+            /** @default  */
+            document_number?: string;
+            /** @default MAN */
+            origin?: components["schemas"]["CreatePayableDocumentOriginEnum"];
+            /** Format: uuid */
+            cost_center_id?: string | null;
+            /** Format: uuid */
+            expense_account_id?: string | null;
+            /** @default  */
+            notes?: string;
+        };
         /** @description Serializer de escrita para criacao de titulo a receber. */
         CreateReceivableDocument: {
             /** Format: uuid */
@@ -10003,15 +10671,15 @@ export interface components {
             /** Format: date */
             competence_date: string;
             /** @default MAN */
-            origin: components["schemas"]["CreateReceivableDocumentOriginEnum"];
+            origin?: components["schemas"]["CreateReceivableDocumentOriginEnum"];
             /** Format: uuid */
             service_order_id?: string | null;
             /** @default  */
-            document_number: string;
+            document_number?: string;
             /** Format: uuid */
             cost_center_id?: string | null;
             /** @default  */
-            notes: string;
+            notes?: string;
         };
         /**
          * @description * `MAN` - MAN
@@ -10022,6 +10690,29 @@ export interface components {
          * @enum {string}
          */
         CreateReceivableDocumentOriginEnum: "MAN" | "OS" | "NFE" | "NFCE" | "NFSE";
+        /** @description Serializer de escrita para criacao de titulo a receber. */
+        CreateReceivableDocumentRequest: {
+            /** Format: uuid */
+            customer_id: string;
+            customer_name: string;
+            description: string;
+            /** Format: decimal */
+            amount: string;
+            /** Format: date */
+            due_date: string;
+            /** Format: date */
+            competence_date: string;
+            /** @default MAN */
+            origin?: components["schemas"]["CreateReceivableDocumentOriginEnum"];
+            /** Format: uuid */
+            service_order_id?: string | null;
+            /** @default  */
+            document_number?: string;
+            /** Format: uuid */
+            cost_center_id?: string | null;
+            /** @default  */
+            notes?: string;
+        };
         /** @description Serializer para CustoHoraFallback — valor direto enquanto RH não está disponível. */
         CustoHoraFallback: {
             /** Format: uuid */
@@ -10034,6 +10725,31 @@ export interface components {
              */
             categoria: string;
             readonly categoria_nome: string;
+            /** Format: date */
+            vigente_desde: string;
+            /**
+             * Vigente até
+             * Format: date
+             */
+            vigente_ate?: string | null;
+            /**
+             * Valor por hora (R$)
+             * Format: decimal
+             */
+            valor_hora: string;
+            /** @description Razão para uso do fallback (ex: 'aguardando integração RH'). */
+            motivo?: string;
+            is_active?: boolean;
+        };
+        /** @description Serializer para CustoHoraFallback — valor direto enquanto RH não está disponível. */
+        CustoHoraFallbackRequest: {
+            /** Format: uuid */
+            empresa: string;
+            /**
+             * Categoria de mão de obra
+             * Format: uuid
+             */
+            categoria: string;
             /** Format: date */
             vigente_desde: string;
             /**
@@ -10077,7 +10793,7 @@ export interface components {
             aprovadas_hoje: number;
         };
         /** @description Input do endpoint POST /debug/custo-hora/. */
-        DebugCustoHoraInput: {
+        DebugCustoHoraInputRequest: {
             /** @description Código da CategoriaMaoObra (ex: 'funileiro'). */
             categoria_codigo: string;
             /**
@@ -10092,7 +10808,7 @@ export interface components {
             empresa_id: string;
         };
         /** @description Input do endpoint POST /debug/rateio/. */
-        DebugRateioInput: {
+        DebugRateioInputRequest: {
             /**
              * Format: date
              * @description Data de referência para busca de vigência (YYYY-MM-DD).
@@ -10136,6 +10852,29 @@ export interface components {
             readonly created_at: string;
         };
         DeductionCreate: {
+            deduction_type: components["schemas"]["DeductionTypeEnum"];
+            /** Descrição */
+            description?: string;
+            /**
+             * Format: decimal
+             * @description Sempre positivo — o sinal é dado pelo tipo (desconto)
+             */
+            amount?: string | null;
+            /** Tipo de desconto */
+            discount_type?: components["schemas"]["DiscountTypeEnum"];
+            /**
+             * Percentual
+             * Format: decimal
+             * @description Usado quando discount_type=percentage. Ex: 11.0 = 11% do salário base.
+             */
+            rate?: string | null;
+            /**
+             * Mês de referência
+             * Format: date
+             */
+            reference_month: string;
+        };
+        DeductionCreateRequest: {
             deduction_type: components["schemas"]["DeductionTypeEnum"];
             /** Descrição */
             description?: string;
@@ -10242,6 +10981,32 @@ export interface components {
             vigente_ate?: string | null;
             is_active?: boolean;
         };
+        /** @description Serializer de detalhe — todos os campos para create/retrieve/update. */
+        DespesaRecorrenteRequest: {
+            /** Format: uuid */
+            empresa: string;
+            tipo: components["schemas"]["Tipo7faEnum"];
+            /** Descrição */
+            descricao: string;
+            /** Format: decimal */
+            valor_mensal: string;
+            /** Format: date */
+            vigente_desde: string;
+            /**
+             * Vigente até
+             * Format: date
+             * @description Null indica que a despesa está vigente até nova versão.
+             */
+            vigente_ate?: string | null;
+            /**
+             * Conta contábil
+             * Format: uuid
+             */
+            conta_contabil?: string | null;
+            /** Observações */
+            observacoes?: string;
+            is_active?: boolean;
+        };
         /**
          * @description * `os_direta` - os_direta
          *     * `estoque_geral` - estoque_geral
@@ -10253,7 +11018,7 @@ export interface components {
             detail: string;
         };
         /** @description Input para devolucao de peca. */
-        DevolucaoInput: {
+        DevolucaoInputRequest: {
             /** Format: uuid */
             nivel_destino_id: string;
             motivo: string;
@@ -10343,6 +11108,86 @@ export interface components {
             readonly id: string;
             /** @description Retorna o username do GlobalUser vinculado. */
             readonly username: string | null;
+            /** Setor */
+            department: components["schemas"]["DepartmentEnum"];
+            /** Cargo */
+            position: components["schemas"]["PositionEnum"];
+            /** Matrícula */
+            registration_number: string;
+            /** Tipo de contrato */
+            contract_type?: components["schemas"]["ContractTypeEnum"];
+            /**
+             * Data de admissão
+             * Format: date
+             */
+            hire_date: string;
+            /**
+             * Data de nascimento
+             * Format: date
+             */
+            birth_date?: string | null;
+            /** Estado civil */
+            marital_status?: string;
+            /** Escolaridade */
+            education_level?: string;
+            /** Nacionalidade */
+            nationality?: string;
+            /** Contato emergência — nome */
+            emergency_contact_name?: string;
+            /** Logradouro */
+            address_street?: string;
+            /** Número */
+            address_number?: string;
+            /** Complemento */
+            address_complement?: string;
+            /** Bairro */
+            address_neighborhood?: string;
+            /** Cidade */
+            address_city?: string;
+            /** Estado */
+            address_state?: string;
+            /** CEP */
+            address_zip?: string;
+            /**
+             * Salário base
+             * Format: decimal
+             */
+            base_salary?: string;
+            /**
+             * Tipo de chave PIX
+             * @description cpf | email | phone | random | cnpj
+             */
+            pix_key_type?: string;
+            /**
+             * Carga horária semanal
+             * Format: decimal
+             */
+            weekly_hours?: string;
+            /**
+             * Escala
+             * @description 6x1 (padrão DS Car), 5x2, 12x36, custom
+             */
+            work_schedule?: string;
+            /**
+             * Frequência de pagamento
+             * @description Define o ciclo de pagamento do colaborador.
+             *
+             *     * `monthly` - Mensal
+             *     * `biweekly` - Quinzenal
+             *     * `weekly` - Semanal
+             */
+            pay_frequency?: components["schemas"]["PayFrequencyEnum"];
+            /** @description ID no Box Empresa para rastreabilidade de migração */
+            legacy_databox_id?: number | null;
+        };
+        /**
+         * @description Admissão de colaborador.
+         *
+         *     Aceita ``name`` + ``email`` em vez do UUID do GlobalUser —
+         *     cria ou localiza o GlobalUser automaticamente via email_hash.
+         *     Retorna ``id`` + ``username`` para o frontend redirecionar ao detalhe.
+         */
+        EmployeeCreateRequest: {
             name: string;
             /** Format: email */
             email: string;
@@ -10574,6 +11419,127 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
+        /** @description Serializer de detalhe — dados completos. CPF mascarado (LGPD). */
+        EmployeeDetailRequest: {
+            /** Matrícula */
+            registration_number: string;
+            /** Setor */
+            department: components["schemas"]["DepartmentEnum"];
+            /** Cargo */
+            position: components["schemas"]["PositionEnum"];
+            status?: components["schemas"]["Status984Enum"];
+            /** Tipo de contrato */
+            contract_type?: components["schemas"]["ContractTypeEnum"];
+            /**
+             * Data de admissão
+             * Format: date
+             */
+            hire_date: string;
+            /**
+             * Data de desligamento
+             * Format: date
+             */
+            termination_date?: string | null;
+            /** Órgão emissor RG */
+            rg_issuer?: string;
+            /**
+             * Data de nascimento
+             * Format: date
+             */
+            birth_date?: string | null;
+            /** Estado civil */
+            marital_status?: string;
+            /** Escolaridade */
+            education_level?: string;
+            /** Nacionalidade */
+            nationality?: string;
+            /** Contato emergência — nome */
+            emergency_contact_name?: string;
+            /** Contato emergência — telefone */
+            emergency_contact_phone?: string;
+            /**
+             * Contato emergência — parentesco
+             * @description Ex: Esposa, Pai, Filho
+             */
+            emergency_contact_relationship?: string;
+            /** Banco */
+            bank_name?: string;
+            /** Agência */
+            bank_agency?: string;
+            /** Conta */
+            bank_account?: string;
+            /**
+             * Tipo de conta
+             * @description corrente ou poupanca
+             */
+            bank_account_type?: string;
+            /** Logradouro */
+            address_street?: string;
+            /** Número */
+            address_number?: string;
+            /** Complemento */
+            address_complement?: string;
+            /** Bairro */
+            address_neighborhood?: string;
+            /** Cidade */
+            address_city?: string;
+            /** Estado */
+            address_state?: string;
+            /** CEP */
+            address_zip?: string;
+            /**
+             * Salário base
+             * Format: decimal
+             */
+            base_salary?: string;
+            /**
+             * Nº de dependentes
+             * @description Dependentes para dedução de IRRF (R$ 189,59/dependente).
+             */
+            dependents_count?: number;
+            /**
+             * Tipo de chave PIX
+             * @description cpf | email | phone | random | cnpj
+             */
+            pix_key_type?: string;
+            /**
+             * Carga horária semanal
+             * Format: decimal
+             */
+            weekly_hours?: string;
+            /**
+             * Escala
+             * @description 6x1 (padrão DS Car), 5x2, 12x36, custom
+             */
+            work_schedule?: string;
+            /**
+             * Frequência de pagamento
+             * @description Define o ciclo de pagamento do colaborador.
+             *
+             *     * `monthly` - Mensal
+             *     * `biweekly` - Quinzenal
+             *     * `weekly` - Semanal
+             */
+            pay_frequency?: components["schemas"]["PayFrequencyEnum"];
+            /**
+             * Role RBAC
+             * @description Nível de acesso do colaborador no sistema.
+             *
+             *     * `STOREKEEPER` - Almoxarife
+             *     * `CONSULTANT` - Consultor
+             *     * `MANAGER` - Gerente
+             *     * `ADMIN` - Administrador
+             *     * `OWNER` - Proprietário
+             */
+            role?: components["schemas"]["Role377Enum"];
+            /**
+             * Permissões extras
+             * @description Lista de permissões granulares além da role base. Ex: ['can_close_os', 'can_approve_purchase']
+             */
+            extra_permissions?: unknown;
+            /** @description ID no Box Empresa para rastreabilidade de migração */
+            legacy_databox_id?: number | null;
+        };
         /** @description Serializer de documento — sem expor document_number em claro. */
         EmployeeDocument: {
             /** Format: uuid */
@@ -10628,6 +11594,37 @@ export interface components {
          * @enum {string}
          */
         EmployeeDocumentDocumentTypeEnum: "cnh" | "rg" | "birth_cert" | "marriage_cert" | "work_card" | "voter_id" | "military_cert" | "school_cert" | "medical_exam" | "contract" | "other";
+        /** @description Serializer de documento — sem expor document_number em claro. */
+        EmployeeDocumentRequest: {
+            /** Tipo de documento */
+            document_type: components["schemas"]["EmployeeDocumentDocumentTypeEnum"];
+            /**
+             * Chave no storage
+             * @description Chave do arquivo no R2/S3 — NUNCA deletar fisicamente
+             */
+            file_key: string;
+            /** Nome do arquivo */
+            file_name: string;
+            /**
+             * Tamanho
+             * @description Tamanho em bytes
+             */
+            file_size: number;
+            /** Tipo MIME */
+            mime_type?: string;
+            /**
+             * Data de emissão
+             * Format: date
+             */
+            issue_date?: string | null;
+            /**
+             * Data de validade
+             * Format: date
+             */
+            expiry_date?: string | null;
+            /** Observações */
+            notes?: string;
+        };
         /** @description Serializer de listagem — dados não-sensíveis para tabelas e kanban. */
         EmployeeList: {
             /** Format: uuid */
@@ -10777,6 +11774,16 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        EmpresaRequest: {
+            /** @description CNPJ sem pontuação (14 dígitos). */
+            cnpj: string;
+            nome_fantasia: string;
+            /** Razão social */
+            razao_social: string;
+            /** Inscrição estadual */
+            inscricao_estadual?: string;
+            is_active?: boolean;
+        };
         EnquadramentoFaltante: {
             readonly id: number;
             marca: string;
@@ -10829,8 +11836,38 @@ export interface components {
             prioridade?: number;
             is_active?: boolean;
         };
+        EnquadramentoVeiculoRequest: {
+            marca: string;
+            /** @description Deixar em branco para regra que cobre toda a marca. */
+            modelo?: string;
+            /**
+             * Ano início
+             * @description Ano de fabricação inicial do intervalo (inclusive). Null = sem limite.
+             */
+            ano_inicio?: number | null;
+            /** @description Ano de fabricação final do intervalo (inclusive). Null = sem limite. */
+            ano_fim?: number | null;
+            /**
+             * Código
+             * @description Slug único, ex: "popular", "premium".
+             */
+            segmento_codigo: string;
+            /**
+             * Código
+             * @description Slug único, ex: "compacto", "suv-grande".
+             */
+            tamanho_codigo: string;
+            /**
+             * Código
+             * @description Slug único, ex: "solida", "metalica", "perolizada", "tricoat".
+             */
+            tipo_pintura_codigo?: string | null;
+            /** @description Quanto menor, mais específico. Match exato (marca+modelo+ano) = 10; só marca = 100. */
+            prioridade?: number;
+            is_active?: boolean;
+        };
         /** @description Input para entrada manual de lote. produto_insumo_id OU material_canonico_id obrigatório. */
-        EntradaLoteInput: {
+        EntradaLoteInputRequest: {
             /** Format: uuid */
             material_canonico_id?: string | null;
             /** Format: decimal */
@@ -10849,7 +11886,7 @@ export interface components {
             validade?: string | null;
         };
         /** @description Input para entrada manual de peca. produto_peca_id OU peca_canonica_id obrigatório. */
-        EntradaPecaInput: {
+        EntradaPecaInputRequest: {
             /** Format: uuid */
             peca_canonica_id?: string | null;
             /** Format: decimal */
@@ -10860,7 +11897,7 @@ export interface components {
             /** Format: uuid */
             produto_peca_id?: string | null;
             /** @default  */
-            numero_serie: string;
+            numero_serie?: string;
         };
         /**
          * @description * `clock_in` - Entrada
@@ -10941,6 +11978,30 @@ export interface components {
             observacao?: string;
         };
         /**
+         * @description Serializer de FichaTecnicaInsumo — somente leitura e criação.
+         *
+         *     Armadilha P1: sem PATCH/PUT — os itens são imutáveis por design.
+         *     Mudanças devem criar nova versão da FichaTecnicaServico.
+         */
+        FichaTecnicaInsumoRequest: {
+            /**
+             * Material canônico
+             * Format: uuid
+             */
+            material_canonico: string;
+            /**
+             * Format: decimal
+             * @description Quantidade do material necessária para executar o serviço.
+             */
+            quantidade: string;
+            /** @description Deve corresponder à unidade_base do material canônico. */
+            unidade: string;
+            /** @description TRUE para insumos que variam com porte (tinta, massa). FALSE para itens fixos (esponja, lixa). */
+            afetado_por_tamanho?: boolean;
+            /** Observação */
+            observacao?: string;
+        };
+        /**
          * @description Serializer de FichaTecnicaMaoObra — somente leitura e criação.
          *
          *     Armadilha P1: sem PATCH/PUT — os itens são imutáveis por design.
@@ -10956,6 +12017,28 @@ export interface components {
             categoria: string;
             readonly categoria_codigo: string;
             readonly categoria_nome: string;
+            /**
+             * Format: decimal
+             * @description Horas de mão de obra desta categoria para executar o serviço.
+             */
+            horas: string;
+            /** @description TRUE para mão de obra que varia com porte (pintura, funilaria). FALSE para elétrica/diagnóstico/configuração. */
+            afetada_por_tamanho?: boolean;
+            /** Observação */
+            observacao?: string;
+        };
+        /**
+         * @description Serializer de FichaTecnicaMaoObra — somente leitura e criação.
+         *
+         *     Armadilha P1: sem PATCH/PUT — os itens são imutáveis por design.
+         *     Mudanças devem criar nova versão da FichaTecnicaServico.
+         */
+        FichaTecnicaMaoObraRequest: {
+            /**
+             * Categoria de mão de obra
+             * Format: uuid
+             */
+            categoria: string;
             /**
              * Format: decimal
              * @description Horas de mão de obra desta categoria para executar o serviço.
@@ -11091,7 +12174,7 @@ export interface components {
             readonly ref: string | null;
             readonly environment: components["schemas"]["EnvironmentEnum"];
             /** Format: uuid */
-            readonly service_order_id: string;
+            readonly service_order_id: string | null;
             /** Format: decimal */
             readonly amount: string;
             /** Format: decimal */
@@ -11223,6 +12306,21 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
+        /** @description Serializer de exercício fiscal. */
+        FiscalYearRequest: {
+            /** Ano */
+            year: number;
+            /**
+             * Data início
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * Data fim
+             * Format: date
+             */
+            end_date: string;
+        };
         /**
          * @description * `vistoria_inicial` - Vistoria Inicial
          *     * `complemento` - Complemento
@@ -11239,7 +12337,7 @@ export interface components {
          */
         FolderEnum: "vistoria_inicial" | "complemento" | "checklist_entrada" | "checklist_saida" | "documentos" | "orcamentos" | "acompanhamento" | "vistoria_final" | "pericia" | "outros" | "financeiro";
         /** @description Body de POST /auth/forgot-password/. */
-        ForgotPasswordRequest: {
+        ForgotPasswordRequestRequest: {
             /** Format: email */
             email: string;
         };
@@ -11265,7 +12363,7 @@ export interface components {
          * @enum {string}
          */
         GenderEnum: "M" | "F" | "N";
-        GenerateDocument: {
+        GenerateDocumentRequest: {
             document_type: components["schemas"]["DocumentType5c8Enum"];
             /** Format: uuid */
             receivable_id?: string | null;
@@ -11427,6 +12525,149 @@ export interface components {
              */
             recurrence_day?: number;
         };
+        GoalTargetCreateRequest: {
+            /**
+             * Format: uuid
+             * @description Null = meta de setor
+             */
+            employee?: string | null;
+            /**
+             * Setor
+             * @description Preenchido quando meta é do setor inteiro
+             *
+             *     * `reception` - Recepção
+             *     * `bodywork` - Funilaria
+             *     * `painting` - Pintura
+             *     * `mechanical` - Mecânica
+             *     * `aesthetics` - Estética
+             *     * `polishing` - Polimento
+             *     * `washing` - Lavagem
+             *     * `inventory` - Almoxarifado
+             *     * `financial` - Financeiro
+             *     * `administrative` - Administrativo
+             *     * `management` - Gerência
+             *     * `direction` - Diretoria
+             */
+            department?: (components["schemas"]["DepartmentEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            /** Título */
+            title: string;
+            /** Descrição */
+            description?: string;
+            /**
+             * Valor alvo
+             * Format: decimal
+             * @description Quantidade, R$, percentual, etc.
+             */
+            target_value: string;
+            /**
+             * Unidade
+             * @description unit | currency | percentage | hours
+             */
+            unit?: string;
+            /**
+             * Bônus ao atingir
+             * Format: decimal
+             * @description Valor da bonificação ao atingir 100%
+             */
+            bonus_amount?: string;
+            /**
+             * Início
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * Prazo
+             * Format: date
+             */
+            end_date: string;
+            /**
+             * Meta recorrente
+             * @description Se True, será clonada automaticamente no próximo ciclo mensal.
+             */
+            is_recurring?: boolean;
+            /**
+             * Dia de reinício
+             * @description Dia do mês para criar a próxima instância (1-28).
+             */
+            recurrence_day?: number;
+        };
+        GoalTargetRequest: {
+            /**
+             * Format: uuid
+             * @description Null = meta de setor
+             */
+            employee?: string | null;
+            /**
+             * Setor
+             * @description Preenchido quando meta é do setor inteiro
+             *
+             *     * `reception` - Recepção
+             *     * `bodywork` - Funilaria
+             *     * `painting` - Pintura
+             *     * `mechanical` - Mecânica
+             *     * `aesthetics` - Estética
+             *     * `polishing` - Polimento
+             *     * `washing` - Lavagem
+             *     * `inventory` - Almoxarifado
+             *     * `financial` - Financeiro
+             *     * `administrative` - Administrativo
+             *     * `management` - Gerência
+             *     * `direction` - Diretoria
+             */
+            department?: (components["schemas"]["DepartmentEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            /** Título */
+            title: string;
+            /** Descrição */
+            description?: string;
+            /**
+             * Valor alvo
+             * Format: decimal
+             * @description Quantidade, R$, percentual, etc.
+             */
+            target_value: string;
+            /**
+             * Valor atual
+             * Format: decimal
+             */
+            current_value?: string;
+            /**
+             * Unidade
+             * @description unit | currency | percentage | hours
+             */
+            unit?: string;
+            /**
+             * Bônus ao atingir
+             * Format: decimal
+             * @description Valor da bonificação ao atingir 100%
+             */
+            bonus_amount?: string;
+            /**
+             * Início
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * Prazo
+             * Format: date
+             */
+            end_date: string;
+            status?: components["schemas"]["Status525Enum"];
+            /**
+             * Meta recorrente
+             * @description Se True, será clonada automaticamente no próximo ciclo mensal.
+             */
+            is_recurring?: boolean;
+            /**
+             * Dia de reinício
+             * @description Dia do mês para criar a próxima instância (1-28).
+             */
+            recurrence_day?: number;
+            /**
+             * Format: uuid
+             * @description Meta original que gerou esta instância recorrente.
+             */
+            parent_goal?: string | null;
+        };
         GoalTargetUpdate: {
             /**
              * Valor atual
@@ -11461,6 +12702,17 @@ export interface components {
             is_active?: boolean;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        /** @description Serializer para Feriados. */
+        HolidayRequest: {
+            /**
+             * Data
+             * Format: date
+             */
+            date: string;
+            /** Nome */
+            name: string;
+            is_active?: boolean;
         };
         ImportAttempt: {
             readonly id: number;
@@ -11511,6 +12763,15 @@ export interface components {
             altura_mm?: number;
             is_active?: boolean;
         };
+        ImpressoraEtiquetaRequest: {
+            nome: string;
+            modelo?: components["schemas"]["ModeloEnum"];
+            /** @description Ex: http://10.0.0.15:9100 (Zebra direct print). */
+            endpoint: string;
+            largura_mm?: number;
+            altura_mm?: number;
+            is_active?: boolean;
+        };
         /**
          * @description * `CONTRIBUINTE` - Contribuinte
          *     * `NAO_CONTRIBUINTE` - Não Contribuinte
@@ -11520,6 +12781,31 @@ export interface components {
         InscriptionTypeEnum: "CONTRIBUINTE" | "NAO_CONTRIBUINTE" | "ISENTO";
         /** @description Serializer de criação para InsumoMaterial. */
         InsumoMaterialCreate: {
+            /**
+             * Material canônico
+             * Format: uuid
+             */
+            material_canonico: string;
+            sku_interno: string;
+            /** GTIN/EAN */
+            gtin?: string;
+            /** Descrição */
+            descricao: string;
+            marca?: string;
+            /**
+             * Unidade de compra
+             * @description Ex: galão, caixa, rolo.
+             */
+            unidade_compra: string;
+            /**
+             * Fator de conversão
+             * Format: decimal
+             * @description Quantas unidades_base vêm em uma unidade_compra. Ex: galão 3.6L → 3.6 se unidade_base=L.
+             */
+            fator_conversao: string;
+        };
+        /** @description Serializer de criação para InsumoMaterial. */
+        InsumoMaterialCreateRequest: {
             /**
              * Material canônico
              * Format: uuid
@@ -11576,6 +12862,32 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        /** @description Serializer de detalhe para InsumoMaterial. */
+        InsumoMaterialDetailRequest: {
+            /**
+             * Material canônico
+             * Format: uuid
+             */
+            material_canonico: string;
+            sku_interno: string;
+            /** GTIN/EAN */
+            gtin?: string;
+            /** Descrição */
+            descricao: string;
+            marca?: string;
+            /**
+             * Unidade de compra
+             * @description Ex: galão, caixa, rolo.
+             */
+            unidade_compra: string;
+            /**
+             * Fator de conversão
+             * Format: decimal
+             * @description Quantas unidades_base vêm em uma unidade_compra. Ex: galão 3.6L → 3.6 se unidade_base=L.
+             */
+            fator_conversao: string;
+            is_active?: boolean;
         };
         /** @description Serializer resumido para listagens de InsumoMaterial. */
         InsumoMaterialList: {
@@ -11642,6 +12954,31 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        /**
+         * @description Serializer de atualização para InsumoMaterial.
+         *
+         *     material_canonico e sku_interno são read_only — não devem ser remapeados
+         *     após criação (quebra consistência de estoque e histórico).
+         */
+        InsumoMaterialUpdateRequest: {
+            /** GTIN/EAN */
+            gtin?: string;
+            /** Descrição */
+            descricao: string;
+            marca?: string;
+            /**
+             * Unidade de compra
+             * @description Ex: galão, caixa, rolo.
+             */
+            unidade_compra: string;
+            /**
+             * Fator de conversão
+             * Format: decimal
+             * @description Quantas unidades_base vêm em uma unidade_compra. Ex: galão 3.6L → 3.6 se unidade_base=L.
+             */
+            fator_conversao: string;
+            is_active?: boolean;
         };
         /**
          * @description * `insured` - Segurado
@@ -11715,6 +13052,60 @@ export interface components {
             /** Ativo */
             is_active?: boolean;
         };
+        /** @description Serializer padrão para lista e uso nested em OS. */
+        InsurerMinimalRequest: {
+            /** Razão social */
+            name: string;
+            /** Nome fantasia */
+            trade_name?: string;
+            cnpj: string;
+            /**
+             * Cor da marca
+             * @description Cor hex da marca para exibição na UI (ex: #003DA5)
+             */
+            brand_color?: string;
+            /**
+             * Abreviação
+             * @description Abreviação para avatar/logo (ex: BR, PS, AZ)
+             */
+            abbreviation?: string;
+            /** URL do logo */
+            logo_url?: string;
+            /**
+             * Utiliza Cilia?
+             * @description Marque se a seguradora envia orçamentos pelo sistema Cilia
+             */
+            uses_cilia?: boolean;
+            /** Ativo */
+            is_active?: boolean;
+        };
+        /** @description Serializer completo para seguradoras. */
+        InsurerRequest: {
+            /** Razão social */
+            name: string;
+            /** Nome fantasia */
+            trade_name?: string;
+            cnpj: string;
+            /**
+             * Cor da marca
+             * @description Cor hex da marca para exibição na UI (ex: #003DA5)
+             */
+            brand_color?: string;
+            /**
+             * Abreviação
+             * @description Abreviação para avatar/logo (ex: BR, PS, AZ)
+             */
+            abbreviation?: string;
+            /** URL do logo */
+            logo_url?: string;
+            /** Ativo */
+            is_active?: boolean;
+            /**
+             * Utiliza Cilia?
+             * @description Marque se a seguradora envia orçamentos pelo sistema Cilia
+             */
+            uses_cilia?: boolean;
+        };
         /** @description Serializer para itens de contagem. */
         ItemContagem: {
             /** Format: uuid */
@@ -11776,8 +13167,38 @@ export interface components {
              */
             labor_cost: string;
         };
+        /** @description Representação read-only de ItemOperation com nested labels. */
+        ItemOperationReadRequest: {
+            /**
+             * Horas
+             * Format: decimal
+             */
+            hours: string;
+            /**
+             * Valor Hora
+             * Format: decimal
+             */
+            hourly_rate: string;
+            /**
+             * Custo Mao de Obra
+             * Format: decimal
+             * @description hours * hourly_rate
+             */
+            labor_cost: string;
+        };
         ItemOperationType: {
             readonly id: number;
+            /** Codigo */
+            code: string;
+            label: string;
+            /** Descricao */
+            description?: string;
+            /** Ativo */
+            is_active?: boolean;
+            /** Ordem */
+            sort_order?: number;
+        };
+        ItemOperationTypeRequest: {
             /** Codigo */
             code: string;
             label: string;
@@ -11865,6 +13286,20 @@ export interface components {
             document_date?: string | null;
             origin: components["schemas"]["OriginE18Enum"];
             lines: components["schemas"]["JournalEntryLineCreate"][];
+        };
+        /**
+         * @description Serializer de criacao de lancamento.
+         *
+         *     Delega para JournalEntryService.create_entry() — nunca salva direto.
+         */
+        JournalEntryCreateRequest: {
+            description: string;
+            /** Format: date */
+            competence_date: string;
+            /** Format: date */
+            document_date?: string | null;
+            origin: components["schemas"]["OriginE18Enum"];
+            lines: components["schemas"]["JournalEntryLineCreateRequest"][];
         };
         /** @description Serializer de detalhe com linhas, aprovador e status de balanceamento. */
         JournalEntryDetail: {
@@ -11955,16 +13390,43 @@ export interface components {
              * Format: decimal
              * @default 0.00
              */
-            debit_amount: string;
+            debit_amount?: string;
             /**
              * Format: decimal
              * @default 0.00
              */
-            credit_amount: string;
+            credit_amount?: string;
             /** @default  */
-            description: string;
+            description?: string;
             /** @default  */
-            document_number: string;
+            document_number?: string;
+        };
+        /** @description Serializer de criacao de linha — aceita UUIDs para FK. */
+        JournalEntryLineCreateRequest: {
+            /**
+             * Format: uuid
+             * @description UUID da conta analítica (ChartOfAccount).
+             */
+            account_id: string;
+            /**
+             * Format: uuid
+             * @description UUID do centro de custo (opcional).
+             */
+            cost_center_id?: string | null;
+            /**
+             * Format: decimal
+             * @default 0.00
+             */
+            debit_amount?: string;
+            /**
+             * Format: decimal
+             * @default 0.00
+             */
+            credit_amount?: string;
+            /** @default  */
+            description?: string;
+            /** @default  */
+            document_number?: string;
         };
         /** @description Serializer de listagem de lancamentos contabeis. */
         JournalEntryList: {
@@ -12011,6 +13473,17 @@ export interface components {
             /** Ordem */
             sort_order?: number;
         };
+        LaborCategoryRequest: {
+            /** Codigo */
+            code: string;
+            label: string;
+            /** Descricao */
+            description?: string;
+            /** Ativo */
+            is_active?: boolean;
+            /** Ordem */
+            sort_order?: number;
+        };
         /**
          * @description * `esquerdo` - Esquerdo
          *     * `direito` - Direito
@@ -12020,7 +13493,7 @@ export interface components {
          */
         LadoEnum: "esquerdo" | "direito" | "central" | "na";
         /** @description Body de POST /auth/login/. */
-        LoginRequest: {
+        LoginRequestRequest: {
             /** @description Email OU username do usuário */
             email: string;
             password: string;
@@ -12061,25 +13534,25 @@ export interface components {
             readonly created_at: string;
         };
         /** @description Item individual de uma NFS-e manual. */
-        ManualItemInput: {
+        ManualItemInputRequest: {
             descricao: string;
             /**
              * Format: decimal
              * @default 1.0000
              */
-            quantidade: string;
+            quantidade?: string;
             /** Format: decimal */
             valor_unitario: string;
             /**
              * Format: decimal
              * @default 0.00
              */
-            valor_desconto: string;
+            valor_desconto?: string;
         };
         /** @description Payload de emissão manual de NF-e de produto (ADMIN+). */
-        ManualNfeInput: {
+        ManualNfeInputRequest: {
             destinatario_id: number;
-            itens: components["schemas"]["ManualNfeItemInput"][];
+            itens: components["schemas"]["ManualNfeItemInputRequest"][];
             /**
              * @description 01=dinheiro, 03=crédito, 04=débito, 99=outros.
              *
@@ -12089,23 +13562,23 @@ export interface components {
              *     * `99` - 99
              * @default 01
              */
-            forma_pagamento: components["schemas"]["FormaPagamentoEnum"];
+            forma_pagamento?: components["schemas"]["FormaPagamentoEnum"];
             /** @default  */
-            observacoes: string;
+            observacoes?: string;
             manual_reason: string;
             /** @default  */
-            cst_icms: string;
+            cst_icms?: string;
             /** Format: decimal */
             icms_aliquota?: string | null;
         };
         /** @description Item de NF-e de produto para emissão manual. */
-        ManualNfeItemInput: {
+        ManualNfeItemInputRequest: {
             /** @default  */
-            codigo_produto: string;
+            codigo_produto?: string;
             descricao: string;
             ncm: string;
             /** @default UN */
-            unidade: string;
+            unidade?: string;
             /** Format: decimal */
             quantidade: string;
             /** Format: decimal */
@@ -12114,7 +13587,7 @@ export interface components {
              * Format: decimal
              * @default 0.00
              */
-            valor_desconto: string;
+            valor_desconto?: string;
         };
         /**
          * @description Entrada de emissão NFS-e manual (sem OS vinculada).
@@ -12122,23 +13595,23 @@ export interface components {
          *     Requer permissão ADMIN+ (fiscal_admin / OWNER).
          *     manual_reason é obrigatório — justificativa auditável.
          */
-        ManualNfseInput: {
+        ManualNfseInputRequest: {
             destinatario_id: number;
-            itens: components["schemas"]["ManualItemInput"][];
+            itens: components["schemas"]["ManualItemInputRequest"][];
             discriminacao: string;
             /** @default 14.01 */
-            codigo_servico_lc116: string;
+            codigo_servico_lc116?: string;
             /** Format: decimal */
             aliquota_iss?: string | null;
             /** @default false */
-            iss_retido: boolean;
+            iss_retido?: boolean;
             /**
              * Format: date-time
              * @description None = agora. Se informada, deve ser ≤ 30 dias no passado.
              */
             data_emissao?: string | null;
             /** @default  */
-            observacoes_contribuinte: string;
+            observacoes_contribuinte?: string;
             manual_reason: string;
         };
         /** @description Serializer para MargemOperacao — margem base por segmento × tipo. */
@@ -12157,6 +13630,31 @@ export interface components {
             /** Tipo de operação */
             tipo_operacao: components["schemas"]["TipoOperacaoEnum"];
             readonly tipo_operacao_display: string;
+            /**
+             * Format: decimal
+             * @description Margem base, ex: 0.4000 = 40%. Multiplicada por (1 + fator_responsabilidade) no cálculo final.
+             */
+            margem_percentual: string;
+            /** Format: date */
+            vigente_desde: string;
+            /**
+             * Vigente até
+             * Format: date
+             */
+            vigente_ate?: string | null;
+            is_active?: boolean;
+        };
+        /** @description Serializer para MargemOperacao — margem base por segmento × tipo. */
+        MargemOperacaoRequest: {
+            /** Format: uuid */
+            empresa: string;
+            /**
+             * Segmento veicular
+             * Format: uuid
+             */
+            segmento: string;
+            /** Tipo de operação */
+            tipo_operacao: components["schemas"]["TipoOperacaoEnum"];
             /**
              * Format: decimal
              * @description Margem base, ex: 0.4000 = 40%. Multiplicada por (1 + fator_responsabilidade) no cálculo final.
@@ -12206,8 +13704,52 @@ export interface components {
             observacao?: string;
             is_active?: boolean;
         };
+        /** @description Serializer para MarkupPeca — override fino por peça ou faixa de custo. */
+        MarkupPecaRequest: {
+            /** Format: uuid */
+            empresa: string;
+            /**
+             * Peça canônica
+             * Format: uuid
+             */
+            peca_canonica?: string | null;
+            /**
+             * Faixa custo mín (R$)
+             * Format: decimal
+             */
+            faixa_custo_min?: string | null;
+            /**
+             * Faixa custo máx (R$)
+             * Format: decimal
+             */
+            faixa_custo_max?: string | null;
+            /** Format: decimal */
+            margem_percentual: string;
+            /** Format: date */
+            vigente_desde: string;
+            /**
+             * Vigente até
+             * Format: date
+             */
+            vigente_ate?: string | null;
+            /** Observação */
+            observacao?: string;
+            is_active?: boolean;
+        };
         /** @description Serializer de criação para MaterialCanonico. */
         MaterialCanonicoCreate: {
+            /**
+             * Código
+             * @description Slug único, ex: "tinta-base-1l", "lixa-400".
+             */
+            codigo: string;
+            nome: string;
+            /** @description Unidade de medida principal: L, kg, m, un, m2. */
+            unidade_base: string;
+            tipo?: components["schemas"]["Tipo1d6Enum"];
+        };
+        /** @description Serializer de criação para MaterialCanonico. */
+        MaterialCanonicoCreateRequest: {
             /**
              * Código
              * @description Slug único, ex: "tinta-base-1l", "lixa-400".
@@ -12238,6 +13780,19 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        /** @description Serializer de detalhe para MaterialCanonico. */
+        MaterialCanonicoDetailRequest: {
+            /**
+             * Código
+             * @description Slug único, ex: "tinta-base-1l", "lixa-400".
+             */
+            codigo: string;
+            nome: string;
+            /** @description Unidade de medida principal: L, kg, m, un, m2. */
+            unidade_base: string;
+            tipo?: components["schemas"]["Tipo1d6Enum"];
+            is_active?: boolean;
         };
         /** @description Serializer resumido para listagens de MaterialCanonico. */
         MaterialCanonicoList: {
@@ -12277,6 +13832,17 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        /**
+         * @description Serializer de atualização para MaterialCanonico.
+         *
+         *     unidade_base é read_only — imutável após criação (quebra fator_conversao dos InsumoMaterial
+         *     vinculados). codigo também é read_only — slug imutável após criação.
+         */
+        MaterialCanonicoUpdateRequest: {
+            nome: string;
+            tipo?: components["schemas"]["Tipo1d6Enum"];
+            is_active?: boolean;
         };
         /**
          * @description Serializer para o endpoint /me — identidade completa do usuário autenticado.
@@ -12404,6 +13970,20 @@ export interface components {
             valor_total?: string;
             observacoes?: string;
         };
+        /** @description Criação manual de NF-e de entrada (sem XML — para importação simplificada). */
+        NFeEntradaCreateRequest: {
+            /** @description Chave de 44 dígitos SEFAZ. */
+            chave_acesso?: string;
+            numero?: string;
+            serie?: string;
+            emitente_cnpj?: string;
+            emitente_nome?: string;
+            /** Format: date */
+            data_emissao?: string | null;
+            /** Format: decimal */
+            valor_total?: string;
+            observacoes?: string;
+        };
         NFeEntradaDetail: {
             /** Format: uuid */
             readonly id: string;
@@ -12486,24 +14066,24 @@ export interface components {
          */
         NatureEnum: "D" | "C";
         /** @description Body de POST /fiscal/nfce/emit/ — emite NFC-e (cupom fiscal). */
-        NfceEmitRequest: {
+        NfceEmitRequestRequest: {
             /** Format: uuid */
             service_order_id: string;
             /** @default 01 */
-            forma_pagamento: string;
+            forma_pagamento?: string;
         };
         /** @description Body de POST /fiscal/nfe/emit/ — emite NF-e de produto a partir de uma OS. */
-        NfeEmitRequest: {
+        NfeEmitRequestRequest: {
             /** Format: uuid */
             service_order_id: string;
             /**
              * @description Código forma pagamento SEFAZ (01=dinheiro, 03=cartão etc)
              * @default 01
              */
-            forma_pagamento: string;
+            forma_pagamento?: string;
         };
         /** @description Body de POST /fiscal/nfe/inutilizacao/ — inutiliza faixa de numeração. */
-        NfeInutilizacaoRequest: {
+        NfeInutilizacaoRequestRequest: {
             serie: number;
             numero_inicial: number;
             numero_final: number;
@@ -12523,25 +14103,25 @@ export interface components {
             created_at: string;
         };
         /** @description Body de POST /fiscal/nfe-recebidas/{chave}/manifesto/. */
-        NfeRecebidaManifestRequest: {
+        NfeRecebidaManifestRequestRequest: {
             tipo_evento: components["schemas"]["TipoEventoEnum"];
             justificativa?: string;
         };
         /** @description Body de POST /fiscal/nfe-recebidas/sync/ — força sync com Focus. */
-        NfeRecebidaSyncRequest: {
+        NfeRecebidaSyncRequestRequest: {
             /**
              * @description Dias atrás pra buscar
              * @default 30
              */
-            days: number;
+            days?: number;
         };
         /** @description Body de POST /fiscal/nfse/emit/ — emite NFS-e a partir de uma OS. */
-        NfseEmitRequest: {
+        NfseEmitRequestRequest: {
             /** Format: uuid */
             service_order_id: string;
         };
         /** @description Body de POST /fiscal/nfse/substituir/ — substitui NFS-e autorizada. */
-        NfseSubstituirRequest: {
+        NfseSubstituirRequestRequest: {
             chave_nfse_substituida: string;
             /** Format: uuid */
             service_order_id?: string;
@@ -12567,6 +14147,19 @@ export interface components {
             is_active?: boolean;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        /** @description CRUD de Nível — ponto terminal do endereçamento WMS. */
+        NivelRequest: {
+            /** Format: uuid */
+            prateleira: string;
+            /** @description N1, N2. */
+            codigo: string;
+            descricao?: string;
+            altura_cm?: number | null;
+            largura_cm?: number | null;
+            profundidade_cm?: number | null;
+            ordem?: number;
+            is_active?: boolean;
         };
         /** @enum {unknown} */
         NullEnum: null;
@@ -12713,14 +14306,32 @@ export interface components {
             /** Format: uuid */
             insurer_id?: string | null;
             /** @default cliente */
-            tipo_responsabilidade: components["schemas"]["OrcamentoCreateTipoResponsabilidadeEnum"];
+            tipo_responsabilidade?: components["schemas"]["OrcamentoCreateTipoResponsabilidadeEnum"];
             /** @default  */
-            sinistro_numero: string;
+            sinistro_numero?: string;
             veiculo: {
                 [key: string]: unknown;
             };
             /** @default  */
-            observacoes: string;
+            observacoes?: string;
+        };
+        /** @description Payload para OrcamentoService.criar(). */
+        OrcamentoCreateRequest: {
+            /** Format: uuid */
+            empresa_id: string;
+            /** Format: uuid */
+            customer_id: string;
+            /** Format: uuid */
+            insurer_id?: string | null;
+            /** @default cliente */
+            tipo_responsabilidade?: components["schemas"]["OrcamentoCreateTipoResponsabilidadeEnum"];
+            /** @default  */
+            sinistro_numero?: string;
+            veiculo: {
+                [key: string]: unknown;
+            };
+            /** @default  */
+            observacoes?: string;
         };
         /**
          * @description * `cliente` - cliente
@@ -12805,6 +14416,35 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
+        OrcamentoIntervencaoRequest: {
+            /**
+             * Área de impacto
+             * Format: uuid
+             */
+            area_impacto: string;
+            /**
+             * Peça canônica
+             * Format: uuid
+             */
+            peca_canonica: string;
+            /** Ação */
+            acao: components["schemas"]["AcaoEnum"];
+            /** Qualificador de peça */
+            qualificador_peca?: components["schemas"]["QualificadorPecaEnum"] | components["schemas"]["BlankEnum"];
+            fornecimento?: components["schemas"]["FornecimentoEnum"];
+            /** Código da peça */
+            codigo_peca?: string;
+            quantidade?: number;
+            /** Status Cilia */
+            status?: components["schemas"]["StatusC95Enum"];
+            abaixo_padrao?: boolean;
+            acima_padrao?: boolean;
+            inclusao_manual?: boolean;
+            codigo_diferente?: boolean;
+            ordem?: number;
+            descricao_visivel?: string;
+            observacao?: string;
+        };
         OrcamentoItemAdicional: {
             /** Format: uuid */
             readonly id: string;
@@ -12843,6 +14483,22 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
+        OrcamentoItemAdicionalRequest: {
+            /**
+             * Serviço do catálogo
+             * Format: uuid
+             */
+            service_catalog: string;
+            quantidade?: number;
+            status?: components["schemas"]["StatusC95Enum"];
+            fornecimento?: components["schemas"]["FornecimentoEnum"];
+            inclusao_manual?: boolean;
+            abaixo_padrao?: boolean;
+            acima_padrao?: boolean;
+            ordem?: number;
+            descricao_visivel?: string;
+            observacao?: string;
+        };
         /** @description Serializer enxuto para listagem. */
         OrcamentoList: {
             /** Format: uuid */
@@ -12877,6 +14533,45 @@ export interface components {
             validade: string;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        /** @description Serializer completo para detalhe. */
+        OrcamentoRequest: {
+            status?: components["schemas"]["Status9f8Enum"];
+            /** Format: uuid */
+            empresa: string;
+            /**
+             * Cliente
+             * Format: uuid
+             */
+            customer: string;
+            /**
+             * Seguradora
+             * Format: uuid
+             */
+            insurer?: string | null;
+            /** Tipo de responsabilidade */
+            tipo_responsabilidade?: components["schemas"]["TipoResponsabilidadeB50Enum"];
+            /** Número do sinistro */
+            sinistro_numero?: string;
+            /** Marca */
+            veiculo_marca: string;
+            /** Modelo */
+            veiculo_modelo: string;
+            /** Ano */
+            veiculo_ano: number;
+            /** Versão */
+            veiculo_versao?: string;
+            /** Placa */
+            veiculo_placa?: string;
+            /** Format: decimal */
+            desconto?: string;
+            /**
+             * Válido até
+             * Format: date
+             */
+            validade: string;
+            /** Observações */
+            observacoes?: string;
         };
         /** @description Serializer com itens aninhados para detalhe da OC. */
         OrdemCompraDetail: {
@@ -12930,6 +14625,21 @@ export interface components {
             readonly total_itens: number;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        /** @description Serializer para listagem de ordens de compra. */
+        OrdemCompraListRequest: {
+            /** @description Auto-gerado: OC-{year}-{seq:04d} */
+            numero: string;
+            /** Format: uuid */
+            service_order: string;
+            status?: components["schemas"]["Status25dEnum"];
+            /**
+             * Format: decimal
+             * @description Soma dos itens — recomputado no save().
+             */
+            valor_total?: string;
+            /** Format: uuid */
+            criado_por: string;
         };
         /**
          * @description * `orcamento_linha` - orcamento_linha
@@ -13000,11 +14710,27 @@ export interface components {
              */
             reference_month: string;
             /** @default  */
-            description: string;
+            description?: string;
             /** @default  */
-            nf_number: string;
+            nf_number?: string;
             /** @default  */
-            nf_file_key: string;
+            nf_file_key?: string;
+        };
+        /** @description Payload para registrar pagamento de colaborador PJ. */
+        PJPaymentRequest: {
+            /** Format: decimal */
+            amount: string;
+            /**
+             * Format: date
+             * @description Primeiro dia do mês
+             */
+            reference_month: string;
+            /** @default  */
+            description?: string;
+            /** @default  */
+            nf_number?: string;
+            /** @default  */
+            nf_file_key?: string;
         };
         PaginatedAliasServicoListList: {
             /** @example 123 */
@@ -14577,10 +16303,72 @@ export interface components {
             observacoes?: string;
             is_active?: boolean;
         };
+        /** @description Serializer para ParametroCustoHora — encargos sobre salário bruto. */
+        ParametroCustoHoraRequest: {
+            /** Format: uuid */
+            empresa: string;
+            /** Format: date */
+            vigente_desde: string;
+            /**
+             * Vigente até
+             * Format: date
+             */
+            vigente_ate?: string | null;
+            /**
+             * Provisão 13º + férias
+             * Format: decimal
+             * @description Provisão de 13º + férias como fração do bruto. Padrão: 0.1389 (13.89%)
+             */
+            provisao_13_ferias?: string;
+            /**
+             * Multa FGTS rescisão
+             * Format: decimal
+             * @description Multa FGTS rescisão como fração. Padrão: 0.0320 (3.20%)
+             */
+            multa_fgts_rescisao?: string;
+            /**
+             * Benefícios por funcionário (R$)
+             * Format: decimal
+             * @description VT + VA + plano de saúde etc por funcionário/mês em R$.
+             */
+            beneficios_por_funcionario?: string;
+            /**
+             * Horas produtivas individuais/mês
+             * Format: decimal
+             * @description Horas produtivas individuais por mês. Padrão: 168h (8h × 21 dias).
+             */
+            horas_produtivas_mes?: string;
+            /** Observações */
+            observacoes?: string;
+            is_active?: boolean;
+        };
         /** @description Serializer para ParametroRateio — parâmetros de rateio de despesas. */
         ParametroRateio: {
             /** Format: uuid */
             readonly id: string;
+            /** Format: uuid */
+            empresa: string;
+            /** Format: date */
+            vigente_desde: string;
+            /**
+             * Vigente até
+             * Format: date
+             */
+            vigente_ate?: string | null;
+            /**
+             * Horas produtivas/mês
+             * Format: decimal
+             * @description Horas produtivas totais da oficina no mês. Default conservador: 168h.
+             */
+            horas_produtivas_mes: string;
+            /** Método de rateio */
+            metodo?: components["schemas"]["MetodoEnum"];
+            /** Observações */
+            observacoes?: string;
+            is_active?: boolean;
+        };
+        /** @description Serializer para ParametroRateio — parâmetros de rateio de despesas. */
+        ParametroRateioRequest: {
             /** Format: uuid */
             empresa: string;
             /** Format: date */
@@ -14643,7 +16431,7 @@ export interface components {
              * Origem
              * @default manual
              */
-            source: components["schemas"]["PartApplicationSourceEnum"];
+            source?: components["schemas"]["PartApplicationSourceEnum"];
             /**
              * Confiança (%)
              * @description 0-100. seed=50, api=80, os_auto=90, manual=100.
@@ -14651,6 +16439,39 @@ export interface components {
             confidence_score?: number;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        /**
+         * @description Serializer de aplicação veicular com campos desnormalizados para exibição.
+         *
+         *     make_nome e model_nome evitam lookups adicionais no frontend.
+         */
+        PartApplicationRequest: {
+            /**
+             * Peça
+             * Format: uuid
+             */
+            part_ref: string;
+            /** Marca */
+            make: number;
+            /**
+             * Modelo
+             * @description Null = compatível com todos os modelos da marca.
+             */
+            model: number | null;
+            /** Ano início */
+            year_start?: number | null;
+            /** Ano fim */
+            year_end?: number | null;
+            /**
+             * Origem
+             * @default manual
+             */
+            source?: components["schemas"]["PartApplicationSourceEnum"];
+            /**
+             * Confiança (%)
+             * @description 0-100. seed=50, api=80, os_auto=90, manual=100.
+             */
+            confidence_score?: number;
         };
         /**
          * @description * `seed` - Seed (legado)
@@ -14744,6 +16565,32 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
+        /**
+         * @description Serializer leve para listagens — omite aplicações e fornecedores aninhados.
+         *
+         *     Usado em endpoints de busca onde o volume de resultados pode ser alto.
+         */
+        PartReferenceListRequest: {
+            /**
+             * Código do fabricante
+             * @description Part number único do fabricante (ex: 52058207, 5U0941005D).
+             */
+            manufacturer_code: string;
+            /** Descrição normalizada */
+            description: string;
+            /** Categoria */
+            category: number;
+            /**
+             * Unidade
+             * @description PC, UN, LT, JG, KT, etc.
+             */
+            unit?: string;
+            /** @description Código NCM 8 dígitos — obrigatório para NF-e. */
+            ncm?: string;
+            /** EAN/GTIN */
+            ean?: string;
+            is_active?: boolean;
+        };
         /** @description Serializer de referência de fornecedor — usado aninhado em PartReferenceDetailSerializer. */
         PartSupplierRef: {
             /** Format: uuid */
@@ -14773,18 +16620,7 @@ export interface components {
          *     do pipeline de match. Use delete + create para corrigir o mapeamento.
          *     confirmado_em e confirmado_por são preenchidos pelos actions approve/reject.
          */
-        PatchedAliasServicoUpdate: {
-            /** Format: uuid */
-            readonly id?: string;
-            /**
-             * Serviço canônico
-             * Format: uuid
-             */
-            readonly canonico?: string;
-            /** Texto original */
-            readonly texto?: string;
-            /** @description Lowercase sem acentos — usado para busca fuzzy. */
-            readonly texto_normalizado?: string;
+        PatchedAliasServicoUpdateRequest: {
             origem?: components["schemas"]["OrigemFcfEnum"];
             /**
              * Confiança
@@ -14797,34 +16633,18 @@ export interface components {
              * @description Quantas vezes este texto apareceu nas OS.
              */
             ocorrencias?: number;
-            /** Format: date-time */
-            readonly confirmado_em?: string | null;
-            /** Format: uuid */
-            readonly confirmado_por?: string | null;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
-        PatchedAreaImpacto: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedAreaImpactoRequest: {
             /** Título */
             titulo?: string;
             ordem?: number;
             status?: components["schemas"]["AreaImpactoStatusEnum"];
             /** Observação do regulador */
             observacao_regulador?: string;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
         /** @description CRUD de Armazém — total_ruas vem via annotate na view. */
-        PatchedArmazem: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedArmazemRequest: {
             nome?: string;
             /** @description Código curto: G1, G2, PT1. */
             codigo?: string;
@@ -14833,16 +16653,9 @@ export interface components {
             /** Format: uuid */
             responsavel?: string | null;
             observacoes?: string;
-            readonly total_ruas?: number;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
-        PatchedBenchmarkFonte: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedBenchmarkFonteRequest: {
             /** Format: uuid */
             empresa?: string;
             nome?: string;
@@ -14855,35 +16668,15 @@ export interface components {
              */
             confiabilidade?: string;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
         };
-        PatchedBenchmarkIngestao: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedBenchmarkIngestaoRequest: {
             /** Format: uuid */
             fonte?: string;
-            readonly fonte_nome?: string;
-            readonly fonte_tipo?: string;
-            /** Format: uri */
+            /** Format: binary */
             arquivo?: string | null;
             metadados?: unknown;
-            readonly status?: components["schemas"]["BenchmarkIngestaoStatusEnum"];
-            /** Format: date-time */
-            readonly iniciado_em?: string | null;
-            /** Format: date-time */
-            readonly concluido_em?: string | null;
-            readonly amostras_importadas?: number;
-            readonly amostras_descartadas?: number;
-            readonly log_erro?: string;
-            /** Format: uuid */
-            readonly criado_por?: string | null;
-            /** Format: date-time */
-            readonly criado_em?: string;
         };
-        PatchedBloqueioCapacidade: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedBloqueioCapacidadeRequest: {
             /**
              * Técnico
              * Format: uuid
@@ -14900,7 +16693,7 @@ export interface components {
             is_active?: boolean;
         };
         /** @description Write: aceita campos do item. Operations aninhadas como lista. */
-        PatchedBudgetVersionItemWrite: {
+        PatchedBudgetVersionItemWriteRequest: {
             bucket?: components["schemas"]["BucketEnum"];
             /** Bloco Pagador */
             payer_block?: components["schemas"]["PayerBlock498Enum"];
@@ -14994,9 +16787,7 @@ export interface components {
                 [key: string]: unknown;
             }[];
         };
-        PatchedCapacidadeTecnico: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedCapacidadeTecnicoRequest: {
             /**
              * Técnico
              * Format: uuid
@@ -15026,9 +16817,7 @@ export interface components {
             vigente_ate?: string | null;
         };
         /** @description CRUD de Categoria de Insumo. */
-        PatchedCategoriaInsumo: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedCategoriaInsumoRequest: {
             nome?: string;
             /** @description Código curto único (ex: TINT, VERN). */
             codigo?: string;
@@ -15039,13 +16828,9 @@ export interface components {
             margem_padrao_pct?: string;
             ordem?: number;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
         };
         /** @description Serializer completo para CategoriaMaoObra (lista + detalhe + CRUD). */
-        PatchedCategoriaMaoObra: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedCategoriaMaoObraRequest: {
             /**
              * Código
              * @description Slug único, ex: "funileiro-senior", "pintor".
@@ -15058,15 +16843,9 @@ export interface components {
              */
             ordem?: number;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
         /** @description CRUD de Categoria de Produto (Peça). */
-        PatchedCategoriaProduto: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedCategoriaProdutoRequest: {
             nome?: string;
             /** @description Código curto único (ex: FUN, PINT). */
             codigo?: string;
@@ -15077,13 +16856,9 @@ export interface components {
             margem_padrao_pct?: string;
             ordem?: number;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
         };
         /** @description Serializer completo para CategoriaServico (lista + detalhe + CRUD). */
-        PatchedCategoriaServico: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedCategoriaServicoRequest: {
             /**
              * Código
              * @description Slug único, ex: "funilaria", "pintura".
@@ -15096,14 +16871,8 @@ export interface components {
              */
             ordem?: number;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
-        PatchedCategoriaTamanho: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedCategoriaTamanhoRequest: {
             /**
              * Código
              * @description Slug único, ex: "compacto", "suv-grande".
@@ -15130,7 +16899,7 @@ export interface components {
             is_active?: boolean;
         };
         /** @description Serializer de criação — valida código único e nível derivado do parent. */
-        PatchedChartOfAccountCreate: {
+        PatchedChartOfAccountCreateRequest: {
             /** Código */
             code?: string;
             /** Nome */
@@ -15155,13 +16924,8 @@ export interface components {
             accepts_cost_center?: boolean;
         };
         /** @description Serializer para listagem de contagens. */
-        PatchedContagemInventario: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedContagemInventarioRequest: {
             tipo?: components["schemas"]["Tipo046Enum"];
-            readonly tipo_display?: string;
-            readonly status?: components["schemas"]["Status5b9Enum"];
-            readonly status_display?: string;
             /**
              * Format: uuid
              * @description Contagem total = armazém inteiro.
@@ -15172,30 +16936,10 @@ export interface components {
              * @description Contagem cíclica = por rua.
              */
             rua?: string | null;
-            /** Format: date-time */
-            readonly data_abertura?: string;
-            /** Format: date-time */
-            readonly data_fechamento?: string | null;
-            /** Format: uuid */
-            readonly iniciado_por?: string;
-            /** @default  */
-            readonly iniciado_por_nome: string;
-            /** Format: uuid */
-            readonly fechado_por?: string | null;
-            /** @default  */
-            readonly fechado_por_nome: string;
             observacoes?: string;
-            /** @default 0 */
-            readonly total_itens: number;
-            /** @default 0 */
-            readonly total_contados: number;
-            /** @default 0 */
-            readonly total_divergencias: number;
-            /** Format: date-time */
-            readonly created_at?: string;
         };
         /** @description Serializer de criação e atualização. */
-        PatchedCostCenterCreate: {
+        PatchedCostCenterCreateRequest: {
             /** Código */
             code?: string;
             /** Nome */
@@ -15212,9 +16956,7 @@ export interface components {
             os_type_code?: string;
         };
         /** @description Serializer para CustoHoraFallback — valor direto enquanto RH não está disponível. */
-        PatchedCustoHoraFallback: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedCustoHoraFallbackRequest: {
             /** Format: uuid */
             empresa?: string;
             /**
@@ -15222,7 +16964,6 @@ export interface components {
              * Format: uuid
              */
             categoria?: string;
-            readonly categoria_nome?: string;
             /** Format: date */
             vigente_desde?: string;
             /**
@@ -15240,13 +16981,10 @@ export interface components {
             is_active?: boolean;
         };
         /** @description Serializer de detalhe — todos os campos para create/retrieve/update. */
-        PatchedDespesaRecorrente: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedDespesaRecorrenteRequest: {
             /** Format: uuid */
             empresa?: string;
             tipo?: components["schemas"]["Tipo7faEnum"];
-            readonly tipo_display?: string;
             /** Descrição */
             descricao?: string;
             /** Format: decimal */
@@ -15267,13 +17005,9 @@ export interface components {
             /** Observações */
             observacoes?: string;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
         /** @description Serializer de atualização — não permite alterar user nem matrícula. */
-        PatchedEmployeeUpdate: {
+        PatchedEmployeeUpdateRequest: {
             /** Setor */
             department?: components["schemas"]["DepartmentEnum"];
             /** Cargo */
@@ -15360,9 +17094,7 @@ export interface components {
              */
             extra_permissions?: unknown;
         };
-        PatchedEmpresa: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedEmpresaRequest: {
             /** @description CNPJ sem pontuação (14 dígitos). */
             cnpj?: string;
             nome_fantasia?: string;
@@ -15371,12 +17103,8 @@ export interface components {
             /** Inscrição estadual */
             inscricao_estadual?: string;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
         };
-        PatchedEnquadramentoVeiculo: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedEnquadramentoVeiculoRequest: {
             marca?: string;
             /** @description Deixar em branco para regra que cobre toda a marca. */
             modelo?: string;
@@ -15402,14 +17130,11 @@ export interface components {
              * @description Slug único, ex: "solida", "metalica", "perolizada", "tricoat".
              */
             tipo_pintura_codigo?: string | null;
-            readonly segmento?: components["schemas"]["SegmentoVeicular"];
-            readonly tamanho?: components["schemas"]["CategoriaTamanho"];
-            readonly tipo_pintura_default?: components["schemas"]["TipoPintura"];
             /** @description Quanto menor, mais específico. Match exato (marca+modelo+ano) = 10; só marca = 100. */
             prioridade?: number;
             is_active?: boolean;
         };
-        PatchedGoalTargetUpdate: {
+        PatchedGoalTargetUpdateRequest: {
             /**
              * Valor atual
              * Format: decimal
@@ -15430,9 +17155,7 @@ export interface components {
             recurrence_day?: number;
         };
         /** @description Serializer para Feriados. */
-        PatchedHoliday: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedHolidayRequest: {
             /**
              * Data
              * Format: date
@@ -15441,15 +17164,10 @@ export interface components {
             /** Nome */
             name?: string;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
         };
-        PatchedImpressoraEtiqueta: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedImpressoraEtiquetaRequest: {
             nome?: string;
             modelo?: components["schemas"]["ModeloEnum"];
-            readonly modelo_display?: string;
             /** @description Ex: http://10.0.0.15:9100 (Zebra direct print). */
             endpoint?: string;
             largura_mm?: number;
@@ -15462,15 +17180,7 @@ export interface components {
          *     material_canonico e sku_interno são read_only — não devem ser remapeados
          *     após criação (quebra consistência de estoque e histórico).
          */
-        PatchedInsumoMaterialUpdate: {
-            /** Format: uuid */
-            readonly id?: string;
-            /**
-             * Material canônico
-             * Format: uuid
-             */
-            readonly material_canonico?: string;
-            readonly sku_interno?: string;
+        PatchedInsumoMaterialUpdateRequest: {
             /** GTIN/EAN */
             gtin?: string;
             /** Descrição */
@@ -15488,15 +17198,9 @@ export interface components {
              */
             fator_conversao?: string;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
         /** @description Serializer completo para seguradoras. */
-        PatchedInsurer: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedInsurerRequest: {
             /** Razão social */
             name?: string;
             /** Nome fantasia */
@@ -15523,9 +17227,7 @@ export interface components {
             uses_cilia?: boolean;
         };
         /** @description Serializer para MargemOperacao — margem base por segmento × tipo. */
-        PatchedMargemOperacao: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedMargemOperacaoRequest: {
             /** Format: uuid */
             empresa?: string;
             /**
@@ -15533,11 +17235,8 @@ export interface components {
              * Format: uuid
              */
             segmento?: string;
-            readonly segmento_codigo?: string;
-            readonly segmento_nome?: string;
             /** Tipo de operação */
             tipo_operacao?: components["schemas"]["TipoOperacaoEnum"];
-            readonly tipo_operacao_display?: string;
             /**
              * Format: decimal
              * @description Margem base, ex: 0.4000 = 40%. Multiplicada por (1 + fator_responsabilidade) no cálculo final.
@@ -15553,9 +17252,7 @@ export interface components {
             is_active?: boolean;
         };
         /** @description Serializer para MarkupPeca — override fino por peça ou faixa de custo. */
-        PatchedMarkupPeca: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedMarkupPecaRequest: {
             /** Format: uuid */
             empresa?: string;
             /**
@@ -15563,7 +17260,6 @@ export interface components {
              * Format: uuid
              */
             peca_canonica?: string | null;
-            readonly peca_nome?: string;
             /**
              * Faixa custo mín (R$)
              * Format: decimal
@@ -15593,52 +17289,15 @@ export interface components {
          *     unidade_base é read_only — imutável após criação (quebra fator_conversao dos InsumoMaterial
          *     vinculados). codigo também é read_only — slug imutável após criação.
          */
-        PatchedMaterialCanonicoUpdate: {
-            /** Format: uuid */
-            readonly id?: string;
-            /**
-             * Código
-             * @description Slug único, ex: "tinta-base-1l", "lixa-400".
-             */
-            readonly codigo?: string;
+        PatchedMaterialCanonicoUpdateRequest: {
             nome?: string;
-            /** @description Unidade de medida principal: L, kg, m, un, m2. */
-            readonly unidade_base?: string;
             tipo?: components["schemas"]["Tipo1d6Enum"];
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
-        };
-        PatchedNFeEntradaList: {
-            /** Format: uuid */
-            readonly id?: string;
-            /** @description Chave de 44 dígitos SEFAZ. */
-            readonly chave_acesso?: string;
-            readonly numero?: string;
-            readonly serie?: string;
-            readonly emitente_cnpj?: string;
-            readonly emitente_nome?: string;
-            /** Format: date */
-            readonly data_emissao?: string | null;
-            /** Format: decimal */
-            readonly valor_total?: string;
-            readonly status?: components["schemas"]["Status21dEnum"];
-            readonly estoque_gerado?: boolean;
-            /** @description True se importada automaticamente via webhook nfe_recebida. */
-            readonly auto_imported?: boolean;
-            readonly total_itens?: number;
-            /** Format: date-time */
-            readonly created_at?: string;
         };
         /** @description CRUD de Nível — ponto terminal do endereçamento WMS. */
-        PatchedNivel: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedNivelRequest: {
             /** Format: uuid */
             prateleira?: string;
-            readonly prateleira_codigo?: string;
             /** @description N1, N2. */
             codigo?: string;
             descricao?: string;
@@ -15646,24 +17305,10 @@ export interface components {
             largura_cm?: number | null;
             profundidade_cm?: number | null;
             ordem?: number;
-            readonly endereco_completo?: string;
-            readonly total_unidades?: number;
-            readonly total_lotes?: number;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
         };
         /** @description Serializer completo para detalhe. */
-        PatchedOrcamento: {
-            /** Format: uuid */
-            readonly id?: string;
-            /** Número */
-            readonly numero?: string;
-            /**
-             * Versão
-             * @default 1
-             */
-            readonly versao: number;
+        PatchedOrcamentoRequest: {
             status?: components["schemas"]["Status9f8Enum"];
             /** Format: uuid */
             empresa?: string;
@@ -15672,13 +17317,11 @@ export interface components {
              * Format: uuid
              */
             customer?: string;
-            readonly customer_nome?: string;
             /**
              * Seguradora
              * Format: uuid
              */
             insurer?: string | null;
-            readonly seguradora?: string;
             /** Tipo de responsabilidade */
             tipo_responsabilidade?: components["schemas"]["TipoResponsabilidadeB50Enum"];
             /** Número do sinistro */
@@ -15693,14 +17336,8 @@ export interface components {
             veiculo_versao?: string;
             /** Placa */
             veiculo_placa?: string;
-            /** @description {segmento_codigo, tamanho_codigo, fator_resp, tipo_pintura_codigo} */
-            readonly enquadramento_snapshot?: unknown;
-            /** Format: decimal */
-            readonly subtotal?: string;
             /** Format: decimal */
             desconto?: string;
-            /** Format: decimal */
-            readonly total?: string;
             /**
              * Válido até
              * Format: date
@@ -15708,34 +17345,14 @@ export interface components {
             validade?: string;
             /** Observações */
             observacoes?: string;
-            /** Format: date-time */
-            readonly enviado_em?: string | null;
-            /** Format: date-time */
-            readonly aprovado_em?: string | null;
-            /**
-             * OS gerada
-             * Format: uuid
-             */
-            readonly service_order?: string | null;
-            readonly areas?: components["schemas"]["AreaImpacto"][];
-            readonly intervencoes?: components["schemas"]["OrcamentoIntervencao"][];
-            readonly itens_adicionais?: components["schemas"]["OrcamentoItemAdicional"][];
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
         /** @description Serializer para listagem de ordens de compra. */
-        PatchedOrdemCompraList: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedOrdemCompraListRequest: {
             /** @description Auto-gerado: OC-{year}-{seq:04d} */
             numero?: string;
             /** Format: uuid */
             service_order?: string;
-            readonly os_number?: number;
             status?: components["schemas"]["Status25dEnum"];
-            readonly status_display?: string;
             /**
              * Format: decimal
              * @description Soma dos itens — recomputado no save().
@@ -15743,18 +17360,9 @@ export interface components {
             valor_total?: string;
             /** Format: uuid */
             criado_por?: string;
-            /** @default  */
-            readonly criado_por_nome: string;
-            /** @default  */
-            readonly aprovado_por_nome: string;
-            readonly total_itens?: number;
-            /** Format: date-time */
-            readonly created_at?: string;
         };
         /** @description Serializer para ParametroCustoHora — encargos sobre salário bruto. */
-        PatchedParametroCustoHora: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedParametroCustoHoraRequest: {
             /** Format: uuid */
             empresa?: string;
             /** Format: date */
@@ -15793,9 +17401,7 @@ export interface components {
             is_active?: boolean;
         };
         /** @description Serializer para ParametroRateio — parâmetros de rateio de despesas. */
-        PatchedParametroRateio: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedParametroRateioRequest: {
             /** Format: uuid */
             empresa?: string;
             /** Format: date */
@@ -15822,9 +17428,7 @@ export interface components {
          *
          *     Usado em endpoints de busca onde o volume de resultados pode ser alto.
          */
-        PatchedPartReferenceList: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedPartReferenceListRequest: {
             /**
              * Código do fabricante
              * @description Part number único do fabricante (ex: 52058207, 5U0941005D).
@@ -15834,7 +17438,6 @@ export interface components {
             description?: string;
             /** Categoria */
             category?: number;
-            readonly category_name?: string;
             /**
              * Unidade
              * @description PC, UN, LT, JG, KT, etc.
@@ -15845,14 +17448,9 @@ export interface components {
             /** EAN/GTIN */
             ean?: string;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
         /** @description Serializer completo de titulo a pagar — inclui pagamentos. */
-        PatchedPayableDocument: {
-            /** Format: uuid */
-            readonly id?: string;
-            readonly supplier?: components["schemas"]["SupplierList"];
+        PatchedPayableDocumentRequest: {
             /** Descricao */
             description?: string;
             /** No Documento */
@@ -15868,13 +17466,6 @@ export interface components {
              */
             amount?: string;
             /**
-             * Valor pago
-             * Format: decimal
-             */
-            readonly amount_paid?: string;
-            /** @description Retorna saldo restante a pagar. */
-            readonly amount_remaining?: string;
-            /**
              * Vencimento
              * Format: date
              */
@@ -15884,11 +17475,8 @@ export interface components {
              * Format: date
              */
             competence_date?: string;
-            readonly status?: components["schemas"]["Status2c7Enum"];
-            readonly status_display?: string;
             /** Origem */
             origin?: components["schemas"]["Origin627Enum"];
-            readonly origin_display?: string;
             /**
              * Centro de Custo
              * Format: uuid
@@ -15902,53 +17490,25 @@ export interface components {
             expense_account?: string | null;
             /** Observacoes */
             notes?: string;
-            /**
-             * Cancelado em
-             * Format: date-time
-             */
-            readonly cancelled_at?: string | null;
-            /**
-             * Cancelado por
-             * Format: uuid
-             */
-            readonly cancelled_by?: string | null;
-            /** @description Retorna nome do usuario que cancelou, se houver. */
-            readonly cancelled_by_name?: string | null;
             /** Motivo do cancelamento */
             cancel_reason?: string;
-            readonly payments?: components["schemas"]["PayablePayment"][];
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
         /**
          * @description Serializer de atualização para PecaCanonica.
          *
          *     codigo é read_only — slug imutável após criação.
          */
-        PatchedPecaCanonicoUpdate: {
-            /** Format: uuid */
-            readonly id?: string;
-            /**
-             * Código
-             * @description Slug único, ex: "para-choque-dianteiro-corolla-2020".
-             */
-            readonly codigo?: string;
+        PatchedPecaCanonicoUpdateRequest: {
             nome?: string;
             /** Tipo de peça */
             tipo_peca?: components["schemas"]["TipoPecaEnum"];
             /** @description Código NCM/SH (8 dígitos). Ex: 87089990. Obrigatório para emissão de NF-e. */
             ncm?: string;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
         /** @description Serializer de escrita com sync de roles, contatos, endereços e documentos. */
-        PatchedPersonCreateUpdate: {
+        PatchedPersonCreateUpdateRequest: {
             /** Tipo de pessoa */
             person_kind?: components["schemas"]["PersonKindEnum"];
             /** Nome / Razão social */
@@ -15975,13 +17535,12 @@ export interface components {
             /** Observações */
             notes?: string;
             roles?: components["schemas"]["RolesEnum"][];
-            contacts?: components["schemas"]["PersonContactWrite"][];
-            addresses?: components["schemas"]["PersonAddress"][];
-            documents?: components["schemas"]["PersonDocumentWrite"][];
+            contacts?: components["schemas"]["PersonContactWriteRequest"][];
+            addresses?: components["schemas"]["PersonAddressRequest"][];
+            documents?: components["schemas"]["PersonDocumentWriteRequest"][];
         };
         /** @description Serializer completo para detalhe de pessoa — PII mascarada por padrão. */
-        PatchedPersonDetail: {
-            readonly id?: number;
+        PatchedPersonDetailRequest: {
             /** Tipo de pessoa */
             person_kind?: components["schemas"]["PersonKindEnum"];
             /** Nome / Razão social */
@@ -16007,25 +17566,13 @@ export interface components {
             is_active?: boolean;
             /** Observações */
             notes?: string;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
             legacy_code?: string;
             legacy_category?: string;
-            readonly roles?: components["schemas"]["PersonRole"][];
-            readonly documents?: components["schemas"]["PersonDocumentMasked"][];
-            readonly contacts?: components["schemas"]["PersonContact"][];
-            readonly addresses?: components["schemas"]["PersonAddress"][];
-            readonly client_profile?: components["schemas"]["ClientProfile"];
         };
         /** @description CRUD de Prateleira. */
-        PatchedPrateleira: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedPrateleiraRequest: {
             /** Format: uuid */
             rua?: string;
-            readonly rua_codigo?: string;
             /** @description P01, P02. */
             codigo?: string;
             descricao?: string;
@@ -16035,15 +17582,10 @@ export interface components {
              */
             capacidade_kg?: string | null;
             ordem?: number;
-            readonly total_niveis?: number;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
         };
         /** @description CRUD de Produto Comercial (Insumo). */
-        PatchedProdutoComercialInsumo: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedProdutoComercialInsumoRequest: {
             /** @description SKU interno da empresa (ex: VN-001). */
             sku_interno?: string;
             /** @description Nome comercial do insumo (ex: Verniz PU Lazzuril 900ml). */
@@ -16058,8 +17600,6 @@ export interface components {
             unidade_base?: string;
             /** Format: uuid */
             categoria_insumo?: string | null;
-            /** @default  */
-            readonly categoria_insumo_nome: string;
             /**
              * Format: uuid
              * @description Material canônico do catálogo técnico.
@@ -16077,15 +17617,9 @@ export interface components {
             margem_padrao_pct?: string | null;
             observacoes?: string;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
         /** @description CRUD de Produto Comercial (Peça). */
-        PatchedProdutoComercialPeca: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedProdutoComercialPecaRequest: {
             /** @description SKU interno da empresa (ex: PC-001). */
             sku_interno?: string;
             /** @description Nome comercial da peça (ex: Para-choque Gol G5 Dianteiro). */
@@ -16100,16 +17634,10 @@ export interface components {
             nome_fabricante?: string;
             /** Format: uuid */
             tipo_peca?: string | null;
-            /** @default  */
-            readonly tipo_peca_nome: string;
             posicao_veiculo?: components["schemas"]["PosicaoVeiculoEnum"];
-            readonly posicao_veiculo_display?: string;
             lado?: components["schemas"]["LadoEnum"];
-            readonly lado_display?: string;
             /** Format: uuid */
             categoria?: string | null;
-            /** @default  */
-            readonly categoria_nome: string;
             /**
              * Format: uuid
              * @description Peça canônica do catálogo técnico.
@@ -16127,20 +17655,14 @@ export interface components {
             margem_padrao_pct?: string | null;
             observacoes?: string;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
         /** @description Body de PATCH /auth/push-token/. */
-        PatchedPushTokenRequest: {
+        PatchedPushTokenRequestRequest: {
             /** @description Expo push token ExponentPushToken[...] */
             token?: string;
         };
         /** @description Serializer completo de titulo a receber — inclui recebimentos. */
-        PatchedReceivableDocument: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedReceivableDocumentRequest: {
             /**
              * ID do cliente
              * Format: uuid
@@ -16163,13 +17685,6 @@ export interface components {
              */
             amount?: string;
             /**
-             * Valor recebido
-             * Format: decimal
-             */
-            readonly amount_received?: string;
-            /** @description Retorna saldo restante a receber. */
-            readonly amount_remaining?: string;
-            /**
              * Vencimento
              * Format: date
              */
@@ -16179,11 +17694,8 @@ export interface components {
              * Format: date
              */
             competence_date?: string;
-            readonly status?: components["schemas"]["StatusFb6Enum"];
-            readonly status_display?: string;
             /** Origem */
             origin?: components["schemas"]["Origin1f1Enum"];
-            readonly origin_display?: string;
             /**
              * ID da OS
              * Format: uuid
@@ -16196,80 +17708,43 @@ export interface components {
             cost_center?: string | null;
             /** Observacoes */
             notes?: string;
-            /**
-             * Cancelado em
-             * Format: date-time
-             */
-            readonly cancelled_at?: string | null;
-            /**
-             * Cancelado por
-             * Format: uuid
-             */
-            readonly cancelled_by?: string | null;
-            /** @description Retorna nome do usuario que cancelou, se houver. */
-            readonly cancelled_by_name?: string | null;
             /** Motivo do cancelamento */
             cancel_reason?: string;
-            readonly receipts?: components["schemas"]["ReceivableReceipt"][];
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
         /** @description Input para registro de quantidade contada em um item. */
-        PatchedRegistrarItemInput: {
+        PatchedRegistrarItemInputRequest: {
             /** Format: decimal */
             quantidade_contada?: string;
             /** @default  */
-            observacao: string;
+            observacao?: string;
         };
-        PatchedRespostaCotacao: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedRespostaCotacaoRequest: {
             /** Format: uuid */
             pedido_compra?: string;
             supplier?: number;
-            readonly supplier_name?: string;
             /** Format: decimal */
             valor_unitario?: string;
             prazo_entrega?: string;
             /** Format: uuid */
             prazo_entrega_obj?: string | null;
-            /** @default  */
-            readonly prazo_entrega_label: string;
             condicoes_pagamento?: string;
             /** Format: uuid */
             condicao_pagamento_obj?: string | null;
-            /** @default  */
-            readonly condicao_pagamento_label: string;
             observacoes?: string;
             selecionada?: boolean;
-            /** Format: uuid */
-            readonly registrado_por?: string;
-            readonly registrado_por_nome?: string;
-            /** Format: date-time */
-            readonly created_at?: string;
         };
         /** @description CRUD de Rua — armazem_codigo resolvido via source. */
-        PatchedRua: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedRuaRequest: {
             /** Format: uuid */
             armazem?: string;
-            readonly armazem_codigo?: string;
             /** @description R01, R02. */
             codigo?: string;
             descricao?: string;
             ordem?: number;
-            readonly total_prateleiras?: number;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
         };
-        PatchedSegmentoVeicular: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedSegmentoVeicularRequest: {
             /**
              * Código
              * @description Slug único, ex: "popular", "premium".
@@ -16291,16 +17766,13 @@ export interface components {
             is_active?: boolean;
         };
         /** @description Serializer completo para criacao/edicao do catalogo. */
-        PatchedServiceCatalog: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedServiceCatalogRequest: {
             /** Nome do serviço */
             name?: string;
             /** Descrição / observação */
             description?: string;
             /** Categoria */
             category?: components["schemas"]["Category48eEnum"];
-            readonly category_display?: string;
             /**
              * Preço sugerido
              * Format: decimal
@@ -16308,55 +17780,9 @@ export interface components {
             suggested_price?: string;
             /** Ativo */
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
         /** @description Serializer completo para a tela de abertura/edicao da OS. */
-        PatchedServiceOrderDetail: {
-            /** Format: uuid */
-            readonly id?: string;
-            /** Format: double */
-            readonly total?: number;
-            readonly status_display?: string;
-            readonly customer_type_display?: string;
-            readonly os_type_display?: string;
-            readonly insured_type_display?: string;
-            readonly vehicle_location_display?: string;
-            readonly allowed_transitions?: string[];
-            readonly insurer_detail?: components["schemas"]["InsurerMinimal"];
-            readonly expert_detail?: components["schemas"]["ExpertMinimal"];
-            readonly transition_logs?: components["schemas"]["StatusTransitionLog"][];
-            readonly photos?: components["schemas"]["ServiceOrderPhoto"][];
-            readonly parts?: components["schemas"]["ServiceOrderPart"][];
-            readonly labor_items?: components["schemas"]["ServiceOrderLabor"][];
-            readonly budget_snapshots?: components["schemas"]["BudgetSnapshot"][];
-            readonly days_in_shop?: number | null;
-            readonly consultant_name?: string;
-            /** @description Retorna customer_uuid para compatibilidade com frontend (nao o PK integer da Person). */
-            readonly customer?: string | null;
-            /** @description Retorna o PK inteiro da Person FK (novo fluxo de criacao de OS). */
-            readonly customer_person_id?: number | null;
-            /**
-             * @description Retorna o status de encerramento da OS (entregue + faturada + paga).
-             *
-             *     Retorna None se a OS nao estiver no status delivered.
-             *     Usa anotacoes do queryset quando disponiveis; caso contrario faz query direta.
-             */
-            readonly closure_status?: {
-                [key: string]: unknown;
-            } | null;
-            /** @description Retorna validacao de pre-requisitos para cada transicao permitida. */
-            readonly transition_requirements?: {
-                [key: string]: {
-                    [key: string]: unknown;
-                };
-            };
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
+        PatchedServiceOrderDetailRequest: {
             is_active?: boolean;
             /** Número da OS */
             number?: number;
@@ -16536,8 +17962,6 @@ export interface components {
              */
             previous_status?: string;
             /** Format: date-time */
-            readonly opened_at?: string;
-            /** Format: date-time */
             delivered_at?: string | null;
             /** Format: date-time */
             estimated_delivery?: string | null;
@@ -16587,8 +18011,7 @@ export interface components {
             /** Perito */
             expert?: number | null;
         };
-        PatchedServiceOrderParecer: {
-            readonly id?: number;
+        PatchedServiceOrderParecerRequest: {
             /** Format: uuid */
             service_order?: string;
             version?: number | null;
@@ -16601,21 +18024,12 @@ export interface components {
             body?: string;
             /** Format: date-time */
             created_at_external?: string | null;
-            /** Format: date-time */
-            readonly created_at?: string;
         };
         /** @description Serializer para atualizacao parcial de OS. */
-        PatchedServiceOrderUpdate: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedServiceOrderUpdateRequest: {
             /** Format: uuid */
             customer?: string | null;
             customer_person_id?: number | null;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
-            readonly is_active?: boolean;
             /** Tipo de atendimento */
             customer_type?: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             /** Tipo de OS */
@@ -16785,33 +18199,18 @@ export interface components {
              * @description Data/hora de entrega ao cliente — ALTERA STATUS automaticamente
              */
             client_delivery_date?: string | null;
-            readonly status?: components["schemas"]["Status5e2Enum"];
             /**
              * Status anterior
              * @description Status antes de entrar em 'budget' (auto-Kanban). Restaurado ao aprovar versão.
              */
             previous_status?: string;
             /** Format: date-time */
-            readonly delivered_at?: string | null;
-            /** Format: date-time */
             estimated_delivery?: string | null;
-            /** Format: decimal */
-            readonly parts_total?: string;
-            /** Format: decimal */
-            readonly services_total?: string;
-            /** Format: decimal */
-            readonly discount_total?: string;
             /**
              * Format: decimal
              * @description Total oficial da seguradora (Cilia/IFX/HDI) — verdade absoluta
              */
             total_seguradora_oficial?: string | null;
-            /** Chave NF-e */
-            readonly nfe_key?: string;
-            /** Número NFS-e */
-            readonly nfse_number?: string;
-            /** NF emitida */
-            readonly invoice_issued?: boolean;
             /**
              * Nº NF externa
              * @description Número da NF emitida fora do sistema (uso temporário enquanto Focus não está disponível). Quando preenchido junto com external_invoice_date, a OS é considerada faturada para fins de fechamento.
@@ -16823,7 +18222,6 @@ export interface components {
              * @description Data da NF emitida fora do sistema.
              */
             external_invoice_date?: string | null;
-            readonly ai_recommendations?: unknown;
             /** Observações gerais */
             notes?: string;
             /**
@@ -16844,14 +18242,7 @@ export interface components {
          *
          *     codigo é read_only — slug imutável após criação (alterar quebraria aliases existentes).
          */
-        PatchedServicoCanonicoUpdate: {
-            /** Format: uuid */
-            readonly id?: string;
-            /**
-             * Código
-             * @description Slug único, ex: "pintura-para-choque".
-             */
-            readonly codigo?: string;
+        PatchedServicoCanonicoUpdateRequest: {
             nome?: string;
             /** Format: uuid */
             categoria?: string;
@@ -16865,43 +18256,25 @@ export interface components {
              */
             aplica_multiplicador_tamanho?: boolean;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
         /** @description Serializer para listagem e gestao de usuarios. */
-        PatchedStaffUser: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedStaffUserRequest: {
             name?: string;
-            readonly email_hash?: string;
             /** Papel */
             role?: components["schemas"]["StaffUserRoleEnum"];
-            readonly role_display?: string;
             /** Setor / Cargo */
             job_title?: components["schemas"]["JobTitleEnum"] | components["schemas"]["BlankEnum"];
-            readonly job_title_display?: string;
             is_active?: boolean;
-            readonly email_verified?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
         };
         /** @description CRUD de Tipo de Peça. */
-        PatchedTipoPeca: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedTipoPecaRequest: {
             nome?: string;
             /** @description Código curto único (ex: PCHQ, FAROL). */
             codigo?: string;
             ordem?: number;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
         };
-        PatchedTipoPintura: {
-            /** Format: uuid */
-            readonly id?: string;
+        PatchedTipoPinturaRequest: {
             /**
              * Código
              * @description Slug único, ex: "solida", "metalica", "perolizada", "tricoat".
@@ -16917,7 +18290,7 @@ export interface components {
          *     CPF não é editável — é o identificador primário.
          *     phone e email são normalizados antes de salvar.
          */
-        PatchedUnifiedCustomerUpdate: {
+        PatchedUnifiedCustomerUpdateRequest: {
             /** Nome */
             name?: string;
             phone?: string;
@@ -16946,38 +18319,29 @@ export interface components {
             /** UF */
             state?: string;
         };
-        PatchedUserPermission: {
-            readonly id?: number;
+        PatchedUserPermissionRequest: {
             /** Format: uuid */
             user?: string;
             permission?: number;
             granted?: boolean;
         };
-        PatchedUserRole: {
-            readonly id?: number;
+        PatchedUserRoleRequest: {
             /** Format: uuid */
             user?: string;
             role?: number;
         };
-        PatchedVehicle: {
-            readonly id?: number;
+        PatchedVehicleRequest: {
             plate?: string;
             version?: number | null;
             description?: string;
-            /** @description Nome para exibição: catálogo FIPE ou descrição livre. */
-            readonly display_name?: string;
             color?: string;
             year_manufacture?: number | null;
             chassis?: string;
             renavam?: string;
             is_active?: boolean;
-            /** Format: date-time */
-            readonly created_at?: string;
-            /** Format: date-time */
-            readonly updated_at?: string;
         };
         /** @description 410 Gone — endpoint deprecated. */
-        Patched_Gone: {
+        Patched_GoneRequest: {
             detail?: string;
         };
         /**
@@ -17095,6 +18459,51 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        /** @description Serializer completo de titulo a pagar — inclui pagamentos. */
+        PayableDocumentRequest: {
+            /** Descricao */
+            description: string;
+            /** No Documento */
+            document_number?: string;
+            /**
+             * Data do documento
+             * Format: date
+             */
+            document_date?: string | null;
+            /**
+             * Valor
+             * Format: decimal
+             */
+            amount: string;
+            /**
+             * Vencimento
+             * Format: date
+             */
+            due_date: string;
+            /**
+             * Competencia
+             * Format: date
+             */
+            competence_date: string;
+            /** Origem */
+            origin?: components["schemas"]["Origin627Enum"];
+            /**
+             * Centro de Custo
+             * Format: uuid
+             */
+            cost_center?: string | null;
+            /**
+             * Conta de Despesa
+             * Format: uuid
+             * @description Conta contábil para reconhecimento da despesa (6.x). Se vazio, não gera lançamento de despesa.
+             */
+            expense_account?: string | null;
+            /** Observacoes */
+            notes?: string;
+            /** Motivo do cancelamento */
+            cancel_reason?: string;
+            is_active?: boolean;
+        };
         /** @description Serializer de leitura de PayablePayment. */
         PayablePayment: {
             /** Format: uuid */
@@ -17123,6 +18532,25 @@ export interface components {
             readonly journal_entry_id: string | null;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        /** @description Serializer de leitura de PayablePayment. */
+        PayablePaymentRequest: {
+            /**
+             * Data do pagamento
+             * Format: date
+             */
+            payment_date: string;
+            /**
+             * Valor pago
+             * Format: decimal
+             */
+            amount: string;
+            /** Forma de pagamento */
+            payment_method?: components["schemas"]["PaymentMethod53eEnum"];
+            /** Conta bancaria */
+            bank_account?: string;
+            /** Observacoes */
+            notes?: string;
         };
         /**
          * @description * `SEGURADORA` - Seguradora
@@ -17194,6 +18622,15 @@ export interface components {
          * @enum {string}
          */
         PaymentPayerBlockEnum: "SEGURADORA" | "COMPLEMENTO_PARTICULAR" | "FRANQUIA" | "PARTICULAR";
+        PaymentRequest: {
+            payer_block: components["schemas"]["PaymentPayerBlockEnum"];
+            /** Format: decimal */
+            amount: string;
+            method: components["schemas"]["PaymentMethodEnum"];
+            reference?: string;
+            received_by?: string;
+            fiscal_doc_ref?: string;
+        };
         /**
          * @description * `pending` - Pendente
          *     * `received` - Recebido
@@ -17217,7 +18654,7 @@ export interface components {
              * Tipo
              * @default regular
              */
-            payslip_type: components["schemas"]["PayslipTypeEnum"];
+            payslip_type?: components["schemas"]["PayslipTypeEnum"];
             /**
              * Salário base
              * Format: decimal
@@ -17291,6 +18728,81 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
+        PayslipRequest: {
+            /** Format: uuid */
+            employee: string;
+            /**
+             * Mês de referência
+             * Format: date
+             * @description Primeiro dia do mês (ex: 2026-04-01)
+             */
+            reference_month: string;
+            /**
+             * Tipo
+             * @default regular
+             */
+            payslip_type?: components["schemas"]["PayslipTypeEnum"];
+            /**
+             * Salário base
+             * Format: decimal
+             */
+            base_salary: string;
+            /**
+             * Total bonificações
+             * Format: decimal
+             */
+            total_bonuses?: string;
+            /**
+             * Total vales
+             * Format: decimal
+             */
+            total_allowances?: string;
+            /**
+             * Horas extras
+             * Format: decimal
+             */
+            total_overtime_hours?: string;
+            /**
+             * Valor horas extras
+             * Format: decimal
+             */
+            total_overtime_value?: string;
+            /**
+             * Total descontos
+             * Format: decimal
+             */
+            total_deductions?: string;
+            /**
+             * Salário bruto
+             * Format: decimal
+             * @description base + bonificações + vales + horas extras
+             */
+            gross_pay: string;
+            /**
+             * Salário líquido
+             * Format: decimal
+             * @description bruto - descontos
+             */
+            net_pay: string;
+            /** Dias trabalhados */
+            worked_days?: number;
+            /**
+             * Horas trabalhadas
+             * Format: decimal
+             */
+            worked_hours?: string;
+            /** Faltas */
+            total_absences?: number;
+            /** Minutos de atraso */
+            total_late_minutes?: number;
+            /** @description [{"type": "goal", "description": "...", "amount": 500.00}] */
+            bonus_breakdown?: unknown;
+            /** @description [{"type": "food", "amount": 600.00}] */
+            allowance_breakdown?: unknown;
+            /** @description [{"type": "inss", "amount": 150.00}] */
+            deduction_breakdown?: unknown;
+            notes?: string;
+        };
         /**
          * @description * `regular` - Folha mensal
          *     * `thirteenth_first` - 13º — 1ª parcela
@@ -17301,6 +18813,19 @@ export interface components {
         PayslipTypeEnum: "regular" | "thirteenth_first" | "thirteenth_second" | "thirteenth_full";
         /** @description Serializer de criação para PecaCanonica. */
         PecaCanonicoCreate: {
+            /**
+             * Código
+             * @description Slug único, ex: "para-choque-dianteiro-corolla-2020".
+             */
+            codigo: string;
+            nome: string;
+            /** Tipo de peça */
+            tipo_peca?: components["schemas"]["TipoPecaEnum"];
+            /** @description Código NCM/SH (8 dígitos). Ex: 87089990. Obrigatório para emissão de NF-e. */
+            ncm?: string;
+        };
+        /** @description Serializer de criação para PecaCanonica. */
+        PecaCanonicoCreateRequest: {
             /**
              * Código
              * @description Slug único, ex: "para-choque-dianteiro-corolla-2020".
@@ -17334,6 +18859,20 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        /** @description Serializer de detalhe para PecaCanonica. */
+        PecaCanonicoDetailRequest: {
+            /**
+             * Código
+             * @description Slug único, ex: "para-choque-dianteiro-corolla-2020".
+             */
+            codigo: string;
+            nome: string;
+            /** Tipo de peça */
+            tipo_peca?: components["schemas"]["TipoPecaEnum"];
+            /** @description Código NCM/SH (8 dígitos). Ex: 87089990. Obrigatório para emissão de NF-e. */
+            ncm?: string;
+            is_active?: boolean;
         };
         /** @description Serializer resumido para listagens de PecaCanonica. */
         PecaCanonicoList: {
@@ -17374,6 +18913,19 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        /**
+         * @description Serializer de atualização para PecaCanonica.
+         *
+         *     codigo é read_only — slug imutável após criação.
+         */
+        PecaCanonicoUpdateRequest: {
+            nome: string;
+            /** Tipo de peça */
+            tipo_peca?: components["schemas"]["TipoPecaEnum"];
+            /** @description Código NCM/SH (8 dígitos). Ex: 87089990. Obrigatório para emissão de NF-e. */
+            ncm?: string;
+            is_active?: boolean;
         };
         /** @description Read-only serializer para listagem de pedidos de compra. */
         PedidoCompra: {
@@ -17435,7 +18987,7 @@ export interface components {
          */
         PedidoCompraStatusEnum: "solicitado" | "em_cotacao" | "oc_pendente" | "aprovado" | "comprado" | "recebido" | "cancelado";
         /** @description Input para registro de perda/avaria. */
-        PerdaInput: {
+        PerdaInputRequest: {
             item_tipo: components["schemas"]["ItemTipoEnum"];
             /** Format: uuid */
             item_id: string;
@@ -17454,6 +19006,31 @@ export interface components {
         };
         PersonAddress: {
             readonly id: number;
+            /** Tipo */
+            address_type?: components["schemas"]["AddressTypeEnum"];
+            /** CEP */
+            zip_code?: string;
+            /** Logradouro */
+            street?: string;
+            /** Número */
+            number?: string;
+            /** Complemento */
+            complement?: string;
+            /** Bairro */
+            neighborhood?: string;
+            /** Cidade */
+            city?: string;
+            /** UF */
+            state?: string;
+            /**
+             * Código IBGE do município
+             * @description 7 dígitos IBGE. Obrigatório para NFS-e Manaus (1302603).
+             */
+            municipio_ibge?: string;
+            /** Principal */
+            is_primary?: boolean;
+        };
+        PersonAddressRequest: {
             /** Tipo */
             address_type?: components["schemas"]["AddressTypeEnum"];
             /** CEP */
@@ -17508,6 +19085,17 @@ export interface components {
             /** Principal */
             is_primary?: boolean;
         };
+        /** @description Serializer de escrita para PersonContact — popula value_hash automaticamente. */
+        PersonContactWriteRequest: {
+            /** Tipo */
+            contact_type: components["schemas"]["ContactTypeEnum"];
+            /** Valor */
+            value: string;
+            /** Rótulo */
+            label?: string;
+            /** Principal */
+            is_primary?: boolean;
+        };
         /** @description Serializer de escrita com sync de roles, contatos, endereços e documentos. */
         PersonCreateUpdate: {
             /** Tipo de pessoa */
@@ -17535,10 +19123,41 @@ export interface components {
             is_active?: boolean;
             /** Observações */
             notes?: string;
-            roles: components["schemas"]["RolesEnum"][];
             contacts?: components["schemas"]["PersonContactWrite"][];
             addresses?: components["schemas"]["PersonAddress"][];
             documents?: components["schemas"]["PersonDocumentWrite"][];
+        };
+        /** @description Serializer de escrita com sync de roles, contatos, endereços e documentos. */
+        PersonCreateUpdateRequest: {
+            /** Tipo de pessoa */
+            person_kind?: components["schemas"]["PersonKindEnum"];
+            /** Nome / Razão social */
+            full_name: string;
+            /** Nome fantasia */
+            fantasy_name?: string;
+            /** RG / IE */
+            secondary_document?: string;
+            /** IM */
+            municipal_registration?: string;
+            /** Simples Nacional */
+            is_simples_nacional?: boolean;
+            /** Tipo de inscrição */
+            inscription_type?: components["schemas"]["InscriptionTypeEnum"] | components["schemas"]["BlankEnum"];
+            /**
+             * Data de nascimento
+             * Format: date
+             */
+            birth_date?: string | null;
+            /** Sexo */
+            gender?: components["schemas"]["GenderEnum"] | components["schemas"]["BlankEnum"];
+            /** Ativo */
+            is_active?: boolean;
+            /** Observações */
+            notes?: string;
+            roles: components["schemas"]["RolesEnum"][];
+            contacts?: components["schemas"]["PersonContactWriteRequest"][];
+            addresses?: components["schemas"]["PersonAddressRequest"][];
+            documents?: components["schemas"]["PersonDocumentWriteRequest"][];
         };
         /** @description Serializer completo para detalhe de pessoa — PII mascarada por padrão. */
         PersonDetail: {
@@ -17625,6 +19244,27 @@ export interface components {
              */
             expires_at?: string | null;
         };
+        /** @description Serializer de escrita para PersonDocument — popula value_hash automaticamente. */
+        PersonDocumentWriteRequest: {
+            /** Tipo de documento */
+            doc_type: components["schemas"]["DocTypeEnum"];
+            /** Valor */
+            value: string;
+            /** Principal */
+            is_primary?: boolean;
+            /** Órgão emissor */
+            issued_by?: string;
+            /**
+             * Data de emissão
+             * Format: date
+             */
+            issued_at?: string | null;
+            /**
+             * Data de validade
+             * Format: date
+             */
+            expires_at?: string | null;
+        };
         /**
          * @description * `PF` - Pessoa Física
          *     * `PJ` - Pessoa Jurídica
@@ -17651,6 +19291,9 @@ export interface components {
         };
         PersonRole: {
             readonly id: number;
+            role: components["schemas"]["PersonRoleRoleEnum"];
+        };
+        PersonRoleRequest: {
             role: components["schemas"]["PersonRoleRoleEnum"];
         };
         /**
@@ -17711,9 +19354,29 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        /** @description CRUD de Prateleira. */
+        PrateleiraRequest: {
+            /** Format: uuid */
+            rua: string;
+            /** @description P01, P02. */
+            codigo: string;
+            descricao?: string;
+            /**
+             * Format: decimal
+             * @description Peso máximo suportado (kg).
+             */
+            capacidade_kg?: string | null;
+            ordem?: number;
+            is_active?: boolean;
+        };
         PrazoEntrega: {
             /** Format: uuid */
             readonly id: string;
+            label: string;
+            /** @description Quantidade de dias úteis para cálculo de data prevista. */
+            dias_uteis: number;
+        };
+        PrazoEntregaRequest: {
             label: string;
             /** @description Quantidade de dias úteis para cálculo de data prevista. */
             dias_uteis: number;
@@ -17759,6 +19422,40 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        /** @description CRUD de Produto Comercial (Insumo). */
+        ProdutoComercialInsumoRequest: {
+            /** @description SKU interno da empresa (ex: VN-001). */
+            sku_interno: string;
+            /** @description Nome comercial do insumo (ex: Verniz PU Lazzuril 900ml). */
+            nome_interno: string;
+            /** @description Part number do fabricante. */
+            codigo_fabricante?: string;
+            /** @description Código EAN/GTIN (8 ou 13 dígitos). */
+            codigo_ean?: string;
+            /** @description Nome do fabricante (ex: Lazzuril, Sikkens). */
+            nome_fabricante?: string;
+            /** @description Unidade de medida base (L, ml, kg, un). */
+            unidade_base?: string;
+            /** Format: uuid */
+            categoria_insumo?: string | null;
+            /**
+             * Format: uuid
+             * @description Material canônico do catálogo técnico.
+             */
+            material_canonico?: string | null;
+            /**
+             * Format: decimal
+             * @description Preço de venda sugerido (R$).
+             */
+            preco_venda_sugerido?: string | null;
+            /**
+             * Format: decimal
+             * @description Margem (%) — sobrescreve a da categoria se preenchida.
+             */
+            margem_padrao_pct?: string | null;
+            observacoes?: string;
+            is_active?: boolean;
         };
         /** @description CRUD de Produto Comercial (Peça). */
         ProdutoComercialPeca: {
@@ -17809,6 +19506,44 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        /** @description CRUD de Produto Comercial (Peça). */
+        ProdutoComercialPecaRequest: {
+            /** @description SKU interno da empresa (ex: PC-001). */
+            sku_interno: string;
+            /** @description Nome comercial da peça (ex: Para-choque Gol G5 Dianteiro). */
+            nome_interno: string;
+            /** @description Part number do fabricante. */
+            codigo_fabricante?: string;
+            /** @description Código EAN/GTIN (8 ou 13 dígitos). */
+            codigo_ean?: string;
+            /** @description Código do distribuidor/atacadista. */
+            codigo_distribuidor?: string;
+            /** @description Nome do fabricante (ex: Volkswagen, Cibie). */
+            nome_fabricante?: string;
+            /** Format: uuid */
+            tipo_peca?: string | null;
+            posicao_veiculo?: components["schemas"]["PosicaoVeiculoEnum"];
+            lado?: components["schemas"]["LadoEnum"];
+            /** Format: uuid */
+            categoria?: string | null;
+            /**
+             * Format: uuid
+             * @description Peça canônica do catálogo técnico.
+             */
+            peca_canonica?: string | null;
+            /**
+             * Format: decimal
+             * @description Preço de venda sugerido (R$).
+             */
+            preco_venda_sugerido?: string | null;
+            /**
+             * Format: decimal
+             * @description Margem (%) — sobrescreve a da categoria se preenchida.
+             */
+            margem_padrao_pct?: string | null;
+            observacoes?: string;
+            is_active?: boolean;
         };
         /**
          * @description * `PPO` - Peça Original (PPO)
@@ -17937,6 +19672,57 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        /** @description Serializer completo de titulo a receber — inclui recebimentos. */
+        ReceivableDocumentRequest: {
+            /**
+             * ID do cliente
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Nome do cliente */
+            customer_name: string;
+            /** Descricao */
+            description: string;
+            /** No Documento */
+            document_number?: string;
+            /**
+             * Data do documento
+             * Format: date
+             */
+            document_date?: string | null;
+            /**
+             * Valor
+             * Format: decimal
+             */
+            amount: string;
+            /**
+             * Vencimento
+             * Format: date
+             */
+            due_date: string;
+            /**
+             * Competencia
+             * Format: date
+             */
+            competence_date: string;
+            /** Origem */
+            origin?: components["schemas"]["Origin1f1Enum"];
+            /**
+             * ID da OS
+             * Format: uuid
+             */
+            service_order_id?: string | null;
+            /**
+             * Centro de Custo
+             * Format: uuid
+             */
+            cost_center?: string | null;
+            /** Observacoes */
+            notes?: string;
+            /** Motivo do cancelamento */
+            cancel_reason?: string;
+            is_active?: boolean;
+        };
         /** @description Serializer de leitura de ReceivableReceipt. */
         ReceivableReceipt: {
             /** Format: uuid */
@@ -17966,6 +19752,25 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        /** @description Serializer de leitura de ReceivableReceipt. */
+        ReceivableReceiptRequest: {
+            /**
+             * Data do recebimento
+             * Format: date
+             */
+            receipt_date: string;
+            /**
+             * Valor recebido
+             * Format: decimal
+             */
+            amount: string;
+            /** Forma de pagamento */
+            payment_method?: components["schemas"]["PaymentMethod53eEnum"];
+            /** Conta bancaria */
+            bank_account?: string;
+            /** Observacoes */
+            notes?: string;
+        };
         /** @description Serializer de escrita para registro de pagamento. */
         RecordPayment: {
             /** Format: date */
@@ -17973,11 +19778,24 @@ export interface components {
             /** Format: decimal */
             amount: string;
             /** @default bank_transfer */
-            payment_method: components["schemas"]["PaymentMethodEffEnum"];
+            payment_method?: components["schemas"]["PaymentMethodEffEnum"];
             /** @default  */
-            bank_account: string;
+            bank_account?: string;
             /** @default  */
-            notes: string;
+            notes?: string;
+        };
+        /** @description Serializer de escrita para registro de pagamento. */
+        RecordPaymentRequest: {
+            /** Format: date */
+            payment_date: string;
+            /** Format: decimal */
+            amount: string;
+            /** @default bank_transfer */
+            payment_method?: components["schemas"]["PaymentMethodEffEnum"];
+            /** @default  */
+            bank_account?: string;
+            /** @default  */
+            notes?: string;
         };
         /** @description Serializer de escrita para registro de recebimento. */
         RecordReceipt: {
@@ -17986,18 +19804,31 @@ export interface components {
             /** Format: decimal */
             amount: string;
             /** @default pix */
-            payment_method: components["schemas"]["PaymentMethodEffEnum"];
+            payment_method?: components["schemas"]["PaymentMethodEffEnum"];
             /** @default  */
-            bank_account: string;
+            bank_account?: string;
             /** @default  */
-            notes: string;
+            notes?: string;
+        };
+        /** @description Serializer de escrita para registro de recebimento. */
+        RecordReceiptRequest: {
+            /** Format: date */
+            receipt_date: string;
+            /** Format: decimal */
+            amount: string;
+            /** @default pix */
+            payment_method?: components["schemas"]["PaymentMethodEffEnum"];
+            /** @default  */
+            bank_account?: string;
+            /** @default  */
+            notes?: string;
         };
         /** @description Body de POST /auth/refresh/. */
-        RefreshRequest: {
+        RefreshRequestRequest: {
             refresh: string;
         };
         /** @description Body de POST /auth/register/ (admin cria usuário). */
-        RegisterRequest: {
+        RegisterRequestRequest: {
             /** Format: email */
             email: string;
             name: string;
@@ -18005,11 +19836,11 @@ export interface components {
             password: string;
         };
         /** @description Input para rejeicao de movimentacao pendente. */
-        RejeicaoInput: {
+        RejeicaoInputRequest: {
             motivo: string;
         };
         /** @description Body de POST /auth/reset-password/. */
-        ResetPasswordRequest: {
+        ResetPasswordRequestRequest: {
             /** @description Token raw enviado por email */
             token: string;
             password: string;
@@ -18040,6 +19871,21 @@ export interface components {
             readonly registrado_por_nome: string;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        RespostaCotacaoRequest: {
+            /** Format: uuid */
+            pedido_compra: string;
+            supplier: number;
+            /** Format: decimal */
+            valor_unitario: string;
+            prazo_entrega?: string;
+            /** Format: uuid */
+            prazo_entrega_obj?: string | null;
+            condicoes_pagamento?: string;
+            /** Format: uuid */
+            condicao_pagamento_obj?: string | null;
+            observacoes?: string;
+            selecionada?: boolean;
         };
         /** @description Resposta de /fiscal/resumo/{year}/{month}/. */
         ResumoFiscalResponse: {
@@ -18100,6 +19946,16 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        /** @description CRUD de Rua — armazem_codigo resolvido via source. */
+        RuaRequest: {
+            /** Format: uuid */
+            armazem: string;
+            /** @description R01, R02. */
+            codigo: string;
+            descricao?: string;
+            ordem?: number;
+            is_active?: boolean;
+        };
         /** @description Leitura do histórico de reajustes. */
         SalaryHistory: {
             /** Format: uuid */
@@ -18155,9 +20011,53 @@ export interface components {
              */
             reason?: string;
         };
+        /** @description Criação de reajuste — injeta employee e authorized_by na view. */
+        SalaryHistoryCreateRequest: {
+            /**
+             * Salário anterior
+             * Format: decimal
+             */
+            previous_salary: string;
+            /**
+             * Novo salário
+             * Format: decimal
+             */
+            new_salary: string;
+            /**
+             * Data de vigência
+             * Format: date
+             */
+            effective_date: string;
+            /**
+             * Motivo
+             * @description Promoção, dissídio, mérito, etc.
+             */
+            reason?: string;
+        };
         SegmentoVeicular: {
             /** Format: uuid */
             readonly id: string;
+            /**
+             * Código
+             * @description Slug único, ex: "popular", "premium".
+             */
+            codigo: string;
+            nome: string;
+            /**
+             * Ordem de exibição
+             * @description Menor valor aparece primeiro.
+             */
+            ordem: number;
+            /**
+             * Format: decimal
+             * @description Multiplicador do custo base de responsabilidade civil (0.5–5.0).
+             */
+            fator_responsabilidade: string;
+            /** Descrição */
+            descricao?: string;
+            is_active?: boolean;
+        };
+        SegmentoVeicularRequest: {
             /**
              * Código
              * @description Slug único, ex: "popular", "premium".
@@ -18215,6 +20115,22 @@ export interface components {
              * Format: decimal
              */
             suggested_price?: string;
+        };
+        /** @description Serializer completo para criacao/edicao do catalogo. */
+        ServiceCatalogRequest: {
+            /** Nome do serviço */
+            name: string;
+            /** Descrição / observação */
+            description?: string;
+            /** Categoria */
+            category?: components["schemas"]["Category48eEnum"];
+            /**
+             * Preço sugerido
+             * Format: decimal
+             */
+            suggested_price?: string;
+            /** Ativo */
+            is_active?: boolean;
         };
         /** @description Serializer para historico detalhado de atividades da OS. */
         ServiceOrderActivityLog: {
@@ -18274,9 +20190,6 @@ export interface components {
         ServiceOrderCreate: {
             /** Format: uuid */
             readonly id: string;
-            /** Format: uuid */
-            customer?: string | null;
-            customer_id?: number | null;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -18488,6 +20401,209 @@ export interface components {
              */
             external_invoice_date?: string | null;
             readonly ai_recommendations: unknown;
+            /** Observações gerais */
+            notes?: string;
+            /**
+             * Consultor
+             * Format: uuid
+             */
+            consultant?: string | null;
+            /**
+             * Seguradora
+             * Format: uuid
+             */
+            insurer?: string | null;
+            /** Perito */
+            expert?: number | null;
+        };
+        /**
+         * @description Serializer para abertura de nova OS.
+         *     Numero e gerado automaticamente pelo ServiceOrderService -- nao exposto como campo de entrada.
+         */
+        ServiceOrderCreateRequest: {
+            /** Format: uuid */
+            customer?: string | null;
+            customer_id?: number | null;
+            /** Tipo de atendimento */
+            customer_type?: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            /** Tipo de OS */
+            os_type?: (components["schemas"]["OsTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            /**
+             * Tipo de segurado
+             * @description Segurado ou Terceiro — só quando customer_type='insurer'
+             *
+             *     * `insured` - Segurado
+             *     * `third` - Terceiro
+             */
+            insured_type?: (components["schemas"]["InsuredTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            /**
+             * Número do sinistro
+             * @description Número do sinistro
+             */
+            casualty_number?: string;
+            /**
+             * Orçamento Cilia
+             * @description Número do orçamento Cilia (último importado)
+             */
+            cilia_budget_number?: string;
+            /**
+             * Versão Cilia
+             * @description Versão do orçamento Cilia (último importado)
+             */
+            cilia_budget_version?: string;
+            /**
+             * Franquia
+             * Format: decimal
+             * @description Valor da franquia — só quando insured_type='insured'
+             */
+            deductible_amount?: string | null;
+            /**
+             * Corretor
+             * @description Nome do corretor (opcional)
+             */
+            broker_name?: string;
+            /**
+             * Data do perito
+             * Format: date
+             * @description Data de visita do perito
+             */
+            expert_date?: string | null;
+            /**
+             * Data da vistoria
+             * Format: date
+             * @description Data da vistoria (seguradora)
+             */
+            survey_date?: string | null;
+            /**
+             * Data de autorização (seguradora)
+             * Format: date-time
+             * @description Data/hora de autorização do orçamento pela SEGURADORA. Usado pelo TransitionValidator (AUTH_DATE_SET) para liberar a transição waiting_auth → authorized. Não confundir com service_authorization_date (particular).
+             */
+            authorization_date?: string | null;
+            /**
+             * Data do orçamento
+             * Format: date
+             * @description Data de orçamentação (particular)
+             */
+            quotation_date?: string | null;
+            /**
+             * UUID do cliente
+             * Format: uuid
+             */
+            customer_uuid?: string | null;
+            /** Nome do cliente */
+            customer_name?: string;
+            /** Placa */
+            plate: string;
+            /** Marca */
+            make?: string;
+            /**
+             * Logo da montadora
+             * Format: uri
+             */
+            make_logo?: string;
+            /** Modelo */
+            model?: string;
+            /** Versão */
+            vehicle_version?: string;
+            /** Ano */
+            year?: number | null;
+            /** Cor */
+            color?: string;
+            /** Chassi */
+            chassis?: string;
+            /** Combustível */
+            fuel_type?: string;
+            /**
+             * Valor FIPE
+             * Format: decimal
+             */
+            fipe_value?: string | null;
+            /** KM entrada */
+            mileage_in?: number | null;
+            /** KM saída */
+            mileage_out?: number | null;
+            /** @description fipe_id da marca — referência solta a vehicle_catalog.VehicleMake */
+            vehicle_make_id?: string;
+            /** @description fipe_id do modelo — referência solta a vehicle_catalog.VehicleModel */
+            vehicle_model_id?: string;
+            /** @description fipe_id do ano/versão — referência solta a vehicle_catalog.VehicleYearVersion */
+            vehicle_year_version_id?: string;
+            /**
+             * Format: decimal
+             * @description Valor FIPE congelado no momento de criação da OS (R$).
+             */
+            vehicle_fipe_value_snapshot?: string | null;
+            /** @description Código do SegmentoVeicular resolvido pelo EnquadramentoService. */
+            segmento_codigo?: string;
+            /** @description Código da CategoriaTamanho resolvida pelo EnquadramentoService. */
+            tamanho_codigo?: string;
+            /** @description Código do TipoPintura resolvido pelo EnquadramentoService. */
+            tipo_pintura_codigo?: string;
+            /**
+             * Format: uuid
+             * @description UUID da Empresa (pricing_profile.Empresa) — referência solta, igual ao customer_uuid.
+             */
+            empresa_id?: string | null;
+            /** Local do veículo */
+            vehicle_location?: components["schemas"]["VehicleLocationEnum"];
+            /**
+             * Data de entrada
+             * Format: date-time
+             * @description Data/hora de entrada do veículo na oficina
+             */
+            entry_date?: string | null;
+            /**
+             * Autorização do serviço (particular)
+             * Format: date-time
+             * @description Data/hora de autorização do serviço pelo CLIENTE PARTICULAR. Preenchido quando o cliente aprova o orçamento. Não confundir com authorization_date (seguradora).
+             */
+            service_authorization_date?: string | null;
+            /**
+             * Data de agendamento
+             * Format: date-time
+             */
+            scheduling_date?: string | null;
+            /**
+             * Dias de reparo
+             * @description Dias estimados de reparo
+             */
+            repair_days?: number | null;
+            /**
+             * Previsão de entrega
+             * Format: date
+             * @description Previsão de entrega (calculada: entry + repair_days)
+             */
+            estimated_delivery_date?: string | null;
+            /**
+             * Vistoria final
+             * Format: date-time
+             * @description Data/hora da vistoria final — ALTERA STATUS automaticamente
+             */
+            final_survey_date?: string | null;
+            /**
+             * Status anterior
+             * @description Status antes de entrar em 'budget' (auto-Kanban). Restaurado ao aprovar versão.
+             */
+            previous_status?: string;
+            /** Format: date-time */
+            estimated_delivery?: string | null;
+            /**
+             * Format: decimal
+             * @description Total oficial da seguradora (Cilia/IFX/HDI) — verdade absoluta
+             */
+            total_seguradora_oficial?: string | null;
+            /**
+             * Nº NF externa
+             * @description Número da NF emitida fora do sistema (uso temporário enquanto Focus não está disponível). Quando preenchido junto com external_invoice_date, a OS é considerada faturada para fins de fechamento.
+             */
+            external_invoice_number?: string;
+            /**
+             * Data NF externa
+             * Format: date
+             * @description Data da NF emitida fora do sistema.
+             */
+            external_invoice_date?: string | null;
             /** Observações gerais */
             notes?: string;
             /**
@@ -18777,6 +20893,236 @@ export interface components {
             /** Perito */
             expert?: number | null;
         };
+        /** @description Serializer completo para a tela de abertura/edicao da OS. */
+        ServiceOrderDetailRequest: {
+            is_active?: boolean;
+            /** Número da OS */
+            number: number;
+            /** Tipo de atendimento */
+            customer_type?: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            /** Tipo de OS */
+            os_type?: (components["schemas"]["OsTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            /**
+             * Tipo de segurado
+             * @description Segurado ou Terceiro — só quando customer_type='insurer'
+             *
+             *     * `insured` - Segurado
+             *     * `third` - Terceiro
+             */
+            insured_type?: (components["schemas"]["InsuredTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            /**
+             * Número do sinistro
+             * @description Número do sinistro
+             */
+            casualty_number?: string;
+            /**
+             * Orçamento Cilia
+             * @description Número do orçamento Cilia (último importado)
+             */
+            cilia_budget_number?: string;
+            /**
+             * Versão Cilia
+             * @description Versão do orçamento Cilia (último importado)
+             */
+            cilia_budget_version?: string;
+            /**
+             * Franquia
+             * Format: decimal
+             * @description Valor da franquia — só quando insured_type='insured'
+             */
+            deductible_amount?: string | null;
+            /**
+             * Corretor
+             * @description Nome do corretor (opcional)
+             */
+            broker_name?: string;
+            /**
+             * Data do perito
+             * Format: date
+             * @description Data de visita do perito
+             */
+            expert_date?: string | null;
+            /**
+             * Data da vistoria
+             * Format: date
+             * @description Data da vistoria (seguradora)
+             */
+            survey_date?: string | null;
+            /**
+             * Data de autorização (seguradora)
+             * Format: date-time
+             * @description Data/hora de autorização do orçamento pela SEGURADORA. Usado pelo TransitionValidator (AUTH_DATE_SET) para liberar a transição waiting_auth → authorized. Não confundir com service_authorization_date (particular).
+             */
+            authorization_date?: string | null;
+            /**
+             * Data do orçamento
+             * Format: date
+             * @description Data de orçamentação (particular)
+             */
+            quotation_date?: string | null;
+            /**
+             * UUID do cliente
+             * Format: uuid
+             */
+            customer_uuid?: string | null;
+            /** Nome do cliente */
+            customer_name: string;
+            /** Placa */
+            plate: string;
+            /** Marca */
+            make?: string;
+            /**
+             * Logo da montadora
+             * Format: uri
+             */
+            make_logo?: string;
+            /** Modelo */
+            model?: string;
+            /** Versão */
+            vehicle_version?: string;
+            /** Ano */
+            year?: number | null;
+            /** Cor */
+            color?: string;
+            /** Chassi */
+            chassis?: string;
+            /** Combustível */
+            fuel_type?: string;
+            /**
+             * Valor FIPE
+             * Format: decimal
+             */
+            fipe_value?: string | null;
+            /** KM entrada */
+            mileage_in?: number | null;
+            /** KM saída */
+            mileage_out?: number | null;
+            /** @description fipe_id da marca — referência solta a vehicle_catalog.VehicleMake */
+            vehicle_make_id?: string;
+            /** @description fipe_id do modelo — referência solta a vehicle_catalog.VehicleModel */
+            vehicle_model_id?: string;
+            /** @description fipe_id do ano/versão — referência solta a vehicle_catalog.VehicleYearVersion */
+            vehicle_year_version_id?: string;
+            /**
+             * Format: decimal
+             * @description Valor FIPE congelado no momento de criação da OS (R$).
+             */
+            vehicle_fipe_value_snapshot?: string | null;
+            /** @description Código do SegmentoVeicular resolvido pelo EnquadramentoService. */
+            segmento_codigo?: string;
+            /** @description Código da CategoriaTamanho resolvida pelo EnquadramentoService. */
+            tamanho_codigo?: string;
+            /** @description Código do TipoPintura resolvido pelo EnquadramentoService. */
+            tipo_pintura_codigo?: string;
+            /**
+             * Format: uuid
+             * @description UUID da Empresa (pricing_profile.Empresa) — referência solta, igual ao customer_uuid.
+             */
+            empresa_id?: string | null;
+            /** Local do veículo */
+            vehicle_location?: components["schemas"]["VehicleLocationEnum"];
+            /**
+             * Data de entrada
+             * Format: date-time
+             * @description Data/hora de entrada do veículo na oficina
+             */
+            entry_date?: string | null;
+            /**
+             * Autorização do serviço (particular)
+             * Format: date-time
+             * @description Data/hora de autorização do serviço pelo CLIENTE PARTICULAR. Preenchido quando o cliente aprova o orçamento. Não confundir com authorization_date (seguradora).
+             */
+            service_authorization_date?: string | null;
+            /**
+             * Data de agendamento
+             * Format: date-time
+             */
+            scheduling_date?: string | null;
+            /**
+             * Dias de reparo
+             * @description Dias estimados de reparo
+             */
+            repair_days?: number | null;
+            /**
+             * Previsão de entrega
+             * Format: date
+             * @description Previsão de entrega (calculada: entry + repair_days)
+             */
+            estimated_delivery_date?: string | null;
+            /**
+             * Data de entrega
+             * Format: date-time
+             * @description Data/hora real de entrega
+             */
+            delivery_date?: string | null;
+            /**
+             * Vistoria final
+             * Format: date-time
+             * @description Data/hora da vistoria final — ALTERA STATUS automaticamente
+             */
+            final_survey_date?: string | null;
+            /**
+             * Entrega ao cliente
+             * Format: date-time
+             * @description Data/hora de entrega ao cliente — ALTERA STATUS automaticamente
+             */
+            client_delivery_date?: string | null;
+            status?: components["schemas"]["Status5e2Enum"];
+            /**
+             * Status anterior
+             * @description Status antes de entrar em 'budget' (auto-Kanban). Restaurado ao aprovar versão.
+             */
+            previous_status?: string;
+            /** Format: date-time */
+            delivered_at?: string | null;
+            /** Format: date-time */
+            estimated_delivery?: string | null;
+            /** Format: decimal */
+            parts_total?: string;
+            /** Format: decimal */
+            services_total?: string;
+            /** Format: decimal */
+            discount_total?: string;
+            /**
+             * Format: decimal
+             * @description Total oficial da seguradora (Cilia/IFX/HDI) — verdade absoluta
+             */
+            total_seguradora_oficial?: string | null;
+            /** Chave NF-e */
+            nfe_key?: string;
+            /** Número NFS-e */
+            nfse_number?: string;
+            /** NF emitida */
+            invoice_issued?: boolean;
+            /**
+             * Nº NF externa
+             * @description Número da NF emitida fora do sistema (uso temporário enquanto Focus não está disponível). Quando preenchido junto com external_invoice_date, a OS é considerada faturada para fins de fechamento.
+             */
+            external_invoice_number?: string;
+            /**
+             * Data NF externa
+             * Format: date
+             * @description Data da NF emitida fora do sistema.
+             */
+            external_invoice_date?: string | null;
+            ai_recommendations?: unknown;
+            /** Observações gerais */
+            notes?: string;
+            /** Format: uuid */
+            created_by?: string | null;
+            /**
+             * Consultor
+             * Format: uuid
+             */
+            consultant?: string | null;
+            /**
+             * Seguradora
+             * Format: uuid
+             */
+            insurer?: string | null;
+            /** Perito */
+            expert?: number | null;
+        };
         ServiceOrderEvent: {
             readonly id: number;
             /** Format: uuid */
@@ -18836,6 +21182,42 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        /** @description Serializer para itens de mao-de-obra de uma OS. */
+        ServiceOrderLaborRequest: {
+            /**
+             * Serviço do catálogo
+             * Format: uuid
+             */
+            service_catalog?: string | null;
+            /** Descrição do serviço */
+            description: string;
+            /**
+             * Quantidade / Horas
+             * Format: decimal
+             */
+            quantity?: string;
+            /**
+             * Valor unitário / Hora
+             * Format: decimal
+             */
+            unit_price: string;
+            /**
+             * Desconto
+             * Format: decimal
+             */
+            discount?: string;
+            /** Pagador */
+            payer?: components["schemas"]["PayerEnum"];
+            /** Origem do item */
+            source_type?: components["schemas"]["SourceTypeEnum"];
+            /** Status de faturamento */
+            billing_status?: components["schemas"]["BillingStatusEnum"];
+            /**
+             * Data do faturamento
+             * Format: date-time
+             */
+            billed_at?: string | null;
         };
         /**
          * @description Serializer compacto para listagem (Kanban, tabelas).
@@ -18954,6 +21336,20 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        ServiceOrderParecerRequest: {
+            /** Format: uuid */
+            service_order: string;
+            version?: number | null;
+            source: components["schemas"]["ServiceOrderParecerSourceEnum"];
+            flow_number?: number | null;
+            author_external?: string;
+            author_org?: string;
+            author_internal?: string;
+            parecer_type?: components["schemas"]["ParecerTypeEnum"] | components["schemas"]["BlankEnum"];
+            body: string;
+            /** Format: date-time */
+            created_at_external?: string | null;
+        };
         /**
          * @description * `internal` - Interno DSCar
          *     * `cilia` - Cilia
@@ -19025,6 +21421,44 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
         };
+        /** @description Serializer para itens de peca de uma OS. */
+        ServiceOrderPartRequest: {
+            /**
+             * Produto do catálogo
+             * Format: uuid
+             */
+            product?: string | null;
+            /** Descrição */
+            description: string;
+            /** Código da peça */
+            part_number?: string;
+            /**
+             * Quantidade
+             * Format: decimal
+             */
+            quantity?: string;
+            /**
+             * Preço unitário
+             * Format: decimal
+             */
+            unit_price: string;
+            /**
+             * Desconto
+             * Format: decimal
+             */
+            discount?: string;
+            /** Pagador */
+            payer?: components["schemas"]["PayerEnum"];
+            /** Origem do item */
+            source_type?: components["schemas"]["SourceTypeEnum"];
+            /** Status de faturamento */
+            billing_status?: components["schemas"]["BillingStatusEnum"];
+            /**
+             * Data do faturamento
+             * Format: date-time
+             */
+            billed_at?: string | null;
+        };
         /** @description Serializer para fotos de OS -- inclui URL gerada pelo storage configurado. */
         ServiceOrderPhoto: {
             /** Format: uuid */
@@ -19053,13 +21487,25 @@ export interface components {
             readonly uploaded_at: string;
             is_active?: boolean;
         };
+        /** @description Serializer para fotos de OS -- inclui URL gerada pelo storage configurado. */
+        ServiceOrderPhotoRequest: {
+            /** Pasta */
+            folder?: components["schemas"]["FolderEnum"];
+            /** @description Slot de vistoria (ex: frente, traseira, lateral_esq) */
+            slot?: string;
+            /**
+             * Tipo de checklist
+             * @description Tipo de checklist: entrada, saida ou acompanhamento
+             */
+            checklist_type?: string;
+            /** Legenda */
+            caption?: string;
+            is_active?: boolean;
+        };
         /** @description Serializer para atualizacao parcial de OS. */
         ServiceOrderUpdate: {
             /** Format: uuid */
             readonly id: string;
-            /** Format: uuid */
-            customer?: string | null;
-            customer_person_id?: number | null;
             /** Format: date-time */
             readonly created_at: string;
             /** Format: date-time */
@@ -19288,6 +21734,218 @@ export interface components {
             /** Perito */
             expert?: number | null;
         };
+        /** @description Serializer para atualizacao parcial de OS. */
+        ServiceOrderUpdateRequest: {
+            /** Format: uuid */
+            customer?: string | null;
+            customer_person_id?: number | null;
+            /** Tipo de atendimento */
+            customer_type?: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            /** Tipo de OS */
+            os_type?: (components["schemas"]["OsTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            /**
+             * Tipo de segurado
+             * @description Segurado ou Terceiro — só quando customer_type='insurer'
+             *
+             *     * `insured` - Segurado
+             *     * `third` - Terceiro
+             */
+            insured_type?: (components["schemas"]["InsuredTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
+            /**
+             * Número do sinistro
+             * @description Número do sinistro
+             */
+            casualty_number?: string;
+            /**
+             * Orçamento Cilia
+             * @description Número do orçamento Cilia (último importado)
+             */
+            cilia_budget_number?: string;
+            /**
+             * Versão Cilia
+             * @description Versão do orçamento Cilia (último importado)
+             */
+            cilia_budget_version?: string;
+            /**
+             * Franquia
+             * Format: decimal
+             * @description Valor da franquia — só quando insured_type='insured'
+             */
+            deductible_amount?: string | null;
+            /**
+             * Corretor
+             * @description Nome do corretor (opcional)
+             */
+            broker_name?: string;
+            /**
+             * Data do perito
+             * Format: date
+             * @description Data de visita do perito
+             */
+            expert_date?: string | null;
+            /**
+             * Data da vistoria
+             * Format: date
+             * @description Data da vistoria (seguradora)
+             */
+            survey_date?: string | null;
+            /**
+             * Data de autorização (seguradora)
+             * Format: date-time
+             * @description Data/hora de autorização do orçamento pela SEGURADORA. Usado pelo TransitionValidator (AUTH_DATE_SET) para liberar a transição waiting_auth → authorized. Não confundir com service_authorization_date (particular).
+             */
+            authorization_date?: string | null;
+            /**
+             * Data do orçamento
+             * Format: date
+             * @description Data de orçamentação (particular)
+             */
+            quotation_date?: string | null;
+            /**
+             * UUID do cliente
+             * Format: uuid
+             */
+            customer_uuid?: string | null;
+            /** Nome do cliente */
+            customer_name?: string;
+            /** Placa */
+            plate?: string;
+            /** Marca */
+            make?: string;
+            /**
+             * Logo da montadora
+             * Format: uri
+             */
+            make_logo?: string;
+            /** Modelo */
+            model?: string;
+            /** Versão */
+            vehicle_version?: string;
+            /** Ano */
+            year?: number | null;
+            /** Cor */
+            color?: string;
+            /** Chassi */
+            chassis?: string;
+            /** Combustível */
+            fuel_type?: string;
+            /**
+             * Valor FIPE
+             * Format: decimal
+             */
+            fipe_value?: string | null;
+            /** KM entrada */
+            mileage_in?: number | null;
+            /** KM saída */
+            mileage_out?: number | null;
+            /** @description fipe_id da marca — referência solta a vehicle_catalog.VehicleMake */
+            vehicle_make_id?: string;
+            /** @description fipe_id do modelo — referência solta a vehicle_catalog.VehicleModel */
+            vehicle_model_id?: string;
+            /** @description fipe_id do ano/versão — referência solta a vehicle_catalog.VehicleYearVersion */
+            vehicle_year_version_id?: string;
+            /**
+             * Format: decimal
+             * @description Valor FIPE congelado no momento de criação da OS (R$).
+             */
+            vehicle_fipe_value_snapshot?: string | null;
+            /** @description Código do SegmentoVeicular resolvido pelo EnquadramentoService. */
+            segmento_codigo?: string;
+            /** @description Código da CategoriaTamanho resolvida pelo EnquadramentoService. */
+            tamanho_codigo?: string;
+            /** @description Código do TipoPintura resolvido pelo EnquadramentoService. */
+            tipo_pintura_codigo?: string;
+            /**
+             * Format: uuid
+             * @description UUID da Empresa (pricing_profile.Empresa) — referência solta, igual ao customer_uuid.
+             */
+            empresa_id?: string | null;
+            /** Local do veículo */
+            vehicle_location?: components["schemas"]["VehicleLocationEnum"];
+            /**
+             * Data de entrada
+             * Format: date-time
+             * @description Data/hora de entrada do veículo na oficina
+             */
+            entry_date?: string | null;
+            /**
+             * Autorização do serviço (particular)
+             * Format: date-time
+             * @description Data/hora de autorização do serviço pelo CLIENTE PARTICULAR. Preenchido quando o cliente aprova o orçamento. Não confundir com authorization_date (seguradora).
+             */
+            service_authorization_date?: string | null;
+            /**
+             * Data de agendamento
+             * Format: date-time
+             */
+            scheduling_date?: string | null;
+            /**
+             * Dias de reparo
+             * @description Dias estimados de reparo
+             */
+            repair_days?: number | null;
+            /**
+             * Previsão de entrega
+             * Format: date
+             * @description Previsão de entrega (calculada: entry + repair_days)
+             */
+            estimated_delivery_date?: string | null;
+            /**
+             * Data de entrega
+             * Format: date-time
+             * @description Data/hora real de entrega
+             */
+            delivery_date?: string | null;
+            /**
+             * Vistoria final
+             * Format: date-time
+             * @description Data/hora da vistoria final — ALTERA STATUS automaticamente
+             */
+            final_survey_date?: string | null;
+            /**
+             * Entrega ao cliente
+             * Format: date-time
+             * @description Data/hora de entrega ao cliente — ALTERA STATUS automaticamente
+             */
+            client_delivery_date?: string | null;
+            /**
+             * Status anterior
+             * @description Status antes de entrar em 'budget' (auto-Kanban). Restaurado ao aprovar versão.
+             */
+            previous_status?: string;
+            /** Format: date-time */
+            estimated_delivery?: string | null;
+            /**
+             * Format: decimal
+             * @description Total oficial da seguradora (Cilia/IFX/HDI) — verdade absoluta
+             */
+            total_seguradora_oficial?: string | null;
+            /**
+             * Nº NF externa
+             * @description Número da NF emitida fora do sistema (uso temporário enquanto Focus não está disponível). Quando preenchido junto com external_invoice_date, a OS é considerada faturada para fins de fechamento.
+             */
+            external_invoice_number?: string;
+            /**
+             * Data NF externa
+             * Format: date
+             * @description Data da NF emitida fora do sistema.
+             */
+            external_invoice_date?: string | null;
+            /** Observações gerais */
+            notes?: string;
+            /**
+             * Consultor
+             * Format: uuid
+             */
+            consultant?: string | null;
+            /**
+             * Seguradora
+             * Format: uuid
+             */
+            insurer?: string | null;
+            /** Perito */
+            expert?: number | null;
+        };
         ServiceOrderVersion: {
             readonly id: number;
             /** Format: uuid */
@@ -19486,6 +22144,26 @@ export interface components {
              */
             aplica_multiplicador_tamanho?: boolean;
         };
+        /** @description Serializer de criação para ServicoCanônico. */
+        ServicoCanonicoCreateRequest: {
+            /**
+             * Código
+             * @description Slug único, ex: "pintura-para-choque".
+             */
+            codigo: string;
+            nome: string;
+            /** Format: uuid */
+            categoria: string;
+            /** @description Unidade de cobrança: "un", "h", "m2", etc. */
+            unidade?: string;
+            /** Descrição */
+            descricao?: string;
+            /**
+             * Aplica multiplicador de tamanho
+             * @description TRUE para serviços que dependem do tamanho do veículo (pintura, funilaria, polimento). FALSE para serviços independentes de tamanho (elétrica, alinhamento, diagnóstico).
+             */
+            aplica_multiplicador_tamanho?: boolean;
+        };
         /** @description Serializer de detalhe para ServicoCanônico. */
         ServicoCanonicoDetail: {
             /** Format: uuid */
@@ -19515,6 +22193,27 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        /** @description Serializer de detalhe para ServicoCanônico. */
+        ServicoCanonicoDetailRequest: {
+            /**
+             * Código
+             * @description Slug único, ex: "pintura-para-choque".
+             */
+            codigo: string;
+            nome: string;
+            /** Format: uuid */
+            categoria: string;
+            /** @description Unidade de cobrança: "un", "h", "m2", etc. */
+            unidade?: string;
+            /** Descrição */
+            descricao?: string;
+            /**
+             * Aplica multiplicador de tamanho
+             * @description TRUE para serviços que dependem do tamanho do veículo (pintura, funilaria, polimento). FALSE para serviços independentes de tamanho (elétrica, alinhamento, diagnóstico).
+             */
+            aplica_multiplicador_tamanho?: boolean;
+            is_active?: boolean;
         };
         /**
          * @description Serializer de atualização para ServicoCanônico.
@@ -19546,6 +22245,26 @@ export interface components {
             readonly created_at: string;
             /** Format: date-time */
             readonly updated_at: string;
+        };
+        /**
+         * @description Serializer de atualização para ServicoCanônico.
+         *
+         *     codigo é read_only — slug imutável após criação (alterar quebraria aliases existentes).
+         */
+        ServicoCanonicoUpdateRequest: {
+            nome: string;
+            /** Format: uuid */
+            categoria: string;
+            /** @description Unidade de cobrança: "un", "h", "m2", etc. */
+            unidade?: string;
+            /** Descrição */
+            descricao?: string;
+            /**
+             * Aplica multiplicador de tamanho
+             * @description TRUE para serviços que dependem do tamanho do veículo (pintura, funilaria, polimento). FALSE para serviços independentes de tamanho (elétrica, alinhamento, diagnóstico).
+             */
+            aplica_multiplicador_tamanho?: boolean;
+            is_active?: boolean;
         };
         /** @description Variante com o PNG base64 completo (pra renderizar no frontend). */
         SignatureDetail: {
@@ -19591,12 +22310,12 @@ export interface components {
             readonly notes: string;
         };
         /** @description Input para POST /simular/ — múltiplos itens em lote. */
-        SimularInput: {
-            contexto: components["schemas"]["ContextoCalculo"];
-            itens: components["schemas"]["SimularItem"][];
+        SimularInputRequest: {
+            contexto: components["schemas"]["ContextoCalculoRequest"];
+            itens: components["schemas"]["SimularItemRequest"][];
         };
         /** @description Item de simulação — serviço ou peça. */
-        SimularItem: {
+        SimularItemRequest: {
             tipo: components["schemas"]["SimularItemTipoEnum"];
             /**
              * Format: uuid
@@ -19604,7 +22323,7 @@ export interface components {
              */
             id: string;
             /** @default 1 */
-            quantidade: number;
+            quantidade?: number;
         };
         /**
          * @description * `servico` - servico
@@ -19837,7 +22556,27 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        /** @description Serializer para log de transicoes de status. */
+        StatusTransitionLogRequest: {
+            /** Status anterior */
+            from_status: string;
+            /** Novo status */
+            to_status: string;
+            /**
+             * Campo gatilho
+             * @description Campo que disparou a transição automática (vazio = manual)
+             */
+            triggered_by_field?: string;
+        };
         SugestaoIACreate: {
+            briefing: string;
+            /** Format: uuid */
+            orcamento_id?: string | null;
+            veiculo: {
+                [key: string]: unknown;
+            };
+        };
+        SugestaoIACreateRequest: {
             briefing: string;
             /** Format: uuid */
             orcamento_id?: string | null;
@@ -19896,16 +22635,37 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        TimeClockEntryRequest: {
+            /** Format: uuid */
+            employee: string;
+            /** Tipo */
+            entry_type: components["schemas"]["EntryTypeEnum"];
+            source?: components["schemas"]["Source72fEnum"];
+            device_info?: string;
+            /** @description Obrigatório para ajuste manual */
+            justification?: string;
+        };
         TimeClockRegister: {
             /** Format: uuid */
             employee: string;
             entry_type: components["schemas"]["EntryTypeEnum"];
             /** @default system */
-            source: components["schemas"]["Source72fEnum"];
+            source?: components["schemas"]["Source72fEnum"];
             /** @default  */
-            device_info: string;
+            device_info?: string;
             /** @default  */
-            justification: string;
+            justification?: string;
+        };
+        TimeClockRegisterRequest: {
+            /** Format: uuid */
+            employee: string;
+            entry_type: components["schemas"]["EntryTypeEnum"];
+            /** @default system */
+            source?: components["schemas"]["Source72fEnum"];
+            /** @default  */
+            device_info?: string;
+            /** @default  */
+            justification?: string;
         };
         /**
          * @description * `ciclica` - Cíclica
@@ -19977,9 +22737,28 @@ export interface components {
          * @enum {string}
          */
         TipoPecaEnum: "genuina" | "original" | "paralela" | "usada" | "recondicionada";
+        /** @description CRUD de Tipo de Peça. */
+        TipoPecaRequest: {
+            nome: string;
+            /** @description Código curto único (ex: PCHQ, FAROL). */
+            codigo: string;
+            ordem?: number;
+            is_active?: boolean;
+        };
         TipoPintura: {
             /** Format: uuid */
             readonly id: string;
+            /**
+             * Código
+             * @description Slug único, ex: "solida", "metalica", "perolizada", "tricoat".
+             */
+            codigo: string;
+            nome: string;
+            /** @description Nível de complexidade da pintura: 1 (Sólida) a 4 (Tricoat). */
+            complexidade: number;
+            is_active?: boolean;
+        };
+        TipoPinturaRequest: {
             /**
              * Código
              * @description Slug único, ex: "solida", "metalica", "perolizada", "tricoat".
@@ -20013,7 +22792,7 @@ export interface components {
             refresh: string;
         };
         /** @description Input para transferencia de item entre niveis. */
-        TransferenciaInput: {
+        TransferenciaInputRequest: {
             item_tipo: components["schemas"]["ItemTipoEnum"];
             /** Format: uuid */
             item_id: string;
@@ -20061,6 +22840,39 @@ export interface components {
          *     passam por normalização (apenas dígitos) antes de serem armazenados.
          */
         UnifiedCustomerCreate: {
+            /** Nome */
+            name: string;
+            cpf: string;
+            phone: string;
+            /** Format: email */
+            email: string;
+            /**
+             * Data de nascimento
+             * Format: date
+             */
+            birth_date?: string | null;
+            /** CEP */
+            zip_code?: string;
+            /** Rua / Av. */
+            street?: string;
+            /** Número */
+            street_number?: string;
+            /** Complemento */
+            complement?: string;
+            /** Bairro */
+            neighborhood?: string;
+            /** Cidade */
+            city?: string;
+            /** UF */
+            state?: string;
+        };
+        /**
+         * @description Serializer para criação de cliente com validação LGPD.
+         *
+         *     O consentimento LGPD é obrigatório (write_only). CPF e telefone
+         *     passam por normalização (apenas dígitos) antes de serem armazenados.
+         */
+        UnifiedCustomerCreateRequest: {
             /** Nome */
             name: string;
             cpf: string;
@@ -20217,8 +23029,19 @@ export interface components {
             permission: number;
             granted?: boolean;
         };
+        UserPermissionRequest: {
+            /** Format: uuid */
+            user: string;
+            permission: number;
+            granted?: boolean;
+        };
         UserRole: {
             readonly id: number;
+            /** Format: uuid */
+            user: string;
+            role: number;
+        };
+        UserRoleRequest: {
             /** Format: uuid */
             user: string;
             role: number;
@@ -20333,6 +23156,75 @@ export interface components {
              * @description Dias vendidos (0 a 10)
              */
             days_sold?: number;
+        };
+        VacationCreateRequest: {
+            /** Format: uuid */
+            employee: string;
+            /**
+             * Início período aquisitivo
+             * Format: date
+             */
+            acquisition_start: string;
+            /**
+             * Fim período aquisitivo
+             * Format: date
+             */
+            acquisition_end: string;
+            /**
+             * Início das férias
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * Fim das férias
+             * Format: date
+             */
+            end_date: string;
+            /**
+             * Dias de férias
+             * @description Dias de gozo (20 a 30)
+             */
+            days_taken: number;
+            /**
+             * Abono pecuniário
+             * @description Dias vendidos (0 a 10)
+             */
+            days_sold?: number;
+        };
+        VacationRequest: {
+            /** Format: uuid */
+            employee: string;
+            /**
+             * Início período aquisitivo
+             * Format: date
+             */
+            acquisition_start: string;
+            /**
+             * Fim período aquisitivo
+             * Format: date
+             */
+            acquisition_end: string;
+            /**
+             * Início das férias
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * Fim das férias
+             * Format: date
+             */
+            end_date: string;
+            /**
+             * Dias de férias
+             * @description Dias de gozo (20 a 30)
+             */
+            days_taken: number;
+            /**
+             * Abono pecuniário
+             * @description Dias vendidos (0 a 10)
+             */
+            days_sold?: number;
+            status?: components["schemas"]["VacationStatusEnum"];
         };
         /**
          * @description * `scheduled` - Agendada
@@ -20470,8 +23362,18 @@ export interface components {
             marca: number;
             readonly marca_nome: string;
         };
+        VehicleRequest: {
+            plate: string;
+            version?: number | null;
+            description?: string;
+            color?: string;
+            year_manufacture?: number | null;
+            chassis?: string;
+            renavam?: string;
+            is_active?: boolean;
+        };
         /** @description Body de POST /auth/verify-email/. */
-        VerifyEmailRequest: {
+        VerifyEmailRequestRequest: {
             /** @description Token raw enviado por email */
             token: string;
         };
@@ -20529,19 +23431,55 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
         };
+        WorkScheduleRequest: {
+            /** Dia da semana */
+            weekday: components["schemas"]["WeekdayEnum"];
+            /**
+             * Entrada
+             * Format: time
+             */
+            start_time?: string | null;
+            /**
+             * Início intervalo
+             * Format: time
+             */
+            break_start?: string | null;
+            /**
+             * Fim intervalo
+             * Format: time
+             */
+            break_end?: string | null;
+            /**
+             * Saída
+             * Format: time
+             */
+            end_time?: string | null;
+            /** Folga */
+            is_day_off?: boolean;
+            /**
+             * Vigente a partir de
+             * Format: date
+             */
+            effective_from: string;
+            /**
+             * Vigente até
+             * Format: date
+             */
+            effective_until?: string | null;
+        };
         _BaixarInsumoResponse: {
             consumos_criados: number;
         };
-        _ConsultarOrcamentoRequest: {
+        _ConsultarOrcamentoRequestRequest: {
             sinistro: string;
             orcamento: string;
             versao?: string;
         };
-        _CustoInsumoRequest: {
+        _CustoInsumoRequestRequest: {
             /** Format: uuid */
             material_canonico_id: string;
         };
-        _CustoPecaRequest: {
+        _CustoPecaRequestRequest: {
             /** Format: uuid */
             peca_canonica_id: string;
         };
@@ -20556,6 +23494,10 @@ export interface components {
         };
         /** @description 410 Gone — endpoint deprecated. */
         _Gone: {
+            detail: string;
+        };
+        /** @description 410 Gone — endpoint deprecated. */
+        _GoneRequest: {
             detail: string;
         };
         /** @description Retorno de /healthz — mapa serviço → status. */
@@ -20573,7 +23515,7 @@ export interface components {
             utilizacao_geral: string;
         };
         /** @description Item do body de PUT /authz/matrix/update/. */
-        _MatrixOverride: {
+        _MatrixOverrideRequest: {
             role: string;
             permission_code: string;
             allowed: boolean;
@@ -20588,8 +23530,8 @@ export interface components {
             };
         };
         /** @description Body de PUT /authz/matrix/update/. */
-        _MatrixUpdateRequest: {
-            overrides: components["schemas"]["_MatrixOverride"][];
+        _MatrixUpdateRequestRequest: {
+            overrides: components["schemas"]["_MatrixOverrideRequest"][];
         };
         /** @description Resposta padrão dos endpoints de movimentação: {id, codigo_barras}. */
         _MovimentacaoIdResponse: {
@@ -20614,13 +23556,13 @@ export interface components {
             unidade_fisica_id: string;
             codigo_barras: string;
         };
-        _RegistrarRecebimentoRequest: {
+        _RegistrarRecebimentoRequestRequest: {
             /** Format: uuid */
             nivel_id: string;
             /** Format: decimal */
             valor_nf: string;
             /** @default estoque_geral */
-            destino: components["schemas"]["DestinoEnum"];
+            destino?: components["schemas"]["DestinoEnum"];
             /** Format: uuid */
             nfe_entrada_id?: string;
             numero_serie?: string;
@@ -20725,9 +23667,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ChartOfAccountCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["ChartOfAccountCreate"];
-                "multipart/form-data": components["schemas"]["ChartOfAccountCreate"];
+                "application/json": components["schemas"]["ChartOfAccountCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ChartOfAccountCreateRequest"];
+                "multipart/form-data": components["schemas"]["ChartOfAccountCreateRequest"];
             };
         };
         responses: {
@@ -20775,9 +23717,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ChartOfAccountCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["ChartOfAccountCreate"];
-                "multipart/form-data": components["schemas"]["ChartOfAccountCreate"];
+                "application/json": components["schemas"]["ChartOfAccountCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ChartOfAccountCreateRequest"];
+                "multipart/form-data": components["schemas"]["ChartOfAccountCreateRequest"];
             };
         };
         responses: {
@@ -20803,9 +23745,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedChartOfAccountCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedChartOfAccountCreate"];
-                "multipart/form-data": components["schemas"]["PatchedChartOfAccountCreate"];
+                "application/json": components["schemas"]["PatchedChartOfAccountCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedChartOfAccountCreateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedChartOfAccountCreateRequest"];
             };
         };
         responses: {
@@ -20898,9 +23840,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CostCenterCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["CostCenterCreate"];
-                "multipart/form-data": components["schemas"]["CostCenterCreate"];
+                "application/json": components["schemas"]["CostCenterCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CostCenterCreateRequest"];
+                "multipart/form-data": components["schemas"]["CostCenterCreateRequest"];
             };
         };
         responses: {
@@ -20948,9 +23890,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CostCenterCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["CostCenterCreate"];
-                "multipart/form-data": components["schemas"]["CostCenterCreate"];
+                "application/json": components["schemas"]["CostCenterCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CostCenterCreateRequest"];
+                "multipart/form-data": components["schemas"]["CostCenterCreateRequest"];
             };
         };
         responses: {
@@ -20976,9 +23918,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedCostCenterCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedCostCenterCreate"];
-                "multipart/form-data": components["schemas"]["PatchedCostCenterCreate"];
+                "application/json": components["schemas"]["PatchedCostCenterCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedCostCenterCreateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedCostCenterCreateRequest"];
             };
         };
         responses: {
@@ -21083,9 +24025,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["DespesaRecorrente"];
-                "application/x-www-form-urlencoded": components["schemas"]["DespesaRecorrente"];
-                "multipart/form-data": components["schemas"]["DespesaRecorrente"];
+                "application/json": components["schemas"]["DespesaRecorrenteRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["DespesaRecorrenteRequest"];
+                "multipart/form-data": components["schemas"]["DespesaRecorrenteRequest"];
             };
         };
         responses: {
@@ -21133,9 +24075,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["DespesaRecorrente"];
-                "application/x-www-form-urlencoded": components["schemas"]["DespesaRecorrente"];
-                "multipart/form-data": components["schemas"]["DespesaRecorrente"];
+                "application/json": components["schemas"]["DespesaRecorrenteRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["DespesaRecorrenteRequest"];
+                "multipart/form-data": components["schemas"]["DespesaRecorrenteRequest"];
             };
         };
         responses: {
@@ -21182,9 +24124,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedDespesaRecorrente"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedDespesaRecorrente"];
-                "multipart/form-data": components["schemas"]["PatchedDespesaRecorrente"];
+                "application/json": components["schemas"]["PatchedDespesaRecorrenteRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedDespesaRecorrenteRequest"];
+                "multipart/form-data": components["schemas"]["PatchedDespesaRecorrenteRequest"];
             };
         };
         responses: {
@@ -21305,13 +24247,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["FiscalPeriodList"];
-                "application/x-www-form-urlencoded": components["schemas"]["FiscalPeriodList"];
-                "multipart/form-data": components["schemas"]["FiscalPeriodList"];
-            };
-        };
+        requestBody?: never;
         responses: {
             201: {
                 headers: {
@@ -21355,13 +24291,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["FiscalPeriodList"];
-                "application/x-www-form-urlencoded": components["schemas"]["FiscalPeriodList"];
-                "multipart/form-data": components["schemas"]["FiscalPeriodList"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -21428,9 +24358,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["FiscalYear"];
-                "application/x-www-form-urlencoded": components["schemas"]["FiscalYear"];
-                "multipart/form-data": components["schemas"]["FiscalYear"];
+                "application/json": components["schemas"]["FiscalYearRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["FiscalYearRequest"];
+                "multipart/form-data": components["schemas"]["FiscalYearRequest"];
             };
         };
         responses: {
@@ -21558,9 +24488,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["JournalEntryCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["JournalEntryCreate"];
-                "multipart/form-data": components["schemas"]["JournalEntryCreate"];
+                "application/json": components["schemas"]["JournalEntryCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["JournalEntryCreateRequest"];
+                "multipart/form-data": components["schemas"]["JournalEntryCreateRequest"];
             };
         };
         responses: {
@@ -21627,13 +24557,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["JournalEntryList"];
-                "application/x-www-form-urlencoded": components["schemas"]["JournalEntryList"];
-                "multipart/form-data": components["schemas"]["JournalEntryList"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -21655,13 +24579,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["JournalEntryList"];
-                "application/x-www-form-urlencoded": components["schemas"]["JournalEntryList"];
-                "multipart/form-data": components["schemas"]["JournalEntryList"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -21715,9 +24633,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreatePayableDocument"];
-                "application/x-www-form-urlencoded": components["schemas"]["CreatePayableDocument"];
-                "multipart/form-data": components["schemas"]["CreatePayableDocument"];
+                "application/json": components["schemas"]["CreatePayableDocumentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CreatePayableDocumentRequest"];
+                "multipart/form-data": components["schemas"]["CreatePayableDocumentRequest"];
             };
         };
         responses: {
@@ -21765,9 +24683,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PayableDocument"];
-                "application/x-www-form-urlencoded": components["schemas"]["PayableDocument"];
-                "multipart/form-data": components["schemas"]["PayableDocument"];
+                "application/json": components["schemas"]["PayableDocumentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PayableDocumentRequest"];
+                "multipart/form-data": components["schemas"]["PayableDocumentRequest"];
             };
         };
         responses: {
@@ -21814,9 +24732,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedPayableDocument"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedPayableDocument"];
-                "multipart/form-data": components["schemas"]["PatchedPayableDocument"];
+                "application/json": components["schemas"]["PatchedPayableDocumentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedPayableDocumentRequest"];
+                "multipart/form-data": components["schemas"]["PatchedPayableDocumentRequest"];
             };
         };
         responses: {
@@ -21842,9 +24760,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PayableDocument"];
-                "application/x-www-form-urlencoded": components["schemas"]["PayableDocument"];
-                "multipart/form-data": components["schemas"]["PayableDocument"];
+                "application/json": components["schemas"]["PayableDocumentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PayableDocumentRequest"];
+                "multipart/form-data": components["schemas"]["PayableDocumentRequest"];
             };
         };
         responses: {
@@ -21870,9 +24788,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RecordPayment"];
-                "application/x-www-form-urlencoded": components["schemas"]["RecordPayment"];
-                "multipart/form-data": components["schemas"]["RecordPayment"];
+                "application/json": components["schemas"]["RecordPaymentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["RecordPaymentRequest"];
+                "multipart/form-data": components["schemas"]["RecordPaymentRequest"];
             };
         };
         responses: {
@@ -21895,9 +24813,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PayableDocument"];
-                "application/x-www-form-urlencoded": components["schemas"]["PayableDocument"];
-                "multipart/form-data": components["schemas"]["PayableDocument"];
+                "application/json": components["schemas"]["PayableDocumentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PayableDocumentRequest"];
+                "multipart/form-data": components["schemas"]["PayableDocumentRequest"];
             };
         };
         responses: {
@@ -21948,9 +24866,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PayableDocument"];
-                "application/x-www-form-urlencoded": components["schemas"]["PayableDocument"];
-                "multipart/form-data": components["schemas"]["PayableDocument"];
+                "application/json": components["schemas"]["PayableDocumentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PayableDocumentRequest"];
+                "multipart/form-data": components["schemas"]["PayableDocumentRequest"];
             };
         };
         responses: {
@@ -21998,9 +24916,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PayableDocument"];
-                "application/x-www-form-urlencoded": components["schemas"]["PayableDocument"];
-                "multipart/form-data": components["schemas"]["PayableDocument"];
+                "application/json": components["schemas"]["PayableDocumentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PayableDocumentRequest"];
+                "multipart/form-data": components["schemas"]["PayableDocumentRequest"];
             };
         };
         responses: {
@@ -22047,9 +24965,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedPayableDocument"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedPayableDocument"];
-                "multipart/form-data": components["schemas"]["PatchedPayableDocument"];
+                "application/json": components["schemas"]["PatchedPayableDocumentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedPayableDocumentRequest"];
+                "multipart/form-data": components["schemas"]["PatchedPayableDocumentRequest"];
             };
         };
         responses: {
@@ -22097,9 +25015,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PayableDocument"];
-                "application/x-www-form-urlencoded": components["schemas"]["PayableDocument"];
-                "multipart/form-data": components["schemas"]["PayableDocument"];
+                "application/json": components["schemas"]["PayableDocumentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PayableDocumentRequest"];
+                "multipart/form-data": components["schemas"]["PayableDocumentRequest"];
             };
         };
         responses: {
@@ -22155,9 +25073,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateReceivableDocument"];
-                "application/x-www-form-urlencoded": components["schemas"]["CreateReceivableDocument"];
-                "multipart/form-data": components["schemas"]["CreateReceivableDocument"];
+                "application/json": components["schemas"]["CreateReceivableDocumentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CreateReceivableDocumentRequest"];
+                "multipart/form-data": components["schemas"]["CreateReceivableDocumentRequest"];
             };
         };
         responses: {
@@ -22205,9 +25123,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ReceivableDocument"];
-                "application/x-www-form-urlencoded": components["schemas"]["ReceivableDocument"];
-                "multipart/form-data": components["schemas"]["ReceivableDocument"];
+                "application/json": components["schemas"]["ReceivableDocumentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReceivableDocumentRequest"];
+                "multipart/form-data": components["schemas"]["ReceivableDocumentRequest"];
             };
         };
         responses: {
@@ -22254,9 +25172,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedReceivableDocument"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedReceivableDocument"];
-                "multipart/form-data": components["schemas"]["PatchedReceivableDocument"];
+                "application/json": components["schemas"]["PatchedReceivableDocumentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedReceivableDocumentRequest"];
+                "multipart/form-data": components["schemas"]["PatchedReceivableDocumentRequest"];
             };
         };
         responses: {
@@ -22282,9 +25200,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ReceivableDocument"];
-                "application/x-www-form-urlencoded": components["schemas"]["ReceivableDocument"];
-                "multipart/form-data": components["schemas"]["ReceivableDocument"];
+                "application/json": components["schemas"]["ReceivableDocumentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReceivableDocumentRequest"];
+                "multipart/form-data": components["schemas"]["ReceivableDocumentRequest"];
             };
         };
         responses: {
@@ -22310,9 +25228,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RecordReceipt"];
-                "application/x-www-form-urlencoded": components["schemas"]["RecordReceipt"];
-                "multipart/form-data": components["schemas"]["RecordReceipt"];
+                "application/json": components["schemas"]["RecordReceiptRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["RecordReceiptRequest"];
+                "multipart/form-data": components["schemas"]["RecordReceiptRequest"];
             };
         };
         responses: {
@@ -22335,9 +25253,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ReceivableDocument"];
-                "application/x-www-form-urlencoded": components["schemas"]["ReceivableDocument"];
-                "multipart/form-data": components["schemas"]["ReceivableDocument"];
+                "application/json": components["schemas"]["ReceivableDocumentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ReceivableDocumentRequest"];
+                "multipart/form-data": components["schemas"]["ReceivableDocumentRequest"];
             };
         };
         responses: {
@@ -22360,9 +25278,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["LoginRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["LoginRequest"];
-                "multipart/form-data": components["schemas"]["LoginRequest"];
+                "application/json": components["schemas"]["LoginRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["LoginRequestRequest"];
+                "multipart/form-data": components["schemas"]["LoginRequestRequest"];
             };
         };
         responses: {
@@ -22385,9 +25303,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ForgotPasswordRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["ForgotPasswordRequest"];
-                "multipart/form-data": components["schemas"]["ForgotPasswordRequest"];
+                "application/json": components["schemas"]["ForgotPasswordRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ForgotPasswordRequestRequest"];
+                "multipart/form-data": components["schemas"]["ForgotPasswordRequestRequest"];
             };
         };
         responses: {
@@ -22410,9 +25328,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["LoginRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["LoginRequest"];
-                "multipart/form-data": components["schemas"]["LoginRequest"];
+                "application/json": components["schemas"]["LoginRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["LoginRequestRequest"];
+                "multipart/form-data": components["schemas"]["LoginRequestRequest"];
             };
         };
         responses: {
@@ -22454,9 +25372,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedPushTokenRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedPushTokenRequest"];
-                "multipart/form-data": components["schemas"]["PatchedPushTokenRequest"];
+                "application/json": components["schemas"]["PatchedPushTokenRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedPushTokenRequestRequest"];
+                "multipart/form-data": components["schemas"]["PatchedPushTokenRequestRequest"];
             };
         };
         responses: {
@@ -22479,9 +25397,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RefreshRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["RefreshRequest"];
-                "multipart/form-data": components["schemas"]["RefreshRequest"];
+                "application/json": components["schemas"]["RefreshRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["RefreshRequestRequest"];
+                "multipart/form-data": components["schemas"]["RefreshRequestRequest"];
             };
         };
         responses: {
@@ -22504,9 +25422,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RegisterRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["RegisterRequest"];
-                "multipart/form-data": components["schemas"]["RegisterRequest"];
+                "application/json": components["schemas"]["RegisterRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["RegisterRequestRequest"];
+                "multipart/form-data": components["schemas"]["RegisterRequestRequest"];
             };
         };
         responses: {
@@ -22529,9 +25447,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ResetPasswordRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["ResetPasswordRequest"];
-                "multipart/form-data": components["schemas"]["ResetPasswordRequest"];
+                "application/json": components["schemas"]["ResetPasswordRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ResetPasswordRequestRequest"];
+                "multipart/form-data": components["schemas"]["ResetPasswordRequestRequest"];
             };
         };
         responses: {
@@ -22582,9 +25500,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedStaffUser"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedStaffUser"];
-                "multipart/form-data": components["schemas"]["PatchedStaffUser"];
+                "application/json": components["schemas"]["PatchedStaffUserRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedStaffUserRequest"];
+                "multipart/form-data": components["schemas"]["PatchedStaffUserRequest"];
             };
         };
         responses: {
@@ -22623,9 +25541,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["VerifyEmailRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["VerifyEmailRequest"];
-                "multipart/form-data": components["schemas"]["VerifyEmailRequest"];
+                "application/json": components["schemas"]["VerifyEmailRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["VerifyEmailRequestRequest"];
+                "multipart/form-data": components["schemas"]["VerifyEmailRequestRequest"];
             };
         };
         responses: {
@@ -22675,9 +25593,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["_MatrixUpdateRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["_MatrixUpdateRequest"];
-                "multipart/form-data": components["schemas"]["_MatrixUpdateRequest"];
+                "application/json": components["schemas"]["_MatrixUpdateRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["_MatrixUpdateRequestRequest"];
+                "multipart/form-data": components["schemas"]["_MatrixUpdateRequestRequest"];
             };
         };
         responses: {
@@ -22863,9 +25781,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UserPermission"];
-                "application/x-www-form-urlencoded": components["schemas"]["UserPermission"];
-                "multipart/form-data": components["schemas"]["UserPermission"];
+                "application/json": components["schemas"]["UserPermissionRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["UserPermissionRequest"];
+                "multipart/form-data": components["schemas"]["UserPermissionRequest"];
             };
         };
         responses: {
@@ -22913,9 +25831,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UserPermission"];
-                "application/x-www-form-urlencoded": components["schemas"]["UserPermission"];
-                "multipart/form-data": components["schemas"]["UserPermission"];
+                "application/json": components["schemas"]["UserPermissionRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["UserPermissionRequest"];
+                "multipart/form-data": components["schemas"]["UserPermissionRequest"];
             };
         };
         responses: {
@@ -22962,9 +25880,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedUserPermission"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedUserPermission"];
-                "multipart/form-data": components["schemas"]["PatchedUserPermission"];
+                "application/json": components["schemas"]["PatchedUserPermissionRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedUserPermissionRequest"];
+                "multipart/form-data": components["schemas"]["PatchedUserPermissionRequest"];
             };
         };
         responses: {
@@ -23015,9 +25933,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UserRole"];
-                "application/x-www-form-urlencoded": components["schemas"]["UserRole"];
-                "multipart/form-data": components["schemas"]["UserRole"];
+                "application/json": components["schemas"]["UserRoleRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["UserRoleRequest"];
+                "multipart/form-data": components["schemas"]["UserRoleRequest"];
             };
         };
         responses: {
@@ -23065,9 +25983,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UserRole"];
-                "application/x-www-form-urlencoded": components["schemas"]["UserRole"];
-                "multipart/form-data": components["schemas"]["UserRole"];
+                "application/json": components["schemas"]["UserRoleRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["UserRoleRequest"];
+                "multipart/form-data": components["schemas"]["UserRoleRequest"];
             };
         };
         responses: {
@@ -23114,9 +26032,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedUserRole"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedUserRole"];
-                "multipart/form-data": components["schemas"]["PatchedUserRole"];
+                "application/json": components["schemas"]["PatchedUserRoleRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedUserRoleRequest"];
+                "multipart/form-data": components["schemas"]["PatchedUserRoleRequest"];
             };
         };
         responses: {
@@ -23168,9 +26086,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BudgetRead"];
-                "application/x-www-form-urlencoded": components["schemas"]["BudgetRead"];
-                "multipart/form-data": components["schemas"]["BudgetRead"];
+                "application/json": components["schemas"]["BudgetReadRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BudgetReadRequest"];
+                "multipart/form-data": components["schemas"]["BudgetReadRequest"];
             };
         };
         responses: {
@@ -23244,9 +26162,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BudgetVersionRead"];
-                "application/x-www-form-urlencoded": components["schemas"]["BudgetVersionRead"];
-                "multipart/form-data": components["schemas"]["BudgetVersionRead"];
+                "application/json": components["schemas"]["BudgetVersionReadRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BudgetVersionReadRequest"];
+                "multipart/form-data": components["schemas"]["BudgetVersionReadRequest"];
             };
         };
         responses: {
@@ -23294,9 +26212,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BudgetVersionRead"];
-                "application/x-www-form-urlencoded": components["schemas"]["BudgetVersionRead"];
-                "multipart/form-data": components["schemas"]["BudgetVersionRead"];
+                "application/json": components["schemas"]["BudgetVersionReadRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BudgetVersionReadRequest"];
+                "multipart/form-data": components["schemas"]["BudgetVersionReadRequest"];
             };
         };
         responses: {
@@ -23322,9 +26240,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BudgetVersionRead"];
-                "application/x-www-form-urlencoded": components["schemas"]["BudgetVersionRead"];
-                "multipart/form-data": components["schemas"]["BudgetVersionRead"];
+                "application/json": components["schemas"]["BudgetVersionReadRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BudgetVersionReadRequest"];
+                "multipart/form-data": components["schemas"]["BudgetVersionReadRequest"];
             };
         };
         responses: {
@@ -23350,9 +26268,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BudgetVersionRead"];
-                "application/x-www-form-urlencoded": components["schemas"]["BudgetVersionRead"];
-                "multipart/form-data": components["schemas"]["BudgetVersionRead"];
+                "application/json": components["schemas"]["BudgetVersionReadRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BudgetVersionReadRequest"];
+                "multipart/form-data": components["schemas"]["BudgetVersionReadRequest"];
             };
         };
         responses: {
@@ -23409,9 +26327,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BudgetVersionItemWrite"];
-                "application/x-www-form-urlencoded": components["schemas"]["BudgetVersionItemWrite"];
-                "multipart/form-data": components["schemas"]["BudgetVersionItemWrite"];
+                "application/json": components["schemas"]["BudgetVersionItemWriteRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BudgetVersionItemWriteRequest"];
+                "multipart/form-data": components["schemas"]["BudgetVersionItemWriteRequest"];
             };
         };
         responses: {
@@ -23461,9 +26379,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BudgetVersionItemWrite"];
-                "application/x-www-form-urlencoded": components["schemas"]["BudgetVersionItemWrite"];
-                "multipart/form-data": components["schemas"]["BudgetVersionItemWrite"];
+                "application/json": components["schemas"]["BudgetVersionItemWriteRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BudgetVersionItemWriteRequest"];
+                "multipart/form-data": components["schemas"]["BudgetVersionItemWriteRequest"];
             };
         };
         responses: {
@@ -23512,9 +26430,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedBudgetVersionItemWrite"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedBudgetVersionItemWrite"];
-                "multipart/form-data": components["schemas"]["PatchedBudgetVersionItemWrite"];
+                "application/json": components["schemas"]["PatchedBudgetVersionItemWriteRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedBudgetVersionItemWriteRequest"];
+                "multipart/form-data": components["schemas"]["PatchedBudgetVersionItemWriteRequest"];
             };
         };
         responses: {
@@ -23562,9 +26480,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BudgetRead"];
-                "application/x-www-form-urlencoded": components["schemas"]["BudgetRead"];
-                "multipart/form-data": components["schemas"]["BudgetRead"];
+                "application/json": components["schemas"]["BudgetReadRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BudgetReadRequest"];
+                "multipart/form-data": components["schemas"]["BudgetReadRequest"];
             };
         };
         responses: {
@@ -23615,9 +26533,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BloqueioCapacidade"];
-                "application/x-www-form-urlencoded": components["schemas"]["BloqueioCapacidade"];
-                "multipart/form-data": components["schemas"]["BloqueioCapacidade"];
+                "application/json": components["schemas"]["BloqueioCapacidadeRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BloqueioCapacidadeRequest"];
+                "multipart/form-data": components["schemas"]["BloqueioCapacidadeRequest"];
             };
         };
         responses: {
@@ -23665,9 +26583,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BloqueioCapacidade"];
-                "application/x-www-form-urlencoded": components["schemas"]["BloqueioCapacidade"];
-                "multipart/form-data": components["schemas"]["BloqueioCapacidade"];
+                "application/json": components["schemas"]["BloqueioCapacidadeRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BloqueioCapacidadeRequest"];
+                "multipart/form-data": components["schemas"]["BloqueioCapacidadeRequest"];
             };
         };
         responses: {
@@ -23714,9 +26632,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedBloqueioCapacidade"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedBloqueioCapacidade"];
-                "multipart/form-data": components["schemas"]["PatchedBloqueioCapacidade"];
+                "application/json": components["schemas"]["PatchedBloqueioCapacidadeRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedBloqueioCapacidadeRequest"];
+                "multipart/form-data": components["schemas"]["PatchedBloqueioCapacidadeRequest"];
             };
         };
         responses: {
@@ -23767,9 +26685,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CapacidadeTecnico"];
-                "application/x-www-form-urlencoded": components["schemas"]["CapacidadeTecnico"];
-                "multipart/form-data": components["schemas"]["CapacidadeTecnico"];
+                "application/json": components["schemas"]["CapacidadeTecnicoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CapacidadeTecnicoRequest"];
+                "multipart/form-data": components["schemas"]["CapacidadeTecnicoRequest"];
             };
         };
         responses: {
@@ -23817,9 +26735,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CapacidadeTecnico"];
-                "application/x-www-form-urlencoded": components["schemas"]["CapacidadeTecnico"];
-                "multipart/form-data": components["schemas"]["CapacidadeTecnico"];
+                "application/json": components["schemas"]["CapacidadeTecnicoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CapacidadeTecnicoRequest"];
+                "multipart/form-data": components["schemas"]["CapacidadeTecnicoRequest"];
             };
         };
         responses: {
@@ -23866,9 +26784,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedCapacidadeTecnico"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedCapacidadeTecnico"];
-                "multipart/form-data": components["schemas"]["PatchedCapacidadeTecnico"];
+                "application/json": components["schemas"]["PatchedCapacidadeTecnicoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedCapacidadeTecnicoRequest"];
+                "multipart/form-data": components["schemas"]["PatchedCapacidadeTecnicoRequest"];
             };
         };
         responses: {
@@ -23987,9 +26905,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["_ConsultarOrcamentoRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["_ConsultarOrcamentoRequest"];
-                "multipart/form-data": components["schemas"]["_ConsultarOrcamentoRequest"];
+                "application/json": components["schemas"]["_ConsultarOrcamentoRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["_ConsultarOrcamentoRequestRequest"];
+                "multipart/form-data": components["schemas"]["_ConsultarOrcamentoRequestRequest"];
             };
         };
         responses: {
@@ -24060,9 +26978,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UnifiedCustomerCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["UnifiedCustomerCreate"];
-                "multipart/form-data": components["schemas"]["UnifiedCustomerCreate"];
+                "application/json": components["schemas"]["UnifiedCustomerCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["UnifiedCustomerCreateRequest"];
+                "multipart/form-data": components["schemas"]["UnifiedCustomerCreateRequest"];
             };
         };
         responses: {
@@ -24110,9 +27028,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedUnifiedCustomerUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedUnifiedCustomerUpdate"];
-                "multipart/form-data": components["schemas"]["PatchedUnifiedCustomerUpdate"];
+                "application/json": components["schemas"]["PatchedUnifiedCustomerUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedUnifiedCustomerUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedUnifiedCustomerUpdateRequest"];
             };
         };
         responses: {
@@ -24215,9 +27133,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["GenerateDocument"];
-                "application/x-www-form-urlencoded": components["schemas"]["GenerateDocument"];
-                "multipart/form-data": components["schemas"]["GenerateDocument"];
+                "application/json": components["schemas"]["GenerateDocumentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["GenerateDocumentRequest"];
+                "multipart/form-data": components["schemas"]["GenerateDocumentRequest"];
             };
         };
         responses: {
@@ -24326,9 +27244,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["_Gone"];
-                "application/x-www-form-urlencoded": components["schemas"]["_Gone"];
-                "multipart/form-data": components["schemas"]["_Gone"];
+                "application/json": components["schemas"]["_GoneRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["_GoneRequest"];
+                "multipart/form-data": components["schemas"]["_GoneRequest"];
             };
         };
         responses: {
@@ -24374,9 +27292,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["_Gone"];
-                "application/x-www-form-urlencoded": components["schemas"]["_Gone"];
-                "multipart/form-data": components["schemas"]["_Gone"];
+                "application/json": components["schemas"]["_GoneRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["_GoneRequest"];
+                "multipart/form-data": components["schemas"]["_GoneRequest"];
             };
         };
         responses: {
@@ -24422,9 +27340,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["Patched_Gone"];
-                "application/x-www-form-urlencoded": components["schemas"]["Patched_Gone"];
-                "multipart/form-data": components["schemas"]["Patched_Gone"];
+                "application/json": components["schemas"]["Patched_GoneRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["Patched_GoneRequest"];
+                "multipart/form-data": components["schemas"]["Patched_GoneRequest"];
             };
         };
         responses: {
@@ -24519,13 +27437,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["FiscalDocumentList"];
-                "application/x-www-form-urlencoded": components["schemas"]["FiscalDocumentList"];
-                "multipart/form-data": components["schemas"]["FiscalDocumentList"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -24547,13 +27459,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["FiscalDocumentList"];
-                "application/x-www-form-urlencoded": components["schemas"]["FiscalDocumentList"];
-                "multipart/form-data": components["schemas"]["FiscalDocumentList"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -24574,9 +27480,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NfceEmitRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["NfceEmitRequest"];
-                "multipart/form-data": components["schemas"]["NfceEmitRequest"];
+                "application/json": components["schemas"]["NfceEmitRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NfceEmitRequestRequest"];
+                "multipart/form-data": components["schemas"]["NfceEmitRequestRequest"];
             };
         };
         responses: {
@@ -24635,9 +27541,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["NFeEntradaCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["NFeEntradaCreate"];
-                "multipart/form-data": components["schemas"]["NFeEntradaCreate"];
+                "application/json": components["schemas"]["NFeEntradaCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NFeEntradaCreateRequest"];
+                "multipart/form-data": components["schemas"]["NFeEntradaCreateRequest"];
             };
         };
         responses: {
@@ -24683,13 +27589,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["NFeEntradaList"];
-                "application/x-www-form-urlencoded": components["schemas"]["NFeEntradaList"];
-                "multipart/form-data": components["schemas"]["NFeEntradaList"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -24732,13 +27632,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["PatchedNFeEntradaList"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedNFeEntradaList"];
-                "multipart/form-data": components["schemas"]["PatchedNFeEntradaList"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -24760,13 +27654,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["NFeEntradaList"];
-                "application/x-www-form-urlencoded": components["schemas"]["NFeEntradaList"];
-                "multipart/form-data": components["schemas"]["NFeEntradaList"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -24789,13 +27677,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["NFeEntradaList"];
-                "application/x-www-form-urlencoded": components["schemas"]["NFeEntradaList"];
-                "multipart/form-data": components["schemas"]["NFeEntradaList"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -24817,13 +27699,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["NFeEntradaList"];
-                "application/x-www-form-urlencoded": components["schemas"]["NFeEntradaList"];
-                "multipart/form-data": components["schemas"]["NFeEntradaList"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -24868,9 +27744,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NfeRecebidaManifestRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["NfeRecebidaManifestRequest"];
-                "multipart/form-data": components["schemas"]["NfeRecebidaManifestRequest"];
+                "application/json": components["schemas"]["NfeRecebidaManifestRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NfeRecebidaManifestRequestRequest"];
+                "multipart/form-data": components["schemas"]["NfeRecebidaManifestRequestRequest"];
             };
         };
         responses: {
@@ -24893,9 +27769,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["NfeRecebidaSyncRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["NfeRecebidaSyncRequest"];
-                "multipart/form-data": components["schemas"]["NfeRecebidaSyncRequest"];
+                "application/json": components["schemas"]["NfeRecebidaSyncRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NfeRecebidaSyncRequestRequest"];
+                "multipart/form-data": components["schemas"]["NfeRecebidaSyncRequestRequest"];
             };
         };
         responses: {
@@ -24918,9 +27794,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NfeEmitRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["NfeEmitRequest"];
-                "multipart/form-data": components["schemas"]["NfeEmitRequest"];
+                "application/json": components["schemas"]["NfeEmitRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NfeEmitRequestRequest"];
+                "multipart/form-data": components["schemas"]["NfeEmitRequestRequest"];
             };
         };
         responses: {
@@ -24951,9 +27827,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ManualNfeInput"];
-                "application/x-www-form-urlencoded": components["schemas"]["ManualNfeInput"];
-                "multipart/form-data": components["schemas"]["ManualNfeInput"];
+                "application/json": components["schemas"]["ManualNfeInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ManualNfeInputRequest"];
+                "multipart/form-data": components["schemas"]["ManualNfeInputRequest"];
             };
         };
         responses: {
@@ -24984,9 +27860,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NfeInutilizacaoRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["NfeInutilizacaoRequest"];
-                "multipart/form-data": components["schemas"]["NfeInutilizacaoRequest"];
+                "application/json": components["schemas"]["NfeInutilizacaoRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NfeInutilizacaoRequestRequest"];
+                "multipart/form-data": components["schemas"]["NfeInutilizacaoRequestRequest"];
             };
         };
         responses: {
@@ -25036,9 +27912,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NfseEmitRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["NfseEmitRequest"];
-                "multipart/form-data": components["schemas"]["NfseEmitRequest"];
+                "application/json": components["schemas"]["NfseEmitRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NfseEmitRequestRequest"];
+                "multipart/form-data": components["schemas"]["NfseEmitRequestRequest"];
             };
         };
         responses: {
@@ -25069,9 +27945,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ManualNfseInput"];
-                "application/x-www-form-urlencoded": components["schemas"]["ManualNfseInput"];
-                "multipart/form-data": components["schemas"]["ManualNfseInput"];
+                "application/json": components["schemas"]["ManualNfseInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ManualNfseInputRequest"];
+                "multipart/form-data": components["schemas"]["ManualNfseInputRequest"];
             };
         };
         responses: {
@@ -25102,9 +27978,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NfseSubstituirRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["NfseSubstituirRequest"];
-                "multipart/form-data": components["schemas"]["NfseSubstituirRequest"];
+                "application/json": components["schemas"]["NfseSubstituirRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NfseSubstituirRequestRequest"];
+                "multipart/form-data": components["schemas"]["NfseSubstituirRequestRequest"];
             };
         };
         responses: {
@@ -25214,9 +28090,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AllowanceCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["AllowanceCreate"];
-                "multipart/form-data": components["schemas"]["AllowanceCreate"];
+                "application/json": components["schemas"]["AllowanceCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AllowanceCreateRequest"];
+                "multipart/form-data": components["schemas"]["AllowanceCreateRequest"];
             };
         };
         responses: {
@@ -25264,9 +28140,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Allowance"];
-                "application/x-www-form-urlencoded": components["schemas"]["Allowance"];
-                "multipart/form-data": components["schemas"]["Allowance"];
+                "application/json": components["schemas"]["AllowanceRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AllowanceRequest"];
+                "multipart/form-data": components["schemas"]["AllowanceRequest"];
             };
         };
         responses: {
@@ -25292,9 +28168,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Allowance"];
-                "application/x-www-form-urlencoded": components["schemas"]["Allowance"];
-                "multipart/form-data": components["schemas"]["Allowance"];
+                "application/json": components["schemas"]["AllowanceRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AllowanceRequest"];
+                "multipart/form-data": components["schemas"]["AllowanceRequest"];
             };
         };
         responses: {
@@ -25375,9 +28251,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EmployeeCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["EmployeeCreate"];
-                "multipart/form-data": components["schemas"]["EmployeeCreate"];
+                "application/json": components["schemas"]["EmployeeCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["EmployeeCreateRequest"];
+                "multipart/form-data": components["schemas"]["EmployeeCreateRequest"];
             };
         };
         responses: {
@@ -25445,9 +28321,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AllowanceCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["AllowanceCreate"];
-                "multipart/form-data": components["schemas"]["AllowanceCreate"];
+                "application/json": components["schemas"]["AllowanceCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AllowanceCreateRequest"];
+                "multipart/form-data": components["schemas"]["AllowanceCreateRequest"];
             };
         };
         responses: {
@@ -25502,9 +28378,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BonusCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["BonusCreate"];
-                "multipart/form-data": components["schemas"]["BonusCreate"];
+                "application/json": components["schemas"]["BonusCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BonusCreateRequest"];
+                "multipart/form-data": components["schemas"]["BonusCreateRequest"];
             };
         };
         responses: {
@@ -25559,9 +28435,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["DeductionCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["DeductionCreate"];
-                "multipart/form-data": components["schemas"]["DeductionCreate"];
+                "application/json": components["schemas"]["DeductionCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["DeductionCreateRequest"];
+                "multipart/form-data": components["schemas"]["DeductionCreateRequest"];
             };
         };
         responses: {
@@ -25616,9 +28492,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EmployeeDocument"];
-                "application/x-www-form-urlencoded": components["schemas"]["EmployeeDocument"];
-                "multipart/form-data": components["schemas"]["EmployeeDocument"];
+                "application/json": components["schemas"]["EmployeeDocumentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["EmployeeDocumentRequest"];
+                "multipart/form-data": components["schemas"]["EmployeeDocumentRequest"];
             };
         };
         responses: {
@@ -25716,9 +28592,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SalaryHistoryCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["SalaryHistoryCreate"];
-                "multipart/form-data": components["schemas"]["SalaryHistoryCreate"];
+                "application/json": components["schemas"]["SalaryHistoryCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["SalaryHistoryCreateRequest"];
+                "multipart/form-data": components["schemas"]["SalaryHistoryCreateRequest"];
             };
         };
         responses: {
@@ -25773,9 +28649,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["WorkSchedule"];
-                "application/x-www-form-urlencoded": components["schemas"]["WorkSchedule"];
-                "multipart/form-data": components["schemas"]["WorkSchedule"];
+                "application/json": components["schemas"]["WorkScheduleRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["WorkScheduleRequest"];
+                "multipart/form-data": components["schemas"]["WorkScheduleRequest"];
             };
         };
         responses: {
@@ -25830,9 +28706,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["VacationCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["VacationCreate"];
-                "multipart/form-data": components["schemas"]["VacationCreate"];
+                "application/json": components["schemas"]["VacationCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["VacationCreateRequest"];
+                "multipart/form-data": components["schemas"]["VacationCreateRequest"];
             };
         };
         responses: {
@@ -25880,9 +28756,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedEmployeeUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedEmployeeUpdate"];
-                "multipart/form-data": components["schemas"]["PatchedEmployeeUpdate"];
+                "application/json": components["schemas"]["PatchedEmployeeUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedEmployeeUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedEmployeeUpdateRequest"];
             };
         };
         responses: {
@@ -25908,9 +28784,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EmployeeDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["EmployeeDetail"];
-                "multipart/form-data": components["schemas"]["EmployeeDetail"];
+                "application/json": components["schemas"]["EmployeeDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["EmployeeDetailRequest"];
+                "multipart/form-data": components["schemas"]["EmployeeDetailRequest"];
             };
         };
         responses: {
@@ -25936,7 +28812,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["EmployeeDetail"];
+                "multipart/form-data": components["schemas"]["EmployeeDetailRequest"];
             };
         };
         responses: {
@@ -26027,9 +28903,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["GoalTargetCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["GoalTargetCreate"];
-                "multipart/form-data": components["schemas"]["GoalTargetCreate"];
+                "application/json": components["schemas"]["GoalTargetCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["GoalTargetCreateRequest"];
+                "multipart/form-data": components["schemas"]["GoalTargetCreateRequest"];
             };
         };
         responses: {
@@ -26077,9 +28953,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedGoalTargetUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedGoalTargetUpdate"];
-                "multipart/form-data": components["schemas"]["PatchedGoalTargetUpdate"];
+                "application/json": components["schemas"]["PatchedGoalTargetUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedGoalTargetUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedGoalTargetUpdateRequest"];
             };
         };
         responses: {
@@ -26105,9 +28981,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["GoalTarget"];
-                "application/x-www-form-urlencoded": components["schemas"]["GoalTarget"];
-                "multipart/form-data": components["schemas"]["GoalTarget"];
+                "application/json": components["schemas"]["GoalTargetRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["GoalTargetRequest"];
+                "multipart/form-data": components["schemas"]["GoalTargetRequest"];
             };
         };
         responses: {
@@ -26180,9 +29056,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Payslip"];
-                "application/x-www-form-urlencoded": components["schemas"]["Payslip"];
-                "multipart/form-data": components["schemas"]["Payslip"];
+                "application/json": components["schemas"]["PayslipRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PayslipRequest"];
+                "multipart/form-data": components["schemas"]["PayslipRequest"];
             };
         };
         responses: {
@@ -26227,9 +29103,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Payslip"];
-                "application/x-www-form-urlencoded": components["schemas"]["Payslip"];
-                "multipart/form-data": components["schemas"]["Payslip"];
+                "application/json": components["schemas"]["PayslipRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PayslipRequest"];
+                "multipart/form-data": components["schemas"]["PayslipRequest"];
             };
         };
         responses: {
@@ -26254,9 +29130,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PJPayment"];
-                "application/x-www-form-urlencoded": components["schemas"]["PJPayment"];
-                "multipart/form-data": components["schemas"]["PJPayment"];
+                "application/json": components["schemas"]["PJPaymentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PJPaymentRequest"];
+                "multipart/form-data": components["schemas"]["PJPaymentRequest"];
             };
         };
         responses: {
@@ -26307,9 +29183,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TimeClockRegister"];
-                "application/x-www-form-urlencoded": components["schemas"]["TimeClockRegister"];
-                "multipart/form-data": components["schemas"]["TimeClockRegister"];
+                "application/json": components["schemas"]["TimeClockRegisterRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["TimeClockRegisterRequest"];
+                "multipart/form-data": components["schemas"]["TimeClockRegisterRequest"];
             };
         };
         responses: {
@@ -26357,9 +29233,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TimeClockEntry"];
-                "application/x-www-form-urlencoded": components["schemas"]["TimeClockEntry"];
-                "multipart/form-data": components["schemas"]["TimeClockEntry"];
+                "application/json": components["schemas"]["TimeClockEntryRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["TimeClockEntryRequest"];
+                "multipart/form-data": components["schemas"]["TimeClockEntryRequest"];
             };
         };
         responses: {
@@ -26405,9 +29281,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Vacation"];
-                "application/x-www-form-urlencoded": components["schemas"]["Vacation"];
-                "multipart/form-data": components["schemas"]["Vacation"];
+                "application/json": components["schemas"]["VacationRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["VacationRequest"];
+                "multipart/form-data": components["schemas"]["VacationRequest"];
             };
         };
         responses: {
@@ -26432,9 +29308,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Vacation"];
-                "application/x-www-form-urlencoded": components["schemas"]["Vacation"];
-                "multipart/form-data": components["schemas"]["Vacation"];
+                "application/json": components["schemas"]["VacationRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["VacationRequest"];
+                "multipart/form-data": components["schemas"]["VacationRequest"];
             };
         };
         responses: {
@@ -26526,13 +29402,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["ImportAttempt"];
-                "application/x-www-form-urlencoded": components["schemas"]["ImportAttempt"];
-                "multipart/form-data": components["schemas"]["ImportAttempt"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -26551,13 +29421,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["ImportAttempt"];
-                "application/x-www-form-urlencoded": components["schemas"]["ImportAttempt"];
-                "multipart/form-data": components["schemas"]["ImportAttempt"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -26604,9 +29468,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Insurer"];
-                "application/x-www-form-urlencoded": components["schemas"]["Insurer"];
-                "multipart/form-data": components["schemas"]["Insurer"];
+                "application/json": components["schemas"]["InsurerRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["InsurerRequest"];
+                "multipart/form-data": components["schemas"]["InsurerRequest"];
             };
         };
         responses: {
@@ -26654,9 +29518,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Insurer"];
-                "application/x-www-form-urlencoded": components["schemas"]["Insurer"];
-                "multipart/form-data": components["schemas"]["Insurer"];
+                "application/json": components["schemas"]["InsurerRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["InsurerRequest"];
+                "multipart/form-data": components["schemas"]["InsurerRequest"];
             };
         };
         responses: {
@@ -26703,9 +29567,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedInsurer"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedInsurer"];
-                "multipart/form-data": components["schemas"]["PatchedInsurer"];
+                "application/json": components["schemas"]["PatchedInsurerRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedInsurerRequest"];
+                "multipart/form-data": components["schemas"]["PatchedInsurerRequest"];
             };
         };
         responses: {
@@ -26753,9 +29617,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Insurer"];
-                "application/x-www-form-urlencoded": components["schemas"]["Insurer"];
-                "multipart/form-data": components["schemas"]["Insurer"];
+                "application/json": components["schemas"]["InsurerRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["InsurerRequest"];
+                "multipart/form-data": components["schemas"]["InsurerRequest"];
             };
         };
         responses: {
@@ -26781,7 +29645,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["Insurer"];
+                "multipart/form-data": components["schemas"]["InsurerRequest"];
             };
         };
         responses: {
@@ -26835,9 +29699,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RejeicaoInput"];
-                "application/x-www-form-urlencoded": components["schemas"]["RejeicaoInput"];
-                "multipart/form-data": components["schemas"]["RejeicaoInput"];
+                "application/json": components["schemas"]["RejeicaoInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["RejeicaoInputRequest"];
+                "multipart/form-data": components["schemas"]["RejeicaoInputRequest"];
             };
         };
         responses: {
@@ -26914,9 +29778,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Armazem"];
-                "application/x-www-form-urlencoded": components["schemas"]["Armazem"];
-                "multipart/form-data": components["schemas"]["Armazem"];
+                "application/json": components["schemas"]["ArmazemRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ArmazemRequest"];
+                "multipart/form-data": components["schemas"]["ArmazemRequest"];
             };
         };
         responses: {
@@ -26964,9 +29828,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Armazem"];
-                "application/x-www-form-urlencoded": components["schemas"]["Armazem"];
-                "multipart/form-data": components["schemas"]["Armazem"];
+                "application/json": components["schemas"]["ArmazemRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ArmazemRequest"];
+                "multipart/form-data": components["schemas"]["ArmazemRequest"];
             };
         };
         responses: {
@@ -27013,9 +29877,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedArmazem"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedArmazem"];
-                "multipart/form-data": components["schemas"]["PatchedArmazem"];
+                "application/json": components["schemas"]["PatchedArmazemRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedArmazemRequest"];
+                "multipart/form-data": components["schemas"]["PatchedArmazemRequest"];
             };
         };
         responses: {
@@ -27060,9 +29924,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BaixaInsumoInput"];
-                "application/x-www-form-urlencoded": components["schemas"]["BaixaInsumoInput"];
-                "multipart/form-data": components["schemas"]["BaixaInsumoInput"];
+                "application/json": components["schemas"]["BaixaInsumoInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BaixaInsumoInputRequest"];
+                "multipart/form-data": components["schemas"]["BaixaInsumoInputRequest"];
             };
         };
         responses: {
@@ -27142,9 +30006,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CategoriaInsumo"];
-                "application/x-www-form-urlencoded": components["schemas"]["CategoriaInsumo"];
-                "multipart/form-data": components["schemas"]["CategoriaInsumo"];
+                "application/json": components["schemas"]["CategoriaInsumoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CategoriaInsumoRequest"];
+                "multipart/form-data": components["schemas"]["CategoriaInsumoRequest"];
             };
         };
         responses: {
@@ -27192,9 +30056,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CategoriaInsumo"];
-                "application/x-www-form-urlencoded": components["schemas"]["CategoriaInsumo"];
-                "multipart/form-data": components["schemas"]["CategoriaInsumo"];
+                "application/json": components["schemas"]["CategoriaInsumoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CategoriaInsumoRequest"];
+                "multipart/form-data": components["schemas"]["CategoriaInsumoRequest"];
             };
         };
         responses: {
@@ -27241,9 +30105,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedCategoriaInsumo"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedCategoriaInsumo"];
-                "multipart/form-data": components["schemas"]["PatchedCategoriaInsumo"];
+                "application/json": components["schemas"]["PatchedCategoriaInsumoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedCategoriaInsumoRequest"];
+                "multipart/form-data": components["schemas"]["PatchedCategoriaInsumoRequest"];
             };
         };
         responses: {
@@ -27294,9 +30158,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CategoriaProduto"];
-                "application/x-www-form-urlencoded": components["schemas"]["CategoriaProduto"];
-                "multipart/form-data": components["schemas"]["CategoriaProduto"];
+                "application/json": components["schemas"]["CategoriaProdutoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CategoriaProdutoRequest"];
+                "multipart/form-data": components["schemas"]["CategoriaProdutoRequest"];
             };
         };
         responses: {
@@ -27344,9 +30208,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CategoriaProduto"];
-                "application/x-www-form-urlencoded": components["schemas"]["CategoriaProduto"];
-                "multipart/form-data": components["schemas"]["CategoriaProduto"];
+                "application/json": components["schemas"]["CategoriaProdutoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CategoriaProdutoRequest"];
+                "multipart/form-data": components["schemas"]["CategoriaProdutoRequest"];
             };
         };
         responses: {
@@ -27393,9 +30257,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedCategoriaProduto"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedCategoriaProduto"];
-                "multipart/form-data": components["schemas"]["PatchedCategoriaProduto"];
+                "application/json": components["schemas"]["PatchedCategoriaProdutoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedCategoriaProdutoRequest"];
+                "multipart/form-data": components["schemas"]["PatchedCategoriaProdutoRequest"];
             };
         };
         responses: {
@@ -27446,9 +30310,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ContagemInventario"];
-                "application/x-www-form-urlencoded": components["schemas"]["ContagemInventario"];
-                "multipart/form-data": components["schemas"]["ContagemInventario"];
+                "application/json": components["schemas"]["ContagemInventarioRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ContagemInventarioRequest"];
+                "multipart/form-data": components["schemas"]["ContagemInventarioRequest"];
             };
         };
         responses: {
@@ -27474,9 +30338,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedRegistrarItemInput"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedRegistrarItemInput"];
-                "multipart/form-data": components["schemas"]["PatchedRegistrarItemInput"];
+                "application/json": components["schemas"]["PatchedRegistrarItemInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedRegistrarItemInputRequest"];
+                "multipart/form-data": components["schemas"]["PatchedRegistrarItemInputRequest"];
             };
         };
         responses: {
@@ -27534,9 +30398,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ContagemInventario"];
-                "application/x-www-form-urlencoded": components["schemas"]["ContagemInventario"];
-                "multipart/form-data": components["schemas"]["ContagemInventario"];
+                "application/json": components["schemas"]["ContagemInventarioRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ContagemInventarioRequest"];
+                "multipart/form-data": components["schemas"]["ContagemInventarioRequest"];
             };
         };
         responses: {
@@ -27583,9 +30447,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedContagemInventario"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedContagemInventario"];
-                "multipart/form-data": components["schemas"]["PatchedContagemInventario"];
+                "application/json": components["schemas"]["PatchedContagemInventarioRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedContagemInventarioRequest"];
+                "multipart/form-data": components["schemas"]["PatchedContagemInventarioRequest"];
             };
         };
         responses: {
@@ -27611,9 +30475,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ContagemInventario"];
-                "application/x-www-form-urlencoded": components["schemas"]["ContagemInventario"];
-                "multipart/form-data": components["schemas"]["ContagemInventario"];
+                "application/json": components["schemas"]["ContagemInventarioRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ContagemInventarioRequest"];
+                "multipart/form-data": components["schemas"]["ContagemInventarioRequest"];
             };
         };
         responses: {
@@ -27639,9 +30503,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ContagemInventario"];
-                "application/x-www-form-urlencoded": components["schemas"]["ContagemInventario"];
-                "multipart/form-data": components["schemas"]["ContagemInventario"];
+                "application/json": components["schemas"]["ContagemInventarioRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ContagemInventarioRequest"];
+                "multipart/form-data": components["schemas"]["ContagemInventarioRequest"];
             };
         };
         responses: {
@@ -27687,9 +30551,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["DevolucaoInput"];
-                "application/x-www-form-urlencoded": components["schemas"]["DevolucaoInput"];
-                "multipart/form-data": components["schemas"]["DevolucaoInput"];
+                "application/json": components["schemas"]["DevolucaoInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["DevolucaoInputRequest"];
+                "multipart/form-data": components["schemas"]["DevolucaoInputRequest"];
             };
         };
         responses: {
@@ -27720,9 +30584,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EntradaLoteInput"];
-                "application/x-www-form-urlencoded": components["schemas"]["EntradaLoteInput"];
-                "multipart/form-data": components["schemas"]["EntradaLoteInput"];
+                "application/json": components["schemas"]["EntradaLoteInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["EntradaLoteInputRequest"];
+                "multipart/form-data": components["schemas"]["EntradaLoteInputRequest"];
             };
         };
         responses: {
@@ -27753,9 +30617,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EntradaPecaInput"];
-                "application/x-www-form-urlencoded": components["schemas"]["EntradaPecaInput"];
-                "multipart/form-data": components["schemas"]["EntradaPecaInput"];
+                "application/json": components["schemas"]["EntradaPecaInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["EntradaPecaInputRequest"];
+                "multipart/form-data": components["schemas"]["EntradaPecaInputRequest"];
             };
         };
         responses: {
@@ -27814,9 +30678,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ImpressoraEtiqueta"];
-                "application/x-www-form-urlencoded": components["schemas"]["ImpressoraEtiqueta"];
-                "multipart/form-data": components["schemas"]["ImpressoraEtiqueta"];
+                "application/json": components["schemas"]["ImpressoraEtiquetaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ImpressoraEtiquetaRequest"];
+                "multipart/form-data": components["schemas"]["ImpressoraEtiquetaRequest"];
             };
         };
         responses: {
@@ -27864,9 +30728,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ImpressoraEtiqueta"];
-                "application/x-www-form-urlencoded": components["schemas"]["ImpressoraEtiqueta"];
-                "multipart/form-data": components["schemas"]["ImpressoraEtiqueta"];
+                "application/json": components["schemas"]["ImpressoraEtiquetaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ImpressoraEtiquetaRequest"];
+                "multipart/form-data": components["schemas"]["ImpressoraEtiquetaRequest"];
             };
         };
         responses: {
@@ -27913,9 +30777,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedImpressoraEtiqueta"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedImpressoraEtiqueta"];
-                "multipart/form-data": components["schemas"]["PatchedImpressoraEtiqueta"];
+                "application/json": components["schemas"]["PatchedImpressoraEtiquetaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedImpressoraEtiquetaRequest"];
+                "multipart/form-data": components["schemas"]["PatchedImpressoraEtiquetaRequest"];
             };
         };
         responses: {
@@ -27941,9 +30805,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ImpressoraEtiqueta"];
-                "application/x-www-form-urlencoded": components["schemas"]["ImpressoraEtiqueta"];
-                "multipart/form-data": components["schemas"]["ImpressoraEtiqueta"];
+                "application/json": components["schemas"]["ImpressoraEtiquetaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ImpressoraEtiquetaRequest"];
+                "multipart/form-data": components["schemas"]["ImpressoraEtiquetaRequest"];
             };
         };
         responses: {
@@ -28017,13 +30881,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["LoteInsumoList"];
-                "application/x-www-form-urlencoded": components["schemas"]["LoteInsumoList"];
-                "multipart/form-data": components["schemas"]["LoteInsumoList"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -28145,9 +31003,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Nivel"];
-                "application/x-www-form-urlencoded": components["schemas"]["Nivel"];
-                "multipart/form-data": components["schemas"]["Nivel"];
+                "application/json": components["schemas"]["NivelRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NivelRequest"];
+                "multipart/form-data": components["schemas"]["NivelRequest"];
             };
         };
         responses: {
@@ -28195,9 +31053,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Nivel"];
-                "application/x-www-form-urlencoded": components["schemas"]["Nivel"];
-                "multipart/form-data": components["schemas"]["Nivel"];
+                "application/json": components["schemas"]["NivelRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["NivelRequest"];
+                "multipart/form-data": components["schemas"]["NivelRequest"];
             };
         };
         responses: {
@@ -28244,9 +31102,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedNivel"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedNivel"];
-                "multipart/form-data": components["schemas"]["PatchedNivel"];
+                "application/json": components["schemas"]["PatchedNivelRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedNivelRequest"];
+                "multipart/form-data": components["schemas"]["PatchedNivelRequest"];
             };
         };
         responses: {
@@ -28291,9 +31149,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PerdaInput"];
-                "application/x-www-form-urlencoded": components["schemas"]["PerdaInput"];
-                "multipart/form-data": components["schemas"]["PerdaInput"];
+                "application/json": components["schemas"]["PerdaInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PerdaInputRequest"];
+                "multipart/form-data": components["schemas"]["PerdaInputRequest"];
             };
         };
         responses: {
@@ -28352,9 +31210,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Prateleira"];
-                "application/x-www-form-urlencoded": components["schemas"]["Prateleira"];
-                "multipart/form-data": components["schemas"]["Prateleira"];
+                "application/json": components["schemas"]["PrateleiraRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PrateleiraRequest"];
+                "multipart/form-data": components["schemas"]["PrateleiraRequest"];
             };
         };
         responses: {
@@ -28402,9 +31260,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Prateleira"];
-                "application/x-www-form-urlencoded": components["schemas"]["Prateleira"];
-                "multipart/form-data": components["schemas"]["Prateleira"];
+                "application/json": components["schemas"]["PrateleiraRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PrateleiraRequest"];
+                "multipart/form-data": components["schemas"]["PrateleiraRequest"];
             };
         };
         responses: {
@@ -28451,9 +31309,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedPrateleira"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedPrateleira"];
-                "multipart/form-data": components["schemas"]["PatchedPrateleira"];
+                "application/json": components["schemas"]["PatchedPrateleiraRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedPrateleiraRequest"];
+                "multipart/form-data": components["schemas"]["PatchedPrateleiraRequest"];
             };
         };
         responses: {
@@ -28504,9 +31362,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ProdutoComercialInsumo"];
-                "application/x-www-form-urlencoded": components["schemas"]["ProdutoComercialInsumo"];
-                "multipart/form-data": components["schemas"]["ProdutoComercialInsumo"];
+                "application/json": components["schemas"]["ProdutoComercialInsumoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ProdutoComercialInsumoRequest"];
+                "multipart/form-data": components["schemas"]["ProdutoComercialInsumoRequest"];
             };
         };
         responses: {
@@ -28554,9 +31412,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ProdutoComercialInsumo"];
-                "application/x-www-form-urlencoded": components["schemas"]["ProdutoComercialInsumo"];
-                "multipart/form-data": components["schemas"]["ProdutoComercialInsumo"];
+                "application/json": components["schemas"]["ProdutoComercialInsumoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ProdutoComercialInsumoRequest"];
+                "multipart/form-data": components["schemas"]["ProdutoComercialInsumoRequest"];
             };
         };
         responses: {
@@ -28603,9 +31461,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedProdutoComercialInsumo"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedProdutoComercialInsumo"];
-                "multipart/form-data": components["schemas"]["PatchedProdutoComercialInsumo"];
+                "application/json": components["schemas"]["PatchedProdutoComercialInsumoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedProdutoComercialInsumoRequest"];
+                "multipart/form-data": components["schemas"]["PatchedProdutoComercialInsumoRequest"];
             };
         };
         responses: {
@@ -28656,9 +31514,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ProdutoComercialPeca"];
-                "application/x-www-form-urlencoded": components["schemas"]["ProdutoComercialPeca"];
-                "multipart/form-data": components["schemas"]["ProdutoComercialPeca"];
+                "application/json": components["schemas"]["ProdutoComercialPecaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ProdutoComercialPecaRequest"];
+                "multipart/form-data": components["schemas"]["ProdutoComercialPecaRequest"];
             };
         };
         responses: {
@@ -28706,9 +31564,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ProdutoComercialPeca"];
-                "application/x-www-form-urlencoded": components["schemas"]["ProdutoComercialPeca"];
-                "multipart/form-data": components["schemas"]["ProdutoComercialPeca"];
+                "application/json": components["schemas"]["ProdutoComercialPecaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ProdutoComercialPecaRequest"];
+                "multipart/form-data": components["schemas"]["ProdutoComercialPecaRequest"];
             };
         };
         responses: {
@@ -28755,9 +31613,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedProdutoComercialPeca"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedProdutoComercialPeca"];
-                "multipart/form-data": components["schemas"]["PatchedProdutoComercialPeca"];
+                "application/json": components["schemas"]["PatchedProdutoComercialPecaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedProdutoComercialPecaRequest"];
+                "multipart/form-data": components["schemas"]["PatchedProdutoComercialPecaRequest"];
             };
         };
         responses: {
@@ -28808,9 +31666,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Rua"];
-                "application/x-www-form-urlencoded": components["schemas"]["Rua"];
-                "multipart/form-data": components["schemas"]["Rua"];
+                "application/json": components["schemas"]["RuaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["RuaRequest"];
+                "multipart/form-data": components["schemas"]["RuaRequest"];
             };
         };
         responses: {
@@ -28858,9 +31716,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Rua"];
-                "application/x-www-form-urlencoded": components["schemas"]["Rua"];
-                "multipart/form-data": components["schemas"]["Rua"];
+                "application/json": components["schemas"]["RuaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["RuaRequest"];
+                "multipart/form-data": components["schemas"]["RuaRequest"];
             };
         };
         responses: {
@@ -28907,9 +31765,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedRua"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedRua"];
-                "multipart/form-data": components["schemas"]["PatchedRua"];
+                "application/json": components["schemas"]["PatchedRuaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedRuaRequest"];
+                "multipart/form-data": components["schemas"]["PatchedRuaRequest"];
             };
         };
         responses: {
@@ -28960,9 +31818,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TipoPeca"];
-                "application/x-www-form-urlencoded": components["schemas"]["TipoPeca"];
-                "multipart/form-data": components["schemas"]["TipoPeca"];
+                "application/json": components["schemas"]["TipoPecaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["TipoPecaRequest"];
+                "multipart/form-data": components["schemas"]["TipoPecaRequest"];
             };
         };
         responses: {
@@ -29010,9 +31868,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TipoPeca"];
-                "application/x-www-form-urlencoded": components["schemas"]["TipoPeca"];
-                "multipart/form-data": components["schemas"]["TipoPeca"];
+                "application/json": components["schemas"]["TipoPecaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["TipoPecaRequest"];
+                "multipart/form-data": components["schemas"]["TipoPecaRequest"];
             };
         };
         responses: {
@@ -29059,9 +31917,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedTipoPeca"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedTipoPeca"];
-                "multipart/form-data": components["schemas"]["PatchedTipoPeca"];
+                "application/json": components["schemas"]["PatchedTipoPecaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedTipoPecaRequest"];
+                "multipart/form-data": components["schemas"]["PatchedTipoPecaRequest"];
             };
         };
         responses: {
@@ -29084,9 +31942,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TransferenciaInput"];
-                "application/x-www-form-urlencoded": components["schemas"]["TransferenciaInput"];
-                "multipart/form-data": components["schemas"]["TransferenciaInput"];
+                "application/json": components["schemas"]["TransferenciaInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["TransferenciaInputRequest"];
+                "multipart/form-data": components["schemas"]["TransferenciaInputRequest"];
             };
         };
         responses: {
@@ -29168,13 +32026,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["UnidadeFisicaList"];
-                "application/x-www-form-urlencoded": components["schemas"]["UnidadeFisicaList"];
-                "multipart/form-data": components["schemas"]["UnidadeFisicaList"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -29196,13 +32048,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["UnidadeFisicaList"];
-                "application/x-www-form-urlencoded": components["schemas"]["UnidadeFisicaList"];
-                "multipart/form-data": components["schemas"]["UnidadeFisicaList"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -29221,13 +32067,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["UnidadeFisicaList"];
-                "application/x-www-form-urlencoded": components["schemas"]["UnidadeFisicaList"];
-                "multipart/form-data": components["schemas"]["UnidadeFisicaList"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -29284,9 +32124,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PartApplication"];
-                "application/x-www-form-urlencoded": components["schemas"]["PartApplication"];
-                "multipart/form-data": components["schemas"]["PartApplication"];
+                "application/json": components["schemas"]["PartApplicationRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PartApplicationRequest"];
+                "multipart/form-data": components["schemas"]["PartApplicationRequest"];
             };
         };
         responses: {
@@ -29368,9 +32208,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PartReferenceList"];
-                "application/x-www-form-urlencoded": components["schemas"]["PartReferenceList"];
-                "multipart/form-data": components["schemas"]["PartReferenceList"];
+                "application/json": components["schemas"]["PartReferenceListRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PartReferenceListRequest"];
+                "multipart/form-data": components["schemas"]["PartReferenceListRequest"];
             };
         };
         responses: {
@@ -29418,9 +32258,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PartReferenceList"];
-                "application/x-www-form-urlencoded": components["schemas"]["PartReferenceList"];
-                "multipart/form-data": components["schemas"]["PartReferenceList"];
+                "application/json": components["schemas"]["PartReferenceListRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PartReferenceListRequest"];
+                "multipart/form-data": components["schemas"]["PartReferenceListRequest"];
             };
         };
         responses: {
@@ -29446,9 +32286,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedPartReferenceList"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedPartReferenceList"];
-                "multipart/form-data": components["schemas"]["PatchedPartReferenceList"];
+                "application/json": components["schemas"]["PatchedPartReferenceListRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedPartReferenceListRequest"];
+                "multipart/form-data": components["schemas"]["PatchedPartReferenceListRequest"];
             };
         };
         responses: {
@@ -29505,9 +32345,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PersonCreateUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["PersonCreateUpdate"];
-                "multipart/form-data": components["schemas"]["PersonCreateUpdate"];
+                "application/json": components["schemas"]["PersonCreateUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PersonCreateUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PersonCreateUpdateRequest"];
             };
         };
         responses: {
@@ -29555,9 +32395,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PersonCreateUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["PersonCreateUpdate"];
-                "multipart/form-data": components["schemas"]["PersonCreateUpdate"];
+                "application/json": components["schemas"]["PersonCreateUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PersonCreateUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PersonCreateUpdateRequest"];
             };
         };
         responses: {
@@ -29604,9 +32444,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedPersonCreateUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedPersonCreateUpdate"];
-                "multipart/form-data": components["schemas"]["PatchedPersonCreateUpdate"];
+                "application/json": components["schemas"]["PatchedPersonCreateUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedPersonCreateUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedPersonCreateUpdateRequest"];
             };
         };
         responses: {
@@ -29676,9 +32516,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedPersonDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedPersonDetail"];
-                "multipart/form-data": components["schemas"]["PatchedPersonDetail"];
+                "application/json": components["schemas"]["PatchedPersonDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedPersonDetailRequest"];
+                "multipart/form-data": components["schemas"]["PatchedPersonDetailRequest"];
             };
         };
         responses: {
@@ -29726,9 +32566,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedPersonDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedPersonDetail"];
-                "multipart/form-data": components["schemas"]["PatchedPersonDetail"];
+                "application/json": components["schemas"]["PatchedPersonDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedPersonDetailRequest"];
+                "multipart/form-data": components["schemas"]["PatchedPersonDetailRequest"];
             };
         };
         responses: {
@@ -29844,9 +32684,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BenchmarkAmostra"];
-                "application/x-www-form-urlencoded": components["schemas"]["BenchmarkAmostra"];
-                "multipart/form-data": components["schemas"]["BenchmarkAmostra"];
+                "application/json": components["schemas"]["BenchmarkAmostraRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BenchmarkAmostraRequest"];
+                "multipart/form-data": components["schemas"]["BenchmarkAmostraRequest"];
             };
         };
         responses: {
@@ -29872,9 +32712,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BenchmarkAmostra"];
-                "application/x-www-form-urlencoded": components["schemas"]["BenchmarkAmostra"];
-                "multipart/form-data": components["schemas"]["BenchmarkAmostra"];
+                "application/json": components["schemas"]["BenchmarkAmostraRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BenchmarkAmostraRequest"];
+                "multipart/form-data": components["schemas"]["BenchmarkAmostraRequest"];
             };
         };
         responses: {
@@ -29951,9 +32791,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BenchmarkFonte"];
-                "application/x-www-form-urlencoded": components["schemas"]["BenchmarkFonte"];
-                "multipart/form-data": components["schemas"]["BenchmarkFonte"];
+                "application/json": components["schemas"]["BenchmarkFonteRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BenchmarkFonteRequest"];
+                "multipart/form-data": components["schemas"]["BenchmarkFonteRequest"];
             };
         };
         responses: {
@@ -30001,9 +32841,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BenchmarkFonte"];
-                "application/x-www-form-urlencoded": components["schemas"]["BenchmarkFonte"];
-                "multipart/form-data": components["schemas"]["BenchmarkFonte"];
+                "application/json": components["schemas"]["BenchmarkFonteRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BenchmarkFonteRequest"];
+                "multipart/form-data": components["schemas"]["BenchmarkFonteRequest"];
             };
         };
         responses: {
@@ -30050,9 +32890,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedBenchmarkFonte"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedBenchmarkFonte"];
-                "multipart/form-data": components["schemas"]["PatchedBenchmarkFonte"];
+                "application/json": components["schemas"]["PatchedBenchmarkFonteRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedBenchmarkFonteRequest"];
+                "multipart/form-data": components["schemas"]["PatchedBenchmarkFonteRequest"];
             };
         };
         responses: {
@@ -30103,9 +32943,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BenchmarkIngestao"];
-                "application/x-www-form-urlencoded": components["schemas"]["BenchmarkIngestao"];
-                "multipart/form-data": components["schemas"]["BenchmarkIngestao"];
+                "application/json": components["schemas"]["BenchmarkIngestaoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BenchmarkIngestaoRequest"];
+                "multipart/form-data": components["schemas"]["BenchmarkIngestaoRequest"];
             };
         };
         responses: {
@@ -30153,9 +32993,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["BenchmarkIngestao"];
-                "application/x-www-form-urlencoded": components["schemas"]["BenchmarkIngestao"];
-                "multipart/form-data": components["schemas"]["BenchmarkIngestao"];
+                "application/json": components["schemas"]["BenchmarkIngestaoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BenchmarkIngestaoRequest"];
+                "multipart/form-data": components["schemas"]["BenchmarkIngestaoRequest"];
             };
         };
         responses: {
@@ -30202,9 +33042,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedBenchmarkIngestao"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedBenchmarkIngestao"];
-                "multipart/form-data": components["schemas"]["PatchedBenchmarkIngestao"];
+                "application/json": components["schemas"]["PatchedBenchmarkIngestaoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedBenchmarkIngestaoRequest"];
+                "multipart/form-data": components["schemas"]["PatchedBenchmarkIngestaoRequest"];
             };
         };
         responses: {
@@ -30255,9 +33095,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AliasServicoCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["AliasServicoCreate"];
-                "multipart/form-data": components["schemas"]["AliasServicoCreate"];
+                "application/json": components["schemas"]["AliasServicoCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AliasServicoCreateRequest"];
+                "multipart/form-data": components["schemas"]["AliasServicoCreateRequest"];
             };
         };
         responses: {
@@ -30305,9 +33145,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AliasServicoUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["AliasServicoUpdate"];
-                "multipart/form-data": components["schemas"]["AliasServicoUpdate"];
+                "application/json": components["schemas"]["AliasServicoUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AliasServicoUpdateRequest"];
+                "multipart/form-data": components["schemas"]["AliasServicoUpdateRequest"];
             };
         };
         responses: {
@@ -30354,9 +33194,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedAliasServicoUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedAliasServicoUpdate"];
-                "multipart/form-data": components["schemas"]["PatchedAliasServicoUpdate"];
+                "application/json": components["schemas"]["PatchedAliasServicoUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedAliasServicoUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedAliasServicoUpdateRequest"];
             };
         };
         responses: {
@@ -30382,9 +33222,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AliasServicoDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["AliasServicoDetail"];
-                "multipart/form-data": components["schemas"]["AliasServicoDetail"];
+                "application/json": components["schemas"]["AliasServicoDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AliasServicoDetailRequest"];
+                "multipart/form-data": components["schemas"]["AliasServicoDetailRequest"];
             };
         };
         responses: {
@@ -30410,9 +33250,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AliasServicoDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["AliasServicoDetail"];
-                "multipart/form-data": components["schemas"]["AliasServicoDetail"];
+                "application/json": components["schemas"]["AliasServicoDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AliasServicoDetailRequest"];
+                "multipart/form-data": components["schemas"]["AliasServicoDetailRequest"];
             };
         };
         responses: {
@@ -30482,9 +33322,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CategoriaMaoObra"];
-                "application/x-www-form-urlencoded": components["schemas"]["CategoriaMaoObra"];
-                "multipart/form-data": components["schemas"]["CategoriaMaoObra"];
+                "application/json": components["schemas"]["CategoriaMaoObraRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CategoriaMaoObraRequest"];
+                "multipart/form-data": components["schemas"]["CategoriaMaoObraRequest"];
             };
         };
         responses: {
@@ -30532,9 +33372,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CategoriaMaoObra"];
-                "application/x-www-form-urlencoded": components["schemas"]["CategoriaMaoObra"];
-                "multipart/form-data": components["schemas"]["CategoriaMaoObra"];
+                "application/json": components["schemas"]["CategoriaMaoObraRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CategoriaMaoObraRequest"];
+                "multipart/form-data": components["schemas"]["CategoriaMaoObraRequest"];
             };
         };
         responses: {
@@ -30581,9 +33421,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedCategoriaMaoObra"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedCategoriaMaoObra"];
-                "multipart/form-data": components["schemas"]["PatchedCategoriaMaoObra"];
+                "application/json": components["schemas"]["PatchedCategoriaMaoObraRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedCategoriaMaoObraRequest"];
+                "multipart/form-data": components["schemas"]["PatchedCategoriaMaoObraRequest"];
             };
         };
         responses: {
@@ -30634,9 +33474,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CategoriaServico"];
-                "application/x-www-form-urlencoded": components["schemas"]["CategoriaServico"];
-                "multipart/form-data": components["schemas"]["CategoriaServico"];
+                "application/json": components["schemas"]["CategoriaServicoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CategoriaServicoRequest"];
+                "multipart/form-data": components["schemas"]["CategoriaServicoRequest"];
             };
         };
         responses: {
@@ -30684,9 +33524,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CategoriaServico"];
-                "application/x-www-form-urlencoded": components["schemas"]["CategoriaServico"];
-                "multipart/form-data": components["schemas"]["CategoriaServico"];
+                "application/json": components["schemas"]["CategoriaServicoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CategoriaServicoRequest"];
+                "multipart/form-data": components["schemas"]["CategoriaServicoRequest"];
             };
         };
         responses: {
@@ -30733,9 +33573,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedCategoriaServico"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedCategoriaServico"];
-                "multipart/form-data": components["schemas"]["PatchedCategoriaServico"];
+                "application/json": components["schemas"]["PatchedCategoriaServicoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedCategoriaServicoRequest"];
+                "multipart/form-data": components["schemas"]["PatchedCategoriaServicoRequest"];
             };
         };
         responses: {
@@ -30777,9 +33617,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["_Gone"];
-                "application/x-www-form-urlencoded": components["schemas"]["_Gone"];
-                "multipart/form-data": components["schemas"]["_Gone"];
+                "application/json": components["schemas"]["_GoneRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["_GoneRequest"];
+                "multipart/form-data": components["schemas"]["_GoneRequest"];
             };
         };
         responses: {
@@ -30825,9 +33665,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["_Gone"];
-                "application/x-www-form-urlencoded": components["schemas"]["_Gone"];
-                "multipart/form-data": components["schemas"]["_Gone"];
+                "application/json": components["schemas"]["_GoneRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["_GoneRequest"];
+                "multipart/form-data": components["schemas"]["_GoneRequest"];
             };
         };
         responses: {
@@ -30873,9 +33713,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["Patched_Gone"];
-                "application/x-www-form-urlencoded": components["schemas"]["Patched_Gone"];
-                "multipart/form-data": components["schemas"]["Patched_Gone"];
+                "application/json": components["schemas"]["Patched_GoneRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["Patched_GoneRequest"];
+                "multipart/form-data": components["schemas"]["Patched_GoneRequest"];
             };
         };
         responses: {
@@ -30926,9 +33766,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["InsumoMaterialCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["InsumoMaterialCreate"];
-                "multipart/form-data": components["schemas"]["InsumoMaterialCreate"];
+                "application/json": components["schemas"]["InsumoMaterialCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["InsumoMaterialCreateRequest"];
+                "multipart/form-data": components["schemas"]["InsumoMaterialCreateRequest"];
             };
         };
         responses: {
@@ -30976,9 +33816,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["InsumoMaterialUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["InsumoMaterialUpdate"];
-                "multipart/form-data": components["schemas"]["InsumoMaterialUpdate"];
+                "application/json": components["schemas"]["InsumoMaterialUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["InsumoMaterialUpdateRequest"];
+                "multipart/form-data": components["schemas"]["InsumoMaterialUpdateRequest"];
             };
         };
         responses: {
@@ -31025,9 +33865,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedInsumoMaterialUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedInsumoMaterialUpdate"];
-                "multipart/form-data": components["schemas"]["PatchedInsumoMaterialUpdate"];
+                "application/json": components["schemas"]["PatchedInsumoMaterialUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedInsumoMaterialUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedInsumoMaterialUpdateRequest"];
             };
         };
         responses: {
@@ -31050,9 +33890,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["InsumoMaterialDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["InsumoMaterialDetail"];
-                "multipart/form-data": components["schemas"]["InsumoMaterialDetail"];
+                "application/json": components["schemas"]["InsumoMaterialDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["InsumoMaterialDetailRequest"];
+                "multipart/form-data": components["schemas"]["InsumoMaterialDetailRequest"];
             };
         };
         responses: {
@@ -31103,9 +33943,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["MaterialCanonicoCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["MaterialCanonicoCreate"];
-                "multipart/form-data": components["schemas"]["MaterialCanonicoCreate"];
+                "application/json": components["schemas"]["MaterialCanonicoCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["MaterialCanonicoCreateRequest"];
+                "multipart/form-data": components["schemas"]["MaterialCanonicoCreateRequest"];
             };
         };
         responses: {
@@ -31153,9 +33993,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["MaterialCanonicoUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["MaterialCanonicoUpdate"];
-                "multipart/form-data": components["schemas"]["MaterialCanonicoUpdate"];
+                "application/json": components["schemas"]["MaterialCanonicoUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["MaterialCanonicoUpdateRequest"];
+                "multipart/form-data": components["schemas"]["MaterialCanonicoUpdateRequest"];
             };
         };
         responses: {
@@ -31202,9 +34042,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedMaterialCanonicoUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedMaterialCanonicoUpdate"];
-                "multipart/form-data": components["schemas"]["PatchedMaterialCanonicoUpdate"];
+                "application/json": components["schemas"]["PatchedMaterialCanonicoUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedMaterialCanonicoUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedMaterialCanonicoUpdateRequest"];
             };
         };
         responses: {
@@ -31227,9 +34067,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["MaterialCanonicoDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["MaterialCanonicoDetail"];
-                "multipart/form-data": components["schemas"]["MaterialCanonicoDetail"];
+                "application/json": components["schemas"]["MaterialCanonicoDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["MaterialCanonicoDetailRequest"];
+                "multipart/form-data": components["schemas"]["MaterialCanonicoDetailRequest"];
             };
         };
         responses: {
@@ -31280,9 +34120,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PecaCanonicoCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["PecaCanonicoCreate"];
-                "multipart/form-data": components["schemas"]["PecaCanonicoCreate"];
+                "application/json": components["schemas"]["PecaCanonicoCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PecaCanonicoCreateRequest"];
+                "multipart/form-data": components["schemas"]["PecaCanonicoCreateRequest"];
             };
         };
         responses: {
@@ -31330,9 +34170,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PecaCanonicoUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["PecaCanonicoUpdate"];
-                "multipart/form-data": components["schemas"]["PecaCanonicoUpdate"];
+                "application/json": components["schemas"]["PecaCanonicoUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PecaCanonicoUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PecaCanonicoUpdateRequest"];
             };
         };
         responses: {
@@ -31379,9 +34219,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedPecaCanonicoUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedPecaCanonicoUpdate"];
-                "multipart/form-data": components["schemas"]["PatchedPecaCanonicoUpdate"];
+                "application/json": components["schemas"]["PatchedPecaCanonicoUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedPecaCanonicoUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedPecaCanonicoUpdateRequest"];
             };
         };
         responses: {
@@ -31404,9 +34244,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PecaCanonicoDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["PecaCanonicoDetail"];
-                "multipart/form-data": components["schemas"]["PecaCanonicoDetail"];
+                "application/json": components["schemas"]["PecaCanonicoDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PecaCanonicoDetailRequest"];
+                "multipart/form-data": components["schemas"]["PecaCanonicoDetailRequest"];
             };
         };
         responses: {
@@ -31457,9 +34297,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServicoCanonicoCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServicoCanonicoCreate"];
-                "multipart/form-data": components["schemas"]["ServicoCanonicoCreate"];
+                "application/json": components["schemas"]["ServicoCanonicoCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServicoCanonicoCreateRequest"];
+                "multipart/form-data": components["schemas"]["ServicoCanonicoCreateRequest"];
             };
         };
         responses: {
@@ -31507,9 +34347,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServicoCanonicoUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServicoCanonicoUpdate"];
-                "multipart/form-data": components["schemas"]["ServicoCanonicoUpdate"];
+                "application/json": components["schemas"]["ServicoCanonicoUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServicoCanonicoUpdateRequest"];
+                "multipart/form-data": components["schemas"]["ServicoCanonicoUpdateRequest"];
             };
         };
         responses: {
@@ -31556,9 +34396,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedServicoCanonicoUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedServicoCanonicoUpdate"];
-                "multipart/form-data": components["schemas"]["PatchedServicoCanonicoUpdate"];
+                "application/json": components["schemas"]["PatchedServicoCanonicoUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedServicoCanonicoUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedServicoCanonicoUpdateRequest"];
             };
         };
         responses: {
@@ -31581,9 +34421,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServicoCanonicoDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServicoCanonicoDetail"];
-                "multipart/form-data": components["schemas"]["ServicoCanonicoDetail"];
+                "application/json": components["schemas"]["ServicoCanonicoDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServicoCanonicoDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServicoCanonicoDetailRequest"];
             };
         };
         responses: {
@@ -31634,9 +34474,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Empresa"];
-                "application/x-www-form-urlencoded": components["schemas"]["Empresa"];
-                "multipart/form-data": components["schemas"]["Empresa"];
+                "application/json": components["schemas"]["EmpresaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["EmpresaRequest"];
+                "multipart/form-data": components["schemas"]["EmpresaRequest"];
             };
         };
         responses: {
@@ -31684,9 +34524,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Empresa"];
-                "application/x-www-form-urlencoded": components["schemas"]["Empresa"];
-                "multipart/form-data": components["schemas"]["Empresa"];
+                "application/json": components["schemas"]["EmpresaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["EmpresaRequest"];
+                "multipart/form-data": components["schemas"]["EmpresaRequest"];
             };
         };
         responses: {
@@ -31733,9 +34573,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedEmpresa"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedEmpresa"];
-                "multipart/form-data": components["schemas"]["PatchedEmpresa"];
+                "application/json": components["schemas"]["PatchedEmpresaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedEmpresaRequest"];
+                "multipart/form-data": components["schemas"]["PatchedEmpresaRequest"];
             };
         };
         responses: {
@@ -31808,9 +34648,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CalcularPecaInput"];
-                "application/x-www-form-urlencoded": components["schemas"]["CalcularPecaInput"];
-                "multipart/form-data": components["schemas"]["CalcularPecaInput"];
+                "application/json": components["schemas"]["CalcularPecaInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CalcularPecaInputRequest"];
+                "multipart/form-data": components["schemas"]["CalcularPecaInputRequest"];
             };
         };
         responses: {
@@ -31843,9 +34683,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CalcularServicoInput"];
-                "application/x-www-form-urlencoded": components["schemas"]["CalcularServicoInput"];
-                "multipart/form-data": components["schemas"]["CalcularServicoInput"];
+                "application/json": components["schemas"]["CalcularServicoInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CalcularServicoInputRequest"];
+                "multipart/form-data": components["schemas"]["CalcularServicoInputRequest"];
             };
         };
         responses: {
@@ -31878,9 +34718,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["DebugCustoHoraInput"];
-                "application/x-www-form-urlencoded": components["schemas"]["DebugCustoHoraInput"];
-                "multipart/form-data": components["schemas"]["DebugCustoHoraInput"];
+                "application/json": components["schemas"]["DebugCustoHoraInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["DebugCustoHoraInputRequest"];
+                "multipart/form-data": components["schemas"]["DebugCustoHoraInputRequest"];
             };
         };
         responses: {
@@ -31913,9 +34753,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["_CustoInsumoRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["_CustoInsumoRequest"];
-                "multipart/form-data": components["schemas"]["_CustoInsumoRequest"];
+                "application/json": components["schemas"]["_CustoInsumoRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["_CustoInsumoRequestRequest"];
+                "multipart/form-data": components["schemas"]["_CustoInsumoRequestRequest"];
             };
         };
         responses: {
@@ -31948,9 +34788,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["_CustoPecaRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["_CustoPecaRequest"];
-                "multipart/form-data": components["schemas"]["_CustoPecaRequest"];
+                "application/json": components["schemas"]["_CustoPecaRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["_CustoPecaRequestRequest"];
+                "multipart/form-data": components["schemas"]["_CustoPecaRequestRequest"];
             };
         };
         responses: {
@@ -31983,9 +34823,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["DebugRateioInput"];
-                "application/x-www-form-urlencoded": components["schemas"]["DebugRateioInput"];
-                "multipart/form-data": components["schemas"]["DebugRateioInput"];
+                "application/json": components["schemas"]["DebugRateioInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["DebugRateioInputRequest"];
+                "multipart/form-data": components["schemas"]["DebugRateioInputRequest"];
             };
         };
         responses: {
@@ -32077,9 +34917,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["MargemOperacao"];
-                "application/x-www-form-urlencoded": components["schemas"]["MargemOperacao"];
-                "multipart/form-data": components["schemas"]["MargemOperacao"];
+                "application/json": components["schemas"]["MargemOperacaoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["MargemOperacaoRequest"];
+                "multipart/form-data": components["schemas"]["MargemOperacaoRequest"];
             };
         };
         responses: {
@@ -32127,9 +34967,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["MargemOperacao"];
-                "application/x-www-form-urlencoded": components["schemas"]["MargemOperacao"];
-                "multipart/form-data": components["schemas"]["MargemOperacao"];
+                "application/json": components["schemas"]["MargemOperacaoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["MargemOperacaoRequest"];
+                "multipart/form-data": components["schemas"]["MargemOperacaoRequest"];
             };
         };
         responses: {
@@ -32176,9 +35016,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedMargemOperacao"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedMargemOperacao"];
-                "multipart/form-data": components["schemas"]["PatchedMargemOperacao"];
+                "application/json": components["schemas"]["PatchedMargemOperacaoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedMargemOperacaoRequest"];
+                "multipart/form-data": components["schemas"]["PatchedMargemOperacaoRequest"];
             };
         };
         responses: {
@@ -32229,9 +35069,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["MarkupPeca"];
-                "application/x-www-form-urlencoded": components["schemas"]["MarkupPeca"];
-                "multipart/form-data": components["schemas"]["MarkupPeca"];
+                "application/json": components["schemas"]["MarkupPecaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["MarkupPecaRequest"];
+                "multipart/form-data": components["schemas"]["MarkupPecaRequest"];
             };
         };
         responses: {
@@ -32279,9 +35119,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["MarkupPeca"];
-                "application/x-www-form-urlencoded": components["schemas"]["MarkupPeca"];
-                "multipart/form-data": components["schemas"]["MarkupPeca"];
+                "application/json": components["schemas"]["MarkupPecaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["MarkupPecaRequest"];
+                "multipart/form-data": components["schemas"]["MarkupPecaRequest"];
             };
         };
         responses: {
@@ -32328,9 +35168,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedMarkupPeca"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedMarkupPeca"];
-                "multipart/form-data": components["schemas"]["PatchedMarkupPeca"];
+                "application/json": components["schemas"]["PatchedMarkupPecaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedMarkupPecaRequest"];
+                "multipart/form-data": components["schemas"]["PatchedMarkupPecaRequest"];
             };
         };
         responses: {
@@ -32381,9 +35221,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ParametroCustoHora"];
-                "application/x-www-form-urlencoded": components["schemas"]["ParametroCustoHora"];
-                "multipart/form-data": components["schemas"]["ParametroCustoHora"];
+                "application/json": components["schemas"]["ParametroCustoHoraRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ParametroCustoHoraRequest"];
+                "multipart/form-data": components["schemas"]["ParametroCustoHoraRequest"];
             };
         };
         responses: {
@@ -32434,9 +35274,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CustoHoraFallback"];
-                "application/x-www-form-urlencoded": components["schemas"]["CustoHoraFallback"];
-                "multipart/form-data": components["schemas"]["CustoHoraFallback"];
+                "application/json": components["schemas"]["CustoHoraFallbackRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CustoHoraFallbackRequest"];
+                "multipart/form-data": components["schemas"]["CustoHoraFallbackRequest"];
             };
         };
         responses: {
@@ -32484,9 +35324,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CustoHoraFallback"];
-                "application/x-www-form-urlencoded": components["schemas"]["CustoHoraFallback"];
-                "multipart/form-data": components["schemas"]["CustoHoraFallback"];
+                "application/json": components["schemas"]["CustoHoraFallbackRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CustoHoraFallbackRequest"];
+                "multipart/form-data": components["schemas"]["CustoHoraFallbackRequest"];
             };
         };
         responses: {
@@ -32533,9 +35373,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedCustoHoraFallback"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedCustoHoraFallback"];
-                "multipart/form-data": components["schemas"]["PatchedCustoHoraFallback"];
+                "application/json": components["schemas"]["PatchedCustoHoraFallbackRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedCustoHoraFallbackRequest"];
+                "multipart/form-data": components["schemas"]["PatchedCustoHoraFallbackRequest"];
             };
         };
         responses: {
@@ -32583,9 +35423,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ParametroCustoHora"];
-                "application/x-www-form-urlencoded": components["schemas"]["ParametroCustoHora"];
-                "multipart/form-data": components["schemas"]["ParametroCustoHora"];
+                "application/json": components["schemas"]["ParametroCustoHoraRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ParametroCustoHoraRequest"];
+                "multipart/form-data": components["schemas"]["ParametroCustoHoraRequest"];
             };
         };
         responses: {
@@ -32632,9 +35472,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedParametroCustoHora"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedParametroCustoHora"];
-                "multipart/form-data": components["schemas"]["PatchedParametroCustoHora"];
+                "application/json": components["schemas"]["PatchedParametroCustoHoraRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedParametroCustoHoraRequest"];
+                "multipart/form-data": components["schemas"]["PatchedParametroCustoHoraRequest"];
             };
         };
         responses: {
@@ -32685,9 +35525,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ParametroRateio"];
-                "application/x-www-form-urlencoded": components["schemas"]["ParametroRateio"];
-                "multipart/form-data": components["schemas"]["ParametroRateio"];
+                "application/json": components["schemas"]["ParametroRateioRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ParametroRateioRequest"];
+                "multipart/form-data": components["schemas"]["ParametroRateioRequest"];
             };
         };
         responses: {
@@ -32735,9 +35575,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ParametroRateio"];
-                "application/x-www-form-urlencoded": components["schemas"]["ParametroRateio"];
-                "multipart/form-data": components["schemas"]["ParametroRateio"];
+                "application/json": components["schemas"]["ParametroRateioRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ParametroRateioRequest"];
+                "multipart/form-data": components["schemas"]["ParametroRateioRequest"];
             };
         };
         responses: {
@@ -32784,9 +35624,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedParametroRateio"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedParametroRateio"];
-                "multipart/form-data": components["schemas"]["PatchedParametroRateio"];
+                "application/json": components["schemas"]["PatchedParametroRateioRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedParametroRateioRequest"];
+                "multipart/form-data": components["schemas"]["PatchedParametroRateioRequest"];
             };
         };
         responses: {
@@ -32809,9 +35649,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SimularInput"];
-                "application/x-www-form-urlencoded": components["schemas"]["SimularInput"];
-                "multipart/form-data": components["schemas"]["SimularInput"];
+                "application/json": components["schemas"]["SimularInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["SimularInputRequest"];
+                "multipart/form-data": components["schemas"]["SimularInputRequest"];
             };
         };
         responses: {
@@ -32922,9 +35762,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EnquadramentoVeiculo"];
-                "application/x-www-form-urlencoded": components["schemas"]["EnquadramentoVeiculo"];
-                "multipart/form-data": components["schemas"]["EnquadramentoVeiculo"];
+                "application/json": components["schemas"]["EnquadramentoVeiculoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["EnquadramentoVeiculoRequest"];
+                "multipart/form-data": components["schemas"]["EnquadramentoVeiculoRequest"];
             };
         };
         responses: {
@@ -32972,9 +35812,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EnquadramentoVeiculo"];
-                "application/x-www-form-urlencoded": components["schemas"]["EnquadramentoVeiculo"];
-                "multipart/form-data": components["schemas"]["EnquadramentoVeiculo"];
+                "application/json": components["schemas"]["EnquadramentoVeiculoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["EnquadramentoVeiculoRequest"];
+                "multipart/form-data": components["schemas"]["EnquadramentoVeiculoRequest"];
             };
         };
         responses: {
@@ -33021,9 +35861,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedEnquadramentoVeiculo"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedEnquadramentoVeiculo"];
-                "multipart/form-data": components["schemas"]["PatchedEnquadramentoVeiculo"];
+                "application/json": components["schemas"]["PatchedEnquadramentoVeiculoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedEnquadramentoVeiculoRequest"];
+                "multipart/form-data": components["schemas"]["PatchedEnquadramentoVeiculoRequest"];
             };
         };
         responses: {
@@ -33046,9 +35886,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["EnquadramentoVeiculo"];
-                "application/x-www-form-urlencoded": components["schemas"]["EnquadramentoVeiculo"];
-                "multipart/form-data": components["schemas"]["EnquadramentoVeiculo"];
+                "application/json": components["schemas"]["EnquadramentoVeiculoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["EnquadramentoVeiculoRequest"];
+                "multipart/form-data": components["schemas"]["EnquadramentoVeiculoRequest"];
             };
         };
         responses: {
@@ -33193,13 +36033,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["FichaTecnicaServicoDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["FichaTecnicaServicoDetail"];
-                "multipart/form-data": components["schemas"]["FichaTecnicaServicoDetail"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -33218,13 +36052,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["FichaTecnicaServicoDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["FichaTecnicaServicoDetail"];
-                "multipart/form-data": components["schemas"]["FichaTecnicaServicoDetail"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -33266,9 +36094,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SugestaoIACreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["SugestaoIACreate"];
-                "multipart/form-data": components["schemas"]["SugestaoIACreate"];
+                "application/json": components["schemas"]["SugestaoIACreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["SugestaoIACreateRequest"];
+                "multipart/form-data": components["schemas"]["SugestaoIACreateRequest"];
             };
         };
         responses: {
@@ -33291,9 +36119,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SugestaoIACreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["SugestaoIACreate"];
-                "multipart/form-data": components["schemas"]["SugestaoIACreate"];
+                "application/json": components["schemas"]["SugestaoIACreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["SugestaoIACreateRequest"];
+                "multipart/form-data": components["schemas"]["SugestaoIACreateRequest"];
             };
         };
         responses: {
@@ -33346,9 +36174,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SegmentoVeicular"];
-                "application/x-www-form-urlencoded": components["schemas"]["SegmentoVeicular"];
-                "multipart/form-data": components["schemas"]["SegmentoVeicular"];
+                "application/json": components["schemas"]["SegmentoVeicularRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["SegmentoVeicularRequest"];
+                "multipart/form-data": components["schemas"]["SegmentoVeicularRequest"];
             };
         };
         responses: {
@@ -33396,9 +36224,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SegmentoVeicular"];
-                "application/x-www-form-urlencoded": components["schemas"]["SegmentoVeicular"];
-                "multipart/form-data": components["schemas"]["SegmentoVeicular"];
+                "application/json": components["schemas"]["SegmentoVeicularRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["SegmentoVeicularRequest"];
+                "multipart/form-data": components["schemas"]["SegmentoVeicularRequest"];
             };
         };
         responses: {
@@ -33445,9 +36273,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedSegmentoVeicular"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedSegmentoVeicular"];
-                "multipart/form-data": components["schemas"]["PatchedSegmentoVeicular"];
+                "application/json": components["schemas"]["PatchedSegmentoVeicularRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedSegmentoVeicularRequest"];
+                "multipart/form-data": components["schemas"]["PatchedSegmentoVeicularRequest"];
             };
         };
         responses: {
@@ -33498,9 +36326,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CategoriaTamanho"];
-                "application/x-www-form-urlencoded": components["schemas"]["CategoriaTamanho"];
-                "multipart/form-data": components["schemas"]["CategoriaTamanho"];
+                "application/json": components["schemas"]["CategoriaTamanhoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CategoriaTamanhoRequest"];
+                "multipart/form-data": components["schemas"]["CategoriaTamanhoRequest"];
             };
         };
         responses: {
@@ -33548,9 +36376,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CategoriaTamanho"];
-                "application/x-www-form-urlencoded": components["schemas"]["CategoriaTamanho"];
-                "multipart/form-data": components["schemas"]["CategoriaTamanho"];
+                "application/json": components["schemas"]["CategoriaTamanhoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CategoriaTamanhoRequest"];
+                "multipart/form-data": components["schemas"]["CategoriaTamanhoRequest"];
             };
         };
         responses: {
@@ -33597,9 +36425,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedCategoriaTamanho"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedCategoriaTamanho"];
-                "multipart/form-data": components["schemas"]["PatchedCategoriaTamanho"];
+                "application/json": components["schemas"]["PatchedCategoriaTamanhoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedCategoriaTamanhoRequest"];
+                "multipart/form-data": components["schemas"]["PatchedCategoriaTamanhoRequest"];
             };
         };
         responses: {
@@ -33650,9 +36478,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TipoPintura"];
-                "application/x-www-form-urlencoded": components["schemas"]["TipoPintura"];
-                "multipart/form-data": components["schemas"]["TipoPintura"];
+                "application/json": components["schemas"]["TipoPinturaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["TipoPinturaRequest"];
+                "multipart/form-data": components["schemas"]["TipoPinturaRequest"];
             };
         };
         responses: {
@@ -33700,9 +36528,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TipoPintura"];
-                "application/x-www-form-urlencoded": components["schemas"]["TipoPintura"];
-                "multipart/form-data": components["schemas"]["TipoPintura"];
+                "application/json": components["schemas"]["TipoPinturaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["TipoPinturaRequest"];
+                "multipart/form-data": components["schemas"]["TipoPinturaRequest"];
             };
         };
         responses: {
@@ -33749,9 +36577,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedTipoPintura"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedTipoPintura"];
-                "multipart/form-data": components["schemas"]["PatchedTipoPintura"];
+                "application/json": components["schemas"]["PatchedTipoPinturaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedTipoPinturaRequest"];
+                "multipart/form-data": components["schemas"]["PatchedTipoPinturaRequest"];
             };
         };
         responses: {
@@ -33822,13 +36650,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["VarianciaFicha"];
-                "application/x-www-form-urlencoded": components["schemas"]["VarianciaFicha"];
-                "multipart/form-data": components["schemas"]["VarianciaFicha"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -33927,9 +36749,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AprovacaoCotacao"];
-                "application/x-www-form-urlencoded": components["schemas"]["AprovacaoCotacao"];
-                "multipart/form-data": components["schemas"]["AprovacaoCotacao"];
+                "application/json": components["schemas"]["AprovacaoCotacaoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AprovacaoCotacaoRequest"];
+                "multipart/form-data": components["schemas"]["AprovacaoCotacaoRequest"];
             };
         };
         responses: {
@@ -33977,9 +36799,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AprovacaoCotacao"];
-                "application/x-www-form-urlencoded": components["schemas"]["AprovacaoCotacao"];
-                "multipart/form-data": components["schemas"]["AprovacaoCotacao"];
+                "application/json": components["schemas"]["AprovacaoCotacaoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AprovacaoCotacaoRequest"];
+                "multipart/form-data": components["schemas"]["AprovacaoCotacaoRequest"];
             };
         };
         responses: {
@@ -34005,9 +36827,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AprovacaoCotacao"];
-                "application/x-www-form-urlencoded": components["schemas"]["AprovacaoCotacao"];
-                "multipart/form-data": components["schemas"]["AprovacaoCotacao"];
+                "application/json": components["schemas"]["AprovacaoCotacaoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AprovacaoCotacaoRequest"];
+                "multipart/form-data": components["schemas"]["AprovacaoCotacaoRequest"];
             };
         };
         responses: {
@@ -34058,9 +36880,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CondicaoPagamento"];
-                "application/x-www-form-urlencoded": components["schemas"]["CondicaoPagamento"];
-                "multipart/form-data": components["schemas"]["CondicaoPagamento"];
+                "application/json": components["schemas"]["CondicaoPagamentoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CondicaoPagamentoRequest"];
+                "multipart/form-data": components["schemas"]["CondicaoPagamentoRequest"];
             };
         };
         responses: {
@@ -34111,9 +36933,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CotacaoLog"];
-                "application/x-www-form-urlencoded": components["schemas"]["CotacaoLog"];
-                "multipart/form-data": components["schemas"]["CotacaoLog"];
+                "application/json": components["schemas"]["CotacaoLogRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CotacaoLogRequest"];
+                "multipart/form-data": components["schemas"]["CotacaoLogRequest"];
             };
         };
         responses: {
@@ -34183,9 +37005,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["OrdemCompraList"];
-                "application/x-www-form-urlencoded": components["schemas"]["OrdemCompraList"];
-                "multipart/form-data": components["schemas"]["OrdemCompraList"];
+                "application/json": components["schemas"]["OrdemCompraListRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["OrdemCompraListRequest"];
+                "multipart/form-data": components["schemas"]["OrdemCompraListRequest"];
             };
         };
         responses: {
@@ -34210,9 +37032,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AdicionarItemOCInput"];
-                "application/x-www-form-urlencoded": components["schemas"]["AdicionarItemOCInput"];
-                "multipart/form-data": components["schemas"]["AdicionarItemOCInput"];
+                "application/json": components["schemas"]["AdicionarItemOCInputRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AdicionarItemOCInputRequest"];
+                "multipart/form-data": components["schemas"]["AdicionarItemOCInputRequest"];
             };
         };
         responses: {
@@ -34275,9 +37097,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["_RegistrarRecebimentoRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["_RegistrarRecebimentoRequest"];
-                "multipart/form-data": components["schemas"]["_RegistrarRecebimentoRequest"];
+                "application/json": components["schemas"]["_RegistrarRecebimentoRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["_RegistrarRecebimentoRequestRequest"];
+                "multipart/form-data": components["schemas"]["_RegistrarRecebimentoRequestRequest"];
             };
         };
         responses: {
@@ -34341,9 +37163,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["OrdemCompraList"];
-                "application/x-www-form-urlencoded": components["schemas"]["OrdemCompraList"];
-                "multipart/form-data": components["schemas"]["OrdemCompraList"];
+                "application/json": components["schemas"]["OrdemCompraListRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["OrdemCompraListRequest"];
+                "multipart/form-data": components["schemas"]["OrdemCompraListRequest"];
             };
         };
         responses: {
@@ -34390,9 +37212,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedOrdemCompraList"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedOrdemCompraList"];
-                "multipart/form-data": components["schemas"]["PatchedOrdemCompraList"];
+                "application/json": components["schemas"]["PatchedOrdemCompraListRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedOrdemCompraListRequest"];
+                "multipart/form-data": components["schemas"]["PatchedOrdemCompraListRequest"];
             };
         };
         responses: {
@@ -34418,9 +37240,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["OrdemCompraList"];
-                "application/x-www-form-urlencoded": components["schemas"]["OrdemCompraList"];
-                "multipart/form-data": components["schemas"]["OrdemCompraList"];
+                "application/json": components["schemas"]["OrdemCompraListRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["OrdemCompraListRequest"];
+                "multipart/form-data": components["schemas"]["OrdemCompraListRequest"];
             };
         };
         responses: {
@@ -34446,9 +37268,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["OrdemCompraList"];
-                "application/x-www-form-urlencoded": components["schemas"]["OrdemCompraList"];
-                "multipart/form-data": components["schemas"]["OrdemCompraList"];
+                "application/json": components["schemas"]["OrdemCompraListRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["OrdemCompraListRequest"];
+                "multipart/form-data": components["schemas"]["OrdemCompraListRequest"];
             };
         };
         responses: {
@@ -34475,9 +37297,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["OrdemCompraList"];
-                "application/x-www-form-urlencoded": components["schemas"]["OrdemCompraList"];
-                "multipart/form-data": components["schemas"]["OrdemCompraList"];
+                "application/json": components["schemas"]["OrdemCompraListRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["OrdemCompraListRequest"];
+                "multipart/form-data": components["schemas"]["OrdemCompraListRequest"];
             };
         };
         responses: {
@@ -34525,9 +37347,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["OrdemCompraList"];
-                "application/x-www-form-urlencoded": components["schemas"]["OrdemCompraList"];
-                "multipart/form-data": components["schemas"]["OrdemCompraList"];
+                "application/json": components["schemas"]["OrdemCompraListRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["OrdemCompraListRequest"];
+                "multipart/form-data": components["schemas"]["OrdemCompraListRequest"];
             };
         };
         responses: {
@@ -34601,13 +37423,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["PedidoCompra"];
-                "application/x-www-form-urlencoded": components["schemas"]["PedidoCompra"];
-                "multipart/form-data": components["schemas"]["PedidoCompra"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -34629,13 +37445,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["PedidoCompra"];
-                "application/x-www-form-urlencoded": components["schemas"]["PedidoCompra"];
-                "multipart/form-data": components["schemas"]["PedidoCompra"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -34684,9 +37494,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PrazoEntrega"];
-                "application/x-www-form-urlencoded": components["schemas"]["PrazoEntrega"];
-                "multipart/form-data": components["schemas"]["PrazoEntrega"];
+                "application/json": components["schemas"]["PrazoEntregaRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PrazoEntregaRequest"];
+                "multipart/form-data": components["schemas"]["PrazoEntregaRequest"];
             };
         };
         responses: {
@@ -34737,9 +37547,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RespostaCotacao"];
-                "application/x-www-form-urlencoded": components["schemas"]["RespostaCotacao"];
-                "multipart/form-data": components["schemas"]["RespostaCotacao"];
+                "application/json": components["schemas"]["RespostaCotacaoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["RespostaCotacaoRequest"];
+                "multipart/form-data": components["schemas"]["RespostaCotacaoRequest"];
             };
         };
         responses: {
@@ -34787,9 +37597,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RespostaCotacao"];
-                "application/x-www-form-urlencoded": components["schemas"]["RespostaCotacao"];
-                "multipart/form-data": components["schemas"]["RespostaCotacao"];
+                "application/json": components["schemas"]["RespostaCotacaoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["RespostaCotacaoRequest"];
+                "multipart/form-data": components["schemas"]["RespostaCotacaoRequest"];
             };
         };
         responses: {
@@ -34836,9 +37646,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedRespostaCotacao"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedRespostaCotacao"];
-                "multipart/form-data": components["schemas"]["PatchedRespostaCotacao"];
+                "application/json": components["schemas"]["PatchedRespostaCotacaoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedRespostaCotacaoRequest"];
+                "multipart/form-data": components["schemas"]["PatchedRespostaCotacaoRequest"];
             };
         };
         responses: {
@@ -34864,9 +37674,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RespostaCotacao"];
-                "application/x-www-form-urlencoded": components["schemas"]["RespostaCotacao"];
-                "multipart/form-data": components["schemas"]["RespostaCotacao"];
+                "application/json": components["schemas"]["RespostaCotacaoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["RespostaCotacaoRequest"];
+                "multipart/form-data": components["schemas"]["RespostaCotacaoRequest"];
             };
         };
         responses: {
@@ -34917,9 +37727,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["OrcamentoCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["OrcamentoCreate"];
-                "multipart/form-data": components["schemas"]["OrcamentoCreate"];
+                "application/json": components["schemas"]["OrcamentoCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["OrcamentoCreateRequest"];
+                "multipart/form-data": components["schemas"]["OrcamentoCreateRequest"];
             };
         };
         responses: {
@@ -34974,9 +37784,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AreaImpacto"];
-                "application/x-www-form-urlencoded": components["schemas"]["AreaImpacto"];
-                "multipart/form-data": components["schemas"]["AreaImpacto"];
+                "application/json": components["schemas"]["AreaImpactoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AreaImpactoRequest"];
+                "multipart/form-data": components["schemas"]["AreaImpactoRequest"];
             };
         };
         responses: {
@@ -35026,9 +37836,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["AreaImpacto"];
-                "application/x-www-form-urlencoded": components["schemas"]["AreaImpacto"];
-                "multipart/form-data": components["schemas"]["AreaImpacto"];
+                "application/json": components["schemas"]["AreaImpactoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AreaImpactoRequest"];
+                "multipart/form-data": components["schemas"]["AreaImpactoRequest"];
             };
         };
         responses: {
@@ -35077,9 +37887,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedAreaImpacto"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedAreaImpacto"];
-                "multipart/form-data": components["schemas"]["PatchedAreaImpacto"];
+                "application/json": components["schemas"]["PatchedAreaImpactoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedAreaImpactoRequest"];
+                "multipart/form-data": components["schemas"]["PatchedAreaImpactoRequest"];
             };
         };
         responses: {
@@ -35127,9 +37937,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Orcamento"];
-                "application/x-www-form-urlencoded": components["schemas"]["Orcamento"];
-                "multipart/form-data": components["schemas"]["Orcamento"];
+                "application/json": components["schemas"]["OrcamentoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["OrcamentoRequest"];
+                "multipart/form-data": components["schemas"]["OrcamentoRequest"];
             };
         };
         responses: {
@@ -35176,9 +37986,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedOrcamento"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedOrcamento"];
-                "multipart/form-data": components["schemas"]["PatchedOrcamento"];
+                "application/json": components["schemas"]["PatchedOrcamentoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedOrcamentoRequest"];
+                "multipart/form-data": components["schemas"]["PatchedOrcamentoRequest"];
             };
         };
         responses: {
@@ -35204,9 +38014,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Orcamento"];
-                "application/x-www-form-urlencoded": components["schemas"]["Orcamento"];
-                "multipart/form-data": components["schemas"]["Orcamento"];
+                "application/json": components["schemas"]["OrcamentoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["OrcamentoRequest"];
+                "multipart/form-data": components["schemas"]["OrcamentoRequest"];
             };
         };
         responses: {
@@ -35232,9 +38042,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Orcamento"];
-                "application/x-www-form-urlencoded": components["schemas"]["Orcamento"];
-                "multipart/form-data": components["schemas"]["Orcamento"];
+                "application/json": components["schemas"]["OrcamentoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["OrcamentoRequest"];
+                "multipart/form-data": components["schemas"]["OrcamentoRequest"];
             };
         };
         responses: {
@@ -35260,9 +38070,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Orcamento"];
-                "application/x-www-form-urlencoded": components["schemas"]["Orcamento"];
-                "multipart/form-data": components["schemas"]["Orcamento"];
+                "application/json": components["schemas"]["OrcamentoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["OrcamentoRequest"];
+                "multipart/form-data": components["schemas"]["OrcamentoRequest"];
             };
         };
         responses: {
@@ -35288,9 +38098,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Orcamento"];
-                "application/x-www-form-urlencoded": components["schemas"]["Orcamento"];
-                "multipart/form-data": components["schemas"]["Orcamento"];
+                "application/json": components["schemas"]["OrcamentoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["OrcamentoRequest"];
+                "multipart/form-data": components["schemas"]["OrcamentoRequest"];
             };
         };
         responses: {
@@ -35316,9 +38126,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Orcamento"];
-                "application/x-www-form-urlencoded": components["schemas"]["Orcamento"];
-                "multipart/form-data": components["schemas"]["Orcamento"];
+                "application/json": components["schemas"]["OrcamentoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["OrcamentoRequest"];
+                "multipart/form-data": components["schemas"]["OrcamentoRequest"];
             };
         };
         responses: {
@@ -35344,9 +38154,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Orcamento"];
-                "application/x-www-form-urlencoded": components["schemas"]["Orcamento"];
-                "multipart/form-data": components["schemas"]["Orcamento"];
+                "application/json": components["schemas"]["OrcamentoRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["OrcamentoRequest"];
+                "multipart/form-data": components["schemas"]["OrcamentoRequest"];
             };
         };
         responses: {
@@ -35416,9 +38226,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderCreate"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderCreate"];
-                "multipart/form-data": components["schemas"]["ServiceOrderCreate"];
+                "application/json": components["schemas"]["ServiceOrderCreateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderCreateRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderCreateRequest"];
             };
         };
         responses: {
@@ -35464,9 +38274,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderUpdate"];
-                "multipart/form-data": components["schemas"]["ServiceOrderUpdate"];
+                "application/json": components["schemas"]["ServiceOrderUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderUpdateRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderUpdateRequest"];
             };
         };
         responses: {
@@ -35491,9 +38301,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedServiceOrderUpdate"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedServiceOrderUpdate"];
-                "multipart/form-data": components["schemas"]["PatchedServiceOrderUpdate"];
+                "application/json": components["schemas"]["PatchedServiceOrderUpdateRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedServiceOrderUpdateRequest"];
+                "multipart/form-data": components["schemas"]["PatchedServiceOrderUpdateRequest"];
             };
         };
         responses: {
@@ -35518,9 +38328,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -35666,9 +38476,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ChecklistItemBulk"];
-                "application/x-www-form-urlencoded": components["schemas"]["ChecklistItemBulk"];
-                "multipart/form-data": components["schemas"]["ChecklistItemBulk"];
+                "application/json": components["schemas"]["ChecklistItemBulkRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ChecklistItemBulkRequest"];
+                "multipart/form-data": components["schemas"]["ChecklistItemBulkRequest"];
             };
         };
         responses: {
@@ -35693,9 +38503,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -35742,9 +38552,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["PatchedServiceOrderDetail"];
+                "application/json": components["schemas"]["PatchedServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["PatchedServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -35790,9 +38600,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -35838,9 +38648,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -35865,9 +38675,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36065,9 +38875,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36092,8 +38902,8 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36118,9 +38928,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36145,9 +38955,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36193,9 +39003,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36242,9 +39052,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["PatchedServiceOrderDetail"];
+                "application/json": components["schemas"]["PatchedServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["PatchedServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36290,9 +39100,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36318,9 +39128,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36366,9 +39176,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36415,9 +39225,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["PatchedServiceOrderDetail"];
+                "application/json": components["schemas"]["PatchedServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["PatchedServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36442,9 +39252,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36469,9 +39279,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36496,9 +39306,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36544,9 +39354,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36592,9 +39402,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36662,9 +39472,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderDetail"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetail"];
-                "multipart/form-data": components["schemas"]["ServiceOrderDetail"];
+                "application/json": components["schemas"]["ServiceOrderDetailRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderDetailRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderDetailRequest"];
             };
         };
         responses: {
@@ -36739,13 +39549,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["Apontamento"];
-                "application/x-www-form-urlencoded": components["schemas"]["Apontamento"];
-                "multipart/form-data": components["schemas"]["Apontamento"];
-            };
-        };
+        requestBody?: never;
         responses: {
             201: {
                 headers: {
@@ -36768,13 +39572,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["Apontamento"];
-                "application/x-www-form-urlencoded": components["schemas"]["Apontamento"];
-                "multipart/form-data": components["schemas"]["Apontamento"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -36827,9 +39625,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Payment"];
-                "application/x-www-form-urlencoded": components["schemas"]["Payment"];
-                "multipart/form-data": components["schemas"]["Payment"];
+                "application/json": components["schemas"]["PaymentRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PaymentRequest"];
+                "multipart/form-data": components["schemas"]["PaymentRequest"];
             };
         };
         responses: {
@@ -36984,9 +39782,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Holiday"];
-                "application/x-www-form-urlencoded": components["schemas"]["Holiday"];
-                "multipart/form-data": components["schemas"]["Holiday"];
+                "application/json": components["schemas"]["HolidayRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["HolidayRequest"];
+                "multipart/form-data": components["schemas"]["HolidayRequest"];
             };
         };
         responses: {
@@ -37034,9 +39832,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Holiday"];
-                "application/x-www-form-urlencoded": components["schemas"]["Holiday"];
-                "multipart/form-data": components["schemas"]["Holiday"];
+                "application/json": components["schemas"]["HolidayRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["HolidayRequest"];
+                "multipart/form-data": components["schemas"]["HolidayRequest"];
             };
         };
         responses: {
@@ -37083,9 +39881,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedHoliday"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedHoliday"];
-                "multipart/form-data": components["schemas"]["PatchedHoliday"];
+                "application/json": components["schemas"]["PatchedHolidayRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedHolidayRequest"];
+                "multipart/form-data": components["schemas"]["PatchedHolidayRequest"];
             };
         };
         responses: {
@@ -37232,9 +40030,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderParecer"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderParecer"];
-                "multipart/form-data": components["schemas"]["ServiceOrderParecer"];
+                "application/json": components["schemas"]["ServiceOrderParecerRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderParecerRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderParecerRequest"];
             };
         };
         responses: {
@@ -37282,9 +40080,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceOrderParecer"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderParecer"];
-                "multipart/form-data": components["schemas"]["ServiceOrderParecer"];
+                "application/json": components["schemas"]["ServiceOrderParecerRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderParecerRequest"];
+                "multipart/form-data": components["schemas"]["ServiceOrderParecerRequest"];
             };
         };
         responses: {
@@ -37331,9 +40129,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedServiceOrderParecer"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedServiceOrderParecer"];
-                "multipart/form-data": components["schemas"]["PatchedServiceOrderParecer"];
+                "application/json": components["schemas"]["PatchedServiceOrderParecerRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedServiceOrderParecerRequest"];
+                "multipart/form-data": components["schemas"]["PatchedServiceOrderParecerRequest"];
             };
         };
         responses: {
@@ -37403,9 +40201,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceCatalog"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceCatalog"];
-                "multipart/form-data": components["schemas"]["ServiceCatalog"];
+                "application/json": components["schemas"]["ServiceCatalogRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceCatalogRequest"];
+                "multipart/form-data": components["schemas"]["ServiceCatalogRequest"];
             };
         };
         responses: {
@@ -37453,9 +40251,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ServiceCatalog"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceCatalog"];
-                "multipart/form-data": components["schemas"]["ServiceCatalog"];
+                "application/json": components["schemas"]["ServiceCatalogRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["ServiceCatalogRequest"];
+                "multipart/form-data": components["schemas"]["ServiceCatalogRequest"];
             };
         };
         responses: {
@@ -37502,9 +40300,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedServiceCatalog"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedServiceCatalog"];
-                "multipart/form-data": components["schemas"]["PatchedServiceCatalog"];
+                "application/json": components["schemas"]["PatchedServiceCatalogRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedServiceCatalogRequest"];
+                "multipart/form-data": components["schemas"]["PatchedServiceCatalogRequest"];
             };
         };
         responses: {
@@ -37624,13 +40422,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["ServiceOrderVersion"];
-                "application/x-www-form-urlencoded": components["schemas"]["ServiceOrderVersion"];
-                "multipart/form-data": components["schemas"]["ServiceOrderVersion"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -37738,13 +40530,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["SignatureRead"];
-                "application/x-www-form-urlencoded": components["schemas"]["SignatureRead"];
-                "multipart/form-data": components["schemas"]["SignatureRead"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -38001,9 +40787,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Vehicle"];
-                "application/x-www-form-urlencoded": components["schemas"]["Vehicle"];
-                "multipart/form-data": components["schemas"]["Vehicle"];
+                "application/json": components["schemas"]["VehicleRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["VehicleRequest"];
+                "multipart/form-data": components["schemas"]["VehicleRequest"];
             };
         };
         responses: {
@@ -38051,9 +40837,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Vehicle"];
-                "application/x-www-form-urlencoded": components["schemas"]["Vehicle"];
-                "multipart/form-data": components["schemas"]["Vehicle"];
+                "application/json": components["schemas"]["VehicleRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["VehicleRequest"];
+                "multipart/form-data": components["schemas"]["VehicleRequest"];
             };
         };
         responses: {
@@ -38100,9 +40886,9 @@ export interface operations {
         };
         requestBody?: {
             content: {
-                "application/json": components["schemas"]["PatchedVehicle"];
-                "application/x-www-form-urlencoded": components["schemas"]["PatchedVehicle"];
-                "multipart/form-data": components["schemas"]["PatchedVehicle"];
+                "application/json": components["schemas"]["PatchedVehicleRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedVehicleRequest"];
+                "multipart/form-data": components["schemas"]["PatchedVehicleRequest"];
             };
         };
         responses: {

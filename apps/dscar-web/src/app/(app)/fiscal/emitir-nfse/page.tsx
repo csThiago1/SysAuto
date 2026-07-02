@@ -21,7 +21,7 @@ import { Label } from "@/components/ui/label"
 import { useEmitManualNfse } from "@/hooks/useFiscal"
 import { usePersons } from "@/hooks/usePersons"
 import { withRoleGuard } from "@/lib/withRoleGuard"
-import type { FiscalDocument } from "@paddock/types"
+import type { FiscalDocument } from "@/hooks/useFiscal"
 import { cn } from "@/lib/utils"
 
 // ─── Person Search ───────────────────────────────────────────────────────────
@@ -149,7 +149,10 @@ function EmitirNfseManualPageInner() {
 
   async function onSubmit(values: FormValues) {
     try {
-      const doc = await emitMutation.mutateAsync(values)
+      const doc = await emitMutation.mutateAsync({
+        ...values,
+        destinatario_id: Number(values.destinatario_id),
+      })
       setEmitted(doc)
       toast.success("NFS-e enviada para processamento.")
     } catch {

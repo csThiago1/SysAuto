@@ -291,7 +291,8 @@ class FiscalDocumentListSerializer(serializers.ModelSerializer):
 
     amount = serializers.DecimalField(source="total_value", max_digits=12, decimal_places=2, read_only=True)
     numero = serializers.CharField(source="number", read_only=True)
-    service_order_id = serializers.UUIDField(read_only=True)
+    # allow_null: NFS-e/NF-e manual não tem OS vinculada
+    service_order_id = serializers.UUIDField(read_only=True, allow_null=True)
     pdf_url = serializers.SerializerMethodField()
     xml_url = serializers.SerializerMethodField()
 

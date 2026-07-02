@@ -32,7 +32,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { useEmitNfse, useEmitNfe } from "@/hooks/useFiscal"
-import type { FiscalDocument } from "@paddock/types"
+import type { FiscalDocument } from "@/hooks/useFiscal"
 import { cn } from "@/lib/utils"
 
 type DocType = "nfse" | "nfe"

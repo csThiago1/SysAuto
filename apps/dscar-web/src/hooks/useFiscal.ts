@@ -13,17 +13,24 @@
  */
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
-  FiscalDocument,
-  FiscalDocumentList,
   FiscalDocumentParams,
-  ManualNfeInput,
-  ManualNfseInput,
   NfeEmitFromOsInput,
   NfeRecebida,
 } from "@paddock/types"
 
 import { apiFetch, fetchList } from "@/lib/api"
 import { useCreate } from "@/lib/crud-mutations"
+import type { ApiSchema } from "@/types"
+
+// Gerados dos serializers Django — sempre em sync com a API.
+// FiscalDocumentParams/NfeRecebida ficam manuais (query params helper e
+// pass-through opaco da Focus, sem serializer no backend).
+// Inputs usam as variantes *Request (COMPONENT_SPLIT_REQUEST): campos com
+// default são opcionais no envio.
+export type FiscalDocument = ApiSchema<"FiscalDocument">
+export type FiscalDocumentList = ApiSchema<"FiscalDocumentList">
+export type ManualNfeInput = ApiSchema<"ManualNfeInputRequest">
+export type ManualNfseInput = ApiSchema<"ManualNfseInputRequest">
 
 const FISCAL = "/api/proxy/fiscal"
 
@@ -72,9 +79,9 @@ export function useEmitNfse() {
       }),
     onSuccess: (doc) => {
       qc.invalidateQueries({ queryKey: fiscalKeys.all })
-      if (doc.service_order_id) {
+      if (doc.service_order) {
         // Invalida a OS para refletir o novo documento fiscal
-        qc.invalidateQueries({ queryKey: ["service-orders", doc.service_order_id] })
+        qc.invalidateQueries({ queryKey: ["service-orders", doc.service_order] })
       }
     },
   })
@@ -99,8 +106,8 @@ export function useEmitNfe() {
       }),
     onSuccess: (doc) => {
       qc.invalidateQueries({ queryKey: fiscalKeys.all })
-      if (doc.service_order_id) {
-        qc.invalidateQueries({ queryKey: ["service-orders", doc.service_order_id] })
+      if (doc.service_order) {
+        qc.invalidateQueries({ queryKey: ["service-orders", doc.service_order] })
       }
     },
   })

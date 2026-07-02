@@ -10,7 +10,8 @@ import { useEmitNfe } from "@/hooks/useFiscal"
 import { useServiceOrders } from "@/hooks/useServiceOrders"
 import { ApiError } from "@/lib/api"
 import { cn } from "@/lib/utils"
-import type { FiscalDocument, ServiceOrder } from "@paddock/types"
+import type { ServiceOrder } from "@paddock/types"
+import type { FiscalDocument } from "@/hooks/useFiscal"
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 

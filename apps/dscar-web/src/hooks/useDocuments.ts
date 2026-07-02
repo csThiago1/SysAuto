@@ -10,13 +10,19 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { apiFetch, fetchList } from "@/lib/api"
 import type {
-  DocumentGeneration,
   DocumentPreviewData,
   PDFDocumentType,
   GenerateDocumentPayload,
 } from "@paddock/types"
+
+import { apiFetch, fetchList } from "@/lib/api"
+import type { ApiSchema } from "@/types"
+
+// Gerado do DocumentGenerationSerializer — sempre em sync com a API.
+// PDFDocumentType/GenerateDocumentPayload ficam manuais: o enum gerado tem
+// nome instável (DocumentType5c8Enum) e o payload gerado tipa data: unknown.
+export type DocumentGeneration = ApiSchema<"DocumentGeneration">
 
 const BASE = "/api/proxy/documents"
 

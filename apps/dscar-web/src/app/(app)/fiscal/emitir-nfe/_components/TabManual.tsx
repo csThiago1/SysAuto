@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { useEmitManualNfe } from "@/hooks/useFiscal"
 import { usePersons } from "@/hooks/usePersons"
 import { ApiError } from "@/lib/api"
-import type { FiscalDocument } from "@paddock/types"
+import type { FiscalDocument } from "@/hooks/useFiscal"
 import { ItemRow } from "./ItemRow"
 
 // ─── Error helper ─────────────────────────────────────────────────────────────
@@ -178,7 +178,10 @@ export function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => v
   async function onSubmit(values: ManualFormValues) {
     setApiError(null)
     try {
-      const doc = await emitMutation.mutateAsync(values)
+      const doc = await emitMutation.mutateAsync({
+        ...values,
+        destinatario_id: Number(values.destinatario_id),
+      })
       onSuccess(doc)
       toast.success("NF-e enviada para processamento.")
     } catch (err) {

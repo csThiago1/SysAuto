@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog"
 import { useFiscalDocuments, useCancelFiscalDoc, useSendFiscalEmail, useSubstituirNfse, useCCe } from "@/hooks/useFiscal"
 import { usePermission } from "@/hooks/usePermission"
-import type { FiscalDocumentList } from "@paddock/types"
+import type { FiscalDocumentList } from "@/hooks/useFiscal"
 import { cn } from "@/lib/utils"
 
 // ─── Status config ────────────────────────────────────────────────────────────

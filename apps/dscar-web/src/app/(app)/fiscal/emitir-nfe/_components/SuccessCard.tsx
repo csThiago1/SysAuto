@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { FileText, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import type { FiscalDocument } from "@paddock/types"
+import type { FiscalDocument } from "@/hooks/useFiscal"
 
 export function SuccessCard({
   doc,
