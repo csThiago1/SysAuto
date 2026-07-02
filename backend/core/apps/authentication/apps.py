@@ -9,5 +9,6 @@ class AuthenticationConfig(AppConfig):
     label = "authentication"
 
     def ready(self) -> None:
-        """Registra signals ao iniciar o app."""
+        """Registra signals e extensões drf-spectacular ao iniciar o app."""
         import apps.authentication.signals  # noqa: F401
+        import apps.authentication.schema_extensions  # noqa: F401
