@@ -10,6 +10,7 @@ RBAC:
 import logging
 
 from django.db.models import Count, Q
+from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -157,6 +158,10 @@ class RegistrarItemView(APIView):
 
     permission_classes = [IsAuthenticated, IsStorekeeperOrAbove]
 
+    @extend_schema(
+        request=RegistrarItemInputSerializer,
+        responses={200: ItemContagemSerializer, 404: dict},
+    )
     def patch(self, request: Request, contagem_id: str, item_id: str) -> Response:
         # Validate item belongs to contagem and contagem is active
         try:

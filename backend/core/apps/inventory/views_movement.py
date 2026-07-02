@@ -342,6 +342,7 @@ class AprovacoesPendentesView(APIView):
 
     permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
+    @extend_schema(responses={200: MovimentacaoEstoqueSerializer(many=True)})
     def get(self, request: Request) -> Response:
         qs = AprovacaoEstoqueService.pendentes()
         serializer = MovimentacaoEstoqueSerializer(qs, many=True)
@@ -353,6 +354,10 @@ class AprovarView(APIView):
 
     permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
+    @extend_schema(
+        request=None,
+        responses={200: MovimentacaoEstoqueSerializer, 400: _DetailSerializer},
+    )
     def post(self, request: Request, pk: str) -> Response:
         try:
             mov = AprovacaoEstoqueService.aprovar(
@@ -379,6 +384,10 @@ class RejeitarView(APIView):
 
     permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
+    @extend_schema(
+        request=RejeicaoInputSerializer,
+        responses={204: None, 400: _DetailSerializer},
+    )
     def post(self, request: Request, pk: str) -> Response:
         serializer = RejeicaoInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

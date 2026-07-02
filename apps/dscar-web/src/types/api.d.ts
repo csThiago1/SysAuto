@@ -3467,7 +3467,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description GET — Lista movimentacoes pendentes de aprovacao. MANAGER+. */
-        get: operations["inventory_aprovacoes_pendentes_retrieve"];
+        get: operations["inventory_aprovacoes_pendentes_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -8969,6 +8969,14 @@ export interface components {
             readonly snapshot_id: string | null;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        BaixaInsumoInput: {
+            /** Format: uuid */
+            material_canonico_id: string;
+            /** Format: decimal */
+            quantidade_base: string;
+            /** Format: uuid */
+            ordem_servico_id: string;
         };
         BenchmarkAmostra: {
             /** Format: uuid */
@@ -16073,6 +16081,13 @@ export interface components {
             /** Format: date-time */
             readonly updated_at?: string;
         };
+        /** @description Input para registro de quantidade contada em um item. */
+        PatchedRegistrarItemInput: {
+            /** Format: decimal */
+            quantidade_contada?: string;
+            /** @default  */
+            observacao: string;
+        };
         PatchedRespostaCotacao: {
             /** Format: uuid */
             readonly id?: string;
@@ -17842,6 +17857,10 @@ export interface components {
             name: string;
             role: components["schemas"]["RoleAa5Enum"];
             password: string;
+        };
+        /** @description Input para rejeicao de movimentacao pendente. */
+        RejeicaoInput: {
+            motivo: string;
         };
         /** @description Body de POST /auth/reset-password/. */
         ResetPasswordRequest: {
@@ -20297,6 +20316,9 @@ export interface components {
             effective_until?: string | null;
             /** Format: date-time */
             readonly created_at: string;
+        };
+        _BaixarInsumoResponse: {
+            consumos_criados: number;
         };
         /** @description Resposta genérica {"detail": "mensagem"}. */
         _Detail: {
@@ -26318,12 +26340,21 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MovimentacaoEstoque"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -26336,18 +26367,32 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejeicaoInput"];
+                "application/x-www-form-urlencoded": components["schemas"]["RejeicaoInput"];
+                "multipart/form-data": components["schemas"]["RejeicaoInput"];
+            };
+        };
         responses: {
             /** @description No response body */
-            200: {
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
+            };
         };
     };
-    inventory_aprovacoes_pendentes_retrieve: {
+    inventory_aprovacoes_pendentes_list: {
         parameters: {
             query?: never;
             header?: never;
@@ -26356,12 +26401,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MovimentacaoEstoque"][];
+                };
             };
         };
     };
@@ -26546,14 +26592,29 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BaixaInsumoInput"];
+                "application/x-www-form-urlencoded": components["schemas"]["BaixaInsumoInput"];
+                "multipart/form-data": components["schemas"]["BaixaInsumoInput"];
+            };
+        };
         responses: {
-            /** @description No response body */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_BaixarInsumoResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
@@ -26942,14 +27003,31 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedRegistrarItemInput"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedRegistrarItemInput"];
+                "multipart/form-data": components["schemas"]["PatchedRegistrarItemInput"];
+            };
+        };
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ItemContagem"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
             };
         };
     };

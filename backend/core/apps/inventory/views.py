@@ -10,6 +10,8 @@ RBAC:
 """
 import logging
 
+from drf_spectacular.utils import extend_schema
+from rest_framework import serializers as drf_serializers
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -191,11 +193,23 @@ class LoteInsumoViewSet(viewsets.ReadOnlyModelViewSet):
         return Response({"detail": "Etiqueta impressa."})
 
 
+class _BaixarInsumoResponseSerializer(drf_serializers.Serializer):
+    consumos_criados = drf_serializers.IntegerField()
+
+
+class _DetailSerializer(drf_serializers.Serializer):
+    detail = drf_serializers.CharField()
+
+
 class BaixarInsumoView(APIView):
     """Baixa de insumo via FIFO em uma OS. CONSULTANT+."""
 
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(
+        request=BaixaInsumoInputSerializer,
+        responses={201: _BaixarInsumoResponseSerializer, 400: _DetailSerializer},
+    )
     def post(self, request: Request) -> Response:
         ser = BaixaInsumoInputSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
