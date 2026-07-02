@@ -1933,7 +1933,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["documents_os_history_retrieve"];
+        get: operations["documents_os_history_list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -10250,6 +10250,38 @@ export interface components {
          * @enum {string}
          */
         DocTypeEnum: "CPF" | "CNPJ" | "RG" | "IE" | "IM" | "CNH";
+        DocumentGeneration: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly document_type: components["schemas"]["DocumentType5c8Enum"];
+            readonly document_type_display: string;
+            readonly version: number;
+            /** Format: uuid */
+            readonly service_order_id: string;
+            /**
+             * Format: uuid
+             * @description Apenas para recibos
+             */
+            readonly receivable_id: string | null;
+            readonly s3_key: string;
+            readonly file_size_bytes: number | null;
+            readonly generated_by_name: string;
+            /** Format: date-time */
+            readonly generated_at: string;
+            readonly download_url: string;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
+        DocumentSnapshot: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly document_type: components["schemas"]["DocumentType5c8Enum"];
+            readonly version: number;
+            /** @description Dados completos no momento da geração. Permite regerar PDF idêntico. */
+            readonly data_snapshot: unknown;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
         /**
          * @description * `BUDGET_APPROVAL` - Aprovação de Orçamento
          *     * `OS_OPEN` - Recepção do Veículo
@@ -10260,6 +10292,14 @@ export interface components {
          * @enum {string}
          */
         DocumentType4feEnum: "BUDGET_APPROVAL" | "OS_OPEN" | "OS_DELIVERY" | "COMPLEMENT_APPROVAL" | "INSURANCE_ACCEPTANCE" | "VISTORIA_ENTRADA";
+        /**
+         * @description * `os_report` - Ordem de Serviço
+         *     * `warranty` - Termo de Garantia
+         *     * `settlement` - Termo de Quitação
+         *     * `receipt` - Recibo de Pagamento
+         * @enum {string}
+         */
+        DocumentType5c8Enum: "os_report" | "warranty" | "settlement" | "receipt";
         /**
          * @description * `nfe` - NF-e (produto B2B)
          *     * `nfce` - NFC-e (consumidor)
@@ -11201,6 +11241,12 @@ export interface components {
          * @enum {string}
          */
         GenderEnum: "M" | "F" | "N";
+        GenerateDocument: {
+            document_type: components["schemas"]["DocumentType5c8Enum"];
+            /** Format: uuid */
+            receivable_id?: string | null;
+            data: unknown;
+        };
         GoalTarget: {
             /** Format: uuid */
             readonly id: string;
@@ -20320,9 +20366,14 @@ export interface components {
         _BaixarInsumoResponse: {
             consumos_criados: number;
         };
-        /** @description Resposta genérica {"detail": "mensagem"}. */
         _Detail: {
             detail: string;
+        };
+        /** @description Preview de dados pra render de documento — shape depende do document_type. */
+        _DocumentPreviewResponse: {
+            document_type: string;
+            /** Format: uuid */
+            order_id: string;
         };
         /** @description Resposta padrão dos endpoints de movimentação: {id, codigo_barras}. */
         _MovimentacaoIdResponse: {
@@ -23669,8 +23720,16 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                };
+            };
+            /** @description No response body */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -23689,8 +23748,16 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentSnapshot"];
+                };
+            };
+            /** @description No response body */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -23707,18 +23774,41 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GenerateDocument"];
+                "application/x-www-form-urlencoded": components["schemas"]["GenerateDocument"];
+                "multipart/form-data": components["schemas"]["GenerateDocument"];
+            };
+        };
         responses: {
-            /** @description No response body */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DocumentGeneration"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
+            };
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };
-    documents_os_history_retrieve: {
+    documents_os_history_list: {
         parameters: {
             query?: never;
             header?: never;
@@ -23729,12 +23819,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DocumentGeneration"][];
+                };
             };
         };
     };
@@ -23750,12 +23841,21 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description No response body */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["_DocumentPreviewResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["_Detail"];
+                };
             };
         };
     };

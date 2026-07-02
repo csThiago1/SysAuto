@@ -4,6 +4,8 @@ from __future__ import annotations
 import logging
 
 from django.http import HttpResponse
+from drf_spectacular.utils import OpenApiTypes, extend_schema
+from rest_framework import serializers as drf_serializers
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -22,9 +24,24 @@ from apps.documents.services import DocumentService
 logger = logging.getLogger(__name__)
 
 
+class _DetailSerializer(drf_serializers.Serializer):
+    detail = drf_serializers.CharField()
+
+
+class _DocumentPreviewResponseSerializer(drf_serializers.Serializer):
+    """Preview de dados pra render de documento — shape depende do document_type."""
+
+    document_type = drf_serializers.CharField()
+    order_id = drf_serializers.UUIDField()
+    # Payload adicional é dinâmico por tipo — não tipamos individualmente.
+
+
 class DocumentPreviewView(APIView):
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(
+        responses={200: _DocumentPreviewResponseSerializer, 400: _DetailSerializer},
+    )
     def get(self, request: Request, order_id: str, document_type: str) -> Response:
         receivable_id = request.query_params.get("receivable_id")
         try:
@@ -46,6 +63,14 @@ class DocumentPreviewView(APIView):
 class DocumentGenerateView(APIView):
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(
+        request=GenerateDocumentSerializer,
+        responses={
+            201: DocumentGenerationSerializer,
+            400: _DetailSerializer,
+            500: _DetailSerializer,
+        },
+    )
     def post(self, request: Request, order_id: str) -> Response:
         serializer = GenerateDocumentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -84,6 +109,7 @@ class DocumentGenerateView(APIView):
 class DocumentHistoryView(APIView):
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(responses={200: DocumentGenerationSerializer(many=True)})
     def get(self, request: Request, order_id: str) -> Response:
         qs = DocumentGeneration.objects.filter(
             service_order_id=order_id,
@@ -94,6 +120,12 @@ class DocumentHistoryView(APIView):
 class DocumentDownloadView(APIView):
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
+    @extend_schema(
+        responses={
+            (200, "application/pdf"): OpenApiTypes.BINARY,
+            404: None,
+        },
+    )
     def get(self, request: Request, doc_id: str) -> HttpResponse:
         try:
             pdf_bytes, filename = DocumentService.download(doc_id)
@@ -117,6 +149,7 @@ class DocumentDownloadView(APIView):
 class DocumentSnapshotView(APIView):
     permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
+    @extend_schema(responses={200: DocumentSnapshotSerializer, 404: None})
     def get(self, request: Request, doc_id: str) -> Response:
         try:
             doc = DocumentGeneration.objects.get(pk=doc_id)
