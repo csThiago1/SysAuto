@@ -18,7 +18,7 @@ const mockSession = (role: PaddockRole, permissions: string[] = []) => {
       user: { name: "Test", email: "test@test.com" },
       expires: "",
       accessToken: "test-token",
-      permissions: [],
+      permissions,
       extraPermissions: [],
       companies: ["dscar"],
       activeCompany: "dscar",

@@ -101,7 +101,7 @@ describe("NotificationBell", () => {
     mockHook(orders);
 
     const view = render(<NotificationBell />);
-    expect(view.getByText("3")).toBeTruthy();
+    expect(view.getByLabelText("3 notificações")).toBeTruthy();
   });
 
   it("badge exibe 99+ quando results.length > 99", () => {

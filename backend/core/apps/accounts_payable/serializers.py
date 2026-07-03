@@ -98,6 +98,7 @@ class PayableDocumentSerializer(serializers.ModelSerializer):
     """Serializer completo de titulo a pagar — inclui pagamentos."""
 
     supplier = SupplierListSerializer(read_only=True)
+    supplier_name = serializers.CharField(source="supplier.name", read_only=True)
     payments = PayablePaymentSerializer(many=True, read_only=True)
     amount_remaining = serializers.SerializerMethodField()
     status_display = serializers.CharField(source="get_status_display", read_only=True)
@@ -109,6 +110,7 @@ class PayableDocumentSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "supplier",
+            "supplier_name",
             "description",
             "document_number",
             "document_date",

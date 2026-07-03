@@ -150,6 +150,7 @@ function MargensTab({ empresaId }: { empresaId: string }) {
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7 text-muted-foreground hover:text-error-400"
+                      title="Remover"
                       onClick={() => handleDelete(m.id)}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -361,7 +362,7 @@ function MarkupPecaTab({ empresaId }: { empresaId: string }) {
                   </TableCell>
                   <TableCell className="text-sm text-foreground/80">
                     {m.peca_canonica
-                      ? (m.peca_canonica_nome ?? m.peca_canonica)
+                      ? (m.peca_nome ?? m.peca_canonica)
                       : `R$${m.faixa_custo_min} – R$${m.faixa_custo_max}`}
                   </TableCell>
                   <TableCell className="text-sm text-right font-mono text-success-400">
@@ -376,6 +377,7 @@ function MarkupPecaTab({ empresaId }: { empresaId: string }) {
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7 text-muted-foreground hover:text-error-400"
+                      title="Remover"
                       onClick={() => handleDelete(m.id)}
                     >
                       <Trash2 className="h-3.5 w-3.5" />

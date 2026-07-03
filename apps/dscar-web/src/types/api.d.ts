@@ -14614,6 +14614,10 @@ export interface components {
             /** Format: date-time */
             readonly created_at: string;
             readonly itens: components["schemas"]["ItemOrdemCompra"][];
+            observacoes: string;
+            /** Format: date-time */
+            aprovado_em: string | null;
+            motivo_rejeicao: string;
         };
         /** @description Serializer para listagem de ordens de compra. */
         OrdemCompraList: {
@@ -18371,6 +18375,7 @@ export interface components {
             /** Format: uuid */
             readonly id: string;
             readonly supplier: components["schemas"]["SupplierList"];
+            readonly supplier_name: string;
             /** Descricao */
             description: string;
             /** No Documento */

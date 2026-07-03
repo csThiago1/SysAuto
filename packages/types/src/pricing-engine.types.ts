@@ -154,7 +154,7 @@ export interface MarkupPeca {
   id: string
   empresa: string
   peca_canonica: string | null
-  peca_canonica_nome?: string | null
+  peca_nome?: string | null
   faixa_custo_min: string | null
   faixa_custo_max: string | null
   margem_percentual: string // "0.3500" = 35%

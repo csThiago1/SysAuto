@@ -200,7 +200,9 @@ class OrdemCompraDetailSerializer(OrdemCompraListSerializer):
     itens = ItemOrdemCompraSerializer(many=True, read_only=True)
 
     class Meta(OrdemCompraListSerializer.Meta):
-        fields = OrdemCompraListSerializer.Meta.fields + ["itens"]
+        fields = OrdemCompraListSerializer.Meta.fields + [
+            "itens", "observacoes", "aprovado_em", "motivo_rejeicao",
+        ]
 
 
 class AdicionarItemOCInputSerializer(serializers.Serializer):

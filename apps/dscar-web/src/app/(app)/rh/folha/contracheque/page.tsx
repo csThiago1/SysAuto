@@ -9,7 +9,7 @@
 import React from "react";
 import Link from "next/link";
 import type { Route } from "next";
-import { ChevronLeft, ChevronRight, Lock, FileText, Download, ReceiptText } from "lucide-react";
+import { ChevronLeft, Lock, FileText, Download } from "lucide-react";
 import { useMyEmployee, useEmployeePayslips } from "@/hooks";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui";
@@ -160,27 +160,6 @@ export default function ContrachequesSelfPage(): React.ReactElement {
                   ))}
                 </div>
 
-                {/* Lancamento contabil vinculado */}
-                {payslip.journal_entry_id && (
-                  <div className="mt-3 rounded-md border border-border bg-muted/30 p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted/50">
-                        <ReceiptText className="h-4 w-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">Lancamento Contabil</p>
-                        <p className="text-xs text-muted-foreground">Gerado automaticamente ao fechar a folha</p>
-                      </div>
-                    </div>
-                    <Link
-                      href={`/financeiro/lancamentos/${payslip.journal_entry_id}` as Route}
-                      className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
-                    >
-                      Ver lancamento
-                      <ChevronRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                )}
               </div>
             ))}
           </div>

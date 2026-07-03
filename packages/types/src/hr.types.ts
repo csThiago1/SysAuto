@@ -315,8 +315,6 @@ export interface Payslip {
   closed_by: string | null;
   pdf_file_key: string;
   notes: string;
-  /** UUID do JournalEntry gerado pelo PayslipAccountingService ao fechar a folha. */
-  journal_entry_id?: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -7,7 +7,6 @@ import type {
   CalcularPecaInput,
   CalcularServicoInput,
   MargemOperacaoCreate,
-  MarkupPeca,
   MarkupPecaCreate,
   ResultadoPecaDTO,
   ResultadoServicoDTO,
@@ -23,6 +22,7 @@ import type { ApiSchema } from "@/types"
 
 // Gerados dos serializers Django (match 1:1 verificado).
 export type MargemOperacao = ApiSchema<"MargemOperacao">
+export type MarkupPeca = ApiSchema<"MarkupPeca">
 
 const ENGINE_API = "/api/proxy/pricing/engine"
 
