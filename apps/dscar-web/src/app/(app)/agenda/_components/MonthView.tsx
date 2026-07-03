@@ -7,7 +7,7 @@ import {
 } from "date-fns"
 import { cn } from "@/lib/utils"
 import { CalendarEventCard } from "./CalendarEventCard"
-import type { CalendarEvent } from "@paddock/types"
+import type { CalendarEvent } from "@/hooks/useAgenda"
 
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"]
 

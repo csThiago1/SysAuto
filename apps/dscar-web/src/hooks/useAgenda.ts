@@ -1,9 +1,24 @@
 "use client"
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { apiFetch, fetchList } from "@/lib/api"
 import { format } from "date-fns"
-import type { CalendarOS, CalendarEvent, SchedulingPayload } from "@paddock/types"
+import type { SchedulingPayload } from "@paddock/types"
+
+import { apiFetch, fetchList } from "@/lib/api"
+import type { ApiSchema } from "@/types"
+
+// Gerado do ServiceOrderCalendarSerializer. SchedulingPayload fica
+// manual (PATCH parcial de OS sem serializer dedicado).
+export type CalendarOS = ApiSchema<"ServiceOrderCalendar">
+
+/** Tipo de UI derivado — não vem da API. */
+export interface CalendarEvent {
+  /** entry=entrada (azul), delivery=previsão s/hora (verde), scheduled_delivery=retirada agendada c/hora (laranja) */
+  type: "entry" | "delivery" | "scheduled_delivery"
+  os: CalendarOS
+  date: Date
+  datetime: Date | null // null apenas para type=delivery (sem hora precisa)
+}
 
 const API = "/api/proxy/service-orders"
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import type { CalendarEvent } from "@paddock/types"
+import type { CalendarEvent } from "@/hooks/useAgenda"
 import { format } from "date-fns"
 
 interface Props {

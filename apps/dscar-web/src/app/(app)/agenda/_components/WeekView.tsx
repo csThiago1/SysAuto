@@ -9,7 +9,7 @@ import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { CalendarEventCard } from "./CalendarEventCard"
 import { SchedulingDialog } from "./SchedulingDialog"
-import type { CalendarEvent } from "@paddock/types"
+import type { CalendarEvent } from "@/hooks/useAgenda"
 
 // Horários exibidos na grade: máximo do expediente (8h–17h)
 const HOURS = Array.from({ length: 10 }, (_, i) => i + 8)

@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { CalendarEventCard } from "./CalendarEventCard"
 import { SchedulingDialog } from "./SchedulingDialog"
-import type { CalendarEvent } from "@paddock/types"
+import type { CalendarEvent } from "@/hooks/useAgenda"
 
 /** Retorna os horários de expediente do dia, ou [] se fechado. */
 function hoursForDay(date: Date): number[] {
