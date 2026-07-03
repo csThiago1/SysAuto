@@ -12,7 +12,7 @@ import {
   useAprovarCotacao,
   useRejeitarCotacao,
 } from "@/hooks/usePurchasing"
-import type { PedidoCompra, RespostaCotacao } from "@paddock/types"
+import type { PedidoCompra, RespostaCotacao } from "@/hooks/usePurchasing"
 
 // ─── Rejeitar dialog ──────────────────────────────────────────────────────────
 
@@ -128,7 +128,7 @@ export default function AprovacaoPage({ params }: { params: Promise<{ id: string
 
   // Unique suppliers from responses
   const uniqueSuppliers = useMemo(() => {
-    const map = new Map<string, string>()
+    const map = new Map<number, string>()
     for (const r of respostas ?? []) {
       map.set(r.supplier, r.supplier_name)
     }
@@ -148,7 +148,7 @@ export default function AprovacaoPage({ params }: { params: Promise<{ id: string
   }
 
   const previewOCs = useMemo<PreviewOC[]>(() => {
-    const supplierGroups = new Map<string, PreviewOC>()
+    const supplierGroups = new Map<number, PreviewOC>()
     for (const [pedidoId, respostaId] of selections) {
       const resp = respostas?.find((r: RespostaCotacao) => r.id === respostaId)
       const pedido = pedidos?.find((p: PedidoCompra) => p.id === pedidoId)

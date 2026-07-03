@@ -3,7 +3,10 @@
  * para uso nas páginas de fichas técnicas.
  */
 import { useCategoriasMaoObra } from "@/hooks/usePricingCatalog"
-import type { CategoriaMaoObra } from "@paddock/types"
+import type { ApiSchema } from "@/types"
+
+// Gerados dos serializers Django (match 1:1 verificado).
+export type CategoriaMaoObra = ApiSchema<"CategoriaMaoObra">
 
 /**
  * Retorna as categorias de mão de obra disponíveis.

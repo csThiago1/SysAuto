@@ -65,25 +65,28 @@ export type GoalStatus =
   | "missed"
   | "cancelled";
 
+// Espelha AllowanceTypeEnum do backend (apps/hr).
 export type AllowanceType =
+  | "food"
   | "meal"
   | "transport"
-  | "health"
-  | "education"
   | "fuel"
-  | "housing"
-  | "clothing"
+  | "health"
+  | "dental"
   | "other";
 
 export type AllowanceStatus = "requested" | "approved" | "paid" | "rejected";
 
+// Espelha DeductionTypeEnum do backend (apps/hr).
 export type DeductionType =
+  | "absence"
+  | "late"
+  | "advance"
+  | "loan"
+  | "damage"
   | "inss"
   | "irrf"
-  | "advance"
-  | "absence"
-  | "fgts"
-  | "discount"
+  | "union_fee"
   | "other";
 
 export type TimeClockEntryType =
@@ -578,13 +581,12 @@ export const ALLOWANCE_STATUS_CONFIG: Record<
 };
 
 export const ALLOWANCE_TYPE_LABELS: Record<AllowanceType, string> = {
+  food: "Vale Alimentação",
   meal: "Vale Refeição",
   transport: "Vale Transporte",
-  health: "Plano de Saúde",
-  education: "Bolsa Educação",
   fuel: "Vale Combustível",
-  housing: "Auxílio Moradia",
-  clothing: "Uniforme / EPI",
+  health: "Plano de Saúde",
+  dental: "Plano Odontológico",
   other: "Outro",
 };
 
@@ -598,12 +600,14 @@ export const BONUS_TYPE_LABELS: Record<BonusType, string> = {
 };
 
 export const DEDUCTION_TYPE_LABELS: Record<DeductionType, string> = {
+  absence: "Falta",
+  late: "Atraso",
+  advance: "Adiantamento",
+  loan: "Empréstimo",
+  damage: "Dano/Avaria",
   inss: "INSS",
   irrf: "IRRF",
-  advance: "Adiantamento",
-  absence: "Falta",
-  fgts: "FGTS",
-  discount: "Desconto",
+  union_fee: "Contribuição Sindical",
   other: "Outro",
 };
 

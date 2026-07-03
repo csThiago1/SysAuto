@@ -31,7 +31,7 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
   });
 
   const deductions = data?.results ?? [];
-  const total = deductions.reduce((s, d) => s + (d.amount ?? 0), 0);
+  const total = deductions.reduce((s, d) => s + Number(d.amount ?? 0), 0);
 
   const handleDiscountTypeChange = (value: "fixed" | "percentage"): void => {
     setDiscountType(value);
@@ -235,7 +235,7 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
                   {d.discount_type === "percentage" && d.rate !== null
                     ? `${d.rate}% do salário`
                     : d.amount !== null
-                    ? fmt.format(d.amount)
+                    ? fmt.format(Number(d.amount))
                     : "—"}
                 </span>
               </div>

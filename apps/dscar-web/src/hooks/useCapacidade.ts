@@ -8,12 +8,14 @@ import type {
   MotorHealthcheck,
   ProximaDataDisponivel,
   UtilizacaoCapacidade,
-  VarianciaFicha,
-  VarianciaPecaCusto,
 } from "@paddock/types"
 
 import { apiFetch, fetchList } from "@/lib/api"
 import type { ApiSchema } from "@/types"
+
+// Gerados dos serializers Django (match 1:1 verificado).
+export type VarianciaFicha = ApiSchema<"VarianciaFicha">
+export type VarianciaPecaCusto = ApiSchema<"VarianciaPecaCusto">
 
 // Gerados dos serializers Django. Os tipos de cálculo (Utilizacao,
 // Heatmap etc.) ficam manuais — backend responde OBJECT dinâmico.

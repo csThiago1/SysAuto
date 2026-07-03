@@ -6,8 +6,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   AliasMatch,
   AliasServico,
-  CategoriaMaoObra,
-  CategoriaServico,
   Fornecedor,
   InsumoMaterial,
   MaterialCanonico,
@@ -17,6 +15,11 @@ import type {
 
 import { apiFetch, fetchList } from "@/lib/api"
 import { useCreate, useUpdate } from "@/lib/crud-mutations"
+import type { ApiSchema } from "@/types"
+
+// Gerados dos serializers Django (match 1:1 verificado).
+export type CategoriaMaoObra = ApiSchema<"CategoriaMaoObra">
+export type CategoriaServico = ApiSchema<"CategoriaServico">
 
 const BASE = "/api/proxy/pricing/catalog"
 

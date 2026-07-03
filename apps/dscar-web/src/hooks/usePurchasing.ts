@@ -7,21 +7,24 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   AdicionarItemOCInput,
-  AprovacaoCotacao,
-  CondicaoPagamento,
-  CotacaoLog,
   DashboardComprasStats,
   DestinoEntrega,
-  ItemOrdemCompra,
   OrdemCompra,
   OrdemCompraDetail,
-  PedidoCompra,
-  PrazoEntrega,
-  RespostaCotacao,
   SupplierWithContacts,
 } from "@paddock/types"
 import { apiFetch, fetchList } from "@/lib/api"
 import { useCreate } from "@/lib/crud-mutations"
+import type { ApiSchema } from "@/types"
+
+// Gerados dos serializers Django (match 1:1 verificado).
+export type AprovacaoCotacao = ApiSchema<"AprovacaoCotacao">
+export type CondicaoPagamento = ApiSchema<"CondicaoPagamento">
+export type CotacaoLog = ApiSchema<"CotacaoLog">
+export type ItemOrdemCompra = ApiSchema<"ItemOrdemCompra">
+export type PedidoCompra = ApiSchema<"PedidoCompra">
+export type PrazoEntrega = ApiSchema<"PrazoEntrega">
+export type RespostaCotacao = ApiSchema<"RespostaCotacao">
 
 const PURCHASING = "/api/proxy/purchasing"
 

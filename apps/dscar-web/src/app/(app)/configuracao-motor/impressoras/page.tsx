@@ -10,12 +10,15 @@ import {
   useImpressoraDelete,
   useTestarImpressora,
 } from "@/hooks/useInventory"
-import type { ImpressoraEtiqueta, ModeloImpressora } from "@paddock/types"
+import type { ModeloImpressora } from "@paddock/types"
+import type { ImpressoraEtiqueta } from "@/hooks/useInventory"
 
 const MODELOS: { value: ModeloImpressora; label: string }[] = [
-  { value: "zebra_zpl", label: "Zebra ZPL" },
-  { value: "bixolon_spp", label: "Bixolon SPP" },
-  { value: "brother_ql", label: "Brother QL" },
+  { value: "zebra_gk420", label: "Zebra GK420t" },
+  { value: "zebra_zd220", label: "Zebra ZD220" },
+  { value: "argox_os214", label: "Argox OS-214" },
+  { value: "elgin_l42", label: "Elgin L42" },
+  { value: "outro", label: "Outro" },
 ]
 
 function ImpressoraRow({ impressora }: { impressora: ImpressoraEtiqueta }) {
@@ -88,7 +91,7 @@ export default function ImpressorasPage() {
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({
     nome: "",
-    modelo: "zebra_zpl" as ModeloImpressora,
+    modelo: "zebra_gk420" as ModeloImpressora,
     endpoint: "",
     largura_mm: 100,
     altura_mm: 50,
@@ -100,7 +103,7 @@ export default function ImpressorasPage() {
       await createMutation.mutateAsync(form)
       toast.success("Impressora cadastrada.")
       setShowForm(false)
-      setForm({ nome: "", modelo: "zebra_zpl", endpoint: "", largura_mm: 100, altura_mm: 50 })
+      setForm({ nome: "", modelo: "zebra_gk420", endpoint: "", largura_mm: 100, altura_mm: 50 })
     } catch {
       toast.error("Erro ao cadastrar impressora.")
     }

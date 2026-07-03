@@ -4,14 +4,11 @@
  */
 import { useMutation, useQuery } from "@tanstack/react-query"
 import type {
-  CustoHoraFallback,
   CustoHoraFallbackCreate,
   CustoHoraResult,
   DebugCustoHoraInput,
   DebugRateioInput,
-  ParametroCustoHora,
   ParametroCustoHoraCreate,
-  ParametroRateio,
   ParametroRateioCreate,
   PaginatedResponse,
   RateioResult,
@@ -19,6 +16,12 @@ import type {
 
 import { apiFetch } from "@/lib/api"
 import { useCreate, useDelete, useUpdate } from "@/lib/crud-mutations"
+import type { ApiSchema } from "@/types"
+
+// Gerados dos serializers Django (match 1:1 verificado).
+export type CustoHoraFallback = ApiSchema<"CustoHoraFallback">
+export type ParametroCustoHora = ApiSchema<"ParametroCustoHora">
+export type ParametroRateio = ApiSchema<"ParametroRateio">
 
 const ENGINE_API = "/api/proxy/pricing/engine"
 

@@ -9,18 +9,21 @@ import type {
   BaixaInsumoInput,
   BipagemInput,
   GerarEstoqueResult,
-  ImpressoraEtiqueta,
   LoteInsumo,
   NFeEntrada,
   NFeEntradaCreateInput,
-  NFeEntradaDetail,
-  NFeEntradaItem,
   ReconciliarItemInput,
   ReservaInput,
   UnidadeFisica,
   UnidadeFisicaDetail,
 } from "@paddock/types"
 import { apiFetch, fetchList } from "@/lib/api"
+import type { ApiSchema } from "@/types"
+
+// Gerados dos serializers Django (match 1:1 verificado).
+export type ImpressoraEtiqueta = ApiSchema<"ImpressoraEtiqueta">
+export type NFeEntradaDetail = ApiSchema<"NFeEntradaDetail">
+export type NFeEntradaItem = ApiSchema<"NFeEntradaItem">
 
 const INV = "/api/proxy/inventory"
 const FISCAL = "/api/proxy/fiscal"

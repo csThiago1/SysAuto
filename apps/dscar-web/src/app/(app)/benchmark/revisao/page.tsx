@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { useAmostrasPendentes, useAceitarMatch, useDescartarAmostra } from "@/hooks/useBenchmark"
 import { useServicosCanonico, usePecasCanonicas } from "@/hooks/usePricingCatalog"
-import type { BenchmarkAmostra } from "@paddock/types"
+import type { BenchmarkAmostra } from "@/hooks/useBenchmark"
 
 export default function BenchmarkRevisaoPage() {
   const { data: pendentes = [], isLoading } = useAmostrasPendentes()

@@ -2,10 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
-  BenchmarkAmostra,
   BenchmarkEstatisticas,
-  BenchmarkFonte,
-  BenchmarkIngestao,
   SugestaoIA,
   SugestaoIACreatePayload,
   SugestaoIAResponse,
@@ -13,6 +10,12 @@ import type {
 
 import { apiFetch, fetchList } from "@/lib/api"
 import { useCreate } from "@/lib/crud-mutations"
+import type { ApiSchema } from "@/types"
+
+// Gerados dos serializers Django (match 1:1 verificado).
+export type BenchmarkAmostra = ApiSchema<"BenchmarkAmostra">
+export type BenchmarkFonte = ApiSchema<"BenchmarkFonte">
+export type BenchmarkIngestao = ApiSchema<"BenchmarkIngestao">
 
 const BASE = "/api/proxy/pricing"
 

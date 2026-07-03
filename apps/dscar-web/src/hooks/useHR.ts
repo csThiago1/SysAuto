@@ -9,31 +9,34 @@ import type {
   PaginatedResponse,
   Employee,
   EmployeeListItem,
-  EmployeeDocument,
-  SalaryHistory,
   CreateEmployeePayload,
   UpdateEmployeePayload,
   CreateSalaryHistoryPayload,
   DailySummary,
-  TimeClockEntry,
   RegisterClockPayload,
-  GoalTarget,
   CreateGoalPayload,
-  Allowance,
   CreateAllowancePayload,
-  Bonus,
   CreateBonusPayload,
-  Deduction,
   CreateDeductionPayload,
-  WorkSchedule,
   Payslip,
   GeneratePayslipPayload,
-  Vacation,
   CreateVacationPayload,
   VacationBalance,
   PJPaymentPayload,
-} from "@paddock/types";
+} from "@paddock/types"
 import { apiFetch } from "@/lib/api";
+import type { ApiSchema } from "@/types"
+
+// Gerados dos serializers Django (match 1:1 verificado).
+export type EmployeeDocument = ApiSchema<"EmployeeDocument">
+export type SalaryHistory = ApiSchema<"SalaryHistory">
+export type TimeClockEntry = ApiSchema<"TimeClockEntry">
+export type GoalTarget = ApiSchema<"GoalTarget">
+export type Allowance = ApiSchema<"Allowance">
+export type Bonus = ApiSchema<"Bonus">
+export type Deduction = ApiSchema<"Deduction">
+export type WorkSchedule = ApiSchema<"WorkSchedule">
+export type Vacation = ApiSchema<"Vacation">
 
 const API = "/api/proxy/hr";
 

@@ -70,7 +70,8 @@ export interface BaixaInsumoInput {
 
 // ─── Impressora de Etiqueta ───────────────────────────────────────────────────
 
-export type ModeloImpressora = 'zebra_zpl' | 'bixolon_spp' | 'brother_ql'
+// Espelha MODELO_CHOICES do backend (inventory/models_label.py).
+export type ModeloImpressora = 'zebra_gk420' | 'zebra_zd220' | 'argox_os214' | 'elgin_l42' | 'outro'
 
 export interface ImpressoraEtiqueta {
   id: string

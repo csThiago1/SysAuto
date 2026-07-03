@@ -4,7 +4,13 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
-import type { PaginatedResponse, Person, PersonRole } from "@paddock/types";
+import type {
+  PaginatedResponse,
+  Person,
+  // ponytail: PersonRole fica manual — o schema gerado "PersonRole" é o
+  // serializer nested {id, role}, não o union de roles usado como query param.
+  PersonRole,
+} from "@paddock/types"
 import { apiFetch } from "@/lib/api";
 
 export interface UsePersonsParams {

@@ -4,8 +4,15 @@
  */
 
 import { useQuery } from "@tanstack/react-query"
-import type { VehicleMake, VehicleModel, VehicleYearVersion } from "@paddock/types"
+import type {
+  VehicleYearVersion,
+} from "@paddock/types"
 import { fetchList } from "@/lib/api"
+import type { ApiSchema } from "@/types"
+
+// Gerados dos serializers Django (match 1:1 verificado).
+export type VehicleMake = ApiSchema<"VehicleMake">
+export type VehicleModel = ApiSchema<"VehicleModel">
 
 const FIPE_BASE = "/api/proxy/vehicle-catalog"
 

@@ -13,7 +13,8 @@ import {
   useAprovacoes,
   useEnviarParaAprovacao,
 } from "@/hooks/usePurchasing"
-import type { AprovacaoCotacao, PedidoCompra, RespostaCotacao, StatusPedidoCompra } from "@paddock/types"
+import type { StatusPedidoCompra } from "@paddock/types"
+import type { AprovacaoCotacao, PedidoCompra, RespostaCotacao } from "@/hooks/usePurchasing"
 import { QuotationBuilder } from "@/components/purchasing/QuotationBuilder"
 import { RespostaForm } from "@/components/purchasing/RespostaForm"
 
@@ -49,7 +50,7 @@ function ComparativoTable({
   respostas: RespostaCotacao[]
 }) {
   const uniqueSuppliers = useMemo(() => {
-    const map = new Map<string, string>()
+    const map = new Map<number, string>()
     for (const r of respostas) {
       map.set(r.supplier, r.supplier_name)
     }
@@ -170,14 +171,18 @@ export default function CotacaoOSPage({ params }: { params: Promise<{ osId: stri
   async function handleIniciarTodos() {
     const solicitados = pedidos?.filter((p) => p.status === "solicitado") ?? []
     if (!solicitados.length) return
-    try {
-      for (const p of solicitados) {
+    let ok = 0
+    let falhas = 0
+    for (const p of solicitados) {
+      try {
         await iniciarCotacao.mutateAsync(p.id)
+        ok++
+      } catch {
+        falhas++
       }
-      toast.success(`${solicitados.length} pedido(s) em cotacao.`)
-    } catch {
-      toast.error("Erro ao iniciar cotacao. Tente novamente.")
     }
+    if (ok) toast.success(`${ok} pedido(s) em cotacao.`)
+    if (falhas) toast.error(`${falhas} pedido(s) falharam. Tente novamente.`)
   }
 
   async function handleEnviarParaAprovacao() {

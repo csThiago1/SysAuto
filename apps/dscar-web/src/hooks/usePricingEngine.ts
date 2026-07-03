@@ -6,7 +6,6 @@ import { useMutation, useQuery } from "@tanstack/react-query"
 import type {
   CalcularPecaInput,
   CalcularServicoInput,
-  MargemOperacao,
   MargemOperacaoCreate,
   MarkupPeca,
   MarkupPecaCreate,
@@ -20,6 +19,10 @@ import type {
 
 import { apiFetch, fetchList } from "@/lib/api"
 import { useCreate, useDelete } from "@/lib/crud-mutations"
+import type { ApiSchema } from "@/types"
+
+// Gerados dos serializers Django (match 1:1 verificado).
+export type MargemOperacao = ApiSchema<"MargemOperacao">
 
 const ENGINE_API = "/api/proxy/pricing/engine"
 

@@ -12,11 +12,14 @@ import type {
   RecordPaymentPayload,
   Supplier,
   ReceivableDocumentListItem,
-  ReceivableDocument,
   CreateReceivablePayload,
   RecordReceiptPayload,
-} from "@paddock/types";
+} from "@paddock/types"
 import { apiFetch, fetchList } from "@/lib/api";
+import type { ApiSchema } from "@/types"
+
+// Gerados dos serializers Django (match 1:1 verificado).
+export type ReceivableDocument = ApiSchema<"ReceivableDocument">
 
 const AP = "/api/proxy/accounts-payable";
 const AR = "/api/proxy/accounts-receivable";
