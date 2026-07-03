@@ -4,17 +4,18 @@
  * Armazem, Rua, Prateleira, Nivel
  */
 import { useQuery } from "@tanstack/react-query"
-import type {
-  Armazem,
-  Nivel,
-  NivelConteudo,
-  OcupacaoRua,
-  Prateleira,
-  Rua,
-} from "@paddock/types"
+import type { NivelConteudo, OcupacaoRua } from "@paddock/types"
 
 import { apiFetch, fetchList } from "@/lib/api"
 import { useCreate, useDelete, useUpdate } from "@/lib/crud-mutations"
+import type { ApiSchema } from "@/types"
+
+// Gerados dos ModelSerializers. NivelConteudo/OcupacaoRua ficam
+// manuais (actions custom sem serializer dedicado).
+export type Armazem = ApiSchema<"Armazem">
+export type Rua = ApiSchema<"Rua">
+export type Prateleira = ApiSchema<"Prateleira">
+export type Nivel = ApiSchema<"Nivel">
 
 const INV = "/api/proxy/inventory"
 

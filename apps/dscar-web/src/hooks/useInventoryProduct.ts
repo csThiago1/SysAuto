@@ -5,16 +5,17 @@
  * ProdutoComercialInsumo
  */
 import { useQuery } from "@tanstack/react-query"
-import type {
-  CategoriaInsumo,
-  CategoriaProduto,
-  ProdutoComercialInsumo,
-  ProdutoComercialPeca,
-  TipoPeca,
-} from "@paddock/types"
 
 import { apiFetch, fetchList } from "@/lib/api"
 import { useCreate, useDelete, useUpdate } from "@/lib/crud-mutations"
+import type { ApiSchema } from "@/types"
+
+// Gerados dos ModelSerializers de inventory (produtos comerciais).
+export type TipoPeca = ApiSchema<"TipoPeca">
+export type CategoriaProduto = ApiSchema<"CategoriaProduto">
+export type CategoriaInsumo = ApiSchema<"CategoriaInsumo">
+export type ProdutoComercialPeca = ApiSchema<"ProdutoComercialPeca">
+export type ProdutoComercialInsumo = ApiSchema<"ProdutoComercialInsumo">
 
 const INV = "/api/proxy/inventory"
 
