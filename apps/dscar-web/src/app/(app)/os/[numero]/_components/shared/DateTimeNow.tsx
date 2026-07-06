@@ -32,17 +32,18 @@ export const DateTimeNow = forwardRef<HTMLInputElement, DateTimeNowProps>(
 
     return (
       <div>
-        <div className="flex gap-1">
+        <div className="flex gap-1.5">
           <input
             ref={ref}
             type="datetime-local"
             className={cn(
-              "flex h-8 w-full rounded-md border bg-background px-2.5 py-1 text-sm",
-              "shadow-sm transition-colors placeholder:text-muted-foreground",
-              "focus-visible:outline-none focus-visible:ring-1",
+              "flex h-9 w-full min-w-0 rounded-lg border bg-muted/30 px-3 py-1 text-sm",
+              "transition-colors placeholder:text-muted-foreground/50",
+              "hover:border-muted-foreground/30",
+              "focus-visible:outline-none focus-visible:ring-2",
               error
-                ? "border-error-500 focus-visible:ring-red-500"
-                : "border-input focus-visible:ring-ring",
+                ? "border-error-500 focus-visible:ring-error-500/40"
+                : "border-input focus-visible:ring-ring/40 focus-visible:border-ring",
               "disabled:cursor-not-allowed disabled:opacity-50",
               className
             )}
@@ -52,7 +53,7 @@ export const DateTimeNow = forwardRef<HTMLInputElement, DateTimeNowProps>(
           <button
             type="button"
             onClick={handleSetNow}
-            className="shrink-0 h-8 rounded-md border border-border bg-muted/50 px-2 text-xs font-medium text-foreground/60 hover:bg-muted/30 transition-colors"
+            className="shrink-0 h-9 rounded-lg border border-border bg-muted/40 px-2.5 text-xs font-medium text-foreground/60 hover:bg-muted/70 hover:text-foreground transition-colors"
             title="Preencher com agora"
           >
             Agora

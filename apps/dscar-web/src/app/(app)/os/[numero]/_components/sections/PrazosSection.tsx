@@ -3,8 +3,9 @@
 import { useEffect } from "react"
 import { Controller, type UseFormReturn } from "react-hook-form"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
-import { FORM_SECTION_TITLE, FORM_SUBSECTION, FORM_LABEL, FORM_INPUT, FORM_INPUT_ERROR, FORM_HINT, FORM_ERROR, FORM_WARN } from "@paddock/utils"
+import { FORM_SECTION_TITLE, FORM_SUBSECTION, FORM_INPUT, FORM_INPUT_ERROR, FORM_ERROR } from "@paddock/utils"
 import { DateTimeNow } from "../shared/DateTimeNow"
+import { FieldLabel } from "../shared/FieldLabel"
 import { cn } from "@/lib/utils"
 
 interface PrazosSectionProps {
@@ -30,15 +31,17 @@ export function PrazosSection({ form }: PrazosSectionProps) {
   }, [entryDate, repairDays, setValue])
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-3 border-b pb-1.5">
+    <div className="space-y-3">
+      <div className="flex items-center gap-3 border-b pb-2">
         <span className={FORM_SECTION_TITLE}>Agendamentos</span>
       </div>
 
       {/* ── 1. Agendamentos lado a lado ──────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
         <div>
-          <label className={FORM_LABEL}>Data de Agendamento</label>
+          <FieldLabel statusHint="Preencher muda o status → Vistoria Inicial">
+            Data de Agendamento
+          </FieldLabel>
           <Controller
             name="scheduling_date"
             control={control}
@@ -51,10 +54,11 @@ export function PrazosSection({ form }: PrazosSectionProps) {
               />
             )}
           />
-          <p className={FORM_WARN}>Muda status → Vistoria Inicial</p>
         </div>
         <div>
-          <label className={FORM_LABEL}>Previsão de Entrega</label>
+          <FieldLabel hint="Data planejada para conclusão do reparo">
+            Previsão de Entrega
+          </FieldLabel>
           <Controller
             name="delivery_date"
             control={control}
@@ -67,15 +71,14 @@ export function PrazosSection({ form }: PrazosSectionProps) {
               />
             )}
           />
-          <p className={FORM_HINT}>Data planejada para conclusão do reparo</p>
         </div>
       </div>
 
       {/* ── 2. Previsão (auto-calculada) ─────────────────────────────── */}
       <p className={FORM_SUBSECTION}>Previsão de reparo</p>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
         <div>
-          <label className={FORM_LABEL}>Dias de reparo</label>
+          <FieldLabel>Dias de reparo</FieldLabel>
           <input
             className={cn(errors.repair_days ? FORM_INPUT_ERROR : FORM_INPUT)}
             type="number"
@@ -88,22 +91,25 @@ export function PrazosSection({ form }: PrazosSectionProps) {
           )}
         </div>
         <div>
-          <label className={FORM_LABEL}>Previsão de Entrega (calculada)</label>
+          <FieldLabel hint="Calculada automaticamente: entrada + dias de reparo">
+            Previsão de Entrega (calculada)
+          </FieldLabel>
           <input
-            className={`${FORM_INPUT} bg-muted/30 cursor-default`}
+            className={`${FORM_INPUT} cursor-default opacity-70`}
             type="date"
             readOnly
             {...register("estimated_delivery_date")} aria-invalid={!!errors.estimated_delivery_date}
           />
-          <p className={FORM_HINT}>Calculada automaticamente: entrada + dias de reparo</p>
         </div>
       </div>
 
       {/* ── 3. Registros automáticos (disparam status ao serem preenchidos) */}
       <p className={FORM_SUBSECTION}>Registros automáticos de status</p>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
         <div>
-          <label className={FORM_LABEL}>Vistoria final</label>
+          <FieldLabel statusHint="Preencher muda o status → Vistoria Final">
+            Vistoria final
+          </FieldLabel>
           <Controller
             name="final_survey_date"
             control={control}
@@ -116,12 +122,11 @@ export function PrazosSection({ form }: PrazosSectionProps) {
               />
             )}
           />
-          {!errors.final_survey_date && (
-            <p className={FORM_WARN}>Muda status → Vistoria Final</p>
-          )}
         </div>
         <div>
-          <label className={FORM_LABEL}>Data de Retirada pelo Cliente</label>
+          <FieldLabel statusHint="Preencher muda o status → Entregue">
+            Data de Retirada pelo Cliente
+          </FieldLabel>
           <Controller
             name="client_delivery_date"
             control={control}
@@ -134,9 +139,6 @@ export function PrazosSection({ form }: PrazosSectionProps) {
               />
             )}
           />
-          {!errors.client_delivery_date && (
-            <p className={FORM_WARN}>Muda status → Entregue</p>
-          )}
         </div>
       </div>
     </div>

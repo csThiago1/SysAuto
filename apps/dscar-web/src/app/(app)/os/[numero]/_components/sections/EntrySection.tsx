@@ -5,6 +5,7 @@ import { CheckCircle2 } from "lucide-react"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import { FORM_SECTION_TITLE, FORM_LABEL, FORM_INPUT, FORM_INPUT_ERROR, FORM_ERROR, FORM_WARN } from "@paddock/utils"
 import { DateTimeNow } from "../shared/DateTimeNow"
+import { FieldLabel } from "../shared/FieldLabel"
 import { NativeSelect } from "@/components/ui/native-select"
 import { cn } from "@/lib/utils"
 
@@ -27,9 +28,11 @@ export function EntrySection({ form, order }: EntrySectionProps) {
       </div>
 
       {/* Linha 1: Data (2/4) | KM (1/4) | Local (1/4) */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-3">
         <div className="col-span-2">
-          <label className={FORM_LABEL}>Data / hora entrada</label>
+          <FieldLabel statusHint="Preencher muda o status da OS">
+            Data / hora entrada
+          </FieldLabel>
           <Controller
             name="entry_date"
             control={control}
@@ -42,9 +45,6 @@ export function EntrySection({ form, order }: EntrySectionProps) {
               />
             )}
           />
-          {!errors.entry_date && (
-            <p className={FORM_WARN}>Preencher muda status</p>
-          )}
         </div>
         <div>
           <label className={FORM_LABEL}>KM entrada <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
@@ -80,7 +80,7 @@ export function EntrySection({ form, order }: EntrySectionProps) {
       </div>
 
       {/* Linha 2: Autorização */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-3">
         <div>
           <label className={FORM_LABEL}>Autorização do serviço</label>
           <Controller
