@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PIPELINE_PHASES, currentPhaseIndex } from "./pipeline"
 import { OverviewSection } from "./OverviewSection"
-import { DadosSection } from "./DadosSection"
+import { DadosWorkspace } from "./dados/DadosWorkspace"
 import { PartsTab } from "../_components/tabs/PartsTab"
 import { ServicesTab } from "../_components/tabs/ServicesTab"
 
@@ -235,7 +235,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
 
         <main className="min-w-0 flex-1 px-5 py-5">
           {section === "overview" && <OverviewSection order={order} onNavigate={(s) => setSection(s as SectionId)} />}
-          {section === "dados" && <DadosSection order={order} />}
+          {section === "dados" && <DadosWorkspace order={order} />}
           {section === "parts" && <PartsTab orderId={order.id} />}
           {section === "services" && <ServicesTab osId={order.id} osStatus={status} />}
 

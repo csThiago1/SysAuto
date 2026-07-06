@@ -11,7 +11,6 @@ import {
 } from "../../_hooks/useCustomerSearch"
 import { useDebounce } from "@/hooks/useDebounce"
 import { useCepLookup } from "@/hooks"
-import { formatPhone } from "@/components/ui/masked-input"
 
 const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-muted-foreground"
 const LABEL = "block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-0.5"
@@ -116,11 +115,22 @@ interface PersonInfoPanelProps {
   onPersonDataChange?: (data: PersonPatch | null) => void
 }
 
+const PHONE_TYPES = ["WHATSAPP", "CELULAR", "COMERCIAL", "PHONE"] as const
+
+function findPhoneContact(contacts: { contact_type: string; value: string; is_primary: boolean }[]) {
+  for (const type of PHONE_TYPES) {
+    const found = contacts.find((c) => c.contact_type === type)
+    if (found?.value) return found
+  }
+  return null
+}
+
 function PersonInfoPanel({ personId, customerName, onPersonDataChange }: PersonInfoPanelProps) {
   const { data: person, isLoading } = usePersonDetail(personId)
   const cepLookup = useCepLookup()
 
   const [email, setEmail] = useState("")
+  const [phoneValue, setPhoneValue] = useState("")
   const [addr, setAddr] = useState({
     zip_code: "", street: "", number: "", complement: "", neighborhood: "", city: "", state: "",
   })
@@ -130,6 +140,7 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange }: PersonI
     if (!person) return
     const existingEmail = person.contacts.find((c) => c.contact_type === "EMAIL")?.value ?? ""
     setEmail(existingEmail)
+    setPhoneValue(findPhoneContact(person.contacts)?.value ?? "")
     const primary = person.addresses.find((a) => a.is_primary) ?? person.addresses[0]
     if (primary) {
       setAddr({
@@ -144,10 +155,12 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange }: PersonI
     }
   }, [person?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function buildPatch(newEmail: string, newAddr: typeof addr): PersonPatch | null {
+  function buildPatch(newEmail: string, newAddr: typeof addr, newPhone: string): PersonPatch | null {
     if (!person) return null
 
     const origEmail = person.contacts.find((c) => c.contact_type === "EMAIL")?.value ?? ""
+    const origPhoneContact = findPhoneContact(person.contacts)
+    const origPhone = origPhoneContact?.value ?? ""
     const primary = person.addresses.find((a) => a.is_primary) ?? person.addresses[0]
     const origAddr = {
       zip_code: primary?.zip_code ?? "",
@@ -160,17 +173,26 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange }: PersonI
     }
 
     const emailChanged = newEmail !== origEmail
+    const phoneChanged = newPhone !== origPhone
     const addrChanged = (Object.keys(newAddr) as Array<keyof typeof newAddr>).some(
       (k) => newAddr[k] !== origAddr[k]
     )
 
-    if (!emailChanged && !addrChanged) return null
+    if (!emailChanged && !addrChanged && !phoneChanged) return null
 
+    const phoneType = origPhoneContact?.contact_type ?? "CELULAR"
     const contacts = person.contacts
-      .filter((c) => c.contact_type !== "EMAIL")
+      .filter((c) => c.contact_type !== "EMAIL" && c.contact_type !== phoneType)
       .map((c) => ({ contact_type: c.contact_type, value: c.value, is_primary: c.is_primary }))
     if (newEmail) {
       contacts.push({ contact_type: "EMAIL", value: newEmail, is_primary: false })
+    }
+    if (newPhone) {
+      contacts.push({
+        contact_type: phoneType,
+        value: newPhone,
+        is_primary: origPhoneContact?.is_primary ?? true,
+      })
     }
 
     const addresses = [{ address_type: "RESIDENTIAL", ...newAddr, is_primary: true }]
@@ -180,13 +202,18 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange }: PersonI
 
   function handleEmailChange(value: string) {
     setEmail(value)
-    onPersonDataChange?.(buildPatch(value, addr))
+    onPersonDataChange?.(buildPatch(value, addr, phoneValue))
+  }
+
+  function handlePhoneChange(value: string) {
+    setPhoneValue(value)
+    onPersonDataChange?.(buildPatch(email, addr, value))
   }
 
   function handleAddrChange(field: keyof typeof addr, value: string) {
     const newAddr = { ...addr, [field]: field === "state" ? value.toUpperCase() : value }
     setAddr(newAddr)
-    onPersonDataChange?.(buildPatch(email, newAddr))
+    onPersonDataChange?.(buildPatch(email, newAddr, phoneValue))
   }
 
   async function handleCepBlur(value: string) {
@@ -204,14 +231,9 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange }: PersonI
         complement: d.complement || addr.complement,
       }
       setAddr(newAddr)
-      onPersonDataChange?.(buildPatch(email, newAddr))
+      onPersonDataChange?.(buildPatch(email, newAddr, phoneValue))
     } catch { /* usuário preenche manualmente */ }
   }
-
-  const phoneContact = person?.contacts.find(
-    (c) => c.contact_type === "PHONE" || c.contact_type === "CELULAR"
-  )
-  const phone = phoneContact?.value_masked ?? (phoneContact?.value ? formatPhone(phoneContact.value) : undefined)
 
   if (isLoading) {
     return (
@@ -231,16 +253,21 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange }: PersonI
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        {phone && (
-          <div>
-            <label className={LABEL}>
-              <span className="flex items-center gap-1">
-                <Phone className="h-2.5 w-2.5" /> Telefone
-              </span>
-            </label>
-            <div className={INPUT_READONLY}>{phone}</div>
-          </div>
-        )}
+        <div>
+          <label className={LABEL}>
+            <span className="flex items-center gap-1">
+              <Phone className="h-2.5 w-2.5" /> Telefone / WhatsApp
+            </span>
+          </label>
+          <input
+            type="tel"
+            className={INPUT_EDIT}
+            value={phoneValue}
+            onChange={(e) => handlePhoneChange(e.target.value)}
+            placeholder="(92) 99999-9999"
+            autoComplete="off"
+          />
+        </div>
         <div>
           <label className={LABEL}>
             <span className="flex items-center gap-1">
