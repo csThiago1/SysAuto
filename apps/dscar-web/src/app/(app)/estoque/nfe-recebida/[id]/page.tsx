@@ -15,9 +15,9 @@ const RECONCILIACAO_LABELS: Record<StatusReconciliacao, string> = {
 }
 
 const RECONCILIACAO_COLORS: Record<StatusReconciliacao, string> = {
-  pendente: "text-yellow-400 bg-yellow-400/10",
+  pendente: "text-warning-400 bg-warning-400/10",
   peca: "text-success-400 bg-success-400/10",
-  insumo: "text-blue-400 bg-blue-400/10",
+  insumo: "text-info-400 bg-info-400/10",
   ignorado: "text-muted-foreground bg-muted/50",
 }
 
@@ -137,7 +137,7 @@ export default function NFeEntradaDetailPage({ params }: { params: Promise<{ id:
       </div>
 
       {pendentes > 0 && !nfe.estoque_gerado && (
-        <div className="flex items-center gap-2 text-yellow-400 bg-yellow-400/10 border border-yellow-400/20 rounded-lg px-4 py-3 text-sm">
+        <div className="flex items-center gap-2 text-warning-400 bg-warning-400/10 border border-warning-400/20 rounded-lg px-4 py-3 text-sm">
           <AlertCircle className="h-4 w-4 flex-shrink-0" />
           {pendentes} item{pendentes !== 1 ? "s" : ""} pendente{pendentes !== 1 ? "s" : ""} de reconciliação. Reconcilie todos antes de gerar estoque.
         </div>

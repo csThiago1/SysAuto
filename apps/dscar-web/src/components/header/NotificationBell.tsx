@@ -43,7 +43,7 @@ function OrderItem({ item }: { item: OverdueServiceOrder }): React.ReactElement 
         isOverdue
           ? "bg-error-500/10 border-error-500"
           : isDueToday
-          ? "bg-amber-50 border-amber-500"
+          ? "bg-warning-500/10 border-warning-500"
           : "bg-muted/30 border-border"
       )}
     >
@@ -57,7 +57,7 @@ function OrderItem({ item }: { item: OverdueServiceOrder }): React.ReactElement 
             Vencida há {item.days_overdue} dia{item.days_overdue !== 1 ? "s" : ""}
           </span>
         ) : isDueToday ? (
-          <span className="text-amber-600 font-medium">Entrega hoje</span>
+          <span className="text-warning-400 font-medium">Entrega hoje</span>
         ) : (
           <span className="text-muted-foreground">Em {Math.abs(item.days_overdue)} dias</span>
         )}
@@ -123,7 +123,7 @@ export function NotificationBell(): React.ReactElement {
           </div>
         ) : orders.length === 0 && pendingOverrideCount === 0 ? (
           <div className="px-4 py-6 text-center flex flex-col items-center gap-2">
-            <CheckCircle2 className="h-6 w-6 text-green-500" />
+            <CheckCircle2 className="h-6 w-6 text-success-500" />
             <p className="text-sm text-muted-foreground">Nenhuma OS vencida ou com entrega hoje.</p>
           </div>
         ) : (
@@ -142,7 +142,7 @@ export function NotificationBell(): React.ReactElement {
                 )}
                 {dueToday.length > 0 && (
                   <>
-                    <p className="text-xs font-bold text-amber-600 uppercase tracking-wide mt-2 mb-1 px-1">
+                    <p className="text-xs font-bold text-warning-400 uppercase tracking-wide mt-2 mb-1 px-1">
                       Entregam hoje ({dueToday.length})
                     </p>
                     {dueToday.slice(0, 10).map((o) => (

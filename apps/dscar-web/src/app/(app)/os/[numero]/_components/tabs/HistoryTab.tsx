@@ -84,10 +84,10 @@ function BudgetSnapshotViewer({ snapshot }: { snapshot: BudgetSnapshot }) {
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <div className="mt-2 rounded-lg border border-indigo-500/20 bg-indigo-500/10 overflow-hidden">
+    <div className="mt-2 rounded-lg border border-info-500/20 bg-info-500/10 overflow-hidden">
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center justify-between px-3 py-2 text-xs text-indigo-300 hover:bg-indigo-500/15 transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2 text-xs text-info-300 hover:bg-info-500/15 transition-colors"
       >
         <span className="font-semibold">
           Orçamento v{snapshot.version} — R${" "}
@@ -98,7 +98,7 @@ function BudgetSnapshotViewer({ snapshot }: { snapshot: BudgetSnapshot }) {
 
       {expanded && snapshot.items_snapshot.length > 0 && (
         <div className="px-3 pb-3 space-y-1">
-          <div className="grid grid-cols-[1fr_auto_auto_auto] text-xs text-indigo-300/60 font-medium border-b border-indigo-500/20 pb-1 gap-2">
+          <div className="grid grid-cols-[1fr_auto_auto_auto] text-xs text-info-300/60 font-medium border-b border-info-500/20 pb-1 gap-2">
             <span>Item</span>
             <span className="text-right">Qtd</span>
             <span className="text-right">Unit.</span>
@@ -106,15 +106,15 @@ function BudgetSnapshotViewer({ snapshot }: { snapshot: BudgetSnapshot }) {
           </div>
           {snapshot.items_snapshot.map((item, i) => (
             <div key={i} className="grid grid-cols-[1fr_auto_auto_auto] text-xs gap-2">
-              <span className="truncate text-indigo-200">
-                <span className={cn("inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle", item.type === "part" ? "bg-info-400" : "bg-orange-400")} />
+              <span className="truncate text-info-200">
+                <span className={cn("inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle", item.type === "part" ? "bg-info-400" : "bg-warning-400")} />
                 {item.description}
               </span>
-              <span className="text-right text-indigo-300">{item.quantity}</span>
-              <span className="text-right text-indigo-300">
+              <span className="text-right text-info-300">{item.quantity}</span>
+              <span className="text-right text-info-300">
                 R$ {item.unit_price.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
               </span>
-              <span className="text-right font-medium text-indigo-200">
+              <span className="text-right font-medium text-info-200">
                 R$ {item.total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
               </span>
             </div>

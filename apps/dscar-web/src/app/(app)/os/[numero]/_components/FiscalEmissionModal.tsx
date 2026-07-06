@@ -204,8 +204,8 @@ export function FiscalEmissionModal({
                     </div>
                   </div>
 
-                  <div className="rounded-lg bg-amber-950/30 border border-amber-700/20 p-3 space-y-1 text-xs text-amber-300/70">
-                    <p className="font-medium text-amber-300">Requisitos NF-e</p>
+                  <div className="rounded-lg bg-warning-950/30 border border-warning-700/20 p-3 space-y-1 text-xs text-warning-300/70">
+                    <p className="font-medium text-warning-300">Requisitos NF-e</p>
                     <p>• Todas as peças devem ter NCM de 8 dígitos preenchido</p>
                     <p>• O cliente deve ter CPF/CNPJ e endereço primário cadastrado</p>
                     <p>• Válido para qualquer estado destino (CFOP automático)</p>
@@ -214,7 +214,7 @@ export function FiscalEmissionModal({
               )}
 
               {errorMessage && (
-                <div className="flex items-start gap-2 rounded-lg bg-red-950/50 border border-red-700/40 px-3 py-2.5">
+                <div className="flex items-start gap-2 rounded-lg bg-error-950/50 border border-error-700/40 px-3 py-2.5">
                   <AlertTriangle className="h-4 w-4 text-error-400 mt-0.5 shrink-0" />
                   <p className="text-xs text-error-400">{errorMessage}</p>
                 </div>
@@ -237,7 +237,7 @@ export function FiscalEmissionModal({
                 )}
                 <p>
                   <span className="text-muted-foreground">Status:</span>{" "}
-                  <span className="text-amber-400">Aguardando autorização SEFAZ...</span>
+                  <span className="text-warning-400">Aguardando autorização SEFAZ...</span>
                 </p>
               </div>
               <p className="text-xs text-muted-foreground">

@@ -159,7 +159,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
 
           {/* Error */}
           {previewError && (
-            <div className="flex items-start gap-2 rounded-lg bg-red-950/50 border border-red-700/40 px-3 py-2.5">
+            <div className="flex items-start gap-2 rounded-lg bg-error-950/50 border border-error-700/40 px-3 py-2.5">
               <AlertTriangle className="h-4 w-4 text-error-400 mt-0.5 shrink-0" />
               <p className="text-xs text-error-400">
                 Erro ao carregar preview de faturamento.
@@ -317,7 +317,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
 
               {/* Can't bill warning */}
               {!preview.can_bill && (
-                <div className="flex items-start gap-2 rounded-lg bg-amber-950/30 border border-amber-700/20 px-3 py-2.5">
+                <div className="flex items-start gap-2 rounded-lg bg-warning-950/30 border border-warning-700/20 px-3 py-2.5">
                   <AlertTriangle className="h-4 w-4 text-warning-400 mt-0.5 shrink-0" />
                   <p className="text-xs text-warning-300/80">
                     Esta OS nao pode ser faturada no momento. Verifique se o

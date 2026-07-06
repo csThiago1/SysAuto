@@ -27,8 +27,8 @@ const NEXT_VALID: Record<string | "none", TimeClockEntryType | null> = {
 const BUTTON_COLORS: Record<TimeClockEntryType, string> = {
   clock_in: "bg-success-600 hover:bg-success-700",
   break_start: "bg-warning-500 hover:bg-warning-600",
-  break_end: "bg-blue-600 hover:bg-blue-700",
-  clock_out: "bg-error-600 hover:bg-red-700",
+  break_end: "bg-info-600 hover:bg-info-700",
+  clock_out: "bg-error-600 hover:bg-error-700",
 };
 
 function LiveClock(): React.ReactElement {
@@ -124,14 +124,14 @@ export default function PontoPage(): React.ReactElement {
                   <button
                     onClick={() => handleRegister("break_end")}
                     disabled={register.isPending || !myEmployee}
-                    className="rounded-md bg-blue-600 hover:bg-blue-700 px-6 py-3 text-sm font-semibold text-foreground transition-colors disabled:opacity-50"
+                    className="rounded-md bg-info-600 hover:bg-info-700 px-6 py-3 text-sm font-semibold text-foreground transition-colors disabled:opacity-50"
                   >
                     {CLOCK_ENTRY_LABELS["break_end"]}
                   </button>
                   <button
                     onClick={() => handleRegister("clock_out")}
                     disabled={register.isPending || !myEmployee}
-                    className="rounded-md bg-error-600 hover:bg-red-700 px-6 py-3 text-sm font-semibold text-foreground transition-colors disabled:opacity-50"
+                    className="rounded-md bg-error-600 hover:bg-error-700 px-6 py-3 text-sm font-semibold text-foreground transition-colors disabled:opacity-50"
                   >
                     {CLOCK_ENTRY_LABELS["clock_out"]}
                   </button>
