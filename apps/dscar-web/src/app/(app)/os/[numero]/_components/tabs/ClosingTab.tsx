@@ -91,8 +91,11 @@ export function ClosingTab({ order }: ClosingTabProps) {
     }
   }
 
+  const deliveryBlocked =
+    order.transition_requirements?.delivered?.can_proceed === false
+
   return (
-    <div className="space-y-4 max-w-2xl">
+    <div className="space-y-4 max-w-5xl">
       {/* Closure checklist */}
       {cs && (
         <div className={cn(
@@ -139,22 +142,49 @@ export function ClosingTab({ order }: ClosingTabProps) {
         </div>
       )}
 
-      {/* Deliver CTA — shown when ready */}
+      {/* Deliver CTA — verde só quando não há pendências de entrega */}
       {isReady && (
-        <div className="flex items-center justify-between bg-success-500/10 border border-success-500/20 rounded-xl px-5 py-4">
+        <div
+          className={cn(
+            "flex items-center justify-between rounded-xl border px-5 py-4",
+            deliveryBlocked
+              ? "bg-warning-500/10 border-warning-500/20"
+              : "bg-success-500/10 border-success-500/20",
+          )}
+        >
           <div className="flex items-center gap-2.5">
-            <Truck className="h-5 w-5 text-success-400 shrink-0" />
+            <Truck
+              className={cn(
+                "h-5 w-5 shrink-0",
+                deliveryBlocked ? "text-warning-400" : "text-success-400",
+              )}
+            />
             <div>
-              <p className="text-sm font-semibold text-success-400">Veículo pronto para entrega</p>
-              <p className="text-xs text-success-400/70 mt-0.5">
-                {order.customer_type === "private"
-                  ? "Certifique-se de emitir a nota fiscal antes de entregar."
+              <p
+                className={cn(
+                  "text-sm font-semibold",
+                  deliveryBlocked ? "text-warning-400" : "text-success-400",
+                )}
+              >
+                {deliveryBlocked
+                  ? "Reparo concluído — há pendências antes de entregar"
+                  : "Veículo pronto para entrega"}
+              </p>
+              <p
+                className={cn(
+                  "text-xs mt-0.5",
+                  deliveryBlocked ? "text-warning-400/70" : "text-success-400/70",
+                )}
+              >
+                {deliveryBlocked
+                  ? "Resolva as pendências listadas na Visão Geral (NF, assinatura, KM)."
                   : "Confirme a entrega ao finalizar o atendimento."}
               </p>
             </div>
           </div>
           <Button
             onClick={() => setShowDelivery(true)}
+            disabled={deliveryBlocked}
             className="bg-success-600 hover:bg-success-700 text-foreground shrink-0"
           >
             <Truck className="h-4 w-4 mr-1.5" />
@@ -162,6 +192,9 @@ export function ClosingTab({ order }: ClosingTabProps) {
           </Button>
         </div>
       )}
+
+      <div className="grid gap-4 lg:grid-cols-2 items-start">
+      <div className="space-y-4">
 
       {/* Financial summary */}
       <div className="bg-muted/50 border border-border rounded-xl shadow-sm overflow-hidden">
@@ -234,6 +267,9 @@ export function ClosingTab({ order }: ClosingTabProps) {
           )}
         </div>
       </div>
+
+      </div>
+      <div className="space-y-4">
 
       {/* KM section */}
       <div className="bg-muted/50 border border-border rounded-xl shadow-sm overflow-hidden">
@@ -310,7 +346,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
             </div>
           )}
           {!order.invoice_issued && order.customer_type === "private" && !isCancelled && (
-            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">
+            <p className="text-xs text-warning-400 bg-warning-500/10 border border-warning-500/20 rounded px-3 py-2">
               OS de cliente particular — nota fiscal obrigatória ao entregar.
             </p>
           )}
@@ -328,6 +364,9 @@ export function ClosingTab({ order }: ClosingTabProps) {
 
       {/* Generated documents */}
       <DocumentHistorySection order={order} />
+
+      </div>
+      </div>
 
       {/* Delivery dialog */}
       {showDelivery && (
