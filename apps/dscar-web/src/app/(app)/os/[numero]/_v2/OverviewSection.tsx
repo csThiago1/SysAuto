@@ -8,16 +8,19 @@
 import Link from "next/link"
 import type { Route } from "next"
 import {
+  CalendarClock,
   Car,
   CircleDollarSign,
   ClipboardList,
   ExternalLink,
+  Images,
   User,
   Wrench,
 } from "lucide-react"
-import type { ServiceOrder } from "@paddock/types"
-import { formatCurrency } from "@paddock/utils"
+import type { ServiceOrder, ServiceOrderPhoto } from "@paddock/types"
+import { formatCurrency, formatDate } from "@paddock/utils"
 import { TransitionRequirementsPanel } from "../_components/TransitionRequirementsPanel"
+import { useOSPhotos } from "../_hooks/useOSItems"
 
 interface OverviewSectionProps {
   order: ServiceOrder
@@ -28,6 +31,11 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
   const partsTotal = Number(order.parts_total ?? 0)
   const servicesTotal = Number(order.services_total ?? 0)
   const total = partsTotal + servicesTotal
+
+  const { data: photos = [] } = useOSPhotos(order.id)
+  const recentPhotos = (photos as ServiceOrderPhoto[])
+    .filter((p) => p.is_active && p.url)
+    .slice(0, 4)
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -68,6 +76,22 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
           </InfoCard>
         </div>
 
+        {/* Prazos */}
+        <InfoCard icon={<CalendarClock className="h-4 w-4" />} title="Prazos">
+          <div className="grid grid-cols-3 gap-3">
+            <DateItem label="Entrada" value={formatDate(order.created_at)} />
+            <DateItem
+              label="Previsão de entrega"
+              value={order.delivery_date ? formatDate(order.delivery_date) : "—"}
+              highlight={!!order.delivery_date}
+            />
+            <DateItem
+              label="Retirada"
+              value={order.client_delivery_date ? formatDate(order.client_delivery_date) : "—"}
+            />
+          </div>
+        </InfoCard>
+
         {/* Pendências / transição — motor existente, casca nova */}
         <div className="rounded-xl border border-border bg-card/50">
           <div className="flex items-center gap-2 border-b border-border px-4 py-3">
@@ -98,6 +122,38 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
             </div>
           </div>
         </div>
+
+        {recentPhotos.length > 0 && (
+          <div className="rounded-xl border border-border bg-card/50">
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Images className="h-4 w-4" />
+                <h3 className="text-sm font-medium text-foreground">Fotos</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate("files")}
+                className="text-xs text-primary hover:underline"
+              >
+                Ver todas
+              </button>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5 p-3">
+              {recentPhotos.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => onNavigate("files")}
+                  className="aspect-square overflow-hidden rounded-md border border-border"
+                  aria-label="Abrir arquivos da OS"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={p.url ?? ""} alt={p.caption || "Foto"} className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="rounded-xl border border-border bg-card/50">
           <div className="flex items-center gap-2 border-b border-border px-4 py-3">
@@ -161,6 +217,25 @@ function MoneyRow({
       <span className="text-xs text-muted-foreground">{label}</span>
       <span className="font-mono text-xs text-foreground/80">{formatCurrency(value)}</span>
     </button>
+  )
+}
+
+function DateItem({
+  label,
+  value,
+  highlight = false,
+}: {
+  label: string
+  value: string
+  highlight?: boolean
+}) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className={`mt-0.5 text-sm font-medium ${highlight ? "text-foreground" : "text-foreground/70"}`}>
+        {value}
+      </p>
+    </div>
   )
 }
 

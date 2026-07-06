@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { Camera, ChevronDown, ChevronRight, Images, Loader2, Plus, Trash2, Upload, X } from "lucide-react"
+import { Camera, ChevronDown, ChevronLeft, ChevronRight, Download, Images, Loader2, Plus, Trash2, Upload, X } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import type { OSPhotoFolder, ServiceOrder, ServiceOrderPhoto } from "@paddock/types"
 import { OS_PHOTO_FOLDERS, OS_PHOTO_FOLDER_ORDER } from "@paddock/utils"
@@ -77,7 +77,7 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
               <img src={preview} alt="Preview" className="w-full h-48 object-cover" />
               <button
                 onClick={() => { setSelectedFile(null); setPreview(null) }}
-                className="absolute top-2 right-2 bg-white/80 hover:bg-muted/50 rounded-full p-1 shadow"
+                className="absolute top-2 right-2 bg-background/80 hover:bg-muted/60 rounded-full p-1 shadow"
               >
                 <X className="h-3 w-3 text-foreground/60" />
               </button>
@@ -140,9 +140,10 @@ interface PhotoThumbProps {
   photo: ServiceOrderPhoto
   orderId: string
   canDelete: boolean
+  onOpen: () => void
 }
 
-function PhotoThumb({ photo, orderId, canDelete }: PhotoThumbProps) {
+function PhotoThumb({ photo, orderId, canDelete, onOpen }: PhotoThumbProps) {
   const deleteMutation = useSoftDeletePhoto(orderId)
   const [showDelete, setShowDelete] = useState(false)
 
@@ -150,25 +151,32 @@ function PhotoThumb({ photo, orderId, canDelete }: PhotoThumbProps) {
 
   return (
     <div
-      className="relative rounded-lg overflow-hidden border border-border aspect-square bg-muted/30"
+      className="group relative rounded-lg overflow-hidden border border-border aspect-square bg-muted/30"
       onMouseEnter={() => setShowDelete(true)}
       onMouseLeave={() => setShowDelete(false)}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={photo.url}
-        alt={photo.caption || "Foto OS"}
-        className="w-full h-full object-cover"
-      />
+      <button
+        type="button"
+        onClick={onOpen}
+        className="block h-full w-full cursor-zoom-in"
+        aria-label={photo.caption ? `Ampliar: ${photo.caption}` : "Ampliar foto"}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={photo.url}
+          alt={photo.caption || "Foto OS"}
+          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+        />
+      </button>
       {photo.caption && (
-        <div className="absolute bottom-0 inset-x-0 bg-black/60 px-2 py-1">
-          <p className="text-xs text-foreground truncate">{photo.caption}</p>
+        <div className="pointer-events-none absolute bottom-0 inset-x-0 bg-black/60 px-2 py-1">
+          <p className="text-xs text-white truncate">{photo.caption}</p>
         </div>
       )}
       {canDelete && showDelete && (
         <button
           onClick={() => deleteMutation.mutate(photo.id)}
-          className="absolute top-1.5 right-1.5 bg-muted hover:bg-error-500/10 rounded-full p-1 shadow transition-colors"
+          className="absolute top-1.5 right-1.5 bg-background/80 hover:bg-error-500/20 rounded-full p-1 shadow transition-colors"
           aria-label="Remover foto"
         >
           {deleteMutation.isPending ? (
@@ -179,6 +187,81 @@ function PhotoThumb({ photo, orderId, canDelete }: PhotoThumbProps) {
         </button>
       )}
     </div>
+  )
+}
+
+// ─── Lightbox ─────────────────────────────────────────────────────────────────
+
+interface LightboxProps {
+  photos: ServiceOrderPhoto[]
+  index: number
+  onNavigate: (index: number) => void
+  onClose: () => void
+}
+
+function PhotoLightbox({ photos, index, onNavigate, onClose }: LightboxProps) {
+  const photo = photos[index]
+  if (!photo) return null
+  const hasPrev = index > 0
+  const hasNext = index < photos.length - 1
+
+  return (
+    <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent
+        className="max-w-5xl border-border bg-background/95 p-0 backdrop-blur"
+        onKeyDown={(e) => {
+          if (e.key === "ArrowLeft" && hasPrev) onNavigate(index - 1)
+          if (e.key === "ArrowRight" && hasNext) onNavigate(index + 1)
+        }}
+      >
+        <DialogHeader className="flex-row items-center justify-between border-b border-border px-4 py-2.5">
+          <DialogTitle className="text-sm font-medium text-foreground/80">
+            {photo.caption || "Foto da OS"}
+            <span className="ml-2 font-mono text-xs text-muted-foreground">
+              {index + 1}/{photos.length}
+            </span>
+          </DialogTitle>
+          <a
+            href={photo.url ?? "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mr-6 inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Abrir original
+          </a>
+        </DialogHeader>
+
+        <div className="relative flex max-h-[75vh] min-h-[320px] items-center justify-center bg-black/40">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={photo.url ?? ""}
+            alt={photo.caption || "Foto OS"}
+            className="max-h-[75vh] w-auto max-w-full object-contain"
+          />
+          {hasPrev && (
+            <button
+              type="button"
+              onClick={() => onNavigate(index - 1)}
+              aria-label="Foto anterior"
+              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-background/70 p-2 text-foreground/80 transition-colors hover:bg-background"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+          )}
+          {hasNext && (
+            <button
+              type="button"
+              onClick={() => onNavigate(index + 1)}
+              aria-label="Próxima foto"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-background/70 p-2 text-foreground/80 transition-colors hover:bg-background"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -196,6 +279,7 @@ interface FolderSectionProps {
 function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }: FolderSectionProps) {
   const cfg = OS_PHOTO_FOLDERS[folder]
   const [showUpload, setShowUpload] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const count = photos.length
 
   const IconComponent =
@@ -232,7 +316,7 @@ function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }:
               className={cn(
                 "flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-md transition-colors",
                 cfg.color,
-                "bg-white/80 hover:bg-muted/50 border border-border"
+                "bg-background/70 hover:bg-muted/60 border border-border"
               )}
             >
               <Plus className="h-3 w-3" />
@@ -266,12 +350,13 @@ function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }:
             </div>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-              {photos.map((photo) => (
+              {photos.map((photo, i) => (
                 <PhotoThumb
                   key={photo.id}
                   photo={photo}
                   orderId={orderId}
                   canDelete={canUpload}
+                  onOpen={() => setLightboxIndex(i)}
                 />
               ))}
               {canUpload && (
@@ -296,6 +381,15 @@ function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }:
           orderId={orderId}
           folder={folder}
           onClose={() => setShowUpload(false)}
+        />
+      )}
+
+      {lightboxIndex !== null && (
+        <PhotoLightbox
+          photos={photos}
+          index={lightboxIndex}
+          onNavigate={setLightboxIndex}
+          onClose={() => setLightboxIndex(null)}
         />
       )}
     </div>

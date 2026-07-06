@@ -165,7 +165,8 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: hsl(var(--primary));
+    /* cor de marca é pra ação/estado — labels ficam discretos */
+    color: hsl(var(--muted-foreground));
     line-height: 1;
   }
 
@@ -174,7 +175,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: hsl(var(--primary));
+    color: hsl(var(--foreground) / 0.65);
     font-size: 10px;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     letter-spacing: 0.14em;
