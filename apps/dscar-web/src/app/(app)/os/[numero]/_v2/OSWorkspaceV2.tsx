@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PIPELINE_PHASES, currentPhaseIndex } from "./pipeline"
 import { OverviewSection } from "./OverviewSection"
+import { DadosSection } from "./DadosSection"
 import { PartsTab } from "../_components/tabs/PartsTab"
 import { ServicesTab } from "../_components/tabs/ServicesTab"
 
@@ -51,6 +52,7 @@ const EstoqueTab = lazy(() =>
 
 type SectionId =
   | "overview"
+  | "dados"
   | "parts"
   | "services"
   | "closing"
@@ -62,6 +64,7 @@ type ActivityView = "history" | "notes" | "reminders"
 
 const NAV: { id: SectionId; label: string; icon: React.ReactNode }[] = [
   { id: "overview", label: "Visão Geral", icon: <LayoutDashboard className="h-4 w-4" /> },
+  { id: "dados", label: "Dados", icon: <FileText className="h-4 w-4" /> },
   { id: "parts", label: "Peças", icon: <Package className="h-4 w-4" /> },
   { id: "services", label: "Serviços", icon: <Wrench className="h-4 w-4" /> },
   { id: "closing", label: "Fechamento", icon: <CircleDollarSign className="h-4 w-4" /> },
@@ -232,6 +235,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
 
         <main className="min-w-0 flex-1 px-5 py-5">
           {section === "overview" && <OverviewSection order={order} onNavigate={(s) => setSection(s as SectionId)} />}
+          {section === "dados" && <DadosSection order={order} />}
           {section === "parts" && <PartsTab orderId={order.id} />}
           {section === "services" && <ServicesTab osId={order.id} osStatus={status} />}
 
