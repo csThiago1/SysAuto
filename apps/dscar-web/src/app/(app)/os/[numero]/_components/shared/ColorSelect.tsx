@@ -1,6 +1,7 @@
 "use client"
 
 import { useVehicleColors } from "../../_hooks/useVehicleCatalog"
+import { NativeSelect } from "@/components/ui/native-select"
 
 interface ColorSelectProps {
   value: string
@@ -37,8 +38,8 @@ export function ColorSelect({ value, onChange, disabled }: ColorSelectProps) {
         title={selected?.name ?? "Sem cor"}
       />
 
-      <select
-        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+      <NativeSelect
+        className="w-full"
         value={value}
         disabled={disabled || isLoading}
         onChange={(e) => onChange(e.target.value)}
@@ -53,7 +54,7 @@ export function ColorSelect({ value, onChange, disabled }: ColorSelectProps) {
             {c.name}
           </option>
         ))}
-      </select>
+      </NativeSelect>
     </div>
   )
 }

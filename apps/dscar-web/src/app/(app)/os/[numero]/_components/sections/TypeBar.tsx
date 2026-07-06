@@ -5,9 +5,10 @@ import { Loader2 } from "lucide-react"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import { useConsultants } from "../../_hooks/useStaff"
 
+import { NativeSelect } from "@/components/ui/native-select"
+import { FORM_INPUT } from "@paddock/utils"
+
 const LABEL = "block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-0.5"
-const SELECT =
-  "flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 
 interface TypeBarProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
@@ -59,12 +60,12 @@ export function TypeBar({ form, customerType }: TypeBarProps) {
       {/* Tipo OS */}
       <div className="min-w-[140px]">
         <label className={LABEL}>Tipo OS</label>
-        <select className={SELECT} {...register("os_type")}>
+        <NativeSelect {...register("os_type")}>
           <option value="">Selecionar...</option>
           {OS_TYPES.map((t) => (
             <option key={t.value} value={t.value} title={t.desc}>{t.label} — {t.desc}</option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       {/* Consultor */}
@@ -79,8 +80,7 @@ export function TypeBar({ form, customerType }: TypeBarProps) {
           name="consultant_id"
           control={control}
           render={({ field }) => (
-            <select
-              className={SELECT}
+            <NativeSelect
               value={field.value ?? ""}
               onChange={(e) => field.onChange(e.target.value || null)}
               disabled={loadingConsultants}
@@ -92,7 +92,7 @@ export function TypeBar({ form, customerType }: TypeBarProps) {
                   {c.job_title_display ? ` (${c.job_title_display})` : ""}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           )}
         />
       </div>
@@ -102,7 +102,7 @@ export function TypeBar({ form, customerType }: TypeBarProps) {
         <div>
           <label className={LABEL}>Data orçamento</label>
           <input
-            className={`${SELECT} w-[140px]`}
+            className={`${FORM_INPUT} w-[140px]`}
             type="date"
             {...register("quotation_date")}
           />

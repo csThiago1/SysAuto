@@ -5,11 +5,11 @@ import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schem
 import { InsurerLogo } from "../shared/InsurerSelect"
 import { ExpertCombobox } from "../shared/ExpertCombobox"
 import { useInsurers } from "../../_hooks/useInsurers"
+import { NativeSelect } from "@/components/ui/native-select"
 
 const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-muted-foreground"
 const LABEL = "block text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-0.5"
 const INPUT = "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
-const SELECT = "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
 
 interface InsurerSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
@@ -47,8 +47,7 @@ export function InsurerSection({ form }: InsurerSectionProps) {
                 name="insurer"
                 control={control}
                 render={({ field }) => (
-                  <select
-                    className={SELECT}
+                  <NativeSelect
                     value={field.value ?? ""}
                     onChange={(e) => field.onChange(e.target.value || null)}
                   >
@@ -56,7 +55,7 @@ export function InsurerSection({ form }: InsurerSectionProps) {
                     {insurers.map((ins) => (
                       <option key={ins.id} value={ins.id}>{ins.display_name}</option>
                     ))}
-                  </select>
+                  </NativeSelect>
                 )}
               />
               {errors.insurer && <p className="mt-0.5 text-xs text-error-400">{errors.insurer.message}</p>}
@@ -68,11 +67,11 @@ export function InsurerSection({ form }: InsurerSectionProps) {
                 name="insured_type"
                 control={control}
                 render={({ field }) => (
-                  <select className={SELECT} {...field} value={field.value ?? ""}>
+                  <NativeSelect {...field} value={field.value ?? ""}>
                     <option value="">Selecionar...</option>
                     <option value="insured">Segurado</option>
                     <option value="third">Terceiro</option>
-                  </select>
+                  </NativeSelect>
                 )}
               />
             </div>

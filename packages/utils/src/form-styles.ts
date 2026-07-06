@@ -20,11 +20,15 @@ export const FORM_LABEL =
 
 /** Standard text input / select */
 export const FORM_INPUT =
-  "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+  "flex h-9 w-full rounded-lg border border-input bg-muted/30 px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground/50 hover:border-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring disabled:opacity-50"
 
 /** Input in error state */
 export const FORM_INPUT_ERROR =
-  "flex h-8 w-full rounded-md border border-error-500 bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-error-500 disabled:opacity-50"
+  "flex h-9 w-full rounded-lg border border-error-500 bg-muted/30 px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-error-500/40 disabled:opacity-50"
+
+/** Native select — usar com o wrapper NativeSelect (chevron próprio) */
+export const FORM_SELECT =
+  "flex h-9 w-full appearance-none rounded-lg border border-input bg-muted/30 px-3 pr-8 py-1 text-sm transition-colors hover:border-muted-foreground/30 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring disabled:opacity-50 cursor-pointer"
 
 /** Hint/help text below a field */
 export const FORM_HINT = "mt-0.5 text-xs text-muted-foreground/70 font-mono"

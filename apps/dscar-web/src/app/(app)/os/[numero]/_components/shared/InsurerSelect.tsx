@@ -2,6 +2,7 @@
 
 import { useInsurers } from "../../_hooks/useInsurers"
 import type { Insurer } from "@paddock/types"
+import { NativeSelect } from "@/components/ui/native-select"
 
 interface InsurerSelectProps {
   value: string | null
@@ -44,8 +45,8 @@ export function InsurerSelect({ value, onChange, disabled }: InsurerSelectProps)
   return (
     <div className="flex items-center gap-3">
       <InsurerLogo insurer={selected} />
-      <select
-        className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm font-medium shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+      <NativeSelect
+        className="w-full font-medium"
         value={value ?? ""}
         disabled={disabled || isLoading}
         onChange={(e) => {
@@ -60,7 +61,7 @@ export function InsurerSelect({ value, onChange, disabled }: InsurerSelectProps)
             {ins.display_name}
           </option>
         ))}
-      </select>
+      </NativeSelect>
     </div>
   )
 }

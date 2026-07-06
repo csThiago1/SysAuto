@@ -4,8 +4,10 @@ import { useEffect, useState } from "react"
 import { useFipeMakes, useFipeModels, useFipeYears } from "@/hooks/useVehicleFipe"
 import type { VehicleMake, VehicleModel, VehicleYearVersion } from "@paddock/types"
 
-const SELECT =
-  "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+import { FORM_INPUT } from "@paddock/utils"
+import { NativeSelect } from "@/components/ui/native-select"
+
+const SELECT = `${FORM_INPUT} disabled:cursor-not-allowed`
 
 interface VehicleFipeFieldsProps {
   /** Valores iniciais (vindos da placa ou edição) */
@@ -142,8 +144,7 @@ export function VehicleFipeFields({
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className={labelClass}>Montadora *</label>
-          <select
-            className={SELECT}
+          <NativeSelect
             disabled={makesLoading}
             value={selectedMakeId ?? ""}
             onChange={(e) => {
@@ -159,14 +160,13 @@ export function VehicleFipeFields({
             {makes.map((m) => (
               <option key={m.id} value={m.id}>{m.nome}</option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
 
         {/* Modelo */}
         <div>
           <label className={labelClass}>Modelo *</label>
-          <select
-            className={SELECT}
+          <NativeSelect
             disabled={!selectedMakeId || modelsLoading}
             value={selectedModelId ?? ""}
             onChange={(e) => {
@@ -181,7 +181,7 @@ export function VehicleFipeFields({
             {models.map((m) => (
               <option key={m.id} value={m.id}>{m.nome}</option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
       </div>
 
@@ -191,8 +191,7 @@ export function VehicleFipeFields({
           <label className={labelClass}>
             Ano / Versão <span className="font-normal text-muted-foreground/60">(opcional)</span>
           </label>
-          <select
-            className={SELECT}
+          <NativeSelect
             disabled={yearsLoading}
             value={selectedYearId ?? ""}
             onChange={(e) => {
@@ -208,7 +207,7 @@ export function VehicleFipeFields({
                 {y.ano} — {y.descricao} ({y.combustivel})
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
       )}
 

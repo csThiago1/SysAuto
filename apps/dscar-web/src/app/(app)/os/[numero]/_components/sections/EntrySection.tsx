@@ -5,6 +5,7 @@ import { CheckCircle2 } from "lucide-react"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import { FORM_SECTION_TITLE, FORM_LABEL, FORM_INPUT, FORM_INPUT_ERROR, FORM_ERROR, FORM_WARN } from "@paddock/utils"
 import { DateTimeNow } from "../shared/DateTimeNow"
+import { NativeSelect } from "@/components/ui/native-select"
 import { cn } from "@/lib/utils"
 
 interface EntrySectionProps {
@@ -71,10 +72,10 @@ export function EntrySection({ form, order }: EntrySectionProps) {
         </div>
         <div>
           <label className={FORM_LABEL}>Localização</label>
-          <select className={FORM_INPUT} {...register("vehicle_location")} aria-invalid={!!errors.vehicle_location}>
+          <NativeSelect {...register("vehicle_location")} aria-invalid={!!errors.vehicle_location}>
             <option value="workshop">Na Oficina</option>
             <option value="in_transit">Em Trânsito</option>
-          </select>
+          </NativeSelect>
         </div>
       </div>
 
