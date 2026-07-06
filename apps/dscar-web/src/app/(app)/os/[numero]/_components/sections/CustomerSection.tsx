@@ -195,7 +195,8 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange }: PersonI
       })
     }
 
-    const addresses = [{ address_type: "RESIDENTIAL", ...newAddr, is_primary: true }]
+    // Choices do backend: PRINCIPAL | COBRANCA | ENTREGA — preserva o tipo existente.
+    const addresses = [{ address_type: primary?.address_type ?? "PRINCIPAL", ...newAddr, is_primary: true }]
 
     return { contacts, addresses }
   }
