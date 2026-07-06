@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import type { Route } from "next"
 import { Plus, Pencil, Trash2, Search, Shield, ExternalLink } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -107,9 +108,16 @@ export default function SeguradorasPage() {
       {isLoading ? (
         <TableSkeleton columns={6} rows={6} />
       ) : insurers.length === 0 ? (
-        <div className="py-12 text-center text-sm text-muted-foreground">
-          {search ? "Nenhuma seguradora encontrada." : "Nenhuma seguradora cadastrada."}
-        </div>
+        <EmptyState
+          icon={<Shield className="h-8 w-8" />}
+          title={search ? "Nenhuma seguradora encontrada." : "Nenhuma seguradora cadastrada."}
+          action={!search && (
+            <Button variant="outline" size="sm" onClick={handleNew}>
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Nova Seguradora
+            </Button>
+          )}
+        />
       ) : (
         <div className="overflow-hidden rounded-md border border-border bg-muted/50">
           <Table>

@@ -9,6 +9,7 @@ import { useServiceCatalog } from "@/hooks/useServiceCatalog"
 import { ServiceFormSheet } from "./_components/ServiceFormSheet"
 import { ServiceRow } from "./_components/ServiceRow"
 import type { ServiceCatalogDetail } from "@paddock/types"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   SERVICE_CATALOG_CATEGORY_LABELS,
   type ServiceCatalogCategory,
@@ -95,7 +96,11 @@ export default function ServicosPage() {
 
       {/* Loading */}
       {isLoading && (
-        <div className="py-16 text-center text-sm text-muted-foreground">Carregando…</div>
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full rounded-lg" />
+          ))}
+        </div>
       )}
 
       {/* Vazio */}

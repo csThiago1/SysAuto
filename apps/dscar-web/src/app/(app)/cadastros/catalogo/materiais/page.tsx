@@ -5,6 +5,7 @@ import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Loader2, Pencil, Plus, Power, Search, Boxes } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
 import { toast } from "sonner"
 import { useQueryClient } from "@tanstack/react-query"
 import { Input } from "@/components/ui/input"
@@ -219,9 +220,16 @@ export default function MateriaisCanonicoPage() {
       {isLoading ? (
         <TableSkeleton columns={6} rows={8} />
       ) : filtered.length === 0 ? (
-        <div className="py-12 text-center text-sm text-muted-foreground">
-          {search ? "Nenhum material encontrado." : "Nenhum material cadastrado."}
-        </div>
+        <EmptyState
+          icon={<Boxes className="h-8 w-8" />}
+          title={search ? "Nenhum material encontrado." : "Nenhum material cadastrado."}
+          action={!search && (
+            <Button variant="outline" size="sm" onClick={openCreate}>
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Novo Material
+            </Button>
+          )}
+        />
       ) : (
         <div className="overflow-hidden rounded-md border border-border bg-muted/50">
           <Table>
@@ -310,7 +318,7 @@ export default function MateriaisCanonicoPage() {
               <Input
                 placeholder="Ex: MAT-LIXA-01"
                 disabled={!!editing}
-                {...register("codigo")}
+                {...register("codigo")} aria-invalid={!!errors.codigo}
               />
               {errors.codigo && (
                 <p className="text-xs text-error-400">{errors.codigo.message}</p>
@@ -322,7 +330,7 @@ export default function MateriaisCanonicoPage() {
               <Label className="text-sm font-medium text-foreground/70">Nome *</Label>
               <Input
                 placeholder="Ex: Lixa d'agua 400"
-                {...register("nome")}
+                {...register("nome")} aria-invalid={!!errors.nome}
               />
               {errors.nome && (
                 <p className="text-xs text-error-400">{errors.nome.message}</p>

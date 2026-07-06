@@ -53,6 +53,7 @@ export function ServiceRow({ item, onEdit }: Props) {
             size="icon"
             variant="ghost"
             className="h-7 w-7 text-muted-foreground hover:text-foreground/90"
+            title="Editar"
             onClick={() => onEdit(item)}
           >
             <Pencil className="h-3.5 w-3.5" />
@@ -61,6 +62,7 @@ export function ServiceRow({ item, onEdit }: Props) {
             size="icon"
             variant="ghost"
             className="h-7 w-7 text-muted-foreground hover:text-error-400"
+            title="Remover"
             onClick={() => setConfirmOpen(true)}
             disabled={deleteMutation.isPending}
           >

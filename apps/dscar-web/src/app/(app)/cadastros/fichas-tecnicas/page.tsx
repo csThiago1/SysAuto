@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import type { Route } from "next"
 import { Search, ClipboardList } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
 import { Input } from "@/components/ui/input"
 import { TableSkeleton } from "@/components/ui/table-skeleton"
 import {
@@ -65,9 +66,11 @@ export default function FichasTecnicasPage() {
       {isLoading ? (
         <TableSkeleton columns={5} rows={8} />
       ) : fichasFiltradas.length === 0 ? (
-        <div className="py-12 text-center text-sm text-muted-foreground">
-          {search ? "Nenhuma ficha encontrada." : "Nenhuma ficha técnica cadastrada."}
-        </div>
+        <EmptyState
+          icon={<ClipboardList className="h-8 w-8" />}
+          title={search ? "Nenhuma ficha encontrada." : "Nenhuma ficha técnica cadastrada."}
+          description={search ? undefined : "Fichas técnicas são criadas a partir dos serviços do catálogo."}
+        />
       ) : (
         <div className="overflow-hidden rounded-md border border-border bg-muted/50">
           <Table>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useTiposPintura } from "@/hooks/usePricingProfile"
+import { TableSkeleton } from "@/components/ui/table-skeleton"
 
 const ESTRELAS_MAX = 4
 
@@ -37,7 +38,7 @@ export default function TiposPinturaPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground">Carregando...</p>
+        <TableSkeleton columns={4} rows={5} />
       ) : tipos.length === 0 ? (
         <div className="rounded-md border px-4 py-8 text-center text-sm text-muted-foreground">
           Nenhum tipo de pintura cadastrado.

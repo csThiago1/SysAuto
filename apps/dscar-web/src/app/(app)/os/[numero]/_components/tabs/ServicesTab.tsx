@@ -190,7 +190,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                 className={errors.description ? `${INPUT} border-red-400` : INPUT}
                 placeholder="Descrição do serviço"
                 data-testid="service-description-input"
-                {...register("description")}
+                {...register("description")} aria-invalid={!!errors.description}
               />
               {errors.description && (
                 <p className="mt-0.5 text-xs text-error-400">{errors.description.message}</p>
@@ -199,14 +199,14 @@ export function ServicesTab({ osId, osStatus }: Props) {
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className={LABEL}>Qtd.</label>
-                <input className={INPUT} type="number" step="0.01" min="0.01" {...register("quantity")} />
+                <input className={INPUT} type="number" step="0.01" min="0.01" {...register("quantity")} aria-invalid={!!errors.quantity} />
               </div>
               <div>
                 <label className={LABEL}>Valor Unit. (R$) *</label>
                 <input
                   className={errors.unit_price ? `${INPUT} border-red-400` : INPUT}
                   placeholder="0.00"
-                  {...register("unit_price")}
+                  {...register("unit_price")} aria-invalid={!!errors.unit_price}
                 />
                 {errors.unit_price && (
                   <p className="mt-0.5 text-xs text-error-400">{errors.unit_price.message}</p>
@@ -229,7 +229,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
               {showDiscount && (
                 <div>
                   <label className={LABEL}>Desconto (R$)</label>
-                  <input className={INPUT} placeholder="0.00" {...register("discount")} />
+                  <input className={INPUT} placeholder="0.00" {...register("discount")} aria-invalid={!!errors.discount} />
                 </div>
               )}
             </div>

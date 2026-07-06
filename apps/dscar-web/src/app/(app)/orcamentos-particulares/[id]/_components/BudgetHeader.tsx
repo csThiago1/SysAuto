@@ -122,7 +122,7 @@ export function BudgetHeader({ budget }: Props) {
         {/* Esquerda: voltar + info */}
         <div className="flex items-center gap-3">
           <Link href={"/orcamentos-particulares" as Route}>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="icon" title="Voltar" className="text-muted-foreground hover:text-foreground">
               <ChevronLeft className="h-5 w-5" />
             </Button>
           </Link>

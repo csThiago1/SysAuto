@@ -51,7 +51,7 @@ export default function InsurerDetailPage({ params }: Props) {
     <div className="max-w-3xl space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" asChild>
+        <Button variant="ghost" size="icon" title="Voltar" asChild>
           <Link href="/cadastros/seguradoras">
             <ArrowLeft className="h-4 w-4" />
           </Link>

@@ -100,7 +100,7 @@ export function VehicleSection({ form, osId }: VehicleSectionProps) {
               type="text"
               placeholder="ABC1D23"
               maxLength={8}
-              {...register("plate")}
+              {...register("plate")} aria-invalid={!!errors.plate}
               onChange={handlePlateChange}
             />
             {isFetching && (
@@ -145,7 +145,7 @@ export function VehicleSection({ form, osId }: VehicleSectionProps) {
         </div>
         <div>
           <label className={FORM_LABEL}>Combustível</label>
-          <input className={FORM_INPUT} type="text" placeholder="Flex, Gasolina..." {...register("fuel_type")} />
+          <input className={FORM_INPUT} type="text" placeholder="Flex, Gasolina..." {...register("fuel_type")} aria-invalid={!!errors.fuel_type} />
         </div>
         <div>
           <label className={FORM_LABEL}>Ano</label>
@@ -155,7 +155,7 @@ export function VehicleSection({ form, osId }: VehicleSectionProps) {
             min={1900}
             max={2100}
             placeholder="2024"
-            {...register("year", { valueAsNumber: true })}
+            {...register("year", { valueAsNumber: true })} aria-invalid={!!errors.year}
           />
         </div>
       </div>
@@ -163,7 +163,7 @@ export function VehicleSection({ form, osId }: VehicleSectionProps) {
       <div className="grid grid-cols-[1fr_120px] gap-2">
         <div>
           <label className={FORM_LABEL}>Chassi</label>
-          <input className={FORM_INPUT} type="text" maxLength={17} placeholder="17 caracteres" {...register("chassis")} />
+          <input className={FORM_INPUT} type="text" maxLength={17} placeholder="17 caracteres" {...register("chassis")} aria-invalid={!!errors.chassis} />
         </div>
         <div>
           <label className={FORM_LABEL}>FIPE (R$)</label>
@@ -173,13 +173,13 @@ export function VehicleSection({ form, osId }: VehicleSectionProps) {
             step="0.01"
             min="0"
             placeholder="0,00"
-            {...register("fipe_value", { valueAsNumber: true })}
+            {...register("fipe_value", { valueAsNumber: true })} aria-invalid={!!errors.fipe_value}
           />
         </div>
       </div>
 
       {/* Hidden field para persistir make_logo */}
-      <input type="hidden" {...register("make_logo")} />
+      <input type="hidden" {...register("make_logo")} aria-invalid={!!errors.make_logo} />
 
       <VehicleHistorySheet
         open={historyOpen}

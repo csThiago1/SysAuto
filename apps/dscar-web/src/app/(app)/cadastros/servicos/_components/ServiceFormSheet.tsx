@@ -100,7 +100,7 @@ export function ServiceFormSheet({ open, onOpenChange, editing }: Props) {
             <label className="text-sm font-medium text-foreground/70">Nome *</label>
             <Input
               placeholder="Ex: Pintura de capô"
-              {...register("name")}
+              {...register("name")} aria-invalid={!!errors.name}
             />
             {errors.name && (
               <p className="text-xs text-error-400">{errors.name.message}</p>
@@ -112,7 +112,7 @@ export function ServiceFormSheet({ open, onOpenChange, editing }: Props) {
             <label className="text-sm font-medium text-foreground/70">Categoria *</label>
             <select
               className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
-              {...register("category")}
+              {...register("category")} aria-invalid={!!errors.category}
             >
               {Object.entries(SERVICE_CATALOG_CATEGORY_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
@@ -125,7 +125,7 @@ export function ServiceFormSheet({ open, onOpenChange, editing }: Props) {
             <label className="text-sm font-medium text-foreground/70">Preço (R$) *</label>
             <Input
               placeholder="Ex: 280,00"
-              {...register("suggested_price")}
+              {...register("suggested_price")} aria-invalid={!!errors.suggested_price}
             />
             {errors.suggested_price && (
               <p className="text-xs text-error-400">{errors.suggested_price.message}</p>
@@ -140,7 +140,7 @@ export function ServiceFormSheet({ open, onOpenChange, editing }: Props) {
             <textarea
               className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring resize-none"
               placeholder="Detalhes do serviço…"
-              {...register("description")}
+              {...register("description")} aria-invalid={!!errors.description}
             />
           </div>
 

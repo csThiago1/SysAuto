@@ -5,6 +5,7 @@ import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Loader2, Pencil, Plus, Power, HardHat } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
 import { toast } from "sonner"
 import { useQueryClient } from "@tanstack/react-query"
 import { Input } from "@/components/ui/input"
@@ -187,9 +188,16 @@ export default function CategoriasMaoObraPage() {
       {isLoading ? (
         <TableSkeleton columns={5} rows={6} />
       ) : filtered.length === 0 ? (
-        <div className="py-12 text-center text-sm text-muted-foreground">
-          Nenhuma categoria de mao de obra cadastrada.
-        </div>
+        <EmptyState
+          icon={<HardHat className="h-8 w-8" />}
+          title="Nenhuma categoria de mao de obra cadastrada."
+          action={
+            <Button variant="outline" size="sm" onClick={openCreate}>
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Nova Categoria
+            </Button>
+          }
+        />
       ) : (
         <div className="overflow-hidden rounded-md border border-border bg-muted/50">
           <Table>
@@ -274,7 +282,7 @@ export default function CategoriasMaoObraPage() {
               <Input
                 placeholder="Ex: MO-FUNILARIA"
                 disabled={!!editing}
-                {...register("codigo")}
+                {...register("codigo")} aria-invalid={!!errors.codigo}
               />
               {errors.codigo && (
                 <p className="text-xs text-error-400">{errors.codigo.message}</p>
@@ -286,7 +294,7 @@ export default function CategoriasMaoObraPage() {
               <Label className="text-sm font-medium text-foreground/70">Nome *</Label>
               <Input
                 placeholder="Ex: Funilaria"
-                {...register("nome")}
+                {...register("nome")} aria-invalid={!!errors.nome}
               />
               {errors.nome && (
                 <p className="text-xs text-error-400">{errors.nome.message}</p>
@@ -300,7 +308,7 @@ export default function CategoriasMaoObraPage() {
                 type="number"
                 placeholder="0"
                 min={0}
-                {...register("ordem")}
+                {...register("ordem")} aria-invalid={!!errors.ordem}
               />
               {errors.ordem && (
                 <p className="text-xs text-error-400">{errors.ordem.message}</p>

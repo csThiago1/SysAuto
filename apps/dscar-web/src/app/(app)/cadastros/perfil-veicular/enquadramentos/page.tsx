@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useEnquadramentos } from "@/hooks/usePricingProfile"
+import { TableSkeleton } from "@/components/ui/table-skeleton"
 
 export default function EnquadramentosPage() {
   const [search, setSearch] = useState("")
@@ -29,7 +30,7 @@ export default function EnquadramentosPage() {
       />
 
       {isLoading ? (
-        <p className="text-muted-foreground">Carregando...</p>
+        <TableSkeleton columns={6} rows={6} />
       ) : enquadramentos.length === 0 ? (
         <div className="rounded-md border px-4 py-8 text-center text-sm text-muted-foreground">
           {search ? `Nenhum enquadramento encontrado para "${search}".` : "Nenhum enquadramento cadastrado."}

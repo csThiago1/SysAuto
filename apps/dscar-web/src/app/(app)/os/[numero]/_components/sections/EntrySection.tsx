@@ -71,7 +71,7 @@ export function EntrySection({ form, order }: EntrySectionProps) {
         </div>
         <div>
           <label className={FORM_LABEL}>Localização</label>
-          <select className={FORM_INPUT} {...register("vehicle_location")}>
+          <select className={FORM_INPUT} {...register("vehicle_location")} aria-invalid={!!errors.vehicle_location}>
             <option value="workshop">Na Oficina</option>
             <option value="in_transit">Em Trânsito</option>
           </select>

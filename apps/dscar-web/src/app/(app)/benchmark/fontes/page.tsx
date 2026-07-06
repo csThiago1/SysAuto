@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Database, Plus } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -25,6 +26,7 @@ import {
 import { useBenchmarkFontes, useCreateBenchmarkFonte } from "@/hooks/useBenchmark"
 import { useMinhaEmpresaId } from "@/hooks/usePricingProfile"
 import type { BenchmarkFonteTipo } from "@paddock/types"
+import { TableSkeleton } from "@/components/ui/table-skeleton"
 
 const TIPO_LABELS: Record<BenchmarkFonteTipo, string> = {
   seguradora_pdf: "PDF Seguradora",
@@ -138,11 +140,18 @@ export default function BenchmarkFontesPage() {
       )}
 
       {isLoading ? (
-        <p className="text-xs text-muted-foreground py-8 text-center">Carregando...</p>
+        <TableSkeleton columns={4} rows={6} />
       ) : fontes.length === 0 ? (
-        <div className="rounded-lg border border-border bg-muted/50 p-8 text-center text-muted-foreground text-sm">
-          Nenhuma fonte cadastrada.
-        </div>
+        <EmptyState
+          icon={<Database className="h-8 w-8" />}
+          title="Nenhuma fonte cadastrada."
+          action={
+            <Button variant="outline" size="sm" onClick={() => setShowForm(true)}>
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Nova Fonte
+            </Button>
+          }
+        />
       ) : (
         <div className="rounded-lg border border-border overflow-hidden">
           <Table>

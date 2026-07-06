@@ -209,7 +209,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
               </div>
               <div>
                 <label className={LABEL}>Tipo de segurado *</label>
-                <select className={SELECT} {...register("insured_type")}>
+                <select className={SELECT} {...register("insured_type")} aria-invalid={!!errors.insured_type}>
                   <option value="">Selecionar...</option>
                   <option value="insured">Segurado</option>
                   <option value="third">Terceiro</option>
@@ -243,7 +243,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
           {/* Tipo OS */}
           <div>
             <label className={LABEL}>Tipo OS <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
-            <select className={SELECT} {...register("os_type")}>
+            <select className={SELECT} {...register("os_type")} aria-invalid={!!errors.os_type}>
               <option value="">Selecionar...</option>
               {OS_TYPES.map((t) => (
                 <option key={t.value} value={t.value} title={t.desc}>
@@ -321,7 +321,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
               </div>
               <div>
                 <label className={LABEL}>Combustível <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
-                <select className={SELECT} {...register("fuel_type")}>
+                <select className={SELECT} {...register("fuel_type")} aria-invalid={!!errors.fuel_type}>
                   <option value="">Selecionar...</option>
                   <option value="flex">Flex</option>
                   <option value="gasoline">Gasolina</option>

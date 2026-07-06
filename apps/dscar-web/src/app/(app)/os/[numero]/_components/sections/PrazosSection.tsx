@@ -81,7 +81,7 @@ export function PrazosSection({ form }: PrazosSectionProps) {
             type="number"
             min="1"
             placeholder="Ex: 10"
-            {...register("repair_days", { valueAsNumber: true })}
+            {...register("repair_days", { valueAsNumber: true })} aria-invalid={!!errors.repair_days}
           />
           {errors.repair_days && (
             <p className={FORM_ERROR}>{errors.repair_days.message}</p>
@@ -93,7 +93,7 @@ export function PrazosSection({ form }: PrazosSectionProps) {
             className={`${FORM_INPUT} bg-muted/30 cursor-default`}
             type="date"
             readOnly
-            {...register("estimated_delivery_date")}
+            {...register("estimated_delivery_date")} aria-invalid={!!errors.estimated_delivery_date}
           />
           <p className={FORM_HINT}>Calculada automaticamente: entrada + dias de reparo</p>
         </div>

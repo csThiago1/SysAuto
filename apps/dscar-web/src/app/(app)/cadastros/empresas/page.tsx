@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/sheet"
 import { useEmpresas, useCreateEmpresa } from "@/hooks/usePricingProfile"
 import type { EmpresaPayload } from "@/hooks/usePricingProfile"
+import { TableSkeleton } from "@/components/ui/table-skeleton"
 
 const EMPTY_FORM: EmpresaPayload = {
   cnpj: "",
@@ -63,7 +64,7 @@ export default function EmpresasPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground">Carregando...</p>
+        <TableSkeleton columns={4} rows={4} />
       ) : empresas.length === 0 ? (
         <div className="rounded-md border px-4 py-12 text-center space-y-3">
           <Building2 className="mx-auto h-8 w-8 text-muted-foreground/40" />

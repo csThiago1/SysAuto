@@ -199,14 +199,14 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
           {/* Razão social */}
           <div>
             <label className={LABEL}>Razão Social *</label>
-            <Input className="h-8" placeholder="Ex: Porto Seguro Companhia de Seguros Gerais" {...register("name")} />
+            <Input className="h-8" placeholder="Ex: Porto Seguro Companhia de Seguros Gerais" {...register("name")} aria-invalid={!!errors.name} />
             {errors.name && <p className="mt-0.5 text-xs text-error-400">{errors.name.message}</p>}
           </div>
 
           {/* Nome fantasia */}
           <div>
             <label className={LABEL}>Nome Fantasia</label>
-            <Input className="h-8" placeholder="Ex: Porto Seguro" {...register("trade_name")} />
+            <Input className="h-8" placeholder="Ex: Porto Seguro" {...register("trade_name")} aria-invalid={!!errors.trade_name} />
           </div>
 
           {/* CNPJ */}
@@ -228,7 +228,7 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={LABEL}>Abreviação (máx. 4)</label>
-              <Input className="h-8" placeholder="Ex: PS" maxLength={4} {...register("abbreviation")} />
+              <Input className="h-8" placeholder="Ex: PS" maxLength={4} {...register("abbreviation")} aria-invalid={!!errors.abbreviation} />
               {errors.abbreviation && (
                 <p className="mt-0.5 text-xs text-error-400">{errors.abbreviation.message}</p>
               )}
@@ -248,7 +248,7 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
                   className="h-8 font-mono text-xs"
                   placeholder="#000000"
                   maxLength={7}
-                  {...register("brand_color")}
+                  {...register("brand_color")} aria-invalid={!!errors.brand_color}
                 />
                 {/* Live preview swatch */}
                 {/^#[0-9a-fA-F]{6}$/.test(brandColor ?? "") && (
@@ -270,7 +270,7 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
               type="checkbox"
               id="uses_cilia"
               className="h-4 w-4 rounded border-border"
-              {...register("uses_cilia")}
+              {...register("uses_cilia")} aria-invalid={!!errors.uses_cilia}
             />
             <label htmlFor="uses_cilia" className="text-sm text-foreground/70">
               Envia orçamentos via sistema Cilia

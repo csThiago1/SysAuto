@@ -199,9 +199,11 @@ export function RespostaForm({ pedidos, open, onOpenChange }: RespostaFormProps)
     }
 
     setIsSaving(true)
-    try {
-      for (const pedido of preenchidos) {
-        const r = respostas[pedido.id]
+    let ok = 0
+    let falhas = 0
+    for (const pedido of preenchidos) {
+      const r = respostas[pedido.id]
+      try {
         await registrarResposta.mutateAsync({
           pedido_compra: pedido.id,
           supplier: supplierId,
@@ -209,15 +211,17 @@ export function RespostaForm({ pedidos, open, onOpenChange }: RespostaFormProps)
           ...(r.prazo_entrega_obj ? { prazo_entrega_obj: r.prazo_entrega_obj } : {}),
           ...(r.condicao_pagamento_obj ? { condicao_pagamento_obj: r.condicao_pagamento_obj } : {}),
         })
+        ok++
+      } catch {
+        falhas++
       }
-      toast.success(
-        `${preenchidos.length} resposta(s) registrada(s) com sucesso.`,
-      )
+    }
+    setIsSaving(false)
+    if (ok) toast.success(`${ok} resposta(s) registrada(s) com sucesso.`)
+    if (falhas) {
+      toast.error(`${falhas} resposta(s) falharam. Tente novamente.`)
+    } else {
       onOpenChange(false)
-    } catch {
-      toast.error("Erro ao salvar respostas. Tente novamente.")
-    } finally {
-      setIsSaving(false)
     }
   }
 

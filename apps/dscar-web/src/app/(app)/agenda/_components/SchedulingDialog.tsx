@@ -137,7 +137,7 @@ export function SchedulingDialog({ open, onOpenChange, defaultDate }: Props) {
           {/* Data/hora entrada */}
           <div>
             <label className={LABEL}>Data e Hora de Entrada *</label>
-            <input type="datetime-local" className={INPUT} {...register("scheduling_date")} />
+            <input type="datetime-local" className={INPUT} {...register("scheduling_date")} aria-invalid={!!errors.scheduling_date} />
             {errors.scheduling_date && (
               <p className="mt-0.5 text-xs text-error-400">{errors.scheduling_date.message}</p>
             )}
@@ -146,7 +146,7 @@ export function SchedulingDialog({ open, onOpenChange, defaultDate }: Props) {
           {/* Dias de reparo */}
           <div>
             <label className={LABEL}>Dias de Reparo</label>
-            <input type="number" min="0" className={INPUT} placeholder="Ex: 5" {...register("repair_days")} />
+            <input type="number" min="0" className={INPUT} placeholder="Ex: 5" {...register("repair_days")} aria-invalid={!!errors.repair_days} />
             {estimatedDelivery && (
               <p className="mt-0.5 text-xs text-success-400">
                 Previsão de entrega: {new Date(estimatedDelivery + "T12:00:00").toLocaleDateString("pt-BR")}

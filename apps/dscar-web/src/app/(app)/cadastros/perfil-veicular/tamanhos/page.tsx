@@ -1,6 +1,7 @@
 "use client"
 
 import { useTamanhos } from "@/hooks/usePricingProfile"
+import { TableSkeleton } from "@/components/ui/table-skeleton"
 
 export default function TamanhosPage() {
   const { data: tamanhos = [], isLoading } = useTamanhos()
@@ -16,7 +17,7 @@ export default function TamanhosPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground">Carregando...</p>
+        <TableSkeleton columns={5} rows={5} />
       ) : tamanhos.length === 0 ? (
         <div className="rounded-md border px-4 py-8 text-center text-sm text-muted-foreground">
           Nenhuma categoria cadastrada.

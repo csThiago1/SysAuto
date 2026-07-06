@@ -5,6 +5,7 @@ import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Loader2, Pencil, Plus, Power, Search, FlaskConical } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
 import { toast } from "sonner"
 import { useQueryClient } from "@tanstack/react-query"
 import { Input } from "@/components/ui/input"
@@ -211,9 +212,16 @@ export default function InsumosPage() {
       {isLoading ? (
         <TableSkeleton columns={7} rows={8} />
       ) : filtered.length === 0 ? (
-        <div className="py-12 text-center text-sm text-muted-foreground">
-          Nenhum insumo cadastrado.
-        </div>
+        <EmptyState
+          icon={<FlaskConical className="h-8 w-8" />}
+          title="Nenhum insumo cadastrado."
+          action={
+            <Button variant="outline" size="sm" onClick={openCreate}>
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Novo Insumo
+            </Button>
+          }
+        />
       ) : (
         <div className="overflow-hidden rounded-md border border-border bg-muted/50">
           <Table>
@@ -335,7 +343,7 @@ export default function InsumosPage() {
               <Input
                 placeholder="Ex: INS-LIXA-400-3M"
                 disabled={!!editing}
-                {...register("sku_interno")}
+                {...register("sku_interno")} aria-invalid={!!errors.sku_interno}
               />
               {errors.sku_interno && (
                 <p className="text-xs text-error-400">{errors.sku_interno.message}</p>
@@ -347,7 +355,7 @@ export default function InsumosPage() {
               <Label className="text-sm font-medium text-foreground/70">Descricao *</Label>
               <Input
                 placeholder="Ex: Lixa d'agua 400 3M"
-                {...register("descricao")}
+                {...register("descricao")} aria-invalid={!!errors.descricao}
               />
               {errors.descricao && (
                 <p className="text-xs text-error-400">{errors.descricao.message}</p>
@@ -361,7 +369,7 @@ export default function InsumosPage() {
               </Label>
               <Input
                 placeholder="Ex: 3M"
-                {...register("marca")}
+                {...register("marca")} aria-invalid={!!errors.marca}
               />
             </div>
 
@@ -374,7 +382,7 @@ export default function InsumosPage() {
                 placeholder="Ex: 7891040109715"
                 className="font-mono"
                 maxLength={14}
-                {...register("gtin")}
+                {...register("gtin")} aria-invalid={!!errors.gtin}
               />
               {errors.gtin && (
                 <p className="text-xs text-error-400">{errors.gtin.message}</p>
@@ -410,7 +418,7 @@ export default function InsumosPage() {
               <Label className="text-sm font-medium text-foreground/70">Fator de Conversao *</Label>
               <Input
                 placeholder="Ex: 1"
-                {...register("fator_conversao")}
+                {...register("fator_conversao")} aria-invalid={!!errors.fator_conversao}
               />
               {errors.fator_conversao && (
                 <p className="text-xs text-error-400">{errors.fator_conversao.message}</p>

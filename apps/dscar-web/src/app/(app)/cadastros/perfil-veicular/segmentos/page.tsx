@@ -1,6 +1,7 @@
 "use client"
 
 import { useSegmentos } from "@/hooks/usePricingProfile"
+import { TableSkeleton } from "@/components/ui/table-skeleton"
 
 export default function SegmentosPage() {
   const { data: segmentos = [], isLoading } = useSegmentos()
@@ -16,7 +17,7 @@ export default function SegmentosPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-muted-foreground">Carregando...</p>
+        <TableSkeleton columns={5} rows={5} />
       ) : segmentos.length === 0 ? (
         <div className="rounded-md border px-4 py-8 text-center text-sm text-muted-foreground">
           Nenhum segmento cadastrado.

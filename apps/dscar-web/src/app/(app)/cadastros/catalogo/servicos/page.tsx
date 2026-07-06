@@ -5,6 +5,7 @@ import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Loader2, Pencil, Plus, Power, Search, Wrench } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
 import { toast } from "sonner"
 import { useQueryClient } from "@tanstack/react-query"
 import { Input } from "@/components/ui/input"
@@ -231,9 +232,16 @@ export default function ServicosCanonicoPage() {
       {isLoading ? (
         <TableSkeleton columns={6} rows={8} />
       ) : filtered.length === 0 ? (
-        <div className="py-12 text-center text-sm text-muted-foreground">
-          {search ? "Nenhum servico encontrado." : "Nenhum servico cadastrado."}
-        </div>
+        <EmptyState
+          icon={<Wrench className="h-8 w-8" />}
+          title={search ? "Nenhum servico encontrado." : "Nenhum servico cadastrado."}
+          action={!search && (
+            <Button variant="outline" size="sm" onClick={openCreate}>
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Novo Servico
+            </Button>
+          )}
+        />
       ) : (
         <div className="overflow-hidden rounded-md border border-border bg-muted/50">
           <Table>
@@ -339,7 +347,7 @@ export default function ServicosCanonicoPage() {
               <Input
                 placeholder="Ex: SERV-PINT-01"
                 disabled={!!editing}
-                {...register("codigo")}
+                {...register("codigo")} aria-invalid={!!errors.codigo}
               />
               {errors.codigo && (
                 <p className="text-xs text-error-400">{errors.codigo.message}</p>
@@ -351,7 +359,7 @@ export default function ServicosCanonicoPage() {
               <Label className="text-sm font-medium text-foreground/70">Nome *</Label>
               <Input
                 placeholder="Ex: Pintura de capo"
-                {...register("nome")}
+                {...register("nome")} aria-invalid={!!errors.nome}
               />
               {errors.nome && (
                 <p className="text-xs text-error-400">{errors.nome.message}</p>
@@ -413,7 +421,7 @@ export default function ServicosCanonicoPage() {
               <textarea
                 className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring resize-none"
                 placeholder="Detalhes do servico..."
-                {...register("descricao")}
+                {...register("descricao")} aria-invalid={!!errors.descricao}
               />
             </div>
 

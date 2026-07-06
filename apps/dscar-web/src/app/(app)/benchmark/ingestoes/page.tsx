@@ -29,6 +29,7 @@ import {
   useAmostrasPorIngestao,
 } from "@/hooks/useBenchmark"
 import { BENCHMARK_INGESTAO_STATUS_LABEL, BENCHMARK_INGESTAO_STATUS_BADGE } from "@paddock/utils"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function BenchmarkIngestoesPage() {
   const { data: ingestoes = [], isLoading, refetch } = useBenchmarkIngestoes()
@@ -138,7 +139,11 @@ export default function BenchmarkIngestoesPage() {
       )}
 
       {isLoading ? (
-        <p className="text-xs text-muted-foreground py-8 text-center">Carregando...</p>
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full rounded-lg" />
+          ))}
+        </div>
       ) : ingestoes.length === 0 ? (
         <div className="rounded-lg border border-border bg-muted/50 p-8 text-center text-muted-foreground text-sm">
           Nenhuma ingestão registrada.

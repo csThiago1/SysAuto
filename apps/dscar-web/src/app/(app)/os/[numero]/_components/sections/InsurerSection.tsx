@@ -82,11 +82,11 @@ export function InsurerSection({ form }: InsurerSectionProps) {
           <div className="grid grid-cols-3 gap-2">
             <div>
               <label className={LABEL}>Sinistro</label>
-              <input className={INPUT} type="text" placeholder="Ex: 2024/001234" {...register("casualty_number")} />
+              <input className={INPUT} type="text" placeholder="Ex: 2024/001234" {...register("casualty_number")} aria-invalid={!!errors.casualty_number} />
             </div>
             <div>
               <label className={LABEL}>Corretor</label>
-              <input className={INPUT} type="text" placeholder="Nome do corretor" {...register("broker_name")} />
+              <input className={INPUT} type="text" placeholder="Nome do corretor" {...register("broker_name")} aria-invalid={!!errors.broker_name} />
             </div>
             {insuredType === "insured" && (
               <div>
@@ -97,7 +97,7 @@ export function InsurerSection({ form }: InsurerSectionProps) {
                   step="0.01"
                   min="0"
                   placeholder="0,00"
-                  {...register("deductible_amount", { valueAsNumber: true })}
+                  {...register("deductible_amount", { valueAsNumber: true })} aria-invalid={!!errors.deductible_amount}
                 />
               </div>
             )}
@@ -121,7 +121,7 @@ export function InsurerSection({ form }: InsurerSectionProps) {
             </div>
             <div>
               <label className={LABEL}>Visita perito</label>
-              <input className={INPUT} type="date" {...register("expert_date")} />
+              <input className={INPUT} type="date" {...register("expert_date")} aria-invalid={!!errors.expert_date} />
             </div>
           </div>
 
@@ -129,14 +129,14 @@ export function InsurerSection({ form }: InsurerSectionProps) {
           <div className="grid grid-cols-3 gap-2">
             <div>
               <label className={LABEL}>Vistoria</label>
-              <input className={INPUT} type="date" {...register("survey_date")} />
+              <input className={INPUT} type="date" {...register("survey_date")} aria-invalid={!!errors.survey_date} />
             </div>
             <div>
               <label className={LABEL}>Autorização</label>
               <input
                 className={errors.authorization_date ? `${INPUT} !border-error-500` : INPUT}
                 type="datetime-local"
-                {...register("authorization_date")}
+                {...register("authorization_date")} aria-invalid={!!errors.authorization_date}
               />
               {errors.authorization_date
                 ? <p className="mt-0.5 text-xs text-error-400">{errors.authorization_date.message}</p>

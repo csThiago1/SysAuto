@@ -26,6 +26,7 @@ import {
 import { useEmployees } from "@/hooks/useHR"
 import { useCategoriasMaoObra } from "@/hooks/usePricingCatalog"
 import type { HeatmapDia, EmployeeListItem } from "@paddock/types"
+import { TableSkeleton } from "@/components/ui/table-skeleton"
 
 function startOfWeek(d: Date): string {
   const day = d.getDay()
@@ -286,7 +287,7 @@ export default function CapacidadePage() {
         )}
 
         {loadingCap ? (
-          <p className="text-xs text-muted-foreground py-8 text-center">Carregando...</p>
+          <TableSkeleton columns={4} rows={4} />
         ) : capacidades.length === 0 ? (
           <div className="rounded-lg border border-border bg-muted/50 p-6 text-center text-muted-foreground text-sm">
             Nenhuma capacidade cadastrada.
@@ -315,6 +316,7 @@ export default function CapacidadePage() {
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 text-muted-foreground hover:text-error-400"
+                        title="Remover"
                         onClick={() => deleteCap(c.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -385,7 +387,7 @@ export default function CapacidadePage() {
         )}
 
         {loadingBlq ? (
-          <p className="text-xs text-muted-foreground py-8 text-center">Carregando...</p>
+          <TableSkeleton columns={4} rows={4} />
         ) : bloqueios.length === 0 ? (
           <div className="rounded-lg border border-border bg-muted/50 p-4 text-center text-muted-foreground text-sm">
             Nenhum bloqueio cadastrado.
@@ -412,6 +414,7 @@ export default function CapacidadePage() {
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 text-muted-foreground hover:text-error-400"
+                        title="Remover"
                         onClick={() => deleteBlq(b.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />

@@ -49,13 +49,13 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
   return (
     <div className="flex items-center justify-between py-3 px-1">
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="icon" className="h-8 w-8" onClick={goBack}>
+        <Button variant="outline" size="icon" className="h-8 w-8" title="Anterior" onClick={goBack}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <h2 className="text-base font-semibold text-foreground/90 capitalize min-w-[200px] text-center">
           {getLabel()}
         </h2>
-        <Button variant="outline" size="icon" className="h-8 w-8" onClick={goForward}>
+        <Button variant="outline" size="icon" className="h-8 w-8" title="Próximo" onClick={goForward}>
           <ChevronRight className="h-4 w-4" />
         </Button>
         <Button

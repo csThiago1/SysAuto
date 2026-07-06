@@ -190,21 +190,32 @@ export function QuotationBuilder({ pedidos, open, onOpenChange }: QuotationBuild
 
     setIsSending(true)
     try {
+      let registrados = 0
+      let falhas = 0
       for (const supplierId of selectedSuppliers) {
         const supplier = suppliers?.find((s) => s.id === supplierId)
-        await registrarCotacao.mutateAsync({
-          service_order: first.service_order,
-          supplier: supplierId,
-          supplier_contact: supplier?.contacts?.[0]?.id ?? null,
-          mensagem: previewText,
-          pedido_ids: pedidos.map((p) => p.id),
-        })
+        try {
+          await registrarCotacao.mutateAsync({
+            service_order: first.service_order,
+            supplier: supplierId,
+            supplier_contact: supplier?.contacts?.[0]?.id ?? null,
+            mensagem: previewText,
+            pedido_ids: pedidos.map((p) => p.id),
+          })
+          registrados++
+        } catch {
+          falhas++
+        }
       }
+      if (falhas) {
+        toast.error(`${falhas} fornecedor(es) falharam ao registrar. Tente novamente.`)
+      }
+      if (!registrados) return
 
       if (mode === "copy") {
         await navigator.clipboard.writeText(previewText)
         toast.success(
-          `Copiado! Cotação registrada para ${selectedSuppliers.length} fornecedor(es).`,
+          `Copiado! Cotação registrada para ${registrados} fornecedor(es).`,
         )
       } else {
         const supplier = suppliers?.find((s) => s.id === selectedSuppliers[0])

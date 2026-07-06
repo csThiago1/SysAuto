@@ -56,6 +56,7 @@ export default function SnapshotDetailPage() {
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-muted-foreground"
+          title="Voltar"
           onClick={() => router.back()}
         >
           <ArrowLeft className="h-4 w-4" />
