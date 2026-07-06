@@ -290,7 +290,14 @@ export function ServicesTab({ osId, osStatus }: Props) {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">Nenhum serviço adicionado.</p>
+        <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border bg-muted/20 p-10 text-center">
+          <Search className="h-8 w-8 text-muted-foreground/50" />
+          <p className="text-sm text-muted-foreground">
+            {isBlocked
+              ? "Nenhum serviço nesta OS."
+              : "Nenhum serviço ainda — busque no catálogo acima ou preencha a descrição."}
+          </p>
+        </div>
       ) : (
         <>
           <ServiceGroupedView

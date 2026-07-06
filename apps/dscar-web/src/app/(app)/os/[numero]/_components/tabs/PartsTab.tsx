@@ -161,45 +161,21 @@ export function PartsTab({ orderId }: PartsTabProps) {
 
   return (
     <div className="py-6 space-y-5">
-      {/* Origin buttons */}
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => setEstoqueOpen(true)}
-          data-testid="part-estoque-btn"
-          className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors bg-success-500/10 border-success-500/20 text-success-400 hover:bg-success-500/20"
-        >
-          <Warehouse className="h-4 w-4" />
-          Do Estoque
-        </button>
-        <button
-          type="button"
-          onClick={() => setCompraOpen(true)}
-          data-testid="part-compra-btn"
-          className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors bg-info-500/10 border-info-500/20 text-info-400 hover:bg-info-500/20"
-        >
-          <ShoppingCart className="h-4 w-4" />
-          Comprar
-        </button>
-        <button
-          type="button"
-          onClick={() => setSeguradoraOpen(true)}
-          data-testid="part-seguradora-btn"
-          className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"
-        >
-          <Shield className="h-4 w-4" />
-          Seguradora Fornece
-        </button>
-      </div>
-
-      {/* Section divider */}
-      <div className="section-divider">
-        PECAS DA OS ({partsList.length})
-        {pendingCount > 0 && (
-          <span className="ml-2 text-warning-400">
-            {pendingCount} pendente{pendingCount > 1 ? "s" : ""}
-          </span>
-        )}
+      {/* Header: título + ação única de adicionar */}
+      <div className="flex items-center justify-between">
+        <div className="section-divider flex-1">
+          PECAS DA OS ({partsList.length})
+          {pendingCount > 0 && (
+            <span className="ml-2 text-warning-400">
+              {pendingCount} pendente{pendingCount > 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
+        <AddPartMenu
+          onEstoque={() => setEstoqueOpen(true)}
+          onCompra={() => setCompraOpen(true)}
+          onSeguradora={() => setSeguradoraOpen(true)}
+        />
       </div>
 
       {/* Filter chips */}
@@ -240,8 +216,15 @@ export function PartsTab({ orderId }: PartsTabProps) {
           <Loader2 className="animate-spin text-muted-foreground h-5 w-5" />
         </div>
       ) : partsList.length === 0 ? (
-        <div className="bg-muted/50 border border-border rounded-lg p-8 text-center text-muted-foreground text-sm">
-          Nenhuma peca adicionada. Use os botoes acima para adicionar.
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border bg-muted/20 p-10 text-center">
+          <Package className="h-8 w-8 text-muted-foreground/50" />
+          <p className="text-sm text-muted-foreground">Nenhuma peça nesta OS ainda.</p>
+          <AddPartMenu
+            primary
+            onEstoque={() => setEstoqueOpen(true)}
+            onCompra={() => setCompraOpen(true)}
+            onSeguradora={() => setSeguradoraOpen(true)}
+          />
         </div>
       ) : (
         <div className="overflow-hidden rounded-md border border-border bg-muted/50">
@@ -249,9 +232,6 @@ export function PartsTab({ orderId }: PartsTabProps) {
             <TableHeader className="bg-muted/30">
               <TableRow>
                 <TableHead className="label-mono text-muted-foreground">Peca</TableHead>
-                <TableHead className="label-mono text-muted-foreground">Tipo</TableHead>
-                <TableHead className="label-mono text-muted-foreground">Origem</TableHead>
-                <TableHead className="label-mono text-muted-foreground">Status</TableHead>
                 <TableHead className="label-mono text-muted-foreground text-center">Pagador</TableHead>
                 <TableHead className="label-mono text-muted-foreground text-right">Qtd</TableHead>
                 <TableHead className="label-mono text-muted-foreground text-right">Unit.</TableHead>
@@ -279,33 +259,23 @@ export function PartsTab({ orderId }: PartsTabProps) {
                     key={part.id}
                     className="border-b border-white/5 hover:bg-muted/30"
                   >
-                    {/* Peca name + SKU */}
+                    {/* Peca: nome + SKU + badges condensados */}
                     <TableCell>
-                      <div>
+                      <div className="space-y-1">
                         <span className="text-foreground font-medium text-sm">
                           {part.description}
+                          {part.part_number && (
+                            <span className="ml-2 text-xs text-muted-foreground font-mono font-normal">
+                              {part.part_number}
+                            </span>
+                          )}
                         </span>
-                        {part.part_number && (
-                          <span className="block text-xs text-muted-foreground font-mono mt-0.5">
-                            {part.part_number}
-                          </span>
-                        )}
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {part.tipo_qualidade && <TipoQualidadeBadge tipo={part.tipo_qualidade} />}
+                          <OrigemBadge origem={part.origem} />
+                          <StatusPecaBadge status={part.status_peca} />
+                        </div>
                       </div>
-                    </TableCell>
-
-                    {/* Tipo qualidade */}
-                    <TableCell>
-                      <TipoQualidadeBadge tipo={part.tipo_qualidade} />
-                    </TableCell>
-
-                    {/* Origem */}
-                    <TableCell>
-                      <OrigemBadge origem={part.origem} />
-                    </TableCell>
-
-                    {/* Status */}
-                    <TableCell>
-                      <StatusPecaBadge status={part.status_peca} />
                     </TableCell>
 
                     {/* Pagador */}
@@ -346,9 +316,9 @@ export function PartsTab({ orderId }: PartsTabProps) {
                         : "\u2014"}
                     </TableCell>
 
-                    {/* Líquido */}
+                    {/* Líquido (cobrado já é bruto − desconto) */}
                     <TableCell className="text-right font-mono text-sm text-foreground font-semibold">
-                      {formatCurrency(cobrado - parseFloat(part.discount))}
+                      {formatCurrency(cobrado)}
                     </TableCell>
 
                     {/* Custo (MANAGER+) */}
@@ -453,5 +423,53 @@ export function PartsTab({ orderId }: PartsTabProps) {
         }}
       />
     </div>
+  )
+}
+
+/* ─── Menu único de adicionar peça (3 origens) ─────────────────────────── */
+
+function AddPartMenu({
+  primary = false,
+  onEstoque,
+  onCompra,
+  onSeguradora,
+}: {
+  primary?: boolean
+  onEstoque: () => void
+  onCompra: () => void
+  onSeguradora: () => void
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          data-testid="add-part-menu-btn"
+          className={cn(
+            "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+            primary
+              ? "bg-primary text-primary-foreground hover:bg-primary/90"
+              : "border border-border bg-muted/30 text-foreground/80 hover:bg-muted/60",
+          )}
+        >
+          <Package className="h-4 w-4" />
+          Adicionar peça
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem data-testid="part-estoque-btn" onClick={onEstoque}>
+          <Warehouse className="mr-2 h-4 w-4 text-success-400" />
+          Do estoque
+        </DropdownMenuItem>
+        <DropdownMenuItem data-testid="part-compra-btn" onClick={onCompra}>
+          <ShoppingCart className="mr-2 h-4 w-4 text-info-400" />
+          Comprar
+        </DropdownMenuItem>
+        <DropdownMenuItem data-testid="part-seguradora-btn" onClick={onSeguradora}>
+          <Shield className="mr-2 h-4 w-4 text-purple-400" />
+          Seguradora fornece
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
