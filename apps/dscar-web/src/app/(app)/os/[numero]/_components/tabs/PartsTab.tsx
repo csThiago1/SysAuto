@@ -364,7 +364,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
                         {hasMargem ? (
                           <MargemBadge custo={custoReal!} cobrado={cobrado} />
                         ) : (
-                          <span className="text-muted-foreground">\u2014</span>
+                          <span className="text-muted-foreground">{"\u2014"}</span>
                         )}
                       </TableCell>
                     )}
