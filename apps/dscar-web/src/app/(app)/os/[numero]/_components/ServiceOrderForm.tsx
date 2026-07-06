@@ -189,6 +189,12 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
           <StatusBadge status={order.status as ServiceOrderStatus} />
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <a
+            href={`/os/${order.number}/v2`}
+            className="flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+          >
+            ✦ Experimentar nova versão
+          </a>
           <DocumentsDropdown order={order} />
 
           {/* Status transition dropdown — hidden for terminal statuses */}
