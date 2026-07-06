@@ -18,6 +18,7 @@ from rest_framework.permissions import IsAuthenticated
 import httpx
 
 from apps.authentication.permissions import HasTenantPermission, IsConsultantOrAbove, IsManagerOrAbove
+from apps.fiscal.serializers import BillingValidationResponseSerializer
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -172,7 +173,7 @@ class ServiceOrderViewSet(
             return [IsAuthenticated(), HasTenantPermission("os.edit")]
         if self.action == "transition":
             return [IsAuthenticated(), HasTenantPermission("os.transition")]
-        if self.action in ("billing", "billing_preview", "complement_bill"):
+        if self.action in ("billing", "billing_preview", "billing_validate", "complement_bill"):
             return [IsAuthenticated(), HasTenantPermission("os.billing")]
         if self.action == "deliver":
             return [IsAuthenticated(), HasTenantPermission("os.transition")]
@@ -539,6 +540,19 @@ class ServiceOrderViewSet(
         from apps.service_orders.billing import BillingService
         preview = BillingService.preview(order)
         return Response(preview)
+
+    @extend_schema(
+        summary="Preflight fiscal do faturamento",
+        responses={200: BillingValidationResponseSerializer},
+    )
+    @action(detail=True, methods=["get"], url_path="billing/validate")
+    def billing_validate(self, request: Request, pk: Optional[str] = None) -> Response:
+        """GET /service-orders/{id}/billing/validate/ — valida dados fiscais antes de emitir."""
+        order = self.get_object()
+        from apps.fiscal.services.validation import validate_service_order_for_billing
+        issues = validate_service_order_for_billing(order)
+        has_error = any(i["severity"] == "error" for i in issues)
+        return Response({"ready": not has_error, "issues": issues})
 
     @action(detail=True, methods=["post"], url_path="billing")
     def billing(self, request: Request, pk: Optional[str] = None) -> Response:

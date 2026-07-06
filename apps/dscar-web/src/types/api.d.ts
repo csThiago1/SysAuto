@@ -7072,6 +7072,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/service-orders/{id}/billing/validate/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preflight fiscal do faturamento
+         * @description GET /service-orders/{id}/billing/validate/ — valida dados fiscais antes de emitir.
+         */
+        get: operations["service_orders_billing_validate_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/service-orders/{id}/budget-snapshots/": {
         parameters: {
             query?: never;
@@ -9205,6 +9225,25 @@ export interface components {
          * @enum {string}
          */
         BillingStatusEnum: "pending" | "billed";
+        /** @description Documentação OpenAPI — issue do preflight de faturamento. */
+        BillingValidationIssue: {
+            code: string;
+            severity: components["schemas"]["SeverityEnum"];
+            message: string;
+            person_id: number;
+            parts: components["schemas"]["BillingValidationPart"][];
+        };
+        /** @description Documentação OpenAPI — peça com NCM inválido no preflight. */
+        BillingValidationPart: {
+            part_id: string;
+            description: string;
+            ncm: string;
+        };
+        /** @description Resposta de GET /service-orders/{id}/billing/validate/. */
+        BillingValidationResponse: {
+            ready: boolean;
+            issues: components["schemas"]["BillingValidationIssue"][];
+        };
         /** @enum {unknown} */
         BlankEnum: "";
         BloqueioCapacidade: {
@@ -22286,6 +22325,12 @@ export interface components {
             aplica_multiplicador_tamanho?: boolean;
             is_active?: boolean;
         };
+        /**
+         * @description * `error` - error
+         *     * `warning` - warning
+         * @enum {string}
+         */
+        SeverityEnum: "error" | "warning";
         /** @description Variante com o PNG base64 completo (pra renderizar no frontend). */
         SignatureDetail: {
             readonly id: number;
@@ -38381,6 +38426,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ServiceOrderDetail"];
+                };
+            };
+        };
+    };
+    service_orders_billing_validate_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingValidationResponse"];
                 };
             };
         };

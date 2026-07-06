@@ -234,6 +234,7 @@ export interface CreatePartPayload {
   quantity: number;
   unit_price: number;
   discount?: number;
+  ncm?: string;
 }
 
 export interface CreateLaborPayload {

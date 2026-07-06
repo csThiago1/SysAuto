@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { useBillingPreview, useBillOS } from "../_hooks/useBilling"
+import { useBillingPreview, useBillingValidation, useBillOS } from "../_hooks/useBilling"
+import { FiscalValidationPanel } from "./FiscalValidationPanel"
 import type {
   ServiceOrder,
   BillingPreviewItem,
@@ -49,6 +50,9 @@ interface BillingModalProps {
 
 export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
   const { data: preview, isLoading, error: previewError } = useBillingPreview(
+    open ? order.id : ""
+  )
+  const { data: validation, isLoading: validationLoading } = useBillingValidation(
     open ? order.id : ""
   )
   const billMutation = useBillOS(order.id)
@@ -166,6 +170,12 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
           {/* Preview loaded */}
           {preview && (
             <>
+              <FiscalValidationPanel
+                orderId={order.id}
+                validation={validation}
+                isLoading={validationLoading}
+              />
+
               {/* RESUMO */}
               <div>
                 <p className="label-mono text-muted-foreground mb-2">RESUMO</p>
@@ -308,8 +318,8 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
               {/* Can't bill warning */}
               {!preview.can_bill && (
                 <div className="flex items-start gap-2 rounded-lg bg-amber-950/30 border border-amber-700/20 px-3 py-2.5">
-                  <AlertTriangle className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
-                  <p className="text-xs text-amber-300/80">
+                  <AlertTriangle className="h-4 w-4 text-warning-400 mt-0.5 shrink-0" />
+                  <p className="text-xs text-warning-300/80">
                     Esta OS nao pode ser faturada no momento. Verifique se o
                     status permite faturamento.
                   </p>
@@ -332,7 +342,7 @@ export function BillingModal({ order, open, onOpenChange }: BillingModalProps) {
             <Button
               onClick={handleConfirm}
               disabled={
-                billMutation.isPending || !preview.can_bill
+                billMutation.isPending || !preview.can_bill || validation?.ready === false
               }
               className="bg-success-600 hover:bg-success-700 text-foreground"
             >

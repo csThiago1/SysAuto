@@ -24,6 +24,7 @@ import { useFiscalDocuments, useCancelFiscalDoc, useSendFiscalEmail, useSubstitu
 import { usePermission } from "@/hooks/usePermission"
 import type { FiscalDocumentList } from "@/hooks/useFiscal"
 import { cn } from "@/lib/utils"
+import { explainSefazError } from "@/lib/sefaz-errors"
 
 // ─── Status config ────────────────────────────────────────────────────────────
 
@@ -581,8 +582,12 @@ function FiscalDocRow({
     year: "numeric",
   })
 
+  const isRejected = doc.status === "rejected" && !!doc.mensagem_sefaz
+  const sefazHint = isRejected ? explainSefazError(doc.mensagem_sefaz) : null
+
   return (
-    <tr className="border-b border-border hover:bg-muted/30 transition-colors">
+    <>
+    <tr className={cn("border-border hover:bg-muted/30 transition-colors", !isRejected && "border-b")}>
       {/* Tipo */}
       <td className="py-3 px-4 text-xs font-mono text-foreground/70">
         {DOC_TYPE_LABELS[doc.document_type] ?? doc.document_type.toUpperCase()}
@@ -665,6 +670,25 @@ function FiscalDocRow({
         </div>
       </td>
     </tr>
+    {isRejected && (
+      <tr className="border-b border-border bg-error-500/5">
+        <td colSpan={8} className="py-2 px-4">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="h-3.5 w-3.5 text-error-400 mt-0.5 shrink-0" />
+            <div className="min-w-0 space-y-0.5">
+              <p className="text-xs text-error-400">{doc.mensagem_sefaz}</p>
+              {sefazHint && (
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground/70">Como resolver:</span>{" "}
+                  {sefazHint}
+                </p>
+              )}
+            </div>
+          </div>
+        </td>
+      </tr>
+    )}
+    </>
   )
 }
 

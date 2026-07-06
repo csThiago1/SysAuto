@@ -461,3 +461,28 @@ class DetailResponseSerializer(serializers.Serializer):
     """Resposta genérica {"detail": "mensagem"}."""
 
     detail = serializers.CharField()
+
+
+class BillingValidationPartSerializer(serializers.Serializer):
+    """Documentação OpenAPI — peça com NCM inválido no preflight."""
+
+    part_id = serializers.CharField()
+    description = serializers.CharField()
+    ncm = serializers.CharField(allow_blank=True)
+
+
+class BillingValidationIssueSerializer(serializers.Serializer):
+    """Documentação OpenAPI — issue do preflight de faturamento."""
+
+    code = serializers.CharField()
+    severity = serializers.ChoiceField(choices=["error", "warning"])
+    message = serializers.CharField()
+    person_id = serializers.IntegerField(required=False)
+    parts = BillingValidationPartSerializer(many=True, required=False)
+
+
+class BillingValidationResponseSerializer(serializers.Serializer):
+    """Resposta de GET /service-orders/{id}/billing/validate/."""
+
+    ready = serializers.BooleanField()
+    issues = BillingValidationIssueSerializer(many=True)
