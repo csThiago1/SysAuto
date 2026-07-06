@@ -12,6 +12,7 @@ import Link from "next/link"
 import type { Route } from "next"
 import { AlertTriangle, CheckCircle2, ExternalLink, Loader2 } from "lucide-react"
 import { useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { useUpdatePart } from "../_hooks/useOSItems"
 import type { BillingValidation, BillingValidationIssue } from "../_hooks/useBilling"
@@ -125,6 +126,9 @@ function NcmInlineFix({
       {
         onSuccess: () => {
           void qc.invalidateQueries({ queryKey: ["billing-validation", orderId] })
+        },
+        onError: () => {
+          toast.error("Erro ao salvar NCM. Tente novamente.")
         },
       },
     )

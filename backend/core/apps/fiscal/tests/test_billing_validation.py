@@ -126,6 +126,30 @@ class BillingValidationTestCase(TenantTestCase):
         codes = _codes(validate_service_order_for_billing(order))
         assert codes == {"no_billable_value"}
 
+    def test_correcao_de_ncm_em_os_ready_resolve_issue(self) -> None:
+        """Fluxo do painel: OS READY permite PATCH ncm-only e o preflight limpa."""
+        person = self._make_complete_person()
+        self._make_config()
+        order = self._make_order(person, number=9505)
+        part = ServiceOrderPart.objects.create(
+            service_order=order,
+            description="Retrovisor",
+            quantity=1,
+            unit_price=Decimal("200.00"),
+        )
+        assert "part_missing_ncm" in _codes(validate_service_order_for_billing(order))
+
+        # Simula o fix inline: serializer aceita ncm e OS READY não bloqueia
+        from apps.service_orders.serializers.core import ServiceOrderPartSerializer
+
+        serializer = ServiceOrderPartSerializer(part, data={"ncm": "87089990"}, partial=True)
+        assert serializer.is_valid(), serializer.errors
+        serializer.save()
+
+        part.refresh_from_db()
+        assert part.ncm == "87089990"
+        assert "part_missing_ncm" not in _codes(validate_service_order_for_billing(order))
+
     def test_nfse_exige_im_e_nfe_exige_ie(self) -> None:
         person = self._make_complete_person()
         config = self._make_config()

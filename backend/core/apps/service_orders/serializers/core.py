@@ -255,7 +255,7 @@ class ServiceOrderPartSerializer(_LineItemValidationMixin, serializers.ModelSeri
         model = ServiceOrderPart
         fields = [
             "id", "product", "product_name", "description", "part_number",
-            "quantity", "unit_price", "discount", "total",
+            "ncm", "quantity", "unit_price", "discount", "total",
             "origem", "origem_display",
             "tipo_qualidade", "tipo_qualidade_display",
             "status_peca", "status_peca_display",

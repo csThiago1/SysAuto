@@ -744,7 +744,10 @@ class ServiceOrderViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if service_order.status in (
+        # Correção de NCM é permitida em qualquer status: é dado fiscal do
+        # preflight de faturamento e não altera valores da OS.
+        is_ncm_only = set(request.data.keys()) <= {"ncm"}
+        if not is_ncm_only and service_order.status in (
             ServiceOrderStatus.READY,
             ServiceOrderStatus.DELIVERED,
             ServiceOrderStatus.CANCELLED,
