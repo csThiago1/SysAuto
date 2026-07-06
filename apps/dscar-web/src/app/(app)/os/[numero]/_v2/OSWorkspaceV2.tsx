@@ -146,7 +146,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
 
           <div className="ml-auto flex items-center gap-2">
             <a
-              href={`/os/${order.number}`}
+              href={`/os/${order.number}/classic`}
               className="rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
             >
               <FileText className="mr-1.5 inline h-3.5 w-3.5" />

@@ -190,10 +190,10 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <a
-            href={`/os/${order.number}/v2`}
+            href={`/os/${order.number}`}
             className="flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
           >
-            ✦ Experimentar nova versão
+            ✦ Voltar pra nova versão
           </a>
           <DocumentsDropdown order={order} />
 
