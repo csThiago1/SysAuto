@@ -96,7 +96,20 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
     <div className="flex min-h-[calc(100vh-64px)] flex-col">
       {/* ── Header ──────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
-        <div className="flex items-center gap-3 px-5 pt-3">
+        {/* Breadcrumb */}
+        <nav aria-label="Breadcrumb" className="px-5 pt-2.5">
+          <ol className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <li>
+              <a href="/os" className="transition-colors hover:text-foreground">
+                Ordens de Serviço
+              </a>
+            </li>
+            <li aria-hidden>/</li>
+            <li className="text-foreground/70">OS #{order.number}</li>
+          </ol>
+        </nav>
+
+        <div className="flex items-center gap-3 px-5 pt-1">
           <button
             type="button"
             onClick={() => router.push("/os")}
@@ -187,8 +200,12 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
 
       {/* ── Corpo: nav lateral + conteúdo ───────────────────────────── */}
       <div className="flex flex-1">
-        <nav className="w-44 shrink-0 border-r border-border px-2 py-4" aria-label="Seções da OS">
-          <ul className="space-y-0.5">
+        {/* Mesma linguagem do Sidebar global: barra ativa de 3px + label mono */}
+        <nav className="w-44 shrink-0 border-r border-border bg-background py-3" aria-label="Seções da OS">
+          <p className="px-5 pb-1.5 font-mono text-[9.5px] uppercase tracking-[1.5px] text-muted-foreground">
+            Seções
+          </p>
+          <ul>
             {NAV.map((item) => (
               <li key={item.id}>
                 <button
@@ -196,12 +213,15 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
                   onClick={() => setSection(item.id)}
                   aria-current={section === item.id ? "page" : undefined}
                   className={cn(
-                    "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
+                    "relative flex w-full items-center gap-2.5 px-5 py-2 text-sm transition-colors",
                     section === item.id
-                      ? "bg-primary/10 font-medium text-primary"
-                      : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+                      ? "bg-muted/30 font-medium text-foreground"
+                      : "text-muted-foreground hover:bg-muted/20 hover:text-foreground",
                   )}
                 >
+                  {section === item.id && (
+                    <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-sm bg-primary" />
+                  )}
                   {item.icon}
                   {item.label}
                 </button>

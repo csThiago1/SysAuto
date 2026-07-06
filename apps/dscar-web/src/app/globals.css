@@ -20,7 +20,8 @@
   --popover:             0 0% 8%;
   --popover-foreground:  0 0% 95%;
 
-  --primary:             0 82% 42%;
+  /* Roxo Paddock (logo) como cor de marca */
+  --primary:             288 68% 48%;
   --primary-foreground:  0 0% 100%;
 
   --secondary:           0 0% 14%;
@@ -37,15 +38,15 @@
 
   --border:              0 0% 18%;
   --input:               0 0% 18%;
-  --ring:                0 82% 42%;
+  --ring:                288 68% 48%;
 
   --radius: 0.5rem;
 
   --sidebar-bg:          0 0% 8%;
-  --sidebar-bg-hover:    0 82% 38%;
+  --sidebar-bg-hover:    288 68% 38%;
   --sidebar-text:        0 0% 72%;
   --sidebar-text-active: 0 0% 100%;
-  --sidebar-accent:      0 82% 42%;
+  --sidebar-accent:      288 68% 48%;
   --sidebar-border:      0 0% 16%;
 }
 
@@ -61,7 +62,7 @@
   --popover:             30 33% 97%;
   --popover-foreground:  240 27% 18%;
 
-  --primary:             233 25% 25%;
+  --primary:             288 55% 36%;
   --primary-foreground:  0 0% 100%;
 
   --secondary:           11 18% 82%;
@@ -78,13 +79,13 @@
 
   --border:              11 18% 78%;
   --input:               11 18% 78%;
-  --ring:                233 25% 25%;
+  --ring:                288 55% 36%;
 
   --sidebar-bg:          21 28% 92%;
   --sidebar-bg-hover:    11 18% 85%;
   --sidebar-text:        273 7% 46%;
-  --sidebar-text-active: 233 25% 22%;
-  --sidebar-accent:      233 25% 22%;
+  --sidebar-text-active: 288 55% 30%;
+  --sidebar-accent:      288 55% 36%;
   --sidebar-border:      11 18% 78%;
 }
 
