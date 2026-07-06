@@ -17,10 +17,32 @@ import {
   User,
   Wrench,
 } from "lucide-react"
-import type { ServiceOrder, ServiceOrderPhoto } from "@paddock/types"
+import type { PersonContact, ServiceOrder, ServiceOrderPhoto } from "@paddock/types"
 import { formatCurrency, formatDate } from "@paddock/utils"
 import { TransitionRequirementsPanel } from "../_components/TransitionRequirementsPanel"
 import { useOSPhotos } from "../_hooks/useOSItems"
+import { usePerson } from "@/hooks/usePersons"
+
+/** Telefone preferido pra contato: WhatsApp > celular > comercial. */
+function pickPhone(contacts: PersonContact[] | undefined): PersonContact | null {
+  if (!contacts?.length) return null
+  for (const type of ["WHATSAPP", "CELULAR", "COMERCIAL"] as const) {
+    const found =
+      contacts.find((c) => c.contact_type === type && c.is_primary) ??
+      contacts.find((c) => c.contact_type === type)
+    if (found?.value) return found
+  }
+  return null
+}
+
+/** wa.me exige só dígitos com DDI — prefixa 55 em números nacionais. */
+function whatsappHref(phone: string): string {
+  let digits = phone.replace(/\D/g, "")
+  if (!digits.startsWith("55") && (digits.length === 10 || digits.length === 11)) {
+    digits = `55${digits}`
+  }
+  return `https://wa.me/${digits}`
+}
 
 interface OverviewSectionProps {
   order: ServiceOrder
@@ -36,6 +58,9 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
   const recentPhotos = (photos as ServiceOrderPhoto[])
     .filter((p) => p.is_active && p.url)
     .slice(0, 4)
+
+  const { data: person } = usePerson(order.customer_person_id)
+  const phone = pickPhone(person?.contacts)
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -62,6 +87,20 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
               {order.customer_type === "insurer" ? "Seguradora" : "Particular"}
               {order.insurer_detail?.name ? ` · ${order.insurer_detail.name}` : ""}
             </p>
+            {phone && (
+              <a
+                href={whatsappHref(phone.value)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-success-500/30 bg-success-500/10 px-2.5 py-1 text-xs font-medium text-success-400 transition-colors hover:bg-success-500/20"
+                aria-label={`Abrir WhatsApp com ${order.customer_name}`}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden>
+                  <path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.47-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.44-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.5h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.1 3.2 5.1 4.49.71.3 1.27.49 1.7.63.72.23 1.37.2 1.88.12.58-.09 1.76-.72 2-1.42.25-.7.25-1.3.18-1.42-.08-.13-.28-.2-.57-.35M12.05 21.79h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.9-9.88a9.83 9.83 0 0 1 7 2.9 9.83 9.83 0 0 1 2.89 7c0 5.45-4.44 9.88-9.9 9.88m8.42-18.3A11.8 11.8 0 0 0 12.05 0C5.5 0 .16 5.34.15 11.89c0 2.1.55 4.14 1.59 5.94L.05 24l6.33-1.66a11.88 11.88 0 0 0 5.66 1.44h.01c6.55 0 11.89-5.34 11.9-11.9a11.82 11.82 0 0 0-3.48-8.4" />
+                </svg>
+                {phone.value}
+              </a>
+            )}
           </InfoCard>
 
           <InfoCard icon={<Car className="h-4 w-4" />} title="Veículo">
