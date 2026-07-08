@@ -32,6 +32,7 @@ export function TopBar(): React.ReactElement {
       <div className="flex items-center gap-2">
         <button
           type="button"
+          aria-label="Buscar (⌘K)"
           onClick={() =>
             document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))
           }
