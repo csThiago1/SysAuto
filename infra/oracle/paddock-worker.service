@@ -1,0 +1,18 @@
+# /etc/systemd/system/paddock-worker.service
+[Unit]
+Description=Paddock DS Car Celery worker
+After=network-online.target redis.service
+Wants=network-online.target
+
+[Service]
+User=opc
+WorkingDirectory=/opt/paddock
+EnvironmentFile=/opt/paddock/.env
+ExecStart=/opt/paddock/venv/bin/celery -A config worker -l warning \
+  --concurrency=1 --max-tasks-per-child=50
+Restart=always
+RestartSec=10
+MemoryMax=250M
+
+[Install]
+WantedBy=multi-user.target

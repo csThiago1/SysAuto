@@ -1,0 +1,15 @@
+# /etc/systemd/system/caddy.service — binário estático em /usr/local/bin/caddy
+[Unit]
+Description=Caddy reverse proxy (TLS automático)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/caddy run --config /etc/caddy/Caddyfile
+Restart=always
+RestartSec=5
+MemoryMax=100M
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target

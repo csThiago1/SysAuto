@@ -1,0 +1,21 @@
+# /etc/systemd/system/paddock-api.service
+# ponytail: bare-metal na E2.1.Micro (500MB) — containers não cabem;
+# ao migrar pra VM A1, voltar pro docker-compose.yml deste diretório.
+[Unit]
+Description=Paddock DS Car API (gunicorn)
+After=network-online.target redis.service
+Wants=network-online.target
+
+[Service]
+User=opc
+WorkingDirectory=/opt/paddock
+EnvironmentFile=/opt/paddock/.env
+ExecStart=/opt/paddock/venv/bin/gunicorn config.wsgi:application \
+  --bind 127.0.0.1:8000 --workers 2 --timeout 60 \
+  --max-requests 500 --max-requests-jitter 50
+Restart=always
+RestartSec=5
+MemoryMax=350M
+
+[Install]
+WantedBy=multi-user.target
