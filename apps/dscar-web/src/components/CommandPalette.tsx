@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Command } from "cmdk"
 import { useSession } from "next-auth/react"
 import { ROLE_HIERARCHY, type PaddockRole } from "@paddock/types"
-import { NAV_SECTIONS, type NavSection } from "./Sidebar"
+import { NAV_SECTIONS, type NavSection } from "@/components/dock/nav-config"
 
 export function CommandPalette(): React.ReactElement {
   const [open, setOpen] = useState(false)

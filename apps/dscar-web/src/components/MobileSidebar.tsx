@@ -19,7 +19,7 @@ import {
   isActiveRoute,
   isGroupActive,
   getInitials,
-} from "./Sidebar";
+} from "@/components/dock/nav-config";
 
 // ─── MobileSidebar ───────────────────────────────────────────────────
 
