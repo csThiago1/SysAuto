@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import type { Route } from "next";
 import { useSession } from "next-auth/react";
 import { useReducedMotion } from "motion/react";
 import type { PaddockRole, ExtraPermission } from "@paddock/types";
@@ -91,12 +92,12 @@ export function DockNav(): React.ReactElement {
     <div
       id="dock-nav"
       className={cn(
-        "fixed bottom-3 left-1/2 -translate-x-1/2 z-40 hidden md:block",
+        "fixed bottom-3 left-1/2 -translate-x-1/2 z-40 hidden md:flex",
         "transition-transform duration-300 ease-out",
         hidden && "translate-y-[140%]"
       )}
     >
-      <Dock modules={modules} onNavigate={(href) => router.push(href as never)} />
+      <Dock modules={modules} onNavigate={(href) => router.push(href as Route)} />
     </div>
   );
 }
