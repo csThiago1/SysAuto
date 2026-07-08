@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { forwardRef, useRef, useState } from "react";
 import {
   motion,
   useMotionValue,
@@ -42,18 +42,22 @@ const MAGNIFIED_SIZE = 64;
 const DISTANCE = 140;
 const SPRING = { mass: 0.1, stiffness: 150, damping: 12 };
 
-function DockItemButton({
-  module: mod,
-  mouseX,
-  magnify,
-  onClick,
-}: {
-  module: DockModule;
-  mouseX: MotionValue<number>;
-  magnify: boolean;
-  onClick?: () => void;
-}) {
+const DockItemButton = forwardRef<
+  HTMLButtonElement,
+  {
+    module: DockModule;
+    mouseX: MotionValue<number>;
+    magnify: boolean;
+    onClick?: () => void;
+  }
+>(function DockItemButton({ module: mod, mouseX, magnify, onClick, ...rest }, forwardedRef) {
   const ref = useRef<HTMLButtonElement>(null);
+  // ponytail: callback ref simples mesclando o ref interno (magnification) com o do Radix Slot
+  const setRefs = (node: HTMLButtonElement | null) => {
+    ref.current = node;
+    if (typeof forwardedRef === "function") forwardedRef(node);
+    else if (forwardedRef) forwardedRef.current = node;
+  };
 
   const distanceFromMouse = useTransform(mouseX, (val: number) => {
     const rect = ref.current?.getBoundingClientRect();
@@ -69,7 +73,8 @@ function DockItemButton({
 
   return (
     <motion.button
-      ref={ref}
+      {...rest}
+      ref={setRefs}
       type="button"
       style={{ width: size, height: size }}
       onClick={onClick}
@@ -77,7 +82,7 @@ function DockItemButton({
       title={mod.label}
       aria-current={mod.active ? "page" : undefined}
       {...(mod.children
-        ? { "aria-haspopup": "menu" as const }
+        ? { "aria-haspopup": "dialog" as const }
         : {})}
       className={cn(
         "relative flex items-center justify-center rounded-xl border transition-colors",
@@ -95,7 +100,7 @@ function DockItemButton({
       )}
     </motion.button>
   );
-}
+});
 
 export function Dock({ modules, onNavigate, className }: DockProps) {
   const reduce = useReducedMotion();
@@ -121,7 +126,7 @@ export function Dock({ modules, onNavigate, className }: DockProps) {
             onOpenChange={(open) => setOpenId(open ? mod.id : null)}
           >
             <PopoverTrigger asChild>
-              <DockItemButton module={mod} mouseX={mouseX} magnify={!reduce} />
+              <DockItemButton module={mod} mouseX={mouseX} magnify={reduce === false} />
             </PopoverTrigger>
             <PopoverContent side="top" sideOffset={12} className="w-52 p-1.5">
               <p className="label-mono px-2.5 pt-1 pb-1.5 text-muted-foreground">
@@ -153,7 +158,7 @@ export function Dock({ modules, onNavigate, className }: DockProps) {
             key={mod.id}
             module={mod}
             mouseX={mouseX}
-            magnify={!reduce}
+            magnify={reduce === false}
             onClick={() => mod.href && onNavigate(mod.href)}
           />
         )
