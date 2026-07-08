@@ -1,0 +1,52 @@
+# Paddock — produção na Oracle Free Tier (E2.1.Micro / A1)
+# Imagem buildada fora da VM (docker buildx no dev) e carregada via docker load.
+# ponytail: micro tem ~500MB RAM — workers/concurrency mínimos; subir quando migrar pra A1.
+
+services:
+  api:
+    image: dscar-api:oracle
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      GUNICORN_WORKERS: "2"
+      GUNICORN_TIMEOUT: "60"
+    depends_on:
+      - redis
+    mem_limit: 700m
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  worker:
+    image: dscar-api:oracle
+    restart: unless-stopped
+    env_file: .env
+    command: celery -A config worker -l warning --concurrency=1 --max-tasks-per-child=50
+    depends_on:
+      - redis
+    mem_limit: 400m
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --maxmemory 48mb --maxmemory-policy allkeys-lru --save ""
+    mem_limit: 80m
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      - api
+    mem_limit: 80m
+
+volumes:
+  caddy_data:

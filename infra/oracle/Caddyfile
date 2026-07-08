@@ -1,0 +1,6 @@
+# TLS automático via Let's Encrypt.
+# sslip.io resolve {ip}.sslip.io pro próprio IP — troca pelo domínio real
+# (api.paddock.solutions) quando o DNS for apontado.
+147-15-19-48.sslip.io {
+    reverse_proxy api:8000
+}
