@@ -67,3 +67,4 @@ weasyprint==63.1
 
 # ── ETL / Migração legado ──────────────────────────────────────────────────
 xlrd==2.0.1             # Leitura de arquivos .xls (Databox export)
+pywebpush==2.0.3

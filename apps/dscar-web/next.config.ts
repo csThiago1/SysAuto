@@ -110,4 +110,15 @@ const nextConfig: NextConfig = {
 // instrumentation-client.ts + NEXT_PUBLIC_SENTRY_DSN — só não há upload
 // automático de source maps (stack trace minificado em produção).
 // TODO: voltar com withSentryConfig depois de resolver hoisting do monorepo.
-export default withBundleAnalyzer(nextConfig);
+
+// PWA (Serwist) — atrás da flag do spec; sem a flag o build sai idêntico ao atual.
+const pwaEnabled = process.env.NEXT_PUBLIC_PWA_ENABLED === "true";
+const withSerwist = pwaEnabled
+    ? require("@serwist/next").default({
+          swSrc: "src/sw/service-worker.ts",
+          swDest: "public/sw.js",
+          disable: process.env.NODE_ENV === "development",
+      })
+    : (config: NextConfig) => config;
+
+export default withSerwist(withBundleAnalyzer(nextConfig));

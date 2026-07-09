@@ -17,6 +17,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { useOSPhotos, useSoftDeletePhoto, useUploadPhoto } from "../../_hooks/useOSItems"
+import { CameraCapture } from "@/components/camera/CameraCapture"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -38,11 +39,17 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
   const [caption, setCaption] = useState("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
+  const [cameraOpen, setCameraOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    setSelectedFile(file)
+    setPreview(URL.createObjectURL(file))
+  }
+
+  function handleCameraCapture(file: File) {
     setSelectedFile(file)
     setPreview(URL.createObjectURL(file))
   }
@@ -83,21 +90,40 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
               </button>
             </div>
           ) : (
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className={cn(
-                "w-full h-36 rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-colors hover:opacity-80",
-                folderCfg.borderColor,
-                folderCfg.bgColor,
-              )}
-            >
-              <Upload className={cn("h-8 w-8", folderCfg.color)} />
-              <span className={cn("text-sm font-medium", folderCfg.color)}>
-                Clique para selecionar foto
-              </span>
-              <span className="text-xs text-muted-foreground">JPG, PNG ou WEBP</span>
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className={cn(
+                  "h-36 rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-colors hover:opacity-80",
+                  folderCfg.borderColor,
+                  folderCfg.bgColor,
+                )}
+              >
+                <Upload className={cn("h-7 w-7", folderCfg.color)} />
+                <span className={cn("text-sm font-medium", folderCfg.color)}>Arquivo</span>
+                <span className="text-xs text-muted-foreground">JPG, PNG ou WEBP</span>
+              </button>
+              <button
+                onClick={() => setCameraOpen(true)}
+                className={cn(
+                  "h-36 rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-colors hover:opacity-80",
+                  folderCfg.borderColor,
+                  folderCfg.bgColor,
+                )}
+              >
+                <Camera className={cn("h-7 w-7", folderCfg.color)} />
+                <span className={cn("text-sm font-medium", folderCfg.color)}>Câmera</span>
+                <span className="text-xs text-muted-foreground">com marca d&apos;água</span>
+              </button>
+            </div>
           )}
+
+          <CameraCapture
+            open={cameraOpen}
+            onClose={() => setCameraOpen(false)}
+            onCapture={handleCameraCapture}
+            watermarkLines={[`Pasta: ${folderCfg.label}`]}
+          />
 
           <input
             ref={fileInputRef}

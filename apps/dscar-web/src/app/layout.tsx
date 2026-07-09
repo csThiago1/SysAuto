@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Montserrat, Rajdhani } from "next/font/google";
 import "./globals.css";
@@ -27,6 +27,22 @@ export const metadata: Metadata = {
   },
   description: "Sistema de gestão DS Car Centro Automotivo",
   robots: { index: false, follow: false },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "DS Car",
+  },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0a0a0a",
+  width: "device-width",
+  initialScale: 1,
+  // maximumScale 1 evita zoom acidental em inputs no iOS sem bloquear pinch (viewport-fit pro notch)
+  viewportFit: "cover",
 };
 
 // ─── Layout raiz ──────────────────────────────────────────────────────────────

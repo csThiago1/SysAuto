@@ -57,6 +57,7 @@ TENANT_APPS = [
     "apps.purchasing",
     "apps.fiscal",
     "apps.cilia",
+    "apps.notifications",
     "apps.hr",
     "apps.accounting",
     "apps.accounts_payable",
@@ -288,6 +289,11 @@ CORS_ALLOW_CREDENTIALS = True
 
 # ─── Criptografia (LGPD) ─────────────────────────────────────────────────────
 FIELD_ENCRYPTION_KEY = config("FIELD_ENCRYPTION_KEY", default="")
+
+# ─── Web Push (VAPID) ────────────────────────────────────────────────────────
+VAPID_PRIVATE_KEY = config("VAPID_PRIVATE_KEY", default="")
+VAPID_PUBLIC_KEY = config("VAPID_PUBLIC_KEY", default="")
+VAPID_CONTACT_EMAIL = config("VAPID_CONTACT_EMAIL", default="tech@paddock.solutions")
 
 # ─── Storage (AWS S3) ────────────────────────────────────────────────────────
 AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID", default="")
