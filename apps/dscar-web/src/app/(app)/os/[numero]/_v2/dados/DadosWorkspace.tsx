@@ -285,7 +285,8 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
 
       {/* ── Barra de salvar ─────────────────────────────────────────── */}
       {isDirty && (
-        <div className="sticky bottom-0 z-10 -mx-1 flex items-center justify-between rounded-t-xl border border-border bg-background/95 px-4 py-3 backdrop-blur">
+        // bottom-20 deixa a barra acima do DockNav/MobileTabBar (fixed bottom z-40)
+        <div className="sticky bottom-20 z-10 -mx-1 flex items-center justify-between rounded-xl border border-border bg-background/95 px-4 py-3 backdrop-blur">
           <p className="text-xs text-muted-foreground">Alterações não salvas</p>
           <div className="flex gap-2">
             <Button
