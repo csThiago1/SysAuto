@@ -94,7 +94,7 @@ def generate_refresh_token(user: "GlobalUser") -> str:  # noqa: F821
         "sub": str(user.pk),
         "aud": getattr(settings, "JWT_AUDIENCE", "dscar-erp"),
         "iat": now,
-        "exp": now + datetime.timedelta(days=7),
+        "exp": now + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"],
         "token_type": "refresh",
     }
     return pyjwt.encode(payload, _get_secret(), algorithm=_get_algorithm())

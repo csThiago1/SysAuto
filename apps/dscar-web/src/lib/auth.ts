@@ -93,6 +93,13 @@ async function refreshAccessToken(
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
+  // Sessão rolante de 30 dias: usuário ativo nunca desloga; o cookie
+  // renova a cada 24h de uso e expira só após 30d de inatividade.
+  session: {
+    strategy: "jwt",
+    maxAge: 60 * 60 * 24 * 30,
+    updateAge: 60 * 60 * 24,
+  },
   providers: [
     Credentials({
       id: "credentials",
@@ -163,8 +170,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       // 2. Token ainda válido — retorna sem refresh
       const expires = token.accessTokenExpires as number | undefined;
-      if (expires && Date.now() < expires - 60_000) {
-        // 60s de margem para evitar race condition
+      if (expires && Date.now() < expires - 300_000) {
+        // 5min de margem: refresh proativo elimina 401 em requests longos
         return token;
       }
 

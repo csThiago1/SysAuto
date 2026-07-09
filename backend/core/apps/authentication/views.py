@@ -103,7 +103,8 @@ def _issue_tokens(user: GlobalUser) -> dict:
     RefreshToken.objects.create(
         user=user,
         token_hash=token_hash,
-        expires_at=datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=7),
+        expires_at=datetime.datetime.now(tz=datetime.timezone.utc)
+        + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"],
     )
     return {"access": access, "refresh": refresh}
 

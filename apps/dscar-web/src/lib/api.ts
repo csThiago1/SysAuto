@@ -48,16 +48,28 @@ export async function apiFetch<T>(
   }
 
   if (res.status === 401) {
-    if (!signingOut) {
-      signingOut = true;
-      toast.error("Sessão expirada. Fazendo logout...");
-      // redirect: false evita que o signOut navegue sozinho e causa loop
-      // quando o endpoint /api/auth/signout falha
-      signOut({ redirect: false }).finally(() => {
-        window.location.href = "/login";
-      });
+    // Retry único: o proxy renova a sessão server-side ao consultar auth(),
+    // então repetir a request usa o access token já atualizado. Só desloga
+    // se o retry também voltar 401 (refresh de fato expirado/revogado).
+    await new Promise((r) => setTimeout(r, 300));
+    try {
+      res = await fetch(input, init);
+    } catch {
+      toast.error("Sem conexão com o servidor");
+      throw new Error("network_error");
     }
-    throw new Error("unauthorized");
+    if (res.status === 401) {
+      if (!signingOut) {
+        signingOut = true;
+        toast.error("Sessão expirada. Fazendo logout...");
+        // redirect: false evita que o signOut navegue sozinho e causa loop
+        // quando o endpoint /api/auth/signout falha
+        signOut({ redirect: false }).finally(() => {
+          window.location.href = "/login";
+        });
+      }
+      throw new Error("unauthorized");
+    }
   }
 
   if (!res.ok) {
