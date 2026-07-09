@@ -53,5 +53,8 @@ export default auth((req: Parameters<Parameters<typeof auth>[0]>[0]) => {
 });
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.svg$|.*\\.jpg$|.*\\.ico$).*)"],
+  // manifest/sw ficam fora do auth — o browser busca sem cookies de sessão
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|.*\\.png$|.*\\.svg$|.*\\.jpg$|.*\\.ico$).*)",
+  ],
 };
