@@ -73,6 +73,15 @@ class ServiceOrderPart(PaddockBaseModel):
     unit_price = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Preço unitário")
     discount = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Desconto")
 
+    client_uuid = models.CharField(
+        max_length=36,
+        unique=True,
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="UUID v7 gerado no cliente — idempotência do sync offline (PWA onda 5)",
+    )
+
     # --- Campos WMS / Compras ---
     class Origem(models.TextChoices):
         ESTOQUE = "estoque", "Estoque"

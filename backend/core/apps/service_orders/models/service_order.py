@@ -84,6 +84,15 @@ class ServiceOrder(PaddockBaseModel):
 
     number = models.PositiveIntegerField(db_index=True, verbose_name="Número da OS")
 
+    client_uuid = models.CharField(
+        max_length=36,
+        unique=True,
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="UUID v7 gerado no cliente — idempotência do sync offline (PWA onda 5)",
+    )
+
     # ── Informações de abertura ──────────────────────────────────────────────
     consultant = models.ForeignKey(
         "authentication.GlobalUser",
@@ -591,6 +600,15 @@ class ServiceOrderPhoto(models.Model):
     uploaded_by_id = models.UUIDField()
     uploaded_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)  # soft delete apenas
+
+    client_uuid = models.CharField(
+        max_length=36,
+        unique=True,
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="UUID v7 gerado no cliente — idempotência do sync offline (PWA onda 5)",
+    )
 
     class Meta:
         db_table = "service_orders_photo"

@@ -67,6 +67,15 @@ class Signature(models.Model):
     user_agent = models.CharField(max_length=400, blank=True, default="")
     signed_at = models.DateTimeField(default=timezone.now, editable=False, db_index=True)
 
+    client_uuid = models.CharField(
+        max_length=36,
+        unique=True,
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="UUID v7 gerado no cliente — idempotência do sync offline (PWA onda 5)",
+    )
+
     # Token do link remoto (quando REMOTE_LINK) — JWT curto opcional
     remote_token = models.CharField(max_length=500, blank=True, default="")
 

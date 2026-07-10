@@ -60,6 +60,15 @@ class ApontamentoHoras(PaddockBaseModel):
         verbose_name="Status",
     )
 
+    client_uuid = models.CharField(
+        max_length=36,
+        unique=True,
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="UUID v7 gerado no cliente — idempotência do sync offline (PWA onda 5)",
+    )
+
     class Meta:
         verbose_name = "Apontamento de Horas"
         verbose_name_plural = "Apontamentos de Horas"
