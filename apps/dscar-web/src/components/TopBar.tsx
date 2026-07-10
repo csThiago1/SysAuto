@@ -3,6 +3,7 @@
 import { useSession, signOut } from "next-auth/react";
 import { Search, LogOut } from "lucide-react";
 import { NotificationBell } from "@/components/header/NotificationBell";
+import { OfflineStatusBar } from "@/components/offline/OfflineStatusBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ROLE_LABELS, getInitials } from "@/components/dock/nav-config";
 import {
@@ -30,6 +31,7 @@ export function TopBar(): React.ReactElement {
       </div>
 
       <div className="flex items-center gap-2">
+        <OfflineStatusBar />
         <button
           type="button"
           aria-label="Buscar (⌘K)"
