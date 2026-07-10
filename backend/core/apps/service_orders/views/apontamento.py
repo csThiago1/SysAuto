@@ -14,6 +14,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from apps.authentication.permissions import IsConsultantOrAbove
 from apps.service_orders.models.capacity import ApontamentoHoras
+from apps.service_orders.offline import find_by_client_uuid
 from apps.service_orders.serializers.apontamento import (
     ApontamentoCreateSerializer,
     ApontamentoSerializer,
@@ -47,6 +48,9 @@ class ApontamentoViewSet(GenericViewSet):
 
     def create(self, request: Request, **kwargs: object) -> Response:
         """Cria apontamento — timer (so tecnico_id) ou manual (com horarios)."""
+        already_synced = find_by_client_uuid(ApontamentoHoras, request)
+        if already_synced:
+            return Response(ApontamentoSerializer(already_synced).data)
         os_id = self.kwargs["service_order_pk"]
         serializer = ApontamentoCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -90,6 +94,7 @@ class ApontamentoViewSet(GenericViewSet):
             horas_apontadas=horas,
             observacao=observacao,
             status=apto_status,
+            client_uuid=request.data.get("client_uuid") or None,
         )
 
         return Response(

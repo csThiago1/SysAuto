@@ -58,3 +58,10 @@ class OfflineSyncTest(TenantTestCase):
 
     def test_sem_if_match_passa(self) -> None:
         check_if_match(self.order, self._request())  # header ausente = sem verificação
+
+    def test_create_os_duplicado_por_client_uuid_nao_duplica(self) -> None:
+        """Replay do mesmo client_uuid devolve a OS existente em vez de criar outra."""
+        req = self._request({"client_uuid": CLIENT_UUID})
+        found = find_by_client_uuid(ServiceOrder, req)
+        assert found is not None
+        assert ServiceOrder.objects.filter(client_uuid=CLIENT_UUID).count() == 1

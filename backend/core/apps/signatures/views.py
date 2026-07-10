@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 from apps.quotes.models import Orcamento
 from apps.service_orders.models import ServiceOrder
+from apps.service_orders.offline import find_by_client_uuid
 
 from .models import Signature
 from .serializers import (
@@ -45,6 +46,10 @@ class SignatureViewSet(viewsets.ReadOnlyModelViewSet):
             "signer_cpf": "000.000.000-00"  // opcional
           }
         """
+        existing = find_by_client_uuid(Signature, request)
+        if existing:
+            return Response(SignatureDetailSerializer(existing).data)
+
         ser = CaptureSignatureSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
 
@@ -72,6 +77,10 @@ class SignatureViewSet(viewsets.ReadOnlyModelViewSet):
             user_agent=ua,
             notes=ser.validated_data.get("notes", ""),
         )
+
+        client_uuid = request.data.get("client_uuid") or None
+        if client_uuid:
+            Signature.objects.filter(pk=signature.pk).update(client_uuid=client_uuid)
 
         return Response(
             SignatureDetailSerializer(signature).data,

@@ -65,6 +65,7 @@ from ..serializers import (
 )
 from apps.accounts_receivable.models import ReceivableDocument
 from ..billing import BillingService
+from ..offline import check_if_match, find_by_client_uuid
 from ..services import ServiceOrderDeliveryService, ServiceOrderService
 
 logger = logging.getLogger(__name__)
@@ -279,12 +280,20 @@ class ServiceOrderViewSet(
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Cria nova OS via ServiceOrderService (gera número automático)."""
+        existing = find_by_client_uuid(ServiceOrder, request)
+        if existing:
+            return Response(
+                ServiceOrderDetailSerializer(existing, context={"request": request}).data
+            )
         serializer = ServiceOrderCreateSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         order = ServiceOrderService.create(
             data=serializer.validated_data,
             created_by_id=str(request.user.id),
         )
+        client_uuid = request.data.get("client_uuid") or None
+        if client_uuid:
+            ServiceOrder.objects.filter(pk=order.pk).update(client_uuid=client_uuid)
         logger.info(
             "OS #%d aberta para placa=%s por user_id=%s",
             order.number,
@@ -300,6 +309,7 @@ class ServiceOrderViewSet(
         """Atualiza OS via ServiceOrderService (processa auto-transitions)."""
         partial = kwargs.pop("partial", False)
         instance = self.get_object()
+        check_if_match(instance, request)
         serializer = ServiceOrderUpdateSerializer(
             instance, data=request.data, partial=partial, context={"request": request}
         )
@@ -667,6 +677,9 @@ class ServiceOrderViewSet(
         service_order: ServiceOrder = self.get_object()
 
         if request.method == "POST":
+            existing = find_by_client_uuid(ServiceOrderPart, request)
+            if existing:
+                return Response(ServiceOrderPartSerializer(existing).data)
             locked_response = _financial_locked_response(service_order)
             if locked_response is not None:
                 return locked_response
@@ -681,7 +694,11 @@ class ServiceOrderViewSet(
                 )
             serializer = ServiceOrderPartSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            part = serializer.save(service_order=service_order, created_by=request.user)
+            part = serializer.save(
+                service_order=service_order,
+                created_by=request.user,
+                client_uuid=request.data.get("client_uuid") or None,
+            )
             ServiceOrderActivityLog.objects.create(
                 service_order=service_order,
                 user=request.user,
@@ -777,6 +794,9 @@ class ServiceOrderViewSet(
     def parts_estoque(self, request: Request, pk: Optional[str] = None) -> Response:
         """Adicionar peça do estoque — bloqueia imediatamente (PC-2)."""
         os = self.get_object()
+        existing = find_by_client_uuid(ServiceOrderPart, request)
+        if existing:
+            return Response(ServiceOrderPartSerializer(existing).data)
         locked_response = _financial_locked_response(os)
         if locked_response is not None:
             return locked_response
@@ -817,6 +837,7 @@ class ServiceOrderViewSet(
                 unidade_fisica=unidade,
                 custo_real=unidade.valor_nf,
                 created_by=request.user,
+                client_uuid=request.data.get("client_uuid") or None,
             )
             return Response(ServiceOrderPartSerializer(part).data, status=status.HTTP_201_CREATED)
         except UnidadeFisica.DoesNotExist:
@@ -830,6 +851,9 @@ class ServiceOrderViewSet(
     def parts_compra(self, request: Request, pk: Optional[str] = None) -> Response:
         """Solicitar compra — gera PedidoCompra automaticamente."""
         os = self.get_object()
+        existing = find_by_client_uuid(ServiceOrderPart, request)
+        if existing:
+            return Response(ServiceOrderPartSerializer(existing).data)
         locked_response = _financial_locked_response(os)
         if locked_response is not None:
             return locked_response
@@ -848,6 +872,7 @@ class ServiceOrderViewSet(
                 tipo_qualidade=d["tipo_qualidade"],
                 status_peca="aguardando_cotacao",
                 created_by=request.user,
+                client_uuid=request.data.get("client_uuid") or None,
             )
             # Gerar pedido de compra
             from apps.purchasing.services import PedidoCompraService
@@ -873,6 +898,9 @@ class ServiceOrderViewSet(
     def parts_seguradora(self, request: Request, pk: Optional[str] = None) -> Response:
         """Registrar peça de seguradora (complemento manual — PC-11)."""
         os = self.get_object()
+        existing = find_by_client_uuid(ServiceOrderPart, request)
+        if existing:
+            return Response(ServiceOrderPartSerializer(existing).data)
         locked_response = _financial_locked_response(os)
         if locked_response is not None:
             return locked_response
@@ -890,6 +918,7 @@ class ServiceOrderViewSet(
                 tipo_qualidade=d["tipo_qualidade"],
                 status_peca="aguardando_seguradora",
                 created_by=request.user,
+                client_uuid=request.data.get("client_uuid") or None,
             )
             return Response(ServiceOrderPartSerializer(part).data, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -906,6 +935,9 @@ class ServiceOrderViewSet(
         service_order: ServiceOrder = self.get_object()
 
         if request.method == "POST":
+            existing = find_by_client_uuid(ServiceOrderLabor, request)
+            if existing:
+                return Response(ServiceOrderLaborSerializer(existing).data)
             locked_response = _financial_locked_response(service_order)
             if locked_response is not None:
                 return locked_response
@@ -920,7 +952,11 @@ class ServiceOrderViewSet(
                 )
             serializer = ServiceOrderLaborSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            labor = serializer.save(service_order=service_order, created_by=request.user)
+            labor = serializer.save(
+                service_order=service_order,
+                created_by=request.user,
+                client_uuid=request.data.get("client_uuid") or None,
+            )
             ServiceOrderActivityLog.objects.create(
                 service_order=service_order,
                 user=request.user,
@@ -1067,6 +1103,11 @@ class ServiceOrderViewSet(
         service_order: ServiceOrder = self.get_object()
 
         if request.method == "POST":
+            existing = find_by_client_uuid(ServiceOrderPhoto, request)
+            if existing:
+                return Response(
+                    ServiceOrderPhotoSerializer(existing, context={"request": request}).data
+                )
             serializer = UploadPhotoSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
 
@@ -1120,6 +1161,7 @@ class ServiceOrderViewSet(
                 checklist_type=checklist_type,
                 s3_key=saved_path,
                 uploaded_by_id=request.user.id,
+                client_uuid=request.data.get("client_uuid") or None,
             )
 
             folder_label = dict(OSPhotoFolder.choices).get(folder, folder)
