@@ -1,6 +1,7 @@
 import type { FieldValues, Path, UseFormSetError } from "react-hook-form";
 import { signOut } from "next-auth/react";
 import { toast } from "sonner";
+import { enqueueMutation, isQueueable } from "@/lib/offline/queue";
 
 // Garante que apenas um signOut seja disparado, mesmo com múltiplas chamadas 401 paralelas
 let signingOut = false;
@@ -35,14 +36,30 @@ export class ApiError extends Error {
   }
 }
 
+export type ApiInit = RequestInit & {
+  /** false = online-only: falha rápido em vez de enfileirar (NF-e, faturamento) */
+  offline?: boolean;
+};
+
+/** Enfileira a mutation offline e devolve resposta otimista, ou null se não enfileirável. */
+async function tryEnqueueOffline<T>(input: RequestInfo, init?: ApiInit): Promise<T | null> {
+  const url = String(input);
+  if (init?.offline === false || !isQueueable(url, init ?? {})) return null;
+  const draft = await enqueueMutation(url, init ?? {});
+  toast.info("Você está offline — alteração salva e será sincronizada.");
+  return { _offline: true, id: draft.id, client_uuid: draft.id } as T;
+}
+
 export async function apiFetch<T>(
   input: RequestInfo,
-  init?: RequestInit
+  init?: ApiInit
 ): Promise<T> {
   let res: Response;
   try {
     res = await fetch(input, init);
   } catch {
+    const queued = await tryEnqueueOffline<T>(input, init);
+    if (queued) return queued;
     toast.error("Sem conexão com o servidor");
     throw new Error("network_error");
   }
@@ -55,6 +72,8 @@ export async function apiFetch<T>(
     try {
       res = await fetch(input, init);
     } catch {
+      const queued = await tryEnqueueOffline<T>(input, init);
+      if (queued) return queued;
       toast.error("Sem conexão com o servidor");
       throw new Error("network_error");
     }
