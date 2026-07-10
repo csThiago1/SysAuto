@@ -15,6 +15,7 @@ import {
   EmptyState,
 } from "@/components/ui"
 import { PageHeader } from "@/components/ui/page-header"
+import { PendingDraftsBanner } from "@/components/offline/PendingDraftsBanner"
 import { ServiceOrderTable } from "./_components/ServiceOrderTable"
 import { NewOSDrawer } from "./_components/NewOSDrawer"
 
@@ -96,6 +97,8 @@ export default function ServiceOrdersPage() {
           </div>
         }
       />
+
+      <PendingDraftsBanner />
 
       {/* Filter Bar */}
       <div className="bg-muted/50 p-4 rounded-md border border-border shadow-sm flex flex-col md:flex-row gap-4">
