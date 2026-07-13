@@ -38,6 +38,10 @@ function SortIcon({ field, ordering }: { field: string; ordering?: string }) {
   return <ArrowUpDown className="h-3 w-3 ml-1 inline-block opacity-0 group-hover/th:opacity-50" />
 }
 
+function isOrderLate(order: ServiceOrder): boolean {
+  return !!order.estimated_delivery_date && new Date(order.estimated_delivery_date) < new Date() && order.status !== "delivered"
+}
+
 export function ServiceOrderTable({ orders, ordering, onOrderingChange }: ServiceOrderTableProps) {
   const router = useRouter()
   const [billingOrder, setBillingOrder] = useState<ServiceOrder | null>(null)
@@ -61,7 +65,8 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
     {/* Mobile card view */}
     <div className="md:hidden space-y-2">
       {orders.map((order) => {
-        const isLate = order.estimated_delivery_date && new Date(order.estimated_delivery_date) < new Date() && order.status !== "delivered"
+        const isLate = isOrderLate(order)
+        const isBillable = !order.invoice_issued && BILLABLE_STATUSES.has(order.status)
 
         return (
           <div
@@ -83,7 +88,7 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
             <p className="text-sm text-foreground truncate">{order.customer_name || "Sem nome"}</p>
 
             <p className="text-xs font-mono text-muted-foreground truncate">
-              {order.plate || "—"} · {order.make} {order.model}
+              {order.plate || "—"} · {order.make} {order.model} {order.year ? `(${order.year})` : ""}
             </p>
 
             <div className="flex items-center justify-between gap-2 border-t border-border pt-2 text-xs">
@@ -95,9 +100,31 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
               <span className="font-mono font-semibold text-foreground shrink-0">
                 {formatCurrency(order.total)}
               </span>
-              <span className={cn("font-mono shrink-0", isLate ? "text-error-500 font-medium" : "text-muted-foreground")}>
-                {formatDate(order.estimated_delivery_date)}
+              <span className="font-mono shrink-0 text-muted-foreground">
+                Entr {formatDate(order.entry_date)}
+                {" · "}
+                <span className={cn(isLate && "text-error-500 font-medium")}>
+                  Prev {formatDate(order.estimated_delivery_date)}
+                </span>
               </span>
+            </div>
+
+            <div className="flex items-center justify-end gap-1.5 pt-1 text-xs">
+              {isBillable ? (
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setBillingOrder(order) }}
+                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-success-400 hover:bg-success-500/10 transition-colors"
+                >
+                  <DollarSign className="h-3.5 w-3.5" />
+                  Faturar OS
+                </button>
+              ) : order.invoice_issued ? (
+                <span className="inline-flex items-center gap-1 text-success-400" title="OS faturada">
+                  <CheckCircle className="h-3.5 w-3.5" />
+                  Faturada
+                </span>
+              ) : null}
             </div>
           </div>
         )
@@ -133,7 +160,7 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
         </TableHeader>
         <TableBody>
           {orders.map((order) => {
-            const isLate = order.estimated_delivery_date && new Date(order.estimated_delivery_date) < new Date() && order.status !== "delivered"
+            const isLate = isOrderLate(order)
 
             return (
               <TableRow
