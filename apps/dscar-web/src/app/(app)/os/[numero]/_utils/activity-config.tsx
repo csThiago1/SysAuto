@@ -23,6 +23,7 @@ import {
   PlusCircle,
   Receipt,
   Shield,
+  Trash2,
   Truck,
   UserCheck,
   Wrench,
@@ -96,6 +97,12 @@ export const ACTIVITY_CONFIG: Partial<Record<ActivityType, ActivityConfig>> = {
     ringClass: "ring-info-500/20",
     bgClass: "bg-info-500/10",
     label: "Foto",
+  },
+  file_deleted: {
+    icon: <Trash2 className="h-4 w-4 text-error-400" />,
+    ringClass: "ring-error-500/20",
+    bgClass: "bg-error-500/10",
+    label: "Foto removida",
   },
   budget_snapshot: {
     icon: <Receipt className="h-4 w-4 text-info-400" />,

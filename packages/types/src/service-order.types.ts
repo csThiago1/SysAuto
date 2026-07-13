@@ -58,6 +58,7 @@ export type ActivityType =
   | "insurer_updated"
   | "reminder"
   | "file_upload"
+  | "file_deleted"
   | "note_added"
   | "budget_snapshot"
   | "cilia_import"
@@ -114,6 +115,10 @@ export interface ServiceOrderPhoto {
   original_stage: string;
   /** Legenda opcional da foto */
   caption: string;
+  /** Posição/ângulo (ex: "frente", "lateral_esq") — usado pelo checklist */
+  slot: string;
+  /** entrada | saida | acompanhamento */
+  checklist_type: string;
   s3_key: string;
   url: string | null;
   uploaded_at: string;

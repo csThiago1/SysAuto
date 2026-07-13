@@ -4250,6 +4250,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications/preferences/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Preferências de notificação */
+        get: operations["notifications_preferences_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Atualizar preferências de notificação */
+        patch: operations["notifications_preferences_partial_update"];
+        trace?: never;
+    };
+    "/api/v1/notifications/subscribe/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Registrar subscription Web Push */
+        post: operations["notifications_subscribe_create"];
+        /** Remover subscription Web Push */
+        delete: operations["notifications_subscribe_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/test/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Enviar push de teste pro próprio usuário */
+        post: operations["notifications_test_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/parts-catalog/applications/": {
         parameters: {
             query?: never;
@@ -7639,6 +7692,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/service-orders/{id}/photos/bulk-delete/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Remover fotos da OS em lote (soft delete)
+         * @description POST /service-orders/{id}/photos/bulk-delete/
+         *     Soft delete em lote — s3_key preservado como evidência de sinistro.
+         *     Requer MANAGER+ (ver get_permissions).
+         */
+        post: operations["service_orders_photos_bulk_delete_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/service-orders/{id}/photos/download/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Baixar fotos da OS em ZIP
+         * @description POST /service-orders/{id}/photos/download/
+         *     ZIP das fotos selecionadas, agrupadas por pasta. ZIP_STORED —
+         *     JPEG já é comprimido, recomprimir só gasta CPU.
+         */
+        post: operations["service_orders_photos_download_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/service-orders/{id}/transition/": {
         parameters: {
             query?: never;
@@ -8561,6 +8658,7 @@ export interface components {
          *     * `insurer_updated` - Seguradora Atualizada
          *     * `reminder` - Lembrete Adicionado
          *     * `file_upload` - Arquivo Anexado
+         *     * `file_deleted` - Arquivo Removido
          *     * `note_added` - Nota Adicionada
          *     * `budget_snapshot` - Snapshot de Orçamento
          *     * `cilia_import` - Importação Cilia
@@ -8575,7 +8673,7 @@ export interface components {
          *     * `document_generated` - Documento Gerado
          * @enum {string}
          */
-        ActivityTypeEnum: "created" | "status_changed" | "updated" | "customer_updated" | "vehicle_updated" | "schedule_updated" | "insurer_updated" | "reminder" | "file_upload" | "note_added" | "budget_snapshot" | "cilia_import" | "delivery" | "part_added" | "part_removed" | "part_updated" | "labor_added" | "labor_removed" | "labor_updated" | "invoice_issued" | "document_generated";
+        ActivityTypeEnum: "created" | "status_changed" | "updated" | "customer_updated" | "vehicle_updated" | "schedule_updated" | "insurer_updated" | "reminder" | "file_upload" | "file_deleted" | "note_added" | "budget_snapshot" | "cilia_import" | "delivery" | "part_added" | "part_removed" | "part_updated" | "labor_added" | "labor_removed" | "labor_updated" | "invoice_issued" | "document_generated";
         /**
          * @description * `PRINCIPAL` - Principal
          *     * `COBRANCA` - Cobrança
@@ -14215,6 +14313,12 @@ export interface components {
             ordem?: number;
             is_active?: boolean;
         };
+        NotificationPreference: {
+            os_status_changes: boolean;
+            os_assigned: boolean;
+            approvals_pending: boolean;
+            overdue_orders: boolean;
+        };
         /** @enum {unknown} */
         NullEnum: null;
         /**
@@ -17365,6 +17469,12 @@ export interface components {
             ordem?: number;
             is_active?: boolean;
         };
+        PatchedNotificationPreferenceRequest: {
+            os_status_changes?: boolean;
+            os_assigned?: boolean;
+            approvals_pending?: boolean;
+            overdue_orders?: boolean;
+        };
         /** @description Serializer completo para detalhe. */
         PatchedOrcamentoRequest: {
             status?: components["schemas"]["Status9f8Enum"];
@@ -19365,6 +19475,10 @@ export interface components {
          * @enum {string}
          */
         PersonRoleRoleEnum: "CLIENT" | "INSURER" | "BROKER" | "EMPLOYEE" | "SUPPLIER" | "EXPERT";
+        /** @description IDs de fotos da OS para operações em lote (bulk-delete, download ZIP). */
+        PhotoIdsRequest: {
+            photo_ids: string[];
+        };
         /**
          * @description * `dianteiro` - Dianteiro
          *     * `traseiro` - Traseiro
@@ -19603,6 +19717,16 @@ export interface components {
             margem_padrao_pct?: string | null;
             observacoes?: string;
             is_active?: boolean;
+        };
+        /** @description Body de POST /notifications/subscribe/ — formato PushSubscription do browser. */
+        PushSubscribeRequest: {
+            /** Format: uri */
+            endpoint: string;
+            keys: {
+                [key: string]: string;
+            };
+            /** @default  */
+            device_id?: string;
         };
         /**
          * @description * `PPO` - Peça Original (PPO)
@@ -20254,6 +20378,8 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
             readonly is_active: boolean;
+            /** @description UUID v7 gerado no cliente — idempotência do sync offline (PWA onda 5) */
+            readonly client_uuid: string | null;
             /** Tipo de atendimento */
             customer_type: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             /** Tipo de OS */
@@ -20725,6 +20851,8 @@ export interface components {
             is_active: boolean;
             /** Número da OS */
             number: number;
+            /** @description UUID v7 gerado no cliente — idempotência do sync offline (PWA onda 5) */
+            readonly client_uuid: string | null;
             /** Tipo de atendimento */
             customer_type: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             /** Tipo de OS */
@@ -21434,6 +21562,8 @@ export interface components {
             description: string;
             /** Código da peça */
             part_number: string;
+            /** @description Código NCM 8 dígitos — obrigatório para NF-e */
+            ncm: string;
             /**
              * Quantidade
              * Format: decimal
@@ -21491,6 +21621,8 @@ export interface components {
             description: string;
             /** Código da peça */
             part_number?: string;
+            /** @description Código NCM 8 dígitos — obrigatório para NF-e */
+            ncm?: string;
             /**
              * Quantidade
              * Format: decimal
@@ -21570,6 +21702,8 @@ export interface components {
             /** Format: date-time */
             readonly updated_at: string;
             readonly is_active: boolean;
+            /** @description UUID v7 gerado no cliente — idempotência do sync offline (PWA onda 5) */
+            readonly client_uuid: string | null;
             /** Tipo de atendimento */
             customer_type: (components["schemas"]["CustomerTypeEnum"] | components["schemas"]["BlankEnum"] | components["schemas"]["NullEnum"]) | null;
             /** Tipo de OS */
@@ -32144,6 +32278,110 @@ export interface operations {
             };
         };
     };
+    notifications_preferences_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreference"];
+                };
+            };
+        };
+    };
+    notifications_preferences_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedNotificationPreferenceRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedNotificationPreferenceRequest"];
+                "multipart/form-data": components["schemas"]["PatchedNotificationPreferenceRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreference"];
+                };
+            };
+        };
+    };
+    notifications_subscribe_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushSubscribeRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PushSubscribeRequest"];
+                "multipart/form-data": components["schemas"]["PushSubscribeRequest"];
+            };
+        };
+        responses: {
+            /** @description No response body */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    notifications_subscribe_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    notifications_test_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     parts_catalog_applications_list: {
         parameters: {
             query?: {
@@ -39474,6 +39712,62 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    service_orders_photos_bulk_delete_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhotoIdsRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PhotoIdsRequest"];
+                "multipart/form-data": components["schemas"]["PhotoIdsRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    service_orders_photos_download_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhotoIdsRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PhotoIdsRequest"];
+                "multipart/form-data": components["schemas"]["PhotoIdsRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": string;
+                };
             };
         };
     };
