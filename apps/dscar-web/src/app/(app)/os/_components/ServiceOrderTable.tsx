@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ExternalLink, Car, DollarSign, CheckCircle, ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react"
-import { formatDate } from "@paddock/utils"
+import { formatDate, formatCurrency } from "@paddock/utils"
 
 import type { ServiceOrder } from "@paddock/types"
 import {
@@ -17,6 +17,7 @@ import {
   StatusBadge,
   ClosureDots,
 } from "@/components/ui"
+import { ScrollFade } from "@/components/ui/scroll-fade"
 import dynamic from "next/dynamic"
 import { cn } from "@/lib/utils"
 
@@ -57,7 +58,55 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
 
   return (
     <>
-    <div className="rounded-md border bg-muted/50 overflow-hidden">
+    {/* Mobile card view */}
+    <div className="md:hidden space-y-2">
+      {orders.map((order) => {
+        const isLate = order.estimated_delivery_date && new Date(order.estimated_delivery_date) < new Date() && order.status !== "delivered"
+
+        return (
+          <div
+            key={order.id}
+            role="button"
+            tabIndex={0}
+            onClick={() => router.push(`/os/${order.number}`)}
+            onKeyDown={(e) => { if (e.key === "Enter") router.push(`/os/${order.number}`) }}
+            className="rounded-md border border-border bg-muted/50 p-4 space-y-2 cursor-pointer hover:bg-primary/5 transition-colors"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-mono font-semibold text-primary">#{order.number}</span>
+              <div className="flex items-center gap-2">
+                <StatusBadge status={order.status} />
+                <ClosureDots closureStatus={order.closure_status} />
+              </div>
+            </div>
+
+            <p className="text-sm text-foreground truncate">{order.customer_name || "Sem nome"}</p>
+
+            <p className="text-xs font-mono text-muted-foreground truncate">
+              {order.plate || "—"} · {order.make} {order.model}
+            </p>
+
+            <div className="flex items-center justify-between gap-2 border-t border-border pt-2 text-xs">
+              <span className="text-muted-foreground truncate">
+                {order.customer_type === "insurer"
+                  ? (order.insurer_detail?.display_name ?? "Seguradora")
+                  : "Particular"}
+              </span>
+              <span className="font-mono font-semibold text-foreground shrink-0">
+                {formatCurrency(order.total)}
+              </span>
+              <span className={cn("font-mono shrink-0", isLate ? "text-error-500 font-medium" : "text-muted-foreground")}>
+                {formatDate(order.estimated_delivery_date)}
+              </span>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+
+    {/* Table */}
+    <div className="hidden md:block rounded-md border bg-muted/50">
+      <ScrollFade>
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/30 hover:bg-muted/30 border-b border-border">
@@ -206,6 +255,7 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
           })}
         </TableBody>
       </Table>
+      </ScrollFade>
     </div>
 
       {billingOrder && (
