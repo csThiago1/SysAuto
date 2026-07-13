@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { Camera, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Download, Images, Loader2, Plus, RefreshCw, Trash2, Upload } from "lucide-react"
+import { Camera, CheckCircle2, CheckSquare, ChevronDown, ChevronLeft, ChevronRight, Download, Images, Loader2, Plus, RefreshCw, Square, Trash2, Upload } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import type { OSPhotoFolder, ServiceOrder, ServiceOrderPhoto } from "@paddock/types"
 import { OS_PHOTO_FOLDERS, OS_PHOTO_FOLDER_ORDER } from "@paddock/utils"
@@ -16,7 +16,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { useOSPhotos, useSoftDeletePhoto } from "../../_hooks/useOSItems"
+import { usePermission } from "@/hooks/usePermission"
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog"
+import { useOSPhotos, useSoftDeletePhoto, useBulkDeletePhotos, useDownloadPhotosZip } from "../../_hooks/useOSItems"
 import { useUploadQueue } from "../../_hooks/useUploadQueue"
 import { CameraCapture } from "@/components/camera/CameraCapture"
 
@@ -187,9 +189,14 @@ interface PhotoThumbProps {
   orderId: string
   canDelete: boolean
   onOpen: () => void
+  selectionMode: boolean
+  selected: boolean
+  onToggleSelect: () => void
 }
 
-function PhotoThumb({ photo, orderId, canDelete, onOpen }: PhotoThumbProps) {
+function PhotoThumb({
+  photo, orderId, canDelete, onOpen, selectionMode, selected, onToggleSelect,
+}: PhotoThumbProps) {
   const deleteMutation = useSoftDeletePhoto(orderId)
   const [showDelete, setShowDelete] = useState(false)
 
@@ -197,15 +204,22 @@ function PhotoThumb({ photo, orderId, canDelete, onOpen }: PhotoThumbProps) {
 
   return (
     <div
-      className="group relative rounded-lg overflow-hidden border border-border aspect-square bg-muted/30"
+      className={cn(
+        "group relative rounded-lg overflow-hidden border aspect-square bg-muted/30",
+        selected ? "border-primary ring-2 ring-primary/50" : "border-border",
+      )}
       onMouseEnter={() => setShowDelete(true)}
       onMouseLeave={() => setShowDelete(false)}
     >
       <button
         type="button"
-        onClick={onOpen}
-        className="block h-full w-full cursor-zoom-in"
-        aria-label={photo.caption ? `Ampliar: ${photo.caption}` : "Ampliar foto"}
+        onClick={selectionMode ? onToggleSelect : onOpen}
+        className={cn("block h-full w-full", selectionMode ? "cursor-pointer" : "cursor-zoom-in")}
+        aria-label={
+          selectionMode
+            ? (selected ? "Desmarcar foto" : "Selecionar foto")
+            : (photo.caption ? `Ampliar: ${photo.caption}` : "Ampliar foto")
+        }
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -214,12 +228,19 @@ function PhotoThumb({ photo, orderId, canDelete, onOpen }: PhotoThumbProps) {
           className="w-full h-full object-cover transition-transform group-hover:scale-105"
         />
       </button>
+      {selectionMode && (
+        <span className="pointer-events-none absolute top-1.5 left-1.5 rounded bg-background/80 p-0.5 shadow">
+          {selected
+            ? <CheckSquare className="h-4 w-4 text-primary" />
+            : <Square className="h-4 w-4 text-foreground/50" />}
+        </span>
+      )}
       {photo.caption && (
         <div className="pointer-events-none absolute bottom-0 inset-x-0 bg-black/60 px-2 py-1">
           <p className="text-xs text-white truncate">{photo.caption}</p>
         </div>
       )}
-      {canDelete && showDelete && (
+      {canDelete && showDelete && !selectionMode && (
         <button
           onClick={() => deleteMutation.mutate(photo.id)}
           className="absolute top-1.5 right-1.5 bg-background/80 hover:bg-error-500/20 rounded-full p-1 shadow transition-colors"
@@ -320,9 +341,17 @@ interface FolderSectionProps {
   isOpen: boolean
   onToggle: () => void
   canUpload: boolean
+  canDelete: boolean
+  selectionMode: boolean
+  selectedIds: Set<string>
+  onToggleSelect: (photoId: string) => void
+  onSelectFolder: (photoIds: string[]) => void
 }
 
-function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }: FolderSectionProps) {
+function FolderSection({
+  folder, photos, orderId, isOpen, onToggle, canUpload, canDelete,
+  selectionMode, selectedIds, onToggleSelect, onSelectFolder,
+}: FolderSectionProps) {
   const cfg = OS_PHOTO_FOLDERS[folder]
   const [showUpload, setShowUpload] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
@@ -355,6 +384,15 @@ function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }:
           <Badge variant="secondary" className="text-xs">
             {count} {count === 1 ? "foto" : "fotos"}
           </Badge>
+          {selectionMode && count > 0 && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onSelectFolder(photos.map((p) => p.id)) }}
+              className="text-xs font-semibold px-2 py-1 rounded-md bg-background/70 hover:bg-muted/60 border border-border"
+            >
+              Selecionar todas
+            </button>
+          )}
           {canUpload && (
             <button
               type="button"
@@ -401,11 +439,14 @@ function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }:
                   key={photo.id}
                   photo={photo}
                   orderId={orderId}
-                  canDelete={canUpload}
+                  canDelete={canDelete}
                   onOpen={() => setLightboxIndex(i)}
+                  selectionMode={selectionMode}
+                  selected={selectedIds.has(photo.id)}
+                  onToggleSelect={() => onToggleSelect(photo.id)}
                 />
               ))}
-              {canUpload && (
+              {canUpload && !selectionMode && (
                 <button
                   onClick={() => setShowUpload(true)}
                   className={cn(
@@ -446,10 +487,16 @@ function FolderSection({ folder, photos, orderId, isOpen, onToggle, canUpload }:
 
 export function FilesTab({ order }: FilesTabProps) {
   const { data: photos = [], isLoading } = useOSPhotos(order.id)
+  const isManager = usePermission("MANAGER")
+  const bulkDelete = useBulkDeletePhotos(order.id)
+  const { download, downloading } = useDownloadPhotosZip(order.id, order.number)
 
   const [openFolders, setOpenFolders] = useState<Set<OSPhotoFolder>>(
     () => new Set<OSPhotoFolder>(["vistoria_inicial"])
   )
+  const [selectionMode, setSelectionMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set())
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   function toggleFolder(folder: OSPhotoFolder) {
     setOpenFolders((prev) => {
@@ -460,7 +507,40 @@ export function FilesTab({ order }: FilesTabProps) {
     })
   }
 
+  function toggleSelect(photoId: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(photoId)) next.delete(photoId)
+      else next.add(photoId)
+      return next
+    })
+  }
+
+  function selectFolder(photoIds: string[]) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      const allSelected = photoIds.every((id) => next.has(id))
+      photoIds.forEach((id) => (allSelected ? next.delete(id) : next.add(id)))
+      return next
+    })
+  }
+
+  function exitSelection() {
+    setSelectionMode(false)
+    setSelectedIds(new Set())
+  }
+
+  async function handleBulkDelete() {
+    try {
+      await bulkDelete.mutateAsync(Array.from(selectedIds))
+      exitSelection()
+    } catch {
+      // toast já exibido no onError do hook
+    }
+  }
+
   const canUpload = !["delivered", "cancelled"].includes(order.status)
+  const canDelete = canUpload && isManager
 
   const photosByFolder = OS_PHOTO_FOLDER_ORDER.reduce<Record<string, ServiceOrderPhoto[]>>(
     (acc, f) => {
@@ -474,6 +554,7 @@ export function FilesTab({ order }: FilesTabProps) {
   const foldersWithPhotos = OS_PHOTO_FOLDER_ORDER.filter(
     (f) => (photosByFolder[f]?.length ?? 0) > 0
   ).length
+  const selectedCount = selectedIds.size
 
   if (isLoading) {
     return (
@@ -497,6 +578,17 @@ export function FilesTab({ order }: FilesTabProps) {
           </span>
         </div>
         <div className="flex gap-1">
+          {totalPhotos > 0 && (
+            <Button
+              variant={selectionMode ? "secondary" : "ghost"}
+              size="sm"
+              className="text-xs h-7"
+              onClick={() => (selectionMode ? exitSelection() : setSelectionMode(true))}
+            >
+              <CheckSquare className="mr-1 h-3.5 w-3.5" />
+              {selectionMode ? "Cancelar seleção" : "Selecionar"}
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -526,10 +618,65 @@ export function FilesTab({ order }: FilesTabProps) {
             orderId={order.id}
             isOpen={openFolders.has(folder)}
             onToggle={() => toggleFolder(folder)}
-            canUpload={canUpload}
+            canUpload={canUpload && !selectionMode}
+            canDelete={canDelete}
+            selectionMode={selectionMode}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
+            onSelectFolder={selectFolder}
           />
         ))}
       </div>
+
+      {/* Barra de ações da seleção */}
+      {selectionMode && (
+        <div className="sticky bottom-4 z-10 flex items-center justify-between gap-2 rounded-xl border border-border bg-background/95 px-4 py-2.5 shadow-lg backdrop-blur">
+          <span className="text-sm text-foreground/70">
+            <strong className="text-foreground/90">{selectedCount}</strong> selecionada
+            {selectedCount !== 1 ? "s" : ""}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={selectedCount === 0 || downloading}
+              onClick={() => void download(Array.from(selectedIds))}
+            >
+              {downloading ? (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Download className="mr-1.5 h-3.5 w-3.5" />
+              )}
+              Baixar ({selectedCount})
+            </Button>
+            {canDelete && (
+              <Button
+                size="sm"
+                variant="destructive"
+                disabled={selectedCount === 0 || bulkDelete.isPending}
+                onClick={() => setConfirmOpen(true)}
+              >
+                {bulkDelete.isPending ? (
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                )}
+                Excluir ({selectedCount})
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={`Remover ${selectedCount} foto${selectedCount !== 1 ? "s" : ""}?`}
+        description="As fotos saem da galeria, mas permanecem arquivadas como evidência (não são apagadas do storage)."
+        confirmLabel="Remover"
+        variant="destructive"
+        onConfirm={() => void handleBulkDelete()}
+      />
     </div>
   )
 }

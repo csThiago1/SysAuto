@@ -4,6 +4,7 @@
  */
 "use client"
 
+import { useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   ServiceOrderPart,
@@ -218,6 +219,56 @@ export function useSoftDeletePhoto(orderId: string) {
       toast.success("Foto removida.")
     },
   })
+}
+
+export function useBulkDeletePhotos(orderId: string) {
+  const qc = useQueryClient()
+  return useMutation<{ deleted: number }, Error, string[]>({
+    mutationFn: (photoIds) =>
+      apiFetch<{ deleted: number }>(`${API}/service-orders/${orderId}/photos/bulk-delete/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photo_ids: photoIds }),
+        offline: false,
+      }),
+    onSuccess: (data) => {
+      void qc.invalidateQueries({ queryKey: ["os-photos", orderId] })
+      toast.success(`${data.deleted} foto${data.deleted !== 1 ? "s" : ""} removida${data.deleted !== 1 ? "s" : ""}.`)
+    },
+    onError: () => {
+      toast.error("Erro ao remover fotos.")
+    },
+  })
+}
+
+export function useDownloadPhotosZip(orderId: string, orderNumber: number) {
+  const [downloading, setDownloading] = useState(false)
+
+  async function download(photoIds: string[]): Promise<void> {
+    setDownloading(true)
+    try {
+      // fetch direto (não apiFetch): resposta é binária, não JSON
+      const res = await fetch(`${API}/service-orders/${orderId}/photos/download/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photo_ids: photoIds }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `OS-${orderNumber}-fotos.zip`
+      a.click()
+      setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    } catch {
+      toast.error("Erro ao baixar fotos.")
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  return { download, downloading }
 }
 
 // ─── Budget Snapshots ─────────────────────────────────────────────────────────
