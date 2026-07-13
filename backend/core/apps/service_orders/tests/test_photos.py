@@ -197,3 +197,21 @@ class PhotoDownloadZipTest(PhotoAPITestBase):
         self.auth("CONSULTANT")
         resp = self.client.post(self._url(), {"photo_ids": [str(alheia.id)]}, format="json")
         assert resp.status_code == 400
+
+    def test_foto_orfa_no_storage_e_pulada_sem_500(self) -> None:
+        orfa = ServiceOrderPhoto.objects.create(
+            service_order=self.order,
+            folder="vistoria_inicial",
+            s3_key="caminho/inexistente.jpg",
+            uploaded_by_id=self.user.id,
+        )
+        normal = self.make_photo(folder="documentos", content=b"foto-normal")
+        self.auth("CONSULTANT")
+        resp = self.client.post(
+            self._url(), {"photo_ids": [str(orfa.id), str(normal.id)]}, format="json"
+        )
+        assert resp.status_code == 200
+        zf = self._zip_from(resp)
+        names = zf.namelist()
+        assert len(names) == 1
+        assert zf.read(names[0]) == b"foto-normal"

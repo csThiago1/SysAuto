@@ -7,6 +7,7 @@ from datetime import timedelta
 from typing import Any, Optional
 
 from django.db.models import Count, DecimalField, Exists, F, Max, Min, OuterRef, Q, QuerySet, Sum
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -1321,7 +1322,7 @@ class ServiceOrderViewSet(
         responses={(200, "application/zip"): OpenApiTypes.BINARY},
     )
     @action(detail=True, methods=["post"], url_path="photos/download")
-    def photos_download(self, request: Request, pk: Optional[str] = None):
+    def photos_download(self, request: Request, pk: Optional[str] = None) -> "Response | FileResponse":
         """
         POST /service-orders/{id}/photos/download/
         ZIP das fotos selecionadas, agrupadas por pasta. ZIP_STORED —
@@ -1331,7 +1332,6 @@ class ServiceOrderViewSet(
         import zipfile as _zipfile
 
         from django.core.files.storage import default_storage
-        from django.http import FileResponse
 
         from ..models import OSPhotoFolder
 
@@ -1359,13 +1359,18 @@ class ServiceOrderViewSet(
                 folder = folder_labels.get(photo.folder, photo.folder)
                 try:
                     with default_storage.open(photo.s3_key) as f:
-                        zf.writestr(f"{folder}/{i:03d}-{str(photo.pk)[:8]}.{ext}", f.read())
-                except FileNotFoundError:
+                        data = f.read()
+                except Exception:
+                    # ponytail: captura ampla de propósito — FileNotFoundError em dev
+                    # (FileSystemStorage) vs botocore.ClientError em prod (S3/R2);
+                    # foto órfã não pode derrubar o ZIP inteiro com 500.
                     logger.warning(
-                        "Arquivo %s ausente no storage (OS #%d) — pulado no ZIP",
+                        "Arquivo %s ilegível no storage (OS #%d) — pulado no ZIP",
                         photo.s3_key,
                         service_order.number,
                     )
+                    continue
+                zf.writestr(f"{folder}/{i:03d}-{str(photo.pk)[:8]}.{ext}", data)
         tmp.seek(0)
         logger.info(
             "Download ZIP de %d fotos da OS #%d por user_id=%s",
