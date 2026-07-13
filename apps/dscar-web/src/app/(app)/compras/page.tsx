@@ -6,6 +6,7 @@ import type { Route } from "next"
 import { ShoppingCart, ArrowRight } from "lucide-react"
 import { useDashboardCompras, usePedidosCompra, useAprovacoes } from "@/hooks/usePurchasing"
 import type { AprovacaoCotacao } from "@paddock/types"
+import { ScrollFade } from "@/components/ui/scroll-fade"
 
 // ─── OS-level status config ───────────────────────────────────────────────────
 
@@ -223,13 +224,13 @@ export default function ComprasPage() {
 
       {/* KPI Cards */}
       {statsLoading ? (
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="bg-muted/50 border border-border rounded-lg p-4 animate-pulse h-20" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <KPICard label="Solicitados" value={stats?.solicitados ?? 0} color="warning" />
           <KPICard label="Em Cotacao" value={stats?.em_cotacao ?? 0} color="info" />
           <KPICard label="Aguard. Aprovacao" value={stats?.aguardando_aprovacao ?? 0} color="purple" />
@@ -240,7 +241,55 @@ export default function ComprasPage() {
       {/* Table */}
       <div className="section-divider">ORDENS DE SERVICO COM PECAS</div>
 
-      <div className="bg-muted/50 rounded-md border border-border overflow-hidden">
+      {pedidosLoading ? (
+        <div className="space-y-2 md:hidden">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-24 bg-muted/50 rounded-md border border-border animate-pulse" />
+          ))}
+        </div>
+      ) : !osRows.length ? (
+        <div className="bg-muted/50 rounded-md border border-border py-10 text-center text-muted-foreground text-sm md:hidden">
+          Nenhuma OS com pedidos de compra
+        </div>
+      ) : (
+        <div className="space-y-2 md:hidden">
+          {osRows.map((row) => (
+            <div
+              key={row.serviceOrderId}
+              className="rounded-md border border-border bg-muted/50 p-4 space-y-2"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono font-semibold text-primary">
+                  {row.osNumber ? `#${row.osNumber}` : "--"}
+                </span>
+                {row.statusSummary !== "—" ? (
+                  <OSStatusBadge label={row.statusSummary} />
+                ) : (
+                  <span className="text-xs text-muted-foreground/50">—</span>
+                )}
+              </div>
+
+              <p className="text-sm text-foreground/80 truncate">{row.vehicle || "—"}</p>
+
+              <div className="flex items-center justify-between gap-2 border-t border-border pt-2 text-xs">
+                <span className="text-muted-foreground truncate">
+                  {row.insurerName ? row.insurerName : "Particular"}
+                </span>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full font-medium bg-muted border border-border text-foreground/70 shrink-0">
+                  {row.totalParts} {row.totalParts === 1 ? "peca" : "pecas"}
+                </span>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <RowAction row={row} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="hidden md:block bg-muted/50 rounded-md border border-border">
+        <ScrollFade>
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
@@ -308,6 +357,7 @@ export default function ComprasPage() {
             )}
           </tbody>
         </table>
+        </ScrollFade>
       </div>
     </div>
   )

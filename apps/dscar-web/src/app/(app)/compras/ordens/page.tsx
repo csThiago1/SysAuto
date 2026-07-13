@@ -14,6 +14,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { formatDate, formatCurrency } from "@paddock/utils"
+import { ScrollFade } from "@/components/ui/scroll-fade"
 
 // ─── Status badge config ────────────────────────────────────────────────────────
 
@@ -195,8 +196,69 @@ export default function OrdensCompraPage() {
         </button>
       </div>
 
+      {/* ── Mobile cards ── */}
+      {isLoading ? (
+        <div className="space-y-2 md:hidden">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-24 bg-muted/50 rounded-md border border-border animate-pulse" />
+          ))}
+        </div>
+      ) : !ordens?.length ? (
+        <div className="bg-muted/50 rounded-md border border-border py-10 text-center text-muted-foreground text-sm md:hidden">
+          Nenhuma ordem de compra encontrada.
+        </div>
+      ) : (
+        <div className="space-y-2 md:hidden">
+          {ordens.map((oc: OrdemCompra) => (
+            <div key={oc.id} className="rounded-md border border-border bg-muted/50 p-4 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <Link
+                  href={`/compras/ordens/${oc.id}`}
+                  className="font-mono font-semibold text-primary hover:underline"
+                >
+                  {oc.numero}
+                </Link>
+                <StatusBadge status={oc.status} />
+              </div>
+
+              <Link
+                href={`/os/${oc.os_number}`}
+                className="text-sm font-mono text-primary/70 hover:text-primary hover:underline block"
+              >
+                OS {oc.os_number ? `#${oc.os_number}` : "--"}
+              </Link>
+
+              <div className="flex items-center justify-between gap-2 border-t border-border pt-2 text-xs">
+                <span className="text-muted-foreground">
+                  {oc.criado_por_nome || "--"} · {formatDate(oc.created_at)}
+                </span>
+                <span className="font-mono font-semibold text-foreground shrink-0">
+                  {formatCurrency(oc.valor_total)}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between gap-2 pt-1 text-xs">
+                <span className="text-muted-foreground">
+                  {oc.total_itens} {oc.total_itens === 1 ? "item" : "itens"}
+                </span>
+                <a
+                  href={`/api/proxy/purchasing/ordens-compra/${oc.id}/pdf/`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-muted-foreground/70 hover:text-foreground/70 transition-colors"
+                >
+                  <FileText size={14} />
+                  PDF
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* ── Table ── */}
-      <div className="overflow-hidden rounded-md border border-border bg-muted/50">
+      <div className="hidden md:block rounded-md border border-border bg-muted/50">
+        <ScrollFade>
         <table className="w-full">
           <thead>
             <tr className="bg-muted/30 border-b border-border">
@@ -290,6 +352,7 @@ export default function OrdensCompraPage() {
             )}
           </tbody>
         </table>
+        </ScrollFade>
       </div>
 
       {/* ── Nova OC Dialog ── */}
