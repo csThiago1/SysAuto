@@ -117,8 +117,8 @@ export default function EstoquePage() {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <LayoutDashboard className="h-5 w-5 text-primary" />
+      <div className="flex items-start gap-3">
+        <LayoutDashboard className="h-5 w-5 text-primary mt-0.5" />
         <div>
           <h1 className="text-lg font-semibold text-foreground">Estoque Físico</h1>
           <p className="text-xs text-muted-foreground mt-0.5">

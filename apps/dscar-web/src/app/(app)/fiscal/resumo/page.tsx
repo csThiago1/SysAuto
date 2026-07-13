@@ -44,8 +44,8 @@ export default function ResumoFiscalPage() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <BarChart3 className="h-6 w-6 text-primary" />
+        <div className="flex items-start gap-3">
+          <BarChart3 className="h-6 w-6 text-primary mt-0.5" />
           <div>
             <h1 className="text-xl font-bold text-foreground">Resumo Fiscal Mensal</h1>
             <p className="text-xs text-muted-foreground mt-0.5">

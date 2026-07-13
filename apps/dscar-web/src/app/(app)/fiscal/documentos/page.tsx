@@ -12,6 +12,7 @@ import { useState } from "react"
 import { FileText, RefreshCw, XCircle, CheckCircle2, Clock, AlertCircle, Mail, X, ArrowRightLeft } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { ScrollFade } from "@/components/ui/scroll-fade"
 import {
   Dialog,
   DialogContent,
@@ -692,6 +693,114 @@ function FiscalDocRow({
   )
 }
 
+// ─── Card (mobile) ─────────────────────────────────────────────────────────────
+
+function FiscalDocCard({
+  doc,
+  canCancel,
+  canSubstituir,
+  onCancel,
+  onSendEmail,
+  onSubstituir,
+  onCCe,
+}: {
+  doc: FiscalDocumentList
+  canCancel: boolean
+  canSubstituir: boolean
+  onCancel: (id: string) => void
+  onSendEmail: (doc: FiscalDocumentList) => void
+  onSubstituir: (doc: FiscalDocumentList) => void
+  onCCe: (doc: FiscalDocumentList) => void
+}) {
+  const cfg = STATUS_CONFIG[doc.status] ?? STATUS_CONFIG.pending
+  const Icon = cfg.icon
+
+  const valorFmt = doc.amount
+    ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+        Number(doc.amount)
+      )
+    : "—"
+
+  const isRejected = doc.status === "rejected" && !!doc.mensagem_sefaz
+  const sefazHint = isRejected ? explainSefazError(doc.mensagem_sefaz) : null
+
+  return (
+    <div className="rounded-md border border-border bg-muted/50 p-4 space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-mono text-foreground/70">
+          {DOC_TYPE_LABELS[doc.document_type] ?? doc.document_type.toUpperCase()}
+        </span>
+        <span
+          className={cn(
+            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs shrink-0",
+            cfg.bg,
+            cfg.color
+          )}
+        >
+          <Icon className="h-3 w-3" />
+          {cfg.label}
+        </span>
+      </div>
+
+      <p className="text-xs font-mono text-muted-foreground truncate">
+        {doc.ref ?? "—"} {doc.numero ? `· ${doc.numero}` : ""}
+      </p>
+
+      {isRejected && (
+        <div className="flex items-start gap-2 border-t border-border pt-2">
+          <AlertCircle className="h-3.5 w-3.5 text-error-400 mt-0.5 shrink-0" />
+          <div className="min-w-0 space-y-0.5">
+            <p className="text-xs text-error-400">{doc.mensagem_sefaz}</p>
+            {sefazHint && (
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium text-foreground/70">Como resolver:</span>{" "}
+                {sefazHint}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between gap-2 border-t border-border pt-2">
+        <span className="text-xs font-mono text-foreground/80 tabular-nums">{valorFmt}</span>
+        <div className="flex items-center gap-1.5">
+          {doc.pdf_url && (
+            <a
+              href={`/api/proxy${doc.pdf_url.replace("/api/v1/", "/")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[11px] font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            >
+              PDF
+            </a>
+          )}
+          {doc.xml_url && (
+            <a
+              href={`/api/proxy${doc.xml_url.replace("/api/v1/", "/")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[11px] font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+            >
+              XML
+            </a>
+          )}
+          {doc.status === "authorized" && (
+            <DropdownActions
+              doc={doc}
+              canCancel={canCancel}
+              canSubstituir={canSubstituir}
+              onSendEmail={onSendEmail}
+              onSubstituir={onSubstituir}
+              onCCe={onCCe}
+              onCancel={onCancel}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function FiscalDocumentosPage() {
@@ -753,8 +862,8 @@ export default function FiscalDocumentosPage() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <FileText className="h-6 w-6 text-primary" />
+        <div className="flex items-start gap-3">
+          <FileText className="h-6 w-6 text-primary mt-0.5" />
           <div>
             <h1 className="text-xl font-bold text-foreground">Documentos Fiscais</h1>
             <p className="text-xs text-muted-foreground mt-0.5">NFS-e, NF-e e NFC-e emitidas pela empresa</p>
@@ -772,7 +881,7 @@ export default function FiscalDocumentosPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {[
           { label: "Aguardando", value: totais.pending, color: "text-warning-400" },
           { label: "Autorizadas", value: totais.authorized, color: "text-success-400" },
@@ -813,8 +922,37 @@ export default function FiscalDocumentosPage() {
         </select>
       </div>
 
-      {/* Tabela */}
-      <div className="rounded-xl bg-muted/30 border border-white/[0.07] overflow-hidden">
+      {/* Cards (mobile) */}
+      {isLoading ? (
+        <div className="space-y-2 md:hidden">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-24 bg-muted/50 rounded-md border border-border animate-pulse" />
+          ))}
+        </div>
+      ) : docs.length === 0 ? (
+        <div className="bg-muted/50 rounded-md border border-border py-10 text-center text-muted-foreground text-sm md:hidden">
+          Nenhum documento fiscal encontrado.
+        </div>
+      ) : (
+        <div className="space-y-2 md:hidden">
+          {docs.map((doc) => (
+            <FiscalDocCard
+              key={doc.id}
+              doc={doc}
+              canCancel={canCancel}
+              canSubstituir={canSubstituir}
+              onCancel={handleCancel}
+              onSendEmail={handleOpenEmailDialog}
+              onSubstituir={(d) => setSubstituirDoc(d)}
+              onCCe={handleOpenCCe}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Tabela (desktop) */}
+      <div className="hidden md:block rounded-xl bg-muted/30 border border-white/[0.07]">
+        <ScrollFade>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
@@ -862,6 +1000,7 @@ export default function FiscalDocumentosPage() {
             )}
           </tbody>
         </table>
+        </ScrollFade>
       </div>
 
       {docs.length > 0 && (
