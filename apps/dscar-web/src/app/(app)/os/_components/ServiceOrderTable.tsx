@@ -74,7 +74,7 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
             role="button"
             tabIndex={0}
             onClick={() => router.push(`/os/${order.number}`)}
-            onKeyDown={(e) => { if (e.key === "Enter") router.push(`/os/${order.number}`) }}
+            onKeyDown={(e) => { if (e.key === "Enter" && e.target === e.currentTarget) router.push(`/os/${order.number}`) }}
             className="rounded-md border border-border bg-muted/50 p-4 space-y-2 cursor-pointer hover:bg-primary/5 transition-colors"
           >
             <div className="flex items-center justify-between gap-2">
@@ -109,23 +109,25 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
               </span>
             </div>
 
-            <div className="flex items-center justify-end gap-1.5 pt-1 text-xs">
-              {isBillable ? (
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setBillingOrder(order) }}
-                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-success-400 hover:bg-success-500/10 transition-colors"
-                >
-                  <DollarSign className="h-3.5 w-3.5" />
-                  Faturar OS
-                </button>
-              ) : order.invoice_issued ? (
-                <span className="inline-flex items-center gap-1 text-success-400" title="OS faturada">
-                  <CheckCircle className="h-3.5 w-3.5" />
-                  Faturada
-                </span>
-              ) : null}
-            </div>
+            {(isBillable || order.invoice_issued) && (
+              <div className="flex items-center justify-end gap-1.5 pt-1 text-xs">
+                {isBillable ? (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setBillingOrder(order) }}
+                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-success-400 hover:bg-success-500/10 transition-colors"
+                  >
+                    <DollarSign className="h-3.5 w-3.5" />
+                    Faturar OS
+                  </button>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-success-400" title="OS faturada">
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    Faturada
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         )
       })}
