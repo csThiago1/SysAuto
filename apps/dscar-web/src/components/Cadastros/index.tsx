@@ -15,6 +15,7 @@ import type { Person, PersonRole, ModalProps } from "@paddock/types";
 import { usePersons, useDebounce } from "@/hooks";
 import { Button, Input, Skeleton, PageHeader, TableSkeleton, EmptyState } from "@/components/ui";
 import { PermissionGate } from "@/components/PermissionGate";
+import { ScrollFade } from "@/components/ui/scroll-fade";
 import { PersonTable } from "./PersonTable";
 import { PersonFormModal } from "./PersonFormModal";
 
@@ -95,21 +96,23 @@ export function Cadastros(): React.ReactElement {
       />
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => handleTabChange(tab.id)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === tab.id
-                ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground hover:text-foreground/70 hover:border-border"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <ScrollFade className="border-b">
+        <div className="flex gap-1">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={`whitespace-nowrap px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab.id
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground/70 hover:border-border"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </ScrollFade>
 
       {/* Busca */}
       <div className="relative max-w-md">

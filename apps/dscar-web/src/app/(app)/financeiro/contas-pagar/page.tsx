@@ -184,7 +184,7 @@ export default function ContasPagarPage(): React.ReactElement {
         {/* Filters */}
         <div className="flex flex-wrap gap-3">
           <Input
-            placeholder="Buscar fornecedor ou descrição..."
+            placeholder="Buscar fornecedor..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-60"
@@ -213,8 +213,8 @@ export default function ContasPagarPage(): React.ReactElement {
               </option>
             ))}
           </select>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Venc. de</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground whitespace-nowrap">Venc. de</span>
             <Input
               type="date"
               value={dueDateGte}

@@ -100,7 +100,7 @@ export default function OrcamentosParticularesPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
           { label: "Total",     value: total,     color: "text-foreground" },
           { label: "Rascunhos", value: rascunhos, color: "text-foreground/60" },
@@ -118,8 +118,8 @@ export default function OrcamentosParticularesPage() {
       </div>
 
       {/* Filtros */}
-      <div className="flex gap-3">
-        <div className="relative flex-1 max-w-xs">
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="relative min-w-0 flex-1 sm:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Número, placa, cliente..."
@@ -146,28 +146,67 @@ export default function OrcamentosParticularesPage() {
       {/* Tabela */}
       {isLoading ? (
         <TableSkeleton columns={6} />
+      ) : filtered.length === 0 ? (
+        <div className="rounded-xl border border-border py-12 text-center text-muted-foreground">
+          Nenhum orçamento encontrado
+        </div>
       ) : (
-        <div className="rounded-xl border border-border overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border hover:bg-transparent">
-                <TableHead className="text-muted-foreground">Número</TableHead>
-                <TableHead className="text-muted-foreground">Cliente</TableHead>
-                <TableHead className="text-muted-foreground">Placa</TableHead>
-                <TableHead className="text-muted-foreground">Versão</TableHead>
-                <TableHead className="text-muted-foreground">Valor Líquido</TableHead>
-                <TableHead className="text-muted-foreground">Data</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
-                    Nenhum orçamento encontrado
-                  </TableCell>
+        <>
+          {/* Mobile card view */}
+          <div className="md:hidden space-y-2">
+            {filtered.map((b) => (
+              <div
+                key={b.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => router.push(`/orcamentos-particulares/${b.id}` as Route)}
+                onKeyDown={(e) => { if (e.key === "Enter" && e.target === e.currentTarget) router.push(`/orcamentos-particulares/${b.id}` as Route) }}
+                className="rounded-md border border-border bg-muted/50 p-4 space-y-2 cursor-pointer hover:bg-primary/5 transition-colors"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono font-semibold text-foreground text-sm">{b.number}</span>
+                  {b.active_version ? (
+                    <Badge className={`text-xs border-0 shrink-0 ${STATUS_COLORS[b.active_version.status]}`}>
+                      v{b.active_version.version_number} · {STATUS_LABELS[b.active_version.status]}
+                    </Badge>
+                  ) : (
+                    <span className="text-muted-foreground/50 text-xs">—</span>
+                  )}
+                </div>
+
+                <p className="text-sm text-foreground/80 truncate">{b.customer_name}</p>
+
+                <div className="flex items-center justify-between gap-2 border-t border-border pt-2 text-xs">
+                  <span className="inline-flex items-center gap-1.5 font-mono bg-muted text-foreground px-2 py-0.5 rounded shrink-0">
+                    {b.vehicle_make_logo && (
+                      <img src={b.vehicle_make_logo} alt="" className="h-3.5 w-3.5 object-contain" />
+                    )}
+                    {b.vehicle_plate}
+                  </span>
+                  <span className="text-muted-foreground">{formatDate(b.created_at)}</span>
+                  <span className="font-mono font-semibold text-foreground shrink-0">
+                    {b.active_version ? formatBRL(b.active_version.net_total) : "—"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Table */}
+          <div className="hidden md:block rounded-xl border border-border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-muted-foreground">Número</TableHead>
+                  <TableHead className="text-muted-foreground">Cliente</TableHead>
+                  <TableHead className="text-muted-foreground">Placa</TableHead>
+                  <TableHead className="text-muted-foreground">Versão</TableHead>
+                  <TableHead className="text-muted-foreground">Valor Líquido</TableHead>
+                  <TableHead className="text-muted-foreground">Data</TableHead>
                 </TableRow>
-              ) : (
-                filtered.map((b) => (
+              </TableHeader>
+              <TableBody>
+                {filtered.map((b) => (
                   <TableRow
                     key={b.id}
                     className="border-white/5 hover:bg-muted/50 cursor-pointer"
@@ -204,11 +243,11 @@ export default function OrcamentosParticularesPage() {
                       {formatDate(b.created_at)}
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
       )}
     </div>
   )
