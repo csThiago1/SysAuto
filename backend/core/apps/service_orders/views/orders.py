@@ -119,6 +119,16 @@ def _financial_locked_response(order: ServiceOrder) -> Response | None:
     )
 
 
+def _photo_deletion_locked_response(order: ServiceOrder) -> Response | None:
+    """Bloqueia exclusão de fotos em OS entregue/cancelada — evidência de sinistro."""
+    if order.status not in (ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED):
+        return None
+    return Response(
+        {"detail": "Não é possível remover fotos de uma OS entregue ou cancelada."},
+        status=422,
+    )
+
+
 @extend_schema_view(
     list=extend_schema(
         summary="Listar ordens de serviço",
@@ -1256,6 +1266,9 @@ class ServiceOrderViewSet(
         Soft delete apenas — s3_key preservado como evidência de sinistro.
         """
         service_order: ServiceOrder = self.get_object()
+        locked_response = _photo_deletion_locked_response(service_order)
+        if locked_response is not None:
+            return locked_response
         try:
             photo = service_order.photos.get(pk=photo_pk)
         except ServiceOrderPhoto.DoesNotExist:
@@ -1286,6 +1299,9 @@ class ServiceOrderViewSet(
         from ..models import ActivityType, OSPhotoFolder
 
         service_order: ServiceOrder = self.get_object()
+        locked_response = _photo_deletion_locked_response(service_order)
+        if locked_response is not None:
+            return locked_response
         serializer = PhotoIdsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         photo_ids = serializer.validated_data["photo_ids"]
@@ -1368,6 +1384,7 @@ class ServiceOrderViewSet(
                         "Arquivo %s ilegível no storage (OS #%d) — pulado no ZIP",
                         photo.s3_key,
                         service_order.number,
+                        exc_info=True,
                     )
                     continue
                 zf.writestr(f"{folder}/{i:03d}-{str(photo.pk)[:8]}.{ext}", data)

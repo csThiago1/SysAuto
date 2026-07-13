@@ -87,6 +87,16 @@ class PhotoDeletePermissionTest(PhotoAPITestBase):
         assert photo.is_active is False
         assert photo.s3_key  # preservado
 
+    def test_delete_manager_em_os_entregue_retorna_422(self) -> None:
+        photo = self.make_photo()
+        self.order.status = ServiceOrderStatus.DELIVERED
+        self.order.save(update_fields=["status"])
+        self.auth("MANAGER")
+        resp = self.client.delete(self._url(str(photo.id)))
+        assert resp.status_code == 422
+        photo.refresh_from_db()
+        assert photo.is_active is True
+
 
 class PhotoBulkDeleteTest(PhotoAPITestBase):
     def _url(self) -> str:
@@ -144,6 +154,20 @@ class PhotoBulkDeleteTest(PhotoAPITestBase):
         self.auth("MANAGER")
         resp = self.client.post(self._url(), {"photo_ids": []}, format="json")
         assert resp.status_code == 400
+
+    def test_manager_bulk_delete_em_os_cancelada_retorna_422(self) -> None:
+        p1 = self.make_photo(folder="vistoria_inicial")
+        p2 = self.make_photo(folder="documentos")
+        self.order.status = ServiceOrderStatus.CANCELLED
+        self.order.save(update_fields=["status"])
+        self.auth("MANAGER")
+        resp = self.client.post(
+            self._url(), {"photo_ids": [str(p1.id), str(p2.id)]}, format="json"
+        )
+        assert resp.status_code == 422
+        p1.refresh_from_db()
+        p2.refresh_from_db()
+        assert p1.is_active is True and p2.is_active is True
 
 
 class PhotoDownloadZipTest(PhotoAPITestBase):

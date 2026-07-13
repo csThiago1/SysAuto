@@ -540,6 +540,7 @@ export function FilesTab({ order }: FilesTabProps) {
   }
 
   const canUpload = !["delivered", "cancelled"].includes(order.status)
+  // OS entregue/cancelada: fotos são evidência consolidada — exclusão bloqueada (backend idem)
   const canDelete = canUpload && isManager
 
   const photosByFolder = OS_PHOTO_FOLDER_ORDER.reduce<Record<string, ServiceOrderPhoto[]>>(
