@@ -98,7 +98,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
   return (
     <div className="flex min-h-[calc(100vh-64px)] flex-col">
       {/* ── Header ──────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
+      <header className="md:sticky md:top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="px-5 pt-2.5">
           <ol className="flex items-center gap-1.5 text-xs text-muted-foreground">

@@ -146,7 +146,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
       {isReady && (
         <div
           className={cn(
-            "flex items-center justify-between rounded-xl border px-5 py-4",
+            "flex flex-col gap-3 rounded-xl border px-5 py-4 sm:flex-row sm:items-center sm:justify-between",
             deliveryBlocked
               ? "bg-warning-500/10 border-warning-500/20"
               : "bg-success-500/10 border-success-500/20",
@@ -159,7 +159,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
                 deliveryBlocked ? "text-warning-400" : "text-success-400",
               )}
             />
-            <div>
+            <div className="min-w-0 flex-1">
               <p
                 className={cn(
                   "text-sm font-semibold",
@@ -280,7 +280,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
           </h2>
         </div>
         <div className="p-5">
-          <div className="grid grid-cols-2 gap-4 items-end">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 items-end">
             <div>
               <Label className="text-xs text-muted-foreground">KM de Entrada</Label>
               <p className="mt-1 text-sm font-medium text-foreground/70">
@@ -299,7 +299,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
                   value={mileageOut}
                   onChange={(e) => setMileageOut(e.target.value)}
                   placeholder="Ex: 85000"
-                  className="h-9"
+                  className="h-9 min-w-0 flex-1"
                   disabled={isDelivered}
                 />
                 <Button

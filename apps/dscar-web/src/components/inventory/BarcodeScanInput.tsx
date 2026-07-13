@@ -23,7 +23,7 @@ interface BarcodeScanInputProps {
 
 export function BarcodeScanInput({
   onScan,
-  placeholder = "Bipe ou digite o codigo de barras...",
+  placeholder = "Bipe ou digite o código...",
   disabled = false,
   className = "",
 }: BarcodeScanInputProps) {
@@ -83,7 +83,7 @@ export function BarcodeScanInput({
         onKeyDown={handleKeyDown}
         disabled={disabled}
         placeholder={placeholder}
-        className="w-full bg-muted/50 border border-border text-foreground rounded-md pl-10 pr-4 py-2 text-sm font-mono placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full truncate bg-muted/50 border border-border text-foreground rounded-md pl-10 pr-4 py-2 text-sm font-mono placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-40 disabled:cursor-not-allowed"
       />
     </div>
   )

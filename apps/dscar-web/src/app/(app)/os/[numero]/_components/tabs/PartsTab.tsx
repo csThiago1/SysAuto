@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Loader2, MoreVertical, Package, Warehouse, ShoppingCart, Shield } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { ScrollFade } from "@/components/ui/scroll-fade"
 
 import {
   useOSParts,
@@ -227,7 +228,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
           />
         </div>
       ) : (
-        <div className="overflow-hidden rounded-md border border-border bg-muted/50">
+        <ScrollFade className="rounded-md border border-border bg-muted/50">
           <Table>
             <TableHeader className="bg-muted/30">
               <TableRow>
@@ -365,7 +366,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
               })}
             </TableBody>
           </Table>
-        </div>
+        </ScrollFade>
       )}
 
       {/* Summary cards */}

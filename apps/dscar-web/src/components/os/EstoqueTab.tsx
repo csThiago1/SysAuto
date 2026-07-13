@@ -117,7 +117,7 @@ export function EstoqueTab({ osId }: EstoqueTabProps) {
           <p className="label-mono text-muted-foreground mb-2">BIPAGEM RAPIDA</p>
           <BarcodeScanInput
             onScan={handleScan}
-            placeholder="Bipe ou digite o codigo para vincular a esta OS..."
+            placeholder="Bipe ou digite o código..."
           />
         </div>
 
