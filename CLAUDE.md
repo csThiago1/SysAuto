@@ -185,6 +185,20 @@ export const useDeleteFoo = () => useDelete("foos")
 
 Casos que NÃO fitam o factory (mantém `useMutation` inline): toast custom em onSuccess/onError, FormData, URL aninhada com id no path, invalidação múltipla independente, invalidação callback-based.
 
+### Responsividade Mobile (viewport de referência: 390px)
+
+- Tabelas operacionais: tabela `hidden md:grid`/`hidden md:table` + cards `md:hidden space-y-3`
+  (padrão-ouro: financeiro/contas-pagar). Tabela que ainda não virou cards: wrapper `ScrollFade`
+  (`@/components/ui/scroll-fade`) — PROIBIDO `overflow-hidden` em wrapper de tabela.
+- KPI cards: `grid grid-cols-2 gap-3 lg:grid-cols-4` — nunca `grid-cols-3/4` fixo.
+- Header de página: `flex flex-wrap gap-y-2`; título com `min-w-0`; ícone ao lado de título com
+  descrição usa `items-start`; botões de ação com `flex-wrap`.
+- Toolbars/filtros: `flex flex-wrap gap-2`; inputs `min-w-0 flex-1` — nunca somar larguras fixas >390px.
+- Scroll horizontal de página é proibido (main é overflow-x-hidden) — scroll lateral só em containers
+  explícitos (kanban, ScrollFade, tab bars com fade).
+- Dialogs: `flex max-h-[90dvh] flex-col` + conteúdo `min-h-0 flex-1`.
+- Toda tela nova: testar em 390px antes de mergear.
+
 ---
 
 ## Armadilhas Conhecidas
