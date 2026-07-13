@@ -78,6 +78,8 @@ async function proxyRequest(
   const isBinaryPassthrough =
     contentType.includes("application/pdf") ||
     contentType.includes("application/xml") ||
+    contentType.includes("application/zip") ||
+    contentType.includes("application/octet-stream") ||
     (contentType.includes("text/html") && response.headers.has("Content-Disposition"));
   if (isBinaryPassthrough) {
     const buf = await response.arrayBuffer();
