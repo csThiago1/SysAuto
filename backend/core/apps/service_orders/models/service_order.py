@@ -633,6 +633,7 @@ class ActivityType(models.TextChoices):
     INSURER_UPDATED  = "insurer_updated",  "Seguradora Atualizada"
     REMINDER         = "reminder",         "Lembrete Adicionado"
     FILE_UPLOAD      = "file_upload",      "Arquivo Anexado"
+    FILE_DELETED     = "file_deleted",     "Arquivo Removido"
     NOTE_ADDED       = "note_added",       "Nota Adicionada"
     BUDGET_SNAPSHOT  = "budget_snapshot",  "Snapshot de Orçamento"
     CILIA_IMPORT     = "cilia_import",     "Importação Cilia"

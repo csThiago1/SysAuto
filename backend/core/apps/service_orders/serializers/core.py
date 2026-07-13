@@ -958,6 +958,14 @@ class UploadPhotoSerializer(serializers.Serializer):
     checklist_type = serializers.CharField(required=False, allow_blank=True, default="")
 
 
+class PhotoIdsSerializer(serializers.Serializer):
+    """IDs de fotos da OS para operações em lote (bulk-delete, download ZIP)."""
+
+    photo_ids = serializers.ListField(
+        child=serializers.UUIDField(), min_length=1, max_length=500
+    )
+
+
 # -- ChecklistItem Serializers (Sprint M4) --
 
 class ChecklistItemSerializer(serializers.ModelSerializer):

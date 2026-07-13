@@ -10,6 +10,7 @@ from django.db.models import Count, DecimalField, Exists, F, Max, Min, OuterRef,
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
@@ -59,6 +60,7 @@ from ..serializers import (
     ServiceOrderUpdateSerializer,
     StatusTransitionLogSerializer,
     NotificationFeedSerializer,
+    PhotoIdsSerializer,
     UploadPhotoSerializer,
     VersionDetailSerializer,
     VehicleHistoryItemSerializer,
@@ -1267,6 +1269,51 @@ class ServiceOrderViewSet(
             request.user.id,
         )
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @extend_schema(
+        summary="Remover fotos da OS em lote (soft delete)",
+        request=PhotoIdsSerializer,
+        responses={200: OpenApiTypes.OBJECT},
+    )
+    @action(detail=True, methods=["post"], url_path="photos/bulk-delete")
+    def photos_bulk_delete(self, request: Request, pk: Optional[str] = None) -> Response:
+        """
+        POST /service-orders/{id}/photos/bulk-delete/
+        Soft delete em lote — s3_key preservado como evidência de sinistro.
+        Requer MANAGER+ (ver get_permissions).
+        """
+        from ..models import ActivityType, OSPhotoFolder
+
+        service_order: ServiceOrder = self.get_object()
+        serializer = PhotoIdsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        photo_ids = serializer.validated_data["photo_ids"]
+
+        photos = list(service_order.photos.filter(pk__in=photo_ids, is_active=True))
+        if len(photos) != len(set(photo_ids)):
+            return Response(
+                {"detail": "Uma ou mais fotos não pertencem a esta OS ou já foram removidas."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        service_order.photos.filter(pk__in=photo_ids).update(is_active=False)
+
+        folder_labels = dict(OSPhotoFolder.choices)
+        folders = sorted({folder_labels.get(p.folder, p.folder) for p in photos})
+        ServiceOrderActivityLog.objects.create(
+            service_order=service_order,
+            user=request.user,
+            activity_type=ActivityType.FILE_DELETED,
+            description=f"{len(photos)} foto(s) removida(s) — {', '.join(folders)}",
+            metadata={"count": len(photos), "photo_ids": [str(p.pk) for p in photos]},
+        )
+        logger.info(
+            "Bulk delete de %d fotos da OS #%d por user_id=%s",
+            len(photos),
+            service_order.number,
+            request.user.id,
+        )
+        return Response({"deleted": len(photos)})
 
     # ── Checklist Items (Sprint M4) ──────────────────────────────────────────
 

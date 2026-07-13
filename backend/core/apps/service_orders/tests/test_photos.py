@@ -86,3 +86,61 @@ class PhotoDeletePermissionTest(PhotoAPITestBase):
         photo.refresh_from_db()
         assert photo.is_active is False
         assert photo.s3_key  # preservado
+
+
+class PhotoBulkDeleteTest(PhotoAPITestBase):
+    def _url(self) -> str:
+        return f"/api/v1/service-orders/{self.order.id}/photos/bulk-delete/"
+
+    def test_manager_bulk_delete_soft_e_log_unico(self) -> None:
+        p1 = self.make_photo(folder="vistoria_inicial")
+        p2 = self.make_photo(folder="documentos")
+        self.auth("MANAGER")
+        resp = self.client.post(
+            self._url(), {"photo_ids": [str(p1.id), str(p2.id)]}, format="json"
+        )
+        assert resp.status_code == 200
+        assert resp.json() == {"deleted": 2}
+        p1.refresh_from_db()
+        p2.refresh_from_db()
+        assert p1.is_active is False and p2.is_active is False
+        assert p1.s3_key and p2.s3_key  # preservados
+        logs = ServiceOrderActivityLog.objects.filter(
+            service_order=self.order, activity_type=ActivityType.FILE_DELETED
+        )
+        assert logs.count() == 1
+        assert "2 foto" in logs.first().description
+
+    def test_consultant_retorna_403(self) -> None:
+        photo = self.make_photo()
+        self.auth("CONSULTANT")
+        resp = self.client.post(self._url(), {"photo_ids": [str(photo.id)]}, format="json")
+        assert resp.status_code == 403
+
+    def test_foto_de_outra_os_retorna_400(self) -> None:
+        other_order = ServiceOrder.objects.create(
+            number=9951,
+            plate="FOT0B22",
+            customer_name="Outro Cliente",
+            status=ServiceOrderStatus.RECEPTION,
+            created_by=self.user,
+        )
+        alheia = ServiceOrderPhoto.objects.create(
+            service_order=other_order,
+            folder="vistoria_inicial",
+            s3_key="x/y.jpg",
+            uploaded_by_id=self.user.id,
+        )
+        minha = self.make_photo()
+        self.auth("MANAGER")
+        resp = self.client.post(
+            self._url(), {"photo_ids": [str(minha.id), str(alheia.id)]}, format="json"
+        )
+        assert resp.status_code == 400
+        minha.refresh_from_db()
+        assert minha.is_active is True  # nada foi excluído
+
+    def test_lista_vazia_retorna_400(self) -> None:
+        self.auth("MANAGER")
+        resp = self.client.post(self._url(), {"photo_ids": []}, format="json")
+        assert resp.status_code == 400
