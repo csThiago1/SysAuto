@@ -178,6 +178,10 @@ class ServiceOrderViewSet(
             return [IsAuthenticated(), HasTenantPermission("os.billing")]
         if self.action == "deliver":
             return [IsAuthenticated(), HasTenantPermission("os.transition")]
+        # Exclusão de fotos (individual e em lote): MANAGER+ — fotos são
+        # evidência de sinistro, soft delete restrito a gestão.
+        if self.action in ("photo_detail", "photos_bulk_delete"):
+            return [IsAuthenticated(), IsManagerOrAbove()]
         # Default: read access (list, retrieve, sync, etc.)
         return [IsAuthenticated(), HasTenantPermission("os.view")]
 
