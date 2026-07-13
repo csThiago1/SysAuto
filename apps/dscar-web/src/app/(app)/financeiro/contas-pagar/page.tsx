@@ -221,7 +221,7 @@ export default function ContasPagarPage(): React.ReactElement {
               onChange={(e) => setDueDateGte(e.target.value)}
               className="w-36"
             />
-            <span className="text-xs text-muted-foreground">até</span>
+            <span className="whitespace-nowrap text-xs text-muted-foreground">até</span>
             <Input
               type="date"
               value={dueDateLte}

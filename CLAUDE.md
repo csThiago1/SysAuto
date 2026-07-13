@@ -187,7 +187,7 @@ Casos que NÃO fitam o factory (mantém `useMutation` inline): toast custom em o
 
 ### Responsividade Mobile (viewport de referência: 390px)
 
-- Tabelas operacionais: tabela `hidden md:grid`/`hidden md:table` + cards `md:hidden space-y-3`
+- Tabelas operacionais: tabela em wrapper `hidden md:block` (com ScrollFade) + cards `md:hidden space-y-3`
   (padrão-ouro: financeiro/contas-pagar). Tabela que ainda não virou cards: wrapper `ScrollFade`
   (`@/components/ui/scroll-fade`) — PROIBIDO `overflow-hidden` em wrapper de tabela.
 - KPI cards: `grid grid-cols-2 gap-3 lg:grid-cols-4` — nunca `grid-cols-3/4` fixo.
