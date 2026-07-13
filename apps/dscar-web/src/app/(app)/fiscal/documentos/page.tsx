@@ -721,6 +721,12 @@ function FiscalDocCard({
       )
     : "—"
 
+  const dateFmt = new Date(doc.created_at).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
+
   const isRejected = doc.status === "rejected" && !!doc.mensagem_sefaz
   const sefazHint = isRejected ? explainSefazError(doc.mensagem_sefaz) : null
 
@@ -743,8 +749,15 @@ function FiscalDocCard({
       </div>
 
       <p className="text-xs font-mono text-muted-foreground truncate">
-        {doc.ref ?? "—"} {doc.numero ? `· ${doc.numero}` : ""}
+        {doc.ref ?? "—"} · {doc.numero ?? "—"}
       </p>
+
+      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+        <span className={doc.environment === "homologacao" ? "text-warning-400" : undefined}>
+          {doc.environment === "homologacao" ? "Homolog." : "Produção"}
+        </span>
+        <span>{dateFmt}</span>
+      </div>
 
       {isRejected && (
         <div className="flex items-start gap-2 border-t border-border pt-2">
