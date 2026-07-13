@@ -21,6 +21,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog"
 import { useOSPhotos, useSoftDeletePhoto, useBulkDeletePhotos, useDownloadPhotosZip } from "../../_hooks/useOSItems"
 import { useUploadQueue } from "../../_hooks/useUploadQueue"
 import { CameraCapture } from "@/components/camera/CameraCapture"
+import { watermarkFile } from "@/components/camera/watermark"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -42,11 +43,27 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
   const [caption, setCaption] = useState("")
   const [cameraOpen, setCameraOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
 
   function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
     if (files.length) enqueue(files, caption)
     e.target.value = "" // permite re-selecionar os mesmos arquivos
+  }
+
+  // Touch (celular/tablet): câmera NATIVA via input capture — marca d'água
+  // aplicada em canvas após a foto. Desktop: getUserMedia (CameraCapture).
+  function handleCameraClick() {
+    if (window.matchMedia("(pointer: coarse)").matches) cameraInputRef.current?.click()
+    else setCameraOpen(true)
+  }
+
+  async function handleNativeCapture(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ""
+    if (!file) return
+    const stamped = await watermarkFile(file, [`Pasta: ${folderCfg.label}`])
+    enqueue([stamped], caption)
   }
 
   function handleClose() {
@@ -84,7 +101,7 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
               <span className="text-xs text-muted-foreground">seleção múltipla</span>
             </button>
             <button
-              onClick={() => setCameraOpen(true)}
+              onClick={handleCameraClick}
               className={cn(
                 "h-24 rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-1.5 transition-colors hover:opacity-80",
                 folderCfg.borderColor,
@@ -96,6 +113,15 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
               <span className="text-xs text-muted-foreground">com marca d&apos;água</span>
             </button>
           </div>
+
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => void handleNativeCapture(e)}
+          />
 
           <Input
             placeholder="Legenda opcional (aplicada às próximas fotos)..."

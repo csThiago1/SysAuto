@@ -22,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { drawWatermark } from "./watermark"
 
 interface CameraCaptureProps {
   open: boolean
@@ -30,26 +31,6 @@ interface CameraCaptureProps {
   onCapture: (file: File) => void
   /** Linhas extras da marca d'água (ex: "OS #9999", "João Silva") */
   watermarkLines?: string[]
-}
-
-function drawWatermark(canvas: HTMLCanvasElement, lines: string[]) {
-  const ctx = canvas.getContext("2d")
-  if (!ctx) return
-  const fontSize = Math.max(14, Math.round(canvas.width / 45))
-  const pad = fontSize
-  const lineHeight = fontSize * 1.4
-  const all = [new Date().toLocaleString("pt-BR"), ...lines]
-
-  ctx.font = `${fontSize}px sans-serif`
-  const boxWidth = Math.max(...all.map((l) => ctx.measureText(l).width)) + pad * 2
-  const boxHeight = all.length * lineHeight + pad
-
-  ctx.fillStyle = "rgba(0,0,0,0.55)"
-  ctx.fillRect(0, canvas.height - boxHeight, boxWidth, boxHeight)
-  ctx.fillStyle = "#fff"
-  all.forEach((line, i) => {
-    ctx.fillText(line, pad, canvas.height - boxHeight + pad * 0.5 + (i + 0.8) * lineHeight - lineHeight * 0.4)
-  })
 }
 
 export function CameraCapture({ open, onClose, onCapture, watermarkLines = [] }: CameraCaptureProps) {
