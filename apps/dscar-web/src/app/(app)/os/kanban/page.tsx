@@ -45,12 +45,12 @@ export default function KanbanPage(): React.ReactElement {
       <NewOSDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
 
       {/* Header */}
-      <div className="flex items-center justify-between shrink-0">
+      <div className="flex flex-wrap items-center justify-between gap-y-2">
         <PageHeader
           title="Kanban"
           description={`${orders.length} ordem${orders.length !== 1 ? "s" : ""} ativa${orders.length !== 1 ? "s" : ""}`}
         />
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Toggle: mostrar entregues */}
           <button
             type="button"
@@ -104,9 +104,13 @@ export default function KanbanPage(): React.ReactElement {
         </div>
       )}
 
-      {/* Board */}
-      <div className="flex-1 min-h-0 overflow-x-auto">
+      {/* Board — overflow-x-auto real fica dentro do KanbanBoard (mesmo container do DndContext) */}
+      <div className="relative flex-1 min-h-0">
         <KanbanBoard orders={orders} isLoading={isLoading} showDelivered={showDelivered} showCancelled={showCancelled} />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background/90 to-transparent md:hidden"
+        />
       </div>
     </div>
     </ErrorBoundary>
