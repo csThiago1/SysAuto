@@ -602,7 +602,7 @@ export function FilesTab({ order }: FilesTabProps) {
   return (
     <div className="space-y-4">
       {/* Summary bar */}
-      <div className="flex items-center justify-between bg-muted/30 rounded-lg px-4 py-2.5 border border-border">
+      <div className="flex flex-wrap items-center justify-between gap-y-1.5 bg-muted/30 rounded-lg px-4 py-2.5 border border-border">
         <div className="flex items-center gap-2 text-sm text-foreground/60">
           <Images className="h-4 w-4 text-muted-foreground" />
           <span>
@@ -612,7 +612,7 @@ export function FilesTab({ order }: FilesTabProps) {
             pasta{foldersWithPhotos !== 1 ? "s" : ""}
           </span>
         </div>
-        <div className="flex gap-1">
+        <div className="flex flex-wrap gap-1">
           {totalPhotos > 0 && (
             <Button
               variant={selectionMode ? "secondary" : "ghost"}
