@@ -20,6 +20,7 @@ import { usePermission } from "@/hooks/usePermission"
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog"
 import { useOSPhotos, useSoftDeletePhoto, useBulkDeletePhotos, useDownloadPhotosZip } from "../../_hooks/useOSItems"
 import { useUploadQueue } from "../../_hooks/useUploadQueue"
+import { useSession } from "next-auth/react"
 import { CameraCapture } from "@/components/camera/CameraCapture"
 import { watermarkFile } from "@/components/camera/watermark"
 
@@ -39,6 +40,7 @@ interface UploadDialogProps {
 
 function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
   const folderCfg = OS_PHOTO_FOLDERS[folder]
+  const { data: session } = useSession()
   const { items, enqueue, retry, reset, isUploading, doneCount } = useUploadQueue(orderId, folder)
   const [caption, setCaption] = useState("")
   const [cameraOpen, setCameraOpen] = useState(false)
@@ -58,11 +60,17 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
     else setCameraOpen(true)
   }
 
+  // Marca d'água: data/hora (automática) + quem tirou + pasta
+  const watermarkLines = [
+    ...(session?.user?.name ? [session.user.name] : []),
+    `Pasta: ${folderCfg.label}`,
+  ]
+
   async function handleNativeCapture(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     e.target.value = ""
     if (!file) return
-    const stamped = await watermarkFile(file, [`Pasta: ${folderCfg.label}`])
+    const stamped = await watermarkFile(file, watermarkLines)
     enqueue([stamped], caption)
   }
 
@@ -176,7 +184,7 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
             open={cameraOpen}
             onClose={() => setCameraOpen(false)}
             onCapture={(file) => enqueue([file], caption)}
-            watermarkLines={[`Pasta: ${folderCfg.label}`]}
+            watermarkLines={watermarkLines}
           />
 
           <input
