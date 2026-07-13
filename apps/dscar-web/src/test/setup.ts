@@ -6,3 +6,7 @@ global.ResizeObserver = class {
   unobserve() {}
   disconnect() {}
 } as never;
+
+// ponytail: jsdom não implementa URL.createObjectURL/revokeObjectURL
+if (!URL.createObjectURL) URL.createObjectURL = () => "blob:mock";
+if (!URL.revokeObjectURL) URL.revokeObjectURL = () => {};
