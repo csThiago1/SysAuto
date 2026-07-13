@@ -144,3 +144,56 @@ class PhotoBulkDeleteTest(PhotoAPITestBase):
         self.auth("MANAGER")
         resp = self.client.post(self._url(), {"photo_ids": []}, format="json")
         assert resp.status_code == 400
+
+
+class PhotoDownloadZipTest(PhotoAPITestBase):
+    def _url(self) -> str:
+        return f"/api/v1/service-orders/{self.order.id}/photos/download/"
+
+    def _zip_from(self, resp) -> zipfile.ZipFile:
+        content = b"".join(resp.streaming_content)
+        return zipfile.ZipFile(io.BytesIO(content))
+
+    def test_download_zip_agrupado_por_pasta(self) -> None:
+        p1 = self.make_photo(folder="vistoria_inicial", content=b"foto-um")
+        p2 = self.make_photo(folder="documentos", content=b"foto-dois")
+        self.auth("CONSULTANT")  # download é leitura — qualquer role com os.view
+        resp = self.client.post(
+            self._url(), {"photo_ids": [str(p1.id), str(p2.id)]}, format="json"
+        )
+        assert resp.status_code == 200
+        assert resp["Content-Type"] == "application/zip"
+        assert "OS-9950-fotos.zip" in resp["Content-Disposition"]
+        zf = self._zip_from(resp)
+        names = sorted(zf.namelist())
+        assert len(names) == 2
+        assert any(n.startswith("Vistoria Inicial/") for n in names)
+        assert any(n.startswith("Documentos/") for n in names)
+        contents = {zf.read(n) for n in names}
+        assert contents == {b"foto-um", b"foto-dois"}
+
+    def test_foto_inativa_retorna_400(self) -> None:
+        photo = self.make_photo()
+        photo.is_active = False
+        photo.save(update_fields=["is_active"])
+        self.auth("CONSULTANT")
+        resp = self.client.post(self._url(), {"photo_ids": [str(photo.id)]}, format="json")
+        assert resp.status_code == 400
+
+    def test_foto_de_outra_os_retorna_400(self) -> None:
+        other_order = ServiceOrder.objects.create(
+            number=9952,
+            plate="FOT0C33",
+            customer_name="Terceiro",
+            status=ServiceOrderStatus.RECEPTION,
+            created_by=self.user,
+        )
+        alheia = ServiceOrderPhoto.objects.create(
+            service_order=other_order,
+            folder="vistoria_inicial",
+            s3_key="x/z.jpg",
+            uploaded_by_id=self.user.id,
+        )
+        self.auth("CONSULTANT")
+        resp = self.client.post(self._url(), {"photo_ids": [str(alheia.id)]}, format="json")
+        assert resp.status_code == 400

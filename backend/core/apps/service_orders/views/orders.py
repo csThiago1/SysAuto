@@ -1315,6 +1315,71 @@ class ServiceOrderViewSet(
         )
         return Response({"deleted": len(photos)})
 
+    @extend_schema(
+        summary="Baixar fotos da OS em ZIP",
+        request=PhotoIdsSerializer,
+        responses={(200, "application/zip"): OpenApiTypes.BINARY},
+    )
+    @action(detail=True, methods=["post"], url_path="photos/download")
+    def photos_download(self, request: Request, pk: Optional[str] = None):
+        """
+        POST /service-orders/{id}/photos/download/
+        ZIP das fotos selecionadas, agrupadas por pasta. ZIP_STORED —
+        JPEG já é comprimido, recomprimir só gasta CPU.
+        """
+        import tempfile
+        import zipfile as _zipfile
+
+        from django.core.files.storage import default_storage
+        from django.http import FileResponse
+
+        from ..models import OSPhotoFolder
+
+        service_order: ServiceOrder = self.get_object()
+        serializer = PhotoIdsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        photo_ids = serializer.validated_data["photo_ids"]
+
+        photos = list(
+            service_order.photos.filter(pk__in=photo_ids, is_active=True).order_by("uploaded_at")
+        )
+        if len(photos) != len(set(photo_ids)):
+            return Response(
+                {"detail": "Uma ou mais fotos não pertencem a esta OS ou estão inativas."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        folder_labels = dict(OSPhotoFolder.choices)
+        # ponytail: SpooledTemporaryFile derrama pro disco acima de 50MB —
+        # streaming zip de verdade só se OS com centenas de fotos virar dor.
+        tmp = tempfile.SpooledTemporaryFile(max_size=50 * 1024 * 1024)
+        with _zipfile.ZipFile(tmp, "w", _zipfile.ZIP_STORED) as zf:
+            for i, photo in enumerate(photos, start=1):
+                ext = photo.s3_key.rsplit(".", 1)[-1].lower() if "." in photo.s3_key else "jpg"
+                folder = folder_labels.get(photo.folder, photo.folder)
+                try:
+                    with default_storage.open(photo.s3_key) as f:
+                        zf.writestr(f"{folder}/{i:03d}-{str(photo.pk)[:8]}.{ext}", f.read())
+                except FileNotFoundError:
+                    logger.warning(
+                        "Arquivo %s ausente no storage (OS #%d) — pulado no ZIP",
+                        photo.s3_key,
+                        service_order.number,
+                    )
+        tmp.seek(0)
+        logger.info(
+            "Download ZIP de %d fotos da OS #%d por user_id=%s",
+            len(photos),
+            service_order.number,
+            request.user.id,
+        )
+        return FileResponse(
+            tmp,
+            as_attachment=True,
+            filename=f"OS-{service_order.number}-fotos.zip",
+            content_type="application/zip",
+        )
+
     # ── Checklist Items (Sprint M4) ──────────────────────────────────────────
 
     @extend_schema(
