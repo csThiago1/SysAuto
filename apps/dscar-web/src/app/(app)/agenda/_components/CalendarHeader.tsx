@@ -47,12 +47,12 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
   }
 
   return (
-    <div className="flex items-center justify-between py-3 px-1">
+    <div className="flex flex-wrap items-center justify-between gap-2 py-3 px-1">
       <div className="flex items-center gap-2">
         <Button variant="outline" size="icon" className="h-8 w-8" title="Anterior" onClick={goBack}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <h2 className="text-base font-semibold text-foreground/90 capitalize min-w-[200px] text-center">
+        <h2 className="text-base sm:text-lg font-semibold text-foreground/90 capitalize min-w-0 whitespace-nowrap text-center">
           {getLabel()}
         </h2>
         <Button variant="outline" size="icon" className="h-8 w-8" title="Próximo" onClick={goForward}>
@@ -68,7 +68,7 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
         </Button>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {/* Seletor de view */}
         <div className="flex rounded-md border border-border bg-muted/50 p-0.5">
           {(["month", "week", "day"] as CalendarView[]).map((v) => (
