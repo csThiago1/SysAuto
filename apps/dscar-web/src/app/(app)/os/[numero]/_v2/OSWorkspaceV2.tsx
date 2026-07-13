@@ -112,7 +112,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
           </ol>
         </nav>
 
-        <div className="flex items-center gap-3 px-5 pt-1">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-5 pt-1">
           <button
             type="button"
             onClick={() => router.push("/os")}
@@ -127,7 +127,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
           </h1>
           <span
             className={cn(
-              "rounded-full px-2.5 py-0.5 text-xs font-medium",
+              "whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium",
               statusCfg?.badge ?? "bg-muted text-muted-foreground",
             )}
           >
@@ -147,10 +147,11 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
           <div className="ml-auto flex items-center gap-2">
             <a
               href={`/os/${order.number}/classic`}
-              className="rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
+              className="whitespace-nowrap rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
             >
               <FileText className="mr-1.5 inline h-3.5 w-3.5" />
-              Versão clássica
+              <span className="hidden sm:inline">Versão clássica</span>
+              <span className="sm:hidden">Clássica</span>
             </a>
           </div>
         </div>
@@ -165,7 +166,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
           </p>
 
           {!isCancelled && (
-            <ol className="ml-auto flex items-center gap-1.5" aria-label="Progresso da OS">
+            <ol className="ml-auto flex max-w-full items-center gap-1.5 overflow-x-auto" aria-label="Progresso da OS">
               {PIPELINE_PHASES.map((phase, i) => {
                 const state = i < phaseIdx ? "done" : i === phaseIdx ? "current" : "todo"
                 return (
@@ -201,10 +202,10 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
         </div>
       </header>
 
-      {/* ── Corpo: nav lateral + conteúdo ───────────────────────────── */}
-      <div className="flex flex-1">
+      {/* ── Corpo: nav lateral (md+) ou tabs horizontais (mobile) ───── */}
+      <div className="flex flex-1 flex-col md:flex-row">
         {/* Mesma linguagem do Sidebar global: barra ativa de 3px + label mono */}
-        <nav className="w-44 shrink-0 border-r border-border bg-background py-3" aria-label="Seções da OS">
+        <nav className="hidden w-44 shrink-0 border-r border-border bg-background py-3 md:block" aria-label="Seções da OS">
           <p className="px-5 pb-1.5 font-mono text-[9.5px] uppercase tracking-[1.5px] text-muted-foreground">
             Seções
           </p>
@@ -233,7 +234,31 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
           </ul>
         </nav>
 
-        <main className="min-w-0 flex-1 px-5 py-5">
+        {/* Mobile: seções como tabs roláveis, indicador embaixo */}
+        <nav className="overflow-x-auto border-b border-border bg-background md:hidden" aria-label="Seções da OS">
+          <ul className="flex w-max px-2">
+            {NAV.map((item) => (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={() => setSection(item.id)}
+                  aria-current={section === item.id ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2.5 text-xs transition-colors",
+                    section === item.id
+                      ? "border-primary font-medium text-foreground"
+                      : "border-transparent text-muted-foreground",
+                  )}
+                >
+                  {item.icon}
+                  {item.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <main className="min-w-0 flex-1 px-4 py-4 md:px-5 md:py-5">
           {section === "overview" && <OverviewSection order={order} onNavigate={(s) => setSection(s as SectionId)} />}
           {section === "dados" && <DadosWorkspace order={order} />}
           {section === "parts" && <PartsTab orderId={order.id} />}

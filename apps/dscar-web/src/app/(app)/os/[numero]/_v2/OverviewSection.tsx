@@ -117,7 +117,7 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
 
         {/* Prazos */}
         <InfoCard icon={<CalendarClock className="h-4 w-4" />} title="Prazos">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <DateItem label="Entrada" value={formatDate(order.created_at)} />
             <DateItem
               label="Previsão de entrega"
