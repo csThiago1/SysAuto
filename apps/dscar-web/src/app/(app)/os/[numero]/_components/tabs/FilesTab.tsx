@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { Camera, ChevronDown, ChevronLeft, ChevronRight, Download, Images, Loader2, Plus, Trash2, Upload, X } from "lucide-react"
+import { Camera, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Download, Images, Loader2, Plus, RefreshCw, Trash2, Upload } from "lucide-react"
 import * as LucideIcons from "lucide-react"
 import type { OSPhotoFolder, ServiceOrder, ServiceOrderPhoto } from "@paddock/types"
 import { OS_PHOTO_FOLDERS, OS_PHOTO_FOLDER_ORDER } from "@paddock/utils"
@@ -16,7 +16,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { useOSPhotos, useSoftDeletePhoto, useUploadPhoto } from "../../_hooks/useOSItems"
+import { useOSPhotos, useSoftDeletePhoto } from "../../_hooks/useOSItems"
+import { useUploadQueue } from "../../_hooks/useUploadQueue"
 import { CameraCapture } from "@/components/camera/CameraCapture"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -35,123 +36,142 @@ interface UploadDialogProps {
 
 function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
   const folderCfg = OS_PHOTO_FOLDERS[folder]
-  const uploadMutation = useUploadPhoto(orderId)
+  const { items, enqueue, retry, reset, isUploading, doneCount } = useUploadQueue(orderId, folder)
   const [caption, setCaption] = useState("")
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [preview, setPreview] = useState<string | null>(null)
   const [cameraOpen, setCameraOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setSelectedFile(file)
-    setPreview(URL.createObjectURL(file))
+  function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? [])
+    if (files.length) enqueue(files, caption)
+    e.target.value = "" // permite re-selecionar os mesmos arquivos
   }
 
-  function handleCameraCapture(file: File) {
-    setSelectedFile(file)
-    setPreview(URL.createObjectURL(file))
+  function handleClose() {
+    if (isUploading) return
+    reset()
+    onClose()
   }
 
-  function handleSubmit() {
-    if (!selectedFile) return
-    const fd = new FormData()
-    fd.append("file", selectedFile)
-    fd.append("folder", folder)
-    if (caption) fd.append("caption", caption)
-    uploadMutation.mutate(fd, { onSuccess: () => onClose() })
-  }
+  const acceptTypes = folder === "orcamentos" ? "image/*,application/pdf" : "image/*"
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
+    <Dialog open onOpenChange={(open) => { if (!open) handleClose() }}>
       <DialogContent className="max-w-md p-0 overflow-hidden">
-        {/* Header */}
         <DialogHeader className={cn("px-4 py-3 border-b", folderCfg.bgColor, folderCfg.borderColor)}>
           <div className="flex items-center gap-2">
             <Camera className={cn("h-4 w-4", folderCfg.color)} />
             <DialogTitle className={cn("text-sm", folderCfg.color)}>
-              Adicionar foto — {folderCfg.label}
+              Adicionar fotos — {folderCfg.label}
             </DialogTitle>
           </div>
         </DialogHeader>
 
-        {/* Body */}
         <div className="p-4 space-y-3">
-          {preview ? (
-            <div className="relative rounded-lg overflow-hidden border border-border">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={preview} alt="Preview" className="w-full h-48 object-cover" />
-              <button
-                onClick={() => { setSelectedFile(null); setPreview(null) }}
-                className="absolute top-2 right-2 bg-background/80 hover:bg-muted/60 rounded-full p-1 shadow"
-              >
-                <X className="h-3 w-3 text-foreground/60" />
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className={cn(
-                  "h-36 rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-colors hover:opacity-80",
-                  folderCfg.borderColor,
-                  folderCfg.bgColor,
-                )}
-              >
-                <Upload className={cn("h-7 w-7", folderCfg.color)} />
-                <span className={cn("text-sm font-medium", folderCfg.color)}>Arquivo</span>
-                <span className="text-xs text-muted-foreground">JPG, PNG ou WEBP</span>
-              </button>
-              <button
-                onClick={() => setCameraOpen(true)}
-                className={cn(
-                  "h-36 rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-colors hover:opacity-80",
-                  folderCfg.borderColor,
-                  folderCfg.bgColor,
-                )}
-              >
-                <Camera className={cn("h-7 w-7", folderCfg.color)} />
-                <span className={cn("text-sm font-medium", folderCfg.color)}>Câmera</span>
-                <span className="text-xs text-muted-foreground">com marca d&apos;água</span>
-              </button>
-            </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className={cn(
+                "h-24 rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-1.5 transition-colors hover:opacity-80",
+                folderCfg.borderColor,
+                folderCfg.bgColor,
+              )}
+            >
+              <Upload className={cn("h-6 w-6", folderCfg.color)} />
+              <span className={cn("text-sm font-medium", folderCfg.color)}>Arquivos</span>
+              <span className="text-xs text-muted-foreground">seleção múltipla</span>
+            </button>
+            <button
+              onClick={() => setCameraOpen(true)}
+              className={cn(
+                "h-24 rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-1.5 transition-colors hover:opacity-80",
+                folderCfg.borderColor,
+                folderCfg.bgColor,
+              )}
+            >
+              <Camera className={cn("h-6 w-6", folderCfg.color)} />
+              <span className={cn("text-sm font-medium", folderCfg.color)}>Câmera</span>
+              <span className="text-xs text-muted-foreground">com marca d&apos;água</span>
+            </button>
+          </div>
+
+          <Input
+            placeholder="Legenda opcional (aplicada às próximas fotos)..."
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            maxLength={200}
+          />
+
+          {items.length > 0 && (
+            <ul className="max-h-52 space-y-1.5 overflow-y-auto">
+              {items.map((item) => (
+                <li
+                  key={item.id}
+                  className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-2 py-1.5"
+                >
+                  {item.previewUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={item.previewUrl} alt="" className="h-8 w-8 shrink-0 rounded object-cover" />
+                  ) : (
+                    <Images className="h-5 w-5 shrink-0 text-muted-foreground" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs text-foreground/80">{item.fileName}</p>
+                    {item.error && <p className="truncate text-xs text-error-400">{item.error}</p>}
+                  </div>
+                  {item.status === "uploading" && (
+                    <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" />
+                  )}
+                  {item.status === "pending" && (
+                    <span className="shrink-0 text-xs text-muted-foreground">na fila</span>
+                  )}
+                  {item.status === "done" && (
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-success-400" />
+                  )}
+                  {item.status === "error" && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 shrink-0 px-1.5 text-xs"
+                      onClick={() => retry(item.id)}
+                    >
+                      <RefreshCw className="mr-1 h-3 w-3" />
+                      Reenviar
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
           )}
 
           <CameraCapture
             open={cameraOpen}
             onClose={() => setCameraOpen(false)}
-            onCapture={handleCameraCapture}
+            onCapture={(file) => enqueue([file], caption)}
             watermarkLines={[`Pasta: ${folderCfg.label}`]}
           />
 
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept={acceptTypes}
+            multiple
             className="hidden"
-            onChange={handleFileChange}
-          />
-
-          <Input
-            placeholder="Legenda opcional..."
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            maxLength={200}
+            onChange={handleFilesChange}
           />
         </div>
 
-        {/* Footer */}
         <DialogFooter className="px-4 pb-4">
-          <Button variant="ghost" onClick={onClose}>Cancelar</Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={!selectedFile || uploadMutation.isPending}
-          >
-            {uploadMutation.isPending ? (
-              <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Enviando...</>
+          {items.length > 0 && (
+            <span className="mr-auto self-center text-xs text-muted-foreground">
+              {doneCount}/{items.length} enviada{items.length !== 1 ? "s" : ""}
+            </span>
+          )}
+          <Button onClick={handleClose} disabled={isUploading}>
+            {isUploading ? (
+              <><Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Enviando...</>
             ) : (
-              <><Upload className="h-4 w-4 mr-1.5" /> Enviar</>
+              "Concluir"
             )}
           </Button>
         </DialogFooter>
