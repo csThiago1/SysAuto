@@ -262,51 +262,53 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
         </nav>
 
         <main className="min-w-0 flex-1 px-4 py-4 md:px-5 md:py-5">
-          {section === "overview" && <OverviewSection order={order} onNavigate={(s) => setSection(s as SectionId)} />}
-          {section === "dados" && <DadosWorkspace order={order} />}
-          {section === "parts" && <PartsTab orderId={order.id} />}
-          {section === "services" && <ServicesTab osId={order.id} osStatus={status} />}
+          <div key={section} className="animate-section-in">
+            {section === "overview" && <OverviewSection order={order} onNavigate={(s) => setSection(s as SectionId)} />}
+            {section === "dados" && <DadosWorkspace order={order} />}
+            {section === "parts" && <PartsTab orderId={order.id} />}
+            {section === "services" && <ServicesTab osId={order.id} osStatus={status} />}
 
-          {section === "activity" && (
-            <div className="space-y-4">
-              <div className="flex gap-1 rounded-lg border border-border bg-muted/20 p-1 w-fit">
-                {(
-                  [
-                    ["history", "Histórico"],
-                    ["notes", "Observações"],
-                    ["reminders", "Lembretes"],
-                  ] as [ActivityView, string][]
-                ).map(([id, label]) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setActivityView(id)}
-                    className={cn(
-                      "rounded-md px-3 py-1.5 text-xs transition-colors",
-                      activityView === id
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    {label}
-                  </button>
-                ))}
+            {section === "activity" && (
+              <div className="space-y-4">
+                <div className="flex gap-1 rounded-lg border border-border bg-muted/20 p-1 w-fit">
+                  {(
+                    [
+                      ["history", "Histórico"],
+                      ["notes", "Observações"],
+                      ["reminders", "Lembretes"],
+                    ] as [ActivityView, string][]
+                  ).map(([id, label]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setActivityView(id)}
+                      className={cn(
+                        "rounded-md px-3 py-1.5 text-xs transition-colors",
+                        activityView === id
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                  {activityView === "history" && <HistoryTab order={order} />}
+                  {activityView === "notes" && (
+                    <NotesTab orderId={order.id} initialNotes={order.notes} />
+                  )}
+                  {activityView === "reminders" && <RemindersTab orderId={order.id} />}
+                </Suspense>
               </div>
-              <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-                {activityView === "history" && <HistoryTab order={order} />}
-                {activityView === "notes" && (
-                  <NotesTab orderId={order.id} initialNotes={order.notes} />
-                )}
-                {activityView === "reminders" && <RemindersTab orderId={order.id} />}
-              </Suspense>
-            </div>
-          )}
+            )}
 
-          <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-            {section === "closing" && <ClosingTab order={order} />}
-            {section === "files" && <FilesTab order={order} />}
-            {section === "estoque" && <EstoqueTab osId={order.id} />}
-          </Suspense>
+            <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+              {section === "closing" && <ClosingTab order={order} />}
+              {section === "files" && <FilesTab order={order} />}
+              {section === "estoque" && <EstoqueTab osId={order.id} />}
+            </Suspense>
+          </div>
         </main>
       </div>
     </div>

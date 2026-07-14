@@ -75,7 +75,7 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
             tabIndex={0}
             onClick={() => router.push(`/os/${order.number}`)}
             onKeyDown={(e) => { if (e.key === "Enter" && e.target === e.currentTarget) router.push(`/os/${order.number}`) }}
-            className="rounded-md border border-border bg-muted/50 p-4 space-y-2 cursor-pointer hover:bg-primary/5 transition-[transform,background-color] duration-150 ease-out active:scale-[0.98]"
+            className="animate-card-in rounded-md border border-border bg-muted/50 p-4 space-y-2 cursor-pointer opacity-0 hover:bg-primary/5 transition-[transform,background-color] duration-150 ease-out active:scale-[0.98]"
           >
             <div className="flex items-center justify-between gap-2">
               <span className="font-mono font-semibold text-primary">#{order.number}</span>

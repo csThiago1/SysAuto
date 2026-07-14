@@ -188,4 +188,42 @@
     height: 1px;
     background: hsl(var(--border));
   }
+
+  /* Stagger de entrada — cards da lista de OS (mobile) */
+  .animate-card-in {
+    animation: card-in 250ms ease-out forwards;
+  }
+  .animate-card-in:nth-child(1) { animation-delay: 0ms; }
+  .animate-card-in:nth-child(2) { animation-delay: 40ms; }
+  .animate-card-in:nth-child(3) { animation-delay: 80ms; }
+  .animate-card-in:nth-child(4) { animation-delay: 120ms; }
+  .animate-card-in:nth-child(5) { animation-delay: 160ms; }
+  .animate-card-in:nth-child(n+6) { animation-delay: 200ms; }
+
+  /* Transição de troca de seção — workspace v2 */
+  .animate-section-in {
+    animation: section-in 150ms ease-out forwards;
+  }
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes section-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-card-in,
+  .animate-section-in {
+    animation: fade-in-only 150ms ease-out forwards;
+  }
+}
+
+@keyframes fade-in-only {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
