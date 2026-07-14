@@ -17,6 +17,8 @@ export interface StatusConfig {
   column: string;
   /** Ponto colorido sólido */
   dot: string;
+  /** Cor de texto pura (sem bg) — legível em fundo escuro, pro card de lista denso */
+  text: string;
 }
 
 export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfig> = {
@@ -27,6 +29,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-blue-400",
     column: "bg-blue-600 text-white",
     dot:    "bg-blue-500",
+    text:   "text-blue-400",
   },
   initial_survey: {
     label:  "Vistoria Inicial",
@@ -34,6 +37,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-blue-500",
     column: "bg-blue-700 text-white",
     dot:    "bg-blue-600",
+    text:   "text-blue-400",
   },
   budget: {
     label:  "Orçamento",
@@ -41,6 +45,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-sky-400",
     column: "bg-sky-700 text-white",
     dot:    "bg-sky-500",
+    text:   "text-sky-400",
   },
 
   // ── Fases de Autorização ──────────────────────────────────────────────────
@@ -50,6 +55,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-amber-500",
     column: "bg-amber-700 text-white",
     dot:    "bg-amber-500",
+    text:   "text-amber-400",
   },
   authorized: {
     label:  "Autorizada",
@@ -57,6 +63,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-emerald-500",
     column: "bg-emerald-700 text-white",
     dot:    "bg-emerald-500",
+    text:   "text-emerald-400",
   },
 
   // ── Aguardando Peças ──────────────────────────────────────────────────────
@@ -66,6 +73,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-amber-400",
     column: "bg-amber-600 text-white",
     dot:    "bg-amber-400",
+    text:   "text-amber-300",
   },
 
   // ── Trabalho Ativo (vermelho/laranja) ─────────────────────────────────────
@@ -75,6 +83,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-red-500",
     column: "bg-red-700 text-white",
     dot:    "bg-red-500",
+    text:   "text-red-400",
   },
   mechanic: {
     label:  "Mecânica",
@@ -82,6 +91,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-orange-500",
     column: "bg-orange-700 text-white",
     dot:    "bg-orange-500",
+    text:   "text-orange-400",
   },
 
   // ── Especializado (roxo) ──────────────────────────────────────────────────
@@ -91,6 +101,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-purple-500",
     column: "bg-purple-700 text-white",
     dot:    "bg-purple-500",
+    text:   "text-purple-400",
   },
   painting: {
     label:  "Pintura",
@@ -98,6 +109,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-violet-500",
     column: "bg-violet-700 text-white",
     dot:    "bg-violet-500",
+    text:   "text-violet-400",
   },
   assembly: {
     label:  "Montagem",
@@ -105,6 +117,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-indigo-500",
     column: "bg-indigo-700 text-white",
     dot:    "bg-indigo-500",
+    text:   "text-indigo-400",
   },
 
   // ── Acabamento ────────────────────────────────────────────────────────────
@@ -114,6 +127,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-yellow-400",
     column: "bg-yellow-700 text-white",
     dot:    "bg-yellow-500",
+    text:   "text-yellow-400",
   },
   washing: {
     label:  "Lavagem",
@@ -121,6 +135,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-cyan-400",
     column: "bg-cyan-700 text-white",
     dot:    "bg-cyan-500",
+    text:   "text-cyan-400",
   },
 
   // ── Saída / Conclusão ─────────────────────────────────────────────────────
@@ -130,6 +145,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-teal-500",
     column: "bg-teal-700 text-white",
     dot:    "bg-teal-500",
+    text:   "text-teal-400",
   },
   ready: {
     label:  "Pronto p/ Entrega",
@@ -137,6 +153,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-green-500",
     column: "bg-green-700 text-white",
     dot:    "bg-green-500",
+    text:   "text-green-400",
   },
   delivered: {
     label:  "Entregue",
@@ -144,6 +161,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-green-400",
     column: "bg-green-800 text-white",
     dot:    "bg-green-400",
+    text:   "text-green-400",
   },
 
   // ── Cancelado ─────────────────────────────────────────────────────────────
@@ -153,6 +171,7 @@ export const SERVICE_ORDER_STATUS_CONFIG: Record<ServiceOrderStatus, StatusConfi
     border: "border-l-4 border-l-neutral-300",
     column: "bg-neutral-600 text-white",
     dot:    "bg-neutral-400",
+    text:   "text-neutral-400",
   },
 } as const;
 

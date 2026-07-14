@@ -252,16 +252,17 @@ export default function ServiceOrdersPage() {
          {isLoading && (
            <>
              <div className="md:hidden space-y-2">
-               {Array.from({ length: 3 }).map((_, i) => (
-                 <div key={i} className="rounded-md border border-border bg-muted/50 p-4 space-y-2">
+               {Array.from({ length: 6 }).map((_, i) => (
+                 <div key={i} className="rounded-[11px] bg-card px-3 py-2.5 space-y-1.5">
                    <div className="flex items-center justify-between gap-2">
-                     <Skeleton className="h-4 w-16" />
-                     <Skeleton className="h-5 w-20 rounded-full" />
-                   </div>
-                   <Skeleton className="h-4 w-3/4" />
-                   <div className="flex items-center justify-between gap-2 border-t border-border pt-2">
-                     <Skeleton className="h-3 w-24" />
+                     <Skeleton className="h-3.5 w-24" />
                      <Skeleton className="h-3 w-16" />
+                   </div>
+                   <Skeleton className="h-3.5 w-3/4" />
+                   <div className="grid grid-cols-[minmax(0,1fr)_88px_78px] gap-2.5">
+                     <Skeleton className="h-3 w-20" />
+                     <Skeleton className="h-3 w-16 justify-self-end" />
+                     <Skeleton className="h-3 w-12 justify-self-end" />
                    </div>
                  </div>
                ))}

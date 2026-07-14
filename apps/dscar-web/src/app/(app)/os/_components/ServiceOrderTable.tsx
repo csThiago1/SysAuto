@@ -7,6 +7,7 @@ import { ExternalLink, Car, DollarSign, CheckCircle, ArrowUp, ArrowDown, ArrowUp
 import { formatDate, formatCurrency } from "@paddock/utils"
 
 import type { ServiceOrder } from "@paddock/types"
+import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 import {
   Table,
   TableBody,
@@ -67,6 +68,8 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
       {orders.map((order) => {
         const isLate = isOrderLate(order)
         const isBillable = !order.invoice_issued && BILLABLE_STATUSES.has(order.status)
+        const statusCfg = SERVICE_ORDER_STATUS_CONFIG[order.status]
+        const vehicle = [order.make, order.model, order.year ? `(${order.year})` : ""].filter(Boolean).join(" ")
 
         return (
           <div
@@ -75,36 +78,41 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
             tabIndex={0}
             onClick={() => router.push(`/os/${order.number}`)}
             onKeyDown={(e) => { if (e.key === "Enter" && e.target === e.currentTarget) router.push(`/os/${order.number}`) }}
-            className="animate-card-in rounded-md border border-border bg-muted/50 p-4 space-y-2 cursor-pointer opacity-0 hover:bg-primary/5 transition-[transform,background-color] duration-150 ease-out active:scale-[0.98]"
+            className="animate-card-in relative rounded-[11px] bg-card px-3 py-2.5 cursor-pointer opacity-0 hover:bg-primary/5 transition-[transform,background-color] duration-150 ease-out active:scale-[0.98]"
           >
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-mono font-semibold text-primary">#{order.number}</span>
-              <div className="flex items-center gap-2">
-                <StatusBadge status={order.status} />
+            <span aria-hidden className={cn("absolute left-0 top-2 bottom-2 w-[3px] rounded-r-[3px]", statusCfg.dot)} />
+
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="font-mono text-[13px] font-semibold text-primary truncate">
+                #{order.number}
+                {order.plate && <span className="font-normal text-muted-foreground"> · {order.plate}</span>}
+              </span>
+              <span className="flex items-center gap-1.5 shrink-0">
+                <span className={cn("text-[11px] font-semibold", statusCfg.text)}>{statusCfg.label}</span>
                 <ClosureDots closureStatus={order.closure_status} />
-              </div>
+              </span>
             </div>
 
-            <p className="text-sm text-foreground truncate">{order.customer_name || "Sem nome"}</p>
-
-            <p className="text-xs font-mono text-muted-foreground truncate">
-              {order.plate || "—"} · {order.make} {order.model} {order.year ? `(${order.year})` : ""}
+            <p className="text-[13.5px] font-medium text-foreground truncate mt-0.5">
+              {order.customer_name || "Sem nome"}
             </p>
+            {vehicle && (
+              <p className="text-[11px] font-mono text-muted-foreground truncate">{vehicle}</p>
+            )}
 
-            <div className="flex items-center justify-between gap-2 border-t border-border pt-2 text-xs">
-              <span className="text-muted-foreground truncate">
+            <div className="grid grid-cols-[minmax(0,1fr)_88px_78px] gap-2.5 items-baseline mt-[5px] font-mono text-[11.5px] tabular-nums text-muted-foreground">
+              <span className="truncate">
                 {order.customer_type === "insurer"
                   ? (order.insurer_detail?.display_name ?? "Seguradora")
                   : "Particular"}
               </span>
-              <span className="font-mono font-semibold text-foreground shrink-0">
+              <span className="text-right text-foreground font-semibold text-[12.5px]">
                 {formatCurrency(order.total)}
               </span>
-              <span className="font-mono shrink-0 text-muted-foreground">
-                Entr {formatDate(order.entry_date)}
-                {" · "}
+              <span className="flex flex-col items-end leading-tight">
+                <span>{formatDate(order.entry_date)}</span>
                 <span className={cn(isLate && "text-error-500 font-medium")}>
-                  Prev {formatDate(order.estimated_delivery_date)}
+                  {formatDate(order.estimated_delivery_date)}
                 </span>
               </span>
             </div>
