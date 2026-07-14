@@ -244,7 +244,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
                   onClick={() => setSection(item.id)}
                   aria-current={section === item.id ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2.5 text-xs transition-colors",
+                    "flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2.5 text-xs transition-[transform,color,border-color] duration-150 ease-out active:scale-[0.97]",
                     section === item.id
                       ? "border-primary font-medium text-foreground"
                       : "border-transparent text-muted-foreground",

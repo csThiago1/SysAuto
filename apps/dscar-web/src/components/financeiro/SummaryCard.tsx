@@ -19,7 +19,7 @@ export function SummaryCard({ label, value, icon, iconBg, isLoading }: SummaryCa
         {isLoading ? (
           <Skeleton className="h-6 w-20 mt-0.5" />
         ) : (
-          <p className="text-xl font-bold text-foreground mt-0.5">{value}</p>
+          <p className="text-xl font-bold text-foreground mt-0.5 tabular-nums">{value}</p>
         )}
       </div>
     </div>

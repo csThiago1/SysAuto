@@ -314,13 +314,13 @@ export default function SimuladorPage() {
                 <div className="grid grid-cols-3 gap-3">
                   <div className="rounded-md bg-muted/50 p-3">
                     <p className="text-xs text-muted-foreground mb-1">Preço final</p>
-                    <p className="text-base font-semibold text-success-400">
+                    <p className="text-base font-semibold text-success-400 tabular-nums">
                       {formatCurrency(r.data.preco_final)}
                     </p>
                   </div>
                   <div className="rounded-md bg-muted/50 p-3">
                     <p className="text-xs text-muted-foreground mb-1">Custo base</p>
-                    <p className="text-base font-semibold text-foreground/70">
+                    <p className="text-base font-semibold text-foreground/70 tabular-nums">
                       {formatCurrency(r.data.custo_total_base)}
                     </p>
                   </div>

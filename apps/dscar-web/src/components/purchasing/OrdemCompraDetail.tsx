@@ -205,7 +205,7 @@ function ReceberDialog({ ocId, item, open, onOpenChange }: ReceberDialogProps) {
                 Ref: {item.codigo_referencia}
               </p>
             )}
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1 tabular-nums">
               Fornecedor: {item.fornecedor_nome} · Qtd: {item.quantidade} · {formatCurrency(item.valor_total)}
             </p>
           </div>

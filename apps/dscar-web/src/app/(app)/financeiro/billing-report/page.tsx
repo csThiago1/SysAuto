@@ -144,7 +144,12 @@ export default function FaturamentoPage(): React.ReactElement {
                   {data.items.map((item, idx) => (
                     <tr key={idx} className="border-b border-border/50">
                       {Object.values(item).map((val, ci) => (
-                        <td key={ci} className="py-2 pr-4 text-foreground">
+                        <td
+                          key={ci}
+                          className={`py-2 pr-4 text-foreground ${
+                            typeof val === "string" && /^\d+\.\d{2}$/.test(val) ? "tabular-nums" : ""
+                          }`}
+                        >
                           {typeof val === "string" && /^\d+\.\d{2}$/.test(val)
                             ? formatCurrency(val)
                             : String(val ?? "—")}

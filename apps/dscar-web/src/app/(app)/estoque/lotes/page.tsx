@@ -355,7 +355,7 @@ export default function LotesPage() {
                       <div className="flex items-center gap-2">
                         <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
                           <div
-                            className={`h-full rounded-full transition-all ${
+                            className={`h-full rounded-full transition-[width] ${
                               lote.saldo_percentual > 50
                                 ? "bg-success-500"
                                 : lote.saldo_percentual > 20

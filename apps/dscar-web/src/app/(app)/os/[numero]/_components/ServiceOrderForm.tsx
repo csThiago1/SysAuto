@@ -262,7 +262,7 @@ export function ServiceOrderForm({ order }: ServiceOrderFormProps) {
             onClick={form.handleSubmit(onSubmit)}
             data-testid="salvar-os-btn"
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-medium transition-all",
+              "inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-medium transition-[background-color,opacity]",
               isDirty
                 ? "bg-primary text-foreground shadow-md hover:bg-primary/90"
                 : "cursor-not-allowed bg-muted text-muted-foreground",

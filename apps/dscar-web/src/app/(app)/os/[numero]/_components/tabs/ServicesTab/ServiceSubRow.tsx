@@ -76,7 +76,7 @@ export function ServiceSubRow({
           />
         ) : (
           <span
-            className={!isBlocked ? "cursor-pointer hover:text-primary" : ""}
+            className={!isBlocked ? "cursor-pointer hover:text-primary tabular-nums" : "tabular-nums"}
             onClick={!isBlocked ? () => startEdit(item) : undefined}
           >
             {formatCurrency(Number(item.unit_price))}/h

@@ -111,7 +111,7 @@ export default function EmitirNfcePage() {
             <div><span className="text-muted-foreground">Ref:</span> <span className="font-mono">{String(result.ref ?? "—")}</span></div>
             <div><span className="text-muted-foreground">Status:</span> <span className="font-semibold">{String(result.status ?? "—")}</span></div>
             <div><span className="text-muted-foreground">Número:</span> {String(result.number ?? "—")}</div>
-            <div><span className="text-muted-foreground">Valor:</span> {formatCurrency(result.total_value as string)}</div>
+            <div><span className="text-muted-foreground">Valor:</span> <span className="tabular-nums">{formatCurrency(result.total_value as string)}</span></div>
           </div>
           {typeof result.pdf_url === "string" && (
             <a href={String(result.pdf_url)} target="_blank" rel="noopener noreferrer"
@@ -190,7 +190,7 @@ export default function EmitirNfcePage() {
             </div>
           ))}
 
-          <div className="text-right text-sm font-semibold text-foreground pt-2 border-t border-border">
+          <div className="text-right text-sm font-semibold text-foreground pt-2 border-t border-border tabular-nums">
             Total: {formatCurrency(total)}
           </div>
         </div>

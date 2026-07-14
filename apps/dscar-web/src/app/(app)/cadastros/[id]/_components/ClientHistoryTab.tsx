@@ -183,7 +183,7 @@ export function ClientHistoryTab({
                     <span className="text-xs text-muted-foreground truncate">
                       {[v.make, v.model, v.year].filter(Boolean).join(" · ")}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground tabular-nums">
                       {v.osCount} OS · {formatCurrency(v.totalSpent)}
                     </span>
                   </div>
@@ -239,7 +239,7 @@ export function ClientHistoryTab({
                     </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-sm font-medium text-foreground">
+                    <span className="text-sm font-medium text-foreground tabular-nums">
                       {formatCurrency(os.total ?? 0)}
                     </span>
                     <StatusBadge
@@ -275,7 +275,7 @@ function MetricCard({
             {label}
           </span>
         </div>
-        <p className="text-lg font-semibold text-foreground">{value}</p>
+        <p className="text-lg font-semibold text-foreground tabular-nums">{value}</p>
       </CardContent>
     </Card>
   )

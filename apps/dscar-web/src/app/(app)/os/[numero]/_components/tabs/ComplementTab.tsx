@@ -163,8 +163,8 @@ export function ComplementTab({ orderId }: Props) {
                       </span>
                     </td>
                     <td className="px-3 py-2.5 text-center text-foreground">{item.quantity}</td>
-                    <td className="px-3 py-2.5 text-right text-foreground">{formatCurrency(item.unit_price)}</td>
-                    <td className="px-3 py-2.5 text-right font-semibold text-foreground">{formatCurrency(total)}</td>
+                    <td className="px-3 py-2.5 text-right text-foreground tabular-nums">{formatCurrency(item.unit_price)}</td>
+                    <td className="px-3 py-2.5 text-right font-semibold text-foreground tabular-nums">{formatCurrency(total)}</td>
                     <td className="px-3 py-2.5 text-center">
                       <span className={cn(
                         "rounded px-2 py-0.5 text-[11px]",
@@ -206,15 +206,15 @@ export function ComplementTab({ orderId }: Props) {
         <div className="flex gap-3">
           <div className="rounded-lg bg-surface-800 px-4 py-3">
             <div className="text-[11px] uppercase text-muted-foreground">Já Faturado</div>
-            <div className="text-base font-bold text-success-500">{formatCurrency(totalBilled)}</div>
+            <div className="text-base font-bold text-success-500 tabular-nums">{formatCurrency(totalBilled)}</div>
           </div>
           <div className="rounded-lg bg-surface-800 px-4 py-3">
             <div className="text-[11px] uppercase text-muted-foreground">Pendente</div>
-            <div className="text-base font-bold text-warning-500">{formatCurrency(totalPending)}</div>
+            <div className="text-base font-bold text-warning-500 tabular-nums">{formatCurrency(totalPending)}</div>
           </div>
           <div className="rounded-lg border border-warning-500/30 bg-warning-500/10 px-4 py-3">
             <div className="text-[11px] uppercase text-warning-500">Total Complemento</div>
-            <div className="text-lg font-bold text-warning-400">{formatCurrency(grandTotal)}</div>
+            <div className="text-lg font-bold text-warning-400 tabular-nums">{formatCurrency(grandTotal)}</div>
           </div>
         </div>
         {totalPending > 0 && (

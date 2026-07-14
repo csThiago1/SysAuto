@@ -207,21 +207,21 @@ export function ClosingTab({ order }: ClosingTabProps) {
         <div className="p-5 space-y-3">
           <div className="flex justify-between text-sm">
             <span className="text-foreground/60">Peças</span>
-            <span className="font-medium text-foreground">{formatCurrency(partsTotal)}</span>
+            <span className="font-medium text-foreground tabular-nums">{formatCurrency(partsTotal)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-foreground/60">Serviços / Mão de obra</span>
-            <span className="font-medium text-foreground">{formatCurrency(servicesTotal)}</span>
+            <span className="font-medium text-foreground tabular-nums">{formatCurrency(servicesTotal)}</span>
           </div>
           {discountTotal > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-foreground/60">Descontos</span>
-              <span className="font-medium text-error-400">− {formatCurrency(discountTotal)}</span>
+              <span className="font-medium text-error-400 tabular-nums">− {formatCurrency(discountTotal)}</span>
             </div>
           )}
           <div className="border-t border-border pt-3 flex justify-between items-baseline">
             <span className="text-base font-bold text-foreground">Total</span>
-            <span className="text-xl font-bold text-foreground">{formatCurrency(grandTotal)}</span>
+            <span className="text-xl font-bold text-foreground tabular-nums">{formatCurrency(grandTotal)}</span>
           </div>
           {isInsurer && deductible > 0 && (
             <div className="border-t border-border pt-3 mt-1 space-y-3">
@@ -229,18 +229,18 @@ export function ClosingTab({ order }: ClosingTabProps) {
               <div>
                 <div className="flex justify-between text-sm font-semibold mb-1">
                   <span className="text-warning-500">Cliente paga (franquia)</span>
-                  <span className="text-warning-500">{formatCurrency(customerPays)}</span>
+                  <span className="text-warning-500 tabular-nums">{formatCurrency(customerPays)}</span>
                 </div>
                 {franquiaServicos > 0 && (
                   <div className="flex justify-between text-xs pl-4">
                     <span className="text-foreground/40">Serviços absorvidos pela franquia</span>
-                    <span className="text-foreground/50">{formatCurrency(franquiaServicos)}</span>
+                    <span className="text-foreground/50 tabular-nums">{formatCurrency(franquiaServicos)}</span>
                   </div>
                 )}
                 {franquiaPecas > 0 && (
                   <div className="flex justify-between text-xs pl-4">
                     <span className="text-foreground/40">Peças absorvidas pela franquia</span>
-                    <span className="text-foreground/50">{formatCurrency(franquiaPecas)}</span>
+                    <span className="text-foreground/50 tabular-nums">{formatCurrency(franquiaPecas)}</span>
                   </div>
                 )}
               </div>
@@ -248,18 +248,18 @@ export function ClosingTab({ order }: ClosingTabProps) {
               <div>
                 <div className="flex justify-between text-sm font-semibold mb-1">
                   <span className="text-info-500">Seguradora paga</span>
-                  <span className="text-info-500">{formatCurrency(insurerPays)}</span>
+                  <span className="text-info-500 tabular-nums">{formatCurrency(insurerPays)}</span>
                 </div>
                 {insurerServicos > 0 && (
                   <div className="flex justify-between text-xs pl-4">
                     <span className="text-foreground/40">Serviços</span>
-                    <span className="text-foreground/50">{formatCurrency(insurerServicos)}</span>
+                    <span className="text-foreground/50 tabular-nums">{formatCurrency(insurerServicos)}</span>
                   </div>
                 )}
                 {insurerPecas > 0 && (
                   <div className="flex justify-between text-xs pl-4">
                     <span className="text-foreground/40">Peças</span>
-                    <span className="text-foreground/50">{formatCurrency(insurerPecas)}</span>
+                    <span className="text-foreground/50 tabular-nums">{formatCurrency(insurerPecas)}</span>
                   </div>
                 )}
               </div>

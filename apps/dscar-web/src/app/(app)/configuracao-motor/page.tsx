@@ -49,7 +49,7 @@ export default function ConfiguracaoMotorPage() {
           <Link
             key={mod.href}
             href={mod.href as Route}
-            className="group rounded-lg border border-border bg-muted/50 p-5 hover:bg-muted hover:border-border transition-all space-y-2"
+            className="group rounded-lg border border-border bg-muted/50 p-5 hover:bg-muted hover:border-border transition-colors space-y-2"
           >
             <mod.icon className="h-5 w-5 text-primary group-hover:text-primary/80 transition-colors" />
             <div>

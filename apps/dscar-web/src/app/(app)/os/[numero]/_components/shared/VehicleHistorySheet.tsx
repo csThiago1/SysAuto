@@ -116,7 +116,7 @@ export function VehicleHistorySheet({
                         </span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-sm font-medium text-foreground">
+                        <span className="text-sm font-medium text-foreground tabular-nums">
                           {formatCurrency(os.total)}
                         </span>
                         <StatusBadge status={os.status as ServiceOrderStatus} size="sm" />
@@ -137,7 +137,7 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border border-border bg-muted/20 px-3 py-2 text-center">
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-sm font-semibold text-foreground mt-0.5">{value}</p>
+      <p className="text-sm font-semibold text-foreground mt-0.5 tabular-nums">{value}</p>
     </div>
   )
 }

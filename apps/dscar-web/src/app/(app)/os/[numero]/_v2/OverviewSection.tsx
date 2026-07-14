@@ -283,7 +283,7 @@ function QuickAction({ label, onClick }: { label: string; onClick: () => void })
     <button
       type="button"
       onClick={onClick}
-      className="rounded-lg border border-border bg-muted/20 px-3 py-2 text-left text-xs text-foreground/80 transition-colors hover:border-primary/40 hover:bg-muted/40"
+      className="rounded-lg border border-border bg-muted/20 px-3 py-2 text-left text-xs text-foreground/80 transition-[transform,background-color,border-color] duration-150 ease-out hover:border-primary/40 hover:bg-muted/40 active:scale-[0.98]"
     >
       {label}
     </button>

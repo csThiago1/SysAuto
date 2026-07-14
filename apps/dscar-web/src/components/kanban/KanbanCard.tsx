@@ -187,7 +187,7 @@ export const KanbanCard = React.memo(function KanbanCard({
         className={cn(
           isDragging
             ? "opacity-40 shadow-lg"
-            : "shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-150"
+            : "shadow-sm hover:shadow-md hover:-translate-y-px transition-[transform,box-shadow] duration-150"
         )}
       />
     </div>

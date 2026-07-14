@@ -174,7 +174,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                     onMouseDown={() => selectFromCatalog(item)}
                   >
                     <span className="font-medium">{item.name}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground tabular-nums">
                       {formatCurrency(Number(item.suggested_price))}
                     </span>
                   </button>
@@ -318,17 +318,17 @@ export function ServicesTab({ osId, osStatus }: Props) {
           <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-foreground/60">Subtotal</span>
-              <span className="font-medium">{formatCurrency(servicesSubtotal)}</span>
+              <span className="font-medium tabular-nums">{formatCurrency(servicesSubtotal)}</span>
             </div>
             {servicesDiscount > 0 && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-foreground/60">Desconto</span>
-                <span className="font-medium text-error-400">- {formatCurrency(servicesDiscount)}</span>
+                <span className="font-medium text-error-400 tabular-nums">- {formatCurrency(servicesDiscount)}</span>
               </div>
             )}
             <div className="border-t border-border pt-2 flex items-center justify-between">
               <span className="text-sm font-semibold text-foreground/90">Total Serviços</span>
-              <span className="text-base font-bold text-foreground">{formatCurrency(servicesTotal)}</span>
+              <span className="text-base font-bold text-foreground tabular-nums">{formatCurrency(servicesTotal)}</span>
             </div>
           </div>
         </>

@@ -144,7 +144,7 @@ export default function ArmazensPage() {
               <Link
                 key={a.id}
                 href={`/estoque/armazens/${a.id}` as Route}
-                className="group rounded-lg border border-border bg-muted/50 p-5 hover:bg-muted hover:border-border transition-all space-y-3"
+                className="group rounded-lg border border-border bg-muted/50 p-5 hover:bg-muted hover:border-border transition-colors space-y-3"
               >
                 <div className="flex items-start justify-between">
                   <div>

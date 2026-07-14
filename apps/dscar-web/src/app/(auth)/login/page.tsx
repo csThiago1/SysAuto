@@ -412,7 +412,7 @@ export default function LoginPage(): React.ReactElement {
                 type="button"
                 aria-label={`Slide ${idx + 1}`}
                 onClick={() => setActiveSlide(idx)}
-                className="rounded-full transition-all duration-300"
+                className="rounded-full transition-[width] duration-300"
                 style={{
                   width: idx === activeSlide ? "24px" : "8px",
                   height: "8px",
