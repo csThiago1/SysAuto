@@ -29,13 +29,13 @@ export default function SnapshotDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 text-xs text-muted-foreground">Carregando snapshot…</div>
+      <div className="p-3 md:p-6 text-xs text-muted-foreground">Carregando snapshot…</div>
     )
   }
 
   if (!snap) {
     return (
-      <div className="p-6 text-xs text-error-400">Snapshot não encontrado.</div>
+      <div className="p-3 md:p-6 text-xs text-error-400">Snapshot não encontrado.</div>
     )
   }
 
@@ -50,7 +50,7 @@ export default function SnapshotDetailPage() {
   const hasFullData = "custo_mo" in snap
 
   return (
-    <div className="p-6 space-y-6 max-w-3xl">
+    <div className="p-3 md:p-6 space-y-6 max-w-3xl">
       <div className="flex items-center gap-3">
         <Button
           variant="ghost"

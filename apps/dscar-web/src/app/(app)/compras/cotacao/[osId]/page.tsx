@@ -206,7 +206,7 @@ export default function CotacaoOSPage({ params }: { params: Promise<{ osId: stri
   const podaEnviar = temRespostas && !aprovacaoExiste
 
   return (
-    <div className="p-6 space-y-6 max-w-5xl">
+    <div className="p-3 md:p-6 space-y-6 max-w-5xl">
       {/* Header com breadcrumb */}
       <div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">

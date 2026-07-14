@@ -154,7 +154,7 @@ export default function NovoBudgetPage() {
   const isOk           = plateData && plateData.situation_code === 0 && placa.length >= 7
 
   return (
-    <div className="p-6 max-w-xl space-y-6">
+    <div className="p-3 md:p-6 max-w-xl space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link href={"/orcamentos-particulares" as Route}>

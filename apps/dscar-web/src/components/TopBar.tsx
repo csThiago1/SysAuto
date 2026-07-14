@@ -20,7 +20,11 @@ export function TopBar(): React.ReactElement {
   const roleLabel = ROLE_LABELS[session?.role ?? ""] ?? session?.role ?? "";
 
   return (
-    <header className="flex h-12 flex-shrink-0 items-center justify-between border-b border-border bg-card px-4">
+    // PWA iOS (viewport-fit=cover): padding-top empurra o conteúdo pra baixo da status bar
+    <header
+      className="flex min-h-12 flex-shrink-0 items-center justify-between border-b border-border bg-card px-4"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
       <div className="flex items-center gap-2.5">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/dscar-logo.png" alt="DS Car" className="h-7 w-auto object-contain logo-themed" draggable={false} />

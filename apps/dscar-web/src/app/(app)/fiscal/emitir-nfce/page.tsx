@@ -96,12 +96,12 @@ export default function EmitirNfcePage() {
   }
 
   if (!canEmit) {
-    return <div className="p-6 text-muted-foreground">Sem permissão para emitir NFC-e.</div>
+    return <div className="p-3 md:p-6 text-muted-foreground">Sem permissão para emitir NFC-e.</div>
   }
 
   if (result) {
     return (
-      <div className="p-6 max-w-2xl mx-auto space-y-6">
+      <div className="p-3 md:p-6 max-w-2xl mx-auto space-y-6">
         <div className="rounded-xl bg-success-500/10 border border-success-500/20 p-6 space-y-3">
           <div className="flex items-center gap-2 text-success-400">
             <CheckCircle2 className="h-5 w-5" />
@@ -128,7 +128,7 @@ export default function EmitirNfcePage() {
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-6">
+    <div className="p-3 md:p-6 max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <ShoppingCart className="h-6 w-6 text-primary" />
         <div>

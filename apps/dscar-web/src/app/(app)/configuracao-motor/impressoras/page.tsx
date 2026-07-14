@@ -110,7 +110,7 @@ export default function ImpressorasPage() {
   }
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-3 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Printer className="h-5 w-5 text-primary" />

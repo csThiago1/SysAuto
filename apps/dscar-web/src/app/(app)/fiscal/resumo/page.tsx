@@ -41,7 +41,7 @@ export default function ResumoFiscalPage() {
     "rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary";
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-3 md:p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">

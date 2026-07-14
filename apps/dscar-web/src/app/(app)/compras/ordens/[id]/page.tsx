@@ -325,7 +325,7 @@ export default function OrdemCompraPage({
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="p-3 md:p-6 space-y-6">
         <div className="h-6 bg-muted/50 rounded w-64 animate-pulse" />
         <div className="h-40 bg-muted/50 rounded-lg animate-pulse" />
         <div className="h-60 bg-muted/50 rounded-lg animate-pulse" />
@@ -335,7 +335,7 @@ export default function OrdemCompraPage({
 
   if (!oc) {
     return (
-      <div className="p-6">
+      <div className="p-3 md:p-6">
         <p className="text-muted-foreground text-sm">Ordem de compra nao encontrada.</p>
       </div>
     )
@@ -344,7 +344,7 @@ export default function OrdemCompraPage({
   const isDraft = oc.status === "rascunho"
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-3 md:p-6 space-y-6">
       {/* ── Breadcrumb + PDF ── */}
       <div className="flex items-center justify-between gap-4">
         <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">

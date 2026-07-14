@@ -28,7 +28,7 @@ export default function TiposPinturaPage() {
   const { data: tipos = [], isLoading } = useTiposPintura()
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-3 md:p-6 space-y-4">
       <div>
         <h1 className="text-2xl font-semibold">Tipos de Pintura</h1>
         <p className="text-sm text-muted-foreground mt-1">

@@ -59,7 +59,7 @@ export default function AliasesRevisaoPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6 max-w-5xl mx-auto">
+    <div className="flex flex-col gap-6 p-3 md:p-6 max-w-5xl mx-auto">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Aliases — Fila de Revisão</h1>

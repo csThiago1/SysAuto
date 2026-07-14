@@ -70,7 +70,7 @@ export default function AprovacoesPage() {
   const count = pendentes.length
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-3 md:p-6 space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
         <CheckCircle2 className="h-5 w-5 text-primary" />
