@@ -7,11 +7,11 @@ import { ClipboardList, CheckCircle2, Plus } from "lucide-react"
 import type { ServiceOrderStatus } from "@paddock/types"
 import { ROLE_HIERARCHY } from "@paddock/types"
 import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
-import { cn } from "@/lib/utils"
 import { useDashboardStats, useServiceOrders } from "@/hooks"
 import { Skeleton, StatusBadge } from "@/components/ui"
 import { PageHeader } from "@/components/ui/page-header"
-import { SectionDivider } from "@/components/ui/section-divider"
+import { SectionLabel } from "@/components/ui/section-label"
+import { KpiStrip, type KpiItem } from "@/components/ui/kpi-strip"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { StatCard } from "./_components/StatCard"
 import { RecentOSTable } from "./_components/RecentOSTable"
@@ -125,41 +125,32 @@ export default function DashboardPage(): React.ReactElement {
           }
         />
 
-        <SectionDivider label="VISÃO GERAL" />
+        <SectionLabel>VISÃO GERAL</SectionLabel>
 
-        <div className={cn(
-          "grid gap-4",
-          topStatuses.length === 0
-            ? "grid-cols-2"
-            : topStatuses.length === 1
-            ? "grid-cols-2 lg:grid-cols-3"
-            : "grid-cols-2 lg:grid-cols-4"
-        )}>
-          <StatCard
-            label="OS em Aberto"
-            value={legacyStats?.total_open ?? 0}
-            icon={<ClipboardList className="h-5 w-5 text-primary" />}
-          />
-          <StatCard
-            label="Entregas Hoje"
-            value={legacyStats?.today_deliveries ?? 0}
-            icon={<CheckCircle2 className="h-5 w-5 text-success-600" />}
-          />
-          {topStatuses.map(({ status, count }) => (
-            <StatCard
-              key={status}
-              label={SERVICE_ORDER_STATUS_CONFIG[status].label}
-              value={count}
-              icon={
-                <span
-                  className={`h-2.5 w-2.5 rounded-full ${SERVICE_ORDER_STATUS_CONFIG[status].dot}`}
-                />
-              }
-            />
-          ))}
-        </div>
+        <KpiStrip
+          items={[
+            {
+              label: "OS em aberto",
+              value: String(legacyStats?.total_open ?? 0),
+              icon: <ClipboardList size={14} />,
+              iconClass: "bg-primary/10 text-primary",
+            },
+            {
+              label: "Entregas hoje",
+              value: String(legacyStats?.today_deliveries ?? 0),
+              icon: <CheckCircle2 size={14} />,
+              iconClass: "bg-success-500/10 text-success-400",
+            },
+            ...topStatuses.map<KpiItem>(({ status, count }) => ({
+              label: SERVICE_ORDER_STATUS_CONFIG[status].label,
+              value: String(count),
+              icon: <span className={`h-2 w-2 rounded-full ${SERVICE_ORDER_STATUS_CONFIG[status].dot}`} />,
+              iconClass: "bg-muted",
+            })),
+          ]}
+        />
 
-        <SectionDivider label="OS RECENTES" />
+        <SectionLabel>OS RECENTES</SectionLabel>
 
         <div className="rounded-md bg-muted/50 shadow-card overflow-hidden">
           <div className="flex items-center justify-between px-card-padding py-4 border-b border-white/5">

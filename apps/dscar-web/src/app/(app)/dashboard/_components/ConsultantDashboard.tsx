@@ -2,44 +2,50 @@
 
 import Link from "next/link"
 import { ClipboardList, Truck, AlertTriangle, CheckCircle } from "lucide-react"
-import { StatCard } from "./StatCard"
 import type { ConsultantDashboardStats } from "@paddock/types"
 import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
-import { SectionDivider } from "@/components/ui/section-divider"
+import { SectionLabel } from "@/components/ui/section-label"
+import { KpiStrip, type KpiItem } from "@/components/ui/kpi-strip"
 
 interface Props {
   data: ConsultantDashboardStats
 }
 
 export function ConsultantDashboard({ data }: Props) {
+  const kpis: KpiItem[] = [
+    {
+      label: "OS abertas",
+      value: String(data.my_open),
+      icon: <ClipboardList size={14} />,
+      iconClass: "bg-info-500/10 text-info-400",
+    },
+    {
+      label: "Entregas hoje",
+      value: String(data.my_deliveries_today),
+      icon: <Truck size={14} />,
+      iconClass: "bg-success-500/10 text-success-400",
+    },
+    {
+      label: "Atrasadas",
+      value: String(data.my_overdue),
+      icon: <AlertTriangle size={14} />,
+      iconClass: "bg-error-500/10 text-error-400",
+      valueClass: data.my_overdue > 0 ? "text-error-400" : undefined,
+    },
+    {
+      label: "Entregues (semana)",
+      value: String(data.my_completed_week),
+      icon: <CheckCircle size={14} />,
+      iconClass: "bg-violet-500/10 text-violet-400",
+    },
+  ]
+
   return (
     <div className="space-y-6">
-      <SectionDivider label="MEUS INDICADORES" />
-      {/* Cards KPI */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          label="Minhas OS Abertas"
-          value={data.my_open}
-          icon={<ClipboardList className="h-5 w-5 text-info-600" />}
-        />
-        <StatCard
-          label="Entregas Hoje"
-          value={data.my_deliveries_today}
-          icon={<Truck className="h-5 w-5 text-success-600" />}
-        />
-        <StatCard
-          label="OS Atrasadas"
-          value={data.my_overdue}
-          icon={<AlertTriangle className={`h-5 w-5 ${data.my_overdue > 0 ? "text-error-600" : "text-muted-foreground"}`} />}
-        />
-        <StatCard
-          label="Entregues esta Semana"
-          value={data.my_completed_week}
-          icon={<CheckCircle className="h-5 w-5 text-violet-600" />}
-        />
-      </div>
+      <SectionLabel>MEUS INDICADORES</SectionLabel>
+      <KpiStrip items={kpis} />
 
-      <SectionDivider label="EM ANDAMENTO" />
+      <SectionLabel>EM ANDAMENTO</SectionLabel>
       {/* OS recentes */}
       <div className="bg-muted/50 rounded-md border border-border shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b border-white/5">
