@@ -98,7 +98,7 @@ export default function MovimentacoesPage() {
     "text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
 
   return (
-    <div className="p-3 md:p-6 space-y-4">
+    <div className="px-0 py-3 md:p-6 space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
         <ArrowLeftRight className="h-5 w-5 text-primary" />

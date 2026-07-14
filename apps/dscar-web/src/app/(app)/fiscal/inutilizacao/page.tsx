@@ -28,7 +28,7 @@ export default function InutilizacaoPage() {
 
   if (!isAdmin) {
     return (
-      <div className="p-3 md:p-6">
+      <div className="px-0 py-3 md:p-6">
         <p className="text-sm text-muted-foreground">
           Acesso restrito a administradores.
         </p>
@@ -69,7 +69,7 @@ export default function InutilizacaoPage() {
   }
 
   return (
-    <div className="p-3 md:p-6 space-y-6">
+    <div className="px-0 py-3 md:p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Ban className="h-6 w-6 text-primary" />

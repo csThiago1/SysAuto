@@ -115,7 +115,7 @@ export default function EstoquePage() {
   const pendentes = stats?.aprovacoes_pendentes ?? 0
 
   return (
-    <div className="p-3 md:p-6 space-y-6">
+    <div className="px-0 py-3 md:p-6 space-y-6">
       {/* Header */}
       <div className="flex items-start gap-3">
         <LayoutDashboard className="h-5 w-5 text-primary mt-0.5" />

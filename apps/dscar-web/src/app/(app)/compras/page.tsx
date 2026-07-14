@@ -210,7 +210,7 @@ export default function ComprasPage() {
   }, [pedidos, aprovacoes])
 
   return (
-    <div className="p-3 md:p-6 space-y-6">
+    <div className="px-0 py-3 md:p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center">

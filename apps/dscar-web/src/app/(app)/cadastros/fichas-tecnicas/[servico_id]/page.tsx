@@ -177,7 +177,7 @@ export default function FichaTecnicaDetalhe() {
 
   if (isLoading) {
     return (
-      <div className="p-3 md:p-6 max-w-5xl mx-auto">
+      <div className="px-0 py-3 md:p-6 max-w-5xl mx-auto">
         <TableSkeleton columns={4} rows={6} />
       </div>
     )
@@ -185,7 +185,7 @@ export default function FichaTecnicaDetalhe() {
 
   if (fichas.length === 0) {
     return (
-      <div className="p-3 md:p-6 max-w-5xl mx-auto">
+      <div className="px-0 py-3 md:p-6 max-w-5xl mx-auto">
         <Button variant="ghost" size="sm" onClick={() => router.back()} className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-1" />
           Voltar
@@ -202,7 +202,7 @@ export default function FichaTecnicaDetalhe() {
   const servicoCodigo = primeiraFicha.servico_codigo
 
   return (
-    <div className="flex flex-col gap-6 p-3 md:p-6 max-w-5xl mx-auto">
+    <div className="flex flex-col gap-4 md:gap-6 px-0 py-3 md:p-6 max-w-5xl mx-auto">
       {/* Header */}
       <div>
         <Button variant="ghost" size="sm" onClick={() => router.back()} className="mb-2 -ml-2">

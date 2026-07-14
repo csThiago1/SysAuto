@@ -15,7 +15,7 @@ export default function BudgetDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="p-3 md:p-6 space-y-4">
+      <div className="px-0 py-3 md:p-6 space-y-4">
         <Skeleton className="h-14 w-full rounded-xl bg-muted/50" />
         <Skeleton className="h-8 w-64 rounded-lg bg-muted/50" />
         <Skeleton className="h-48 w-full rounded-xl bg-muted/50" />
@@ -25,7 +25,7 @@ export default function BudgetDetailPage() {
 
   if (isError || !budget) {
     return (
-      <div className="p-3 md:p-6 text-error-400 text-sm">
+      <div className="px-0 py-3 md:p-6 text-error-400 text-sm">
         Orçamento não encontrado.
       </div>
     )
@@ -34,7 +34,7 @@ export default function BudgetDetailPage() {
   const version = budget.active_version
 
   return (
-    <div className="p-3 md:p-6 space-y-6">
+    <div className="px-0 py-3 md:p-6 space-y-6">
       <BudgetHeader budget={budget} />
 
       <Tabs defaultValue="itens">

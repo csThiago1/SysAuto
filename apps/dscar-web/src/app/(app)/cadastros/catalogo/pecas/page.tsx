@@ -164,7 +164,7 @@ export default function PecasCanonicoPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-3 md:p-6 max-w-5xl mx-auto">
+    <div className="flex flex-col gap-4 md:gap-6 px-0 py-3 md:p-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>

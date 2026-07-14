@@ -68,7 +68,7 @@ export default function ServicosPage() {
   const total = items.length
 
   return (
-    <div className="flex flex-col gap-6 p-3 md:p-6 max-w-3xl mx-auto">
+    <div className="flex flex-col gap-4 md:gap-6 px-0 py-3 md:p-6 max-w-3xl mx-auto">
 
       {/* Cabeçalho */}
       <div className="flex items-center justify-between">

@@ -782,7 +782,7 @@ export default function CategoriasPage() {
   const [activeTab, setActiveTab] = useState<Tab>("tipos")
 
   return (
-    <div className="p-3 md:p-6 space-y-6">
+    <div className="px-0 py-3 md:p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Tags className="h-5 w-5 text-primary" />

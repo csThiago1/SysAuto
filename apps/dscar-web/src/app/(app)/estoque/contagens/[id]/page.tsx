@@ -209,7 +209,7 @@ export default function ContagemDetailPage({
 
   if (isLoading || !contagem) {
     return (
-      <div className="p-3 md:p-6 text-muted-foreground text-sm">Carregando contagem...</div>
+      <div className="px-0 py-3 md:p-6 text-muted-foreground text-sm">Carregando contagem...</div>
     )
   }
 
@@ -219,7 +219,7 @@ export default function ContagemDetailPage({
     contagem.status === "aberta" || contagem.status === "em_andamento"
 
   return (
-    <div className="p-3 md:p-6 space-y-6">
+    <div className="px-0 py-3 md:p-6 space-y-6">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Link

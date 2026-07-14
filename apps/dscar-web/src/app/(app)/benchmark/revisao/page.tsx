@@ -65,7 +65,7 @@ export default function BenchmarkRevisaoPage() {
   }
 
   return (
-    <div className="p-3 md:p-6 space-y-6">
+    <div className="px-0 py-3 md:p-6 space-y-6">
       <div className="flex items-center gap-3">
         <AlertCircle className="h-5 w-5 text-yellow-500" />
         <div>
@@ -88,7 +88,7 @@ export default function BenchmarkRevisaoPage() {
         {/* Lista */}
         <div className="rounded-lg border border-border overflow-hidden">
           {isLoading ? (
-            <div className="p-3 md:p-6 text-muted-foreground text-xs text-center">Carregando...</div>
+            <div className="px-0 py-3 md:p-6 text-muted-foreground text-xs text-center">Carregando...</div>
           ) : pendentes.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground text-sm">
               Nenhuma amostra pendente de revisão.

@@ -73,7 +73,7 @@ export default function ServiceOrdersPage() {
   const lastItem = data ? Math.min(page * PAGE_SIZE, data.count) : 0
 
   return (
-    <div className="flex flex-col gap-6 p-3 md:p-6 max-w-7xl mx-auto">
+    <div className="flex flex-col gap-4 md:gap-6 px-0 py-3 md:p-6 max-w-7xl mx-auto">
       <NewOSDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
 
       <PageHeader

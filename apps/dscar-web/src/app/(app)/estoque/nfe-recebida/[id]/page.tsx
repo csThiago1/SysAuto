@@ -78,15 +78,15 @@ export default function NFeEntradaDetailPage({ params }: { params: Promise<{ id:
   }
 
   if (isLoading) {
-    return <div className="p-3 md:p-6 text-muted-foreground text-sm">Carregando...</div>
+    return <div className="px-0 py-3 md:p-6 text-muted-foreground text-sm">Carregando...</div>
   }
 
   if (!nfe) {
-    return <div className="p-3 md:p-6 text-muted-foreground text-sm">NF-e não encontrada.</div>
+    return <div className="px-0 py-3 md:p-6 text-muted-foreground text-sm">NF-e não encontrada.</div>
   }
 
   return (
-    <div className="p-3 md:p-6 space-y-6">
+    <div className="px-0 py-3 md:p-6 space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">

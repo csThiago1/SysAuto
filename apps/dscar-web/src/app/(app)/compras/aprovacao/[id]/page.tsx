@@ -206,7 +206,7 @@ export default function AprovacaoPage({ params }: { params: Promise<{ id: string
 
   if (aprovLoading) {
     return (
-      <div className="p-3 md:p-6">
+      <div className="px-0 py-3 md:p-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-muted/50 rounded w-64" />
           <div className="h-4 bg-muted/50 rounded w-48" />
@@ -217,7 +217,7 @@ export default function AprovacaoPage({ params }: { params: Promise<{ id: string
 
   if (!aprovacao) {
     return (
-      <div className="p-3 md:p-6">
+      <div className="px-0 py-3 md:p-6">
         <p className="text-muted-foreground text-sm">Aprovacao nao encontrada.</p>
       </div>
     )
@@ -229,7 +229,7 @@ export default function AprovacaoPage({ params }: { params: Promise<{ id: string
   const isProcessada = aprovacao.status !== "pendente"
 
   return (
-    <div className="p-3 md:p-6 space-y-6 max-w-5xl">
+    <div className="px-0 py-3 md:p-6 space-y-6 max-w-5xl">
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">

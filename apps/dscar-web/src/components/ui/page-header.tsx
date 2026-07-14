@@ -29,9 +29,9 @@ export function PageHeader({ title, description, backHref, actions }: PageHeader
           </Button>
         )}
         <div className="min-w-0">
-          <h2 className="text-2xl font-semibold text-foreground break-words">{title}</h2>
+          <h2 className="text-xl md:text-2xl font-semibold text-foreground break-words">{title}</h2>
           {description && (
-            <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
+            <p className="mt-0.5 text-xs md:text-sm text-muted-foreground">{description}</p>
           )}
         </div>
       </div>

@@ -49,7 +49,7 @@ export default function EmpresasPage() {
   }
 
   return (
-    <div className="p-3 md:p-6 space-y-4">
+    <div className="px-0 py-3 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Empresas</h1>

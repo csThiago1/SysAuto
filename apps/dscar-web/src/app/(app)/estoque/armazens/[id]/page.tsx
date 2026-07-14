@@ -131,14 +131,14 @@ export default function ArmazemDetailPage({
 
   if (isLoading || !armazem) {
     return (
-      <div className="p-3 md:p-6 text-muted-foreground text-sm">Carregando armazém...</div>
+      <div className="px-0 py-3 md:p-6 text-muted-foreground text-sm">Carregando armazém...</div>
     )
   }
 
   const badge = TIPO_BADGE[armazem.tipo] ?? TIPO_BADGE.galpao
 
   return (
-    <div className="p-3 md:p-6 space-y-6">
+    <div className="px-0 py-3 md:p-6 space-y-6">
       {/* Breadcrumb */}
       <Breadcrumb
         items={[

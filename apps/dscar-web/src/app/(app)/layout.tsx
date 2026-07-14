@@ -20,7 +20,7 @@ export default function AppLayout({
       <TopBar />
       <main
         id="main-content"
-        className="flex-1 overflow-y-auto overflow-x-hidden bg-background px-3 pt-4 pb-24 md:px-6 max-md:pb-20"
+        className="flex-1 overflow-y-auto overflow-x-hidden bg-background px-2 pt-4 pb-24 md:px-6 max-md:pb-20"
       >
         {children}
       </main>

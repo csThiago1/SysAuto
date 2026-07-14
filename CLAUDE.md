@@ -198,6 +198,13 @@ Casos que NÃO fitam o factory (mantém `useMutation` inline): toast custom em o
   explícitos (kanban, ScrollFade, tab bars com fade).
 - Dialogs: `flex max-h-[90dvh] flex-col` + conteúdo `min-h-0 flex-1`.
 - Toda tela nova: testar em 390px antes de mergear.
+- Densidade mobile: gutter total ~8-10px (layout px-2 + páginas px-0 no mobile); gap entre cards
+  space-y-2; padding interno de card px-3 py-2.5.
+- Rodapé/linha de dados de card de lista: SEMPRE grid de colunas fixas
+  (`grid-cols-[minmax(0,1fr)_96px_44px]`, texto trunca, valor/data text-right) — PROIBIDO
+  justify-between (valores flutuam conforme o vizinho).
+- Card de lista mobile: sem border (superfície por tom), rounded-[11px], faixa de status 3px à
+  esquerda, status como texto colorido (sem pill), dados em font-mono tabular-nums.
 
 ---
 
