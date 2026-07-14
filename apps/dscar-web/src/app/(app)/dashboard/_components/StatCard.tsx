@@ -34,12 +34,12 @@ function StatCardComponent({
 
   return (
     <div className="rounded-md bg-muted/50 p-card-padding shadow-card hover:shadow-card-hover transition-shadow duration-normal">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <p className="label-mono text-muted-foreground">
+          <p className="label-mono tracking-[0.06em] sm:tracking-[0.14em] text-muted-foreground">
             {label}
           </p>
-          <p className="mt-1 text-3xl font-bold text-foreground font-mono">
+          <p className="mt-1 text-xl sm:text-3xl font-bold text-foreground font-mono whitespace-nowrap">
             {formattedValue}
           </p>
           {sub && <p className="mt-0.5 text-xs text-muted-foreground">{sub}</p>}

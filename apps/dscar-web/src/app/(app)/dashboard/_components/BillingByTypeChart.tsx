@@ -1,5 +1,6 @@
 "use client"
 
+import { BarChart3 } from "lucide-react"
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { formatCurrency } from "@paddock/utils"
 import type { BillingMonthPoint } from "@paddock/types"
@@ -14,11 +15,19 @@ export function BillingByTypeChart({ data }: Props) {
     total: parseFloat(String(d.amount ?? 0)),
   }))
 
+  const isEmpty = chartData.every((d) => d.total === 0)
+
   return (
     <div className="bg-muted/50 rounded-md border border-border shadow-sm p-4">
       <h3 className="text-sm font-semibold text-foreground/70 mb-4">
         Faturamento — Últimos 6 Meses
       </h3>
+      {isEmpty ? (
+        <div className="flex h-24 flex-col items-center justify-center gap-1.5 text-muted-foreground">
+          <BarChart3 className="h-5 w-5" />
+          <p className="text-xs">Sem faturamento no período</p>
+        </div>
+      ) : (
       <ResponsiveContainer width="100%" height={200}>
         <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
           <XAxis dataKey="month" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -38,6 +47,7 @@ export function BillingByTypeChart({ data }: Props) {
           <Bar dataKey="total" fill="#ea0e03" radius={[3, 3, 0, 0]} name="Faturamento" />
         </BarChart>
       </ResponsiveContainer>
+      )}
     </div>
   )
 }

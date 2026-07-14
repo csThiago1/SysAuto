@@ -115,7 +115,7 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); setBillingOrder(order) }}
-                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-success-400 hover:bg-success-500/10 transition-colors"
+                    className="inline-flex min-h-11 items-center gap-1 rounded-md px-3 py-2 text-success-400 hover:bg-success-500/10 transition-colors"
                   >
                     <DollarSign className="h-3.5 w-3.5" />
                     Faturar OS

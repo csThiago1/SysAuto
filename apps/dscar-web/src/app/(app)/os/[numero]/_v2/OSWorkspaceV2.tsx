@@ -25,6 +25,7 @@ import type { ServiceOrder, ServiceOrderStatus } from "@paddock/types"
 import { SERVICE_ORDER_STATUS_CONFIG, formatCurrency } from "@paddock/utils"
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ScrollFade } from "@/components/ui/scroll-fade"
 import { PIPELINE_PHASES, currentPhaseIndex } from "./pipeline"
 import { OverviewSection } from "./OverviewSection"
 import { DadosWorkspace } from "./dados/DadosWorkspace"
@@ -235,27 +236,29 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
         </nav>
 
         {/* Mobile: seções como tabs roláveis, indicador embaixo */}
-        <nav className="overflow-x-auto border-b border-border bg-background md:hidden" aria-label="Seções da OS">
-          <ul className="flex w-max px-2">
-            {NAV.map((item) => (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  onClick={() => setSection(item.id)}
-                  aria-current={section === item.id ? "page" : undefined}
-                  className={cn(
-                    "flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2.5 text-xs transition-[transform,color,border-color] duration-150 ease-out active:scale-[0.97]",
-                    section === item.id
-                      ? "border-primary font-medium text-foreground"
-                      : "border-transparent text-muted-foreground",
-                  )}
-                >
-                  {item.icon}
-                  {item.label}
-                </button>
-              </li>
-            ))}
-          </ul>
+        <nav className="border-b border-border bg-background md:hidden" aria-label="Seções da OS">
+          <ScrollFade>
+            <ul className="flex w-max px-2">
+              {NAV.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => setSection(item.id)}
+                    aria-current={section === item.id ? "page" : undefined}
+                    className={cn(
+                      "flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2.5 text-xs transition-[transform,color,border-color] duration-150 ease-out active:scale-[0.97]",
+                      section === item.id
+                        ? "border-primary font-medium text-foreground"
+                        : "border-transparent text-muted-foreground",
+                    )}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </ScrollFade>
         </nav>
 
         <main className="min-w-0 flex-1 px-4 py-4 md:px-5 md:py-5">
