@@ -24,6 +24,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { KpiStrip, type KpiItem } from "@/components/ui/kpi-strip"
+import { FileEdit, Send, CheckCircle2, ListChecks } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { useBudgets } from "@/hooks/useBudgets"
 import type { BudgetVersionStatus } from "@paddock/types"
 
@@ -45,6 +48,27 @@ const STATUS_COLORS: Record<BudgetVersionStatus, string> = {
   expired:    "text-warning-400 bg-warning-400/10",
   revision:   "text-warning-400 bg-warning-400/10",
   superseded: "text-muted-foreground bg-muted/50",
+}
+
+// dot = faixa do card denso (mobile) — cor do status do orçamento (active_version), não da versão
+const STATUS_DOT: Record<BudgetVersionStatus, string> = {
+  draft:      "bg-muted-foreground",
+  sent:       "bg-info-400",
+  approved:   "bg-success-400",
+  rejected:   "bg-error-400",
+  expired:    "bg-warning-400",
+  revision:   "bg-warning-400",
+  superseded: "bg-muted-foreground",
+}
+
+const STATUS_TEXT: Record<BudgetVersionStatus, string> = {
+  draft:      "text-muted-foreground",
+  sent:       "text-info-400",
+  approved:   "text-success-400",
+  rejected:   "text-error-400",
+  expired:    "text-warning-400",
+  revision:   "text-warning-400",
+  superseded: "text-muted-foreground",
 }
 
 const formatBRL = (v: string | number) =>
@@ -99,23 +123,15 @@ export default function OrcamentosParticularesPage() {
         </Link>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          { label: "Total",     value: total,     color: "text-foreground" },
-          { label: "Rascunhos", value: rascunhos, color: "text-foreground/60" },
-          { label: "Enviados",  value: enviados,  color: "text-info-400" },
-          { label: "Aprovados", value: aprovados, color: "text-success-400" },
-        ].map((card) => (
-          <div
-            key={card.label}
-            className="rounded-xl bg-muted/50 border border-border p-4"
-          >
-            <p className="text-xs text-muted-foreground">{card.label}</p>
-            <p className={`text-2xl font-bold mt-1 ${card.color}`}>{card.value}</p>
-          </div>
-        ))}
-      </div>
+      {/* KPI Strip */}
+      <KpiStrip
+        items={[
+          { label: "Total", value: String(total), icon: <ListChecks size={14} />, iconClass: "bg-primary/10 text-primary" },
+          { label: "Rascunhos", value: String(rascunhos), icon: <FileEdit size={14} />, iconClass: "bg-muted text-foreground/60" },
+          { label: "Enviados", value: String(enviados), icon: <Send size={14} />, iconClass: "bg-info-400/10 text-info-400" },
+          { label: "Aprovados", value: String(aprovados), icon: <CheckCircle2 size={14} />, iconClass: "bg-success-400/10 text-success-400" },
+        ] satisfies KpiItem[]}
+      />
 
       {/* Filtros */}
       <div className="flex flex-col gap-3 sm:flex-row">
@@ -154,42 +170,52 @@ export default function OrcamentosParticularesPage() {
         <>
           {/* Mobile card view */}
           <div className="md:hidden space-y-2">
-            {filtered.map((b) => (
-              <div
-                key={b.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => router.push(`/orcamentos-particulares/${b.id}` as Route)}
-                onKeyDown={(e) => { if (e.key === "Enter" && e.target === e.currentTarget) router.push(`/orcamentos-particulares/${b.id}` as Route) }}
-                className="rounded-md border border-border bg-muted/50 p-4 space-y-2 cursor-pointer hover:bg-primary/5 transition-[transform,background-color] duration-150 ease-out active:scale-[0.98]"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono font-semibold text-foreground text-sm">{b.number}</span>
-                  {b.active_version ? (
-                    <Badge className={`text-xs border-0 shrink-0 ${STATUS_COLORS[b.active_version.status]}`}>
-                      v{b.active_version.version_number} · {STATUS_LABELS[b.active_version.status]}
-                    </Badge>
-                  ) : (
-                    <span className="text-muted-foreground/50 text-xs">—</span>
-                  )}
-                </div>
+            {filtered.map((b) => {
+              const status = b.active_version?.status
+              return (
+                <div
+                  key={b.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => router.push(`/orcamentos-particulares/${b.id}` as Route)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && e.target === e.currentTarget) router.push(`/orcamentos-particulares/${b.id}` as Route) }}
+                  className="relative rounded-[11px] bg-card px-3 py-2.5 cursor-pointer hover:bg-primary/5 transition-[transform,background-color] duration-150 ease-out active:scale-[0.98]"
+                >
+                  <span aria-hidden className={cn("absolute left-0 top-2 bottom-2 w-[3px] rounded-r-[3px]", status ? STATUS_DOT[status] : "bg-muted-foreground/30")} />
 
-                <p className="text-sm text-foreground/80 truncate">{b.customer_name}</p>
-
-                <div className="flex items-center justify-between gap-2 border-t border-border pt-2 text-xs">
-                  <span className="inline-flex items-center gap-1.5 font-mono bg-muted text-foreground px-2 py-0.5 rounded shrink-0">
-                    {b.vehicle_make_logo && (
-                      <img src={b.vehicle_make_logo} alt="" className="h-3.5 w-3.5 object-contain" />
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="font-mono text-[13px] font-semibold text-primary truncate">{b.number}</span>
+                    {status ? (
+                      <span className={cn("text-[11px] font-semibold shrink-0", STATUS_TEXT[status])}>
+                        {STATUS_LABELS[status]}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground/50 text-[11px]">—</span>
                     )}
-                    {b.vehicle_plate}
-                  </span>
-                  <span className="text-muted-foreground">{formatDate(b.created_at)}</span>
-                  <span className="font-mono font-semibold text-foreground shrink-0">
-                    {b.active_version ? formatBRL(b.active_version.net_total) : "—"}
-                  </span>
+                  </div>
+
+                  <p className="text-[13.5px] font-medium text-foreground truncate mt-0.5">{b.customer_name}</p>
+
+                  <div className="grid grid-cols-[minmax(0,1fr)_112px_78px] gap-2.5 items-baseline mt-[5px] font-mono text-[11.5px] tabular-nums text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5 truncate">
+                      {b.vehicle_make_logo && (
+                        <img src={b.vehicle_make_logo} alt="" className="h-3.5 w-3.5 object-contain shrink-0" />
+                      )}
+                      <span className="truncate">{b.vehicle_plate}</span>
+                      {b.active_version && (
+                        <Badge className="text-[10px] border-0 shrink-0 px-1.5 py-0 font-mono">
+                          v{b.active_version.version_number}
+                        </Badge>
+                      )}
+                    </span>
+                    <span className="text-right text-foreground font-semibold text-[12.5px]">
+                      {b.active_version ? formatBRL(b.active_version.net_total) : "—"}
+                    </span>
+                    <span className="text-right">{formatDate(b.created_at)}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           {/* Table */}

@@ -26,36 +26,43 @@ import { usePermission } from "@/hooks/usePermission"
 import type { FiscalDocumentList } from "@/hooks/useFiscal"
 import { cn } from "@/lib/utils"
 import { explainSefazError } from "@/lib/sefaz-errors"
+import { SectionLabel } from "@/components/ui/section-label"
+import { KpiStrip, type KpiItem } from "@/components/ui/kpi-strip"
 
 // ─── Status config ────────────────────────────────────────────────────────────
+// dot = faixa do card denso (mobile) | color/bg seguem o badge existente (desktop)
 
 const STATUS_CONFIG: Record<
   string,
-  { label: string; icon: React.ElementType; color: string; bg: string }
+  { label: string; icon: React.ElementType; color: string; bg: string; dot: string }
 > = {
   pending: {
     label: "Aguardando",
     icon: Clock,
     color: "text-warning-400",
     bg: "bg-warning-400/10",
+    dot: "bg-warning-400",
   },
   authorized: {
     label: "Autorizada",
     icon: CheckCircle2,
     color: "text-success-400",
     bg: "bg-success-400/10",
+    dot: "bg-success-400",
   },
   rejected: {
     label: "Rejeitada",
     icon: AlertCircle,
     color: "text-error-400",
     bg: "bg-red-400/10",
+    dot: "bg-error-400",
   },
   cancelled: {
     label: "Cancelada",
     icon: XCircle,
     color: "text-muted-foreground",
     bg: "bg-muted/50",
+    dot: "bg-muted-foreground",
   },
 }
 
@@ -731,36 +738,32 @@ function FiscalDocCard({
   const sefazHint = isRejected ? explainSefazError(doc.mensagem_sefaz) : null
 
   return (
-    <div className="rounded-md border border-border bg-muted/50 p-4 space-y-2">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-mono text-foreground/70">
+    <div className="relative rounded-[11px] bg-card px-3 py-2.5">
+      <span aria-hidden className={cn("absolute left-0 top-2 bottom-2 w-[3px] rounded-r-[3px]", cfg.dot)} />
+
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="font-mono text-[13px] font-semibold text-primary truncate">
           {DOC_TYPE_LABELS[doc.document_type] ?? doc.document_type.toUpperCase()}
+          {doc.numero && <span className="font-normal text-muted-foreground"> · {doc.numero}</span>}
         </span>
-        <span
-          className={cn(
-            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs shrink-0",
-            cfg.bg,
-            cfg.color
-          )}
-        >
+        <span className={cn("inline-flex items-center gap-1 text-[11px] font-semibold shrink-0", cfg.color)}>
           <Icon className="h-3 w-3" />
           {cfg.label}
         </span>
       </div>
 
-      <p className="text-xs font-mono text-muted-foreground truncate">
-        {doc.ref ?? "—"} · {doc.numero ?? "—"}
-      </p>
+      <p className="text-[11px] font-mono text-muted-foreground truncate mt-0.5">{doc.ref ?? "—"}</p>
 
-      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-        <span className={doc.environment === "homologacao" ? "text-warning-400" : undefined}>
+      <div className="grid grid-cols-[minmax(0,1fr)_112px_84px] gap-2.5 items-baseline mt-[5px] font-mono text-[11.5px] tabular-nums text-muted-foreground">
+        <span className={cn("truncate", doc.environment === "homologacao" && "text-warning-400")}>
           {doc.environment === "homologacao" ? "Homolog." : "Produção"}
         </span>
-        <span>{dateFmt}</span>
+        <span className="text-right text-foreground font-semibold text-[12.5px]">{valorFmt}</span>
+        <span className="text-right">{dateFmt}</span>
       </div>
 
       {isRejected && (
-        <div className="flex items-start gap-2 border-t border-border pt-2">
+        <div className="flex items-start gap-2 border-t border-border pt-2 mt-2">
           <AlertCircle className="h-3.5 w-3.5 text-error-400 mt-0.5 shrink-0" />
           <div className="min-w-0 space-y-0.5">
             <p className="text-xs text-error-400">{doc.mensagem_sefaz}</p>
@@ -774,41 +777,38 @@ function FiscalDocCard({
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-2 border-t border-border pt-2">
-        <span className="text-xs font-mono text-foreground/80 tabular-nums">{valorFmt}</span>
-        <div className="flex items-center gap-1.5">
-          {doc.pdf_url && (
-            <a
-              href={`/api/proxy${doc.pdf_url.replace("/api/v1/", "/")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[11px] font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-            >
-              PDF
-            </a>
-          )}
-          {doc.xml_url && (
-            <a
-              href={`/api/proxy${doc.xml_url.replace("/api/v1/", "/")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[11px] font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
-            >
-              XML
-            </a>
-          )}
-          {doc.status === "authorized" && (
-            <DropdownActions
-              doc={doc}
-              canCancel={canCancel}
-              canSubstituir={canSubstituir}
-              onSendEmail={onSendEmail}
-              onSubstituir={onSubstituir}
-              onCCe={onCCe}
-              onCancel={onCancel}
-            />
-          )}
-        </div>
+      <div className="flex items-center justify-end gap-1.5 pt-1.5">
+        {doc.pdf_url && (
+          <a
+            href={`/api/proxy${doc.pdf_url.replace("/api/v1/", "/")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-11 items-center gap-0.5 rounded px-1.5 text-[11px] font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+          >
+            PDF
+          </a>
+        )}
+        {doc.xml_url && (
+          <a
+            href={`/api/proxy${doc.xml_url.replace("/api/v1/", "/")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-11 items-center gap-0.5 rounded px-1.5 text-[11px] font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+          >
+            XML
+          </a>
+        )}
+        {doc.status === "authorized" && (
+          <DropdownActions
+            doc={doc}
+            canCancel={canCancel}
+            canSubstituir={canSubstituir}
+            onSendEmail={onSendEmail}
+            onSubstituir={onSubstituir}
+            onCCe={onCCe}
+            onCancel={onCancel}
+          />
+        )}
       </div>
     </div>
   )
@@ -894,21 +894,13 @@ export default function FiscalDocumentosPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {[
-          { label: "Aguardando", value: totais.pending, color: "text-warning-400" },
-          { label: "Autorizadas", value: totais.authorized, color: "text-success-400" },
-          { label: "Rejeitadas", value: totais.rejected, color: "text-error-400" },
-        ].map((kpi) => (
-          <div
-            key={kpi.label}
-            className="rounded-xl bg-muted/30 border border-white/[0.07] px-4 py-3"
-          >
-            <p className="text-xs text-muted-foreground">{kpi.label}</p>
-            <p className={cn("text-2xl font-bold mt-0.5", kpi.color)}>{kpi.value}</p>
-          </div>
-        ))}
-      </div>
+      <KpiStrip
+        items={[
+          { label: "Aguardando", value: String(totais.pending), icon: <Clock size={14} />, iconClass: "bg-warning-400/10 text-warning-400" },
+          { label: "Autorizadas", value: String(totais.authorized), icon: <CheckCircle2 size={14} />, iconClass: "bg-success-400/10 text-success-400" },
+          { label: "Rejeitadas", value: String(totais.rejected), icon: <AlertCircle size={14} />, iconClass: "bg-error-400/10 text-error-400" },
+        ] satisfies KpiItem[]}
+      />
 
       {/* Filtros */}
       <div className="flex gap-3">

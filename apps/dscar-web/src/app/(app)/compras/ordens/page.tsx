@@ -15,48 +15,56 @@ import {
 } from "@/components/ui/dialog"
 import { formatDate, formatCurrency } from "@paddock/utils"
 import { ScrollFade } from "@/components/ui/scroll-fade"
+import { cn } from "@/lib/utils"
 
 // ─── Status badge config ────────────────────────────────────────────────────────
+// dot = faixa do card denso (mobile) | text = texto colorido da linha 1
 
 const STATUS_CONFIG: Record<
   StatusOrdemCompra,
-  { label: string; bg: string; text: string; border: string }
+  { label: string; bg: string; text: string; border: string; dot: string }
 > = {
   rascunho: {
     label: "Rascunho",
     bg: "bg-muted/50",
     text: "text-muted-foreground",
     border: "border-border",
+    dot: "bg-muted-foreground",
   },
   pendente_aprovacao: {
     label: "Pend. Aprovacao",
     bg: "bg-purple-500/10",
     text: "text-purple-400",
     border: "border-purple-500/20",
+    dot: "bg-purple-500",
   },
   aprovada: {
     label: "Aprovada",
     bg: "bg-success-500/10",
     text: "text-success-400",
     border: "border-success-500/20",
+    dot: "bg-success-500",
   },
   rejeitada: {
     label: "Rejeitada",
     bg: "bg-error-500/10",
     text: "text-error-400",
     border: "border-error-500/20",
+    dot: "bg-error-500",
   },
   parcial_recebida: {
     label: "Parcial",
     bg: "bg-warning-500/10",
     text: "text-warning-400",
     border: "border-warning-500/20",
+    dot: "bg-warning-500",
   },
   concluida: {
     label: "Concluida",
     bg: "bg-success-500/10",
     text: "text-success-400",
     border: "border-success-500/20",
+    dot: "bg-success-500",
   },
 }
 
@@ -209,50 +217,47 @@ export default function OrdensCompraPage() {
         </div>
       ) : (
         <div className="space-y-2 md:hidden">
-          {ordens.map((oc: OrdemCompra) => (
-            <div key={oc.id} className="rounded-md border border-border bg-muted/50 p-4 space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <Link
-                  href={`/compras/ordens/${oc.id}`}
-                  className="font-mono font-semibold text-primary hover:underline"
-                >
-                  {oc.numero}
-                </Link>
-                <StatusBadge status={oc.status} />
-              </div>
-
+          {ordens.map((oc: OrdemCompra) => {
+            const cfg = STATUS_CONFIG[oc.status] ?? STATUS_CONFIG.rascunho
+            return (
               <Link
-                href={`/os/${oc.os_number}`}
-                className="text-sm font-mono text-primary/70 hover:text-primary hover:underline block"
+                key={oc.id}
+                href={`/compras/ordens/${oc.id}`}
+                className="relative block rounded-[11px] bg-card px-3 py-2.5 transition-[transform,background-color] duration-150 ease-out active:scale-[0.98] hover:bg-primary/5"
               >
-                OS {oc.os_number ? `#${oc.os_number}` : "--"}
+                <span aria-hidden className={cn("absolute left-0 top-2 bottom-2 w-[3px] rounded-r-[3px]", cfg.dot)} />
+
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="font-mono text-[13px] font-semibold text-primary truncate">
+                    {oc.numero}
+                    {oc.os_number && <span className="font-normal text-muted-foreground"> · OS #{oc.os_number}</span>}
+                  </span>
+                  <span className={cn("text-[11px] font-semibold shrink-0", cfg.text)}>{cfg.label}</span>
+                </div>
+
+                <p className="text-[11px] font-mono text-muted-foreground truncate mt-0.5">
+                  {oc.criado_por_nome || "--"} · {oc.total_itens} {oc.total_itens === 1 ? "item" : "itens"}
+                </p>
+
+                <div className="grid grid-cols-[minmax(0,1fr)_112px_78px] gap-2.5 items-baseline mt-[5px] font-mono text-[11.5px] tabular-nums text-muted-foreground">
+                  <a
+                    href={`/api/proxy/purchasing/ordens-compra/${oc.id}/pdf/`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex min-h-11 items-center gap-1 -my-2.5 text-muted-foreground/70 hover:text-foreground/70 transition-colors"
+                  >
+                    <FileText size={14} />
+                    PDF
+                  </a>
+                  <span className="text-right text-foreground font-semibold text-[12.5px]">
+                    {formatCurrency(oc.valor_total)}
+                  </span>
+                  <span className="text-right">{formatDate(oc.created_at)}</span>
+                </div>
               </Link>
-
-              <div className="flex items-center justify-between gap-2 border-t border-border pt-2 text-xs">
-                <span className="text-muted-foreground">
-                  {oc.criado_por_nome || "--"} · {formatDate(oc.created_at)}
-                </span>
-                <span className="font-mono font-semibold text-foreground shrink-0">
-                  {formatCurrency(oc.valor_total)}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between gap-2 pt-1 text-xs">
-                <span className="text-muted-foreground">
-                  {oc.total_itens} {oc.total_itens === 1 ? "item" : "itens"}
-                </span>
-                <a
-                  href={`/api/proxy/purchasing/ordens-compra/${oc.id}/pdf/`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-muted-foreground/70 hover:text-foreground/70 transition-colors"
-                >
-                  <FileText size={14} />
-                  PDF
-                </a>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 

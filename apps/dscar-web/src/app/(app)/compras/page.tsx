@@ -3,43 +3,52 @@
 import React, { useMemo } from "react"
 import Link from "next/link"
 import type { Route } from "next"
-import { ShoppingCart, ArrowRight } from "lucide-react"
+import { ShoppingCart, ArrowRight, Clock, Search, Gavel, CheckCircle2 } from "lucide-react"
 import { useDashboardCompras, usePedidosCompra, useAprovacoes } from "@/hooks/usePurchasing"
 import type { AprovacaoCotacao } from "@paddock/types"
 import { ScrollFade } from "@/components/ui/scroll-fade"
+import { SectionLabel } from "@/components/ui/section-label"
+import { KpiStrip, type KpiItem } from "@/components/ui/kpi-strip"
+import { cn } from "@/lib/utils"
 
 // ─── OS-level status config ───────────────────────────────────────────────────
+// dot = faixa do card denso | text = texto colorido da linha 1 (mesmo padrão de SERVICE_ORDER_STATUS_CONFIG)
 
-const OS_STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string }> = {
+const OS_STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
   "Solicitado": {
     label: "Solicitado",
     bg: "bg-warning-500/10",
     text: "text-warning-400",
     border: "border-warning-500/20",
+    dot: "bg-warning-500",
   },
   "Em cotacao": {
     label: "Em cotacao",
     bg: "bg-info-500/10",
     text: "text-info-400",
     border: "border-info-500/20",
+    dot: "bg-info-500",
   },
   "Aguard. aprovacao": {
     label: "Aguard. aprovacao",
     bg: "bg-purple-500/10",
     text: "text-purple-400",
     border: "border-purple-500/20",
+    dot: "bg-purple-500",
   },
   "Aprovada": {
     label: "Aprovada",
     bg: "bg-success-500/10",
     text: "text-success-400",
     border: "border-success-500/20",
+    dot: "bg-success-500",
   },
   "Rejeitada": {
     label: "Rejeitada",
     bg: "bg-error-500/10",
     text: "text-error-400",
     border: "border-error-500/20",
+    dot: "bg-error-500",
   },
 }
 
@@ -52,32 +61,6 @@ function OSStatusBadge({ label }: { label: string }) {
       <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse-slow" />
       {cfg.label}
     </span>
-  )
-}
-
-// ─── KPI Card ─────────────────────────────────────────────────────────────────
-
-function KPICard({
-  label,
-  value,
-  color,
-}: {
-  label: string
-  value: number
-  color: "warning" | "info" | "purple" | "success"
-}) {
-  const colorMap = {
-    warning: { bg: "bg-warning-500/10", border: "border-warning-500/15", text: "text-warning-400" },
-    info: { bg: "bg-info-500/10", border: "border-info-500/15", text: "text-info-400" },
-    purple: { bg: "bg-purple-500/10", border: "border-purple-500/15", text: "text-purple-400" },
-    success: { bg: "bg-success-500/10", border: "border-success-500/15", text: "text-success-400" },
-  }
-  const c = colorMap[color]
-  return (
-    <div className={`${c.bg} border ${c.border} rounded-lg p-4`}>
-      <p className={`label-mono ${c.text}`}>{label}</p>
-      <p className={`text-2xl font-bold font-mono mt-1 ${c.text}`}>{value}</p>
-    </div>
   )
 }
 
@@ -222,7 +205,7 @@ export default function ComprasPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Strip */}
       {statsLoading ? (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
@@ -230,16 +213,18 @@ export default function ComprasPage() {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <KPICard label="Solicitados" value={stats?.solicitados ?? 0} color="warning" />
-          <KPICard label="Em Cotacao" value={stats?.em_cotacao ?? 0} color="info" />
-          <KPICard label="Aguard. Aprovacao" value={stats?.aguardando_aprovacao ?? 0} color="purple" />
-          <KPICard label="Aprovadas Hoje" value={stats?.aprovadas_hoje ?? 0} color="success" />
-        </div>
+        <KpiStrip
+          items={[
+            { label: "Solicitados", value: String(stats?.solicitados ?? 0), icon: <Clock size={14} />, iconClass: "bg-warning-500/10 text-warning-400" },
+            { label: "Em Cotação", value: String(stats?.em_cotacao ?? 0), icon: <Search size={14} />, iconClass: "bg-info-500/10 text-info-400" },
+            { label: "Aguard. Aprov.", value: String(stats?.aguardando_aprovacao ?? 0), icon: <Gavel size={14} />, iconClass: "bg-purple-500/10 text-purple-400" },
+            { label: "Aprovadas Hoje", value: String(stats?.aprovadas_hoje ?? 0), icon: <CheckCircle2 size={14} />, iconClass: "bg-success-500/10 text-success-400" },
+          ] satisfies KpiItem[]}
+        />
       )}
 
       {/* Table */}
-      <div className="section-divider">ORDENS DE SERVICO COM PECAS</div>
+      <SectionLabel>ORDENS DE SERVIÇO COM PEÇAS</SectionLabel>
 
       {pedidosLoading ? (
         <div className="space-y-2 md:hidden">
@@ -253,38 +238,39 @@ export default function ComprasPage() {
         </div>
       ) : (
         <div className="space-y-2 md:hidden">
-          {osRows.map((row) => (
-            <div
-              key={row.serviceOrderId}
-              className="rounded-md border border-border bg-muted/50 p-4 space-y-2"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-mono font-semibold text-primary">
-                  {row.osNumber ? `#${row.osNumber}` : "--"}
-                </span>
-                {row.statusSummary !== "—" ? (
-                  <OSStatusBadge label={row.statusSummary} />
-                ) : (
-                  <span className="text-xs text-muted-foreground/50">—</span>
-                )}
-              </div>
+          {osRows.map((row) => {
+            const cfg = row.statusSummary !== "—" ? (OS_STATUS_CONFIG[row.statusSummary] ?? OS_STATUS_CONFIG["Solicitado"]) : null
+            return (
+              <div
+                key={row.serviceOrderId}
+                className="relative rounded-[11px] bg-card px-3 py-2.5 transition-[transform] duration-150 ease-out active:scale-[0.98]"
+              >
+                {cfg && <span aria-hidden className={cn("absolute left-0 top-2 bottom-2 w-[3px] rounded-r-[3px]", cfg.dot)} />}
 
-              <p className="text-sm text-foreground/80 truncate">{row.vehicle || "—"}</p>
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="font-mono text-[13px] font-semibold text-primary truncate">
+                    {row.osNumber ? `#${row.osNumber}` : "--"}
+                  </span>
+                  <span className={cn("text-[11px] font-semibold shrink-0", cfg ? cfg.text : "text-muted-foreground/50")}>
+                    {cfg ? cfg.label : "—"}
+                  </span>
+                </div>
 
-              <div className="flex items-center justify-between gap-2 border-t border-border pt-2 text-xs">
-                <span className="text-muted-foreground truncate">
-                  {row.insurerName ? row.insurerName : "Particular"}
-                </span>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full font-medium bg-muted border border-border text-foreground/70 shrink-0">
-                  {row.totalParts} {row.totalParts === 1 ? "peca" : "pecas"}
-                </span>
-              </div>
+                <p className="text-[13.5px] font-medium text-foreground truncate mt-0.5">{row.vehicle || "—"}</p>
 
-              <div className="flex justify-end pt-1">
-                <RowAction row={row} />
+                <div className="grid grid-cols-[minmax(0,1fr)_72px] gap-2.5 items-baseline mt-[5px] font-mono text-[11.5px] tabular-nums text-muted-foreground">
+                  <span className="truncate">{row.insurerName ? row.insurerName : "Particular"}</span>
+                  <span className="text-right text-foreground font-semibold text-[12.5px]">
+                    {row.totalParts} {row.totalParts === 1 ? "peça" : "peças"}
+                  </span>
+                </div>
+
+                <div className="flex justify-end pt-1">
+                  <RowAction row={row} />
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
