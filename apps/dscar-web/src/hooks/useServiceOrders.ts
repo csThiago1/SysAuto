@@ -14,12 +14,14 @@ const API = "/api/proxy";
 export function useServiceOrders(
   filters: Record<string, string> = {},
   page: number = 1,
-  pageSize: number = 20
+  pageSize: number = 20,
+  enabled: boolean = true
 ): ReturnType<typeof useQuery<PaginatedResponse<ServiceOrder>>> {
   const params = new URLSearchParams({ ...filters, page: String(page), page_size: String(pageSize) }).toString();
   return useQuery<PaginatedResponse<ServiceOrder>>({
     queryKey: ["service-orders", filters, page, pageSize],
     queryFn: () => apiFetch<PaginatedResponse<ServiceOrder>>(`${API}/service-orders/?${params}`),
+    enabled,
   });
 }
 
