@@ -1,4 +1,5 @@
 """Testes da listagem global de apontamentos (tela mobile de apontamento)."""
+
 import hashlib
 from datetime import timedelta
 
@@ -42,14 +43,18 @@ class ApontamentoGlobalListTest(TenantTestCase):
         )
         now = timezone.now()
         self.aberto = ApontamentoHoras.objects.create(
-            service_order=self.order, tecnico=self.tecnico,
-            iniciado_em=now, status="iniciado",
+            service_order=self.order,
+            tecnico=self.tecnico,
+            iniciado_em=now,
+            status="iniciado",
         )
         self.ontem = ApontamentoHoras.objects.create(
-            service_order=self.order, tecnico=self.tecnico,
+            service_order=self.order,
+            tecnico=self.tecnico,
             iniciado_em=now - timedelta(days=2),
             encerrado_em=now - timedelta(days=2) + timedelta(hours=1),
-            horas_apontadas=1, status="encerrado",
+            horas_apontadas=1,
+            status="encerrado",
         )
         self.client = APIClient()
         self.client.defaults["SERVER_NAME"] = self.domain.domain

@@ -7836,7 +7836,7 @@ export interface paths {
             cookie?: never;
         };
         /** @description Lista apontamentos da OS. */
-        get: operations["service_orders_apontamentos_list"];
+        get: operations["service_orders_apontamentos_list_2"];
         put?: never;
         /** @description Cria apontamento — timer (so tecnico_id) ou manual (com horarios). */
         post: operations["service_orders_apontamentos_create"];
@@ -7875,6 +7875,29 @@ export interface paths {
         put?: never;
         /** @description Registra pagamento na OS especificada via PaymentService. */
         post: operations["service_orders_payments_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/service-orders/apontamentos/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lista global de apontamentos
+         * @description GET /service-orders/apontamentos/ — lista global de apontamentos (cross-OS).
+         *
+         *     Filtros: ?tecnico=<uuid>  ?status=iniciado|encerrado|validado  ?hoje=1
+         *     Usada pela tela mobile de apontamento (reidratar timer aberto + lista "Hoje").
+         */
+        get: operations["service_orders_apontamentos_list"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -9018,17 +9041,34 @@ export interface components {
              */
             readonly horas_apontadas: string;
             readonly observacao: string;
-            readonly status: components["schemas"]["ApontamentoStatusEnum"];
+            readonly status: components["schemas"]["StatusAbdEnum"];
             /** Format: date-time */
             readonly created_at: string;
         };
-        /**
-         * @description * `iniciado` - Iniciado
-         *     * `encerrado` - Encerrado
-         *     * `validado` - Validado
-         * @enum {string}
-         */
-        ApontamentoStatusEnum: "iniciado" | "encerrado" | "validado";
+        /** @description Apontamento com snapshot da OS — usado na listagem global (tela mobile). */
+        ApontamentoGlobal: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly tecnico: components["schemas"]["TecnicoMini"];
+            /** Format: date-time */
+            readonly iniciado_em: string;
+            /** Format: date-time */
+            readonly encerrado_em: string | null;
+            /**
+             * Format: decimal
+             * @description Calculado: (encerrado_em - iniciado_em) em horas.
+             */
+            readonly horas_apontadas: string;
+            readonly observacao: string;
+            readonly status: components["schemas"]["StatusAbdEnum"];
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: uuid */
+            readonly os_id: string;
+            readonly os_numero: number;
+            readonly os_plate: string;
+            readonly os_model: string;
+        };
         AprovacaoCotacao: {
             /** Format: uuid */
             readonly id: string;
@@ -22709,6 +22749,13 @@ export interface components {
          * @enum {string}
          */
         Status9f8Enum: "rascunho" | "enviado" | "aprovado" | "aprovado_parc" | "recusado" | "expirado" | "convertido_os";
+        /**
+         * @description * `iniciado` - Iniciado
+         *     * `encerrado` - Encerrado
+         *     * `validado` - Validado
+         * @enum {string}
+         */
+        StatusAbdEnum: "iniciado" | "encerrado" | "validado";
         /**
          * @description * `orcado` - Orçado
          *     * `aprovado` - Aprovado
@@ -39890,7 +39937,7 @@ export interface operations {
             };
         };
     };
-    service_orders_apontamentos_list: {
+    service_orders_apontamentos_list_2: {
         parameters: {
             query?: {
                 /** @description Which field to use when ordering the results. */
@@ -40017,6 +40064,32 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Payment"];
+                };
+            };
+        };
+    };
+    service_orders_apontamentos_list: {
+        parameters: {
+            query?: {
+                /** @description 1 = apenas de hoje */
+                hoje?: string;
+                /** @description iniciado | encerrado | validado */
+                status?: string;
+                /** @description UUID do técnico */
+                tecnico?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApontamentoGlobal"][];
                 };
             };
         };

@@ -1,13 +1,19 @@
 """
 Paddock Solutions — Service Orders URLs
 """
+
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter, SimpleRouter
 
 from .views import (
-    CalendarView, DashboardStatsView, HolidayViewSet,
-    ServiceCatalogViewSet, ServiceOrderViewSet,
-    ServiceOrderVersionViewSet, ServiceOrderEventViewSet, ServiceOrderParecerViewSet,
+    CalendarView,
+    DashboardStatsView,
+    HolidayViewSet,
+    ServiceCatalogViewSet,
+    ServiceOrderEventViewSet,
+    ServiceOrderParecerViewSet,
+    ServiceOrderVersionViewSet,
+    ServiceOrderViewSet,
 )
 from .views.apontamento import ApontamentoGlobalListView, ApontamentoViewSet
 

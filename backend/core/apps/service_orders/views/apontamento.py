@@ -1,11 +1,13 @@
 """Apontamento de Horas — ViewSet."""
+
 from __future__ import annotations
 
 import logging
 from decimal import Decimal
 
-from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, extend_schema
+
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated

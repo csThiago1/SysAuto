@@ -1,4 +1,5 @@
 """Apontamento de Horas — Serializers."""
+
 from __future__ import annotations
 
 from rest_framework import serializers
@@ -24,8 +25,14 @@ class ApontamentoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ApontamentoHoras
         fields = [
-            "id", "tecnico", "iniciado_em", "encerrado_em",
-            "horas_apontadas", "observacao", "status", "created_at",
+            "id",
+            "tecnico",
+            "iniciado_em",
+            "encerrado_em",
+            "horas_apontadas",
+            "observacao",
+            "status",
+            "created_at",
         ]
         read_only_fields = fields
 
@@ -40,7 +47,10 @@ class ApontamentoGlobalSerializer(ApontamentoSerializer):
 
     class Meta(ApontamentoSerializer.Meta):
         fields = ApontamentoSerializer.Meta.fields + [
-            "os_id", "os_numero", "os_plate", "os_model",
+            "os_id",
+            "os_numero",
+            "os_plate",
+            "os_model",
         ]
         read_only_fields = fields
 
@@ -66,7 +76,5 @@ class ApontamentoCreateSerializer(serializers.Serializer):
                 {"iniciado_em": "Obrigatorio quando encerrado_em e informado."}
             )
         if encerrado and iniciado and encerrado <= iniciado:
-            raise serializers.ValidationError(
-                {"encerrado_em": "Deve ser posterior ao inicio."}
-            )
+            raise serializers.ValidationError({"encerrado_em": "Deve ser posterior ao inicio."})
         return attrs
