@@ -26,6 +26,7 @@ import {
   PackagePlus,
   ArrowLeftRight,
   CheckCircle2,
+  Timer,
   Layers,
   FileText,
   ReceiptText,
@@ -241,6 +242,27 @@ export const NAV_SECTIONS: NavSection[] = [
     ],
   },
 ];
+
+// ─── Modo operação (mobile) ──────────────────────────────────────────
+// Tabs fixas da tab bar mobile. O restante da navegação fica no sheet
+// "Mais", visível apenas para MANAGER+ (corte por dispositivo + papel).
+
+export const MOBILE_TABS: NavItem[] = [
+  { id: "m-inicio", label: "Início", icon: LayoutDashboard, href: "/dashboard" },
+  {
+    id: "m-os",
+    label: "OS",
+    icon: KanbanSquare,
+    href: "/os/kanban",
+    dynamicBadge: "overdue",
+    children: [{ id: "m-os-lista", label: "Lista de OS", href: "/os", icon: ClipboardList }],
+  },
+  { id: "m-agenda", label: "Agenda", icon: CalendarDays, href: "/agenda" },
+  { id: "m-apontamento", label: "Apontar", icon: Timer, href: "/apontamento" },
+];
+
+/** Sub-rotas de fluxo onde o FAB "Nova OS" não deve aparecer. */
+export const FAB_HIDDEN_SUBPATHS = ["/recepcao", "/vistoria"];
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 

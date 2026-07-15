@@ -3,10 +3,16 @@
 import { useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { LayoutGrid } from "lucide-react";
+import { LayoutGrid, Plus } from "lucide-react";
 import type { Route } from "next";
-import type { PaddockRole, ExtraPermission } from "@paddock/types";
-import { visibleModules, isGroupActive, type NavItem } from "./nav-config";
+import { ROLE_HIERARCHY, type PaddockRole, type ExtraPermission } from "@paddock/types";
+import {
+  visibleModules,
+  isGroupActive,
+  MOBILE_TABS,
+  FAB_HIDDEN_SUBPATHS,
+  type NavItem,
+} from "./nav-config";
 import { useOverdueOrders } from "@/hooks/useOverdueOrders";
 import {
   Sheet,
@@ -16,8 +22,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-
-const FIXED_COUNT = 4;
 
 interface TabButtonProps {
   item: NavItem;
@@ -62,10 +66,18 @@ export function MobileTabBar(): React.ReactElement {
 
   const role = (session?.role ?? "STOREKEEPER") as PaddockRole;
   const perms = (session?.extraPermissions ?? []) as ExtraPermission[];
-  const modules = useMemo(() => visibleModules(role, perms), [role, perms]);
+  const level = ROLE_HIERARCHY[role] ?? 0;
 
-  const fixed = modules.slice(0, FIXED_COUNT);
-  const rest = modules.slice(FIXED_COUNT);
+  // Modo operação: tabs fixas pra todos; navegação completa só no "Mais" (MANAGER+)
+  const fixed = MOBILE_TABS;
+  const rest = useMemo(
+    () => (level >= ROLE_HIERARCHY.MANAGER ? visibleModules(role, perms) : []),
+    [level, role, perms]
+  );
+
+  const fabVisible =
+    level >= ROLE_HIERARCHY.CONSULTANT &&
+    !FAB_HIDDEN_SUBPATHS.some((p) => pathname.includes(p));
 
   function go(item: NavItem) {
     const href = item.href ?? item.children?.[0]?.href;
@@ -74,6 +86,18 @@ export function MobileTabBar(): React.ReactElement {
   }
 
   return (
+    <>
+    {fabVisible && (
+      <button
+        type="button"
+        aria-label="Nova OS"
+        onClick={() => router.push("/recepcao" as Route)}
+        className="fixed right-4 z-40 flex h-[52px] w-[52px] items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg active:scale-95 transition-transform md:hidden"
+        style={{ bottom: "calc(4.5rem + env(safe-area-inset-bottom))" }}
+      >
+        <Plus className="h-6 w-6" />
+      </button>
+    )}
     <nav
       aria-label="Navegação"
       className="fixed bottom-0 left-0 right-0 z-40 flex items-stretch border-t border-border bg-card md:hidden"
@@ -139,5 +163,6 @@ export function MobileTabBar(): React.ReactElement {
         </Sheet>
       )}
     </nav>
+    </>
   );
 }
