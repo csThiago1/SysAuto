@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import type { Route } from "next";
 import { toast } from "sonner";
 import { v7 as uuidv7 } from "uuid";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
@@ -92,7 +93,8 @@ export default function RecepcaoPage(): React.ReactElement {
     } else {
       toast.success(`OS ${osNumber} criada.`);
     }
-    router.push(`/os/${osNumber}`);
+    // segue direto pra vistoria de entrada (checklist + assinatura)
+    router.push(`/os/${osNumber}/vistoria` as Route);
   }
 
   const values = form.watch();
