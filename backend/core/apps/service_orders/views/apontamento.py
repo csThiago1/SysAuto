@@ -5,11 +5,13 @@ import logging
 from decimal import Decimal
 
 from django.utils import timezone
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
 from apps.authentication.permissions import IsConsultantOrAbove
@@ -17,10 +19,50 @@ from apps.service_orders.models.capacity import ApontamentoHoras
 from apps.service_orders.offline import find_by_client_uuid
 from apps.service_orders.serializers.apontamento import (
     ApontamentoCreateSerializer,
+    ApontamentoGlobalSerializer,
     ApontamentoSerializer,
 )
 
 logger = logging.getLogger(__name__)
+
+
+class ApontamentoGlobalListView(APIView):
+    """
+    GET /service-orders/apontamentos/ — lista global de apontamentos (cross-OS).
+
+    Filtros: ?tecnico=<uuid>  ?status=iniciado|encerrado|validado  ?hoje=1
+    Usada pela tela mobile de apontamento (reidratar timer aberto + lista "Hoje").
+    """
+
+    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+
+    @extend_schema(
+        summary="Lista global de apontamentos",
+        parameters=[
+            OpenApiParameter("tecnico", description="UUID do técnico", required=False),
+            OpenApiParameter(
+                "status", description="iniciado | encerrado | validado", required=False
+            ),
+            OpenApiParameter("hoje", description="1 = apenas de hoje", required=False),
+        ],
+        responses=ApontamentoGlobalSerializer(many=True),
+    )
+    def get(self, request: Request) -> Response:
+        qs = (
+            ApontamentoHoras.objects.filter(is_active=True)
+            .select_related("tecnico", "service_order")
+            .order_by("-iniciado_em")
+        )
+        tecnico = request.query_params.get("tecnico")
+        if tecnico:
+            qs = qs.filter(tecnico_id=tecnico)
+        status_param = request.query_params.get("status")
+        if status_param:
+            qs = qs.filter(status=status_param)
+        if request.query_params.get("hoje"):
+            hoje = timezone.localdate()
+            qs = qs.filter(iniciado_em__date=hoje)
+        return Response(ApontamentoGlobalSerializer(qs[:100], many=True).data)
 
 
 class ApontamentoViewSet(GenericViewSet):

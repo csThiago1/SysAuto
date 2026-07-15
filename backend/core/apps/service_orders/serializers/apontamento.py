@@ -30,6 +30,21 @@ class ApontamentoSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class ApontamentoGlobalSerializer(ApontamentoSerializer):
+    """Apontamento com snapshot da OS — usado na listagem global (tela mobile)."""
+
+    os_id = serializers.UUIDField(source="service_order_id", read_only=True)
+    os_numero = serializers.IntegerField(source="service_order.number", read_only=True)
+    os_plate = serializers.CharField(source="service_order.plate", read_only=True)
+    os_model = serializers.CharField(source="service_order.model", read_only=True)
+
+    class Meta(ApontamentoSerializer.Meta):
+        fields = ApontamentoSerializer.Meta.fields + [
+            "os_id", "os_numero", "os_plate", "os_model",
+        ]
+        read_only_fields = fields
+
+
 class ApontamentoCreateSerializer(serializers.Serializer):
     """Serializer para criacao de apontamentos (timer ou manual)."""
 

@@ -9,7 +9,7 @@ from .views import (
     ServiceCatalogViewSet, ServiceOrderViewSet,
     ServiceOrderVersionViewSet, ServiceOrderEventViewSet, ServiceOrderParecerViewSet,
 )
-from .views.apontamento import ApontamentoViewSet
+from .views.apontamento import ApontamentoGlobalListView, ApontamentoViewSet
 
 router = DefaultRouter()
 router.register(r"", ServiceOrderViewSet, basename="service-order")
@@ -36,6 +36,8 @@ urlpatterns = [
     path("dashboard/stats/", DashboardStatsView.as_view(), name="service-order-dashboard-stats"),
     path("calendar/", CalendarView.as_view(), name="service-order-calendar"),
     # vehicle-history/ é gerado automaticamente pelo router via @action no ServiceOrderViewSet
+    # prefixo explícito ANTES do DefaultRouter em "" (senão vira pk)
+    path("apontamentos/", ApontamentoGlobalListView.as_view(), name="apontamento-global"),
     path("service-catalog/", include(catalog_router.urls)),
     path("holidays/", include(holiday_router.urls)),
     path("versions/", include(versions_router.urls)),
