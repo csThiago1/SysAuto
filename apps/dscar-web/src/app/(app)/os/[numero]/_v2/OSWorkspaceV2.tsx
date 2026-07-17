@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   Boxes,
+  Camera,
   CircleDollarSign,
   FileText,
   FolderOpen,
@@ -146,6 +147,13 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
           )}
 
           <div className="ml-auto flex items-center gap-2">
+            <a
+              href={`/os/${order.number}/vistoria`}
+              className="whitespace-nowrap rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              <Camera className="mr-1.5 inline h-3.5 w-3.5" />
+              Vistoria
+            </a>
             <a
               href={`/os/${order.number}/classic`}
               className="whitespace-nowrap rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
