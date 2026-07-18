@@ -50,14 +50,15 @@ export function SignatureSection({
     queryKey,
     queryFn: () =>
       fetchList<SignatureRead>(
-        `${API}/signatures/?service_order=${osId}&document_type=${documentType}`
+        // prefixo dobrado é real: app montado em /signatures/ + router "signatures"
+        `${API}/signatures/signatures/?service_order=${osId}&document_type=${documentType}`
       ),
   });
 
   const capture = useMutation({
     mutationFn: async (file: File) => {
       const png = await fileToBase64(file);
-      return apiFetch(`${API}/signatures/capture/`, {
+      return apiFetch(`${API}/signatures/signatures/capture/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

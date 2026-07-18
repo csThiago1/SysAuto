@@ -7,7 +7,8 @@ const QUEUEABLE: RegExp[] = [
   /^\/api\/proxy\/service-orders\/$/,
   /^\/api\/proxy\/service-orders\/[0-9a-f-]+\/$/,
   /^\/api\/proxy\/service-orders\/[0-9a-f-]+\/(photos|parts|parts\/estoque|labor|apontamentos|transition|checklist-items\/bulk)\/$/,
-  /^\/api\/proxy\/signatures\/capture\/$/,
+  // prefixo dobrado é o path real (app /signatures/ + router "signatures")
+  /^\/api\/proxy\/signatures\/signatures\/capture\/$/,
 ];
 
 export function isQueueable(url: string, init: RequestInit): boolean {
