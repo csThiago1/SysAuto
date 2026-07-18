@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/offline/db";
 import { drainQueue } from "@/lib/offline/queue";
@@ -31,9 +32,18 @@ export function useOfflineSync(): OfflineSyncState {
     { pendingCount: 0, conflictCount: 0, failedCount: 0 },
   );
 
+  const qc = useQueryClient();
+
   useEffect(() => {
     if (isOnline) void drainQueue();
   }, [isOnline]);
+
+  // fila drenou → dados novos no servidor → refetch de tudo que está na tela
+  useEffect(() => {
+    const onDrained = (): void => void qc.invalidateQueries();
+    window.addEventListener("offline-queue-drained", onDrained);
+    return () => window.removeEventListener("offline-queue-drained", onDrained);
+  }, [qc]);
 
   return { ...counts, isOnline };
 }

@@ -40,6 +40,7 @@ class CaptureSignatureSerializer(serializers.Serializer):
     document_type = serializers.ChoiceField(choices=[
         "BUDGET_APPROVAL", "OS_OPEN", "OS_DELIVERY",
         "COMPLEMENT_APPROVAL", "INSURANCE_ACCEPTANCE",
+        "VISTORIA_ENTRADA",
     ])
     method = serializers.ChoiceField(choices=[
         "CANVAS_TABLET", "REMOTE_LINK", "SCAN_PDF",

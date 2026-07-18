@@ -1,6 +1,7 @@
 "use client";
 
-import { use, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
+import { drainQueue } from "@/lib/offline/queue";
 import { useQuery } from "@tanstack/react-query";
 import { v7 as uuidv7 } from "uuid";
 import { toast } from "sonner";
@@ -41,7 +42,15 @@ export default function VistoriaPage({
     queryKey: ["os-photos", os?.id],
     queryFn: () => fetchList<ServiceOrderPhoto>(`${API}/service-orders/${os?.id}/photos/`),
     enabled: Boolean(os?.id),
+    // fotos podem chegar pela fila offline (wizard/uploads em background) —
+    // sem push do servidor, poll leve mantém a tela viva
+    refetchInterval: 6000,
   });
+
+  // cutuca a fila ao abrir a tela: drafts pendentes de foto sobem já
+  useEffect(() => {
+    void drainQueue();
+  }, []);
 
   const photos = useMemo(
     () => (photosQuery.data ?? []).filter((p) => p.folder === segment.folder),

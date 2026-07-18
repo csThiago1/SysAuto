@@ -148,6 +148,7 @@ let draining = false;
 export async function drainQueue(): Promise<void> {
   if (draining || !navigator.onLine) return;
   draining = true;
+  let synced = 0;
   try {
     const pending = await db.drafts.where("status").equals("pending").sortBy("createdAt");
     for (const stale of pending) {
@@ -156,9 +157,12 @@ export async function drainQueue(): Promise<void> {
       if (!draft || draft.status !== "pending") continue;
       const ok = await syncDraft(draft);
       if (!ok) break;
+      synced++;
     }
   } finally {
     draining = false;
+    // avisa a UI que dados chegaram no servidor (invalidação de queries)
+    if (synced > 0) window.dispatchEvent(new CustomEvent("offline-queue-drained"));
   }
 }
 
