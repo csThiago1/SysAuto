@@ -18,7 +18,7 @@ describe("isQueueable", () => {
   it("aceita writes de OS/fotos/peças/apontamento/assinatura", () => {
     expect(isQueueable("/api/proxy/service-orders/", { method: "POST" })).toBe(true);
     expect(isQueueable("/api/proxy/service-orders/abc-123/photos/", { method: "POST" })).toBe(true);
-    expect(isQueueable("/api/proxy/signatures/capture/", { method: "POST" })).toBe(true);
+    expect(isQueueable("/api/proxy/signatures/signatures/capture/", { method: "POST" })).toBe(true);
   });
 
   it("rejeita GET, fiscal e transição pra delivered", () => {
