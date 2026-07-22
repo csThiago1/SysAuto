@@ -22,6 +22,8 @@ from .serializers import (
     UnifiedCustomerDetailSerializer,
     UnifiedCustomerListSerializer,
     UnifiedCustomerUpdateSerializer,
+    mask_cpf,
+    mask_phone,
 )
 
 logger = logging.getLogger(__name__)
@@ -155,8 +157,8 @@ class UnifiedCustomerViewSet(
             results.append({
                 "id": str(c.id),
                 "name": c.name,
-                "cpf_masked": self._mask_cpf(str(c.cpf or "")),
-                "phone_masked": self._mask_phone(str(c.phone or "")),
+                "cpf_masked": mask_cpf(c.cpf) or "",
+                "phone_masked": mask_phone(c.phone) or "",
             })
             seen_names.add(c.name.lower())
 
@@ -190,15 +192,3 @@ class UnifiedCustomerViewSet(
         results = results[:20]
         logger.debug("Customer search q=%r → %d resultado(s)", q, len(results))
         return Response({"count": len(results), "results": results})
-
-    @staticmethod
-    def _mask_cpf(cpf: str) -> str:
-        if len(cpf) >= 2:
-            return "***.***.***-" + cpf[-2:]
-        return ""
-
-    @staticmethod
-    def _mask_phone(phone: str) -> str:
-        if len(phone) >= 4:
-            return "(**) *****-" + phone[-4:]
-        return ""

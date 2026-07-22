@@ -13,6 +13,36 @@ from .models import UnifiedCustomer
 logger = logging.getLogger(__name__)
 
 
+def mask_cpf(cpf: str | None) -> str | None:
+    """Retorna CPF mascarado (***.***.***-XX) — nunca em texto claro."""
+    if not cpf:
+        return None
+    cpf = str(cpf)
+    if len(cpf) == 11:
+        return f"***.***.***-{cpf[-2:]}"
+    return "***.***.***-**"
+
+
+def mask_phone(phone: str | None) -> str | None:
+    """Retorna telefone mascarado — apenas últimos 4 dígitos."""
+    if not phone:
+        return None
+    digits = "".join(filter(str.isdigit, str(phone)))
+    if len(digits) >= 4:
+        return f"(**) *****-{digits[-4:]}"
+    return "(**) *****-****"
+
+
+def normalize_phone_digits(value: str) -> str:
+    """Remove formatação, valida comprimento mínimo do telefone."""
+    if not value:
+        return value
+    digits = "".join(filter(str.isdigit, value))
+    if len(digits) < 10:
+        raise serializers.ValidationError("Telefone inválido.")
+    return digits
+
+
 class UnifiedCustomerListSerializer(serializers.ModelSerializer):
     """
     Serializer compacto para listagem de clientes.
@@ -39,23 +69,10 @@ class UnifiedCustomerListSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_cpf_masked(self, obj: UnifiedCustomer) -> str | None:
-        """Retorna CPF mascarado (***.***.***-XX) — nunca em texto claro."""
-        if not obj.cpf:
-            return None
-        cpf = str(obj.cpf)
-        if len(cpf) == 11:
-            return f"***.***.***-{cpf[-2:]}"
-        return "***.***.***-**"
+        return mask_cpf(obj.cpf)
 
     def get_phone_masked(self, obj: UnifiedCustomer) -> str | None:
-        """Retorna telefone mascarado — apenas últimos 4 dígitos."""
-        if not obj.phone:
-            return None
-        phone = str(obj.phone)
-        digits = "".join(filter(str.isdigit, phone))
-        if len(digits) >= 4:
-            return f"(**) *****-{digits[-4:]}"
-        return "(**) *****-****"
+        return mask_phone(obj.phone)
 
 
 class UnifiedCustomerDetailSerializer(serializers.ModelSerializer):
@@ -100,23 +117,10 @@ class UnifiedCustomerDetailSerializer(serializers.ModelSerializer):
         ]
 
     def get_cpf_masked(self, obj: UnifiedCustomer) -> str | None:
-        """Retorna CPF mascarado (***.***.***-XX) — nunca em texto claro."""
-        if not obj.cpf:
-            return None
-        cpf = str(obj.cpf)
-        if len(cpf) == 11:
-            return f"***.***.***-{cpf[-2:]}"
-        return "***.***.***-**"
+        return mask_cpf(obj.cpf)
 
     def get_phone_masked(self, obj: UnifiedCustomer) -> str | None:
-        """Retorna telefone mascarado — apenas últimos 4 dígitos."""
-        if not obj.phone:
-            return None
-        phone = str(obj.phone)
-        digits = "".join(filter(str.isdigit, phone))
-        if len(digits) >= 4:
-            return f"(**) *****-{digits[-4:]}"
-        return "(**) *****-****"
+        return mask_phone(obj.phone)
 
 
 class UnifiedCustomerUpdateSerializer(serializers.ModelSerializer):
@@ -145,13 +149,9 @@ class UnifiedCustomerUpdateSerializer(serializers.ModelSerializer):
         ]
 
     def validate_phone(self, value: str) -> str:
-        """Remove formatação, valida comprimento."""
         if not value:
             return value
-        digits = "".join(filter(str.isdigit, value))
-        if len(digits) < 10:
-            raise serializers.ValidationError("Telefone inválido.")
-        return digits
+        return normalize_phone_digits(value)
 
 
 class UnifiedCustomerCreateSerializer(serializers.ModelSerializer):
@@ -197,11 +197,7 @@ class UnifiedCustomerCreateSerializer(serializers.ModelSerializer):
         return digits
 
     def validate_phone(self, value: str) -> str:
-        """Remove formatação e valida comprimento mínimo do telefone."""
-        digits = "".join(filter(str.isdigit, value))
-        if len(digits) < 10:
-            raise serializers.ValidationError("Telefone inválido.")
-        return digits
+        return normalize_phone_digits(value)
 
     def create(self, validated_data: dict) -> UnifiedCustomer:
         """Preenche metadados de consentimento LGPD e persiste o cliente."""
