@@ -191,12 +191,28 @@ class OSDataLoader:
         return result
 
     @staticmethod
-    def _vehicle_dict(order: Any) -> dict[str, Any]:
+    def _color_hex(color_name: str) -> str:
+        """Casa o texto livre de cor (ex: 'Prata') com o catálogo VehicleColor.
+
+        Best-effort: cor é texto livre no cadastro da OS, não FK. Sem match,
+        retorna "" e o template exibe só o texto (sem swatch).
+        """
+        if not color_name:
+            return ""
+        from apps.vehicle_catalog.models import VehicleColor
+        match = VehicleColor.objects.filter(name__iexact=color_name.strip()).first()
+        return match.hex_code if match else ""
+
+    @classmethod
+    def _vehicle_dict(cls, order: Any) -> dict[str, Any]:
+        color = order.color or ""
         return {
             "make": order.make or "",
+            "make_logo": order.make_logo or "",
             "model": order.model or "",
             "year": order.year or "",
-            "color": order.color or "",
+            "color": color,
+            "color_hex": cls._color_hex(color),
             "plate": order.plate or "",
             "chassis": order.chassis or "",
             "mileage_in": order.mileage_in,
@@ -507,6 +523,21 @@ class OSDataLoader:
             })
         return items
 
+    @classmethod
+    def _base_context(cls, order: Any) -> dict[str, Any]:
+        """Envelope comum a todo PDF de OS — empresa, logos, nº da OS, local/data.
+
+        Todo load_* novo deve partir daqui (`data = cls._base_context(order)`)
+        e só então acrescentar/mesclar as seções específicas do documento.
+        """
+        return {
+            "company": cls.load_company_info(),
+            "logo_base64": get_logo_base64(),
+            "logo_black_base64": get_logo_black_base64(),
+            "order": {"number": order.number},
+            "location_date": _location_date_str(),
+        }
+
     @staticmethod
     def _totals_dict(order: Any) -> dict[str, str]:
         parts = Decimal(str(order.parts_total or 0))
@@ -524,49 +555,36 @@ class OSDataLoader:
     def load_os_report(cls, order_id: UUID) -> dict[str, Any]:
         """OS Report: documento de trabalho interno (sem dados do cliente, sem valores)."""
         order = cls._load_order(order_id)
-        company = cls.load_company_info()
+        data = cls._base_context(order)
 
         # Tipo de atendimento
         customer_type_map = {"insurer": "Seguradora", "private": "Particular"}
         customer_type_display = customer_type_map.get(order.customer_type or "", "Particular")
+        consultor_name = order.consultant.get_full_name() if order.consultant else ""
 
-        matrix = cls._build_service_matrix(order)
-
-        data: dict[str, Any] = {
-            "company": company,
-            "logo_base64": get_logo_base64(),
-            "logo_black_base64": get_logo_black_base64(),
-            "order": {
-                "number": order.number,
-                "customer_type_display": customer_type_display,
-                "entry_date": _format_date_br(order.entry_date),
-                "entry_time": _format_time_br(order.entry_date),
-                "estimated_delivery_date": _format_date_br(order.estimated_delivery_date),
-                "estimated_delivery_time": _format_time_br(
-                    order.estimated_delivery or order.estimated_delivery_date
-                ),
-                "consultor": (
-                    order.consultant.get_full_name()
-                    if order.consultant
-                    else ""
-                ),
-            },
+        data["order"].update({
+            "customer_type_display": customer_type_display,
+            "entry_date": _format_date_br(order.entry_date),
+            "entry_time": _format_time_br(order.entry_date),
+            "estimated_delivery_date": _format_date_br(order.estimated_delivery_date),
+            "estimated_delivery_time": _format_time_br(
+                order.estimated_delivery or order.estimated_delivery_date
+            ),
+            "consultor": consultor_name,
+        })
+        data.update({
             "vehicle": cls._vehicle_dict(order),
-            "matrix": matrix,
+            "matrix": cls._build_service_matrix(order),
             "services": cls._services_list(order),
             "parts": cls._parts_list(order),
             "observations": order.notes or "",
-            "location_date": _location_date_str(),
             "consultant_signature_base64": _get_employee_signature_base64(order.consultant),
-            "consultant_name": (
-                order.consultant.get_full_name()
-                if order.consultant
-                else ""
-            ),
-        }
+            "consultant_name": consultor_name,
+        })
         if order.customer_type == "insurer" and order.insurer:
             data["insurer"] = {
                 "name": getattr(order.insurer, "display_name", None) or order.insurer.name or "",
+                "logo": order.insurer.logo_url or "",
                 "casualty_number": order.casualty_number or "",
                 "insured_type": order.get_insured_type_display() if order.insured_type else "",
             }
@@ -575,7 +593,7 @@ class OSDataLoader:
     @classmethod
     def load_warranty(cls, order_id: UUID) -> dict[str, Any]:
         order = cls._load_order(order_id)
-        company = cls.load_company_info()
+        data = cls._base_context(order)
         delivery_date = order.delivered_at or order.client_delivery_date or timezone.now()
         if isinstance(delivery_date, str):
             delivery_date = date.fromisoformat(delivery_date)
@@ -590,11 +608,7 @@ class OSDataLoader:
                 svc["warranty_until"] = _format_date_br(delivery_date + relativedelta(months=months))
             else:
                 svc["warranty_until"] = "Sem garantia"
-        return {
-            "company": company,
-            "logo_base64": get_logo_base64(),
-            "logo_black_base64": get_logo_black_base64(),
-            "order": {"number": order.number},
+        data.update({
             "customer": cls._customer_dict(order),
             "vehicle": cls._vehicle_dict(order),
             "services": services,
@@ -602,13 +616,13 @@ class OSDataLoader:
             "warranty_coverage": list(DEFAULT_WARRANTY_COVERAGE),
             "warranty_exclusions": list(DEFAULT_WARRANTY_EXCLUSIONS),
             "observations": "",
-            "location_date": _location_date_str(),
-        }
+        })
+        return data
 
     @classmethod
     def load_settlement(cls, order_id: UUID) -> dict[str, Any]:
         order = cls._load_order(order_id)
-        company = cls.load_company_info()
+        data = cls._base_context(order)
         from apps.accounts_receivable.models import ReceivableDocument
         receivables = list(
             ReceivableDocument.objects.filter(
@@ -623,11 +637,7 @@ class OSDataLoader:
             first = receivables[0]
             payment_method = getattr(first, "payment_method", "") or ""
             payment_date = _format_date_br(getattr(first, "paid_at", None) or first.created_at)
-        return {
-            "company": company,
-            "logo_base64": get_logo_base64(),
-            "logo_black_base64": get_logo_black_base64(),
-            "order": {"number": order.number},
+        data.update({
             "customer": cls._customer_dict(order),
             "vehicle": cls._vehicle_dict(order),
             "services": cls._services_list(order),
@@ -641,20 +651,16 @@ class OSDataLoader:
                 "status": "paid",
             },
             "observations": "",
-            "location_date": _location_date_str(),
-        }
+        })
+        return data
 
     @classmethod
     def load_receipt(cls, order_id: UUID, receivable_id: UUID) -> dict[str, Any]:
         order = cls._load_order(order_id)
-        company = cls.load_company_info()
+        data = cls._base_context(order)
         from apps.accounts_receivable.models import ReceivableDocument
         receivable = ReceivableDocument.objects.get(pk=receivable_id, is_active=True)
-        return {
-            "company": company,
-            "logo_base64": get_logo_base64(),
-            "logo_black_base64": get_logo_black_base64(),
-            "order": {"number": order.number},
+        data.update({
             "customer": cls._customer_dict(order),
             "receipt": {
                 "description": receivable.description or "Serviços automotivos",
@@ -667,5 +673,5 @@ class OSDataLoader:
                 "amount_words": "",
                 "date": _format_date_br(getattr(receivable, "paid_at", None) or receivable.created_at),
             },
-            "location_date": _location_date_str(),
-        }
+        })
+        return data

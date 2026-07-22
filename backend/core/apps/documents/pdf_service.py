@@ -57,6 +57,9 @@ class PDFService:
     @classmethod
     def render_budget(cls, version: Any) -> bytes:
         """Renderiza PDF de orçamento particular (budgets.BudgetVersion)."""
+        from apps.documents.data_loaders import OSDataLoader
+        from apps.documents.pdf_logo import get_logo_base64, get_logo_black_base64
+
         return cls.render_html(
             "pdf_engine/budget.html",
             {
@@ -67,10 +70,13 @@ class PDFService:
                 "totals": {
                     "subtotal": version.subtotal,
                     "discount": version.discount_total,
-                    "total": version.net_total,
+                    "net": version.net_total,
                     "labor": version.labor_total,
                     "parts": version.parts_total,
                 },
+                "company": OSDataLoader.load_company_info(),
+                "logo_base64": get_logo_base64(),
+                "logo_black_base64": get_logo_black_base64(),
             },
         )
 
