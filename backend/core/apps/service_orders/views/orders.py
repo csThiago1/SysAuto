@@ -1181,6 +1181,11 @@ class ServiceOrderViewSet(
                 client_uuid=request.data.get("client_uuid") or None,
             )
 
+            # transition_requirements cacheia por updated_at (serializers/core.py) —
+            # foto não toca a OS por si só, então força o bump pra não servir
+            # pendência de foto stale por até 60s após o upload.
+            service_order.save(update_fields=["updated_at"])
+
             folder_label = dict(OSPhotoFolder.choices).get(folder, folder)
             from django.utils import timezone
             import datetime
@@ -2069,9 +2074,7 @@ class ServiceOrderViewSet(
     def complement_bill(self, request: Request, pk: Optional[str] = None) -> Response:
         """Fatura itens pendentes do complemento particular."""
         order = self.get_object()
-        result = BillingService.bill_complement(
-            order, billed_by=request.user.email or "user",
-        )
+        result = BillingService.bill_complement(order, billed_by=request.user)
         return Response(result)
 
     @action(detail=True, methods=["get"], url_path="financial-summary")

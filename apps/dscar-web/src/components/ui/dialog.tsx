@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 
@@ -43,7 +44,7 @@ function Dialog({
 
 function DialogTrigger({
   children,
-  asChild: _asChild,
+  asChild = false,
   className,
   ...props
 }: {
@@ -52,15 +53,16 @@ function DialogTrigger({
   className?: string;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>): React.ReactElement {
   const { onOpenChange } = React.useContext(DialogContext);
+  const Comp = asChild ? Slot : "button";
   return (
-    <button
-      type="button"
+    <Comp
+      type={asChild ? undefined : "button"}
       className={cn("cursor-pointer", className)}
       onClick={() => onOpenChange(true)}
       {...props}
     >
       {children}
-    </button>
+    </Comp>
   );
 }
 

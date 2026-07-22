@@ -509,7 +509,7 @@ class BillingService:
 
     @classmethod
     @transaction.atomic
-    def bill_complement(cls, order: Any, billed_by: str = "Sistema") -> dict[str, Any]:
+    def bill_complement(cls, order: Any, billed_by: Any) -> dict[str, Any]:
         """Fatura itens pendentes do complemento particular.
 
         Cria receivables + emite NF-e (peças) e NFS-e (serviços) separados,
@@ -635,14 +635,14 @@ class BillingService:
     def _log_complement_activity(
         order: Any,
         total: Decimal,
-        billed_by: str,
+        billed_by: Any,
     ) -> None:
         """Registra log de atividade do faturamento de complemento."""
         from apps.service_orders.models import ServiceOrderActivityLog
 
         ServiceOrderActivityLog.objects.create(
             service_order=order,
+            user=billed_by,
             activity_type="billing",
             description=f"Complemento particular faturado: R$ {total:.2f}",
-            created_by=billed_by,
         )

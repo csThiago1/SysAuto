@@ -89,6 +89,12 @@ class SignatureService:
             notes=notes,
         )
 
+        # transition_requirements da OS cacheia por updated_at (service_orders/
+        # serializers/core.py) — assinatura não toca a OS por si só, então
+        # força o bump pra não servir pendência de assinatura stale por até 60s.
+        if service_order is not None:
+            service_order.save(update_fields=["updated_at"])
+
         logger.info(
             "Assinatura capturada: id=%s document_type=%s method=%s signer=%s",
             signature.pk,
@@ -104,8 +110,8 @@ class SignatureService:
         png_bytes: bytes,
         document_type: str,
         signer_name: str,
-        service_order_id: int | None,
-        orcamento_id: int | None,
+        service_order_id: int | str | None,
+        orcamento_id: int | str | None,
     ) -> str:
         """SHA256 do PNG concatenado com metadados críticos.
 
@@ -116,8 +122,10 @@ class SignatureService:
             {
                 "document_type": document_type,
                 "signer_name": signer_name,
-                "service_order_id": service_order_id,
-                "orcamento_id": orcamento_id,
+                # UUID não é JSON-serializável — normaliza pra string (PKs de
+                # ServiceOrder/Orcamento são UUID, apesar do type hint legado).
+                "service_order_id": str(service_order_id) if service_order_id is not None else None,
+                "orcamento_id": str(orcamento_id) if orcamento_id is not None else None,
             },
             sort_keys=True,
         ).encode("utf-8")

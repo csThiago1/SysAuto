@@ -10,6 +10,7 @@ import {
   FileText,
   Loader2,
   Lock,
+  PenLine,
   Truck,
   XCircle,
 } from "lucide-react"
@@ -28,6 +29,7 @@ import { BillingModal } from "../BillingModal"
 import { FiscalEmissionModal } from "../FiscalEmissionModal"
 import { DocumentHistorySection } from "../DocumentHistorySection"
 import { DeliveryConfirmationDialog } from "./ClosingTab/DeliveryConfirmationDialog"
+import { SignatureSection } from "../../vistoria/_components/SignatureSection"
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -315,6 +317,25 @@ export function ClosingTab({ order }: ClosingTabProps) {
           </div>
         </div>
       </div>
+
+      {/* Budget approval signature — hard block pra waiting_auth → authorized (particular) */}
+      {order.customer_type === "private" && !isCancelled && (
+        <div className="bg-muted/50 border border-border rounded-xl shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
+            <PenLine className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
+              Aprovação do Orçamento
+            </h2>
+          </div>
+          <div className="p-5">
+            <SignatureSection
+              osId={order.id}
+              customerName={order.customer_name}
+              documentType="BUDGET_APPROVAL"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Fiscal */}
       <div className="bg-muted/50 border border-border rounded-xl shadow-sm overflow-hidden">

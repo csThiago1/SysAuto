@@ -531,7 +531,7 @@ class TestValidateToAuthorized:
 
 
 class TestValidateToDelivered:
-    @patch.object(TransitionValidator, "_has_nfce", return_value=False)
+    @patch.object(TransitionValidator, "_has_fiscal_document", return_value=False)
     @patch.object(TransitionValidator, "_has_signature", return_value=False)
     @patch.object(TransitionValidator, "_has_receivables", return_value=False)
     @patch.object(TransitionValidator, "_complement_all_billed", return_value=True)
@@ -546,12 +546,12 @@ class TestValidateToDelivered:
         )
         result = TransitionValidator.validate(order, "delivered")
         codes = [b.code for b in result.hard_blocks]
-        assert "NFCE_ISSUED" in codes
+        assert "INVOICE_ISSUED" in codes
         assert "CLIENT_SIGNATURE" in codes
         assert "MILEAGE_OUT" in codes
         assert "RECEIVABLE_CREATED" in codes
 
-    @patch.object(TransitionValidator, "_has_nfce", return_value=True)
+    @patch.object(TransitionValidator, "_has_fiscal_document", return_value=True)
     @patch.object(TransitionValidator, "_has_signature", return_value=True)
     @patch.object(TransitionValidator, "_has_receivables", return_value=True)
     @patch.object(TransitionValidator, "_complement_all_billed", return_value=True)
@@ -571,10 +571,10 @@ class TestValidateToDelivered:
     @patch.object(TransitionValidator, "_has_signature", return_value=False)
     @patch.object(TransitionValidator, "_has_receivables", return_value=True)
     @patch.object(TransitionValidator, "_complement_all_billed", return_value=True)
-    def test_insurer_no_nfce_block(
+    def test_insurer_no_invoice_block(
         self, mock_comp, mock_recv, mock_sig
     ) -> None:
-        """OS de seguradora não exige NFC-e (sem NFCE_ISSUED)."""
+        """OS de seguradora não exige nota fiscal (sem INVOICE_ISSUED)."""
         order = _make_order(
             status="ready",
             customer_type="insurer",
@@ -582,9 +582,9 @@ class TestValidateToDelivered:
         )
         result = TransitionValidator.validate(order, "delivered")
         codes = [b.code for b in result.hard_blocks]
-        assert "NFCE_ISSUED" not in codes
+        assert "INVOICE_ISSUED" not in codes
 
-    @patch.object(TransitionValidator, "_has_nfce", return_value=True)
+    @patch.object(TransitionValidator, "_has_fiscal_document", return_value=True)
     @patch.object(TransitionValidator, "_has_signature", return_value=True)
     @patch.object(TransitionValidator, "_has_receivables", return_value=True)
     @patch.object(TransitionValidator, "_complement_all_billed", return_value=False)
@@ -601,7 +601,7 @@ class TestValidateToDelivered:
         codes = [b.code for b in result.hard_blocks]
         assert "COMPLEMENT_BILLED" in codes
 
-    @patch.object(TransitionValidator, "_has_nfce", return_value=True)
+    @patch.object(TransitionValidator, "_has_fiscal_document", return_value=True)
     @patch.object(TransitionValidator, "_has_signature", return_value=True)
     @patch.object(TransitionValidator, "_has_receivables", return_value=False)
     @patch.object(TransitionValidator, "_complement_all_billed", return_value=True)
@@ -618,7 +618,7 @@ class TestValidateToDelivered:
         codes = [b.code for b in result.hard_blocks]
         assert "RECEIVABLE_CREATED" in codes
 
-    @patch.object(TransitionValidator, "_has_nfce", return_value=True)
+    @patch.object(TransitionValidator, "_has_fiscal_document", return_value=True)
     @patch.object(TransitionValidator, "_has_signature", return_value=True)
     @patch.object(TransitionValidator, "_has_receivables", return_value=True)
     @patch.object(TransitionValidator, "_complement_all_billed", return_value=True)

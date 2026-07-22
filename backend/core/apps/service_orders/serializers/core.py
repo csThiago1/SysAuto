@@ -286,18 +286,18 @@ class PartEstoqueInputSerializer(serializers.Serializer):
     unidade_fisica_id = serializers.UUIDField()
     tipo_qualidade = serializers.ChoiceField(choices=["genuina", "reposicao", "similar", "usada"])
     unit_price = serializers.DecimalField(max_digits=12, decimal_places=2, help_text="Valor cobrado ao cliente -- PC-9")
-    description = serializers.CharField(max_length=300, required=False, default="")
+    description = serializers.CharField(max_length=300, required=False, allow_blank=True, default="")
 
 
 class PartCompraInputSerializer(serializers.Serializer):
     """Input para solicitar compra de peca para OS."""
 
     description = serializers.CharField(max_length=300)
-    part_number = serializers.CharField(max_length=100, required=False, default="")
+    part_number = serializers.CharField(max_length=100, required=False, allow_blank=True, default="")
     tipo_qualidade = serializers.ChoiceField(choices=["genuina", "reposicao", "similar", "usada"])
     unit_price = serializers.DecimalField(max_digits=12, decimal_places=2, help_text="Valor cobrado -- PC-9")
     quantity = serializers.DecimalField(max_digits=10, decimal_places=2, default=1)
-    observacoes = serializers.CharField(max_length=500, required=False, default="")
+    observacoes = serializers.CharField(max_length=500, required=False, allow_blank=True, default="")
 
 
 class PartSeguradoraInputSerializer(serializers.Serializer):

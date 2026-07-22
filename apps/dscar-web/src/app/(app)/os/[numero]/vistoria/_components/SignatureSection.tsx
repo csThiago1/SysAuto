@@ -21,8 +21,8 @@ interface SignatureRead {
 interface SignatureSectionProps {
   osId: string;
   customerName: string;
-  /** VISTORIA_ENTRADA (entrada) ou OS_DELIVERY (saída) */
-  documentType: "VISTORIA_ENTRADA" | "OS_DELIVERY";
+  /** VISTORIA_ENTRADA (entrada), OS_DELIVERY (saída) ou BUDGET_APPROVAL (aprovação do orçamento) */
+  documentType: "VISTORIA_ENTRADA" | "OS_DELIVERY" | "BUDGET_APPROVAL";
 }
 
 function fileToBase64(file: File): Promise<string> {

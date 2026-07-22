@@ -360,8 +360,14 @@ class TransitionValidator:
         return pending
 
     @staticmethod
-    def _has_nfce(order: ServiceOrder) -> bool:
-        """Verifica se existe NFC-e autorizada vinculada diretamente à OS.
+    def _has_fiscal_document(order: ServiceOrder) -> bool:
+        """Verifica se existe nota fiscal autorizada vinculada diretamente à OS.
+
+        Aceita qualquer tipo (nfce, nfse, nfe) — o tipo correto depende da
+        composição da OS: billing.py emite NFS-e para serviços e NF-e para
+        peças, nunca NFC-e. Checar só 'nfce' bloqueava permanentemente a
+        entrega de qualquer OS particular, já que o faturamento nunca gera
+        esse tipo.
 
         Usa o relacionamento fiscal_documents (via FK ServiceOrder → FiscalDocument).
         Também verifica via reference_id legado como fallback.
@@ -370,13 +376,10 @@ class TransitionValidator:
             order: Instância de ServiceOrder.
 
         Returns:
-            True se há pelo menos uma FiscalDocument do tipo 'nfce' com
-            status 'authorized' vinculada à OS.
+            True se há pelo menos uma FiscalDocument autorizada vinculada à OS.
         """
         # Verificação via FK direto (novo padrão 06C+)
-        if order.fiscal_documents.filter(
-            document_type="nfce", status="authorized"
-        ).exists():
+        if order.fiscal_documents.filter(status="authorized").exists():
             return True
 
         # Fallback: referência legada via reference_id
@@ -386,12 +389,11 @@ class TransitionValidator:
             return FiscalDocument.objects.filter(
                 reference_id=order.pk,
                 reference_type="service_order",
-                document_type="nfce",
                 status="authorized",
             ).exists()
         except Exception as exc:
             logger.warning(
-                "TransitionValidator._has_nfce: erro ao verificar via reference_id: %s",
+                "TransitionValidator._has_fiscal_document: erro ao verificar via reference_id: %s",
                 exc,
             )
             return False
@@ -983,20 +985,20 @@ class TransitionValidator:
 
         Returns:
             ValidationResult com:
-              HARD: NFCE_ISSUED (particular sem NFC-e), CLIENT_SIGNATURE,
+              HARD: INVOICE_ISSUED (particular sem nota fiscal), CLIENT_SIGNATURE,
                     MILEAGE_OUT, RECEIVABLE_CREATED, COMPLEMENT_BILLED
         """
         hard: list[ValidationBlock] = []
         soft: list[ValidationBlock] = []
         warn: list[ValidationBlock] = []
 
-        # HARD: NFC-e obrigatória para clientes particulares
+        # HARD: nota fiscal obrigatória para clientes particulares
         if order.customer_type == "private":
-            if not cls._has_nfce(order):
+            if not cls._has_fiscal_document(order):
                 hard.append(
                     ValidationBlock(
-                        code="NFCE_ISSUED",
-                        message="NFC-e não emitida (obrigatório para cliente particular)",
+                        code="INVOICE_ISSUED",
+                        message="Nota fiscal não emitida (obrigatório para cliente particular)",
                     )
                 )
 
