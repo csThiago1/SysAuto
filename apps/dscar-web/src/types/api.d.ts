@@ -1431,6 +1431,62 @@ export interface paths {
         patch: operations["authz_user_roles_partial_update"];
         trace?: never;
     };
+    "/api/v1/banks/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description - list / retrieve: qualquer usuário autenticado
+         *     - create / update / destroy: MANAGER+
+         */
+        get: operations["banks_list"];
+        put?: never;
+        /**
+         * @description - list / retrieve: qualquer usuário autenticado
+         *     - create / update / destroy: MANAGER+
+         */
+        post: operations["banks_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/banks/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description - list / retrieve: qualquer usuário autenticado
+         *     - create / update / destroy: MANAGER+
+         */
+        get: operations["banks_retrieve"];
+        /**
+         * @description - list / retrieve: qualquer usuário autenticado
+         *     - create / update / destroy: MANAGER+
+         */
+        put: operations["banks_update"];
+        post?: never;
+        /**
+         * @description - list / retrieve: qualquer usuário autenticado
+         *     - create / update / destroy: MANAGER+
+         */
+        delete: operations["banks_destroy"];
+        options?: never;
+        head?: never;
+        /**
+         * @description - list / retrieve: qualquer usuário autenticado
+         *     - create / update / destroy: MANAGER+
+         */
+        patch: operations["banks_partial_update"];
+        trace?: never;
+    };
     "/api/v1/budgets/": {
         parameters: {
             query?: never;
@@ -1956,62 +2012,6 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
-        trace?: never;
-    };
-    "/api/v1/experts/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * @deprecated
-         * @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT.
-         */
-        get: operations["experts_list"];
-        put?: never;
-        /**
-         * @deprecated
-         * @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT.
-         */
-        post: operations["experts_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/experts/{id}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * @deprecated
-         * @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT.
-         */
-        get: operations["experts_retrieve"];
-        /**
-         * @deprecated
-         * @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT.
-         */
-        put: operations["experts_update"];
-        post?: never;
-        /**
-         * @deprecated
-         * @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT.
-         */
-        delete: operations["experts_destroy"];
-        options?: never;
-        head?: never;
-        /**
-         * @deprecated
-         * @description Endpoint deprecated — use /api/v1/persons/?role=EXPERT.
-         */
-        patch: operations["experts_partial_update"];
         trace?: never;
     };
     "/api/v1/fiscal/documents/": {
@@ -8452,6 +8452,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/vehicle-catalog/makes/{id}/logo/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * @description PATCH /vehicle-catalog/makes/{id}/logo/ — atualiza só o logo_url.
+         *
+         *     nome/fipe_id vêm do sync FIPE e não são editáveis por aqui — apenas
+         *     o logo (URL colada manualmente) pode ser gerenciado no cadastro.
+         */
+        patch: operations["vehicle_catalog_makes_logo_partial_update"];
+        trace?: never;
+    };
     "/api/v1/vehicle-catalog/makes/{id}/models/": {
         parameters: {
             query?: never;
@@ -9155,6 +9177,7 @@ export interface components {
             endereco: string;
             /** Format: uuid */
             responsavel: string | null;
+            readonly responsavel_nome: string;
             observacoes: string;
             readonly total_ruas: number;
             is_active: boolean;
@@ -9220,6 +9243,27 @@ export interface components {
             quantidade_base: string;
             /** Format: uuid */
             ordem_servico_id: string;
+        };
+        Bank: {
+            readonly id: number;
+            /** Código FEBRABAN */
+            code: string;
+            /** Nome */
+            name: string;
+            /** URL do logo */
+            logo_url: string;
+            /** Ativo */
+            is_active: boolean;
+        };
+        BankRequest: {
+            /** Código FEBRABAN */
+            code: string;
+            /** Nome */
+            name: string;
+            /** URL do logo */
+            logo_url?: string;
+            /** Ativo */
+            is_active?: boolean;
         };
         BenchmarkAmostra: {
             /** Format: uuid */
@@ -12133,7 +12177,6 @@ export interface components {
          * @description Serializer compacto para perito (Person + role=EXPERT).
          *
          *     Usado em ServiceOrderSerializer.expert_detail para retorno aninhado.
-         *     Campos espelham a antiga estrutura experts.Expert.
          */
         ExpertMinimal: {
             readonly id: number;
@@ -15039,6 +15082,21 @@ export interface components {
             previous: string | null;
             results: components["schemas"]["AuditoriaMotor"][];
         };
+        PaginatedBankList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous: string | null;
+            results: components["schemas"]["Bank"][];
+        };
         PaginatedBenchmarkAmostraList: {
             /** @example 123 */
             count: number;
@@ -16857,6 +16915,16 @@ export interface components {
             observacoes?: string;
             is_active?: boolean;
         };
+        PatchedBankRequest: {
+            /** Código FEBRABAN */
+            code?: string;
+            /** Nome */
+            name?: string;
+            /** URL do logo */
+            logo_url?: string;
+            /** Ativo */
+            is_active?: boolean;
+        };
         PatchedBenchmarkFonteRequest: {
             /** Format: uuid */
             empresa?: string;
@@ -18538,6 +18606,14 @@ export interface components {
             user?: string;
             role?: number;
         };
+        PatchedVehicleMakeRequest: {
+            fipe_id?: string;
+            nome?: string;
+            /** @description Nome em lowercase sem acentos — usado para fuzzy match e aliases. */
+            nome_normalizado?: string;
+            /** URL do logo */
+            logo_url?: string;
+        };
         PatchedVehicleRequest: {
             plate?: string;
             version?: number | null;
@@ -18548,7 +18624,6 @@ export interface components {
             renavam?: string;
             is_active?: boolean;
         };
-        /** @description 410 Gone — endpoint deprecated. */
         Patched_GoneRequest: {
             detail?: string;
         };
@@ -20364,8 +20439,6 @@ export interface components {
             /** @description Descrição minuciosa (ex: Thiago mudou X para Y) */
             readonly description: string;
             readonly metadata: unknown;
-            /** Format: uuid */
-            readonly user: string;
             readonly user_name: string;
             /** Format: date-time */
             readonly created_at: string;
@@ -22874,6 +22947,7 @@ export interface components {
             readonly is_approved: boolean;
             /** Format: uuid */
             readonly approved_by: string | null;
+            readonly approved_by_name: string;
             /** Format: date-time */
             readonly approved_at: string | null;
             /** @description Obrigatório para ajuste manual */
@@ -23156,11 +23230,9 @@ export interface components {
             readonly id: string;
             /** Nome */
             name: string;
-            /** @description Retorna CPF mascarado (***.***.***-XX) — nunca em texto claro. */
             readonly cpf_masked: string | null;
             /** Telefone */
             phone: string;
-            /** @description Retorna telefone mascarado — apenas últimos 4 dígitos. */
             readonly phone_masked: string | null;
             /**
              * E-mail
@@ -23211,9 +23283,7 @@ export interface components {
             readonly id: string;
             /** Nome */
             readonly name: string;
-            /** @description Retorna CPF mascarado (***.***.***-XX) — nunca em texto claro. */
             readonly cpf_masked: string | null;
-            /** @description Retorna telefone mascarado — apenas últimos 4 dígitos. */
             readonly phone_masked: string | null;
             readonly lgpd_consent_version: string;
             /** Format: date-time */
@@ -23599,6 +23669,8 @@ export interface components {
             nome: string;
             /** @description Nome em lowercase sem acentos — usado para fuzzy match e aliases. */
             nome_normalizado: string;
+            /** URL do logo */
+            logo_url: string;
         };
         VehicleModel: {
             readonly id: number;
@@ -23738,11 +23810,9 @@ export interface components {
             /** Format: uuid */
             order_id: string;
         };
-        /** @description 410 Gone — endpoint deprecated. */
         _Gone: {
             detail: string;
         };
-        /** @description 410 Gone — endpoint deprecated. */
         _GoneRequest: {
             detail: string;
         };
@@ -26294,6 +26364,156 @@ export interface operations {
             };
         };
     };
+    banks_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                /** @description A search term. */
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedBankList"];
+                };
+            };
+        };
+    };
+    banks_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BankRequest"];
+                "multipart/form-data": components["schemas"]["BankRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Bank"];
+                };
+            };
+        };
+    };
+    banks_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Banco. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Bank"];
+                };
+            };
+        };
+    };
+    banks_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Banco. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BankRequest"];
+                "multipart/form-data": components["schemas"]["BankRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Bank"];
+                };
+            };
+        };
+    };
+    banks_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Banco. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    banks_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Banco. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedBankRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedBankRequest"];
+                "multipart/form-data": components["schemas"]["PatchedBankRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Bank"];
+                };
+            };
+        };
+    };
     budgets_list: {
         parameters: {
             query?: {
@@ -27458,146 +27678,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["_Detail"];
-                };
-            };
-        };
-    };
-    experts_list: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            410: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["_Gone"];
-                };
-            };
-        };
-    };
-    experts_create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["_GoneRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["_GoneRequest"];
-                "multipart/form-data": components["schemas"]["_GoneRequest"];
-            };
-        };
-        responses: {
-            410: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["_Gone"];
-                };
-            };
-        };
-    };
-    experts_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            410: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["_Gone"];
-                };
-            };
-        };
-    };
-    experts_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["_GoneRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["_GoneRequest"];
-                "multipart/form-data": components["schemas"]["_GoneRequest"];
-            };
-        };
-        responses: {
-            410: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["_Gone"];
-                };
-            };
-        };
-    };
-    experts_destroy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            410: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["_Gone"];
-                };
-            };
-        };
-    };
-    experts_partial_update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/json": components["schemas"]["Patched_GoneRequest"];
-                "application/x-www-form-urlencoded": components["schemas"]["Patched_GoneRequest"];
-                "multipart/form-data": components["schemas"]["Patched_GoneRequest"];
-            };
-        };
-        responses: {
-            410: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["_Gone"];
                 };
             };
         };
@@ -41058,6 +41138,34 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VehicleMake"];
+                };
+            };
+        };
+    };
+    vehicle_catalog_makes_logo_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Marca (FIPE). */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedVehicleMakeRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedVehicleMakeRequest"];
+                "multipart/form-data": components["schemas"]["PatchedVehicleMakeRequest"];
+            };
+        };
         responses: {
             200: {
                 headers: {

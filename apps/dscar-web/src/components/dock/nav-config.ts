@@ -37,6 +37,9 @@ import {
   FileCheck,
   BarChart3,
   Ban,
+  Landmark,
+  Car,
+  Palette,
   type LucideIcon,
 } from "lucide-react";
 import { ROLE_HIERARCHY, type PaddockRole, type ExtraPermission } from "@paddock/types";
@@ -122,8 +125,11 @@ export const NAV_SECTIONS: NavSection[] = [
           { id: "cad-pessoas",       label: "Pessoas",       href: "/cadastros",                    icon: Users },
           { id: "cad-servicos",      label: "Serviços",      href: "/cadastros/servicos",         icon: Wrench },
           { id: "cad-seguradoras",   label: "Seguradoras",   href: "/cadastros/seguradoras",      icon: Shield },
+          { id: "cad-bancos",        label: "Bancos",        href: "/cadastros/bancos",           icon: Landmark },
+          { id: "cad-montadoras",    label: "Montadoras",    href: "/cadastros/montadoras",        icon: Car },
+          { id: "cad-cores",         label: "Cores",         href: "/cadastros/cores",             icon: Palette },
           { id: "cad-corretores",    label: "Corretores",    href: "/cadastros/corretores",       icon: Handshake },
-          { id: "cad-especialistas", label: "Especialistas", href: "/cadastros/especialistas",    icon: UserSearch },
+          { id: "cad-especialistas", label: "Peritos",       href: "/cadastros?tab=EXPERT",       icon: UserSearch },
         ],
       },
     ],

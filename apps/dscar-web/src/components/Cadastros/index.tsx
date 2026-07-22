@@ -10,6 +10,7 @@
  */
 
 import React, { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { UserPlus, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Person, PersonRole, ModalProps } from "@paddock/types";
 import { usePersons, useDebounce } from "@/hooks";
@@ -33,10 +34,18 @@ const TABS: { id: TabId; label: string }[] = [
   { id: "BROKER",   label: "Corretores" },
 ];
 
+const TAB_IDS = TABS.map((t) => t.id);
+
+function isTabId(value: string | null): value is TabId {
+  return value !== null && (TAB_IDS as string[]).includes(value);
+}
+
 // ─── Componente principal ─────────────────────────────────────────────────────
 
 export function Cadastros(): React.ReactElement {
-  const [activeTab, setActiveTab]       = useState<TabId>("ALL");
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab");
+  const [activeTab, setActiveTab]       = useState<TabId>(isTabId(initialTab) ? initialTab : "ALL");
   const [searchInput, setSearchInput]   = useState("");
   const [modalOpen, setModalOpen]       = useState(false);
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);

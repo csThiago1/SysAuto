@@ -13,7 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.authentication.permissions import IsConsultantOrAbove
+from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
 from apps.vehicle_catalog.models import PlateCache, VehicleColor, VehicleMake, VehicleModel, VehicleYearVersion
 from apps.vehicle_catalog.serializers import (
     VehicleColorSerializer,
@@ -25,13 +25,21 @@ from apps.vehicle_catalog.serializers import (
 logger = logging.getLogger(__name__)
 
 
-class VehicleColorViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    """Lista de cores de veículos com código hex para preview na UI."""
+class VehicleColorViewSet(viewsets.ModelViewSet):
+    """CRUD de cores de veículos com código hex para preview na UI.
 
-    permission_classes = [IsAuthenticated]
+    - list / retrieve: qualquer usuário autenticado
+    - create / update / destroy: MANAGER+
+    """
+
     serializer_class = VehicleColorSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ["name"]
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        if self.action in ("create", "update", "partial_update", "destroy"):
+            return [IsAuthenticated(), IsManagerOrAbove()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):  # type: ignore[override]
         return VehicleColor.objects.all()
@@ -46,6 +54,18 @@ class VehicleColorViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             cache.set("vehicle_colors:all", response.data, timeout=3600)
             return response
         return super().list(request, *args, **kwargs)
+
+    def perform_create(self, serializer) -> None:  # type: ignore[override]
+        serializer.save()
+        cache.delete("vehicle_colors:all")
+
+    def perform_update(self, serializer) -> None:  # type: ignore[override]
+        serializer.save()
+        cache.delete("vehicle_colors:all")
+
+    def perform_destroy(self, instance) -> None:  # type: ignore[override]
+        super().perform_destroy(instance)
+        cache.delete("vehicle_colors:all")
 
 
 # ── Normalização de montadora ─────────────────────────────────────────────────
@@ -465,6 +485,19 @@ class VehicleMakeViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = VehicleModelSerializer(qs, many=True)
         cache.set(cache_key, serializer.data, timeout=3600)
         return Response(serializer.data)
+
+    @action(detail=True, methods=["patch"], url_path="logo", permission_classes=[IsAuthenticated, IsManagerOrAbove])
+    def logo(self, request: Request, pk: str | None = None) -> Response:
+        """PATCH /vehicle-catalog/makes/{id}/logo/ — atualiza só o logo_url.
+
+        nome/fipe_id vêm do sync FIPE e não são editáveis por aqui — apenas
+        o logo (URL colada manualmente) pode ser gerenciado no cadastro.
+        """
+        make = self.get_object()
+        logo_url = request.data.get("logo_url", "")
+        make.logo_url = logo_url
+        make.save(update_fields=["logo_url"])
+        return Response(VehicleMakeSerializer(make).data)
 
 
 class VehicleModelViewSet(viewsets.ReadOnlyModelViewSet):

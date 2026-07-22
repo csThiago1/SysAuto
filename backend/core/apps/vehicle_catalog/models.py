@@ -33,6 +33,9 @@ class VehicleMake(models.Model):
         db_index=True,
         help_text="Nome em lowercase sem acentos — usado para fuzzy match e aliases.",
     )
+    logo_url = models.CharField(
+        max_length=500, blank=True, default="", verbose_name="URL do logo"
+    )
 
     class Meta:
         app_label = "vehicle_catalog"

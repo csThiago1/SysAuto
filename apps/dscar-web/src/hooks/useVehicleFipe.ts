@@ -3,11 +3,12 @@
  * staleTime: 24h (dados mudam raramente).
  */
 
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useQuery } from "@tanstack/react-query"
 import type {
   VehicleYearVersion,
 } from "@paddock/types"
-import { fetchList } from "@/lib/api"
+import { apiFetch, fetchList } from "@/lib/api"
 import type { ApiSchema } from "@/types"
 
 // Gerados dos serializers Django (match 1:1 verificado).
@@ -31,6 +32,19 @@ export function useFipeMakes() {
     queryKey: fipeKeys.makes,
     queryFn: () => fetchList<VehicleMake>(`${FIPE_BASE}/makes/`),
     staleTime: 24 * 60 * 60 * 1000, // 24h
+  })
+}
+
+export function useUpdateMakeLogo() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, logo_url }: { id: number; logo_url: string }) =>
+      apiFetch<VehicleMake>(`${FIPE_BASE}/makes/${id}/logo/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ logo_url }),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: fipeKeys.makes }),
   })
 }
 
