@@ -41,6 +41,7 @@ SHARED_APPS = [
     "apps.tenants",
     "apps.customers",
     "apps.insurers",
+    "apps.banks",
     "apps.vehicle_catalog",
     "apps.parts_catalog",
 ]
@@ -52,7 +53,7 @@ TENANT_APPS = [
     # Paddock apps (por tenant)
     "apps.persons",
     "apps.service_orders",
-    "apps.experts",
+    "apps.experts",  # sem model/views/urls ativos — mantido só p/ histórico de migrations (persons.0013 depende dele)
     "apps.inventory",
     "apps.purchasing",
     "apps.fiscal",

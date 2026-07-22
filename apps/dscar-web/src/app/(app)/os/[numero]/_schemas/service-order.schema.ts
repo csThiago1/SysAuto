@@ -51,7 +51,7 @@ const serviceOrderBaseSchema = z.object({
     z.number().nonnegative("Franquia não pode ser negativa").nullish()
   ),
   broker_name: z.string().max(200).optional().default(""),
-  expert: z.preprocess(toNullStr, z.string().uuid("Perito inválido").nullish()),
+  expert: z.preprocess(toNullNum, z.number().int().nullish()),
   expert_date: dateField,
   survey_date: dateField,
 

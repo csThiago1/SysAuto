@@ -729,6 +729,12 @@ class DeductionCreateSerializer(serializers.ModelSerializer):
 class TimeClockEntrySerializer(serializers.ModelSerializer):
     entry_type_display = serializers.CharField(source="get_entry_type_display", read_only=True)
     source_display = serializers.CharField(source="get_source_display", read_only=True)
+    approved_by_name = serializers.SerializerMethodField()
+
+    def get_approved_by_name(self, obj: TimeClockEntry) -> str:
+        if obj.approved_by:
+            return obj.approved_by.get_full_name()
+        return ""
 
     class Meta:
         model = TimeClockEntry
@@ -738,11 +744,11 @@ class TimeClockEntrySerializer(serializers.ModelSerializer):
             "timestamp",
             "source", "source_display",
             "ip_address", "device_info",
-            "is_approved", "approved_by", "approved_at",
+            "is_approved", "approved_by", "approved_by_name", "approved_at",
             "justification",
             "created_at",
         ]
-        read_only_fields = ["id", "timestamp", "ip_address", "is_approved", "approved_by", "approved_at", "created_at"]
+        read_only_fields = ["id", "timestamp", "ip_address", "is_approved", "approved_by", "approved_by_name", "approved_at", "created_at"]
 
 
 class TimeClockRegisterSerializer(serializers.Serializer):

@@ -9,7 +9,6 @@ export * from "./auth.types";
 export * from "./person.types";
 export * from "./service-order.types";
 export * from "./insurer.types";
-export * from "./expert.types";
 export * from "./vehicle.types";
 export * from "./api.types";
 export * from "./ui.types";

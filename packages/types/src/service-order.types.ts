@@ -314,9 +314,14 @@ export interface ServiceOrder {
   deductible_amount: string | null;
   broker_name: string;
 
-  // Perito
-  expert: string | null;
-  expert_detail: import("./expert.types").Expert | null;
+  // Perito — Person com role EXPERT (persons.Person, PK inteira)
+  expert: number | null;
+  expert_detail: {
+    id: number;
+    name: string;
+    registration_number: string;
+    phone: string;
+  } | null;
   expert_date: string | null;
   survey_date: string | null;
   authorization_date: string | null;

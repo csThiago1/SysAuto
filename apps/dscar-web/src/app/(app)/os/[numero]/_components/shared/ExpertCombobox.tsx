@@ -1,12 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { useExperts, useExpertCreate } from "../../_hooks/useExperts"
-import type { Expert } from "@paddock/types"
+import { useExperts, useExpertCreate, type ExpertResult } from "../../_hooks/useExperts"
 
 interface ExpertComboboxProps {
-  value: string | null
-  onChange: (expertId: string | null, expert: Expert | null) => void
+  value: number | null
+  onChange: (expertId: number | null, expert: ExpertResult | null) => void
   insurerId?: string | null
   disabled?: boolean
 }

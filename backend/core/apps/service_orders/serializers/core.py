@@ -8,9 +8,9 @@ from typing import Optional
 from django.utils import timezone
 from rest_framework import serializers
 
-from apps.experts.serializers import ExpertMinimalSerializer
 from apps.insurers.serializers import InsurerMinimalSerializer
 from apps.persons.models import Person
+from apps.persons.serializers import ExpertMinimalSerializer
 
 from ..models import (
     VALID_TRANSITIONS,
@@ -200,7 +200,6 @@ class ServiceOrderActivityLogSerializer(serializers.ModelSerializer):
             "activity_type_display",
             "description",
             "metadata",
-            "user",
             "user_name",
             "created_at",
         ]

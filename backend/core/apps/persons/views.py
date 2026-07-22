@@ -55,6 +55,9 @@ class PersonViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
         office_id = self.request.query_params.get("office_id")
         if office_id:
             base = base.filter(broker_person__office__person_id=office_id)
+        insurer_id = self.request.query_params.get("insurer_id")
+        if insurer_id:
+            base = base.filter(expert_profile__insurers__id=insurer_id)
         return base.distinct().order_by("-created_at")
 
     def get_serializer_class(self):  # type: ignore[override]

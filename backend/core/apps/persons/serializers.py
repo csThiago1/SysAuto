@@ -205,6 +205,29 @@ class PersonRoleSerializer(serializers.ModelSerializer):
         fields = ["id", "role"]
 
 
+class ExpertMinimalSerializer(serializers.ModelSerializer):
+    """Serializer compacto para perito (Person + role=EXPERT).
+
+    Usado em ServiceOrderSerializer.expert_detail para retorno aninhado.
+    """
+
+    name = serializers.CharField(source="full_name", read_only=True)
+    registration_number = serializers.SerializerMethodField()
+    phone = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Person
+        fields = ["id", "name", "registration_number", "phone"]
+
+    def get_registration_number(self, obj: Person) -> str:
+        profile = getattr(obj, "expert_profile", None)
+        return profile.registration_number if profile else ""
+
+    def get_phone(self, obj: Person) -> str:
+        contact = obj.contacts.filter(contact_type="CELULAR").first()
+        return contact.value if contact else ""
+
+
 class PersonListSerializer(serializers.ModelSerializer):
     """Serializer compacto para listagem — inclui contato principal mascarado."""
 
@@ -300,15 +323,11 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
             PersonRole.objects.create(person=person, role=role)
         person.roles.filter(role__in=existing - new_roles).delete()
 
-    def _sync_contacts(self, person: Person, contacts_data: list) -> None:
-        person.contacts.all().delete()
-        for c in contacts_data:
-            PersonContact.objects.create(person=person, **c)
-
-    def _sync_addresses(self, person: Person, addresses_data: list) -> None:
-        person.addresses.all().delete()
-        for a in addresses_data:
-            PersonAddress.objects.create(person=person, **a)
+    def _sync_children(self, related_manager, model: type, data: list) -> None:
+        """Substitui os filhos (contatos/endereços) da pessoa — delete-then-recreate."""
+        related_manager.all().delete()
+        for item in data:
+            model.objects.create(person=related_manager.instance, **item)
 
     def _sync_documents(self, person: Person, documents_data: list) -> None:
         if not documents_data:
@@ -334,8 +353,8 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
         person = Person.objects.create(**validated_data)
         self._sync_roles(person, roles)
         self._sync_broker_profile(person, roles)
-        self._sync_contacts(person, contacts)
-        self._sync_addresses(person, addresses)
+        self._sync_children(person.contacts, PersonContact, contacts)
+        self._sync_children(person.addresses, PersonAddress, addresses)
         self._sync_documents(person, documents)
         return person
 
@@ -351,9 +370,9 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
             self._sync_roles(instance, roles)
             self._sync_broker_profile(instance, roles)
         if contacts is not None:
-            self._sync_contacts(instance, contacts)
+            self._sync_children(instance.contacts, PersonContact, contacts)
         if addresses is not None:
-            self._sync_addresses(instance, addresses)
+            self._sync_children(instance.addresses, PersonAddress, addresses)
         if documents is not None:
             self._sync_documents(instance, documents)
         return instance

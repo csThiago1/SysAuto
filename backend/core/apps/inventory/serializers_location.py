@@ -11,6 +11,10 @@ class ArmazemSerializer(serializers.ModelSerializer):
     """CRUD de Armazém — total_ruas vem via annotate na view."""
 
     total_ruas = serializers.IntegerField(read_only=True)
+    responsavel_nome = serializers.SerializerMethodField()
+
+    def get_responsavel_nome(self, obj: Armazem) -> str:
+        return obj.responsavel.get_full_name() if obj.responsavel else ""
 
     class Meta:
         model = Armazem
@@ -21,6 +25,7 @@ class ArmazemSerializer(serializers.ModelSerializer):
             "tipo",
             "endereco",
             "responsavel",
+            "responsavel_nome",
             "observacoes",
             "total_ruas",
             "is_active",
