@@ -276,7 +276,11 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange }: PersonI
             </span>
           </label>
           <input
-            type="email"
+            // type="text" (não "email"): o valor inicial vem do contato salvo e, em
+            // dados legados/corrompidos, pode não ter "@" — a validação nativa do
+            // browser bloqueia o submit do form inteiro em silêncio nesse caso.
+            type="text"
+            inputMode="email"
             className={INPUT_EDIT}
             value={email}
             onChange={(e) => handleEmailChange(e.target.value)}
