@@ -9,7 +9,7 @@
  *  - UI: @/components/ui (barrel)
  */
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { UserPlus, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Person, PersonRole, ModalProps } from "@paddock/types";
@@ -47,6 +47,12 @@ export function Cadastros(): React.ReactElement {
   const initialTab = searchParams.get("tab");
   const [activeTab, setActiveTab]       = useState<TabId>(isTabId(initialTab) ? initialTab : "ALL");
   const [searchInput, setSearchInput]   = useState("");
+
+  // Navegação client-side (ex: menu → /cadastros?tab=EXPERT) não remonta o
+  // componente, então o useState inicial não roda de novo — sincroniza aqui.
+  useEffect(() => {
+    if (isTabId(initialTab)) setActiveTab(initialTab);
+  }, [initialTab]);
   const [modalOpen, setModalOpen]       = useState(false);
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
   const [page, setPage]                 = useState(1);

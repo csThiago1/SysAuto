@@ -22,6 +22,7 @@ from .models import (
     PersonContact,
     PersonDocument,
     PersonRole,
+    RolePessoa,
     SupplierProfile,
 )
 from .utils import sha256_hex
@@ -259,9 +260,7 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
     """Serializer de escrita com sync de roles, contatos, endereços e documentos."""
 
     roles = serializers.ListField(
-        child=serializers.ChoiceField(
-            choices=["CLIENT", "INSURER", "BROKER", "EMPLOYEE", "SUPPLIER"]
-        ),
+        child=serializers.ChoiceField(choices=RolePessoa.choices),
         write_only=True,
     )
     contacts = PersonContactWriteSerializer(many=True, required=False)
