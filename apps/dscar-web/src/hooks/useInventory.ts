@@ -18,6 +18,7 @@ import type {
   UnidadeFisicaDetail,
 } from "@paddock/types"
 import { apiFetch, fetchList } from "@/lib/api"
+import { useCreate, useUpdate, useDelete } from "@/lib/crud-mutations"
 import type { ApiSchema } from "@/types"
 
 // Gerados dos serializers Django (match 1:1 verificado).
@@ -132,40 +133,18 @@ export function useImpressoras() {
   })
 }
 
-export function useImpressoraCreate() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<ImpressoraEtiqueta>) =>
-      apiFetch<ImpressoraEtiqueta>(`${INV}/impressoras/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: inventoryKeys.impressoras() }),
+export const useImpressoraCreate = () =>
+  useCreate<ImpressoraEtiqueta, Partial<ImpressoraEtiqueta>>("inventory/impressoras", {
+    invalidateKey: inventoryKeys.impressoras(),
   })
-}
 
-export function useImpressoraUpdate(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Partial<ImpressoraEtiqueta>) =>
-      apiFetch<ImpressoraEtiqueta>(`${INV}/impressoras/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: inventoryKeys.impressoras() }),
+export const useImpressoraUpdate = () =>
+  useUpdate<ImpressoraEtiqueta, Partial<ImpressoraEtiqueta>>("inventory/impressoras", {
+    invalidateKey: inventoryKeys.impressoras(),
   })
-}
 
-export function useImpressoraDelete(id: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: () =>
-      apiFetch<void>(`${INV}/impressoras/${id}/`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: inventoryKeys.impressoras() }),
-  })
-}
+export const useImpressoraDelete = () =>
+  useDelete("inventory/impressoras", { invalidateKey: inventoryKeys.impressoras() })
 
 export function useTestarImpressora(id: string) {
   return useMutation({

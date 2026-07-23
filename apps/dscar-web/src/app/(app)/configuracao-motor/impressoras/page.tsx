@@ -23,7 +23,7 @@ const MODELOS: { value: ModeloImpressora; label: string }[] = [
 
 function ImpressoraRow({ impressora }: { impressora: ImpressoraEtiqueta }) {
   const testar = useTestarImpressora(impressora.id)
-  const deleteMutation = useImpressoraDelete(impressora.id)
+  const deleteMutation = useImpressoraDelete()
 
   async function handleTestar() {
     try {
@@ -36,7 +36,7 @@ function ImpressoraRow({ impressora }: { impressora: ImpressoraEtiqueta }) {
 
   async function handleDelete() {
     try {
-      await deleteMutation.mutateAsync()
+      await deleteMutation.mutateAsync(impressora.id)
       toast.success("Impressora removida.")
     } catch {
       toast.error("Erro ao remover impressora.")

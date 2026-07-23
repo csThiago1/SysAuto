@@ -13,6 +13,7 @@ import type {
 } from "@paddock/types"
 
 import { apiFetch, fetchList } from "@/lib/api"
+import { useCreate } from "@/lib/crud-mutations"
 import type { ApiSchema } from "@/types"
 
 // Gerados dos serializers de budgets. Payloads (create/approve/item) e
@@ -73,18 +74,8 @@ export function useBudgetItems(budgetId: string | number, versionId: string | nu
 
 // ── Mutations ─────────────────────────────────────────────────────────────────
 
-export function useCreateBudget() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (payload: BudgetCreatePayload) =>
-      apiFetch<Budget>(`${BASE}/`, {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(payload),
-      }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: budgetKeys.lists() }),
-  })
-}
+export const useCreateBudget = () =>
+  useCreate<Budget, BudgetCreatePayload>("budgets", { invalidateKey: budgetKeys.lists() })
 
 export function useCloneBudget() {
   const qc = useQueryClient()
