@@ -209,8 +209,11 @@ class FiscalService:
 
         # Agendar polling se ainda pendente
         if doc.status == FiscalDocument.Status.PENDING:
+            from django.db import connection
+
             from apps.fiscal.tasks import poll_fiscal_document
-            poll_fiscal_document.apply_async(args=[str(doc.pk)], countdown=10)
+            schema = getattr(connection.tenant, "schema_name", "public")
+            poll_fiscal_document.apply_async(args=[str(doc.pk), schema], countdown=10)
 
         return doc
 
@@ -313,8 +316,11 @@ class FiscalService:
                                  "authorized_at", "cancelled_at"])
 
         if doc.status == FiscalDocument.Status.PENDING:
+            from django.db import connection
+
             from apps.fiscal.tasks import poll_fiscal_document
-            poll_fiscal_document.apply_async(args=[str(doc.pk)], countdown=10)
+            schema = getattr(connection.tenant, "schema_name", "public")
+            poll_fiscal_document.apply_async(args=[str(doc.pk), schema], countdown=10)
 
         return doc
 
@@ -574,8 +580,11 @@ class FiscalService:
                                  "authorized_at", "cancelled_at"])
 
         if doc.status == FiscalDocument.Status.PENDING:
+            from django.db import connection
+
             from apps.fiscal.tasks import poll_fiscal_document
-            poll_fiscal_document.apply_async(args=[str(doc.pk)], countdown=10)
+            schema = getattr(connection.tenant, "schema_name", "public")
+            poll_fiscal_document.apply_async(args=[str(doc.pk), schema], countdown=10)
 
         return doc
 
@@ -695,8 +704,11 @@ class FiscalService:
                                  "authorized_at", "cancelled_at"])
 
         if doc.status == FiscalDocument.Status.PENDING:
+            from django.db import connection
+
             from apps.fiscal.tasks import poll_fiscal_document
-            poll_fiscal_document.apply_async(args=[str(doc.pk)], countdown=10)
+            schema = getattr(connection.tenant, "schema_name", "public")
+            poll_fiscal_document.apply_async(args=[str(doc.pk), schema], countdown=10)
 
         return doc
 

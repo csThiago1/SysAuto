@@ -127,24 +127,26 @@ def task_clone_recurring_goals(self: object, tenant_schema: str) -> None:  # typ
 
 
 @shared_task(bind=True, max_retries=3)
-def task_generate_payslip_pdf(self: object, payslip_id: str) -> None:  # type: ignore[type-arg]
+def task_generate_payslip_pdf(self: object, payslip_id: str, tenant_schema: str) -> None:  # type: ignore[type-arg]
     """
     Gera PDF do contracheque de forma assíncrona e faz upload para S3.
     Salva a S3 key em Payslip.pdf_file_key após sucesso.
     """
     try:
         from django.utils import timezone
+        from django_tenants.utils import schema_context
 
         from apps.hr.models import Payslip
         from apps.hr.services import generate_payslip_pdf, upload_payslip_to_s3
 
-        payslip = Payslip.objects.select_related("employee__user").get(id=payslip_id)
-        pdf_bytes = generate_payslip_pdf(payslip)
-        pdf_key = upload_payslip_to_s3(pdf_bytes, payslip)
-        Payslip.objects.filter(id=payslip_id).update(
-            pdf_file_key=pdf_key,
-            updated_at=timezone.now(),
-        )
+        with schema_context(tenant_schema):
+            payslip = Payslip.objects.select_related("employee__user").get(id=payslip_id)
+            pdf_bytes = generate_payslip_pdf(payslip)
+            pdf_key = upload_payslip_to_s3(pdf_bytes, payslip)
+            Payslip.objects.filter(id=payslip_id).update(
+                pdf_file_key=pdf_key,
+                updated_at=timezone.now(),
+            )
         logger.info("[HR] PDF gerado e enviado para S3: %s", pdf_key)
     except Exception as exc:
         logger.error("[HR] task_generate_payslip_pdf failed: %s", exc)

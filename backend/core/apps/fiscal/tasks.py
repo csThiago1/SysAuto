@@ -26,7 +26,7 @@ POLL_TERMINAL_STATUSES: frozenset[str] = frozenset({"authorized", "rejected", "c
     default_retry_delay=10,
     retry_backoff=False,  # intervalo fixo de 10s para NFS-e
 )
-def poll_fiscal_document(self, document_id: str) -> dict:  # type: ignore[type-arg]
+def poll_fiscal_document(self, document_id: str, tenant_schema: str) -> dict:  # type: ignore[type-arg]
     """Consulta status de documento fiscal na Focus e atualiza FiscalDocument.
 
     Ciclo:
@@ -38,64 +38,68 @@ def poll_fiscal_document(self, document_id: str) -> dict:  # type: ignore[type-a
 
     Args:
         document_id: UUID string do FiscalDocument.
+        tenant_schema: Schema do tenant (ex: "tenant_dscar") — FiscalDocument é tenant-aware.
 
     Returns:
         Dict com document_id, status e attempt.
     """
     # Imports lazy — evita import circular com FiscalService
+    from django_tenants.utils import schema_context
+
     from apps.fiscal.exceptions import FocusServerError, FocusTimeout
     from apps.fiscal.models import FiscalDocument
     from apps.fiscal.services.fiscal_service import FiscalService
 
-    try:
-        doc = FiscalDocument.objects.get(pk=document_id)
-    except FiscalDocument.DoesNotExist:
-        logger.warning("poll_fiscal_document: doc %s não encontrado.", document_id)
-        return {"document_id": document_id, "error": "not_found"}
+    with schema_context(tenant_schema):
+        try:
+            doc = FiscalDocument.objects.get(pk=document_id)
+        except FiscalDocument.DoesNotExist:
+            logger.warning("poll_fiscal_document: doc %s não encontrado.", document_id)
+            return {"document_id": document_id, "error": "not_found"}
 
-    # Webhook ou outra chamada já processou o documento
-    if doc.status != FiscalDocument.Status.PENDING:
-        logger.debug(
-            "poll_fiscal_document: doc %s já em status '%s' — encerrando.",
+        # Webhook ou outra chamada já processou o documento
+        if doc.status != FiscalDocument.Status.PENDING:
+            logger.debug(
+                "poll_fiscal_document: doc %s já em status '%s' — encerrando.",
+                document_id,
+                doc.status,
+            )
+            return {"document_id": document_id, "status": doc.status, "skipped": True}
+
+        # Delegar consulta ao FiscalService
+        try:
+            doc = FiscalService.consult(doc)
+        except (FocusServerError, FocusTimeout) as exc:  # type: ignore[misc]
+            logger.warning(
+                "poll_fiscal_document: erro retryable para doc %s: %s",
+                document_id,
+                type(exc).__name__,
+            )
+            raise self.retry(exc=exc, countdown=10)
+        except Exception as exc:
+            logger.error(
+                "poll_fiscal_document: erro não retryable para doc %s: %s",
+                document_id,
+                exc,
+            )
+            return {"document_id": document_id, "error": str(type(exc).__name__)}
+
+        # Ainda pendente → retry
+        if doc.status == FiscalDocument.Status.PENDING:
+            logger.debug(
+                "poll_fiscal_document: doc %s ainda pending — agendando retry (attempt %d/%d).",
+                document_id,
+                self.request.retries + 1,
+                POLL_MAX_ATTEMPTS,
+            )
+            raise self.retry(countdown=10)
+
+        logger.info(
+            "poll_fiscal_document: doc %s resolvido com status '%s'.",
             document_id,
             doc.status,
         )
-        return {"document_id": document_id, "status": doc.status, "skipped": True}
-
-    # Delegar consulta ao FiscalService
-    try:
-        doc = FiscalService.consult(doc)
-    except (FocusServerError, FocusTimeout) as exc:  # type: ignore[misc]
-        logger.warning(
-            "poll_fiscal_document: erro retryable para doc %s: %s",
-            document_id,
-            type(exc).__name__,
-        )
-        raise self.retry(exc=exc, countdown=10)
-    except Exception as exc:
-        logger.error(
-            "poll_fiscal_document: erro não retryable para doc %s: %s",
-            document_id,
-            exc,
-        )
-        return {"document_id": document_id, "error": str(type(exc).__name__)}
-
-    # Ainda pendente → retry
-    if doc.status == FiscalDocument.Status.PENDING:
-        logger.debug(
-            "poll_fiscal_document: doc %s ainda pending — agendando retry (attempt %d/%d).",
-            document_id,
-            self.request.retries + 1,
-            POLL_MAX_ATTEMPTS,
-        )
-        raise self.retry(countdown=10)
-
-    logger.info(
-        "poll_fiscal_document: doc %s resolvido com status '%s'.",
-        document_id,
-        doc.status,
-    )
-    return {"document_id": document_id, "status": doc.status}
+        return {"document_id": document_id, "status": doc.status}
 
 
 # ─── S3-T6: Webhook auto-registration ────────────────────────────────────────

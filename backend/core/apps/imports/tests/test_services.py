@@ -148,6 +148,8 @@ class FetchCiliaBudgetTest(TenantTestCase):
         assert attempt.error_type == "Duplicate"
 
     def test_os_without_casualty_number_skipped_by_poll_task(self) -> None:
+        from django.db import connection
+
         from apps.imports.tasks import poll_cilia_budget
         from apps.service_orders.models import ServiceOrder
 
@@ -157,5 +159,8 @@ class FetchCiliaBudgetTest(TenantTestCase):
             plate="TST0002",
         )
         with patch("apps.imports.tasks.ImportService") as MockService:
-            poll_cilia_budget(service_order_id=os_instance.pk)
+            poll_cilia_budget(
+                service_order_id=os_instance.pk,
+                tenant_schema=connection.tenant.schema_name,
+            )
         MockService.fetch_cilia_budget.assert_not_called()

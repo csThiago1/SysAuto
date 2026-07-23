@@ -742,8 +742,11 @@ class PayslipService:
 
         # Disparar geração assíncrona do PDF
         try:
+            from django.db import connection
+
             from .tasks import task_generate_payslip_pdf
-            task_generate_payslip_pdf.delay(str(payslip_id))
+            schema = getattr(connection.tenant, "schema_name", "public")
+            task_generate_payslip_pdf.delay(str(payslip_id), tenant_schema=schema)
         except Exception:
             logger.warning("Could not dispatch PDF task for payslip %s", payslip_id)
 

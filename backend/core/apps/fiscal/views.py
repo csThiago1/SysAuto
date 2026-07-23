@@ -294,9 +294,12 @@ class FocusWebhookView(APIView):
                 )
 
         # Agendar consulta (consulta autoritativa — não confiar 100% no payload do webhook)
+        from django.db import connection
+
         from apps.fiscal.tasks import poll_fiscal_document  # lazy import
 
-        poll_fiscal_document.apply_async(args=[str(doc.pk)], countdown=2)
+        schema = getattr(connection.tenant, "schema_name", "public")
+        poll_fiscal_document.apply_async(args=[str(doc.pk), schema], countdown=2)
 
         logger.info(
             "FocusWebhookView: evento %s processado para doc=%s — poll agendado.",
