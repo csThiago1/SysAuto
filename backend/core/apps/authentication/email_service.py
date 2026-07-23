@@ -4,6 +4,7 @@ Paddock Solutions — Email Service
 Sends transactional emails via Resend API (https://resend.com).
 Falls back to Django console email backend in dev (when RESEND_API_KEY is empty).
 """
+import hashlib
 import logging
 
 import httpx
@@ -19,6 +20,11 @@ def _get_from_address() -> str:
     return getattr(settings, "EMAIL_FROM", "noreply@paddock.solutions")
 
 
+def _mask_email(email: str) -> str:
+    """Hash curto pra log — nunca email em texto claro (LGPD)."""
+    return hashlib.sha256(email.lower().encode()).hexdigest()[:8]
+
+
 def _send_email(to: str, subject: str, html: str) -> bool:
     """Send email via Resend API.
 
@@ -32,8 +38,11 @@ def _send_email(to: str, subject: str, html: str) -> bool:
     """
     api_key = getattr(settings, "RESEND_API_KEY", "")
     if not api_key:
+        # Fallback de dev sem Resend configurado: precisa do link pra testar o
+        # fluxo localmente, então o corpo (com o token) fica no console — mas
+        # nunca o email em claro.
         logger.info("RESEND_API_KEY not configured -- logging email to console.")
-        logger.info("TO: %s | SUBJECT: %s", to, subject)
+        logger.info("TO_HASH: %s... | SUBJECT: %s", _mask_email(to), subject)
         logger.info("BODY: %s", html[:200])
         return True
 
@@ -53,12 +62,12 @@ def _send_email(to: str, subject: str, html: str) -> bool:
             timeout=10.0,
         )
         if response.status_code in (200, 201):
-            logger.info("Email enviado para %s via Resend.", to)
+            logger.info("Email enviado para %s... via Resend.", _mask_email(to))
             return True
         logger.warning("Resend API retornou status %s: %s", response.status_code, response.text[:200])
         return False
     except Exception:
-        logger.exception("Falha ao enviar email via Resend para %s", to)
+        logger.exception("Falha ao enviar email via Resend para %s...", _mask_email(to))
         return False
 
 

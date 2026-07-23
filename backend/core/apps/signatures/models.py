@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from django.db import models
 from django.utils import timezone
+from encrypted_model_fields.fields import EncryptedCharField
 
 
 class Signature(models.Model):
@@ -51,7 +52,8 @@ class Signature(models.Model):
 
     # Dados do signatário
     signer_name = models.CharField(max_length=200)
-    signer_cpf = models.CharField(max_length=14, blank=True, default="")
+    # LGPD: CPF criptografado em repouso — nunca filtrado/buscado por valor.
+    signer_cpf = EncryptedCharField(max_length=14, blank=True, default="")
 
     # Dados da assinatura
     signature_png_base64 = models.TextField(

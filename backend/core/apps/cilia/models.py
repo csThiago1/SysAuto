@@ -4,6 +4,7 @@ Módulo responsável por importar ordens de serviço (orçamentos) do Cilia Web 
 """
 from django.db import models
 from django.utils import timezone
+from encrypted_model_fields.fields import EncryptedCharField
 from apps.authentication.models import PaddockBaseModel
 
 class OrcamentoCilia(PaddockBaseModel):
@@ -31,8 +32,9 @@ class OrcamentoCilia(PaddockBaseModel):
 
     # Cliente
     client_name = models.CharField(max_length=200)
-    client_document = models.CharField(max_length=20, blank=True)
-    client_phone = models.CharField(max_length=30, blank=True)
+    # LGPD: CPF/CNPJ e telefone criptografados em repouso — nunca filtrados por valor.
+    client_document = EncryptedCharField(max_length=20, blank=True)
+    client_phone = EncryptedCharField(max_length=30, blank=True)
 
     # Seguradora
     insurer_name = models.CharField(max_length=200)

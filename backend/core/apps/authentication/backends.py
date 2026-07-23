@@ -120,7 +120,7 @@ class KeycloakJWTAuthentication(BaseAuthentication):
             },
         )
         if created:
-            logger.info("Keycloak: usuario criado automaticamente para %s", email)
+            logger.info("Keycloak: usuario criado automaticamente (hash=%s...)", email_hash[:8])
 
         return (user, payload)
 

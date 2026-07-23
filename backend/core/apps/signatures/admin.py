@@ -10,7 +10,7 @@ class SignatureAdmin(admin.ModelAdmin):
         "service_order", "orcamento", "signed_at",
     )
     list_filter = ("document_type", "method")
-    search_fields = ("signer_name", "signer_cpf", "signature_hash")
+    search_fields = ("signer_name", "signature_hash")
     readonly_fields = (
         "service_order", "orcamento",
         "document_type", "method",
