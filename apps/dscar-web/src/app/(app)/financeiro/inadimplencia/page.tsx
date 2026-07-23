@@ -11,6 +11,7 @@ import { useInadimplencia } from "@/hooks/useAccounting";
 import { SummaryCard } from "@/components/financeiro";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollFade } from "@/components/ui/scroll-fade";
 import { formatCurrency } from "@paddock/utils";
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -61,7 +62,33 @@ export default function InadimplenciaPage(): React.ReactElement {
               ))}
             </div>
           ) : data?.items && data.items.length > 0 ? (
-            <div className="overflow-x-auto">
+            <>
+            {/* Mobile cards */}
+            <div className="md:hidden space-y-3">
+              {data.items.map((item) => (
+                <div key={item.customer_id} className="rounded-lg border border-border bg-background/40 p-4 space-y-2">
+                  <span className="text-sm font-medium text-foreground truncate block">
+                    {item.customer_name}
+                  </span>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div>
+                      <p className="text-muted-foreground">Valor Total</p>
+                      <p className="font-mono text-foreground">{formatCurrency(item.total_amount)}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-muted-foreground">Títulos</p>
+                      <p className="font-mono text-foreground">{item.count}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-muted-foreground">Restante</p>
+                      <p className="font-mono font-semibold text-error-400">{formatCurrency(item.total_remaining)}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Desktop table */}
+            <ScrollFade className="hidden md:block">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-left text-muted-foreground">
@@ -102,7 +129,8 @@ export default function InadimplenciaPage(): React.ReactElement {
                   </tr>
                 </tfoot>
               </table>
-            </div>
+            </ScrollFade>
+            </>
           ) : (
             <p className="text-sm text-muted-foreground">
               Nenhum cliente inadimplente encontrado.

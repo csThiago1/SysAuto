@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react"
 import { ChevronDown, ChevronRight, Pencil, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ScrollFade } from "@/components/ui/scroll-fade"
 import { formatCurrency } from "@paddock/utils"
 import {
   groupServicesByPart,
@@ -68,11 +69,11 @@ export function ServiceGroupedView({
       {groups.map((group) => {
         const isExpanded = expandedGroups.has(group.partName)
         return (
-          <div key={group.partName} className="rounded-lg border border-border overflow-hidden">
+          <div key={group.partName} className="rounded-lg border border-border">
             <button
               type="button"
               onClick={() => toggleGroup(group.partName)}
-              className="flex w-full items-center justify-between px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors"
+              className="flex w-full items-center justify-between px-4 py-3 bg-muted/30 hover:bg-muted/50 transition-colors rounded-t-lg"
             >
               <div className="flex items-center gap-2">
                 {isExpanded ? (
@@ -91,13 +92,15 @@ export function ServiceGroupedView({
             </button>
 
             {isExpanded && (
-              <table className="w-full text-sm">
-                <tbody>
-                  {group.items.map((item) => (
-                    <ServiceSubRow key={item.id} item={item} {...subRowProps} />
-                  ))}
-                </tbody>
-              </table>
+              <ScrollFade>
+                <table className="w-full text-sm">
+                  <tbody>
+                    {group.items.map((item) => (
+                      <ServiceSubRow key={item.id} item={item} {...subRowProps} />
+                    ))}
+                  </tbody>
+                </table>
+              </ScrollFade>
             )}
           </div>
         )
@@ -105,7 +108,7 @@ export function ServiceGroupedView({
 
       {/* Flat items: manual, complement, single-operation imported */}
       {flatItems.length > 0 && (
-        <div className="rounded-lg border border-border overflow-hidden">
+        <ScrollFade className="rounded-lg border border-border">
           <table className="w-full text-sm">
             <tbody>
               {flatItems.map((item) => {
@@ -148,7 +151,7 @@ export function ServiceGroupedView({
               })}
             </tbody>
           </table>
-        </div>
+        </ScrollFade>
       )}
     </div>
   )

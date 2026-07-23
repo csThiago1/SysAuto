@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ScrollFade } from "@/components/ui/scroll-fade"
 import { fetchList } from "@/lib/api"
 import type { ServiceOrder, ServiceOrderVersion } from "@paddock/types"
 
@@ -60,37 +61,59 @@ export function InsurerBudgetTab({ order, onOpenImport }: Props) {
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border">
+      <div className="rounded-lg border border-border">
         <div className="flex items-center justify-between bg-surface-800 px-3 py-2">
           <span className="text-xs text-muted-foreground">Itens do orçamento da seguradora (somente leitura)</span>
         </div>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-surface-800/50">
-              <th className="px-3 py-2 text-left font-semibold text-foreground/60">Item</th>
-              <th className="px-3 py-2 text-center font-semibold text-foreground/60">Tipo</th>
-              <th className="px-3 py-2 text-center font-semibold text-foreground/60">Qtd</th>
-              <th className="px-3 py-2 text-right font-semibold text-foreground/60">Valor</th>
-            </tr>
-          </thead>
-          <tbody>
-            {activeVersion.items.map((item) => (
-              <tr key={item.id} className="border-t border-white/5">
-                <td className="px-3 py-2.5 text-foreground">{item.description}</td>
-                <td className="px-3 py-2.5 text-center">
-                  <span className={cn("rounded px-2 py-0.5 text-[11px]",
-                    item.item_type === "PART" ? "bg-info-900/50 text-info-400" : "bg-warning-900/50 text-warning-400",
-                  )}>{item.item_type === "PART" ? "Peça" : "MO"}</span>
-                </td>
-                <td className="px-3 py-2.5 text-center text-foreground">{item.quantity}</td>
-                <td className="px-3 py-2.5 text-right text-foreground">{fmtMoney(item.net_price)}</td>
+
+        {/* Desktop table */}
+        <ScrollFade className="hidden md:block">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-surface-800/50">
+                <th className="px-3 py-2 text-left font-semibold text-foreground/60">Item</th>
+                <th className="px-3 py-2 text-center font-semibold text-foreground/60">Tipo</th>
+                <th className="px-3 py-2 text-center font-semibold text-foreground/60">Qtd</th>
+                <th className="px-3 py-2 text-right font-semibold text-foreground/60">Valor</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {activeVersion.items.map((item) => (
+                <tr key={item.id} className="border-t border-white/5">
+                  <td className="px-3 py-2.5 text-foreground">{item.description}</td>
+                  <td className="px-3 py-2.5 text-center">
+                    <span className={cn("rounded px-2 py-0.5 text-[11px]",
+                      item.item_type === "PART" ? "bg-info-900/50 text-info-400" : "bg-warning-900/50 text-warning-400",
+                    )}>{item.item_type === "PART" ? "Peça" : "MO"}</span>
+                  </td>
+                  <td className="px-3 py-2.5 text-center text-foreground">{item.quantity}</td>
+                  <td className="px-3 py-2.5 text-right text-foreground">{fmtMoney(item.net_price)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </ScrollFade>
+
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-white/5">
+          {activeVersion.items.map((item) => (
+            <div key={item.id} className="space-y-1 px-3 py-2.5">
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-sm text-foreground">{item.description}</span>
+                <span className={cn("shrink-0 rounded px-2 py-0.5 text-[11px]",
+                  item.item_type === "PART" ? "bg-info-900/50 text-info-400" : "bg-warning-900/50 text-warning-400",
+                )}>{item.item_type === "PART" ? "Peça" : "MO"}</span>
+              </div>
+              <div className="grid grid-cols-[1fr_auto] gap-2 text-xs">
+                <span className="text-muted-foreground">Qtd: {item.quantity}</span>
+                <span className="text-right font-mono tabular-nums text-foreground">{fmtMoney(item.net_price)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="flex justify-end gap-3">
+      <div className="flex flex-wrap justify-end gap-3">
         <div className="rounded-lg bg-surface-800 px-4 py-3 text-right">
           <div className="text-[11px] uppercase text-muted-foreground">Peças</div>
           <div className="text-base font-bold text-foreground">{fmtMoney(activeVersion.parts_total)}</div>

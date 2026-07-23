@@ -17,6 +17,7 @@ import type { StatusPedidoCompra } from "@paddock/types"
 import type { AprovacaoCotacao, PedidoCompra, RespostaCotacao } from "@/hooks/usePurchasing"
 import { QuotationBuilder } from "@/components/purchasing/QuotationBuilder"
 import { RespostaForm } from "@/components/purchasing/RespostaForm"
+import { ScrollFade } from "@/components/ui/scroll-fade"
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
@@ -60,7 +61,7 @@ function ComparativoTable({
   if (uniqueSuppliers.length === 0) return null
 
   return (
-    <div className="overflow-x-auto">
+    <ScrollFade>
       <table className="w-full text-xs">
         <thead>
           <tr className="border-b border-border">
@@ -110,7 +111,7 @@ function ComparativoTable({
           ))}
         </tbody>
       </table>
-    </div>
+    </ScrollFade>
   )
 }
 
@@ -251,7 +252,7 @@ export default function CotacaoOSPage({ params }: { params: Promise<{ osId: stri
           )}
         </div>
 
-        <div className="bg-muted/50 rounded-md border border-border overflow-hidden">
+        <ScrollFade className="bg-muted/50 rounded-md border border-border">
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
@@ -309,7 +310,7 @@ export default function CotacaoOSPage({ params }: { params: Promise<{ osId: stri
               )}
             </tbody>
           </table>
-        </div>
+        </ScrollFade>
 
         <div className="flex items-center gap-2 mt-3">
           {selectedPedidos.length > 0 && (
@@ -357,7 +358,7 @@ export default function CotacaoOSPage({ params }: { params: Promise<{ osId: stri
         </div>
 
         {pedidosComResposta.length > 0 && respostas ? (
-          <div className="bg-muted/50 rounded-md border border-border overflow-hidden">
+          <div className="bg-muted/50 rounded-md border border-border">
             <ComparativoTable pedidos={pedidosComResposta} respostas={respostas} />
           </div>
         ) : (

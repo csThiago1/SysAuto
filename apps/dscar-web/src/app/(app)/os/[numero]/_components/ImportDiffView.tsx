@@ -2,6 +2,7 @@
 
 import { Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ScrollFade } from "@/components/ui/scroll-fade"
 import type { ImportBudgetResponse, VersionDiffItem } from "@paddock/types"
 
 const CHANGE_STYLES: Record<string, { bg: string; text: string; label: string }> = {
@@ -34,7 +35,7 @@ export function ImportDiffView({ diffResult, onApply, onCancel, isApplying }: Pr
       </h2>
 
       {/* Summary cards */}
-      <div className="mb-5 grid grid-cols-4 gap-3">
+      <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <div className="rounded-lg bg-surface-800 p-3">
           <div className="text-[11px] uppercase text-muted-foreground">Versão Atual</div>
           <div className="text-xl font-bold text-foreground/60">v{current_version.version_number}</div>
@@ -58,8 +59,8 @@ export function ImportDiffView({ diffResult, onApply, onCancel, isApplying }: Pr
         </div>
       </div>
 
-      {/* Diff table */}
-      <div className="mb-5 overflow-hidden rounded-lg border border-border">
+      {/* Diff table — desktop */}
+      <ScrollFade className="mb-5 hidden rounded-lg border border-border md:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-surface-800">
@@ -100,6 +101,36 @@ export function ImportDiffView({ diffResult, onApply, onCancel, isApplying }: Pr
             })}
           </tbody>
         </table>
+      </ScrollFade>
+
+      {/* Diff cards — mobile */}
+      <div className="mb-5 space-y-3 md:hidden">
+        {diff_items.map((item: VersionDiffItem, i: number) => {
+          const style = CHANGE_STYLES[item.change_type]
+          return (
+            <div key={i} className={cn("space-y-2 rounded-lg border border-border p-3", style.bg)}>
+              <div className="flex items-start justify-between gap-2">
+                <span className={cn("text-sm", item.change_type === "removed" ? "line-through text-error-500" : "text-foreground")}>
+                  {item.description}
+                  {item.is_executed && (
+                    <span className="ml-2 rounded bg-warning-500/15 px-1.5 py-0.5 text-[10px] text-warning-500">Executado</span>
+                  )}
+                </span>
+                <span className={cn("shrink-0 rounded px-2 py-0.5 text-[11px]", `${style.bg} ${style.text}`)}>{style.label}</span>
+              </div>
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <span className={cn("rounded px-2 py-0.5 text-[11px]",
+                  item.item_type === "PART" ? "bg-info-900/50 text-info-400" : "bg-warning-900/50 text-warning-400",
+                )}>{item.item_type === "PART" ? "Peça" : "MO"}</span>
+                <span className="font-mono tabular-nums text-foreground/70">
+                  <span className="text-foreground/50">{item.old_value ? `R$ ${fmtMoney(item.old_value)}` : "—"}</span>
+                  {" → "}
+                  <span className={style.text}>{item.new_value ? `R$ ${fmtMoney(item.new_value)}` : "—"}</span>
+                </span>
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       {/* Executed items warning */}

@@ -84,12 +84,13 @@ export function SchedulingDialog({ open, onOpenChange, defaultDate }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="flex max-h-[90dvh] flex-col sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Agendar OS</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex min-h-0 flex-1 flex-col mt-2">
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
           {/* Busca OS */}
           <div>
             <label className={LABEL}>OS *</label>
@@ -153,8 +154,9 @@ export function SchedulingDialog({ open, onOpenChange, defaultDate }: Props) {
               </p>
             )}
           </div>
+          </div>
 
-          <div className="flex justify-end gap-2 pt-1">
+          <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
             <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-foreground">
               {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}

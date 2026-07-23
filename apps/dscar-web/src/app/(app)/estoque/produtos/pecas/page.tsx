@@ -11,6 +11,7 @@ import {
   useCategoriasProduto,
 } from "@/hooks/useInventoryProduct"
 import { ProdutoPecaDialog } from "@/components/inventory/ProdutoPecaDialog"
+import { ScrollFade } from "@/components/ui/scroll-fade"
 
 const INPUT_CLS =
   "bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
@@ -125,7 +126,53 @@ export default function ProdutosPecasPage() {
           Nenhuma peca encontrada.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-md border border-border bg-muted/50">
+        <>
+        {/* Mobile cards */}
+        <div className="md:hidden space-y-3">
+          {produtos.map((p) => (
+            <div
+              key={p.id}
+              onClick={() => handleEdit(p)}
+              className="cursor-pointer rounded-[11px] bg-muted/30 px-3 py-2.5"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-foreground/90">
+                    {p.nome_interno}
+                  </p>
+                  <p className="mt-0.5 truncate font-mono text-xs text-foreground/50">
+                    {p.sku_interno}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDelete(p)
+                  }}
+                  className="shrink-0 rounded p-1 text-muted-foreground hover:bg-error-500/10 hover:text-error-400 transition-colors"
+                  title="Remover"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 text-[11px] text-muted-foreground">
+                <span className="truncate">
+                  {[p.tipo_peca_nome, p.posicao_veiculo_display, p.lado_display, p.categoria_nome]
+                    .filter(Boolean)
+                    .join(" · ") || "--"}
+                </span>
+                <span className="whitespace-nowrap text-right font-mono tabular-nums">
+                  {p.margem_padrao_pct ? `${p.margem_padrao_pct}%` : "--"}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block rounded-md border border-border bg-muted/50">
+        <ScrollFade>
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-muted/30">
@@ -215,7 +262,9 @@ export default function ProdutosPecasPage() {
               ))}
             </tbody>
           </table>
+        </ScrollFade>
         </div>
+        </>
       )}
 
       {/* Dialog */}

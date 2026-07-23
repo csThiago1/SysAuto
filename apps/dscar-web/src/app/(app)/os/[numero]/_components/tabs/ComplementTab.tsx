@@ -7,6 +7,7 @@ import { Loader2, Plus, Pencil, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { apiFetch, fetchList } from "@/lib/api"
 import { Button } from "@/components/ui/button"
+import { ScrollFade } from "@/components/ui/scroll-fade"
 import { formatCurrency } from "@paddock/utils"
 import type { ServiceOrderPart, ServiceOrderLabor } from "@paddock/types"
 import { ComplementAddForm } from "./ComplementTab/ComplementAddForm"
@@ -132,78 +133,134 @@ export function ComplementTab({ orderId }: Props) {
 
       {/* Items table */}
       {allItems.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-warning-500/20">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-warning-500/5">
-                <th className="px-3 py-2 text-left font-semibold text-warning-400">Item</th>
-                <th className="px-3 py-2 text-center font-semibold text-warning-400">Tipo</th>
-                <th className="px-3 py-2 text-center font-semibold text-warning-400">Qtd</th>
-                <th className="px-3 py-2 text-right font-semibold text-warning-400">Unit.</th>
-                <th className="px-3 py-2 text-right font-semibold text-warning-400">Total</th>
-                <th className="px-3 py-2 text-center font-semibold text-warning-400">Faturado</th>
-                <th className="px-3 py-2 text-center font-semibold text-warning-400">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allItems.map((item) => {
-                const total = calcTotal(item)
-                const isBilled = item.billing_status === "billed"
-                return (
-                  <tr key={item.id} className="border-t border-white/5">
-                    <td className="px-3 py-2.5 text-foreground">{item.description}</td>
-                    <td className="px-3 py-2.5 text-center">
-                      <span className={cn(
-                        "rounded px-2 py-0.5 text-[11px]",
-                        item.kind === "part"
-                          ? "bg-info-900/50 text-info-400"
-                          : "bg-warning-900/50 text-warning-400",
-                      )}>
-                        {item.kind === "part" ? "Peça" : "Serviço"}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2.5 text-center text-foreground">{item.quantity}</td>
-                    <td className="px-3 py-2.5 text-right text-foreground tabular-nums">{formatCurrency(item.unit_price)}</td>
-                    <td className="px-3 py-2.5 text-right font-semibold text-foreground tabular-nums">{formatCurrency(total)}</td>
-                    <td className="px-3 py-2.5 text-center">
-                      <span className={cn(
-                        "rounded px-2 py-0.5 text-[11px]",
-                        isBilled
-                          ? "bg-success-500/15 text-success-500"
-                          : "bg-warning-500/15 text-warning-500",
-                      )}>
-                        {isBilled ? "✓ Faturado" : "Pendente"}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2.5 text-center">
-                      {isBilled ? (
-                        <span className="text-muted-foreground/50">—</span>
-                      ) : (
-                        <div className="flex items-center justify-center gap-2">
-                          <button type="button" className="text-info-500 hover:text-info-400">
-                            <Pencil className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => deleteMutation.mutate(item.id)}
-                            className="text-error-500 hover:text-error-400"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* Desktop table */}
+          <ScrollFade className="hidden rounded-lg border border-warning-500/20 md:block">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-warning-500/5">
+                  <th className="px-3 py-2 text-left font-semibold text-warning-400">Item</th>
+                  <th className="px-3 py-2 text-center font-semibold text-warning-400">Tipo</th>
+                  <th className="px-3 py-2 text-center font-semibold text-warning-400">Qtd</th>
+                  <th className="px-3 py-2 text-right font-semibold text-warning-400">Unit.</th>
+                  <th className="px-3 py-2 text-right font-semibold text-warning-400">Total</th>
+                  <th className="px-3 py-2 text-center font-semibold text-warning-400">Faturado</th>
+                  <th className="px-3 py-2 text-center font-semibold text-warning-400">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allItems.map((item) => {
+                  const total = calcTotal(item)
+                  const isBilled = item.billing_status === "billed"
+                  return (
+                    <tr key={item.id} className="border-t border-white/5">
+                      <td className="px-3 py-2.5 text-foreground">{item.description}</td>
+                      <td className="px-3 py-2.5 text-center">
+                        <span className={cn(
+                          "rounded px-2 py-0.5 text-[11px]",
+                          item.kind === "part"
+                            ? "bg-info-900/50 text-info-400"
+                            : "bg-warning-900/50 text-warning-400",
+                        )}>
+                          {item.kind === "part" ? "Peça" : "Serviço"}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 text-center text-foreground">{item.quantity}</td>
+                      <td className="px-3 py-2.5 text-right text-foreground tabular-nums">{formatCurrency(item.unit_price)}</td>
+                      <td className="px-3 py-2.5 text-right font-semibold text-foreground tabular-nums">{formatCurrency(total)}</td>
+                      <td className="px-3 py-2.5 text-center">
+                        <span className={cn(
+                          "rounded px-2 py-0.5 text-[11px]",
+                          isBilled
+                            ? "bg-success-500/15 text-success-500"
+                            : "bg-warning-500/15 text-warning-500",
+                        )}>
+                          {isBilled ? "✓ Faturado" : "Pendente"}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 text-center">
+                        {isBilled ? (
+                          <span className="text-muted-foreground/50">—</span>
+                        ) : (
+                          <div className="flex items-center justify-center gap-2">
+                            <button type="button" className="text-info-500 hover:text-info-400">
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteMutation.mutate(item.id)}
+                              className="text-error-500 hover:text-error-400"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </ScrollFade>
+
+          {/* Mobile cards */}
+          <div className="space-y-3 md:hidden">
+            {allItems.map((item) => {
+              const total = calcTotal(item)
+              const isBilled = item.billing_status === "billed"
+              return (
+                <div key={item.id} className="space-y-2 rounded-lg border border-warning-500/20 bg-warning-500/5 p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-sm text-foreground">{item.description}</span>
+                    <span className={cn(
+                      "shrink-0 rounded px-2 py-0.5 text-[11px]",
+                      item.kind === "part"
+                        ? "bg-info-900/50 text-info-400"
+                        : "bg-warning-900/50 text-warning-400",
+                    )}>
+                      {item.kind === "part" ? "Peça" : "Serviço"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-[1fr_auto] items-center gap-2 text-xs">
+                    <span className="text-muted-foreground">
+                      {item.quantity} × {formatCurrency(item.unit_price)}
+                    </span>
+                    <span className="text-right font-semibold tabular-nums text-foreground">{formatCurrency(total)}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={cn(
+                      "rounded px-2 py-0.5 text-[11px]",
+                      isBilled
+                        ? "bg-success-500/15 text-success-500"
+                        : "bg-warning-500/15 text-warning-500",
+                    )}>
+                      {isBilled ? "✓ Faturado" : "Pendente"}
+                    </span>
+                    {!isBilled && (
+                      <div className="flex items-center gap-3">
+                        <button type="button" className="text-info-500 hover:text-info-400">
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteMutation.mutate(item.id)}
+                          className="text-error-500 hover:text-error-400"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </>
       )}
 
       {/* Totals + bill button */}
-      <div className="flex items-end justify-between">
-        <div className="flex gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-wrap gap-3">
           <div className="rounded-lg bg-surface-800 px-4 py-3">
             <div className="text-[11px] uppercase text-muted-foreground">Já Faturado</div>
             <div className="text-base font-bold text-success-500 tabular-nums">{formatCurrency(totalBilled)}</div>

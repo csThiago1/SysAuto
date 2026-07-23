@@ -11,7 +11,11 @@ import { useFaturamento } from "@/hooks/useAccounting";
 import { SummaryCard } from "@/components/financeiro";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollFade } from "@/components/ui/scroll-fade";
 import { formatCurrency } from "@paddock/utils";
+
+const isMoney = (val: unknown): val is string =>
+  typeof val === "string" && /^\d+\.\d{2}$/.test(val);
 
 // ── Period helpers ────────────────────────────────────────────────────────────
 
@@ -129,7 +133,33 @@ export default function FaturamentoPage(): React.ReactElement {
               ))}
             </div>
           ) : data?.items && data.items.length > 0 ? (
-            <div className="overflow-x-auto">
+            <>
+            {/* Mobile cards */}
+            <div className="md:hidden space-y-3">
+              {data.items.map((item, idx) => {
+                const entries = Object.entries(item);
+                const [labelKey, labelVal] = entries[0] ?? ["", ""];
+                return (
+                  <div key={idx} className="rounded-lg border border-border bg-background/40 p-4 space-y-2">
+                    <span className="text-sm font-medium text-foreground truncate block" title={labelKey}>
+                      {isMoney(labelVal) ? formatCurrency(labelVal) : String(labelVal ?? "—")}
+                    </span>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      {entries.slice(1).map(([key, val]) => (
+                        <div key={key}>
+                          <p className="text-muted-foreground capitalize">{key.replace(/_/g, " ")}</p>
+                          <p className={`text-foreground ${isMoney(val) ? "font-mono tabular-nums" : ""}`}>
+                            {isMoney(val) ? formatCurrency(val) : String(val ?? "—")}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {/* Desktop table */}
+            <ScrollFade className="hidden md:block">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-left text-muted-foreground">
@@ -167,7 +197,8 @@ export default function FaturamentoPage(): React.ReactElement {
                   </tr>
                 </tfoot>
               </table>
-            </div>
+            </ScrollFade>
+            </>
           ) : (
             <p className="text-sm text-muted-foreground">Nenhum registro para o periodo.</p>
           )}

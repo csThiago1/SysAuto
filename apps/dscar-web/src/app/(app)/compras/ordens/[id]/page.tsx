@@ -17,6 +17,7 @@ import {
 } from "@/hooks/usePurchasing"
 import { OrdemCompraDetail } from "@/components/purchasing/OrdemCompraDetail"
 import { TipoQualidadeBadge } from "@/components/purchasing/TipoQualidadeBadge"
+import { ScrollFade } from "@/components/ui/scroll-fade"
 
 // ─── Add Item Form ────────────────────────────────────────────────────────────
 
@@ -66,7 +67,7 @@ function AddItemForm({
     <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-4">
       <p className="label-mono text-muted-foreground">ADICIONAR ITEM</p>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         {/* Fornecedor nome */}
         <div className="space-y-1">
           <label className="label-mono text-muted-foreground">FORNECEDOR</label>
@@ -107,7 +108,7 @@ function AddItemForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {/* Quantidade */}
         <div className="space-y-1">
           <label className="label-mono text-muted-foreground">QTD</label>
@@ -175,7 +176,9 @@ function DraftItemsManager({ ocId }: { ocId: string }) {
   return (
     <div className="space-y-2">
       <div className="section-divider">ITENS NO RASCUNHO</div>
-      <div className="bg-muted/50 rounded-md border border-border overflow-hidden">
+
+      {/* Desktop table */}
+      <ScrollFade className="hidden rounded-md border border-border bg-muted/50 md:block">
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
@@ -201,6 +204,80 @@ function DraftItemsManager({ ocId }: { ocId: string }) {
             ))}
           </tbody>
         </table>
+      </ScrollFade>
+
+      {/* Mobile cards */}
+      <div className="space-y-3 md:hidden">
+        {oc.itens.map((item) => (
+          <DraftItemCard
+            key={item.id}
+            item={item}
+            ocId={ocId}
+            isRemoving={removingId === item.id}
+            onRemoveStart={() => setRemovingId(item.id)}
+            onRemoveEnd={() => setRemovingId(null)}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function DraftItemCard({
+  item,
+  ocId,
+  isRemoving,
+  onRemoveStart,
+  onRemoveEnd,
+}: {
+  item: import("@paddock/types").ItemOrdemCompra
+  ocId: string
+  isRemoving: boolean
+  onRemoveStart: () => void
+  onRemoveEnd: () => void
+}) {
+  const removeMutation = useRemoverItemOC(ocId, item.id)
+
+  async function handleRemove(): Promise<void> {
+    onRemoveStart()
+    try {
+      await removeMutation.mutateAsync()
+      toast.success("Item removido.")
+    } catch {
+      toast.error("Erro ao remover item.")
+    } finally {
+      onRemoveEnd()
+    }
+  }
+
+  return (
+    <div className={`space-y-2 rounded-md border border-border bg-muted/50 p-3 ${isRemoving ? "opacity-50" : ""}`}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <span className="text-sm text-foreground/70">{item.descricao}</span>
+          {item.codigo_referencia && (
+            <span className="ml-1.5 text-xs text-muted-foreground font-mono">{item.codigo_referencia}</span>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={() => void handleRemove()}
+          disabled={isRemoving}
+          className="shrink-0 p-1 rounded text-muted-foreground/50 hover:text-error-400 hover:bg-error-500/10 transition-colors disabled:opacity-50"
+          title="Remover item"
+        >
+          <Trash2 size={14} />
+        </button>
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs text-muted-foreground">{item.fornecedor_nome || "--"}</span>
+        <TipoQualidadeBadge tipo={item.tipo_qualidade} />
+      </div>
+      <div className="grid grid-cols-[1fr_auto] gap-2 text-xs">
+        <span className="font-mono text-muted-foreground">
+          {item.quantidade} × {formatCurrency(item.valor_unitario)}
+        </span>
+        <span className="text-right font-mono font-bold text-foreground">{formatCurrency(item.valor_total)}</span>
       </div>
     </div>
   )

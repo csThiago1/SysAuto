@@ -108,9 +108,9 @@ export function FiscalEmissionModal({
 
   return (
     <Dialog open onOpenChange={(v) => { if (!v) onClose() }}>
-      <DialogContent className="max-w-md p-0 overflow-hidden">
+      <DialogContent className="max-w-md p-0 overflow-hidden flex max-h-[90dvh] flex-col">
         {/* Header */}
-        <div className="flex items-center px-5 py-4 border-b border-border">
+        <div className="flex items-center px-5 py-4 border-b border-border shrink-0">
           <div className="flex items-center gap-2.5">
             <FileText className="h-5 w-5 text-primary shrink-0" />
             <div>
@@ -121,7 +121,7 @@ export function FiscalEmissionModal({
         </div>
 
         {/* Body */}
-        <div className="p-5 space-y-4">
+        <div className="p-5 space-y-4 min-h-0 flex-1 overflow-y-auto">
           {!emitted ? (
             <>
               {/* Seleção de tipo — só exibe quando a OS tem peças */}
@@ -248,7 +248,7 @@ export function FiscalEmissionModal({
         </div>
 
         {/* Footer */}
-        <DialogFooter className="px-5 pb-5">
+        <DialogFooter className="px-5 pb-5 pt-4 shrink-0 border-t border-border">
           <Button variant="ghost" onClick={onClose} className="text-foreground/60">
             {emitted ? "Fechar" : "Cancelar"}
           </Button>

@@ -5,6 +5,7 @@ import { FileText, Plus } from "lucide-react"
 import Link from "next/link"
 import type { Route } from "next"
 import { useNFeEntradas } from "@/hooks/useInventory"
+import { ScrollFade } from "@/components/ui/scroll-fade"
 import type { NFeEntradaStatus } from "@paddock/types"
 
 const STATUS_LABELS: Record<NFeEntradaStatus, string> = {
@@ -18,6 +19,14 @@ const STATUS_COLORS: Record<NFeEntradaStatus, string> = {
   validada: "text-blue-400 bg-blue-400/10",
   estoque_gerado: "text-success-400 bg-success-400/10",
 }
+
+const STATUS_STRIPE: Record<NFeEntradaStatus, string> = {
+  importada: "bg-yellow-400",
+  validada: "bg-blue-400",
+  estoque_gerado: "bg-success-500",
+}
+
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
 
 export default function NFeRecebidaPage() {
   const [statusFilter, setStatusFilter] = useState("")
@@ -60,7 +69,58 @@ export default function NFeRecebidaPage() {
           Nenhuma NF-e encontrada.
         </div>
       ) : (
-        <div className="rounded-lg border border-border overflow-hidden">
+        <>
+        {/* Mobile cards */}
+        <div className="md:hidden space-y-3">
+          {notas.map((nfe) => {
+            const status = nfe.status as NFeEntradaStatus
+            return (
+              <div
+                key={nfe.id}
+                onClick={() => (window.location.href = `/estoque/nfe-recebida/${nfe.id}`)}
+                className="relative cursor-pointer overflow-hidden rounded-[11px] bg-muted/30 py-2.5 pl-4 pr-3"
+              >
+                <span
+                  aria-hidden
+                  className={`absolute inset-y-0 left-0 w-[3px] ${STATUS_STRIPE[status]}`}
+                />
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {nfe.numero || "—"}
+                      {nfe.serie ? ` / ${nfe.serie}` : ""}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs text-foreground/60">
+                      {nfe.emitente_nome || "—"}
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-medium ${STATUS_COLORS[status]}`}
+                  >
+                    {STATUS_LABELS[status]}
+                  </span>
+                </div>
+                <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto_44px] gap-x-3 text-[11px] text-muted-foreground">
+                  <span className="truncate">
+                    {nfe.data_emissao
+                      ? new Date(nfe.data_emissao).toLocaleDateString("pt-BR")
+                      : "—"}
+                  </span>
+                  <span className="whitespace-nowrap text-right font-mono tabular-nums text-foreground/80">
+                    {brl.format(parseFloat(nfe.valor_total))}
+                  </span>
+                  <span className="text-right font-mono tabular-nums">
+                    {nfe.total_itens} it.
+                  </span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block rounded-lg border border-border">
+        <ScrollFade>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50 text-muted-foreground text-xs">
@@ -104,7 +164,9 @@ export default function NFeRecebidaPage() {
               ))}
             </tbody>
           </table>
+        </ScrollFade>
         </div>
+        </>
       )}
     </div>
   )

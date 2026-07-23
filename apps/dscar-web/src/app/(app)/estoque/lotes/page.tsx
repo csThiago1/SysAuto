@@ -13,6 +13,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import type { LoteInsumo } from "@paddock/types"
+import { ScrollFade } from "@/components/ui/scroll-fade"
 import { toast } from "sonner"
 
 const INV = "/api/proxy/inventory"
@@ -307,7 +308,90 @@ export default function LotesPage() {
           Nenhum lote encontrado.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-md border border-border bg-muted/50">
+        <>
+        {/* Mobile cards */}
+        <div className="md:hidden space-y-3">
+          {lotes.map((lote) => {
+            const saldo = parseFloat(lote.saldo)
+            const custo = parseFloat(lote.valor_unitario_base)
+            const stripe =
+              lote.saldo_percentual > 50
+                ? "bg-success-500"
+                : lote.saldo_percentual > 20
+                ? "bg-warning-500"
+                : "bg-error-500"
+            return (
+              <div
+                key={lote.id}
+                className="relative overflow-hidden rounded-[11px] bg-muted/30 py-2.5 pl-4 pr-3"
+              >
+                <span
+                  aria-hidden
+                  className={`absolute inset-y-0 left-0 w-[3px] ${stripe}`}
+                />
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {lote.material_nome}
+                    </p>
+                    <p className="mt-0.5 truncate font-mono text-xs text-foreground/50">
+                      {lote.codigo_barras}
+                    </p>
+                  </div>
+                  <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
+                    {lote.saldo_percentual}%
+                  </span>
+                </div>
+                <p className="mt-1.5 truncate font-mono text-xs text-foreground/80">
+                  {saldo.toFixed(2)} {lote.unidade_base} a R$ {custo.toFixed(4)}/
+                  {lote.unidade_base}
+                </p>
+                <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 text-[11px] text-muted-foreground">
+                  <span className="truncate font-mono">
+                    {lote.nivel || lote.localizacao || "—"}
+                  </span>
+                  <span className="whitespace-nowrap text-right font-mono tabular-nums">
+                    {lote.validade
+                      ? new Date(lote.validade).toLocaleDateString("pt-BR")
+                      : "—"}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center gap-1">
+                  {saldo > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setBaixarLote(lote)}
+                      className="inline-flex items-center gap-1 rounded bg-warning-500/10 px-2 py-1 text-[11px] font-medium text-warning-400 transition-colors"
+                    >
+                      <ArrowDownToLine className="h-3.5 w-3.5" />
+                      Baixar
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setTransferirLote(lote)}
+                    className="inline-flex items-center gap-1 rounded bg-muted px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors"
+                  >
+                    <ArrowRightLeft className="h-3.5 w-3.5" />
+                    Transferir
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handlePrintLabel(lote)}
+                    className="inline-flex items-center gap-1 rounded bg-muted px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors"
+                  >
+                    <Printer className="h-3.5 w-3.5" />
+                    Etiqueta
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block rounded-md border border-border bg-muted/50">
+        <ScrollFade>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
@@ -415,7 +499,9 @@ export default function LotesPage() {
               })}
             </tbody>
           </table>
+        </ScrollFade>
         </div>
+        </>
       )}
 
       {/* Pagination info */}
