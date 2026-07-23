@@ -34,7 +34,6 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 from apps.authentication.permissions import (
-    IsConsultantOrAbove,
     IsManagerOrAbove,
     PermissionsByActionMixin,
 )
@@ -178,6 +177,7 @@ class EmployeeViewSet(PermissionsByActionMixin, ModelViewSet):
         return Response(data)
 
 class EmployeeDocumentViewSet(
+    PermissionsByActionMixin,
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
@@ -192,7 +192,6 @@ class EmployeeDocumentViewSet(
     deactivate DELETE /hr/employees/{id}/documents/{doc_id}/  → soft delete
     """
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     serializer_class = EmployeeDocumentSerializer
 
     def get_queryset(self) -> Any:
@@ -264,13 +263,12 @@ class SalaryHistoryViewSet(
 
 
 class BonusViewSet(
+    PermissionsByActionMixin,
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     GenericViewSet,
 ):
     """Bonificações — nested em /employees/{id}/bonuses/."""
-
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
     def get_queryset(self) -> Any:
         return Bonus.objects.filter(
@@ -286,10 +284,10 @@ class BonusViewSet(
         serializer.save(employee_id=self.kwargs["employee_pk"])
 
 
-class GoalTargetViewSet(ModelViewSet):
+class GoalTargetViewSet(PermissionsByActionMixin, ModelViewSet):
     """Metas individuais e de setor."""
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
+    write_actions = ("create", "update", "partial_update", "achieve")
     http_method_names = ["get", "post", "patch", "head", "options"]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {"status": ["exact"], "department": ["exact"]}
@@ -367,13 +365,12 @@ class AllowanceViewSet(
 
 
 class DeductionViewSet(
+    PermissionsByActionMixin,
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     GenericViewSet,
 ):
     """Descontos — nested em /employees/{id}/deductions/."""
-
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
 
     def get_queryset(self) -> Any:
         return Deduction.objects.filter(
@@ -440,13 +437,13 @@ class TimeClockViewSet(
 
 
 class WorkScheduleViewSet(
+    PermissionsByActionMixin,
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     GenericViewSet,
 ):
     """Escala semanal — nested em /employees/{id}/schedules/."""
 
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     serializer_class = WorkScheduleSerializer
 
     def get_queryset(self) -> Any:
