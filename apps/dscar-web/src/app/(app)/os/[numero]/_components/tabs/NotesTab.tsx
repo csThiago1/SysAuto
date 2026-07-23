@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Loader2, Save } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -29,8 +30,12 @@ export function NotesTab({ orderId, initialNotes = "" }: NotesTabProps) {
 
   async function handleSave() {
     if (!orderId) return
-    await updateNotes.mutateAsync(notes)
-    setIsDirty(false)
+    try {
+      await updateNotes.mutateAsync(notes)
+      setIsDirty(false)
+    } catch {
+      toast.error("Erro ao salvar observações. Tente novamente.")
+    }
   }
 
   if (!orderId) {

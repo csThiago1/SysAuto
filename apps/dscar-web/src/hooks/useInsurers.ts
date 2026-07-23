@@ -23,11 +23,12 @@ const insurerKeys = {
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
 export function useInsurers(search = "") {
-  const params = search ? `?search=${encodeURIComponent(search)}` : ""
+  const params = new URLSearchParams({ page_size: "200" })
+  if (search) params.set("search", search)
   return useQuery<PaginatedResponse<InsurerListItem>>({
     queryKey: insurerKeys.list(search),
     queryFn: () =>
-      apiFetch<PaginatedResponse<InsurerListItem>>(`${API}/${params}`),
+      apiFetch<PaginatedResponse<InsurerListItem>>(`${API}/?${params.toString()}`),
     staleTime: 5 * 60 * 1000,
   })
 }

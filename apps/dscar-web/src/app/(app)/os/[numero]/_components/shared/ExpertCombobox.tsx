@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { toast } from "sonner"
 import { useExperts, useExpertCreate, type ExpertResult } from "../../_hooks/useExperts"
 
 interface ExpertComboboxProps {
@@ -8,9 +9,13 @@ interface ExpertComboboxProps {
   onChange: (expertId: number | null, expert: ExpertResult | null) => void
   insurerId?: string | null
   disabled?: boolean
+  /** Perito já resolvido pela API da OS (expert_detail) — usado quando `value`
+   * não está entre os 10 resultados da busca atual (paginação/filtro), pra
+   * não mostrar o campo vazio com um perito na verdade já vinculado. */
+  knownExpert?: ExpertResult | null
 }
 
-export function ExpertCombobox({ value, onChange, insurerId, disabled }: ExpertComboboxProps) {
+export function ExpertCombobox({ value, onChange, insurerId, disabled, knownExpert }: ExpertComboboxProps) {
   const [search, setSearch] = useState("")
   const [showCreate, setShowCreate] = useState(false)
   const [newName, setNewName] = useState("")
@@ -18,19 +23,24 @@ export function ExpertCombobox({ value, onChange, insurerId, disabled }: ExpertC
   const { data } = useExperts(insurerId ?? undefined, search)
   const createMutation = useExpertCreate()
   const experts = data?.results ?? []
-  const selected = experts.find((e) => e.id === value) ?? null
+  const selected =
+    experts.find((e) => e.id === value) ?? (knownExpert?.id === value ? knownExpert : null)
 
   async function handleCreate() {
     if (!newName.trim()) return
-    const expert = await createMutation.mutateAsync({
-      name: newName.trim(),
-      phone: newPhone.trim(),
-      insurer_ids: insurerId ? [insurerId] : [],
-    })
-    onChange(expert.id, expert)
-    setShowCreate(false)
-    setNewName("")
-    setNewPhone("")
+    try {
+      const expert = await createMutation.mutateAsync({
+        name: newName.trim(),
+        phone: newPhone.trim(),
+        insurer_ids: insurerId ? [insurerId] : [],
+      })
+      onChange(expert.id, expert)
+      setShowCreate(false)
+      setNewName("")
+      setNewPhone("")
+    } catch {
+      toast.error("Erro ao cadastrar perito. Tente novamente.")
+    }
   }
 
   return (

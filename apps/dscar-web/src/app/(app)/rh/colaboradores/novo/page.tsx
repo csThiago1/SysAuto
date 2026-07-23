@@ -46,7 +46,7 @@ const admissionSchema = z.object({
   position: z.enum(HR_POSITIONS, { errorMap: () => ({ message: "Cargo obrigatório" }) }),
   contract_type: z.enum(CONTRACT_TYPES, { errorMap: () => ({ message: "Tipo de contrato obrigatório" }) }),
   hire_date: z.string().min(1, "Data de admissão obrigatória"),
-  base_salary: z.number({ invalid_type_error: "Salário inválido" }).min(0),
+  base_salary: z.number({ invalid_type_error: "Salário inválido" }).min(0, "Salário inválido"),
   pay_frequency: z.enum(PAY_FREQUENCIES).default("monthly"),
   cpf: z.string().optional(),
   birth_date: z.string().optional(),

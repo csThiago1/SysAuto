@@ -200,7 +200,7 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
 
       {customerType === "insurer" && (
         <Panel icon={<Shield className="h-4 w-4" />} title="Seguradora">
-          <InsurerSection form={form} />
+          <InsurerSection form={form} order={order} />
         </Panel>
       )}
 

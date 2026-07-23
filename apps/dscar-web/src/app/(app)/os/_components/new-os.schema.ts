@@ -11,7 +11,7 @@ export const newOSSchema = z
     ),
 
     // Seguradora (obrigatório só quando customer_type === "insurer")
-    insurer: z.string().uuid().optional().nullable(),
+    insurer: z.string().uuid("Seguradora inválida").optional().nullable(),
     insured_type: z.preprocess(
       (v) => (v === "" ? null : v),
       z.enum(["insured", "third"]).optional().nullable()
@@ -32,7 +32,7 @@ export const newOSSchema = z
     vehicle_version: z.string().optional().default(""),
     year: z.preprocess(
       (v) => (v === "" || v === null || (typeof v === "number" && isNaN(v)) ? undefined : v),
-      z.number().int().min(1900).max(2100).optional().nullable()
+      z.number().int().min(1900, "Ano inválido").max(2100, "Ano inválido").optional().nullable()
     ),
     color: z.string().optional().default(""),
     fuel_type: z.string().optional().default(""),

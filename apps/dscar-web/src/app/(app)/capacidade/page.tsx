@@ -317,7 +317,13 @@ export default function CapacidadePage() {
                         size="icon"
                         className="h-7 w-7 text-muted-foreground hover:text-error-400"
                         title="Remover"
-                        onClick={() => deleteCap(c.id)}
+                        onClick={async () => {
+                          try {
+                            await deleteCap(c.id)
+                          } catch {
+                            toast.error("Erro ao remover capacidade.")
+                          }
+                        }}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
@@ -415,7 +421,13 @@ export default function CapacidadePage() {
                         size="icon"
                         className="h-7 w-7 text-muted-foreground hover:text-error-400"
                         title="Remover"
-                        onClick={() => deleteBlq(b.id)}
+                        onClick={async () => {
+                          try {
+                            await deleteBlq(b.id)
+                          } catch {
+                            toast.error("Erro ao remover bloqueio.")
+                          }
+                        }}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>

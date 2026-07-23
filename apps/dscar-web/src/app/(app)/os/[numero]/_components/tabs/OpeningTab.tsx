@@ -13,7 +13,10 @@ import { PrazosSection } from "../sections/PrazosSection"
 
 interface OpeningTabProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
-  order?: Pick<ServiceOrder, "id" | "nfe_key" | "nfse_number" | "invoice_issued">
+  order?: Pick<
+    ServiceOrder,
+    "id" | "nfe_key" | "nfse_number" | "invoice_issued" | "insurer_detail" | "expert_detail"
+  >
   onPersonDataChange?: (data: PersonPatch | null) => void
 }
 
@@ -45,7 +48,7 @@ export function OpeningTab({ form, order, onPersonDataChange }: OpeningTabProps)
           </FormCard>
           {customerType === "insurer" && (
             <FormCard>
-              <InsurerSection form={form} />
+              <InsurerSection form={form} order={order} />
             </FormCard>
           )}
           <FormCard>

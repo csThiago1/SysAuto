@@ -33,15 +33,15 @@ function extractApiError(err: unknown): string {
 // ─── Schemas ──────────────────────────────────────────────────────────────────
 
 const nfeItemSchema = z.object({
-  codigo_produto: z.string().max(60).optional().default(""),
+  codigo_produto: z.string().max(60, "Máximo de 60 caracteres").optional().default(""),
   descricao: z.string().min(2, "Mínimo 2 caracteres").max(120, "Máximo 120 caracteres"),
   ncm: z
     .string()
     .min(8, "NCM deve ter 8 dígitos")
-    .max(10)
+    .max(10, "Máximo de 10 caracteres")
     .regex(/^[\d.]+$/, "Apenas dígitos e pontos")
     .transform((v) => v.replace(".", "")),
-  unidade: z.string().max(6).default("UN"),
+  unidade: z.string().max(6, "Máximo de 6 caracteres").default("UN"),
   quantidade: z.string().regex(/^\d+(\.\d{1,4})?$/, "Quantidade inválida"),
   valor_unitario: z.string().regex(/^\d+(\.\d{1,4})?$/, "Preço inválido"),
   valor_desconto: z.string().default("0"),
@@ -51,7 +51,7 @@ const manualSchema = z.object({
   destinatario_id: z.string().min(1, "Selecione um destinatário"),
   itens: z.array(nfeItemSchema).min(1, "Ao menos um item obrigatório"),
   forma_pagamento: z.enum(["01", "03", "04", "99"]).default("01"),
-  observacoes: z.string().max(2000).default(""),
+  observacoes: z.string().max(2000, "Máximo de 2000 caracteres").default(""),
   manual_reason: z.string().min(5, "Mínimo 5 caracteres").max(255, "Máximo 255 caracteres"),
 })
 

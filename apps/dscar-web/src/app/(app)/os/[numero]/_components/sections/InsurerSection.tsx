@@ -1,6 +1,7 @@
 "use client"
 
 import { Controller, type UseFormReturn } from "react-hook-form"
+import type { ServiceOrder } from "@paddock/types"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import { InsurerLogo } from "../shared/InsurerSelect"
 import { ExpertCombobox } from "../shared/ExpertCombobox"
@@ -13,16 +14,21 @@ const INPUT = "flex h-8 w-full rounded-md border border-input bg-background px-2
 
 interface InsurerSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
+  /** OS carregada da API — insurer_detail/expert_detail já vêm resolvidos,
+   * evita depender só da lista (paginada/filtrada) pra achar o nome. */
+  order?: Pick<ServiceOrder, "insurer_detail" | "expert_detail">
 }
 
-export function InsurerSection({ form }: InsurerSectionProps) {
+export function InsurerSection({ form, order }: InsurerSectionProps) {
   const { register, control, watch, formState: { errors } } = form
   const insuredType = watch("insured_type")
   const insurerId = watch("insurer")
 
   const { data } = useInsurers()
   const insurers = data?.results ?? []
-  const selectedInsurer = insurers.find((i) => i.id === insurerId) ?? null
+  const knownInsurer = order?.insurer_detail ?? null
+  const selectedInsurer =
+    insurers.find((i) => i.id === insurerId) ?? (knownInsurer?.id === insurerId ? knownInsurer : null)
 
   return (
     <div className="space-y-2">
@@ -114,6 +120,7 @@ export function InsurerSection({ form }: InsurerSectionProps) {
                     value={field.value ?? null}
                     onChange={(id) => field.onChange(id)}
                     insurerId={insurerId}
+                    knownExpert={order?.expert_detail ?? null}
                   />
                 )}
               />

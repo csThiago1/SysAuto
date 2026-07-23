@@ -45,12 +45,12 @@ const serviceOrderBaseSchema = z.object({
     toNullEnum,
     z.enum(["insured", "third"]).nullish()
   ),
-  casualty_number: z.string().max(50).optional().default(""),
+  casualty_number: z.string().max(50, "Número de sinistro muito longo").optional().default(""),
   deductible_amount: z.preprocess(
     toNullNum,
     z.number().nonnegative("Franquia não pode ser negativa").nullish()
   ),
-  broker_name: z.string().max(200).optional().default(""),
+  broker_name: z.string().max(200, "Nome do corretor muito longo").optional().default(""),
   expert: z.preprocess(toNullNum, z.number().int().nullish()),
   expert_date: dateField,
   survey_date: dateField,

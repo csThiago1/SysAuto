@@ -8,6 +8,9 @@ interface InsurerSelectProps {
   value: string | null
   onChange: (insurerId: string | null, insurer: Insurer | null) => void
   disabled?: boolean
+  /** Seguradora já resolvida (ex: insurer_detail da OS) — fallback quando
+   * `value` não está entre os resultados carregados. */
+  knownInsurer?: Insurer | null
 }
 
 // Exported so InsurerSection can render the logo standalone
@@ -37,10 +40,11 @@ export function InsurerLogo({ insurer }: { insurer: Insurer | null }) {
 }
 
 // Legacy combined component (used in NewOSForm)
-export function InsurerSelect({ value, onChange, disabled }: InsurerSelectProps) {
+export function InsurerSelect({ value, onChange, disabled, knownInsurer }: InsurerSelectProps) {
   const { data, isLoading } = useInsurers()
   const insurers = data?.results ?? []
-  const selected = insurers.find((i) => i.id === value) ?? null
+  const selected =
+    insurers.find((i) => i.id === value) ?? (knownInsurer?.id === value ? knownInsurer : null)
 
   return (
     <div className="flex items-center gap-3">
