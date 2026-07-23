@@ -901,8 +901,12 @@ class ServiceOrderStatusTransitionSerializer(serializers.Serializer):
             password = attrs["manager_password"]
 
             try:
-                manager = GlobalUser.objects.get(email=email, is_active=True)
+                manager = GlobalUser.objects.get_by_natural_key(email)
             except GlobalUser.DoesNotExist:
+                raise serializers.ValidationError(
+                    {"manager_email": "Credenciais do gerente invalidas."}
+                )
+            if not manager.is_active:
                 raise serializers.ValidationError(
                     {"manager_email": "Credenciais do gerente invalidas."}
                 )

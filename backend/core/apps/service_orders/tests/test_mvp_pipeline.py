@@ -80,6 +80,7 @@ class ServiceOrderMvpPipelineTest(TenantTestCase):
             new_status=status,
             changed_by_id=str(self.user.id),
             force=force,
+            manager_verified=force,
             justification="Validação MVP",
         )
 

@@ -367,6 +367,11 @@ class ServiceOrderViewSet(
         manager_user = data.get("_manager_user")
         changed_by_id = str(manager_user.id) if manager_user else str(request.user.id)
 
+        # force só derruba blocks com autoridade real: o próprio solicitante já é
+        # MANAGER+, ou validou credencial presencial de gerente (manager_user acima).
+        from apps.authentication.permissions import _has_min_role
+        manager_verified = bool(manager_user) or _has_min_role(request, "MANAGER")
+
         # Capturar warnings ANTES da transição (depois o status muda e a validação não se aplica)
         from apps.service_orders.transition_validator import TransitionValidator
         pre_validation = TransitionValidator.validate(
@@ -378,6 +383,7 @@ class ServiceOrderViewSet(
             new_status=new_status,
             changed_by_id=changed_by_id,
             force=force,
+            manager_verified=manager_verified,
             override_id=str(data["override_id"]) if data.get("override_id") else None,
             justification=data.get("justification", ""),
         )

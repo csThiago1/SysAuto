@@ -106,6 +106,7 @@ class ServiceOrderIntegrationTestCase(TenantTestCase):
             new_status="budget",
             changed_by_id=str(self.user.id),
             force=True,
+            manager_verified=True,
             justification="Teste de integração",
         )
 

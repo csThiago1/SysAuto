@@ -323,6 +323,7 @@ class _ServiceOrderCoreMixin:
         new_status: str,
         changed_by_id: str,
         force: bool = False,
+        manager_verified: bool = False,
         override_id: str | None = None,
         justification: str = "",
     ) -> "ServiceOrder":
@@ -333,7 +334,10 @@ class _ServiceOrderCoreMixin:
             order_id: UUID da OS.
             new_status: Status de destino.
             changed_by_id: UUID do usuario que esta executando a transicao.
-            force: Se True, ignora soft blocks (requer MANAGER+).
+            force: Se True, tenta ignorar blocks (requer manager_verified=True).
+            manager_verified: True se o solicitante e MANAGER+ ou validou credenciais
+                presenciais de gerente. Sem isso, force e ignorado silenciosamente —
+                um client nao pode se autoconceder override so setando o boolean.
             override_id: ID de um TransitionOverrideRequest aprovado.
             justification: Justificativa para force/cancelled.
 
@@ -369,9 +373,11 @@ class _ServiceOrderCoreMixin:
             order, new_status, justification=justification
         )
 
-        # Hard blocks: bloqueiam sem force; com force presencial do gerente, cria auditoria
+        # Hard blocks: nunca contornaveis por um force desacompanhado de autoridade —
+        # so avanca com override presencial de MANAGER+ (manager_verified), que fica
+        # registrado abaixo para auditoria.
         if result.hard_blocks:
-            if not force:
+            if not (force and manager_verified):
                 raise ValidationError({
                     "transition_blocks": {
                         "type": "hard",
@@ -409,7 +415,7 @@ class _ServiceOrderCoreMixin:
                     status="approved",
                 ).exists()
 
-            if not force and not has_approved_override:
+            if not (force and manager_verified) and not has_approved_override:
                 raise ValidationError({
                     "transition_blocks": {
                         "type": "soft",
@@ -422,8 +428,8 @@ class _ServiceOrderCoreMixin:
                     }
                 })
 
-            # Se force=True sem override aprovado, criar registro de auditoria
-            if force and not has_approved_override:
+            # Se force=True (com autoridade) sem override aprovado, criar registro de auditoria
+            if force and manager_verified and not has_approved_override:
                 from django.utils import timezone as tz
                 TransitionOverrideRequest.objects.create(
                     service_order=order,
