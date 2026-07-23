@@ -16,6 +16,18 @@ from apps.inventory.services.reserva import BaixaInsumoService, ReservaIndisponi
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
 
+def make_user(email: str = "lote-test@example.com") -> object:
+    import hashlib
+
+    from apps.authentication.models import GlobalUser
+    email_hash = hashlib.sha256(email.lower().encode()).hexdigest()
+    user, _ = GlobalUser.objects.get_or_create(
+        email_hash=email_hash,
+        defaults={"email": email, "name": "Lote Test User"},
+    )
+    return user
+
+
 def make_material(codigo: str = "tinta-branca-001") -> object:
     from apps.pricing_catalog.models import MaterialCanonico
     m, _ = MaterialCanonico.objects.get_or_create(
@@ -102,6 +114,7 @@ class TestBaixaInsumoService(TenantTestCase):
     def setUp(self) -> None:
         self.os = make_service_order(9002)
         self.os_id = str(self.os.pk)
+        self.user_id = str(make_user("lote-baixa@example.com").id)
 
     def test_baixa_fifo_ordem_criacao(self) -> None:
         """Deve consumir o lote mais antigo primeiro (FIFO)."""
@@ -113,6 +126,7 @@ class TestBaixaInsumoService(TenantTestCase):
             material_canonico_id=str(material.pk),
             quantidade_base=Decimal("3.000"),
             ordem_servico_id=self.os_id,
+            user_id=self.user_id,
         )
 
         lote1.refresh_from_db()
@@ -130,6 +144,7 @@ class TestBaixaInsumoService(TenantTestCase):
             material_canonico_id=str(material.pk),
             quantidade_base=Decimal("7.000"),
             ordem_servico_id=self.os_id,
+            user_id=self.user_id,
         )
 
         self.assertEqual(len(consumos), 2)
@@ -148,6 +163,7 @@ class TestBaixaInsumoService(TenantTestCase):
                 material_canonico_id=str(material.pk),
                 quantidade_base=Decimal("10.000"),
                 ordem_servico_id=self.os_id,
+                user_id=self.user_id,
             )
 
     def test_valor_unitario_na_baixa_e_snapshot(self) -> None:
@@ -159,5 +175,6 @@ class TestBaixaInsumoService(TenantTestCase):
             material_canonico_id=str(material.pk),
             quantidade_base=Decimal("2.000"),
             ordem_servico_id=self.os_id,
+            user_id=self.user_id,
         )
         self.assertEqual(consumos[0].valor_unitario_na_baixa, Decimal("75.5000"))

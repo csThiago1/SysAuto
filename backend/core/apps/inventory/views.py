@@ -118,6 +118,7 @@ class UnidadeFisicaViewSet(viewsets.ReadOnlyModelViewSet):
             unidade = ReservaUnidadeService.baixar_por_bipagem(
                 codigo_barras=ser.validated_data["codigo_barras"],
                 ordem_servico_id=str(ser.validated_data["ordem_servico_id"]),
+                user_id=str(request.user.pk) if request.user else None,
             )
         except ReservaIndisponivel as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)

@@ -546,6 +546,7 @@ class OrcamentoService:
                     peca_canonica_id=str(osi.peca_canonica_id),
                     quantidade=osi.quantidade,
                     ordem_servico_id=str(os_.id),
+                    user_id=user_id,
                 )
             except ReservaIndisponivel:
                 logger.warning(

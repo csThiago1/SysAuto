@@ -15,6 +15,12 @@ from django.dispatch import receiver
 logger = logging.getLogger(__name__)
 
 
+# Catálogo de aplicação peça↔veículo é dado objetivo de veículo (código de fabricante,
+# marca/modelo/ano FIPE) — correto ser global entre tenants, como TecDoc/Fraga/FIPE.
+# Este signal grava SÓ esses campos objetivos: nenhum dado de negócio do tenant
+# (preço pago, fornecedor, cliente, sinistro) entra no catálogo compartilhado.
+# Entradas ficam marcadas com source=OS_AUTO e confidence_score=90, distinguíveis das
+# curadas manualmente (MANUAL=100) para revisão/curadoria posterior.
 @receiver(post_save, sender="service_orders.ServiceOrder")
 def register_part_applications_on_delivery(
     sender: type,

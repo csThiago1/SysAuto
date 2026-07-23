@@ -53,6 +53,12 @@ class ReservaUnidadeService:
         """
         from apps.inventory.models import UnidadeFisica
 
+        if not user_id:
+            raise ValueError(
+                "reservar requer user_id: toda baixa de estoque precisa registrar "
+                "quem realizou (MovimentacaoEstoque.realizado_por é NOT NULL)."
+            )
+
         # P7: log obrigatório para forcar_mais_caro
         if forcar_mais_caro:
             logger.warning(
@@ -83,23 +89,17 @@ class ReservaUnidadeService:
                 u.save(update_fields=["status", "ordem_servico_id"])
 
             # Audit trail: MovimentacaoEstoque por unidade reservada
-            if user_id:
-                from apps.inventory.models_movement import MovimentacaoEstoque
+            from apps.inventory.models_movement import MovimentacaoEstoque
 
-                for u in disponiveis:
-                    MovimentacaoEstoque(
-                        tipo=MovimentacaoEstoque.Tipo.SAIDA_OS,
-                        unidade_fisica=u,
-                        quantidade=1,
-                        nivel_origem=u.nivel,
-                        ordem_servico_id=ordem_servico_id,
-                        realizado_por_id=user_id,
-                    ).save()
-            else:
-                logger.warning(
-                    "Reserva sem user_id — MovimentacaoEstoque não criada: peca=%s os=%s",
-                    peca_canonica_id, ordem_servico_id,
-                )
+            for u in disponiveis:
+                MovimentacaoEstoque(
+                    tipo=MovimentacaoEstoque.Tipo.SAIDA_OS,
+                    unidade_fisica=u,
+                    quantidade=1,
+                    nivel_origem=u.nivel,
+                    ordem_servico_id=ordem_servico_id,
+                    realizado_por_id=user_id,
+                ).save()
 
         return disponiveis
 
@@ -156,12 +156,22 @@ class ReservaUnidadeService:
         return unidade
 
     @staticmethod
-    def baixar_por_bipagem(codigo_barras: str, ordem_servico_id: str) -> object:
+    def baixar_por_bipagem(
+        codigo_barras: str,
+        ordem_servico_id: str,
+        user_id: str | None = None,
+    ) -> object:
         """
         Resolve codigo_barras → UnidadeFisica e reserva para a OS.
         Usado na tela de bipagem.
         """
         from apps.inventory.models import UnidadeFisica
+
+        if not user_id:
+            raise ValueError(
+                "baixar_por_bipagem requer user_id: toda baixa de estoque precisa "
+                "registrar quem realizou (MovimentacaoEstoque.realizado_por é NOT NULL)."
+            )
 
         with transaction.atomic():
             try:
@@ -175,6 +185,18 @@ class ReservaUnidadeService:
             u.status = "reserved"
             u.ordem_servico_id = ordem_servico_id
             u.save(update_fields=["status", "ordem_servico_id"])
+
+            # Audit trail: MovimentacaoEstoque da unidade reservada por bipagem
+            from apps.inventory.models_movement import MovimentacaoEstoque
+
+            MovimentacaoEstoque(
+                tipo=MovimentacaoEstoque.Tipo.SAIDA_OS,
+                unidade_fisica=u,
+                quantidade=1,
+                nivel_origem=u.nivel,
+                ordem_servico_id=ordem_servico_id,
+                realizado_por_id=user_id,
+            ).save()
         return u
 
 
@@ -204,6 +226,12 @@ class BaixaInsumoService:
             ReservaIndisponivel: se saldo total insuficiente.
         """
         from apps.inventory.models import ConsumoInsumo, LoteInsumo
+
+        if not user_id:
+            raise ValueError(
+                "baixar requer user_id: toda baixa de estoque precisa registrar "
+                "quem realizou (MovimentacaoEstoque.realizado_por é NOT NULL)."
+            )
 
         restante = Decimal(str(quantidade_base))
         consumos: list = []
@@ -241,22 +269,16 @@ class BaixaInsumoService:
                 )
 
             # Audit trail: MovimentacaoEstoque por consumo criado
-            if user_id:
-                from apps.inventory.models_movement import MovimentacaoEstoque
+            from apps.inventory.models_movement import MovimentacaoEstoque
 
-                for c in consumos:
-                    MovimentacaoEstoque(
-                        tipo=MovimentacaoEstoque.Tipo.SAIDA_OS,
-                        lote_insumo=c.lote,
-                        quantidade=c.quantidade_base,
-                        nivel_origem=c.lote.nivel,
-                        ordem_servico_id=ordem_servico_id,
-                        realizado_por_id=user_id,
-                    ).save()
-            else:
-                logger.warning(
-                    "Baixa sem user_id — MovimentacaoEstoque não criada: material=%s os=%s",
-                    material_canonico_id, ordem_servico_id,
-                )
+            for c in consumos:
+                MovimentacaoEstoque(
+                    tipo=MovimentacaoEstoque.Tipo.SAIDA_OS,
+                    lote_insumo=c.lote,
+                    quantidade=c.quantidade_base,
+                    nivel_origem=c.lote.nivel,
+                    ordem_servico_id=ordem_servico_id,
+                    realizado_por_id=user_id,
+                ).save()
 
         return consumos

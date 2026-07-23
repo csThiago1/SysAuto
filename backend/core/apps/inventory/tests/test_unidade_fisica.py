@@ -92,6 +92,7 @@ class TestReservaUnidadeService(TenantTestCase):
     def setUp(self) -> None:
         self.os = make_service_order(9001)
         self.os_id = str(self.os.pk)
+        self.user_id = str(make_user("inv-reserva@example.com").id)
 
     def test_reserva_ordena_por_valor_asc_default(self) -> None:
         """Menor valor_nf deve ser reservado primeiro (default)."""
@@ -103,6 +104,7 @@ class TestReservaUnidadeService(TenantTestCase):
             peca_canonica_id=str(peca.pk),
             quantidade=1,
             ordem_servico_id=self.os_id,
+            user_id=self.user_id,
         )
         self.assertEqual(len(reservadas), 1)
         self.assertEqual(reservadas[0].pk, u_barato.pk)
@@ -123,6 +125,7 @@ class TestReservaUnidadeService(TenantTestCase):
             quantidade=1,
             ordem_servico_id=self.os_id,
             forcar_mais_caro=True,
+            user_id=self.user_id,
         )
         self.assertEqual(reservadas[0].pk, u_caro.pk)
 
@@ -136,6 +139,7 @@ class TestReservaUnidadeService(TenantTestCase):
                 peca_canonica_id=str(peca.pk),
                 quantidade=5,  # pede 5
                 ordem_servico_id=self.os_id,
+                user_id=self.user_id,
             )
 
     def test_reserva_nao_pega_unidades_ja_reservadas(self) -> None:
@@ -148,6 +152,7 @@ class TestReservaUnidadeService(TenantTestCase):
                 peca_canonica_id=str(peca.pk),
                 quantidade=1,
                 ordem_servico_id=self.os_id,
+                user_id=self.user_id,
             )
 
     def test_bipagem_resolve_codigo_barras(self) -> None:
@@ -159,6 +164,7 @@ class TestReservaUnidadeService(TenantTestCase):
         resultado = ReservaUnidadeService.baixar_por_bipagem(
             codigo_barras=codigo,
             ordem_servico_id=self.os_id,
+            user_id=self.user_id,
         )
         u.refresh_from_db()
         self.assertEqual(u.status, "reserved")
