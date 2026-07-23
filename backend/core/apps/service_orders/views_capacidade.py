@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
-from apps.authentication.permissions import IsManagerOrAbove
+from apps.authentication.permissions import PermissionsByActionMixin
 
 from apps.service_orders.models import BloqueioCapacidade, CapacidadeTecnico
 from apps.service_orders.services_capacidade import CapacidadeService
@@ -66,36 +66,26 @@ class _ProximaDataResponseSerializer(serializers.Serializer):
 # ── ViewSets ──────────────────────────────────────────────────────────────────
 
 
-class CapacidadeTecnicoViewSet(ModelViewSet):
+class CapacidadeTecnicoViewSet(PermissionsByActionMixin, ModelViewSet):
     """CRUD de capacidade produtiva por técnico + categoria."""
 
+    read_permission = IsAuthenticated
     serializer_class = CapacidadeTecnicoSerializer
-    permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
     def get_queryset(self):
         return CapacidadeTecnico.objects.filter(
             is_active=True
         ).select_related("tecnico", "categoria_mao_obra").order_by("tecnico", "vigente_desde")
 
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("list", "retrieve"):
-            return [IsAuthenticated()]
-        return [IsAuthenticated(), IsManagerOrAbove()]
 
-
-class BloqueioCapacidadeViewSet(ModelViewSet):
+class BloqueioCapacidadeViewSet(PermissionsByActionMixin, ModelViewSet):
     """CRUD de bloqueios de capacidade (férias, licença, etc.)."""
 
+    read_permission = IsAuthenticated
     serializer_class = BloqueioCapacidadeSerializer
-    permission_classes = [IsAuthenticated, IsManagerOrAbove]
 
     def get_queryset(self):
         return BloqueioCapacidade.objects.filter(is_active=True).order_by("data_inicio")
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("list", "retrieve"):
-            return [IsAuthenticated()]
-        return [IsAuthenticated(), IsManagerOrAbove()]
 
 
 # ── APIViews de cálculo ───────────────────────────────────────────────────────

@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.authentication.permissions import IsManagerOrAbove
+from apps.authentication.permissions import PermissionsByActionMixin
 from apps.parts_catalog.models import PartApplication, PartCategory, PartReference
 from apps.parts_catalog.serializers import (
     PartApplicationSerializer,
@@ -50,6 +50,7 @@ class PartCategoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
 
 class PartReferenceViewSet(
+    PermissionsByActionMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
@@ -69,17 +70,12 @@ class PartReferenceViewSet(
     PATCH  /parts-catalog/references/{id}/
     """
 
-    permission_classes = [IsAuthenticated]
+    read_permission = IsAuthenticated
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ["category", "is_active", "unit"]
     search_fields = ["manufacturer_code", "description", "description_original", "ean"]
     ordering_fields = ["description", "manufacturer_code", "updated_at"]
     ordering = ["description"]
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated()]
 
     def get_queryset(self):  # type: ignore[override]
         if self.action == "retrieve":
@@ -150,6 +146,7 @@ class PartReferenceViewSet(
 
 
 class PartApplicationViewSet(
+    PermissionsByActionMixin,
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     viewsets.GenericViewSet,
@@ -164,17 +161,13 @@ class PartApplicationViewSet(
     POST /parts-catalog/applications/
     """
 
-    permission_classes = [IsAuthenticated]
+    read_permission = IsAuthenticated
+    write_actions = ("create",)
     serializer_class = PartApplicationSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ["part_ref", "make", "model", "source"]
     ordering_fields = ["confidence_score", "created_at"]
     ordering = ["-confidence_score"]
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action == "create":
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated()]
 
     def get_queryset(self):  # type: ignore[override]
         return (

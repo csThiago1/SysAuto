@@ -16,7 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.authentication.permissions import IsManagerOrAbove
+from apps.authentication.permissions import PermissionsByActionMixin
 
 from apps.insurers.models import Insurer, InsurerTenantProfile
 from apps.insurers.serializers import (
@@ -44,6 +44,7 @@ def _logo_extension(file: object) -> str | None:
 
 
 class InsurerViewSet(
+    PermissionsByActionMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
@@ -59,12 +60,8 @@ class InsurerViewSet(
     - upload_logo: POST {id}/upload_logo/ — MANAGER+
     """
 
-    permission_classes = [IsAuthenticated]
-
-    def get_permissions(self) -> list:  # type: ignore[override]
-        if self.action in ("create", "update", "partial_update", "destroy", "upload_logo"):
-            return [IsAuthenticated(), IsManagerOrAbove()]
-        return [IsAuthenticated()]
+    read_permission = IsAuthenticated
+    write_actions = ("create", "update", "partial_update", "destroy", "upload_logo")
     filter_backends = [filters.SearchFilter]
     search_fields = ["name", "trade_name", "abbreviation"]
 
