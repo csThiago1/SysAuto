@@ -10,7 +10,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useForm, useFieldArray } from "react-hook-form"
+import { useForm, useFieldArray, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
@@ -23,6 +23,7 @@ import { usePersons } from "@/hooks/usePersons"
 import { withRoleGuard } from "@/lib/withRoleGuard"
 import type { FiscalDocument } from "@/hooks/useFiscal"
 import { cn } from "@/lib/utils"
+import { DateField } from "@/components/ui/date-field"
 
 // ─── Person Search ───────────────────────────────────────────────────────────
 
@@ -167,7 +168,7 @@ function EmitirNfseManualPageInner() {
           <CheckCircle2 className="h-6 w-6 text-success-400 shrink-0" />
           <div>
             <p className="font-semibold text-success-300">NFS-e em processamento</p>
-            <p className="text-xs text-success-500 mt-0.5">
+            <p className="text-xs text-success-400 mt-0.5">
               O documento foi enviado para a Prefeitura de Manaus.
             </p>
           </div>
@@ -254,10 +255,14 @@ function EmitirNfseManualPageInner() {
               <Label className="text-xs text-foreground/60">
                 Data de Emissão <span className="text-error-400">*</span>
               </Label>
-              <Input
-                type="date"
-                className="mt-1"
-                {...form.register("data_emissao")}
+              <Controller
+                name="data_emissao"
+                control={form.control}
+                render={({ field }) => (
+                  <div className="mt-1">
+                    <DateField value={field.value} onChange={field.onChange} />
+                  </div>
+                )}
               />
               {form.formState.errors.data_emissao && (
                 <p className="mt-0.5 text-xs text-error-400">
@@ -423,7 +428,7 @@ function EmitirNfseManualPageInner() {
           <Button
             type="submit"
             disabled={emitMutation.isPending}
-            className="bg-primary hover:bg-primary/90 text-foreground"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {emitMutation.isPending ? (
               <>

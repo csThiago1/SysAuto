@@ -53,7 +53,18 @@ export function VehicleFipeFields({
 
   // Se tem valor inicial de make, tentar casar com a lista FIPE
   useEffect(() => {
-    if (!initialMake || makes.length === 0) return
+    if (!initialMake || makesLoading) return
+
+    // Catálogo indisponível (tabela vazia / API fora): antes o efeito saía aqui
+    // e a tela mostrava "Selecione..." mesmo com marca e modelo salvos na OS —
+    // parecia veículo sem dados. Cai no modo livre exibindo o que está salvo.
+    if (makes.length === 0) {
+      setFreeMode(true)
+      setFreeMake(initialMake)
+      setFreeModel(initialModel ?? "")
+      return
+    }
+
     const match = makes.find(
       (m) => m.nome.toLowerCase() === initialMake.toLowerCase()
     )
@@ -66,7 +77,7 @@ export function VehicleFipeFields({
       setFreeModel(initialModel ?? "")
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [makes.length])
+  }, [makes.length, makesLoading])
 
   // Se tem valor inicial de model, tentar casar
   useEffect(() => {
@@ -99,8 +110,8 @@ export function VehicleFipeFields({
   if (freeMode) {
     return (
       <>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
+        <div className="grid grid-cols-6 gap-2">
+          <div className="col-span-3">
             <label className={labelClass}>Montadora *</label>
             <input
               className={SELECT}
@@ -112,7 +123,7 @@ export function VehicleFipeFields({
               placeholder="Ex: Honda"
             />
           </div>
-          <div>
+          <div className="col-span-3">
             <label className={labelClass}>Modelo *</label>
             <input
               className={SELECT}
@@ -141,8 +152,8 @@ export function VehicleFipeFields({
   return (
     <>
       {/* Marca */}
-      <div className="grid grid-cols-2 gap-2">
-        <div>
+      <div className="grid grid-cols-6 gap-2">
+        <div className="col-span-3">
           <label className={labelClass}>Montadora *</label>
           <NativeSelect
             disabled={makesLoading}
@@ -164,7 +175,7 @@ export function VehicleFipeFields({
         </div>
 
         {/* Modelo */}
-        <div>
+        <div className="col-span-3">
           <label className={labelClass}>Modelo *</label>
           <NativeSelect
             disabled={!selectedMakeId || modelsLoading}

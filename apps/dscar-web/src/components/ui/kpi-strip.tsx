@@ -8,6 +8,8 @@ export interface KpiItem {
   iconClass: string
   /** destaca o valor (ex: alerta) — classes no valor */
   valueClass?: string
+  /** período do valor, ex: "Agosto/2026" — evita KPI sem contexto de qual mês é */
+  period?: string
 }
 
 /** Régua contínua de KPIs — células divididas por 1px, pastilha + label + valor mono. */
@@ -20,7 +22,10 @@ export function KpiStrip({ items, className }: { items: KpiItem[]; className?: s
             {kpi.icon}
           </span>
           <span className="min-w-0">
-            <span className="block truncate text-[11px] leading-tight text-muted-foreground">{kpi.label}</span>
+            <span className="block truncate text-[11px] leading-tight text-muted-foreground">
+              {kpi.label}
+              {kpi.period && <span className="text-muted-foreground/50"> · {kpi.period}</span>}
+            </span>
             <span className={cn("block font-mono text-[17px] font-semibold leading-tight tabular-nums", kpi.valueClass)}>
               {kpi.value}
             </span>

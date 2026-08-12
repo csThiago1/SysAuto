@@ -87,6 +87,27 @@ export function PartsTab({ orderId }: PartsTabProps) {
   const partsList = parts ?? []
   const filteredParts = sourceFilter === "all" ? partsList : partsList.filter((p) => p.source_type === sourceFilter)
 
+  // Valores derivados de uma peca — a tabela (md+) e os cards (mobile) leem daqui,
+  // pra nao duplicar a aritmetica em dois lugares.
+  function derivePart(part: (typeof filteredParts)[number]) {
+    const bruto = parseFloat(part.unit_price) * parseFloat(part.quantity)
+    const desconto = parseFloat(part.discount)
+    const cobrado = bruto - desconto
+    const custoReal = part.custo_real ? parseFloat(part.custo_real) : null
+    return { desconto, cobrado, custoReal, hasMargem: custoReal !== null && cobrado > 0 }
+  }
+
+  function pagadorLabel(part: (typeof filteredParts)[number]): string {
+    return (
+      part.source_type_display ||
+      (part.source_type === "import"
+        ? "Seguradora"
+        : part.source_type === "complement"
+        ? "Particular"
+        : "Manual")
+    )
+  }
+
   const { custoTotal, valorCobrado, margemPct, pendingCount } = calcPartsTotals(partsList)
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
@@ -163,14 +184,18 @@ export function PartsTab({ orderId }: PartsTabProps) {
   return (
     <div className="py-6 space-y-5">
       {/* Header: título + ação única de adicionar */}
-      <div className="flex items-center justify-between">
-        <div className="section-divider flex-1">
-          PECAS DA OS ({partsList.length})
-          {pendingCount > 0 && (
-            <span className="ml-2 text-warning-400">
-              {pendingCount} pendente{pendingCount > 1 ? "s" : ""}
-            </span>
-          )}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {/* Mobile: eyebrow ocupa a linha toda e a acao desce — a 390px o
+            "N pendentes" passava por baixo do botao. */}
+        <div className="section-divider w-full min-w-0 sm:w-auto sm:flex-1">
+          <span className="whitespace-nowrap">
+            PEÇAS DA OS ({partsList.length})
+            {pendingCount > 0 && (
+              <span className="ml-2 text-warning-400">
+                {pendingCount} pendente{pendingCount > 1 ? "s" : ""}
+              </span>
+            )}
+          </span>
         </div>
         <AddPartMenu
           onEstoque={() => setEstoqueOpen(true)}
@@ -198,9 +223,9 @@ export function PartsTab({ orderId }: PartsTabProps) {
                   "rounded-full px-3 py-1 text-xs font-medium transition",
                   sourceFilter === f.id
                     ? f.color === "info"
-                      ? "bg-info-500/15 text-info-500"
+                      ? "bg-info-500/15 text-info-400"
                       : f.color === "warning"
-                      ? "bg-warning-500/15 text-warning-500"
+                      ? "bg-warning-500/15 text-warning-400"
                       : "bg-white/15 text-foreground"
                     : "bg-muted/50 text-muted-foreground hover:bg-muted"
                 )}
@@ -228,7 +253,9 @@ export function PartsTab({ orderId }: PartsTabProps) {
           />
         </div>
       ) : (
-        <ScrollFade className="rounded-md border border-border bg-muted/50">
+        <>
+        {/* md+: tabela densa. Mobile: cards — 8 colunas a 390px sao ilegiveis no patio. */}
+        <ScrollFade className="hidden rounded-md border border-border bg-muted/50 md:block">
           <Table>
             <TableHeader className="bg-muted/30">
               <TableRow>
@@ -249,11 +276,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
             </TableHeader>
             <TableBody>
               {filteredParts.map((part) => {
-                const bruto = parseFloat(part.unit_price) * parseFloat(part.quantity)
-                const desconto = parseFloat(part.discount)
-                const cobrado = bruto - desconto
-                const custoReal = part.custo_real ? parseFloat(part.custo_real) : null
-                const hasMargem = custoReal !== null && cobrado > 0
+                const { cobrado, custoReal, hasMargem } = derivePart(part)
 
                 return (
                   <TableRow
@@ -285,18 +308,13 @@ export function PartsTab({ orderId }: PartsTabProps) {
                         className={cn(
                           "rounded px-2 py-0.5 text-[11px]",
                           part.source_type === "import"
-                            ? "bg-info-500/10 text-info-500"
+                            ? "bg-info-500/10 text-info-400"
                             : part.source_type === "complement"
-                            ? "bg-warning-500/10 text-warning-500"
+                            ? "bg-warning-500/10 text-warning-400"
                             : "bg-muted text-muted-foreground"
                         )}
                       >
-                        {part.source_type_display ||
-                          (part.source_type === "import"
-                            ? "Seguradora"
-                            : part.source_type === "complement"
-                            ? "Particular"
-                            : "Manual")}
+                        {pagadorLabel(part)}
                       </span>
                     </TableCell>
 
@@ -367,6 +385,92 @@ export function PartsTab({ orderId }: PartsTabProps) {
             </TableBody>
           </Table>
         </ScrollFade>
+
+        <ul className="space-y-2 md:hidden">
+          {filteredParts.map((part) => {
+            const { desconto, cobrado, custoReal, hasMargem } = derivePart(part)
+
+            return (
+              <li
+                key={part.id}
+                className="rounded-[11px] bg-card px-3 py-2.5"
+              >
+                <div className="flex items-start gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-foreground">{part.description}</p>
+                    {part.part_number && (
+                      <p className="mt-0.5 font-mono text-xs text-muted-foreground">
+                        {part.part_number}
+                      </p>
+                    )}
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label={`Ações da peça ${part.description}`}
+                        className="-mr-1 shrink-0 rounded p-1.5 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        className="text-error-400 focus:text-error-400"
+                        onClick={() => setConfirmDeleteId(part.id)}
+                      >
+                        Remover
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                  {part.tipo_qualidade && <TipoQualidadeBadge tipo={part.tipo_qualidade} />}
+                  <OrigemBadge origem={part.origem} />
+                  <StatusPecaBadge status={part.status_peca} />
+                  {/* Pagador so informa quando ha um: "Manual" nao e pagador, e
+                      repetiria o que OrigemBadge/StatusPecaBadge ja dizem. */}
+                  {part.source_type !== "manual" && (
+                    <span
+                      className={cn(
+                        "rounded px-2 py-0.5 text-[11px]",
+                        part.source_type === "import"
+                          ? "bg-info-500/10 text-info-400"
+                          : "bg-warning-500/10 text-warning-400"
+                      )}
+                    >
+                      {pagadorLabel(part)}
+                    </span>
+                  )}
+                </div>
+
+                {/* Rodape em grade de colunas fixas — justify-between faria os
+                    valores flutuarem conforme o comprimento do vizinho. */}
+                <div className="mt-2 grid grid-cols-[minmax(0,1fr)_96px] items-baseline gap-2 border-t border-border pt-2">
+                  <span className="truncate font-mono text-xs tabular-nums text-muted-foreground">
+                    {part.quantity} × {formatCurrency(parseFloat(part.unit_price))}
+                    {desconto > 0 && ` − ${formatCurrency(desconto)}`}
+                  </span>
+                  <span className="text-right font-mono text-sm font-semibold tabular-nums text-foreground">
+                    {formatCurrency(cobrado)}
+                  </span>
+                </div>
+
+                {isManager && (
+                  <div className="mt-1.5 grid grid-cols-[minmax(0,1fr)_96px] items-center gap-2">
+                    <span className="label-mono">Custo</span>
+                    <span className="flex items-center justify-end gap-2 text-right font-mono text-xs tabular-nums text-muted-foreground">
+                      {custoReal !== null ? formatCurrency(custoReal) : "—"}
+                      {hasMargem && <MargemBadge custo={custoReal!} cobrado={cobrado} />}
+                    </span>
+                  </div>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+        </>
       )}
 
       {/* Summary cards */}

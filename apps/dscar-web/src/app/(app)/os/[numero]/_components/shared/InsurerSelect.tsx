@@ -13,25 +13,42 @@ interface InsurerSelectProps {
   knownInsurer?: Insurer | null
 }
 
-// Exported so InsurerSection can render the logo standalone
-export function InsurerLogo({ insurer }: { insurer: Insurer | null }) {
+// Exported so InsurerSection can render the logo standalone.
+// `compact` = adorno de 36px ao lado do select (altura de campo);
+// sem ele, o bloco grande de 80px usado nas telas legadas.
+export function InsurerLogo({
+  insurer,
+  compact = false,
+}: {
+  insurer: Insurer | null
+  compact?: boolean
+}) {
+  const box = compact
+    ? "h-9 w-9 shrink-0 rounded-md"
+    : "h-20 w-20 shrink-0 rounded-xl"
+
   if (!insurer) {
+    if (compact) return null // sem seguradora nao ha o que adornar
     return (
-      <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/30 text-muted-foreground text-2xl font-bold select-none">
+      <div className={`flex ${box} items-center justify-center border-2 border-dashed border-border bg-muted/30 text-muted-foreground text-2xl font-bold select-none`}>
         ?
       </div>
     )
   }
   if (insurer.logo) {
     return (
-      <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl border border-border bg-muted/50 shadow-sm overflow-hidden">
-        <img src={insurer.logo} alt={insurer.display_name} className="h-16 w-16 object-contain" />
+      <div className={`flex ${box} items-center justify-center overflow-hidden bg-muted/50`}>
+        <img
+          src={insurer.logo}
+          alt={insurer.display_name}
+          className={compact ? "h-7 w-7 object-contain" : "h-16 w-16 object-contain"}
+        />
       </div>
     )
   }
   return (
     <div
-      className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl text-foreground text-xl font-bold shadow-sm select-none"
+      className={`flex ${box} items-center justify-center font-bold text-foreground select-none ${compact ? "text-xs" : "text-xl shadow-sm"}`}
       style={{ backgroundColor: insurer.brand_color ?? "#6b7280" }}
     >
       {insurer.abbreviation || insurer.display_name?.charAt(0) || "?"}

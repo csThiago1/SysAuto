@@ -55,7 +55,7 @@ export default function BancosPage() {
             Catálogo de bancos (FEBRABAN) — usado nos dados bancários de fornecedores.
           </p>
         </div>
-        <Button onClick={handleNew} className="bg-primary hover:bg-primary/90 text-foreground gap-1.5">
+        <Button onClick={handleNew} className="bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5">
           <Plus className="h-4 w-4" />
           Novo Banco
         </Button>

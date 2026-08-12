@@ -12,6 +12,7 @@ import { useWatch, type UseFormReturn } from "react-hook-form"
 import { Check, Pencil, X, Zap } from "lucide-react"
 import { formatDateTime } from "@paddock/utils"
 import { cn } from "@/lib/utils"
+import { DateField } from "@/components/ui/date-field"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 
 type DateField =
@@ -28,9 +29,13 @@ interface Milestone {
   statusHint?: string
 }
 
+// Hints abaixo espelham AUTO_TRANSITION_FIELDS (useAutoTransition.ts) — os únicos
+// campos desta timeline que de fato disparam transição automática ao salvar.
+// entry_date NÃO dispara transição ao ser preenchido aqui: é o inverso — o backend
+// preenche entry_date sozinho ao entrar em "initial_survey" (order_service.py).
 const MILESTONES: Milestone[] = [
   { field: "scheduling_date", label: "Agendamento", statusHint: "Preencher muda o status → Vistoria Inicial" },
-  { field: "entry_date", label: "Entrada do veículo", statusHint: "Preencher muda o status da OS" },
+  { field: "entry_date", label: "Entrada do veículo" },
   { field: "service_authorization_date", label: "Autorização do serviço" },
   { field: "final_survey_date", label: "Vistoria final", statusHint: "Preencher muda o status → Vistoria Final" },
   { field: "client_delivery_date", label: "Retirada pelo cliente", statusHint: "Preencher muda o status → Entregue" },
@@ -84,12 +89,12 @@ export function MilestoneTimeline({ form }: MilestoneTimelineProps) {
               <div className="pt-0.5">
                 <p className="inline-flex items-center gap-1.5 text-sm text-foreground/80">
                   {m.label}
-                  {m.statusHint && (
-                    <Zap className="h-3 w-3 cursor-help text-warning-400/80" aria-label={m.statusHint}>
-                      <title>{m.statusHint}</title>
-                    </Zap>
-                  )}
+                  {m.statusHint && !done && <Zap className="h-3 w-3 text-warning-400/80" />}
                 </p>
+                {/* Visível sempre, não só no hover — no touch/mobile um <title> nunca aparece */}
+                {m.statusHint && !done && (
+                  <p className="text-[11px] text-warning-400/80">{m.statusHint}</p>
+                )}
                 {done && !isEditing && (
                   <p className="font-mono text-xs text-muted-foreground">{formatDateTime(value)}</p>
                 )}
@@ -97,13 +102,9 @@ export function MilestoneTimeline({ form }: MilestoneTimelineProps) {
 
               {isEditing ? (
                 <div className="flex items-center gap-1.5">
-                  <input
-                    type="datetime-local"
-                    autoFocus
-                    value={draft}
-                    onChange={(e) => setDraft(e.target.value)}
-                    className="h-8 min-w-0 rounded-lg border border-ring bg-muted/30 px-2 text-xs focus:outline-none focus:ring-2 focus:ring-ring/40"
-                  />
+                  <div className="min-w-0 flex-1">
+                    <DateField withTime value={draft} onChange={setDraft} />
+                  </div>
                   <button
                     type="button"
                     onClick={() => set(m.field, draft || null)}

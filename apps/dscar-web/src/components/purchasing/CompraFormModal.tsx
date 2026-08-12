@@ -115,7 +115,7 @@ export function CompraFormModal({
         <div className="space-y-4">
           {/* Descricao — with catalog search */}
           <div>
-            <label className="label-mono text-muted-foreground mb-0.5 block">
+            <label className="label-mono text-muted-foreground mb-1.5 block">
               Descricao *
             </label>
             <CatalogSearchCombobox
@@ -138,7 +138,7 @@ export function CompraFormModal({
 
           {/* Codigo / Referencia */}
           <div>
-            <label className="label-mono text-muted-foreground mb-0.5 block">
+            <label className="label-mono text-muted-foreground mb-1.5 block">
               Codigo / Referencia
             </label>
             <input
@@ -153,7 +153,7 @@ export function CompraFormModal({
           {/* Tipo de peca + Valor cobrado */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 Tipo de peca *
               </label>
               <select
@@ -171,7 +171,7 @@ export function CompraFormModal({
               </select>
             </div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 Valor cobrado ao cliente *
               </label>
               <div className="relative">
@@ -191,7 +191,7 @@ export function CompraFormModal({
 
           {/* Quantidade */}
           <div className="w-24">
-            <label className="label-mono text-muted-foreground mb-0.5 block">
+            <label className="label-mono text-muted-foreground mb-1.5 block">
               Quantidade
             </label>
             <input
@@ -205,7 +205,7 @@ export function CompraFormModal({
 
           {/* Observacoes */}
           <div>
-            <label className="label-mono text-muted-foreground mb-0.5 block">
+            <label className="label-mono text-muted-foreground mb-1.5 block">
               Observacoes para compras
             </label>
             <textarea

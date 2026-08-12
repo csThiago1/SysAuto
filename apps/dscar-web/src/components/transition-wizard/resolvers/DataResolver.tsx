@@ -9,6 +9,8 @@ import { apiFetch } from "@/lib/api"
 import { usePersonSearch } from "@/app/(app)/os/[numero]/_hooks/useCustomerSearch"
 import { toLocalDatetime } from "@/app/(app)/os/[numero]/_utils/form-defaults"
 import type { ResolverProps } from "./index"
+import { DateField } from "@/components/ui/date-field"
+import { formatPlate, onlyAlnum } from "@paddock/utils"
 
 async function patchOrder(id: string, data: Record<string, unknown>): Promise<void> {
   await apiFetch(`/api/proxy/service-orders/${id}/`, {
@@ -83,9 +85,9 @@ function VehicleDataForm({ block, order, onResolved }: ResolverProps) {
             <input
               id="dv-plate"
               className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-              value={plate}
-              onChange={(e) => setPlate(e.target.value.toUpperCase())}
-              placeholder="ABC1234"
+              value={formatPlate(plate)}
+              onChange={(e) => setPlate(onlyAlnum(e.target.value))}
+              placeholder="ABC-1234"
               maxLength={8}
             />
           </div>
@@ -502,13 +504,7 @@ function AuthDateForm({ order, onResolved }: ResolverProps) {
     <div className="mt-2 flex items-end gap-2">
       <div className="flex-1">
         <label htmlFor="dv-auth-date" className="text-xs font-medium">Data de Autorização</label>
-        <input
-          id="dv-auth-date"
-          type="datetime-local"
-          className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-          value={val}
-          onChange={(e) => setVal(e.target.value)}
-        />
+        <DateField id="dv-auth-date" withTime value={val} onChange={setVal} />
       </div>
       <Button size="sm" disabled={saving} onClick={() => void handleSave()}>
         {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}
@@ -545,13 +541,7 @@ function EntryDateForm({ order, onResolved }: ResolverProps) {
     <div className="mt-2 flex items-end gap-2">
       <div className="flex-1">
         <label htmlFor="dv-entry-date" className="text-xs font-medium">Data de Entrada</label>
-        <input
-          id="dv-entry-date"
-          type="datetime-local"
-          className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-          value={val}
-          onChange={(e) => setVal(e.target.value)}
-        />
+        <DateField id="dv-entry-date" withTime value={val} onChange={setVal} />
       </div>
       <Button size="sm" disabled={saving} onClick={() => void handleSave()}>
         {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}

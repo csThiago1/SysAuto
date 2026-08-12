@@ -6,9 +6,9 @@ import { ScrollFade } from "@/components/ui/scroll-fade"
 import type { ImportBudgetResponse, VersionDiffItem } from "@paddock/types"
 
 const CHANGE_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  added: { bg: "bg-success-500/10", text: "text-success-500", label: "+ Novo" },
-  removed: { bg: "bg-error-500/10", text: "text-error-500", label: "Removido" },
-  changed: { bg: "bg-warning-500/10", text: "text-warning-500", label: "Alterado" },
+  added: { bg: "bg-success-500/10", text: "text-success-400", label: "+ Novo" },
+  removed: { bg: "bg-error-500/10", text: "text-error-400", label: "Removido" },
+  changed: { bg: "bg-warning-500/10", text: "text-warning-400", label: "Alterado" },
   unchanged: { bg: "", text: "text-muted-foreground", label: "—" },
 }
 
@@ -41,8 +41,8 @@ export function ImportDiffView({ diffResult, onApply, onCancel, isApplying }: Pr
           <div className="text-xl font-bold text-foreground/60">v{current_version.version_number}</div>
         </div>
         <div className="rounded-lg border border-info-500/30 bg-info-500/10 p-3">
-          <div className="text-[11px] uppercase text-info-500">Nova Versão</div>
-          <div className="text-xl font-bold text-info-500">v{new_version.version_number}</div>
+          <div className="text-[11px] uppercase text-info-400">Nova Versão</div>
+          <div className="text-xl font-bold text-info-400">v{new_version.version_number}</div>
         </div>
         <div className="rounded-lg bg-surface-800 p-3">
           <div className="text-[11px] uppercase text-muted-foreground">Total Anterior</div>
@@ -50,10 +50,10 @@ export function ImportDiffView({ diffResult, onApply, onCancel, isApplying }: Pr
         </div>
         <div className="rounded-lg bg-surface-800 p-3">
           <div className="text-[11px] uppercase text-muted-foreground">Novo Total</div>
-          <div className={cn("text-xl font-bold", difference >= 0 ? "text-success-500" : "text-error-500")}>
+          <div className={cn("text-xl font-bold", difference >= 0 ? "text-success-400" : "text-error-400")}>
             R$ {fmtMoney(totals_diff.new_total)}
           </div>
-          <div className={cn("text-[11px]", difference >= 0 ? "text-success-500" : "text-error-500")}>
+          <div className={cn("text-[11px]", difference >= 0 ? "text-success-400" : "text-error-400")}>
             {difference >= 0 ? "+" : ""}R$ {fmtMoney(difference)}
           </div>
         </div>
@@ -76,10 +76,10 @@ export function ImportDiffView({ diffResult, onApply, onCancel, isApplying }: Pr
               const style = CHANGE_STYLES[item.change_type]
               return (
                 <tr key={i} className={cn("border-t border-white/5", style.bg)}>
-                  <td className={cn("px-3 py-2", item.change_type === "removed" ? "line-through text-error-500" : "text-foreground")}>
+                  <td className={cn("px-3 py-2", item.change_type === "removed" ? "line-through text-error-400" : "text-foreground")}>
                     {item.description}
                     {item.is_executed && (
-                      <span className="ml-2 rounded bg-warning-500/15 px-1.5 py-0.5 text-[10px] text-warning-500">Executado</span>
+                      <span className="ml-2 rounded bg-warning-500/15 px-1.5 py-0.5 text-[10px] text-warning-400">Executado</span>
                     )}
                   </td>
                   <td className="px-3 py-2 text-center">
@@ -110,10 +110,10 @@ export function ImportDiffView({ diffResult, onApply, onCancel, isApplying }: Pr
           return (
             <div key={i} className={cn("space-y-2 rounded-lg border border-border p-3", style.bg)}>
               <div className="flex items-start justify-between gap-2">
-                <span className={cn("text-sm", item.change_type === "removed" ? "line-through text-error-500" : "text-foreground")}>
+                <span className={cn("text-sm", item.change_type === "removed" ? "line-through text-error-400" : "text-foreground")}>
                   {item.description}
                   {item.is_executed && (
-                    <span className="ml-2 rounded bg-warning-500/15 px-1.5 py-0.5 text-[10px] text-warning-500">Executado</span>
+                    <span className="ml-2 rounded bg-warning-500/15 px-1.5 py-0.5 text-[10px] text-warning-400">Executado</span>
                   )}
                 </span>
                 <span className={cn("shrink-0 rounded px-2 py-0.5 text-[11px]", `${style.bg} ${style.text}`)}>{style.label}</span>

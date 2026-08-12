@@ -258,7 +258,7 @@ export default function MateriaisCanonicoPage() {
                   </TableCell>
                   <TableCell className="py-2">
                     {m.is_active ? (
-                      <Badge className="bg-success-500/10 text-success-500 border-success-500/20 text-xs">
+                      <Badge className="bg-success-500/10 text-success-400 border-success-500/20 text-xs">
                         Ativo
                       </Badge>
                     ) : (

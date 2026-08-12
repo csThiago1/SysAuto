@@ -267,7 +267,7 @@ export default function PlanoContasPage(): React.ReactElement {
             </button>
             <Link
               href={"/financeiro/plano-contas/nova" as Route}
-              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               <PlusCircle className="h-3.5 w-3.5" />
               Nova Conta

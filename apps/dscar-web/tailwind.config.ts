@@ -109,7 +109,8 @@ const config: Config = {
           "100": "#dcfce7",
           "200": "#bbf7d0",
           "300": "#86efac",
-          "400": "#4ade80",
+          // -400 e o degrau de TEXTO sobre superficie: token por tema.
+          "400": "hsl(var(--success-fg))",
           "500": "#22c55e",
           "600": "#16a34a",
           "700": "#15803d",
@@ -124,7 +125,8 @@ const config: Config = {
           "100": "#fef3c7",
           "200": "#fde68a",
           "300": "#fcd34d",
-          "400": "#fbbf24",
+          // -400 e o degrau de TEXTO sobre superficie: token por tema.
+          "400": "hsl(var(--warning-fg))",
           "500": "#f59e0b",
           "600": "#d97706",
           "700": "#b45309",
@@ -139,7 +141,8 @@ const config: Config = {
           "100": "#ffdddd",
           "200": "#ffbfbf",
           "300": "#ff9292",
-          "400": "#ff5757",
+          // -400 e o degrau de TEXTO sobre superficie: token por tema.
+          "400": "hsl(var(--error-fg))",
           "500": "#ff2424",
           "600": "#f20000",
           "700": "#cc0000",
@@ -172,7 +175,8 @@ const config: Config = {
           "100": "#dbeafe",
           "200": "#bfdbfe",
           "300": "#93c5fd",
-          "400": "#60a5fa",
+          // -400 e o degrau de TEXTO sobre superficie: token por tema.
+          "400": "hsl(var(--info-fg))",
           "500": "#3b82f6",
           "600": "#2563eb",
           "700": "#1d4ed8",
@@ -233,9 +237,10 @@ const config: Config = {
 
       // ─── Sombras ─────────────────────────────────────────────────────────────
       boxShadow: {
-        // Cards ERP — sombra sutil para plano de fundo claro
-        "card":   "0 1px 3px 0 rgba(0,0,0,0.08), 0 1px 2px -1px rgba(0,0,0,0.05)",
-        "card-hover": "0 4px 12px 0 rgba(0,0,0,0.12), 0 2px 4px -2px rgba(0,0,0,0.08)",
+        // Cards ERP. Cor vem do token: no claro e quente (preto sobre bege
+        // acinzenta), no escuro e preta. Mesma classe, dois temas.
+        "card":   "0 1px 2px 0 hsl(var(--shadow-color) / calc(var(--shadow-alpha) * 0.55)), 0 2px 6px -1px hsl(var(--shadow-color) / calc(var(--shadow-alpha) * 0.7))",
+        "card-hover": "0 2px 4px 0 hsl(var(--shadow-color) / calc(var(--shadow-alpha) * 0.6)), 0 8px 20px -4px hsl(var(--shadow-color) / var(--shadow-alpha))",
         // Sombra para sidebar overlay mobile
         "sidebar": "4px 0 16px 0 rgba(0,0,0,0.18)",
         // Sombra para dropdowns / menus

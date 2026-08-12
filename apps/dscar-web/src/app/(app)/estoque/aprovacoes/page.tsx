@@ -259,7 +259,7 @@ function ApprovalRow({
           <td colSpan={7} className="px-4 py-3">
             <div className="flex items-end gap-3 max-w-lg">
               <div className="flex-1">
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   MOTIVO DA REJEICAO
                 </label>
                 <input

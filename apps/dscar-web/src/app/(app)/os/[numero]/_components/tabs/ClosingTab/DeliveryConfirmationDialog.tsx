@@ -55,7 +55,7 @@ export function DeliveryConfirmationDialog({
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent className="max-w-md p-0 overflow-hidden">
+      <DialogContent className="flex max-h-[90dvh] max-w-md flex-col overflow-hidden p-0">
         {/* Header */}
         <DialogHeader className="bg-success-500/10 border-b border-success-500/20 px-5 py-4">
           <div className="flex items-center gap-2.5">
@@ -69,8 +69,8 @@ export function DeliveryConfirmationDialog({
           </div>
         </DialogHeader>
 
-        {/* Body */}
-        <div className="p-5 space-y-4">
+        {/* Body — min-h-0 flex-1 pro corpo rolar sem empurrar header/footer pra fora */}
+        <div className="min-h-0 flex-1 overflow-y-auto p-5 space-y-4">
           {/* Fiscal warning for private */}
           {isPrivate && !order.invoice_issued && (
             <div className="flex items-start gap-2 bg-warning-500/10 border border-warning-500/20 rounded-lg px-3 py-2.5">

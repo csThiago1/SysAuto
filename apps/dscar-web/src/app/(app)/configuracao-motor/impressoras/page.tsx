@@ -124,7 +124,7 @@ export default function ImpressorasPage() {
 
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 text-sm bg-primary hover:bg-primary/90 text-foreground px-4 py-2 rounded-md transition-colors"
+          className="flex items-center gap-2 text-sm bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md transition-colors"
         >
           <Plus className="h-4 w-4" />
           Nova Impressora
@@ -190,7 +190,7 @@ export default function ImpressorasPage() {
             <button
               type="submit"
               disabled={createMutation.isPending}
-              className="text-sm bg-primary hover:bg-primary/90 disabled:opacity-50 text-foreground px-4 py-2 rounded-md transition-colors"
+              className="text-sm bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground px-4 py-2 rounded-md transition-colors"
             >
               {createMutation.isPending ? "Salvando..." : "Salvar"}
             </button>

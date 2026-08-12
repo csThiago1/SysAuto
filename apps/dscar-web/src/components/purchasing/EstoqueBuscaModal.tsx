@@ -240,7 +240,7 @@ export function EstoqueBuscaModal({
 
             <div className="mt-4 grid grid-cols-2 gap-3">
               <div>
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   Valor cobrado ao cliente *
                 </label>
                 <div className="relative">
@@ -257,7 +257,7 @@ export function EstoqueBuscaModal({
                 </div>
               </div>
               <div>
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   Tipo de peca *
                 </label>
                 <select

@@ -111,7 +111,7 @@ function BaixarModal({
           </span>
         </p>
         <div>
-          <label className="label-mono text-muted-foreground mb-1 block">
+          <label className="label-mono text-muted-foreground mb-1.5 block">
             ID DA ORDEM DE SERVICO
           </label>
           <input
@@ -124,7 +124,7 @@ function BaixarModal({
           />
         </div>
         <div>
-          <label className="label-mono text-muted-foreground mb-1 block">
+          <label className="label-mono text-muted-foreground mb-1.5 block">
             QUANTIDADE ({lote.unidade_base})
           </label>
           <input
@@ -150,7 +150,7 @@ function BaixarModal({
             type="button"
             onClick={handleSubmit}
             disabled={!osId.trim() || !quantidade.trim() || baixar.isPending}
-            className="px-4 py-1.5 text-xs font-medium text-foreground bg-primary hover:bg-primary/90 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-1.5 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {baixar.isPending ? "Baixando..." : "Baixar"}
           </button>
@@ -201,7 +201,7 @@ function TransferirLoteModal({
           {" "}| Atual: <span className="text-foreground/60">{lote.nivel || lote.localizacao || "Sem posicao"}</span>
         </p>
         <div>
-          <label className="label-mono text-muted-foreground mb-1 block">
+          <label className="label-mono text-muted-foreground mb-1.5 block">
             DESTINO
           </label>
           <PosicaoSelector value={nivelId} onChange={setNivelId} />
@@ -218,7 +218,7 @@ function TransferirLoteModal({
             type="button"
             onClick={handleSubmit}
             disabled={!nivelId || transferir.isPending}
-            className="px-4 py-1.5 text-xs font-medium text-foreground bg-primary hover:bg-primary/90 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-1.5 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {transferir.isPending ? "Transferindo..." : "Transferir"}
           </button>

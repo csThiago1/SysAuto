@@ -2,24 +2,29 @@
 
 import { Controller, type UseFormReturn } from "react-hook-form"
 import type { ServiceOrder } from "@paddock/types"
+import { FORM_INPUT, FORM_LABEL } from "@paddock/utils"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import { InsurerLogo } from "../shared/InsurerSelect"
 import { ExpertCombobox } from "../shared/ExpertCombobox"
 import { useInsurers } from "../../_hooks/useInsurers"
 import { NativeSelect } from "@/components/ui/native-select"
+import { DateField } from "@/components/ui/date-field"
 
 const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-muted-foreground"
-const LABEL = "block text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-0.5"
-const INPUT = "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+// Um unico sistema de campo na tela de OS — antes cada secao tinha o seu.
+const LABEL = FORM_LABEL
+const INPUT = FORM_INPUT
 
 interface InsurerSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
+  /** O container ja rotula a secao (Panel "Seguradora") — nao repetir. */
+  hideHeading?: boolean
   /** OS carregada da API — insurer_detail/expert_detail já vêm resolvidos,
    * evita depender só da lista (paginada/filtrada) pra achar o nome. */
   order?: Pick<ServiceOrder, "insurer_detail" | "expert_detail">
 }
 
-export function InsurerSection({ form, order }: InsurerSectionProps) {
+export function InsurerSection({ form, order, hideHeading }: InsurerSectionProps) {
   const { register, control, watch, formState: { errors } } = form
   const insuredType = watch("insured_type")
   const insurerId = watch("insurer")
@@ -32,42 +37,45 @@ export function InsurerSection({ form, order }: InsurerSectionProps) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-3 border-b pb-1.5">
-        <span className={SECTION_TITLE}>Seguradora</span>
-      </div>
+      {!hideHeading && (
+        <div className="flex items-center gap-3 border-b pb-1.5">
+          <span className={SECTION_TITLE}>Seguradora</span>
+        </div>
+      )}
 
-      {/* Main layout: logo hero on left, fields on right */}
-      <div className="flex items-start gap-4">
+      {/* Uma unica grade de 6 colunas: antes o logo era um trilho lateral que
+          deixava a coluna vazia nas linhas seguintes, e cada linha usava um
+          sistema proprio (flex, cols-3), entao nada se alinhava na vertical. */}
+      <div className="space-y-2">
 
-        {/* Logo — the hero */}
-        <InsurerLogo insurer={selectedInsurer} />
-
-        {/* All fields — compact grid */}
-        <div className="flex-1 min-w-0 space-y-2">
-
-          {/* Row 1: Dropdown + Tipo */}
-          <div className="flex gap-2">
-            <div className="flex-1 min-w-0">
+          {/* Row 1: Logo + Seguradora + Tipo */}
+          <div className="grid grid-cols-6 gap-x-2 gap-y-5">
+            {/* Logo inline ao lado do select, nao numa coluna propria: como
+                coluna ele deslocava a linha 1 em relacao as de baixo. */}
+            <div className="col-span-4 min-w-0">
               <label className={LABEL}>Seguradora</label>
-              <Controller
-                name="insurer"
-                control={control}
-                render={({ field }) => (
-                  <NativeSelect
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value || null)}
-                  >
-                    <option value="">Selecione...</option>
-                    {insurers.map((ins) => (
-                      <option key={ins.id} value={ins.id}>{ins.display_name}</option>
-                    ))}
-                  </NativeSelect>
-                )}
-              />
+              <div className="flex items-center gap-2">
+                <InsurerLogo insurer={selectedInsurer} compact />
+                <Controller
+                  name="insurer"
+                  control={control}
+                  render={({ field }) => (
+                    <NativeSelect
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value || null)}
+                    >
+                      <option value="">Selecione...</option>
+                      {insurers.map((ins) => (
+                        <option key={ins.id} value={ins.id}>{ins.display_name}</option>
+                      ))}
+                    </NativeSelect>
+                  )}
+                />
+              </div>
               {errors.insurer && <p className="mt-0.5 text-xs text-error-400">{errors.insurer.message}</p>}
             </div>
 
-            <div className="w-36 shrink-0">
+            <div className="col-span-2">
               <label className={LABEL}>Tipo</label>
               <Controller
                 name="insured_type"
@@ -84,17 +92,17 @@ export function InsurerSection({ form, order }: InsurerSectionProps) {
           </div>
 
           {/* Row 2: Sinistro + Corretor + Franquia */}
-          <div className="grid grid-cols-3 gap-2">
-            <div>
+          <div className="grid grid-cols-6 gap-x-2 gap-y-5">
+            <div className="col-span-3 sm:col-span-2">
               <label className={LABEL}>Sinistro</label>
               <input className={INPUT} type="text" placeholder="Ex: 2024/001234" {...register("casualty_number")} aria-invalid={!!errors.casualty_number} />
             </div>
-            <div>
+            <div className="col-span-3 sm:col-span-2">
               <label className={LABEL}>Corretor</label>
               <input className={INPUT} type="text" placeholder="Nome do corretor" {...register("broker_name")} aria-invalid={!!errors.broker_name} />
             </div>
             {insuredType === "insured" && (
-              <div>
+              <div className="col-span-3 sm:col-span-2">
                 <label className={LABEL}>Franquia (R$)</label>
                 <input
                   className={INPUT}
@@ -109,8 +117,8 @@ export function InsurerSection({ form, order }: InsurerSectionProps) {
           </div>
 
           {/* Row 3: Perito + Visita */}
-          <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-2">
+          <div className="grid grid-cols-6 gap-x-2 gap-y-5">
+            <div className="col-span-6 sm:col-span-4">
               <label className={LABEL}>Perito</label>
               <Controller
                 name="expert"
@@ -125,24 +133,52 @@ export function InsurerSection({ form, order }: InsurerSectionProps) {
                 )}
               />
             </div>
-            <div>
+            <div className="col-span-3 sm:col-span-2">
               <label className={LABEL}>Visita perito</label>
-              <input className={INPUT} type="date" {...register("expert_date")} aria-invalid={!!errors.expert_date} />
+              <Controller
+                name="expert_date"
+                control={control}
+                render={({ field }) => (
+                  <DateField
+                    value={field.value}
+                    onChange={field.onChange}
+                    aria-invalid={!!errors.expert_date}
+                  />
+                )}
+              />
             </div>
           </div>
 
           {/* Row 4: Datas */}
-          <div className="grid grid-cols-3 gap-2">
-            <div>
+          <div className="grid grid-cols-6 gap-x-2 gap-y-5">
+            <div className="col-span-3 sm:col-span-2">
               <label className={LABEL}>Vistoria</label>
-              <input className={INPUT} type="date" {...register("survey_date")} aria-invalid={!!errors.survey_date} />
+              <Controller
+                name="survey_date"
+                control={control}
+                render={({ field }) => (
+                  <DateField
+                    value={field.value}
+                    onChange={field.onChange}
+                    aria-invalid={!!errors.survey_date}
+                  />
+                )}
+              />
             </div>
-            <div>
+            <div className="col-span-3 sm:col-span-4">
               <label className={LABEL}>Autorização</label>
-              <input
-                className={errors.authorization_date ? `${INPUT} !border-error-500` : INPUT}
-                type="datetime-local"
-                {...register("authorization_date")} aria-invalid={!!errors.authorization_date}
+              <Controller
+                name="authorization_date"
+                control={control}
+                render={({ field }) => (
+                  <DateField
+                    withTime
+                    value={field.value}
+                    onChange={field.onChange}
+                    aria-invalid={!!errors.authorization_date}
+                    className={errors.authorization_date ? "!border-error-500" : undefined}
+                  />
+                )}
               />
               {errors.authorization_date
                 ? <p className="mt-0.5 text-xs text-error-400">{errors.authorization_date.message}</p>
@@ -151,7 +187,6 @@ export function InsurerSection({ form, order }: InsurerSectionProps) {
             </div>
           </div>
 
-        </div>
       </div>
     </div>
   )

@@ -27,6 +27,7 @@ import { useEmployees } from "@/hooks/useHR"
 import { useCategoriasMaoObra } from "@/hooks/usePricingCatalog"
 import type { HeatmapDia, EmployeeListItem } from "@paddock/types"
 import { TableSkeleton } from "@/components/ui/table-skeleton"
+import { DateField } from "@/components/ui/date-field"
 
 function startOfWeek(d: Date): string {
   const day = d.getDay()
@@ -267,12 +268,7 @@ export default function CapacidadePage() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-foreground/70 text-xs">Vigente desde *</Label>
-                <Input
-                  className="bg-muted/50 border-border text-foreground"
-                  type="date"
-                  value={capVigente}
-                  onChange={(e) => setCapVigente(e.target.value)}
-                />
+                <DateField value={capVigente} onChange={setCapVigente} />
               </div>
             </div>
             <div className="flex justify-end gap-2">
@@ -364,21 +360,11 @@ export default function CapacidadePage() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-foreground/70 text-xs">Data início *</Label>
-                <Input
-                  className="bg-muted/50 border-border text-foreground"
-                  type="date"
-                  value={blqInicio}
-                  onChange={(e) => setBlqInicio(e.target.value)}
-                />
+                <DateField value={blqInicio} onChange={setBlqInicio} />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-foreground/70 text-xs">Data fim *</Label>
-                <Input
-                  className="bg-muted/50 border-border text-foreground"
-                  type="date"
-                  value={blqFim}
-                  onChange={(e) => setBlqFim(e.target.value)}
-                />
+                <DateField value={blqFim} onChange={setBlqFim} />
               </div>
             </div>
             <div className="flex justify-end gap-2">

@@ -8,6 +8,7 @@ import { useReducedMotion } from "motion/react";
 import type { PaddockRole, ExtraPermission } from "@paddock/types";
 import { visibleModules, isActiveRoute, isGroupActive } from "./nav-config";
 import { Dock, type DockModule } from "./Dock";
+import { DockActions } from "./DockActions";
 import { useOverdueOrders } from "@/hooks/useOverdueOrders";
 import { cn } from "@/lib/utils";
 
@@ -97,7 +98,11 @@ export function DockNav(): React.ReactElement {
         hidden && "translate-y-[140%]"
       )}
     >
-      <Dock modules={modules} onNavigate={(href) => router.push(href as Route)} />
+      <Dock
+        modules={modules}
+        onNavigate={(href) => router.push(href as Route)}
+        trailing={<DockActions />}
+      />
     </div>
   );
 }

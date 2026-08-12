@@ -163,7 +163,7 @@ function ItemRow({
             type="button"
             onClick={handleSave}
             disabled={registrar.isPending}
-            className="rounded-md bg-primary px-2.5 py-1 text-[10px] font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+            className="rounded-md bg-primary px-2.5 py-1 text-[10px] font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
           >
             {registrar.isPending ? "..." : "Salvar"}
           </button>

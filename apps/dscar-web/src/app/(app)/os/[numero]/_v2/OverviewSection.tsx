@@ -118,11 +118,11 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
         {/* Prazos */}
         <InfoCard icon={<CalendarClock className="h-4 w-4" />} title="Prazos">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <DateItem label="Entrada" value={formatDate(order.created_at)} />
+            <DateItem label="Entrada" value={formatDate(order.entry_date ?? order.created_at)} />
             <DateItem
               label="Previsão de entrega"
-              value={order.delivery_date ? formatDate(order.delivery_date) : "—"}
-              highlight={!!order.delivery_date}
+              value={order.estimated_delivery_date ? formatDate(order.estimated_delivery_date) : "—"}
+              highlight={!!order.estimated_delivery_date}
             />
             <DateItem
               label="Retirada"
@@ -132,7 +132,7 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
         </InfoCard>
 
         {/* Pendências / transição — motor existente, casca nova */}
-        <div className="rounded-xl border border-border bg-card/50">
+        <div className="rounded-xl border border-border bg-card shadow-card">
           <div className="flex items-center gap-2 border-b border-border px-4 py-3">
             <ClipboardList className="h-4 w-4 text-muted-foreground" />
             <h3 className="text-sm font-medium text-foreground">Próximo passo</h3>
@@ -145,7 +145,7 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
 
       {/* Coluna lateral */}
       <div className="space-y-4">
-        <div className="rounded-xl border border-border bg-card/50">
+        <div className="rounded-xl border border-border bg-card shadow-card">
           <div className="flex items-center gap-2 border-b border-border px-4 py-3">
             <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
             <h3 className="text-sm font-medium text-foreground">Financeiro</h3>
@@ -163,7 +163,7 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
         </div>
 
         {recentPhotos.length > 0 && (
-          <div className="rounded-xl border border-border bg-card/50">
+          <div className="rounded-xl border border-border bg-card shadow-card">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Images className="h-4 w-4" />
@@ -194,7 +194,7 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
           </div>
         )}
 
-        <div className="rounded-xl border border-border bg-card/50">
+        <div className="rounded-xl border border-border bg-card shadow-card">
           <div className="flex items-center gap-2 border-b border-border px-4 py-3">
             <Wrench className="h-4 w-4 text-muted-foreground" />
             <h3 className="text-sm font-medium text-foreground">Ações rápidas</h3>
@@ -225,7 +225,7 @@ function InfoCard({
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card/50">
+    <div className="rounded-xl border border-border bg-card shadow-card">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2 text-muted-foreground">
           {icon}

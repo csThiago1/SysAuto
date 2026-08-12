@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { ReceivableOrigin } from "@paddock/types";
 import { RECEIVABLE_ORIGIN_LABELS } from "@paddock/types";
+import { DateField } from "@/components/ui/date-field"
 
 // ── Zod schema ────────────────────────────────────────────────────────────────
 
@@ -342,21 +343,13 @@ export default function NovoContaReceberPage(): React.ReactElement {
                 />
               </FormField>
               <FormField label="Data de vencimento *" error={errors.due_date}>
-                <Input
-                  type="date"
-                  value={form.due_date}
-                  onChange={(e) => setField("due_date", e.target.value)}
-                />
+                <DateField value={form.due_date} onChange={(v) => setField("due_date", v)} />
               </FormField>
               <FormField
                 label="Data de competência *"
                 error={errors.competence_date}
               >
-                <Input
-                  type="date"
-                  value={form.competence_date}
-                  onChange={(e) => setField("competence_date", e.target.value)}
-                />
+                <DateField value={form.competence_date} onChange={(v) => setField("competence_date", v)} />
               </FormField>
               <FormField label="Origem" error={errors.origin}>
                 <select
@@ -465,7 +458,7 @@ export default function NovoContaReceberPage(): React.ReactElement {
             <button
               type="submit"
               disabled={isSaving}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {isSaving
                 ? "Salvando..."

@@ -97,7 +97,7 @@ export default function FolhaPage(): React.ReactElement {
             </Link>
             <button
               onClick={() => setShowGenerate((p) => !p)}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >
               Gerar contracheque
             </button>
@@ -180,7 +180,7 @@ export default function FolhaPage(): React.ReactElement {
               <button
                 type="submit"
                 disabled={generate.isPending}
-                className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-foreground disabled:opacity-50"
+                className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50"
               >
                 {generate.isPending ? "Gerando..." : "Gerar"}
               </button>

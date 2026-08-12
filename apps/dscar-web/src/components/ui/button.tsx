@@ -17,7 +17,9 @@ const buttonVariants = cva(
         outline:
           "border-2 border-foreground/20 bg-card text-foreground shadow-sm hover:bg-muted/50 hover:border-foreground/30",
         secondary:
-          "bg-secondary-950 text-foreground border border-secondary-800 shadow-sm hover:bg-secondary-800",
+          // secondary-950 e quase preto: um degrau de rampa calibrado so pro escuro.
+        // No tema claro o botao saia preto no meio do papel.
+        "bg-secondary text-secondary-foreground border border-border shadow-sm hover:bg-accent",
         ghost:
           "text-foreground/70 hover:bg-muted/50 hover:text-foreground/90",
         link:

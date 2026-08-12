@@ -80,7 +80,7 @@ export default function ContagensPage() {
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 transition-colors"
+          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Nova Contagem
@@ -106,7 +106,7 @@ export default function ContagensPage() {
                   className={`rounded-md border px-4 py-2 text-sm font-medium transition-colors ${
                     tipo === t
                       ? "border-primary text-primary/80 bg-primary/10"
-                      : "border-border text-foreground/60 hover:text-foreground hover:border-border"
+                      : "border-border text-primary-foreground/60 hover:text-foreground hover:border-border"
                   }`}
                 >
                   {t === "ciclica" ? "Cíclica" : "Total"}
@@ -119,7 +119,7 @@ export default function ContagensPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Armazem select — always shown */}
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 ARMAZÉM
               </label>
               <select
@@ -142,7 +142,7 @@ export default function ContagensPage() {
             {/* Rua select — only for ciclica */}
             {tipo === "ciclica" && (
               <div>
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   RUA
                 </label>
                 <select
@@ -180,7 +180,7 @@ export default function ContagensPage() {
               type="button"
               onClick={handleCreate}
               disabled={createMut.isPending}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {createMut.isPending ? "Abrindo..." : "Abrir Contagem"}
             </button>

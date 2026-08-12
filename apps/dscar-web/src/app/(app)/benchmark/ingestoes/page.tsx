@@ -30,6 +30,7 @@ import {
 } from "@/hooks/useBenchmark"
 import { BENCHMARK_INGESTAO_STATUS_LABEL, BENCHMARK_INGESTAO_STATUS_BADGE } from "@paddock/utils"
 import { Skeleton } from "@/components/ui/skeleton"
+import { DateField } from "@/components/ui/date-field"
 
 export default function BenchmarkIngestoesPage() {
   const { data: ingestoes = [], isLoading, refetch } = useBenchmarkIngestoes()
@@ -110,12 +111,7 @@ export default function BenchmarkIngestoesPage() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-foreground/70 text-xs">Período de referência</Label>
-              <Input
-                type="date"
-                className="bg-muted/50 border-border text-foreground"
-                value={periodoRef}
-                onChange={(e) => setPeriodoRef(e.target.value)}
-              />
+              <DateField value={periodoRef} onChange={setPeriodoRef} />
             </div>
           </div>
           <div className="space-y-1.5">

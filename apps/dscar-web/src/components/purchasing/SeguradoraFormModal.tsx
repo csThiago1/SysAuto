@@ -73,7 +73,7 @@ export function SeguradoraFormModal({ open, onClose, onSubmit }: SeguradoraFormM
         <div className="space-y-4">
           {/* Descricao */}
           <div>
-            <label className="label-mono text-muted-foreground mb-0.5 block">
+            <label className="label-mono text-muted-foreground mb-1.5 block">
               Descricao *
             </label>
             <input
@@ -88,7 +88,7 @@ export function SeguradoraFormModal({ open, onClose, onSubmit }: SeguradoraFormM
           {/* Tipo de peca + Valor cobrado */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 Tipo de peca *
               </label>
               <select
@@ -106,7 +106,7 @@ export function SeguradoraFormModal({ open, onClose, onSubmit }: SeguradoraFormM
               </select>
             </div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 Valor cobrado ao cliente *
               </label>
               <div className="relative">
@@ -126,7 +126,7 @@ export function SeguradoraFormModal({ open, onClose, onSubmit }: SeguradoraFormM
 
           {/* Quantidade */}
           <div className="w-24">
-            <label className="label-mono text-muted-foreground mb-0.5 block">
+            <label className="label-mono text-muted-foreground mb-1.5 block">
               Quantidade
             </label>
             <input

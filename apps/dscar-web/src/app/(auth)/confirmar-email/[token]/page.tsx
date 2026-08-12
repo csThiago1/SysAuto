@@ -89,7 +89,7 @@ export default function ConfirmEmailPage({
             {status === "success" && (
               <div className="space-y-4">
                 <div className="flex flex-col items-center gap-3 py-4">
-                  <CheckCircle className="h-10 w-10 text-success-500" />
+                  <CheckCircle className="h-10 w-10 text-success-400" />
                   <p className="text-sm text-secondary-300 text-center">
                     Seu e-mail foi confirmado com sucesso! Agora voce pode acessar o sistema.
                   </p>
@@ -106,7 +106,7 @@ export default function ConfirmEmailPage({
             {status === "error" && (
               <div className="space-y-4">
                 <div className="flex flex-col items-center gap-3 py-4">
-                  <XCircle className="h-10 w-10 text-error-500" />
+                  <XCircle className="h-10 w-10 text-error-400" />
                   <p className="text-sm text-secondary-300 text-center">
                     {errorMessage}
                   </p>

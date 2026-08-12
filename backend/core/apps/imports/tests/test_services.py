@@ -158,9 +158,9 @@ class FetchCiliaBudgetTest(TenantTestCase):
             customer_name="Sem Sinistro",
             plate="TST0002",
         )
-        with patch("apps.imports.tasks.ImportService") as MockService:
+        with patch("apps.cilia.services.import_from_cilia") as mock_import:
             poll_cilia_budget(
                 service_order_id=os_instance.pk,
                 tenant_schema=connection.tenant.schema_name,
             )
-        MockService.fetch_cilia_budget.assert_not_called()
+        mock_import.assert_not_called()

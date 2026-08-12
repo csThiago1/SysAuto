@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { formatCpfCnpj, formatPhone, formatPlate, onlyDigits, onlyAlnum } from "@paddock/utils"
 
 interface Props {
   order: ServiceOrder
@@ -138,16 +139,18 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                   <div>
                     <Label className="text-xs text-muted-foreground">CPF</Label>
                     <Input
-                      value={formData.customer.cpf}
-                      onChange={(e) => updateField("customer.cpf", e.target.value)}
+                      inputMode="numeric"
+                      value={formatCpfCnpj(formData.customer.cpf)}
+                      onChange={(e) => updateField("customer.cpf", onlyDigits(e.target.value))}
                       className="mt-1 h-8 text-xs"
                     />
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground">Telefone</Label>
                     <Input
-                      value={formData.customer.phone}
-                      onChange={(e) => updateField("customer.phone", e.target.value)}
+                      inputMode="numeric"
+                      value={formatPhone(formData.customer.phone)}
+                      onChange={(e) => updateField("customer.phone", onlyDigits(e.target.value))}
                       className="mt-1 h-8 text-xs"
                     />
                   </div>
@@ -171,8 +174,8 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                 <div>
                   <Label className="text-xs text-muted-foreground">Placa</Label>
                   <Input
-                    value={formData.vehicle.plate}
-                    onChange={(e) => updateField("vehicle.plate", e.target.value)}
+                    value={formatPlate(formData.vehicle.plate)}
+                    onChange={(e) => updateField("vehicle.plate", onlyAlnum(e.target.value))}
                     className="mt-1 h-8 text-xs font-mono"
                   />
                 </div>
@@ -335,7 +338,7 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
               <Button
                 onClick={handleGenerate}
                 disabled={generateMutation.isPending}
-                className="bg-primary hover:bg-primary/90 text-foreground"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 {generateMutation.isPending ? (
                   <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Gerando...</>

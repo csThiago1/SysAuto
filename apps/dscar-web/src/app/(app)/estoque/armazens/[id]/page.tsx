@@ -186,7 +186,7 @@ export default function ArmazemDetailPage({
               className={`flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
                 activeForm === form
                   ? "border-primary text-primary/80 bg-primary/10"
-                  : "border-border text-foreground/60 hover:text-foreground hover:border-border"
+                  : "border-border text-primary-foreground/60 hover:text-foreground hover:border-border"
               }`}
             >
               <Plus className="h-3 w-3" />
@@ -206,7 +206,7 @@ export default function ArmazemDetailPage({
           <div className="section-divider">NOVA RUA</div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 CÓDIGO
               </label>
               <input
@@ -217,7 +217,7 @@ export default function ArmazemDetailPage({
               />
             </div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 DESCRIÇÃO
               </label>
               <input
@@ -243,7 +243,7 @@ export default function ArmazemDetailPage({
               type="button"
               onClick={handleCreateRua}
               disabled={ruaCreate.isPending}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {ruaCreate.isPending ? "Criando..." : "Criar Rua"}
             </button>
@@ -256,7 +256,7 @@ export default function ArmazemDetailPage({
           <div className="section-divider">NOVA PRATELEIRA</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 RUA
               </label>
               <select
@@ -274,7 +274,7 @@ export default function ArmazemDetailPage({
               </select>
             </div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 CÓDIGO
               </label>
               <input
@@ -285,7 +285,7 @@ export default function ArmazemDetailPage({
               />
             </div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 CAPACIDADE (KG)
               </label>
               <input
@@ -312,7 +312,7 @@ export default function ArmazemDetailPage({
               type="button"
               onClick={handleCreatePrateleira}
               disabled={prateleiraCreate.isPending}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {prateleiraCreate.isPending ? "Criando..." : "Criar Prateleira"}
             </button>
@@ -325,7 +325,7 @@ export default function ArmazemDetailPage({
           <div className="section-divider">NOVO NÍVEL</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 RUA
               </label>
               <select
@@ -346,7 +346,7 @@ export default function ArmazemDetailPage({
               </select>
             </div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 PRATELEIRA
               </label>
               <select
@@ -367,7 +367,7 @@ export default function ArmazemDetailPage({
               </select>
             </div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 CÓDIGO
               </label>
               <input
@@ -393,7 +393,7 @@ export default function ArmazemDetailPage({
               type="button"
               onClick={handleCreateNivel}
               disabled={nivelCreate.isPending}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {nivelCreate.isPending ? "Criando..." : "Criar Nível"}
             </button>

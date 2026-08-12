@@ -67,7 +67,7 @@ export function OverrideRequestModal({
               {softBlocks.map((b) => (
                 <li
                   key={b.code}
-                  className="flex items-start gap-2 text-sm text-warning-500"
+                  className="flex items-start gap-2 text-sm text-warning-400"
                 >
                   <Lock className="h-4 w-4 mt-0.5 shrink-0" aria-hidden="true" />
                   {b.message}
@@ -79,7 +79,7 @@ export function OverrideRequestModal({
           <div>
             <label htmlFor="override-reason" className="text-sm font-medium">
               Motivo da solicitação{" "}
-              <span className="text-error-500" aria-hidden="true">*</span>
+              <span className="text-error-400" aria-hidden="true">*</span>
             </label>
             <textarea
               id="override-reason"

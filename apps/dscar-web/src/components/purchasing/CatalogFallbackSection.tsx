@@ -49,7 +49,7 @@ export function CatalogFallbackSection({
 
       {compatible.length > 0 && (
         <div className="mb-4">
-          <p className="text-xs text-success-500 font-medium mb-2">
+          <p className="text-xs text-success-400 font-medium mb-2">
             Compativeis com {vehicleLabel}
           </p>
           <div className="space-y-1">
@@ -107,7 +107,7 @@ function CatalogResultRow({
         <div className="flex items-center gap-1.5 shrink-0">
           <span className="text-xs text-muted-foreground">{ref_.category_name}</span>
           {compatible && (
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-success-500/10 text-success-500 border border-success-500/20">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-success-500/10 text-success-400 border border-success-500/20">
               Compativel
             </span>
           )}

@@ -83,7 +83,7 @@ export function NotificationBell(): React.ReactElement {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground/70 transition-colors"
+          className="relative flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground/70 transition-colors md:h-9 md:w-9"
           aria-label="Notificações de OS"
           aria-haspopup="true"
         >
@@ -123,7 +123,7 @@ export function NotificationBell(): React.ReactElement {
           </div>
         ) : orders.length === 0 && pendingOverrideCount === 0 ? (
           <div className="px-4 py-6 text-center flex flex-col items-center gap-2">
-            <CheckCircle2 className="h-6 w-6 text-success-500" />
+            <CheckCircle2 className="h-6 w-6 text-success-400" />
             <p className="text-sm text-muted-foreground">Nenhuma OS vencida ou com entrega hoje.</p>
           </div>
         ) : (

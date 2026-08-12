@@ -167,7 +167,7 @@ export function ProdutoInsumoDialog({
             <div className="section-divider">IDENTIDADE</div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   SKU INTERNO
                 </label>
                 <input
@@ -178,7 +178,7 @@ export function ProdutoInsumoDialog({
                 />
               </div>
               <div>
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   NOME INTERNO
                 </label>
                 <input
@@ -191,7 +191,7 @@ export function ProdutoInsumoDialog({
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   COD. FABRICANTE
                 </label>
                 <input
@@ -201,7 +201,7 @@ export function ProdutoInsumoDialog({
                 />
               </div>
               <div>
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   COD. EAN
                 </label>
                 <input
@@ -212,7 +212,7 @@ export function ProdutoInsumoDialog({
               </div>
             </div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 NOME FABRICANTE
               </label>
               <input
@@ -228,7 +228,7 @@ export function ProdutoInsumoDialog({
             <div className="section-divider">CLASSIFICACAO</div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   UNIDADE BASE
                 </label>
                 <select
@@ -244,7 +244,7 @@ export function ProdutoInsumoDialog({
                 </select>
               </div>
               <div>
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   CATEGORIA
                 </label>
                 <select
@@ -268,7 +268,7 @@ export function ProdutoInsumoDialog({
             <div className="section-divider">PRECO</div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   PRECO VENDA SUGERIDO
                 </label>
                 <input
@@ -284,7 +284,7 @@ export function ProdutoInsumoDialog({
                 />
               </div>
               <div>
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   MARGEM PADRAO %
                 </label>
                 <input

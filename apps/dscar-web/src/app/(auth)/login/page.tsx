@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -92,6 +93,8 @@ export default function LoginPage(): React.ReactElement {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // So marca os campos como invalidos quando a credencial e que foi recusada.
+  const [fieldsRejected, setFieldsRejected] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
 
   // Auto-rotate carousel
@@ -102,24 +105,65 @@ export default function LoginPage(): React.ReactElement {
     return () => clearInterval(interval);
   }, []);
 
+  /** Credencial recusada vs. qualquer outra coisa (servidor fora, rede, 500). */
+  function isCredentialsError(err: unknown): boolean {
+    const raw =
+      typeof err === "string"
+        ? err
+        : err instanceof Error
+          ? `${err.name} ${err.message}`
+          : String((err as { type?: string } | null)?.type ?? "");
+    return /credential/i.test(raw);
+  }
+
+  /**
+   * Mensagem que nomeia o problema e o caminho de saída. Dizer "senha
+   * incorreta" quando o backend está fora manda o usuário caçar o problema
+   * errado — por isso os dois casos são separados.
+   */
+  function describeAuthError(err: unknown): string {
+    if (err == null) return "Não foi possível entrar. Tente novamente.";
+    if (isCredentialsError(err)) return "E-mail ou senha incorretos.";
+    return "Não foi possível falar com o servidor. Verifique sua conexão e tente de novo.";
+  }
+
   async function handleSubmit(
     e: React.FormEvent<HTMLFormElement>
   ): Promise<void> {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setFieldsRejected(false);
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    // next-auth v5 tanto RETORNA {error} quanto LANÇA, dependendo do caso — a
+    // v4 sempre retornava {ok:false}. Sem try/catch o botão ficava travado em
+    // "carregando" para sempre e nenhuma mensagem aparecia. Os dois caminhos
+    // terminam em fail(); o finally garante que a tela sempre destrava.
+    function fail(cause: unknown): void {
+      const credencial = isCredentialsError(cause);
+      setError(describeAuthError(cause));
+      setFieldsRejected(credencial);
+      // Servidor fora merece o canal barulhento; senha errada o inline resolve.
+      if (!credencial) toast.error(describeAuthError(cause));
+    }
 
-    if (!result?.ok) {
-      setError("E-mail ou senha incorretos.");
-      setIsLoading(false);
-    } else {
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error || !result?.ok) {
+        fail(result?.error ?? "CredentialsSignin");
+        return;
+      }
+
       router.push("/dashboard");
+    } catch (err: unknown) {
+      fail(err);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -272,6 +316,7 @@ export default function LoginPage(): React.ReactElement {
                     onChange={(e) => setEmail(e.target.value)}
                     className="border-secondary-700/50 bg-secondary-950/80 text-foreground placeholder:text-secondary-600 focus-visible:ring-primary"
                     autoComplete="email"
+                    aria-invalid={fieldsRejected ? true : undefined}
                     required
                   />
                 </div>
@@ -288,12 +333,20 @@ export default function LoginPage(): React.ReactElement {
                     onChange={(e) => setPassword(e.target.value)}
                     className="border-secondary-700/50 bg-secondary-950/80 text-foreground placeholder:text-secondary-600 focus-visible:ring-primary"
                     autoComplete="current-password"
+                    aria-invalid={fieldsRejected ? true : undefined}
                     required
                   />
                 </div>
 
                 {error && (
-                  <p className="text-sm text-error-600">{error}</p>
+                  <p
+                    role="alert"
+                    aria-live="assertive"
+                    className="flex items-start gap-2 rounded-md border border-error-500/30 bg-error-500/10 px-3 py-2 text-sm text-error-400"
+                  >
+                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span>{error}</span>
+                  </p>
                 )}
 
                 <Button

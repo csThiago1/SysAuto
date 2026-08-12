@@ -14,6 +14,7 @@ import { DEPARTMENT_LABELS } from "@paddock/types";
 import { useEmployees, useDailySummary } from "@/hooks";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui";
+import { DateField } from "@/components/ui/date-field"
 
 export default function EspelhoPontoPage(): React.ReactElement {
   const today = new Date().toISOString().split("T")[0];
@@ -53,12 +54,7 @@ export default function EspelhoPontoPage(): React.ReactElement {
 
         {/* Filters */}
         <div className="flex flex-wrap gap-3">
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="rounded-md border border-border px-3 py-2 text-sm"
-          />
+          <DateField value={selectedDate} onChange={setSelectedDate} />
           <select
             value={department}
             onChange={(e) =>

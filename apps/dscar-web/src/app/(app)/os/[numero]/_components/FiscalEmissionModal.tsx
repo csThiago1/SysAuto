@@ -256,7 +256,7 @@ export function FiscalEmissionModal({
             <Button
               onClick={handleEmit}
               disabled={mutation.isPending}
-              className="bg-primary hover:bg-primary/90 text-foreground"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {mutation.isPending ? (
                 <>

@@ -84,7 +84,7 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) handleClose() }}>
-      <DialogContent className="max-w-md p-0 overflow-hidden">
+      <DialogContent className="flex max-h-[90dvh] max-w-md flex-col overflow-hidden p-0">
         <DialogHeader className={cn("px-4 py-3 border-b", folderCfg.bgColor, folderCfg.borderColor)}>
           <div className="flex items-center gap-2">
             <Camera className={cn("h-4 w-4", folderCfg.color)} />
@@ -94,7 +94,7 @@ function UploadDialog({ orderId, folder, onClose }: UploadDialogProps) {
           </div>
         </DialogHeader>
 
-        <div className="p-4 space-y-3">
+        <div className="min-h-0 flex-1 overflow-y-auto p-4 space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => fileInputRef.current?.click()}
@@ -309,7 +309,7 @@ function PhotoLightbox({ photos, index, onNavigate, onClose }: LightboxProps) {
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
       <DialogContent
-        className="max-w-5xl border-border bg-background/95 p-0 backdrop-blur"
+        className="max-h-[90dvh] max-w-5xl border-border bg-background/95 p-0 backdrop-blur"
         onKeyDown={(e) => {
           if (e.key === "ArrowLeft" && hasPrev) onNavigate(index - 1)
           if (e.key === "ArrowRight" && hasNext) onNavigate(index + 1)
@@ -333,12 +333,12 @@ function PhotoLightbox({ photos, index, onNavigate, onClose }: LightboxProps) {
           </a>
         </DialogHeader>
 
-        <div className="relative flex max-h-[75vh] min-h-[320px] items-center justify-center bg-black/40">
+        <div className="relative flex max-h-[75dvh] min-h-[320px] items-center justify-center bg-black/40">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={photo.url ?? ""}
             alt={photo.caption || "Foto OS"}
-            className="max-h-[75vh] w-auto max-w-full object-contain"
+            className="max-h-[75dvh] w-auto max-w-full object-contain"
           />
           {hasPrev && (
             <button

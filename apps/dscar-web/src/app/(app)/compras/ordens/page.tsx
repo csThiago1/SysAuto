@@ -143,7 +143,7 @@ function NovaOCDialog({
             className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-border"
           />
           {error && (
-            <p className="mt-1 text-xs text-error-500">{error}</p>
+            <p className="mt-1 text-xs text-error-400">{error}</p>
           )}
         </div>
         <DialogFooter>
@@ -159,7 +159,7 @@ function NovaOCDialog({
             onClick={handleCreate}
             disabled={criarOC.isPending}
             data-testid="nova-oc-submit"
-            className="px-4 py-2 text-sm font-medium rounded-md bg-primary text-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
             {criarOC.isPending ? "Criando..." : "Criar OC"}
           </button>
@@ -197,7 +197,7 @@ export default function OrdensCompraPage() {
           type="button"
           onClick={() => setDialogOpen(true)}
           className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md
-                     bg-primary text-foreground hover:bg-primary/90 transition-colors"
+                     bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus size={16} />
           Nova OC

@@ -77,7 +77,7 @@ export function ServiceGroupedView({
             >
               <div className="flex items-center gap-2">
                 {isExpanded ? (
-                  <ChevronDown className="h-4 w-4 text-info-500" />
+                  <ChevronDown className="h-4 w-4 text-info-400" />
                 ) : (
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 )}

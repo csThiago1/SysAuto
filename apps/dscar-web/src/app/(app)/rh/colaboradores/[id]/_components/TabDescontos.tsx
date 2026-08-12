@@ -181,7 +181,7 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
             <button
               type="submit"
               disabled={create.isPending}
-              className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary/90 disabled:opacity-50"
+              className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {create.isPending ? "Salvando..." : "Registrar desconto"}
             </button>

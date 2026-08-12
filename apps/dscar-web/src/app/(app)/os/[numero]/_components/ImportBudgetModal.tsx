@@ -19,6 +19,7 @@ import {
 import type { ImportBudgetResponse, ServiceOrder } from "@paddock/types"
 import { ImportDiffView } from "./ImportDiffView"
 import { ImportReconcileModal, type ReconcilePayload } from "./ImportReconcileModal"
+import { parseCiliaSubject } from "../_utils/parse-cilia-subject"
 
 const SOURCES = [
   { id: "cilia", label: "Cilia", sub: "Webservice" },
@@ -53,6 +54,28 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
   const [xmlInsurer, setXmlInsurer] = useState<typeof XML_INSURERS[number]["code"]>("porto")
   const [diffResult, setDiffResult] = useState<ImportBudgetResponse | null>(null)
   const [reconcilePayload, setReconcilePayload] = useState<ReconcilePayload | null>(null)
+  const [pastedSubject, setPastedSubject] = useState("")
+  const [pasteFeedback, setPasteFeedback] = useState<
+    { ok: true; conclusion?: string } | { ok: false } | null
+  >(null)
+
+  /** Preenche sinistro/orçamento/versão a partir do e-mail do Cilia colado. */
+  const handlePasteSubject = (value: string) => {
+    setPastedSubject(value)
+    if (!value.trim()) {
+      setPasteFeedback(null)
+      return
+    }
+    const parsed = parseCiliaSubject(value)
+    if (!parsed) {
+      setPasteFeedback({ ok: false })
+      return
+    }
+    setCasualtyNumber(parsed.casualtyNumber)
+    setBudgetNumber(parsed.budgetNumber)
+    setVersionNumber(parsed.versionNumber ?? "")
+    setPasteFeedback({ ok: true, conclusion: parsed.conclusion })
+  }
 
   const importMutation = useMutation({
     mutationFn: async () => {
@@ -132,7 +155,7 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
         />
       )}
       <Dialog open={!!diffResult && diffResult.action === "diff"} onOpenChange={(v) => { if (!v) setDiffResult(null) }}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto p-0">
+        <DialogContent className="max-w-4xl max-h-[85dvh] overflow-y-auto p-0">
           {diffResult?.action === "diff" && (
             <ImportDiffView
               diffResult={diffResult}
@@ -160,7 +183,7 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
                   className={cn("flex-1 rounded-lg border p-3 text-center transition",
                     source === s.id ? "border-info-500 bg-info-500/10" : "border-border bg-muted/50 hover:bg-muted",
                   )}>
-                  <div className={cn("text-sm font-semibold", source === s.id ? "text-info-500" : "text-foreground/60")}>{s.label}</div>
+                  <div className={cn("text-sm font-semibold", source === s.id ? "text-info-400" : "text-foreground/60")}>{s.label}</div>
                   <div className="text-[11px] text-muted-foreground">{s.sub}</div>
                 </button>
               ))}
@@ -169,6 +192,31 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
 
           {source === "cilia" && (
             <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="cilia-subject">
+                  Colar e-mail do Cilia{" "}
+                  <span className="text-muted-foreground">(preenche os campos abaixo)</span>
+                </Label>
+                <Input
+                  id="cilia-subject"
+                  value={pastedSubject}
+                  onChange={(e) => handlePasteSubject(e.target.value)}
+                  placeholder="Bradesco Seguros - Sin. 104202608041229 - Orç. 1941275.2 - Conclusão: Autorizado"
+                />
+                {pasteFeedback?.ok === true && (
+                  <p className="text-xs text-success-600">
+                    Reconhecido
+                    {pasteFeedback.conclusion ? ` · ${pasteFeedback.conclusion}` : ""} — confira
+                    abaixo e clique em Consultar.
+                  </p>
+                )}
+                {pasteFeedback?.ok === false && (
+                  <p className="text-xs text-muted-foreground">
+                    Não reconheci sinistro e orçamento nesse texto — preencha à mão.
+                  </p>
+                )}
+              </div>
+
               <div className="space-y-1.5">
                 <Label htmlFor="casualty">Nº Sinistro</Label>
                 <Input id="casualty" value={casualtyNumber} onChange={(e) => setCasualtyNumber(e.target.value)} />

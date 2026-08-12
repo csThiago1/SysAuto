@@ -48,7 +48,7 @@ export function CatalogContextCard({ reference, onClear }: CatalogContextCardPro
 
       {compatible.length > 0 ? (
         <div className="mt-2 text-xs">
-          <span className="inline-flex items-center gap-1 text-success-500">
+          <span className="inline-flex items-center gap-1 text-success-400">
             <span className="h-1.5 w-1.5 rounded-full bg-success-500" />
             Compativel:
           </span>{" "}

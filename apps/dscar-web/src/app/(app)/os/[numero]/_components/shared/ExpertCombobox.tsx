@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { toast } from "sonner"
 import { useExperts, useExpertCreate, type ExpertResult } from "../../_hooks/useExperts"
+import { formatPhone, onlyDigits } from "@paddock/utils"
 
 interface ExpertComboboxProps {
   value: number | null
@@ -99,10 +100,11 @@ export function ExpertCombobox({ value, onChange, insurerId, disabled, knownExpe
           />
           <input
             type="text"
-            placeholder="Telefone"
+            placeholder="(92) 99999-9999"
+            inputMode="numeric"
             className="flex h-8 w-full rounded-md border border-input bg-muted/50 px-3 py-1 text-sm"
-            value={newPhone}
-            onChange={(e) => setNewPhone(e.target.value)}
+            value={formatPhone(newPhone)}
+            onChange={(e) => setNewPhone(onlyDigits(e.target.value))}
           />
           <div className="flex gap-2 justify-end">
             <button
@@ -116,7 +118,7 @@ export function ExpertCombobox({ value, onChange, insurerId, disabled, knownExpe
               type="button"
               onClick={handleCreate}
               disabled={!newName.trim() || createMutation.isPending}
-              className="rounded bg-primary px-3 py-1 text-xs text-foreground hover:bg-primary/90 disabled:opacity-50"
+              className="rounded bg-primary px-3 py-1 text-xs text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {createMutation.isPending ? "Salvando..." : "Salvar"}
             </button>

@@ -197,10 +197,10 @@ export function ImportReconcileModal({ orderId, payload, open, onClose, onApplie
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose() }}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-warning-500" />
+            <AlertTriangle className="h-5 w-5 text-warning-400" />
             Conciliação Obrigatória
           </DialogTitle>
           <p className="text-sm text-muted-foreground mt-1">
@@ -210,7 +210,7 @@ export function ImportReconcileModal({ orderId, payload, open, onClose, onApplie
         </DialogHeader>
 
         {/* Cards de totais */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-1 gap-3 mb-4 sm:grid-cols-3">
           <CategoryCard
             label="Peças"
             parser={derived.parts}
@@ -256,7 +256,7 @@ export function ImportReconcileModal({ orderId, payload, open, onClose, onApplie
                   <td className="px-2 py-1">
                     <span className={cn(
                       "rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase",
-                      it.item_type === "PART" ? "bg-info-500/10 text-info-500" : "bg-success-500/10 text-success-600",
+                      it.item_type === "PART" ? "bg-info-500/10 text-info-400" : "bg-success-500/10 text-success-600",
                     )}>
                       {it.item_type === "PART" ? "Peça" : "Serv."}
                     </span>
@@ -311,7 +311,7 @@ export function ImportReconcileModal({ orderId, payload, open, onClose, onApplie
                   <td className="px-2 py-1 text-center">
                     <button
                       onClick={() => removeItem(idx)}
-                      className="text-error-500 hover:text-error-700"
+                      className="text-error-400 hover:text-error-700"
                       title="Remover item"
                     >
                       <Trash2 className="h-4 w-4" />

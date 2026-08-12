@@ -5,6 +5,7 @@ import { ArrowLeftRight, ChevronDown, ChevronRight } from "lucide-react"
 import type { TipoMovimentacao, MovimentacaoEstoque } from "@paddock/types"
 import { useMovimentacoes } from "@/hooks/useInventoryMovement"
 import { ScrollFade } from "@/components/ui/scroll-fade"
+import { DateField } from "@/components/ui/date-field"
 
 // ─── Tipo badge config ──────────────────────────────────────────────────────
 
@@ -133,20 +134,8 @@ export default function MovimentacoesPage() {
           ))}
         </select>
 
-        <input
-          type="date"
-          value={dataInicio}
-          onChange={(e) => setDataInicio(e.target.value)}
-          className={inputClass}
-          placeholder="Data inicio"
-        />
-        <input
-          type="date"
-          value={dataFim}
-          onChange={(e) => setDataFim(e.target.value)}
-          className={inputClass}
-          placeholder="Data fim"
-        />
+        <DateField value={dataInicio} onChange={setDataInicio} />
+        <DateField value={dataFim} onChange={setDataFim} />
         <input
           type="text"
           value={osFilter}

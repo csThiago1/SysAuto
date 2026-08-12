@@ -8,7 +8,7 @@
  * componentes de dados existentes enquanto são redesenhadas em fases.
  */
 
-import { Suspense, lazy, useState } from "react"
+import { Suspense, lazy, useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
@@ -52,26 +52,38 @@ const EstoqueTab = lazy(() =>
   import("@/components/os/EstoqueTab").then((m) => ({ default: m.EstoqueTab })),
 )
 
-type SectionId =
-  | "overview"
-  | "dados"
-  | "parts"
-  | "services"
-  | "closing"
-  | "activity"
-  | "files"
-  | "estoque"
+type SectionId = "overview" | "dados" | "execucao" | "closing" | "activity" | "files"
+
+type ExecView = "parts" | "services" | "estoque"
 
 type ActivityView = "history" | "notes" | "reminders"
 
-const NAV: { id: SectionId; label: string; icon: React.ReactNode }[] = [
+/**
+ * Oito seções eram oito decisões a cada visita. Peças, Serviços e Estoque
+ * respondem à mesma pergunta — "o que vai no carro e quanto custa" — então
+ * viraram uma só, com abas internas. Atividade e Arquivos são consulta, não
+ * fluxo de trabalho, e recuam para um grupo secundário.
+ */
+type NavItem = { id: SectionId; label: string; icon: React.ReactNode }
+
+const NAV_PRIMARY: NavItem[] = [
   { id: "overview", label: "Visão Geral", icon: <LayoutDashboard className="h-4 w-4" /> },
   { id: "dados", label: "Dados", icon: <FileText className="h-4 w-4" /> },
-  { id: "parts", label: "Peças", icon: <Package className="h-4 w-4" /> },
-  { id: "services", label: "Serviços", icon: <Wrench className="h-4 w-4" /> },
+  { id: "execucao", label: "Execução", icon: <Wrench className="h-4 w-4" /> },
   { id: "closing", label: "Fechamento", icon: <CircleDollarSign className="h-4 w-4" /> },
+]
+
+const NAV_SECONDARY: NavItem[] = [
   { id: "activity", label: "Atividade", icon: <MessageSquareText className="h-4 w-4" /> },
   { id: "files", label: "Arquivos", icon: <FolderOpen className="h-4 w-4" /> },
+]
+
+const NAV = [...NAV_PRIMARY, ...NAV_SECONDARY]
+
+/** Abas internas de Execução. */
+const EXEC_VIEWS: { id: ExecView; label: string; icon: React.ReactNode }[] = [
+  { id: "parts", label: "Peças", icon: <Package className="h-4 w-4" /> },
+  { id: "services", label: "Serviços", icon: <Wrench className="h-4 w-4" /> },
   { id: "estoque", label: "Estoque", icon: <Boxes className="h-4 w-4" /> },
 ]
 
@@ -79,10 +91,78 @@ interface OSWorkspaceV2Props {
   order: ServiceOrder
 }
 
+/** Lista de seções do rail lateral — mesma linguagem do Sidebar global. */
+function NavList({
+  items,
+  section,
+  onSelect,
+}: {
+  items: NavItem[]
+  section: SectionId
+  onSelect: (id: SectionId) => void
+}) {
+  return (
+    <ul>
+      {items.map((item) => (
+        <li key={item.id}>
+          <button
+            type="button"
+            onClick={() => onSelect(item.id)}
+            aria-current={section === item.id ? "page" : undefined}
+            className={cn(
+              "relative flex w-full items-center gap-2.5 px-5 py-2 text-sm transition-colors",
+              section === item.id
+                ? "bg-muted/30 font-medium text-foreground"
+                : "text-muted-foreground hover:bg-muted/20 hover:text-foreground",
+            )}
+          >
+            {section === item.id && (
+              <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-sm bg-primary" />
+            )}
+            {item.icon}
+            {item.label}
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
   const router = useRouter()
   const [section, setSection] = useState<SectionId>("overview")
+  const [execView, setExecView] = useState<ExecView>("parts")
   const [activityView, setActivityView] = useState<ActivityView>("history")
+
+  /**
+   * A Visão Geral navega por nomes antigos ("parts", "services", "estoque"),
+   * que agora são abas DENTRO de Execução. Antes isso passava por um
+   * `as SectionId` — o cast calava o compilador e a área de conteúdo ficava
+   * em branco. Aqui o destino é traduzido de verdade.
+   */
+  function goTo(target: string) {
+    const exec = EXEC_VIEWS.find((v) => v.id === target)
+    if (exec) {
+      setExecView(exec.id)
+      setSection("execucao")
+      return
+    }
+    if (NAV.some((n) => n.id === target)) setSection(target as SectionId)
+  }
+
+  // A nav lateral precisa colar logo ABAIXO do header sticky. A altura dele
+  // varia (chip de pendências, trilha que quebra em duas linhas), entao e
+  // medida em vez de chumbada — numero magico aqui volta a esconder itens.
+  const headerRef = useRef<HTMLElement>(null)
+  const [headerH, setHeaderH] = useState(0)
+  useEffect(() => {
+    const el = headerRef.current
+    if (!el) return
+    const ro = new ResizeObserver(([entry]) => setHeaderH(entry.contentRect.height))
+    ro.observe(el)
+    setHeaderH(el.getBoundingClientRect().height)
+    return () => ro.disconnect()
+  }, [])
 
   const status = order.status as ServiceOrderStatus
   const statusCfg = SERVICE_ORDER_STATUS_CONFIG[status]
@@ -100,7 +180,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
   return (
     <div className="flex min-h-[calc(100vh-64px)] flex-col">
       {/* ── Header ──────────────────────────────────────────────────── */}
-      <header className="md:sticky md:top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
+      <header ref={headerRef} className="md:sticky md:top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="px-5 pt-2.5">
           <ol className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -119,7 +199,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
             type="button"
             onClick={() => router.push("/os")}
             aria-label="Voltar para a lista"
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
+            className="-ml-2 flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground md:-ml-1.5 md:h-9 md:w-9"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
@@ -140,7 +220,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
             <button
               type="button"
               onClick={() => setSection("overview")}
-              className="rounded-full border border-warning-500/30 bg-warning-500/10 px-2.5 py-0.5 text-xs text-warning-400 transition-colors hover:bg-warning-500/20"
+              className="inline-flex min-h-[44px] items-center rounded-full border border-warning-500/30 bg-warning-500/10 px-3 text-xs text-warning-400 transition-colors hover:bg-warning-500/20 md:min-h-0 md:px-2.5 md:py-0.5"
             >
               {pendingCount} pendência{pendingCount > 1 ? "s" : ""}
             </button>
@@ -149,18 +229,10 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
           <div className="ml-auto flex items-center gap-2">
             <a
               href={`/os/${order.number}/vistoria`}
-              className="whitespace-nowrap rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              className="inline-flex min-h-[44px] items-center whitespace-nowrap rounded-md bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 md:min-h-0 md:px-3 md:py-1.5"
             >
               <Camera className="mr-1.5 inline h-3.5 w-3.5" />
               Vistoria
-            </a>
-            <a
-              href={`/os/${order.number}/classic`}
-              className="whitespace-nowrap rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
-            >
-              <FileText className="mr-1.5 inline h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Versão clássica</span>
-              <span className="sm:hidden">Clássica</span>
             </a>
           </div>
         </div>
@@ -175,7 +247,8 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
           </p>
 
           {!isCancelled && (
-            <ol className="ml-auto flex max-w-full items-center gap-1.5 overflow-x-auto" aria-label="Progresso da OS">
+            <ScrollFade className="ml-auto max-w-full">
+            <ol className="flex items-center gap-1.5" aria-label="Progresso da OS">
               {PIPELINE_PHASES.map((phase, i) => {
                 const state = i < phaseIdx ? "done" : i === phaseIdx ? "current" : "todo"
                 return (
@@ -207,6 +280,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
                 )
               })}
             </ol>
+            </ScrollFade>
           )}
         </div>
       </header>
@@ -214,33 +288,19 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
       {/* ── Corpo: nav lateral (md+) ou tabs horizontais (mobile) ───── */}
       <div className="flex flex-1 flex-col md:flex-row">
         {/* Mesma linguagem do Sidebar global: barra ativa de 3px + label mono */}
-        <nav className="hidden w-44 shrink-0 border-r border-border bg-background py-3 md:block" aria-label="Seções da OS">
-          <p className="px-5 pb-1.5 font-mono text-[9.5px] uppercase tracking-[1.5px] text-muted-foreground">
-            Seções
-          </p>
-          <ul>
-            {NAV.map((item) => (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  onClick={() => setSection(item.id)}
-                  aria-current={section === item.id ? "page" : undefined}
-                  className={cn(
-                    "relative flex w-full items-center gap-2.5 px-5 py-2 text-sm transition-colors",
-                    section === item.id
-                      ? "bg-muted/30 font-medium text-foreground"
-                      : "text-muted-foreground hover:bg-muted/20 hover:text-foreground",
-                  )}
-                >
-                  {section === item.id && (
-                    <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-sm bg-primary" />
-                  )}
-                  {item.icon}
-                  {item.label}
-                </button>
-              </li>
-            ))}
-          </ul>
+        {/* Sticky junto com o header: sem isso a nav rolava POR BAIXO dele e os
+            primeiros itens (Visão Geral, Dados, Peças) ficavam inacessíveis
+            exatamente quando o usuário rolava para editar. */}
+        <nav
+          className="hidden w-44 shrink-0 self-start overflow-y-auto border-r border-border bg-background py-3 md:sticky md:block"
+          style={{ top: headerH, maxHeight: `calc(100vh - ${headerH}px)` }}
+          aria-label="Seções da OS"
+        >
+          <NavList items={NAV_PRIMARY} section={section} onSelect={setSection} />
+          {/* Consulta, não fluxo de trabalho — separado por uma régua para não
+              competir com as quatro decisões principais. */}
+          <div className="my-2 border-t border-border" />
+          <NavList items={NAV_SECONDARY} section={section} onSelect={setSection} />
         </nav>
 
         {/* Mobile: seções como tabs roláveis, indicador embaixo */}
@@ -271,10 +331,44 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
 
         <main className="min-w-0 flex-1 px-4 py-4 md:px-5 md:py-5">
           <div key={section} className="animate-section-in">
-            {section === "overview" && <OverviewSection order={order} onNavigate={(s) => setSection(s as SectionId)} />}
+            {section === "overview" && <OverviewSection order={order} onNavigate={goTo} />}
             {section === "dados" && <DadosWorkspace order={order} />}
-            {section === "parts" && <PartsTab orderId={order.id} />}
-            {section === "services" && <ServicesTab osId={order.id} osStatus={status} />}
+
+            {section === "execucao" && (
+              <div className="space-y-4">
+                {/* Segmentado interno: Peças, Serviços e Estoque são o mesmo
+                    assunto visto de três ângulos, não três destinos. */}
+                <div className="flex w-fit gap-1 rounded-lg border border-border bg-muted/20 p-1">
+                  {EXEC_VIEWS.map((v) => (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() => setExecView(v.id)}
+                      aria-current={execView === v.id ? "true" : undefined}
+                      className={cn(
+                        "inline-flex min-h-[38px] items-center gap-1.5 rounded-md px-3 text-xs transition-colors",
+                        execView === v.id
+                          ? "bg-background font-medium text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {v.icon}
+                      {v.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div key={execView} className="animate-section-in">
+                  {execView === "parts" && <PartsTab orderId={order.id} />}
+                  {execView === "services" && <ServicesTab osId={order.id} osStatus={status} />}
+                  {execView === "estoque" && (
+                    <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                      <EstoqueTab osId={order.id} />
+                    </Suspense>
+                  )}
+                </div>
+              </div>
+            )}
 
             {section === "activity" && (
               <div className="space-y-4">
@@ -314,7 +408,6 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
             <Suspense fallback={<Skeleton className="h-64 w-full" />}>
               {section === "closing" && <ClosingTab order={order} />}
               {section === "files" && <FilesTab order={order} />}
-              {section === "estoque" && <EstoqueTab osId={order.id} />}
             </Suspense>
           </div>
         </main>

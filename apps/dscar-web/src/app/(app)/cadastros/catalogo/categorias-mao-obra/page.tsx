@@ -222,7 +222,7 @@ export default function CategoriasMaoObraPage() {
                   <TableCell className="py-2 font-medium text-foreground/90">{c.nome}</TableCell>
                   <TableCell className="py-2">
                     {c.is_active ? (
-                      <Badge className="bg-success-500/10 text-success-500 border-success-500/20 text-xs">
+                      <Badge className="bg-success-500/10 text-success-400 border-success-500/20 text-xs">
                         Ativo
                       </Badge>
                     ) : (

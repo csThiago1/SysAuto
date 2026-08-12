@@ -35,6 +35,8 @@ interface DockProps {
   modules: DockModule[];
   onNavigate: (href: string) => void;
   className?: string;
+  /** Utilidades (busca, notificação, conta) — entram depois dos módulos. */
+  trailing?: React.ReactNode;
 }
 
 const BASE_SIZE = 44;
@@ -102,22 +104,27 @@ const DockItemButton = forwardRef<
   );
 });
 
-export function Dock({ modules, onNavigate, className }: DockProps) {
+export function Dock({ modules, onNavigate, className, trailing }: DockProps) {
   const reduce = useReducedMotion();
   const mouseX = useMotionValue(Infinity);
   const [openId, setOpenId] = useState<string | null>(null);
 
   return (
-    <motion.nav
-      aria-label="Módulos"
-      onMouseMove={(e) => mouseX.set(e.clientX)}
-      onMouseLeave={() => mouseX.set(Infinity)}
+    // A casca e um div, nao o <nav>: busca, sino e conta nao sao navegacao, e
+    // um leitor de tela anunciando "Modulos" pra eles seria mentira.
+    <div
       className={cn(
-        "flex items-end gap-3 rounded-2xl border border-border bg-card/90 px-3 shadow-lg backdrop-blur-md",
+        "flex items-end gap-2.5 rounded-2xl border border-border bg-card px-3 shadow-lg backdrop-blur-md",
         "h-[60px] pb-2",
         className
       )}
     >
+      <motion.nav
+        aria-label="Módulos"
+        onMouseMove={(e) => mouseX.set(e.clientX)}
+        onMouseLeave={() => mouseX.set(Infinity)}
+        className="flex items-end gap-2.5"
+      >
       {modules.map((mod) =>
         mod.children ? (
           <Popover
@@ -163,6 +170,8 @@ export function Dock({ modules, onNavigate, className }: DockProps) {
           />
         )
       )}
-    </motion.nav>
+      </motion.nav>
+      {trailing}
+    </div>
   );
 }

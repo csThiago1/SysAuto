@@ -100,7 +100,7 @@ export function CommandPalette(): React.ReactElement {
                       key={item.id}
                       value={item.label}
                       onSelect={() => handleSelect(item.href)}
-                      className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-foreground/80 cursor-pointer aria-selected:bg-primary/10 aria-selected:text-primary transition-colors"
+                      className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-primary-foreground/80 cursor-pointer aria-selected:bg-primary/10 aria-selected:text-primary transition-colors"
                     >
                       {item.label}
                     </Command.Item>

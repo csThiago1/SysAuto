@@ -21,6 +21,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { AccountSheetBlock } from "./DockActions";
 import { cn } from "@/lib/utils";
 
 interface TabButtonProps {
@@ -115,12 +116,15 @@ export function MobileTabBar(): React.ReactElement {
         />
       ))}
 
-      {rest.length > 0 && (
+      {/* Sempre presente: sem o header, esta folha e o unico caminho pra busca,
+          notificacao, tema e SAIR no telefone. Antes ela so aparecia pra
+          MANAGER+ (quem tinha modulos extras) — um almoxarife ficaria sem sair. */}
+      {(
         <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
           <SheetTrigger asChild>
             <button
               type="button"
-              aria-label="Mais módulos"
+              aria-label="Conta e mais módulos"
               className="flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] text-muted-foreground"
             >
               <LayoutGrid className="h-5 w-5" />
@@ -128,8 +132,16 @@ export function MobileTabBar(): React.ReactElement {
             </button>
           </SheetTrigger>
           <SheetContent side="bottom" className="rounded-t-2xl pb-8">
-            <SheetTitle className="text-sm text-muted-foreground mb-4">Módulos</SheetTitle>
-            <SheetDescription className="sr-only">Lista de módulos</SheetDescription>
+            <SheetTitle className="sr-only">Conta e módulos</SheetTitle>
+            <SheetDescription className="sr-only">
+              Busca, notificações, tema, sair e lista de módulos
+            </SheetDescription>
+
+            <AccountSheetBlock />
+
+            {rest.length > 0 && (
+              <p className="label-mono mb-3 border-t border-border pt-4">Módulos</p>
+            )}
             <div className="grid grid-cols-4 gap-4">
               {rest.map((item) => {
                 const active = isGroupActive(pathname, item);

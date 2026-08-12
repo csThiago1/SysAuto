@@ -10,6 +10,7 @@ import {
 } from "@/hooks/useInventoryMovement"
 import { useProdutosPeca, useProdutosInsumo } from "@/hooks/useInventoryProduct"
 import type { ProdutoComercialPeca, ProdutoComercialInsumo } from "@paddock/types"
+import { DateField } from "@/components/ui/date-field"
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
@@ -239,8 +240,8 @@ export default function EntradaManualPage() {
           onClick={() => setTab("peca")}
           className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
             tab === "peca"
-              ? "bg-primary text-foreground"
-              : "bg-muted/50 text-foreground/60 hover:text-foreground/80"
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted/50 text-primary-foreground/60 hover:text-foreground/80"
           }`}
         >
           Peça
@@ -250,8 +251,8 @@ export default function EntradaManualPage() {
           onClick={() => setTab("lote")}
           className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
             tab === "lote"
-              ? "bg-primary text-foreground"
-              : "bg-muted/50 text-foreground/60 hover:text-foreground/80"
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted/50 text-primary-foreground/60 hover:text-foreground/80"
           }`}
         >
           Lote
@@ -267,7 +268,7 @@ export default function EntradaManualPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Product search select */}
               <div className="md:col-span-2" ref={pecaDropdownRef}>
-                <label className="label-mono text-muted-foreground mb-0.5 block">PRODUTO *</label>
+                <label className="label-mono text-muted-foreground mb-1.5 block">PRODUTO *</label>
                 <div className="relative">
                   <input
                     type="text"
@@ -334,7 +335,7 @@ export default function EntradaManualPage() {
 
               {/* Serial number */}
               <div>
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   NUMERO DE SERIE (OPCIONAL)
                 </label>
                 <input
@@ -352,7 +353,7 @@ export default function EntradaManualPage() {
           <div className="bg-muted/50 border border-border rounded-lg p-5 space-y-4">
             <div className="section-divider">VALOR</div>
             <div className="max-w-xs">
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 VALOR NF *
               </label>
               <div className="relative">
@@ -385,7 +386,7 @@ export default function EntradaManualPage() {
           <div className="bg-muted/50 border border-border rounded-lg p-5 space-y-4">
             <div className="section-divider">MOTIVO</div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 MOTIVO DA ENTRADA *
               </label>
               <textarea
@@ -403,7 +404,7 @@ export default function EntradaManualPage() {
             type="button"
             disabled={submitting}
             onClick={handleSubmitPeca}
-            className="bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-foreground font-medium rounded-md px-6 py-2.5 text-sm transition-colors"
+            className="bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-medium rounded-md px-6 py-2.5 text-sm transition-colors"
           >
             {entradaPeca.isPending ? "Registrando..." : "Registrar Entrada"}
           </button>
@@ -419,7 +420,7 @@ export default function EntradaManualPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Product search select */}
               <div className="md:col-span-2" ref={insumoDropdownRef}>
-                <label className="label-mono text-muted-foreground mb-0.5 block">PRODUTO *</label>
+                <label className="label-mono text-muted-foreground mb-1.5 block">PRODUTO *</label>
                 <div className="relative">
                   <input
                     type="text"
@@ -491,7 +492,7 @@ export default function EntradaManualPage() {
             <div className="section-divider">QUANTIDADES</div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   QUANTIDADE COMPRA *
                 </label>
                 <input
@@ -505,7 +506,7 @@ export default function EntradaManualPage() {
                 />
               </div>
               <div>
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   UNIDADE DE COMPRA *
                 </label>
                 <select
@@ -521,7 +522,7 @@ export default function EntradaManualPage() {
                 </select>
               </div>
               <div>
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   FATOR DE CONVERSÃO *
                 </label>
                 <input
@@ -535,7 +536,7 @@ export default function EntradaManualPage() {
                 />
               </div>
               <div>
-                <label className="label-mono text-muted-foreground mb-0.5 block">
+                <label className="label-mono text-muted-foreground mb-1.5 block">
                   VALOR TOTAL NF *
                 </label>
                 <div className="relative">
@@ -555,14 +556,12 @@ export default function EntradaManualPage() {
               </div>
             </div>
             <div className="max-w-xs">
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 VALIDADE (OPCIONAL)
               </label>
-              <input
-                type="date"
+              <DateField
                 value={lote.validade}
-                onChange={(e) => setLote({ ...lote, validade: e.target.value })}
-                className={INPUT_CLS}
+                onChange={(v) => setLote({ ...lote, validade: v })}
               />
             </div>
           </div>
@@ -580,7 +579,7 @@ export default function EntradaManualPage() {
           <div className="bg-muted/50 border border-border rounded-lg p-5 space-y-4">
             <div className="section-divider">MOTIVO</div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 MOTIVO DA ENTRADA *
               </label>
               <textarea
@@ -598,7 +597,7 @@ export default function EntradaManualPage() {
             type="button"
             disabled={submitting}
             onClick={handleSubmitLote}
-            className="bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-foreground font-medium rounded-md px-6 py-2.5 text-sm transition-colors"
+            className="bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-medium rounded-md px-6 py-2.5 text-sm transition-colors"
           >
             {entradaLote.isPending ? "Registrando..." : "Registrar Entrada"}
           </button>

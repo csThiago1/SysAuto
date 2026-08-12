@@ -95,7 +95,7 @@ export default function ResetPasswordPage({
             {success ? (
               <div className="space-y-4">
                 <div className="flex flex-col items-center gap-3 py-4">
-                  <CheckCircle className="h-10 w-10 text-success-500" />
+                  <CheckCircle className="h-10 w-10 text-success-400" />
                   <p className="text-sm text-secondary-300 text-center">
                     Sua senha foi redefinida com sucesso. Redirecionando para o login...
                   </p>

@@ -30,6 +30,7 @@ import { FORM_INPUT, FORM_LABEL } from "@paddock/utils"
 import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { NativeSelect } from "@/components/ui/native-select"
+import { DateField } from "@/components/ui/date-field"
 import { cn } from "@/lib/utils"
 import { serviceOrderUpdateSchema, type ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import { buildFormDefaults } from "../../_utils/form-defaults"
@@ -72,6 +73,7 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
   // Previsão calculada: entrada + dias de reparo
   const entryDate = watch("entry_date")
   const repairDays = watch("repair_days")
+  const estimatedDelivery = watch("estimated_delivery_date")
   useEffect(() => {
     if (entryDate && repairDays && repairDays > 0) {
       const d = new Date(entryDate)
@@ -117,12 +119,16 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="relative mx-auto max-w-6xl space-y-3 pb-14">
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      // Espaco extra so quando a barra existe — nada de conteudo por baixo dela.
+      className={cn("relative mx-auto max-w-6xl space-y-7 pb-14", isDirty && "pb-32")}
+    >
       {/* ── Atendimento ─────────────────────────────────────────────── */}
       <Panel icon={<ClipboardList className="h-4 w-4" />} title="Atendimento">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-x-3 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <span className={FORM_LABEL}>Atendimento *</span>
+            <span className={FORM_LABEL}>Tipo de cliente *</span>
             <Controller
               name="customer_type"
               control={control}
@@ -184,23 +190,29 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
           {customerType === "private" && (
             <div>
               <span className={FORM_LABEL}>Data do orçamento</span>
-              <input className={FORM_INPUT} type="date" {...register("quotation_date")} />
+              <Controller
+                name="quotation_date"
+                control={control}
+                render={({ field }) => (
+                  <DateField value={field.value} onChange={field.onChange} />
+                )}
+              />
             </div>
           )}
         </div>
       </Panel>
 
       {/* ── Duas colunas em telas largas ────────────────────────────── */}
-      <div className="grid grid-cols-1 items-start gap-3 xl:grid-cols-2">
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 items-start gap-x-8 gap-y-7 xl:grid-cols-2">
+      <div className="space-y-7">
       {/* ── Cliente ─────────────────────────────────────────────────── */}
       <Panel icon={<User className="h-4 w-4" />} title="Cliente">
-        <CustomerSection form={form} onPersonDataChange={setPersonDirtyData} />
+        <CustomerSection form={form} onPersonDataChange={setPersonDirtyData} hideHeading />
       </Panel>
 
       {customerType === "insurer" && (
         <Panel icon={<Shield className="h-4 w-4" />} title="Seguradora">
-          <InsurerSection form={form} order={order} />
+          <InsurerSection form={form} order={order} hideHeading />
         </Panel>
       )}
 
@@ -214,12 +226,12 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
       </Panel>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-7">
       {/* ── Veículo ─────────────────────────────────────────────────── */}
       <Panel icon={<Car className="h-4 w-4" />} title="Veículo">
-        <VehicleSection form={form} osId={order.id} />
-        <div className="mt-3 grid grid-cols-2 gap-3 border-t border-border pt-3">
-          <div>
+        <VehicleSection form={form} osId={order.id} hideHeading />
+        <div className="mt-4 grid grid-cols-6 gap-x-2 gap-y-5 border-t border-border pt-4">
+          <div className="col-span-3">
             <span className={FORM_LABEL}>KM de entrada</span>
             <input
               className={FORM_INPUT}
@@ -237,7 +249,7 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
               <p className="mt-0.5 text-xs text-error-400">{errors.mileage_in.message}</p>
             )}
           </div>
-          <div>
+          <div className="col-span-3">
             <span className={FORM_LABEL}>Localização</span>
             <NativeSelect {...register("vehicle_location")}>
               <option value="workshop">Na Oficina</option>
@@ -249,15 +261,7 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
 
       {/* ── Planejamento ────────────────────────────────────────────── */}
       <Panel icon={<CalendarClock className="h-4 w-4" />} title="Planejamento de entrega">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div>
-            <span className={FORM_LABEL}>Previsão de entrega</span>
-            <input
-              className={FORM_INPUT}
-              type="datetime-local"
-              {...register("delivery_date")}
-            />
-          </div>
+        <div className="grid grid-cols-1 gap-x-3 gap-y-5 sm:grid-cols-3">
           <div>
             <span className={FORM_LABEL}>Dias de reparo</span>
             <input
@@ -269,13 +273,24 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
             />
           </div>
           <div>
-            <span className={FORM_LABEL}>Calculada (entrada + dias)</span>
-            <input
-              className={`${FORM_INPUT} cursor-default opacity-70`}
-              type="date"
-              readOnly
-              tabIndex={-1}
-              {...register("estimated_delivery_date")}
+            {/* Valor derivado (entrada + dias de reparo). Era um input readOnly
+                disfarçado de campo — agora se apresenta como o que é: leitura.
+                Rótulo curto também para não quebrar em duas linhas. */}
+            <span className={FORM_LABEL}>Previsão (calc.)</span>
+            <p className={`${FORM_INPUT} items-center font-mono tabular-nums text-muted-foreground`}>
+              {estimatedDelivery
+                ? new Date(`${estimatedDelivery}T12:00:00`).toLocaleDateString("pt-BR")
+                : "—"}
+            </p>
+          </div>
+          <div>
+            <span className={FORM_LABEL}>Data de entrega</span>
+            <Controller
+              name="delivery_date"
+              control={control}
+              render={({ field }) => (
+                <DateField withTime value={field.value} onChange={field.onChange} />
+              )}
             />
           </div>
         </div>
@@ -285,8 +300,17 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
 
       {/* ── Barra de salvar ─────────────────────────────────────────── */}
       {isDirty && (
-        // bottom-20 deixa a barra acima do DockNav/MobileTabBar (fixed bottom z-40)
-        <div className="sticky bottom-20 z-10 -mx-1 flex items-center justify-between rounded-xl border border-border bg-background/95 px-4 py-3 backdrop-blur">
+        // FIXA na borda inferior, acima do chrome — nao sticky. Como sticky com
+        // `bottom`, ela era içada 80px para DENTRO do conteudo e cobria os campos
+        // do painel Seguradora sempre que houvesse alteracao pendente.
+        // Offsets reusam os do proprio app: 4.5rem = o mesmo do FAB no mobile,
+        // 6rem = o pb-24 que o <main> ja reserva no desktop. left-44 = a largura
+        // da nav de secoes, pra barra nao passar por baixo dela.
+        <div
+          className="fixed inset-x-0 z-30 px-2 md:left-44 md:px-6"
+          style={{ bottom: "calc(4.5rem + env(safe-area-inset-bottom))" }}
+        >
+        <div className="mx-auto flex max-w-6xl items-center justify-between rounded-xl border border-border bg-background/95 px-4 py-3 shadow-lg backdrop-blur">
           <p className="text-xs text-muted-foreground">Alterações não salvas</p>
           <div className="flex gap-2">
             <Button
@@ -310,6 +334,7 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
             </Button>
           </div>
         </div>
+        </div>
       )}
     </form>
   )
@@ -321,23 +346,35 @@ function Panel({
   icon,
   title,
   subtitle,
+  action,
   children,
 }: {
   icon: React.ReactNode
   title: string
   subtitle?: string
+  /** Ação do painel (ex: "Trocar cliente"). Fica no cabeçalho, não no corpo —
+   *  dentro do conteúdo ela consumia uma linha inteira mais um divisor. */
+  action?: React.ReactNode
   children: React.ReactNode
 }) {
   return (
-    <section className="rounded-xl border border-border bg-card/50">
-      <header className="flex items-center gap-2 border-b border-border px-3.5 py-2">
-        <span className="text-muted-foreground">{icon}</span>
-        <h3 className="text-sm font-medium text-foreground">{title}</h3>
+    // Sem card. Seção = eyebrow + régua de 1px, como manda a Regra do Eyebrow
+    // Nu do DESIGN.md: seis caixas empilhadas dentro da área de conteúdo eram
+    // seis bordas, seis fundos e seis paddings para separar o que uma linha
+    // separa melhor — e faziam a tela parecer um amontoado de blocos.
+    <section className="space-y-2.5">
+      <div className="flex items-center gap-3">
+        <span className="flex shrink-0 items-center gap-2 text-muted-foreground">
+          {icon}
+          <span className="label-mono text-foreground/70">{title}</span>
+        </span>
+        <span aria-hidden className="h-px flex-1 bg-border" />
         {subtitle && (
-          <p className="ml-auto hidden text-xs text-muted-foreground sm:block">{subtitle}</p>
+          <span className="hidden shrink-0 text-xs text-muted-foreground sm:block">{subtitle}</span>
         )}
-      </header>
-      <div className="p-3.5">{children}</div>
+        {action && <span className="shrink-0">{action}</span>}
+      </div>
+      {children}
     </section>
   )
 }

@@ -1,0 +1,24 @@
+# /etc/systemd/system/paddock-beat.service
+# ponytail: bare-metal na E2.1.Micro, mesmo motivo do paddock-api.service.
+# O beat só agenda — quem executa é o paddock-worker. Por isso 80M bastam:
+# ele não carrega payload de tarefa nenhuma.
+# Usa DatabaseScheduler (django_celery_beat): as entradas de
+# CELERY_BEAT_SCHEDULE são sincronizadas pro banco na inicialização.
+[Unit]
+Description=Paddock DS Car Celery beat (agendador)
+After=network-online.target redis.service paddock-api.service
+Wants=network-online.target
+
+[Service]
+User=opc
+WorkingDirectory=/opt/paddock
+EnvironmentFile=/opt/paddock/.env
+ExecStart=/opt/paddock/venv/bin/celery -A config beat -l warning \
+  --scheduler django_celery_beat.schedulers:DatabaseScheduler \
+  --pidfile=
+Restart=always
+RestartSec=10
+MemoryMax=80M
+
+[Install]
+WantedBy=multi-user.target

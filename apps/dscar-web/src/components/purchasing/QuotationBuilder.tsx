@@ -305,7 +305,7 @@ export function QuotationBuilder({ pedidos, open, onOpenChange }: QuotationBuild
             {/* Motor and Cambio editable fields */}
             <div className="space-y-3">
               <div>
-                <label className="label-mono text-muted-foreground mb-1 block">Motor</label>
+                <label className="label-mono text-muted-foreground mb-1.5 block">Motor</label>
                 <input
                   type="text"
                   value={motor}
@@ -315,7 +315,7 @@ export function QuotationBuilder({ pedidos, open, onOpenChange }: QuotationBuild
                 />
               </div>
               <div>
-                <label className="label-mono text-muted-foreground mb-1 block">Cambio</label>
+                <label className="label-mono text-muted-foreground mb-1.5 block">Cambio</label>
                 <input
                   type="text"
                   value={cambio}

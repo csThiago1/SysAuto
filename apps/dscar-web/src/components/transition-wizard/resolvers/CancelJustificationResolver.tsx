@@ -25,7 +25,7 @@ export function CancelJustificationResolver({ onResolved }: ResolverProps) {
         value={justification}
         onChange={(e) => setJustification(e.target.value)}
       />
-      <p className={`text-xs ${isValid ? "text-success-500" : "text-muted-foreground"}`}>
+      <p className={`text-xs ${isValid ? "text-success-400" : "text-muted-foreground"}`}>
         {len}/{MIN_LENGTH} caracteres
       </p>
     </div>

@@ -32,6 +32,7 @@ import {
   PAYABLE_ORIGIN_LABELS,
 } from "@paddock/types";
 import { formatDate } from "@paddock/utils";
+import { DateField } from "@/components/ui/date-field"
 
 // ── Formatting helpers ────────────────────────────────────────────────────────
 
@@ -142,7 +143,7 @@ export default function ContasPagarPage(): React.ReactElement {
           </div>
           <Link
             href={"/financeiro/contas-pagar/novo" as Route}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             <PlusCircle className="h-4 w-4" />
             Novo Título
@@ -215,19 +216,9 @@ export default function ContasPagarPage(): React.ReactElement {
           </select>
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs text-muted-foreground whitespace-nowrap">Venc. de</span>
-            <Input
-              type="date"
-              value={dueDateGte}
-              onChange={(e) => setDueDateGte(e.target.value)}
-              className="w-36"
-            />
+            <DateField value={dueDateGte} onChange={setDueDateGte} />
             <span className="whitespace-nowrap text-xs text-muted-foreground">até</span>
-            <Input
-              type="date"
-              value={dueDateLte}
-              onChange={(e) => setDueDateLte(e.target.value)}
-              className="w-36"
-            />
+            <DateField value={dueDateLte} onChange={setDueDateLte} />
           </div>
         </div>
 
