@@ -24,8 +24,8 @@ const ICON: Record<Severity, LucideIcon> = {
 }
 
 const COLOR: Record<Severity, string> = {
-  hard: "text-error-500",
-  soft: "text-warning-500",
+  hard: "text-error-400",
+  soft: "text-warning-400",
   warning: "text-muted-foreground",
 }
 
@@ -34,7 +34,7 @@ export function WizardItem({ block, severity, isResolved, order, onResolved }: W
   const Resolver = getResolver(block.code)
   const hasResolver = hasResolverFor(block.code)
   const Icon: LucideIcon = isResolved ? CheckCircle2 : ICON[severity]
-  const colorClass = isResolved ? "text-success-500" : COLOR[severity]
+  const colorClass = isResolved ? "text-success-400" : COLOR[severity]
 
   return (
     <li className="rounded-md border bg-card px-3 py-2.5 space-y-2">

@@ -41,6 +41,7 @@ import {
 import { useSegmentos } from "@/hooks/usePricingProfile"
 import { usePecasCanonicas } from "@/hooks/usePricingCatalog"
 import type { MargemOperacaoCreate, MarkupPecaCreate, TipoOperacao } from "@paddock/types"
+import { DateField } from "@/components/ui/date-field"
 
 const TIPO_OPERACAO_LABELS: Record<TipoOperacao, string> = {
   servico_mao_obra: "Serviço / Mão de obra",
@@ -226,28 +227,14 @@ function MargensTab({ empresaId }: { empresaId: string }) {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-foreground/70 text-xs">Vigente desde</Label>
-                <Input
-                  type="date"
-                  className="bg-muted/50 border-border text-foreground"
-                  value={form.vigente_desde ?? ""}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, vigente_desde: e.target.value }))
-                  }
-                />
+                <DateField value={form.vigente_desde ?? ""} onChange={(v) => setForm((f) => ({ ...f, vigente_desde: v }))} />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-foreground/70 text-xs">Vigente até (opcional)</Label>
-                <Input
-                  type="date"
-                  className="bg-muted/50 border-border text-foreground"
-                  value={form.vigente_ate ?? ""}
-                  onChange={(e) =>
-                    setForm((f) => ({
+                <DateField value={form.vigente_ate ?? ""} onChange={(v) => setForm((f) => ({
                       ...f,
-                      vigente_ate: e.target.value || null,
-                    }))
-                  }
-                />
+                      vigente_ate: v || null,
+                    }))} />
               </div>
             </div>
 
@@ -488,25 +475,11 @@ function MarkupPecaTab({ empresaId }: { empresaId: string }) {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-foreground/70 text-xs">Vigente desde</Label>
-                <Input
-                  type="date"
-                  className="bg-muted/50 border-border text-foreground"
-                  value={form.vigente_desde ?? ""}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, vigente_desde: e.target.value }))
-                  }
-                />
+                <DateField value={form.vigente_desde ?? ""} onChange={(v) => setForm((f) => ({ ...f, vigente_desde: v }))} />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-foreground/70 text-xs">Vigente até (opcional)</Label>
-                <Input
-                  type="date"
-                  className="bg-muted/50 border-border text-foreground"
-                  value={form.vigente_ate ?? ""}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, vigente_ate: e.target.value || null }))
-                  }
-                />
+                <DateField value={form.vigente_ate ?? ""} onChange={(v) => setForm((f) => ({ ...f, vigente_ate: v || null }))} />
               </div>
             </div>
 

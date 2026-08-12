@@ -24,6 +24,7 @@ import {
 } from "@paddock/utils";
 import { apiFetch, ApiError } from "@/lib/api";
 import { TransitionWizard } from "@/components/transition-wizard";
+import { ScrollFade } from "@/components/ui/scroll-fade";
 import { KanbanColumn, KanbanColumnSkeleton } from "./KanbanColumn";
 import { KanbanCardOverlay } from "./KanbanCard";
 
@@ -101,6 +102,39 @@ export function KanbanBoard({
     [orders]
   );
 
+  // Reverte uma transição — só chamado quando VALID_TRANSITIONS já confirmou que a volta existe.
+  const handleUndo = useCallback(
+    async (orderId: string, revertTo: ServiceOrderStatus) => {
+      if (pendingIds.current.has(orderId)) return;
+      setOptimisticMoves((prev) => ({ ...prev, [orderId]: revertTo }));
+      pendingIds.current.add(orderId);
+      try {
+        await apiFetch(`/api/proxy/service-orders/${orderId}/transition/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ new_status: revertTo }),
+        });
+        void qc.invalidateQueries({ queryKey: ["service-orders"] });
+      } catch (err) {
+        setOptimisticMoves((prev) => {
+          const next = { ...prev };
+          delete next[orderId];
+          return next;
+        });
+        toast.error(err instanceof Error ? err.message : "Erro ao desfazer");
+        return;
+      } finally {
+        pendingIds.current.delete(orderId);
+      }
+      setOptimisticMoves((prev) => {
+        const next = { ...prev };
+        delete next[orderId];
+        return next;
+      });
+    },
+    [qc]
+  );
+
   const handleDragEnd = useCallback(
     async ({ active, over }: DragEndEvent) => {
       setActiveOrder(null);
@@ -166,6 +200,14 @@ export function KanbanBoard({
 
         // Sync server state after success
         void qc.invalidateQueries({ queryKey: ["service-orders"] });
+
+        const targetLabel = SERVICE_ORDER_STATUS_CONFIG[newStatus]?.label ?? newStatus;
+        const canUndo = (VALID_TRANSITIONS[newStatus] ?? []).includes(currentStatus);
+        toast.success(`Movido para "${targetLabel}"`, {
+          action: canUndo
+            ? { label: "Desfazer", onClick: () => void handleUndo(orderId, currentStatus) }
+            : undefined,
+        });
       } catch (err) {
         // Rollback optimistic move on any error
         setOptimisticMoves((prev) => {
@@ -193,7 +235,7 @@ export function KanbanBoard({
         return next;
       });
     },
-    [orders, qc, optimisticMoves]
+    [orders, qc, optimisticMoves, handleUndo]
   );
 
   if (isLoading) {
@@ -214,15 +256,37 @@ export function KanbanBoard({
     ) as ServiceOrderStatus[],
   })).filter((g) => g.statuses.length > 0);
 
+  const jumpToPhase = (groupId: string) => {
+    document
+      .getElementById(`kanban-phase-${groupId}`)
+      ?.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+  };
+
   return (
     <DndContext
       sensors={sensors}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
+      {/* Pular pra fase — 17 colunas cabem mal em telas estreitas, sem isso é rolar às cegas */}
+      <ScrollFade className="mb-2 shrink-0">
+        <div className="flex gap-1.5 pb-0.5">
+          {visiblePhaseGroups.map((group) => (
+            <button
+              key={group.id}
+              type="button"
+              onClick={() => jumpToPhase(group.id)}
+              className="shrink-0 whitespace-nowrap rounded-md border border-border bg-muted/30 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+            >
+              {group.label}
+            </button>
+          ))}
+        </div>
+      </ScrollFade>
+
       <div className="flex gap-4 overflow-x-auto pb-4 min-h-0 flex-1 items-start">
         {visiblePhaseGroups.map((group) => (
-          <div key={group.id} className="flex flex-col shrink-0">
+          <div key={group.id} id={`kanban-phase-${group.id}`} className="flex flex-col shrink-0">
             {/* Phase group header */}
             <div
               className={`rounded-t-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wide ${group.headerClass}`}

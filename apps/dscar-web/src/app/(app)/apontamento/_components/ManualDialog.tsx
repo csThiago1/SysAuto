@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { datetimeLocalToIso, toDatetimeLocalValue } from "../_lib/time";
+import { DateField } from "@/components/ui/date-field"
 
 interface ManualDialogProps {
   tecnicoId: string;
@@ -131,21 +132,11 @@ export function ManualDialog({ tecnicoId, onSubmit }: ManualDialogProps): React.
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="manual-inicio">Início</Label>
-            <Input
-              id="manual-inicio"
-              type="datetime-local"
-              value={inicio}
-              onChange={(e) => setInicio(e.target.value)}
-            />
+            <DateField id="manual-inicio" withTime value={inicio} onChange={setInicio} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="manual-fim">Fim</Label>
-            <Input
-              id="manual-fim"
-              type="datetime-local"
-              value={fim}
-              onChange={(e) => setFim(e.target.value)}
-            />
+            <DateField id="manual-fim" withTime value={fim} onChange={setFim} />
             {osId && inicio && fim && new Date(fim) <= new Date(inicio) && (
               <p className="text-xs text-error-400">Fim deve ser depois do início.</p>
             )}

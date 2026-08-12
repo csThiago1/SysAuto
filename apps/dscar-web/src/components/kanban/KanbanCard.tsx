@@ -4,12 +4,11 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { AlertTriangle, Clock } from "lucide-react";
+import { AlertTriangle, Clock, GripVertical } from "lucide-react";
 import type { ServiceOrder, ServiceOrderStatus } from "@paddock/types";
 import {
   SERVICE_ORDER_STATUS_CONFIG,
   getDaysInShopColor,
-  getDaysInShopBorderColor,
 } from "@paddock/utils";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils";
@@ -51,34 +50,37 @@ function UrgencyIndicator({ order }: { order: ServiceOrder }): React.ReactElemen
 interface CardContentProps {
   order: ServiceOrder;
   className?: string;
+  /** Alça de arrastar (props do dnd-kit) — omitida no overlay de drag */
+  dragHandle?: React.ReactNode;
 }
 
 const CardContent = React.memo(function CardContent({
   order,
   className,
+  dragHandle,
 }: CardContentProps): React.ReactElement {
   const statusCfg = SERVICE_ORDER_STATUS_CONFIG[order.status as ServiceOrderStatus];
   const daysOverdue = getDaysOverdue(order);
   const isOverdue = daysOverdue !== null && daysOverdue > 0;
 
-  // Urgency overrides default border
-  const borderCls = isOverdue
-    ? "border-l-4 border-l-error-500"
-    : (getDaysInShopBorderColor(order.days_in_shop) || statusCfg?.border || "");
-
+  // Borda esquerda = só status (um canal, um significado). Idade/atraso já têm
+  // seus próprios badges (DaysInShopBadge, UrgencyIndicator) — não brigam pela borda.
   return (
     <div
       className={cn(
         "bg-muted/30 rounded-md border border-border backdrop-blur-sm",
-        borderCls,
+        statusCfg?.border ?? "",
         className
       )}
     >
       <div className="p-2.5 space-y-1.5">
-        {/* Row 1: OS number + status dot + days badge */}
+        {/* Row 1: drag handle + OS number + status dot + days badge */}
         <div className="flex items-center justify-between gap-1">
-          <span className="text-xs font-bold text-foreground/80 leading-none font-mono">
-            #{order.number}
+          <span className="flex items-center gap-1">
+            {dragHandle}
+            <span className="text-xs font-bold text-foreground/80 leading-none font-mono">
+              #{order.number}
+            </span>
           </span>
           <div className="flex items-center gap-1.5">
             {order.has_transition_blocks && (
@@ -155,6 +157,7 @@ export const KanbanCard = React.memo(function KanbanCard({
     attributes,
     listeners,
     setNodeRef,
+    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
@@ -169,21 +172,37 @@ export const KanbanCard = React.memo(function KanbanCard({
     if (!isDragging) router.push(`/os/${order.number}`);
   };
 
+  // Alça dedicada: dnd-kit reserva Space/Enter para arrastar, o que colidia
+  // com Enter-para-abrir quando os listeners ficavam no card inteiro — sem
+  // alça própria, teclado/leitor de tela não conseguia arrastar de jeito nenhum.
+  const dragHandle = (
+    <button
+      ref={setActivatorNodeRef}
+      type="button"
+      {...attributes}
+      {...listeners}
+      onClick={(e) => e.stopPropagation()}
+      aria-label={`Arrastar OS #${order.number} para mudar status`}
+      className="shrink-0 rounded p-0.5 text-muted-foreground/50 cursor-grab hover:bg-muted/60 hover:text-muted-foreground active:cursor-grabbing"
+    >
+      <GripVertical className="h-3 w-3" />
+    </button>
+  );
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
-      {...listeners}
       role="button"
       tabIndex={0}
       aria-label={`OS #${order.number} — ${order.plate}`}
-      className="cursor-grab active:cursor-grabbing select-none"
+      className="select-none"
       onClick={handleNavigate}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleNavigate(); } }}
     >
       <CardContent
         order={order}
+        dragHandle={dragHandle}
         className={cn(
           isDragging
             ? "opacity-40 shadow-lg"

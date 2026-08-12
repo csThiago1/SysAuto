@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Loader2, Search } from "lucide-react"
@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { useScheduleOS } from "@/hooks/useAgenda"
 import { useServiceOrders } from "@/hooks"
+import { DateField } from "@/components/ui/date-field"
 
 const schema = z.object({
   osId: z.string().uuid("Selecione uma OS"),
@@ -39,7 +40,7 @@ export function SchedulingDialog({ open, onOpenChange, defaultDate }: Props) {
     osSearch.length >= 3 ? { search: osSearch, status: "reception" } : {}
   )
 
-  const { register, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } =
+  const { register, control, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } =
     useForm<FormData>({
       resolver: zodResolver(schema),
       defaultValues: {
@@ -138,7 +139,13 @@ export function SchedulingDialog({ open, onOpenChange, defaultDate }: Props) {
           {/* Data/hora entrada */}
           <div>
             <label className={LABEL}>Data e Hora de Entrada *</label>
-            <input type="datetime-local" className={INPUT} {...register("scheduling_date")} aria-invalid={!!errors.scheduling_date} />
+            <Controller
+              name="scheduling_date"
+              control={control}
+              render={({ field }) => (
+                <DateField withTime value={field.value} onChange={field.onChange} aria-invalid={!!errors.scheduling_date} />
+              )}
+            />
             {errors.scheduling_date && (
               <p className="mt-0.5 text-xs text-error-400">{errors.scheduling_date.message}</p>
             )}
@@ -158,7 +165,7 @@ export function SchedulingDialog({ open, onOpenChange, defaultDate }: Props) {
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-foreground">
+            <Button type="submit" disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-primary-foreground">
               {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />}
               Salvar Agendamento
             </Button>

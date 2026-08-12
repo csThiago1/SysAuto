@@ -224,31 +224,36 @@ export const KANBAN_PHASE_GROUPS: KanbanPhaseGroup[] = [
     id: "intake",
     label: "Entrada",
     statuses: ["reception", "initial_survey", "budget", "waiting_auth", "authorized"],
-    headerClass: "bg-blue-50 text-blue-700 border-b border-blue-200",
+    headerClass:
+      "bg-blue-50 text-blue-700 border-b border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20",
   },
   {
     id: "production",
     label: "Produção",
     statuses: ["waiting_parts", "repair", "mechanic", "bodywork", "painting", "assembly"],
-    headerClass: "bg-red-50 text-red-700 border-b border-red-200",
+    headerClass:
+      "bg-red-50 text-red-700 border-b border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/20",
   },
   {
     id: "finishing",
     label: "Acabamento",
     statuses: ["polishing", "washing", "final_survey"],
-    headerClass: "bg-yellow-50 text-yellow-700 border-b border-yellow-200",
+    headerClass:
+      "bg-yellow-50 text-yellow-700 border-b border-yellow-200 dark:bg-yellow-500/10 dark:text-yellow-300 dark:border-yellow-500/20",
   },
   {
     id: "delivery",
     label: "Saída",
     statuses: ["ready", "delivered"],
-    headerClass: "bg-green-50 text-green-700 border-b border-green-200",
+    headerClass:
+      "bg-green-50 text-green-700 border-b border-green-200 dark:bg-green-500/10 dark:text-green-300 dark:border-green-500/20",
   },
   {
     id: "cancelled",
     label: "Canceladas",
     statuses: ["cancelled"],
-    headerClass: "bg-neutral-100 text-neutral-500 border-b border-neutral-200",
+    headerClass:
+      "bg-neutral-100 text-neutral-500 border-b border-neutral-200 dark:bg-neutral-500/10 dark:text-neutral-400 dark:border-neutral-500/20",
   },
 ];
 

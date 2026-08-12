@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { Search, FilterX, Plus, ChevronLeft, ChevronRight, X } from "lucide-react"
+import { Search, FilterX, Plus, ChevronLeft, ChevronRight, X, SlidersHorizontal, Columns3 } from "lucide-react"
 import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 
 import { useServiceOrders, useDebounce, usePersons } from "@/hooks"
@@ -15,13 +15,116 @@ import {
   EmptyState,
   Skeleton,
 } from "@/components/ui"
-import { PageHeader } from "@/components/ui/page-header"
+import {
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
 import { PendingDraftsBanner } from "@/components/offline/PendingDraftsBanner"
 import { ServiceOrderTable } from "./_components/ServiceOrderTable"
 import { NewOSDrawer } from "./_components/NewOSDrawer"
 
 const SELECT_CLS = "h-9 rounded-md border border-border bg-muted/50 px-3 py-1 text-sm text-foreground/70 shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
 const PAGE_SIZE = 20
+
+interface AdvancedFiltersProps {
+  status: string
+  setStatus: (v: string) => void
+  insurerId: string
+  setInsurerId: (v: string) => void
+  insurers?: { id: string | number; fantasy_name?: string | null; full_name?: string | null }[]
+  customerType: string
+  setCustomerType: (v: string) => void
+  closure: string
+  setClosure: (v: string) => void
+  /** Empilhado e com alvo de 44px — usado dentro da folha mobile. */
+  stacked?: boolean
+}
+
+/** Os quatro filtros secundarios. Inline no desktop, dentro da folha no mobile. */
+function AdvancedFilters({
+  status,
+  setStatus,
+  insurerId,
+  setInsurerId,
+  insurers,
+  customerType,
+  setCustomerType,
+  closure,
+  setClosure,
+  stacked = false,
+}: AdvancedFiltersProps): React.ReactElement {
+  const cls = stacked ? cn(SELECT_CLS, "h-11 w-full") : SELECT_CLS
+  const field = (label: string, node: React.ReactNode) =>
+    stacked ? (
+      <label className="block space-y-1">
+        <span className="label-mono">{label}</span>
+        {node}
+      </label>
+    ) : (
+      node
+    )
+
+  return (
+    <>
+      {field(
+        "Status",
+        <select className={cls} value={status} onChange={(e) => setStatus(e.target.value)}>
+          <option value="ALL">Todos os status</option>
+          <option value="reception">Recepção</option>
+          <option value="initial_survey">Vistoria Inicial</option>
+          <option value="budget">Orçamento</option>
+          <option value="waiting_auth">Aguardando Aprovação</option>
+          <option value="authorized">Autorizada</option>
+          <option value="waiting_parts">Aguardando Peças</option>
+          <option value="repair">Em Reparo</option>
+          <option value="mechanic">Mecânica</option>
+          <option value="bodywork">Funilaria</option>
+          <option value="painting">Pintura</option>
+          <option value="assembly">Montagem</option>
+          <option value="polishing">Polimento</option>
+          <option value="washing">Lavagem</option>
+          <option value="final_survey">Vistoria Final</option>
+          <option value="ready">Pronto p/ Entrega</option>
+          <option value="delivered">Entregue</option>
+          <option value="cancelled">Cancelada</option>
+        </select>,
+      )}
+
+      {field(
+        "Seguradora",
+        <select className={cls} value={insurerId} onChange={(e) => setInsurerId(e.target.value)}>
+          <option value="ALL">Qualquer Seguradora</option>
+          {insurers?.map((insurer) => (
+            <option key={insurer.id} value={String(insurer.id)}>
+              {insurer.fantasy_name || insurer.full_name}
+            </option>
+          ))}
+        </select>,
+      )}
+
+      {field(
+        "Tipo de cliente",
+        <select className={cls} value={customerType} onChange={(e) => setCustomerType(e.target.value)}>
+          <option value="ALL">Qualquer Tipo</option>
+          <option value="insurer">Seguradora</option>
+          <option value="private">Particular</option>
+        </select>,
+      )}
+
+      {field(
+        "Fechamento",
+        <select className={cls} value={closure} onChange={(e) => setClosure(e.target.value)}>
+          <option value="ALL">Qualquer fechamento</option>
+          <option value="closed">Fechadas</option>
+          <option value="pending">Pendentes</option>
+        </select>,
+      )}
+    </>
+  )
+}
 
 export default function ServiceOrdersPage() {
   const searchParams = useSearchParams()
@@ -34,6 +137,10 @@ export default function ServiceOrdersPage() {
   const [excludeClosed, setExcludeClosed] = useState(true)
   const [closure, setClosure] = useState<string>("ALL")
   const [page, setPage] = useState(1)
+  const [filtersOpen, setFiltersOpen] = useState(false)
+
+  // Quantos dos 4 filtros secundarios estao ativos — vira o badge do botao "Filtros".
+  const advancedCount = [status, insurerId, customerType, closure].filter((v) => v !== "ALL").length
 
   const debouncedSearch = useDebounce(search, 300)
 
@@ -76,28 +183,40 @@ export default function ServiceOrdersPage() {
     <div className="flex flex-col gap-4 md:gap-6 px-0 py-3 md:p-6 max-w-7xl mx-auto">
       <NewOSDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
 
-      <PageHeader
-        title="Ordens de Serviço"
-        description={data ? `${data.count} resultado${data.count !== 1 ? "s" : ""} encontrado${data.count !== 1 ? "s" : ""}` : "Gerencie as Ordens de Serviço"}
-        actions={
-          <div className="flex items-center gap-3">
+      {/* Cabecalho proprio (nao o PageHeader compartilhado): esta tela tem
+          contagem + alternador de visao, e a 390px o bloco de 3 linhas do
+          PageHeader empurrava a primeira OS pra fora da tela. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <div className="flex min-w-0 items-baseline gap-2">
+          <h2 className="truncate text-base font-semibold text-foreground md:text-2xl">
+            Ordens de Serviço
+          </h2>
+          {data && (
+            <span className="label-mono shrink-0 tabular-nums">
+              {data.count} {data.count === 1 ? "OS" : "OS"}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2 md:gap-3">
             <Link
               href="/os/kanban"
-              className="rounded-md border border-border bg-muted/50 px-4 py-2 text-sm font-medium text-foreground/70 hover:bg-muted/30"
+              title="Ver Kanban"
+              aria-label="Ver Kanban"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-border bg-muted/50 text-sm font-medium text-foreground/70 hover:bg-muted/30 md:h-auto md:w-auto md:px-4 md:py-2"
             >
-              Ver Kanban
+              <Columns3 className="h-4 w-4 md:hidden" />
+              <span className="hidden md:inline">Ver Kanban</span>
             </Link>
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
-              className="flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 shadow-sm"
+              className="flex min-h-[44px] items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 shadow-sm md:min-h-0 md:px-4 md:py-2"
             >
               <Plus className="h-4 w-4" />
               Nova OS
             </button>
-          </div>
-        }
-      />
+        </div>
+      </div>
 
       <PendingDraftsBanner />
 
@@ -109,11 +228,53 @@ export default function ServiceOrdersPage() {
             placeholder="Buscar OS (ex: placa, num, cliente)..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-muted/50"
+            className="h-11 pl-9 bg-muted/50 md:h-9"
           />
         </div>
 
-        <div className="flex flex-col md:flex-row gap-3">
+        {/* Mobile: escopo segmentado + folha de filtros. Empilhar 5 controles em
+            largura cheia empurrava a primeira OS pra fora da tela. */}
+        <div className="flex gap-2 md:hidden">
+          <div className="flex min-w-0 flex-1 rounded-md border border-border bg-background p-0.5">
+            {([true, false] as const).map((v) => (
+              <button
+                key={String(v)}
+                type="button"
+                onClick={() => setExcludeClosed(v)}
+                aria-pressed={excludeClosed === v}
+                className={cn(
+                  "min-h-[44px] flex-1 rounded-[5px] px-2 text-sm font-medium transition-colors",
+                  excludeClosed === v
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {v ? "Na Oficina" : "Todas"}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setFiltersOpen(true)}
+            className={cn(
+              "inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-md border px-3 text-sm font-medium transition-colors",
+              advancedCount > 0
+                ? "border-primary/40 bg-primary/10 text-primary"
+                : "border-border bg-background text-foreground/70",
+            )}
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            Filtros
+            {advancedCount > 0 && (
+              <span className="rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground">
+                {advancedCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        <div className="hidden md:flex md:flex-row gap-3">
           <button
             type="button"
             onClick={() => setExcludeClosed(!excludeClosed)}
@@ -127,63 +288,17 @@ export default function ServiceOrdersPage() {
             {excludeClosed ? "Na Oficina" : "Todas"}
           </button>
 
-          <select
-            className={SELECT_CLS}
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-          >
-            <option value="ALL">Todos os status</option>
-            <option value="reception">Recepção</option>
-            <option value="initial_survey">Vistoria Inicial</option>
-            <option value="budget">Orçamento</option>
-            <option value="waiting_auth">Aguardando Aprovação</option>
-            <option value="authorized">Autorizada</option>
-            <option value="waiting_parts">Aguardando Peças</option>
-            <option value="repair">Em Reparo</option>
-            <option value="mechanic">Mecânica</option>
-            <option value="bodywork">Funilaria</option>
-            <option value="painting">Pintura</option>
-            <option value="assembly">Montagem</option>
-            <option value="polishing">Polimento</option>
-            <option value="washing">Lavagem</option>
-            <option value="final_survey">Vistoria Final</option>
-            <option value="ready">Pronto p/ Entrega</option>
-            <option value="delivered">Entregue</option>
-            <option value="cancelled">Cancelada</option>
-          </select>
-
-          <select
-            className={SELECT_CLS}
-            value={insurerId}
-            onChange={(e) => setInsurerId(e.target.value)}
-          >
-            <option value="ALL">Qualquer Seguradora</option>
-            {insurersData?.results.map((insurer) => (
-              <option key={insurer.id} value={String(insurer.id)}>
-                {insurer.fantasy_name || insurer.full_name}
-              </option>
-            ))}
-          </select>
-
-          <select
-            className={SELECT_CLS}
-            value={customerType}
-            onChange={(e) => setCustomerType(e.target.value)}
-          >
-            <option value="ALL">Qualquer Tipo</option>
-            <option value="insurer">Seguradora</option>
-            <option value="private">Particular</option>
-          </select>
-
-          <select
-            className={SELECT_CLS}
-            value={closure}
-            onChange={(e) => setClosure(e.target.value)}
-          >
-            <option value="ALL">Fechamento</option>
-            <option value="closed">Fechadas</option>
-            <option value="pending">Pendentes</option>
-          </select>
+          <AdvancedFilters
+            status={status}
+            setStatus={setStatus}
+            insurerId={insurerId}
+            setInsurerId={setInsurerId}
+            insurers={insurersData?.results}
+            customerType={customerType}
+            setCustomerType={setCustomerType}
+            closure={closure}
+            setClosure={setClosure}
+          />
 
           {hasFilters && (
             <Button variant="ghost" onClick={clearFilters} className="text-muted-foreground hover:text-error-600 px-3">
@@ -192,6 +307,48 @@ export default function ServiceOrdersPage() {
           )}
         </div>
       </div>
+
+      {/* Mobile: os mesmos selects, numa folha — fora do caminho até serem pedidos */}
+      <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+        <SheetContent side="bottom" className="flex max-h-[90dvh] flex-col md:hidden">
+          <SheetHeader>
+            <SheetTitle>Filtros</SheetTitle>
+          </SheetHeader>
+          <div className="min-h-0 flex-1 overflow-y-auto py-2">
+            <AdvancedFilters
+              stacked
+              status={status}
+              setStatus={setStatus}
+              insurerId={insurerId}
+              setInsurerId={setInsurerId}
+              insurers={insurersData?.results}
+              customerType={customerType}
+              setCustomerType={setCustomerType}
+              closure={closure}
+              setClosure={setClosure}
+            />
+          </div>
+          <SheetFooter className="gap-2">
+            {advancedCount > 0 && (
+              <Button
+                variant="outline"
+                className="min-h-[44px] flex-1"
+                onClick={() => {
+                  setStatus("ALL")
+                  setInsurerId("ALL")
+                  setCustomerType("ALL")
+                  setClosure("ALL")
+                }}
+              >
+                <FilterX className="mr-2 h-4 w-4" /> Limpar
+              </Button>
+            )}
+            <Button className="min-h-[44px] flex-1" onClick={() => setFiltersOpen(false)}>
+              Ver resultados
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
 
       {/* Active filter chips */}
       {hasFilters && (

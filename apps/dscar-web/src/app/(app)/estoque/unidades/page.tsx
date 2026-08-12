@@ -79,7 +79,7 @@ function ReservarModal({
           Barcode: <span className="font-mono text-foreground/60">{unidade.codigo_barras}</span>
         </p>
         <div>
-          <label className="label-mono text-muted-foreground mb-1 block">
+          <label className="label-mono text-muted-foreground mb-1.5 block">
             ID DA ORDEM DE SERVICO
           </label>
           <input
@@ -103,7 +103,7 @@ function ReservarModal({
             type="button"
             onClick={handleSubmit}
             disabled={!osId.trim() || reservar.isPending}
-            className="px-4 py-1.5 text-xs font-medium text-foreground bg-primary hover:bg-primary/90 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-1.5 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {reservar.isPending ? "Reservando..." : "Reservar"}
           </button>
@@ -153,7 +153,7 @@ function TransferirModal({
           {" "}| Atual: <span className="text-foreground/60">{unidade.nivel || unidade.localizacao || "Sem posicao"}</span>
         </p>
         <div>
-          <label className="label-mono text-muted-foreground mb-1 block">
+          <label className="label-mono text-muted-foreground mb-1.5 block">
             DESTINO
           </label>
           <PosicaoSelector value={nivelId} onChange={setNivelId} />
@@ -170,7 +170,7 @@ function TransferirModal({
             type="button"
             onClick={handleSubmit}
             disabled={!nivelId || transferir.isPending}
-            className="px-4 py-1.5 text-xs font-medium text-foreground bg-primary hover:bg-primary/90 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-1.5 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {transferir.isPending ? "Transferindo..." : "Transferir"}
           </button>

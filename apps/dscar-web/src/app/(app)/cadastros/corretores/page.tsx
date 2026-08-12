@@ -49,8 +49,8 @@ export default function CorretoresPage() {
                 onClick={() => setSelectedOffice(office)}
                 className={`w-full text-left p-3 rounded-lg border transition-colors ${
                   selectedOffice?.id === office.id
-                    ? "border-primary bg-primary/10 text-foreground"
-                    : "border-border hover:border-border text-foreground/70"
+                    ? "border-primary bg-primary/10 text-primary-foreground"
+                    : "border-border hover:border-border text-primary-foreground/70"
                 }`}
               >
                 <p className="text-sm font-medium">{office.full_name}</p>

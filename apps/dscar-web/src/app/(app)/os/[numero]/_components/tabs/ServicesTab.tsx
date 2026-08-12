@@ -240,7 +240,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                 disabled={isSubmitting}
                 size="sm"
                 data-testid="add-service-btn"
-                className="bg-primary hover:bg-primary/90 text-foreground gap-1.5"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Adicionar
@@ -269,9 +269,9 @@ export function ServicesTab({ osId, osStatus }: Props) {
                   "rounded-full px-3 py-1 text-xs font-medium transition",
                   sourceFilter === f.id
                     ? f.color === "info"
-                      ? "bg-info-500/15 text-info-500"
+                      ? "bg-info-500/15 text-info-400"
                       : f.color === "warning"
-                      ? "bg-warning-500/15 text-warning-500"
+                      ? "bg-warning-500/15 text-warning-400"
                       : "bg-white/15 text-foreground"
                     : "bg-muted/50 text-muted-foreground hover:bg-muted"
                 )}

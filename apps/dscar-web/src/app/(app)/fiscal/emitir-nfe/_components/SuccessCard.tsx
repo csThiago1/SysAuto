@@ -20,7 +20,7 @@ export function SuccessCard({
         <CheckCircle2 className="h-6 w-6 text-success-400 shrink-0" />
         <div>
           <p className="font-semibold text-success-300">NF-e enviada para processamento</p>
-          <p className="text-xs text-success-500 mt-0.5">
+          <p className="text-xs text-success-400 mt-0.5">
             O documento foi enviado à SEFAZ via Focus NF-e.
           </p>
         </div>
@@ -86,7 +86,7 @@ export function SuccessCard({
         <Button
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onClick={() => router.push("/fiscal/documentos" as any)}
-          className="bg-primary hover:bg-primary/90 text-foreground"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           Ver documentos emitidos
         </Button>

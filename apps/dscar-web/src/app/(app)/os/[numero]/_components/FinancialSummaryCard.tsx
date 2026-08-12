@@ -28,9 +28,9 @@ export function FinancialSummaryCard({ orderId, customerType }: Props) {
       {/* Seguradora */}
       <div className="rounded-lg border border-info-500/20 p-4">
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm font-semibold text-info-500">Seguradora</span>
+          <span className="text-sm font-semibold text-info-400">Seguradora</span>
           {summary.active_version && (
-            <span className="rounded-full bg-info-500/15 px-2 py-0.5 text-[11px] text-info-500">
+            <span className="rounded-full bg-info-500/15 px-2 py-0.5 text-[11px] text-info-400">
               v{summary.active_version.version_number}
             </span>
           )}
@@ -40,32 +40,32 @@ export function FinancialSummaryCard({ orderId, customerType }: Props) {
           <div className="flex justify-between"><span className="text-muted-foreground">Mão de obra</span><span className="text-foreground">{fmt(summary.insurer_labor)}</span></div>
           <div className="mt-2 flex justify-between border-t border-border pt-2">
             <span className="font-semibold text-foreground">Subtotal</span>
-            <span className="font-bold text-info-500">{fmt(summary.insurer_subtotal)}</span>
+            <span className="font-bold text-info-400">{fmt(summary.insurer_subtotal)}</span>
           </div>
-          <div className="flex justify-between"><span className="text-warning-500">Franquia</span><span className="text-warning-500">- {fmt(summary.deductible)}</span></div>
+          <div className="flex justify-between"><span className="text-warning-400">Franquia</span><span className="text-warning-400">- {fmt(summary.deductible)}</span></div>
         </div>
       </div>
 
       {/* Complemento */}
       {parseFloat(summary.complement_subtotal) > 0 && (
         <div className="rounded-lg border border-warning-500/20 p-4">
-          <div className="mb-3 text-sm font-semibold text-warning-500">Complemento Particular</div>
+          <div className="mb-3 text-sm font-semibold text-warning-400">Complemento Particular</div>
           <div className="space-y-1 text-xs">
             <div className="flex justify-between"><span className="text-muted-foreground">Serviços</span><span className="text-foreground">{fmt(summary.complement_labor)}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Peças</span><span className="text-foreground">{fmt(summary.complement_parts)}</span></div>
             <div className="mt-2 flex justify-between border-t border-border pt-2">
               <span className="font-semibold text-foreground">Subtotal</span>
-              <span className="font-bold text-warning-500">{fmt(summary.complement_subtotal)}</span>
+              <span className="font-bold text-warning-400">{fmt(summary.complement_subtotal)}</span>
             </div>
-            <div className="flex justify-between"><span className="text-success-500">Já faturado</span><span className="text-success-500">{fmt(summary.complement_billed)}</span></div>
+            <div className="flex justify-between"><span className="text-success-400">Já faturado</span><span className="text-success-400">{fmt(summary.complement_billed)}</span></div>
           </div>
         </div>
       )}
 
       {/* Totais */}
       <div className="rounded-lg border border-border bg-muted/50 p-4 text-xs">
-        <div className="flex justify-between"><span className="text-muted-foreground">Cliente deve</span><span className="font-bold text-error-500">{fmt(summary.customer_owes)}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">Seguradora deve</span><span className="font-bold text-info-500">{fmt(summary.insurer_owes)}</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Cliente deve</span><span className="font-bold text-error-400">{fmt(summary.customer_owes)}</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Seguradora deve</span><span className="font-bold text-info-400">{fmt(summary.insurer_owes)}</span></div>
         <div className="mt-2 flex justify-between border-t border-border pt-2">
           <span className="font-bold text-foreground">Total geral</span>
           <span className="text-base font-bold text-foreground">{fmt(summary.grand_total)}</span>

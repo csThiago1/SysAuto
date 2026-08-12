@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import type { PaymentMethod } from "@paddock/types";
 import { PAYMENT_METHOD_LABELS } from "@paddock/types";
+import { DateField } from "@/components/ui/date-field"
+import { toast } from "sonner"
 
 interface RecordPaymentDialogProps {
   /** The document being paid/received */
@@ -77,6 +79,12 @@ export function RecordPaymentDialog({
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     if (!document) return;
+    // O `required` do input nativo era a única validação desta data; o
+    // DateField é um botão, então o browser não bloqueia mais o submit.
+    if (!paymentDate) {
+      toast.error("Informe a data do pagamento.");
+      return;
+    }
     onSubmit({
       documentId: document.id,
       payment_date: paymentDate,
@@ -115,12 +123,7 @@ export function RecordPaymentDialog({
           </div>
           <div className="flex flex-col gap-1.5">
             <Label className="text-xs font-medium text-foreground/70">Data do pagamento *</Label>
-            <Input
-              type="date"
-              value={paymentDate}
-              onChange={(e) => setPaymentDate(e.target.value)}
-              required
-            />
+            <DateField value={paymentDate} onChange={setPaymentDate} />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label className="text-xs font-medium text-foreground/70">Forma de pagamento *</Label>
@@ -173,7 +176,7 @@ export function RecordPaymentDialog({
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {isPending ? "Salvando..." : submitLabel}
             </button>

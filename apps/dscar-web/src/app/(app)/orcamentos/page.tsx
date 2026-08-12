@@ -39,7 +39,7 @@ export default function OrcamentosPage() {
         </div>
         <Link
           href={"/orcamentos/novo" as Route}
-          className="inline-flex items-center gap-1.5 rounded-md bg-primary hover:bg-primary/90 px-3 py-1.5 text-sm text-foreground transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-md bg-primary hover:bg-primary/90 px-3 py-1.5 text-sm text-primary-foreground transition-colors"
         >
           <Plus className="h-4 w-4" />
           Novo Orçamento

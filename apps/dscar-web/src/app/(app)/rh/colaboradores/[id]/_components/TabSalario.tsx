@@ -10,6 +10,8 @@ import { TrendingUp } from "lucide-react";
 import type { Employee, CreateSalaryHistoryPayload } from "@paddock/types";
 import { useSalaryHistory, useCreateSalaryHistory } from "@/hooks";
 import { Skeleton } from "@/components/ui";
+import { DateField } from "@/components/ui/date-field"
+import { toast } from "sonner"
 
 interface TabSalarioProps {
   employee: Employee;
@@ -28,6 +30,11 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
 
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
+    // `required` nativo era a unica validacao desta data.
+    if (!form.effective_date) {
+      toast.error("Informe a data de vigência.");
+      return;
+    }
     create.mutate(form, { onSuccess: () => setShowForm(false) });
   };
 
@@ -51,7 +58,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
           </div>
           <button
             onClick={() => setShowForm((p) => !p)}
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             <TrendingUp className="h-3.5 w-3.5" />
             Novo reajuste
@@ -110,15 +117,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
               <label className="text-xs text-muted-foreground">
                 Data de vigência
               </label>
-              <input
-                type="date"
-                required
-                className="rounded border border-border px-2 py-1.5 text-sm"
-                value={form.effective_date}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, effective_date: e.target.value }))
-                }
-              />
+              <DateField value={form.effective_date} onChange={(v) => setForm((p) => ({ ...p, effective_date: v }))} />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Motivo</label>
@@ -144,7 +143,7 @@ export function TabSalario({ employee }: TabSalarioProps): React.ReactElement {
             <button
               type="submit"
               disabled={create.isPending}
-              className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary/90 disabled:opacity-50"
+              className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {create.isPending ? "Salvando..." : "Confirmar reajuste"}
             </button>

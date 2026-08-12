@@ -1,0 +1,601 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-10T00:00:00.000Z",
+  "title": "Design System: DS Car ERP",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Roxo Paddock",
+        "canonical": "hsl(288 68% 48%)",
+        "tonalRamp": [
+          "hsl(288 68% 15%)",
+          "hsl(288 68% 24%)",
+          "hsl(288 68% 32%)",
+          "hsl(288 68% 40%)",
+          "hsl(288 68% 48%)",
+          "hsl(288 60% 62%)",
+          "hsl(288 55% 76%)",
+          "hsl(288 50% 92%)"
+        ]
+      },
+      "primary-light": {
+        "role": "primary",
+        "displayName": "Roxo Paddock Profundo",
+        "canonical": "hsl(288 55% 36%)",
+        "tonalRamp": [
+          "hsl(288 55% 15%)",
+          "hsl(288 55% 22%)",
+          "hsl(288 55% 29%)",
+          "hsl(288 55% 36%)",
+          "hsl(288 55% 47%)",
+          "hsl(288 50% 62%)",
+          "hsl(288 45% 78%)",
+          "hsl(288 40% 93%)"
+        ]
+      },
+      "surface-base": {
+        "role": "neutral",
+        "displayName": "Piche",
+        "canonical": "hsl(0 0% 4%)",
+        "tonalRamp": [
+          "hsl(0 0% 4%)",
+          "hsl(0 0% 7%)",
+          "hsl(0 0% 8%)",
+          "hsl(0 0% 14%)",
+          "hsl(0 0% 18%)",
+          "hsl(0 0% 40%)",
+          "hsl(0 0% 55%)",
+          "hsl(0 0% 95%)"
+        ]
+      },
+      "surface-card": {
+        "role": "neutral",
+        "displayName": "Chapa",
+        "canonical": "hsl(0 0% 7%)",
+        "tonalRamp": [
+          "hsl(0 0% 4%)",
+          "hsl(0 0% 7%)",
+          "hsl(0 0% 10%)",
+          "hsl(0 0% 14%)",
+          "hsl(0 0% 18%)",
+          "hsl(0 0% 26%)",
+          "hsl(0 0% 55%)",
+          "hsl(0 0% 95%)"
+        ]
+      },
+      "surface-raised": {
+        "role": "neutral",
+        "displayName": "Chapa Erguida",
+        "canonical": "hsl(0 0% 8%)",
+        "tonalRamp": [
+          "hsl(0 0% 5%)",
+          "hsl(0 0% 8%)",
+          "hsl(0 0% 12%)",
+          "hsl(0 0% 16%)",
+          "hsl(0 0% 20%)",
+          "hsl(0 0% 30%)",
+          "hsl(0 0% 58%)",
+          "hsl(0 0% 95%)"
+        ]
+      },
+      "surface-inset": {
+        "role": "neutral",
+        "displayName": "Rebaixo",
+        "canonical": "hsl(0 0% 14%)",
+        "tonalRamp": [
+          "hsl(0 0% 6%)",
+          "hsl(0 0% 10%)",
+          "hsl(0 0% 14%)",
+          "hsl(0 0% 18%)",
+          "hsl(0 0% 24%)",
+          "hsl(0 0% 36%)",
+          "hsl(0 0% 60%)",
+          "hsl(0 0% 95%)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Giz",
+        "canonical": "hsl(0 0% 95%)",
+        "tonalRamp": [
+          "hsl(0 0% 18%)",
+          "hsl(0 0% 30%)",
+          "hsl(0 0% 42%)",
+          "hsl(0 0% 55%)",
+          "hsl(0 0% 68%)",
+          "hsl(0 0% 80%)",
+          "hsl(0 0% 88%)",
+          "hsl(0 0% 95%)"
+        ]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Grafite",
+        "canonical": "hsl(0 0% 55%)",
+        "tonalRamp": [
+          "hsl(0 0% 14%)",
+          "hsl(0 0% 24%)",
+          "hsl(0 0% 34%)",
+          "hsl(0 0% 45%)",
+          "hsl(0 0% 55%)",
+          "hsl(0 0% 68%)",
+          "hsl(0 0% 82%)",
+          "hsl(0 0% 94%)"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Régua",
+        "canonical": "hsl(0 0% 18%)",
+        "tonalRamp": [
+          "hsl(0 0% 8%)",
+          "hsl(0 0% 13%)",
+          "hsl(0 0% 18%)",
+          "hsl(0 0% 24%)",
+          "hsl(0 0% 32%)",
+          "hsl(0 0% 45%)",
+          "hsl(0 0% 65%)",
+          "hsl(0 0% 90%)"
+        ]
+      },
+      "steel": {
+        "role": "tertiary",
+        "displayName": "Aço Escovado",
+        "canonical": "hsl(207 14% 38%)",
+        "tonalRamp": [
+          "#2b3038",
+          "#424c55",
+          "#4c5862",
+          "#5a6876",
+          "#6e7f8e",
+          "#8796a5",
+          "#cbd2da",
+          "#f8f9fa"
+        ]
+      },
+      "success": {
+        "role": "secondary",
+        "displayName": "Verde Motor",
+        "canonical": "#22c55e",
+        "tonalRamp": [
+          "#052e16",
+          "#14532d",
+          "#166534",
+          "#15803d",
+          "#16a34a",
+          "#22c55e",
+          "#86efac",
+          "#f0fdf4"
+        ]
+      },
+      "warning": {
+        "role": "secondary",
+        "displayName": "Âmbar",
+        "canonical": "#f59e0b",
+        "tonalRamp": [
+          "#451a03",
+          "#78350f",
+          "#92400e",
+          "#b45309",
+          "#d97706",
+          "#f59e0b",
+          "#fcd34d",
+          "#fffbeb"
+        ]
+      },
+      "error": {
+        "role": "secondary",
+        "displayName": "Vermelho Alerta",
+        "canonical": "#ff2424",
+        "tonalRamp": [
+          "#4c0000",
+          "#8b0000",
+          "#a80000",
+          "#cc0000",
+          "#f20000",
+          "#ff2424",
+          "#ff9292",
+          "#fff0f0"
+        ]
+      },
+      "info": {
+        "role": "secondary",
+        "displayName": "Azul Diagnóstico",
+        "canonical": "#3b82f6",
+        "tonalRamp": [
+          "#172554",
+          "#1e3a8a",
+          "#1e40af",
+          "#1d4ed8",
+          "#2563eb",
+          "#3b82f6",
+          "#93c5fd",
+          "#eff6ff"
+        ]
+      },
+      "approval": {
+        "role": "tertiary",
+        "displayName": "Roxo Aprovação",
+        "canonical": "#a855f7",
+        "tonalRamp": [
+          "#3b0764",
+          "#581c87",
+          "#6b21a8",
+          "#7e22ce",
+          "#9333ea",
+          "#a855f7",
+          "#d8b4fe",
+          "#faf5ff"
+        ]
+      },
+      "destructive": {
+        "role": "secondary",
+        "displayName": "Vermelho Destrutivo",
+        "canonical": "hsl(0 80% 40%)",
+        "tonalRamp": [
+          "hsl(0 80% 12%)",
+          "hsl(0 80% 20%)",
+          "hsl(0 80% 28%)",
+          "hsl(0 80% 34%)",
+          "hsl(0 80% 40%)",
+          "hsl(0 70% 55%)",
+          "hsl(0 65% 74%)",
+          "hsl(0 60% 94%)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Papel",
+        "canonical": "hsl(21 28% 92%)",
+        "tonalRamp": [
+          "hsl(21 28% 20%)",
+          "hsl(21 28% 34%)",
+          "hsl(21 28% 48%)",
+          "hsl(21 28% 62%)",
+          "hsl(21 28% 76%)",
+          "hsl(21 28% 85%)",
+          "hsl(21 28% 92%)",
+          "hsl(21 28% 97%)"
+        ]
+      },
+      "paper-ink": {
+        "role": "neutral",
+        "displayName": "Tinta Ferrogálica",
+        "canonical": "hsl(240 27% 18%)",
+        "tonalRamp": [
+          "hsl(240 27% 10%)",
+          "hsl(240 27% 18%)",
+          "hsl(240 27% 27%)",
+          "hsl(240 20% 40%)",
+          "hsl(240 14% 55%)",
+          "hsl(240 10% 70%)",
+          "hsl(240 8% 84%)",
+          "hsl(240 8% 95%)"
+        ]
+      },
+      "primary-auth": {
+        "role": "primary",
+        "displayName": "Vermelho DS Car (login)",
+        "canonical": "hsl(0 82% 42%)",
+        "tonalRamp": [
+          "hsl(0 82% 14%)",
+          "hsl(0 82% 22%)",
+          "hsl(0 82% 30%)",
+          "hsl(0 82% 36%)",
+          "hsl(0 82% 42%)",
+          "hsl(0 72% 56%)",
+          "hsl(0 66% 74%)",
+          "hsl(0 60% 94%)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Título de página. Uma única ocorrência por tela."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Título de seção dentro de uma página."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Título de card."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Corpo padrão do ERP a 14px. A densidade de formulário é deliberada — não subir para 16px."
+      },
+      "label": {
+        "displayName": "Label mono",
+        "purpose": "Eyebrow de seção, label de campo e unidade. Mono 10px uppercase com tracking 0.14em, cor Grafite."
+      },
+      "plate": {
+        "displayName": "Placa",
+        "purpose": "Placa de veículo em Rajdhani 700. Identificador que o pátio usa para falar — nunca dissolver no corpo do texto."
+      },
+      "metric": {
+        "displayName": "Métrica",
+        "purpose": "Valor de KPI, dinheiro e quantidade. Mono com tabular-nums para varredura vertical."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card",
+        "value": "0 1px 3px 0 rgba(0,0,0,0.08), 0 1px 2px -1px rgba(0,0,0,0.05)",
+        "purpose": "Repouso de card. Quase imperceptível no tema escuro — é o piso, não um efeito."
+      },
+      {
+        "name": "card-hover",
+        "value": "0 4px 12px 0 rgba(0,0,0,0.12), 0 2px 4px -2px rgba(0,0,0,0.08)",
+        "purpose": "Resposta a hover em card clicável."
+      },
+      {
+        "name": "dropdown",
+        "value": "0 8px 24px -4px rgba(0,0,0,0.14), 0 4px 8px -4px rgba(0,0,0,0.10)",
+        "purpose": "Menu e popover — elementos que realmente sobrepõem e podem ser fechados."
+      },
+      {
+        "name": "sidebar",
+        "value": "4px 0 16px 0 rgba(0,0,0,0.18)",
+        "purpose": "Overlay de navegação no mobile."
+      },
+      {
+        "name": "kanban",
+        "value": "0 2px 8px 0 rgba(0,0,0,0.10)",
+        "purpose": "Card do board em repouso."
+      },
+      {
+        "name": "kanban-drag",
+        "value": "0 8px 24px 0 rgba(0,0,0,0.20)",
+        "purpose": "Card do board sendo arrastado. A única sombra dramática do sistema; comunica 'isto está na sua mão'."
+      }
+    ],
+    "motion": [
+      {
+        "name": "duration-fast",
+        "value": "100ms",
+        "purpose": "Micro-resposta: mudança de cor, troca de estado de botão."
+      },
+      {
+        "name": "duration-normal",
+        "value": "200ms",
+        "purpose": "Padrão para transição de estado e entrada de drawer."
+      },
+      {
+        "name": "duration-slow",
+        "value": "300ms",
+        "purpose": "Transição de superfície maior."
+      },
+      {
+        "name": "card-in",
+        "value": "250ms ease-out (opacity 0→1, translateY 8px→0)",
+        "purpose": "Entrada de card na lista mobile, com stagger de 40ms nos 5 primeiros e saturação em 200ms a partir do 6º."
+      },
+      {
+        "name": "section-in",
+        "value": "150ms ease-out (opacity 0→1, translateY 4px→0)",
+        "purpose": "Troca de seção no workspace."
+      },
+      {
+        "name": "slide-in-left",
+        "value": "200ms ease-out (translateX -100%→0)",
+        "purpose": "Entrada de drawer e sidebar overlay."
+      },
+      {
+        "name": "pulse-slow",
+        "value": "4s ease-in-out infinite (opacity 1→0.4→1)",
+        "purpose": "Ponto de status vivo. Lento o bastante para não distrair numa tabela densa."
+      },
+      {
+        "name": "pulse-red",
+        "value": "1.5s ease-in-out infinite (opacity 1→0.5→1)",
+        "purpose": "Alerta ativo que exige atenção agora."
+      },
+      {
+        "name": "reduced-motion-fallback",
+        "value": "fade-in-only 150ms ease-out",
+        "purpose": "Degradação obrigatória sob prefers-reduced-motion: reduce. Toda animação nova precisa deste caminho."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "field-reference",
+        "value": "390px"
+      },
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botão Primário",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação primária da tela. Uma por superfície — é onde o roxo Paddock aparece.",
+      "html": "<button class=\"ds-btn-primary\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M12 5v14M5 12h14\"/></svg>Nova OS</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 8px 16px; border-radius: 6px; border: 1px solid hsl(288 68% 48%); background: hsl(288 68% 48%); color: #fff; font-family: Montserrat, ui-sans-serif, system-ui, sans-serif; font-size: 14px; font-weight: 500; white-space: nowrap; cursor: pointer; transition: color 200ms, background-color 200ms, border-color 200ms, transform 200ms; } .ds-btn-primary:hover { background: hsl(288 68% 48% / 0.9); } .ds-btn-primary:active { background: hsl(288 68% 48% / 0.8); transform: scale(0.98); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(0 0% 4%), 0 0 0 4px hsl(288 68% 48%); }"
+    },
+    {
+      "name": "Botão Outline",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Ação secundária real. Ganha peso pela borda de 2px, nunca por cor.",
+      "html": "<button class=\"ds-btn-outline\">Ver Kanban</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 8px 16px; border-radius: 6px; border: 2px solid hsl(0 0% 95% / 0.2); background: hsl(0 0% 7%); color: hsl(0 0% 95%); font-family: Montserrat, ui-sans-serif, system-ui, sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: background-color 200ms, border-color 200ms, transform 200ms; } .ds-btn-outline:hover { background: hsl(0 0% 14% / 0.5); border-color: hsl(0 0% 95% / 0.3); } .ds-btn-outline:active { transform: scale(0.98); } .ds-btn-outline:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(0 0% 4%), 0 0 0 4px hsl(288 68% 48%); }"
+    },
+    {
+      "name": "Campo de Entrada",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Input é sulco, não saliência — fundo mais escuro que o card que o contém.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Buscar OS (ex: placa, num, cliente)…\" />",
+      "css": ".ds-input { display: flex; width: 100%; height: 36px; padding: 4px 12px; border-radius: 6px; border: 1px solid hsl(0 0% 18%); background: hsl(0 0% 14% / 0.5); color: hsl(0 0% 95%); font-family: Montserrat, ui-sans-serif, system-ui, sans-serif; font-size: 14px; transition: border-color 200ms, box-shadow 200ms; } .ds-input::placeholder { color: hsl(0 0% 55% / 0.5); } .ds-input:focus-visible { outline: none; box-shadow: 0 0 0 2px hsl(288 68% 48%); } .ds-input[aria-invalid=\"true\"] { border-color: #ff2424; box-shadow: 0 0 0 2px rgba(255, 36, 36, 0.2); } .ds-input:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Status Pill — tonal alpha",
+      "kind": "chip",
+      "refersTo": "status-pill-tonal",
+      "description": "Dialeto de escritório: tela densa, sessão longa, luz controlada. Integra-se ao workspace escuro.",
+      "html": "<span class=\"ds-pill-tonal ds-pill-success\"><span class=\"ds-pill-dot\"></span>Finalizada</span>",
+      "css": ".ds-pill-tonal { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 9999px; border: 1px solid; font-family: Montserrat, ui-sans-serif, system-ui, sans-serif; font-size: 12px; font-weight: 500; } .ds-pill-success { background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.2); color: #4ade80; } .ds-pill-dot { width: 6px; height: 6px; border-radius: 9999px; flex-shrink: 0; background: currentColor; animation: ds-pulse-slow 4s ease-in-out infinite; } @keyframes ds-pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } } @media (prefers-reduced-motion: reduce) { .ds-pill-dot { animation: none; } }"
+    },
+    {
+      "name": "Status Chip — campo",
+      "kind": "chip",
+      "refersTo": "status-chip-field",
+      "description": "Dialeto de campo: consultado sob luz direta, de relance. Chapado porque contraste sob sol é requisito operacional.",
+      "html": "<span class=\"ds-chip-field\">Pronto p/ Entrega</span>",
+      "css": ".ds-chip-field { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 9999px; border: 1px solid #bbf7d0; background: #dcfce7; color: #166534; font-family: Montserrat, ui-sans-serif, system-ui, sans-serif; font-size: 12px; font-weight: 500; }"
+    },
+    {
+      "name": "Régua de KPI",
+      "kind": "custom",
+      "refersTo": "kpi-cell",
+      "description": "Componente-assinatura. Divisores de exatamente 1px produzidos por gap-px sobre fundo Régua — sem desenhar borda nenhuma.",
+      "html": "<div class=\"ds-kpi-strip\"><div class=\"ds-kpi-cell\"><span class=\"ds-kpi-icon\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6\"/></svg></span><span class=\"ds-kpi-text\"><span class=\"ds-kpi-label\">Faturamento Mês</span><span class=\"ds-kpi-value\">R$ 48.320,00</span></span></div><div class=\"ds-kpi-cell\"><span class=\"ds-kpi-icon ds-kpi-icon-info\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M5 18a2 2 0 1 0 4 0 2 2 0 1 0-4 0M15 18a2 2 0 1 0 4 0 2 2 0 1 0-4 0M3 6h11v10M14 9h4l3 3v6h-2\"/></svg></span><span class=\"ds-kpi-text\"><span class=\"ds-kpi-label\">Entregas (Mês)</span><span class=\"ds-kpi-value\">27</span></span></div></div>",
+      "css": ".ds-kpi-strip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; overflow: hidden; border-radius: 16px; background: hsl(0 0% 18%); } .ds-kpi-cell { display: flex; align-items: center; gap: 10px; background: hsl(0 0% 7%); padding: 10px 12px; } .ds-kpi-icon { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; flex-shrink: 0; border-radius: 8px; background: rgba(34, 197, 94, 0.1); color: #4ade80; } .ds-kpi-icon-info { background: rgba(59, 130, 246, 0.1); color: #60a5fa; } .ds-kpi-text { min-width: 0; } .ds-kpi-label { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: Montserrat, ui-sans-serif, system-ui, sans-serif; font-size: 11px; line-height: 1.25; color: hsl(0 0% 55%); } .ds-kpi-value { display: block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 17px; font-weight: 600; line-height: 1.15; font-variant-numeric: tabular-nums; color: hsl(0 0% 95%); }"
+    },
+    {
+      "name": "Eyebrow de Seção",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "O separador estrutural padrão do sistema. Substitui o card em quase todos os casos — custa 10px de altura em vez de 40px.",
+      "html": "<p class=\"ds-section-label\">Visão Geral</p>",
+      "css": ".ds-section-label { display: flex; align-items: center; gap: 12px; margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; line-height: 1; letter-spacing: 0.14em; text-transform: uppercase; color: hsl(0 0% 95% / 0.65); } .ds-section-label::after { content: ''; flex: 1; height: 1px; background: hsl(0 0% 18%); }"
+    },
+    {
+      "name": "Card de Lista Mobile",
+      "kind": "card",
+      "refersTo": "card-list-mobile",
+      "description": "Sem borda — separa-se por tom. Faixa de status de 3px identifica a etapa antes de qualquer texto ser lido. Rodapé em grade de colunas fixas, nunca justify-between.",
+      "html": "<article class=\"ds-card-mobile\"><span class=\"ds-card-stripe\"></span><header class=\"ds-card-head\"><span class=\"ds-card-os\">#9999</span><span class=\"ds-chip-field\">Pronto p/ Entrega</span></header><p class=\"ds-card-client\">Cliente Teste Fiscal</p><p class=\"ds-card-vehicle\">TST9F99 · Honda Civic (2020)</p><footer class=\"ds-card-foot\"><span class=\"ds-card-origin\">Particular</span><span class=\"ds-card-value\">R$ 650,00</span><span class=\"ds-card-date\">—</span></footer></article>",
+      "css": ".ds-card-mobile { position: relative; overflow: hidden; border-radius: 11px; background: hsl(0 0% 7%); padding: 10px 12px 10px 15px; font-family: Montserrat, ui-sans-serif, system-ui, sans-serif; } .ds-card-stripe { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #22c55e; } .ds-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; } .ds-card-os { font-family: Rajdhani, ui-sans-serif, system-ui, sans-serif; font-size: 18px; font-weight: 600; letter-spacing: 0.04em; color: hsl(288 68% 48%); } .ds-card-client { margin: 0 0 2px; font-size: 14px; color: hsl(0 0% 95%); } .ds-card-vehicle { margin: 0 0 10px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: hsl(0 0% 55%); } .ds-card-foot { display: grid; grid-template-columns: minmax(0, 1fr) 96px 44px; align-items: center; gap: 8px; border-top: 1px solid hsl(0 0% 18%); padding-top: 8px; } .ds-card-origin { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: hsl(0 0% 55%); } .ds-card-value { text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: hsl(0 0% 95%); } .ds-card-date { text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; font-variant-numeric: tabular-nums; color: hsl(0 0% 55%); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A Prancheta do Chefe de Oficina",
+    "overview": "O sistema não se comporta como um dashboard. Comporta-se como a prancheta de metal que o chefe de oficina carrega pelo pátio: uma superfície escura, dura e sem brilho, onde o que importa é o registro. Os dados vêm carbonados — números em mono tabular, alinhados em coluna, legíveis de relance e sem interpretação. As seções são separadas por uma etiqueta em maiúsculas monoespaçadas seguida de uma régua de 1px que atravessa a largura, exatamente como o cabeçalho impresso de um formulário de ofício. A faixa de cor de 3px na lateral do card de OS é a etiqueta de pasta: identifica a etapa antes de qualquer leitura.\n\nA consequência é uma interface de ornamento zero. Não há gradiente decorativo, não há ilustração, não há sombra dramática, não há card dentro de card dentro de card. A profundidade vem de tom — #0a0a0a do fundo, #121212 do card, #242424 do campo de input — e não de elevação simulada. A hierarquia vem de peso tipográfico e de espaço, não de moldura.\n\nA cor é o recurso mais escasso do sistema e a regra que mais o define. O roxo Paddock aparece em uma fração pequena de qualquer tela: a ação primária, o número da OS, o item ativo do dock, o anel de foco. Todo o resto é escala de cinza. As cores semânticas não decoram: elas reportam estado de uma OS, de um documento fiscal ou de um saldo.",
+    "keyCharacteristics": [
+      "Superfície escura por padrão (dark fixa no <html>); o tema claro existe e é secundário",
+      "Profundidade por tom, nunca por sombra pesada",
+      "Números sempre em mono tabular — dinheiro, quantidade, data, placa, número de OS",
+      "Eyebrow monoespaçado + régua de 1px como único separador de seção",
+      "Ornamento zero; densidade de formulário",
+      "Cor de marca em ≤10% da tela; cor semântica só reporta estado",
+      "Duas densidades legítimas: escritório denso, campo folgado"
+    ],
+    "rules": [
+      {
+        "name": "A Regra dos Dois Territórios",
+        "body": "O produto tem duas cores de marca separadas por território: workspace autenticado ((app)/) usa Roxo Paddock (--primary: 288 68% 48%); superfície de autenticação ((auth)/) usa Vermelho DS Car (#c31313, hsl(0 82% 42%)) via override inline de --primary em login/page.tsx. bg-primary é correto nos dois — nunca chumbe o hexadecimal.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra dos 10%",
+        "body": "O roxo Paddock ocupa no máximo 10% de qualquer tela. Ele marca a ação primária, o identificador da OS e o foco — nada mais. Sua raridade é o mecanismo: quando tudo é roxo, nada é a próxima ação.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Estado",
+        "body": "Cor semântica reporta estado de um objeto de negócio (OS, documento fiscal, conta, saldo). Ela nunca é escolhida por estética, por variedade ou para 'dar vida' a uma seção. Um card colorido sem estado por trás é um defeito.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Sulco",
+        "body": "Superfícies interativas de entrada são mais escuras que o card que as contém (#242424 dentro de #121212), nunca mais claras. Input é sulco, não saliência.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra da Escala Órfã",
+        "body": "A escala primary-50…950 do tailwind.config.ts é vermelha e não acompanha --primary em nenhum dos dois territórios (nem o roxo do workspace, nem o #c31313 do login). Não use primary-500/600 esperando a cor de marca. Vermelho semântico = error-*; cor de marca = bg-primary/text-primary.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Número Tabular",
+        "body": "Todo número que o usuário compara entre linhas — dinheiro, quantidade, data, hora, placa, número de OS — usa fonte mono com tabular-nums. Números que dançam de linha para linha são ilegíveis em varredura vertical, e varredura vertical é como este produto é lido.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra da Placa",
+        "body": "Placa de veículo é sempre Rajdhani 700 com tracking 0.08em. É o identificador que o pátio usa para falar; precisa ser reconhecível de longe e nunca deve se dissolver no corpo do texto.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra do Eyebrow Nu",
+        "body": "Seção se organiza com um eyebrow mono maiúsculo seguido de régua de 1px — não com um card em volta. Um card custa 2 bordas, 1 sombra e ~40px de altura para comunicar o que uma linha de 10px comunica melhor.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra do Scroll Único",
+        "body": "A página nunca rola horizontalmente (main é overflow-x-hidden). Scroll lateral existe apenas em containers que o declaram: Kanban, ScrollFade, tab bar com fade. Uma página que sangra para o lado no mobile é um bug, não uma escolha de layout.",
+        "section": "layout"
+      },
+      {
+        "name": "A Regra do Rodapé em Grade",
+        "body": "Linha de dados no rodapé de card de lista usa grade de colunas fixas (grid-cols-[minmax(0,1fr)_96px_44px], texto trunca, valor alinhado à direita). justify-between é proibido ali: os valores flutuam conforme o comprimento do vizinho e a coluna deixa de existir na varredura vertical.",
+        "section": "layout"
+      },
+      {
+        "name": "A Regra do Tom Antes da Sombra",
+        "body": "Para separar duas superfícies, mude o tom primeiro. Só recorra à sombra quando o elemento genuinamente flutua sobre o conteúdo e pode ser fechado. Sombra em elemento que não fecha é decoração.",
+        "section": "elevation"
+      },
+      {
+        "name": "A Regra do Pill Reservado",
+        "body": "rounded-full é exclusivo de pill de status e chip. Botão, card e input nunca são totalmente arredondados. O formato de cápsula é o sinal de 'isto é um estado, não um controle'.",
+        "section": "shapes"
+      },
+      {
+        "name": "A Regra do Card sem Moldura no Mobile",
+        "body": "Card de lista no mobile não tem borda — separa-se do fundo por tom, raio de 11px e a faixa de status de 3px. Borda em card de lista mobile rouba largura que é escassa a 390px.",
+        "section": "shapes"
+      },
+      {
+        "name": "A Regra dos Dois Dialetos",
+        "body": "O sistema mantém duas expressões de status, escolhidas pela condição física de uso: tonal alpha em superfície de escritório (densa, sessão longa, luz controlada) e chip opaco em superfície de campo (luz direta, leitura de relance). Nunca misture os dois na mesma superfície — uma tela escolhe seu dialeto e o mantém do topo ao rodapé.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do usar --primary / bg-primary para a cor de marca. É a única fonte de verdade do roxo (#ac27ce).",
+      "Do usar bg-primary/text-primary para a cor de marca — ela resolve para roxo no workspace e vermelho no login. Nunca chumbe o hexadecimal.",
+      "Do separar seções com SectionLabel ou .section-divider antes de considerar um card.",
+      "Do aplicar font-mono tabular-nums em todo valor comparável entre linhas: dinheiro, quantidade, data, hora, placa, número de OS.",
+      "Do criar superfície por tom (#0a0a0a → #121212 → #141414) e deixar input mais escuro que o card que o contém.",
+      "Do escolher o dialeto de status pela condição de uso da tela — tonal alpha no escritório, chip opaco no campo — e mantê-lo consistente na tela inteira.",
+      "Do consumir SERVICE_ORDER_STATUS_CONFIG via StatusBadge para qualquer status de OS. É a fonte única.",
+      "Do testar toda tela nova a 390px antes de mergear, com a tabela já convertida em cards.",
+      "Do usar aria-[invalid=true] para estado de erro em input, para que semântica e visual não possam divergir.",
+      "Do dar caminho de prefers-reduced-motion para qualquer animação nova."
+    ],
+    "donts": [
+      "Don't usar primary-500/600 ou qualquer degrau da escala primary-* esperando a cor de marca — a escala é vermelha e órfã, não acompanha --primary em nenhum território. Use bg-primary/text-primary.",
+      "Don't escrever CSS contra --font-inter. Inter não é carregada; só existem Montserrat e Rajdhani.",
+      "Don't construir contra os tokens sidebar, sidebar-compact, app-layout ou app-layout-compact. O shell é uma dock flutuante; esses tokens são órfãos.",
+      "Don't usar bg-blue-*, bg-amber-*, bg-green-* diretamente quando existe token semântico (info, warning, success). A exceção viva é SERVICE_ORDER_STATUS_CONFIG, que usa a paleta Tailwind por precisar de 17 matizes distinguíveis.",
+      "Don't aplicar rounded-full em botão, card ou input. Cápsula é exclusiva de pill de status e chip.",
+      "Don't usar justify-between em linha de dados de card de lista. Use grade de colunas fixas.",
+      "Don't colocar overflow-hidden em wrapper de tabela. Use ScrollFade.",
+      "Don't aninhar card dentro de card dentro de card. Se a hierarquia precisa de três níveis de moldura, a hierarquia está errada.",
+      "Don't adicionar sombra a elemento que não flutua e não pode ser fechado.",
+      "Don't usar cor semântica por variedade visual. Se não há estado de negócio por trás, é cinza.",
+      "Don't introduzir novo estado semântico em purple. Essa categoria está fechada; use success/warning/error/info."
+    ]
+  }
+}

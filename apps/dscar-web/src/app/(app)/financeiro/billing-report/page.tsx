@@ -84,7 +84,7 @@ export default function FaturamentoPage(): React.ReactElement {
                 onClick={() => setPreset(p)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
                   preset === p
-                    ? "bg-primary text-foreground border-primary"
+                    ? "bg-primary text-primary-foreground border-primary"
                     : "bg-muted/50 text-muted-foreground border-border hover:border-primary/30"
                 }`}
               >

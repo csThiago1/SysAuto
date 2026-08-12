@@ -68,7 +68,7 @@ export default function ForgotPasswordPage(): React.ReactElement {
             {sent ? (
               <div className="space-y-4">
                 <div className="flex flex-col items-center gap-3 py-4">
-                  <MailCheck className="h-10 w-10 text-success-500" />
+                  <MailCheck className="h-10 w-10 text-success-400" />
                   <p className="text-sm text-secondary-300 text-center">
                     Se o e-mail informado estiver cadastrado, um link de recuperacao foi enviado.
                     Verifique sua caixa de entrada e spam.

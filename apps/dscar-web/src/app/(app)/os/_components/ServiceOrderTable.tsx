@@ -76,60 +76,78 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
             key={order.id}
             role="button"
             tabIndex={0}
+            aria-label={`OS ${order.number}${order.plate ? `, placa ${order.plate}` : ""}, ${order.customer_name || "sem nome"}, ${statusCfg.label}`}
             onClick={() => router.push(`/os/${order.number}`)}
             onKeyDown={(e) => { if (e.key === "Enter" && e.target === e.currentTarget) router.push(`/os/${order.number}`) }}
             className="animate-card-in relative rounded-[11px] bg-card px-3 py-2.5 cursor-pointer opacity-0 hover:bg-primary/5 transition-[transform,background-color] duration-150 ease-out active:scale-[0.98]"
           >
             <span aria-hidden className={cn("absolute left-0 top-2 bottom-2 w-[3px] rounded-r-[3px]", statusCfg.dot)} />
 
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="font-mono text-[13px] font-semibold text-primary truncate">
-                #{order.number}
-                {order.plate && <span className="font-normal text-muted-foreground"> · {order.plate}</span>}
+            {/* Identidade: numero + placa sao como o patio chama a OS — Rajdhani,
+                nao mono generica. O nome do cliente vem depois. */}
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex min-w-0 items-baseline gap-2">
+                <span className="font-plate text-[15px] font-semibold leading-none tracking-[0.04em] text-primary">
+                  #{order.number}
+                </span>
+                {order.plate && (
+                  <span className="truncate font-plate text-[13px] font-bold leading-none tracking-[0.08em] text-foreground/80">
+                    {order.plate}
+                  </span>
+                )}
               </span>
-              <span className="flex items-center gap-1.5 shrink-0">
+              <span className="flex shrink-0 items-center gap-1.5">
                 <span className={cn("text-[11px] font-semibold", statusCfg.text)}>{statusCfg.label}</span>
                 <ClosureDots closureStatus={order.closure_status} />
               </span>
             </div>
 
-            <p className="text-[13.5px] font-medium text-foreground truncate mt-0.5">
+            <p className="mt-1.5 truncate text-[13.5px] font-medium text-foreground">
               {order.customer_name || "Sem nome"}
             </p>
             {vehicle && (
-              <p className="text-[11px] font-mono text-muted-foreground truncate">{vehicle}</p>
+              <p className="truncate font-mono text-[11px] text-muted-foreground">{vehicle}</p>
             )}
 
-            <div className="grid grid-cols-[minmax(0,1fr)_88px_78px] gap-2.5 items-baseline mt-[5px] font-mono text-[11.5px] tabular-nums text-muted-foreground">
+            {/* Rodape: 3 colunas fixas, um dado por celula. Antes as duas datas
+                empilhavam na 3a coluna e a vazia sobrava como traco solto. */}
+            <div className="mt-2 grid grid-cols-[minmax(0,1fr)_92px_72px] items-baseline gap-2.5 border-t border-border/60 pt-2 font-mono text-[11.5px] tabular-nums text-muted-foreground">
               <span className="truncate">
                 {order.customer_type === "insurer"
                   ? (order.insurer_detail?.display_name ?? "Seguradora")
                   : "Particular"}
               </span>
-              <span className="text-right text-foreground font-semibold text-[12.5px]">
+              <span className="text-right text-[12.5px] font-semibold text-foreground">
                 {formatCurrency(order.total)}
               </span>
-              <span className="flex flex-col items-end leading-tight">
-                <span>{formatDate(order.entry_date)}</span>
-                <span className={cn(isLate && "text-error-500 font-medium")}>
-                  {formatDate(order.estimated_delivery_date)}
-                </span>
+              <span
+                className={cn("text-right", isLate && "font-medium text-error-400")}
+                title={order.estimated_delivery_date ? "Previsão de entrega" : undefined}
+              >
+                {order.estimated_delivery_date ? (
+                  <>
+                    <span className="text-muted-foreground/60">prev </span>
+                    {formatDate(order.estimated_delivery_date)}
+                  </>
+                ) : (
+                  <span className="text-muted-foreground/50">sem prazo</span>
+                )}
               </span>
             </div>
 
             {(isBillable || order.invoice_issued) && (
-              <div className="flex items-center justify-end gap-1.5 pt-1 text-xs">
+              <div className="mt-1.5 flex items-center border-t border-border/60 pt-1 text-xs">
                 {isBillable ? (
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); setBillingOrder(order) }}
-                    className="inline-flex min-h-11 items-center gap-1 rounded-md px-3 py-2 text-success-400 hover:bg-success-500/10 transition-colors"
+                    className="-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-md px-2 text-success-400 transition-colors hover:bg-success-500/10"
                   >
                     <DollarSign className="h-3.5 w-3.5" />
                     Faturar OS
                   </button>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-success-400" title="OS faturada">
+                  <span className="inline-flex items-center gap-1.5 py-1 text-success-400" title="OS faturada">
                     <CheckCircle className="h-3.5 w-3.5" />
                     Faturada
                   </span>
@@ -247,7 +265,7 @@ export function ServiceOrderTable({ orders, ordering, onOrderingChange }: Servic
                       "flex items-center justify-between gap-2 font-medium",
                       isLate ? "text-error-600" : "text-foreground/70"
                     )}>
-                      <span className={cn(isLate ? "text-error-500" : "text-muted-foreground")}>Prev:</span>
+                      <span className={cn(isLate ? "text-error-400" : "text-muted-foreground")}>Prev:</span>
                       <span>{formatDate(order.estimated_delivery_date)}</span>
                     </div>
                   </div>

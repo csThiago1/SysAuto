@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { DateField } from "@/components/ui/date-field"
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -303,11 +304,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
                 </FormField>
               </div>
               <FormField label="Data de Competencia *" error={errors.competence_date}>
-                <Input
-                  type="date"
-                  value={form.competence_date}
-                  onChange={(e) => setField("competence_date", e.target.value)}
-                />
+                <DateField value={form.competence_date} onChange={(v) => setField("competence_date", v)} />
               </FormField>
               <FormField label="Origem *" error={errors.origin}>
                 <select
@@ -504,7 +501,7 @@ export default function NovoLancamentoPage(): React.ReactElement {
             <button
               type="submit"
               disabled={create.isPending}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {create.isPending ? "Salvando..." : "Salvar Lançamento"}
             </button>

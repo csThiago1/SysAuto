@@ -111,8 +111,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        // Contrato com a tela de login:
+        //   return null  → credencial recusada  (next-auth: CredentialsSignin)
+        //   throw        → backend fora/quebrado (next-auth: CallbackRouteError)
+        // Antes os dois casos viravam null, e o usuario via "senha incorreta"
+        // com o servidor desligado — cacando o problema errado.
+        let res: Response;
         try {
-          const res = await fetch(`${BACKEND_URL}/api/v1/auth/login/`, {
+          res = await fetch(`${BACKEND_URL}/api/v1/auth/login/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -120,9 +126,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               password: credentials.password,
             }),
           });
+        } catch (error) {
+          console.error("Auth: backend inalcancavel:", error);
+          throw new Error("backend_unreachable");
+        }
 
-          if (!res.ok) return null;
+        if (res.status === 400 || res.status === 401 || res.status === 403) {
+          return null; // credencial mesmo
+        }
+        if (!res.ok) {
+          console.error(`Auth: backend respondeu ${res.status}`);
+          throw new Error(`backend_${res.status}`);
+        }
 
+        try {
           const data = await res.json();
           // data: { access: "<jwt>", refresh: "<jwt>" }
 
@@ -144,8 +161,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             clientSlug: (payload.client_slug as string) || "grupo-dscar",
           };
         } catch (error) {
-          console.error("Auth error:", error);
-          return null;
+          // Resposta 200 mas corpo/JWT ilegivel: e defeito de servidor, nao
+          // credencial errada — por isso lanca em vez de retornar null.
+          console.error("Auth: resposta invalida do backend:", error);
+          throw new Error("backend_invalid_response");
         }
       },
     }),

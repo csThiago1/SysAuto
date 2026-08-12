@@ -108,7 +108,7 @@ export function CatalogSearchCombobox({
                       {ref.category_name}
                     </span>
                     {ref.is_compatible && (
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-success-500/10 text-success-500 border border-success-500/20">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-success-500/10 text-success-400 border border-success-500/20">
                         Compativel
                       </span>
                     )}

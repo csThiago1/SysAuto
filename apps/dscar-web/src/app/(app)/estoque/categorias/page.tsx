@@ -109,7 +109,7 @@ function TiposPecaTab() {
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 transition-colors"
+          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Novo Tipo
@@ -121,7 +121,7 @@ function TiposPecaTab() {
         <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 CÓDIGO
               </label>
               <input
@@ -132,7 +132,7 @@ function TiposPecaTab() {
               />
             </div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 NOME
               </label>
               <input
@@ -143,7 +143,7 @@ function TiposPecaTab() {
               />
             </div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 ORDEM
               </label>
               <input
@@ -168,7 +168,7 @@ function TiposPecaTab() {
               type="button"
               onClick={handleCreate}
               disabled={createMut.isPending}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {createMut.isPending ? "Criando..." : "Criar"}
             </button>
@@ -428,7 +428,7 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 transition-colors"
+          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Nova {entityLabel}
@@ -440,7 +440,7 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
         <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 CÓDIGO
               </label>
               <input
@@ -451,7 +451,7 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
               />
             </div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 NOME
               </label>
               <input
@@ -462,7 +462,7 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
               />
             </div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 MARGEM %
               </label>
               <input
@@ -476,7 +476,7 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
               />
             </div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">
+              <label className="label-mono text-muted-foreground mb-1.5 block">
                 ORDEM
               </label>
               <input
@@ -501,7 +501,7 @@ function CategoriaTab<T extends CategoriaProduto | CategoriaInsumo>({
               type="button"
               onClick={handleCreate}
               disabled={createPending}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {createPending ? "Criando..." : "Criar"}
             </button>

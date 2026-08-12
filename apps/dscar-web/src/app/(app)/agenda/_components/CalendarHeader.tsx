@@ -43,7 +43,9 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
       const end = endOfWeek(currentDate, { weekStartsOn: 0 })
       return `${format(start, "d MMM", { locale: ptBR })} – ${format(end, "d MMM yyyy", { locale: ptBR })}`
     }
-    return format(currentDate, "EEEE, d 'de' MMMM yyyy", { locale: ptBR })
+    // Curto de proposito: o DayView ja escreve "terca-feira, 11 de agosto"
+    // logo abaixo. A data longa aqui duplicava e estourava 390px.
+    return format(currentDate, "d 'de' MMM yyyy", { locale: ptBR })
   }
 
   return (
@@ -52,7 +54,8 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
         <Button variant="outline" size="icon" className="h-11 w-11 md:h-8 md:w-8" title="Anterior" onClick={goBack}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <h2 className="text-base sm:text-lg font-semibold text-foreground/90 capitalize min-w-0 whitespace-nowrap text-center">
+        {/* first-letter, nao capitalize: "11 de ago" nao pode virar "11 De Ago" */}
+        <h2 className="min-w-0 truncate text-center text-base font-semibold text-foreground/90 first-letter:uppercase sm:text-lg">
           {getLabel()}
         </h2>
         <Button variant="outline" size="icon" className="h-11 w-11 md:h-8 md:w-8" title="Próximo" onClick={goForward}>
@@ -76,7 +79,7 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
               key={v}
               type="button"
               onClick={() => onViewChange(v)}
-              className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
+              className={`inline-flex min-h-[44px] items-center rounded px-3.5 text-xs font-medium transition-colors md:min-h-0 md:px-2.5 md:py-1 ${
                 view === v
                   ? "bg-muted text-foreground"
                   : "text-muted-foreground hover:text-foreground/70"
@@ -87,7 +90,7 @@ export function CalendarHeader({ currentDate, view, onDateChange, onViewChange, 
           ))}
         </div>
 
-        <Button onClick={onSchedule} size="sm" className="bg-primary hover:bg-primary/90 text-foreground gap-1.5">
+        <Button onClick={onSchedule} size="sm" className="min-h-11 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 md:min-h-0">
           <CalendarDays className="h-3.5 w-3.5" />
           Agendar
         </Button>

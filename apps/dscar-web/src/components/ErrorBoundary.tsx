@@ -21,7 +21,7 @@ function ErrorFallback({
 
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <AlertTriangle className="h-10 w-10 text-error-500 mb-3" />
+      <AlertTriangle className="h-10 w-10 text-error-400 mb-3" />
       <p className="text-lg font-semibold text-foreground/90">Algo deu errado</p>
       <p className="text-sm text-muted-foreground mt-1 max-w-sm">
         {error.message !== "network_error" && error.message !== "unauthorized"

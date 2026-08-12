@@ -142,13 +142,13 @@ export function TransitionRequirementsPanel({
       {validation && (
         <ul className="space-y-1.5" role="list" aria-label="Requisitos de transição">
           {validation.hard_blocks?.map((b) => (
-            <li key={b.code} className="flex items-start gap-2 text-sm text-error-500">
+            <li key={b.code} className="flex items-start gap-2 text-sm text-error-400">
               <XCircle className="h-4 w-4 mt-0.5 shrink-0" aria-hidden="true" />
               <span>{b.message}</span>
             </li>
           ))}
           {validation.soft_blocks?.map((b) => (
-            <li key={b.code} className="flex items-start gap-2 text-sm text-warning-500">
+            <li key={b.code} className="flex items-start gap-2 text-sm text-warning-400">
               <Lock className="h-4 w-4 mt-0.5 shrink-0" aria-hidden="true" />
               <span>{b.message}</span>
             </li>
@@ -163,7 +163,7 @@ export function TransitionRequirementsPanel({
             </li>
           ))}
           {canProceed && !hasHardBlocks && !hasSoftBlocks && (
-            <li className="flex items-center gap-2 text-sm text-success-500">
+            <li className="flex items-center gap-2 text-sm text-success-400">
               <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span>Todos os requisitos atendidos</span>
             </li>

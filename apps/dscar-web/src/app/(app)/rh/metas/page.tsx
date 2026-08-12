@@ -15,6 +15,8 @@ import { useGoals, useAchieveGoal, useCreateGoal, useEmployees } from "@/hooks";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { DateField } from "@/components/ui/date-field"
+import { toast } from "sonner"
 
 const STATUS_CLASSES: Record<string, string> = {
   success: "bg-success-500/10 text-success-400",
@@ -49,7 +51,7 @@ export default function MetasPage(): React.ReactElement {
           </div>
           <button
             onClick={() => setShowCreate(true)}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
             + Nova meta
           </button>
@@ -230,6 +232,13 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
 
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
+    // O `required` do input nativo era a unica validacao destas datas; com o
+    // DateField (um botao) o browser nao bloqueia mais o submit, entao a regra
+    // passa a ser explicita.
+    if (!form.start_date || !form.end_date) {
+      toast.error("Informe a data de início e o prazo da meta.");
+      return;
+    }
     create.mutate(form, { onSuccess: onClose });
   };
 
@@ -369,26 +378,16 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-muted-foreground">Início *</label>
-          <input
-            required
-            type="date"
-            className="rounded border border-border px-2 py-1.5 text-sm"
+          <DateField
             value={form.start_date}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, start_date: e.target.value }))
-            }
+            onChange={(v) => setForm((p) => ({ ...p, start_date: v }))}
           />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-muted-foreground">Prazo *</label>
-          <input
-            required
-            type="date"
-            className="rounded border border-border px-2 py-1.5 text-sm"
+          <DateField
             value={form.end_date}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, end_date: e.target.value }))
-            }
+            onChange={(v) => setForm((p) => ({ ...p, end_date: v }))}
           />
         </div>
       </div>
@@ -438,7 +437,7 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
         <button
           type="submit"
           disabled={create.isPending}
-          className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary/90 disabled:opacity-50"
+          className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         >
           {create.isPending ? "Criando..." : "Criar meta"}
         </button>

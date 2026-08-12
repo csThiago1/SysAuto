@@ -8,6 +8,8 @@ import React from "react";
 import type { Employee, CreateVacationPayload } from "@paddock/types";
 import { VACATION_STATUS_CONFIG } from "@paddock/types";
 import { useVacations, useVacationBalance, useCreateVacation, useCancelVacation } from "@/hooks";
+import { DateField } from "@/components/ui/date-field"
+import { toast } from "sonner"
 
 interface TabFeriasProps {
   employee: Employee;
@@ -37,6 +39,12 @@ export function TabFerias({ employee }: TabFeriasProps): React.ReactElement {
 
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
+    // Os quatro campos eram `required` no input nativo; o DateField e um botao,
+    // entao o browser nao bloqueia mais o submit.
+    if (!form.acquisition_start || !form.acquisition_end || !form.start_date || !form.end_date) {
+      toast.error("Preencha o período aquisitivo e as datas de férias.");
+      return;
+    }
     createVacation.mutate(form, { onSuccess: () => setShowForm(false) });
   };
 
@@ -101,27 +109,19 @@ export function TabFerias({ employee }: TabFeriasProps): React.ReactElement {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Início período aquisitivo</label>
-              <input type="date" required className="rounded border border-border px-2 py-1.5 text-sm"
-                value={form.acquisition_start}
-                onChange={(e) => setForm((p) => ({ ...p, acquisition_start: e.target.value }))} />
+              <DateField value={form.acquisition_start} onChange={(v) => setForm((p) => ({ ...p, acquisition_start: v }))} />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Fim período aquisitivo</label>
-              <input type="date" required className="rounded border border-border px-2 py-1.5 text-sm"
-                value={form.acquisition_end}
-                onChange={(e) => setForm((p) => ({ ...p, acquisition_end: e.target.value }))} />
+              <DateField value={form.acquisition_end} onChange={(v) => setForm((p) => ({ ...p, acquisition_end: v }))} />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Início das férias</label>
-              <input type="date" required className="rounded border border-border px-2 py-1.5 text-sm"
-                value={form.start_date}
-                onChange={(e) => setForm((p) => ({ ...p, start_date: e.target.value }))} />
+              <DateField value={form.start_date} onChange={(v) => setForm((p) => ({ ...p, start_date: v }))} />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Fim das férias</label>
-              <input type="date" required className="rounded border border-border px-2 py-1.5 text-sm"
-                value={form.end_date}
-                onChange={(e) => setForm((p) => ({ ...p, end_date: e.target.value }))} />
+              <DateField value={form.end_date} onChange={(v) => setForm((p) => ({ ...p, end_date: v }))} />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Dias de gozo (20-30)</label>
@@ -139,7 +139,7 @@ export function TabFerias({ employee }: TabFeriasProps): React.ReactElement {
           <div className="flex justify-end gap-2">
             <button type="button" onClick={() => setShowForm(false)} className="text-xs text-muted-foreground hover:underline">Cancelar</button>
             <button type="submit" disabled={createVacation.isPending}
-              className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-foreground disabled:opacity-50">
+              className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50">
               {createVacation.isPending ? "Salvando..." : "Agendar"}
             </button>
           </div>

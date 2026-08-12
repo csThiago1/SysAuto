@@ -14,7 +14,9 @@
   --background:          0 0% 4%;
   --foreground:          0 0% 95%;
 
-  --card:                0 0% 7%;
+  /* 6%, nao 7%: os cards deixaram de ser `bg-card/50`. Meio-tom de 7% sobre
+     um fundo de 4% dava ~5,5% — este valor mantem o escuro como estava. */
+  --card:                0 0% 6%;
   --card-foreground:     0 0% 95%;
 
   --popover:             0 0% 8%;
@@ -40,6 +42,22 @@
   --input:               0 0% 18%;
   --ring:                288 68% 48%;
 
+  /* Cor da sombra por tema. No escuro a elevacao vem do TOM (card mais claro
+     que o fundo), entao a sombra e so um assentamento preto discreto. */
+  --shadow-color:        0 0% 0%;
+  --shadow-alpha:        0.5;
+
+
+  /* ── Cores de ESTADO, por tema ─────────────────────────────────────────
+     As escalas success/warning/error/info no tailwind.config sao hex fixo e
+     iguais nos dois temas. O degrau -400 e o "texto sobre superficie" e vinha
+     calibrado so pro escuro — no papel ficava ilegivel. Estas variaveis dao
+     a ele um valor por tema; o config aponta o -400 para ca. */
+  --success-fg:          142 69% 58%;
+  --warning-fg:          43 96% 56%;
+  --error-fg:            0 100% 67%;
+  --info-fg:             213 94% 68%;
+
   --radius: 0.5rem;
 
   --sidebar-bg:          0 0% 8%;
@@ -53,13 +71,21 @@
 /* ─── Light Theme — Coolors Palette ───────────────────────────────────────── */
 /* #22223B · #4A4E69 · #9A8C98 · #C9ADA7 · #F2E9E4                          */
 .light {
-  --background:          21 28% 92%;
+  /* A prancheta e o papel.
+     Contraste e RAZAO, nao diferenca: no escuro o card (6%) e ~50% mais claro
+     que o fundo (4%) e por isso os planos se separam sozinhos. No claro,
+     97% sobre 92% e uma razao de 1,13 — o olho le como UMA superficie so, e a
+     tela vira um campo bege sem hierarquia. Duas correcoes: o fundo desce
+     (prancheta) e o papel sobe pro branco, dobrando o degrau; e a elevacao
+     passa a ser carregada por SOMBRA, que e o recurso que o tema claro tem e
+     o escuro nao. */
+  --background:          24 20% 88%;
   --foreground:          240 27% 18%;
 
-  --card:                30 33% 97%;
+  --card:                30 40% 98%;
   --card-foreground:     240 27% 18%;
 
-  --popover:             30 33% 97%;
+  --popover:             30 40% 98%;
   --popover-foreground:  240 27% 18%;
 
   --primary:             288 55% 36%;
@@ -68,8 +94,11 @@
   --secondary:           11 18% 82%;
   --secondary-foreground:240 27% 18%;
 
+  /* Escurecido: a 46% de luminosidade o texto secundario batia 4.11:1 sobre o
+     papel (#f0e9e5) — abaixo do piso AA de 4.5. Rotulo de campo, placeholder e
+     eyebrow usam este token, entao o tema inteiro herdava a falha. */
   --muted:               11 18% 85%;
-  --muted-foreground:    273 7% 46%;
+  --muted-foreground:    273 10% 36%;
 
   --accent:              11 18% 82%;
   --accent-foreground:   240 27% 18%;
@@ -77,9 +106,24 @@
   --destructive:         0 72% 45%;
   --destructive-foreground: 0 0% 100%;
 
-  --border:              11 18% 78%;
-  --input:               11 18% 78%;
+  /* 74%, entre os dois extremos ja tentados: a 78% o fio sumia, a 68% ele
+     competia com a sombra e cada card virava um retangulo desenhado. Com a
+     sombra assumindo a separacao, a borda volta a ser fio, nao moldura. */
+  --border:              20 16% 74%;
+  --input:               20 16% 74%;
   --ring:                288 55% 36%;
+
+  /* Sombra QUENTE. Preto sobre bege acinzenta e a peca parece encardida —
+     a sombra precisa ser da familia do papel que ela escurece. */
+  --shadow-color:        24 35% 26%;
+  --shadow-alpha:        0.16;
+
+  /* Mesmos papeis, escurecidos para passar AA sobre o papel (#f0e9e5). */
+  --success-fg:          142 74% 26%;
+  --warning-fg:          32 90% 33%;
+  --error-fg:            0 100% 38%;
+  --info-fg:             224 76% 43%;
+
 
   --sidebar-bg:          21 28% 92%;
   --sidebar-bg-hover:    11 18% 85%;

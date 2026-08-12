@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   startOfMonth, endOfMonth,
   startOfWeek, endOfWeek,
@@ -18,6 +18,16 @@ export default function AgendaPage() {
   const [view, setView] = useState<CalendarView>("month")
   const [schedulingOpen, setSchedulingOpen] = useState(false)
   const [schedulingDate, setSchedulingDate] = useState<Date | undefined>()
+
+  // No celular a grade de mes nao cabe: cada celula fica com ~50px e nenhum
+  // evento e legivel. Abre no Dia, que responde "o que entra/sai hoje".
+  // Roda uma vez no mount (nao no SSR) e nunca sobrepoe uma escolha do usuario.
+  const viewDefaulted = useRef(false)
+  useEffect(() => {
+    if (viewDefaulted.current) return
+    viewDefaulted.current = true
+    if (window.matchMedia("(max-width: 767px)").matches) setView("day")
+  }, [])
 
   // Calcular range de datas para a view atual
   const dateRange = (() => {
@@ -61,13 +71,10 @@ export default function AgendaPage() {
   )
 
   return (
-    <div className="flex flex-col h-full gap-2 p-6 max-w-7xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Agenda</h1>
-        <p className="text-sm text-muted-foreground">Visualize e gerencie agendamentos de entrada e entrega das OS.</p>
-      </div>
+    <div className="flex flex-col h-full gap-2 px-0 py-3 md:p-6 max-w-7xl mx-auto">
+      <h1 className="text-lg font-semibold text-foreground md:text-2xl md:font-bold">Agenda</h1>
 
-      <div className="bg-muted/50 rounded-md border border-border shadow-sm flex flex-col flex-1 overflow-hidden p-3">
+      <div className="bg-muted/50 rounded-md border border-border shadow-sm flex flex-col flex-1 overflow-hidden p-2 md:p-3">
         <CalendarHeader
           currentDate={currentDate}
           view={view}
@@ -76,7 +83,8 @@ export default function AgendaPage() {
           onSchedule={handleSchedule}
         />
 
-        <Legend />
+        {/* Legenda so quando ha o que legendar */}
+        {events.length > 0 && <Legend />}
 
         {isLoading && (
           <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">

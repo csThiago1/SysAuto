@@ -44,6 +44,7 @@ import { useMinhaEmpresaId } from "@/hooks/usePricingProfile"
 import type { CustoHoraFallbackCreate, ParametroCustoHoraCreate, ParametroRateioCreate } from "@paddock/types"
 import Link from "next/link"
 import type { Route } from "next"
+import { DateField } from "@/components/ui/date-field"
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -184,21 +185,11 @@ function AbaFallback({ empresaId }: { empresaId: string }) {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs text-foreground/60">Vigente desde</Label>
-                <Input
-                  type="date"
-                  value={form.vigente_desde ?? ""}
-                  onChange={(e) => setForm({ ...form, vigente_desde: e.target.value })}
-                  className="bg-muted/50 border-border text-foreground text-sm"
-                />
+                <DateField value={form.vigente_desde ?? ""} onChange={(v) => setForm({ ...form, vigente_desde: v })} />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs text-foreground/60">Vigente até (opcional)</Label>
-                <Input
-                  type="date"
-                  value={form.vigente_ate ?? ""}
-                  onChange={(e) => setForm({ ...form, vigente_ate: e.target.value || null })}
-                  className="bg-muted/50 border-border text-foreground text-sm"
-                />
+                <DateField value={form.vigente_ate ?? ""} onChange={(v) => setForm({ ...form, vigente_ate: v || null })} />
               </div>
             </div>
             <div className="space-y-1">
@@ -320,21 +311,11 @@ function AbaParametros({ empresaId }: { empresaId: string }) {
           </div>
           <div className="space-y-1">
             <Label className="text-xs text-foreground/60">Vigente desde</Label>
-            <Input
-              type="date"
-              value={rateioForm.vigente_desde ?? ""}
-              onChange={(e) => setRateioForm({ ...rateioForm, vigente_desde: e.target.value })}
-              className="bg-muted/50 border-border text-foreground text-sm"
-            />
+            <DateField value={rateioForm.vigente_desde ?? ""} onChange={(v) => setRateioForm({ ...rateioForm, vigente_desde: v })} />
           </div>
           <div className="space-y-1">
             <Label className="text-xs text-foreground/60">Vigente até</Label>
-            <Input
-              type="date"
-              value={rateioForm.vigente_ate ?? ""}
-              onChange={(e) => setRateioForm({ ...rateioForm, vigente_ate: e.target.value || null })}
-              className="bg-muted/50 border-border text-foreground text-sm"
-            />
+            <DateField value={rateioForm.vigente_ate ?? ""} onChange={(v) => setRateioForm({ ...rateioForm, vigente_ate: v || null })} />
           </div>
         </div>
         <PermissionGate role="ADMIN">
@@ -422,12 +403,7 @@ function AbaParametros({ empresaId }: { empresaId: string }) {
           </div>
           <div className="space-y-1 col-span-2">
             <Label className="text-xs text-foreground/60">Vigente desde</Label>
-            <Input
-              type="date"
-              value={custoHoraForm.vigente_desde ?? ""}
-              onChange={(e) => setCustoHoraForm({ ...custoHoraForm, vigente_desde: e.target.value })}
-              className="bg-muted/50 border-border text-foreground text-sm max-w-[200px]"
-            />
+            <DateField value={custoHoraForm.vigente_desde ?? ""} onChange={(v) => setCustoHoraForm({ ...custoHoraForm, vigente_desde: v })} />
           </div>
         </div>
         <PermissionGate role="ADMIN">
@@ -533,12 +509,7 @@ function AbaSimulacao({ empresaId }: { empresaId: string }) {
         </div>
         <div className="space-y-1">
           <Label className="text-xs text-foreground/60">Data de referência</Label>
-          <Input
-            type="date"
-            value={form.data}
-            onChange={(e) => setForm({ ...form, data: e.target.value })}
-            className="bg-muted/50 border-border text-foreground text-sm"
-          />
+          <DateField value={form.data} onChange={(v) => setForm({ ...form, data: v })} />
         </div>
         <Button
           onClick={handleSimular}

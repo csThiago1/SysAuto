@@ -183,7 +183,7 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
                   className={cn("flex-1 rounded-lg border p-3 text-center transition",
                     source === s.id ? "border-info-500 bg-info-500/10" : "border-border bg-muted/50 hover:bg-muted",
                   )}>
-                  <div className={cn("text-sm font-semibold", source === s.id ? "text-info-500" : "text-foreground/60")}>{s.label}</div>
+                  <div className={cn("text-sm font-semibold", source === s.id ? "text-info-400" : "text-foreground/60")}>{s.label}</div>
                   <div className="text-[11px] text-muted-foreground">{s.sub}</div>
                 </button>
               ))}

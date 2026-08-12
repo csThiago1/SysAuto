@@ -82,7 +82,7 @@ export function PhotoResolver({ block, order, onResolved }: ResolverProps) {
   return (
     <div className="mt-2 space-y-2">
       {counts && (
-        <div className={`flex items-center gap-1.5 text-xs font-medium ${isComplete ? "text-success-500" : "text-muted-foreground"}`}>
+        <div className={`flex items-center gap-1.5 text-xs font-medium ${isComplete ? "text-success-400" : "text-muted-foreground"}`}>
           {isComplete && <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />}
           <span>
             {effectiveCount}/{required} fotos

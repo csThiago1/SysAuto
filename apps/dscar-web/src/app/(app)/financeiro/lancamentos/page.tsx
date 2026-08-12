@@ -18,6 +18,7 @@ import {
 } from "./_components/JournalEntryTable";
 import type { JournalEntryOrigin } from "@paddock/types";
 import { ORIGIN_LABELS } from "@paddock/types";
+import { DateField } from "@/components/ui/date-field"
 
 type FilterOrigin = JournalEntryOrigin | "";
 type FilterApproved = "true" | "false" | "";
@@ -57,7 +58,7 @@ export default function LancamentosPage(): React.ReactElement {
           </div>
           <Link
             href={"/financeiro/lancamentos/novo" as Route}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             <PlusCircle className="h-4 w-4" />
             Novo Lançamento
@@ -95,19 +96,9 @@ export default function LancamentosPage(): React.ReactElement {
           </select>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">De</span>
-            <Input
-              type="date"
-              value={dateStart}
-              onChange={(e) => setDateStart(e.target.value)}
-              className="w-36"
-            />
+            <DateField value={dateStart} onChange={setDateStart} />
             <span className="text-xs text-muted-foreground">Até</span>
-            <Input
-              type="date"
-              value={dateEnd}
-              onChange={(e) => setDateEnd(e.target.value)}
-              className="w-36"
-            />
+            <DateField value={dateEnd} onChange={setDateEnd} />
           </div>
         </div>
 

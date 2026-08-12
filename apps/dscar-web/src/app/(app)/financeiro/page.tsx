@@ -53,7 +53,7 @@ export default function FinanceiroDashboardPage(): React.ReactElement {
             {(Object.keys(PRESETS) as Preset[]).map((p) => (
               <button key={p} type="button" onClick={() => setPreset(p)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
-                  preset === p ? "bg-primary text-foreground border-primary"
+                  preset === p ? "bg-primary text-primary-foreground border-primary"
                     : "bg-muted/50 text-muted-foreground border-border hover:border-primary/30"
                 }`}>{PRESETS[p]}</button>
             ))}

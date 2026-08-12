@@ -1,6 +1,7 @@
 "use client"
 
 import { isToday, format, getHours } from "date-fns"
+import { Plus } from "lucide-react"
 import { ptBR } from "date-fns/locale"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
@@ -123,9 +124,16 @@ export function DayView({ currentDate, events }: Props) {
                         </div>
                       ))}
                       {hourEvents.length === 0 && (
-                        <span className="absolute inset-0 flex items-center text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                          + Agendar
-                        </span>
+                        <>
+                          {/* Touch nao tem hover, entao o slot livre precisa de um
+                              sinal proprio — discreto, porque se repete a cada hora. */}
+                          <span className="absolute inset-0 flex items-center text-muted-foreground/40 md:hidden">
+                            <Plus className="h-3.5 w-3.5" />
+                          </span>
+                          <span className="absolute inset-0 hidden items-center text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100 md:flex">
+                            + Agendar
+                          </span>
+                        </>
                       )}
                     </div>
                   </div>

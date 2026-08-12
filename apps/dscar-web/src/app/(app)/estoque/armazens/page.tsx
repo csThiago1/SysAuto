@@ -68,7 +68,7 @@ export default function ArmazensPage() {
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 transition-colors"
+          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Novo Armazém
@@ -80,7 +80,7 @@ export default function ArmazensPage() {
         <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">NOME</label>
+              <label className="label-mono text-muted-foreground mb-1.5 block">NOME</label>
               <input
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
@@ -89,7 +89,7 @@ export default function ArmazensPage() {
               />
             </div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">CÓDIGO</label>
+              <label className="label-mono text-muted-foreground mb-1.5 block">CÓDIGO</label>
               <input
                 value={codigo}
                 onChange={(e) => setCodigo(e.target.value)}
@@ -98,7 +98,7 @@ export default function ArmazensPage() {
               />
             </div>
             <div>
-              <label className="label-mono text-muted-foreground mb-0.5 block">TIPO</label>
+              <label className="label-mono text-muted-foreground mb-1.5 block">TIPO</label>
               <select
                 value={tipo}
                 onChange={(e) => setTipo(e.target.value as ArmazemTipo)}
@@ -121,7 +121,7 @@ export default function ArmazensPage() {
               type="button"
               onClick={handleCreate}
               disabled={createMut.isPending}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {createMut.isPending ? "Criando..." : "Criar"}
             </button>

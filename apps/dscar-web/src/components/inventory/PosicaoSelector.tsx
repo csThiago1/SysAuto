@@ -70,7 +70,7 @@ export function PosicaoSelector({
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       {/* Armazém */}
       <div>
-        <label className="label-mono text-muted-foreground mb-0.5 block">
+        <label className="label-mono text-muted-foreground mb-1.5 block">
           ARMAZÉM
         </label>
         <select
@@ -90,7 +90,7 @@ export function PosicaoSelector({
 
       {/* Rua */}
       <div>
-        <label className="label-mono text-muted-foreground mb-0.5 block">RUA</label>
+        <label className="label-mono text-muted-foreground mb-1.5 block">RUA</label>
         <select
           value={ruaId}
           onChange={(e) => handleRuaChange(e.target.value)}
@@ -111,7 +111,7 @@ export function PosicaoSelector({
 
       {/* Prateleira */}
       <div>
-        <label className="label-mono text-muted-foreground mb-0.5 block">
+        <label className="label-mono text-muted-foreground mb-1.5 block">
           PRATELEIRA
         </label>
         <select
@@ -134,7 +134,7 @@ export function PosicaoSelector({
 
       {/* Nível */}
       <div>
-        <label className="label-mono text-muted-foreground mb-0.5 block">NÍVEL</label>
+        <label className="label-mono text-muted-foreground mb-1.5 block">NÍVEL</label>
         <select
           value={value ?? ""}
           onChange={(e) => handleNivelChange(e.target.value)}

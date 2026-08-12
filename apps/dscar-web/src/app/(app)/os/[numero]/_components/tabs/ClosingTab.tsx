@@ -26,7 +26,6 @@ import { Label } from "@/components/ui/label"
 import { apiFetch } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import { BillingModal } from "../BillingModal"
-import { FiscalEmissionModal } from "../FiscalEmissionModal"
 import { DocumentHistorySection } from "../DocumentHistorySection"
 import { DeliveryConfirmationDialog } from "./ClosingTab/DeliveryConfirmationDialog"
 import { SignatureSection } from "../../vistoria/_components/SignatureSection"
@@ -44,7 +43,6 @@ export function ClosingTab({ order }: ClosingTabProps) {
   const [mileageOut, setMileageOut] = useState(order?.mileage_out?.toString() ?? "")
   const [savingKm, setSavingKm] = useState(false)
   const [showDelivery, setShowDelivery] = useState(false)
-  const [showNfseModal, setShowNfseModal] = useState(false)
   const [showBillingModal, setShowBillingModal] = useState(false)
 
   if (!order) {
@@ -95,6 +93,9 @@ export function ClosingTab({ order }: ClosingTabProps) {
 
   const deliveryBlocked =
     order.transition_requirements?.delivered?.can_proceed === false
+  // Lista o que trava a entrega aqui mesmo — mandar o usuario pra outra aba
+  // pra descobrir o bloqueio custa uma troca de contexto no pior momento.
+  const deliveryBlocks = order.transition_requirements?.delivered?.hard_blocks ?? []
 
   return (
     <div className="space-y-4 max-w-5xl">
@@ -104,7 +105,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
           "rounded-xl border p-4",
           cs.is_closed
             ? "bg-success-500/10 border-success-500/20"
-            : "bg-muted/50 border-border"
+            : "bg-card border-border"
         )}>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-foreground/80">Fechamento da OS</h2>
@@ -172,16 +173,30 @@ export function ClosingTab({ order }: ClosingTabProps) {
                   ? "Reparo concluído — há pendências antes de entregar"
                   : "Veículo pronto para entrega"}
               </p>
-              <p
-                className={cn(
-                  "text-xs mt-0.5",
-                  deliveryBlocked ? "text-warning-400/70" : "text-success-400/70",
-                )}
-              >
-                {deliveryBlocked
-                  ? "Resolva as pendências listadas na Visão Geral (NF, assinatura, KM)."
-                  : "Confirme a entrega ao finalizar o atendimento."}
-              </p>
+              {deliveryBlocked && deliveryBlocks.length > 0 ? (
+                <ul className="mt-1.5 space-y-1">
+                  {deliveryBlocks.map((block) => (
+                    <li
+                      key={block.code}
+                      className="flex items-start gap-1.5 text-xs text-warning-400/80"
+                    >
+                      <Circle className="mt-[3px] h-2.5 w-2.5 shrink-0" />
+                      <span className="min-w-0">{block.message}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p
+                  className={cn(
+                    "text-xs mt-0.5",
+                    deliveryBlocked ? "text-warning-400/70" : "text-success-400/70",
+                  )}
+                >
+                  {deliveryBlocked
+                    ? "Resolva as pendências antes de registrar a entrega."
+                    : "Confirme a entrega ao finalizar o atendimento."}
+                </p>
+              )}
             </div>
           </div>
           <Button
@@ -199,7 +214,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
       <div className="space-y-4">
 
       {/* Financial summary */}
-      <div className="bg-muted/50 border border-border rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
           <DollarSign className="h-4 w-4 text-muted-foreground" />
           <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
@@ -230,8 +245,8 @@ export function ClosingTab({ order }: ClosingTabProps) {
               {/* Cliente paga (franquia) */}
               <div>
                 <div className="flex justify-between text-sm font-semibold mb-1">
-                  <span className="text-warning-500">Cliente paga (franquia)</span>
-                  <span className="text-warning-500 tabular-nums">{formatCurrency(customerPays)}</span>
+                  <span className="text-warning-400">Cliente paga (franquia)</span>
+                  <span className="text-warning-400 tabular-nums">{formatCurrency(customerPays)}</span>
                 </div>
                 {franquiaServicos > 0 && (
                   <div className="flex justify-between text-xs pl-4">
@@ -249,8 +264,8 @@ export function ClosingTab({ order }: ClosingTabProps) {
               {/* Seguradora paga */}
               <div>
                 <div className="flex justify-between text-sm font-semibold mb-1">
-                  <span className="text-info-500">Seguradora paga</span>
-                  <span className="text-info-500 tabular-nums">{formatCurrency(insurerPays)}</span>
+                  <span className="text-info-400">Seguradora paga</span>
+                  <span className="text-info-400 tabular-nums">{formatCurrency(insurerPays)}</span>
                 </div>
                 {insurerServicos > 0 && (
                   <div className="flex justify-between text-xs pl-4">
@@ -274,7 +289,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
       <div className="space-y-4">
 
       {/* KM section */}
-      <div className="bg-muted/50 border border-border rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
           <Car className="h-4 w-4 text-muted-foreground" />
           <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
@@ -320,7 +335,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
 
       {/* Budget approval signature — hard block pra waiting_auth → authorized (particular) */}
       {order.customer_type === "private" && !isCancelled && (
-        <div className="bg-muted/50 border border-border rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
           <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
             <PenLine className="h-4 w-4 text-muted-foreground" />
             <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
@@ -338,7 +353,7 @@ export function ClosingTab({ order }: ClosingTabProps) {
       )}
 
       {/* Fiscal */}
-      <div className="bg-muted/50 border border-border rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/30">
           <FileText className="h-4 w-4 text-muted-foreground" />
           <h2 className="text-xs font-semibold uppercase tracking-wide text-foreground/60">Fiscal</h2>
@@ -396,20 +411,6 @@ export function ClosingTab({ order }: ClosingTabProps) {
           onClose={() => setShowDelivery(false)}
           onSuccess={() => {
             setShowDelivery(false)
-            void qc.invalidateQueries({ queryKey: ["service-orders", order.id] })
-          }}
-        />
-      )}
-
-      {/* Fiscal emission modal (NFS-e / NF-e) */}
-      {showNfseModal && (
-        <FiscalEmissionModal
-          serviceOrderId={order.id}
-          orderNumber={order.number}
-          hasParts={partsTotal > 0}
-          onClose={() => setShowNfseModal(false)}
-          onSuccess={() => {
-            setShowNfseModal(false)
             void qc.invalidateQueries({ queryKey: ["service-orders", order.id] })
           }}
         />
