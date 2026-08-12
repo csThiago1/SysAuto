@@ -21,6 +21,7 @@ import { ColorSelect } from "../[numero]/_components/shared/ColorSelect"
 import { usePlateLookup } from "../[numero]/_hooks/useVehicleCatalog"
 import { VehicleFipeFields } from "@/components/vehicle/VehicleFipeFields"
 import { ApiError, handleApiFormError } from "@/lib/api"
+import { formatPlate } from "@paddock/utils"
 
 const FUEL_TYPE_PT: Record<string, string> = {
   gasoline: "Gasolina", Gasoline: "Gasolina",
@@ -171,7 +172,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                       onClick={() => field.onChange(type)}
                       className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
                         field.value === type
-                          ? "bg-primary text-foreground shadow-sm"
+                          ? "bg-primary text-primary-foreground shadow-sm"
                           : "text-muted-foreground hover:text-foreground/70"
                       }`}
                     >
@@ -265,8 +266,8 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
               <div className="relative">
                 <input
                   className={errors.plate ? INPUT_ERROR : INPUT}
-                  placeholder="ABC1D23"
-                  value={watch("plate")}
+                  placeholder="ABC-1D23"
+                  value={formatPlate(watch("plate") ?? "")}
                   onChange={handlePlateChange}
                   maxLength={8}
                   autoCapitalize="characters"
@@ -353,7 +354,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
               type="submit"
               disabled={isSubmitting}
               data-testid="criar-os-btn"
-              className="flex items-center gap-1.5 rounded bg-primary px-4 py-1.5 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {isSubmitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               {isSubmitting ? "Criando..." : "Criar OS"}

@@ -11,6 +11,7 @@ import { VehicleFipeFields } from "@/components/vehicle/VehicleFipeFields";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { NewOSInput } from "../../os/_components/new-os.schema";
+import { formatPlate } from "@paddock/utils"
 
 const TERMINAL_STATUS = new Set(["delivered", "cancelled"]);
 
@@ -71,9 +72,9 @@ export function StepPlaca(): React.ReactElement {
         <div className="relative">
           <Input
             id="rec-plate"
-            value={plate ?? ""}
+            value={formatPlate(plate ?? "")}
             onChange={handlePlateChange}
-            placeholder="ABC1D23"
+            placeholder="ABC-1D23"
             autoCapitalize="characters"
             autoComplete="off"
             className="font-mono text-lg tracking-widest"

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useQuery } from "@tanstack/react-query"
 import { useCreateBudget } from "@/hooks/useBudgets"
+import { formatPlate, onlyAlnum } from "@paddock/utils"
 
 const FUEL_TYPE_PT: Record<string, string> = {
   gasoline: "Gasolina", Gasoline: "Gasolina",
@@ -228,9 +229,9 @@ export default function NovoBudgetPage() {
             <Label className="text-foreground/70 text-xs">Placa</Label>
             <div className="flex items-center gap-3">
               <Input
-                placeholder="ABC1D23"
-                value={placa}
-                onChange={(e) => setPlaca(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+                placeholder="ABC-1D23"
+                value={formatPlate(placa)}
+                onChange={(e) => setPlaca(onlyAlnum(e.target.value))}
                 maxLength={8}
                 className="w-32 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground font-mono uppercase tracking-widest font-bold"
               />

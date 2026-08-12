@@ -19,6 +19,7 @@ import {
   useAddItemOC,
   useOrdensCompraByOS,
 } from "@/hooks/usePurchasing"
+import { formatCNPJ, formatPhone, onlyDigits } from "@paddock/utils"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -149,8 +150,9 @@ export function MontarOCModal({ pedido, open, onOpenChange }: MontarOCModalProps
             <div>
               <Label className="mb-1 block">CNPJ do fornecedor</Label>
               <Input
-                value={fornecedorCnpj}
-                onChange={(e) => setFornecedorCnpj(e.target.value)}
+                inputMode="numeric"
+                value={formatCNPJ(fornecedorCnpj)}
+                onChange={(e) => setFornecedorCnpj(onlyDigits(e.target.value))}
                 placeholder="00.000.000/0001-00"
                 disabled={isSubmitting}
               />
@@ -158,8 +160,9 @@ export function MontarOCModal({ pedido, open, onOpenChange }: MontarOCModalProps
             <div>
               <Label className="mb-1 block">Contato / WhatsApp</Label>
               <Input
-                value={fornecedorContato}
-                onChange={(e) => setFornecedorContato(e.target.value)}
+                inputMode="numeric"
+                value={formatPhone(fornecedorContato)}
+                onChange={(e) => setFornecedorContato(onlyDigits(e.target.value))}
                 placeholder="(92) 99000-0000"
                 disabled={isSubmitting}
               />

@@ -15,6 +15,7 @@ import {
 import { useEmpresas, useCreateEmpresa } from "@/hooks/usePricingProfile"
 import type { EmpresaPayload } from "@/hooks/usePricingProfile"
 import { TableSkeleton } from "@/components/ui/table-skeleton"
+import { formatCNPJ, onlyDigits } from "@paddock/utils"
 
 const EMPTY_FORM: EmpresaPayload = {
   cnpj: "",
@@ -120,8 +121,9 @@ export default function EmpresasPage() {
               <Label className="text-xs font-medium">CNPJ *</Label>
               <Input
                 placeholder="00.000.000/0000-00"
-                value={form.cnpj}
-                onChange={(e) => set("cnpj", e.target.value)}
+                inputMode="numeric"
+                value={formatCNPJ(form.cnpj)}
+                onChange={(e) => set("cnpj", onlyDigits(e.target.value))}
               />
             </div>
             <div className="space-y-1.5">

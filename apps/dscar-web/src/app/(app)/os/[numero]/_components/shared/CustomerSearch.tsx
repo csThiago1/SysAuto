@@ -5,7 +5,8 @@ import { Loader2, Search, UserPlus, X, CheckCircle2 } from "lucide-react"
 import { z } from "zod"
 import { usePersonSearch, usePersonCreate } from "../../_hooks/useCustomerSearch"
 import { useDebounce } from "@/hooks/useDebounce"
-import { isValidCPF } from "@paddock/utils"
+import { isValidCPF, formatCPF, formatPhone, onlyDigits } from "@paddock/utils"
+import { DateField } from "@/components/ui/date-field"
 
 export interface SelectedCustomer {
   id: number
@@ -195,15 +196,16 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
             type="text"
             placeholder="CPF (opcional)"
             className={INPUT}
-            value={newCpf}
-            onChange={(e) => setNewCpf(e.target.value.replace(/\D/g, "").slice(0, 11))}
+            value={formatCPF(newCpf)}
+            onChange={(e) => setNewCpf(onlyDigits(e.target.value).slice(0, 11))}
           />
           <input
             type="tel"
-            placeholder="Celular * (10-11 dígitos)"
+            placeholder="(92) 99999-9999 *"
+            inputMode="numeric"
             className={INPUT}
-            value={newPhone}
-            onChange={(e) => setNewPhone(e.target.value)}
+            value={formatPhone(newPhone)}
+            onChange={(e) => setNewPhone(onlyDigits(e.target.value))}
           />
         </div>
 
@@ -217,12 +219,10 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
         />
 
         {/* Nascimento (opcional) */}
-        <input
-          type="date"
-          className={INPUT}
+        <DateField
           value={newBirthDate}
-          onChange={(e) => setNewBirthDate(e.target.value)}
-          title="Data de nascimento (opcional)"
+          onChange={setNewBirthDate}
+          placeholder="Nascimento (opcional)"
         />
 
         {createError && (
@@ -244,7 +244,7 @@ export function CustomerSearch({ value, onChange, disabled }: CustomerSearchProp
             onClick={handleCreate}
             disabled={!canCreate || createMutation.isPending}
             data-testid="cadastrar-cliente-btn"
-            className="flex items-center gap-1 rounded bg-primary px-2.5 py-1 text-xs font-medium text-foreground hover:bg-primary/90 disabled:opacity-50"
+            className="flex items-center gap-1 rounded bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             {createMutation.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
             {createMutation.isPending ? "Salvando..." : "Cadastrar"}

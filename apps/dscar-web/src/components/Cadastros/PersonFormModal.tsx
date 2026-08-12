@@ -27,7 +27,7 @@ import type {
   ModalProps,
   PersonDocumentWrite,
 } from "@paddock/types";
-import { PERSON_ROLE_LABEL } from "@paddock/utils";
+import { PERSON_ROLE_LABEL, formatCPF, formatCNPJ, formatCEP, onlyDigits } from "@paddock/utils";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +46,7 @@ import {
 } from "@/components/ui";
 import { useCreatePerson, useUpdatePerson, useCepLookup, usePerson } from "@/hooks";
 import { handleApiFormError } from "@/lib/api";
+import { DateField } from "@/components/ui/date-field"
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -215,6 +216,13 @@ export function PersonFormModal({
     });
   }
 
+  /** CPF e CNPJ mascaram; os outros documentos ficam como o usuario digitou. */
+  function maskDoc(tipo: string | undefined, valor: string): string {
+    if (tipo === "CPF") return formatCPF(valor);
+    if (tipo === "CNPJ") return formatCNPJ(valor);
+    return valor;
+  }
+
   async function handleCepBlur(index: number, value: string): Promise<void> {
     const clean = value.replace(/\D/g, "");
     if (clean.length !== 8) return;
@@ -311,7 +319,7 @@ export function PersonFormModal({
                         onClick={() => field.onChange(kind)}
                         className={`rounded-md px-4 py-1.5 text-xs font-semibold transition-colors ${
                           field.value === kind
-                            ? "bg-primary text-foreground shadow-sm"
+                            ? "bg-primary text-primary-foreground shadow-sm"
                             : "text-muted-foreground hover:text-foreground/70"
                         }`}
                       >
@@ -333,7 +341,7 @@ export function PersonFormModal({
                     className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                       selectedRoles.includes(role)
                         ? "bg-primary text-white border-primary"
-                        : "bg-muted/50 text-foreground/60 border-border hover:border-border"
+                        : "bg-muted/50 text-primary-foreground/60 border-border hover:border-border"
                     }`}
                   >
                     {PERSON_ROLE_LABEL[role]}
@@ -364,7 +372,13 @@ export function PersonFormModal({
                 <>
                   <div>
                     <Label htmlFor="birth_date">Data de Nascimento</Label>
-                    <Input id="birth_date" type="date" {...register("birth_date")} />
+                    <Controller
+                      name="birth_date"
+                      control={control}
+                      render={({ field }) => (
+                        <DateField id="birth_date" value={field.value} onChange={field.onChange} />
+                      )}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="gender">Gênero</Label>
@@ -500,9 +514,25 @@ export function PersonFormModal({
                 <div className="grid grid-cols-2 gap-2">
                   <div className="col-span-2">
                     <Label className="text-xs">Número *</Label>
+                    {/* CPF/CNPJ ganham mascara; RG/CNH nao tem formato canonico,
+                        entao o campo continua texto livre. Guarda so os digitos. */}
                     <Input
                       {...register(`documents.${index}.value`, { required: true })}
-                      placeholder={watch(`documents.${index}.doc_type`) === "CPF" ? "000.000.000-00" : ""}
+                      value={maskDoc(watch(`documents.${index}.doc_type`), watch(`documents.${index}.value`) ?? "")}
+                      onChange={(e) => {
+                        const tipo = watch(`documents.${index}.doc_type`)
+                        const bruto = e.target.value
+                        setValue(
+                          `documents.${index}.value`,
+                          tipo === "CPF" || tipo === "CNPJ" ? onlyDigits(bruto) : bruto,
+                          { shouldDirty: true },
+                        )
+                      }}
+                      placeholder={
+                        watch(`documents.${index}.doc_type`) === "CPF" ? "000.000.000-00"
+                        : watch(`documents.${index}.doc_type`) === "CNPJ" ? "00.000.000/0000-00"
+                        : ""
+                      }
                     />
                   </div>
                   <div>
@@ -511,7 +541,13 @@ export function PersonFormModal({
                   </div>
                   <div>
                     <Label className="text-xs">Validade</Label>
-                    <Input type="date" {...register(`documents.${index}.expires_at`)} />
+                    <Controller
+                      name={`documents.${index}.expires_at`}
+                      control={control}
+                      render={({ field }) => (
+                        <DateField value={field.value} onChange={field.onChange} />
+                      )}
+                    />
                   </div>
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer text-xs">
@@ -640,6 +676,9 @@ export function PersonFormModal({
                   <div className="col-span-1">
                     <Label className="text-xs">CEP</Label>
                     <Input {...register(`addresses.${index}.zip_code`)} placeholder="00000-000"
+                      inputMode="numeric"
+                      value={formatCEP(watch(`addresses.${index}.zip_code`) ?? "")}
+                      onChange={(e) => setValue(`addresses.${index}.zip_code`, onlyDigits(e.target.value), { shouldDirty: true })}
                       onBlur={(e) => handleCepBlur(index, e.target.value)} />
                   </div>
                   <div className="col-span-3">

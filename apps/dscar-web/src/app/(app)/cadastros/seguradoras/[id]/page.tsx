@@ -17,6 +17,7 @@ import {
   useUpdateInsurerTenantProfile,
 } from "@/hooks/useInsurers"
 import type { InsurerTenantProfile } from "@paddock/types"
+import { formatPhone, onlyDigits } from "@paddock/utils"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -29,7 +30,7 @@ export default function InsurerDetailPage({ params }: Props) {
   const updateProfile = useUpdateInsurerTenantProfile()
   const [activeTab, setActiveTab] = useState<"geral" | "operacional">("geral")
 
-  const { register, handleSubmit } = useForm<Partial<InsurerTenantProfile>>({
+  const { register, handleSubmit, watch, setValue } = useForm<Partial<InsurerTenantProfile>>({
     values: profile,
   })
 
@@ -118,7 +119,9 @@ export default function InsurerDetailPage({ params }: Props) {
               </div>
               <div>
                 <Label className="text-xs">Telefone</Label>
-                <Input {...register("contact_sinistro_phone")} />
+                <Input {...register("contact_sinistro_phone")} inputMode="numeric" placeholder="(92) 99999-9999"
+                  value={formatPhone(watch("contact_sinistro_phone") ?? "")}
+                  onChange={(e) => setValue("contact_sinistro_phone", onlyDigits(e.target.value), { shouldDirty: true })} />
               </div>
               <div>
                 <Label className="text-xs">E-mail</Label>
@@ -139,7 +142,9 @@ export default function InsurerDetailPage({ params }: Props) {
               </div>
               <div>
                 <Label className="text-xs">Telefone</Label>
-                <Input {...register("contact_financeiro_phone")} />
+                <Input {...register("contact_financeiro_phone")} inputMode="numeric" placeholder="(92) 99999-9999"
+                  value={formatPhone(watch("contact_financeiro_phone") ?? "")}
+                  onChange={(e) => setValue("contact_financeiro_phone", onlyDigits(e.target.value), { shouldDirty: true })} />
               </div>
               <div>
                 <Label className="text-xs">E-mail</Label>
@@ -160,7 +165,9 @@ export default function InsurerDetailPage({ params }: Props) {
               </div>
               <div>
                 <Label className="text-xs">Telefone</Label>
-                <Input {...register("contact_comercial_phone")} />
+                <Input {...register("contact_comercial_phone")} inputMode="numeric" placeholder="(92) 99999-9999"
+                  value={formatPhone(watch("contact_comercial_phone") ?? "")}
+                  onChange={(e) => setValue("contact_comercial_phone", onlyDigits(e.target.value), { shouldDirty: true })} />
               </div>
               <div>
                 <Label className="text-xs">E-mail</Label>

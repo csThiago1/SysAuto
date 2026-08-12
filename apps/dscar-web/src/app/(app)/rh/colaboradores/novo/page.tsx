@@ -18,6 +18,8 @@ import { useCreateEmployee, useCepLookup } from "@/hooks";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DateField } from "@/components/ui/date-field"
+import { formatPhone, formatCPF, formatCEP, onlyDigits } from "@paddock/utils"
 
 // ─── Validation schema ────────────────────────────────────────────────────────
 
@@ -210,8 +212,9 @@ export default function NovoColaboradorPage(): React.ReactElement {
               <FormField label="Celular *" error={errors.phone}>
                 <Input
                   type="tel"
-                  value={form.phone}
-                  onChange={(e) => set("phone", e.target.value)}
+                  inputMode="numeric"
+                  value={formatPhone(form.phone)}
+                  onChange={(e) => set("phone", onlyDigits(e.target.value))}
                   placeholder="(92) 99999-1234"
                 />
               </FormField>
@@ -277,11 +280,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
                 </select>
               </FormField>
               <FormField label="Data de admissão *" error={errors.hire_date}>
-                <Input
-                  type="date"
-                  value={form.hire_date}
-                  onChange={(e) => set("hire_date", e.target.value)}
-                />
+                <DateField value={form.hire_date} onChange={(v) => set("hire_date", v)} />
               </FormField>
               <FormField label="Salário base (R$) *" error={errors.base_salary}>
                 <Input
@@ -331,20 +330,16 @@ export default function NovoColaboradorPage(): React.ReactElement {
               colaborador.
             </p>
             <div className="grid grid-cols-2 gap-4">
-              <FormField label="CPF (apenas dígitos)">
+              <FormField label="CPF">
                 <Input
-                  value={form.cpf ?? ""}
-                  onChange={(e) => set("cpf", e.target.value)}
-                  placeholder="00000000000"
-                  maxLength={11}
+                  inputMode="numeric"
+                  value={formatCPF(form.cpf ?? "")}
+                  onChange={(e) => set("cpf", onlyDigits(e.target.value).slice(0, 11))}
+                  placeholder="000.000.000-00"
                 />
               </FormField>
               <FormField label="Data de nascimento">
-                <Input
-                  type="date"
-                  value={form.birth_date ?? ""}
-                  onChange={(e) => set("birth_date", e.target.value)}
-                />
+                <DateField value={form.birth_date ?? ""} onChange={(v) => set("birth_date", v)} />
               </FormField>
               <FormField label="Contato de emergência — nome">
                 <Input
@@ -363,8 +358,9 @@ export default function NovoColaboradorPage(): React.ReactElement {
             <div className="grid grid-cols-2 gap-4">
               <FormField label="CEP">
                 <Input
-                  value={form.address_zip ?? ""}
-                  onChange={(e) => set("address_zip", e.target.value)}
+                  inputMode="numeric"
+                  value={formatCEP(form.address_zip ?? "")}
+                  onChange={(e) => set("address_zip", onlyDigits(e.target.value))}
                   onBlur={() => { void handleCepBlur(); }}
                   placeholder="69000-000"
                 />
@@ -421,7 +417,7 @@ export default function NovoColaboradorPage(): React.ReactElement {
             <button
               type="submit"
               disabled={create.isPending}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {create.isPending ? "Admitindo..." : "Admitir colaborador"}
             </button>

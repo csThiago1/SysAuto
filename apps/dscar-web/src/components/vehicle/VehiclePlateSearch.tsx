@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { formatPlate, onlyAlnum } from "@paddock/utils"
 import { Search, History, Globe, X, Car, AlertCircle, CheckCircle2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,12 +27,6 @@ interface Props {
   onChange: (v: VehicleData | null) => void
   /** Se true, mostra o campo de versão */
   showVersion?: boolean
-}
-
-function formatPlate(raw: string): string {
-  const clean = raw.toUpperCase().replace(/[^A-Z0-9]/g, "")
-  if (clean.length <= 3) return clean
-  return clean.slice(0, 3) + "-" + clean.slice(3, 7)
 }
 
 export function VehiclePlateSearch({ value, onChange, showVersion = true }: Props) {
@@ -208,9 +203,9 @@ export function VehiclePlateSearch({ value, onChange, showVersion = true }: Prop
           <Input
             className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground/50 uppercase font-plate tracking-widest text-base"
             placeholder="ABC-1234"
-            value={plateInput}
+            value={formatPlate(plateInput)}
             maxLength={8}
-            onChange={(e) => setPlateInput(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ""))}
+            onChange={(e) => setPlateInput(onlyAlnum(e.target.value))}
           />
           {historyLoading && (
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground animate-pulse">
@@ -370,8 +365,8 @@ function VehicleForm({
           <Label className="text-foreground/70 text-xs">Placa</Label>
           <Input
             className="bg-muted/50 border-border text-foreground uppercase font-plate tracking-widest"
-            value={value.plate}
-            onChange={(e) => set("plate", e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+            value={formatPlate(value.plate)}
+            onChange={(e) => set("plate", onlyAlnum(e.target.value))}
           />
         </div>
         <div className="space-y-1.5">

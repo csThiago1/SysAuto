@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useEmitNfce } from "@/hooks/useFiscal"
 import { usePermission } from "@/hooks/usePermission"
-import { formatCurrency } from "@paddock/utils"
+import { formatCurrency, formatCPF, onlyDigits } from "@paddock/utils"
 
 const FORMA_PAGAMENTO_OPTIONS = [
   { value: "01", label: "Dinheiro" },
@@ -144,7 +144,7 @@ export default function EmitirNfcePage() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label className="text-xs text-foreground/70">CPF</Label>
-              <Input value={cpf} onChange={e => setCpf(e.target.value)} placeholder="000.000.000-00" />
+              <Input value={formatCPF(cpf)} onChange={e => setCpf(onlyDigits(e.target.value).slice(0, 11))} inputMode="numeric" placeholder="000.000.000-00" />
             </div>
             <div>
               <Label className="text-xs text-foreground/70">Nome</Label>

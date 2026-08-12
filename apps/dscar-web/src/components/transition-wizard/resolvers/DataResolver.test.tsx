@@ -205,8 +205,10 @@ describe("DataResolver — AUTH_DATE_SET", () => {
     const user = userEvent.setup()
     const onResolved = vi.fn()
     wrap(<DataResolver block={block("AUTH_DATE_SET")} order={ORDER} onResolved={onResolved} />)
-    const input = screen.getByLabelText(/data de autorização/i) as HTMLInputElement
-    await user.type(input, "2026-06-17T10:00")
+    // O campo virou DateField (popover proprio, nao datetime-local): a data
+    // entra por clique no calendario, que e como o usuario faz.
+    await user.click(screen.getByLabelText(/data de autorização/i))
+    await user.click(screen.getByRole("button", { name: "Hoje" }))
     await user.click(screen.getByRole("button", { name: /salvar/i }))
     await waitFor(() => expect(onResolved).toHaveBeenCalledTimes(1))
   })
@@ -222,8 +224,10 @@ describe("DataResolver — ENTRY_DATE_SET", () => {
     const user = userEvent.setup()
     const onResolved = vi.fn()
     wrap(<DataResolver block={block("ENTRY_DATE_SET")} order={ORDER} onResolved={onResolved} />)
-    const input = screen.getByLabelText(/data de entrada/i) as HTMLInputElement
-    await user.type(input, "2026-06-15T08:30")
+    // O campo virou DateField (popover proprio, nao datetime-local): a data
+    // entra por clique no calendario, que e como o usuario faz.
+    await user.click(screen.getByLabelText(/data de entrada/i))
+    await user.click(screen.getByRole("button", { name: "Hoje" }))
     await user.click(screen.getByRole("button", { name: /salvar/i }))
     await waitFor(() => expect(onResolved).toHaveBeenCalledTimes(1))
   })
