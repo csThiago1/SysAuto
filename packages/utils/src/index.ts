@@ -6,6 +6,7 @@
  */
 
 export * from "./formatters";
+export * from "./masks";
 export * from "./validators";
 export * from "./person.utils";
 export * from "./service-order.utils";
