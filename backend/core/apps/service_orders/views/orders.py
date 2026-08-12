@@ -1497,81 +1497,19 @@ class ServiceOrderViewSet(
         budget_number: Optional[str] = None,
         version_number: Optional[str] = None,
     ) -> list[str]:
-        """Aplica os campos do ParsedBudget na OS. Retorna update_fields."""
-        update_fields: list[str] = []
+        """Aplica os campos do ParsedBudget na OS. Retorna update_fields.
 
-        # Campos só preenchidos se vazios — nunca sobrescreve digitação do consultor.
-        # Veículo (make/model/color/year) entra aqui: o usuário prefere preencher
-        # manualmente porque a normalização do parser Cilia não fica boa (descrição
-        # completa do modelo é difícil de quebrar em make+model). Se a OS já tinha
-        # esses campos preenchidos, mantém o que o consultor digitou.
-        fill_if_empty = {
-            "casualty_number": parsed.casualty_number,
-            "plate": parsed.vehicle_plate,
-            "chassis": parsed.vehicle_chassis,
-            "customer_name": parsed.segurado_name,
-            "make": parsed.vehicle_brand,
-            "model": getattr(parsed, "vehicle_model", "") or parsed.vehicle_description or "",
-            "color": parsed.vehicle_color,
-        }
-        for field, value in fill_if_empty.items():
-            if value and not getattr(order, field, None):
-                setattr(order, field, value)
-                update_fields.append(field)
+        Delega para `apps.cilia.services` — a mesma regra vale para a
+        importação automática (Celery), que não passa por HTTP.
+        """
+        from apps.cilia.services import apply_parsed_budget_to_order
 
-        if parsed.vehicle_year and not order.year:
-            order.year = parsed.vehicle_year
-            update_fields.append("year")
-
-        # Orçamento Cilia (só se fonte for Cilia/IFX/HDI com budget_number)
-        if budget_number and order.cilia_budget_number != str(budget_number):
-            order.cilia_budget_number = str(budget_number)
-            update_fields.append("cilia_budget_number")
-        if version_number is not None and str(version_number) and (
-            order.cilia_budget_version != str(version_number)
-        ):
-            order.cilia_budget_version = str(version_number)
-            update_fields.append("cilia_budget_version")
-
-        # Seguradora
-        if parsed.insurer_code:
-            if order.customer_type != "insurer":
-                order.customer_type = "insurer"
-                update_fields.append("customer_type")
-            if not order.insurer_id:
-                from apps.insurers.models import Insurer
-                insurer = Insurer.objects.filter(code=parsed.insurer_code).first()
-                if insurer:
-                    order.insurer = insurer
-                    update_fields.append("insurer_id")
-                else:
-                    import logging
-                    logging.getLogger(__name__).warning(
-                        "Insurer code='%s' não cadastrado — OS %s fica sem FK.",
-                        parsed.insurer_code, order.pk,
-                    )
-
-        # Franquia
-        if parsed.franchise_amount:
-            order.deductible_amount = parsed.franchise_amount
-            update_fields.append("deductible_amount")
-
-        # Observações técnicas
-        if not order.notes and parsed.pareceres:
-            obs_lines = []
-            for parecer in parsed.pareceres:
-                parts = [
-                    parecer.parecer_type.replace("_", " ").title() if parecer.parecer_type else "",
-                    parecer.body or "",
-                ]
-                line = " — ".join(p for p in parts if p)
-                if line:
-                    obs_lines.append(line)
-            if obs_lines:
-                order.notes = "\n".join(obs_lines)
-                update_fields.append("notes")
-
-        return update_fields
+        return apply_parsed_budget_to_order(
+            order,
+            parsed,
+            budget_number=budget_number,
+            version_number=version_number,
+        )
 
     def _create_version_and_respond(
         self,
@@ -1589,47 +1527,42 @@ class ServiceOrderViewSet(
         somado normalmente a partir dos items com payer_block=
         COMPLEMENTO_PARTICULAR.
         """
-        # Dedup por content_hash
-        existing_version = order.versions.filter(content_hash=parsed.raw_hash).first()
-        if existing_version:
+        from apps.cilia.services import create_version_from_parsed
+
+        result = create_version_from_parsed(
+            order=order,
+            parsed=parsed,
+            attempt=attempt,
+            applied_by=request.user.email or "user",
+        )
+        return self._respond_from_import_result(order, result)
+
+    def _respond_from_import_result(self, order: Any, result: Any) -> Response:
+        """Converte um ImportResult do serviço em Response HTTP."""
+        if result.action == "duplicate":
             return Response({
                 "action": "applied",
-                "version": VersionDetailSerializer(existing_version).data,
+                "version": VersionDetailSerializer(result.version).data,
                 "message": "Versão já importada (mesmo conteúdo).",
             })
 
-        version = ServiceOrderService.create_new_version_from_import(
-            service_order=order,
-            parsed_budget=parsed,
-            import_attempt=attempt,
-        )
-        # Passa source_grand_total pra forçar total_seguradora = valor oficial
-        source_total = getattr(parsed, "source_grand_total", None) or None
-        ServiceOrderService.recalculate_version_totals(version, source_grand_total=source_total)
-
-        # Diff se já tinha versão anterior
-        previous = order.versions.exclude(pk=version.pk).order_by("-version_number").first()
-        if previous:
+        if result.action == "diff":
             diff = ServiceOrderService.compute_version_diff(
-                current_version=previous,
-                new_version=version,
+                current_version=result.previous,
+                new_version=result.version,
                 service_order=order,
             )
             return Response({
                 "action": "diff",
-                "current_version": VersionDetailSerializer(previous).data,
-                "new_version": VersionDetailSerializer(version).data,
+                "current_version": VersionDetailSerializer(result.previous).data,
+                "new_version": VersionDetailSerializer(result.version).data,
                 **diff,
             })
 
-        # Primeira importação — aplicar direto
-        ServiceOrderService.apply_version_override(
-            service_order=order, new_version=version,
-            applied_by=request.user.email or "user",
-        )
+        # Primeira importação — já aplicada pelo serviço
         return Response({
             "action": "applied",
-            "version": VersionDetailSerializer(version).data,
+            "version": VersionDetailSerializer(result.version).data,
         }, status=status.HTTP_201_CREATED)
 
     @action(
@@ -1662,74 +1595,25 @@ class ServiceOrderViewSet(
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # 1. Fetch do Cilia (client → parse)
-            from apps.cilia.client import CiliaClient, CiliaError
-            from apps.cilia.sources.cilia_parser import CiliaParser
+            # Núcleo compartilhado com a importação automática (Celery).
+            from apps.cilia.services import CiliaImportError, import_from_cilia
 
-            client = CiliaClient()
             try:
-                response = client.get_budget(
+                result = import_from_cilia(
+                    order=order,
                     casualty_number=casualty_number,
                     budget_number=budget_number,
                     version_number=version_number,
+                    trigger="user_requested",
+                    created_by=request.user.email or "user",
                 )
-            except CiliaError as exc:
-                logger.warning("Cilia network error: %s", exc)
+            except CiliaImportError as exc:
                 return Response(
-                    {"detail": "Erro de conexão com a Cilia.", "error_type": "NetworkError"},
+                    {"detail": exc.detail, "error_type": exc.error_type},
                     status=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 )
 
-            if response.status_code != 200:
-                detail_by_status = {
-                    401: "Token Cilia inválido ou ausente. Verifique CILIA_AUTH_TOKEN no servidor.",
-                    403: "Sem permissão para acessar este orçamento na Cilia.",
-                    404: "Orçamento não encontrado na Cilia. Confira sinistro, orçamento e versão.",
-                }
-                detail = detail_by_status.get(
-                    response.status_code,
-                    f"Cilia retornou HTTP {response.status_code}.",
-                )
-                return Response(
-                    {"detail": detail, "error_type": f"HTTP{response.status_code}"},
-                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                )
-
-            # 2. Parse
-            try:
-                parsed = CiliaParser.parse(response.data)
-            except Exception as exc:
-                logger.exception("Cilia parse error: %s", exc)
-                return Response(
-                    {"detail": "Erro ao processar orçamento.", "error_type": "ParseError"},
-                    status=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                )
-
-            # 3. Aplica dados na OS e cria versão
-            update_fields = self._apply_parsed_budget_to_order(
-                order, parsed,
-                budget_number=str(budget_number),
-                version_number=str(version_number) if version_number else None,
-            )
-            if update_fields:
-                order.save(update_fields=update_fields)
-
-            from apps.cilia.models import ImportAttempt
-            attempt = ImportAttempt.objects.create(
-                source="cilia",
-                trigger="user_requested",
-                created_by=request.user.email or "user",
-                casualty_number=casualty_number,
-                budget_number=str(budget_number),
-                version_number=version_number,
-                http_status=response.status_code,
-                duration_ms=response.duration_ms,
-                raw_payload=response.data,
-                raw_hash=parsed.raw_hash,
-                parsed_ok=True,
-                service_order=order,
-            )
-            return self._create_version_and_respond(order, parsed, attempt, request)
+            return self._respond_from_import_result(order, result)
 
         # ─────────────────────────────────────────────────── XML IFX (Soma/Porto/Azul/Itaú)
         XML_SOURCES = {"soma", "xml_porto", "xml_azul", "xml_itau"}

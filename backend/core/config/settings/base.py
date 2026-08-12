@@ -261,6 +261,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.purchasing.tasks.task_check_delivery_deadlines",
         "schedule": crontab(hour=7, minute=30),  # Todo dia às 07:30
     },
+    # Cilia — sondar versão nova dos orçamentos das OS abertas
+    "cilia-sync-active-os": {
+        "task": "apps.imports.tasks.sync_active_cilia_os",
+        "schedule": crontab(minute="*/15"),  # A cada 15 minutos
+    },
 }
 
 # ─── Django Channels ─────────────────────────────────────────────────────────
