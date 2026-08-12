@@ -1,5 +1,4 @@
 import React from "react";
-import { TopBar } from "@/components/TopBar";
 import { DockNav } from "@/components/dock/DockNav";
 import { MobileTabBar } from "@/components/dock/MobileTabBar";
 import { CommandPalette } from "@/components/CommandPalette";
@@ -17,10 +16,12 @@ export default function AppLayout({
       >
         Ir para o conteúdo principal
       </a>
-      <TopBar />
       <main
         id="main-content"
-        className="flex-1 overflow-y-auto overflow-x-hidden bg-background px-2 pt-4 pb-24 md:px-6 max-md:pb-20"
+        // Sem header, o recorte da status bar (PWA iOS, viewport-fit=cover)
+        // passa a ser responsabilidade do proprio conteudo.
+        className="flex-1 overflow-y-auto overflow-x-hidden bg-background px-2 pb-24 md:px-6 max-md:pb-20"
+        style={{ paddingTop: "max(1.25rem, env(safe-area-inset-top))" }}
       >
         {children}
       </main>
