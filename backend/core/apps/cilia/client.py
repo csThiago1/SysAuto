@@ -15,6 +15,16 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
+# Campos que a Cilia devolve em base64 e que nada no import consome: o
+# relatório em HTML (~0,9 MB) e o PDF (~0,1 MB). Juntos são 96% do payload —
+# um orçamento típico pesa 1,1 MB, dos quais só 51 KB são dados úteis.
+# Descartar na entrada mantém tudo a jusante leve: parser, DTO e o
+# raw_payload gravado no ImportAttempt. Importa em produção, onde o worker
+# roda com MemoryMax=250M numa E2.1.Micro.
+# O hash da versão já os ignorava (ver CiliaParser._compute_hash), então
+# remover não altera dedup.
+_DISCARDED_FIELDS = ("report_html", "report_pdf")
+
 
 class CiliaError(Exception):
     """Erro genérico da integração Cilia."""
@@ -98,6 +108,10 @@ class CiliaClient:
             data: dict[str, Any] | None = response.json()
         except ValueError:
             data = None
+
+        if isinstance(data, dict):
+            for field in _DISCARDED_FIELDS:
+                data.pop(field, None)
 
         logger.debug(
             "Cilia GET %s → %d (%dms)",
