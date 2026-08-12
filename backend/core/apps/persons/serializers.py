@@ -96,6 +96,30 @@ class PersonDocumentWriteSerializer(serializers.ModelSerializer):
             "expires_at",
         ]
 
+    def validate_value(self, value: str) -> str:
+        """Rejeita valor mascarado.
+
+        `_mask_value` troca tudo menos os 4 ultimos caracteres por '*'. Se um
+        cliente ler o registro e devolver esse texto num PATCH, o dado real e
+        sobrescrito por asteriscos — perda permanente de PII, sem erro visivel.
+        Nenhum telefone, e-mail ou documento legitimo contem '*'.
+
+        Args:
+            value: Valor vindo do cliente.
+
+        Returns:
+            O proprio valor, quando valido.
+
+        Raises:
+            serializers.ValidationError: Se o valor estiver mascarado.
+        """
+        if value and "*" in value:
+            raise serializers.ValidationError(
+                "Valor mascarado nao pode ser gravado. "
+                "Envie o valor completo ou omita o campo."
+            )
+        return value
+
     def validate(self, attrs: dict) -> dict:
         """Popula value_hash a partir de value."""
         value = attrs.get("value", "")
@@ -133,6 +157,30 @@ class PersonContactWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = PersonContact
         fields = ["contact_type", "value", "label", "is_primary"]
+
+    def validate_value(self, value: str) -> str:
+        """Rejeita valor mascarado.
+
+        `_mask_value` troca tudo menos os 4 ultimos caracteres por '*'. Se um
+        cliente ler o registro e devolver esse texto num PATCH, o dado real e
+        sobrescrito por asteriscos — perda permanente de PII, sem erro visivel.
+        Nenhum telefone, e-mail ou documento legitimo contem '*'.
+
+        Args:
+            value: Valor vindo do cliente.
+
+        Returns:
+            O proprio valor, quando valido.
+
+        Raises:
+            serializers.ValidationError: Se o valor estiver mascarado.
+        """
+        if value and "*" in value:
+            raise serializers.ValidationError(
+                "Valor mascarado nao pode ser gravado. "
+                "Envie o valor completo ou omita o campo."
+            )
+        return value
 
     def validate(self, attrs: dict) -> dict:
         """Popula value_hash a partir de value."""
