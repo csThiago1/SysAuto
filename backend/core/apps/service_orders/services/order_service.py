@@ -470,6 +470,17 @@ class _ServiceOrderCoreMixin:
             "delivered_at", "updated_at"
         ])
 
+        if new_status == "delivered":
+            # Agenda os retornos pós-entrega. Nunca interrompe a transição.
+            try:
+                from apps.followups.services import schedule_for_delivery
+
+                schedule_for_delivery(order_id=str(order.pk), delivered_at=order.delivered_at)
+            except Exception as exc:
+                logger.warning(
+                    "Falha ao agendar retornos da OS %s: %s", order.pk, type(exc).__name__
+                )
+
         StatusTransitionLog.objects.create(
             service_order=order,
             from_status=old_status,

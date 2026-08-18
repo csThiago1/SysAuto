@@ -77,6 +77,7 @@ TENANT_APPS = [
     "apps.payments",
     "apps.imports",
     "apps.budgets",
+    "apps.followups",
 ]
 
 INSTALLED_APPS = list(set(SHARED_APPS + TENANT_APPS))
@@ -260,6 +261,11 @@ CELERY_BEAT_SCHEDULE = {
     "purchasing-check-deadlines": {
         "task": "apps.purchasing.tasks.task_check_delivery_deadlines",
         "schedule": crontab(hour=7, minute=30),  # Todo dia às 07:30
+    },
+    # Retornos ao cliente — dispara os vencidos de hora em hora
+    "followups-dispatch-due": {
+        "task": "apps.followups.tasks.task_dispatch_due_followups_all_tenants",
+        "schedule": crontab(minute=5),
     },
     # Cilia — sondar versão nova dos orçamentos das OS abertas
     "cilia-sync-active-os": {

@@ -146,6 +146,16 @@ class Person(models.Model):
     is_active = models.BooleanField(default=True, db_index=True, verbose_name="Ativo")
     notes = models.TextField(blank=True, default="", verbose_name="Observações")
 
+    # LGPD — descadastro de comunicação de pós-venda (retornos, ofertas).
+    # Checado no agendamento E no disparo: o cliente pode pedir descadastro
+    # depois de o retorno já estar na fila.
+    followup_opt_out = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="Não receber retornos",
+        help_text="Cliente pediu para não receber pesquisas de satisfação nem ofertas.",
+    )
+
     # Migração legacy (Databox)
     legacy_code = models.CharField(max_length=30, blank=True, default="")
     legacy_category = models.CharField(max_length=30, blank=True, default="")
