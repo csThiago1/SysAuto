@@ -301,6 +301,13 @@ VAPID_PRIVATE_KEY = config("VAPID_PRIVATE_KEY", default="")
 VAPID_PUBLIC_KEY = config("VAPID_PUBLIC_KEY", default="")
 VAPID_CONTACT_EMAIL = config("VAPID_CONTACT_EMAIL", default="tech@paddock.solutions")
 
+# ─── LLM (endpoint compatível com API OpenAI) ────────────────────────────────
+# Vazio = sem classificação por LLM; a sugestão de conta contábil passa a usar
+# apenas o cache de regras já aprendidas. Para Ollama na VM: trocar a base URL.
+LLM_BASE_URL = config("LLM_BASE_URL", default="")
+LLM_API_KEY = config("LLM_API_KEY", default="")
+LLM_MODEL = config("LLM_MODEL", default="")
+
 # ─── Storage (AWS S3) ────────────────────────────────────────────────────────
 AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID", default="")
 AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", default="")
@@ -375,9 +382,9 @@ CILIA_BASE_URL = config("CILIA_BASE_URL", default="https://sistema.cilia.com.br"
 CILIA_AUTH_TOKEN = config("CILIA_AUTH_TOKEN", default="")
 
 # ─── API Placas ───────────────────────────────────────────────────────────────
-APIPLACAS_TOKEN   = config("APIPLACAS_TOKEN", default="")
+APIPLACAS_TOKEN = config("APIPLACAS_TOKEN", default="")
 # endpoint: GET https://wdapi2.com.br/consulta/{plate}/{token}
-APIPLACAS_URL     = "https://wdapi2.com.br/consulta"
+APIPLACAS_URL = "https://wdapi2.com.br/consulta"
 APIPLACAS_TIMEOUT = 8.0
 
 # ─── Focus NF-e ──────────────────────────────────────────────────────────────
