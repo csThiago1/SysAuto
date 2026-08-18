@@ -134,6 +134,8 @@ export interface Person {
   birth_date?: string;
   gender?: Gender;
   is_active: boolean;
+  /** LGPD — cliente pediu para não receber pesquisas de satisfação nem ofertas. */
+  followup_opt_out: boolean;
   notes?: string;
   roles: PersonRoleEntry[];
   contacts: PersonContact[];
@@ -158,6 +160,7 @@ export interface CreatePersonPayload {
   birth_date?: string;
   gender?: Gender;
   is_active?: boolean;
+  followup_opt_out?: boolean;
   notes?: string;
   roles: PersonRole[];
   contacts: Omit<PersonContact, "id">[];

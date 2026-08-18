@@ -1,4 +1,6 @@
 import {
+  Bell,
+  Settings2,
   LayoutDashboard,
   ClipboardList,
   KanbanSquare,
@@ -130,6 +132,21 @@ export const NAV_SECTIONS: NavSection[] = [
           { id: "cad-cores",         label: "Cores",         href: "/cadastros/cores",             icon: Palette },
           { id: "cad-corretores",    label: "Corretores",    href: "/cadastros/corretores",       icon: Handshake },
           { id: "cad-especialistas", label: "Peritos",       href: "/cadastros?tab=EXPERT",       icon: UserSearch },
+        ],
+      },
+    ],
+  },
+  {
+    label: "CRM",
+    items: [
+      {
+        id: "crm",
+        label: "CRM",
+        icon: Bell,
+        href: "/crm/retornos",
+        children: [
+          { id: "crm-retornos", label: "Retornos", href: "/crm/retornos", icon: Bell },
+          { id: "crm-regras",   label: "Regras",   href: "/crm/regras",   icon: Settings2 },
         ],
       },
     ],
