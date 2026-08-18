@@ -67,6 +67,12 @@ def suggest_account(description: str) -> AccountSuggestion | None:
     if cached is not None:
         return cached
 
+    # Descrição real é frase ("mascara n95 caixa c 50"), não o item puro.
+    # Sem este passo o cache só acerta quando a descrição bate inteira.
+    by_word = _from_words(term)
+    if by_word is not None:
+        return by_word
+
     return _from_llm(term)
 
 
@@ -113,6 +119,45 @@ def _from_cache(term: str) -> AccountSuggestion | None:
 
     AccountSuggestionRule.objects.filter(pk=rule.pk).update(hits=F("hits") + 1)
     return AccountSuggestion(account=rule.account, source=rule.source)
+
+
+def _from_words(term: str) -> AccountSuggestion | None:
+    """
+    Procura uma regra cujo termo apareça como palavra dentro da descrição.
+
+    Casa por token e por bigrama ("papel a4", "taxa de cartao" são termos de
+    duas/três palavras), tudo num único filtro indexado — nada de varrer a
+    tabela inteira.
+
+    Desempate: regra confirmada por humano ganha da carga inicial, e termo
+    mais específico (mais longo) ganha do mais genérico.
+    """
+    words = term.split()
+    if len(words) < 2:
+        # Descrição de uma palavra já foi tentada no match exato.
+        return None
+
+    candidates = set(words)
+    candidates.update(" ".join(words[i : i + 2]) for i in range(len(words) - 1))
+    candidates.update(" ".join(words[i : i + 3]) for i in range(len(words) - 2))
+
+    rules = (
+        AccountSuggestionRule.objects.filter(term__in=candidates, is_active=True)
+        .select_related("account")
+        .filter(account__is_active=True)
+    )
+
+    priority = {SuggestionSource.HUMAN: 0, SuggestionSource.SEED: 1, SuggestionSource.LLM: 2}
+    best = min(
+        rules,
+        key=lambda r: (priority.get(r.source, 3), -len(r.term)),
+        default=None,
+    )
+    if best is None:
+        return None
+
+    AccountSuggestionRule.objects.filter(pk=best.pk).update(hits=F("hits") + 1)
+    return AccountSuggestion(account=best.account, source=best.source)
 
 
 def _from_llm(term: str) -> AccountSuggestion | None:

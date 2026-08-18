@@ -6,7 +6,7 @@ O cliente LLM é sempre mockado — nenhum teste faz chamada de rede.
 
 from unittest.mock import patch
 
-from django.test import override_settings
+from django.test import SimpleTestCase, override_settings
 from django_tenants.test.cases import TenantTestCase
 
 from apps.accounting.models.account_suggestion import AccountSuggestionRule, SuggestionSource
@@ -179,3 +179,130 @@ class AccountSuggestionServiceTest(TenantTestCase):
         """Descrição vazia não cria regra lixo."""
         svc.remember("   ", self.escritorio)
         self.assertEqual(AccountSuggestionRule.objects.count(), 0)
+
+
+def _load_seed_module():
+    """Importa a migração de seed pelo nome (começa com dígito)."""
+    import importlib
+
+    return importlib.import_module("apps.accounting.migrations.0007_seed_account_suggestion_rules")
+
+
+class AccountSuggestionSeedDataTest(SimpleTestCase):
+    """Valida os dados do seed contra a fixture do plano de contas.
+
+    Sem banco: o risco real é um código de conta com typo, que a migração
+    pularia em silêncio e o termo nunca seria sugerido.
+    """
+
+    def test_every_seeded_code_exists_and_is_suggestable(self) -> None:
+        """Todo código do seed existe na fixture, é analítico e é custo/despesa."""
+        from apps.accounting.fixtures.chart_of_accounts_dscar import CHART_OF_ACCOUNTS_DSCAR
+
+        seed_mod = _load_seed_module()
+
+        by_code = {a["code"]: a for a in CHART_OF_ACCOUNTS_DSCAR}
+
+        for code in seed_mod.SEED:
+            with self.subTest(code=code):
+                self.assertIn(code, by_code, f"Conta {code} não existe no plano padrão")
+                account = by_code[code]
+                self.assertTrue(account["is_analytical"], f"{code} é sintética")
+                self.assertIn(account["account_type"], ("C", "X"), f"{code} não é custo/despesa")
+
+    def test_seeded_terms_are_normalized_and_unique(self) -> None:
+        """Nenhum termo se perde na normalização nem colide entre contas."""
+        seed_mod = _load_seed_module()
+
+        seen: dict[str, str] = {}
+        for code, terms in seed_mod.SEED.items():
+            for term in terms:
+                normalized = normalize_term(term)
+                self.assertNotEqual(normalized, "", f"'{term}' normaliza para vazio")
+                self.assertNotIn(
+                    normalized,
+                    seen,
+                    f"'{normalized}' duplicado entre {seen.get(normalized)} e {code}",
+                )
+                seen[normalized] = code
+
+
+class AccountSuggestionByWordsTest(TenantTestCase):
+    """Descrição real é frase, não o item puro — o match por palavra cobre isso."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.escritorio = ChartOfAccount.objects.create(
+            code="6.1.03.001",
+            name="Material de Escritorio e Limpeza",
+            account_type=AccountType.EXPENSE,
+            nature=NatureType.DEBIT,
+            is_analytical=True,
+            level=4,
+        )
+        cls.agua = ChartOfAccount.objects.create(
+            code="6.1.02.002",
+            name="Agua e Esgoto",
+            account_type=AccountType.EXPENSE,
+            nature=NatureType.DEBIT,
+            is_analytical=True,
+            level=4,
+        )
+        cls.alimentacao = ChartOfAccount.objects.create(
+            code="6.1.01.006",
+            name="Vales Alimentacao",
+            account_type=AccountType.EXPENSE,
+            nature=NatureType.DEBIT,
+            is_analytical=True,
+            level=4,
+        )
+
+    def setUp(self) -> None:
+        AccountSuggestionRule.objects.create(
+            term="tesoura", account=self.escritorio, source=SuggestionSource.SEED
+        )
+        AccountSuggestionRule.objects.create(
+            term="agua", account=self.agua, source=SuggestionSource.SEED
+        )
+        AccountSuggestionRule.objects.create(
+            term="agua mineral", account=self.alimentacao, source=SuggestionSource.SEED
+        )
+
+    def tearDown(self) -> None:
+        AccountSuggestionRule.objects.all().delete()
+
+    def test_matches_item_inside_a_phrase(self) -> None:
+        """'Compra de tesoura grande' acha a conta da tesoura."""
+        suggestion = svc.suggest_account("Compra de tesoura grande")
+        assert suggestion is not None
+        self.assertEqual(suggestion.account, self.escritorio)
+
+    def test_longer_term_wins(self) -> None:
+        """'agua mineral' (bigrama) ganha de 'agua' (token) por ser mais específico."""
+        suggestion = svc.suggest_account("Agua mineral 20L galao")
+        assert suggestion is not None
+        self.assertEqual(suggestion.account, self.alimentacao)
+
+    def test_human_rule_beats_seed(self) -> None:
+        """Regra confirmada por humano tem precedência sobre a carga inicial."""
+        AccountSuggestionRule.objects.filter(term="tesoura").update(
+            source=SuggestionSource.HUMAN, account=self.agua
+        )
+        suggestion = svc.suggest_account("nota de tesoura escolar")
+        assert suggestion is not None
+        self.assertEqual(suggestion.account, self.agua)
+
+    def test_no_partial_word_false_positive(self) -> None:
+        """'aguardente' não casa com o termo 'agua'."""
+        self.assertIsNone(svc.suggest_account("compra de aguardente"))
+
+    def test_single_word_miss_stays_a_miss(self) -> None:
+        """Palavra única desconhecida não inventa sugestão."""
+        self.assertIsNone(svc.suggest_account("parafuso"))
+
+    def test_word_match_increments_hits(self) -> None:
+        """Acerto por palavra também contabiliza hit."""
+        svc.suggest_account("compra de tesoura")
+        rule = AccountSuggestionRule.objects.get(term="tesoura")
+        self.assertEqual(rule.hits, 1)
