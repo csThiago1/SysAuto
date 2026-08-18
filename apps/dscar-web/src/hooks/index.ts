@@ -26,7 +26,7 @@ export {
 export { useOverdueOrders } from "./useOverdueOrders";
 
 // ── Relacionamentos ───────────────────────────────────────────────────────
-export { useClientOrders } from "./useClientOrders";
+export { useHistoricoOrders } from "./useHistoricoOrders";
 
 // ── RH (Recursos Humanos) ─────────────────────────────────────────────────────
 export {

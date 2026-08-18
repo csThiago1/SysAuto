@@ -17,6 +17,7 @@ import {
   CircleDollarSign,
   FileText,
   FolderOpen,
+  History,
   LayoutDashboard,
   MessageSquareText,
   Package,
@@ -51,12 +52,27 @@ const FilesTab = lazy(() =>
 const EstoqueTab = lazy(() =>
   import("@/components/os/EstoqueTab").then((m) => ({ default: m.EstoqueTab })),
 )
+const HistoricoAtendimentos = lazy(() =>
+  import("@/components/historico/HistoricoAtendimentos").then((m) => ({
+    default: m.HistoricoAtendimentos,
+  })),
+)
 
-type SectionId = "overview" | "dados" | "execucao" | "closing" | "activity" | "files"
+type SectionId =
+  | "overview"
+  | "dados"
+  | "execucao"
+  | "closing"
+  | "activity"
+  | "historico"
+  | "files"
 
 type ExecView = "parts" | "services" | "estoque"
 
 type ActivityView = "history" | "notes" | "reminders"
+
+/** Abas internas de Histórico: passado deste carro vs. passado deste cliente. */
+type HistoricoView = "veiculo" | "cliente"
 
 /**
  * Oito seções eram oito decisões a cada visita. Peças, Serviços e Estoque
@@ -75,6 +91,7 @@ const NAV_PRIMARY: NavItem[] = [
 
 const NAV_SECONDARY: NavItem[] = [
   { id: "activity", label: "Atividade", icon: <MessageSquareText className="h-4 w-4" /> },
+  { id: "historico", label: "Histórico", icon: <History className="h-4 w-4" /> },
   { id: "files", label: "Arquivos", icon: <FolderOpen className="h-4 w-4" /> },
 ]
 
@@ -133,6 +150,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
   const [section, setSection] = useState<SectionId>("overview")
   const [execView, setExecView] = useState<ExecView>("parts")
   const [activityView, setActivityView] = useState<ActivityView>("history")
+  const [historicoView, setHistoricoView] = useState<HistoricoView>("veiculo")
 
   /**
    * A Visão Geral navega por nomes antigos ("parts", "services", "estoque"),
@@ -401,6 +419,50 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
                     <NotesTab orderId={order.id} initialNotes={order.notes} />
                   )}
                   {activityView === "reminders" && <RemindersTab orderId={order.id} />}
+                </Suspense>
+              </div>
+            )}
+
+            {section === "historico" && (
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-1 rounded-lg bg-muted/50 p-1">
+                  {(
+                    [
+                      ["veiculo", "Este veículo"],
+                      ["cliente", "Este cliente"],
+                    ] as [HistoricoView, string][]
+                  ).map(([id, label]) => {
+                    // Sem Person vinculada (OS de seguradora), só o veículo tem histórico.
+                    const disabled = id === "cliente" && order.customer_person_id == null
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => setHistoricoView(id)}
+                        className={cn(
+                          "rounded-md px-3 py-1.5 text-xs transition-colors",
+                          disabled && "cursor-not-allowed opacity-40",
+                          historicoView === id && !disabled
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground",
+                        )}
+                      >
+                        {label}
+                      </button>
+                    )
+                  })}
+                </div>
+                <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                  {historicoView === "veiculo" && order.plate && (
+                    <HistoricoAtendimentos plate={order.plate} highlightOrderId={order.id} />
+                  )}
+                  {historicoView === "cliente" && order.customer_person_id != null && (
+                    <HistoricoAtendimentos
+                      customerId={String(order.customer_person_id)}
+                      highlightOrderId={order.id}
+                    />
+                  )}
                 </Suspense>
               </div>
             )}
