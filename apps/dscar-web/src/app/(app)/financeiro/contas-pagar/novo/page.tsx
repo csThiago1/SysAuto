@@ -12,6 +12,8 @@ import type { Route } from "next";
 import { ChevronLeft } from "lucide-react";
 import { z } from "zod";
 import { useCreatePayable, useCreatePayableInstallments, useSuppliers } from "@/hooks/useFinanceiro";
+import { useAccountSuggestion, useExpenseAccounts } from "@/hooks/useAccounting";
+import { useDebounce } from "@/hooks/useDebounce";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,6 +37,7 @@ const payableSchema = z.object({
   competence_date: z.string().min(1, "Data de competência obrigatória"),
   document_number: z.string().optional(),
   origin: z.enum(PAYABLE_ORIGINS).optional(),
+  expense_account_id: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -46,6 +49,7 @@ type FormDraft = {
   competence_date: string;
   document_number: string;
   origin: string;
+  expense_account_id: string;
   notes: string;
 };
 
@@ -100,11 +104,53 @@ const ORIGIN_OPTIONS = Object.entries(PAYABLE_ORIGIN_LABELS) as [
   string,
 ][];
 
+const SELECT_CLASS =
+  "w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary";
+
+/**
+ * Sugestão de conta contábil a partir da descrição.
+ *
+ * Nunca preenche sozinha: mostra a sugestão e espera o clique. Some quando a
+ * conta já está escolhida ou quando não há sugestão — sem estado de erro,
+ * porque LLM fora do ar é ausência de sugestão, não falha do formulário.
+ */
+function AccountSuggestionHint({
+  description,
+  selectedId,
+  onApply,
+}: {
+  description: string;
+  selectedId: string;
+  onApply: (accountId: string) => void;
+}): React.ReactElement | null {
+  const debounced = useDebounce(description, 600);
+  const { data: suggestion } = useAccountSuggestion(debounced);
+
+  if (!suggestion || suggestion.account_id === selectedId) return null;
+
+  return (
+    <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
+      <span className="text-muted-foreground">Sugestão:</span>
+      <span className="font-medium text-foreground">
+        {suggestion.code} — {suggestion.name}
+      </span>
+      <button
+        type="button"
+        onClick={() => onApply(suggestion.account_id)}
+        className="rounded-md border border-primary px-2 py-0.5 font-medium text-primary transition-colors hover:bg-primary/10"
+      >
+        Aplicar
+      </button>
+    </div>
+  );
+}
+
 export default function NovoContaPagarPage(): React.ReactElement {
   const router = useRouter();
   const createPayable = useCreatePayable();
   const createInstallments = useCreatePayableInstallments();
   const { data: suppliersData, isLoading: loadingSuppliers } = useSuppliers();
+  const { data: expenseAccounts } = useExpenseAccounts();
 
   const todayStr = new Date().toISOString().split("T")[0] ?? "";
 
@@ -116,6 +162,7 @@ export default function NovoContaPagarPage(): React.ReactElement {
     competence_date: todayStr,
     document_number: "",
     origin: "MAN",
+    expense_account_id: "",
     notes: "",
   });
 
@@ -157,6 +204,7 @@ export default function NovoContaPagarPage(): React.ReactElement {
       competence_date: form.competence_date,
       document_number: form.document_number || undefined,
       origin: (form.origin as PayableOrigin) || undefined,
+      expense_account_id: form.expense_account_id || undefined,
       notes: form.notes || undefined,
     };
 
@@ -181,6 +229,7 @@ export default function NovoContaPagarPage(): React.ReactElement {
       competence_date: result.data.competence_date,
       document_number: result.data.document_number,
       origin: result.data.origin,
+      expense_account_id: result.data.expense_account_id ?? null,
       notes: result.data.notes,
     };
 
@@ -243,7 +292,7 @@ export default function NovoContaPagarPage(): React.ReactElement {
                 <select
                   value={form.supplier_id}
                   onChange={(e) => setField("supplier_id", e.target.value)}
-                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  className={SELECT_CLASS}
                 >
                   <option value="">Selecione o fornecedor...</option>
                   {suppliers.map((s) => (
@@ -278,6 +327,27 @@ export default function NovoContaPagarPage(): React.ReactElement {
                   />
                 </FormField>
               </div>
+              <div className="md:col-span-2">
+                <FormField label="Conta contábil" error={errors.expense_account_id}>
+                  <select
+                    className={SELECT_CLASS}
+                    value={form.expense_account_id}
+                    onChange={(e) => setField("expense_account_id", e.target.value)}
+                  >
+                    <option value="">Não classificar agora</option>
+                    {(expenseAccounts ?? []).map((acc) => (
+                      <option key={acc.id} value={acc.id}>
+                        {acc.code} — {acc.name}
+                      </option>
+                    ))}
+                  </select>
+                </FormField>
+                <AccountSuggestionHint
+                  description={form.description}
+                  selectedId={form.expense_account_id}
+                  onApply={(id) => setField("expense_account_id", id)}
+                />
+              </div>
               <FormField label="Número do documento" error={errors.document_number}>
                 <Input
                   value={form.document_number}
@@ -308,7 +378,7 @@ export default function NovoContaPagarPage(): React.ReactElement {
                 <select
                   value={form.origin}
                   onChange={(e) => setField("origin", e.target.value)}
-                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  className={SELECT_CLASS}
                 >
                   {ORIGIN_OPTIONS.map(([value, label]) => (
                     <option key={value} value={value}>

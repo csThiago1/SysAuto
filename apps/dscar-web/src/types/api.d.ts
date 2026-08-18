@@ -11074,8 +11074,7 @@ export interface components {
         };
         /** @description Serializer de escrita para criacao de titulo a pagar. */
         CreatePayableDocument: {
-            /** Format: uuid */
-            supplier_id: string;
+            supplier_id: number;
             description: string;
             /** Format: decimal */
             amount: string;
@@ -11104,8 +11103,7 @@ export interface components {
         CreatePayableDocumentOriginEnum: "MAN" | "FOLHA" | "NFE_E" | "AUTO";
         /** @description Serializer de escrita para criacao de titulo a pagar. */
         CreatePayableDocumentRequest: {
-            /** Format: uuid */
-            supplier_id: string;
+            supplier_id: number;
             description: string;
             /** Format: decimal */
             amount: string;

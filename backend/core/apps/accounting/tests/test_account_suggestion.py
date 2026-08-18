@@ -306,3 +306,71 @@ class AccountSuggestionByWordsTest(TenantTestCase):
         svc.suggest_account("compra de tesoura")
         rule = AccountSuggestionRule.objects.get(term="tesoura")
         self.assertEqual(rule.hits, 1)
+
+
+class SuggestAccountEndpointTest(TenantTestCase):
+    """GET /api/v1/accounting/suggest-account/"""
+
+    URL = "/api/v1/accounting/suggest-account/"
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        import hashlib
+
+        from apps.authentication.models import GlobalUser
+
+        cls.user = GlobalUser.objects.create_user(
+            email="sugestao@dscar.com",
+            email_hash=hashlib.sha256(b"sugestao@dscar.com").hexdigest(),
+            password="x",
+        )
+        cls.conta = ChartOfAccount.objects.create(
+            code="6.1.03.001",
+            name="Material de Escritorio e Limpeza",
+            account_type=AccountType.EXPENSE,
+            nature=NatureType.DEBIT,
+            is_analytical=True,
+            level=4,
+        )
+
+    def setUp(self) -> None:
+        from rest_framework.test import APIClient
+
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user, token={"role": "ADMIN"})
+        self.client.defaults["SERVER_NAME"] = "tenant.test.com"
+        AccountSuggestionRule.objects.create(
+            term="tesoura", account=self.conta, source=SuggestionSource.SEED
+        )
+
+    def tearDown(self) -> None:
+        AccountSuggestionRule.objects.all().delete()
+
+    def test_returns_suggestion_payload(self) -> None:
+        """Termo conhecido devolve id, código, nome e origem."""
+        resp = self.client.get(self.URL, {"q": "Tesoura"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data["code"], "6.1.03.001")
+        self.assertEqual(resp.data["account_id"], str(self.conta.id))
+        self.assertEqual(resp.data["source"], SuggestionSource.SEED)
+
+    def test_unknown_term_returns_empty_object(self) -> None:
+        """Sem sugestão é {} com 200 — nunca 404, nunca erro."""
+        resp = self.client.get(self.URL, {"q": "termo nunca visto aqui"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data, {})
+
+    def test_short_query_is_ignored(self) -> None:
+        """Menos de 3 caracteres não consulta nada."""
+        resp = self.client.get(self.URL, {"q": "te"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data, {})
+
+    def test_requires_authentication(self) -> None:
+        """Sem autenticação, 401."""
+        from rest_framework.test import APIClient
+
+        anon = APIClient()
+        anon.defaults["SERVER_NAME"] = "tenant.test.com"
+        self.assertEqual(anon.get(self.URL, {"q": "tesoura"}).status_code, 401)
