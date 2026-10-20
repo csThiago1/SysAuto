@@ -2,6 +2,7 @@ from django.test import TestCase
 
 from apps.insurers.matching import match_insurer
 from apps.insurers.models import Insurer
+from apps.insurers.serializers import InsurerSerializer
 
 
 class MatchInsurerTest(TestCase):
@@ -58,3 +59,12 @@ class InsurerCnpjsTest(TestCase):
         insurer.save(update_fields=["cnpj"])
         insurer.refresh_from_db()
         assert insurer.cnpjs == ["11222333000181", "61074175000138"]
+
+    def test_cnpj_alfanumerico(self) -> None:
+        insurer = Insurer.objects.create(name="Seg Alfa", cnpj="12.ABC.345/01DE-35")
+        assert insurer.cnpjs == ["12ABC34501DE35"]
+        assert match_insurer(cnpj="12.ABC.345/01DE-35") == insurer
+        mapfre = Insurer.objects.get(code="mapfre")
+        s = InsurerSerializer(mapfre, data={"cnpjs": ["12ABC34501DE35"]}, partial=True)
+        assert s.is_valid(), s.errors
+        assert s.validated_data["cnpjs"] == ["12ABC34501DE35"]

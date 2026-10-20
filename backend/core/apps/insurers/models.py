@@ -10,7 +10,7 @@ from typing import Any
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
-from apps.lookups.validators import only_digits
+from apps.lookups.validators import clean_cnpj
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +88,7 @@ class Insurer(models.Model):
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         self.susep_code = self.susep_code or None  # "" duplicaria o unique
-        digits = only_digits(self.cnpj)
+        digits = clean_cnpj(self.cnpj)
         if digits and digits not in self.cnpjs:
             self.cnpjs = [digits, *self.cnpjs]
             update_fields = kwargs.get("update_fields")

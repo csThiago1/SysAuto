@@ -3,7 +3,7 @@ Casamento de seguradora a partir do que vem nas fontes (Cilia, XML): código, CN
 """
 
 from apps.insurers.models import Insurer
-from apps.lookups.validators import only_digits
+from apps.lookups.validators import clean_cnpj
 from apps.vehicle_catalog.normalize import normalize_name
 
 
@@ -11,6 +11,7 @@ def match_insurer(*, cnpj: str = "", name: str = "", code: str = "") -> Insurer 
     """
     Primeiro acerto entre as ativas: código, CNPJ exato, raiz única, nome normalizado.
 
+    CNPJ normalizado com clean_cnpj (aceita o alfanumérico).
     Nunca valida o DV: o seed e as fontes trazem CNPJs com DV inválido.
     """
     # ponytail: varredura em memória; índice GIN em cnpjs se passar de algumas centenas
@@ -19,7 +20,7 @@ def match_insurer(*, cnpj: str = "", name: str = "", code: str = "") -> Insurer 
         found = next((i for i in insurers if i.code == code), None)
         if found:
             return found
-    digits = only_digits(cnpj)
+    digits = clean_cnpj(cnpj)
     if digits:
         found = next((i for i in insurers if digits in i.cnpjs), None)
         if found:

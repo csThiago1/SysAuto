@@ -7,7 +7,7 @@ import logging
 from rest_framework import serializers
 
 from apps.insurers.models import Insurer, InsurerTenantProfile
-from apps.lookups.validators import is_valid_cnpj, only_digits
+from apps.lookups.validators import clean_cnpj, is_valid_cnpj
 
 logger = logging.getLogger(__name__)
 
@@ -41,15 +41,15 @@ class InsurerSerializer(serializers.ModelSerializer):
     def _known_cnpjs(self) -> set[str]:
         if self.instance is None:
             return set()
-        return {only_digits(self.instance.cnpj), *self.instance.cnpjs}
+        return {clean_cnpj(self.instance.cnpj), *self.instance.cnpjs}
 
     def validate_cnpj(self, value: str) -> str:
-        if only_digits(value) not in self._known_cnpjs() and not is_valid_cnpj(value):
+        if clean_cnpj(value) not in self._known_cnpjs() and not is_valid_cnpj(value):
             raise serializers.ValidationError("CNPJ inválido.")
         return value
 
     def validate_cnpjs(self, value: list[str]) -> list[str]:
-        digits = [only_digits(c) for c in value]
+        digits = [clean_cnpj(c) for c in value]
         known = self._known_cnpjs()
         invalid = [c for c in digits if c not in known and not is_valid_cnpj(c)]
         if invalid:
