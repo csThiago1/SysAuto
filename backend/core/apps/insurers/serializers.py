@@ -1,32 +1,60 @@
 """
 Paddock Solutions — Insurers Serializers
 """
+
 import logging
 
 from rest_framework import serializers
 
 from apps.insurers.models import Insurer, InsurerTenantProfile
+from apps.lookups.validators import is_valid_cnpj, only_digits
 
 logger = logging.getLogger(__name__)
 
 
 class InsurerSerializer(serializers.ModelSerializer):
-    """Serializer completo para seguradoras."""
+    """
+    Serializer completo para seguradoras.
+
+    O DV só é validado em CNPJ novo ou alterado: o seed tem CNPJs com DV inválido.
+    """
 
     class Meta:
         model = Insurer
         fields = [
             "id",
+            "code",
             "name",
             "trade_name",
+            "trade_names",
             "cnpj",
+            "cnpjs",
+            "susep_code",
             "brand_color",
             "abbreviation",
             "logo_url",
             "is_active",
             "uses_cilia",
         ]
-        read_only_fields = ["id"]
+        read_only_fields = ["id", "code"]
+
+    def _known_cnpjs(self) -> set[str]:
+        if self.instance is None:
+            return set()
+        return {only_digits(self.instance.cnpj), *self.instance.cnpjs}
+
+    def validate_cnpj(self, value: str) -> str:
+        if only_digits(value) not in self._known_cnpjs() and not is_valid_cnpj(value):
+            raise serializers.ValidationError("CNPJ inválido.")
+        return value
+
+    def validate_cnpjs(self, value: list[str]) -> list[str]:
+        digits = [only_digits(c) for c in value]
+        known = self._known_cnpjs()
+        invalid = [c for c in digits if c not in known and not is_valid_cnpj(c)]
+        if invalid:
+            raise serializers.ValidationError(f"CNPJ inválido: {', '.join(invalid)}.")
+        return digits
 
 
 class InsurerMinimalSerializer(serializers.ModelSerializer):
@@ -38,10 +66,21 @@ class InsurerMinimalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Insurer
         fields = [
-            "id", "name", "trade_name", "cnpj", "brand_color",
-            "abbreviation", "display_name", "logo", "logo_url",
-            "uses_cilia", "is_active",
+            "id",
+            "code",
+            "name",
+            "trade_name",
+            "cnpj",
+            "cnpjs",
+            "brand_color",
+            "abbreviation",
+            "display_name",
+            "logo",
+            "logo_url",
+            "uses_cilia",
+            "is_active",
         ]
+        read_only_fields = ["code", "cnpjs"]
 
     def get_display_name(self, obj: Insurer) -> str:
         return obj.trade_name or obj.name
