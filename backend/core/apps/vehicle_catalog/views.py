@@ -4,25 +4,34 @@ Paddock Solutions — Vehicle Catalog Views
 import logging
 import re
 
+import django_filters
 import httpx
+from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+
 from django.core.cache import cache
-from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.authentication.permissions import (
-    IsConsultantOrAbove,
-    IsManagerOrAbove,
-    PermissionsByActionMixin,
+from apps.authentication.permissions import IsAdminOrAbove, PermissionsByActionMixin
+from apps.vehicle_catalog.models import (
+    PlateCache,
+    VehicleColor,
+    VehicleFamily,
+    VehicleMake,
+    VehicleModel,
+    VehicleYearVersion,
 )
-from apps.vehicle_catalog.models import PlateCache, VehicleColor, VehicleMake, VehicleModel, VehicleYearVersion
 from apps.vehicle_catalog.serializers import (
     VehicleColorSerializer,
+    VehicleFamilySerializer,
     VehicleMakeSerializer,
+    VehicleModelOptionSerializer,
     VehicleModelSerializer,
+    VehicleYearOptionSerializer,
     VehicleYearVersionSerializer,
 )
 
@@ -453,77 +462,110 @@ def plate_lookup(request: Request, plate: str) -> Response:
     return Response(normalized)
 
 
-class VehicleMakeViewSet(viewsets.ReadOnlyModelViewSet):
-    """Lista marcas FIPE cacheadas localmente.
+@extend_schema_view(list=extend_schema(parameters=[OpenApiParameter("include_inactive", bool)]))
+class VehicleMakeViewSet(
+    PermissionsByActionMixin, mixins.UpdateModelMixin, viewsets.ReadOnlyModelViewSet
+):
+    """Montadoras por tipo. Leitura para todos; PATCH {is_active} e logo só ADMIN+.
 
-    GET /vehicle-catalog/makes/
-    GET /vehicle-catalog/makes/{id}/models/
+    GET   /vehicle-catalog/makes/?tipo=carro&search=chev[&include_inactive=true]
+    PATCH /vehicle-catalog/makes/{id}/  e  /vehicle-catalog/makes/{id}/logo/
+    GET   /vehicle-catalog/makes/{id}/models/  (legado, sai na Task 18)
     """
 
-    queryset = VehicleMake.objects.all().order_by("nome")
     serializer_class = VehicleMakeSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
-    filter_backends = [filters.SearchFilter]
-    search_fields = ["nome", "nome_normalizado"]
+    read_permission = IsAuthenticated
+    write_permission = IsAdminOrAbove
+    write_actions = ("update", "partial_update", "logo")
+    http_method_names = ["get", "patch", "head", "options"]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ["tipo"]
+    search_fields = ["display_name", "nome", "nome_normalizado"]
 
+    def get_queryset(self):  # type: ignore[override]
+        qs = VehicleMake.objects.order_by("display_name")
+        if self.action in self.write_actions:
+            return qs  # o ADMIN reativa uma montadora inativa
+        include_inactive = self.request.query_params.get("include_inactive") == "true"
+        if include_inactive and IsAdminOrAbove().has_permission(self.request, self):
+            return qs
+        return qs.filter(is_active=True)
+
+    @extend_schema(responses=VehicleModelSerializer(many=True))
     @action(detail=True, methods=["get"], url_path="models")
     def models(self, request: Request, pk: str | None = None) -> Response:
-        """Lista modelos de uma marca específica.
-
-        GET /vehicle-catalog/makes/{id}/models/
-        """
-        cache_key = f"vehicle_models:make:{pk}"
-        cached = cache.get(cache_key)
-        if cached is not None:
-            return Response(cached)
+        """Legado: lista modelos de uma marca (GET /vehicle-catalog/makes/{id}/models/)."""
         make = self.get_object()
-        qs = (
-            VehicleModel.objects.filter(marca=make)
-            .select_related("marca")
-            .order_by("nome")
-        )
-        serializer = VehicleModelSerializer(qs, many=True)
-        cache.set(cache_key, serializer.data, timeout=3600)
-        return Response(serializer.data)
+        qs = VehicleModel.objects.filter(marca=make).select_related("marca").order_by("nome")
+        return Response(VehicleModelSerializer(qs, many=True).data)
 
-    @action(detail=True, methods=["patch"], url_path="logo", permission_classes=[IsAuthenticated, IsManagerOrAbove])
+    @action(detail=True, methods=["patch"], url_path="logo")
     def logo(self, request: Request, pk: str | None = None) -> Response:
         """PATCH /vehicle-catalog/makes/{id}/logo/ — atualiza só o logo_url.
 
-        nome/fipe_id vêm do sync FIPE e não são editáveis por aqui — apenas
+        nome/tipo vêm da carga FIPE e não são editáveis por aqui — apenas
         o logo (URL colada manualmente) pode ser gerenciado no cadastro.
         """
         make = self.get_object()
-        logo_url = request.data.get("logo_url", "")
-        make.logo_url = logo_url
+        make.logo_url = request.data.get("logo_url", "")
         make.save(update_fields=["logo_url"])
         return Response(VehicleMakeSerializer(make).data)
 
 
-class VehicleModelViewSet(viewsets.ReadOnlyModelViewSet):
-    """Lista modelos FIPE com action de anos/versões.
+class FamilyFilter(django_filters.FilterSet):
+    marca = django_filters.NumberFilter(field_name="make")
 
-    GET /vehicle-catalog/models/
-    GET /vehicle-catalog/models/{id}/years/
+    class Meta:
+        model = VehicleFamily
+        fields = ["marca"]
+
+
+class VehicleFamilyViewSet(PermissionsByActionMixin, viewsets.ReadOnlyModelViewSet):
+    """Famílias (o "Modelo" da tela). GET /vehicle-catalog/families/?marca=<id>&search="""
+
+    queryset = VehicleFamily.objects.filter(is_active=True).order_by("nome")
+    serializer_class = VehicleFamilySerializer
+    read_permission = IsAuthenticated
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_class = FamilyFilter
+    search_fields = ["nome", "nome_normalizado"]
+
+
+@extend_schema_view(list=extend_schema(parameters=[OpenApiParameter("ano", int)]))
+class VehicleModelViewSet(PermissionsByActionMixin, viewsets.ReadOnlyModelViewSet):
+    """Versões FIPE de uma família.
+
+    GET /vehicle-catalog/models/?familia=<id>&ano=2025&search=lt 1.0 turbo
+    GET /vehicle-catalog/models/{id}/years/  (legado, sai na Task 18)
     """
 
-    queryset = VehicleModel.objects.all().select_related("marca").order_by("nome")
-    serializer_class = VehicleModelSerializer
-    permission_classes = [IsAuthenticated, IsConsultantOrAbove]
-    filter_backends = [filters.SearchFilter]
-    search_fields = ["nome", "nome_normalizado", "marca__nome"]
+    serializer_class = VehicleModelOptionSerializer
+    read_permission = IsAuthenticated
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ["familia"]
+    search_fields = ["nome", "nome_normalizado"]
 
+    def get_queryset(self):  # type: ignore[override]
+        qs = VehicleModel.objects.filter(is_active=True).order_by("nome")
+        ano = self.request.query_params.get("ano", "")
+        if ano.isdigit():
+            qs = qs.filter(versoes__ano=int(ano), versoes__is_active=True).distinct()
+        return qs
+
+    @extend_schema(responses=VehicleYearVersionSerializer(many=True))
     @action(detail=True, methods=["get"], url_path="years")
     def years(self, request: Request, pk: str | None = None) -> Response:
-        """Lista anos/versões de um modelo específico.
-
-        GET /vehicle-catalog/models/{id}/years/
-        """
+        """Legado: anos/versões de um modelo (GET /vehicle-catalog/models/{id}/years/)."""
         model = self.get_object()
-        qs = (
-            VehicleYearVersion.objects.filter(modelo=model)
-            .select_related("modelo")
-            .order_by("-ano")
-        )
-        serializer = VehicleYearVersionSerializer(qs, many=True)
-        return Response(serializer.data)
+        qs = VehicleYearVersion.objects.filter(modelo=model).order_by("-ano")
+        return Response(VehicleYearVersionSerializer(qs, many=True).data)
+
+
+class VehicleYearViewSet(PermissionsByActionMixin, viewsets.ReadOnlyModelViewSet):
+    """Anos/combustível de uma versão FIPE. GET /vehicle-catalog/years/?modelo=<id>"""
+
+    queryset = VehicleYearVersion.objects.filter(is_active=True).order_by("-ano")
+    serializer_class = VehicleYearOptionSerializer
+    read_permission = IsAuthenticated
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ["modelo"]

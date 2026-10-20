@@ -29,8 +29,9 @@ export const fipeKeys = {
 
 export function useFipeMakes() {
   return useQuery<VehicleMake[]>({
-    queryKey: fipeKeys.makes,
-    queryFn: () => fetchList<VehicleMake>(`${FIPE_BASE}/makes/`),
+    // ponytail: só carros, até 200 — VehicleCatalogPicker (Task 16) substitui este hook
+    queryKey: [...fipeKeys.makes, "carro"],
+    queryFn: () => fetchList<VehicleMake>(`${FIPE_BASE}/makes/?tipo=carro&page_size=200`),
     staleTime: 24 * 60 * 60 * 1000, // 24h
   })
 }
