@@ -272,6 +272,12 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.imports.tasks.sync_active_cilia_os",
         "schedule": crontab(minute="*/15"),  # A cada 15 minutos
     },
+    # Catálogo FIPE — carga mensal do dump fipeX (dia 5, 04:00)
+    "vehicle-catalog-sync-fipe": {
+        "task": "vehicle_catalog.sync_fipe_catalog",
+        "schedule": crontab(hour=4, minute=0, day_of_month=5),
+        "kwargs": {"tenant_schema": "public"},
+    },
 }
 
 # ─── Django Channels ─────────────────────────────────────────────────────────

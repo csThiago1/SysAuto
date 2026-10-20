@@ -68,6 +68,8 @@ def test_normalize_name() -> None:
         ("HONDA", "Honda"),
         ("BMW", "BMW"),
         ("Land Rover", "Land Rover"),
+        ("MV AGUSTA", "MV Agusta"),
+        ("DFSK", "DFSK"),
     ],
 )
 def test_make_display_name(fipe: str, display: str) -> None:

@@ -1,4 +1,6 @@
+import tempfile
 from decimal import Decimal
+from pathlib import Path
 
 from apps.vehicle_catalog.models import VehicleFamily, VehicleMake, VehicleModel, VehicleYearVersion
 from apps.vehicle_catalog.normalize import make_display_name, normalize_name
@@ -47,3 +49,16 @@ def make_catalog(
         },
     )
     return version
+
+
+SAMPLE = Path(__file__).parent / "fixtures" / "fipex_2026_10_sample.tsv"
+
+
+def sample_without(codigo: str) -> Path:
+    """Cópia temporária da fixture fipeX sem as linhas do código FIPE dado."""
+    lines = SAMPLE.read_text(encoding="utf-8").splitlines(keepends=True)
+    with tempfile.NamedTemporaryFile(
+        "w", encoding="utf-8", suffix=".tsv", delete=False
+    ) as tmp:  # ponytail: arquivo fica no /tmp do container, o SO limpa
+        tmp.writelines(line for line in lines if line.split("\t")[1] != codigo)
+    return Path(tmp.name)

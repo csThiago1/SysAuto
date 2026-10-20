@@ -94,6 +94,12 @@ MAKE_DISPLAY: dict[str, str] = {
     "VW - VOLKSWAGEN": "Volkswagen",
     "KIA MOTORS": "Kia",
     "CAOA CHERY/CHERY": "Chery",
+    # Siglas que o title-case estragaria (vistas na carga fipeX 2026-10)
+    "CFMOTO": "CFMoto",
+    "DFSK": "DFSK",
+    "EFFA-JMC": "Effa-JMC",
+    "MV AGUSTA": "MV Agusta",
+    "SSANGYONG": "SsangYong",
 }
 
 BRAND_ALIASES: dict[str, str] = {
