@@ -96,6 +96,15 @@ class ServiceOrderDeliveryService:
 
         order.save()
 
+        # Agenda os retornos pós-entrega. Nunca interrompe a entrega: regra mal
+        # cadastrada não pode impedir o carro de sair da oficina.
+        try:
+            from apps.followups.services import schedule_for_delivery
+
+            schedule_for_delivery(order_id=str(order.pk), delivered_at=order.delivered_at)
+        except Exception as exc:
+            logger.warning("Falha ao agendar retornos da OS %s: %s", order.pk, type(exc).__name__)
+
         # Log de nota fiscal emitida na entrega
         if nf_issued_now:
             ServiceOrderActivityLog.objects.create(

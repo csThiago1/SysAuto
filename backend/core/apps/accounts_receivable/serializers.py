@@ -1,7 +1,9 @@
 """
 Paddock Solutions — Accounts Receivable Serializers
 """
+
 import logging
+from decimal import Decimal
 
 from rest_framework import serializers
 
@@ -135,7 +137,7 @@ class CreateReceivableDocumentSerializer(serializers.Serializer):
     customer_id = serializers.UUIDField()
     customer_name = serializers.CharField(max_length=200)
     description = serializers.CharField(max_length=300)
-    amount = serializers.DecimalField(max_digits=18, decimal_places=2, min_value="0.01")
+    amount = serializers.DecimalField(max_digits=18, decimal_places=2, min_value=Decimal("0.01"))
     due_date = serializers.DateField()
     competence_date = serializers.DateField()
     origin = serializers.ChoiceField(
@@ -153,7 +155,7 @@ class RecordReceiptSerializer(serializers.Serializer):
     """Serializer de escrita para registro de recebimento."""
 
     receipt_date = serializers.DateField()
-    amount = serializers.DecimalField(max_digits=18, decimal_places=2, min_value="0.01")
+    amount = serializers.DecimalField(max_digits=18, decimal_places=2, min_value=Decimal("0.01"))
     payment_method = serializers.ChoiceField(
         choices=[
             "bank_transfer",

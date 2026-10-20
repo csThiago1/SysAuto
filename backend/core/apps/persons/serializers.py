@@ -115,8 +115,7 @@ class PersonDocumentWriteSerializer(serializers.ModelSerializer):
         """
         if value and "*" in value:
             raise serializers.ValidationError(
-                "Valor mascarado nao pode ser gravado. "
-                "Envie o valor completo ou omita o campo."
+                "Valor mascarado nao pode ser gravado. " "Envie o valor completo ou omita o campo."
             )
         return value
 
@@ -177,8 +176,7 @@ class PersonContactWriteSerializer(serializers.ModelSerializer):
         """
         if value and "*" in value:
             raise serializers.ValidationError(
-                "Valor mascarado nao pode ser gravado. "
-                "Envie o valor completo ou omita o campo."
+                "Valor mascarado nao pode ser gravado. " "Envie o valor completo ou omita o campo."
             )
         return value
 
@@ -328,6 +326,7 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
             "birth_date",
             "gender",
             "is_active",
+            "followup_opt_out",
             "notes",
             "roles",
             "contacts",
@@ -448,6 +447,7 @@ class PersonDetailSerializer(serializers.ModelSerializer):
             "birth_date",
             "gender",
             "is_active",
+            "followup_opt_out",
             "notes",
             "created_at",
             "updated_at",

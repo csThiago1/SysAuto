@@ -1,6 +1,7 @@
 """
 Paddock Solutions — Accounting: ViewSet do Plano de Contas
 """
+
 import logging
 from datetime import date
 from typing import Any
@@ -27,6 +28,7 @@ from apps.authentication.permissions import (
     IsManagerOrAbove,
     PermissionsByActionMixin,
 )
+
 logger = logging.getLogger(__name__)
 
 
@@ -43,16 +45,16 @@ class ChartOfAccountViewSet(PermissionsByActionMixin, ModelViewSet):
     http_method_names = ["get", "post", "put", "patch", "head", "options"]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = ChartOfAccountFilter
-    search_fields = ["code", "name"]
+    # `suggestion_rules__term` faz o plano de contas ser encontrável pelo item
+    # comprado, não só pelo nome contábil: buscar "tesoura" acha Material de
+    # Escritório. DRF aplica distinct() sozinho em lookup de relação.
+    search_fields = ["code", "name", "suggestion_rules__term"]
     ordering_fields = ["code", "name", "level"]
-
 
     def get_queryset(self) -> Any:
         """Retorna contas com select_related para parent."""
         return (
-            ChartOfAccount.objects.select_related("parent")
-            .filter(is_active=True)
-            .order_by("code")
+            ChartOfAccount.objects.select_related("parent").filter(is_active=True).order_by("code")
         )
 
     def get_serializer_class(self) -> Any:
@@ -75,15 +77,11 @@ class ChartOfAccountViewSet(PermissionsByActionMixin, ModelViewSet):
         Retorna apenas contas raiz (parent=None); os filhos são aninhados.
         """
         roots = (
-            ChartOfAccount.objects.filter(
-                parent__isnull=True, is_active=True
-            )
+            ChartOfAccount.objects.filter(parent__isnull=True, is_active=True)
             .prefetch_related("children__children__children__children")
             .order_by("code")
         )
-        serializer = ChartOfAccountTreeSerializer(
-            roots, many=True, context={"request": request}
-        )
+        serializer = ChartOfAccountTreeSerializer(roots, many=True, context={"request": request})
         return Response(serializer.data)
 
     @action(detail=True, methods=["get"], url_path="balance")

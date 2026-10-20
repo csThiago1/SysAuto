@@ -4,6 +4,7 @@ Paddock Solutions — Accounts Payable Views
 ViewSets para Contas a Pagar.
 Regras de negocio ficam em services.py — nunca aqui.
 """
+
 import logging
 from typing import Any
 
@@ -15,6 +16,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from apps.accounting.services.account_suggestion_service import remember as remember_account
 from apps.authentication.permissions import IsConsultantOrAbove, IsManagerOrAbove
 
 from .filters import PayableDocumentFilter
@@ -95,6 +97,21 @@ class PayableDocumentViewSet(ModelViewSet):
     ordering_fields = ["due_date", "amount", "status", "created_at"]
     ordering = ["due_date"]
 
+    @staticmethod
+    def _remember_account(document: PayableDocument) -> None:
+        """
+        Memoriza descricao → conta de despesa como regra de sugestao.
+
+        A escolha do humano vira regra permanente: o mesmo item nunca mais
+        precisa de LLM. Falha aqui nunca derruba o salvamento do titulo.
+        """
+        if not document.description or document.expense_account_id is None:
+            return
+        try:
+            remember_account(document.description, document.expense_account)
+        except Exception as exc:
+            logger.warning("Falha ao memorizar sugestao de conta: %s", type(exc).__name__)
+
     def get_serializer_class(self) -> type:
         """Retorna serializer adequado para cada acao."""
         if self.action == "list":
@@ -128,10 +145,14 @@ class PayableDocumentViewSet(ModelViewSet):
             document_number=data.get("document_number", ""),
             origin=data.get("origin", "MAN"),
             cost_center_id=str(data["cost_center_id"]) if data.get("cost_center_id") else None,
-            expense_account_id=str(data["expense_account_id"]) if data.get("expense_account_id") else None,
+            expense_account_id=(
+                str(data["expense_account_id"]) if data.get("expense_account_id") else None
+            ),
             notes=data.get("notes", ""),
             user=request.user,
         )
+
+        self._remember_account(document)
 
         out_serializer = PayableDocumentSerializer(document)
         return Response(out_serializer.data, status=status.HTTP_201_CREATED)
@@ -144,7 +165,9 @@ class PayableDocumentViewSet(ModelViewSet):
                 {"detail": "Apenas titulos em aberto podem ser editados."},
                 status=status.HTTP_405_METHOD_NOT_ALLOWED,
             )
-        return super().update(request, *args, **kwargs)
+        response = super().update(request, *args, **kwargs)
+        self._remember_account(self.get_object())
+        return response
 
     def partial_update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Edicao parcial permitida apenas para titulos em aberto."""
@@ -154,7 +177,9 @@ class PayableDocumentViewSet(ModelViewSet):
                 {"detail": "Apenas titulos em aberto podem ser editados."},
                 status=status.HTTP_405_METHOD_NOT_ALLOWED,
             )
-        return super().partial_update(request, *args, **kwargs)
+        response = super().partial_update(request, *args, **kwargs)
+        self._remember_account(self.get_object())
+        return response
 
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """DELETE desabilitado — use a acao cancel."""

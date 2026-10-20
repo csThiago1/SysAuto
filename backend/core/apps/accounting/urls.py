@@ -1,6 +1,7 @@
 """
 Paddock Solutions — Accounting URLs
 """
+
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
@@ -16,6 +17,7 @@ from .views import (
     FiscalYearViewSet,
     InadimplenciaView,
     JournalEntryViewSet,
+    SuggestAccountView,
 )
 
 router = DefaultRouter()
@@ -32,5 +34,6 @@ urlpatterns = [
     path("faturamento/", FaturamentoView.as_view(), name="faturamento"),
     path("inadimplencia/", InadimplenciaView.as_view(), name="inadimplencia"),
     path("alertas/", FinanceiroAlertasView.as_view(), name="financeiro-alertas"),
+    path("suggest-account/", SuggestAccountView.as_view(), name="suggest-account"),
     path("", include(router.urls)),
 ]
