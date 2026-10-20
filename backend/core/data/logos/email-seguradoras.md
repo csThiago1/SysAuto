@@ -3,17 +3,20 @@
 Para: gestor(a) de rede de oficinas referenciadas de cada seguradora.
 Trocar os campos entre colchetes antes de enviar.
 
-| Seguradora | Logo no Commons (staging) | Prioridade do pedido |
+| Seguradora | Logo hoje no ERP (data/logos) | Prioridade do pedido |
 |---|---|---|
-| Porto Seguro | só o logo antigo (antes da marca "Porto", 2022) | alta |
-| Itaú Seguros | não tem | alta |
-| Mitsui Sumitomo | não tem | alta |
-| Yelum | não tem | alta |
-| Bradesco Seguros | tem (2026) | normal |
-| Azul Seguros | tem (2026) | normal |
-| HDI Seguros | tem (2020) | normal |
-| Allianz | tem | normal |
-| Tokio Marine | tem | normal |
+| Porto Seguro | atual, do site oficial, sem licença aberta | alta |
+| Mitsui Sumitomo | atual, do site oficial (MSIG), sem licença aberta | alta |
+| Yelum | atual, do site oficial, sem licença aberta | alta |
+| Itaú Seguros | logo Itaú 2023 do Commons (domínio público) | normal |
+| Bradesco Seguros | Commons (2026) | normal |
+| Azul Seguros | Commons (2026) | normal |
+| HDI Seguros | Commons (2020) | normal |
+| Allianz | Commons | normal |
+| Tokio Marine | Commons | normal |
+
+"Sem licença aberta" = arquivo publicado pela própria marca no site dela. Serve para identificação
+interna até o kit chegar; o kit oficial substitui esses três primeiro.
 
 Mapfre e Zurich também foram baixadas do Commons, mas não estão na lista de seguradoras que a
 DS Car atende. Só pedir se passarem a atender.

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Coleta única de logos de montadoras e seguradoras — Wikidata (P154) + Wikimedia Commons.
+Coleta única de logos de montadoras e seguradoras — Wikidata (P154) + Wikimedia Commons,
+e site oficial da marca quando o Commons não tem o logo atual (lista OFFICIAL).
 
 NÃO é dependência de runtime. Gera a pasta que o comando `load_logos` lê:
     <out>/makes/*.svg|png      logos das montadoras
@@ -9,7 +10,7 @@ NÃO é dependência de runtime. Gera a pasta que o comando `load_logos` lê:
     <out>/review.html          grade para o dono aprovar (imagens embutidas; fora do git)
 
 Revisão humana obrigatória antes do commit: abra review.html e confira cada logo.
-Aprovados pelo dono em 19/10/2026 (41 arquivos).
+Aprovados pelo dono em 19/10/2026 (44 arquivos).
 
 Execução (só stdlib, sem Django):
     cd backend/core
@@ -28,8 +29,10 @@ import hashlib
 import html
 import json
 import logging
+import mimetypes
 import re
 import time
+import unicodedata
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
@@ -106,17 +109,41 @@ MAKES: list[tuple[str, list[tuple[str, str]], str, Optional[str]]] = [
     ("Kawasaki", [("moto", "KAWASAKI")], "Q249033", None),
 ]
 
-# (trade_name do seed load_insurers, QID Wikidata, arquivo Commons forçado ou None)
-INSURERS: list[tuple[str, str, Optional[str]]] = [
+# (trade_name do seed load_insurers, QID Wikidata ou None, arquivo Commons forçado ou None)
+INSURERS: list[tuple[str, Optional[str], Optional[str]]] = [
     ("Allianz", "Q487292", None),
     ("Bradesco Seguros", "Q4954511", None),
     ("HDI Seguros", "Q48867563", None),
     ("Mapfre", "Q544532", None),
     ("Zurich", "Q230426", None),
-    ("Porto Seguro", "Q7232169", "Porto Seguro Logo.jpg"),  # sem P154 no Wikidata
+    ("Porto Seguro", "Q7232169", None),  # Commons só tem o logo anterior à marca "Porto" (2022)
     ("Azul Seguros", "Q134466051", "Logotipo da Azul Seguros.svg"),  # sem P154 no Wikidata
     ("Tokio Marine", "Q1812086", None),
+    ("Itaú Seguros", "Q1424293", "Itaú Unibanco logo 2023.svg"),  # marca Itaú, sem P154 próprio
+    ("Mitsui Sumitomo", "Q6883244", None),
+    ("Yelum", None, None),
 ]
+
+# Logo atual que o Commons não tem: baixado do site da própria marca, sem licença aberta.
+# Vale só para identificação interna até chegar o kit oficial (data/logos/email-seguradoras.md).
+# trade_name: (URL do arquivo, página onde foi encontrado) — conferidos em 19/10/2026.
+OFFICIAL: dict[str, tuple[str, str]] = {
+    "Porto Seguro": (
+        "https://portoseguro.cdn.prismic.io/portoseguro/aScbuWGnmrmGqW3T_porto-logo.svg",
+        "https://www.portoseguro.com.br/",
+    ),
+    "Mitsui Sumitomo": (
+        "https://msig.com.br/wp-content/uploads/2024/09/mitsui-logo.svg",
+        "https://msig.com.br/",
+    ),
+    "Yelum": (
+        "https://www.yelumseguros.com.br/SiteAssets/img/logo-cia-primary.svg",
+        "https://www.yelumseguros.com.br/",
+    ),
+}
+
+# SVG com conteúdo ativo é recusado (o arquivo vai para S3/R2 e pode ser aberto direto).
+UNSAFE_SVG = re.compile(rb"<script|javascript:|\son[a-z]+\s*=|<foreignObject", re.I)
 
 
 def _get_json(url: str, params: dict[str, str]) -> Any:
@@ -198,16 +225,41 @@ def commons_info(filename: str) -> dict[str, Any]:
 
 
 def slug(name: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "-", name.lower().replace("ë", "e").replace("ã", "a")).strip("-")
+    name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
 
 
-def download(url: str, dest: Path, sha1: str) -> None:
+def official_info(file_url: str, page_url: str) -> dict[str, Any]:
+    return {
+        "official_file": file_url,
+        "source_url": page_url,
+        "download_url": file_url,
+        "mime": mimetypes.guess_type(urllib.parse.urlsplit(file_url).path)[0] or "",
+        "sha1": "",
+        "author": "a própria marca (site oficial)",
+        "license": "Sem licença aberta",
+        "license_url": "",
+        "usage_terms": "Logo publicado no site oficial da marca. Uso só para identificação "
+        "interna no ERP até chegar o kit oficial.",
+        "restrictions": "trademarked",
+        "date": "",
+        "uploaded_at": "",
+    }
+
+
+def download(url: str, dest: Path, sha1: str) -> tuple[str, str]:
+    """Baixa, confere o sha1 (quando há) e recusa SVG ativo. Devolve (sha1, Last-Modified)."""
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=60) as resp:
         data = resp.read()
-    if hashlib.sha1(data).hexdigest() != sha1:
+        last_modified = resp.headers.get("Last-Modified", "")
+    digest = hashlib.sha1(data).hexdigest()
+    if sha1 and digest != sha1:
         raise ValueError(f"sha1 diferente do Commons: {dest.name}")
+    if dest.suffix == ".svg" and UNSAFE_SVG.search(data):
+        raise ValueError(f"SVG com conteúdo ativo recusado: {dest.name}")
     dest.write_bytes(data)
+    return digest, last_modified
 
 
 def collect(out: Path) -> list[dict[str, Any]]:
@@ -225,29 +277,34 @@ def collect(out: Path) -> list[dict[str, Any]]:
         for n, q, f_ in INSURERS
     ]
 
-    p154 = wikidata_logos(sorted({j["wikidata"] for j in jobs if not j["file"]}))
+    p154 = wikidata_logos(sorted({j["wikidata"] for j in jobs if j["wikidata"] and not j["file"]}))
     retrieved_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     manifest: list[dict[str, Any]] = []
     for job in jobs:
-        filename = job.pop("file") or p154.get(job["wikidata"])
+        official = OFFICIAL.get(job["name"])
+        filename = official[0] if official else job.pop("file") or p154.get(job["wikidata"])
+        job.pop("file", None)
         entry: dict[str, Any] = {
             **job,
-            "wikidata_url": f"https://www.wikidata.org/wiki/{job['wikidata']}",
+            "wikidata_url": (
+                f"https://www.wikidata.org/wiki/{job['wikidata']}" if job["wikidata"] else ""
+            ),
         }
         if not filename:
             logger.warning("sem logo: %s (%s) — fica no monograma", job["name"], job["wikidata"])
             manifest.append({**entry, "status": "missing"})
             continue
         try:
-            info = commons_info(filename)
-            ext = Path(filename).suffix.lower()
+            info = official_info(*official) if official else commons_info(filename)
+            ext = Path(urllib.parse.urlsplit(filename).path).suffix.lower()
             local = Path(job["kind"]) / f"{slug(job['name'])}{ext}"
             (out / job["kind"]).mkdir(parents=True, exist_ok=True)
-            download(info["download_url"], out / local, info["sha1"])
+            info["sha1"], last_modified = download(info["download_url"], out / local, info["sha1"])
+            info["date"] = info["date"] or last_modified or retrieved_at
         except (OSError, LookupError, ValueError) as exc:
             logger.warning("falhou: %s (%s): %s", job["name"], filename, exc)
             manifest.append(
-                {**entry, "commons_file": filename, "status": "error", "error": str(exc)}
+                {**entry, "source_file": filename, "status": "error", "error": str(exc)}
             )
             continue
         logger.info("ok: %-16s %-6s %s", job["name"], info["license"], filename)
@@ -283,7 +340,8 @@ def review_html(out: Path, manifest: list[dict[str, Any]]) -> str:
             else ""
         )
         src = (
-            f'<a href="{html.escape(e["source_url"])}">{html.escape(e["commons_file"])}</a>'
+            f'<a href="{html.escape(e["source_url"])}">'
+            f'{html.escape(e.get("commons_file") or e["official_file"])}</a>'
             if e.get("source_url")
             else html.escape(e.get("error", "sem P154"))
         )
@@ -294,7 +352,12 @@ def review_html(out: Path, manifest: list[dict[str, Any]]) -> str:
             f'<dt>Autor</dt><dd>{html.escape((e.get("author") or "—")[:160])}</dd>'
             f'<dt>Data</dt><dd>{html.escape(str(e.get("date", "—"))[:40])}</dd>'
             f"<dt>Fonte</dt><dd>{src}</dd>"
-            f'<dt>Wikidata</dt><dd><a href="{e["wikidata_url"]}">{e["wikidata"]}</a></dd></dl></article>'
+            + (
+                f'<dt>Wikidata</dt><dd><a href="{e["wikidata_url"]}">{e["wikidata"]}</a></dd>'
+                if e["wikidata"]
+                else ""
+            )
+            + "</dl></article>"
         )
 
     sections = "".join(
@@ -346,6 +409,9 @@ def _selftest() -> None:
     )
     assert pick_logo([claim("a.svg"), claim("p.svg", rank="preferred", end=True)]) == "p.svg"
     assert pick_logo([claim("x.svg", rank="deprecated")]) is None
+    assert slug("Itaú Seguros") == "itau-seguros"
+    assert UNSAFE_SVG.search(b'<svg onload="alert(1)">') and UNSAFE_SVG.search(b"<script>")
+    assert not UNSAFE_SVG.search(b'<svg viewBox="0 0 1 1"><path d="M0 0"/></svg>')
     assert slug("Citroën") == "citroen" and slug("Honda (moto)") == "honda-moto"
 
 
