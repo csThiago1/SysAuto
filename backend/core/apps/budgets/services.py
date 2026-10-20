@@ -19,6 +19,8 @@ from rest_framework.exceptions import ValidationError
 from apps.items.services import NumberAllocator
 from apps.persons.models import Person
 from apps.documents.pdf_service import PDFService
+from apps.vehicle_catalog.models import VehicleFamily, VehicleYearVersion
+from apps.vehicle_catalog.snapshot import build_snapshot, resolve_family
 
 from .models import Budget, BudgetVersion, BudgetVersionItem
 
@@ -42,7 +44,7 @@ class BudgetService:
         *,
         customer: Person,
         vehicle_plate: str,
-        vehicle_description: str,
+        vehicle_description: str = "",
         vehicle_chassis: str = "",
         vehicle_version: str = "",
         vehicle_engine: str = "",
@@ -50,10 +52,16 @@ class BudgetService:
         vehicle_fuel_type: str = "",
         vehicle_make_logo: str = "",
         vehicle_year: int | None = None,
+        vehicle_year_manufacture: int | None = None,
+        catalog_family: VehicleFamily | None = None,
+        catalog_version: VehicleYearVersion | None = None,
         created_by: str,
     ) -> Budget:
-        """Cria Budget novo + BudgetVersion v1 em status draft."""
-        budget = Budget.objects.create(
+        """Cria Budget novo + BudgetVersion v1 em status draft.
+
+        Com família/versão do catálogo, o texto do veículo é o snapshot do servidor.
+        """
+        budget = Budget(
             number=NumberAllocator.allocate("BUDGET"),
             customer=customer,
             vehicle_plate=vehicle_plate.upper(),
@@ -65,7 +73,11 @@ class BudgetService:
             vehicle_fuel_type=vehicle_fuel_type,
             vehicle_make_logo=vehicle_make_logo,
             vehicle_year=vehicle_year,
+            vehicle_year_manufacture=vehicle_year_manufacture,
         )
+        if catalog_family is not None or catalog_version is not None:
+            cls._apply_catalog_vehicle(budget, catalog_family, catalog_version)
+        budget.save()
         BudgetVersion.objects.create(
             budget=budget,
             version_number=1,
@@ -193,13 +205,19 @@ class BudgetService:
     @transaction.atomic
     def clone(cls, *, source_budget: Budget, created_by: str) -> Budget:
         """Clona budget arquivado (rejected/expired) para reutilizar dados."""
-        new_budget = Budget.objects.create(
+        new_budget = Budget(
             number=NumberAllocator.allocate("BUDGET"),
             customer=source_budget.customer,
             vehicle_plate=source_budget.vehicle_plate,
             vehicle_description=source_budget.vehicle_description,
+            vehicle_year_manufacture=source_budget.vehicle_year_manufacture,
             cloned_from=source_budget,
         )
+        if source_budget.catalog_family_id or source_budget.catalog_version_id:
+            cls._apply_catalog_vehicle(
+                new_budget, source_budget.catalog_family, source_budget.catalog_version
+            )
+        new_budget.save()
         new_v = BudgetVersion.objects.create(
             budget=new_budget, version_number=1,
             status="draft", created_by=created_by,
@@ -226,6 +244,24 @@ class BudgetService:
         ).update(status="expired")
 
     # ── Helpers privados ──────────────────────────────────────────────────────
+
+    @staticmethod
+    def _apply_catalog_vehicle(
+        budget: Budget,
+        family: VehicleFamily | None,
+        version: VehicleYearVersion | None,
+    ) -> None:
+        """FKs + snapshot de texto do catálogo no orçamento (não salva)."""
+        snap = build_snapshot(family, version)
+        budget.catalog_family = resolve_family(family, version)
+        budget.catalog_version = version
+        budget.vehicle_description = snap.description
+        budget.vehicle_version = snap.version
+        budget.vehicle_fuel_type = snap.fuel_type
+        budget.vehicle_make_logo = snap.make_logo
+        budget.vehicle_year = snap.year
+        budget.vehicle_zero_km = snap.zero_km
+        budget.vehicle_needs_review = version is None
 
     @classmethod
     def _copy_items_between_versions(

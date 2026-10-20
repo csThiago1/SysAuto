@@ -244,7 +244,7 @@ class ServiceOrder(PaddockBaseModel):
     make_logo = models.URLField(max_length=500, blank=True, default="", verbose_name="Logo da montadora")
     model = models.CharField(max_length=100, default="", verbose_name="Modelo")
     vehicle_version = models.CharField(
-        max_length=50, blank=True, default="", verbose_name="Versão"
+        max_length=120, blank=True, default="", verbose_name="Versão"
     )
     year = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name="Ano")
     color = models.CharField(max_length=50, default="", verbose_name="Cor")
@@ -256,22 +256,44 @@ class ServiceOrder(PaddockBaseModel):
     mileage_in = models.PositiveIntegerField(null=True, blank=True, verbose_name="KM entrada")
     mileage_out = models.PositiveIntegerField(null=True, blank=True, verbose_name="KM saída")
 
+    # ── Veículo no catálogo (snapshot de texto acima é derivado destas FKs) ──
+    catalog_family = models.ForeignKey(
+        "vehicle_catalog.VehicleFamily",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="Modelo (catálogo)",
+    )
+    catalog_version = models.ForeignKey(
+        "vehicle_catalog.VehicleYearVersion",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="Versão (catálogo)",
+    )
+    vehicle_needs_review = models.BooleanField(
+        default=False, db_index=True, verbose_name="Versão a confirmar"
+    )
+    vehicle_source = models.CharField(
+        max_length=20, blank=True, default="", verbose_name="Origem do veículo"
+    )
+    vehicle_source_text = models.CharField(
+        max_length=300, blank=True, default="", verbose_name="Veículo como veio da fonte"
+    )
+    vehicle_source_year = models.PositiveSmallIntegerField(
+        null=True, blank=True, verbose_name="Ano como veio da fonte"
+    )
+    year_manufacture = models.PositiveSmallIntegerField(
+        null=True, blank=True, verbose_name="Ano de fabricação"
+    )
+    zero_km = models.BooleanField(default=False, verbose_name="Zero km")
+    insurer_cnpj = models.CharField(
+        max_length=14, blank=True, default="", verbose_name="CNPJ da seguradora (nota)"
+    )
+
     # ── Perfil veicular (Motor de Orçamentos MO-1) ──────────────────────────
-    vehicle_make_id = models.CharField(
-        max_length=10,
-        blank=True,
-        help_text="fipe_id da marca — referência solta a vehicle_catalog.VehicleMake",
-    )
-    vehicle_model_id = models.CharField(
-        max_length=10,
-        blank=True,
-        help_text="fipe_id do modelo — referência solta a vehicle_catalog.VehicleModel",
-    )
-    vehicle_year_version_id = models.CharField(
-        max_length=20,
-        blank=True,
-        help_text="fipe_id do ano/versão — referência solta a vehicle_catalog.VehicleYearVersion",
-    )
     vehicle_fipe_value_snapshot = models.DecimalField(
         max_digits=12,
         decimal_places=2,

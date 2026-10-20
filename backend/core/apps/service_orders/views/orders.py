@@ -228,7 +228,11 @@ class ServiceOrderViewSet(
         if self.action in ("retrieve", "update", "partial_update", "transition",
                            "deliver", "billing", "financial_summary"):
             from django.db.models import Prefetch
-            qs = qs.prefetch_related(
+            qs = qs.select_related(
+                "catalog_family__make",
+                "catalog_version__modelo__marca",
+                "catalog_version__modelo__familia",
+            ).prefetch_related(
                 Prefetch(
                     "transition_logs",
                     queryset=StatusTransitionLog.objects.select_related("changed_by").order_by("-created_at"),
@@ -313,12 +317,7 @@ class ServiceOrderViewSet(
         client_uuid = request.data.get("client_uuid") or None
         if client_uuid:
             ServiceOrder.objects.filter(pk=order.pk).update(client_uuid=client_uuid)
-        logger.info(
-            "OS #%d aberta para placa=%s por user_id=%s",
-            order.number,
-            order.plate,
-            request.user.id,
-        )
+        logger.info("OS #%d aberta por user_id=%s", order.number, request.user.id)
         return Response(
             ServiceOrderDetailSerializer(order, context={"request": request}).data,
             status=status.HTTP_201_CREATED,

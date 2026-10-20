@@ -9,6 +9,8 @@ from typing import Any
 from django.db import models, transaction
 from rest_framework.exceptions import ValidationError
 
+from .vehicle import CATALOG_KEYS, apply_catalog_vehicle, resulting_catalog_pair
+
 logger = logging.getLogger(__name__)
 
 # Mapeamento campo -> (status_de_origem_validos, status_destino)
@@ -76,7 +78,11 @@ class _ServiceOrderCoreMixin:
             except Person.DoesNotExist:
                 pass
 
+        catalog_family = payload.pop("catalog_family", None)
+        catalog_version = payload.pop("catalog_version", None)
         order = ServiceOrder(**payload)
+        if catalog_family is not None or catalog_version is not None:
+            apply_catalog_vehicle(order, family=catalog_family, version=catalog_version)
         order.save()
 
         ServiceOrderActivityLog.objects.create(
@@ -121,6 +127,11 @@ class _ServiceOrderCoreMixin:
         if customer_uuid is not None:
             data["customer_uuid"] = customer_uuid
 
+        # Par familia/versao resultante, calculado antes de aplicar o payload na OS
+        catalog_changed = bool(CATALOG_KEYS & data.keys())
+        if catalog_changed:
+            catalog_family, catalog_version = resulting_catalog_pair(order, data)
+
         # Detectar campos de data recem-preenchidos que disparam transicao
         triggered_transitions: list[tuple[str, str]] = []
 
@@ -130,6 +141,8 @@ class _ServiceOrderCoreMixin:
             "color": "Cor", "chassis": "Chassi", "fuel_type": "Combustivel",
             "fipe_value": "Valor FIPE", "mileage_in": "KM entrada", "mileage_out": "KM saida",
             "vehicle_version": "Versao do veiculo", "vehicle_location": "Localizacao do veiculo",
+            "catalog_family": "Modelo (catalogo)", "catalog_version": "Versao (catalogo)",
+            "year_manufacture": "Ano de fabricacao",
             # Cliente
             "customer_name": "Nome do cliente", "customer_uuid": "Cliente vinculado",
             "customer_type": "Tipo de cliente",
@@ -164,6 +177,7 @@ class _ServiceOrderCoreMixin:
                 "plate", "make", "model", "year", "color", "chassis",
                 "fuel_type", "fipe_value", "mileage_in", "mileage_out",
                 "vehicle_version", "vehicle_location",
+                "catalog_family", "catalog_version", "year_manufacture",
             })),
             ("schedule_updated", frozenset({
                 "entry_date", "service_authorization_date", "scheduling_date",
@@ -210,6 +224,9 @@ class _ServiceOrderCoreMixin:
                 if not assigned:
                     other_changes.append(change)
             setattr(order, key, value)
+
+        if catalog_changed:
+            apply_catalog_vehicle(order, family=catalog_family, version=catalog_version)
 
         # Criar um log por grupo que teve alteracoes
         if any(changes_by_group.values()) or other_changes:
@@ -305,6 +322,9 @@ class _ServiceOrderCoreMixin:
         vehicle_fields = {
             "make", "make_logo", "model", "year", "color", "chassis",
             "fuel_type", "vehicle_version",
+            "catalog_family", "catalog_version", "vehicle_needs_review", "vehicle_source",
+            "vehicle_source_text", "vehicle_source_year", "year_manufacture", "zero_km",
+            "fipe_value",
         }
         vehicle_changed = vehicle_fields & set(data.keys())
         if vehicle_changed and order.plate:

@@ -3,7 +3,7 @@ Paddock Solutions — Service Orders: Core Serializers
 OS CRUD, photo, parts, labor, budget, status transition, checklist, etc.
 """
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 from django.utils import timezone
 from rest_framework import serializers
@@ -11,6 +11,8 @@ from rest_framework import serializers
 from apps.insurers.serializers import InsurerMinimalSerializer
 from apps.persons.models import Person
 from apps.persons.serializers import ExpertMinimalSerializer
+from apps.vehicle_catalog.models import VehicleFamily, VehicleYearVersion
+from apps.vehicle_catalog.snapshot import catalog_path
 
 from ..models import (
     VALID_TRANSITIONS,
@@ -30,6 +32,7 @@ from ..models import (
     StatusTransitionLog,
     TransitionOverrideRequest,
 )
+from ..services.vehicle import resulting_catalog_pair, validate_catalog_vehicle
 
 logger = logging.getLogger(__name__)
 
@@ -547,10 +550,14 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
     customer_person_id = serializers.SerializerMethodField()
     closure_status = serializers.SerializerMethodField()
     transition_requirements = serializers.SerializerMethodField()
+    catalog_path = serializers.SerializerMethodField()
 
     class Meta:
         model = ServiceOrder
         fields = "__all__"
+
+    def get_catalog_path(self, obj: ServiceOrder) -> dict[str, Any] | None:
+        return catalog_path(family=obj.catalog_family, version=obj.catalog_version)
 
     def get_customer(self, obj: "ServiceOrder") -> str | None:
         """Retorna customer_uuid para compatibilidade com frontend (nao o PK integer da Person)."""
@@ -648,6 +655,12 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
         allow_null=True,
         write_only=True,
     )
+    catalog_family = serializers.PrimaryKeyRelatedField(
+        queryset=VehicleFamily.objects.filter(is_active=True), required=False, allow_null=True
+    )
+    catalog_version = serializers.PrimaryKeyRelatedField(
+        queryset=VehicleYearVersion.objects.filter(is_active=True), required=False, allow_null=True
+    )
 
     class Meta:
         model = ServiceOrder
@@ -665,6 +678,11 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
             "delivered_at",
             "delivery_date",
             "client_delivery_date",
+            "vehicle_needs_review",
+            "vehicle_source",
+            "vehicle_source_text",
+            "vehicle_source_year",
+            "zero_km",
         ]
         extra_kwargs = {
             # Campos opcionais do veiculo -- model tem default="" mas sem blank=True
@@ -699,6 +717,9 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
                             )
                         }
                     )
+
+        family, version = resulting_catalog_pair(None, attrs)
+        validate_catalog_vehicle(family, version, attrs.get("year_manufacture"))
 
         if attrs.get("customer_type") == ServiceOrder.CustomerType.INSURER:
             if not attrs.get("insurer"):
@@ -785,6 +806,12 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
         write_only=True,
         source="customer_id",
     )
+    catalog_family = serializers.PrimaryKeyRelatedField(
+        queryset=VehicleFamily.objects.filter(is_active=True), required=False, allow_null=True
+    )
+    catalog_version = serializers.PrimaryKeyRelatedField(
+        queryset=VehicleYearVersion.objects.filter(is_active=True), required=False, allow_null=True
+    )
 
     class Meta:
         model = ServiceOrder
@@ -801,6 +828,11 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
             "nfe_key",
             "nfse_number",
             "delivered_at",
+            "vehicle_needs_review",
+            "vehicle_source",
+            "vehicle_source_text",
+            "vehicle_source_year",
+            "zero_km",
         ]
         extra_kwargs = {
             "make":            {"required": False, "allow_blank": True},
@@ -846,6 +878,14 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
                 )
 
         instance = self.instance
+        # Veiculo do catalogo: valida o par resultante (chave ausente = valor atual da OS).
+        if {"catalog_family", "catalog_version", "year_manufacture"} & attrs.keys():
+            family, version = resulting_catalog_pair(instance, attrs)
+            year_manufacture = attrs.get(
+                "year_manufacture", getattr(instance, "year_manufacture", None)
+            )
+            validate_catalog_vehicle(family, version, year_manufacture)
+
         # So dispara validacao se algum campo relevante esta sendo alterado
         insurer_fields_in_payload = {"customer_type", "insurer", "insured_type"} & attrs.keys()
         if not insurer_fields_in_payload and instance is not None:

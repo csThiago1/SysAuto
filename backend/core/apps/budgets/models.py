@@ -23,14 +23,29 @@ class Budget(models.Model):
         Person, on_delete=models.PROTECT, related_name="budgets",
     )
     vehicle_plate       = models.CharField(max_length=10, db_index=True)
-    vehicle_description = models.CharField(max_length=200)
+    vehicle_description = models.CharField(max_length=300, blank=True, default="")
     vehicle_chassis     = models.CharField(max_length=17,  blank=True, default="")
-    vehicle_version     = models.CharField(max_length=80,  blank=True, default="", help_text="Versão/trim ex: LT1, EXL")
+    vehicle_version     = models.CharField(max_length=120, blank=True, default="", help_text="Versão/trim ex: LT1, EXL")
     vehicle_engine      = models.CharField(max_length=20,  blank=True, default="", help_text="Motorização ex: 1.0T, 2.0")
     vehicle_color       = models.CharField(max_length=40,  blank=True, default="", help_text="Cor do veículo")
     vehicle_fuel_type   = models.CharField(max_length=30,  blank=True, default="", help_text="Combustível ex: Flex, Gasolina")
     vehicle_make_logo   = models.URLField(max_length=500,  blank=True, default="", help_text="URL da logo da montadora")
     vehicle_year        = models.IntegerField(null=True, blank=True, help_text="Ano modelo do veículo")
+    vehicle_year_manufacture = models.PositiveSmallIntegerField(null=True, blank=True)
+    vehicle_zero_km     = models.BooleanField(default=False)
+    vehicle_needs_review = models.BooleanField(default=False, db_index=True)
+    catalog_family = models.ForeignKey(
+        "vehicle_catalog.VehicleFamily",
+        on_delete=models.PROTECT,
+        null=True, blank=True,
+        related_name="+",
+    )
+    catalog_version = models.ForeignKey(
+        "vehicle_catalog.VehicleYearVersion",
+        on_delete=models.PROTECT,
+        null=True, blank=True,
+        related_name="+",
+    )
     cloned_from = models.ForeignKey(
         "self",
         on_delete=models.SET_NULL,

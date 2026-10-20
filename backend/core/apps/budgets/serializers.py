@@ -2,11 +2,14 @@
 from __future__ import annotations
 
 from decimal import Decimal
+from typing import Any
 
 from rest_framework import serializers
 
 from apps.items.models import ItemOperation, ItemOperationType, LaborCategory
 from apps.items.serializers import ItemOperationReadSerializer
+from apps.vehicle_catalog.models import VehicleFamily, VehicleYearVersion
+from apps.vehicle_catalog.snapshot import catalog_path
 
 from .models import Budget, BudgetVersion, BudgetVersionItem
 
@@ -94,6 +97,7 @@ class BudgetReadSerializer(serializers.ModelSerializer):
     service_order_number = serializers.IntegerField(
         source="service_order.number", read_only=True, allow_null=True, default=None,
     )
+    catalog_path = serializers.SerializerMethodField()
 
     class Meta:
         model = Budget
@@ -102,22 +106,39 @@ class BudgetReadSerializer(serializers.ModelSerializer):
             "vehicle_plate", "vehicle_description",
             "vehicle_chassis", "vehicle_version", "vehicle_engine",
             "vehicle_color", "vehicle_fuel_type", "vehicle_make_logo", "vehicle_year",
+            "vehicle_year_manufacture", "vehicle_zero_km", "vehicle_needs_review",
+            "catalog_family", "catalog_version", "catalog_path",
             "cloned_from", "service_order", "service_order_number", "active_version",
             "is_active", "created_at", "updated_at",
         ]
+
+    def get_catalog_path(self, obj: Budget) -> dict[str, Any] | None:
+        return catalog_path(family=obj.catalog_family, version=obj.catalog_version)
 
 
 class BudgetCreateSerializer(serializers.Serializer):
     customer_id         = serializers.IntegerField()
     vehicle_plate       = serializers.CharField(max_length=10)
-    vehicle_description = serializers.CharField(max_length=200)
+    vehicle_description = serializers.CharField(
+        max_length=300, required=False, default="", allow_blank=True,
+    )
     vehicle_chassis     = serializers.CharField(max_length=17,  required=False, default="")
-    vehicle_version     = serializers.CharField(max_length=80,  required=False, default="")
+    vehicle_version     = serializers.CharField(max_length=120, required=False, default="")
     vehicle_engine      = serializers.CharField(max_length=20,  required=False, default="")
     vehicle_color       = serializers.CharField(max_length=40,  required=False, default="")
     vehicle_fuel_type   = serializers.CharField(max_length=30,  required=False, default="")
     vehicle_make_logo   = serializers.URLField(max_length=500,  required=False, default="", allow_blank=True)
     vehicle_year        = serializers.IntegerField(required=False, allow_null=True, default=None)
+    vehicle_year_manufacture = serializers.IntegerField(
+        required=False, allow_null=True, default=None,
+    )
+    catalog_family = serializers.PrimaryKeyRelatedField(
+        queryset=VehicleFamily.objects.filter(is_active=True), required=False, allow_null=True,
+    )
+    catalog_version = serializers.PrimaryKeyRelatedField(
+        queryset=VehicleYearVersion.objects.filter(is_active=True),
+        required=False, allow_null=True,
+    )
 
 
 class BudgetApproveSerializer(serializers.Serializer):
