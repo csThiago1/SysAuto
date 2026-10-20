@@ -44,6 +44,7 @@ SHARED_APPS = [
     "apps.banks",
     "apps.vehicle_catalog",
     "apps.parts_catalog",
+    "apps.lookups",
 ]
 
 # Apps instalados em cada SCHEMA DE TENANT

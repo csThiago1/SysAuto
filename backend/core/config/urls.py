@@ -41,6 +41,7 @@ urlpatterns = [
     path("api/v1/budgets/", include("apps.budgets.urls")),
     path("api/v1/documents/", include("apps.documents.urls")),
     path("api/v1/purchasing/", include("apps.purchasing.urls")),
+    path("api/v1/lookups/", include("apps.lookups.urls")),
     # MO-9: Capacidade
     path("api/v1/capacidade/", include("apps.service_orders.urls_capacidade")),
     # API Docs

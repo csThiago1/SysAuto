@@ -12,6 +12,8 @@ import logging
 
 from rest_framework import serializers
 
+from apps.lookups.validators import is_valid_cnpj, is_valid_cpf
+
 from .models import (
     BrokerOffice,
     BrokerPerson,
@@ -24,6 +26,7 @@ from .models import (
     PersonRole,
     RolePessoa,
     SupplierProfile,
+    TipoDocumento,
 )
 from .utils import sha256_hex
 
@@ -120,8 +123,13 @@ class PersonDocumentWriteSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs: dict) -> dict:
-        """Popula value_hash a partir de value."""
+        """Recusa CPF/CNPJ com DV inválido e popula value_hash a partir de value."""
         value = attrs.get("value", "")
+        doc_type = attrs.get("doc_type") or getattr(self.instance, "doc_type", None)
+        if value and doc_type == TipoDocumento.CPF and not is_valid_cpf(value):
+            raise serializers.ValidationError({"value": "CPF inválido."})
+        if value and doc_type == TipoDocumento.CNPJ and not is_valid_cnpj(value):
+            raise serializers.ValidationError({"value": "CNPJ inválido."})
         if value:
             attrs["value_hash"] = sha256_hex(value)
         return attrs
