@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="85.089996mm"
+   height="12.620624mm"
+   viewBox="0 0 85.089996 12.620624"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   sodipodi:docname="Ram Trucks wordmark.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="3.9458701"
+     inkscape:cx="131.65664"
+     inkscape:cy="20.907936"
+     inkscape:window-width="1920"
+     inkscape:window-height="1001"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-4.2333329,-126.73542)">
+    <polygon
+       class="st0"
+       points="344.5,393.2 344.5,346 394.6,346 403.4,360.7 412.8,346 460.9,346 460.9,393.2 429.3,393.2 429.3,366.8 427.6,366.8 413.4,393.2 392,393.2 377.8,366.8 376.5,366.8 376.5,393.2 "
+       id="polygon1"
+       style="clip-rule:evenodd;fill-rule:evenodd"
+       transform="matrix(0.26458333,0,0,0.26458333,-32.623125,35.189584)" />
+    <path
+       class="st0"
+       d="m 22.992291,134.9375 c 0,0 3.571875,-0.74083 3.571875,-3.57188 0,-4.60375 -5.609167,-4.60375 -5.609167,-4.60375 H 4.2333329 v 12.59417 h 9.1281251 v -4.15396 h 1.402291 l 3.122084,4.07459 h 9.710208 z m -7.567083,-2.67229 h -2.143125 v -2.93688 h 2.354791 c 0.873125,0.0529 1.561042,0.79375 1.561042,1.66688 0,1.24354 -1.74625,1.27 -1.74625,1.27 z"
+       id="path1"
+       style="clip-rule:evenodd;fill-rule:evenodd;stroke-width:0.264583" />
+    <path
+       class="st0"
+       d="M 49.715207,126.76187 H 36.036249 l -6.561666,12.48834 h 9.233958 l 1.27,-3.01625 h 5.635625 l 1.217083,2.98979 h 9.36625 z m -8.863541,6.61459 1.984375,-3.88938 1.957916,3.88938 z"
+       id="path2"
+       style="clip-rule:evenodd;fill-rule:evenodd;stroke-width:0.264583" />
+  </g>
+</svg>

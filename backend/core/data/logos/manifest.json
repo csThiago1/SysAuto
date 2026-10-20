@@ -1,0 +1,1158 @@
+[
+  {
+    "kind": "makes",
+    "name": "Chevrolet",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "GM - Chevrolet"
+      },
+      {
+        "tipo": "caminhao",
+        "nome": "CHEVROLET"
+      }
+    ],
+    "wikidata": "Q29570",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q29570",
+    "commons_file": "Chevrolet simple logo.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Chevrolet_simple_logo.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/5/55/Chevrolet_simple_logo.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "f8b001504ed4383485447db438b9707003ead5aa",
+    "author": "Unknown authorUnknown author",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2022",
+    "uploaded_at": "2024-08-16T17:03:26Z",
+    "local_file": "makes/chevrolet.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Volkswagen",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "VW - VolksWagen"
+      },
+      {
+        "tipo": "caminhao",
+        "nome": "VOLKSWAGEN"
+      }
+    ],
+    "wikidata": "Q246",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q246",
+    "commons_file": "Volkswagen logo 2019.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Volkswagen_logo_2019.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/6/6d/Volkswagen_logo_2019.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "32d0787c042ae9e1178419a7fe0b1072bc43d13c",
+    "author": "Volkswagen",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2019-09-09",
+    "uploaded_at": "2025-01-19T01:21:18Z",
+    "local_file": "makes/volkswagen.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Fiat",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Fiat"
+      },
+      {
+        "tipo": "caminhao",
+        "nome": "FIAT"
+      }
+    ],
+    "wikidata": "Q27597",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q27597",
+    "commons_file": "FIAT logo (2020).svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:FIAT_logo_(2020).svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/b/b5/FIAT_logo_%282020%29.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "ad31938fd6bfc918c8d72c880a48398172ef813e",
+    "author": "FIAT",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2020-07-21",
+    "uploaded_at": "2021-01-24T01:41:46Z",
+    "local_file": "makes/fiat.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Ford",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Ford"
+      },
+      {
+        "tipo": "caminhao",
+        "nome": "FORD"
+      }
+    ],
+    "wikidata": "Q44294",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q44294",
+    "commons_file": "Ford logo flat.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ford_logo_flat.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Ford_logo_flat.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "0d69922aea7789bfb27d2468b58ac1863528a8d2",
+    "author": "Ford Motor Company",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2017-08-06",
+    "uploaded_at": "2023-08-31T14:59:25Z",
+    "local_file": "makes/ford.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Toyota",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Toyota"
+      }
+    ],
+    "wikidata": "Q53268",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q53268",
+    "commons_file": "Toyota.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Toyota.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/e/e7/Toyota.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "b944006034d7642d3ce058cac327d699d3f22258",
+    "author": "Toyota Motor Corporation",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "1989-10-02",
+    "uploaded_at": "2024-05-12T08:10:09Z",
+    "local_file": "makes/toyota.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Honda",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Honda"
+      }
+    ],
+    "wikidata": "Q9584",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q9584",
+    "commons_file": "Honda.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Honda.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/3/38/Honda.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "b95baa76530cee7a838cbeea75aedb2ac2a715a0",
+    "author": "Unknown authorUnknown author",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2020-11-27",
+    "uploaded_at": "2025-06-19T14:51:47Z",
+    "local_file": "makes/honda.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Honda (moto)",
+    "fipe": [
+      {
+        "tipo": "moto",
+        "nome": "HONDA"
+      }
+    ],
+    "wikidata": "Q9584",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q9584",
+    "commons_file": "Honda Logo.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Honda_Logo.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Honda_Logo.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "0e7cd9bbc77b1051221199737260bd2f626597a0",
+    "author": "Honda Motor Co., Ltd.",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2000-03-29",
+    "uploaded_at": "2017-12-26T08:13:39Z",
+    "local_file": "makes/honda-moto.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Hyundai",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Hyundai"
+      },
+      {
+        "tipo": "caminhao",
+        "nome": "HYUNDAI"
+      }
+    ],
+    "wikidata": "Q55931",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q55931",
+    "commons_file": "Hyundai Motor Company logo.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Hyundai_Motor_Company_logo.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/4/44/Hyundai_Motor_Company_logo.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "40240f3a33358cbcd2daadcd347f68fbf973ca3e",
+    "author": "Hyundai Motor Company",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "1990",
+    "uploaded_at": "2022-03-28T17:54:11Z",
+    "local_file": "makes/hyundai.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Renault",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Renault"
+      }
+    ],
+    "wikidata": "Q98584518",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q98584518",
+    "commons_file": "Renault 2021.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Renault_2021.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Renault_2021.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "47cc2aa51d9aebe58952de852a20d6476b4e67b0",
+    "author": "Renault",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2021-03-19",
+    "uploaded_at": "2026-05-03T01:33:19Z",
+    "local_file": "makes/renault.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Nissan",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Nissan"
+      }
+    ],
+    "wikidata": "Q20165",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q20165",
+    "commons_file": "Nissan brand wordmark.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Nissan_brand_wordmark.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/e/e2/Nissan_brand_wordmark.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "228872555ad73fc53d670336d7ed772ffb76f9b2",
+    "author": "Nissan",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2020/07/1",
+    "uploaded_at": "2026-02-25T08:32:20Z",
+    "local_file": "makes/nissan.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Jeep",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Jeep"
+      }
+    ],
+    "wikidata": "Q30113",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q30113",
+    "commons_file": "Jeep wordmark.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Jeep_wordmark.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/9/92/Jeep_wordmark.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "54a5f6dd56347990a6b16d2f39e0d647466d07f1",
+    "author": "Jeep",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2017-08-21",
+    "uploaded_at": "2024-04-25T14:15:03Z",
+    "local_file": "makes/jeep.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Peugeot",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Peugeot"
+      },
+      {
+        "tipo": "moto",
+        "nome": "PEUGEOT"
+      }
+    ],
+    "wikidata": "Q6742",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q6742",
+    "commons_file": "Wordmark Peugeot 2021.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Wordmark_Peugeot_2021.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Wordmark_Peugeot_2021.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "0ee606b71b44e8708f0ce8b762da8e10f7210dbb",
+    "author": "Peugeot",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2026-09-12",
+    "uploaded_at": "2026-09-12T20:58:56Z",
+    "local_file": "makes/peugeot.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Citroën",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Citroën"
+      }
+    ],
+    "wikidata": "Q6746",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q6746",
+    "commons_file": "Citroen 2022.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Citroen_2022.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/d/dd/Citroen_2022.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "c2820579c59adc023df95d47c782f9269cfeee6f",
+    "author": "Citroën",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2022-09-27",
+    "uploaded_at": "2022-09-29T15:57:52Z",
+    "local_file": "makes/citroen.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Mitsubishi",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Mitsubishi"
+      }
+    ],
+    "wikidata": "Q36033",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q36033",
+    "commons_file": "Mitsubishi motors new logo.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Mitsubishi_motors_new_logo.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Mitsubishi_motors_new_logo.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "d7259e660a0355eaaa593227bf6c89f69ddb4b00",
+    "author": "Mitsubishi Motors Corporation",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2018-02-18",
+    "uploaded_at": "2023-06-29T16:05:02Z",
+    "local_file": "makes/mitsubishi.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Kia",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Kia Motors"
+      }
+    ],
+    "wikidata": "Q35349",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q35349",
+    "commons_file": "KIA logo3.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:KIA_logo3.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/b/b6/KIA_logo3.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "5e503aa4eef71eefec3dc2bb26da148aad3966ae",
+    "author": "Kia Corporation",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2020-09-06",
+    "uploaded_at": "2024-12-30T16:15:05Z",
+    "local_file": "makes/kia.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "BMW",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "BMW"
+      }
+    ],
+    "wikidata": "Q796364",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q796364",
+    "commons_file": "BMW logo (gray).svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:BMW_logo_(gray).svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/f/f4/BMW_logo_%28gray%29.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "78df270d277486ab3caf27f83a21715520ba69ba",
+    "author": "BMW",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "6 March 2020 (original upload date)",
+    "uploaded_at": "2021-02-11T15:25:14Z",
+    "local_file": "makes/bmw.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "BMW Motorrad",
+    "fipe": [
+      {
+        "tipo": "moto",
+        "nome": "BMW"
+      }
+    ],
+    "wikidata": "Q249173",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q249173",
+    "commons_file": "Logo BMW Motorrad 2021.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Logo_BMW_Motorrad_2021.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Logo_BMW_Motorrad_2021.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "23110a23d98000f1cb3e23a1c978b6178b630b6e",
+    "author": "BMW Group",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2021-12-15",
+    "uploaded_at": "2021-12-15T17:18:10Z",
+    "local_file": "makes/bmw-motorrad.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Mercedes-Benz",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Mercedes-Benz"
+      },
+      {
+        "tipo": "caminhao",
+        "nome": "MERCEDES-BENZ"
+      }
+    ],
+    "wikidata": "Q36008",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q36008",
+    "commons_file": "Mercedes-Benz Logo 2010.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Mercedes-Benz_Logo_2010.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Mercedes-Benz_Logo_2010.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "762d4451fef8a65b60f870af76e4189e86a687ad",
+    "author": "Mercedes-Benz",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2022-03-28T17:25:47Z",
+    "uploaded_at": "2022-03-28T17:25:47Z",
+    "local_file": "makes/mercedes-benz.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Audi",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Audi"
+      }
+    ],
+    "wikidata": "Q23317",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q23317",
+    "commons_file": "Audi-Logo 2016.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Audi-Logo_2016.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/9/92/Audi-Logo_2016.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "cf9128e6cba4b11926eee0a4fd596341edb66856",
+    "author": "Strichpunkt / KMS Team",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2016-04-07",
+    "uploaded_at": "2023-01-11T20:40:48Z",
+    "local_file": "makes/audi.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Land Rover",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Land Rover"
+      }
+    ],
+    "wikidata": "Q35907",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q35907",
+    "commons_file": "Land Rover 2023.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Land_Rover_2023.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/c/c2/Land_Rover_2023.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "c1c548e3405b6a6d4e81d098df34281495954b84",
+    "author": "Jaguar Land Rover Automotive PLC",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2023",
+    "uploaded_at": "2025-08-04T15:53:57Z",
+    "local_file": "makes/land-rover.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Chery",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Caoa Chery"
+      },
+      {
+        "tipo": "carro",
+        "nome": "Caoa Chery/Chery"
+      }
+    ],
+    "wikidata": "Q591001",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q591001",
+    "commons_file": "Chery logo.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Chery_logo.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/b/b6/Chery_logo.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "2b33667339bbd8b42dada199fe871659425ef175",
+    "author": "Chery",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2022",
+    "uploaded_at": "2024-01-31T20:55:08Z",
+    "local_file": "makes/chery.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "BYD",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "BYD"
+      }
+    ],
+    "wikidata": "Q27423",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q27423",
+    "commons_file": "BYD Auto 2022 logo.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:BYD_Auto_2022_logo.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/e/e2/BYD_Auto_2022_logo.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "17e5682457cfea0cec089cb215a099e9436da3d1",
+    "author": "BYD",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2022-02-19",
+    "uploaded_at": "2026-03-30T13:35:21Z",
+    "local_file": "makes/byd.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "GWM",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "GWM"
+      },
+      {
+        "tipo": "carro",
+        "nome": "GREAT WALL"
+      }
+    ],
+    "wikidata": "Q1117001",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q1117001",
+    "commons_file": "GWM 2025 logo.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:GWM_2025_logo.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/d/d2/GWM_2025_logo.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "2f746958c3d140f8ce01c5e35270769028b915e9",
+    "author": "Great Wall Motor Company Limited",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2025",
+    "uploaded_at": "2025-10-26T15:21:54Z",
+    "local_file": "makes/gwm.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "RAM",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "RAM"
+      }
+    ],
+    "wikidata": "Q165708",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q165708",
+    "commons_file": "Ram Trucks 2009 wordmark.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ram_Trucks_2009_wordmark.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/5/58/Ram_Trucks_2009_wordmark.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "a5ebade9189cb89b1ab36a0de73098c550ca8537",
+    "author": "FCA US LLC",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2009",
+    "uploaded_at": "2025-08-19T17:25:30Z",
+    "local_file": "makes/ram.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Yamaha",
+    "fipe": [
+      {
+        "tipo": "moto",
+        "nome": "YAMAHA"
+      }
+    ],
+    "wikidata": "Q158888",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q158888",
+    "commons_file": "Yamaha Motor 2025.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Yamaha_Motor_2025.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/1/1b/Yamaha_Motor_2025.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "7cc582016a9250736140a9fa83e827b5b729d754",
+    "author": "Yamaha Motor Co., Ltd.",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2025-01-10",
+    "uploaded_at": "2025-02-23T23:54:32Z",
+    "local_file": "makes/yamaha.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Iveco",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "IVECO"
+      },
+      {
+        "tipo": "caminhao",
+        "nome": "IVECO"
+      }
+    ],
+    "wikidata": "Q29913",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q29913",
+    "commons_file": "Iveco Logo 2023.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Iveco_Logo_2023.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/f/f7/Iveco_Logo_2023.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "6a277e75e5fbcfb41959482672e21b35867e6ebf",
+    "author": "Iveco Group N.V.",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2023-10-03",
+    "uploaded_at": "2023-10-13T18:45:18Z",
+    "local_file": "makes/iveco.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Volvo",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Volvo"
+      }
+    ],
+    "wikidata": "Q215293",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q215293",
+    "commons_file": "Volvo-Iron-Mark-Black.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Volvo-Iron-Mark-Black.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/2/29/Volvo-Iron-Mark-Black.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "cc0fcf5afbcc9eb61ab95ca341aec84ce477408d",
+    "author": "Volvo Group",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2020-01-01",
+    "uploaded_at": "2024-10-15T04:34:21Z",
+    "local_file": "makes/volvo.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Volvo Trucks",
+    "fipe": [
+      {
+        "tipo": "caminhao",
+        "nome": "VOLVO"
+      }
+    ],
+    "wikidata": "Q2033642",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q2033642",
+    "commons_file": "Volvo-Iron-Mark-Black.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Volvo-Iron-Mark-Black.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/2/29/Volvo-Iron-Mark-Black.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "cc0fcf5afbcc9eb61ab95ca341aec84ce477408d",
+    "author": "Volvo Group",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2020-01-01",
+    "uploaded_at": "2024-10-15T04:34:21Z",
+    "local_file": "makes/volvo-trucks.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Scania",
+    "fipe": [
+      {
+        "tipo": "caminhao",
+        "nome": "SCANIA"
+      },
+      {
+        "tipo": "caminhao",
+        "nome": "SAAB-SCANIA"
+      }
+    ],
+    "wikidata": "Q219960",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q219960",
+    "commons_file": "Scandia wordmark.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Scandia_wordmark.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/3/30/Scandia_wordmark.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "5aee0af9b63c7d46413376e6a58393681163a909",
+    "author": "Scania",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "",
+    "date": "2010-01-28T17:40:23Z",
+    "uploaded_at": "2010-01-28T17:40:23Z",
+    "local_file": "makes/scania.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "MAN",
+    "fipe": [
+      {
+        "tipo": "caminhao",
+        "nome": "MAN"
+      }
+    ],
+    "wikidata": "Q708667",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q708667",
+    "commons_file": "MAN Truck & Bus - Logo.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:MAN_Truck_%26_Bus_-_Logo.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/c/ce/MAN_Truck_%26_Bus_-_Logo.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "17e95bc158213ee6b3fd68dd9ac423d41c800d9a",
+    "author": "FDRMRZUSA",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2023-02-26",
+    "uploaded_at": "2023-02-26T21:41:45Z",
+    "local_file": "makes/man.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "DAF",
+    "fipe": [
+      {
+        "tipo": "caminhao",
+        "nome": "DAF"
+      }
+    ],
+    "wikidata": "Q27489",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q27489",
+    "commons_file": "DAF logo.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:DAF_logo.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/1/12/DAF_logo.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "45dcddc2c3f39aebbd5c8b8dbc976b13bcbbe7bf",
+    "author": "DAF Trucks",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "27 August 2010 (original upload date)",
+    "uploaded_at": "2021-08-15T02:31:14Z",
+    "local_file": "makes/daf.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Suzuki",
+    "fipe": [
+      {
+        "tipo": "carro",
+        "nome": "Suzuki"
+      },
+      {
+        "tipo": "moto",
+        "nome": "SUZUKI"
+      }
+    ],
+    "wikidata": "Q181642",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q181642",
+    "commons_file": "Suzuki logo 2025.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Suzuki_logo_2025.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/b/b9/Suzuki_logo_2025.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "eed0f19172b9292938eb95a5c2a7bb191dba6fb9",
+    "author": "Suzuki Motor Corporation",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2025-03-31",
+    "uploaded_at": "2025-04-02T11:01:40Z",
+    "local_file": "makes/suzuki.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "makes",
+    "name": "Kawasaki",
+    "fipe": [
+      {
+        "tipo": "moto",
+        "nome": "KAWASAKI"
+      }
+    ],
+    "wikidata": "Q249033",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q249033",
+    "commons_file": "Kawasaki Motors logo.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Kawasaki_Motors_logo.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/e/e1/Kawasaki_Motors_logo.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "a13e1c85fb8a134b6b74625a417d5a6c39cd9232",
+    "author": "Kawasaki Motors, Ltd.",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2023-07-06",
+    "uploaded_at": "2023-07-07T17:05:19Z",
+    "local_file": "makes/kawasaki.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "insurers",
+    "name": "Allianz",
+    "fipe": [],
+    "wikidata": "Q487292",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q487292",
+    "commons_file": "Allianz.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Allianz.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/4/4b/Allianz.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "4042c8daa82c37c5f4304c23aa3defd01d120679",
+    "author": "Allianz SE",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2008",
+    "uploaded_at": "2025-10-04T05:01:14Z",
+    "local_file": "insurers/allianz.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "insurers",
+    "name": "Bradesco Seguros",
+    "fipe": [],
+    "wikidata": "Q4954511",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q4954511",
+    "commons_file": "Logotipo do Bradesco Seguros.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Logotipo_do_Bradesco_Seguros.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Logotipo_do_Bradesco_Seguros.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "182473e1fa395ec0f2277f5ed6e022e8325ab6dc",
+    "author": "Bradesco Seguros",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2026-08-06T12:39:27Z",
+    "uploaded_at": "2026-08-06T12:39:27Z",
+    "local_file": "insurers/bradesco-seguros.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "insurers",
+    "name": "HDI Seguros",
+    "fipe": [],
+    "wikidata": "Q48867563",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q48867563",
+    "commons_file": "HDI Seguros Brasil - Logo 2020.png",
+    "source_url": "https://commons.wikimedia.org/wiki/File:HDI_Seguros_Brasil_-_Logo_2020.png",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/0/05/HDI_Seguros_Brasil_-_Logo_2020.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/png",
+    "sha1": "01ac990cb02e240bfbabc2eca448e152a30ee38e",
+    "author": "HDI Seguros Brasil",
+    "license": "CC0",
+    "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "usage_terms": "Creative Commons Zero, Public Domain Dedication",
+    "restrictions": "",
+    "date": "2020-01-01",
+    "uploaded_at": "2020-01-15T15:01:42Z",
+    "local_file": "insurers/hdi-seguros.png",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "insurers",
+    "name": "Mapfre",
+    "fipe": [],
+    "wikidata": "Q544532",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q544532",
+    "commons_file": "Logo Mapfre 2026.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Logo_Mapfre_2026.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/4/48/Logo_Mapfre_2026.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "940d7efc8fd3d80528f3437473203eb9e3546532",
+    "author": "Mapfre",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2026-01-08",
+    "uploaded_at": "2026-02-06T16:54:41Z",
+    "local_file": "insurers/mapfre.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "insurers",
+    "name": "Zurich",
+    "fipe": [],
+    "wikidata": "Q230426",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q230426",
+    "commons_file": "Zurich Insurance Group logo.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Zurich_Insurance_Group_logo.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/e/ec/Zurich_Insurance_Group_logo.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "ae0c9ff638d00f00e3fe96066397b789c019e526",
+    "author": "Zurich",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2021-07-08T17:56:06Z",
+    "uploaded_at": "2021-07-08T17:56:06Z",
+    "local_file": "insurers/zurich.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "insurers",
+    "name": "Porto Seguro",
+    "fipe": [],
+    "wikidata": "Q7232169",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q7232169",
+    "commons_file": "Porto Seguro Logo.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Porto_Seguro_Logo.jpg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/5/57/Porto_Seguro_Logo.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/jpeg",
+    "sha1": "816909d07714ced2ed1a125ed30321a78d630b22",
+    "author": "Porto Seguro",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2023-06-21",
+    "uploaded_at": "2011-06-29T21:48:32Z",
+    "local_file": "insurers/porto-seguro.jpg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "insurers",
+    "name": "Azul Seguros",
+    "fipe": [],
+    "wikidata": "Q134466051",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q134466051",
+    "commons_file": "Logotipo da Azul Seguros.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Logotipo_da_Azul_Seguros.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/c/c4/Logotipo_da_Azul_Seguros.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "fdc694e207ae16bc92a6101edbb59dbcc6bcc31b",
+    "author": "Azul Seguros",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2026-07-14T22:05:04Z",
+    "uploaded_at": "2026-07-14T22:05:04Z",
+    "local_file": "insurers/azul-seguros.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  },
+  {
+    "kind": "insurers",
+    "name": "Tokio Marine",
+    "fipe": [],
+    "wikidata": "Q1812086",
+    "wikidata_url": "https://www.wikidata.org/wiki/Q1812086",
+    "commons_file": "Tokio Marine Logo.svg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Tokio_Marine_Logo.svg",
+    "download_url": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Tokio_Marine_Logo.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+    "mime": "image/svg+xml",
+    "sha1": "fea81a96d2d91bca2fc70e9c674628b1fa3da874",
+    "author": "Tokio Marine Holdings, Inc.",
+    "license": "Public domain",
+    "license_url": "",
+    "usage_terms": "Public domain",
+    "restrictions": "trademarked",
+    "date": "2023-09-12",
+    "uploaded_at": "2023-09-12T14:25:09Z",
+    "local_file": "insurers/tokio-marine.svg",
+    "retrieved_at": "2026-10-20T01:07:47+00:00",
+    "status": "approved",
+    "approved_at": "2026-10-19"
+  }
+]
