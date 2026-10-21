@@ -173,6 +173,7 @@ class ServiceOrderViewSet(
         "insurer": ["exact"],
         "consultant": ["exact"],
         "is_active": ["exact"],
+        "vehicle_needs_review": ["exact"],
         "entry_date": ["gte", "lte", "date"],
         "estimated_delivery_date": ["gte", "lte"],
         "created_at": ["gte", "lte", "date"],

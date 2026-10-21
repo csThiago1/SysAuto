@@ -393,8 +393,8 @@ export interface ServiceOrder {
 
   // Transition validation
   transition_requirements: TransitionRequirements | null;
-  /** Indicador leve para listagem/Kanban: true se há hard ou soft blocks para o próximo status */
-  has_transition_blocks: boolean;
+  /** Veículo sem versão do catálogo: bloqueia a entrada em produção (selo no Kanban). */
+  vehicle_needs_review: boolean;
 
   opened_at: string;
   created_at: string;

@@ -83,11 +83,10 @@ const CardContent = React.memo(function CardContent({
             </span>
           </span>
           <div className="flex items-center gap-1.5">
-            {order.has_transition_blocks && (
-              <span
-                className="h-2 w-2 rounded-full bg-warning-500 shrink-0"
-                title="Requisitos pendentes para avançar"
-              />
+            {order.vehicle_needs_review && (
+              <span className="text-[10px] font-semibold leading-none text-warning-400 bg-warning-500/10 px-1.5 py-0.5 rounded-sm border border-warning-500/30 whitespace-nowrap">
+                Veículo a confirmar
+              </span>
             )}
             <DaysInShopBadge days={order.days_in_shop} />
             <StatusBadge status={order.status as ServiceOrderStatus} variant="dot" />

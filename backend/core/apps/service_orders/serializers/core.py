@@ -447,6 +447,7 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
             "vehicle_version",
             "year",
             "color",
+            "vehicle_needs_review",
             "insurer_detail",
             "consultant_name",
             "entry_date",

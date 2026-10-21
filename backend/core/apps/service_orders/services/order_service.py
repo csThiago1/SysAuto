@@ -13,6 +13,9 @@ from .vehicle import CATALOG_KEYS, apply_catalog_vehicle, resulting_catalog_pair
 
 logger = logging.getLogger(__name__)
 
+# HARD blocks que nem o override presencial de gerente fura.
+NON_OVERRIDABLE_BLOCKS: frozenset[str] = frozenset({"VEHICLE_NEEDS_REVIEW"})
+
 # Mapeamento campo -> (status_de_origem_validos, status_destino)
 # Quando um desses campos passa de None para um valor, o status muda automaticamente.
 AUTO_TRANSITIONS: dict[str, tuple[list[str], str]] = {
@@ -404,13 +407,14 @@ class _ServiceOrderCoreMixin:
 
         # Hard blocks: nunca contornaveis por um force desacompanhado de autoridade —
         # so avanca com override presencial de MANAGER+ (manager_verified), que fica
-        # registrado abaixo para auditoria.
+        # registrado abaixo para auditoria. NON_OVERRIDABLE_BLOCKS recusam até esse override.
         if result.hard_blocks:
-            if not (force and manager_verified):
+            non_overridable = {b.code for b in result.hard_blocks} & NON_OVERRIDABLE_BLOCKS
+            if non_overridable or not (force and manager_verified):
                 raise ValidationError({
                     "transition_blocks": {
                         "type": "hard",
-                        "can_override": True,
+                        "can_override": not non_overridable,
                         "blocks": [b.to_dict() for b in result.hard_blocks],
                         "warnings": [w.to_dict() for w in result.warnings],
                     }
