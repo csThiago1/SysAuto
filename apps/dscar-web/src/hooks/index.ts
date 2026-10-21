@@ -118,6 +118,14 @@ export {
   type InsurerPayload,
 } from "./useInsurers";
 
+// ── Catálogo de veículos e consultas (CEP, CNPJ, placa) ──────────────────────
+export {
+  useCatalogOptions,
+  type CatalogLevel,
+  type CatalogParams,
+} from "./useCatalog";
+export { useLookup } from "./useLookup";
+
 // ── Motor de Orçamentos — Catálogo FIPE ───────────────────────────────────────
 export {
   useFipeMakes,

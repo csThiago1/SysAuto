@@ -1,14 +1,15 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useFipeMakes, useFipeModels, useFipeYears } from "@/hooks/useVehicleFipe"
+import {
+  useFipeMakes,
+  useFipeModels,
+  useFipeYears,
+  type VehicleMake,
+  type VehicleModel,
+} from "@/hooks/useVehicleFipe"
 import { useResolverEnquadramento } from "@/hooks/useEnquadramento"
-import type {
-  EnquadramentoResolve,
-  VehicleMake,
-  VehicleModel,
-  VehicleYearVersion,
-} from "@paddock/types"
+import type { EnquadramentoResolve, VehicleYearVersion } from "@paddock/types"
 
 export interface FipeSelectGroupResolveResult extends EnquadramentoResolve {
   make: VehicleMake
