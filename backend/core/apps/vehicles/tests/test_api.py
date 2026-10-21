@@ -2,6 +2,7 @@
 
 import hashlib
 
+from django.db import connection
 from django.test import override_settings
 from django_tenants.test.cases import TenantTestCase
 from rest_framework.test import APIClient
@@ -49,6 +50,17 @@ class VehicleAPITestCase(TenantTestCase):
         read = self.client.get(f"/api/v1/vehicles/{resp.data['id']}/")
         assert read.data["chassis"] == "9BWZZZ377VT004251"
         assert Vehicle.objects.get(pk=resp.data["id"]).chassis == "9BWZZZ377VT004251"
+
+    def test_chassi_e_renavam_cifrados_no_banco(self) -> None:
+        v = Vehicle.objects.create(
+            plate="ENC0001", chassis="9BWZZZ377VT004251", renavam="12345678901"
+        )
+        # Raw SQL só neste teste: lê a coluna gravada sem o ORM decifrar.
+        with connection.cursor() as cur:
+            cur.execute("SELECT chassis, renavam FROM vehicles_vehicle WHERE id = %s", [v.pk])
+            chassis, renavam = cur.fetchone()
+        assert chassis and chassis != "9BWZZZ377VT004251"
+        assert renavam and renavam != "12345678901"
 
     def test_create_vehicle_sem_familia_400(self) -> None:
         resp = self.client.post(

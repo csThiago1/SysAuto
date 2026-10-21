@@ -154,6 +154,28 @@ class CatalogVehicleOSTest(TenantTestCase):
         )
         assert o.fipe_value == v.valor_referencia and o.vehicle_needs_review is False
 
+    def test_patch_cor_em_os_legada_nao_apaga_catalogo_da_irma(self) -> None:
+        v = make_catalog()
+        nova = self.post_os(catalog_family=v.modelo.familia_id)
+        legada = self.post_os(make="Chevrolet", model="Onix")
+        p = self.patch_os(legada.data["id"], color="Prata")
+        assert p.status_code == 200, p.data
+        o = ServiceOrder.objects.get(pk=nova.data["id"])
+        assert o.color == "Prata"
+        assert o.catalog_family == v.modelo.familia and o.catalog_version is None
+        assert (o.make, o.model, o.vehicle_needs_review) == ("Chevrolet", "Onix Plus", True)
+
+    def test_patch_texto_legado_propaga_so_para_irma_sem_catalogo(self) -> None:
+        nova = self.post_os(catalog_version=make_catalog().id)
+        legada = self.post_os(make="Chevrolet", model="Onix")
+        outra_legada = self.post_os(make="Chevrolet", model="Onix")
+        p = self.patch_os(legada.data["id"], make="Fiat", model="Uno")
+        assert p.status_code == 200, p.data
+        o = ServiceOrder.objects.get(pk=outra_legada.data["id"])
+        assert (o.make, o.model) == ("Fiat", "Uno")
+        o = ServiceOrder.objects.get(pk=nova.data["id"])
+        assert (o.make, o.model, o.vehicle_needs_review) == ("Chevrolet", "Onix Plus", False)
+
     def test_sem_catalogo_continua_aceitando_texto(self) -> None:
         # Transição — removido na Task 16.
         r = self.post_os(make="Honda", model="Civic")

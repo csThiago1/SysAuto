@@ -319,19 +319,28 @@ class _ServiceOrderCoreMixin:
         order.save()
 
         # -- Propagar dados do veiculo para outras OSes com a mesma placa --
-        vehicle_fields = {
-            "make", "make_logo", "model", "year", "color", "chassis",
-            "fuel_type", "vehicle_version",
-            "catalog_family", "catalog_version", "vehicle_needs_review", "vehicle_source",
-            "vehicle_source_text", "vehicle_source_year", "year_manufacture", "zero_km",
-            "fipe_value",
+        # vehicle_source* nunca propagam: pertencem a importacao que criou cada OS.
+        text_fields = {
+            "make", "make_logo", "model", "year", "fuel_type", "vehicle_version",
         }
-        vehicle_changed = vehicle_fields & set(data.keys())
-        if vehicle_changed and order.plate:
-            update_payload = {f: getattr(order, f) for f in vehicle_fields}
-            ServiceOrder.objects.filter(
+        catalog_fields = text_fields | {
+            "catalog_family", "catalog_version", "vehicle_needs_review", "zero_km",
+            "year_manufacture", "fipe_value", "vehicle_fipe_value_snapshot",
+        }
+        legacy_changed = (text_fields | {"color", "chassis"}) & data.keys()
+        if order.plate and (catalog_changed or legacy_changed):
+            siblings = ServiceOrder.objects.filter(
                 plate=order.plate, is_active=True,
-            ).exclude(pk=order.pk).update(**update_payload)
+            ).exclude(pk=order.pk)
+            if legacy_changed:
+                siblings.update(color=order.color, chassis=order.chassis)
+            if catalog_changed:
+                siblings.update(**{f: getattr(order, f) for f in catalog_fields})
+            elif legacy_changed:
+                # Texto legado nunca apaga o catalogo de uma OS irma.
+                siblings.filter(catalog_family__isnull=True).update(
+                    **{f: getattr(order, f) for f in text_fields}
+                )
 
         return order
 
