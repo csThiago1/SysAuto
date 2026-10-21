@@ -223,3 +223,48 @@ class VehicleYearVersion(models.Model):
             )
             if part
         )
+
+
+class VehicleAlias(models.Model):
+    """Regra aprendida: texto de uma fonte → versão (ou família) confirmada pelo usuário."""
+
+    class Source(models.TextChoices):
+        CILIA = "cilia", "Cilia"
+        XML_IFX = "xml_ifx", "XML IFX"
+        HDI = "hdi", "HDI"
+        PLACA = "placa", "Placa"
+        ORCAMENTO = "orcamento", "Orçamento"
+        QUOTES = "quotes", "Cotações"
+        BOX = "box", "Box Empresa"
+
+    source = models.CharField(max_length=20, choices=Source.choices)
+    raw_key = models.CharField(max_length=300, help_text="alias_key(texto, ano).")
+    version = models.ForeignKey(
+        VehicleYearVersion, on_delete=models.PROTECT, null=True, blank=True, related_name="+"
+    )
+    family = models.ForeignKey(
+        VehicleFamily, on_delete=models.PROTECT, null=True, blank=True, related_name="+"
+    )
+    confirmacoes = models.PositiveIntegerField(default=1)
+    aprovado = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "vehicle_catalog"
+        ordering = ["-updated_at"]
+        verbose_name = "Regra aprendida"
+        verbose_name_plural = "Regras aprendidas"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["source", "raw_key"], name="uniq_vehiclealias_source_key"
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.source}: {self.raw_key}"
+
+    @property
+    def is_exact(self) -> bool:
+        """Exata com aprovação do admin ou 2 confirmações iguais da mesma fonte."""
+        return self.aprovado or self.confirmacoes >= 2

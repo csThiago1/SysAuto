@@ -1,6 +1,9 @@
 from django.contrib import admin
+from django.db.models import QuerySet
+from django.http import HttpRequest
 
 from apps.vehicle_catalog.models import (
+    VehicleAlias,
     VehicleFamily,
     VehicleFamilyRule,
     VehicleMake,
@@ -47,3 +50,17 @@ class VehicleYearVersionAdmin(admin.ModelAdmin):
     search_fields = ["descricao", "codigo_fipe"]
     list_filter = ["modelo__tipo", "combustivel", "zero_km", "is_active"]
     raw_id_fields = ["modelo"]
+
+
+@admin.register(VehicleAlias)
+class VehicleAliasAdmin(admin.ModelAdmin):
+    list_display = ["raw_key", "source", "version", "family", "confirmacoes", "aprovado"]
+    search_fields = ["raw_key"]
+    list_filter = ["source", "aprovado"]
+    raw_id_fields = ["version", "family"]
+    list_select_related = ["version__modelo__marca", "family__make"]
+    actions = ["aprovar"]
+
+    @admin.action(description="Aprovar regras selecionadas")
+    def aprovar(self, request: HttpRequest, queryset: QuerySet[VehicleAlias]) -> None:
+        self.message_user(request, f"{queryset.update(aprovado=True)} regra(s) aprovada(s).")
