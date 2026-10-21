@@ -369,6 +369,8 @@ LOGGING = {
     "loggers": {
         "django": {"handlers": ["console"], "level": "WARNING", "propagate": False},
         "apps": {"handlers": ["console"], "level": "DEBUG", "propagate": False},
+        # O httpx loga a URL em INFO, e a URL das consultas traz CEP/CNPJ/placa.
+        "httpx": {"level": "WARNING"},
     },
 }
 
@@ -399,6 +401,9 @@ APIPLACAS_TOKEN = config("APIPLACAS_TOKEN", default="")
 # endpoint: GET https://wdapi2.com.br/consulta/{plate}/{token}
 APIPLACAS_URL = "https://wdapi2.com.br/consulta"
 APIPLACAS_TIMEOUT = 8.0
+
+# ─── AwesomeAPI (CEP, fallback das consultas) ─────────────────────────────────
+AWESOMEAPI_TOKEN = config("AWESOMEAPI_TOKEN", default="")
 
 # ─── Focus NF-e ──────────────────────────────────────────────────────────────
 FOCUS_NFE_TOKEN = config("FOCUSNFE_TOKEN", default="") or config("FOCUS_NFE_TOKEN", default="")

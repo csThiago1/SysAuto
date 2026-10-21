@@ -70,7 +70,9 @@ async function proxyRequest(
     // Não logar o body do request — pode conter CPF, email, telefone (LGPD)
     // Mas logar o body da RESPOSTA de erro (contém nomes de campo, não PII)
     const errBody = await response.clone().json().catch(() => null)
-    console.error(`[proxy] ${method} ${backendUrl} → ${response.status}`, errBody)
+    // Defesa extra: nada de lookups/ (CEP, CNPJ, placa) vai para o log
+    const logUrl = backendUrl.replace(/\/api\/v1\/lookups\/.*$/, "/api/v1/lookups/<redacted>")
+    console.error(`[proxy] ${method} ${logUrl} → ${response.status}`, errBody)
   }
 
   // Passthrough binário para PDF/XML/HTML (não parsear como JSON)
