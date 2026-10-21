@@ -76,6 +76,17 @@ class ColorEnumTest(TenantTestCase):
         assert _normalize_plate_response("CCH1D23", {"cor": "BRANCA"})["color"] == "BRANCA"
         assert _normalize_plate_response("CCH1D23", {"cor": "Furta-cor"})["color"] == ""
 
+    def test_post_os_cor_livre_vira_codigo(self) -> None:
+        # App mobile manda a cor digitada à mão (online e no replay offline com null).
+        for color, expected in (("Prata", "PRATA"), ("Furta-cor", "NAO_INFORMADA"), (None, "")):
+            r = self.client.post(
+                URL,
+                {"plate": "MOB1D23", "customer_name": "Cliente Mobile", "color": color},
+                format="json",
+            )
+            assert r.status_code == 201, r.data
+            assert ServiceOrder.objects.get(pk=r.data["id"]).color == expected
+
     def test_post_orcamento_cor_livre_vira_codigo(self) -> None:
         NumberSequence.objects.get_or_create(
             sequence_type="BUDGET",

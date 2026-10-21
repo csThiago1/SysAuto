@@ -12,6 +12,7 @@ from apps.insurers.serializers import InsurerMinimalSerializer
 from apps.persons.models import Person
 from apps.persons.serializers import ExpertMinimalSerializer
 from apps.vehicle_catalog.models import VehicleFamily, VehicleYearVersion
+from apps.vehicle_catalog.normalize import CorVeiculo, match_color
 from apps.vehicle_catalog.snapshot import catalog_path
 
 from ..models import (
@@ -661,6 +662,8 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
     catalog_version = serializers.PrimaryKeyRelatedField(
         queryset=VehicleYearVersion.objects.filter(is_active=True), required=False, allow_null=True
     )
+    # Tolerante só na abertura: o app mobile ainda manda cor em texto livre ("Prata").
+    color = serializers.CharField(max_length=40, required=False, allow_blank=True, allow_null=True)
 
     class Meta:
         model = ServiceOrder
@@ -689,13 +692,18 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
             "make":            {"required": False, "allow_blank": True},
             "model":           {"required": False, "allow_blank": True},
             "vehicle_version": {"required": False, "allow_blank": True},
-            "color":           {"required": False, "allow_blank": True},
             "chassis":         {"required": False, "allow_blank": True},
             "fuel_type":       {"required": False, "allow_blank": True},
             "broker_name":     {"required": False, "allow_blank": True},
             "casualty_number": {"required": False, "allow_blank": True},
             "customer_name":   {"required": False, "allow_blank": True},
         }
+
+    def validate_color(self, v: str | None) -> str:
+        # Texto livre vira código do enum em vez de 400; vazio/nulo continua vazio.
+        if not v or v in CorVeiculo.values:
+            return v or ""
+        return match_color(v) or CorVeiculo.NAO_INFORMADA
 
     def validate(self, attrs: dict) -> dict:
         # Proteção RBAC: apenas MANAGER+ pode setar campos de NF externa no create.
