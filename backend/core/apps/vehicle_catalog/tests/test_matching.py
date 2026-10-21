@@ -154,6 +154,28 @@ def test_alias_de_familia_preenche_familia_sem_versao() -> None:
     assert m.review is True  # sem versão a OS continua com selo
 
 
+def test_alias_com_versao_desativada_e_ignorado() -> None:
+    v = VehicleYearVersion.objects.get(modelo__codigo_fipe="005275-2", ano=2013)
+    for _ in range(2):
+        record_alias_confirmation(
+            "hdi", "VOLKSWAGEN GOL 1.0MI TOTAL FLEX 8V 4P", 2013, version=v, family=None
+        )
+    VehicleYearVersion.objects.filter(pk=v.pk).update(is_active=False)
+    m = match_vehicle("VOLKSWAGEN", "GOL 1.0MI TOTAL FLEX 8V 4P", 2013, source="hdi")
+    assert m.version != v and m.confidence != "exata" and m.review is True
+
+
+def test_alias_com_familia_desativada_e_ignorado() -> None:
+    fam = VehicleFamily.objects.get(nome="Gol")
+    for _ in range(2):
+        record_alias_confirmation(
+            "hdi", "VOLKSWAGEN GOL 1.0MI TOTAL FLEX 8V 4P", 2013, version=None, family=fam
+        )
+    VehicleFamily.objects.filter(pk=fam.pk).update(is_active=False)
+    m = match_vehicle("VOLKSWAGEN", "GOL 1.0MI TOTAL FLEX 8V 4P", 2013, source="hdi")
+    assert m.family != fam and m.confidence != "exata" and m.review is True
+
+
 def test_alias_de_outra_fonte_nao_vale() -> None:
     v = VehicleYearVersion.objects.get(modelo__codigo_fipe="005275-2", ano=2013)
     for _ in range(2):

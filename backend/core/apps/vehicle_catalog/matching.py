@@ -114,6 +114,11 @@ def _by_alias(source: str, brand: str, text: str, year: int | None) -> VehicleMa
     )
     if alias is None:
         return None
+    # alvo desativado por recarga da FIPE: ignora a regra e segue para os passos normais
+    if alias.version is not None and not alias.version.is_active:
+        return None
+    if alias.family is not None and not alias.family.is_active:
+        return None
     confidence: Confidence = "exata" if alias.is_exact else "alta"
     if alias.version is not None:
         return _version_result(alias.version, confidence, not alias.is_exact)
