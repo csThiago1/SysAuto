@@ -6,6 +6,8 @@
 /** Retornada pelo InsurerMinimalSerializer (list e nested em OS). */
 export interface Insurer {
   id: string;
+  code: string | null;   // código interno (porto, azul...); null em seguradora sem seed
+  cnpjs: string[];       // todos os CNPJs, só dígitos, incluindo o principal
   name: string;
   trade_name: string;
   cnpj: string;

@@ -1788,6 +1788,9 @@ class ServiceOrderViewSet(
                 pb.source_services_total = tmp.source_services_total
                 pb.source_grand_total = tmp.source_grand_total
                 pb.insurer_code = tmp.insurer_code
+                pb.insurer_trade = tmp.insurer_trade
+                pb.insurer_cnpj = tmp.insurer_cnpj
+                pb.vehicle_tipo_hint = tmp.vehicle_tipo_hint
                 pb.segurado_name = tmp.segurado_name
                 pb.vehicle_plate = tmp.vehicle_plate
                 pb.vehicle_brand = tmp.vehicle_brand

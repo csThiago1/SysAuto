@@ -687,6 +687,7 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
             "vehicle_source_text",
             "vehicle_source_year",
             "zero_km",
+            "import_warnings",
         ]
         extra_kwargs = {
             # Campos opcionais do veiculo -- model tem default="" mas sem blank=True
@@ -856,6 +857,12 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
             "customer_name":   {"required": False, "allow_blank": True},
             "plate":           {"required": False, "allow_blank": True},
         }
+
+    def validate_import_warnings(self, value: Any) -> list[str]:
+        """Avisos da importacao so podem ser dispensados (lista vazia), nunca escritos."""
+        if value != []:
+            raise serializers.ValidationError("Envie [] para dispensar os avisos.")
+        return value
 
     def update(self, instance: "ServiceOrder", validated_data: dict) -> "ServiceOrder":
         # UUID do UnifiedCustomer nao pode ser salvo no FK inteiro de Person -- descarta.

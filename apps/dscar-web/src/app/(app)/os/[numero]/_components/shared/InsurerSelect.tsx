@@ -11,6 +11,8 @@ interface InsurerSelectProps {
   /** Seguradora já resolvida (ex: insurer_detail da OS) — fallback quando
    * `value` não está entre os resultados carregados. */
   knownInsurer?: Insurer | null
+  /** Lista só seguradoras com `code` (a importação XML depende dele). */
+  onlyWithCode?: boolean
 }
 
 // Exported so InsurerSection can render the logo standalone.
@@ -57,9 +59,15 @@ export function InsurerLogo({
 }
 
 // Legacy combined component (used in NewOSForm)
-export function InsurerSelect({ value, onChange, disabled, knownInsurer }: InsurerSelectProps) {
+export function InsurerSelect({
+  value,
+  onChange,
+  disabled,
+  knownInsurer,
+  onlyWithCode = false,
+}: InsurerSelectProps) {
   const { data, isLoading } = useInsurers()
-  const insurers = data?.results ?? []
+  const insurers = (data?.results ?? []).filter((i) => !onlyWithCode || i.code)
   const selected =
     insurers.find((i) => i.id === value) ?? (knownInsurer?.id === value ? knownInsurer : null)
 

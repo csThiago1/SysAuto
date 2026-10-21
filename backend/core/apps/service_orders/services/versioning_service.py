@@ -9,7 +9,7 @@ from typing import Any
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
 
-from .vehicle import apply_catalog_vehicle
+from .vehicle import apply_catalog_vehicle, apply_vehicle_text
 
 logger = logging.getLogger(__name__)
 
@@ -426,14 +426,14 @@ class _ServiceOrderVersioningMixin:
                 needs_review=budget.vehicle_needs_review,
             )
         else:
-            # Sem FK: separa vehicle_description em make/model (primeiras 2 palavras) ate a Task 11
-            desc_parts = (budget.vehicle_description or "").split()
-            os_instance.make = desc_parts[0] if desc_parts else ""
-            os_instance.model = desc_parts[1] if len(desc_parts) > 1 else ""
-            os_instance.make_logo = budget.vehicle_make_logo or ""
-            os_instance.vehicle_version = budget.vehicle_version or ""
-            os_instance.fuel_type = budget.vehicle_fuel_type or ""
-            os_instance.year = budget.vehicle_year
+            # Orçamento legado sem FK: casa a descrição livre com o catálogo
+            apply_vehicle_text(
+                os_instance,
+                brand="",
+                text=budget.vehicle_description or "",
+                year=budget.vehicle_year,
+                source="orcamento",
+            )
         os_instance.save()
 
         # -- Copia itens do orcamento aprovado para a OS --

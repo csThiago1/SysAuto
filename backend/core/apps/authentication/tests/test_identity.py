@@ -127,6 +127,25 @@ class TestPermissionsByActionMixin(SimpleTestCase):
         vs = self._make_viewset("create", write_actions=("approve",))
         assert any(isinstance(p, IsConsultantOrAbove) for p in vs.get_permissions())
 
+    def test_action_permissions_vence_write_actions(self) -> None:
+        """Entrada em action_permissions vale mesmo para action listada em write_actions."""
+        from apps.authentication.permissions import (
+            IsConsultantOrAbove,
+            IsManagerOrAbove,
+        )
+
+        attrs = {
+            "write_actions": ("trade_names", "destroy"),
+            "action_permissions": {"trade_names": IsConsultantOrAbove},
+        }
+        perms = self._make_viewset("trade_names", **attrs).get_permissions()
+        assert any(isinstance(p, IsConsultantOrAbove) for p in perms)
+        assert not any(isinstance(p, IsManagerOrAbove) for p in perms)
+
+        # as demais actions de write_actions seguem write_permission
+        perms = self._make_viewset("destroy", **attrs).get_permissions()
+        assert any(isinstance(p, IsManagerOrAbove) for p in perms)
+
     def test_custom_write_permission_class(self) -> None:
         """write_permission override troca quem pode escrever."""
         from apps.authentication.permissions import IsAdminOrAbove

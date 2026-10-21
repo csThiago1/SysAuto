@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from decimal import Decimal
 from typing import Any
+from uuid import UUID
 
 
 @dataclass
@@ -88,8 +89,11 @@ class ParsedBudget:
     segurado_cpf: str = ""
     segurado_phone: str = ""
     segurado_email: str = ""
+    segurado_city: str = ""
+    segurado_uf: str = ""
+    segurado_cep: str = ""
 
-    # Veículo
+    # Veículo (texto como veio da fonte; o casamento fica em normalize_parsed_budget)
     vehicle_plate: str = ""
     vehicle_description: str = ""
     vehicle_chassis: str = ""
@@ -97,11 +101,22 @@ class ParsedBudget:
     vehicle_km: str = ""
     vehicle_year: int | None = None
     vehicle_brand: str = ""
-    vehicle_model: str = ""  # Modelo normalizado (sem range de anos do Cilia)
+    vehicle_model: str = ""
+    vehicle_tipo_hint: str = ""  # type_key do Cilia: car | truck | motorcycle | van ...
 
     # Sinistro / apólice
     casualty_number: str = ""
-    insurer_code: str = ""  # mapeado de insurer.trade pro nosso Insurer.code
+    insurer_code: str = ""  # Insurer.code quando a fonte informa (XML, HDI) ou após casar
+    insurer_trade: str = ""
+    insurer_cnpj: str = ""
+
+    # Resultado de normalize_parsed_budget (apps.cilia.normalization)
+    catalog_family_id: int | None = None
+    catalog_version_id: int | None = None
+    vehicle_review: bool = True
+    color: str = ""  # valor de CorVeiculo; "" quando não casou
+    insurer_id: UUID | None = None
+    normalized: bool = False
 
     # Financeiro
     franchise_amount: Decimal = Decimal("0")
@@ -170,8 +185,9 @@ class ImportService:
             ImportAttempt (sempre — mesmo em erro). Se sucesso, tem
             service_order preenchido.
         """
-        from .models import ImportAttempt
         from .client import CiliaClient, CiliaError
+        from .models import ImportAttempt
+        from .normalization import UnknownInsurerError
         from .sources.cilia_parser import CiliaParser
 
         client = client or CiliaClient()
@@ -271,6 +287,8 @@ class ImportService:
         # Persist
         try:
             os_instance, _version = cls._persist_cilia_budget(parsed=parsed, attempt=attempt)
+        except UnknownInsurerError as exc:
+            return cls._fail_unknown_insurer(attempt, exc)
         except Exception as exc:  # noqa: BLE001
             logger.exception("Cilia persist error")
             attempt.error_message = f"Persist error: {exc}"
@@ -284,6 +302,15 @@ class ImportService:
         attempt.save(update_fields=["service_order", "parsed_ok"])
         return attempt
 
+    @staticmethod
+    def _fail_unknown_insurer(attempt: "Any", exc: "Any") -> "Any":
+        """Importação parada por seguradora desconhecida, com o texto recebido."""
+        attempt.error_message = str(exc)
+        attempt.error_type = "UnknownInsurer"
+        attempt.parsed_ok = False
+        attempt.save(update_fields=["error_message", "error_type", "parsed_ok"])
+        return attempt
+
     @classmethod
     @transaction.atomic
     def _persist_cilia_budget(
@@ -294,17 +321,26 @@ class ImportService:
         """
         from django.db.models import Q
 
-        from apps.persons.models import Person, PersonRole, RolePessoa, TipoPessoa
-        from apps.insurers.models import Insurer
+        from apps.cilia.normalization import (
+            UnknownInsurerError,
+            color_warning,
+            matched_insurer,
+            matched_vehicle,
+            normalize_parsed_budget,
+            note_cnpj,
+            vehicle_source_text,
+        )
         from apps.service_orders.models import ServiceOrder
         from apps.service_orders.services import ServiceOrderService
+        from apps.service_orders.services.vehicle import apply_catalog_vehicle
+        from apps.vehicle_catalog.normalize import CorVeiculo
 
-        insurer = Insurer.objects.filter(code=parsed.insurer_code).first()
+        normalize_parsed_budget(parsed)
+        insurer = matched_insurer(parsed)
         if insurer is None:
-            trade = (parsed.raw_payload.get("insurer") or {}).get("trade", "?")
-            raise ValueError(
-                f"Insurer '{parsed.insurer_code}' não existe no catálogo "
-                f"(Cilia trade: '{trade}'). Seed a seguradora primeiro."
+            # XML não traz nome: o texto mostrado é o código escolhido no upload
+            raise UnknownInsurerError(
+                parsed.insurer_trade or parsed.insurer_code, parsed.insurer_cnpj
             )
 
         os_instance = ServiceOrder.objects.filter(
@@ -312,19 +348,7 @@ class ImportService:
         ).first()
 
         if os_instance is None:
-            document_digits = "".join(ch for ch in parsed.segurado_cpf if ch.isdigit())
-            customer = Person.objects.create(
-                full_name=parsed.segurado_name or "Cliente Importado Cilia",
-                person_kind=(
-                    TipoPessoa.JURIDICA
-                    if len(document_digits) > 11
-                    else TipoPessoa.FISICA
-                ),
-            )
-            PersonRole.objects.get_or_create(person=customer, role=RolePessoa.CLIENTE)
-
-            model = parsed.vehicle_description or "Veículo importado Cilia"
-            make = parsed.vehicle_brand or (model.split()[0] if model else "")
+            customer = cls._create_segurado(parsed)
             mileage_in = None
             if parsed.vehicle_km:
                 try:
@@ -332,24 +356,35 @@ class ImportService:
                 except (ArithmeticError, ValueError):
                     mileage_in = None
 
-            os_instance = ServiceOrder.objects.create(
+            warning = color_warning(parsed)
+            os_instance = ServiceOrder(
                 number=ServiceOrderService.get_next_number(),
                 customer=customer,
                 customer_name=customer.full_name,
                 customer_type="insurer",
                 insurer=insurer,
+                insurer_cnpj=note_cnpj(insurer, parsed.insurer_cnpj),
                 insured_type="insured" if parsed.franchise_amount else "third",
                 casualty_number=parsed.casualty_number,
                 deductible_amount=parsed.franchise_amount or None,
                 plate=parsed.vehicle_plate,
-                make=make,
-                model=model,
-                year=parsed.vehicle_year,
-                color=parsed.vehicle_color or "",
+                color=parsed.color or CorVeiculo.NAO_INFORMADA,
                 chassis=parsed.vehicle_chassis or "",
                 mileage_in=mileage_in,
                 status="waiting_auth",
+                import_warnings=[warning] if warning else [],
             )
+            family, version = matched_vehicle(parsed)
+            apply_catalog_vehicle(
+                os_instance,
+                family=family,
+                version=version,
+                needs_review=parsed.vehicle_review,
+                source=parsed.source,
+                source_text=vehicle_source_text(parsed),
+                source_year=parsed.vehicle_year,
+            )
+            os_instance.save()
 
         # Idempotência: se já existe version com mesmo external_version_id, retorna ela
         external_version_id = str(parsed.external_version_id or "")
@@ -367,6 +402,57 @@ class ImportService:
             import_attempt=attempt,
         )
         return os_instance, version
+
+    @staticmethod
+    def _create_segurado(parsed: ParsedBudget) -> "Any":
+        """Person nova do segurado: CPF só se válido, telefone em dígitos, cidade do IBGE."""
+        from apps.lookups.municipios import match_municipio
+        from apps.lookups.validators import is_valid_cpf, only_digits
+        from apps.persons.models import (
+            Person,
+            PersonAddress,
+            PersonContact,
+            PersonDocument,
+            PersonRole,
+            RolePessoa,
+            TipoContato,
+            TipoDocumento,
+            TipoPessoa,
+        )
+
+        document = only_digits(parsed.segurado_cpf)
+        customer = Person.objects.create(
+            full_name=parsed.segurado_name or "Cliente Importado Cilia",
+            person_kind=TipoPessoa.JURIDICA if len(document) > 11 else TipoPessoa.FISICA,
+        )
+        PersonRole.objects.get_or_create(person=customer, role=RolePessoa.CLIENTE)
+        if is_valid_cpf(document):
+            PersonDocument.objects.create(
+                person=customer, doc_type=TipoDocumento.CPF, value=document, is_primary=True
+            )
+        phone = only_digits(parsed.segurado_phone)
+        if len(phone) in (10, 11):
+            PersonContact.objects.create(
+                person=customer,
+                contact_type=TipoContato.CELULAR if len(phone) == 11 else TipoContato.COMERCIAL,
+                value=phone,
+                is_primary=True,
+            )
+        municipio = (
+            match_municipio(parsed.segurado_city, parsed.segurado_uf)
+            if parsed.segurado_city
+            else None
+        )
+        if municipio is not None:
+            PersonAddress.objects.create(
+                person=customer,
+                city=municipio.nome,
+                state=municipio.uf,
+                zip_code=parsed.segurado_cep[:9],  # como veio da fonte, sem consulta externa
+                municipio_ibge=municipio.codigo_ibge,
+                is_primary=True,
+            )
+        return customer
 
     # ------------------------------------------------------------------ XML IFX
     @classmethod
@@ -387,6 +473,7 @@ class ImportService:
           - Status sempre "autorizado" (XML só chega quando finaliza)
         """
         from .models import ImportAttempt
+        from .normalization import UnknownInsurerError
         from .sources.xml_ifx_parser import XmlIfxParser
 
         source = f"xml_{insurer_code.lower()}" if insurer_code else "xml_ifx"
@@ -442,6 +529,8 @@ class ImportService:
             os_instance, _version = cls._persist_cilia_budget(
                 parsed=parsed, attempt=attempt,
             )
+        except UnknownInsurerError as exc:
+            return cls._fail_unknown_insurer(attempt, exc)
         except Exception as exc:  # noqa: BLE001
             logger.exception("XML IFX persist error")
             attempt.error_message = f"Persist error: {exc}"

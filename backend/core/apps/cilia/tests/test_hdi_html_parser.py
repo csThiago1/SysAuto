@@ -26,7 +26,7 @@ class HdiParserBasicTest(SimpleTestCase):
         self.assertEqual(pb.vehicle_plate, "OAO2325")
         self.assertEqual(pb.vehicle_brand, "VOLKSWAGEN")
         self.assertEqual(pb.vehicle_year, 2013)
-        self.assertEqual(pb.vehicle_color, "Preta")
+        self.assertEqual(pb.vehicle_color, "PRETA")
         self.assertEqual(pb.insurer_code, "hdi")
 
     def test_hdi_2_basics(self) -> None:

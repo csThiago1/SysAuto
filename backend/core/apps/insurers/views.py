@@ -10,20 +10,20 @@ from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db import connection
-from rest_framework import filters, mixins, parsers, status, viewsets
+from rest_framework import filters, mixins, parsers, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.authentication.permissions import PermissionsByActionMixin
-
+from apps.authentication.permissions import IsConsultantOrAbove, PermissionsByActionMixin
 from apps.insurers.models import Insurer, InsurerTenantProfile
 from apps.insurers.serializers import (
     InsurerMinimalSerializer,
     InsurerSerializer,
     InsurerTenantProfileSerializer,
 )
+from apps.vehicle_catalog.normalize import normalize_name
 
 logger = logging.getLogger(__name__)
 
@@ -58,10 +58,12 @@ class InsurerViewSet(
     - list / retrieve: qualquer usuário autenticado
     - create / update / destroy: MANAGER+
     - upload_logo: POST {id}/upload_logo/ — MANAGER+
+    - trade_names: POST {id}/trade-names/ — CONSULTANT+
     """
 
     read_permission = IsAuthenticated
     write_actions = ("create", "update", "partial_update", "destroy", "upload_logo")
+    action_permissions = {"trade_names": IsConsultantOrAbove}
     filter_backends = [filters.SearchFilter]
     search_fields = ["name", "trade_name", "abbreviation"]
 
@@ -153,6 +155,22 @@ class InsurerViewSet(
         cache.delete("insurers:active")
 
         return Response(InsurerSerializer(insurer).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="trade-names")
+    def trade_names(self, request: Request, pk: str | None = None) -> Response:
+        """
+        Vincula um nome recebido numa importação a esta seguradora.
+
+        Request: {"name": "..."}. Acrescenta só se o nome ainda não estiver na lista
+        (sem caixa nem acento). Response: {"trade_names": [...]}.
+        """
+        insurer: Insurer = self.get_object()
+        name = serializers.CharField(max_length=200).run_validation(request.data.get("name"))
+        if normalize_name(name) not in {normalize_name(n) for n in insurer.trade_names}:
+            insurer.trade_names = [*insurer.trade_names, name]
+            insurer.save(update_fields=["trade_names", "updated_at"])
+            cache.delete("insurers:active")
+        return Response({"trade_names": insurer.trade_names})
 
     @action(detail=True, methods=["get", "put"], url_path="tenant_profile")
     def tenant_profile(self, request: Request, pk: str | None = None) -> Response:

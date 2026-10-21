@@ -298,6 +298,12 @@ class ServiceOrder(PaddockBaseModel):
     insurer_cnpj = models.CharField(
         max_length=14, blank=True, default="", verbose_name="CNPJ da seguradora (nota)"
     )
+    import_warnings = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name="Avisos da importação",
+        help_text="Divergências entre o arquivo importado e a OS; o usuário dispensa limpando.",
+    )
 
     # ── Perfil veicular (Motor de Orçamentos MO-1) ──────────────────────────
     vehicle_fipe_value_snapshot = models.DecimalField(

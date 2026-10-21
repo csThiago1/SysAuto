@@ -9,6 +9,8 @@ from typing import Any
 from django.db import models, transaction
 from rest_framework.exceptions import ValidationError
 
+from apps.vehicle_catalog.matching import record_alias_confirmation
+
 from .vehicle import CATALOG_KEYS, apply_catalog_vehicle, resulting_catalog_pair
 
 logger = logging.getLogger(__name__)
@@ -134,6 +136,7 @@ class _ServiceOrderCoreMixin:
         catalog_changed = bool(CATALOG_KEYS & data.keys())
         if catalog_changed:
             catalog_family, catalog_version = resulting_catalog_pair(order, data)
+            old_family_id = order.catalog_family_id
 
         # Detectar campos de data recem-preenchidos que disparam transicao
         triggered_transitions: list[tuple[str, str]] = []
@@ -230,6 +233,21 @@ class _ServiceOrderCoreMixin:
 
         if catalog_changed:
             apply_catalog_vehicle(order, family=catalog_family, version=catalog_version)
+            # Usuario confirmou/corrigiu o veiculo de uma importacao: conta para a regra.
+            # So limpar a versao nao e confirmacao.
+            if (
+                order.vehicle_source
+                and order.vehicle_source_text
+                and order.catalog_family_id
+                and (order.catalog_version_id or order.catalog_family_id != old_family_id)
+            ):
+                record_alias_confirmation(
+                    order.vehicle_source,
+                    order.vehicle_source_text,
+                    order.vehicle_source_year,
+                    version=order.catalog_version,
+                    family=order.catalog_family,
+                )
 
         # Criar um log por grupo que teve alteracoes
         if any(changes_by_group.values()) or other_changes:

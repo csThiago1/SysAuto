@@ -69,7 +69,7 @@ Caminhos:
   - nunca raw SQL;
   - nunca `except: pass`;
   - Black (linha 100) + isort;
-  - permissões só via `PermissionsByActionMixin` (`write_permission`, `read_permission`, `write_actions`), nunca `get_permissions` à mão.
+  - permissões só via `PermissionsByActionMixin` (`write_permission`, `read_permission`, `write_actions`, `action_permissions`), nunca `get_permissions` à mão.
 - **Front:**
   - TS strict, sem `any`;
   - toda resposta nova da API validada com Zod, nunca `as Type`;
@@ -1171,7 +1171,7 @@ Se um caso divergir, ajuste só `TOKEN_SYN` ou `DROP`, nunca os limiares, e regi
 - Modify: `apps/service_orders/models/service_order.py`: +`import_warnings` (JSONField, `default=list`, `blank=True`), exposto no Detail e gravável só como lista vazia, para dispensar o aviso.
 - Modify:
   - `apps/insurers/views.py`: action `trade_names` (POST, detail, `IsConsultantOrAbove`);
-  - `app/(app)/os/[numero]/_components/ImportBudgetModal.tsx:33-38,241-250`: troca a lista fixa por `InsurerSelect` (`os/[numero]/_components/shared/InsurerSelect.tsx`). O envio passa `insurer_code` = `code` da seguradora escolhida e `source = "xml_" + code`; o backend já trata como `xml_porto` o que não estiver em `XML_SOURCES` (`orders.py:1650-1652`).
+  - `app/(app)/os/[numero]/_components/ImportBudgetModal.tsx:33-38,241-250`: troca a lista fixa por `InsurerSelect` (`os/[numero]/_components/shared/InsurerSelect.tsx`). O select lista só seguradoras com `code`. O envio passa `insurer_code` = `code` da seguradora escolhida; `source` é `xml_{code}` para porto, azul e itau e `"soma"` para qualquer outro código (o ramo XML só aceita `soma`, `xml_porto`, `xml_azul` e `xml_itau`; com `soma` o backend grava a tentativa como `xml_porto`).
 - Delete: `apps/cilia/tests/test_cilia_parser_normalization.py`. Ajuste a cor esperada em `test_hdi_html_parser.py` de "Preta" para "PRETA".
 - Test:
   - `apps/cilia/tests/test_normalization.py`;

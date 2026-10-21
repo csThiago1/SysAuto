@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
+from apps.vehicle_catalog.matching import match_vehicle
 from apps.vehicle_catalog.models import VehicleFamily, VehicleYearVersion
 from apps.vehicle_catalog.snapshot import build_snapshot, resolve_family
 
@@ -47,6 +48,22 @@ def apply_catalog_vehicle(
         order.vehicle_source_text = source_text
     if source_year is not None:
         order.vehicle_source_year = source_year
+
+
+def apply_vehicle_text(
+    order: "ServiceOrder", *, brand: str, text: str, year: int | None, source: str
+) -> None:
+    """Casa um texto livre de veículo com o catálogo e grava o resultado na OS (não salva)."""
+    match = match_vehicle(brand, text, year, source=source)
+    apply_catalog_vehicle(
+        order,
+        family=match.family,
+        version=match.version,
+        needs_review=match.review,
+        source=source,
+        source_text=f"{brand} {text}".strip()[:300],
+        source_year=year,
+    )
 
 
 def resulting_catalog_pair(
