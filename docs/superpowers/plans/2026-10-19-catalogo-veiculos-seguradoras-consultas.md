@@ -1355,7 +1355,7 @@ Run: `docker exec paddock_django pytest apps/lookups -v`.
 
 **`service.lookup`:**
 1. limpa e valida a chave: CEP com 8 dígitos; CNPJ com `is_valid_cnpj`; placa com `is_valid_plate`;
-2. passa pelo DB-first do tipo, se houver (só placa, na Task 14);
+2. passa pelo DB-first do tipo, se houver: placa (Task 14) e CNPJ (Task 13);
 3. lê o cache `cache_key(kind, key) = f"lookup:{kind}:{sha256_hex(key)}"`;
 4. percorre `CHAINS[kind]`:
    - para no prazo `monotonic() + 6.0`;

@@ -12,9 +12,11 @@ from time import monotonic
 from typing import Any, Literal, TypedDict
 
 from django.core.cache import cache
+from django.db import connection
+from django_tenants.utils import get_public_schema_name
 
 from apps.lookups.models import Municipio
-from apps.lookups.providers import awesomeapi, opencep, viacep
+from apps.lookups.providers import awesomeapi, cnpja_open, cnpjws, minhareceita, opencep, viacep
 from apps.lookups.validators import (
     clean_cnpj,
     is_valid_cnpj,
@@ -22,6 +24,7 @@ from apps.lookups.validators import (
     normalize_plate,
     only_digits,
 )
+from apps.persons.models import PersonAddress, PersonDocument, TipoDocumento
 from apps.persons.utils import sha256_hex
 
 logger = logging.getLogger(__name__)
@@ -36,6 +39,9 @@ BUDGET_S = 6.0
 QUOTAS: dict[str, int] = {"cnpja_open": 4, "cnpjws": 2}
 CHAINS: dict[str, list[Provider]] = {
     "cep": [viacep, opencep, awesomeapi],
+    # Antes de ligar em produção: confirmar os termos de uso comercial do CNPJá. Se não
+    # permitirem, a ordem vira [minhareceita, cnpjws, cnpja_open].
+    "cnpj": [cnpja_open, minhareceita, cnpjws],
 }
 
 
@@ -81,9 +87,72 @@ def _normalize_cep(raw: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     return fields, [] if municipio else ["municipio"]
 
 
+def _normalize_cnpj(raw: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    fields = {k: v for k, v in raw.items() if k not in ("ibge", "cidade")}
+    municipio = Municipio.objects.filter(codigo_ibge=raw.get("ibge") or "").first()
+    fields["cep"] = only_digits(raw.get("cep", ""))
+    fields["municipio"] = (
+        {"id": municipio.codigo_ibge, "label": municipio.nome} if municipio else None
+    )
+    fields["uf"] = municipio.uf if municipio else raw.get("uf", "")
+    said_city = raw.get("ibge") or raw.get("cidade")
+    return fields, ["municipio"] if said_city and not municipio else []
+
+
 NORMALIZERS: dict[str, Callable[[dict[str, Any]], tuple[dict[str, Any], list[str]]]] = {
     "cep": _normalize_cep,
+    "cnpj": _normalize_cnpj,
 }
+
+
+def _db_first_cnpj(cnpj: str) -> LookupResult | None:
+    """`Person` ativa do tenant com esse CNPJ, gravado com ou sem máscara. Não vai para o cache."""
+    if connection.schema_name == get_public_schema_name():  # Person só existe no tenant
+        return None
+    formatted = f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:]}"
+    doc = (
+        PersonDocument.objects.filter(
+            doc_type=TipoDocumento.CNPJ,
+            value_hash__in={sha256_hex(cnpj), sha256_hex(formatted)},
+            person__is_active=True,
+        )
+        .select_related("person")
+        .first()
+    )
+    if doc is None:
+        return None
+    person = doc.person
+    addr = person.addresses.filter(is_primary=True).first() or PersonAddress()  # vazio
+    raw: dict[str, Any] = {
+        "razao_social": person.full_name,
+        "nome_fantasia": person.fantasy_name,
+        "situacao": "",
+        "logradouro": addr.street,
+        "numero": addr.number,
+        "complemento": addr.complement,
+        "bairro": addr.neighborhood,
+        "cep": addr.zip_code,
+        "ibge": addr.municipio_ibge,
+        "cidade": addr.city,
+        "uf": addr.state,
+        "cnae_codigo": "",
+        "cnae_descricao": "",
+        "simples": None,
+        "mei": None,
+        "email": "",
+        "telefone": "",
+    }
+    fields, unmatched = _normalize_cnpj(raw)
+    return {"found": True, "source": "db", "fields": fields, "unmatched": unmatched}
+
+
+DB_FIRST: dict[str, Callable[[str], LookupResult | None]] = {"cnpj": _db_first_cnpj}
+
+
+def _chain(kind: str, key: str) -> list[Provider]:
+    if kind == "cnpj" and not key.isdigit():
+        return [cnpja_open]  # o único que aceita CNPJ alfanumérico
+    return CHAINS.get(kind, [])
 
 
 def _has_quota(name: str) -> bool:
@@ -104,7 +173,7 @@ def _log(kind: str, name: str, status: str, ms: int) -> None:
 def _run_chain(kind: str, key: str) -> LookupResult:
     deadline = monotonic() + BUDGET_S
     said_missing = False
-    for provider in CHAINS.get(kind, []):
+    for provider in _chain(kind, key):
         name = provider.__name__
         if monotonic() >= deadline:
             break
@@ -150,6 +219,10 @@ def lookup(kind: Kind, key: str) -> LookupResult:
         clean = _clean_key(kind, key)
         if clean is None:
             return _miss("invalid")
+        db_first = DB_FIRST.get(kind)
+        found = db_first(clean) if db_first else None
+        if found is not None:
+            return found
         cached = cache.get(cache_key(kind, clean))
         if cached is not None:
             return cached
