@@ -9,6 +9,7 @@ from rest_framework import serializers
 from apps.items.models import ItemOperation, ItemOperationType, LaborCategory
 from apps.items.serializers import ItemOperationReadSerializer
 from apps.vehicle_catalog.models import VehicleFamily, VehicleYearVersion
+from apps.vehicle_catalog.normalize import CorVeiculo, match_color
 from apps.vehicle_catalog.snapshot import catalog_path
 
 from .models import Budget, BudgetVersion, BudgetVersionItem
@@ -125,7 +126,9 @@ class BudgetCreateSerializer(serializers.Serializer):
     vehicle_chassis     = serializers.CharField(max_length=17,  required=False, default="")
     vehicle_version     = serializers.CharField(max_length=120, required=False, default="")
     vehicle_engine      = serializers.CharField(max_length=20,  required=False, default="")
-    vehicle_color       = serializers.CharField(max_length=40,  required=False, default="")
+    vehicle_color       = serializers.CharField(
+        max_length=40, required=False, allow_blank=True, default="",
+    )
     vehicle_fuel_type   = serializers.CharField(max_length=30,  required=False, default="")
     vehicle_make_logo   = serializers.URLField(max_length=500,  required=False, default="", allow_blank=True)
     vehicle_year        = serializers.IntegerField(required=False, allow_null=True, default=None)
@@ -139,6 +142,10 @@ class BudgetCreateSerializer(serializers.Serializer):
         queryset=VehicleYearVersion.objects.filter(is_active=True),
         required=False, allow_null=True,
     )
+
+    def validate_vehicle_color(self, v: str) -> str:
+        # Tolerante por enquanto: texto livre vira código do enum em vez de 400.
+        return v if v in CorVeiculo.values else (match_color(v) or CorVeiculo.NAO_INFORMADA)
 
 
 class BudgetApproveSerializer(serializers.Serializer):

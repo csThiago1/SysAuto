@@ -19,6 +19,7 @@ from apps.documents.constants import (
     WARRANTY_MONTHS_BY_CATEGORY,
 )
 from apps.documents.pdf_logo import get_logo_base64, get_logo_black_base64
+from apps.vehicle_catalog.normalize import COR_HEX
 
 logger = logging.getLogger(__name__)
 
@@ -191,28 +192,19 @@ class OSDataLoader:
         return result
 
     @staticmethod
-    def _color_hex(color_name: str) -> str:
-        """Casa o texto livre de cor (ex: 'Prata') com o catálogo VehicleColor.
-
-        Best-effort: cor é texto livre no cadastro da OS, não FK. Sem match,
-        retorna "" e o template exibe só o texto (sem swatch).
-        """
-        if not color_name:
-            return ""
-        from apps.vehicle_catalog.models import VehicleColor
-        match = VehicleColor.objects.filter(name__iexact=color_name.strip()).first()
-        return match.hex_code if match else ""
+    def _color_hex(value: str) -> str:
+        """Hex do swatch para o código CorVeiculo; "" sem swatch (ex: NAO_INFORMADA)."""
+        return COR_HEX.get(value, "")
 
     @classmethod
     def _vehicle_dict(cls, order: Any) -> dict[str, Any]:
-        color = order.color or ""
         return {
             "make": order.make or "",
             "make_logo": order.make_logo or "",
             "model": order.model or "",
             "year": order.year or "",
-            "color": color,
-            "color_hex": cls._color_hex(color),
+            "color": order.get_color_display(),
+            "color_hex": cls._color_hex(order.color),
             "plate": order.plate or "",
             "chassis": order.chassis or "",
             "mileage_in": order.mileage_in,

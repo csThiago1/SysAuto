@@ -23,6 +23,8 @@ import uuid
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+from apps.vehicle_catalog.normalize import CorVeiculo
+
 if TYPE_CHECKING:
     from apps.service_orders.models import ServiceOrder
 
@@ -529,7 +531,7 @@ class TransitionValidator:
             warn.append(
                 ValidationBlock(code="VEHICLE_YEAR", message="Ano do veículo não informado")
             )
-        if not order.color:
+        if order.color in ("", CorVeiculo.NAO_INFORMADA):
             warn.append(
                 ValidationBlock(code="VEHICLE_COLOR", message="Cor do veículo não informada")
             )

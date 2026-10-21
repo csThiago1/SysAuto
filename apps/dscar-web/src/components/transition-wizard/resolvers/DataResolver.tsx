@@ -11,6 +11,7 @@ import { toLocalDatetime } from "@/app/(app)/os/[numero]/_utils/form-defaults"
 import type { ResolverProps } from "./index"
 import { DateField } from "@/components/ui/date-field"
 import { formatPlate, onlyAlnum } from "@paddock/utils"
+import { ColorSelect } from "@/app/(app)/os/[numero]/_components/shared/ColorSelect"
 
 async function patchOrder(id: string, data: Record<string, unknown>): Promise<void> {
   await apiFetch(`/api/proxy/service-orders/${id}/`, {
@@ -48,11 +49,11 @@ function VehicleDataForm({ block, order, onResolved }: ResolverProps) {
       payload.model = model
     }
     if (needsColor) {
-      if (!color.trim()) {
+      if (!color || color === "NAO_INFORMADA") {
         toast.error("Informe a cor do veículo")
         return
       }
-      payload.color = color.trim()
+      payload.color = color
     }
     if (needsYear) {
       const parsed = parseInt(year, 10)
@@ -115,15 +116,9 @@ function VehicleDataForm({ block, order, onResolved }: ResolverProps) {
       )}
 
       {needsColor && (
-        <div>
-          <label htmlFor="dv-color" className="text-xs font-medium">Cor</label>
-          <input
-            id="dv-color"
-            className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-            placeholder="Vermelho"
-          />
+        <div className="space-y-0.5">
+          <span className="text-xs font-medium">Cor</span>
+          <ColorSelect value={color} onChange={setColor} />
         </div>
       )}
 

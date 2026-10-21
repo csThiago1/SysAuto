@@ -4,9 +4,19 @@ import { describe, it, expect, vi } from "vitest"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { DataResolver } from "./DataResolver"
 import type { ServiceOrder, ValidationBlock } from "@paddock/types"
+import { apiFetch } from "@/lib/api"
 
 vi.mock("@/lib/api", () => ({
-  apiFetch: vi.fn().mockResolvedValue({}),
+  apiFetch: vi.fn((url: string) =>
+    Promise.resolve(
+      url.includes("/vehicle-catalog/colors/")
+        ? [
+            { value: "PRETA", label: "Preta", hex: "#111111" },
+            { value: "NAO_INFORMADA", label: "Não informada", hex: "" },
+          ]
+        : {}
+    )
+  ),
 }))
 
 vi.mock("@tanstack/react-query", async (imp) => {
@@ -106,24 +116,43 @@ describe("DataResolver — MILEAGE_OUT", () => {
 })
 
 describe("DataResolver — VEHICLE_COLOR", () => {
-  it("renderiza input de cor quando code=VEHICLE_COLOR", () => {
-    wrap(<DataResolver block={block("VEHICLE_COLOR")} order={ORDER} onResolved={vi.fn()} />)
-    expect(screen.getByLabelText(/cor/i)).toBeInTheDocument()
+  it("renderiza o select de cor sem campo de texto livre", async () => {
+    const { container } = wrap(
+      <DataResolver block={block("VEHICLE_COLOR")} order={ORDER} onResolved={vi.fn()} />
+    )
+    expect(await screen.findByRole("option", { name: "Preta" })).toBeInTheDocument()
+    expect(container.querySelector('input[type="text"]')).toBeNull()
   })
 
-  it("chama onResolved após salvar cor", async () => {
+  it("escolher Preta faz PATCH com o código e chama onResolved", async () => {
     const user = userEvent.setup()
     const onResolved = vi.fn()
     wrap(<DataResolver block={block("VEHICLE_COLOR")} order={ORDER} onResolved={onResolved} />)
-    await user.type(screen.getByLabelText(/cor/i), "Vermelho")
+    await screen.findByRole("option", { name: "Preta" })
+    await user.selectOptions(screen.getByRole("combobox"), "Preta")
     await user.click(screen.getByRole("button", { name: /salvar/i }))
     await waitFor(() => expect(onResolved).toHaveBeenCalledTimes(1))
+    expect(apiFetch).toHaveBeenCalledWith(
+      "/api/proxy/service-orders/abc-123/",
+      expect.objectContaining({ method: "PATCH", body: JSON.stringify({ color: "PRETA" }) })
+    )
   })
 
   it("não chama onResolved com cor vazia", async () => {
     const user = userEvent.setup()
     const onResolved = vi.fn()
     wrap(<DataResolver block={block("VEHICLE_COLOR")} order={ORDER} onResolved={onResolved} />)
+    await screen.findByRole("option", { name: "Preta" })
+    await user.click(screen.getByRole("button", { name: /salvar/i }))
+    expect(onResolved).not.toHaveBeenCalled()
+  })
+
+  it("não aceita Não informada como cor", async () => {
+    const user = userEvent.setup()
+    const onResolved = vi.fn()
+    wrap(<DataResolver block={block("VEHICLE_COLOR")} order={ORDER} onResolved={onResolved} />)
+    await screen.findByRole("option", { name: "Preta" })
+    await user.selectOptions(screen.getByRole("combobox"), "Não informada")
     await user.click(screen.getByRole("button", { name: /salvar/i }))
     expect(onResolved).not.toHaveBeenCalled()
   })

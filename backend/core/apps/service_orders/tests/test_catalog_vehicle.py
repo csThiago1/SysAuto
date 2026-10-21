@@ -158,10 +158,10 @@ class CatalogVehicleOSTest(TenantTestCase):
         v = make_catalog()
         nova = self.post_os(catalog_family=v.modelo.familia_id)
         legada = self.post_os(make="Chevrolet", model="Onix")
-        p = self.patch_os(legada.data["id"], color="Prata")
+        p = self.patch_os(legada.data["id"], color="PRATA")
         assert p.status_code == 200, p.data
         o = ServiceOrder.objects.get(pk=nova.data["id"])
-        assert o.color == "Prata"
+        assert o.color == "PRATA"
         assert o.catalog_family == v.modelo.familia and o.catalog_version is None
         assert (o.make, o.model, o.vehicle_needs_review) == ("Chevrolet", "Onix Plus", True)
 

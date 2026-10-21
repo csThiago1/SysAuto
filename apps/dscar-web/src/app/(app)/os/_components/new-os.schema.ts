@@ -34,7 +34,7 @@ export const newOSSchema = z
       (v) => (v === "" || v === null || (typeof v === "number" && isNaN(v)) ? undefined : v),
       z.number().int().min(1900, "Ano inválido").max(2100, "Ano inválido").optional().nullable()
     ),
-    color: z.string().optional().default(""),
+    color: z.string().optional().default("NAO_INFORMADA"),
     fuel_type: z.string().optional().default(""),
     chassis: z.string().max(17).optional().default(""),
   })

@@ -72,7 +72,7 @@ export function buildFormDefaults(o: ServiceOrder): ServiceOrderUpdateInput {
     model: o.model ?? "",
     vehicle_version: o.vehicle_version ?? "",
     year: o.year ?? undefined,
-    color: o.color ?? "",
+    color: o.color || "NAO_INFORMADA",
     chassis: o.chassis ?? "",
     fuel_type: o.fuel_type ?? "",
     fipe_value: o.fipe_value ? parseFloat(o.fipe_value) : undefined,

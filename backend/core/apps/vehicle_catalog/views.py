@@ -9,7 +9,6 @@ import httpx
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 
-from django.core.cache import cache
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -19,14 +18,13 @@ from rest_framework.response import Response
 from apps.authentication.permissions import IsAdminOrAbove, PermissionsByActionMixin
 from apps.vehicle_catalog.models import (
     PlateCache,
-    VehicleColor,
     VehicleFamily,
     VehicleMake,
     VehicleModel,
     VehicleYearVersion,
 )
+from apps.vehicle_catalog.normalize import COR_HEX, CorVeiculo, match_color
 from apps.vehicle_catalog.serializers import (
-    VehicleColorSerializer,
     VehicleFamilySerializer,
     VehicleMakeSerializer,
     VehicleModelOptionSerializer,
@@ -38,43 +36,23 @@ from apps.vehicle_catalog.serializers import (
 logger = logging.getLogger(__name__)
 
 
-class VehicleColorViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
-    """CRUD de cores de veículos com código hex para preview na UI.
-
-    - list / retrieve: qualquer usuário autenticado
-    - create / update / destroy: MANAGER+
-    """
-
-    read_permission = IsAuthenticated
-    serializer_class = VehicleColorSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ["name"]
-
-    def get_queryset(self):  # type: ignore[override]
-        return VehicleColor.objects.all()
-
-    def list(self, request, *args, **kwargs):  # type: ignore[override]
-        search = request.query_params.get("search", "")
-        if not search:
-            cached = cache.get("vehicle_colors:all")
-            if cached is not None:
-                return Response(cached)
-            response = super().list(request, *args, **kwargs)
-            cache.set("vehicle_colors:all", response.data, timeout=3600)
-            return response
-        return super().list(request, *args, **kwargs)
-
-    def perform_create(self, serializer) -> None:  # type: ignore[override]
-        serializer.save()
-        cache.delete("vehicle_colors:all")
-
-    def perform_update(self, serializer) -> None:  # type: ignore[override]
-        serializer.save()
-        cache.delete("vehicle_colors:all")
-
-    def perform_destroy(self, instance) -> None:  # type: ignore[override]
-        super().perform_destroy(instance)
-        cache.delete("vehicle_colors:all")
+@extend_schema(
+    summary="Cores do enum CorVeiculo com hex para o preview",
+    responses={
+        200: {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {k: {"type": "string"} for k in ("value", "label", "hex")},
+            },
+        }
+    },
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def colors_list(request: Request) -> Response:
+    """GET /vehicle-catalog/colors/ — lista fixa do enum, sem paginação."""
+    return Response([{"value": c.value, "label": c.label, "hex": COR_HEX[c]} for c in CorVeiculo])
 
 
 # ── Normalização de montadora ─────────────────────────────────────────────────
@@ -279,7 +257,7 @@ def _normalize_plate_response(plate: str, data: dict) -> dict:  # type: ignore[t
         "chassis":         chassis,
         "renavam":         data.get("renavam") or "",
         "city":            data.get("municipio") or "",
-        "color":           (data.get("cor") or "").title(),
+        "color":           match_color(data.get("cor") or "") or "",
         "fuel_type":       fuel_type,
         "fipe_value":      fipe_value,
         "situation":       situation_text,
@@ -356,7 +334,7 @@ def plate_lookup(request: Request, plate: str) -> Response:
             "chassis":        existing.chassis,
             "renavam":        existing.renavam,
             "city":           "",
-            "color":          existing.color,
+            "color":          match_color(existing.color) or "",
             "fuel_type":      "",
             "fipe_value":     None,
             "situation":      "",
@@ -384,7 +362,7 @@ def plate_lookup(request: Request, plate: str) -> Response:
             "chassis":        cached.chassis,
             "renavam":        cached.renavam,
             "city":           cached.city,
-            "color":          cached.color,
+            "color":          match_color(cached.color) or "",
             "fuel_type":      cached.fuel_type,
             "fipe_value":     cache_details.get("fipe_value"),
             "situation":      cache_details.get("situation", ""),

@@ -11,6 +11,7 @@ from django.conf import settings
 from .models import Vehicle
 from apps.vehicle_catalog.models import PlateCache
 from apps.vehicle_catalog.models import VehicleYearVersion
+from apps.vehicle_catalog.normalize import match_color
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +125,7 @@ class VehicleService:
                 "year": cached.year,
                 "chassis": cached.chassis,
                 "renavam": cached.renavam,
-                "color": cached.color,
+                "color": match_color(cached.color) or "",
                 "fuel_type": cached.fuel_type,
                 "fipe_value": None,
             }

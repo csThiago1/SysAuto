@@ -12,6 +12,7 @@ from django.db import models
 from django.utils import timezone
 
 from apps.authentication.models import PaddockBaseModel
+from apps.vehicle_catalog.normalize import CorVeiculo
 
 
 # ── Status choices ─────────────────────────────────────────────────────────────
@@ -247,7 +248,12 @@ class ServiceOrder(PaddockBaseModel):
         max_length=120, blank=True, default="", verbose_name="Versão"
     )
     year = models.PositiveSmallIntegerField(null=True, blank=True, verbose_name="Ano")
-    color = models.CharField(max_length=50, default="", verbose_name="Cor")
+    color = models.CharField(
+        max_length=20,
+        choices=CorVeiculo.choices,
+        default=CorVeiculo.NAO_INFORMADA,
+        verbose_name="Cor",
+    )
     chassis = models.CharField(max_length=17, blank=True, default="", verbose_name="Chassi")
     fuel_type = models.CharField(max_length=30, blank=True, default="", verbose_name="Combustível")
     fipe_value = models.DecimalField(

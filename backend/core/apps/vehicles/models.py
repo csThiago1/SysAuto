@@ -10,6 +10,8 @@ from encrypted_model_fields.fields import EncryptedCharField
 
 from django.db import models
 
+from apps.vehicle_catalog.normalize import CorVeiculo
+
 logger = logging.getLogger(__name__)
 
 
@@ -38,7 +40,9 @@ class Vehicle(models.Model):
 
     # Fallback quando versão FIPE não encontrada
     description = models.CharField(max_length=200, blank=True, default="")
-    color = models.CharField(max_length=50, blank=True, default="")
+    color = models.CharField(
+        max_length=20, blank=True, choices=CorVeiculo.choices, default=CorVeiculo.NAO_INFORMADA
+    )
     year_manufacture = models.IntegerField(null=True, blank=True)
     chassis = EncryptedCharField(max_length=50, blank=True, default="")
     renavam = EncryptedCharField(max_length=20, blank=True, default="")

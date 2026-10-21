@@ -74,7 +74,7 @@ const serviceOrderBaseSchema = z.object({
     toNullNum,
     z.number().int().min(1900, "Ano inválido").max(2100, "Ano inválido").nullish()
   ),
-  color: z.string().optional().default(""),
+  color: z.string().optional().default("NAO_INFORMADA"),
   chassis: z.string().max(17, "Chassi inválido — máximo 17 caracteres").optional().default(""),
   fuel_type: z.string().optional().default(""),
   fipe_value: z.preprocess(
