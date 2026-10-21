@@ -83,6 +83,11 @@ def test_codigo_fipe_e_exato() -> None:
     assert not m.review
 
 
+def test_codigo_fipe_sem_ano_usa_ano_do_chassi() -> None:
+    m = match_vehicle("Honda", "POP 110I", None, codigo_fipe="811132-4", vin="9C2KC0000LR000000")
+    assert m.confidence == "exata" and m.version.ano == 2020
+
+
 def test_marca_de_duas_palavras_no_texto() -> None:
     m = match_vehicle("LAND", "ROVER RANGE ROVER EVOQUE AUTOBIOGRAPHY 2.0 AUT", 2018)
     assert m.make.nome == "Land Rover"

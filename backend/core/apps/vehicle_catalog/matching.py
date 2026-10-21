@@ -60,7 +60,8 @@ def version_tokens(text: str) -> tuple[set[str], str | None]:
     t = YEAR_RANGE.sub(" ", normalize_name(text))
     t = re.sub(r"(\d\.\d)([A-Z])", r"\1 \2", t)  # 1.0MI → 1.0 MI
     t = re.sub(r"[()/,;:]|(?<!\d)-|-(?!\d)", " ", t)  # separa EXL-AT, mantém 35-160
-    out, fuel = set(), match_fuel(text)
+    out: set[str] = set()
+    fuel = match_fuel(text)
     for tok in t.split():
         tok = (tok.replace(".", "") if not re.search(r"\d", tok) else tok).rstrip(".")
         if not tok or tok in DROP or tok in FUEL_WORDS:
@@ -181,13 +182,11 @@ def match_vehicle(
     source: str = "",
 ) -> VehicleMatch:
     """Casa marca + descrição livre + ano-modelo com o catálogo FIPE (para no 1º passo que resolve)."""
-    if year is None and vin:
-        year = decode_vin(vin).model_year
-
-    if codigo_fipe and year:
+    fipe_year = year or (decode_vin(vin).model_year if vin else None)
+    if codigo_fipe and fipe_year:
         versions = list(
             VehicleYearVersion.objects.select_related("modelo__marca", "modelo__familia").filter(
-                modelo__codigo_fipe=codigo_fipe, ano=year, is_active=True
+                modelo__codigo_fipe=codigo_fipe, ano=fipe_year, is_active=True
             )
         )
         if fuel and len(versions) > 1:
