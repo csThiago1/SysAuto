@@ -14,6 +14,7 @@ from typing import Any, Literal, TypedDict
 
 from django.core.cache import cache
 from django.db import connection
+from django.db.models import Q
 from django.utils import timezone
 from django_tenants.utils import get_public_schema_name
 
@@ -118,6 +119,8 @@ def _normalize_cnpj(raw: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
 def _color(value: str | None) -> dict[str, str] | None:
     if not value or value == CorVeiculo.NAO_INFORMADA:
         return None
+    if value not in CorVeiculo.values:  # valor gravado fora da lista: sem cor
+        return None
     return {"value": value, "label": CorVeiculo(value).label}
 
 
@@ -204,7 +207,11 @@ def _db_first_placa(placa: str) -> LookupResult | None:
     if connection.schema_name == get_public_schema_name():  # OS só existe no tenant
         return None
     order = (
-        ServiceOrder.objects.filter(plate=placa, is_active=True, catalog_family__isnull=False)
+        ServiceOrder.objects.filter(
+            Q(plate__iexact=placa) | Q(plate__iexact=f"{placa[:3]}-{placa[3:]}"),
+            is_active=True,
+            catalog_family__isnull=False,
+        )
         .select_related(
             "catalog_family__make",
             "catalog_version__modelo__marca",

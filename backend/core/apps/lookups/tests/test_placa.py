@@ -23,8 +23,9 @@ from apps.vehicle_catalog.tests.factories import SAMPLE
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 LOCMEM = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 PLACA = "ABC1D23"
-URL = f"https://wdapi2.com.br/consulta/{PLACA}/t"
-SALDO_URL = "https://wdapi2.com.br/saldo/t"
+TOKEN = "tok-placas-7f3e9a"
+URL = f"https://wdapi2.com.br/consulta/{PLACA}/{TOKEN}"
+SALDO_URL = f"https://wdapi2.com.br/saldo/{TOKEN}"
 CHASSI = "9C2JC4110LR000001"
 
 
@@ -49,7 +50,7 @@ def seed_restricao(days_ago: int) -> str:
 class PlacaLookupTest(TenantTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.enterContext(override_settings(APIPLACAS_TOKEN="t", CACHES=LOCMEM))
+        self.enterContext(override_settings(APIPLACAS_TOKEN=TOKEN, CACHES=LOCMEM))
         cache.clear()
         load_fipex(SAMPLE, ref="2026-10")
 
@@ -120,6 +121,14 @@ class PlacaLookupTest(TenantTestCase):
         assert restricao["consultado_em"] > old
         assert cache.get(cache_key("placa", PLACA))["fields"]["restricao"] == restricao
 
+    @respx.mock  # sem rota: qualquer chamada à API falha o teste
+    def test_os_com_placa_hifenizada_e_cor_fora_da_lista(self) -> None:
+        order = self.os_com_placa()
+        ServiceOrder.objects.filter(pk=order.pk).update(plate="abc-1d23", color="XADREZ")
+        seed_restricao(days_ago=1)
+        r = lookup("placa", PLACA)
+        assert r["source"] == "os" and r["fields"]["color"] is None
+
     @respx.mock
     def test_restricao_recente_nao_reconsulta(self) -> None:
         self.os_com_placa()
@@ -141,7 +150,7 @@ class PlacaLookupTest(TenantTestCase):
         r = lookup("placa", PLACA)
         assert r["found"] is True and r["fields"]["restricao"]["tem_restricao"] is True
         assert r["fields"]["restricao"]["consultado_em"] == consultado_em
-        assert cache.get(cache_key("placa", PLACA)) == r  # o miss do 402 não apaga a antiga
+        assert cache.get(cache_key("placa", PLACA)) == r  # o 402 é erro: a antiga continua
 
     @respx.mock
     def test_402_found_false_sem_logar_placa(self) -> None:
@@ -151,7 +160,8 @@ class PlacaLookupTest(TenantTestCase):
         assert r == {"found": False, "source": "none", "fields": {}, "unmatched": []}
         assert any("token API Placas inválido" in m for m in logs.output)
         assert all(PLACA not in str(rec.__dict__) for rec in logs.records)
-        assert all("/t" not in str(rec.__dict__) for rec in logs.records)
+        assert all(TOKEN not in str(rec.__dict__) for rec in logs.records)
+        assert cache.get(cache_key("placa", PLACA)) is None  # erro não fica no cache
 
     @respx.mock
     def test_resposta_nao_tem_chassi(self) -> None:
@@ -173,7 +183,9 @@ class PlacaLookupTest(TenantTestCase):
 class HealthSaldoTest(TenantTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.enterContext(override_settings(APIPLACAS_TOKEN="t", RESEND_API_KEY="r", CACHES=LOCMEM))
+        self.enterContext(
+            override_settings(APIPLACAS_TOKEN=TOKEN, RESEND_API_KEY="r", CACHES=LOCMEM)
+        )
         cache.clear()
         self.client = APIClient()
         self.client.defaults["SERVER_NAME"] = self.client.defaults["HTTP_HOST"] = self.domain.domain

@@ -187,8 +187,8 @@ def apiplacas(placa: str) -> dict[str, Any] | None:
     # ponytail: ignora APIPLACAS_TIMEOUT (8 s); vale o timeout comum das consultas
     resp = httpx.get(f"{settings.APIPLACAS_URL}/{placa}/{token}", timeout=TIMEOUT)
     if resp.status_code in (402, 403):
+        # Erro, não "placa não existe": o raise_for_status abaixo levanta e nada vai ao cache.
         logger.error("token API Placas inválido", extra={"status": resp.status_code})
-        return None
     if resp.status_code in (404, 406):  # 406: placa não encontrada
         return None
     resp.raise_for_status()
