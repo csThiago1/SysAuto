@@ -8,15 +8,25 @@ import logging
 import re
 import time
 from collections.abc import Callable
+from datetime import datetime, timedelta
 from time import monotonic
 from typing import Any, Literal, TypedDict
 
 from django.core.cache import cache
 from django.db import connection
+from django.utils import timezone
 from django_tenants.utils import get_public_schema_name
 
 from apps.lookups.models import Municipio
-from apps.lookups.providers import awesomeapi, cnpja_open, cnpjws, minhareceita, opencep, viacep
+from apps.lookups.providers import (
+    apiplacas,
+    awesomeapi,
+    cnpja_open,
+    cnpjws,
+    minhareceita,
+    opencep,
+    viacep,
+)
 from apps.lookups.validators import (
     clean_cnpj,
     is_valid_cnpj,
@@ -26,6 +36,10 @@ from apps.lookups.validators import (
 )
 from apps.persons.models import PersonAddress, PersonDocument, TipoDocumento
 from apps.persons.utils import sha256_hex
+from apps.service_orders.models import ServiceOrder
+from apps.vehicle_catalog.matching import VehicleMatch, match_vehicle
+from apps.vehicle_catalog.normalize import CorVeiculo, match_color
+from apps.vehicle_catalog.snapshot import catalog_path
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +49,7 @@ Provider = Callable[[str], dict[str, Any] | None]
 DAY = 86400
 TTL: dict[str, int] = {"cep": 180 * DAY, "cnpj": 30 * DAY, "placa": 365 * DAY}
 MISS_TTL = DAY
+RESTRICAO_MAX_AGE = timedelta(days=30)
 BUDGET_S = 6.0
 QUOTAS: dict[str, int] = {"cnpja_open": 4, "cnpjws": 2}
 CHAINS: dict[str, list[Provider]] = {
@@ -42,6 +57,7 @@ CHAINS: dict[str, list[Provider]] = {
     # Antes de ligar em produção: confirmar os termos de uso comercial do CNPJá. Se não
     # permitirem, a ordem vira [minhareceita, cnpjws, cnpja_open].
     "cnpj": [cnpja_open, minhareceita, cnpjws],
+    "placa": [apiplacas],
 }
 
 
@@ -99,9 +115,46 @@ def _normalize_cnpj(raw: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     return fields, ["municipio"] if said_city and not municipio else []
 
 
+def _color(value: str | None) -> dict[str, str] | None:
+    if not value or value == CorVeiculo.NAO_INFORMADA:
+        return None
+    return {"value": value, "label": CorVeiculo(value).label}
+
+
+def _normalize_placa(raw: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    """Casa o veículo da API com o catálogo; o caminho volta até onde casou."""
+    marca, ano = raw["marca"], raw["ano_modelo"]
+    texto = f"{raw['modelo']} {raw['versao']}".strip()
+    match: VehicleMatch | None = None
+    # Sem `exata`, o resultado de cada tentativa já é o casamento por texto (o código só
+    # decide quando acha uma versão única), então o último resultado vale como fallback.
+    for codigo, _ in sorted(raw["codigos_fipe"], key=lambda c: c[1], reverse=True):
+        match = match_vehicle(marca, texto, ano, codigo_fipe=codigo)
+        if match.confidence == "exata":
+            break
+    if match is None:
+        match = match_vehicle(marca, texto, ano)
+    color = _color(match_color(raw["cor"]))
+    fields = {
+        "vehicle": catalog_path(make=match.make, family=match.family, version=match.version),
+        "color": color,
+        "year_manufacture": raw["ano_fabricacao"],
+        "restricao": {
+            "situacao": raw["situacao"],
+            "tem_restricao": raw["codigo_situacao"] != 0,
+            "consultado_em": timezone.now().isoformat(),
+        },
+    }
+    unmatched = [f"{marca} {texto}".strip()] if match.version is None else []
+    if color is None and raw["cor"]:
+        unmatched.append(raw["cor"])
+    return fields, unmatched
+
+
 NORMALIZERS: dict[str, Callable[[dict[str, Any]], tuple[dict[str, Any], list[str]]]] = {
     "cep": _normalize_cep,
     "cnpj": _normalize_cnpj,
+    "placa": _normalize_placa,
 }
 
 
@@ -144,6 +197,31 @@ def _db_first_cnpj(cnpj: str) -> LookupResult | None:
     }
     fields, unmatched = _normalize_cnpj(raw)
     return {"found": True, "source": "db", "fields": fields, "unmatched": unmatched}
+
+
+def _db_first_placa(placa: str) -> LookupResult | None:
+    """Última OS ativa do tenant com a placa e família do catálogo. Sem a restrição."""
+    if connection.schema_name == get_public_schema_name():  # OS só existe no tenant
+        return None
+    order = (
+        ServiceOrder.objects.filter(plate=placa, is_active=True, catalog_family__isnull=False)
+        .select_related(
+            "catalog_family__make",
+            "catalog_version__modelo__marca",
+            "catalog_version__modelo__familia",
+        )
+        .order_by("-created_at")
+        .first()
+    )
+    if order is None:
+        return None
+    fields = {
+        "vehicle": catalog_path(family=order.catalog_family, version=order.catalog_version),
+        "color": _color(order.color),
+        "year_manufacture": order.year_manufacture,
+        "restricao": None,
+    }
+    return {"found": True, "source": "os", "fields": fields, "unmatched": []}
 
 
 DB_FIRST: dict[str, Callable[[str], LookupResult | None]] = {"cnpj": _db_first_cnpj}
@@ -213,12 +291,44 @@ def _run_chain(kind: str, key: str) -> LookupResult:
     return result
 
 
+def _restricao_fresca(result: LookupResult) -> bool:
+    restricao = result["fields"].get("restricao")
+    if restricao is None:
+        return not result["found"]  # miss do cache: vale o 1 dia dele
+    consultado_em = datetime.fromisoformat(restricao["consultado_em"])
+    return timezone.now() - consultado_em < RESTRICAO_MAX_AGE
+
+
+def _lookup_placa(placa: str) -> LookupResult:
+    """O veículo vem da OS do tenant, se houver; a restrição vem do cache e vence em 30 dias.
+
+    Restrição vencida ou ausente reconsulta a API, mesmo com OS no banco. Se a API falhar,
+    fica a restrição antiga, com o `consultado_em` antigo.
+    """
+    from_os = _db_first_placa(placa)
+    key = cache_key("placa", placa)
+    cached: LookupResult | None = cache.get(key)
+    if cached is None or not _restricao_fresca(cached):
+        fresh = _run_chain("placa", placa)
+        if fresh["found"] or cached is None:
+            cached = fresh
+        else:
+            # ponytail: regrava a antiga por cima do miss do _run_chain; o TTL recomeça
+            cache.set(key, cached, TTL["placa"])
+    if from_os is None:
+        return cached
+    from_os["fields"]["restricao"] = cached["fields"].get("restricao")
+    return from_os
+
+
 def lookup(kind: Kind, key: str) -> LookupResult:
     """Consulta `kind` pela `key`. Nunca levanta: chave inválida dá `source="invalid"`."""
     try:
         clean = _clean_key(kind, key)
         if clean is None:
             return _miss("invalid")
+        if kind == "placa":
+            return _lookup_placa(clean)
         db_first = DB_FIRST.get(kind)
         found = db_first(clean) if db_first else None
         if found is not None:

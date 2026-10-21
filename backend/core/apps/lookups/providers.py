@@ -5,11 +5,16 @@ Cada uma devolve o dict normalizado do seu tipo, ou `None` quando a fonte diz "n
 Erro de rede ou HTTP inesperado levanta; quem trata é `service.lookup`.
 """
 
+import logging
+import re
 from typing import Any
 
 import httpx
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+
+logger = logging.getLogger(__name__)
 
 TIMEOUT = httpx.Timeout(3.0, connect=1.5)
 
@@ -166,3 +171,46 @@ def cnpjws(cnpj: str) -> dict[str, Any] | None:
         email=est.get("email") or "",
         telefone=f"{est.get('ddd1') or ''}{est.get('telefone1') or ''}",
     )
+
+
+def _year(value: Any) -> int | None:
+    """Ano de "2022", "2022/2023" ou 2022; `None` se não houver ano plausível."""
+    m = re.search(r"\d{4}", str(value or ""))
+    return int(m.group()) if m and 1900 <= int(m.group()) <= 2100 else None
+
+
+def apiplacas(placa: str) -> dict[str, Any] | None:
+    """API Placas (wdapi2). O chassi e o RENAVAM da resposta nunca saem daqui."""
+    token = settings.APIPLACAS_TOKEN
+    if not token:
+        raise ImproperlyConfigured("APIPLACAS_TOKEN")
+    # ponytail: ignora APIPLACAS_TIMEOUT (8 s); vale o timeout comum das consultas
+    resp = httpx.get(f"{settings.APIPLACAS_URL}/{placa}/{token}", timeout=TIMEOUT)
+    if resp.status_code in (402, 403):
+        logger.error("token API Placas inválido", extra={"status": resp.status_code})
+        return None
+    if resp.status_code in (404, 406):  # 406: placa não encontrada
+        return None
+    resp.raise_for_status()
+    data = resp.json()
+    marca = (data.get("MARCA") or data.get("marca") or "").strip()
+    # Com SUBMODELO e VERSAO a API já separou; senão a versão está dentro de MODELO.
+    sub, versao = (data.get("SUBMODELO") or "").strip(), (data.get("VERSAO") or "").strip()
+    modelo = sub if sub and versao else (data.get("MODELO") or data.get("modelo") or "").strip()
+    if not marca and not modelo:  # 200 sem veículo
+        return None
+    extra = data.get("extra") if isinstance(data.get("extra"), dict) else {}
+    dados = (data.get("fipe") or {}).get("dados") or []
+    return {
+        "marca": marca,
+        "modelo": modelo,
+        "versao": versao if sub else "",
+        "ano_modelo": _year(data.get("anoModelo") or data.get("ano")),
+        "ano_fabricacao": _year(data.get("ano") or extra.get("ano_fabricacao")),
+        "cor": (data.get("cor") or "").strip(),
+        "codigos_fipe": [
+            (d["codigo_fipe"], int(d.get("score") or 0)) for d in dados if d.get("codigo_fipe")
+        ],
+        "situacao": (data.get("situacao") or "").strip(),
+        "codigo_situacao": int(data.get("codigoSituacao") or 0),
+    }
