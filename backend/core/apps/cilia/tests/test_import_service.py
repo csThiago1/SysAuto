@@ -408,6 +408,12 @@ class ConfirmacaoPelaTelaTest(CatalogTenantTestCase):
         self.confirm(self.hdi_order())
         assert self.alias().is_exact
 
+    def test_reenviar_a_mesma_versao_numa_os_confirmada_nao_conta(self) -> None:
+        order = self.hdi_order()
+        self.confirm(order)
+        self.confirm(order)
+        assert self.alias().confirmacoes == 1
+
     def test_patch_que_so_limpa_a_versao_nao_conta(self) -> None:
         order = self.hdi_order()
         r = self.client.patch(

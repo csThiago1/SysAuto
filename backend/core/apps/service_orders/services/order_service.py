@@ -137,6 +137,8 @@ class _ServiceOrderCoreMixin:
         if catalog_changed:
             catalog_family, catalog_version = resulting_catalog_pair(order, data)
             old_family_id = order.catalog_family_id
+            old_version_id = order.catalog_version_id
+            was_review = order.vehicle_needs_review
 
         # Detectar campos de data recem-preenchidos que disparam transicao
         triggered_transitions: list[tuple[str, str]] = []
@@ -234,12 +236,17 @@ class _ServiceOrderCoreMixin:
         if catalog_changed:
             apply_catalog_vehicle(order, family=catalog_family, version=catalog_version)
             # Usuario confirmou/corrigiu o veiculo de uma importacao: conta para a regra.
-            # So limpar a versao nao e confirmacao.
+            # So limpar a versao nao e confirmacao, nem reenviar o par de uma OS ja confirmada.
+            pair_changed = (order.catalog_family_id, order.catalog_version_id) != (
+                old_family_id,
+                old_version_id,
+            )
             if (
                 order.vehicle_source
                 and order.vehicle_source_text
                 and order.catalog_family_id
                 and (order.catalog_version_id or order.catalog_family_id != old_family_id)
+                and (pair_changed or was_review)
             ):
                 record_alias_confirmation(
                     order.vehicle_source,
