@@ -133,6 +133,17 @@ describe("PersonFormModal — CEP e município", () => {
     })
   })
 
+  it("o complemento da faixa do CEP (\"lado ímpar\") não entra no endereço", async () => {
+    mockApi({ cep: { ...CEP_FOUND, fields: { ...CEP_FOUND.fields, complemento: "lado ímpar" } } })
+    const user = userEvent.setup()
+    renderModal()
+    await addAddress(user)
+    await user.type(screen.getByPlaceholderText("00000-000"), "69050000")
+    await user.tab()
+    expect(await screen.findByDisplayValue("Centro")).toBeInTheDocument()
+    expect(screen.getByPlaceholderText("Apto...")).toHaveValue("")
+  })
+
   it("UF escolhida à mão diferente da do CEP: cidade, UF e IBGE ficam como estão", async () => {
     mockApi({ cep: CEP_FOUND })
     const user = userEvent.setup()
@@ -224,6 +235,33 @@ describe("PersonFormModal — CNPJ", () => {
     expect(await screen.findByLabelText("Nome Fantasia")).toHaveValue("Acme")
     expect(screen.getByLabelText(/Razão Social/)).toHaveValue("Nome do usuário")
     expect(screen.queryByRole("alert")).toBeNull()
+  })
+
+  it("CNPJ alfanumérico mantém as letras e é consultado limpo", async () => {
+    mockApi({ cnpj: cnpjResult("ATIVA") })
+    const user = userEvent.setup()
+    renderModal()
+    await user.click(screen.getByRole("button", { name: /Pessoa Jurídica/ }))
+    await addDocument(user)
+    const input = screen.getByPlaceholderText("00.000.000/0000-00")
+    await user.type(input, "12.abc.345/01de-35")
+    expect(input).toHaveValue("12.ABC.345/01DE-35")
+    await user.tab()
+    await waitFor(() => expect(callTo("/lookups/cnpj/")).toBeTruthy())
+    expect(JSON.parse(String(callTo("/lookups/cnpj/")?.[1]?.body))).toEqual({
+      key: "12ABC34501DE35",
+    })
+  })
+
+  it("CNPJ numérico continua com a máscara de sempre", async () => {
+    mockApi({ cnpj: cnpjResult("ATIVA") })
+    const user = userEvent.setup()
+    renderModal()
+    await user.click(screen.getByRole("button", { name: /Pessoa Jurídica/ }))
+    await addDocument(user)
+    const input = screen.getByPlaceholderText("00.000.000/0000-00")
+    await user.type(input, "11222333000181")
+    expect(input).toHaveValue("11.222.333/0001-81")
   })
 
   it("CNPJ com dígito verificador errado não é consultado", async () => {

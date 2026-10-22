@@ -330,7 +330,7 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }:
     const newAddr = fillEmpty(addr, {
       street: f.logradouro,
       neighborhood: f.bairro,
-      complement: f.complemento,
+      // sem complemento: o do ViaCEP é da faixa do CEP ("lado ímpar"), não do cliente
       ...locationGroup(addr, f.municipio, f.uf),
     })
     setAddr(newAddr)

@@ -28,7 +28,7 @@ import type {
   PersonDocumentWrite,
 } from "@paddock/types";
 import {
-  PERSON_ROLE_LABEL, formatCPF, formatCNPJ, formatCEP, isValidCNPJ, onlyDigits,
+  PERSON_ROLE_LABEL, formatCPF, formatCNPJ, formatCEP, isValidCNPJ, onlyAlnum, onlyDigits,
 } from "@paddock/utils";
 import {
   Dialog,
@@ -258,7 +258,7 @@ export function PersonFormModal({
 
   function handleCnpjBlur(value: string): void {
     // DV inválido não gasta cota de consulta; o backend revalida ao salvar.
-    if (isValidCNPJ(value)) setCnpjTarget((t) => ({ key: onlyDigits(value), n: (t?.n ?? 0) + 1 }));
+    if (isValidCNPJ(value)) setCnpjTarget((t) => ({ key: onlyAlnum(value), n: (t?.n ?? 0) + 1 }));
   }
 
   const prefixed = (p: string, g: Record<string, string>): Record<string, string> =>
@@ -271,8 +271,8 @@ export function PersonFormModal({
     const f = cepData.fields;
     const p = `addresses.${cepTarget.index}` as const;
     applyIfEmpty(form, {
+      // sem complemento: o do ViaCEP é da faixa do CEP ("lado ímpar"), não do cliente
       [`${p}.street`]: f.logradouro,
-      [`${p}.complement`]: f.complemento,
       [`${p}.neighborhood`]: f.bairro,
       ...prefixed(p, locationGroup(getValues(p), f.municipio, f.uf)),
     });
@@ -605,7 +605,7 @@ export function PersonFormModal({
                         const bruto = e.target.value
                         setValue(
                           `documents.${index}.value`,
-                          tipo === "CPF" || tipo === "CNPJ" ? onlyDigits(bruto) : bruto,
+                          tipo === "CPF" ? onlyDigits(bruto) : tipo === "CNPJ" ? onlyAlnum(bruto) : bruto,
                           { shouldDirty: true },
                         )
                       }}

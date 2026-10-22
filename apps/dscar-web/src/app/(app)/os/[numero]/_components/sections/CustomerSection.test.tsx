@@ -50,7 +50,7 @@ const CEP = {
   fields: {
     cep: "69050000",
     logradouro: "Avenida Eduardo Ribeiro",
-    complemento: "",
+    complemento: "lado ímpar", // faixa do CEP, não é do cliente
     bairro: "Centro",
     municipio: { id: "1302603", label: "Manaus" },
     uf: "AM",
@@ -123,6 +123,7 @@ describe("CustomerSection — endereço da pessoa", () => {
       address_type: "PRINCIPAL",
       zip_code: "69050000",
       street: "Rua do usuário",
+      complement: "",
       neighborhood: "Centro",
       city: "Manaus",
       state: "AM",
