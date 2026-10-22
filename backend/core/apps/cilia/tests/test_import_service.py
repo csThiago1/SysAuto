@@ -308,7 +308,8 @@ class ApplyToExistingOrderTest(CatalogTenantTestCase):
         return order
 
     def test_veiculo_diferente_gera_aviso(self) -> None:
-        order = self.order(version=self.kicks, insurer=self.bradesco)
+        # CNPJ da nota já é o do arquivo: o único aviso é o do veículo
+        order = self.order(version=self.kicks, insurer=self.bradesco, insurer_cnpj="33055146000193")
         onix = CiliaParser.parse(cilia_payload("cilia_bradesco_discount_10pct.json"))
         order = self.apply(order, onix)
         assert order.import_warnings == [f"Veículo diverge: o cilia diz '{ONIX_TEXT}'"]
@@ -364,6 +365,40 @@ class ApplyToExistingOrderTest(CatalogTenantTestCase):
         )
         assert order.insurer == porto and order.insurer_cnpj == ""
         assert order.import_warnings == ["Seguradora diverge: o arquivo diz 'Bradesco Seguros'"]
+
+    def yelum_order(self) -> ServiceOrder:
+        yelum = Insurer.objects.get(code="yelum")
+        return self.order(
+            version=self.kicks,
+            insurer=yelum,
+            customer_type="insurer",
+            insurer_cnpj="92684515000137",  # principal da Yelum, escolhido na abertura
+        )
+
+    def test_mesma_seguradora_grava_o_cnpj_do_orcamento_com_aviso(self) -> None:
+        order = self.apply(
+            self.yelum_order(),
+            ParsedBudget(source="cilia", insurer_code="yelum", insurer_cnpj="61550141009129"),
+        )
+        assert order.insurer.code == "yelum" and order.insurer_cnpj == "61550141009129"
+        assert order.import_warnings == [
+            "CNPJ da nota trocado de 92684515000137 para 61550141009129 pelo orçamento"
+        ]
+
+    def test_mesma_seguradora_sem_cnpj_valido_no_arquivo_nao_muda(self) -> None:
+        for cnpj in ("", "61550141000107"):  # vazio; raiz da Yelum com DV inválido
+            order = self.apply(
+                self.yelum_order(),
+                ParsedBudget(source="cilia", insurer_code="yelum", insurer_cnpj=cnpj),
+            )
+            assert order.insurer_cnpj == "92684515000137" and order.import_warnings == []
+
+    def test_mesma_seguradora_e_mesmo_cnpj_sem_aviso(self) -> None:
+        order = self.apply(
+            self.yelum_order(),
+            ParsedBudget(source="cilia", insurer_code="yelum", insurer_cnpj="92.684.515/0001-37"),
+        )
+        assert order.insurer_cnpj == "92684515000137" and order.import_warnings == []
 
     def test_seguradora_nao_reconhecida_gera_aviso(self) -> None:
         order = self.order(version=self.kicks)

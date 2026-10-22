@@ -185,6 +185,7 @@ def apply_parsed_budget_to_order(
         note_cnpj,
         vehicle_source_text,
     )
+    from apps.lookups.validators import clean_cnpj
     from apps.service_orders.services.vehicle import apply_catalog_vehicle
     from apps.vehicle_catalog.matching import record_alias_confirmation
     from apps.vehicle_catalog.normalize import CorVeiculo
@@ -262,7 +263,15 @@ def apply_parsed_budget_to_order(
         order.customer_type = "insurer"
         order.insurer_cnpj = note_cnpj(insurer, parsed.insurer_cnpj)
         update_fields.extend(["insurer", "customer_type", "insurer_cnpj"])
-    elif insurer is not None and insurer.pk != order.insurer_id:
+    elif insurer is not None and insurer.pk == order.insurer_id:
+        # Mesma seguradora: a nota sai no CNPJ do orçamento (spec); o aviso deixa reverter.
+        cnpj = note_cnpj(insurer, parsed.insurer_cnpj)
+        old = clean_cnpj(order.insurer_cnpj or "")
+        if cnpj and cnpj != old:
+            order.insurer_cnpj = cnpj
+            update_fields.append("insurer_cnpj")
+            warn(f"CNPJ da nota trocado de {old or 'principal'} para {cnpj} pelo orçamento")
+    elif insurer is not None:
         warn(f"Seguradora diverge: o arquivo diz '{parsed.insurer_trade or insurer}'")
     elif insurer is None and parsed.insurer_trade:
         warn(f"Seguradora do arquivo não reconhecida: '{parsed.insurer_trade}'")
