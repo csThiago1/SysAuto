@@ -27,7 +27,7 @@ Caminhos:
 1. **Leitura do fipeX:** o fipeX publica `YYYY/MM/fipex-prices.csv`, que na verdade é TSV (5,3 MB, 12 colunas). Ele é lido com `csv` da stdlib, sem `pyarrow`.
 2. **Consultas por POST:** todas usam `POST /api/v1/lookups/{kind}/` com corpo `{"key": "..."}`, e não GET com a chave no path. O proxy Next grava a URL no log em resposta não-OK (`app/api/proxy/[...path]/route.ts:73`), e o access log também grava. CEP e municípios seguem o mesmo padrão; a lista de municípios é GET, porque não tem dado pessoal.
 3. **`PlateCache` sai:** o Redis já guarda 365 dias, e a tabela tinha placa em claro no public. O passo "banco antes" passa a ser a última OS do tenant com aquela placa e com `catalog_family`.
-4. **Ficam de fora o endpoint `/vin/` e a validação de inscrição estadual:** nenhuma tela chama o primeiro, e `Person` não tem campo de IE. `decode_vin` entra só como pista no casamento.
+4. **Fica de fora a validação de inscrição estadual:** `Person` não tem campo de IE. ~~Ficam de fora o endpoint `/vin/` e a validação de inscrição estadual: nenhuma tela chama o primeiro. `decode_vin` entra só como pista no casamento.~~ Substituído em 22/10/2026 pelo adendo (Tasks 22-23): existe `POST /api/v1/lookups/chassi/` (última OS do tenant → regra aprendida `VehicleAlias(source="chassi")` por `chassi[:8]` + ano-modelo → decodificação local do VIN), chamado no blur do chassi nas telas de OS, recepção e orçamento.
 5. **Tomador fiscal da seguradora:** continua sendo uma `Person` com papel `INSURER`, porque o fiscal e o `FiscalDocument.destinatario` exigem `Person`.
    - Ela passa a ser criada pelo sistema na página da seguradora.
    - O papel sai só do formulário genérico de pessoa.
@@ -1857,7 +1857,7 @@ Expected: tudo verde.
 2. Regra aprendida no catálogo: `VehicleAlias(source="chassi")` com chave `alias_key(chassi[:8], ano_modelo)`.
    - Os 8 primeiros caracteres são o WMI mais o VDS e identificam o modelo de fábrica, não o carro.
    - A regra nasce quando uma OS com chassi válido fica com a versão confirmada pela tela.
-   - Ela passa a "exata" com 2 confirmações iguais, ou com aprovação do admin.
+   - Ela passa a "exata" com 2 confirmações iguais, ou com aprovação do admin. Cada confirmação é de um carro diferente: o mesmo chassi voltando em outra OS não conta, nem versão cujo ano difere do ano-modelo do VIN (correção de 22/10/2026).
 3. Decodificação local: a montadora vem do WMI e o ano-modelo do 10º caractere.
 
 Nenhuma fonte externa é usada.
