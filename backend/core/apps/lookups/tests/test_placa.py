@@ -199,7 +199,7 @@ class PlacaDesligadaTest(TenantTestCase):
         assert r == {"found": False, "source": "none", "fields": {}, "unmatched": []}
         assert route.call_count == 0
         assert cache.get(cache_key("placa", PLACA)) is None
-        assert not any(k.startswith("lookup:placa:") for k in cache._cache)  # type: ignore[attr-defined]
+        assert not any("lookup:placa:" in k for k in cache._cache)  # type: ignore[attr-defined]
 
     @respx.mock
     def test_api_desligada_ignora_restricao_em_cache(self) -> None:
@@ -228,7 +228,8 @@ class PlacaDesligadaTest(TenantTestCase):
         assert r["fields"]["vehicle"]["version"]["id"] == version.pk
         assert r["fields"]["color"] == {"value": "PRATA", "label": "Prata"}
         assert route.call_count == 0
-        assert not any(k.startswith("lookup:placa:") for k in cache._cache)  # type: ignore[attr-defined]
+        assert cache.get(cache_key("placa", PLACA)) is None
+        assert not any("lookup:placa:" in k for k in cache._cache)  # type: ignore[attr-defined]
 
 
 class HealthSaldoTest(TenantTestCase):
