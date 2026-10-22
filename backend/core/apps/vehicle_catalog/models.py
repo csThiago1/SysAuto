@@ -202,6 +202,7 @@ class VehicleAlias(models.Model):
         ORCAMENTO = "orcamento", "Orçamento"
         QUOTES = "quotes", "Cotações"
         BOX = "box", "Box Empresa"
+        CHASSI = "chassi", "Chassi"
 
     source = models.CharField(max_length=20, choices=Source.choices)
     raw_key = models.CharField(max_length=300, help_text="alias_key(texto, ano).")

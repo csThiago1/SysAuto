@@ -11,8 +11,9 @@ from django.db import models, transaction
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
-from apps.lookups.validators import clean_cnpj
-from apps.vehicle_catalog.matching import record_alias_confirmation
+from apps.lookups.validators import clean_cnpj, decode_vin
+from apps.vehicle_catalog.matching import record_alias_confirmation, vin_rule_key
+from apps.vehicle_catalog.models import VehicleAlias
 
 from .vehicle import CATALOG_KEYS, apply_catalog_vehicle, resulting_catalog_pair
 
@@ -31,6 +32,20 @@ AUTO_TRANSITIONS: dict[str, tuple[list[str], str]] = {
     # Clientes particulares: ao definir data do orcamento, aguarda autorizacao
     "quotation_date": (["budget", "initial_survey"], "waiting_auth"),
 }
+
+
+def _learn_chassis(order: "ServiceOrder") -> None:
+    """Versão confirmada + chassi válido ensinam a regra do prefixo de fábrica do chassi."""
+    vin = order.chassis.strip().upper()
+    if order.catalog_version_id is None or order.vehicle_needs_review or not vin_rule_key(vin):
+        return
+    record_alias_confirmation(
+        VehicleAlias.Source.CHASSI,
+        vin[:8],
+        decode_vin(vin).model_year,
+        version=order.catalog_version,
+        family=order.catalog_family,
+    )
 
 
 class _ServiceOrderCoreMixin:
@@ -95,6 +110,7 @@ class _ServiceOrderCoreMixin:
         if catalog_family is not None or catalog_version is not None:
             apply_catalog_vehicle(order, family=catalog_family, version=catalog_version)
         order.save()
+        _learn_chassis(order)
 
         ServiceOrderActivityLog.objects.create(
             service_order=order,
@@ -142,6 +158,7 @@ class _ServiceOrderCoreMixin:
         if customer_uuid is not None:
             data["customer_uuid"] = customer_uuid
 
+        old_vehicle = (order.catalog_family_id, order.catalog_version_id, order.chassis)
         # Par familia/versao resultante, calculado antes de aplicar o payload na OS
         catalog_changed = bool(CATALOG_KEYS & data.keys())
         if catalog_changed:
@@ -337,6 +354,8 @@ class _ServiceOrderCoreMixin:
                     version=order.catalog_version,
                     family=order.catalog_family,
                 )
+        if (order.catalog_family_id, order.catalog_version_id, order.chassis) != old_vehicle:
+            _learn_chassis(order)  # PATCH que não mexe no par nem no chassi não conta
 
         # Criar um log por grupo que teve alteracoes
         if any(changes_by_group.values()) or other_changes:

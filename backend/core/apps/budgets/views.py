@@ -33,7 +33,7 @@ class BudgetViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     serializer_class = BudgetReadSerializer
     filterset_fields = ["is_active"]
-    search_fields = ["number", "vehicle_plate", "customer__full_name"]
+    search_fields = ["number", "vehicle_plate", "vehicle_chassis", "customer__full_name"]
     ordering_fields = ["created_at", "number"]
 
     def get_queryset(self):  # type: ignore[override]

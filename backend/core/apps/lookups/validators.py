@@ -43,12 +43,14 @@ WMI_MAKES: dict[str, str] = {
     "KNA": "KIA",
     "JHM": "HONDA",
 }
+MOTO_WMIS = frozenset({"9C2", "9C6"})  # WMI de moto: Honda e Yamaha
 
 
 class VinInfo(NamedTuple):
     wmi: str
     make_hint: str | None
     model_year: int | None
+    tipo_hint: str  # "moto" ou "carro"
 
 
 def only_digits(s: str) -> str:
@@ -111,7 +113,7 @@ def is_valid_vin(v: str) -> bool:
 
 
 def decode_vin(v: str) -> VinInfo:
-    """Pista de montadora (WMI) e ano-modelo (10º caractere, maior ano até o próximo)."""
+    """Pista de montadora e tipo (WMI) e ano-modelo (10º caractere, maior ano até o próximo)."""
     vin = v.strip().upper()
     wmi = vin[:3]
     model_year = None
@@ -119,4 +121,9 @@ def decode_vin(v: str) -> VinInfo:
     if idx >= 0:
         limit = date.today().year + 1
         model_year = max(y for y in range(1980 + idx, limit + 1, 30))
-    return VinInfo(wmi=wmi, make_hint=WMI_MAKES.get(wmi), model_year=model_year)
+    return VinInfo(
+        wmi=wmi,
+        make_hint=WMI_MAKES.get(wmi),
+        model_year=model_year,
+        tipo_hint="moto" if wmi in MOTO_WMIS else "carro",
+    )

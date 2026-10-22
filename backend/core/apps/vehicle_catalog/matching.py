@@ -8,7 +8,7 @@ import re
 from dataclasses import dataclass
 from typing import Literal
 
-from apps.lookups.validators import decode_vin
+from apps.lookups.validators import decode_vin, is_valid_vin
 from apps.vehicle_catalog.fipe_sync import rule_family
 from apps.vehicle_catalog.models import (
     VehicleAlias,
@@ -89,6 +89,13 @@ def alias_key(text: str, year: int | None) -> str:
     return n[: RAW_KEY_MAX - len(suffix)] + suffix
 
 
+def vin_rule_key(vin: str) -> str | None:
+    """Chave da regra aprendida do chassi: WMI + VDS (8 primeiros) + ano-modelo, nunca o VIN."""
+    vin = vin.strip().upper()
+    year = decode_vin(vin).model_year if is_valid_vin(vin) else None
+    return alias_key(vin[:8], year) if year else None
+
+
 def _strip_prefix(text: str, prefixes: set[str]) -> str:
     """Tira repetidamente o maior prefixo da lista que termina em espaço ou no fim."""
     changed = True
@@ -108,12 +115,13 @@ def _version_result(
     return VehicleMatch(modelo.marca, modelo.familia, modelo, version, confidence, review)
 
 
-def _by_alias(source: str, brand: str, text: str, year: int | None) -> VehicleMatch | None:
+def alias_match(source: str, raw_key: str) -> VehicleMatch | None:
+    """Regra aprendida da fonte para a chave, se o alvo dela continua ativo."""
     alias = (
         VehicleAlias.objects.select_related(
             "version__modelo__marca", "version__modelo__familia", "family__make"
         )
-        .filter(source=source, raw_key=alias_key(f"{brand} {text}", year))
+        .filter(source=source, raw_key=raw_key)
         .first()
     )
     if alias is None:
@@ -220,7 +228,7 @@ def match_vehicle(
             return _version_result(versions[0], "exata", False)
 
     if source:
-        by_alias = _by_alias(source, brand, text, year)
+        by_alias = alias_match(source, alias_key(f"{brand} {text}", year))
         if by_alias is not None:
             return by_alias
 

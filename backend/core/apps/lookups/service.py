@@ -1,6 +1,8 @@
 """
 Consultas externas (CEP, CNPJ, placa): validação, cache, cota por provider e fallback.
 
+O chassi é só local: histórico de OS, regra aprendida e decodificação do VIN.
+
 A chave consultada nunca vai para log nem para a chave de cache em claro.
 """
 
@@ -31,22 +33,25 @@ from apps.lookups.providers import (
 )
 from apps.lookups.validators import (
     clean_cnpj,
+    decode_vin,
     format_cnpj,
     is_valid_cnpj,
     is_valid_plate,
+    is_valid_vin,
     normalize_plate,
     only_digits,
 )
 from apps.persons.models import PersonAddress, PersonDocument, TipoDocumento
 from apps.persons.utils import sha256_hex
 from apps.service_orders.models import ServiceOrder
-from apps.vehicle_catalog.matching import VehicleMatch, match_vehicle
-from apps.vehicle_catalog.normalize import CorVeiculo, match_color
+from apps.vehicle_catalog.matching import VehicleMatch, alias_match, match_vehicle, vin_rule_key
+from apps.vehicle_catalog.models import VehicleAlias, VehicleMake
+from apps.vehicle_catalog.normalize import CorVeiculo, match_color, normalize_name
 from apps.vehicle_catalog.snapshot import catalog_path
 
 logger = logging.getLogger(__name__)
 
-Kind = Literal["cep", "cnpj", "placa"]
+Kind = Literal["cep", "cnpj", "placa", "chassi"]
 Provider = Callable[[str], dict[str, Any] | None]
 
 DAY = 86400
@@ -61,6 +66,7 @@ CHAINS: dict[str, list[Provider]] = {
     # permitirem, a ordem vira [minhareceita, cnpjws, cnpja_open].
     "cnpj": [cnpja_open, minhareceita, cnpjws],
     "placa": [apiplacas],
+    "chassi": [],  # sem fonte externa: _lookup_chassi
 }
 
 
@@ -88,6 +94,9 @@ def _clean_key(kind: str, key: str) -> str | None:
         return clean_cnpj(key) if is_valid_cnpj(key) else None
     if kind == "placa":
         return normalize_plate(key) if is_valid_plate(key) else None
+    if kind == "chassi":
+        vin = key.strip().upper()
+        return vin if is_valid_vin(vin) else None
     return None
 
 
@@ -335,6 +344,58 @@ def _lookup_placa(placa: str) -> LookupResult:
     return from_os
 
 
+def _lookup_chassi(vin: str) -> LookupResult:
+    """Última OS do tenant com o chassi → regra aprendida pelo prefixo → montadora do WMI.
+
+    Sem cache e sem rede: tudo é consulta local.
+    """
+    info = decode_vin(vin)
+    fields: dict[str, Any] = {
+        "vehicle": None,
+        "color": None,
+        "year_manufacture": None,
+        "ano_modelo": info.model_year,
+        "confianca": None,
+    }
+    order = None
+    if connection.schema_name != get_public_schema_name():  # OS só existe no tenant
+        order = (
+            ServiceOrder.objects.filter(
+                chassis__iexact=vin, is_active=True, catalog_family__isnull=False
+            )
+            .select_related(
+                "catalog_family__make",
+                "catalog_version__modelo__marca",
+                "catalog_version__modelo__familia",
+            )
+            .order_by("-created_at")
+            .first()
+        )
+    if order is not None:
+        fields["vehicle"] = catalog_path(family=order.catalog_family, version=order.catalog_version)
+        fields["color"] = _color(order.color)
+        fields["year_manufacture"] = order.year_manufacture
+        return {"found": True, "source": "os", "fields": fields, "unmatched": []}
+
+    key = vin_rule_key(vin)
+    match = alias_match(VehicleAlias.Source.CHASSI, key) if key else None
+    if match is not None:
+        fields["vehicle"] = catalog_path(
+            make=match.make, family=match.family, version=match.version
+        )
+        fields["confianca"] = match.confidence
+        return {"found": True, "source": "regra", "fields": fields, "unmatched": []}
+
+    makes = (
+        VehicleMake.objects.filter(is_active=True, tipo=info.tipo_hint) if info.make_hint else []
+    )
+    make = next((mk for mk in makes if normalize_name(mk.display_name) == info.make_hint), None)
+    if make is None:
+        return _miss("none")
+    fields["vehicle"] = catalog_path(make=make)
+    return {"found": True, "source": "vin", "fields": fields, "unmatched": []}
+
+
 def lookup(kind: Kind, key: str) -> LookupResult:
     """Consulta `kind` pela `key`. Nunca levanta: chave inválida dá `source="invalid"`."""
     try:
@@ -343,6 +404,8 @@ def lookup(kind: Kind, key: str) -> LookupResult:
             return _miss("invalid")
         if kind == "placa":
             return _lookup_placa(clean)
+        if kind == "chassi":
+            return _lookup_chassi(clean)
         db_first = DB_FIRST.get(kind)
         found = db_first(clean) if db_first else None
         if found is not None:

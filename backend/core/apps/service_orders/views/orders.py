@@ -178,7 +178,7 @@ class ServiceOrderViewSet(
         "estimated_delivery_date": ["gte", "lte"],
         "created_at": ["gte", "lte", "date"],
     }
-    search_fields = ["number", "casualty_number", "customer_name", "plate"]
+    search_fields = ["number", "casualty_number", "customer_name", "plate", "chassis"]
     ordering_fields = ["number", "created_at", "entry_date", "estimated_delivery_date", "opened_at"]
     ordering = ["-opened_at"]
 
