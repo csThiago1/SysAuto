@@ -20,6 +20,7 @@ from apps.items.services import NumberAllocator
 from apps.persons.models import Person
 from apps.documents.pdf_service import PDFService
 from apps.vehicle_catalog.models import VehicleFamily, VehicleYearVersion
+from apps.vehicle_catalog.normalize import CorVeiculo
 from apps.vehicle_catalog.snapshot import build_snapshot, resolve_family
 
 from .models import Budget, BudgetVersion, BudgetVersionItem
@@ -44,39 +45,27 @@ class BudgetService:
         *,
         customer: Person,
         vehicle_plate: str,
-        vehicle_description: str = "",
-        vehicle_chassis: str = "",
-        vehicle_version: str = "",
-        vehicle_engine: str = "",
-        vehicle_color: str = "",
-        vehicle_fuel_type: str = "",
-        vehicle_make_logo: str = "",
-        vehicle_year: int | None = None,
-        vehicle_year_manufacture: int | None = None,
         catalog_family: VehicleFamily | None = None,
         catalog_version: VehicleYearVersion | None = None,
+        vehicle_color: str = CorVeiculo.NAO_INFORMADA,
+        vehicle_year_manufacture: int | None = None,
+        vehicle_chassis: str = "",
         created_by: str,
     ) -> Budget:
         """Cria Budget novo + BudgetVersion v1 em status draft.
 
-        Com família/versão do catálogo, o texto do veículo é o snapshot do servidor.
+        O veículo vem só do catálogo (família, ou versão que traz a família; o
+        BudgetCreateSerializer exige um dos dois); o texto é o snapshot do servidor.
         """
         budget = Budget(
             number=NumberAllocator.allocate("BUDGET"),
             customer=customer,
             vehicle_plate=vehicle_plate.upper(),
-            vehicle_description=vehicle_description,
             vehicle_chassis=vehicle_chassis,
-            vehicle_version=vehicle_version,
-            vehicle_engine=vehicle_engine,
             vehicle_color=vehicle_color,
-            vehicle_fuel_type=vehicle_fuel_type,
-            vehicle_make_logo=vehicle_make_logo,
-            vehicle_year=vehicle_year,
             vehicle_year_manufacture=vehicle_year_manufacture,
         )
-        if catalog_family is not None or catalog_version is not None:
-            cls._apply_catalog_vehicle(budget, catalog_family, catalog_version)
+        cls._apply_catalog_vehicle(budget, catalog_family, catalog_version)
         budget.save()
         BudgetVersion.objects.create(
             budget=budget,

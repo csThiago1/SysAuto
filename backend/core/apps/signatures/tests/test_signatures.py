@@ -12,6 +12,7 @@ from apps.persons.models import Person
 from apps.service_orders.models import ServiceOrder
 from apps.signatures.models import Signature
 from apps.signatures.services import SignatureService
+from apps.vehicle_catalog.tests.factories import make_catalog
 
 
 User = get_user_model()
@@ -126,7 +127,7 @@ class TestSignatureService:
     def test_capture_for_budget(self, person):
         budget = BudgetService.create(
             customer=person, vehicle_plate="BDG1234",
-            vehicle_description="Test", created_by="x",
+            catalog_family=make_catalog().modelo.familia, created_by="x",
         )
         sig = SignatureService.capture(
             budget=budget,

@@ -8,6 +8,7 @@ from apps.authentication.models import GlobalUser
 from apps.items.models import NumberSequence
 from apps.persons.models import Person
 from apps.budgets.models import Budget, BudgetVersion
+from apps.vehicle_catalog.tests.factories import make_catalog
 
 
 def _setup_seq() -> None:
@@ -43,7 +44,7 @@ class BudgetViewsBase(TenantTestCase):
         return BudgetService.create(
             customer=self.customer,
             vehicle_plate="ABC1D23",
-            vehicle_description="Toyota Corolla 2020",
+            catalog_family=make_catalog().modelo.familia,
             created_by="test",
         )
 
@@ -61,7 +62,7 @@ class TestBudgetListCreate(BudgetViewsBase):
         response = self.client.post("/api/v1/budgets/", {
             "customer_id": self.customer.pk,
             "vehicle_plate": "XYZ9876",
-            "vehicle_description": "Honda Civic 2022",
+            "catalog_version": make_catalog().id,
         })
         self.assertEqual(response.status_code, 201)
         self.assertIn("ORC-2026-", response.data["number"])

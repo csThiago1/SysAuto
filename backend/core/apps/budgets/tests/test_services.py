@@ -9,6 +9,7 @@ from apps.items.models import NumberSequence
 from apps.persons.models import Person
 from apps.budgets.models import Budget, BudgetVersion, BudgetVersionItem
 from apps.documents.pdf_service import PDFService
+from apps.vehicle_catalog.tests.factories import make_catalog
 
 
 # ── Task 3: PDFService + create_from_budget ───────────────────────────────────
@@ -27,7 +28,7 @@ class TestRenderBudget(TenantTestCase):
             number="ORC-2026-000001",
             customer=customer,
             vehicle_plate="ABC1D23",
-            vehicle_description="Toyota Corolla 2020",
+            catalog_family=make_catalog().modelo.familia,
         )
         return BudgetVersion.objects.create(
             budget=budget, version_number=1, status="draft", created_by="test",
@@ -56,7 +57,7 @@ class TestCreateFromBudget(TenantTestCase):
             number="ORC-2026-000001",
             customer=customer,
             vehicle_plate="XYZ9876",
-            vehicle_description="Honda Civic 2022",
+            catalog_family=make_catalog().modelo.familia,
         )
         version = BudgetVersion.objects.create(
             budget=budget, version_number=1, status="sent", created_by="test",
@@ -89,7 +90,7 @@ def _make_budget(customer: Person | None = None) -> Budget:
     return BudgetService.create(
         customer=customer,
         vehicle_plate="ABC1D23",
-        vehicle_description="Toyota Corolla 2020",
+        catalog_family=make_catalog().modelo.familia,
         created_by="test_user",
     )
 

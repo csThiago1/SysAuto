@@ -1,6 +1,7 @@
 """Orçamento grava família e versão do catálogo e as leva para a OS."""
 
 from django_tenants.test.cases import TenantTestCase
+from rest_framework.response import Response
 from rest_framework.test import APIClient
 
 from apps.authentication.models import GlobalUser
@@ -21,6 +22,7 @@ class CatalogVehicleBudgetTest(TenantTestCase):
             defaults={"prefix": "ORC-2026-", "padding": 6, "next_number": 1},
         )
         self.customer = Person.objects.create(full_name="Cliente Catálogo", person_kind="PF")
+        self.user = GlobalUser.objects.create_user(email="orc@dscar.com", password="x")
 
     def create_budget(self, **kwargs: object) -> Budget:
         return BudgetService.create(
@@ -31,22 +33,49 @@ class CatalogVehicleBudgetTest(TenantTestCase):
         version = BudgetVersion.objects.get(budget=budget)
         return ServiceOrderService.create_from_budget(version=version)
 
+    def post(self, **data: object) -> Response:
+        client = APIClient()
+        client.defaults["SERVER_NAME"] = client.defaults["HTTP_HOST"] = self.domain.domain
+        client.force_authenticate(user=self.user, token={"role": "CONSULTANT"})
+        body = {"customer_id": self.customer.pk, "vehicle_plate": "ABC1D23", **data}
+        return client.post("/api/v1/budgets/", body, format="json")
+
+    def test_budget_sem_familia_400(self) -> None:
+        r = self.post(vehicle_color="PRETA")
+        assert r.status_code == 400
+        assert r.data["catalog_family"] == ["Escolha a montadora e o modelo."]
+        # Os textos livres antigos não abrem outra porta.
+        r = self.post(vehicle_description="Toyota Corolla 2020", vehicle_version="XEi")
+        assert r.status_code == 400 and "catalog_family" in r.data
+        assert not Budget.objects.exists()
+
+    def test_budget_ano_e_cor_invalidos_400(self) -> None:
+        v = make_catalog()
+        r = self.post(catalog_version=v.id, vehicle_year_manufacture=2020)
+        assert r.status_code == 400 and "year_manufacture" in r.data
+        r = self.post(catalog_version=v.id, vehicle_color="Prata metálico")
+        assert r.status_code == 400 and "vehicle_color" in r.data
+        assert not Budget.objects.exists()
+
+    def test_budget_so_familia_201_com_selo(self) -> None:
+        fam = make_catalog().modelo.familia
+        r = self.post(
+            catalog_family=fam.id,
+            vehicle_color="PRETA",
+            vehicle_year_manufacture=2024,
+            vehicle_chassis="9BWZZZ377VT004251",
+        )
+        assert r.status_code == 201, r.data
+        b = Budget.objects.get(pk=r.data["id"])
+        assert b.catalog_family == fam and b.catalog_version is None
+        assert b.vehicle_needs_review is True and r.data["vehicle_needs_review"] is True
+        assert b.vehicle_description == "Chevrolet Onix Plus"
+        assert b.vehicle_color == "PRETA" and b.vehicle_year_manufacture == 2024
+        assert b.vehicle_chassis == "9BWZZZ377VT004251" and b.vehicle_year is None
+
     def test_post_com_versao_preenche_snapshot(self) -> None:
         v = make_catalog()
-        client = APIClient()
-        client.defaults["HTTP_X_TENANT_DOMAIN"] = self.domain.domain
-        user = GlobalUser.objects.create_user(email="orc@dscar.com", password="x")
-        client.force_authenticate(user=user, token={"role": "CONSULTANT"})
-        r = client.post(
-            "/api/v1/budgets/",
-            {
-                "customer_id": self.customer.pk,
-                "vehicle_plate": "ABC1D23",
-                "catalog_version": v.id,
-                "vehicle_year_manufacture": 2024,
-            },
-            format="json",
-        )
+        r = self.post(catalog_version=v.id, vehicle_year_manufacture=2024)
         assert r.status_code == 201, r.data
         b = Budget.objects.get(pk=r.data["id"])
         assert (

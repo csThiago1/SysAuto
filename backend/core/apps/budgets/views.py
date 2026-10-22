@@ -14,7 +14,6 @@ from apps.authentication.permissions import (
     PermissionsByActionMixin,
 )
 from apps.persons.models import Person
-from apps.vehicle_catalog.normalize import CorVeiculo
 
 from .models import Budget, BudgetVersion, BudgetVersionItem
 from .serializers import (
@@ -57,17 +56,11 @@ class BudgetViewSet(viewsets.ReadOnlyModelViewSet):
         budget = BudgetService.create(
             customer=customer,
             vehicle_plate=ser.validated_data["vehicle_plate"],
-            vehicle_description=ser.validated_data.get("vehicle_description", ""),
-            vehicle_chassis=ser.validated_data.get("vehicle_chassis", ""),
-            vehicle_version=ser.validated_data.get("vehicle_version", ""),
-            vehicle_engine=ser.validated_data.get("vehicle_engine", ""),
-            vehicle_color=ser.validated_data.get("vehicle_color", CorVeiculo.NAO_INFORMADA),
-            vehicle_fuel_type=ser.validated_data.get("vehicle_fuel_type", ""),
-            vehicle_make_logo=ser.validated_data.get("vehicle_make_logo", ""),
-            vehicle_year=ser.validated_data.get("vehicle_year"),
-            vehicle_year_manufacture=ser.validated_data.get("vehicle_year_manufacture"),
             catalog_family=ser.validated_data.get("catalog_family"),
             catalog_version=ser.validated_data.get("catalog_version"),
+            vehicle_color=ser.validated_data["vehicle_color"],
+            vehicle_year_manufacture=ser.validated_data["vehicle_year_manufacture"],
+            vehicle_chassis=ser.validated_data["vehicle_chassis"],
             created_by=request.user.email,
         )
         return Response(

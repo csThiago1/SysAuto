@@ -9,7 +9,9 @@ from rest_framework import serializers
 from apps.items.models import ItemOperation, ItemOperationType, LaborCategory
 from apps.items.serializers import ItemOperationReadSerializer
 from apps.vehicle_catalog.models import VehicleFamily, VehicleYearVersion
-from apps.vehicle_catalog.normalize import CorVeiculo, match_color
+from apps.service_orders.serializers.core import FAMILY_REQUIRED
+from apps.service_orders.services.vehicle import validate_catalog_vehicle
+from apps.vehicle_catalog.normalize import CorVeiculo
 from apps.vehicle_catalog.snapshot import catalog_path
 
 from .models import Budget, BudgetVersion, BudgetVersionItem
@@ -118,34 +120,35 @@ class BudgetReadSerializer(serializers.ModelSerializer):
 
 
 class BudgetCreateSerializer(serializers.Serializer):
-    customer_id         = serializers.IntegerField()
-    vehicle_plate       = serializers.CharField(max_length=10)
-    vehicle_description = serializers.CharField(
-        max_length=300, required=False, default="", allow_blank=True,
+    """Veículo só pelo catálogo: o texto é o snapshot do servidor, nunca vem do cliente."""
+
+    customer_id = serializers.IntegerField()
+    vehicle_plate = serializers.CharField(max_length=10)
+    vehicle_chassis = serializers.CharField(
+        max_length=17, required=False, default="", allow_blank=True
     )
-    vehicle_chassis     = serializers.CharField(max_length=17,  required=False, default="")
-    vehicle_version     = serializers.CharField(max_length=120, required=False, default="")
-    vehicle_engine      = serializers.CharField(max_length=20,  required=False, default="")
-    vehicle_color       = serializers.CharField(
-        max_length=40, required=False, allow_blank=True, default="",
+    vehicle_color = serializers.ChoiceField(
+        choices=CorVeiculo.choices, required=False, default=CorVeiculo.NAO_INFORMADA
     )
-    vehicle_fuel_type   = serializers.CharField(max_length=30,  required=False, default="")
-    vehicle_make_logo   = serializers.URLField(max_length=500,  required=False, default="", allow_blank=True)
-    vehicle_year        = serializers.IntegerField(required=False, allow_null=True, default=None)
     vehicle_year_manufacture = serializers.IntegerField(
-        required=False, allow_null=True, default=None,
+        required=False, allow_null=True, default=None
     )
     catalog_family = serializers.PrimaryKeyRelatedField(
-        queryset=VehicleFamily.objects.filter(is_active=True), required=False, allow_null=True,
+        queryset=VehicleFamily.objects.filter(is_active=True), required=False, allow_null=True
     )
     catalog_version = serializers.PrimaryKeyRelatedField(
         queryset=VehicleYearVersion.objects.filter(is_active=True),
-        required=False, allow_null=True,
+        required=False,
+        allow_null=True,
     )
 
-    def validate_vehicle_color(self, v: str) -> str:
-        # Tolerante por enquanto: texto livre vira código do enum em vez de 400.
-        return v if v in CorVeiculo.values else (match_color(v) or CorVeiculo.NAO_INFORMADA)
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        family, version = attrs.get("catalog_family"), attrs.get("catalog_version")
+        # A versão traz a família junto (o servidor deriva).
+        if family is None and version is None:
+            raise serializers.ValidationError({"catalog_family": FAMILY_REQUIRED})
+        validate_catalog_vehicle(family, version, attrs.get("vehicle_year_manufacture"))
+        return attrs
 
 
 class BudgetApproveSerializer(serializers.Serializer):
