@@ -94,6 +94,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
     onOpenChange(false)
     setTimeout(() => {
       reset()
+      placa.reset()
       setServerError(null)
       setInsurer(null)
     }, 300)

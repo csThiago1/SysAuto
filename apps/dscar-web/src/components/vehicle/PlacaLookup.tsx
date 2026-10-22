@@ -9,22 +9,27 @@ import type { CatalogSelection, LookupResult } from "./catalog.schema"
 
 export type PlacaFields = Extract<LookupResult<"placa">, { found: true }>["fields"]
 
-/** Consulta a placa no blur ou no botão "Consultar", nunca a cada tecla. */
+/**
+ * Consulta a placa no blur ou no botão "Consultar", nunca a cada tecla.
+ * `n` faz a mesma placa consultada de novo reaplicar o resultado (vem do cache).
+ */
 export function usePlacaLookup(onFound: (fields: PlacaFields) => void) {
-  const [key, setKey] = useState<string | null>(null)
-  const query = useLookup("placa", key)
+  const [key, setKey] = useState<{ plate: string; n: number } | null>(null)
+  const query = useLookup("placa", key?.plate ?? null)
   const data = query.data
 
   useEffect(() => {
     if (data?.found) onFound(data.fields)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data])
+  }, [data, key?.n])
 
   return {
     lookup: (plate: string | null | undefined) => {
       const p = onlyAlnum(plate ?? "").toUpperCase()
-      if (p.length >= 7) setKey(p)
+      if (p.length >= 7) setKey((k) => ({ plate: p, n: (k?.n ?? 0) + 1 }))
     },
+    /** Esquece a última consulta (form novo não herda restrição de outra placa). */
+    reset: () => setKey(null),
     isFetching: query.isFetching,
     notFound: data?.found === false || query.isError,
     restricao: data?.found ? data.fields.restricao : null,
