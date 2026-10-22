@@ -8,9 +8,9 @@ from rest_framework import serializers
 
 from apps.items.models import ItemOperation, ItemOperationType, LaborCategory
 from apps.items.serializers import ItemOperationReadSerializer
-from apps.vehicle_catalog.models import VehicleFamily, VehicleYearVersion
 from apps.service_orders.serializers.core import FAMILY_REQUIRED
 from apps.service_orders.services.vehicle import validate_catalog_vehicle
+from apps.vehicle_catalog.models import VehicleFamily, VehicleYearVersion
 from apps.vehicle_catalog.normalize import CorVeiculo
 from apps.vehicle_catalog.snapshot import catalog_path
 
@@ -23,12 +23,28 @@ class BudgetVersionItemReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = BudgetVersionItem
         fields = [
-            "id", "bucket", "payer_block", "impact_area", "item_type",
-            "description", "external_code", "part_type", "supplier",
-            "quantity", "unit_price", "unit_cost", "discount_pct", "net_price",
-            "flag_abaixo_padrao", "flag_acima_padrao", "flag_inclusao_manual",
-            "flag_codigo_diferente", "flag_servico_manual", "flag_peca_da_conta",
-            "sort_order", "operations",
+            "id",
+            "bucket",
+            "payer_block",
+            "impact_area",
+            "item_type",
+            "description",
+            "external_code",
+            "part_type",
+            "supplier",
+            "quantity",
+            "unit_price",
+            "unit_cost",
+            "discount_pct",
+            "net_price",
+            "flag_abaixo_padrao",
+            "flag_acima_padrao",
+            "flag_inclusao_manual",
+            "flag_codigo_diferente",
+            "flag_servico_manual",
+            "flag_peca_da_conta",
+            "sort_order",
+            "operations",
         ]
 
 
@@ -36,18 +52,35 @@ class BudgetVersionItemWriteSerializer(serializers.ModelSerializer):
     """Write: aceita campos do item. Operations aninhadas como lista."""
 
     operations = serializers.ListField(
-        child=serializers.DictField(), required=False, write_only=True,
+        child=serializers.DictField(),
+        required=False,
+        write_only=True,
     )
 
     class Meta:
         model = BudgetVersionItem
         fields = [
-            "bucket", "payer_block", "impact_area", "item_type",
-            "description", "external_code", "part_type", "supplier",
-            "quantity", "unit_price", "unit_cost", "discount_pct", "net_price",
-            "flag_abaixo_padrao", "flag_acima_padrao", "flag_inclusao_manual",
-            "flag_codigo_diferente", "flag_servico_manual", "flag_peca_da_conta",
-            "sort_order", "operations",
+            "bucket",
+            "payer_block",
+            "impact_area",
+            "item_type",
+            "description",
+            "external_code",
+            "part_type",
+            "supplier",
+            "quantity",
+            "unit_price",
+            "unit_cost",
+            "discount_pct",
+            "net_price",
+            "flag_abaixo_padrao",
+            "flag_acima_padrao",
+            "flag_inclusao_manual",
+            "flag_codigo_diferente",
+            "flag_servico_manual",
+            "flag_peca_da_conta",
+            "sort_order",
+            "operations",
         ]
 
     def create(self, validated_data: dict) -> BudgetVersionItem:
@@ -56,18 +89,18 @@ class BudgetVersionItemWriteSerializer(serializers.ModelSerializer):
         for op_data in operations:
             ItemOperation.objects.create(
                 item_budget=item,
-                operation_type=ItemOperationType.objects.get(
-                    code=op_data["operation_type_code"]
-                ),
-                labor_category=LaborCategory.objects.get(
-                    code=op_data["labor_category_code"]
-                ),
+                operation_type=ItemOperationType.objects.get(code=op_data["operation_type_code"]),
+                labor_category=LaborCategory.objects.get(code=op_data["labor_category_code"]),
                 hours=Decimal(str(op_data["hours"])),
                 hourly_rate=Decimal(str(op_data["hourly_rate"])),
-                labor_cost=Decimal(str(op_data.get(
-                    "labor_cost",
-                    Decimal(str(op_data["hours"])) * Decimal(str(op_data["hourly_rate"])),
-                ))),
+                labor_cost=Decimal(
+                    str(
+                        op_data.get(
+                            "labor_cost",
+                            Decimal(str(op_data["hours"])) * Decimal(str(op_data["hourly_rate"])),
+                        )
+                    )
+                ),
             )
         return item
 
@@ -75,44 +108,83 @@ class BudgetVersionItemWriteSerializer(serializers.ModelSerializer):
 class BudgetVersionReadSerializer(serializers.ModelSerializer):
     items = BudgetVersionItemReadSerializer(many=True, read_only=True)
     status_display = serializers.CharField(
-        source="get_status_display", read_only=True,
+        source="get_status_display",
+        read_only=True,
     )
 
     class Meta:
         model = BudgetVersion
         fields = [
-            "id", "version_number", "status", "status_display",
-            "valid_until", "subtotal", "discount_total", "net_total",
-            "labor_total", "parts_total", "pdf_s3_key",
-            "validity_days", "payment_terms", "payment_methods", "estimated_days",
-            "sent_at", "approved_at", "approved_by", "approval_evidence_s3_key",
-            "created_by", "created_at", "items",
+            "id",
+            "version_number",
+            "status",
+            "status_display",
+            "valid_until",
+            "subtotal",
+            "discount_total",
+            "net_total",
+            "labor_total",
+            "parts_total",
+            "pdf_s3_key",
+            "validity_days",
+            "payment_terms",
+            "payment_methods",
+            "estimated_days",
+            "sent_at",
+            "approved_at",
+            "approved_by",
+            "approval_evidence_s3_key",
+            "created_by",
+            "created_at",
+            "items",
         ]
 
 
 class BudgetReadSerializer(serializers.ModelSerializer):
     active_version = BudgetVersionReadSerializer(read_only=True)
     customer_name = serializers.CharField(
-        source="customer.full_name", read_only=True,
+        source="customer.full_name",
+        read_only=True,
     )
     # Número da OS vinculada — o pk (service_order) é UUID e não serve
     # pra montar o link /os/{numero} no frontend.
     service_order_number = serializers.IntegerField(
-        source="service_order.number", read_only=True, allow_null=True, default=None,
+        source="service_order.number",
+        read_only=True,
+        allow_null=True,
+        default=None,
     )
     catalog_path = serializers.SerializerMethodField()
 
     class Meta:
         model = Budget
         fields = [
-            "id", "number", "customer", "customer_name",
-            "vehicle_plate", "vehicle_description",
-            "vehicle_chassis", "vehicle_version", "vehicle_engine",
-            "vehicle_color", "vehicle_fuel_type", "vehicle_make_logo", "vehicle_year",
-            "vehicle_year_manufacture", "vehicle_zero_km", "vehicle_needs_review",
-            "catalog_family", "catalog_version", "catalog_path",
-            "cloned_from", "service_order", "service_order_number", "active_version",
-            "is_active", "created_at", "updated_at",
+            "id",
+            "number",
+            "customer",
+            "customer_name",
+            "vehicle_plate",
+            "vehicle_description",
+            "vehicle_chassis",
+            "vehicle_version",
+            "vehicle_engine",
+            "vehicle_color",
+            "vehicle_fuel_type",
+            "vehicle_make_logo",
+            "vehicle_year",
+            "vehicle_year_manufacture",
+            "vehicle_zero_km",
+            "vehicle_needs_review",
+            "catalog_family",
+            "catalog_version",
+            "catalog_path",
+            "cloned_from",
+            "service_order",
+            "service_order_number",
+            "active_version",
+            "is_active",
+            "created_at",
+            "updated_at",
         ]
 
     def get_catalog_path(self, obj: Budget) -> dict[str, Any] | None:
@@ -154,5 +226,7 @@ class BudgetCreateSerializer(serializers.Serializer):
 class BudgetApproveSerializer(serializers.Serializer):
     approved_by = serializers.CharField(max_length=120)
     evidence_s3_key = serializers.CharField(
-        max_length=500, required=False, default="",
+        max_length=500,
+        required=False,
+        default="",
     )

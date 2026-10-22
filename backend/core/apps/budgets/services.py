@@ -16,9 +16,9 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
+from apps.documents.pdf_service import PDFService
 from apps.items.services import NumberAllocator
 from apps.persons.models import Person
-from apps.documents.pdf_service import PDFService
 from apps.vehicle_catalog.models import VehicleFamily, VehicleYearVersion
 from apps.vehicle_catalog.normalize import CorVeiculo
 from apps.vehicle_catalog.snapshot import build_snapshot, resolve_family
@@ -143,7 +143,8 @@ class BudgetService:
         ).update(status="superseded")
 
         os_instance = ServiceOrderService.create_from_budget(
-            version=version, created_by_user=user,
+            version=version,
+            created_by_user=user,
         )
         version.budget.service_order = os_instance
         version.budget.save(update_fields=["service_order"])
@@ -208,14 +209,13 @@ class BudgetService:
             )
         new_budget.save()
         new_v = BudgetVersion.objects.create(
-            budget=new_budget, version_number=1,
-            status="draft", created_by=created_by,
+            budget=new_budget,
+            version_number=1,
+            status="draft",
+            created_by=created_by,
         )
         source_v = (
-            source_budget.versions
-            .exclude(status="draft")
-            .order_by("-version_number")
-            .first()
+            source_budget.versions.exclude(status="draft").order_by("-version_number").first()
         )
         if source_v:
             cls._copy_items_between_versions(source=source_v, target=new_v)
@@ -229,7 +229,8 @@ class BudgetService:
             Quantidade de versões marcadas como expired.
         """
         return BudgetVersion.objects.filter(
-            status="sent", valid_until__lt=timezone.now(),
+            status="sent",
+            valid_until__lt=timezone.now(),
         ).update(status="expired")
 
     # ── Helpers privados ──────────────────────────────────────────────────────
@@ -254,17 +255,34 @@ class BudgetService:
 
     @classmethod
     def _copy_items_between_versions(
-        cls, *, source: BudgetVersion, target: BudgetVersion,
+        cls,
+        *,
+        source: BudgetVersion,
+        target: BudgetVersion,
     ) -> None:
         """Copia items de source para target, preservando operations."""
         from apps.items.models import ItemOperation
 
         shared_fields = [
-            "bucket", "payer_block", "impact_area", "item_type",
-            "description", "external_code", "part_type", "supplier",
-            "quantity", "unit_price", "unit_cost", "discount_pct", "net_price",
-            "flag_abaixo_padrao", "flag_acima_padrao", "flag_inclusao_manual",
-            "flag_codigo_diferente", "flag_servico_manual", "flag_peca_da_conta",
+            "bucket",
+            "payer_block",
+            "impact_area",
+            "item_type",
+            "description",
+            "external_code",
+            "part_type",
+            "supplier",
+            "quantity",
+            "unit_price",
+            "unit_cost",
+            "discount_pct",
+            "net_price",
+            "flag_abaixo_padrao",
+            "flag_acima_padrao",
+            "flag_inclusao_manual",
+            "flag_codigo_diferente",
+            "flag_servico_manual",
+            "flag_peca_da_conta",
             "sort_order",
         ]
         for item in source.items.all().prefetch_related("operations"):
@@ -306,21 +324,29 @@ class BudgetService:
         version.subtotal = subtotal + labor
         version.discount_total = discount
         version.net_total = version.subtotal - version.discount_total
-        version.save(update_fields=[
-            "labor_total", "parts_total", "subtotal", "discount_total", "net_total",
-        ])
+        version.save(
+            update_fields=[
+                "labor_total",
+                "parts_total",
+                "subtotal",
+                "discount_total",
+                "net_total",
+            ]
+        )
 
     @classmethod
     def _compute_hash(cls, version: BudgetVersion) -> str:
         """SHA256 dos items da versão. Snapshot imutável pós-send."""
         payload = []
         for item in version.items.all().order_by("sort_order", "pk"):
-            payload.append({
-                "description": item.description,
-                "qty": str(item.quantity),
-                "unit_price": str(item.unit_price),
-                "net_price": str(item.net_price),
-                "item_type": item.item_type,
-            })
+            payload.append(
+                {
+                    "description": item.description,
+                    "qty": str(item.quantity),
+                    "unit_price": str(item.unit_price),
+                    "net_price": str(item.net_price),
+                    "item_type": item.item_type,
+                }
+            )
         serialized = json.dumps(payload, sort_keys=True)
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
