@@ -8,11 +8,11 @@ import {
 } from "@/components/vehicle/catalog.schema"
 import { apiFetch } from "@/lib/api"
 
-// Mapeado por tipo para `schemas[kind]` sair como o schema de K (e não a união dos três).
+// Mapeado por tipo para `schemas[kind]` sair como o schema de K (e não a união dos tipos).
 const schemas: { [P in LookupKind]: z.ZodType<LookupResult<P>, z.ZodTypeDef, unknown> } =
   lookupResultSchemas
 
-/** Consulta CEP/CNPJ/placa. Quem chama fixa `key` no blur ou no botão (debounce de 400 ms). */
+/** Consulta CEP/CNPJ/placa/chassi. Quem chama fixa `key` no blur ou no botão (debounce de 400 ms). */
 export function useLookup<K extends LookupKind>(kind: K, key: string | null) {
   const schema = schemas[kind]
   return useQuery({

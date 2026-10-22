@@ -7,11 +7,12 @@ import { toast } from "sonner";
 import { useServiceOrders } from "@/hooks/useServiceOrders";
 import { VehicleCatalogPicker } from "@/components/vehicle/VehicleCatalogPicker";
 import {
+  ChassiHint,
   RestricaoAlert,
   SinespHint,
   keepYearManufacture,
   placaPrefill,
-  usePlacaLookup,
+  useVehicleLookup,
 } from "@/components/vehicle/PlacaLookup";
 import { applyIfEmpty } from "@/lib/prefill";
 import { Button } from "@/components/ui/button";
@@ -29,10 +30,15 @@ export function StepPlaca(): React.ReactElement {
   const { watch, setValue, control, formState } = form;
   const plate = watch("plate");
 
-  const placa = usePlacaLookup((fields) => {
+  const placa = useVehicleLookup("placa", (fields) => {
     applyIfEmpty(form, placaPrefill(fields, form.getValues("catalog_selection")));
     toast.success("Dados do veículo preenchidos pela placa.");
   });
+  const chassiLookup = useVehicleLookup("chassi", (fields) => {
+    applyIfEmpty(form, placaPrefill(fields, form.getValues("catalog_selection")));
+    toast.success("Dados do veículo preenchidos pelo chassi.");
+  });
+  const chassis = watch("chassis");
 
   // OS aberta com a mesma placa → aviso com link
   const dup = useServiceOrders({ search: plate ?? "" }, 1, 5, (plate ?? "").length >= 7);
@@ -85,9 +91,37 @@ export function StepPlaca(): React.ReactElement {
         )}
       </div>
 
-      <RestricaoAlert restricao={placa.restricao} />
+      <RestricaoAlert restricao={placa.result?.fields.restricao} />
 
       <SinespHint searched={placa.searched} />
+
+      <div className="space-y-1.5">
+        <Label htmlFor="rec-chassis">Chassi (opcional)</Label>
+        <div className="relative">
+          <Input
+            id="rec-chassis"
+            value={chassis ?? ""}
+            onChange={(e) =>
+              setValue("chassis", e.target.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase())
+            }
+            onBlur={() => chassiLookup.lookup(chassis)}
+            placeholder="17 caracteres"
+            maxLength={17}
+            autoCapitalize="characters"
+            autoComplete="off"
+            className="font-mono tracking-widest"
+          />
+          {chassiLookup.isFetching && (
+            <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-muted-foreground" />
+          )}
+        </div>
+        {chassiLookup.notFound && (
+          <p className="text-xs text-muted-foreground">
+            Chassi não encontrado — escolha o veículo na lista.
+          </p>
+        )}
+        <ChassiHint result={chassiLookup.result} />
+      </div>
 
       {osAberta && (
         <Link

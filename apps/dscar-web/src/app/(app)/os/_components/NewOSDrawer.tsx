@@ -20,11 +20,12 @@ import { InsurerSelect } from "../[numero]/_components/shared/InsurerSelect"
 import { ColorSelect } from "../[numero]/_components/shared/ColorSelect"
 import { VehicleCatalogPicker } from "@/components/vehicle/VehicleCatalogPicker"
 import {
+  ChassiHint,
   RestricaoAlert,
   SinespHint,
   keepYearManufacture,
   placaPrefill,
-  usePlacaLookup,
+  useVehicleLookup,
 } from "@/components/vehicle/PlacaLookup"
 import { applyIfEmpty } from "@/lib/prefill"
 import { ApiError, handleApiFormError } from "@/lib/api"
@@ -83,9 +84,13 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
     formState: { errors, isSubmitting, dirtyFields },
   } = form
 
-  const placa = usePlacaLookup((fields) => {
+  const placa = useVehicleLookup("placa", (fields) => {
     applyIfEmpty(form, placaPrefill(fields, form.getValues("catalog_selection")))
     toast.success("Dados do veículo preenchidos pela placa.")
+  })
+  const chassiLookup = useVehicleLookup("chassi", (fields) => {
+    applyIfEmpty(form, placaPrefill(fields, form.getValues("catalog_selection")))
+    toast.success("Dados do veículo preenchidos pelo chassi.")
   })
 
   const customerType = watch("customer_type")
@@ -96,6 +101,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
     setTimeout(() => {
       reset()
       placa.reset()
+      chassiLookup.reset()
       setServerError(null)
       setInsurer(null)
     }, 300)
@@ -300,8 +306,40 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                 </p>
               )}
             </div>
-            <RestricaoAlert restricao={placa.restricao} />
+            <RestricaoAlert restricao={placa.result?.fields.restricao} />
             <SinespHint searched={placa.searched} />
+
+            <div>
+              <label htmlFor="new-os-chassis" className={LABEL}>
+                Chassi <span className="font-normal text-muted-foreground/60">(opcional)</span>
+              </label>
+              <div className="relative">
+                <input
+                  id="new-os-chassis"
+                  className={errors.chassis ? INPUT_ERROR : INPUT}
+                  placeholder="17 caracteres"
+                  value={watch("chassis") ?? ""}
+                  onChange={(e) =>
+                    setValue("chassis", e.target.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase(), {
+                      shouldDirty: true,
+                    })
+                  }
+                  onBlur={() => chassiLookup.lookup(watch("chassis"))}
+                  maxLength={17}
+                  autoCapitalize="characters"
+                  data-testid="chassis-input"
+                />
+                {chassiLookup.isFetching && (
+                  <Loader2 className="absolute right-2 top-2 h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+              </div>
+              {chassiLookup.notFound && (
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Chassi não encontrado — escolha o veículo na lista.
+                </p>
+              )}
+              <ChassiHint result={chassiLookup.result} />
+            </div>
 
             <Controller
               name="catalog_selection"

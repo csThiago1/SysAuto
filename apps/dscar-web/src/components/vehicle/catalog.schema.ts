@@ -62,13 +62,24 @@ const cnpjFields = z.object({
   telefone: z.string(),
 })
 
-const placaFields = z.object({
+const vehicleFields = {
   vehicle: catalogSelectionSchema.nullable(),
   color: z.object({ value: z.string(), label: z.string() }).nullable(),
   year_manufacture: z.number().nullable(),
+}
+
+const placaFields = z.object({
+  ...vehicleFields,
   restricao: z
     .object({ situacao: z.string(), tem_restricao: z.boolean(), consultado_em: z.string() })
     .nullable(),
+})
+
+/** `source`: "os" (OS anterior), "regra" (aprendida pelo prefixo) ou "vin" (só a montadora). */
+const chassiFields = z.object({
+  ...vehicleFields,
+  ano_modelo: z.number().nullable(),
+  confianca: z.enum(["exata", "alta"]).nullable(),
 })
 
 /** `found: false` traz `fields: {}`; é resposta normal, não erro. */
@@ -84,6 +95,7 @@ export const lookupResultSchemas = {
   cep: lookupResult(cepFields),
   cnpj: lookupResult(cnpjFields),
   placa: lookupResult(placaFields),
+  chassi: lookupResult(chassiFields),
 }
 export type LookupKind = keyof typeof lookupResultSchemas
 export type LookupResult<K extends LookupKind> = z.infer<(typeof lookupResultSchemas)[K]>

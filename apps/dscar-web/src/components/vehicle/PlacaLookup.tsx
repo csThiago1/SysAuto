@@ -7,42 +7,61 @@ import { onlyAlnum } from "@paddock/utils"
 import { useLookup } from "@/hooks/useLookup"
 import type { CatalogSelection, LookupResult } from "./catalog.schema"
 
-export type PlacaFields = Extract<LookupResult<"placa">, { found: true }>["fields"]
+type VehicleLookupKind = "placa" | "chassi"
+type Found<K extends VehicleLookupKind> = Extract<LookupResult<K>, { found: true }>
+export type PlacaFields = Found<"placa">["fields"]
+export type ChassiResult = Found<"chassi">
+
+/** Placa com 7+ caracteres; chassi com 17 caracteres de VIN (sem I, O e Q). */
+const READY: Record<VehicleLookupKind, (v: string) => boolean> = {
+  placa: (v) => v.length >= 7,
+  chassi: (v) => /^[A-HJ-NPR-Z0-9]{17}$/.test(v),
+}
+
+const isFound = <K extends VehicleLookupKind>(r: LookupResult<K> | undefined): r is Found<K> =>
+  r?.found === true
 
 /**
- * Consulta a placa no blur ou no botão "Consultar", nunca a cada tecla.
- * `n` faz a mesma placa consultada de novo reaplicar o resultado (vem do cache).
+ * Consulta a placa ou o chassi no blur ou no botão "Consultar", nunca a cada tecla.
+ * `n` faz a mesma chave consultada de novo reaplicar o resultado (vem do cache).
  */
-export function usePlacaLookup(onFound: (fields: PlacaFields) => void) {
-  const [key, setKey] = useState<{ plate: string; n: number } | null>(null)
-  const query = useLookup("placa", key?.plate ?? null)
+export function useVehicleLookup<K extends VehicleLookupKind>(
+  kind: K,
+  onFound: (fields: Found<K>["fields"]) => void,
+) {
+  const [key, setKey] = useState<{ value: string; n: number } | null>(null)
+  const query = useLookup(kind, key?.value ?? null)
   const data = query.data
 
   useEffect(() => {
-    if (data?.found) onFound(data.fields)
+    if (isFound(data)) onFound(data.fields)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, key?.n])
 
   return {
-    lookup: (plate: string | null | undefined) => {
-      const p = onlyAlnum(plate ?? "").toUpperCase()
-      if (p.length >= 7) setKey((k) => ({ plate: p, n: (k?.n ?? 0) + 1 }))
+    lookup: (raw: string | null | undefined) => {
+      const v = onlyAlnum(raw ?? "").toUpperCase()
+      if (READY[kind](v)) setKey((k) => ({ value: v, n: (k?.n ?? 0) + 1 }))
     },
-    /** Esquece a última consulta (form novo não herda restrição de outra placa). */
+    /** Esquece a última consulta (form novo não herda restrição nem dica de outro veículo). */
     reset: () => setKey(null),
     isFetching: query.isFetching,
     /** Já rodou uma consulta (achou ou não): libera o `SinespHint`. */
     searched: query.isFetched,
     notFound: data?.found === false || query.isError,
-    restricao: data?.found ? data.fields.restricao : null,
+    /** Último resultado encontrado (restrição da placa, `source` do chassi). */
+    result: isFound(data) ? data : null,
   }
 }
 
 /**
- * O que a placa sugere para o form (vai por `applyIfEmpty`, que nunca sobrescreve).
- * Com veículo já escolhido, o ano de fabricação da placa não entra: é de outro veículo.
+ * O que a placa ou o chassi sugere para o form (vai por `applyIfEmpty`, que nunca sobrescreve).
+ * Com veículo já escolhido, o ano de fabricação da consulta não entra: é de outro veículo.
  */
-export function placaPrefill(fields: PlacaFields, current: CatalogSelection | null | undefined) {
+export function placaPrefill(
+  fields: Pick<PlacaFields, "vehicle" | "color" | "year_manufacture">,
+  current: CatalogSelection | null | undefined,
+) {
   const color = fields.color?.value
   if (current) return { color }
   return { color, catalog_selection: fields.vehicle, year_manufacture: fields.year_manufacture }
@@ -71,7 +90,7 @@ export function keepYearManufacture(
   return y === ym || y === ym + 1 ? ym : null
 }
 
-export function RestricaoAlert({ restricao }: { restricao: PlacaFields["restricao"] }) {
+export function RestricaoAlert({ restricao }: { restricao: PlacaFields["restricao"] | undefined }) {
   if (restricao?.tem_restricao !== true) return null
   return (
     <p
@@ -92,4 +111,17 @@ export function SinespHint({ searched }: { searched: boolean }) {
       Roubo/furto: confira no app Sinesp Cidadão.
     </p>
   )
+}
+
+/** Chassi sem OS anterior: diz de onde veio a sugestão, para o usuário completar ou conferir. */
+export function ChassiHint({ result }: { result: ChassiResult | null }) {
+  if (!result) return null
+  const { vehicle, ano_modelo, confianca } = result.fields
+  let text: string | null = null
+  if (result.source === "vin" && vehicle)
+    text = `Pelo chassi: ${vehicle.make.label}${ano_modelo ? `, ano-modelo ${ano_modelo}` : ""}`
+  else if (result.source === "regra" && confianca === "alta")
+    text = "Sugerido pelo chassi — confirme a versão"
+  if (!text) return null
+  return <p className="text-xs text-muted-foreground">{text}</p>
 }

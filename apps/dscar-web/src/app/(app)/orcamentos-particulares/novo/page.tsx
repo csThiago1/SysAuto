@@ -18,11 +18,12 @@ import { formatPlate, onlyAlnum } from "@paddock/utils"
 import { catalogSelectionSchema } from "@/components/vehicle/catalog.schema"
 import { VehicleCatalogPicker } from "@/components/vehicle/VehicleCatalogPicker"
 import {
+  ChassiHint,
   RestricaoAlert,
   SinespHint,
   keepYearManufacture,
   placaPrefill,
-  usePlacaLookup,
+  useVehicleLookup,
 } from "@/components/vehicle/PlacaLookup"
 import { ColorSelect } from "@/app/(app)/os/[numero]/_components/shared/ColorSelect"
 import { applyIfEmpty } from "@/lib/prefill"
@@ -87,9 +88,13 @@ export default function NovoBudgetPage() {
     formState: { errors, isSubmitting },
   } = form
 
-  const placa = usePlacaLookup((fields) => {
+  const placa = useVehicleLookup("placa", (fields) => {
     applyIfEmpty(form, placaPrefill(fields, form.getValues("catalog_selection")))
     toast.success("Dados do veículo preenchidos pela placa.")
+  })
+  const chassiLookup = useVehicleLookup("chassi", (fields) => {
+    applyIfEmpty(form, placaPrefill(fields, form.getValues("catalog_selection")))
+    toast.success("Dados do veículo preenchidos pelo chassi.")
   })
 
   const cliente = watch("customer")
@@ -216,7 +221,7 @@ export default function NovoBudgetPage() {
               </p>
             )}
           </div>
-          <RestricaoAlert restricao={placa.restricao} />
+          <RestricaoAlert restricao={placa.result?.fields.restricao} />
           <SinespHint searched={placa.searched} />
 
           <Controller
@@ -257,12 +262,20 @@ export default function NovoBudgetPage() {
                   shouldDirty: true,
                 })
               }
+              onBlur={() => chassiLookup.lookup(chassi)}
               maxLength={17}
               className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground font-mono text-xs tracking-widest"
             />
             {chassi.length > 0 && chassi.length !== 17 && (
               <p className="text-xs text-warning-400">{chassi.length}/17 dígitos</p>
             )}
+            {chassiLookup.isFetching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            {chassiLookup.notFound && (
+              <p className="text-xs text-muted-foreground">
+                Chassi não encontrado — escolha o veículo na lista.
+              </p>
+            )}
+            <ChassiHint result={chassiLookup.result} />
           </div>
         </div>
 

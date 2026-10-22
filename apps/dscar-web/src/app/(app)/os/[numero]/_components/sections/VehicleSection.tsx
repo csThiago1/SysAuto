@@ -15,11 +15,12 @@ import { ColorSelect } from "../shared/ColorSelect"
 import { VehicleHistorySheet } from "../shared/VehicleHistorySheet"
 import { VehicleCatalogPicker } from "@/components/vehicle/VehicleCatalogPicker"
 import {
+  ChassiHint,
   RestricaoAlert,
   SinespHint,
   keepYearManufacture,
   placaPrefill,
-  usePlacaLookup,
+  useVehicleLookup,
 } from "@/components/vehicle/PlacaLookup"
 import { applyIfEmpty } from "@/lib/prefill"
 
@@ -46,9 +47,13 @@ function HistoryButton({ count, onClick }: { count?: number; onClick: () => void
 
 export function VehicleSection({ form, order, hideHeading }: VehicleSectionProps) {
   const { register, control, setValue, watch, formState: { errors } } = form
-  const placa = usePlacaLookup((fields) => {
+  const placa = useVehicleLookup("placa", (fields) => {
     applyIfEmpty(form, placaPrefill(fields, form.getValues("catalog_selection")))
     toast.success("Dados do veículo preenchidos pela placa!")
+  })
+  const chassiLookup = useVehicleLookup("chassi", (fields) => {
+    applyIfEmpty(form, placaPrefill(fields, form.getValues("catalog_selection")))
+    toast.success("Dados do veículo preenchidos pelo chassi!")
   })
 
   const plate = watch("plate") ?? ""
@@ -121,7 +126,7 @@ export function VehicleSection({ form, order, hideHeading }: VehicleSectionProps
         </div>
       </div>
 
-      <RestricaoAlert restricao={placa.restricao} />
+      <RestricaoAlert restricao={placa.result?.fields.restricao} />
 
       <SinespHint searched={placa.searched} />
 
@@ -172,7 +177,18 @@ export function VehicleSection({ form, order, hideHeading }: VehicleSectionProps
       <div className="grid grid-cols-6 gap-x-2 gap-y-5">
         <div className="col-span-6 sm:col-span-4">
           <label className={FORM_LABEL}>Chassi</label>
-          <input className={FORM_INPUT} type="text" maxLength={17} placeholder="17 caracteres" {...register("chassis")} aria-invalid={!!errors.chassis} />
+          <input
+            className={FORM_INPUT}
+            type="text"
+            maxLength={17}
+            placeholder="17 caracteres"
+            {...register("chassis", { onBlur: () => chassiLookup.lookup(form.getValues("chassis")) })}
+            aria-invalid={!!errors.chassis}
+          />
+          {chassiLookup.notFound && (
+            <p className={FORM_WARN}>Chassi não encontrado — escolha o veículo na lista</p>
+          )}
+          <ChassiHint result={chassiLookup.result} />
         </div>
       </div>
 

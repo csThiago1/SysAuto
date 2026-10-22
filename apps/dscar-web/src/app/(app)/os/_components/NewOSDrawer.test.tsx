@@ -191,6 +191,108 @@ describe("NewOSDrawer — veículo pelo seletor", () => {
   })
 })
 
+describe("NewOSDrawer — chassi", () => {
+  const VIN = "8AC907655SE254082"
+  const CHASSI_OS = {
+    found: true,
+    source: "os",
+    unmatched: [],
+    fields: {
+      vehicle: PLACA.fields.vehicle,
+      color: { value: "PRETA", label: "Preta" },
+      year_manufacture: 2024,
+      ano_modelo: 2025,
+      confianca: null,
+    },
+  }
+  const CHASSI_VIN = {
+    found: true,
+    source: "vin",
+    unmatched: [],
+    fields: {
+      vehicle: { tipo: "carro", make: { id: 3, label: "Mercedes-Benz" }, family: null, model: null, version: null },
+      color: null,
+      year_manufacture: null,
+      ano_modelo: 2025,
+      confianca: null,
+    },
+  }
+
+  function mockChassi(result: unknown) {
+    vi.mocked(apiFetch).mockReset()
+    vi.mocked(apiFetch).mockImplementation(
+      async (url) => (String(url).includes("/lookups/chassi/") ? result : api(String(url))) as never,
+    )
+  }
+  const chassiCalls = () =>
+    vi.mocked(apiFetch).mock.calls.filter(([url]) => url === "/api/proxy/lookups/chassi/")
+
+  it("chassi de OS anterior preenche o seletor e a cor no blur, e vai no POST", async () => {
+    mockChassi(CHASSI_OS)
+    const user = userEvent.setup()
+    renderDrawer()
+    await user.type(screen.getByTestId("plate-input"), "ABC1D23")
+    await user.type(screen.getByTestId("chassis-input"), VIN.toLowerCase())
+    expect(chassiCalls()).toHaveLength(0)
+    await user.tab()
+    await waitFor(() => expect(screen.getByLabelText("Modelo")).toHaveTextContent("Onix Plus"))
+    expect(screen.getByLabelText("Montadora")).toHaveTextContent("Chevrolet")
+    expect(screen.getByLabelText("Ano")).toHaveTextContent("2025 Flex")
+    expect(screen.getByDisplayValue("Preta")).toBeInTheDocument()
+    expect(JSON.parse(String(chassiCalls()[0]?.[1]?.body))).toEqual({ key: VIN })
+
+    await user.click(screen.getByRole("button", { name: "Escolher cliente" }))
+    await user.click(screen.getByTestId("criar-os-btn"))
+    await waitFor(() => expect(postCall()).toBeDefined())
+    expect(JSON.parse(String(postCall()?.[1]?.body))).toMatchObject({
+      chassis: VIN,
+      catalog_family: 10,
+      catalog_version: 1000,
+      color: "PRETA",
+      year_manufacture: 2024,
+    })
+  })
+
+  it("chassi decodificado pré-seleciona só a montadora, com a dica do ano-modelo", async () => {
+    mockChassi(CHASSI_VIN)
+    const user = userEvent.setup()
+    renderDrawer()
+    await user.type(screen.getByTestId("chassis-input"), VIN)
+    await user.tab()
+    await waitFor(() => expect(screen.getByLabelText("Montadora")).toHaveTextContent("Mercedes-Benz"))
+    expect(screen.getByLabelText("Modelo")).toHaveTextContent("Selecione...")
+    expect(screen.getByText("Pelo chassi: Mercedes-Benz, ano-modelo 2025")).toBeInTheDocument()
+  })
+
+  it("chassi não troca uma família já escolhida", async () => {
+    mockChassi(CHASSI_OS)
+    const user = userEvent.setup()
+    renderDrawer()
+    await user.click(screen.getByLabelText("Montadora"))
+    await user.click(await screen.findByRole("option", { name: "Fiat" }))
+    await user.click(screen.getByLabelText("Modelo"))
+    await user.click(await screen.findByRole("option", { name: "Uno" }))
+
+    await user.type(screen.getByTestId("chassis-input"), VIN)
+    await user.tab()
+    await waitFor(() => expect(screen.getByDisplayValue("Preta")).toBeInTheDocument())
+    expect(chassiCalls()).toHaveLength(1)
+    expect(screen.getByLabelText("Montadora")).toHaveTextContent("Fiat")
+    expect(screen.getByLabelText("Modelo")).toHaveTextContent("Uno")
+  })
+
+  it("chassi com menos de 17 caracteres não consulta", async () => {
+    mockChassi(CHASSI_OS)
+    const user = userEvent.setup()
+    renderDrawer()
+    await user.type(screen.getByTestId("chassis-input"), VIN.slice(0, 16))
+    await user.tab()
+    await new Promise((r) => setTimeout(r, 50))
+    expect(chassiCalls()).toHaveLength(0)
+    expect(screen.getByLabelText("Montadora")).toHaveTextContent("Selecione...")
+  })
+})
+
 describe("NewOSDrawer — CNPJ da nota", () => {
   beforeEach(() => {
     vi.mocked(apiFetch).mockReset()

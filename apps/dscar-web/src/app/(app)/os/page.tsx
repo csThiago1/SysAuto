@@ -240,7 +240,7 @@ export default function ServiceOrdersPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
-            placeholder="Buscar OS (ex: placa, num, cliente)..."
+            placeholder="Buscar OS (placa, chassi, nº, cliente)..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-11 pl-9 bg-muted/50 md:h-9"
