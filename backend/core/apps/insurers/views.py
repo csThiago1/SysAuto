@@ -2,6 +2,7 @@
 Paddock Solutions — Insurers Views
 CRUD de seguradoras (schema público) + upload de logo via S3/local.
 """
+
 import logging
 import os
 import uuid
@@ -188,12 +189,8 @@ class InsurerViewSet(
             return Response(InsurerTenantProfileSerializer(profile).data)
 
         # PUT — upsert
-        profile, _ = InsurerTenantProfile.objects.get_or_create(
-            insurer=insurer, company=company
-        )
-        serializer = InsurerTenantProfileSerializer(
-            profile, data=request.data, partial=True
-        )
+        profile, _ = InsurerTenantProfile.objects.get_or_create(insurer=insurer, company=company)
+        serializer = InsurerTenantProfileSerializer(profile, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
@@ -210,7 +207,7 @@ def _extract_storage_path(url: str) -> str | None:
         return None
     # URL local: /media/insurers/logos/...
     if url.startswith("/media/"):
-        return url[len("/media/"):]
+        return url[len("/media/") :]
     # URL S3: https://bucket.s3.region.amazonaws.com/insurers/logos/...
     if "amazonaws.com/" in url:
         return url.split("amazonaws.com/", 1)[-1].split("?")[0]

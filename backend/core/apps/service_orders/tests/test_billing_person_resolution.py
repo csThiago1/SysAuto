@@ -1,4 +1,5 @@
 """Tests for Person-based billing recipient resolution."""
+
 import hashlib
 from decimal import Decimal
 
@@ -6,10 +7,7 @@ from django.utils import timezone
 from django_tenants.test.cases import TenantTestCase
 
 from apps.accounts_receivable.models import ReceivableDocument
-from apps.accounts_receivable.services import (
-    ReceivableDocumentService,
-    normalize_free_reference_id,
-)
+from apps.accounts_receivable.services import ReceivableDocumentService, normalize_free_reference_id
 from apps.authentication.models import GlobalUser
 from apps.insurers.models import Insurer
 from apps.persons.models import Person, PersonDocument, PersonRole
