@@ -1,4 +1,5 @@
 """O parser Cilia não pode escrever o telefone do segurado no log (LGPD)."""
+
 from __future__ import annotations
 
 import copy
