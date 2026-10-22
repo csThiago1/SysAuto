@@ -8,6 +8,7 @@ from datetime import timedelta
 from typing import Any
 
 from django.db import models, transaction
+from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from apps.lookups.validators import clean_cnpj
@@ -432,17 +433,17 @@ class _ServiceOrderCoreMixin:
 
         order.save()
 
-        # -- Propagar dados do veiculo para outras OSes com a mesma placa --
+        # -- Propagar dados do veiculo para outras OSes abertas com a mesma placa --
         # vehicle_source* nunca propagam: pertencem a importacao que criou cada OS.
-        text_fields = {
+        # So uma versao nova propaga o catalogo: escolher so a familia (ou reenviar
+        # o mesmo par) nao pode apagar a versao confirmada de outra OS.
+        catalog_fields = {
             "make",
             "make_logo",
             "model",
             "year",
             "fuel_type",
             "vehicle_version",
-        }
-        catalog_fields = text_fields | {
             "catalog_family",
             "catalog_version",
             "vehicle_needs_review",
@@ -451,21 +452,24 @@ class _ServiceOrderCoreMixin:
             "fipe_value",
             "vehicle_fipe_value_snapshot",
         }
-        legacy_changed = (text_fields | {"color", "chassis"}) & data.keys()
-        if order.plate and (catalog_changed or legacy_changed):
-            siblings = ServiceOrder.objects.filter(
-                plate=order.plate,
-                is_active=True,
-            ).exclude(pk=order.pk)
+        propagate_catalog = (
+            catalog_changed
+            and order.catalog_version_id is not None
+            and (order.catalog_family_id, order.catalog_version_id)
+            != (old_family_id, old_version_id)
+        )
+        legacy_changed = {"color", "chassis"} & data.keys()
+        if order.plate and (propagate_catalog or legacy_changed):
+            siblings = (
+                ServiceOrder.objects.filter(plate=order.plate, is_active=True)
+                .exclude(pk=order.pk)
+                .exclude(status__in=["delivered", "cancelled"])
+            )
+            now = timezone.now()
             if legacy_changed:
-                siblings.update(color=order.color, chassis=order.chassis)
-            if catalog_changed:
-                siblings.update(**{f: getattr(order, f) for f in catalog_fields})
-            elif legacy_changed:
-                # Texto legado nunca apaga o catalogo de uma OS irma.
-                siblings.filter(catalog_family__isnull=True).update(
-                    **{f: getattr(order, f) for f in text_fields}
-                )
+                siblings.update(color=order.color, chassis=order.chassis, updated_at=now)
+            if propagate_catalog:
+                siblings.update(updated_at=now, **{f: getattr(order, f) for f in catalog_fields})
 
         return order
 

@@ -174,6 +174,46 @@ class CatalogVehicleOSTest(TenantTestCase):
         assert o.catalog_family == v.modelo.familia and o.catalog_version is None
         assert (o.make, o.model, o.vehicle_needs_review) == ("Chevrolet", "Onix Plus", True)
 
+    def test_os_entregue_nao_recebe_propagacao(self) -> None:
+        v = make_catalog()
+        entregue = self.post_os(catalog_version=v.id)
+        ServiceOrder.objects.filter(pk=entregue.data["id"]).update(
+            status="delivered", fipe_value=Decimal("70000.00")
+        )
+        aberta = self.post_os(catalog_version=v.id)
+        p = self.patch_os(aberta.data["id"], catalog_family=montana().modelo.familia_id)
+        assert p.status_code == 200, p.data
+        o = ServiceOrder.objects.get(pk=entregue.data["id"])
+        assert o.catalog_version == v and o.fipe_value == Decimal("70000.00")
+        assert o.year == 2025 and o.vehicle_needs_review is False
+
+    def test_patch_so_familia_nao_apaga_versao_da_irma(self) -> None:
+        v = make_catalog()
+        irma = self.post_os(catalog_version=v.id)
+        aberta = self.post_os(catalog_version=v.id)
+        p = self.patch_os(aberta.data["id"], catalog_family=montana().modelo.familia_id)
+        assert p.status_code == 200, p.data
+        o = ServiceOrder.objects.get(pk=irma.data["id"])
+        assert o.catalog_version == v and o.vehicle_needs_review is False
+
+    def test_patch_cor_nao_copia_texto_para_irma_legada(self) -> None:
+        nova = self.post_os(catalog_family=make_catalog().modelo.familia_id)
+        legada = self.legacy_os(make="Chevrolet", model="Onix", year=2019, vehicle_version="LT")
+        p = self.patch_os(nova.data["id"], color="AZUL")
+        assert p.status_code == 200, p.data
+        o = ServiceOrder.objects.get(pk=legada.pk)
+        assert (o.year, o.vehicle_version, o.color) == (2019, "LT", "AZUL")
+
+    def test_versao_propaga_e_atualiza_updated_at_da_irma(self) -> None:
+        v = make_catalog()
+        irma = self.post_os(catalog_family=v.modelo.familia_id)
+        antes = ServiceOrder.objects.get(pk=irma.data["id"]).updated_at
+        aberta = self.post_os(catalog_family=v.modelo.familia_id)
+        p = self.patch_os(aberta.data["id"], catalog_version=v.id)
+        assert p.status_code == 200, p.data
+        o = ServiceOrder.objects.get(pk=irma.data["id"])
+        assert o.catalog_version == v and o.updated_at > antes
+
     def test_patch_make_texto_ignorado(self) -> None:
         nova = self.post_os(catalog_version=make_catalog().id)
         legada = self.legacy_os(make="Chevrolet", model="Onix")
