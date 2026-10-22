@@ -48,6 +48,7 @@ Caminhos:
 16. **Vínculo de seguradora desconhecida sem tela:** quando a importação para por seguradora desconhecida, o vínculo do texto a uma seguradora existente ganha endpoint (CONSULTANT+), mas não ganha tela, porque não existe tela de tentativas de importação.
 17. **Casamento separado por domínio:** veículo, cor e combustível ficam em `vehicle_catalog`. `match_insurer` fica em `insurers/matching.py` e `match_municipio` em `lookups/municipios.py`, junto dos seus models.
 18. **CEP do segurado:** o CEP que vem do Cilia é gravado como veio. A importação não dispara consulta externa; a cidade casa pelo nome, com `match_municipio`.
+19. **Marca nunca é desativada pela carga FIPE:** `VehicleMake.is_active` fica só com o admin. A marca que some da fonte num mês fica sem família ativa (o Modelo dela sai vazio) e volta quando a fonte a traz de novo. A carga recusa (`ValueError`) dump com menos de 80% das versões ativas.
 
 ## Global Constraints
 

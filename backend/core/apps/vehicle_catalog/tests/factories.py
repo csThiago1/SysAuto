@@ -54,11 +54,13 @@ def make_catalog(
 SAMPLE = Path(__file__).parent / "fixtures" / "fipex_2026_10_sample.tsv"
 
 
-def sample_without(codigo: str) -> Path:
-    """Cópia temporária da fixture fipeX sem as linhas do código FIPE dado."""
+def sample_without(codigo: str = "", *, marca: str = "") -> Path:
+    """Cópia temporária da fixture fipeX sem as linhas do código FIPE (ou da marca) dado."""
     lines = SAMPLE.read_text(encoding="utf-8").splitlines(keepends=True)
     with tempfile.NamedTemporaryFile(
         "w", encoding="utf-8", suffix=".tsv", delete=False
     ) as tmp:  # ponytail: arquivo fica no /tmp do container, o SO limpa
-        tmp.writelines(line for line in lines if line.split("\t")[1] != codigo)
+        tmp.writelines(
+            line for line in lines if codigo != line.split("\t")[1] and marca != line.split("\t")[3]
+        )
     return Path(tmp.name)

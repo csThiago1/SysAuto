@@ -1,7 +1,7 @@
 """
 Carga mensal do catálogo FIPE completo a partir do dump fipeX (TSV, ~51 mil linhas).
 
-O catálogo nunca apaga linha: o que sai da fonte vira is_active=False.
+O catálogo nunca apaga linha: o que sai da fonte vira is_active=False (a marca não: é do admin).
 """
 
 import csv
@@ -125,7 +125,10 @@ def _deactivate_stale(model: type[Model], ref: str) -> int:
 
 @transaction.atomic
 def load_fipex(path: Path, *, ref: str) -> SyncReport:
-    """Upsert de marcas, famílias, versões e ano-versões do TSV; desativa o que saiu da fonte."""
+    """Upsert de marcas, famílias, versões e ano-versões do TSV; desativa o que saiu da fonte.
+
+    Marcas não são desativadas. Recusa (ValueError) dump com menos de 80% das versões ativas.
+    """
     rules = list(VehicleFamilyRule.objects.filter(is_active=True))
     makes: dict[tuple[str, str], VehicleMake] = {}
     families: dict[tuple[tuple[str, str], str], str] = {}  # (make_key, nn) -> nome
@@ -156,6 +159,11 @@ def load_fipex(path: Path, *, ref: str) -> SyncReport:
                 "zero_km": zero_km,
                 "valor_referencia": Decimal(row["valor_centavos"]) / 100,
             }
+
+    # Dump truncado desativaria quase todo o catálogo: recusa antes de qualquer escrita.
+    active = VehicleYearVersion.objects.filter(is_active=True).count()
+    if active and len(versions) < 0.8 * active:
+        raise ValueError(f"dump curto: {len(versions)} versões vs {active} ativas")
 
     VehicleMake.objects.bulk_create(
         makes.values(),
@@ -239,7 +247,8 @@ def load_fipex(path: Path, *, ref: str) -> SyncReport:
     rep.families["upserted"] = len(families)
     rep.models["upserted"] = len(models)
     rep.versions["upserted"] = len(version_objs)
-    rep.makes["deactivated"] = _deactivate_stale(VehicleMake, ref)
+    # Marca nunca é desativada pela carga (is_active é do admin); a que some da fonte fica
+    # sem família ativa, então o Modelo dela já sai vazio.
     rep.models["deactivated"] = _deactivate_stale(VehicleModel, ref)
     rep.versions["deactivated"] = _deactivate_stale(VehicleYearVersion, ref)
     rep.families["deactivated"] = _deactivate_stale(VehicleFamily, ref) + (

@@ -85,6 +85,30 @@ class LoadFipexTest(TestCase):
         load_fipex(SAMPLE, ref="2026-11")
         assert not VehicleMake.objects.get(nome="Nissan").is_active
 
+    def test_marca_que_some_num_mes_volta_ativa(self) -> None:
+        load_fipex(SAMPLE, ref="2026-10")
+        load_fipex(sample_without(marca="Hyundai"), ref="2026-11")  # 20 de 607 linhas
+        hyundai = VehicleMake.objects.get(nome="Hyundai")
+        assert hyundai.is_active  # sem família ativa, o Modelo já sai vazio
+        assert not hyundai.familias.filter(is_active=True).exists()
+        load_fipex(SAMPLE, ref="2026-12")
+        hyundai.refresh_from_db()
+        assert hyundai.is_active and hyundai.familias.filter(is_active=True).exists()
+
+    def test_dump_curto_nao_desativa_o_catalogo(self) -> None:
+        load_fipex(SAMPLE, ref="2026-10")
+        antes = (
+            list(VehicleYearVersion.objects.order_by("pk").values_list("pk", "is_active")),
+            list(VehicleMake.objects.order_by("pk").values_list("pk", "is_active")),
+        )
+        with pytest.raises(ValueError, match="dump curto"):
+            load_fipex(sample_without(marca="Mercedes-Benz"), ref="2026-11")  # 190 linhas
+        depois = (
+            list(VehicleYearVersion.objects.order_by("pk").values_list("pk", "is_active")),
+            list(VehicleMake.objects.order_by("pk").values_list("pk", "is_active")),
+        )
+        assert depois == antes
+
     def test_task_cai_para_o_mes_anterior_em_404(self) -> None:
         pedidos: list[tuple[int, int]] = []
 
