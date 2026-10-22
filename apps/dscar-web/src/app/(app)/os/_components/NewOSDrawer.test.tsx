@@ -43,6 +43,22 @@ const PLACA = {
   },
 }
 
+const YELUM = {
+  id: "8f6c1f4e-2b7a-4c39-9d51-3a2e8b7c6d10",
+  code: "yelum",
+  name: "Yelum Seguros S.A.",
+  trade_name: "Yelum Seguradora",
+  display_name: "Yelum Seguradora",
+  cnpj: "92.684.515/0001-37",
+  cnpjs: ["92684515000137", "61550141009129"],
+  abbreviation: "YL",
+  brand_color: "#000000",
+  logo: "",
+  logo_url: "",
+  uses_cilia: true,
+  is_active: true,
+}
+
 function api(url: string): unknown {
   if (url.includes("/vehicle-catalog/colors/")) return [{ value: "PRETA", label: "Preta", hex: "#111111" }]
   if (url.includes("/lookups/placa/")) return PLACA
@@ -54,6 +70,7 @@ function api(url: string): unknown {
       { id: 1000, label: "2025 Flex" },
       { id: 1001, label: "2022 Flex" },
     ])
+  if (url.includes("/insurers/")) return { count: 1, next: null, previous: null, results: [YELUM] }
   if (url.includes("/service-orders/")) return { id: "os-1", number: 501 }
   return {}
 }
@@ -171,5 +188,39 @@ describe("NewOSDrawer — veículo pelo seletor", () => {
         year_manufacture: null,
       })
     })
+  })
+})
+
+describe("NewOSDrawer — CNPJ da nota", () => {
+  beforeEach(() => {
+    vi.mocked(apiFetch).mockReset()
+    vi.mocked(apiFetch).mockImplementation(async (url) => api(String(url)) as never)
+  })
+
+  it("seguradora com mais de um CNPJ mostra o select com o principal e envia o escolhido", async () => {
+    const user = userEvent.setup()
+    renderDrawer()
+    await user.click(screen.getByRole("button", { name: "Seguradora" }))
+    await screen.findByRole("option", { name: "Yelum Seguradora" })
+    const insurerSelect = screen.getByRole("option", { name: "Selecione a seguradora..." }).closest("select")!
+    await user.selectOptions(insurerSelect, YELUM.id)
+
+    const cnpj = screen.getByLabelText("CNPJ da nota")
+    expect(cnpj).toHaveValue("92684515000137")
+    expect(screen.getByRole("option", { name: "92.684.515/0001-37 (principal)" })).toBeInTheDocument()
+    await user.selectOptions(cnpj, "61550141009129")
+    await user.selectOptions(
+      screen.getByRole("option", { name: "Segurado" }).closest("select")!,
+      "insured",
+    )
+
+    await user.type(screen.getByTestId("plate-input"), "ABC1D23")
+    await user.tab()
+    await waitFor(() => expect(screen.getByLabelText("Modelo")).toHaveTextContent("Onix Plus"))
+    await user.click(screen.getByRole("button", { name: "Escolher cliente" }))
+    await user.click(screen.getByTestId("criar-os-btn"))
+    await waitFor(() => expect(postCall()).toBeDefined())
+    const body = JSON.parse(String(postCall()?.[1]?.body)) as Record<string, unknown>
+    expect(body).toMatchObject({ insurer: YELUM.id, insurer_cnpj: "61550141009129" })
   })
 })

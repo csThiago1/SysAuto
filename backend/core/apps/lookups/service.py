@@ -30,6 +30,7 @@ from apps.lookups.providers import (
 )
 from apps.lookups.validators import (
     clean_cnpj,
+    format_cnpj,
     is_valid_cnpj,
     is_valid_plate,
     normalize_plate,
@@ -165,11 +166,10 @@ def _db_first_cnpj(cnpj: str) -> LookupResult | None:
     """`Person` ativa do tenant com esse CNPJ, gravado com ou sem máscara. Não vai para o cache."""
     if connection.schema_name == get_public_schema_name():  # Person só existe no tenant
         return None
-    formatted = f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:]}"
     doc = (
         PersonDocument.objects.filter(
             doc_type=TipoDocumento.CNPJ,
-            value_hash__in={sha256_hex(cnpj), sha256_hex(formatted)},
+            value_hash__in={sha256_hex(cnpj), sha256_hex(format_cnpj(cnpj))},
             person__is_active=True,
         )
         .select_related("person")

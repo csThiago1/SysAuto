@@ -10,20 +10,29 @@ import uuid
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.db import connection
+from django.db import connection, transaction
 from rest_framework import filters, mixins, parsers, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from apps.authentication.permissions import IsConsultantOrAbove, PermissionsByActionMixin
+from apps.authentication.permissions import (
+    IsAdminOrAbove,
+    IsConsultantOrAbove,
+    PermissionsByActionMixin,
+    _has_min_role,
+)
 from apps.insurers.models import Insurer, InsurerTenantProfile
 from apps.insurers.serializers import (
     InsurerMinimalSerializer,
     InsurerSerializer,
     InsurerTenantProfileSerializer,
 )
+from apps.lookups.service import lookup
+from apps.lookups.validators import clean_cnpj
+from apps.persons.models import Person, PersonAddress, PersonDocument, PersonRole
+from apps.service_orders.billing import BillingService
 from apps.vehicle_catalog.normalize import normalize_name
 
 logger = logging.getLogger(__name__)
@@ -50,28 +59,37 @@ class InsurerViewSet(
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
     """
-    CRUD de seguradoras.
+    Seguradoras: sem DELETE, desativa com PATCH is_active.
 
     - list / retrieve: qualquer usuário autenticado
-    - create / update / destroy: MANAGER+
-    - upload_logo: POST {id}/upload_logo/ — MANAGER+
+    - create / update / upload_logo / tomadores / tomador: ADMIN+
     - trade_names: POST {id}/trade-names/ — CONSULTANT+
     """
 
     read_permission = IsAuthenticated
-    write_actions = ("create", "update", "partial_update", "destroy", "upload_logo")
+    write_permission = IsAdminOrAbove
+    write_actions = (
+        "create",
+        "update",
+        "partial_update",
+        "upload_logo",
+        "tomadores",
+        "tomador",
+    )
     action_permissions = {"trade_names": IsConsultantOrAbove}
     filter_backends = [filters.SearchFilter]
     search_fields = ["name", "trade_name", "abbreviation"]
 
     def get_queryset(self):  # type: ignore[override]
-        if self.action == "list":
-            return Insurer.objects.filter(is_active=True)
-        return Insurer.objects.all()
+        if self.action != "list":
+            return Insurer.objects.all()
+        include_inactive = self.request.query_params.get("include_inactive") == "true"
+        if include_inactive and _has_min_role(self.request, "ADMIN"):
+            return Insurer.objects.all()
+        return Insurer.objects.filter(is_active=True)
 
     def get_serializer_class(self):  # type: ignore[override]
         if self.action == "list":
@@ -79,6 +97,9 @@ class InsurerViewSet(
         return InsurerSerializer
 
     def list(self, request, *args, **kwargs):  # type: ignore[override]
+        # Só a lista sem querystring vai para o cache: busca e filtros nunca a envenenam.
+        if request.query_params:
+            return super().list(request, *args, **kwargs)
         cached = cache.get("insurers:active")
         if cached is not None:
             return Response(cached)
@@ -92,10 +113,6 @@ class InsurerViewSet(
 
     def perform_update(self, serializer) -> None:  # type: ignore[override]
         serializer.save()
-        cache.delete("insurers:active")
-
-    def perform_destroy(self, instance) -> None:  # type: ignore[override]
-        super().perform_destroy(instance)
         cache.delete("insurers:active")
 
     @action(
@@ -172,6 +189,61 @@ class InsurerViewSet(
             insurer.save(update_fields=["trade_names", "updated_at"])
             cache.delete("insurers:active")
         return Response({"trade_names": insurer.trade_names})
+
+    @action(detail=True, methods=["get"])
+    def tomadores(self, request: Request, pk: str | None = None) -> Response:
+        """Tomador da nota (Person INSURER) de cada CNPJ da seguradora, ou None."""
+        insurer: Insurer = self.get_object()
+        rows = []
+        for cnpj in insurer.cnpjs:
+            person = BillingService._resolve_insurer_person(insurer, cnpj)
+            rows.append(
+                {
+                    "cnpj": cnpj,
+                    "person_id": person.pk if person else None,
+                    "person_name": person.full_name if person else "",
+                    "has_address": bool(person and any(a.street for a in person.addresses.all())),
+                }
+            )
+        return Response(rows)
+
+    @action(detail=True, methods=["post"])
+    def tomador(self, request: Request, pk: str | None = None) -> Response:
+        """Cria (ou devolve) o tomador PJ de um CNPJ da seguradora, com endereço da Receita."""
+        insurer: Insurer = self.get_object()
+        cnpj = clean_cnpj(
+            serializers.CharField(max_length=18).run_validation(request.data.get("cnpj"))
+        )
+        if cnpj not in insurer.cnpjs:
+            raise serializers.ValidationError({"cnpj": "CNPJ não pertence a esta seguradora."})
+        existing = BillingService._resolve_insurer_person(insurer, cnpj)
+        if existing is not None:
+            return Response({"person_id": existing.pk})
+
+        found = lookup("cnpj", cnpj)  # fora da transação: a rede não segura o banco
+        with transaction.atomic():
+            person = Person.objects.create(person_kind="PJ", full_name=insurer.name)
+            PersonRole.objects.create(person=person, role="INSURER")
+            PersonDocument.objects.create(
+                person=person, doc_type="CNPJ", value=cnpj, is_primary=True
+            )
+            if found["found"]:
+                f = found["fields"]
+                municipio = f.get("municipio") or {}
+                PersonAddress.objects.create(
+                    person=person,
+                    is_primary=True,
+                    zip_code=f.get("cep", ""),
+                    street=f.get("logradouro", ""),
+                    number=f.get("numero", ""),
+                    complement=f.get("complemento", ""),
+                    neighborhood=f.get("bairro", ""),
+                    city=municipio.get("label", ""),
+                    state=f.get("uf", ""),
+                    municipio_ibge=municipio.get("id", ""),
+                )
+        logger.info("Tomador criado para seguradora %s (person %s)", insurer.code, person.pk)
+        return Response({"person_id": person.pk}, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["get", "put"], url_path="tenant_profile")
     def tenant_profile(self, request: Request, pk: str | None = None) -> Response:

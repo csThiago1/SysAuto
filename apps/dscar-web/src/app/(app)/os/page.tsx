@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation"
 import { Search, FilterX, Plus, ChevronLeft, ChevronRight, X, SlidersHorizontal, Columns3 } from "lucide-react"
 import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 
-import { useServiceOrders, useDebounce, usePersons } from "@/hooks"
+import { useServiceOrders, useDebounce, useInsurers } from "@/hooks"
 import { cn } from "@/lib/utils"
 import {
   Button,
@@ -34,7 +34,7 @@ interface AdvancedFiltersProps {
   setStatus: (v: string) => void
   insurerId: string
   setInsurerId: (v: string) => void
-  insurers?: { id: string | number; fantasy_name?: string | null; full_name?: string | null }[]
+  insurers?: { id: string; display_name: string }[]
   customerType: string
   setCustomerType: (v: string) => void
   closure: string
@@ -102,8 +102,8 @@ function AdvancedFilters({
         <select className={cls} value={insurerId} onChange={(e) => setInsurerId(e.target.value)}>
           <option value="ALL">Qualquer Seguradora</option>
           {insurers?.map((insurer) => (
-            <option key={insurer.id} value={String(insurer.id)}>
-              {insurer.fantasy_name || insurer.full_name}
+            <option key={insurer.id} value={insurer.id}>
+              {insurer.display_name}
             </option>
           ))}
         </select>,
@@ -157,8 +157,8 @@ export default function ServiceOrdersPage() {
 
   const debouncedSearch = useDebounce(search, 300)
 
-  // Fetch seguradoras dynamically
-  const { data: insurersData } = usePersons({ role: "INSURER" })
+  // Seguradoras vêm de /insurers/ (fonte única); o filtro envia o UUID.
+  const { data: insurersData } = useInsurers()
 
   // Omit empty/ALL filters
   const filters: Record<string, string> = {}
@@ -391,7 +391,7 @@ export default function ServiceOrdersPage() {
           )}
           {insurerId !== "ALL" && (
             <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-3 py-1 text-xs font-medium text-foreground/80">
-              Seguradora: {insurersData?.results.find((i) => String(i.id) === insurerId)?.fantasy_name ?? insurerId}
+              Seguradora: {insurersData?.results.find((i) => i.id === insurerId)?.display_name ?? insurerId}
               <button type="button" onClick={() => setInsurerId("ALL")} className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors" aria-label="Remover filtro de seguradora">
                 <X className="h-3 w-3" />
               </button>

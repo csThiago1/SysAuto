@@ -27,7 +27,8 @@ import {
 } from "@/components/vehicle/PlacaLookup"
 import { applyIfEmpty } from "@/lib/prefill"
 import { ApiError, handleApiFormError } from "@/lib/api"
-import { formatPlate } from "@paddock/utils"
+import { formatCNPJ, formatPlate } from "@paddock/utils"
+import type { Insurer } from "@paddock/types"
 
 const LABEL = "block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-0.5"
 const INPUT =
@@ -44,6 +45,8 @@ const OS_TYPES = [
   { value: "aesthetic", label: "Estética", desc: "Polimento, higienização, estética veicular" },
 ] as const
 
+const mainCnpj = (ins: Insurer) => ins.cnpj.replace(/[^0-9A-Za-z]/g, "").toUpperCase()
+
 interface NewOSDrawerProps {
   open: boolean
   onOpenChange: (v: boolean) => void
@@ -53,6 +56,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
   const router = useRouter()
   const createMutation = useServiceOrderCreate()
   const [serverError, setServerError] = useState<string | null>(null)
+  const [insurer, setInsurer] = useState<Insurer | null>(null)
 
   const form = useForm<NewOSInput>({
     resolver: zodResolver(newOSSchema),
@@ -91,6 +95,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
     setTimeout(() => {
       reset()
       setServerError(null)
+      setInsurer(null)
     }, 300)
   }
 
@@ -174,7 +179,12 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                   render={({ field }) => (
                     <InsurerSelect
                       value={field.value ?? null}
-                      onChange={(insurerId) => field.onChange(insurerId)}
+                      onChange={(insurerId, ins) => {
+                        field.onChange(insurerId)
+                        setInsurer(ins)
+                        // O principal vem pré-selecionado.
+                        setValue("insurer_cnpj", ins ? mainCnpj(ins) : "")
+                      }}
                     />
                   )}
                 />
@@ -184,6 +194,19 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                   </p>
                 )}
               </div>
+              {insurer && insurer.cnpjs.length > 1 && (
+                <div>
+                  <label htmlFor="insurer_cnpj" className={LABEL}>CNPJ da nota</label>
+                  <select id="insurer_cnpj" className={SELECT} {...register("insurer_cnpj")}>
+                    {insurer.cnpjs.map((c) => (
+                      <option key={c} value={c}>
+                        {formatCNPJ(c)}
+                        {c === mainCnpj(insurer) ? " (principal)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label className={LABEL}>Tipo de segurado *</label>
                 <select className={SELECT} {...register("insured_type")} aria-invalid={!!errors.insured_type}>

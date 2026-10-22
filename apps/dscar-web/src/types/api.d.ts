@@ -3390,21 +3390,19 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * @description CRUD de seguradoras.
+         * @description Seguradoras: sem DELETE, desativa com PATCH is_active.
          *
          *     - list / retrieve: qualquer usuário autenticado
-         *     - create / update / destroy: MANAGER+
-         *     - upload_logo: POST {id}/upload_logo/ — MANAGER+
+         *     - create / update / upload_logo / tomadores / tomador: ADMIN+
          *     - trade_names: POST {id}/trade-names/ — CONSULTANT+
          */
         get: operations["insurers_list"];
         put?: never;
         /**
-         * @description CRUD de seguradoras.
+         * @description Seguradoras: sem DELETE, desativa com PATCH is_active.
          *
          *     - list / retrieve: qualquer usuário autenticado
-         *     - create / update / destroy: MANAGER+
-         *     - upload_logo: POST {id}/upload_logo/ — MANAGER+
+         *     - create / update / upload_logo / tomadores / tomador: ADMIN+
          *     - trade_names: POST {id}/trade-names/ — CONSULTANT+
          */
         post: operations["insurers_create"];
@@ -3422,41 +3420,30 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * @description CRUD de seguradoras.
+         * @description Seguradoras: sem DELETE, desativa com PATCH is_active.
          *
          *     - list / retrieve: qualquer usuário autenticado
-         *     - create / update / destroy: MANAGER+
-         *     - upload_logo: POST {id}/upload_logo/ — MANAGER+
+         *     - create / update / upload_logo / tomadores / tomador: ADMIN+
          *     - trade_names: POST {id}/trade-names/ — CONSULTANT+
          */
         get: operations["insurers_retrieve"];
         /**
-         * @description CRUD de seguradoras.
+         * @description Seguradoras: sem DELETE, desativa com PATCH is_active.
          *
          *     - list / retrieve: qualquer usuário autenticado
-         *     - create / update / destroy: MANAGER+
-         *     - upload_logo: POST {id}/upload_logo/ — MANAGER+
+         *     - create / update / upload_logo / tomadores / tomador: ADMIN+
          *     - trade_names: POST {id}/trade-names/ — CONSULTANT+
          */
         put: operations["insurers_update"];
         post?: never;
-        /**
-         * @description CRUD de seguradoras.
-         *
-         *     - list / retrieve: qualquer usuário autenticado
-         *     - create / update / destroy: MANAGER+
-         *     - upload_logo: POST {id}/upload_logo/ — MANAGER+
-         *     - trade_names: POST {id}/trade-names/ — CONSULTANT+
-         */
-        delete: operations["insurers_destroy"];
+        delete?: never;
         options?: never;
         head?: never;
         /**
-         * @description CRUD de seguradoras.
+         * @description Seguradoras: sem DELETE, desativa com PATCH is_active.
          *
          *     - list / retrieve: qualquer usuário autenticado
-         *     - create / update / destroy: MANAGER+
-         *     - upload_logo: POST {id}/upload_logo/ — MANAGER+
+         *     - create / update / upload_logo / tomadores / tomador: ADMIN+
          *     - trade_names: POST {id}/trade-names/ — CONSULTANT+
          */
         patch: operations["insurers_partial_update"];
@@ -3479,6 +3466,40 @@ export interface paths {
          *     PUT  → cria ou atualiza perfil operacional (upsert).
          */
         put: operations["insurers_tenant_profile_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insurers/{id}/tomador/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Cria (ou devolve) o tomador PJ de um CNPJ da seguradora, com endereço da Receita. */
+        post: operations["insurers_tomador_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/insurers/{id}/tomadores/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Tomador da nota (Person INSURER) de cada CNPJ da seguradora, ou None. */
+        get: operations["insurers_tomadores_retrieve"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -30923,27 +30944,6 @@ export interface operations {
             };
         };
     };
-    insurers_destroy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description A UUID string identifying this Seguradora. */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No response body */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     insurers_partial_update: {
         parameters: {
             query?: never;
@@ -31011,6 +31011,56 @@ export interface operations {
                 "multipart/form-data": components["schemas"]["InsurerRequest"];
             };
         };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Insurer"];
+                };
+            };
+        };
+    };
+    insurers_tomador_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this Seguradora. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InsurerRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["InsurerRequest"];
+                "multipart/form-data": components["schemas"]["InsurerRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Insurer"];
+                };
+            };
+        };
+    };
+    insurers_tomadores_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this Seguradora. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {

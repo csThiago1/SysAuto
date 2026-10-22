@@ -14,7 +14,7 @@ class TestInsurerTenantProfileEndpoint(TenantTestCase):
         self.client = APIClient()
         self.client.defaults["SERVER_NAME"] = self.domain.domain
         self.client.defaults["HTTP_HOST"] = self.domain.domain
-        self.client.force_authenticate(user=self.user)
+        self.client.force_authenticate(user=self.user, token={"role": "ADMIN"})
         self.insurer = Insurer.objects.create(name="Porto Seguro", cnpj="61198164000160")
 
     def test_get_profile_sem_dados_retorna_defaults(self):
@@ -41,7 +41,9 @@ class TestInsurerTenantProfileEndpoint(TenantTestCase):
         assert profile.sla_dias_uteis == 3
 
     def test_put_atualiza_profile_existente(self):
-        InsurerTenantProfile.objects.create(insurer=self.insurer, sla_dias_uteis=5)
+        InsurerTenantProfile.objects.create(
+            insurer=self.insurer, company=self.tenant, sla_dias_uteis=5
+        )
         payload = {"sla_dias_uteis": 10}
         self.client.put(
             f"/api/v1/insurers/{self.insurer.id}/tenant_profile/", payload, format="json"

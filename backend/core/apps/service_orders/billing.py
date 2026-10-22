@@ -14,6 +14,8 @@ from typing import Any
 from django.db import transaction
 from django.utils import timezone
 
+from apps.lookups.validators import clean_cnpj, format_cnpj
+
 logger = logging.getLogger(__name__)
 
 # ── Constantes ────────────────────────────────────────────────────────────────
@@ -88,43 +90,33 @@ class BillingService:
         )
 
     @staticmethod
-    def _resolve_insurer_person(insurer: Any) -> Any | None:
-        """Busca Person com role INSURER e CNPJ da seguradora.
+    def _resolve_insurer_person(insurer: Any, cnpj: str = "") -> Any | None:
+        """Tomador da nota: Person INSURER com o CNPJ da OS (`cnpj`) ou o principal da seguradora.
+
+        Sem fallback por nome: cada CNPJ tem o seu tomador, e o nome é o mesmo em todos.
 
         Returns:
             Person com documents+addresses prefetched, ou None.
         """
         from apps.persons.models import Person, PersonDocument
-        from apps.persons.utils import sha256_lookup_candidates
+        from apps.persons.utils import sha256_hex
 
-        cnpj = getattr(insurer, "cnpj", "") or ""
-        if not cnpj:
+        digits = clean_cnpj(cnpj or getattr(insurer, "cnpj", "") or "")
+        if not digits:
             return None
-
-        # Busca Person que tenha documento CNPJ com mesmo valor
+        masked = format_cnpj(digits)
         doc = (
             PersonDocument.objects.filter(
                 doc_type="CNPJ",
-                value_hash__in=sha256_lookup_candidates(cnpj),
+                value_hash__in={sha256_hex(digits), sha256_hex(masked)},
                 person__roles__role="INSURER",
             )
-            .select_related("person")
+            .order_by("person_id")
             .first()
         )
-
-        if doc:
-            return Person.objects.prefetch_related("documents", "addresses").get(pk=doc.person_id)
-
-        # Fallback: Person com role INSURER e nome similar
-        person = (
-            Person.objects.filter(
-                roles__role="INSURER",
-                full_name__icontains=insurer.name[:20] if insurer.name else "",
-            )
-            .prefetch_related("documents", "addresses")
-            .first()
-        )
-        return person
+        if doc is None:
+            return None
+        return Person.objects.prefetch_related("documents", "addresses").get(pk=doc.person_id)
 
     @classmethod
     def preview(cls, order: Any) -> dict[str, Any]:
@@ -386,16 +378,16 @@ class BillingService:
             # Resolve Person destinatário para o FiscalService
             # _get_person_for_os checa destinatario_id (atributo runtime)
             if recipient_type == "insurer" and order.insurer:
-                # Busca Person com role INSURER que tenha CNPJ da seguradora
-                insurer_person = cls._resolve_insurer_person(order.insurer)
+                insurer_person = cls._resolve_insurer_person(order.insurer, order.insurer_cnpj)
                 if insurer_person:
                     order.destinatario_id = insurer_person.pk
                     order.destinatario = insurer_person
                 else:
+                    cnpj = format_cnpj(clean_cnpj(order.insurer_cnpj or order.insurer.cnpj))
                     result.errors.append(
-                        f"Seguradora '{recv_customer_name}' não tem cadastro "
-                        f"completo (Person com CNPJ e endereço). "
-                        f"Cadastre-a em Cadastros → Pessoas."
+                        f"Seguradora '{recv_customer_name}' não tem tomador da nota para o "
+                        f"CNPJ {cnpj}. Crie em Cadastros → Seguradoras → {order.insurer.name} → "
+                        f'Tomador da nota → "Criar tomador".'
                     )
                     continue  # Pula emissão fiscal mas mantém o receivable
             elif order.customer_id:

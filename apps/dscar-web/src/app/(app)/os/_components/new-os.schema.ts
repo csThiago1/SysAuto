@@ -15,6 +15,8 @@ export const newOSSchema = z
 
     // Seguradora (obrigatório só quando customer_type === "insurer")
     insurer: z.string().uuid("Seguradora inválida").optional().nullable(),
+    // CNPJ da nota: um dos CNPJs da seguradora; vazio = o backend usa o principal
+    insurer_cnpj: z.string().optional(),
     insured_type: z.preprocess(
       (v) => (v === "" ? null : v),
       z.enum(["insured", "third"]).optional().nullable()

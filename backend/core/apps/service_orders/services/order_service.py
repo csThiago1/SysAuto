@@ -10,6 +10,7 @@ from typing import Any
 from django.db import models, transaction
 from rest_framework.exceptions import ValidationError
 
+from apps.lookups.validators import clean_cnpj
 from apps.vehicle_catalog.matching import record_alias_confirmation
 
 from .vehicle import CATALOG_KEYS, apply_catalog_vehicle, resulting_catalog_pair
@@ -82,6 +83,10 @@ class _ServiceOrderCoreMixin:
                 payload["customer_name"] = Person.objects.get(pk=customer_id).full_name
             except Person.DoesNotExist:
                 pass
+
+        # Sem CNPJ da nota escolhido, a nota sai no CNPJ principal da seguradora.
+        if payload.get("insurer") and not payload.get("insurer_cnpj"):
+            payload["insurer_cnpj"] = clean_cnpj(payload["insurer"].cnpj)
 
         catalog_family = payload.pop("catalog_family", None)
         catalog_version = payload.pop("catalog_version", None)

@@ -73,6 +73,11 @@ def clean_cnpj(v: str) -> str:
     return re.sub(r"[^0-9A-Za-z]", "", v).upper()
 
 
+def format_cnpj(c: str) -> str:
+    """CNPJ limpo (14 caracteres) com máscara: 12.345.678/0001-90."""
+    return f"{c[:2]}.{c[2:5]}.{c[5:8]}/{c[8:12]}-{c[12:]}"
+
+
 def is_valid_cnpj(v: str) -> bool:
     c = clean_cnpj(v)
     if not _CNPJ_RE.match(c) or len(set(c)) == 1:

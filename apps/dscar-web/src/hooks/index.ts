@@ -112,7 +112,7 @@ export {
   useInsurer,
   useInsurerCreate,
   useInsurerUpdate,
-  useInsurerDelete,
+  useSetInsurerActive,
   useInsurerUploadLogo,
   type InsurerPayload,
 } from "./useInsurers";

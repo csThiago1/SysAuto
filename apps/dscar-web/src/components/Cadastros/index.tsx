@@ -10,6 +10,7 @@
  */
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { UserPlus, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Person, PersonRole, ModalProps } from "@paddock/types";
@@ -24,17 +25,18 @@ import { PersonFormModal } from "./PersonFormModal";
 
 type TabId = "ALL" | PersonRole;
 
-const TABS: { id: TabId; label: string }[] = [
+// Seguradora é cadastro próprio (apps.insurers), não papel de Person: a aba só leva até lá.
+const TABS: { id: TabId; label: string; href?: "/cadastros/seguradoras" }[] = [
   { id: "ALL",      label: "Todos" },
   { id: "CLIENT",   label: "Clientes" },
   { id: "SUPPLIER", label: "Fornecedores" },
   { id: "EMPLOYEE", label: "Funcionários" },
   { id: "EXPERT",   label: "Peritos" },
-  { id: "INSURER",  label: "Seguradoras" },
+  { id: "INSURER",  label: "Seguradoras", href: "/cadastros/seguradoras" },
   { id: "BROKER",   label: "Corretores" },
 ];
 
-const TAB_IDS = TABS.map((t) => t.id);
+const TAB_IDS = TABS.filter((t) => !t.href).map((t) => t.id);
 
 function isTabId(value: string | null): value is TabId {
   return value !== null && (TAB_IDS as string[]).includes(value);
@@ -113,19 +115,22 @@ export function Cadastros(): React.ReactElement {
       {/* Tabs */}
       <ScrollFade className="border-b">
         <div className="flex gap-1">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={`whitespace-nowrap px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.id
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground hover:text-foreground/70 hover:border-border"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {TABS.map((tab) => {
+            const className = `whitespace-nowrap px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === tab.id
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground/70 hover:border-border"
+            }`;
+            return tab.href ? (
+              <Link key={tab.id} href={tab.href} className={className}>
+                {tab.label}
+              </Link>
+            ) : (
+              <button key={tab.id} onClick={() => handleTabChange(tab.id)} className={className}>
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
       </ScrollFade>
 

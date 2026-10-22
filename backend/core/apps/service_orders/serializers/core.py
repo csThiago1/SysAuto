@@ -10,6 +10,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from apps.insurers.serializers import InsurerMinimalSerializer
+from apps.lookups.validators import clean_cnpj
 from apps.persons.models import Person
 from apps.persons.serializers import ExpertMinimalSerializer
 from apps.vehicle_catalog.models import VehicleFamily, VehicleYearVersion
@@ -759,6 +760,18 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
         return result
 
 
+def _check_insurer_cnpj(attrs: dict, insurer: Any, cnpj: str) -> None:
+    """O CNPJ da nota precisa ser um dos CNPJs da seguradora; grava só o CNPJ limpo."""
+    if not insurer or not cnpj:
+        return
+    if clean_cnpj(cnpj) not in insurer.cnpjs:
+        raise serializers.ValidationError(
+            {"insurer_cnpj": "Escolha um dos CNPJs cadastrados da seguradora."}
+        )
+    if "insurer_cnpj" in attrs:
+        attrs["insurer_cnpj"] = clean_cnpj(cnpj)
+
+
 class ServiceOrderCreateSerializer(serializers.ModelSerializer):
     """
     Serializer para abertura de nova OS.
@@ -864,6 +877,7 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {"insured_type": "Tipo de segurado e obrigatorio para OS de seguradora."}
                 )
+        _check_insurer_cnpj(attrs, attrs.get("insurer"), attrs.get("insurer_cnpj", ""))
         # A versão traz a família junto (o servidor deriva).
         if family is None and version is None:
             raise serializers.ValidationError({"catalog_family": FAMILY_REQUIRED})
@@ -973,6 +987,14 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
             validate_catalog_vehicle(family, version, year_manufacture)
             if CATALOG_KEYS & attrs.keys() and family is None and version is None:
                 raise serializers.ValidationError({"catalog_family": FAMILY_REQUIRED})
+
+        # CNPJ da nota: trocar de seguradora sem escolher o CNPJ volta ao principal da nova.
+        if {"insurer", "insurer_cnpj"} & attrs.keys():
+            insurer = attrs.get("insurer", getattr(instance, "insurer", None))
+            cnpj = attrs.get("insurer_cnpj", getattr(instance, "insurer_cnpj", ""))
+            if "insurer_cnpj" not in attrs and insurer and clean_cnpj(cnpj) not in insurer.cnpjs:
+                attrs["insurer_cnpj"] = cnpj = clean_cnpj(insurer.cnpj)
+            _check_insurer_cnpj(attrs, insurer, cnpj)
 
         # So dispara validacao se algum campo relevante esta sendo alterado
         insurer_fields_in_payload = {"customer_type", "insurer", "insured_type"} & attrs.keys()
