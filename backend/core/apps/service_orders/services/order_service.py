@@ -36,13 +36,22 @@ AUTO_TRANSITIONS: dict[str, tuple[list[str], str]] = {
 
 def _learn_chassis(order: "ServiceOrder") -> None:
     """Versão confirmada + chassi válido ensinam a regra do prefixo de fábrica do chassi."""
+    from apps.service_orders.models import ServiceOrder
+
     vin = order.chassis.strip().upper()
     if order.catalog_version_id is None or order.vehicle_needs_review or not vin_rule_key(vin):
         return
+    # Mesmo carro voltando não é segunda confirmação; OS inativa anterior já contou uma vez.
+    if ServiceOrder.objects.filter(chassis__iexact=vin).exclude(pk=order.pk).exists():
+        return
+    model_year = decode_vin(vin).model_year
+    version = order.catalog_version
+    if not version.zero_km and version.ano != model_year:
+        return  # versão de outro ano que o do VIN: dado contraditório não ensina
     record_alias_confirmation(
         VehicleAlias.Source.CHASSI,
         vin[:8],
-        decode_vin(vin).model_year,
+        model_year,
         version=order.catalog_version,
         family=order.catalog_family,
     )

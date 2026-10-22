@@ -98,6 +98,19 @@ class ChassiLookupTest(TenantTestCase):
         assert p.status_code == 200, p.data
         assert self.regra().confirmacoes == 2  # chassi novo com a versão confirmada conta
 
+    def test_mesmo_carro_voltando_nao_vira_exata(self) -> None:
+        self.post_os(catalog_version=self.sprinter.id, chassis=CHASSI)
+        self.post_os(catalog_version=self.sprinter.id, chassis=CHASSI)  # mesmo carro volta
+        assert self.regra().confirmacoes == 1 and not self.regra().is_exact
+
+        r = self.client.post("/api/v1/lookups/chassi/", {"key": OUTRO}, format="json")
+        assert (r.data["source"], r.data["fields"]["confianca"]) == ("regra", "alta")
+
+    def test_ano_da_versao_diferente_do_vin_nao_ensina(self) -> None:
+        v2023 = VehicleYearVersion.objects.get(modelo__codigo_fipe="021506-6", ano=2023)
+        self.post_os(catalog_version=v2023.id, chassis=CHASSI)  # VIN diz 2025
+        assert not VehicleAlias.objects.filter(source="chassi").exists()
+
     def test_os_so_com_familia_nao_ensina(self) -> None:
         self.post_os(catalog_family=self.sprinter.modelo.familia_id, chassis=CHASSI)
         assert not VehicleAlias.objects.filter(source="chassi").exists()
