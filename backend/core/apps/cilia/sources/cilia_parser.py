@@ -113,11 +113,7 @@ class CiliaParser:
         raw_phone = f"{ddd}{number}".strip()
         phone_digits = re.sub(r"\D", "", raw_phone) if raw_phone else ""
         if phone_digits and not (10 <= len(phone_digits) <= 11):
-            logger.warning(
-                "import_parse: telefone '%s' tem %d digitos",
-                raw_phone,
-                len(phone_digits),
-            )
+            logger.warning("import_parse: telefone com %d digitos", len(phone_digits))
         pb.segurado_phone = phone_digits
         address = client.get("address") or {}
         pb.segurado_city = address.get("city") or ""
