@@ -133,6 +133,28 @@ describe("PersonFormModal — CEP e município", () => {
     })
   })
 
+  it("UF escolhida à mão diferente da do CEP: cidade, UF e IBGE ficam como estão", async () => {
+    mockApi({ cep: CEP_FOUND })
+    const user = userEvent.setup()
+    renderModal()
+    await addAddress(user)
+    await user.selectOptions(screen.getByLabelText("UF"), "SP")
+    await user.type(screen.getByPlaceholderText("00000-000"), "69050000")
+    await user.tab()
+    expect(await screen.findByDisplayValue("Centro")).toBeInTheDocument()
+    expect(screen.getByLabelText("UF")).toHaveValue("SP")
+
+    await fillRequired(user)
+    await user.click(screen.getByRole("button", { name: "Salvar" }))
+    await waitFor(() => expect(personSaved()).toBeTruthy())
+    expect((personSaved().addresses as unknown[])[0]).toMatchObject({
+      neighborhood: "Centro",
+      state: "SP",
+      city: "",
+      municipio_ibge: "",
+    })
+  })
+
   it("com a consulta do CEP sem resposta, escolhe UF e depois o município", async () => {
     mockApi({ cep: NOT_FOUND })
     const user = userEvent.setup()

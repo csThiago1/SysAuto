@@ -48,7 +48,7 @@ import {
 } from "@/components/ui";
 import { useCreatePerson, useUpdatePerson, usePerson } from "@/hooks";
 import { useLookup } from "@/hooks/useLookup";
-import { applyIfEmpty } from "@/lib/prefill";
+import { applyIfEmpty, locationGroup } from "@/lib/prefill";
 import { MunicipioCombobox } from "./MunicipioCombobox";
 import { handleApiFormError } from "@/lib/api";
 import { DateField } from "@/components/ui/date-field"
@@ -261,6 +261,9 @@ export function PersonFormModal({
     if (isValidCNPJ(value)) setCnpjTarget((t) => ({ key: onlyDigits(value), n: (t?.n ?? 0) + 1 }));
   }
 
+  const prefixed = (p: string, g: Record<string, string>): Record<string, string> =>
+    Object.fromEntries(Object.entries(g).map(([k, v]) => [`${p}.${k}`, v]));
+
   // Só preenche o que está vazio; o que o usuário já escolheu fica como está.
   const cepData = cepQuery.data;
   useEffect(() => {
@@ -271,9 +274,7 @@ export function PersonFormModal({
       [`${p}.street`]: f.logradouro,
       [`${p}.complement`]: f.complemento,
       [`${p}.neighborhood`]: f.bairro,
-      [`${p}.city`]: f.municipio?.label,
-      [`${p}.state`]: f.uf,
-      [`${p}.municipio_ibge`]: f.municipio?.id,
+      ...prefixed(p, locationGroup(getValues(p), f.municipio, f.uf)),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cepData, cepTarget]);
@@ -300,9 +301,7 @@ export function PersonFormModal({
         "addresses.0.number": f.numero,
         "addresses.0.complement": f.complemento,
         "addresses.0.neighborhood": f.bairro,
-        "addresses.0.city": f.municipio?.label,
-        "addresses.0.state": f.uf,
-        "addresses.0.municipio_ibge": f.municipio?.id,
+        ...prefixed("addresses.0", locationGroup(getValues("addresses.0"), f.municipio, f.uf)),
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

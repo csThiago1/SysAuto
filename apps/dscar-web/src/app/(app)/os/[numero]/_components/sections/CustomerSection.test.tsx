@@ -150,4 +150,27 @@ describe("CustomerSection — endereço da pessoa", () => {
       municipio_ibge: "",
     })
   })
+
+  it("cidade já preenchida diferente da do CEP e IBGE vazio: o grupo cidade/UF/IBGE não muda", async () => {
+    const itacoatiara = { ...PRINCIPAL, city: "Itacoatiara", state: "AM", municipio_ibge: "" }
+    vi.mocked(apiFetch).mockImplementation(async (input: RequestInfo) => {
+      const url = String(input)
+      if (url.includes("/lookups/cep/")) return CEP
+      if (url.includes("/persons/5/")) return { ...PERSON, addresses: [itacoatiara] }
+      throw new Error(`apiFetch inesperado: ${url}`)
+    })
+    const spy = renderSection()
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole("button", { name: "Editar" }))
+    await user.type(screen.getByPlaceholderText("00000-000"), "69050000")
+    await user.tab()
+    await waitFor(() => expect(screen.getByPlaceholderText("Centro")).toHaveValue("Centro"))
+
+    expect(lastPatch(spy).addresses!.find((a) => a.is_primary)).toMatchObject({
+      neighborhood: "Centro",
+      city: "Itacoatiara",
+      state: "AM",
+      municipio_ibge: "",
+    })
+  })
 })

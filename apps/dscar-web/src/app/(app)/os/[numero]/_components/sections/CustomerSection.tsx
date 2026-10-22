@@ -12,7 +12,7 @@ import {
 import { FORM_INPUT, FORM_LABEL, formatPhone, formatCEP, onlyDigits } from "@paddock/utils"
 import { useDebounce } from "@/hooks/useDebounce"
 import { useLookup } from "@/hooks/useLookup"
-import { fillEmpty } from "@/lib/prefill"
+import { fillEmpty, locationGroup } from "@/lib/prefill"
 
 const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-muted-foreground"
 // Um unico sistema de campo na tela de OS — antes cada secao tinha o seu.
@@ -331,9 +331,7 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }:
       street: f.logradouro,
       neighborhood: f.bairro,
       complement: f.complemento,
-      city: f.municipio?.label,
-      state: f.uf,
-      municipio_ibge: f.municipio?.id,
+      ...locationGroup(addr, f.municipio, f.uf),
     })
     setAddr(newAddr)
     onPersonDataChange?.(buildPatch(email, newAddr, phoneValue))

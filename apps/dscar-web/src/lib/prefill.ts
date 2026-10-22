@@ -28,3 +28,22 @@ export function fillEmpty<T extends Record<string, unknown>>(current: T, values:
   }
   return out
 }
+
+const norm = (s: string): string =>
+  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase()
+
+/**
+ * {cidade, UF, código IBGE} são um grupo só (o IBGE vai para a NFS-e): preenche os três
+ * juntos, e só se o IBGE está vazio e cidade/UF estão vazias ou já batem com a consulta.
+ * Caso contrário devolve {} e o grupo fica como o usuário deixou.
+ */
+export function locationGroup(
+  cur: { city?: string | null; state?: string | null; municipio_ibge?: string | null },
+  municipio: { id: string; label: string } | null | undefined,
+  uf: string | null | undefined,
+): { city: string; state: string; municipio_ibge: string } | Record<string, never> {
+  if (!municipio || !uf || !isEmpty(cur.municipio_ibge)) return {}
+  const same = (a: string | null | undefined, b: string): boolean => isEmpty(a) || norm(a ?? "") === norm(b)
+  if (!same(cur.city, municipio.label) || !same(cur.state, uf)) return {}
+  return { city: municipio.label, state: uf, municipio_ibge: municipio.id }
+}

@@ -90,16 +90,26 @@ class ColorEnumTest(TenantTestCase):
             assert r.status_code == 201, r.data
             assert ServiceOrder.objects.get(pk=r.data["id"]).color == expected
 
-    def test_post_orcamento_cor_livre_vira_codigo(self) -> None:
+    def test_post_orcamento_cor_livre_e_recusada_e_codigo_valido_e_gravado(self) -> None:
         NumberSequence.objects.get_or_create(
             sequence_type="BUDGET",
             defaults={"prefix": "ORC-2026-", "padding": 6, "next_number": 1},
         )
         customer = Person.objects.create(full_name="Cliente Orçamento", person_kind="PF")
+        payload = {
+            "customer_id": customer.pk,
+            "vehicle_plate": "ORC1D23",
+            "catalog_family": make_catalog().modelo.familia_id,
+        }
         r = self.client.post(
-            "/api/v1/budgets/",
-            {"customer_id": customer.pk, "vehicle_plate": "ORC1D23", "vehicle_color": "Preto"},
-            format="json",
+            "/api/v1/budgets/", {**payload, "vehicle_color": "Preto"}, format="json"
+        )
+        assert r.status_code == 400, r.data
+        assert "vehicle_color" in r.data
+        assert not Budget.objects.filter(vehicle_plate="ORC1D23").exists()
+
+        r = self.client.post(
+            "/api/v1/budgets/", {**payload, "vehicle_color": "PRETA"}, format="json"
         )
         assert r.status_code == 201, r.data
         assert Budget.objects.get(pk=r.data["id"]).vehicle_color == "PRETA"
