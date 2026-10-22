@@ -19,7 +19,6 @@ export {
   useCreatePerson,
   useUpdatePerson,
   useDeactivatePerson,
-  useCepLookup,
 } from "./usePersonMutations";
 
 // ── Notificações ──────────────────────────────────────────────────────────────

@@ -4789,23 +4789,6 @@ export interface paths {
         patch: operations["persons_supplier_profile_partial_update"];
         trace?: never;
     };
-    "/api/v1/persons/cep/{cep}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Consulta endereço pelo CEP via ViaCEP. */
-        get: operations["persons_cep_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/persons/employee-options/": {
         parameters: {
             query?: never;
@@ -34168,27 +34151,6 @@ export interface operations {
                 "multipart/form-data": components["schemas"]["PatchedPersonDetailRequest"];
             };
         };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PersonDetail"];
-                };
-            };
-        };
-    };
-    persons_cep_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                cep: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             200: {
                 headers: {

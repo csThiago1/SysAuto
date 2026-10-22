@@ -350,6 +350,14 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
     def validate_roles(self, value: list) -> list:
         if not value:
             raise serializers.ValidationError("Pelo menos um role é obrigatório.")
+        # Seguradora nasce em Cadastros → Seguradoras; quem já tem o papel o mantém.
+        already_insurer = (
+            self.instance is not None and self.instance.roles.filter(role="INSURER").exists()
+        )
+        if "INSURER" in value and not already_insurer:
+            raise serializers.ValidationError(
+                "Seguradoras são cadastradas em Cadastros → Seguradoras."
+            )
         return list(set(value))
 
     def validate(self, attrs: dict) -> dict:

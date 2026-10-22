@@ -11,7 +11,8 @@ import {
 } from "../../_hooks/useCustomerSearch"
 import { FORM_INPUT, FORM_LABEL, formatPhone, formatCEP, onlyDigits } from "@paddock/utils"
 import { useDebounce } from "@/hooks/useDebounce"
-import { useCepLookup } from "@/hooks"
+import { useLookup } from "@/hooks/useLookup"
+import { fillEmpty } from "@/lib/prefill"
 
 const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-muted-foreground"
 // Um unico sistema de campo na tela de OS — antes cada secao tinha o seu.
@@ -184,12 +185,15 @@ function findPhoneContact(contacts: { contact_type: string; value: string; is_pr
 
 function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }: PersonInfoPanelProps) {
   const { data: person, isLoading } = usePersonDetail(personId)
-  const cepLookup = useCepLookup()
+  // `n` muda a cada blur: a resposta já em cache é aplicada de novo.
+  const [cepTarget, setCepTarget] = useState<{ key: string; n: number } | null>(null)
+  const cepQuery = useLookup("cep", cepTarget?.key ?? null)
 
   const [email, setEmail] = useState("")
   const [phoneValue, setPhoneValue] = useState("")
   const [addr, setAddr] = useState({
     zip_code: "", street: "", number: "", complement: "", neighborhood: "", city: "", state: "",
+    municipio_ibge: "",
   })
   // Endereco preenchido colapsa numa linha: 7 caixas permanentes eram o maior
   // bloco da aba. Vazio abre sozinho — nada que precise ser preenchido some.
@@ -220,6 +224,7 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }:
         neighborhood: primary.neighborhood ?? "",
         city: primary.city ?? "",
         state: primary.state ?? "",
+        municipio_ibge: primary.municipio_ibge ?? "",
       })
     }
   }, [person?.id]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -239,6 +244,7 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }:
       neighborhood: primary?.neighborhood ?? "",
       city: primary?.city ?? "",
       state: primary?.state ?? "",
+      municipio_ibge: primary?.municipio_ibge ?? "",
     }
 
     const emailChanged = newEmail !== origEmail
@@ -269,7 +275,26 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }:
     }
 
     // Choices do backend: PRINCIPAL | COBRANCA | ENTREGA — preserva o tipo existente.
-    const addresses = [{ address_type: primary?.address_type ?? "PRINCIPAL", ...newAddr, is_primary: true }]
+    // O backend apaga e recria os endereços: tem que ir a lista inteira, trocando só o principal.
+    const edited = { address_type: primary?.address_type ?? "PRINCIPAL", ...newAddr, is_primary: true }
+    const addresses = primary
+      ? person.addresses.map((a) =>
+          a === primary
+            ? edited
+            : {
+                address_type: a.address_type,
+                zip_code: a.zip_code ?? "",
+                street: a.street ?? "",
+                number: a.number ?? "",
+                complement: a.complement ?? "",
+                neighborhood: a.neighborhood ?? "",
+                city: a.city ?? "",
+                state: a.state ?? "",
+                municipio_ibge: a.municipio_ibge ?? "",
+                is_primary: a.is_primary,
+              },
+        )
+      : [edited]
 
     return { contacts, addresses }
   }
@@ -286,28 +311,33 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }:
 
   function handleAddrChange(field: keyof typeof addr, value: string) {
     const newAddr = { ...addr, [field]: field === "state" ? value.toUpperCase() : value }
+    // O código IBGE era do município anterior: cidade ou UF editadas à mão o invalidam.
+    if (field === "city" || field === "state") newAddr.municipio_ibge = ""
     setAddr(newAddr)
     onPersonDataChange?.(buildPatch(email, newAddr, phoneValue))
   }
 
-  async function handleCepBlur(value: string) {
-    const clean = value.replace(/\D/g, "")
-    if (clean.length !== 8) return
-    try {
-      const d = await cepLookup.mutateAsync(clean)
-      const newAddr = {
-        ...addr,
-        zip_code: value,
-        street: d.street || addr.street,
-        neighborhood: d.neighborhood || addr.neighborhood,
-        city: d.city || addr.city,
-        state: d.state || addr.state,
-        complement: d.complement || addr.complement,
-      }
-      setAddr(newAddr)
-      onPersonDataChange?.(buildPatch(email, newAddr, phoneValue))
-    } catch { /* usuário preenche manualmente */ }
+  function handleCepBlur(value: string) {
+    const clean = onlyDigits(value)
+    if (clean.length === 8) setCepTarget((t) => ({ key: clean, n: (t?.n ?? 0) + 1 }))
   }
+
+  // Só preenche o que está vazio; o que o usuário digitou fica como está.
+  const cepData = cepQuery.data
+  useEffect(() => {
+    if (!cepTarget || !cepData?.found) return
+    const f = cepData.fields
+    const newAddr = fillEmpty(addr, {
+      street: f.logradouro,
+      neighborhood: f.bairro,
+      complement: f.complemento,
+      city: f.municipio?.label,
+      state: f.uf,
+      municipio_ibge: f.municipio?.id,
+    })
+    setAddr(newAddr)
+    onPersonDataChange?.(buildPatch(email, newAddr, phoneValue))
+  }, [cepData, cepTarget]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (isLoading) {
     return (
@@ -429,11 +459,11 @@ function PersonInfoPanel({ personId, customerName, onPersonDataChange, action }:
                 inputMode="numeric"
                 value={formatCEP(addr.zip_code)}
                 onChange={(e) => handleAddrChange("zip_code", onlyDigits(e.target.value))}
-                onBlur={(e) => void handleCepBlur(e.target.value)}
+                onBlur={(e) => handleCepBlur(e.target.value)}
                 placeholder="00000-000"
                 maxLength={9}
               />
-              {cepLookup.isPending && (
+              {cepQuery.isFetching && (
                 <Loader2 className="absolute right-2 top-2 h-3.5 w-3.5 animate-spin text-muted-foreground" />
               )}
             </div>

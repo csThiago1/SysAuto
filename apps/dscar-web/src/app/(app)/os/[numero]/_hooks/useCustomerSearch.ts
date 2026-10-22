@@ -117,6 +117,7 @@ export interface PersonDetailAddress {
   neighborhood: string
   city: string
   state: string
+  municipio_ibge?: string
   is_primary: boolean
 }
 
@@ -143,6 +144,7 @@ export interface PersonAddressPatch {
   neighborhood: string
   city: string
   state: string
+  municipio_ibge: string
   is_primary: boolean
 }
 
