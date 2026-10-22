@@ -46,5 +46,5 @@ class CatalogModelsTest(TestCase):
 
     def test_seed_de_regras_existe(self) -> None:
         assert VehicleFamilyRule.objects.filter(
-            marca_nome_normalizado="GM - CHEVROLET", padrao="^ONIX SED"
-        ).exists()
+            marca_nome_normalizado="GM - CHEVROLET", padrao=r"^ONIX (SEDAN|SED|SD)\b"
+        ).exists()  # 0008 com o padrão corrigido pela 0012

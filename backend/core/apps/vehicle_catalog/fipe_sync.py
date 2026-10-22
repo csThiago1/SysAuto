@@ -44,6 +44,29 @@ BATCH = 2000
 LEADING_NEW = {"NOVO", "NOVA", "NEW"}
 
 
+def rule_family(
+    marca_nn: str,
+    model_nn: str,
+    rules: Sequence[VehicleFamilyRule],
+    tipo: str = "carro",
+) -> str | None:
+    """Família pela regra ativa da marca (padrão mais longo primeiro), ou None."""
+    applicable = sorted(
+        (
+            r
+            for r in rules
+            if r.is_active and r.tipo == tipo and r.marca_nome_normalizado == marca_nn
+        ),
+        key=lambda r: len(r.padrao),
+        reverse=True,
+    )
+    for rule in applicable:
+        m = re.match(rule.padrao, model_nn)
+        if m:
+            return m.expand(rule.familia)
+    return None
+
+
 def derive_family(
     fipe_make: str,
     fipe_model: str,
@@ -53,15 +76,9 @@ def derive_family(
     """Nome de exibição da família de uma versão FIPE (regra da marca, senão 1º termo)."""
     n = normalize_name(fipe_model)
     marca = normalize_name(fipe_make)
-    applicable = sorted(
-        (r for r in rules if r.is_active and r.tipo == tipo and r.marca_nome_normalizado == marca),
-        key=lambda r: len(r.padrao),
-        reverse=True,
-    )
-    for rule in applicable:
-        m = re.match(rule.padrao, n)
-        if m:
-            return m.expand(rule.familia)
+    hit = rule_family(marca, n, rules, tipo)
+    if hit:
+        return hit
 
     toks = n.split()
     while len(toks) > 1 and toks[0] in LEADING_NEW:

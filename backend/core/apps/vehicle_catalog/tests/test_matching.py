@@ -2,7 +2,12 @@ import pytest
 
 from apps.vehicle_catalog.fipe_sync import load_fipex
 from apps.vehicle_catalog.matching import match_vehicle, record_alias_confirmation
-from apps.vehicle_catalog.models import VehicleAlias, VehicleFamily, VehicleYearVersion
+from apps.vehicle_catalog.models import (
+    VehicleAlias,
+    VehicleFamily,
+    VehicleFamilyRule,
+    VehicleYearVersion,
+)
 from apps.vehicle_catalog.tests.factories import SAMPLE
 
 pytestmark = pytest.mark.django_db
@@ -68,6 +73,23 @@ def test_fixtures_reais(
     assert (m.family.nome, m.confidence) == (fam, conf)
     assert (m.version.modelo.codigo_fipe if m.version else None) == fipe
     assert m.review is (fipe is None)
+
+
+ONIX_SEDAN_FIPE = "CHEVROLET ONIX SEDAN PLUS LTZ 1.0 12V TB FLEX AUT"
+
+
+def test_onix_sedan_no_texto_fipe_cai_no_onix_plus() -> None:
+    m = match_vehicle("", ONIX_SEDAN_FIPE, 2023)
+    assert m.family.nome == "Onix Plus"
+    assert (m.version.modelo.codigo_fipe if m.version else None) != "004515-2"
+
+
+def test_sem_regra_sedan_nao_casa_versao_hatch_com_confianca() -> None:
+    VehicleFamilyRule.objects.filter(
+        marca_nome_normalizado="GM - CHEVROLET", padrao__startswith="^ONIX"
+    ).update(is_active=False)
+    m = match_vehicle("", ONIX_SEDAN_FIPE, 2023)
+    assert m.confidence == "baixa" and m.version is None and m.candidates
 
 
 def test_baixa_traz_candidatos_da_familia() -> None:

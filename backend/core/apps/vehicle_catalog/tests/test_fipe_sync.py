@@ -26,6 +26,10 @@ def RULES() -> list[VehicleFamilyRule]:
     [
         ("GM - Chevrolet", "ONIX HATCH LT 1.0 12V Flex 5p Mec.", "Onix", "carro"),
         ("GM - Chevrolet", "ONIX SED. Plus PREM. 1.0 12V TB Flex Aut", "Onix Plus", "carro"),
+        ("GM - Chevrolet", "ONIX SEDAN Plus LT 1.0 12V Flex 4p Mec.", "Onix Plus", "carro"),
+        ("GM - Chevrolet", "ONIX SD. P. PR. MIDNIGHT 1.0 TB Flex Aut", "Onix Plus", "carro"),
+        ("Mercedes-Benz", "C 180 Avantgarde 1.6 TB 16V Aut.", "Classe C", "carro"),
+        ("Mercedes-Benz", "GLA-200 Advance 1.6 TB 16V Aut.", "Classe GLA", "carro"),
         ("GM - Chevrolet", "MONTANA RS 1.2 Turbo Flex 12V Aut.", "Montana", "carro"),
         ("Mercedes-Benz", "Sprinter 517 VAN E.L.T.A. 18L Die (E6)", "Sprinter", "carro"),
         ("Fiat", "Grand Siena 1.0 EVO Flex 8V 4p", "Grand Siena", "carro"),

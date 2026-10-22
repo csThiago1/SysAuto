@@ -9,9 +9,11 @@ from dataclasses import dataclass
 from typing import Literal
 
 from apps.lookups.validators import decode_vin
+from apps.vehicle_catalog.fipe_sync import rule_family
 from apps.vehicle_catalog.models import (
     VehicleAlias,
     VehicleFamily,
+    VehicleFamilyRule,
     VehicleMake,
     VehicleModel,
     VehicleYearVersion,
@@ -35,7 +37,9 @@ TOKEN_SYN = {
     "TB": "TURBO",
     "PREM": "PREMIER",
     "SED": "SEDAN",
+    "SD": "SEDAN",
 }
+BODY = {"SEDAN", "HATCH"}
 DROP = {"NOVO", "NOVA", "NEW", "TOTAL"}
 LEADING_NEW = {"NOVO", "NOVA", "NEW"}
 YEAR_RANGE = re.compile(r"\(\s*\d{4}\s*A\s*\d{4}\s*\)")
@@ -165,10 +169,26 @@ def _clean_rest(full: str, brand: str, name: str, makes: list[VehicleMake]) -> s
 
 
 def _family(rest: str, makes: list[VehicleMake], tipo: str) -> VehicleFamily | None:
+    active = list(
+        VehicleFamily.objects.filter(make__in=makes, is_active=True).select_related("make")
+    )
+    # regra da marca primeiro: "ONIX SEDAN PLUS" é Onix Plus, não o prefixo "ONIX"
+    rules = list(
+        VehicleFamilyRule.objects.filter(
+            is_active=True,
+            tipo=tipo,
+            marca_nome_normalizado__in={m.nome_normalizado for m in makes},
+        )
+    )
+    for marca_nn in sorted({m.nome_normalizado for m in makes}):
+        hit = rule_family(marca_nn, rest, rules, tipo)
+        if hit:
+            named = [f for f in active if f.nome_normalizado == normalize_name(hit)]
+            if named:
+                return sorted(named, key=lambda f: f.make.tipo != tipo)[0]
+
     families = [
-        f
-        for f in VehicleFamily.objects.filter(make__in=makes, is_active=True).select_related("make")
-        if rest == f.nome_normalizado or rest.startswith(f.nome_normalizado + " ")
+        f for f in active if rest == f.nome_normalizado or rest.startswith(f.nome_normalizado + " ")
     ]
     # a mais longa primeiro; o tipo só desempata famílias homônimas
     families.sort(key=lambda f: (-len(f.nome_normalizado), f.make.tipo != tipo))
@@ -236,6 +256,11 @@ def match_vehicle(
     s1 = scored[0][0] if scored else None
     s2 = scored[1][0] if len(scored) > 1 else None
     if s1 is None or s1 < 3 or (s2 is not None and s1 - s2 < 1.5):
+        candidates = tuple(m for _, m in scored[:5])
+        return VehicleMatch(family.make, family, None, None, "baixa", True, candidates)
+
+    # carroceria do texto que a versão vencedora não tem: não confia (sedan ≠ hatch)
+    if (src_tokens & BODY) - (version_tokens(scored[0][1].nome)[0] - fam_tokens):
         candidates = tuple(m for _, m in scored[:5])
         return VehicleMatch(family.make, family, None, None, "baixa", True, candidates)
 
