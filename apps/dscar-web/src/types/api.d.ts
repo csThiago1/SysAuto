@@ -8700,7 +8700,6 @@ export interface paths {
          *
          *     GET   /vehicle-catalog/makes/?tipo=carro&search=chev[&include_inactive=true]
          *     PATCH /vehicle-catalog/makes/{id}/  e  /vehicle-catalog/makes/{id}/logo/
-         *     GET   /vehicle-catalog/makes/{id}/models/  (legado, sai na Task 18)
          */
         get: operations["vehicle_catalog_makes_list"];
         put?: never;
@@ -8723,7 +8722,6 @@ export interface paths {
          *
          *     GET   /vehicle-catalog/makes/?tipo=carro&search=chev[&include_inactive=true]
          *     PATCH /vehicle-catalog/makes/{id}/  e  /vehicle-catalog/makes/{id}/logo/
-         *     GET   /vehicle-catalog/makes/{id}/models/  (legado, sai na Task 18)
          */
         get: operations["vehicle_catalog_makes_retrieve"];
         put?: never;
@@ -8736,7 +8734,6 @@ export interface paths {
          *
          *     GET   /vehicle-catalog/makes/?tipo=carro&search=chev[&include_inactive=true]
          *     PATCH /vehicle-catalog/makes/{id}/  e  /vehicle-catalog/makes/{id}/logo/
-         *     GET   /vehicle-catalog/makes/{id}/models/  (legado, sai na Task 18)
          */
         patch: operations["vehicle_catalog_makes_partial_update"];
         trace?: never;
@@ -8763,23 +8760,6 @@ export interface paths {
         patch: operations["vehicle_catalog_makes_logo_partial_update"];
         trace?: never;
     };
-    "/api/v1/vehicle-catalog/makes/{id}/models/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Legado: lista modelos de uma marca (GET /vehicle-catalog/makes/{id}/models/). */
-        get: operations["vehicle_catalog_makes_models_list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/vehicle-catalog/models/": {
         parameters: {
             query?: never;
@@ -8791,7 +8771,6 @@ export interface paths {
          * @description Versões FIPE de uma família.
          *
          *     GET /vehicle-catalog/models/?familia=<id>&ano=2025&search=lt 1.0 turbo
-         *     GET /vehicle-catalog/models/{id}/years/  (legado, sai na Task 18)
          */
         get: operations["vehicle_catalog_models_list"];
         put?: never;
@@ -8813,50 +8792,8 @@ export interface paths {
          * @description Versões FIPE de uma família.
          *
          *     GET /vehicle-catalog/models/?familia=<id>&ano=2025&search=lt 1.0 turbo
-         *     GET /vehicle-catalog/models/{id}/years/  (legado, sai na Task 18)
          */
         get: operations["vehicle_catalog_models_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/vehicle-catalog/models/{id}/years/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Legado: anos/versões de um modelo (GET /vehicle-catalog/models/{id}/years/). */
-        get: operations["vehicle_catalog_models_years_list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/vehicle-catalog/plate/{plate}/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Consulta dados do veículo pela placa
-         * @description GET /vehicle-catalog/plate/<plate>/
-         *
-         *     1. Checa PlateCache — se existir, retorna sem consumir crédito da API.
-         *     2. Consulta wdapi2.com.br com o token configurado em APIPLACAS_TOKEN.
-         *     3. Salva resultado no PlateCache para consultas futuras.
-         */
-        get: operations["vehicle_catalog_plate_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -8906,10 +8843,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description CRUD de veículos físicos + lookup de placa. */
+        /** @description CRUD de veículos físicos. */
         get: operations["vehicles_list"];
         put?: never;
-        /** @description CRUD de veículos físicos + lookup de placa. */
+        /** @description CRUD de veículos físicos. */
         post: operations["vehicles_create"];
         delete?: never;
         options?: never;
@@ -8924,34 +8861,17 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description CRUD de veículos físicos + lookup de placa. */
+        /** @description CRUD de veículos físicos. */
         get: operations["vehicles_retrieve"];
-        /** @description CRUD de veículos físicos + lookup de placa. */
+        /** @description CRUD de veículos físicos. */
         put: operations["vehicles_update"];
         post?: never;
-        /** @description CRUD de veículos físicos + lookup de placa. */
+        /** @description CRUD de veículos físicos. */
         delete: operations["vehicles_destroy"];
         options?: never;
         head?: never;
-        /** @description CRUD de veículos físicos + lookup de placa. */
+        /** @description CRUD de veículos físicos. */
         patch: operations["vehicles_partial_update"];
-        trace?: never;
-    };
-    "/api/v1/vehicles/lookup/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description GET /vehicles/lookup/?plate=ABC1D23 — DB-first então API externa. */
-        get: operations["vehicles_lookup_retrieve"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/healthz/": {
@@ -17125,21 +17045,6 @@ export interface components {
             previous: string | null;
             results: components["schemas"]["VehicleMake"][];
         };
-        PaginatedVehicleModelList: {
-            /** @example 123 */
-            count: number;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=4
-             */
-            next: string | null;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=2
-             */
-            previous: string | null;
-            results: components["schemas"]["VehicleModel"][];
-        };
         PaginatedVehicleModelOptionList: {
             /** @example 123 */
             count: number;
@@ -17169,21 +17074,6 @@ export interface components {
              */
             previous: string | null;
             results: components["schemas"]["VehicleYearOption"][];
-        };
-        PaginatedVehicleYearVersionList: {
-            /** @example 123 */
-            count: number;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=4
-             */
-            next: string | null;
-            /**
-             * Format: uri
-             * @example http://api.example.org/accounts/?page=2
-             */
-            previous: string | null;
-            results: components["schemas"]["VehicleYearVersion"][];
         };
         PaginatedWorkScheduleList: {
             /** @example 123 */
@@ -19138,30 +19028,10 @@ export interface components {
             customer_name?: string;
             /** Placa */
             plate?: string;
-            /** Marca */
-            make?: string;
-            /**
-             * Logo da montadora
-             * Format: uri
-             */
-            make_logo?: string;
-            /** Modelo */
-            model?: string;
-            /** Versão */
-            vehicle_version?: string;
-            /** Ano */
-            year?: number | null;
             /** Cor */
             color?: components["schemas"]["ColorEnum"] | components["schemas"]["BlankEnum"];
             /** Chassi */
             chassis?: string;
-            /** Combustível */
-            fuel_type?: string;
-            /**
-             * Valor FIPE
-             * Format: decimal
-             */
-            fipe_value?: string | null;
             /** KM entrada */
             mileage_in?: number | null;
             /** KM saída */
@@ -19175,11 +19045,6 @@ export interface components {
              * @description Divergências entre o arquivo importado e a OS; o usuário dispensa limpando.
              */
             import_warnings?: unknown;
-            /**
-             * Format: decimal
-             * @description Valor FIPE congelado no momento de criação da OS (R$).
-             */
-            vehicle_fipe_value_snapshot?: string | null;
             /** @description Código do SegmentoVeicular resolvido pelo EnquadramentoService. */
             segmento_codigo?: string;
             /** @description Código da CategoriaTamanho resolvida pelo EnquadramentoService. */
@@ -21345,27 +21210,27 @@ export interface components {
             /** Placa */
             plate: string;
             /** Marca */
-            make: string;
+            readonly make: string;
             /**
              * Logo da montadora
              * Format: uri
              */
-            make_logo: string;
+            readonly make_logo: string;
             /** Modelo */
-            model: string;
+            readonly model: string;
             /** Versão */
-            vehicle_version: string;
+            readonly vehicle_version: string;
             /** Ano */
-            year: number | null;
+            readonly year: number | null;
             /** Chassi */
             chassis: string;
             /** Combustível */
-            fuel_type: string;
+            readonly fuel_type: string;
             /**
              * Valor FIPE
              * Format: decimal
              */
-            fipe_value: string | null;
+            readonly fipe_value: string | null;
             /** KM entrada */
             mileage_in: number | null;
             /** KM saída */
@@ -21392,7 +21257,7 @@ export interface components {
              * Format: decimal
              * @description Valor FIPE congelado no momento de criação da OS (R$).
              */
-            vehicle_fipe_value_snapshot: string | null;
+            readonly vehicle_fipe_value_snapshot: string | null;
             /** @description Código do SegmentoVeicular resolvido pelo EnquadramentoService. */
             segmento_codigo: string;
             /** @description Código da CategoriaTamanho resolvida pelo EnquadramentoService. */
@@ -21586,28 +21451,8 @@ export interface components {
             customer_name?: string;
             /** Placa */
             plate: string;
-            /** Marca */
-            make?: string;
-            /**
-             * Logo da montadora
-             * Format: uri
-             */
-            make_logo?: string;
-            /** Modelo */
-            model?: string;
-            /** Versão */
-            vehicle_version?: string;
-            /** Ano */
-            year?: number | null;
             /** Chassi */
             chassis?: string;
-            /** Combustível */
-            fuel_type?: string;
-            /**
-             * Valor FIPE
-             * Format: decimal
-             */
-            fipe_value?: string | null;
             /** KM entrada */
             mileage_in?: number | null;
             /** KM saída */
@@ -21616,11 +21461,6 @@ export interface components {
             year_manufacture?: number | null;
             /** CNPJ da seguradora (nota) */
             insurer_cnpj?: string;
-            /**
-             * Format: decimal
-             * @description Valor FIPE congelado no momento de criação da OS (R$).
-             */
-            vehicle_fipe_value_snapshot?: string | null;
             /** @description Código do SegmentoVeicular resolvido pelo EnquadramentoService. */
             segmento_codigo?: string;
             /** @description Código da CategoriaTamanho resolvida pelo EnquadramentoService. */
@@ -22717,29 +22557,29 @@ export interface components {
             /** Placa */
             plate: string;
             /** Marca */
-            make: string;
+            readonly make: string;
             /**
              * Logo da montadora
              * Format: uri
              */
-            make_logo: string;
+            readonly make_logo: string;
             /** Modelo */
-            model: string;
+            readonly model: string;
             /** Versão */
-            vehicle_version: string;
+            readonly vehicle_version: string;
             /** Ano */
-            year: number | null;
+            readonly year: number | null;
             /** Cor */
             color: components["schemas"]["ColorEnum"] | components["schemas"]["BlankEnum"];
             /** Chassi */
             chassis: string;
             /** Combustível */
-            fuel_type: string;
+            readonly fuel_type: string;
             /**
              * Valor FIPE
              * Format: decimal
              */
-            fipe_value: string | null;
+            readonly fipe_value: string | null;
             /** KM entrada */
             mileage_in: number | null;
             /** KM saída */
@@ -22766,7 +22606,7 @@ export interface components {
              * Format: decimal
              * @description Valor FIPE congelado no momento de criação da OS (R$).
              */
-            vehicle_fipe_value_snapshot: string | null;
+            readonly vehicle_fipe_value_snapshot: string | null;
             /** @description Código do SegmentoVeicular resolvido pelo EnquadramentoService. */
             segmento_codigo: string;
             /** @description Código da CategoriaTamanho resolvida pelo EnquadramentoService. */
@@ -22958,30 +22798,10 @@ export interface components {
             customer_name?: string;
             /** Placa */
             plate?: string;
-            /** Marca */
-            make?: string;
-            /**
-             * Logo da montadora
-             * Format: uri
-             */
-            make_logo?: string;
-            /** Modelo */
-            model?: string;
-            /** Versão */
-            vehicle_version?: string;
-            /** Ano */
-            year?: number | null;
             /** Cor */
             color?: components["schemas"]["ColorEnum"] | components["schemas"]["BlankEnum"];
             /** Chassi */
             chassis?: string;
-            /** Combustível */
-            fuel_type?: string;
-            /**
-             * Valor FIPE
-             * Format: decimal
-             */
-            fipe_value?: string | null;
             /** KM entrada */
             mileage_in?: number | null;
             /** KM saída */
@@ -22995,11 +22815,6 @@ export interface components {
              * @description Divergências entre o arquivo importado e a OS; o usuário dispensa limpando.
              */
             import_warnings?: unknown;
-            /**
-             * Format: decimal
-             * @description Valor FIPE congelado no momento de criação da OS (R$).
-             */
-            vehicle_fipe_value_snapshot?: string | null;
             /** @description Código do SegmentoVeicular resolvido pelo EnquadramentoService. */
             segmento_codigo?: string;
             /** @description Código da CategoriaTamanho resolvida pelo EnquadramentoService. */
@@ -24547,15 +24362,7 @@ export interface components {
          * @enum {string}
          */
         VehicleMakeTipoEnum: "carro" | "moto" | "caminhao";
-        VehicleModel: {
-            readonly id: number;
-            fipe_id: string | null;
-            nome: string;
-            nome_normalizado: string;
-            marca: number;
-            readonly marca_nome: string;
-        };
-        /** @description Versão FIPE no seletor. O legado (makes/{id}/models/) segue no VehicleModelSerializer. */
+        /** @description Versão FIPE no seletor. */
         VehicleModelOption: {
             readonly id: number;
             readonly label: string;
@@ -24573,10 +24380,7 @@ export interface components {
             renavam?: string;
             is_active?: boolean;
         };
-        /**
-         * @description Ano/combustível no seletor. O legado (models/{id}/years/) segue no
-         *     VehicleYearVersionSerializer.
-         */
+        /** @description Ano/combustível no seletor. */
         VehicleYearOption: {
             readonly id: number;
             readonly label: string;
@@ -24585,17 +24389,6 @@ export interface components {
             zero_km: boolean;
             combustivel: components["schemas"]["CombustivelEnum"];
             readonly combustivel_label: string;
-            /** Format: decimal */
-            valor_referencia: string | null;
-        };
-        VehicleYearVersion: {
-            readonly id: number;
-            fipe_id: string | null;
-            /** @description Ano-modelo; 32000 = zero km (FIPE). */
-            ano: number;
-            combustivel: components["schemas"]["CombustivelEnum"];
-            descricao: string;
-            codigo_fipe: string;
             /** Format: decimal */
             valor_referencia: string | null;
         };
@@ -42652,41 +42445,6 @@ export interface operations {
             };
         };
     };
-    vehicle_catalog_makes_models_list: {
-        parameters: {
-            query?: {
-                /** @description A page number within the paginated result set. */
-                page?: number;
-                /** @description Number of results to return per page. */
-                page_size?: number;
-                /** @description A search term. */
-                search?: string;
-                /**
-                 * @description * `carro` - Carro
-                 *     * `moto` - Moto
-                 *     * `caminhao` - Caminhão/ônibus
-                 */
-                tipo?: "caminhao" | "carro" | "moto";
-            };
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this Marca (FIPE). */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedVehicleModelList"];
-                };
-            };
-        };
-    };
     vehicle_catalog_models_list: {
         parameters: {
             query?: {
@@ -42733,78 +42491,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VehicleModelOption"];
-                };
-            };
-        };
-    };
-    vehicle_catalog_models_years_list: {
-        parameters: {
-            query?: {
-                familia?: number;
-                /** @description A page number within the paginated result set. */
-                page?: number;
-                /** @description Number of results to return per page. */
-                page_size?: number;
-                /** @description A search term. */
-                search?: string;
-            };
-            header?: never;
-            path: {
-                /** @description A unique integer value identifying this Modelo (FIPE). */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaginatedVehicleYearVersionList"];
-                };
-            };
-        };
-    };
-    vehicle_catalog_plate_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Placa do veículo (7-8 chars) */
-                plate: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        plate?: string;
-                        make?: string;
-                        model?: string;
-                        version?: string;
-                        engine?: string;
-                        year?: number;
-                        chassis?: string;
-                        renavam?: string;
-                        city?: string;
-                        color?: string;
-                        fuel_type?: string;
-                    };
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
                 };
             };
         };
@@ -42999,25 +42685,6 @@ export interface operations {
                 "multipart/form-data": components["schemas"]["PatchedVehicleRequest"];
             };
         };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Vehicle"];
-                };
-            };
-        };
-    };
-    vehicles_lookup_retrieve: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             200: {
                 headers: {

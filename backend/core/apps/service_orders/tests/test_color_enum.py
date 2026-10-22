@@ -1,4 +1,4 @@
-"""Cor do veículo é enum fechado (CorVeiculo) na OS, no orçamento e no lookup de placa."""
+"""Cor do veículo é enum fechado (CorVeiculo) na OS e no orçamento."""
 
 import hashlib
 import importlib
@@ -12,9 +12,7 @@ from apps.budgets.models import Budget
 from apps.items.models import NumberSequence
 from apps.persons.models import Person
 from apps.service_orders.models import ServiceOrder
-from apps.vehicle_catalog.models import PlateCache
 from apps.vehicle_catalog.tests.factories import make_catalog
-from apps.vehicle_catalog.views import _normalize_plate_response
 
 URL = "/api/v1/service-orders/"
 
@@ -75,13 +73,6 @@ class ColorEnumTest(TenantTestCase):
         prta.refresh_from_db()
         lixo.refresh_from_db()
         assert (prta.color, lixo.color) == ("PRETA", "NAO_INFORMADA")
-
-    def test_lookup_placa_devolve_codigo_da_cor(self) -> None:
-        PlateCache.objects.create(plate="CCH1D23", make="Volkswagen", model="Gol", color="Branca")
-        r = self.client.get("/api/v1/vehicle-catalog/plate/CCH1D23/")
-        assert r.status_code == 200 and r.data["color"] == "BRANCA"
-        assert _normalize_plate_response("CCH1D23", {"cor": "BRANCA"})["color"] == "BRANCA"
-        assert _normalize_plate_response("CCH1D23", {"cor": "Furta-cor"})["color"] == ""
 
     def test_post_os_cor_livre_vira_codigo(self) -> None:
         # App mobile manda a cor digitada à mão (online e no replay offline com null).

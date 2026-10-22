@@ -126,14 +126,6 @@ export {
 } from "./useCatalog";
 export { useLookup } from "./useLookup";
 
-// ── Motor de Orçamentos — Catálogo FIPE ───────────────────────────────────────
-export {
-  useFipeMakes,
-  useFipeModels,
-  useFipeYears,
-  fipeKeys,
-} from "./useVehicleFipe";
-
 // ── Motor de Orçamentos — Enquadramento Veicular ──────────────────────────────
 export { useResolverEnquadramento, enquadramentoKeys } from "./useEnquadramento";
 

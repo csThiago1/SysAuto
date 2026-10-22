@@ -3,7 +3,6 @@
 import hashlib
 
 from django.db import connection
-from django.test import override_settings
 from django_tenants.test.cases import TenantTestCase
 from rest_framework.test import APIClient
 
@@ -69,16 +68,3 @@ class VehicleAPITestCase(TenantTestCase):
             format="json",
         )
         assert resp.status_code == 400 and "family" in resp.data
-
-    def test_lookup_plate_found_in_db(self) -> None:
-        Vehicle.objects.create(plate="LOOK001", description="Ford Ka", is_active=True)
-        resp = self.client.get("/api/v1/vehicles/lookup/?plate=LOOK001")
-        assert resp.status_code == 200
-        assert resp.data["plate"] == "LOOK001"
-        assert resp.data["source"] == "db"
-
-    @override_settings(APIPLACAS_TOKEN="", APIPLACAS_URL="")
-    def test_lookup_plate_not_found_returns_404(self) -> None:
-        """Sem token configurado → retorna 404 (lookup retorna None)."""
-        resp = self.client.get("/api/v1/vehicles/lookup/?plate=NOTFOUND")
-        assert resp.status_code == 404

@@ -17,6 +17,11 @@ export const catalogSelectionSchema = z.object({
 })
 export type CatalogSelection = z.infer<typeof catalogSelectionSchema>
 export type VehicleTipo = CatalogSelection["tipo"]
+export const VEHICLE_TIPOS: { value: VehicleTipo; label: string }[] = [
+  { value: "carro", label: "Carro" },
+  { value: "moto", label: "Moto" },
+  { value: "caminhao", label: "Caminhão" },
+]
 
 export function paginatedSchema<T extends z.ZodTypeAny>(item: T) {
   return z.object({

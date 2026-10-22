@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import type { CatalogOption, CatalogSelection, VehicleTipo } from "./catalog.schema"
+import { VEHICLE_TIPOS, type CatalogOption, type CatalogSelection, type VehicleTipo } from "./catalog.schema"
 import { CatalogCombobox } from "./CatalogCombobox"
 import { MakeLogo } from "./MakeLogo"
 
@@ -16,12 +16,6 @@ interface VehicleCatalogPickerProps {
   error?: string
   disabled?: boolean
 }
-
-const TIPOS: { value: VehicleTipo; label: string }[] = [
-  { value: "carro", label: "Carro" },
-  { value: "moto", label: "Moto" },
-  { value: "caminhao", label: "Caminhão" },
-]
 
 const makeLogo = (o: CatalogOption) => <MakeLogo make={o} />
 
@@ -40,7 +34,7 @@ export function VehicleCatalogPicker({
   return (
     <div className="space-y-3">
       <div role="group" aria-label="Tipo de veículo" className="inline-flex rounded-md border border-border p-0.5">
-        {TIPOS.map((t) => (
+        {VEHICLE_TIPOS.map((t) => (
           <button
             key={t.value}
             type="button"

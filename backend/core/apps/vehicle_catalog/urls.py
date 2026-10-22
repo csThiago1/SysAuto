@@ -11,7 +11,6 @@ from apps.vehicle_catalog.views import (
     VehicleModelViewSet,
     VehicleYearViewSet,
     colors_list,
-    plate_lookup,
 )
 
 router = DefaultRouter()
@@ -22,6 +21,5 @@ router.register(r"years", VehicleYearViewSet, basename="vehicle-year")
 
 urlpatterns = [
     path("colors/", colors_list, name="vehicle-colors"),
-    path("plate/<str:plate>/", plate_lookup, name="vehicle-plate-lookup"),
     *router.urls,
 ]

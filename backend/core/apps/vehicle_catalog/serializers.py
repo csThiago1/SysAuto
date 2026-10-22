@@ -28,7 +28,7 @@ class VehicleFamilySerializer(serializers.ModelSerializer):
 
 
 class VehicleModelOptionSerializer(serializers.ModelSerializer):
-    """Versão FIPE no seletor. O legado (makes/{id}/models/) segue no VehicleModelSerializer."""
+    """Versão FIPE no seletor."""
 
     label = serializers.CharField(source="nome", read_only=True)
 
@@ -38,8 +38,7 @@ class VehicleModelOptionSerializer(serializers.ModelSerializer):
 
 
 class VehicleYearOptionSerializer(serializers.ModelSerializer):
-    """Ano/combustível no seletor. O legado (models/{id}/years/) segue no
-    VehicleYearVersionSerializer."""
+    """Ano/combustível no seletor."""
 
     label = serializers.CharField(read_only=True)
     combustivel_label = serializers.CharField(source="get_combustivel_display", read_only=True)
@@ -53,27 +52,5 @@ class VehicleYearOptionSerializer(serializers.ModelSerializer):
             "zero_km",
             "combustivel",
             "combustivel_label",
-            "valor_referencia",
-        ]
-
-
-class VehicleModelSerializer(serializers.ModelSerializer):
-    marca_nome = serializers.CharField(source="marca.nome", read_only=True)
-
-    class Meta:
-        model = VehicleModel
-        fields = ["id", "fipe_id", "nome", "nome_normalizado", "marca", "marca_nome"]
-
-
-class VehicleYearVersionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = VehicleYearVersion
-        fields = [
-            "id",
-            "fipe_id",
-            "ano",
-            "combustivel",
-            "descricao",
-            "codigo_fipe",
             "valor_referencia",
         ]
