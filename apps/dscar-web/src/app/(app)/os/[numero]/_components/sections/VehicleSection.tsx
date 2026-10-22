@@ -16,6 +16,7 @@ import { VehicleHistorySheet } from "../shared/VehicleHistorySheet"
 import { VehicleCatalogPicker } from "@/components/vehicle/VehicleCatalogPicker"
 import {
   RestricaoAlert,
+  SinespHint,
   keepYearManufacture,
   placaPrefill,
   usePlacaLookup,
@@ -121,6 +122,8 @@ export function VehicleSection({ form, order, hideHeading }: VehicleSectionProps
       </div>
 
       <RestricaoAlert restricao={placa.restricao} />
+
+      <SinespHint searched={placa.searched} />
 
       <Controller
         name="catalog_selection"

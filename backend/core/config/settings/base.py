@@ -397,6 +397,7 @@ CILIA_BASE_URL = config("CILIA_BASE_URL", default="https://sistema.cilia.com.br"
 CILIA_AUTH_TOKEN = config("CILIA_AUTH_TOKEN", default="")
 
 # ─── API Placas ───────────────────────────────────────────────────────────────
+APIPLACAS_ENABLED = config("APIPLACAS_ENABLED", default=False, cast=bool)  # paga: desligada
 APIPLACAS_TOKEN = config("APIPLACAS_TOKEN", default="")
 # endpoint: GET https://wdapi2.com.br/consulta/{plate}/{token}
 APIPLACAS_URL = "https://wdapi2.com.br/consulta"

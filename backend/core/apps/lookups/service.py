@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from time import monotonic
 from typing import Any, Literal, TypedDict
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db import connection
 from django.db.models import Q
@@ -237,6 +238,8 @@ DB_FIRST: dict[str, Callable[[str], LookupResult | None]] = {"cnpj": _db_first_c
 def _chain(kind: str, key: str) -> list[Provider]:
     if kind == "cnpj" and not key.isdigit():
         return [cnpja_open]  # o único que aceita CNPJ alfanumérico
+    if kind == "placa" and not settings.APIPLACAS_ENABLED:
+        return []  # a API paga fica desligada; a placa só olha o histórico de OS
     return CHAINS.get(kind, [])
 
 
@@ -309,10 +312,14 @@ def _restricao_fresca(result: LookupResult) -> bool:
 def _lookup_placa(placa: str) -> LookupResult:
     """O veículo vem da OS do tenant, se houver; a restrição vem do cache e vence em 30 dias.
 
+    Com `APIPLACAS_ENABLED=False` (padrão) só vale a OS do tenant, sem restrição.
+
     Restrição vencida ou ausente reconsulta a API, mesmo com OS no banco. Se a API falhar,
     fica a restrição antiga, com o `consultado_em` antigo.
     """
     from_os = _db_first_placa(placa)
+    if not settings.APIPLACAS_ENABLED:  # sem rede e sem cache: não há restrição para guardar
+        return from_os or _miss("none")
     key = cache_key("placa", placa)
     cached: LookupResult | None = cache.get(key)
     if cached is None or not _restricao_fresca(cached):

@@ -1,8 +1,8 @@
-import { act, renderHook, waitFor } from "@testing-library/react"
+import { act, render, renderHook, screen, waitFor } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { apiFetch } from "@/lib/api"
-import { usePlacaLookup } from "./PlacaLookup"
+import { SinespHint, usePlacaLookup } from "./PlacaLookup"
 
 vi.mock("@/lib/api", () => ({ apiFetch: vi.fn() }))
 
@@ -45,5 +45,25 @@ describe("usePlacaLookup", () => {
     act(() => result.current.reset())
     expect(result.current.restricao).toBeNull()
     expect(result.current.notFound).toBe(false)
+  })
+})
+
+describe("SinespHint", () => {
+  const TEXTO = "Roubo/furto: confira no app Sinesp Cidadão."
+
+  it("só aparece depois que uma consulta de placa rodou", async () => {
+    vi.mocked(apiFetch).mockResolvedValue({ found: false, source: "none", fields: {}, unmatched: [] })
+    const { result } = setup()
+    const hint = render(<SinespHint searched={result.current.searched} />)
+    expect(screen.queryByText(TEXTO)).toBeNull()
+
+    act(() => result.current.lookup("ABC1D23"))
+    await waitFor(() => expect(result.current.searched).toBe(true))
+    hint.rerender(<SinespHint searched={result.current.searched} />)
+    expect(screen.getByText(TEXTO)).toBeTruthy()
+
+    act(() => result.current.reset())
+    hint.rerender(<SinespHint searched={result.current.searched} />)
+    expect(screen.queryByText(TEXTO)).toBeNull()
   })
 })

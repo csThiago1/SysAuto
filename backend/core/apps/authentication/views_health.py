@@ -35,7 +35,7 @@ class _HealthzResponseSerializer(serializers.Serializer):
 def _api_placas_saldo() -> dict[str, object] | None:
     """Saldo de consultas da API Placas, cacheado por 1 h. `None` sem token ou se falhar."""
     token = settings.APIPLACAS_TOKEN
-    if not token:
+    if not settings.APIPLACAS_ENABLED or not token:
         return None
     try:
         saldo = cache.get(SALDO_KEY)
@@ -73,14 +73,17 @@ def healthz(request: Request) -> Response:
         checks["cache"] = "error"
 
     # API Placas
-    checks["api_placas"] = (
-        "configured" if getattr(settings, "APIPLACAS_TOKEN", "") else "not_configured"
-    )
+    if not settings.APIPLACAS_ENABLED:
+        checks["api_placas"] = "disabled"
+    else:
+        checks["api_placas"] = (
+            "configured" if getattr(settings, "APIPLACAS_TOKEN", "") else "not_configured"
+        )
 
     # Email (Resend)
     checks["email"] = "configured" if getattr(settings, "RESEND_API_KEY", "") else "not_configured"
 
-    all_ok = all(v in ("ok", "configured") for v in checks.values())
+    all_ok = all(v in ("ok", "configured", "disabled") for v in checks.values())
     # Informativo: o saldo nunca muda o status HTTP.
     saldo = _api_placas_saldo()
     if saldo is not None:

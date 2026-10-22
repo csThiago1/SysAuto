@@ -21,6 +21,7 @@ import { ColorSelect } from "../[numero]/_components/shared/ColorSelect"
 import { VehicleCatalogPicker } from "@/components/vehicle/VehicleCatalogPicker"
 import {
   RestricaoAlert,
+  SinespHint,
   keepYearManufacture,
   placaPrefill,
   usePlacaLookup,
@@ -300,6 +301,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
               )}
             </div>
             <RestricaoAlert restricao={placa.restricao} />
+            <SinespHint searched={placa.searched} />
 
             <Controller
               name="catalog_selection"

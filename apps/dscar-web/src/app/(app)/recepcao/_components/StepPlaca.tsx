@@ -8,6 +8,7 @@ import { useServiceOrders } from "@/hooks/useServiceOrders";
 import { VehicleCatalogPicker } from "@/components/vehicle/VehicleCatalogPicker";
 import {
   RestricaoAlert,
+  SinespHint,
   keepYearManufacture,
   placaPrefill,
   usePlacaLookup,
@@ -85,6 +86,8 @@ export function StepPlaca(): React.ReactElement {
       </div>
 
       <RestricaoAlert restricao={placa.restricao} />
+
+      <SinespHint searched={placa.searched} />
 
       {osAberta && (
         <Link

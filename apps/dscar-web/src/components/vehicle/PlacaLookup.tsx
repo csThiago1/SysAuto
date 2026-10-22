@@ -31,6 +31,8 @@ export function usePlacaLookup(onFound: (fields: PlacaFields) => void) {
     /** Esquece a última consulta (form novo não herda restrição de outra placa). */
     reset: () => setKey(null),
     isFetching: query.isFetching,
+    /** Já rodou uma consulta (achou ou não): libera o `SinespHint`. */
+    searched: query.isFetched,
     notFound: data?.found === false || query.isError,
     restricao: data?.found ? data.fields.restricao : null,
   }
@@ -78,6 +80,16 @@ export function RestricaoAlert({ restricao }: { restricao: PlacaFields["restrica
     >
       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
       <span>Restrição na placa: {restricao.situacao}</span>
+    </p>
+  )
+}
+
+/** A placa não traz mais alerta de roubo/furto (API paga desligada): aponta o app oficial. */
+export function SinespHint({ searched }: { searched: boolean }) {
+  if (!searched) return null
+  return (
+    <p className="text-xs text-muted-foreground">
+      Roubo/furto: confira no app Sinesp Cidadão.
     </p>
   )
 }

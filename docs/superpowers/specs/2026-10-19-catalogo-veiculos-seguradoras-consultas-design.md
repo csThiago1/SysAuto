@@ -139,6 +139,7 @@ primeiro dado real.
 | Nível de modelo | Com família: montadora → modelo (família, ex.: Onix) → versão FIPE → ano. A família é derivada do nome FIPE, com uma tabela de exceções |
 | Versão desconhecida | A OS pode ser salva só com montadora e família, com selo "versão a confirmar". Não entra em produção até confirmar |
 | Seguradora × CNPJ | Uma seguradora (marca, com logo) aceita vários CNPJs e casa pela raiz. A nota sai no CNPJ que veio no orçamento da seguradora |
+| Placa só gratuita (22/10/2026) | A API Placas fica desligada (`APIPLACAS_ENABLED=False`) e a placa busca só no histórico de OS do tenant. O alerta automático de roubo/furto deixa de existir; no lugar, a tela mostra "Roubo/furto: confira no app Sinesp Cidadão." Não há API gratuita de placa. Com a chave ligada de novo, o comportamento anterior volta |
 
 ## Objetivos, não objetivos e antiobjetivos
 
@@ -373,7 +374,7 @@ CHAINS = {
 | CNPJ | CNPJá aberto (`open.cnpja.com`, 5 req/min medido, aceita alfanumérico) | Minha Receita/BrasilAPI, CNPJ.ws (3/min) | tempo real | R$ 0 |
 | Inscrição estadual | `inscricoes_estaduais` da CNPJ.ws, quando vier | digitada com máscara e DV do AM; "ISENTO" válido | tempo real + validação local | R$ 0 |
 | CPF | validação local do DV | botão "Conferir na Receita" (abre o site oficial) | local | R$ 0 |
-| Placa → veículo + código FIPE | API Placas (wdapi2), `fipe.dados[]` de maior score | seletor manual | tempo real, banco antes | R$ 0,03/consulta |
+| Placa → veículo + código FIPE | API Placas (wdapi2), `fipe.dados[]` de maior score. **Desligada desde 22/10/2026** (`APIPLACAS_ENABLED=False`): a placa busca só a última OS do tenant | seletor manual | tempo real, banco antes | R$ 0,03/consulta (só com a API ligada) |
 | Chassi (VIN) | decode local do WMI (montadora) e do 10º caractere (ano-modelo) | — | local | R$ 0 |
 | RENAVAM | validação local do DV | — | local | R$ 0 |
 

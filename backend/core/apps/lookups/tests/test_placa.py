@@ -50,7 +50,9 @@ def seed_restricao(days_ago: int) -> str:
 class PlacaLookupTest(TenantTestCase):
     def setUp(self) -> None:
         super().setUp()
-        self.enterContext(override_settings(APIPLACAS_TOKEN=TOKEN, CACHES=LOCMEM))
+        self.enterContext(
+            override_settings(APIPLACAS_ENABLED=True, APIPLACAS_TOKEN=TOKEN, CACHES=LOCMEM)
+        )
         cache.clear()
         load_fipex(SAMPLE, ref="2026-10")
 
@@ -180,11 +182,62 @@ class PlacaLookupTest(TenantTestCase):
         assert cache.get(cache_key("placa", PLACA)) is None
 
 
+class PlacaDesligadaTest(TenantTestCase):
+    """`APIPLACAS_ENABLED` é False por padrão: a placa só olha o histórico de OS do tenant."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        # token presente de propósito: só o flag desliga a API
+        self.enterContext(override_settings(APIPLACAS_TOKEN=TOKEN, CACHES=LOCMEM))
+        cache.clear()
+        load_fipex(SAMPLE, ref="2026-10")
+
+    @respx.mock
+    def test_api_desligada_nao_chama_rede(self) -> None:
+        route = respx.get(URL).mock(return_value=Response(200, json=fixture("ok")))
+        r = lookup("placa", PLACA)
+        assert r == {"found": False, "source": "none", "fields": {}, "unmatched": []}
+        assert route.call_count == 0
+        assert cache.get(cache_key("placa", PLACA)) is None
+        assert not any(k.startswith("lookup:placa:") for k in cache._cache)  # type: ignore[attr-defined]
+
+    @respx.mock
+    def test_api_desligada_ignora_restricao_em_cache(self) -> None:
+        seed_restricao(days_ago=1)
+        route = respx.get(URL).mock(return_value=Response(200, json=fixture("ok")))
+        r = lookup("placa", PLACA)
+        assert r["found"] is False and r["source"] == "none"
+        assert route.call_count == 0
+
+    @respx.mock
+    def test_api_desligada_usa_os_do_tenant(self) -> None:
+        route = respx.get(URL).mock(return_value=Response(200, json=fixture("ok")))
+        version = VehicleYearVersion.objects.get(modelo__codigo_fipe="002112-1", ano=2021)
+        ServiceOrder.objects.create(
+            number=9702,
+            plate=PLACA,
+            customer_name="Cliente Placa",
+            catalog_family=version.modelo.familia,
+            catalog_version=version,
+            color="PRATA",
+            year_manufacture=2020,
+        )
+        r = lookup("placa", PLACA)
+        assert r["found"] is True and r["source"] == "os"
+        assert r["fields"]["restricao"] is None
+        assert r["fields"]["vehicle"]["version"]["id"] == version.pk
+        assert r["fields"]["color"] == {"value": "PRATA", "label": "Prata"}
+        assert route.call_count == 0
+        assert not any(k.startswith("lookup:placa:") for k in cache._cache)  # type: ignore[attr-defined]
+
+
 class HealthSaldoTest(TenantTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.enterContext(
-            override_settings(APIPLACAS_TOKEN=TOKEN, RESEND_API_KEY="r", CACHES=LOCMEM)
+            override_settings(
+                APIPLACAS_ENABLED=True, APIPLACAS_TOKEN=TOKEN, RESEND_API_KEY="r", CACHES=LOCMEM
+            )
         )
         cache.clear()
         self.client = APIClient()

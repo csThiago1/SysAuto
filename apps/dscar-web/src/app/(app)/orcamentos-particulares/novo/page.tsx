@@ -19,6 +19,7 @@ import { catalogSelectionSchema } from "@/components/vehicle/catalog.schema"
 import { VehicleCatalogPicker } from "@/components/vehicle/VehicleCatalogPicker"
 import {
   RestricaoAlert,
+  SinespHint,
   keepYearManufacture,
   placaPrefill,
   usePlacaLookup,
@@ -216,6 +217,7 @@ export default function NovoBudgetPage() {
             )}
           </div>
           <RestricaoAlert restricao={placa.restricao} />
+          <SinespHint searched={placa.searched} />
 
           <Controller
             name="catalog_selection"
