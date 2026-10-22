@@ -6,7 +6,12 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useServiceOrders } from "@/hooks/useServiceOrders";
 import { VehicleCatalogPicker } from "@/components/vehicle/VehicleCatalogPicker";
-import { RestricaoAlert, placaPrefill, usePlacaLookup } from "@/components/vehicle/PlacaLookup";
+import {
+  RestricaoAlert,
+  keepYearManufacture,
+  placaPrefill,
+  usePlacaLookup,
+} from "@/components/vehicle/PlacaLookup";
 import { applyIfEmpty } from "@/lib/prefill";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -101,9 +106,11 @@ export function StepPlaca(): React.ReactElement {
           <VehicleCatalogPicker
             value={field.value ?? null}
             onChange={(sel) => {
+              setValue(
+                "year_manufacture",
+                keepYearManufacture(field.value, sel, form.getValues("year_manufacture")),
+              );
               field.onChange(sel);
-              // ponytail: o ano de fabricação é do veículo anterior; sem campo para corrigi-lo
-              setValue("year_manufacture", null);
             }}
             error={formState.errors.catalog_selection?.message}
           />

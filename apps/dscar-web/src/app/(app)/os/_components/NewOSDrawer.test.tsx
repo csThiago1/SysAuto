@@ -48,6 +48,12 @@ function api(url: string): unknown {
   if (url.includes("/lookups/placa/")) return PLACA
   if (url.includes("/vehicle-catalog/makes/")) return page([{ id: 2, label: "Fiat" }])
   if (url.includes("/vehicle-catalog/families/")) return page([{ id: 20, label: "Uno" }])
+  if (url.includes("/vehicle-catalog/models/")) return page([{ id: 100, label: "ONIX SED. Plus 1.0" }])
+  if (url.includes("/vehicle-catalog/years/"))
+    return page([
+      { id: 1000, label: "2025 Flex" },
+      { id: 1001, label: "2022 Flex" },
+    ])
   if (url.includes("/service-orders/")) return { id: "os-1", number: 501 }
   return {}
 }
@@ -122,5 +128,48 @@ describe("NewOSDrawer — veículo pelo seletor", () => {
     await waitFor(() => expect(screen.getByDisplayValue("Preta")).toBeInTheDocument())
     expect(screen.getByLabelText("Montadora")).toHaveTextContent("Fiat")
     expect(screen.getByLabelText("Modelo")).toHaveTextContent("Uno")
+  })
+
+  describe("placa só com a família", () => {
+    beforeEach(() => {
+      const soFamilia = {
+        ...PLACA,
+        fields: { ...PLACA.fields, vehicle: { ...PLACA.fields.vehicle, model: null, version: null } },
+      }
+      vi.mocked(apiFetch).mockImplementation(
+        async (url) => (String(url).includes("/lookups/placa/") ? soFamilia : api(String(url))) as never,
+      )
+    })
+
+    async function placaEVersao(ano: string) {
+      const user = userEvent.setup()
+      renderDrawer()
+      await user.type(screen.getByTestId("plate-input"), "ABC1D23")
+      await user.tab()
+      await waitFor(() => expect(screen.getByLabelText("Modelo")).toHaveTextContent("Onix Plus"))
+      await user.click(screen.getByLabelText("Versão"))
+      await user.click(await screen.findByRole("option", { name: "ONIX SED. Plus 1.0" }))
+      await user.click(screen.getByLabelText("Ano"))
+      await user.click(await screen.findByRole("option", { name: ano }))
+      await user.click(screen.getByRole("button", { name: "Escolher cliente" }))
+      await user.click(screen.getByTestId("criar-os-btn"))
+      await waitFor(() => expect(postCall()).toBeDefined())
+      return JSON.parse(String(postCall()?.[1]?.body)) as Record<string, unknown>
+    }
+
+    it("completar versão e ano mantém o ano de fabricação da placa", async () => {
+      expect(await placaEVersao("2025 Flex")).toMatchObject({
+        catalog_family: 10,
+        catalog_version: 1000,
+        year_manufacture: 2024,
+      })
+    })
+
+    it("versão de ano-modelo incompatível zera o ano de fabricação", async () => {
+      expect(await placaEVersao("2022 Flex")).toMatchObject({
+        catalog_version: 1001,
+        year_manufacture: null,
+      })
+    })
   })
 })

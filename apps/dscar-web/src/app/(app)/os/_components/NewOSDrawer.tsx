@@ -19,7 +19,12 @@ import { CustomerSearch } from "../[numero]/_components/shared/CustomerSearch"
 import { InsurerSelect } from "../[numero]/_components/shared/InsurerSelect"
 import { ColorSelect } from "../[numero]/_components/shared/ColorSelect"
 import { VehicleCatalogPicker } from "@/components/vehicle/VehicleCatalogPicker"
-import { RestricaoAlert, placaPrefill, usePlacaLookup } from "@/components/vehicle/PlacaLookup"
+import {
+  RestricaoAlert,
+  keepYearManufacture,
+  placaPrefill,
+  usePlacaLookup,
+} from "@/components/vehicle/PlacaLookup"
 import { applyIfEmpty } from "@/lib/prefill"
 import { ApiError, handleApiFormError } from "@/lib/api"
 import { formatPlate } from "@paddock/utils"
@@ -279,9 +284,11 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                 <VehicleCatalogPicker
                   value={field.value ?? null}
                   onChange={(sel) => {
+                    setValue(
+                      "year_manufacture",
+                      keepYearManufacture(field.value, sel, form.getValues("year_manufacture")),
+                    )
                     field.onChange(sel)
-                    // ponytail: o ano de fabricação é do veículo anterior; sem campo para corrigi-lo
-                    setValue("year_manufacture", null)
                   }}
                   error={errors.catalog_selection?.message}
                 />

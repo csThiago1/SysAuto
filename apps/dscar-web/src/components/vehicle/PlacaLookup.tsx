@@ -41,6 +41,29 @@ export function placaPrefill(fields: PlacaFields, current: CatalogSelection | nu
   return { color, catalog_selection: fields.vehicle, year_manufacture: fields.year_manufacture }
 }
 
+/** Ano-modelo pelo rótulo da versão ("2025 Flex", "Zero km Flex"); mesma regra do backend. */
+function versionYear(label: string): number | null {
+  if (label.startsWith("Zero km")) return new Date().getFullYear()
+  const m = /^\d{4}/.exec(label)
+  return m ? Number(m[0]) : null
+}
+
+/**
+ * Ano de fabricação depois de uma troca no seletor. Completar o mesmo veículo (modelo, versão,
+ * ano) mantém o da placa; outra montadora/família, ou versão cujo ano-modelo não é ym nem ym+1, zera.
+ */
+export function keepYearManufacture(
+  prev: CatalogSelection | null | undefined,
+  next: CatalogSelection | null,
+  ym: number | null | undefined,
+): number | null {
+  if (ym == null || !prev || !next || next.make.id !== prev.make.id) return null
+  if (prev.family && next.family?.id !== prev.family.id) return null
+  if (!next.version) return ym
+  const y = versionYear(next.version.label)
+  return y === ym || y === ym + 1 ? ym : null
+}
+
 export function RestricaoAlert({ restricao }: { restricao: PlacaFields["restricao"] }) {
   if (restricao?.tem_restricao !== true) return null
   return (

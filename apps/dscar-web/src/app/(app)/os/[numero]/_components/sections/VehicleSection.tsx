@@ -14,7 +14,12 @@ import {
 import { ColorSelect } from "../shared/ColorSelect"
 import { VehicleHistorySheet } from "../shared/VehicleHistorySheet"
 import { VehicleCatalogPicker } from "@/components/vehicle/VehicleCatalogPicker"
-import { RestricaoAlert, placaPrefill, usePlacaLookup } from "@/components/vehicle/PlacaLookup"
+import {
+  RestricaoAlert,
+  keepYearManufacture,
+  placaPrefill,
+  usePlacaLookup,
+} from "@/components/vehicle/PlacaLookup"
 import { applyIfEmpty } from "@/lib/prefill"
 
 interface VehicleSectionProps {
@@ -124,9 +129,12 @@ export function VehicleSection({ form, order, hideHeading }: VehicleSectionProps
           <VehicleCatalogPicker
             value={field.value ?? null}
             onChange={(sel) => {
+              setValue(
+                "year_manufacture",
+                keepYearManufacture(field.value, sel, form.getValues("year_manufacture")),
+                { shouldDirty: true },
+              )
               field.onChange(sel)
-              // ponytail: o ano de fabricação é do veículo anterior; sem campo para corrigi-lo
-              setValue("year_manufacture", null, { shouldDirty: true })
             }}
             sourceText={order.vehicle_source_text || undefined}
             error={errors.catalog_selection?.message}
