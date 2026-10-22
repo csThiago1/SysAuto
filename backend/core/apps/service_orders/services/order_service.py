@@ -158,7 +158,11 @@ class _ServiceOrderCoreMixin:
         if customer_uuid is not None:
             data["customer_uuid"] = customer_uuid
 
-        old_vehicle = (order.catalog_family_id, order.catalog_version_id, order.chassis)
+        old_vehicle = (
+            order.catalog_family_id,
+            order.catalog_version_id,
+            order.chassis.strip().upper(),  # só caixa/espaço não é chassi novo
+        )
         # Par familia/versao resultante, calculado antes de aplicar o payload na OS
         catalog_changed = bool(CATALOG_KEYS & data.keys())
         if catalog_changed:
@@ -354,7 +358,11 @@ class _ServiceOrderCoreMixin:
                     version=order.catalog_version,
                     family=order.catalog_family,
                 )
-        if (order.catalog_family_id, order.catalog_version_id, order.chassis) != old_vehicle:
+        if (
+            order.catalog_family_id,
+            order.catalog_version_id,
+            order.chassis.strip().upper(),
+        ) != old_vehicle:
             _learn_chassis(order)  # PATCH que não mexe no par nem no chassi não conta
 
         # Criar um log por grupo que teve alteracoes

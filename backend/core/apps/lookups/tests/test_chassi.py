@@ -85,7 +85,11 @@ class ChassiLookupTest(TenantTestCase):
         pk = self.post_os(catalog_version=self.sprinter.id, chassis=CHASSI).data["id"]
         assert self.regra().confirmacoes == 1
 
-        for data in ({"notes": "cliente ligou"}, {"catalog_version": self.sprinter.id}):
+        for data in (
+            {"notes": "cliente ligou"},
+            {"catalog_version": self.sprinter.id},
+            {"chassis": CHASSI.lower()},  # só a caixa mudou: mesmo chassi
+        ):
             p = self.client.patch(f"{OS_URL}{pk}/", data, format="json")
             assert p.status_code == 200, p.data
             assert self.regra().confirmacoes == 1
