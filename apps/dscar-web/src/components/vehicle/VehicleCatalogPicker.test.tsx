@@ -54,6 +54,22 @@ describe("VehicleCatalogPicker", () => {
     expect(vi.mocked(apiFetch).mock.calls[0][0]).toContain("tipo=carro")
   })
 
+  it("escolher de novo a mesma montadora não limpa modelo, versão e ano", async () => {
+    vi.mocked(apiFetch).mockResolvedValue(
+      page([
+        { id: 1, label: "Chevrolet" },
+        { id: 2, label: "Fiat" },
+      ]),
+    )
+    const onChange = vi.fn()
+    const user = userEvent.setup()
+    wrap(<VehicleCatalogPicker value={FULL} onChange={onChange} />)
+    await user.click(screen.getByLabelText("Montadora"))
+    await user.click(await screen.findByRole("option", { name: "Chevrolet" }))
+    await waitFor(() => expect(screen.queryByRole("option")).toBeNull())
+    expect(onChange).not.toHaveBeenCalled()
+  })
+
   it("família sem versão mostra 'Versão a confirmar'", () => {
     const { rerender } = wrap(
       <VehicleCatalogPicker value={{ ...FULL, model: null, version: null }} onChange={vi.fn()} />,

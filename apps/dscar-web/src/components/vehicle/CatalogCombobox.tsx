@@ -78,7 +78,8 @@ export function CatalogCombobox({
               search={search}
               icon={icon}
               onSelect={(option) => {
-                onChange(option)
+                // a mesma opção de novo não muda nada (nem limpa os níveis de baixo)
+                if (option.id !== value?.id) onChange(option)
                 setOpen(false)
                 setSearch("")
               }}
