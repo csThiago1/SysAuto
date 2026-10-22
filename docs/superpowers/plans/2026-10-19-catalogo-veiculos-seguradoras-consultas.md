@@ -1842,3 +1842,130 @@ Run:
 Expected: tudo verde.
 
 - [ ] **Step 4: Commit** `feat(dscar): seguradora vira fonte única com edição só de admin e tomador fiscal por CNPJ`
+
+---
+
+# Adendo de 22/10/2026 — chassi e placa só gratuita
+
+**Pedido do dono, depois das 20 tasks:** "precisamos também de busca por chassis do veículo" e, sobre a placa, "Só gratuito". Ele também pediu uma busca gratuita ou interna no catálogo para o chassi, além de achar OS pelo chassi e de o chassi preencher o veículo.
+
+**Muda a decisão da spec.** Na tabela "Fontes por tipo", a placa era "API Placas, R$ 0,03/consulta". Agora a API Placas fica desligada por configuração, e a placa passa a buscar só no histórico de OS do tenant. O alerta automático de roubo/furto deixa de existir, e no lugar entra um aviso fixo para conferir no app Sinesp Cidadão. Não existe API gratuita de placa: o SINESP não publica uma, e as bibliotecas que o consultam funcionam por engenharia reversa do app.
+
+**Chassi, sempre gratuito e na ordem abaixo:**
+1. Última OS do tenant com o mesmo chassi (veículo completo).
+2. Regra aprendida no catálogo: `VehicleAlias(source="chassi")` com chave `alias_key(chassi[:8], ano_modelo)`.
+   - Os 8 primeiros caracteres são o WMI mais o VDS e identificam o modelo de fábrica, não o carro.
+   - A regra nasce quando uma OS com chassi válido fica com a versão confirmada pela tela.
+   - Ela passa a "exata" com 2 confirmações iguais, ou com aprovação do admin.
+3. Decodificação local: a montadora vem do WMI e o ano-modelo do 10º caractere.
+
+Nenhuma fonte externa é usada.
+
+### Task 21: Placa só gratuita
+
+**Files:**
+- Modify:
+  - `backend/core/config/settings/base.py:400-403`: acrescentar `APIPLACAS_ENABLED = config("APIPLACAS_ENABLED", default=False, cast=bool)`, e a mesma chave no `.env.example`;
+  - `apps/lookups/service.py`: `_chain` e `_lookup_placa`;
+  - `apps/authentication/views_health.py`.
+- Modify: `apps/dscar-web/src/components/vehicle/PlacaLookup.tsx`. Acrescentar `SinespHint` e usá-lo nas 4 telas que já usam o `PlacaLookup` (NewOSDrawer, StepPlaca, VehicleSection e orçamento particular).
+- Modify:
+  - `docs/superpowers/specs/2026-10-19-catalogo-veiculos-seguradoras-consultas-design.md`: uma nota datada em "Decisões do dono" e na tabela "Fontes por tipo";
+  - este plano: item 20 dos Desvios.
+- Test: `apps/lookups/tests/test_placa.py`, o teste do health em `apps/authentication/tests/` e `PlacaLookup.test.tsx`.
+
+**Interfaces:**
+- Produces:
+  - com `APIPLACAS_ENABLED=False`, `lookup("placa", ...)` nunca faz chamada HTTP e não lê nem grava o cache de placa;
+    - devolve o DB-first da OS (`source="os"`, `restricao=None`), ou `found: False` com `source="none"`;
+  - com `True`, o comportamento atual continua igual;
+  - o health, com a API desligada, reporta `checks["api_placas"] = "disabled"`, conta como ok e não consulta o saldo;
+  - o componente `SinespHint` mostra o texto "Roubo/furto: confira no app Sinesp Cidadão." abaixo do campo de placa, sempre que uma consulta de placa já rodou.
+
+- [ ] **Step 1: Escrever os testes**
+  - `test_api_desligada_nao_chama_rede`: com respx sem rotas (qualquer chamada falha), dá `found: False`, `source == "none"`, e nenhuma chave `lookup:placa:*` no cache;
+  - `test_api_desligada_usa_os_do_tenant`: devolve o veículo da OS, com `restricao` None;
+  - `test_api_ligada_continua_igual`: um teste existente com `override_settings(APIPLACAS_ENABLED=True)`;
+  - `test_health_api_desligada_200_sem_saldo`: o health responde 200, e a rota de saldo não é chamada;
+  - vitest: `SinespHint` aparece depois da consulta e não aparece antes.
+- [ ] **Step 2: Rodar e ver falhar → implementar → rodar.** Use `docker exec paddock_django timeout 1800 pytest apps/lookups apps/authentication -q` e, no front, `npx vitest run src/components/vehicle` mais `npm run typecheck`.
+- [ ] **Step 3: Commit** `feat(dscar): consulta de placa só gratuita, com a API Placas desligada por padrão`
+
+### Task 22: Chassi no backend — busca de OS e consulta gratuita com regra aprendida
+
+**Files:**
+- Modify: as buscas.
+  - `apps/service_orders/views/orders.py:181`: `search_fields` ganha `"chassis"`;
+  - `apps/budgets/views.py:36`: `search_fields` ganha `"vehicle_chassis"`.
+- Modify: a consulta por chassi.
+  - `apps/lookups/service.py`: `Kind`, `_clean_key`, `lookup` e o novo `_lookup_chassi`;
+  - `apps/lookups/urls.py`: a regex passa a `cep|cnpj|placa|chassi`;
+  - `apps/lookups/validators.py`: `decode_vin` ganha `tipo_hint` (`"moto"` para os WMI `9C2` e `9C6`, senão `"carro"`).
+- Modify:
+  - `apps/vehicle_catalog/models.py`: `VehicleAlias.Source` ganha `CHASSI = "chassi", "Chassi"`, com migration só de choices;
+  - `apps/vehicle_catalog/matching.py`: nova função `vin_rule_key(vin: str) -> str | None`.
+- Modify: `apps/service_orders/services/order_service.py`, nos pontos de `create` (≈96) e `update` (≈319), para gravar o aprendizado.
+- Test: `apps/lookups/tests/test_chassi.py` e `apps/service_orders/tests/test_chassi_search.py`.
+
+**Interfaces:**
+- Produces:
+  - `vin_rule_key(vin) -> str | None` = `alias_key(vin[:8], decode_vin(vin).model_year)`, ou `None` quando o VIN é inválido ou não tem ano;
+  - `lookup("chassi", vin) -> LookupResult` com `fields = {"vehicle": catalog_path | None, "color": {value,label} | None, "year_manufacture": int | None, "ano_modelo": int | None, "confianca": "exata" | "alta" | None}`. O campo `source` diz de onde veio:
+    - `"os"`: a última OS ativa do tenant com `chassis__iexact` e `catalog_family`;
+    - `"regra"`: um `VehicleAlias` de `source="chassi"` com aquela chave e alvo ativo. A confiança é `"exata"` se `is_exact`, senão `"alta"`;
+    - `"vin"`: só a make ativa cujo `display_name` normalizado é igual a `decode_vin(vin).make_hint`, com o tipo vindo de `tipo_hint` e carro como padrão, mais o `ano_modelo`;
+    - `"none"`: nada casou. Com VIN inválido, `found` é False e `source` é `"invalid"`;
+  - a consulta não usa cache nem fonte externa e é sempre 200. O chassi nunca aparece em log;
+  - **aprendizado:** chama `record_alias_confirmation("chassi", chassis[:8], model_year, version=order.catalog_version, family=order.catalog_family)` quando, depois de `create` ou `update`:
+    - a OS tem `catalog_version`;
+    - `vehicle_needs_review` é False;
+    - o `chassis` é um VIN válido;
+    - e, no `update`, o par do catálogo ou o chassi mudou.
+
+    PATCH que não mexe em veículo nem em chassi não conta.
+
+- [ ] **Step 1: Escrever os testes** (`TenantTestCase`; a carga vai no `setUp`, como manda o adendo das constraints)
+  - `test_busca_os_por_final_do_chassi`: `GET /service-orders/?search=254082` acha a OS com chassi `8AC907655SE254082`;
+  - `test_busca_orcamento_por_chassi`;
+  - `test_chassi_da_os_anterior`: `source == "os"`, com o caminho completo;
+  - `test_regra_aprendida`:
+    - uma OS criada pela tela com a versão 021506-6 (Sprinter 2025) e o chassi `8AC907655SE254082`;
+    - um `lookup` de `8AC90765XSE999999` (outro carro, mesmo prefixo e mesmo ano) dá `source == "regra"` e `confianca == "alta"`;
+    - depois de uma segunda OS confirmada, dá `"exata"`;
+  - `test_patch_sem_veiculo_nao_conta_confirmacao`;
+  - `test_decodificacao_local`: um chassi `8AC...S...` sem histórico dá `source == "vin"`, a make "Mercedes-Benz" do tipo carro e `ano_modelo == 2025`;
+  - `test_wmi_de_moto_escolhe_make_moto`: `9C2...` dá a make Honda do tipo moto;
+  - `test_vin_invalido_200`: dá `found` False e `source == "invalid"`;
+  - `test_chassi_fora_do_log`: o caplog não contém o chassi.
+- [ ] **Step 2: Rodar e ver falhar → implementar → rodar** com `docker exec paddock_django timeout 1800 pytest apps/lookups apps/vehicle_catalog/tests/test_matching.py apps/service_orders/tests/test_chassi_search.py apps/service_orders/tests/test_catalog_vehicle.py -q`.
+- [ ] **Step 3: Commit** `feat(dscar): busca de OS pelo chassi e consulta gratuita que aprende o modelo pelo chassi`
+
+### Task 23: Chassi nas telas
+
+**Files:**
+- Modify:
+  - `apps/dscar-web/src/hooks/useLookup.ts` e `components/vehicle/catalog.schema.ts`: kind `"chassi"`, com o schema Zod dos `fields` da Task 22;
+  - `components/vehicle/PlacaLookup.tsx`: generalizar `usePlacaLookup` para `useVehicleLookup(kind: "placa" | "chassi", onFound)`, mantendo o padrão de nonce e o `reset`. Sem duplicar o hook.
+- Modify: o campo de chassi passa a consultar no blur, quando tem 17 caracteres válidos.
+  - `app/(app)/os/_components/NewOSDrawer.tsx`;
+  - `app/(app)/recepcao/_components/StepPlaca.tsx`;
+  - `app/(app)/os/[numero]/_components/sections/VehicleSection.tsx`;
+  - `app/(app)/orcamentos-particulares/novo/page.tsx`.
+- Modify: `app/(app)/os/page.tsx:243`: o placeholder passa a "Buscar OS (placa, chassi, nº, cliente)...".
+- Test: `components/vehicle/PlacaLookup.test.tsx` (ampliar) e `app/(app)/os/_components/NewOSDrawer.test.tsx` (ampliar).
+
+**Interfaces:**
+- Consumes: Task 22.
+- Produces: no blur do chassi, `applyIfEmpty` / `placaPrefill` preenchem a seleção do catálogo e a cor, e `keepYearManufacture` preenche o ano de fabricação. Nunca sobrescreve o que já foi escolhido.
+  - Com `source="vin"`, só a montadora é pré-selecionada (família vazia), com a dica "Pelo chassi: <Montadora>, ano-modelo <ano>".
+  - Com `source="regra"` e confiança `"alta"`, a versão vem pré-selecionada, com a dica "Sugerido pelo chassi — confirme a versão".
+
+- [ ] **Step 1: Escrever os testes**
+  - o hook com `"chassi"` chama `POST /api/proxy/lookups/chassi/` com o chassi no corpo;
+  - NewOSDrawer:
+    - um resultado `os` preenche o picker;
+    - um resultado `vin` pré-seleciona só a montadora;
+    - nada sobrescreve uma família já escolhida;
+    - um chassi com menos de 17 caracteres não consulta.
+- [ ] **Step 2: Rodar e ver falhar → implementar → rodar** com `npx vitest run src/components/vehicle src/app/\(app\)/os src/app/\(app\)/recepcao src/app/\(app\)/orcamentos-particulares` mais `npm run typecheck`. Antes, rode `make gen-api-types` se o OpenAPI mudou.
+- [ ] **Step 3: Commit** `feat(dscar): chassi preenche o veículo nas telas de OS, recepção e orçamento`
