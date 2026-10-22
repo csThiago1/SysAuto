@@ -1,6 +1,7 @@
 """OS grava família e versão do catálogo; o texto do veículo é snapshot do servidor."""
 
 import hashlib
+from decimal import Decimal
 from typing import Any
 
 from django.utils import timezone
@@ -42,6 +43,14 @@ class CatalogVehicleOSTest(TenantTestCase):
 
     def patch_os(self, pk: str, **data: Any) -> Response:
         return self.client.patch(f"{URL}{pk}/", data, format="json")
+
+    def legacy_os(self, **text: Any) -> ServiceOrder:
+        """OS de antes do catálogo: só texto, sem família (a API não abre mais assim)."""
+        r = self.post_os(catalog_family=make_catalog().modelo.familia_id)
+        ServiceOrder.objects.filter(pk=r.data["id"]).update(
+            catalog_family=None, catalog_version=None, vehicle_needs_review=False, **text
+        )
+        return ServiceOrder.objects.get(pk=r.data["id"])
 
     def test_com_versao_preenche_snapshot_e_sem_selo(self) -> None:
         v = make_catalog()
@@ -140,11 +149,11 @@ class CatalogVehicleOSTest(TenantTestCase):
 
     def test_propaga_para_outra_os_da_mesma_placa(self) -> None:
         primeira = self.post_os(catalog_family=make_catalog().modelo.familia_id)
-        segunda = self.post_os(make="Chevrolet", model="Onix")
+        segunda = self.legacy_os(make="Chevrolet", model="Onix")
         v = VehicleYearVersion.objects.get(modelo__codigo_fipe="004504-7")
         p = self.patch_os(primeira.data["id"], catalog_version=v.id, year_manufacture=2024)
         assert p.status_code == 200, p.data
-        o = ServiceOrder.objects.get(pk=segunda.data["id"])
+        o = ServiceOrder.objects.get(pk=segunda.pk)
         assert o.catalog_family == v.modelo.familia and o.catalog_version == v
         assert (o.model, o.year, o.fuel_type, o.year_manufacture) == (
             "Onix Plus",
@@ -157,30 +166,40 @@ class CatalogVehicleOSTest(TenantTestCase):
     def test_patch_cor_em_os_legada_nao_apaga_catalogo_da_irma(self) -> None:
         v = make_catalog()
         nova = self.post_os(catalog_family=v.modelo.familia_id)
-        legada = self.post_os(make="Chevrolet", model="Onix")
-        p = self.patch_os(legada.data["id"], color="PRATA")
+        legada = self.legacy_os(make="Chevrolet", model="Onix")
+        p = self.patch_os(legada.pk, color="PRATA")
         assert p.status_code == 200, p.data
         o = ServiceOrder.objects.get(pk=nova.data["id"])
         assert o.color == "PRATA"
         assert o.catalog_family == v.modelo.familia and o.catalog_version is None
         assert (o.make, o.model, o.vehicle_needs_review) == ("Chevrolet", "Onix Plus", True)
 
-    def test_patch_texto_legado_propaga_so_para_irma_sem_catalogo(self) -> None:
+    def test_patch_make_texto_ignorado(self) -> None:
         nova = self.post_os(catalog_version=make_catalog().id)
-        legada = self.post_os(make="Chevrolet", model="Onix")
-        outra_legada = self.post_os(make="Chevrolet", model="Onix")
-        p = self.patch_os(legada.data["id"], make="Fiat", model="Uno")
+        legada = self.legacy_os(make="Chevrolet", model="Onix")
+        p = self.patch_os(
+            nova.data["id"], make="X", model="X", year=1999, fuel_type="X", fipe_value="1.00"
+        )
         assert p.status_code == 200, p.data
-        o = ServiceOrder.objects.get(pk=outra_legada.data["id"])
-        assert (o.make, o.model) == ("Fiat", "Uno")
         o = ServiceOrder.objects.get(pk=nova.data["id"])
-        assert (o.make, o.model, o.vehicle_needs_review) == ("Chevrolet", "Onix Plus", False)
+        assert (o.make, o.model, o.year, o.fuel_type) == ("Chevrolet", "Onix Plus", 2025, "Flex")
+        assert o.fipe_value == Decimal("98765.00")
+        p = self.patch_os(legada.pk, make="X")
+        assert p.status_code == 200, p.data
+        assert ServiceOrder.objects.get(pk=legada.pk).make == "Chevrolet"
 
-    def test_sem_catalogo_continua_aceitando_texto(self) -> None:
-        # Transição — removido na Task 16.
+    def test_sem_familia_400(self) -> None:
         r = self.post_os(make="Honda", model="Civic")
-        assert r.status_code == 201
-        assert (r.data["make"], r.data["model"], r.data["catalog_path"]) == ("Honda", "Civic", None)
+        assert r.status_code == 400
+        assert r.data["catalog_family"] == ["Escolha a montadora e o modelo."]
+        assert not ServiceOrder.objects.exists()
+
+    def test_patch_so_familia_null_400(self) -> None:
+        r = self.post_os(catalog_family=make_catalog().modelo.familia_id)
+        p = self.patch_os(r.data["id"], catalog_family=None)
+        assert p.status_code == 400
+        assert p.data["catalog_family"] == ["Escolha a montadora e o modelo."]
+        assert ServiceOrder.objects.get(pk=r.data["id"]).catalog_family is not None
 
     def test_entrega_registra_aplicacao_da_peca_na_versao(self) -> None:
         v = make_catalog()
@@ -198,7 +217,7 @@ class CatalogVehicleOSTest(TenantTestCase):
         v = make_catalog()
         make_catalog(tipo="moto", fipe_make="Chevrolet", family="Moto", codigo="811111-1")
         ref = PartReferenceFactory(manufacturer_code="52058208")
-        o = ServiceOrder.objects.get(pk=self.post_os(make="Chevrolet", model="Onix").data["id"])
+        o = self.legacy_os(make="Chevrolet", model="Onix")
         ServiceOrderPart.objects.create(
             service_order=o, description="Farol", part_number="52058208", unit_price=10
         )

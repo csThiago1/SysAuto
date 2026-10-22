@@ -295,6 +295,21 @@ export interface ClosureStatus {
 
 // ─── Entidade principal ────────────────────────────────────────────────────────
 
+export interface CatalogPathOption {
+  id: number;
+  label: string;
+  logo_url?: string;
+}
+
+/** Tipo → montadora → família → versão FIPE → ano, como o backend devolve. */
+export interface CatalogPath {
+  tipo: "carro" | "moto" | "caminhao";
+  make: CatalogPathOption;
+  family: CatalogPathOption | null;
+  model: CatalogPathOption | null;
+  version: CatalogPathOption | null;
+}
+
 export interface ServiceOrder {
   id: string;
   number: number;
@@ -348,6 +363,17 @@ export interface ServiceOrder {
   fipe_value: string | null;
   mileage_in: number | null;
   mileage_out: number | null;
+  /** Veículo do catálogo; os campos de texto acima são snapshot do servidor. */
+  catalog_family: number | null;
+  catalog_version: number | null;
+  catalog_path: CatalogPath | null;
+  /** Texto do veículo como veio da importação, só para conferência. */
+  vehicle_source_text: string;
+  year_manufacture: number | null;
+  zero_km: boolean;
+  insurer_cnpj: string;
+  /** Avisos da importação; a tela dispensa com PATCH `import_warnings: []`. */
+  import_warnings: string[];
 
   // Entrada e localização
   vehicle_location: VehicleLocation;

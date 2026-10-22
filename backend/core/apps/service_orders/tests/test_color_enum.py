@@ -13,6 +13,7 @@ from apps.items.models import NumberSequence
 from apps.persons.models import Person
 from apps.service_orders.models import ServiceOrder
 from apps.vehicle_catalog.models import PlateCache
+from apps.vehicle_catalog.tests.factories import make_catalog
 from apps.vehicle_catalog.views import _normalize_plate_response
 
 URL = "/api/v1/service-orders/"
@@ -32,7 +33,13 @@ class ColorEnumTest(TenantTestCase):
 
     def create_os(self) -> str:
         r = self.client.post(
-            URL, {"plate": "COR1D23", "customer_name": "Cliente Cor"}, format="json"
+            URL,
+            {
+                "plate": "COR1D23",
+                "customer_name": "Cliente Cor",
+                "catalog_family": make_catalog().modelo.familia_id,
+            },
+            format="json",
         )
         assert r.status_code == 201, r.data
         return str(r.data["id"])
@@ -81,7 +88,12 @@ class ColorEnumTest(TenantTestCase):
         for color, expected in (("Prata", "PRATA"), ("Furta-cor", "NAO_INFORMADA"), (None, "")):
             r = self.client.post(
                 URL,
-                {"plate": "MOB1D23", "customer_name": "Cliente Mobile", "color": color},
+                {
+                    "plate": "MOB1D23",
+                    "customer_name": "Cliente Mobile",
+                    "color": color,
+                    "catalog_family": make_catalog().modelo.familia_id,
+                },
                 format="json",
             )
             assert r.status_code == 201, r.data

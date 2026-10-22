@@ -93,9 +93,17 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
     try {
       const patch: Record<string, unknown> = {}
       for (const key of Object.keys(dirtyFields)) {
-        patch[key] = data[key as keyof ServiceOrderUpdateInput]
+        if (key === "catalog_selection") {
+          // Só o id que mudou: reenviar uma versão que saiu da FIPE (inativa) daria 400.
+          const family = data.catalog_selection?.family?.id ?? null
+          const version = data.catalog_selection?.version?.id ?? null
+          if (family !== order.catalog_family) patch.catalog_family = family
+          if (version !== order.catalog_version) patch.catalog_version = version
+        } else {
+          patch[key] = data[key as keyof ServiceOrderUpdateInput]
+        }
       }
-      const savedOrder = await updateMutation.mutateAsync(patch as ServiceOrderUpdateInput)
+      const savedOrder = await updateMutation.mutateAsync(patch)
       form.reset(buildFormDefaults(savedOrder))
       if (personDirtyData && order.customer_person_id) {
         await personUpdateMutation.mutateAsync(personDirtyData)
@@ -106,7 +114,11 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
     } catch (err) {
       if (err instanceof ApiError && err.fieldErrors) {
         for (const [field, messages] of Object.entries(err.fieldErrors)) {
-          form.setError(field as keyof ServiceOrderUpdateInput, {
+          // Ano de fabricação não tem campo próprio: o erro aparece no seletor.
+          const name = ["catalog_family", "catalog_version", "year_manufacture"].includes(field)
+            ? "catalog_selection"
+            : field
+          form.setError(name as keyof ServiceOrderUpdateInput, {
             type: "server",
             message: messages[0],
           })
@@ -124,6 +136,30 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
       // Espaco extra so quando a barra existe — nada de conteudo por baixo dela.
       className={cn("relative mx-auto max-w-6xl space-y-7 pb-14", isDirty && "pb-32")}
     >
+      {order.import_warnings?.length > 0 && (
+        <div
+          role="status"
+          className="flex items-start justify-between gap-3 rounded-md border border-warning-500/30 bg-warning-500/10 px-3 py-2 text-sm text-warning-400"
+        >
+          <ul className="list-disc space-y-0.5 pl-4">
+            {order.import_warnings.map((w, i) => (
+              <li key={i}>{w}</li>
+            ))}
+          </ul>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={updateMutation.isPending}
+            onClick={() =>
+              updateMutation.mutate({ import_warnings: [] }, { onSuccess: () => router.refresh() })
+            }
+          >
+            Dispensar
+          </Button>
+        </div>
+      )}
+
       {/* ── Atendimento ─────────────────────────────────────────────── */}
       <Panel icon={<ClipboardList className="h-4 w-4" />} title="Atendimento">
         <div className="grid grid-cols-1 gap-x-3 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -229,7 +265,7 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
       <div className="space-y-7">
       {/* ── Veículo ─────────────────────────────────────────────────── */}
       <Panel icon={<Car className="h-4 w-4" />} title="Veículo">
-        <VehicleSection form={form} osId={order.id} hideHeading />
+        <VehicleSection form={form} order={order} hideHeading />
         <div className="mt-4 grid grid-cols-6 gap-x-2 gap-y-5 border-t border-border pt-4">
           <div className="col-span-3">
             <span className={FORM_LABEL}>KM de entrada</span>

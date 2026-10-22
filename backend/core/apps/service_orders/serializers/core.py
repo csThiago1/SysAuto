@@ -34,9 +34,22 @@ from ..models import (
     StatusTransitionLog,
     TransitionOverrideRequest,
 )
-from ..services.vehicle import resulting_catalog_pair, validate_catalog_vehicle
+from ..services.vehicle import CATALOG_KEYS, resulting_catalog_pair, validate_catalog_vehicle
 
 logger = logging.getLogger(__name__)
+
+# Texto do veículo é snapshot do servidor a partir do catálogo: a API não aceita escrita.
+VEHICLE_SNAPSHOT_FIELDS = (
+    "make",
+    "make_logo",
+    "model",
+    "vehicle_version",
+    "year",
+    "fuel_type",
+    "fipe_value",
+    "vehicle_fipe_value_snapshot",
+)
+FAMILY_REQUIRED = "Escolha a montadora e o modelo."
 
 # Caches construidos uma vez no import -- evita recriar dict a cada registro serializado
 _STATUS_DISPLAY: dict[str, str] = {}
@@ -798,14 +811,11 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
             "vehicle_source_year",
             "zero_km",
             "import_warnings",
+            *VEHICLE_SNAPSHOT_FIELDS,
         ]
         extra_kwargs = {
-            # Campos opcionais do veiculo -- model tem default="" mas sem blank=True
-            "make": {"required": False, "allow_blank": True},
-            "model": {"required": False, "allow_blank": True},
-            "vehicle_version": {"required": False, "allow_blank": True},
+            # Model tem default="" mas sem blank=True
             "chassis": {"required": False, "allow_blank": True},
-            "fuel_type": {"required": False, "allow_blank": True},
             "broker_name": {"required": False, "allow_blank": True},
             "casualty_number": {"required": False, "allow_blank": True},
             "customer_name": {"required": False, "allow_blank": True},
@@ -854,64 +864,10 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {"insured_type": "Tipo de segurado e obrigatorio para OS de seguradora."}
                 )
+        # A versão traz a família junto (o servidor deriva).
+        if family is None and version is None:
+            raise serializers.ValidationError({"catalog_family": FAMILY_REQUIRED})
         return attrs
-
-    # Mapa de logos de montadoras -- fonte: apiplacas.com.br
-    _MAKE_LOGOS: dict[str, str] = {
-        "chevrolet": "https://apiplacas.com.br/logos/logosMarcas/chevrolet.png",
-        "fiat": "https://apiplacas.com.br/logos/logosMarcas/fiat.png",
-        "ford": "https://apiplacas.com.br/logos/logosMarcas/ford.png",
-        "honda": "https://apiplacas.com.br/logos/logosMarcas/honda.png",
-        "hyundai": "https://apiplacas.com.br/logos/logosMarcas/hyundai.png",
-        "toyota": "https://apiplacas.com.br/logos/logosMarcas/toyota.png",
-        "volkswagen": "https://apiplacas.com.br/logos/logosMarcas/volkswagen.png",
-        "renault": "https://apiplacas.com.br/logos/logosMarcas/renault.png",
-        "nissan": "https://apiplacas.com.br/logos/logosMarcas/nissan.png",
-        "jeep": "https://apiplacas.com.br/logos/logosMarcas/jeep.png",
-        "bmw": "https://apiplacas.com.br/logos/logosMarcas/bmw.png",
-        "mercedes-benz": "https://apiplacas.com.br/logos/logosMarcas/mercedes-benz.png",
-        "audi": "https://apiplacas.com.br/logos/logosMarcas/audi.png",
-        "kia": "https://apiplacas.com.br/logos/logosMarcas/kia.png",
-        "peugeot": "https://apiplacas.com.br/logos/logosMarcas/peugeot.png",
-        "mitsubishi": "https://apiplacas.com.br/logos/logosMarcas/mitsubishi.png",
-        "volvo": "https://apiplacas.com.br/logos/logosMarcas/volvo.png",
-        "byd": "https://apiplacas.com.br/logos/logosMarcas/byd.png",
-        "citron": "https://apiplacas.com.br/logos/logosMarcas/citroen.png",
-        "subaru": "https://apiplacas.com.br/logos/logosMarcas/subaru.png",
-        "dodge": "https://apiplacas.com.br/logos/logosMarcas/dodge.png",
-        "land rover": "https://apiplacas.com.br/logos/logosMarcas/land-rover.png",
-        "caoa chery": "https://apiplacas.com.br/logos/logosMarcas/caoa-chery.png",
-        "jac": "https://apiplacas.com.br/logos/logosMarcas/jac.png",
-        "gwm": "https://apiplacas.com.br/logos/logosMarcas/gwm.png",
-    }
-
-    def create(self, validated_data: dict) -> "ServiceOrder":
-        from apps.vehicles.models import Vehicle
-
-        # UUID do UnifiedCustomer nao pode ser salvo no FK inteiro de Person -- descarta.
-        validated_data.pop("customer", None)
-
-        # Resolve make_logo se nao fornecido
-        make = validated_data.get("make", "")
-        if make and not validated_data.get("make_logo"):
-            validated_data["make_logo"] = self._MAKE_LOGOS.get(make.lower(), "")
-
-        # Persiste veiculo na base para lookup futuro (DB-first)
-        plate = (validated_data.get("plate") or "").upper().strip().replace("-", "")
-        if plate:
-            model = validated_data.get("model", "")
-            description = f"{make} {model}".strip()
-            Vehicle.objects.get_or_create(
-                plate=plate,
-                is_active=True,
-                defaults={
-                    "description": description,
-                    "color": validated_data.get("color", ""),
-                    "year_manufacture": validated_data.get("year"),
-                },
-            )
-
-        return super().create(validated_data)
 
 
 class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
@@ -957,15 +913,11 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
             "vehicle_source_text",
             "vehicle_source_year",
             "zero_km",
+            *VEHICLE_SNAPSHOT_FIELDS,
         ]
         extra_kwargs = {
-            "make": {"required": False, "allow_blank": True},
-            "make_logo": {"required": False, "allow_blank": True},
-            "model": {"required": False, "allow_blank": True},
-            "vehicle_version": {"required": False, "allow_blank": True},
             "color": {"required": False, "allow_blank": True},
             "chassis": {"required": False, "allow_blank": True},
-            "fuel_type": {"required": False, "allow_blank": True},
             "broker_name": {"required": False, "allow_blank": True},
             "casualty_number": {"required": False, "allow_blank": True},
             "customer_name": {"required": False, "allow_blank": True},
@@ -1019,6 +971,8 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
                 "year_manufacture", getattr(instance, "year_manufacture", None)
             )
             validate_catalog_vehicle(family, version, year_manufacture)
+            if CATALOG_KEYS & attrs.keys() and family is None and version is None:
+                raise serializers.ValidationError({"catalog_family": FAMILY_REQUIRED})
 
         # So dispara validacao se algum campo relevante esta sendo alterado
         insurer_fields_in_payload = {"customer_type", "insurer", "insured_type"} & attrs.keys()

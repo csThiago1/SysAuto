@@ -1,5 +1,8 @@
 import { z } from "zod"
 
+import { catalogSelectionSchema } from "@/components/vehicle/catalog.schema"
+import type { OSCreatePayload } from "../[numero]/_hooks/useServiceOrder"
+
 export const newOSSchema = z
   .object({
     customer_type: z.enum(["insurer", "private"], {
@@ -27,15 +30,11 @@ export const newOSSchema = z
       .min(7, "Placa inválida — mínimo 7 caracteres")
       .max(8, "Placa inválida — máximo 8 caracteres")
       .regex(/^[A-Z]{3}\d[A-Z0-9]\d{2}$/, "Formato de placa inválido"),
-    make: z.string().min(1, "Montadora é obrigatória"),
-    model: z.string().min(1, "Modelo é obrigatório"),
-    vehicle_version: z.string().optional().default(""),
-    year: z.preprocess(
-      (v) => (v === "" || v === null || (typeof v === "number" && isNaN(v)) ? undefined : v),
-      z.number().int().min(1900, "Ano inválido").max(2100, "Ano inválido").optional().nullable()
-    ),
+    catalog_selection: catalogSelectionSchema
+      .nullable()
+      .refine((s) => s?.family != null, "Escolha a montadora e o modelo."),
+    year_manufacture: z.number().int().nullable().optional(),
     color: z.string().optional().default("NAO_INFORMADA"),
-    fuel_type: z.string().optional().default(""),
     chassis: z.string().max(17).optional().default(""),
   })
   .refine(
@@ -52,3 +51,12 @@ export const newOSSchema = z
   )
 
 export type NewOSInput = z.infer<typeof newOSSchema>
+
+/** O form guarda o caminho do seletor; a API recebe só os ids. */
+export function toCreatePayload({ catalog_selection, ...rest }: NewOSInput): OSCreatePayload {
+  return {
+    ...rest,
+    catalog_family: catalog_selection?.family?.id ?? null,
+    catalog_version: catalog_selection?.version?.id ?? null,
+  }
+}
