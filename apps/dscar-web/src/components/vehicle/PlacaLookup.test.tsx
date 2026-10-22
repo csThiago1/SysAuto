@@ -68,6 +68,21 @@ describe("useVehicleLookup", () => {
     act(() => result.current.lookup("8AC907655SE25408O"))
     expect(apiFetch).not.toHaveBeenCalled()
   })
+
+  it.each(["", "8AC907655SE25408"])("chassi apagado ou incompleto (%j) esquece o resultado", async (v) => {
+    vi.mocked(apiFetch).mockResolvedValue({
+      found: true,
+      source: "vin",
+      unmatched: [],
+      fields: { vehicle: null, color: null, year_manufacture: null, ano_modelo: 2025, confianca: null },
+    })
+    const { result } = setup("chassi")
+    act(() => result.current.lookup("8AC907655SE254082"))
+    await waitFor(() => expect(result.current.result).not.toBeNull())
+    act(() => result.current.lookup(v))
+    expect(result.current.result).toBeNull()
+    expect(result.current.notFound).toBe(false)
+  })
 })
 
 describe("ChassiHint", () => {

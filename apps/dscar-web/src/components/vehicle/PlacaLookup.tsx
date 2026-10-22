@@ -41,7 +41,9 @@ export function useVehicleLookup<K extends VehicleLookupKind>(
   return {
     lookup: (raw: string | null | undefined) => {
       const v = onlyAlnum(raw ?? "").toUpperCase()
+      // Campo apagado ou incompleto esquece o último resultado (dica e alerta não ficam órfãos).
       if (READY[kind](v)) setKey((k) => ({ value: v, n: (k?.n ?? 0) + 1 }))
+      else setKey(null)
     },
     /** Esquece a última consulta (form novo não herda restrição nem dica de outro veículo). */
     reset: () => setKey(null),
