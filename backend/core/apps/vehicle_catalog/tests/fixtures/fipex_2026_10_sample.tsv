@@ -1,0 +1,608 @@
+tipo_veiculo	codigo_fipe	nome_modelo	nome_marca	nome_combustivel	sigla_combustivel	ano_modelo	zero_km	valor_centavos	valor_formatado	mes_referencia	ano_referencia
+carro	004539-0	MONTANA 1.2 Turbo Flex 12V 4p Mec.	GM - Chevrolet	Flex	f	2023	false	9495000	R$ 94.950,00	10	2026
+carro	004539-0	MONTANA 1.2 Turbo Flex 12V 4p Mec.	GM - Chevrolet	Flex	f	2025	false	10349400	R$ 103.494,00	10	2026
+carro	004539-0	MONTANA 1.2 Turbo Flex 12V 4p Mec.	GM - Chevrolet	Flex	f		true	13397800	R$ 133.978,00	10	2026
+carro	004370-2	MONTANA LS 1.4 ECONOFLEX 8V 2p	GM - Chevrolet	Flex	f	2013	false	3982100	R$ 39.821,00	10	2026
+carro	004370-2	MONTANA LS 1.4 ECONOFLEX 8V 2p	GM - Chevrolet	Flex	f	2018	false	5097500	R$ 50.975,00	10	2026
+carro	004370-2	MONTANA LS 1.4 ECONOFLEX 8V 2p	GM - Chevrolet	Flex	f	2019	false	5225000	R$ 52.250,00	10	2026
+carro	004370-2	MONTANA LS 1.4 ECONOFLEX 8V 2p	GM - Chevrolet	Flex	f	2020	false	5486900	R$ 54.869,00	10	2026
+carro	004370-2	MONTANA LS 1.4 ECONOFLEX 8V 2p	GM - Chevrolet	Flex	f	2021	false	6017900	R$ 60.179,00	10	2026
+carro	004422-9	MONTANA LS COMBO 1.4 8V ECONOFLEX 2p	GM - Chevrolet	Flex	f	2013	false	4086900	R$ 40.869,00	10	2026
+carro	004540-3	MONTANA LT 1.2  Turbo Flex 12V 4p Mec.	GM - Chevrolet	Flex	f	2023	false	9502100	R$ 95.021,00	10	2026
+carro	004540-3	MONTANA LT 1.2  Turbo Flex 12V 4p Mec.	GM - Chevrolet	Flex	f	2025	false	10457300	R$ 104.573,00	10	2026
+carro	004540-3	MONTANA LT 1.2  Turbo Flex 12V 4p Mec.	GM - Chevrolet	Flex	f		true	13962800	R$ 139.628,00	10	2026
+carro	004541-1	MONTANA LTZ 1.2 Turbo Flex 12V 4p Aut.	GM - Chevrolet	Flex	f	2023	false	10311000	R$ 103.110,00	10	2026
+carro	004541-1	MONTANA LTZ 1.2 Turbo Flex 12V 4p Aut.	GM - Chevrolet	Flex	f	2025	false	11568800	R$ 115.688,00	10	2026
+carro	004541-1	MONTANA LTZ 1.2 Turbo Flex 12V 4p Aut.	GM - Chevrolet	Flex	f		true	15410300	R$ 154.103,00	10	2026
+carro	004542-0	MONTANA PREMIER 1.2 Turbo Flex 12V Aut.	GM - Chevrolet	Flex	f	2023	false	10589400	R$ 105.894,00	10	2026
+carro	004542-0	MONTANA PREMIER 1.2 Turbo Flex 12V Aut.	GM - Chevrolet	Flex	f	2025	false	11603000	R$ 116.030,00	10	2026
+carro	004542-0	MONTANA PREMIER 1.2 Turbo Flex 12V Aut.	GM - Chevrolet	Flex	f		true	16354900	R$ 163.549,00	10	2026
+carro	004546-2	MONTANA RS 1.2 Turbo Flex 12V Aut.	GM - Chevrolet	Flex	f	2025	false	11605200	R$ 116.052,00	10	2026
+carro	004546-2	MONTANA RS 1.2 Turbo Flex 12V Aut.	GM - Chevrolet	Flex	f		true	17227800	R$ 172.278,00	10	2026
+carro	004365-6	MONTANA Sport 1.4 ECONOFLEX 8V 2p	GM - Chevrolet	Flex	f	2013	false	4575800	R$ 45.758,00	10	2026
+carro	004365-6	MONTANA Sport 1.4 ECONOFLEX 8V 2p	GM - Chevrolet	Flex	f	2018	false	5417500	R$ 54.175,00	10	2026
+carro	004365-6	MONTANA Sport 1.4 ECONOFLEX 8V 2p	GM - Chevrolet	Flex	f	2019	false	5634500	R$ 56.345,00	10	2026
+carro	004365-6	MONTANA Sport 1.4 ECONOFLEX 8V 2p	GM - Chevrolet	Flex	f	2020	false	5775400	R$ 57.754,00	10	2026
+carro	004519-5	ONIX HATCH 1.0 12V Flex 5p Mec.	GM - Chevrolet	Flex	f	2020	false	5433000	R$ 54.330,00	10	2026
+carro	004519-5	ONIX HATCH 1.0 12V Flex 5p Mec.	GM - Chevrolet	Flex	f	2021	false	5886900	R$ 58.869,00	10	2026
+carro	004519-5	ONIX HATCH 1.0 12V Flex 5p Mec.	GM - Chevrolet	Flex	f	2023	false	6465800	R$ 64.658,00	10	2026
+carro	004519-5	ONIX HATCH 1.0 12V Flex 5p Mec.	GM - Chevrolet	Flex	f	2025	false	6811300	R$ 68.113,00	10	2026
+carro	004519-5	ONIX HATCH 1.0 12V Flex 5p Mec.	GM - Chevrolet	Flex	f		true	9724400	R$ 97.244,00	10	2026
+carro	004559-4	ONIX HATCH 1.0 12V TB 5p Mec.	GM - Chevrolet	Flex	f		true	10218700	R$ 102.187,00	10	2026
+carro	004511-0	ONIX HATCH 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f	2020	false	6065300	R$ 60.653,00	10	2026
+carro	004511-0	ONIX HATCH 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f	2021	false	6436400	R$ 64.364,00	10	2026
+carro	004511-0	ONIX HATCH 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f	2023	false	6933100	R$ 69.331,00	10	2026
+carro	004511-0	ONIX HATCH 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f	2025	false	8187900	R$ 81.879,00	10	2026
+carro	004511-0	ONIX HATCH 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f		true	10977800	R$ 109.778,00	10	2026
+carro	004557-8	ONIX HATCH 100 Anos 1.0 12V 5p Mec.	GM - Chevrolet	Flex	f		true	10622600	R$ 106.226,00	10	2026
+carro	004568-3	ONIX HATCH ACTIV 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f		true	11362200	R$ 113.622,00	10	2026
+carro	004471-7	ONIX HATCH ACTIV 1.4 8V Flex 5P Aut.	GM - Chevrolet	Flex	f	2018	false	6590200	R$ 65.902,00	10	2026
+carro	004471-7	ONIX HATCH ACTIV 1.4 8V Flex 5P Aut.	GM - Chevrolet	Flex	f	2019	false	6761900	R$ 67.619,00	10	2026
+carro	004472-5	ONIX HATCH ACTIV 1.4 8V Flex 5p Mec.	GM - Chevrolet	Flex	f	2018	false	6316700	R$ 63.167,00	10	2026
+carro	004472-5	ONIX HATCH ACTIV 1.4 8V Flex 5p Mec.	GM - Chevrolet	Flex	f	2019	false	6596900	R$ 65.969,00	10	2026
+carro	004488-1	ONIX HATCH ADVANTAGE 1.4 8V Flex 5p Aut.	GM - Chevrolet	Flex	f	2018	false	6323900	R$ 63.239,00	10	2026
+carro	004488-1	ONIX HATCH ADVANTAGE 1.4 8V Flex 5p Aut.	GM - Chevrolet	Flex	f	2019	false	6497100	R$ 64.971,00	10	2026
+carro	004567-5	ONIX HATCH ECO 1.0 12V TB 5p Aut.	GM - Chevrolet	Álcool	e		true	10078100	R$ 100.781,00	10	2026
+carro	004460-1	ONIX HATCH EFFECT 1.4 8V F.Power 5p Mec.	GM - Chevrolet	Flex	f	2018	false	6133800	R$ 61.338,00	10	2026
+carro	004460-1	ONIX HATCH EFFECT 1.4 8V F.Power 5p Mec.	GM - Chevrolet	Flex	f	2019	false	6320500	R$ 63.205,00	10	2026
+carro	004473-3	ONIX HATCH Joy 1.0 8V Flex 5p Mec.	GM - Chevrolet	Flex	f	2018	false	4565900	R$ 45.659,00	10	2026
+carro	004473-3	ONIX HATCH Joy 1.0 8V Flex 5p Mec.	GM - Chevrolet	Flex	f	2019	false	4932600	R$ 49.326,00	10	2026
+carro	004473-3	ONIX HATCH Joy 1.0 8V Flex 5p Mec.	GM - Chevrolet	Flex	f	2020	false	5268200	R$ 52.682,00	10	2026
+carro	004423-7	ONIX HATCH LS 1.0 8V FlexPower 5p Mec.	GM - Chevrolet	Flex	f	2013	false	3957200	R$ 39.572,00	10	2026
+carro	004517-9	ONIX HATCH LT 1.0 12V Flex 5p Mec.	GM - Chevrolet	Flex	f	2020	false	5657900	R$ 56.579,00	10	2026
+carro	004517-9	ONIX HATCH LT 1.0 12V Flex 5p Mec.	GM - Chevrolet	Flex	f	2021	false	5820200	R$ 58.202,00	10	2026
+carro	004517-9	ONIX HATCH LT 1.0 12V Flex 5p Mec.	GM - Chevrolet	Flex	f	2023	false	6507000	R$ 65.070,00	10	2026
+carro	004517-9	ONIX HATCH LT 1.0 12V Flex 5p Mec.	GM - Chevrolet	Flex	f	2025	false	7243400	R$ 72.434,00	10	2026
+carro	004517-9	ONIX HATCH LT 1.0 12V Flex 5p Mec.	GM - Chevrolet	Flex	f		true	9233400	R$ 92.334,00	10	2026
+carro	004514-4	ONIX HATCH LT 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f	2020	false	6330600	R$ 63.306,00	10	2026
+carro	004514-4	ONIX HATCH LT 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f	2021	false	6668600	R$ 66.686,00	10	2026
+carro	004514-4	ONIX HATCH LT 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f	2023	false	7285300	R$ 72.853,00	10	2026
+carro	004514-4	ONIX HATCH LT 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f	2025	false	9195400	R$ 91.954,00	10	2026
+carro	004514-4	ONIX HATCH LT 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f		true	11600200	R$ 116.002,00	10	2026
+carro	004512-8	ONIX HATCH LT 1.0 12V TB Flex 5p Mec.	GM - Chevrolet	Flex	f	2020	false	6112800	R$ 61.128,00	10	2026
+carro	004512-8	ONIX HATCH LT 1.0 12V TB Flex 5p Mec.	GM - Chevrolet	Flex	f	2021	false	6461500	R$ 64.615,00	10	2026
+carro	004512-8	ONIX HATCH LT 1.0 12V TB Flex 5p Mec.	GM - Chevrolet	Flex	f	2023	false	7009100	R$ 70.091,00	10	2026
+carro	004512-8	ONIX HATCH LT 1.0 12V TB Flex 5p Mec.	GM - Chevrolet	Flex	f	2025	false	8247400	R$ 82.474,00	10	2026
+carro	004512-8	ONIX HATCH LT 1.0 12V TB Flex 5p Mec.	GM - Chevrolet	Flex	f		true	11505100	R$ 115.051,00	10	2026
+carro	004424-5	ONIX HATCH LT 1.0 8V FlexPower 5p Mec.	GM - Chevrolet	Flex	f	2013	false	3975900	R$ 39.759,00	10	2026
+carro	004424-5	ONIX HATCH LT 1.0 8V FlexPower 5p Mec.	GM - Chevrolet	Flex	f	2018	false	5163900	R$ 51.639,00	10	2026
+carro	004424-5	ONIX HATCH LT 1.0 8V FlexPower 5p Mec.	GM - Chevrolet	Flex	f	2019	false	5326900	R$ 53.269,00	10	2026
+carro	004438-5	ONIX HATCH LT 1.4 8V FlexPower 5p Aut.	GM - Chevrolet	Flex	f	2018	false	6177400	R$ 61.774,00	10	2026
+carro	004438-5	ONIX HATCH LT 1.4 8V FlexPower 5p Aut.	GM - Chevrolet	Flex	f	2019	false	6408400	R$ 64.084,00	10	2026
+carro	004425-3	ONIX HATCH LT 1.4 8V FlexPower 5p Mec.	GM - Chevrolet	Flex	f	2013	false	4233400	R$ 42.334,00	10	2026
+carro	004425-3	ONIX HATCH LT 1.4 8V FlexPower 5p Mec.	GM - Chevrolet	Flex	f	2018	false	5742000	R$ 57.420,00	10	2026
+carro	004425-3	ONIX HATCH LT 1.4 8V FlexPower 5p Mec.	GM - Chevrolet	Flex	f	2019	false	5945300	R$ 59.453,00	10	2026
+carro	004515-2	ONIX HATCH LTZ 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f	2020	false	6513100	R$ 65.131,00	10	2026
+carro	004515-2	ONIX HATCH LTZ 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f	2021	false	6736700	R$ 67.367,00	10	2026
+carro	004515-2	ONIX HATCH LTZ 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f	2023	false	7826600	R$ 78.266,00	10	2026
+carro	004515-2	ONIX HATCH LTZ 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f	2025	false	9212700	R$ 92.127,00	10	2026
+carro	004515-2	ONIX HATCH LTZ 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f		true	11907300	R$ 119.073,00	10	2026
+carro	004513-6	ONIX HATCH LTZ 1.0 12V TB Flex 5p Mec.	GM - Chevrolet	Flex	f	2020	false	6135200	R$ 61.352,00	10	2026
+carro	004513-6	ONIX HATCH LTZ 1.0 12V TB Flex 5p Mec.	GM - Chevrolet	Flex	f	2021	false	6475400	R$ 64.754,00	10	2026
+carro	004513-6	ONIX HATCH LTZ 1.0 12V TB Flex 5p Mec.	GM - Chevrolet	Flex	f	2023	false	7150800	R$ 71.508,00	10	2026
+carro	004439-3	ONIX HATCH LTZ 1.4 8V FlexPower 5p Aut.	GM - Chevrolet	Flex	f	2018	false	6408400	R$ 64.084,00	10	2026
+carro	004439-3	ONIX HATCH LTZ 1.4 8V FlexPower 5p Aut.	GM - Chevrolet	Flex	f	2019	false	6608000	R$ 66.080,00	10	2026
+carro	004426-1	ONIX HATCH LTZ 1.4 8V FlexPower 5p Mec.	GM - Chevrolet	Flex	f	2013	false	4365300	R$ 43.653,00	10	2026
+carro	004426-1	ONIX HATCH LTZ 1.4 8V FlexPower 5p Mec.	GM - Chevrolet	Flex	f	2018	false	5948500	R$ 59.485,00	10	2026
+carro	004426-1	ONIX HATCH LTZ 1.4 8V FlexPower 5p Mec.	GM - Chevrolet	Flex	f	2019	false	6168500	R$ 61.685,00	10	2026
+carro	004516-0	ONIX HATCH PREM. 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f	2020	false	6700500	R$ 67.005,00	10	2026
+carro	004516-0	ONIX HATCH PREM. 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f	2021	false	6955600	R$ 69.556,00	10	2026
+carro	004516-0	ONIX HATCH PREM. 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f	2023	false	7945000	R$ 79.450,00	10	2026
+carro	004516-0	ONIX HATCH PREM. 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f	2025	false	9420900	R$ 94.209,00	10	2026
+carro	004516-0	ONIX HATCH PREM. 1.0 12V TB Flex 5p Aut.	GM - Chevrolet	Flex	f		true	11912500	R$ 119.125,00	10	2026
+carro	004569-1	ONIX HATCH PRO 1.0 12V 5p Mec.	GM - Chevrolet	Flex	f		true	9903600	R$ 99.036,00	10	2026
+carro	004530-6	ONIX HATCH RS 1.0 TB 12V Flex 5p Aut.	GM - Chevrolet	Flex	f	2021	false	7022500	R$ 70.225,00	10	2026
+carro	004530-6	ONIX HATCH RS 1.0 TB 12V Flex 5p Aut.	GM - Chevrolet	Flex	f	2023	false	7899900	R$ 78.999,00	10	2026
+carro	004530-6	ONIX HATCH RS 1.0 TB 12V Flex 5p Aut.	GM - Chevrolet	Flex	f	2025	false	9397300	R$ 93.973,00	10	2026
+carro	004530-6	ONIX HATCH RS 1.0 TB 12V Flex 5p Aut.	GM - Chevrolet	Flex	f		true	11888500	R$ 118.885,00	10	2026
+carro	004531-4	ONIX SD. P. PR. MIDNIGHT 1.0 TB Flex Aut	GM - Chevrolet	Flex	f	2021	false	6821000	R$ 68.210,00	10	2026
+carro	004504-7	ONIX SED. Plus PREM. 1.0 12V TB Flex Aut	GM - Chevrolet	Flex	f	2020	false	6769800	R$ 67.698,00	10	2026
+carro	004504-7	ONIX SED. Plus PREM. 1.0 12V TB Flex Aut	GM - Chevrolet	Flex	f	2021	false	7081200	R$ 70.812,00	10	2026
+carro	004504-7	ONIX SED. Plus PREM. 1.0 12V TB Flex Aut	GM - Chevrolet	Flex	f	2023	false	7958700	R$ 79.587,00	10	2026
+carro	004504-7	ONIX SED. Plus PREM. 1.0 12V TB Flex Aut	GM - Chevrolet	Flex	f	2025	false	9598800	R$ 95.988,00	10	2026
+carro	004504-7	ONIX SED. Plus PREM. 1.0 12V TB Flex Aut	GM - Chevrolet	Flex	f		true	12270100	R$ 122.701,00	10	2026
+carro	004561-6	ONIX SEDAN Plus 1.0 12V Mec.	GM - Chevrolet	Flex	f		true	10471900	R$ 104.719,00	10	2026
+carro	004499-7	ONIX SEDAN Plus 1.0 12V TB Flex Aut.	GM - Chevrolet	Flex	f	2020	false	6289700	R$ 62.897,00	10	2026
+carro	004499-7	ONIX SEDAN Plus 1.0 12V TB Flex Aut.	GM - Chevrolet	Flex	f	2021	false	6586100	R$ 65.861,00	10	2026
+carro	004499-7	ONIX SEDAN Plus 1.0 12V TB Flex Aut.	GM - Chevrolet	Flex	f	2023	false	7344400	R$ 73.444,00	10	2026
+carro	004499-7	ONIX SEDAN Plus 1.0 12V TB Flex Aut.	GM - Chevrolet	Flex	f	2025	false	8967900	R$ 89.679,00	10	2026
+carro	004499-7	ONIX SEDAN Plus 1.0 12V TB Flex Aut.	GM - Chevrolet	Flex	f		true	11218800	R$ 112.188,00	10	2026
+carro	004556-0	ONIX SEDAN Plus 1.0 12V TB Flex Mec.	GM - Chevrolet	Flex	f		true	10485900	R$ 104.859,00	10	2026
+carro	004570-5	ONIX SEDAN Plus ECO 1.0 12V TB Aut.	GM - Chevrolet	Álcool	e		true	10280700	R$ 102.807,00	10	2026
+carro	004518-7	ONIX SEDAN Plus LT 1.0 12V Flex 4p Mec.	GM - Chevrolet	Flex	f	2020	false	5665200	R$ 56.652,00	10	2026
+carro	004518-7	ONIX SEDAN Plus LT 1.0 12V Flex 4p Mec.	GM - Chevrolet	Flex	f	2021	false	5828500	R$ 58.285,00	10	2026
+carro	004518-7	ONIX SEDAN Plus LT 1.0 12V Flex 4p Mec.	GM - Chevrolet	Flex	f	2023	false	6583600	R$ 65.836,00	10	2026
+carro	004518-7	ONIX SEDAN Plus LT 1.0 12V Flex 4p Mec.	GM - Chevrolet	Flex	f	2025	false	7655600	R$ 76.556,00	10	2026
+carro	004518-7	ONIX SEDAN Plus LT 1.0 12V Flex 4p Mec.	GM - Chevrolet	Flex	f		true	10102300	R$ 101.023,00	10	2026
+carro	004501-2	ONIX SEDAN Plus LT 1.0 12V TB Flex Aut.	GM - Chevrolet	Flex	f	2020	false	6353500	R$ 63.535,00	10	2026
+carro	004501-2	ONIX SEDAN Plus LT 1.0 12V TB Flex Aut.	GM - Chevrolet	Flex	f	2021	false	6640100	R$ 66.401,00	10	2026
+carro	004501-2	ONIX SEDAN Plus LT 1.0 12V TB Flex Aut.	GM - Chevrolet	Flex	f	2023	false	7381400	R$ 73.814,00	10	2026
+carro	004501-2	ONIX SEDAN Plus LT 1.0 12V TB Flex Aut.	GM - Chevrolet	Flex	f	2025	false	8992600	R$ 89.926,00	10	2026
+carro	004501-2	ONIX SEDAN Plus LT 1.0 12V TB Flex Aut.	GM - Chevrolet	Flex	f		true	11948000	R$ 119.480,00	10	2026
+carro	004500-4	ONIX SEDAN Plus LT 1.0 12V TB Flex Mec.	GM - Chevrolet	Flex	f	2020	false	6115200	R$ 61.152,00	10	2026
+carro	004500-4	ONIX SEDAN Plus LT 1.0 12V TB Flex Mec.	GM - Chevrolet	Flex	f	2021	false	6474500	R$ 64.745,00	10	2026
+carro	004500-4	ONIX SEDAN Plus LT 1.0 12V TB Flex Mec.	GM - Chevrolet	Flex	f	2023	false	7012000	R$ 70.120,00	10	2026
+carro	004500-4	ONIX SEDAN Plus LT 1.0 12V TB Flex Mec.	GM - Chevrolet	Flex	f	2025	false	8252100	R$ 82.521,00	10	2026
+carro	004500-4	ONIX SEDAN Plus LT 1.0 12V TB Flex Mec.	GM - Chevrolet	Flex	f		true	11063800	R$ 110.638,00	10	2026
+carro	004502-0	ONIX SEDAN Plus LTZ 1.0 12V TB Flex Aut.	GM - Chevrolet	Flex	f	2020	false	6530200	R$ 65.302,00	10	2026
+carro	004502-0	ONIX SEDAN Plus LTZ 1.0 12V TB Flex Aut.	GM - Chevrolet	Flex	f	2021	false	6751400	R$ 67.514,00	10	2026
+carro	004502-0	ONIX SEDAN Plus LTZ 1.0 12V TB Flex Aut.	GM - Chevrolet	Flex	f	2023	false	7838500	R$ 78.385,00	10	2026
+carro	004502-0	ONIX SEDAN Plus LTZ 1.0 12V TB Flex Aut.	GM - Chevrolet	Flex	f	2025	false	9247500	R$ 92.475,00	10	2026
+carro	004502-0	ONIX SEDAN Plus LTZ 1.0 12V TB Flex Aut.	GM - Chevrolet	Flex	f		true	11952100	R$ 119.521,00	10	2026
+carro	004503-9	ONIX SEDAN Plus LTZ 1.0 12V TB Flex Mec.	GM - Chevrolet	Flex	f	2020	false	6125600	R$ 61.256,00	10	2026
+carro	004503-9	ONIX SEDAN Plus LTZ 1.0 12V TB Flex Mec.	GM - Chevrolet	Flex	f	2021	false	6485400	R$ 64.854,00	10	2026
+carro	004503-9	ONIX SEDAN Plus LTZ 1.0 12V TB Flex Mec.	GM - Chevrolet	Flex	f	2023	false	7173000	R$ 71.730,00	10	2026
+moto	811085-9	POP 100 97cc	HONDA	Gasolina	g	2013	false	706700	R$ 7.067,00	10	2026
+moto	811132-4	POP 110i	HONDA	Gasolina	g	2018	false	1025700	R$ 10.257,00	10	2026
+moto	811132-4	POP 110i	HONDA	Gasolina	g	2019	false	1051400	R$ 10.514,00	10	2026
+moto	811132-4	POP 110i	HONDA	Gasolina	g	2020	false	1077700	R$ 10.777,00	10	2026
+moto	811132-4	POP 110i	HONDA	Gasolina	g	2021	false	1104700	R$ 11.047,00	10	2026
+moto	811132-4	POP 110i	HONDA	Gasolina	g	2023	false	1182800	R$ 11.828,00	10	2026
+moto	811179-0	POP 110i ES	HONDA	Gasolina	g	2025	false	1229100	R$ 12.291,00	10	2026
+moto	811179-0	POP 110i ES	HONDA	Gasolina	g		true	1370800	R$ 13.708,00	10	2026
+carro	014069-4	Fit DX 1.4 Flex 16V 5p Mec.	Honda	Flex	f	2013	false	4569700	R$ 45.697,00	10	2026
+carro	014083-0	Fit DX 1.5 Flexone 16V 5p Mec.	Honda	Flex	f	2018	false	6885600	R$ 68.856,00	10	2026
+carro	014083-0	Fit DX 1.5 Flexone 16V 5p Mec.	Honda	Flex	f	2019	false	7057800	R$ 70.578,00	10	2026
+carro	014083-0	Fit DX 1.5 Flexone 16V 5p Mec.	Honda	Flex	f	2020	false	7377100	R$ 73.771,00	10	2026
+carro	014083-0	Fit DX 1.5 Flexone 16V 5p Mec.	Honda	Flex	f	2021	false	7825300	R$ 78.253,00	10	2026
+carro	014046-5	Fit EX/ S 1.5/ EX 1.5 Flex 16V 5p Mec.	Honda	Gasolina	g	2013	false	5294800	R$ 52.948,00	10	2026
+carro	014045-7	Fit EX/S 1.5 Flex/Flexone 16V 5p Aut.	Honda	Gasolina	g	2013	false	5329100	R$ 53.291,00	10	2026
+carro	014045-7	Fit EX/S 1.5 Flex/Flexone 16V 5p Aut.	Honda	Gasolina	g	2018	false	7579300	R$ 75.793,00	10	2026
+carro	014045-7	Fit EX/S 1.5 Flex/Flexone 16V 5p Aut.	Honda	Gasolina	g	2019	false	7987100	R$ 79.871,00	10	2026
+carro	014045-7	Fit EX/S 1.5 Flex/Flexone 16V 5p Aut.	Honda	Gasolina	g	2020	false	8199900	R$ 81.999,00	10	2026
+carro	014045-7	Fit EX/S 1.5 Flex/Flexone 16V 5p Aut.	Honda	Gasolina	g	2021	false	8404900	R$ 84.049,00	10	2026
+carro	014056-2	Fit EXL 1.5 Flex/Flexone 16V 5p Aut	Honda	Flex	f	2013	false	5422800	R$ 54.228,00	10	2026
+carro	014056-2	Fit EXL 1.5 Flex/Flexone 16V 5p Aut	Honda	Flex	f	2018	false	7833100	R$ 78.331,00	10	2026
+carro	014056-2	Fit EXL 1.5 Flex/Flexone 16V 5p Aut	Honda	Flex	f	2019	false	8140400	R$ 81.404,00	10	2026
+carro	014056-2	Fit EXL 1.5 Flex/Flexone 16V 5p Aut	Honda	Flex	f	2020	false	8542600	R$ 85.426,00	10	2026
+carro	014056-2	Fit EXL 1.5 Flex/Flexone 16V 5p Aut	Honda	Flex	f	2021	false	8904800	R$ 89.048,00	10	2026
+carro	014040-6	Fit LX 1.4/ 1.4 Flex 8V/16V 5p Aut.	Honda	Gasolina	g	2013	false	5201700	R$ 52.017,00	10	2026
+carro	014039-2	Fit LX 1.4/ 1.4 Flex 8V/16V 5p Mec.	Honda	Gasolina	g	2013	false	4700600	R$ 47.006,00	10	2026
+carro	014081-3	Fit LX 1.5 Flexone 16V 5p Aut.	Honda	Flex	f	2018	false	7410500	R$ 74.105,00	10	2026
+carro	014081-3	Fit LX 1.5 Flexone 16V 5p Aut.	Honda	Flex	f	2019	false	7749300	R$ 77.493,00	10	2026
+carro	014081-3	Fit LX 1.5 Flexone 16V 5p Aut.	Honda	Flex	f	2020	false	8047500	R$ 80.475,00	10	2026
+carro	014081-3	Fit LX 1.5 Flexone 16V 5p Aut.	Honda	Flex	f	2021	false	8347600	R$ 83.476,00	10	2026
+carro	014097-0	Fit Personal 1.5 Flexone 16V 5p Aut.	Honda	Flex	f	2018	false	7288400	R$ 72.884,00	10	2026
+carro	014097-0	Fit Personal 1.5 Flexone 16V 5p Aut.	Honda	Flex	f	2019	false	7801600	R$ 78.016,00	10	2026
+carro	014097-0	Fit Personal 1.5 Flexone 16V 5p Aut.	Honda	Flex	f	2020	false	7996700	R$ 79.967,00	10	2026
+carro	014097-0	Fit Personal 1.5 Flexone 16V 5p Aut.	Honda	Flex	f	2021	false	8470300	R$ 84.703,00	10	2026
+carro	014073-2	Fit Twist 1.5 Flex 16V 5p Aut.	Honda	Flex	f	2013	false	5456200	R$ 54.562,00	10	2026
+carro	014072-4	Fit Twist 1.5 Flex 16V 5p Mec.	Honda	Flex	f	2013	false	5088400	R$ 50.884,00	10	2026
+carro	014111-9	HR-V Advance 1.5  Flex TB 16V 5p Aut.	Honda	Flex	f	2023	false	14122000	R$ 141.220,00	10	2026
+carro	014111-9	HR-V Advance 1.5  Flex TB 16V 5p Aut.	Honda	Flex	f	2025	false	15202800	R$ 152.028,00	10	2026
+carro	014111-9	HR-V Advance 1.5  Flex TB 16V 5p Aut.	Honda	Flex	f		true	20317000	R$ 203.170,00	10	2026
+carro	014109-7	HR-V EX 1.5 Flex Sensing 16V 5p Aut.	Honda	Flex	f	2023	false	12933000	R$ 129.330,00	10	2026
+carro	014109-7	HR-V EX 1.5 Flex Sensing 16V 5p Aut.	Honda	Flex	f	2025	false	13959500	R$ 139.595,00	10	2026
+carro	014109-7	HR-V EX 1.5 Flex Sensing 16V 5p Aut.	Honda	Flex	f		true	16635500	R$ 166.355,00	10	2026
+carro	014087-2	HR-V EX 1.8 Flexone 16V 5p Aut.	Honda	Flex	f	2018	false	8905200	R$ 89.052,00	10	2026
+carro	014087-2	HR-V EX 1.8 Flexone 16V 5p Aut.	Honda	Flex	f	2019	false	9823600	R$ 98.236,00	10	2026
+carro	014087-2	HR-V EX 1.8 Flexone 16V 5p Aut.	Honda	Flex	f	2020	false	10248500	R$ 102.485,00	10	2026
+carro	014087-2	HR-V EX 1.8 Flexone 16V 5p Aut.	Honda	Flex	f	2021	false	10903400	R$ 109.034,00	10	2026
+carro	014110-0	HR-V EXL 1.5 Flex Sensing 16V 5p Aut.	Honda	Flex	f	2023	false	13259200	R$ 132.592,00	10	2026
+carro	014110-0	HR-V EXL 1.5 Flex Sensing 16V 5p Aut.	Honda	Flex	f	2025	false	14317100	R$ 143.171,00	10	2026
+carro	014110-0	HR-V EXL 1.5 Flex Sensing 16V 5p Aut.	Honda	Flex	f		true	17431600	R$ 174.316,00	10	2026
+carro	014088-0	HR-V EXL 1.8 Flexone 16V 5p Aut.	Honda	Flex	f	2018	false	9035600	R$ 90.356,00	10	2026
+carro	014088-0	HR-V EXL 1.8 Flexone 16V 5p Aut.	Honda	Flex	f	2019	false	10171900	R$ 101.719,00	10	2026
+carro	014088-0	HR-V EXL 1.8 Flexone 16V 5p Aut.	Honda	Flex	f	2020	false	10487700	R$ 104.877,00	10	2026
+carro	014088-0	HR-V EXL 1.8 Flexone 16V 5p Aut.	Honda	Flex	f	2021	false	11173200	R$ 111.732,00	10	2026
+carro	014086-4	HR-V LX 1.8 Flexone 16V 5p Aut.	Honda	Flex	f	2018	false	8634200	R$ 86.342,00	10	2026
+carro	014086-4	HR-V LX 1.8 Flexone 16V 5p Aut.	Honda	Flex	f	2019	false	9567100	R$ 95.671,00	10	2026
+carro	014086-4	HR-V LX 1.8 Flexone 16V 5p Aut.	Honda	Flex	f	2020	false	9972700	R$ 99.727,00	10	2026
+carro	014086-4	HR-V LX 1.8 Flexone 16V 5p Aut.	Honda	Flex	f	2021	false	10508000	R$ 105.080,00	10	2026
+carro	014085-6	HR-V LX 1.8 Flexone 16V 5p Mec.	Honda	Flex	f	2018	false	8550500	R$ 85.505,00	10	2026
+carro	014102-0	HR-V Touring 1.5 Flex TB 16V 5p Aut.	Honda	Flex	f	2020	false	12057200	R$ 120.572,00	10	2026
+carro	014102-0	HR-V Touring 1.5 Flex TB 16V 5p Aut.	Honda	Flex	f	2021	false	12724100	R$ 127.241,00	10	2026
+carro	014102-0	HR-V Touring 1.5 Flex TB 16V 5p Aut.	Honda	Flex	f	2023	false	14725900	R$ 147.259,00	10	2026
+carro	014102-0	HR-V Touring 1.5 Flex TB 16V 5p Aut.	Honda	Flex	f	2025	false	16224200	R$ 162.242,00	10	2026
+carro	014102-0	HR-V Touring 1.5 Flex TB 16V 5p Aut.	Honda	Flex	f		true	21454100	R$ 214.541,00	10	2026
+carro	014096-1	HR-V Touring 1.8 Flexone 16V 5p Aut.	Honda	Flex	f	2018	false	9465100	R$ 94.651,00	10	2026
+carro	015183-1	HB20X Diamond 1.6 Flex 16V Aut.	Hyundai	Flex	f	2020	false	7667300	R$ 76.673,00	10	2026
+carro	015183-1	HB20X Diamond 1.6 Flex 16V Aut.	Hyundai	Flex	f	2021	false	7859000	R$ 78.590,00	10	2026
+carro	015182-3	HB20X Diamond Plus 1.6 Flex 16V Aut.	Hyundai	Flex	f	2020	false	7720300	R$ 77.203,00	10	2026
+carro	015182-3	HB20X Diamond Plus 1.6 Flex 16V Aut.	Hyundai	Flex	f	2021	false	7962000	R$ 79.620,00	10	2026
+carro	015184-0	HB20X Evolution 1.6 Flex 16V Aut.	Hyundai	Flex	f	2020	false	7603100	R$ 76.031,00	10	2026
+carro	015184-0	HB20X Evolution 1.6 Flex 16V Aut.	Hyundai	Flex	f	2021	false	7793200	R$ 77.932,00	10	2026
+carro	015097-5	HB20X Premium 1.6 Flex 16V Aut.	Hyundai	Flex	f	2013	false	5325300	R$ 53.253,00	10	2026
+carro	015097-5	HB20X Premium 1.6 Flex 16V Aut.	Hyundai	Flex	f	2018	false	6942400	R$ 69.424,00	10	2026
+carro	015097-5	HB20X Premium 1.6 Flex 16V Aut.	Hyundai	Flex	f	2019	false	7166000	R$ 71.660,00	10	2026
+carro	015096-7	HB20X Premium 1.6 Flex 16V Mec.	Hyundai	Flex	f	2013	false	4723900	R$ 47.239,00	10	2026
+carro	015095-9	HB20X Style 1.6 Flex 16V Aut.	Hyundai	Flex	f	2013	false	4839000	R$ 48.390,00	10	2026
+carro	015095-9	HB20X Style 1.6 Flex 16V Aut.	Hyundai	Flex	f	2018	false	6920400	R$ 69.204,00	10	2026
+carro	015095-9	HB20X Style 1.6 Flex 16V Aut.	Hyundai	Flex	f	2019	false	7093500	R$ 70.935,00	10	2026
+carro	015094-0	HB20X Style 1.6 Flex 16v Mec.	Hyundai	Flex	f	2013	false	4545200	R$ 45.452,00	10	2026
+carro	015094-0	HB20X Style 1.6 Flex 16v Mec.	Hyundai	Flex	f	2018	false	6354800	R$ 63.548,00	10	2026
+carro	015094-0	HB20X Style 1.6 Flex 16v Mec.	Hyundai	Flex	f	2019	false	6782600	R$ 67.826,00	10	2026
+carro	015185-8	HB20X Vision 1.6 Flex 16V Aut.	Hyundai	Flex	f	2020	false	7577600	R$ 75.776,00	10	2026
+carro	015185-8	HB20X Vision 1.6 Flex 16V Aut.	Hyundai	Flex	f	2021	false	7767100	R$ 77.671,00	10	2026
+carro	015186-6	HB20X Vision 1.6 Flex 16V Mec.	Hyundai	Flex	f	2020	false	6897100	R$ 68.971,00	10	2026
+carro	015186-6	HB20X Vision 1.6 Flex 16V Mec.	Hyundai	Flex	f	2021	false	7069600	R$ 70.696,00	10	2026
+carro	033242-9	Range R.EVOQUE Autob. 2.0 P250 Flex Aut	Land Rover	Flex	f		true	50665300	R$ 506.653,00	10	2026
+carro	033076-0	Range R.EVOQUE Dynamic 2.0 Aut 3p	Land Rover	Gasolina	g	2013	false	8765700	R$ 87.657,00	10	2026
+carro	033077-9	Range R.EVOQUE Dynamic 2.0 Aut 5p	Land Rover	Gasolina	g	2013	false	9153900	R$ 91.539,00	10	2026
+carro	033078-7	Range R.EVOQUE Dynamic Tech 2.0 Aut 3p	Land Rover	Gasolina	g	2013	false	8474700	R$ 84.747,00	10	2026
+carro	033079-5	Range R.EVOQUE Dynamic Tech 2.0 Aut 5p	Land Rover	Gasolina	g	2013	false	9220400	R$ 92.204,00	10	2026
+carro	033153-8	Range R.EVOQUE HSE Dyna. 2.0 Dies. Aut.	Land Rover	Diesel	d	2018	false	13057800	R$ 130.578,00	10	2026
+carro	033153-8	Range R.EVOQUE HSE Dyna. 2.0 Dies. Aut.	Land Rover	Diesel	d	2019	false	15936500	R$ 159.365,00	10	2026
+carro	033095-7	Range R.EVOQUE ONE SICILIAN 2.0 Aut. 5p	Land Rover	Gasolina	g	2013	false	10740900	R$ 107.409,00	10	2026
+carro	033074-4	Range R.EVOQUE Prestige 2.0 Aut. 5p	Land Rover	Gasolina	g	2013	false	8691200	R$ 86.912,00	10	2026
+carro	033099-0	Range R.EVOQUE Prestige 2.2 5p Dies.	Land Rover	Diesel	d	2013	false	9379900	R$ 93.799,00	10	2026
+carro	033075-2	Range R.EVOQUE Prestige Tech 2.0 Aut 5p	Land Rover	Gasolina	g	2013	false	8539700	R$ 85.397,00	10	2026
+carro	033073-6	Range R.EVOQUE Pure  2.0 Aut. 5p	Land Rover	Gasolina	g	2013	false	8020600	R$ 80.206,00	10	2026
+carro	033072-8	Range R.EVOQUE Pure 2.0 Aut. 3p	Land Rover	Gasolina	g	2013	false	7977800	R$ 79.778,00	10	2026
+carro	033115-5	Range R.EVOQUE Si4 HSE Dyn. 2.0/Flex Aut	Land Rover	Gasolina	g	2018	false	13665800	R$ 136.658,00	10	2026
+carro	033115-5	Range R.EVOQUE Si4 HSE Dyn. 2.0/Flex Aut	Land Rover	Gasolina	g	2019	false	14746600	R$ 147.466,00	10	2026
+carro	033115-5	Range R.EVOQUE Si4 HSE Dyn. 2.0/Flex Aut	Land Rover	Gasolina	g	2023	false	25747000	R$ 257.470,00	10	2026
+carro	033115-5	Range R.EVOQUE Si4 HSE Dyn. 2.0/Flex Aut	Land Rover	Gasolina	g	2025	false	37005900	R$ 370.059,00	10	2026
+carro	033115-5	Range R.EVOQUE Si4 HSE Dyn. 2.0/Flex Aut	Land Rover	Gasolina	g		true	47902200	R$ 479.022,00	10	2026
+carro	033113-9	Range R.EVOQUE Si4 SE 2.0 Aut.5p/Flex	Land Rover	Gasolina	g	2018	false	11550600	R$ 115.506,00	10	2026
+carro	033113-9	Range R.EVOQUE Si4 SE 2.0 Aut.5p/Flex	Land Rover	Gasolina	g	2019	false	13306400	R$ 133.064,00	10	2026
+carro	033113-9	Range R.EVOQUE Si4 SE 2.0 Aut.5p/Flex	Land Rover	Gasolina	g	2023	false	24398900	R$ 243.989,00	10	2026
+carro	033116-3	Range R.EVOQUE Si4 SE Dynamic 2.0 Aut.	Land Rover	Gasolina	g	2018	false	11934400	R$ 119.344,00	10	2026
+carro	033160-0	Range Rover EVOQUE Autobiography 2.0 Aut	Land Rover	Gasolina	g	2018	false	15997000	R$ 159.970,00	10	2026
+carro	033092-2	Range Rover EVOQUE Pure Tech 2.0 Aut. 3p	Land Rover	Gasolina	g	2013	false	8267400	R$ 82.674,00	10	2026
+carro	033082-5	Range Rover EVOQUE Pure Tech 2.0 Aut. 5p	Land Rover	Gasolina	g	2013	false	8292500	R$ 82.925,00	10	2026
+carro	033128-7	Range Rover EVOQUE SE 2.0 Diesel Aut.	Land Rover	Diesel	d	2018	false	11408900	R$ 114.089,00	10	2026
+carro	033128-7	Range Rover EVOQUE SE 2.0 Diesel Aut.	Land Rover	Diesel	d	2019	false	14413300	R$ 144.133,00	10	2026
+carro	021146-0	Sprinter 311 Chassi 2.2 Diesel	Mercedes-Benz	Diesel	d	2013	false	10892200	R$ 108.922,00	10	2026
+carro	021319-5	Sprinter 311 Chassi E. Longa 2.2 Diesel	Mercedes-Benz	Diesel	d	2013	false	12146400	R$ 121.464,00	10	2026
+carro	021133-8	Sprinter 311 Furgão Curto 2.2 Dies	Mercedes-Benz	Diesel	d	2013	false	11117600	R$ 111.176,00	10	2026
+carro	021248-2	Sprinter 311 Furgão E.Longo T.Alto Dies.	Mercedes-Benz	Diesel	d	2013	false	11931500	R$ 119.315,00	10	2026
+carro	021134-6	Sprinter 311 Furgão Longo 2.2  Dies	Mercedes-Benz	Diesel	d	2013	false	11124200	R$ 111.242,00	10	2026
+carro	021135-4	Sprinter 311 Furgão Longo Teto alto Dies	Mercedes-Benz	Diesel	d	2013	false	11814900	R$ 118.149,00	10	2026
+carro	021353-5	Sprinter 313  Chassi Ex. Longo 2.2 Dies.	Mercedes-Benz	Diesel	d	2018	false	15721800	R$ 157.218,00	10	2026
+carro	021353-5	Sprinter 313  Chassi Ex. Longo 2.2 Dies.	Mercedes-Benz	Diesel	d	2019	false	16529900	R$ 165.299,00	10	2026
+carro	021352-7	Sprinter 313 Chassi Longo 2.2 Diesel	Mercedes-Benz	Diesel	d	2018	false	15500600	R$ 155.006,00	10	2026
+carro	021352-7	Sprinter 313 Chassi Longo 2.2 Diesel	Mercedes-Benz	Diesel	d	2019	false	15951100	R$ 159.511,00	10	2026
+carro	021164-8	Sprinter 313 Furgão Curto 2.2 129cv Dies	Mercedes-Benz	Diesel	d	2018	false	15113600	R$ 151.136,00	10	2026
+carro	021164-8	Sprinter 313 Furgão Curto 2.2 129cv Dies	Mercedes-Benz	Diesel	d	2019	false	15517500	R$ 155.175,00	10	2026
+carro	021354-3	Sprinter 313 Furgão Ex. Longo T. A. Die.	Mercedes-Benz	Diesel	d	2018	false	16418800	R$ 164.188,00	10	2026
+carro	021354-3	Sprinter 313 Furgão Ex. Longo T. A. Die.	Mercedes-Benz	Diesel	d	2019	false	17425200	R$ 174.252,00	10	2026
+carro	021165-6	Sprinter 313 Furgão Longo 2.2 129cv Dies	Mercedes-Benz	Diesel	d	2018	false	15265200	R$ 152.652,00	10	2026
+carro	021165-6	Sprinter 313 Furgão Longo 2.2 129cv Dies	Mercedes-Benz	Diesel	d	2019	false	15950700	R$ 159.507,00	10	2026
+carro	021147-8	Sprinter 313 Furgão Longo T. Alto Diesel	Mercedes-Benz	Diesel	d	2018	false	15320100	R$ 153.201,00	10	2026
+carro	021147-8	Sprinter 313 Furgão Longo T. Alto Diesel	Mercedes-Benz	Diesel	d	2019	false	16019000	R$ 160.190,00	10	2026
+carro	021440-0	Sprinter 314 Chassi E.L T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2020	false	18829500	R$ 188.295,00	10	2026
+carro	021440-0	Sprinter 314 Chassi E.L T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2021	false	19589400	R$ 195.894,00	10	2026
+carro	021439-6	Sprinter 314 Chassi Longo T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2020	false	18274400	R$ 182.744,00	10	2026
+carro	021439-6	Sprinter 314 Chassi Longo T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2021	false	19032500	R$ 190.325,00	10	2026
+carro	021425-6	Sprinter 314 Furgão Curto T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2020	false	18785400	R$ 187.854,00	10	2026
+carro	021425-6	Sprinter 314 Furgão Curto T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2021	false	19330600	R$ 193.306,00	10	2026
+carro	021425-6	Sprinter 314 Furgão Curto T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2023	false	22147800	R$ 221.478,00	10	2026
+carro	021426-4	Sprinter 314 Furgão E.L. T.A.  2.2 Dies.	Mercedes-Benz	Diesel	d	2020	false	19298100	R$ 192.981,00	10	2026
+carro	021426-4	Sprinter 314 Furgão E.L. T.A.  2.2 Dies.	Mercedes-Benz	Diesel	d	2021	false	20385900	R$ 203.859,00	10	2026
+carro	021426-4	Sprinter 314 Furgão E.L. T.A.  2.2 Dies.	Mercedes-Benz	Diesel	d	2023	false	22451500	R$ 224.515,00	10	2026
+carro	021424-8	Sprinter 314 Furgão Longo T.A. 2.2 Dies.	Mercedes-Benz	Diesel	d	2020	false	16032500	R$ 160.325,00	10	2026
+carro	021424-8	Sprinter 314 Furgão Longo T.A. 2.2 Dies.	Mercedes-Benz	Diesel	d	2021	false	19005500	R$ 190.055,00	10	2026
+carro	021424-8	Sprinter 314 Furgão Longo T.A. 2.2 Dies.	Mercedes-Benz	Diesel	d	2023	false	21918700	R$ 219.187,00	10	2026
+carro	021430-2	Sprinter 314 Furgão Longo T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2020	false	15998500	R$ 159.985,00	10	2026
+carro	021430-2	Sprinter 314 Furgão Longo T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2021	false	18845400	R$ 188.454,00	10	2026
+carro	021430-2	Sprinter 314 Furgão Longo T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2023	false	21836100	R$ 218.361,00	10	2026
+carro	021481-7	Sprinter 314 Truck E.Longo T.B. 2.2 Dies	Mercedes-Benz	Diesel	d	2023	false	18470600	R$ 184.706,00	10	2026
+carro	021480-9	Sprinter 314 Truck Longo T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2023	false	18302500	R$ 183.025,00	10	2026
+carro	021474-4	Sprinter 315 Furg.Str. E.L.T.A. 2.0 Dies	Mercedes-Benz	Diesel	d	2023	false	21541200	R$ 215.412,00	10	2026
+carro	021474-4	Sprinter 315 Furg.Str. E.L.T.A. 2.0 Dies	Mercedes-Benz	Diesel	d	2025	false	26746400	R$ 267.464,00	10	2026
+carro	021474-4	Sprinter 315 Furg.Str. E.L.T.A. 2.0 Dies	Mercedes-Benz	Diesel	d		true	29412100	R$ 294.121,00	10	2026
+carro	021477-9	Sprinter 315 Furgão Str. L T.A 2.0 Dies.	Mercedes-Benz	Diesel	d	2023	false	20568300	R$ 205.683,00	10	2026
+carro	021477-9	Sprinter 315 Furgão Str. L T.A 2.0 Dies.	Mercedes-Benz	Diesel	d	2025	false	24878400	R$ 248.784,00	10	2026
+carro	021477-9	Sprinter 315 Furgão Str. L T.A 2.0 Dies.	Mercedes-Benz	Diesel	d		true	28894500	R$ 288.945,00	10	2026
+carro	021476-0	Sprinter 315 Furgão Str. L T.B 2.0 Dies.	Mercedes-Benz	Diesel	d	2023	false	20845500	R$ 208.455,00	10	2026
+carro	021476-0	Sprinter 315 Furgão Str. L T.B 2.0 Dies.	Mercedes-Benz	Diesel	d	2025	false	24368200	R$ 243.682,00	10	2026
+carro	021476-0	Sprinter 315 Furgão Str. L T.B 2.0 Dies.	Mercedes-Benz	Diesel	d		true	28510000	R$ 285.100,00	10	2026
+carro	021475-2	Sprinter 315 Furgão Str.Curto 2.0 Dies.	Mercedes-Benz	Diesel	d	2023	false	19933500	R$ 199.335,00	10	2026
+carro	021475-2	Sprinter 315 Furgão Str.Curto 2.0 Dies.	Mercedes-Benz	Diesel	d	2025	false	24043700	R$ 240.437,00	10	2026
+carro	021478-7	Sprinter 315 Truck E.Longo T.B 2.0 Dies.	Mercedes-Benz	Diesel	d	2023	false	22153600	R$ 221.536,00	10	2026
+carro	021478-7	Sprinter 315 Truck E.Longo T.B 2.0 Dies.	Mercedes-Benz	Diesel	d	2025	false	25021200	R$ 250.212,00	10	2026
+carro	021478-7	Sprinter 315 Truck E.Longo T.B 2.0 Dies.	Mercedes-Benz	Diesel	d		true	29114500	R$ 291.145,00	10	2026
+carro	021479-5	Sprinter 315 Truck Longo T.B 2.0 Dies.	Mercedes-Benz	Diesel	d	2023	false	20242900	R$ 202.429,00	10	2026
+carro	021479-5	Sprinter 315 Truck Longo T.B 2.0 Dies.	Mercedes-Benz	Diesel	d	2025	false	23286000	R$ 232.860,00	10	2026
+carro	021479-5	Sprinter 315 Truck Longo T.B 2.0 Dies.	Mercedes-Benz	Diesel	d		true	28456000	R$ 284.560,00	10	2026
+carro	021553-8	Sprinter 317 Chassi Extra Lon. T. B. 2.0 Diesel	Mercedes-Benz	Diesel	d		true	31005300	R$ 310.053,00	10	2026
+carro	021555-4	Sprinter 317 Chassi Longo 2.0 Diesel	Mercedes-Benz	Diesel	d		true	30875100	R$ 308.751,00	10	2026
+carro	021551-1	Sprinter 317 Furgão E.LT.A. 2.0 Dies.	Mercedes-Benz	Diesel	d		true	33066200	R$ 330.662,00	10	2026
+carro	021572-4	Sprinter 317 Furgão Extra Lon. T. A. 2.0 Aut. (E6)	Mercedes-Benz	Diesel	d		true	34892500	R$ 348.925,00	10	2026
+carro	021571-6	Sprinter 317 Furgão Longo T.A. 2.0 Aut. (E6)	Mercedes-Benz	Diesel	d		true	33961400	R$ 339.614,00	10	2026
+carro	021552-0	Sprinter 317 Furgão Longo T.A. 2.0 Dies.	Mercedes-Benz	Diesel	d		true	32700300	R$ 327.003,00	10	2026
+carro	021550-3	Sprinter 317 Furgão Longo T.B. 2.0 Dies.	Mercedes-Benz	Diesel	d		true	31699600	R$ 316.996,00	10	2026
+carro	021265-2	Sprinter 415 Chassi L. 2.2 Diesel	Mercedes-Benz	Diesel	d	2013	false	9523000	R$ 95.230,00	10	2026
+carro	021265-2	Sprinter 415 Chassi L. 2.2 Diesel	Mercedes-Benz	Diesel	d	2018	false	14956200	R$ 149.562,00	10	2026
+carro	021265-2	Sprinter 415 Chassi L. 2.2 Diesel	Mercedes-Benz	Diesel	d	2019	false	17020100	R$ 170.201,00	10	2026
+carro	021268-7	Sprinter 415 Furgão Curto T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2013	false	9945100	R$ 99.451,00	10	2026
+carro	021268-7	Sprinter 415 Furgão Curto T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2018	false	15188100	R$ 151.881,00	10	2026
+carro	021268-7	Sprinter 415 Furgão Curto T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2019	false	17161100	R$ 171.611,00	10	2026
+carro	021269-5	Sprinter 415 Furgão E.L.T.Alt. 2.2 Dies.	Mercedes-Benz	Diesel	d	2013	false	11948100	R$ 119.481,00	10	2026
+carro	021269-5	Sprinter 415 Furgão E.L.T.Alt. 2.2 Dies.	Mercedes-Benz	Diesel	d	2018	false	17520100	R$ 175.201,00	10	2026
+carro	021269-5	Sprinter 415 Furgão E.L.T.Alt. 2.2 Dies.	Mercedes-Benz	Diesel	d	2019	false	18161200	R$ 181.612,00	10	2026
+carro	021261-0	Sprinter 415 Furgão Lon.T.Alto 2.2 Dies	Mercedes-Benz	Diesel	d	2013	false	11502200	R$ 115.022,00	10	2026
+carro	021261-0	Sprinter 415 Furgão Lon.T.Alto 2.2 Dies	Mercedes-Benz	Diesel	d	2018	false	17047100	R$ 170.471,00	10	2026
+carro	021261-0	Sprinter 415 Furgão Lon.T.Alto 2.2 Dies	Mercedes-Benz	Diesel	d	2019	false	17882700	R$ 178.827,00	10	2026
+carro	021260-1	Sprinter 415 Furgão Lon.T.Bai. 2.2 Dies.	Mercedes-Benz	Diesel	d	2013	false	10022000	R$ 100.220,00	10	2026
+carro	021260-1	Sprinter 415 Furgão Lon.T.Bai. 2.2 Dies.	Mercedes-Benz	Diesel	d	2018	false	15298500	R$ 152.985,00	10	2026
+carro	021260-1	Sprinter 415 Furgão Lon.T.Bai. 2.2 Dies.	Mercedes-Benz	Diesel	d	2019	false	17276700	R$ 172.767,00	10	2026
+carro	021273-3	Sprinter 415 VAN Luxo T.A. 2.2 Diesel	Mercedes-Benz	Diesel	d	2013	false	12650900	R$ 126.509,00	10	2026
+carro	021273-3	Sprinter 415 VAN Luxo T.A. 2.2 Diesel	Mercedes-Benz	Diesel	d	2018	false	18156200	R$ 181.562,00	10	2026
+carro	021273-3	Sprinter 415 VAN Luxo T.A. 2.2 Diesel	Mercedes-Benz	Diesel	d	2019	false	20684100	R$ 206.841,00	10	2026
+carro	021272-5	Sprinter 415 VAN Luxo T.B. 2.2 Diesel	Mercedes-Benz	Diesel	d	2013	false	11985500	R$ 119.855,00	10	2026
+carro	021272-5	Sprinter 415 VAN Luxo T.B. 2.2 Diesel	Mercedes-Benz	Diesel	d	2018	false	16862200	R$ 168.622,00	10	2026
+carro	021272-5	Sprinter 415 VAN Luxo T.B. 2.2 Diesel	Mercedes-Benz	Diesel	d	2019	false	18012800	R$ 180.128,00	10	2026
+carro	021271-7	Sprinter 415 VAN Standard T.A. 2.2 Dies.	Mercedes-Benz	Diesel	d	2013	false	12020800	R$ 120.208,00	10	2026
+carro	021271-7	Sprinter 415 VAN Standard T.A. 2.2 Dies.	Mercedes-Benz	Diesel	d	2018	false	17801500	R$ 178.015,00	10	2026
+carro	021271-7	Sprinter 415 VAN Standard T.A. 2.2 Dies.	Mercedes-Benz	Diesel	d	2019	false	20366600	R$ 203.666,00	10	2026
+carro	021270-9	Sprinter 415 VAN Standard T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2013	false	11151300	R$ 111.513,00	10	2026
+carro	021270-9	Sprinter 415 VAN Standard T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2018	false	16167800	R$ 161.678,00	10	2026
+carro	021270-9	Sprinter 415 VAN Standard T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2019	false	16735800	R$ 167.358,00	10	2026
+carro	021427-2	Sprinter 416 Chassi Longo T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2020	false	21003000	R$ 210.030,00	10	2026
+carro	021427-2	Sprinter 416 Chassi Longo T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2021	false	21751500	R$ 217.515,00	10	2026
+carro	021444-2	Sprinter 416 F. Vidrado E.L T.A. 2.2 Die	Mercedes-Benz	Diesel	d	2021	false	23602800	R$ 236.028,00	10	2026
+carro	021445-0	Sprinter 416 F. Vidrado L. T.A. 2.2 Die.	Mercedes-Benz	Diesel	d	2020	false	19734800	R$ 197.348,00	10	2026
+carro	021445-0	Sprinter 416 F. Vidrado L. T.A. 2.2 Die.	Mercedes-Benz	Diesel	d	2021	false	21294900	R$ 212.949,00	10	2026
+carro	021433-7	Sprinter 416 Furgão Curto T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2020	false	19664200	R$ 196.642,00	10	2026
+carro	021433-7	Sprinter 416 Furgão Curto T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2021	false	20360300	R$ 203.603,00	10	2026
+carro	021434-5	Sprinter 416 Furgão E.L. T. A. 2.2 Dies.	Mercedes-Benz	Diesel	d	2020	false	18182600	R$ 181.826,00	10	2026
+carro	021434-5	Sprinter 416 Furgão E.L. T. A. 2.2 Dies.	Mercedes-Benz	Diesel	d	2021	false	22012000	R$ 220.120,00	10	2026
+carro	021431-0	Sprinter 416 Furgão Longo T.A. 2.2 Dies.	Mercedes-Benz	Diesel	d	2020	false	19030000	R$ 190.300,00	10	2026
+carro	021431-0	Sprinter 416 Furgão Longo T.A. 2.2 Dies.	Mercedes-Benz	Diesel	d	2021	false	19505800	R$ 195.058,00	10	2026
+carro	021432-9	Sprinter 416 Furgão Longo T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2020	false	20045100	R$ 200.451,00	10	2026
+carro	021432-9	Sprinter 416 Furgão Longo T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2021	false	20546300	R$ 205.463,00	10	2026
+carro	021421-3	Sprinter 416 VAN L. T.A. 10L 2.2 Diesel	Mercedes-Benz	Diesel	d	2020	false	21325500	R$ 213.255,00	10	2026
+carro	021421-3	Sprinter 416 VAN L. T.A. 10L 2.2 Diesel	Mercedes-Benz	Diesel	d	2021	false	27854000	R$ 278.540,00	10	2026
+carro	021422-1	Sprinter 416 VAN L. T.A. 16L 2.2 Diesel	Mercedes-Benz	Diesel	d	2020	false	20498800	R$ 204.988,00	10	2026
+carro	021422-1	Sprinter 416 VAN L. T.A. 16L 2.2 Diesel	Mercedes-Benz	Diesel	d	2021	false	22185300	R$ 221.853,00	10	2026
+carro	021420-5	Sprinter 416 VAN L. T.B. 10L 2.2 Diesel	Mercedes-Benz	Diesel	d	2020	false	18970700	R$ 189.707,00	10	2026
+carro	021420-5	Sprinter 416 VAN L. T.B. 10L 2.2 Diesel	Mercedes-Benz	Diesel	d	2021	false	21383900	R$ 213.839,00	10	2026
+carro	021419-1	Sprinter 416 VAN L. T.B. 16L 2.2 Diesel	Mercedes-Benz	Diesel	d	2020	false	20271600	R$ 202.716,00	10	2026
+carro	021419-1	Sprinter 416 VAN L. T.B. 16L 2.2 Diesel	Mercedes-Benz	Diesel	d	2021	false	22022600	R$ 220.226,00	10	2026
+carro	021488-4	Sprinter 417 Chassi L.T.B. Dies. (E6)	Mercedes-Benz	Diesel	d	2023	false	21494700	R$ 214.947,00	10	2026
+carro	021488-4	Sprinter 417 Chassi L.T.B. Dies. (E6)	Mercedes-Benz	Diesel	d	2025	false	22841000	R$ 228.410,00	10	2026
+carro	021488-4	Sprinter 417 Chassi L.T.B. Dies. (E6)	Mercedes-Benz	Diesel	d		true	26823100	R$ 268.231,00	10	2026
+carro	021567-8	Sprinter 417 Chassi Longo T. B.  2.0 Aut. (E6)	Mercedes-Benz	Diesel	d		true	29815400	R$ 298.154,00	10	2026
+carro	021492-2	Sprinter 417 F. Vidrado L.T.A. Die. (E6)	Mercedes-Benz	Diesel	d	2023	false	23742400	R$ 237.424,00	10	2026
+carro	021492-2	Sprinter 417 F. Vidrado L.T.A. Die. (E6)	Mercedes-Benz	Diesel	d	2025	false	29801900	R$ 298.019,00	10	2026
+carro	021492-2	Sprinter 417 F. Vidrado L.T.A. Die. (E6)	Mercedes-Benz	Diesel	d		true	36990700	R$ 369.907,00	10	2026
+carro	021490-6	Sprinter 417 Furgão Curto T.B. Die. (E6)	Mercedes-Benz	Diesel	d	2023	false	22972800	R$ 229.728,00	10	2026
+carro	021490-6	Sprinter 417 Furgão Curto T.B. Die. (E6)	Mercedes-Benz	Diesel	d	2025	false	26086700	R$ 260.867,00	10	2026
+carro	021494-9	Sprinter 417 Furgão Ext. L.T.A Die. (E6)	Mercedes-Benz	Diesel	d	2023	false	25759400	R$ 257.594,00	10	2026
+carro	021494-9	Sprinter 417 Furgão Ext. L.T.A Die. (E6)	Mercedes-Benz	Diesel	d	2025	false	27781000	R$ 277.810,00	10	2026
+carro	021494-9	Sprinter 417 Furgão Ext. L.T.A Die. (E6)	Mercedes-Benz	Diesel	d		true	34965000	R$ 349.650,00	10	2026
+carro	021563-5	Sprinter 417 Furgão Extra LongoTeto Alto Aut. (E6)	Mercedes-Benz	Diesel	d		true	36728200	R$ 367.282,00	10	2026
+carro	021496-5	Sprinter 417 Furgão L.T.A. Diesel (E6)	Mercedes-Benz	Diesel	d	2023	false	22784500	R$ 227.845,00	10	2026
+carro	021496-5	Sprinter 417 Furgão L.T.A. Diesel (E6)	Mercedes-Benz	Diesel	d	2025	false	27412500	R$ 274.125,00	10	2026
+carro	021496-5	Sprinter 417 Furgão L.T.A. Diesel (E6)	Mercedes-Benz	Diesel	d		true	32201500	R$ 322.015,00	10	2026
+carro	021568-6	Sprinter 417 Furgão Longo T. A. 2.0  Aut.(E6)	Mercedes-Benz	Diesel	d		true	34357600	R$ 343.576,00	10	2026
+carro	021493-0	Sprinter 417 Furgão Longo T.B Die. (E6)	Mercedes-Benz	Diesel	d	2023	false	22390000	R$ 223.900,00	10	2026
+carro	021493-0	Sprinter 417 Furgão Longo T.B Die. (E6)	Mercedes-Benz	Diesel	d	2025	false	25333100	R$ 253.331,00	10	2026
+carro	021493-0	Sprinter 417 Furgão Longo T.B Die. (E6)	Mercedes-Benz	Diesel	d		true	31604600	R$ 316.046,00	10	2026
+carro	021498-1	Sprinter 417 VAN L.T.A. 10L Diesel (E6)	Mercedes-Benz	Diesel	d	2023	false	27641100	R$ 276.411,00	10	2026
+carro	021498-1	Sprinter 417 VAN L.T.A. 10L Diesel (E6)	Mercedes-Benz	Diesel	d	2025	false	32786000	R$ 327.860,00	10	2026
+carro	021498-1	Sprinter 417 VAN L.T.A. 10L Diesel (E6)	Mercedes-Benz	Diesel	d		true	40684000	R$ 406.840,00	10	2026
+carro	021497-3	Sprinter 417 VAN L.T.A. 16L Diesel (E6)	Mercedes-Benz	Diesel	d	2023	false	26185100	R$ 261.851,00	10	2026
+carro	021497-3	Sprinter 417 VAN L.T.A. 16L Diesel (E6)	Mercedes-Benz	Diesel	d	2025	false	29090600	R$ 290.906,00	10	2026
+carro	021497-3	Sprinter 417 VAN L.T.A. 16L Diesel (E6)	Mercedes-Benz	Diesel	d		true	39165500	R$ 391.655,00	10	2026
+carro	021500-7	Sprinter 417 VAN L.T.B 10L Diesel (E6)	Mercedes-Benz	Diesel	d	2023	false	26322400	R$ 263.224,00	10	2026
+carro	021500-7	Sprinter 417 VAN L.T.B 10L Diesel (E6)	Mercedes-Benz	Diesel	d	2025	false	30106200	R$ 301.062,00	10	2026
+carro	021500-7	Sprinter 417 VAN L.T.B 10L Diesel (E6)	Mercedes-Benz	Diesel	d		true	39563300	R$ 395.633,00	10	2026
+carro	021499-0	Sprinter 417 VAN L.T.B 16L Diesel( E6)	Mercedes-Benz	Diesel	d	2023	false	25109300	R$ 251.093,00	10	2026
+carro	021499-0	Sprinter 417 VAN L.T.B 16L Diesel( E6)	Mercedes-Benz	Diesel	d	2025	false	28288300	R$ 282.883,00	10	2026
+carro	021499-0	Sprinter 417 VAN L.T.B 16L Diesel( E6)	Mercedes-Benz	Diesel	d		true	38132300	R$ 381.323,00	10	2026
+carro	021570-8	Sprinter 417 VAN Longo T. A. 2.0  16L Aut. (E6)	Mercedes-Benz	Diesel	d		true	40285100	R$ 402.851,00	10	2026
+carro	021569-4	Sprinter 417 VAN Longo T. B. 2.0 16L Aut. (E6)	Mercedes-Benz	Diesel	d		true	39192900	R$ 391.929,00	10	2026
+carro	021267-9	Sprinter 515 Chassi E. L. 2.2 Diesel	Mercedes-Benz	Diesel	d	2013	false	13575100	R$ 135.751,00	10	2026
+carro	021267-9	Sprinter 515 Chassi E. L. 2.2 Diesel	Mercedes-Benz	Diesel	d	2018	false	20074400	R$ 200.744,00	10	2026
+carro	021267-9	Sprinter 515 Chassi E. L. 2.2 Diesel	Mercedes-Benz	Diesel	d	2019	false	20947100	R$ 209.471,00	10	2026
+carro	021266-0	Sprinter 515 Chassi L. 2.2  Diesel	Mercedes-Benz	Diesel	d	2013	false	12470000	R$ 124.700,00	10	2026
+carro	021266-0	Sprinter 515 Chassi L. 2.2  Diesel	Mercedes-Benz	Diesel	d	2018	false	17692800	R$ 176.928,00	10	2026
+carro	021266-0	Sprinter 515 Chassi L. 2.2  Diesel	Mercedes-Benz	Diesel	d	2019	false	21400900	R$ 214.009,00	10	2026
+carro	021262-8	Sprinter 515 Furgão E.L.T. Alto 2.2 Die.	Mercedes-Benz	Diesel	d	2013	false	12227600	R$ 122.276,00	10	2026
+carro	021262-8	Sprinter 515 Furgão E.L.T. Alto 2.2 Die.	Mercedes-Benz	Diesel	d	2018	false	18268000	R$ 182.680,00	10	2026
+carro	021262-8	Sprinter 515 Furgão E.L.T. Alto 2.2 Die.	Mercedes-Benz	Diesel	d	2019	false	19166400	R$ 191.664,00	10	2026
+carro	021283-0	Sprinter 515 VAN 2.2 Diesel	Mercedes-Benz	Diesel	d	2013	false	13832500	R$ 138.325,00	10	2026
+carro	021283-0	Sprinter 515 VAN 2.2 Diesel	Mercedes-Benz	Diesel	d	2018	false	19848200	R$ 198.482,00	10	2026
+carro	021283-0	Sprinter 515 VAN 2.2 Diesel	Mercedes-Benz	Diesel	d	2019	false	20712400	R$ 207.124,00	10	2026
+carro	021429-9	Sprinter 516 Chassi E.L. T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2020	false	18538900	R$ 185.389,00	10	2026
+carro	021429-9	Sprinter 516 Chassi E.L. T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2021	false	21733800	R$ 217.338,00	10	2026
+carro	021428-0	Sprinter 516 Chassi Longo T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2020	false	18205700	R$ 182.057,00	10	2026
+carro	021428-0	Sprinter 516 Chassi Longo T.B. 2.2 Dies.	Mercedes-Benz	Diesel	d	2021	false	21315700	R$ 213.157,00	10	2026
+carro	021446-9	Sprinter 516 F.Vidrado E.L. T.A. 2.2 Die	Mercedes-Benz	Diesel	d	2020	false	19643200	R$ 196.432,00	10	2026
+carro	021446-9	Sprinter 516 F.Vidrado E.L. T.A. 2.2 Die	Mercedes-Benz	Diesel	d	2021	false	21281500	R$ 212.815,00	10	2026
+carro	021435-3	Sprinter 516 Furgão E.L.T. Alto 2.2 Dies	Mercedes-Benz	Diesel	d	2020	false	17908000	R$ 179.080,00	10	2026
+carro	021435-3	Sprinter 516 Furgão E.L.T. Alto 2.2 Dies	Mercedes-Benz	Diesel	d	2021	false	20585800	R$ 205.858,00	10	2026
+carro	021453-1	Sprinter 516 VAN E.L. T.A  20L 2.2 Dies.	Mercedes-Benz	Diesel	d	2020	false	23949100	R$ 239.491,00	10	2026
+carro	021453-1	Sprinter 516 VAN E.L. T.A  20L 2.2 Dies.	Mercedes-Benz	Diesel	d	2021	false	28542700	R$ 285.427,00	10	2026
+carro	021437-0	Sprinter 516 VAN E.L. T.A. 18L 2.2 Dies.	Mercedes-Benz	Diesel	d	2020	false	21540600	R$ 215.406,00	10	2026
+carro	021437-0	Sprinter 516 VAN E.L. T.A. 18L 2.2 Dies.	Mercedes-Benz	Diesel	d	2021	false	26106900	R$ 261.069,00	10	2026
+carro	021438-8	Sprinter 516 VAN E.L. T.A. 21L 2.2 Dies.	Mercedes-Benz	Diesel	d	2020	false	24022600	R$ 240.226,00	10	2026
+carro	021438-8	Sprinter 516 VAN E.L. T.A. 21L 2.2 Dies.	Mercedes-Benz	Diesel	d	2021	false	27965300	R$ 279.653,00	10	2026
+carro	021502-3	Sprinter 517 Chassi E.Lon. T.B. Die.(E6)	Mercedes-Benz	Diesel	d	2023	false	21184000	R$ 211.840,00	10	2026
+carro	021502-3	Sprinter 517 Chassi E.Lon. T.B. Die.(E6)	Mercedes-Benz	Diesel	d	2025	false	23589300	R$ 235.893,00	10	2026
+carro	021502-3	Sprinter 517 Chassi E.Lon. T.B. Die.(E6)	Mercedes-Benz	Diesel	d		true	30331500	R$ 303.315,00	10	2026
+carro	021566-0	Sprinter 517 Chassi Extra Lon. T. B. 2.0 Aut. (E6)	Mercedes-Benz	Diesel	d		true	31522300	R$ 315.223,00	10	2026
+carro	021565-1	Sprinter 517 Chassi Longo T. B. 2.0  Aut. (E6)	Mercedes-Benz	Diesel	d		true	30771400	R$ 307.714,00	10	2026
+carro	021501-5	Sprinter 517 Chassi Longo T.B. Die. (E6)	Mercedes-Benz	Diesel	d	2023	false	20896100	R$ 208.961,00	10	2026
+carro	021501-5	Sprinter 517 Chassi Longo T.B. Die. (E6)	Mercedes-Benz	Diesel	d	2025	false	24025100	R$ 240.251,00	10	2026
+carro	021501-5	Sprinter 517 Chassi Longo T.B. Die. (E6)	Mercedes-Benz	Diesel	d		true	29919900	R$ 299.199,00	10	2026
+carro	021503-1	Sprinter 517 F. Ext. L. T.A. Die. (E6)	Mercedes-Benz	Diesel	d	2023	false	23501200	R$ 235.012,00	10	2026
+carro	021503-1	Sprinter 517 F. Ext. L. T.A. Die. (E6)	Mercedes-Benz	Diesel	d	2025	false	28451500	R$ 284.515,00	10	2026
+carro	021503-1	Sprinter 517 F. Ext. L. T.A. Die. (E6)	Mercedes-Benz	Diesel	d		true	36666900	R$ 366.669,00	10	2026
+carro	021504-0	Sprinter 517 F. Ext. L.P.T.A. Die. (E6)	Mercedes-Benz	Diesel	d	2023	false	25129100	R$ 251.291,00	10	2026
+carro	021504-0	Sprinter 517 F. Ext. L.P.T.A. Die. (E6)	Mercedes-Benz	Diesel	d	2025	false	29086800	R$ 290.868,00	10	2026
+carro	021504-0	Sprinter 517 F. Ext. L.P.T.A. Die. (E6)	Mercedes-Benz	Diesel	d		true	37770100	R$ 377.701,00	10	2026
+carro	021505-8	Sprinter 517 F.Vidr. E.L.P.T.A. Die (E6)	Mercedes-Benz	Diesel	d	2023	false	25690100	R$ 256.901,00	10	2026
+carro	021505-8	Sprinter 517 F.Vidr. E.L.P.T.A. Die (E6)	Mercedes-Benz	Diesel	d	2025	false	29842700	R$ 298.427,00	10	2026
+carro	021505-8	Sprinter 517 F.Vidr. E.L.P.T.A. Die (E6)	Mercedes-Benz	Diesel	d		true	40589500	R$ 405.895,00	10	2026
+carro	021564-3	Sprinter 517 Furgão Extra Lon. P.T.A. 2.0 Aut.(E6)	Mercedes-Benz	Diesel	d		true	38568400	R$ 385.684,00	10	2026
+carro	021506-6	Sprinter 517 VAN E.L.T.A. 18L Die (E6)	Mercedes-Benz	Diesel	d	2023	false	28434900	R$ 284.349,00	10	2026
+carro	021506-6	Sprinter 517 VAN E.L.T.A. 18L Die (E6)	Mercedes-Benz	Diesel	d	2025	false	33146400	R$ 331.464,00	10	2026
+carro	021506-6	Sprinter 517 VAN E.L.T.A. 18L Die (E6)	Mercedes-Benz	Diesel	d		true	44295500	R$ 442.955,00	10	2026
+carro	021562-7	Sprinter 517 VAN Extra Longo P.T.A. 21L Aut. (E6)	Mercedes-Benz	Diesel	d		true	48553400	R$ 485.534,00	10	2026
+carro	023186-0	KICKS Active 1.6 16V Flex Aut.	Nissan	Flex	f	2023	false	9025100	R$ 90.251,00	10	2026
+carro	023173-8	KICKS Active S 1.6 16V Flex Aut.	Nissan	Flex	f	2021	false	8072500	R$ 80.725,00	10	2026
+carro	023195-9	KICKS Advance 1.0 Turbo Flex Aut.	Nissan	Flex	f		true	17262500	R$ 172.625,00	10	2026
+carro	023180-0	KICKS Advance 1.6 16V Flex Aut.	Nissan	Flex	f	2023	false	9781500	R$ 97.815,00	10	2026
+carro	023196-7	KICKS Exclusive 1.0 Turbo Flex Aut.	Nissan	Flex	f		true	18231700	R$ 182.317,00	10	2026
+carro	023181-9	KICKS Exclusive 1.6 16V Flex Aut.	Nissan	Flex	f	2023	false	10384300	R$ 103.843,00	10	2026
+carro	023197-5	KICKS Platinum 1.0 Turbo Flex Aut.	Nissan	Flex	f		true	19298400	R$ 192.984,00	10	2026
+carro	023191-6	KICKS Play Active Plus 1.6 16V Flex Aut.	Nissan	Flex	f	2025	false	10619400	R$ 106.194,00	10	2026
+carro	023191-6	KICKS Play Active Plus 1.6 16V Flex Aut.	Nissan	Flex	f		true	11992600	R$ 119.926,00	10	2026
+carro	023193-2	KICKS Play Advance Plus 1.6 16V Flex Aut	Nissan	Flex	f	2025	false	11648800	R$ 116.488,00	10	2026
+carro	023193-2	KICKS Play Advance Plus 1.6 16V Flex Aut	Nissan	Flex	f		true	14410300	R$ 144.103,00	10	2026
+carro	023192-4	KICKS Play Sense 1.6 16V Flex Aut.	Nissan	Flex	f	2025	false	11002000	R$ 110.020,00	10	2026
+carro	023192-4	KICKS Play Sense 1.6 16V Flex Aut.	Nissan	Flex	f		true	12995500	R$ 129.955,00	10	2026
+carro	023156-8	KICKS S 1.6 16V Flex 5p Aut.	Nissan	Flex	f	2018	false	7319200	R$ 73.192,00	10	2026
+carro	023156-8	KICKS S 1.6 16V Flex 5p Aut.	Nissan	Flex	f	2019	false	7581400	R$ 75.814,00	10	2026
+carro	023156-8	KICKS S 1.6 16V Flex 5p Aut.	Nissan	Flex	f	2020	false	7780500	R$ 77.805,00	10	2026
+carro	023156-8	KICKS S 1.6 16V Flex 5p Aut.	Nissan	Flex	f	2021	false	8114300	R$ 81.143,00	10	2026
+carro	023155-0	KICKS S 1.6 16V FlexStar 5p Mec.	Nissan	Flex	f	2018	false	7265700	R$ 72.657,00	10	2026
+carro	023155-0	KICKS S 1.6 16V FlexStar 5p Mec.	Nissan	Flex	f	2019	false	7447400	R$ 74.474,00	10	2026
+carro	023155-0	KICKS S 1.6 16V FlexStar 5p Mec.	Nissan	Flex	f	2020	false	7699300	R$ 76.993,00	10	2026
+carro	023155-0	KICKS S 1.6 16V FlexStar 5p Mec.	Nissan	Flex	f	2021	false	8059600	R$ 80.596,00	10	2026
+carro	023158-4	KICKS S Direct 1.6 16V Flex 5p Aut.	Nissan	Flex	f	2018	false	7327400	R$ 73.274,00	10	2026
+carro	023158-4	KICKS S Direct 1.6 16V Flex 5p Aut.	Nissan	Flex	f	2019	false	7645100	R$ 76.451,00	10	2026
+carro	023158-4	KICKS S Direct 1.6 16V Flex 5p Aut.	Nissan	Flex	f	2020	false	7855900	R$ 78.559,00	10	2026
+carro	023149-5	KICKS SL 1.6 16V FlexStar 5p Aut.	Nissan	Flex	f	2018	false	7883200	R$ 78.832,00	10	2026
+carro	023149-5	KICKS SL 1.6 16V FlexStar 5p Aut.	Nissan	Flex	f	2019	false	8133600	R$ 81.336,00	10	2026
+carro	023149-5	KICKS SL 1.6 16V FlexStar 5p Aut.	Nissan	Flex	f	2020	false	8347500	R$ 83.475,00	10	2026
+carro	023149-5	KICKS SL 1.6 16V FlexStar 5p Aut.	Nissan	Flex	f	2021	false	8880800	R$ 88.808,00	10	2026
+carro	023154-1	KICKS SV 1.6 16V FlexStar 5p Aut.	Nissan	Flex	f	2018	false	7795800	R$ 77.958,00	10	2026
+carro	023154-1	KICKS SV 1.6 16V FlexStar 5p Aut.	Nissan	Flex	f	2019	false	7990700	R$ 79.907,00	10	2026
+carro	023154-1	KICKS SV 1.6 16V FlexStar 5p Aut.	Nissan	Flex	f	2020	false	8190500	R$ 81.905,00	10	2026
+carro	023154-1	KICKS SV 1.6 16V FlexStar 5p Aut.	Nissan	Flex	f	2021	false	8536000	R$ 85.360,00	10	2026
+carro	023194-0	KICKS Sense 1.0 Turbo Flex Aut.	Nissan	Flex	f		true	15859400	R$ 158.594,00	10	2026
+carro	023178-9	KICKS Sense 1.6 16V Flex Aut.	Nissan	Flex	f	2023	false	9113500	R$ 91.135,00	10	2026
+carro	023165-7	KICKS Special Ed. 1.6 16V Flex 5p Aut.	Nissan	Flex	f	2020	false	7866400	R$ 78.664,00	10	2026
+carro	023166-5	KICKS Special Ed.1.6 16V Flex 5p Mec.	Nissan	Flex	f	2020	false	7873700	R$ 78.737,00	10	2026
+carro	023162-2	KICKS UCL 1.6 16V Flex 5p Aut.	Nissan	Flex	f	2019	false	7803800	R$ 78.038,00	10	2026
+carro	023162-2	KICKS UCL 1.6 16V Flex 5p Aut.	Nissan	Flex	f	2020	false	7998900	R$ 79.989,00	10	2026
+carro	023162-2	KICKS UCL 1.6 16V Flex 5p Aut.	Nissan	Flex	f	2021	false	8273900	R$ 82.739,00	10	2026
+carro	023182-7	KICKS XPlay 1.6 16V Flex Aut.	Nissan	Flex	f	2023	false	10128000	R$ 101.280,00	10	2026
+carro	002112-1	Corolla ALTIS/A.Premiu. 2.0 Flex 16V Aut	Toyota	Flex	f	2013	false	6840700	R$ 68.407,00	10	2026
+carro	002112-1	Corolla ALTIS/A.Premiu. 2.0 Flex 16V Aut	Toyota	Flex	f	2018	false	10135300	R$ 101.353,00	10	2026
+carro	002112-1	Corolla ALTIS/A.Premiu. 2.0 Flex 16V Aut	Toyota	Flex	f	2019	false	10410800	R$ 104.108,00	10	2026
+carro	002112-1	Corolla ALTIS/A.Premiu. 2.0 Flex 16V Aut	Toyota	Flex	f	2020	false	12208500	R$ 122.085,00	10	2026
+carro	002112-1	Corolla ALTIS/A.Premiu. 2.0 Flex 16V Aut	Toyota	Flex	f	2021	false	12667400	R$ 126.674,00	10	2026
+carro	002112-1	Corolla ALTIS/A.Premiu. 2.0 Flex 16V Aut	Toyota	Flex	f	2023	false	14353900	R$ 143.539,00	10	2026
+carro	002112-1	Corolla ALTIS/A.Premiu. 2.0 Flex 16V Aut	Toyota	Flex	f	2025	false	17014700	R$ 170.147,00	10	2026
+carro	002112-1	Corolla ALTIS/A.Premiu. 2.0 Flex 16V Aut	Toyota	Flex	f		true	20340100	R$ 203.401,00	10	2026
+carro	002182-2	Corolla Altis 1.8 16V Aut. (Híbrido)	Toyota	Híbrido	h	2020	false	11907700	R$ 119.077,00	10	2026
+carro	002182-2	Corolla Altis 1.8 16V Aut. (Híbrido)	Toyota	Híbrido	h	2021	false	12205400	R$ 122.054,00	10	2026
+carro	002182-2	Corolla Altis 1.8 16V Aut. (Híbrido)	Toyota	Híbrido	h	2023	false	13567900	R$ 135.679,00	10	2026
+carro	002182-2	Corolla Altis 1.8 16V Aut. (Híbrido)	Toyota	Híbrido	h	2025	false	17364500	R$ 173.645,00	10	2026
+carro	002183-0	Corolla Altis Prem. 1.8 Aut. (Híbrido)	Toyota	Híbrido	h	2020	false	12078700	R$ 120.787,00	10	2026
+carro	002183-0	Corolla Altis Prem. 1.8 Aut. (Híbrido)	Toyota	Híbrido	h	2021	false	12650200	R$ 126.502,00	10	2026
+carro	002183-0	Corolla Altis Prem. 1.8 Aut. (Híbrido)	Toyota	Híbrido	h	2023	false	13927400	R$ 139.274,00	10	2026
+carro	002183-0	Corolla Altis Prem. 1.8 Aut. (Híbrido)	Toyota	Híbrido	h	2025	false	17433600	R$ 174.336,00	10	2026
+carro	002183-0	Corolla Altis Prem. 1.8 Aut. (Híbrido)	Toyota	Híbrido	h		true	20500200	R$ 205.002,00	10	2026
+carro	002208-0	Corolla Cross GR-S 2.0 16V Flex Aut.	Toyota	Flex	f	2023	false	14055500	R$ 140.555,00	10	2026
+carro	002208-0	Corolla Cross GR-S 2.0 16V Flex Aut.	Toyota	Flex	f	2025	false	17019000	R$ 170.190,00	10	2026
+carro	002208-0	Corolla Cross GR-S 2.0 16V Flex Aut.	Toyota	Flex	f		true	21488600	R$ 214.886,00	10	2026
+carro	002201-2	Corolla Cross XR 2.0 16V Flex Aut.	Toyota	Flex	f	2023	false	12540900	R$ 125.409,00	10	2026
+carro	002201-2	Corolla Cross XR 2.0 16V Flex Aut.	Toyota	Flex	f	2025	false	15265000	R$ 152.650,00	10	2026
+carro	002201-2	Corolla Cross XR 2.0 16V Flex Aut.	Toyota	Flex	f		true	19623100	R$ 196.231,00	10	2026
+carro	002203-9	Corolla Cross XRE 2.0 16V Flex Aut.	Toyota	Flex	f	2023	false	13208200	R$ 132.082,00	10	2026
+carro	002203-9	Corolla Cross XRE 2.0 16V Flex Aut.	Toyota	Flex	f	2025	false	15537400	R$ 155.374,00	10	2026
+carro	002203-9	Corolla Cross XRE 2.0 16V Flex Aut.	Toyota	Flex	f		true	19785400	R$ 197.854,00	10	2026
+carro	002200-4	Corolla Cross XRV 1.8 16V Aut. (Híbrido)	Toyota	Híbrido	h	2023	false	14136800	R$ 141.368,00	10	2026
+carro	002200-4	Corolla Cross XRV 1.8 16V Aut. (Híbrido)	Toyota	Híbrido	h	2025	false	17337000	R$ 173.370,00	10	2026
+carro	002204-7	Corolla Cross XRX 1.8 16V Aut. (Híbrido)	Toyota	Híbrido	h	2023	false	14531200	R$ 145.312,00	10	2026
+carro	002204-7	Corolla Cross XRX 1.8 16V Aut. (Híbrido)	Toyota	Híbrido	h	2025	false	18063700	R$ 180.637,00	10	2026
+carro	002204-7	Corolla Cross XRX 1.8 16V Aut. (Híbrido)	Toyota	Híbrido	h		true	21983500	R$ 219.835,00	10	2026
+carro	002216-0	Corolla Cross XRX 2.0 16V Flex Aut.	Toyota	Flex	f	2025	false	17064800	R$ 170.648,00	10	2026
+carro	002216-0	Corolla Cross XRX 2.0 16V Flex Aut.	Toyota	Flex	f		true	21020700	R$ 210.207,00	10	2026
+carro	002222-5	Corolla GLi 1.8 16V Aut.	Toyota	Híbrido	h		true	18318800	R$ 183.188,00	10	2026
+carro	002109-1	Corolla GLi 1.8 Flex 16V  Aut.	Toyota	Flex	f	2013	false	6123900	R$ 61.239,00	10	2026
+carro	002109-1	Corolla GLi 1.8 Flex 16V  Aut.	Toyota	Flex	f	2018	false	8482300	R$ 84.823,00	10	2026
+carro	002109-1	Corolla GLi 1.8 Flex 16V  Aut.	Toyota	Flex	f	2019	false	8713400	R$ 87.134,00	10	2026
+carro	002108-3	Corolla GLi 1.8 Flex 16V Mec.	Toyota	Flex	f	2013	false	5978100	R$ 59.781,00	10	2026
+carro	002181-4	Corolla GLi 2.0 16V Flex Aut.	Toyota	Flex	f	2020	false	10588300	R$ 105.883,00	10	2026
+carro	002181-4	Corolla GLi 2.0 16V Flex Aut.	Toyota	Flex	f	2021	false	10853100	R$ 108.531,00	10	2026
+carro	002181-4	Corolla GLi 2.0 16V Flex Aut.	Toyota	Flex	f	2023	false	11736900	R$ 117.369,00	10	2026
+carro	002181-4	Corolla GLi 2.0 16V Flex Aut.	Toyota	Flex	f	2025	false	13882800	R$ 138.828,00	10	2026
+carro	002181-4	Corolla GLi 2.0 16V Flex Aut.	Toyota	Flex	f		true	17131200	R$ 171.312,00	10	2026
+carro	002139-3	Corolla GLi Upper 1.8 Flex 16V Aut.	Toyota	Flex	f	2018	false	8541100	R$ 85.411,00	10	2026
+carro	002139-3	Corolla GLi Upper 1.8 Flex 16V Aut.	Toyota	Flex	f	2019	false	8783800	R$ 87.838,00	10	2026
+carro	002213-6	Corolla GR Circuit 1.6 Turbo 4x4 Mec	Toyota	Gasolina	g		true	39999000	R$ 399.990,00	10	2026
+carro	002212-8	Corolla GR Core 1.6 Turbo 4x4 Mec	Toyota	Gasolina	g		true	39554000	R$ 395.540,00	10	2026
+carro	002199-7	Corolla GR-Sport 2.0 Flex 16V Aut.	Toyota	Flex	f	2023	false	13545200	R$ 135.452,00	10	2026
+carro	002199-7	Corolla GR-Sport 2.0 Flex 16V Aut.	Toyota	Flex	f	2025	false	16623300	R$ 166.233,00	10	2026
+carro	002199-7	Corolla GR-Sport 2.0 Flex 16V Aut.	Toyota	Flex	f		true	20236500	R$ 202.365,00	10	2026
+carro	002111-3	Corolla XEi 2.0 Flex 16V Aut.	Toyota	Flex	f	2013	false	6526100	R$ 65.261,00	10	2026
+carro	002111-3	Corolla XEi 2.0 Flex 16V Aut.	Toyota	Flex	f	2018	false	9704100	R$ 97.041,00	10	2026
+carro	002111-3	Corolla XEi 2.0 Flex 16V Aut.	Toyota	Flex	f	2019	false	10106900	R$ 101.069,00	10	2026
+carro	002111-3	Corolla XEi 2.0 Flex 16V Aut.	Toyota	Flex	f	2020	false	11395800	R$ 113.958,00	10	2026
+carro	002111-3	Corolla XEi 2.0 Flex 16V Aut.	Toyota	Flex	f	2021	false	11690400	R$ 116.904,00	10	2026
+carro	002111-3	Corolla XEi 2.0 Flex 16V Aut.	Toyota	Flex	f	2023	false	12439900	R$ 124.399,00	10	2026
+carro	002111-3	Corolla XEi 2.0 Flex 16V Aut.	Toyota	Flex	f	2025	false	15199300	R$ 151.993,00	10	2026
+carro	002111-3	Corolla XEi 2.0 Flex 16V Aut.	Toyota	Flex	f		true	17604600	R$ 176.046,00	10	2026
+carro	002062-1	Corolla XLi 1.8/1.8 Flex 16V Aut.	Toyota	Gasolina	g	2013	false	6106100	R$ 61.061,00	10	2026
+carro	002027-3	Corolla XLi 1.8/1.8 Flex 16V Mec.	Toyota	Gasolina	g	2013	false	6159300	R$ 61.593,00	10	2026
+carro	002115-6	Corolla XRS 2.0 Flex 16V Aut.	Toyota	Flex	f	2013	false	6611400	R$ 66.114,00	10	2026
+carro	002115-6	Corolla XRS 2.0 Flex 16V Aut.	Toyota	Flex	f	2018	false	9793000	R$ 97.930,00	10	2026
+carro	002115-6	Corolla XRS 2.0 Flex 16V Aut.	Toyota	Flex	f	2019	false	10037900	R$ 100.379,00	10	2026
+carro	005345-7	Gol (novo) 1.0 Mi Total Flex 8V 2p	VW - VolksWagen	Flex	f	2013	false	2850700	R$ 28.507,00	10	2026
+carro	005275-2	Gol (novo) 1.0 Mi Total Flex 8V 4p	VW - VolksWagen	Flex	f	2013	false	3038500	R$ 30.385,00	10	2026
+carro	005346-5	Gol (novo) 1.6 Mi Total Flex 8V 2p	VW - VolksWagen	Flex	f	2013	false	3483100	R$ 34.831,00	10	2026
+carro	005276-0	Gol (novo) 1.6 Mi Total Flex 8V 4p	VW - VolksWagen	Flex	f	2013	false	3532300	R$ 35.323,00	10	2026
+carro	005277-9	Gol (novo) 1.6 Power/Highi T.Flex 8v 4P	VW - VolksWagen	Flex	f	2013	false	3635000	R$ 36.350,00	10	2026
+carro	005490-9	Gol 1.0 Flex 12V 5p	VW - VolksWagen	Flex	f	2019	false	4305200	R$ 43.052,00	10	2026
+carro	005490-9	Gol 1.0 Flex 12V 5p	VW - VolksWagen	Flex	f	2020	false	4495900	R$ 44.959,00	10	2026
+carro	005490-9	Gol 1.0 Flex 12V 5p	VW - VolksWagen	Flex	f	2021	false	4708800	R$ 47.088,00	10	2026
+carro	005490-9	Gol 1.0 Flex 12V 5p	VW - VolksWagen	Flex	f	2023	false	5440100	R$ 54.401,00	10	2026
+carro	005341-4	Gol 1.0 Total Flex 8V 5p (25 Anos)	VW - VolksWagen	Flex	f	2013	false	3070200	R$ 30.702,00	10	2026
+carro	005310-4	Gol 1.6 I MOTI.Power/Highli T.Flex 8V 4p	VW - VolksWagen	Flex	f	2013	false	3705800	R$ 37.058,00	10	2026
+carro	005502-6	Gol 1.6 MSI Flex 16V 5p Aut.	VW - VolksWagen	Flex	f	2019	false	5529800	R$ 55.298,00	10	2026
+carro	005502-6	Gol 1.6 MSI Flex 16V 5p Aut.	VW - VolksWagen	Flex	f	2020	false	5705800	R$ 57.058,00	10	2026
+carro	005502-6	Gol 1.6 MSI Flex 16V 5p Aut.	VW - VolksWagen	Flex	f	2021	false	5848500	R$ 58.485,00	10	2026
+carro	005491-7	Gol 1.6 MSI Flex 8V 5p	VW - VolksWagen	Flex	f	2019	false	4727200	R$ 47.272,00	10	2026
+carro	005491-7	Gol 1.6 MSI Flex 8V 5p	VW - VolksWagen	Flex	f	2020	false	5009300	R$ 50.093,00	10	2026
+carro	005491-7	Gol 1.6 MSI Flex 8V 5p	VW - VolksWagen	Flex	f	2021	false	5190200	R$ 51.902,00	10	2026
+carro	005350-3	Gol 1.6 Mi I MOTION Total Flex 8V 3p	VW - VolksWagen	Flex	f	2013	false	3775000	R$ 37.750,00	10	2026
+carro	005324-4	Gol 1.6 Mi Rallye I MOTION T. Flex 8V 4p	VW - VolksWagen	Flex	f	2013	false	3838400	R$ 38.384,00	10	2026
+carro	005210-8	Gol 1.6 Mi Rallye Total Flex 8V 4p	VW - VolksWagen	Flex	f	2013	false	3779200	R$ 37.792,00	10	2026
+carro	005339-2	Gol BLACK 1.0 Mi Total Flex 8V 4p	VW - VolksWagen	Flex	f	2013	false	3244000	R$ 32.440,00	10	2026
+carro	005227-2	Gol City (Trend) 1.0 Mi Total Flex 8V 2p	VW - VolksWagen	Flex	f	2013	false	2469600	R$ 24.696,00	10	2026
+carro	005195-0	Gol City (Trend) 1.6 Mi T.Flex 8V 4p	VW - VolksWagen	Flex	f	2013	false	3363100	R$ 33.631,00	10	2026
+carro	005228-0	Gol City (Trend)/Titan 1.0 T. Flex 8V 4p	VW - VolksWagen	Gasolina	g	2013	false	2838600	R$ 28.386,00	10	2026
+carro	005394-5	Gol Comfort. I MOTION 1.6 T. Flex 8V 5p	VW - VolksWagen	Flex	f	2018	false	4794800	R$ 47.948,00	10	2026
+carro	005392-9	Gol Comfortline 1.6 T. Flex 8V 5p	VW - VolksWagen	Flex	f	2018	false	4762300	R$ 47.623,00	10	2026
+carro	005317-1	Gol ECOMOTION  1.0 Mi Total Flex 8V 4p	VW - VolksWagen	Flex	f	2013	false	3122100	R$ 31.221,00	10	2026
+carro	005316-3	Gol ECOMOTION 1.0 Mi Total Flex 8V 2p	VW - VolksWagen	Flex	f	2013	false	2333700	R$ 23.337,00	10	2026
+carro	005309-0	Gol I MOTION 1.6 Mi Total Flex 8V 4p	VW - VolksWagen	Flex	f	2013	false	3407800	R$ 34.078,00	10	2026
+carro	005539-5	Gol Last Edition 1.0 Flex 12V 5p	VW - VolksWagen	Flex	f	2023	false	9854300	R$ 98.543,00	10	2026
+carro	005469-0	Gol TRACK 1.0 Total Flex 12V 5p	VW - VolksWagen	Flex	f	2018	false	4824900	R$ 48.249,00	10	2026
+carro	005455-0	Gol Trendline 1.0 T.Flex 12V 5p	VW - VolksWagen	Flex	f	2018	false	4150000	R$ 41.500,00	10	2026
+carro	005397-0	Gol Trendline 1.6 T.Flex 8V 5p	VW - VolksWagen	Flex	f	2018	false	4612800	R$ 46.128,00	10	2026
+carro	005500-0	VIRTUS 1.6 MSI Flex 16V 4p Aut.	VW - VolksWagen	Flex	f	2019	false	6991100	R$ 69.911,00	10	2026
+carro	005500-0	VIRTUS 1.6 MSI Flex 16V 4p Aut.	VW - VolksWagen	Flex	f	2020	false	7184000	R$ 71.840,00	10	2026
+carro	005500-0	VIRTUS 1.6 MSI Flex 16V 4p Aut.	VW - VolksWagen	Flex	f	2021	false	7363600	R$ 73.636,00	10	2026
+carro	005486-0	VIRTUS 1.6 MSI Flex 16V 5p Mec.	VW - VolksWagen	Flex	f	2018	false	5916500	R$ 59.165,00	10	2026
+carro	005486-0	VIRTUS 1.6 MSI Flex 16V 5p Mec.	VW - VolksWagen	Flex	f	2019	false	6432600	R$ 64.326,00	10	2026
+carro	005486-0	VIRTUS 1.6 MSI Flex 16V 5p Mec.	VW - VolksWagen	Flex	f	2020	false	6694600	R$ 66.946,00	10	2026
+carro	005486-0	VIRTUS 1.6 MSI Flex 16V 5p Mec.	VW - VolksWagen	Flex	f	2021	false	6911400	R$ 69.114,00	10	2026
+carro	005485-2	VIRTUS Comfort. 200 TSI 1.0 Flex 12V Aut	VW - VolksWagen	Flex	f	2018	false	7147200	R$ 71.472,00	10	2026
+carro	005485-2	VIRTUS Comfort. 200 TSI 1.0 Flex 12V Aut	VW - VolksWagen	Flex	f	2019	false	7325900	R$ 73.259,00	10	2026
+carro	005485-2	VIRTUS Comfort. 200 TSI 1.0 Flex 12V Aut	VW - VolksWagen	Flex	f	2020	false	7567800	R$ 75.678,00	10	2026
+carro	005485-2	VIRTUS Comfort. 200 TSI 1.0 Flex 12V Aut	VW - VolksWagen	Flex	f	2021	false	7771500	R$ 77.715,00	10	2026
+carro	005485-2	VIRTUS Comfort. 200 TSI 1.0 Flex 12V Aut	VW - VolksWagen	Flex	f	2023	false	9710000	R$ 97.100,00	10	2026
+carro	005485-2	VIRTUS Comfort. 200 TSI 1.0 Flex 12V Aut	VW - VolksWagen	Flex	f	2025	false	11138700	R$ 111.387,00	10	2026
+carro	005485-2	VIRTUS Comfort. 200 TSI 1.0 Flex 12V Aut	VW - VolksWagen	Flex	f		true	14134100	R$ 141.341,00	10	2026
+carro	005544-1	VIRTUS Exclusive 250TSI 1.4 Flex 16V Aut	VW - VolksWagen	Flex	f	2023	false	11174800	R$ 111.748,00	10	2026
+carro	005544-1	VIRTUS Exclusive 250TSI 1.4 Flex 16V Aut	VW - VolksWagen	Flex	f	2025	false	12291500	R$ 122.915,00	10	2026
+carro	005544-1	VIRTUS Exclusive 250TSI 1.4 Flex 16V Aut	VW - VolksWagen	Flex	f		true	16337000	R$ 163.370,00	10	2026
+carro	005522-0	VIRTUS GTS 1.4 TSI 16V Flex 4p	VW - VolksWagen	Flex	f	2020	false	10065500	R$ 100.655,00	10	2026
+carro	005522-0	VIRTUS GTS 1.4 TSI 16V Flex 4p	VW - VolksWagen	Flex	f	2021	false	10372600	R$ 103.726,00	10	2026
+carro	005484-4	VIRTUS Highline 200 TSI 1.0 Flex 12V Aut	VW - VolksWagen	Flex	f	2018	false	7441000	R$ 74.410,00	10	2026
+carro	005484-4	VIRTUS Highline 200 TSI 1.0 Flex 12V Aut	VW - VolksWagen	Flex	f	2019	false	7870000	R$ 78.700,00	10	2026
+carro	005484-4	VIRTUS Highline 200 TSI 1.0 Flex 12V Aut	VW - VolksWagen	Flex	f	2020	false	8066800	R$ 80.668,00	10	2026
+carro	005484-4	VIRTUS Highline 200 TSI 1.0 Flex 12V Aut	VW - VolksWagen	Flex	f	2021	false	8686600	R$ 86.866,00	10	2026
+carro	005484-4	VIRTUS Highline 200 TSI 1.0 Flex 12V Aut	VW - VolksWagen	Flex	f	2023	false	10569200	R$ 105.692,00	10	2026
+carro	005484-4	VIRTUS Highline 200 TSI 1.0 Flex 12V Aut	VW - VolksWagen	Flex	f	2025	false	11608700	R$ 116.087,00	10	2026
+carro	005484-4	VIRTUS Highline 200 TSI 1.0 Flex 12V Aut	VW - VolksWagen	Flex	f		true	15148300	R$ 151.483,00	10	2026
+carro	005551-4	VIRTUS Sense 1.0 Flex 12V 5p Mec. 	VW - VolksWagen	Flex	f	2025	false	9226200	R$ 92.262,00	10	2026
+carro	005551-4	VIRTUS Sense 1.0 Flex 12V 5p Mec. 	VW - VolksWagen	Flex	f		true	11375600	R$ 113.756,00	10	2026
+carro	005512-3	VIRTUS Sense 1.6 Flex 16V 5p Aut. 	VW - VolksWagen	Flex	f	2019	false	6974100	R$ 69.741,00	10	2026
+carro	005512-3	VIRTUS Sense 1.6 Flex 16V 5p Aut. 	VW - VolksWagen	Flex	f	2020	false	7248200	R$ 72.482,00	10	2026
+carro	005512-3	VIRTUS Sense 1.6 Flex 16V 5p Aut. 	VW - VolksWagen	Flex	f	2021	false	7959900	R$ 79.599,00	10	2026
+carro	005543-3	VIRTUS TSI 1.0 Flex 12V 4p Aut.	VW - VolksWagen	Flex	f	2023	false	8748300	R$ 87.483,00	10	2026
+carro	005543-3	VIRTUS TSI 1.0 Flex 12V 4p Aut.	VW - VolksWagen	Flex	f	2025	false	10047200	R$ 100.472,00	10	2026
+carro	005543-3	VIRTUS TSI 1.0 Flex 12V 4p Aut.	VW - VolksWagen	Flex	f		true	12893500	R$ 128.935,00	10	2026
+carro	005542-5	VIRTUS TSI 1.0 Flex 12V 4p Mec.	VW - VolksWagen	Flex	f	2023	false	7853000	R$ 78.530,00	10	2026
+carro	005542-5	VIRTUS TSI 1.0 Flex 12V 4p Mec.	VW - VolksWagen	Flex	f	2025	false	9371000	R$ 93.710,00	10	2026
+carro	005542-5	VIRTUS TSI 1.0 Flex 12V 4p Mec.	VW - VolksWagen	Flex	f		true	11727200	R$ 117.272,00	10	2026

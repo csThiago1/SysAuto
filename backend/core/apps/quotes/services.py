@@ -26,6 +26,7 @@ from apps.quotes.constants import (
     StatusItem,
 )
 from apps.quotes.models import AreaImpacto, Orcamento, OrcamentoIntervencao, OrcamentoItemAdicional
+from apps.service_orders.services.vehicle import apply_vehicle_text
 
 logger = logging.getLogger(__name__)
 
@@ -431,21 +432,25 @@ class OrcamentoService:
 
         # Criar ServiceOrder (P10 — transacional)
         max_num = ServiceOrder.objects.aggregate(m=_Max("number"))["m"] or 0
-        os_ = ServiceOrder.objects.create(
+        os_ = ServiceOrder(
             number=max_num + 1,
-            customer_id=orc.customer_id,
+            # orc.customer é UnifiedCustomer (UUID): vai em customer_uuid, nunca no FK de Person
             customer_uuid=orc.customer_id,
             customer_name=orc.customer.name,
-            make=orc.veiculo_marca,
-            model=orc.veiculo_modelo,
-            year=orc.veiculo_ano,
-            vehicle_version=orc.veiculo_versao,
             plate=orc.veiculo_placa or "N/A",
             insurer_id=orc.insurer_id,
             insured_type=("insured" if orc.insurer_id else None),
             status="authorized",
             created_by_id=user_id,
         )
+        apply_vehicle_text(
+            os_,
+            brand=orc.veiculo_marca,
+            text=f"{orc.veiculo_modelo} {orc.veiculo_versao}".strip(),
+            year=orc.veiculo_ano,
+            source="quotes",
+        )
+        os_.save()
 
         # Espelhar áreas aprovadas
         area_map: dict[str, OSAreaImpacto] = {}

@@ -117,18 +117,22 @@ class PermissionsByActionMixin:
             write_permission = IsAdminOrAbove
             read_permission = IsManagerOrAbove
             write_actions = ("create",)  # opcional, default cobre os 4
+            action_permissions = {"approve": IsConsultantOrAbove}  # vence write/read
     """
 
     write_permission: type[BasePermission]
     read_permission: type[BasePermission]
     write_actions: tuple[str, ...] = ("create", "update", "partial_update", "destroy")
+    action_permissions: dict[str, type[BasePermission]] = {}
 
     def get_permissions(self) -> list[BasePermission]:
         from rest_framework.permissions import IsAuthenticated
 
         write_cls = getattr(self, "write_permission", IsManagerOrAbove)
         read_cls = getattr(self, "read_permission", IsConsultantOrAbove)
-        perm_cls = write_cls if self.action in self.write_actions else read_cls
+        perm_cls = self.action_permissions.get(self.action) or (
+            write_cls if self.action in self.write_actions else read_cls
+        )
         return [IsAuthenticated(), perm_cls()]
 
 

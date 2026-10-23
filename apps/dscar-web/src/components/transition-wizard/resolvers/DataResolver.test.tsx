@@ -1,12 +1,36 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, it, expect, vi } from "vitest"
+import { beforeEach, describe, it, expect, vi } from "vitest"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { DataResolver } from "./DataResolver"
 import type { ServiceOrder, ValidationBlock } from "@paddock/types"
+import { apiFetch } from "@/lib/api"
+
+const page = (results: { id: number; label: string }[]) => ({
+  count: results.length,
+  next: null,
+  previous: null,
+  results,
+})
+
+const CATALOG: Record<string, { id: number; label: string }> = {
+  makes: { id: 1, label: "Chevrolet" },
+  families: { id: 10, label: "Onix Plus" },
+  models: { id: 100, label: "Onix Plus Premier 1.0 Turbo" },
+  years: { id: 1000, label: "2025 Flex" },
+}
 
 vi.mock("@/lib/api", () => ({
-  apiFetch: vi.fn().mockResolvedValue({}),
+  apiFetch: vi.fn((url: string) => {
+    if (url.includes("/vehicle-catalog/colors/")) {
+      return Promise.resolve([
+        { value: "PRETA", label: "Preta", hex: "#111111" },
+        { value: "NAO_INFORMADA", label: "Não informada", hex: "" },
+      ])
+    }
+    const level = Object.keys(CATALOG).find((l) => url.includes(`/vehicle-catalog/${l}/`))
+    return Promise.resolve(level ? page([CATALOG[level]]) : {})
+  }),
 }))
 
 vi.mock("@tanstack/react-query", async (imp) => {
@@ -36,23 +60,56 @@ function block(code: string): ValidationBlock {
   return { code, message: `Bloco ${code}` }
 }
 
+const patchBodies = () =>
+  vi
+    .mocked(apiFetch)
+    .mock.calls.filter(([, init]) => init?.method === "PATCH")
+    .map(([, init]) => JSON.parse(String(init?.body)) as Record<string, unknown>)
+
+async function pickVehicle(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  for (const [label, option] of [
+    ["Montadora", "Chevrolet"],
+    ["Modelo", "Onix Plus"],
+    ["Versão", "Onix Plus Premier 1.0 Turbo"],
+    ["Ano", "2025 Flex"],
+  ]) {
+    await user.click(screen.getByLabelText(label))
+    await user.click(await screen.findByRole("option", { name: option }))
+  }
+}
+
 describe("DataResolver — VEHICLE_BASIC_DATA", () => {
-  it("renderiza campos placa + montadora + modelo", () => {
-    wrap(<DataResolver block={block("VEHICLE_BASIC_DATA")} order={ORDER} onResolved={vi.fn()} />)
-    expect(screen.getByLabelText(/placa/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/montadora/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/modelo/i)).toBeInTheDocument()
+  beforeEach(() => {
+    vi.mocked(apiFetch).mockClear()
   })
 
-  it("chama onResolved após salvar com dados válidos", async () => {
+  it("tem placa e o seletor, sem texto livre de montadora ou modelo", () => {
+    wrap(<DataResolver block={block("VEHICLE_BASIC_DATA")} order={ORDER} onResolved={vi.fn()} />)
+    expect(screen.getByLabelText(/placa/i)).toBeInTheDocument()
+    expect(screen.getByLabelText("Montadora").tagName).toBe("BUTTON")
+    expect(screen.getByLabelText("Modelo").tagName).toBe("BUTTON")
+    expect(screen.getAllByRole("textbox")).toHaveLength(1)
+  })
+
+  it("salva placa + catalog_family + catalog_version, sem texto do veículo", async () => {
     const user = userEvent.setup()
     const onResolved = vi.fn()
     wrap(<DataResolver block={block("VEHICLE_BASIC_DATA")} order={ORDER} onResolved={onResolved} />)
     await user.type(screen.getByLabelText(/placa/i), "ABC1234")
-    await user.type(screen.getByLabelText(/montadora/i), "Fiat")
-    await user.type(screen.getByLabelText(/modelo/i), "Uno")
+    await pickVehicle(user)
     await user.click(screen.getByRole("button", { name: /salvar/i }))
     await waitFor(() => expect(onResolved).toHaveBeenCalledTimes(1))
+    expect(patchBodies()).toEqual([{ plate: "ABC1234", catalog_family: 10, catalog_version: 1000 }])
+  })
+
+  it("não salva sem família", async () => {
+    const user = userEvent.setup()
+    const onResolved = vi.fn()
+    wrap(<DataResolver block={block("VEHICLE_BASIC_DATA")} order={ORDER} onResolved={onResolved} />)
+    await user.type(screen.getByLabelText(/placa/i), "ABC1234")
+    await user.click(screen.getByRole("button", { name: /salvar/i }))
+    expect(onResolved).not.toHaveBeenCalled()
+    expect(patchBodies()).toEqual([])
   })
 })
 
@@ -106,51 +163,71 @@ describe("DataResolver — MILEAGE_OUT", () => {
 })
 
 describe("DataResolver — VEHICLE_COLOR", () => {
-  it("renderiza input de cor quando code=VEHICLE_COLOR", () => {
-    wrap(<DataResolver block={block("VEHICLE_COLOR")} order={ORDER} onResolved={vi.fn()} />)
-    expect(screen.getByLabelText(/cor/i)).toBeInTheDocument()
+  it("renderiza o select de cor sem campo de texto livre", async () => {
+    const { container } = wrap(
+      <DataResolver block={block("VEHICLE_COLOR")} order={ORDER} onResolved={vi.fn()} />
+    )
+    expect(await screen.findByRole("option", { name: "Preta" })).toBeInTheDocument()
+    expect(container.querySelector('input[type="text"]')).toBeNull()
   })
 
-  it("chama onResolved após salvar cor", async () => {
+  it("escolher Preta faz PATCH com o código e chama onResolved", async () => {
     const user = userEvent.setup()
     const onResolved = vi.fn()
     wrap(<DataResolver block={block("VEHICLE_COLOR")} order={ORDER} onResolved={onResolved} />)
-    await user.type(screen.getByLabelText(/cor/i), "Vermelho")
+    await screen.findByRole("option", { name: "Preta" })
+    await user.selectOptions(screen.getByRole("combobox"), "Preta")
     await user.click(screen.getByRole("button", { name: /salvar/i }))
     await waitFor(() => expect(onResolved).toHaveBeenCalledTimes(1))
+    expect(apiFetch).toHaveBeenCalledWith(
+      "/api/proxy/service-orders/abc-123/",
+      expect.objectContaining({ method: "PATCH", body: JSON.stringify({ color: "PRETA" }) })
+    )
   })
 
   it("não chama onResolved com cor vazia", async () => {
     const user = userEvent.setup()
     const onResolved = vi.fn()
     wrap(<DataResolver block={block("VEHICLE_COLOR")} order={ORDER} onResolved={onResolved} />)
+    await screen.findByRole("option", { name: "Preta" })
+    await user.click(screen.getByRole("button", { name: /salvar/i }))
+    expect(onResolved).not.toHaveBeenCalled()
+  })
+
+  it("não aceita Não informada como cor", async () => {
+    const user = userEvent.setup()
+    const onResolved = vi.fn()
+    wrap(<DataResolver block={block("VEHICLE_COLOR")} order={ORDER} onResolved={onResolved} />)
+    await screen.findByRole("option", { name: "Preta" })
+    await user.selectOptions(screen.getByRole("combobox"), "Não informada")
     await user.click(screen.getByRole("button", { name: /salvar/i }))
     expect(onResolved).not.toHaveBeenCalled()
   })
 })
 
-describe("DataResolver — VEHICLE_YEAR", () => {
-  it("renderiza input de ano quando code=VEHICLE_YEAR", () => {
-    wrap(<DataResolver block={block("VEHICLE_YEAR")} order={ORDER} onResolved={vi.fn()} />)
-    expect(screen.getByLabelText(/ano/i)).toBeInTheDocument()
+describe.each(["VEHICLE_YEAR", "FUEL_TYPE"])("DataResolver — %s", (code) => {
+  beforeEach(() => {
+    vi.mocked(apiFetch).mockClear()
   })
 
-  it("chama onResolved após salvar ano válido", async () => {
+  it("usa o seletor, sem input de ano nem de combustível", () => {
+    const { container } = wrap(
+      <DataResolver block={block(code)} order={ORDER} onResolved={vi.fn()} />
+    )
+    expect(screen.getByLabelText("Ano").tagName).toBe("BUTTON")
+    expect(container.querySelector("input")).toBeNull()
+    expect(screen.queryByRole("button", { name: "Flex" })).toBeNull()
+    expect(screen.queryByRole("button", { name: "Gasolina" })).toBeNull()
+  })
+
+  it("salva só catalog_family + catalog_version", async () => {
     const user = userEvent.setup()
     const onResolved = vi.fn()
-    wrap(<DataResolver block={block("VEHICLE_YEAR")} order={ORDER} onResolved={onResolved} />)
-    await user.type(screen.getByLabelText(/ano/i), "2023")
+    wrap(<DataResolver block={block(code)} order={ORDER} onResolved={onResolved} />)
+    await pickVehicle(user)
     await user.click(screen.getByRole("button", { name: /salvar/i }))
     await waitFor(() => expect(onResolved).toHaveBeenCalledTimes(1))
-  })
-
-  it("não chama onResolved com ano inválido (<1900)", async () => {
-    const user = userEvent.setup()
-    const onResolved = vi.fn()
-    wrap(<DataResolver block={block("VEHICLE_YEAR")} order={ORDER} onResolved={onResolved} />)
-    await user.type(screen.getByLabelText(/ano/i), "1899")
-    await user.click(screen.getByRole("button", { name: /salvar/i }))
-    expect(onResolved).not.toHaveBeenCalled()
+    expect(patchBodies()).toEqual([{ catalog_family: 10, catalog_version: 1000 }])
   })
 })
 

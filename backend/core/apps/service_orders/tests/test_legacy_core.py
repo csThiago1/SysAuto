@@ -2,19 +2,17 @@
 Paddock Solutions — Service Orders Core Tests
 Sprint OS-001 — auto-transitions, validações, multitenancy.
 """
+
 from datetime import date, timedelta
 
 from django.test import TestCase
 
-from apps.service_orders.models import (
-    VALID_TRANSITIONS,
-    ServiceOrder,
-    ServiceOrderStatus,
-)
+from apps.service_orders.models import VALID_TRANSITIONS, ServiceOrder, ServiceOrderStatus
 from apps.service_orders.services import AUTO_TRANSITIONS
-
+from apps.vehicle_catalog.tests.factories import make_catalog
 
 # ── TestServiceOrderStatus ─────────────────────────────────────────────────────
+
 
 class TestServiceOrderStatus(TestCase):
     """Valida integridade do mapeamento de status e transições."""
@@ -44,9 +42,7 @@ class TestServiceOrderStatus(TestCase):
                 target, valid, f"Target '{target}' de AUTO_TRANSITIONS['{field}'] é inválido"
             )
             for s in valid_from:
-                self.assertIn(
-                    s, valid, f"Status '{s}' em valid_from de '{field}' é inválido"
-                )
+                self.assertIn(s, valid, f"Status '{s}' em valid_from de '{field}' é inválido")
 
     def test_can_transition_to_valid(self) -> None:
         """can_transition_to deve retornar True para transições válidas."""
@@ -62,6 +58,7 @@ class TestServiceOrderStatus(TestCase):
 
 
 # ── TestAutoTransitionLogic ─────────────────────────────────────────────────────
+
 
 class TestAutoTransitionLogic(TestCase):
     """Testa a lógica de detecção de transições automáticas no service."""
@@ -154,6 +151,7 @@ class TestAutoTransitionLogic(TestCase):
 
 # ── TestEstimatedDelivery ───────────────────────────────────────────────────────
 
+
 class TestEstimatedDelivery(TestCase):
     """Testa cálculo automático de previsão de entrega."""
 
@@ -173,6 +171,7 @@ class TestEstimatedDelivery(TestCase):
 
 
 # ── TestManualTransitionValidation ──────────────────────────────────────────────
+
 
 class TestManualTransitionValidation(TestCase):
     """Testa validação de transições manuais."""
@@ -209,6 +208,7 @@ class TestManualTransitionValidation(TestCase):
 
 # ── TestSerializerValidation ─────────────────────────────────────────────────────
 
+
 class TestSerializerValidation(TestCase):
     """Testa validações dos serializers."""
 
@@ -220,6 +220,7 @@ class TestSerializerValidation(TestCase):
             "customer_type": "insurer",
             "customer_name": "Test Cliente",
             "plate": "ABC1234",
+            "catalog_family": make_catalog().modelo.familia_id,
             "insured_type": "insured",
             # insurer ausente
         }
@@ -237,6 +238,7 @@ class TestSerializerValidation(TestCase):
             "customer_type": "insurer",
             "customer_name": "Test Cliente",
             "plate": "ABC1234",
+            "catalog_family": make_catalog().modelo.familia_id,
             # insurer e insured_type ausentes
         }
         serializer = ServiceOrderCreateSerializer(data=data)

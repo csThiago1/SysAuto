@@ -105,14 +105,11 @@ export interface BudgetListItem extends Omit<Budget, "active_version"> {
 export interface BudgetCreatePayload {
   customer_id: number
   vehicle_plate: string
-  vehicle_description: string
-  vehicle_chassis?: string
-  vehicle_version?: string
-  vehicle_engine?: string
-  vehicle_color?: string
-  vehicle_fuel_type?: string
-  vehicle_make_logo?: string
-  vehicle_year?: number | null
+  catalog_family: number
+  catalog_version: number | null
+  vehicle_color: string
+  vehicle_year_manufacture: number | null
+  vehicle_chassis: string
 }
 
 /** Payload para aprovar versão */

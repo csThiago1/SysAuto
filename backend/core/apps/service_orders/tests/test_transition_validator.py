@@ -46,6 +46,7 @@ def _make_order(**kwargs) -> MagicMock:
     order.casualty_number = kwargs.get("casualty_number", "")
     order.deductible_amount = kwargs.get("deductible_amount", None)
     order.number = kwargs.get("number", 1234)
+    order.vehicle_needs_review = kwargs.get("vehicle_needs_review", False)
 
     # Related managers — configurados para retornar defaults seguros
     _photos = MagicMock()
@@ -715,6 +716,31 @@ class TestValidateWorkshopTransition:
         order.photos.filter.return_value.count.return_value = 3
         result = TransitionValidator.validate(order, "bodywork")
         assert result.soft_blocks == []
+
+
+class TestVehicleNeedsReview:
+    @pytest.mark.parametrize(
+        "status,target",
+        [
+            ("budget", "repair"),
+            ("waiting_parts", "repair"),
+            ("authorized", "waiting_parts"),
+            ("repair", "bodywork"),
+            ("bodywork", "painting"),
+            ("polishing", "washing"),
+        ],
+    )
+    def test_veiculo_a_confirmar_bloqueia_producao(self, status: str, target: str) -> None:
+        r = TransitionValidator.validate(
+            _make_order(status=status, vehicle_needs_review=True), target
+        )
+        assert "VEHICLE_NEEDS_REVIEW" in {b.code for b in r.hard_blocks}
+
+    def test_seguradora_pode_receber_com_veiculo_pendente(self) -> None:
+        r = TransitionValidator.validate(
+            _make_order(status="budget", vehicle_needs_review=True), "waiting_auth"
+        )
+        assert "VEHICLE_NEEDS_REVIEW" not in {b.code for b in r.hard_blocks}
 
 
 # ── TestValidateAllTargets ────────────────────────────────────────────────────

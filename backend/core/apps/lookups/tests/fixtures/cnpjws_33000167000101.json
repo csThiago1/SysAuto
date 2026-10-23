@@ -1,0 +1,171 @@
+{
+  "cnpj_raiz": "33000167",
+  "razao_social": "PETROLEO BRASILEIRO S A PETROBRAS",
+  "capital_social": "205431960490.52",
+  "responsavel_federativo": "",
+  "atualizado_em": "2026-10-10T03:00:00.000Z",
+  "porte": {
+    "id": "05",
+    "descricao": "Demais"
+  },
+  "natureza_juridica": {
+    "id": "2038",
+    "descricao": "Sociedade de Economia Mista"
+  },
+  "qualificacao_do_responsavel": {
+    "id": 10,
+    "descricao": "Diretor "
+  },
+  "simples": null,
+  "estabelecimento": {
+    "cnpj": "33000167000101",
+    "atividades_secundarias": [
+      {
+        "id": "1921700",
+        "secao": "C",
+        "divisao": "19",
+        "grupo": "19.2",
+        "classe": "19.21-7",
+        "subclasse": "1921-7/00",
+        "descricao": "Fabricação de produtos do refino de petróleo"
+      },
+      {
+        "id": "3520401",
+        "secao": "D",
+        "divisao": "35",
+        "grupo": "35.2",
+        "classe": "35.20-4",
+        "subclasse": "3520-4/01",
+        "descricao": "Produção de gás; processamento de gás natural"
+      },
+      {
+        "id": "3520402",
+        "secao": "D",
+        "divisao": "35",
+        "grupo": "35.2",
+        "classe": "35.20-4",
+        "subclasse": "3520-4/02",
+        "descricao": "Distribuição de combustíveis gasosos por redes urbanas"
+      },
+      {
+        "id": "4681801",
+        "secao": "G",
+        "divisao": "46",
+        "grupo": "46.8",
+        "classe": "46.81-8",
+        "subclasse": "4681-8/01",
+        "descricao": "Comércio atacadista de álcool carburante, biodiesel, gasolina e demais derivados de petróleo, exceto lubrificantes, não realizado por transportador retalhista (TRR)"
+      },
+      {
+        "id": "8630599",
+        "secao": "Q",
+        "divisao": "86",
+        "grupo": "86.3",
+        "classe": "86.30-5",
+        "subclasse": "8630-5/99",
+        "descricao": "Atividades de atenção ambulatorial não especificadas anteriormente"
+      }
+    ],
+    "cnpj_raiz": "33000167",
+    "cnpj_ordem": "0001",
+    "cnpj_digito_verificador": "01",
+    "tipo": "Matriz",
+    "nome_fantasia": "PETROBRAS - EDISE",
+    "situacao_cadastral": "Ativa",
+    "data_situacao_cadastral": "2005-11-03",
+    "data_inicio_atividade": "1966-09-28",
+    "nome_cidade_exterior": null,
+    "tipo_logradouro": "AVENIDA",
+    "logradouro": "REPUBLICA DO CHILE",
+    "numero": "65",
+    "complemento": null,
+    "bairro": "CENTRO",
+    "cep": "20031170",
+    "ddd1": "21",
+    "telefone1": "21660000",
+    "ddd2": null,
+    "telefone2": null,
+    "ddd_fax": "21",
+    "fax": "3224",
+    "email": "cc-rfisc@petrobras.com.br",
+    "situacao_especial": null,
+    "data_situacao_especial": null,
+    "atualizado_em": "2026-09-12T03:00:00.000Z",
+    "atividade_principal": {
+      "id": "0600001",
+      "secao": "B",
+      "divisao": "06",
+      "grupo": "06.0",
+      "classe": "06.00-0",
+      "subclasse": "0600-0/01",
+      "descricao": "Extração de petróleo e gás natural"
+    },
+    "pais": {
+      "id": "1058",
+      "iso2": "BR",
+      "iso3": "BRA",
+      "nome": "Brasil",
+      "comex_id": "105"
+    },
+    "estado": {
+      "id": 19,
+      "nome": "Rio de Janeiro",
+      "sigla": "RJ",
+      "ibge_id": 33
+    },
+    "cidade": {
+      "id": 3243,
+      "nome": "Rio de Janeiro",
+      "ibge_id": 3304557,
+      "siafi_id": "6001"
+    },
+    "motivo_situacao_cadastral": null,
+    "inscricoes_estaduais": [
+      {
+        "inscricao_estadual": "0748878600131",
+        "ativo": false,
+        "atualizado_em": "2025-11-02T04:44:52.850Z",
+        "estado": {
+          "id": 7,
+          "nome": "Distrito Federal",
+          "sigla": "DF",
+          "ibge_id": 53
+        }
+      },
+      {
+        "inscricao_estadual": "283058749",
+        "ativo": false,
+        "atualizado_em": "2025-11-02T04:44:52.850Z",
+        "estado": {
+          "id": 12,
+          "nome": "Mato Grosso do Sul",
+          "sigla": "MS",
+          "ibge_id": 50
+        }
+      },
+      {
+        "inscricao_estadual": "81281882",
+        "ativo": true,
+        "atualizado_em": "2025-11-14T00:00:00.000Z",
+        "estado": {
+          "id": 19,
+          "nome": "Rio de Janeiro",
+          "sigla": "RJ",
+          "ibge_id": 33
+        }
+      },
+      {
+        "inscricao_estadual": "0240026870",
+        "ativo": false,
+        "atualizado_em": "2025-11-02T04:44:52.850Z",
+        "estado": {
+          "id": 23,
+          "nome": "Rio Grande do Sul",
+          "sigla": "RS",
+          "ibge_id": 43
+        }
+      }
+    ]
+  },
+  "observacao": null
+}

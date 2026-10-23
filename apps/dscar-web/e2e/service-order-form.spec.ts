@@ -5,7 +5,7 @@
  * 1. Login
  * 2. Abre drawer "Nova OS"
  * 3. Cria novo cliente inline (nome + CPF + telefone + email)
- * 4. Preenche placa (campo controlado com handlePlateChange), montadora, modelo
+ * 4. Preenche placa (campo controlado com handlePlateChange) e escolhe o veículo no seletor
  * 5. Submete → navega para a OS criada
  * 6. Na tela de edição: salva sem erros de validação
  * 7. Usa botão "Agora" em campo datetime → salva sem erro de datetime
@@ -38,7 +38,7 @@ async function openNewOSDrawer(page: Page): Promise<boolean> {
 // Campo de placa é controlado com setValue — usar page.evaluate para disparar
 // o evento de forma que o React processe corretamente
 async function fillPlate(page: Page, plate: string) {
-  const plateInput = page.locator('input[placeholder="ABC1D23"]')
+  const plateInput = page.locator('input[placeholder="ABC-1D23"]')
   await plateInput.click()
   await plateInput.evaluate(
     (el: HTMLInputElement, value: string) => {
@@ -80,7 +80,14 @@ async function createClienteInline(page: Page, name: string) {
 }
 
 // Cria OS mínima e retorna a URL da OS criada
-async function createMinimalOS(page: Page, opts: { plate: string; make: string; model: string }) {
+// Seletor do catálogo: abre o nível, busca no servidor e escolhe a opção
+async function pickCatalog(page: Page, level: string, search: string) {
+  await page.getByLabel(level, { exact: true }).click()
+  await page.getByPlaceholder(`Buscar ${level.toLowerCase()}...`).fill(search)
+  await page.getByRole("option", { name: search, exact: true }).click()
+}
+
+async function createMinimalOS(page: Page, opts: { plate: string }) {
   const opened = await openNewOSDrawer(page)
   expect(opened).toBe(true)
 
@@ -88,11 +95,11 @@ async function createMinimalOS(page: Page, opts: { plate: string; make: string; 
   await createClienteInline(page, clientName)
 
   await fillPlate(page, opts.plate)
-  await page.locator('input[placeholder="Ex: Honda"]').fill(opts.make)
-  await page.locator('input[placeholder="Ex: Civic"]').fill(opts.model)
+  await pickCatalog(page, "Montadora", "Chevrolet")
+  await pickCatalog(page, "Modelo", "Onix Plus")
 
   // Confirmar que a placa está válida (sem borda vermelha)
-  const plateInput = page.locator('input[placeholder="ABC1D23"]')
+  const plateInput = page.locator('input[placeholder="ABC-1D23"]')
   const plateVal = await plateInput.inputValue()
   expect(plateVal.length).toBeGreaterThanOrEqual(7)
 
@@ -132,7 +139,7 @@ test.describe("Nova OS — criação completa", () => {
   })
 
   test("cria nova OS particular com novo cliente e navega para tela de edição", async ({ page }) => {
-    await createMinimalOS(page, { plate: "TST1234", make: "Toyota", model: "Corolla" })
+    await createMinimalOS(page, { plate: "TST1234" })
 
     // Título mostra número da OS
     await expect(page.locator("h1")).toContainText("OS #")
@@ -142,7 +149,7 @@ test.describe("Nova OS — criação completa", () => {
   })
 
   test("salva OS recém-criada sem erros de validação", async ({ page }) => {
-    await createMinimalOS(page, { plate: "TST9876", make: "Honda", model: "Fit" })
+    await createMinimalOS(page, { plate: "TST9876" })
 
     // Salvar sem modificar nada
     await page.locator("button", { hasText: "Salvar" }).click()
@@ -158,7 +165,7 @@ test.describe("Nova OS — criação completa", () => {
   })
 
   test("preenche Data/Hora Entrada com botão Agora e salva sem erro de datetime", async ({ page }) => {
-    await createMinimalOS(page, { plate: "TST5555", make: "VW", model: "Gol" })
+    await createMinimalOS(page, { plate: "TST5555" })
 
     // Usar botão "Agora" no primeiro campo datetime visível (Data/Hora Entrada)
     const agoraButtons = page.locator("button", { hasText: "Agora" })

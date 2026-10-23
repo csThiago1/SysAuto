@@ -70,7 +70,11 @@ async function proxyRequest(
     // Não logar o body do request — pode conter CPF, email, telefone (LGPD)
     // Mas logar o body da RESPOSTA de erro (contém nomes de campo, não PII)
     const errBody = await response.clone().json().catch(() => null)
-    console.error(`[proxy] ${method} ${backendUrl} → ${response.status}`, errBody)
+    // Defesa extra: sem query string (busca por chassi, placa, nome) e nada de lookups/ no log
+    const logUrl = backendUrl
+      .split("?")[0]
+      .replace(/\/api\/v1\/lookups\/.*$/, "/api/v1/lookups/<redacted>")
+    console.error(`[proxy] ${method} ${logUrl} → ${response.status}`, errBody)
   }
 
   // Passthrough binário para PDF/XML/HTML (não parsear como JSON)

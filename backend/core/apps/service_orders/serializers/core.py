@@ -2,15 +2,20 @@
 Paddock Solutions — Service Orders: Core Serializers
 OS CRUD, photo, parts, labor, budget, status transition, checklist, etc.
 """
+
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 from django.utils import timezone
 from rest_framework import serializers
 
 from apps.insurers.serializers import InsurerMinimalSerializer
+from apps.lookups.validators import clean_cnpj
 from apps.persons.models import Person
 from apps.persons.serializers import ExpertMinimalSerializer
+from apps.vehicle_catalog.models import VehicleFamily, VehicleYearVersion
+from apps.vehicle_catalog.normalize import CorVeiculo, match_color
+from apps.vehicle_catalog.snapshot import catalog_path
 
 from ..models import (
     VALID_TRANSITIONS,
@@ -30,8 +35,22 @@ from ..models import (
     StatusTransitionLog,
     TransitionOverrideRequest,
 )
+from ..services.vehicle import CATALOG_KEYS, resulting_catalog_pair, validate_catalog_vehicle
 
 logger = logging.getLogger(__name__)
+
+# Texto do veículo é snapshot do servidor a partir do catálogo: a API não aceita escrita.
+VEHICLE_SNAPSHOT_FIELDS = (
+    "make",
+    "make_logo",
+    "model",
+    "vehicle_version",
+    "year",
+    "fuel_type",
+    "fipe_value",
+    "vehicle_fipe_value_snapshot",
+)
+FAMILY_REQUIRED = "Escolha a montadora e o modelo."
 
 # Caches construidos uma vez no import -- evita recriar dict a cada registro serializado
 _STATUS_DISPLAY: dict[str, str] = {}
@@ -42,6 +61,7 @@ def _get_status_display() -> dict[str, str]:
     global _STATUS_DISPLAY
     if not _STATUS_DISPLAY:
         from ..models import ServiceOrderStatus as _SOS
+
         _STATUS_DISPLAY = dict(_SOS.choices)
     return _STATUS_DISPLAY
 
@@ -74,7 +94,14 @@ class ServiceOrderPhotoSerializer(serializers.ModelSerializer):
             "uploaded_at",
             "is_active",
         ]
-        read_only_fields = ["id", "s3_key", "url", "uploaded_at", "original_stage", "folder_display"]
+        read_only_fields = [
+            "id",
+            "s3_key",
+            "url",
+            "uploaded_at",
+            "original_stage",
+            "folder_display",
+        ]
 
     def get_url(self, obj: ServiceOrderPhoto) -> str | None:
         """Retorna URL publica/presignada via default_storage (S3 em prod, absoluta em dev)."""
@@ -180,17 +207,29 @@ class NotificationFeedSerializer(_StatusTransitionMixin, serializers.ModelSerial
         model = StatusTransitionLog
         fields = [
             "id",
-            "os_id", "os_number", "os_plate", "os_make", "os_model", "os_customer_name",
-            "from_status", "from_status_display",
-            "to_status", "to_status_display",
-            "triggered_by_field", "changed_by_name", "created_at",
+            "os_id",
+            "os_number",
+            "os_plate",
+            "os_make",
+            "os_model",
+            "os_customer_name",
+            "from_status",
+            "from_status_display",
+            "to_status",
+            "to_status_display",
+            "triggered_by_field",
+            "changed_by_name",
+            "created_at",
         ]
 
 
 class ServiceOrderActivityLogSerializer(serializers.ModelSerializer):
     """Serializer para historico detalhado de atividades da OS."""
+
     user_name = serializers.SerializerMethodField()
-    activity_type_display = serializers.CharField(source="get_activity_type_display", read_only=True)
+    activity_type_display = serializers.CharField(
+        source="get_activity_type_display", read_only=True
+    )
 
     class Meta:
         model = ServiceOrderActivityLog
@@ -217,9 +256,7 @@ class _LineItemValidationMixin:
         unit_price = attrs.get("unit_price")
         discount = attrs.get("discount")
         if quantity is not None and quantity <= 0:
-            raise serializers.ValidationError(
-                {"quantity": "A quantidade deve ser maior que zero."}
-            )
+            raise serializers.ValidationError({"quantity": "A quantidade deve ser maior que zero."})
         if unit_price is not None and unit_price < 0:
             raise serializers.ValidationError(
                 {"unit_price": "O preco unitario nao pode ser negativo."}
@@ -241,36 +278,71 @@ class ServiceOrderPartSerializer(_LineItemValidationMixin, serializers.ModelSeri
     origem = serializers.CharField(read_only=True)
     origem_display = serializers.CharField(source="get_origem_display", read_only=True)
     tipo_qualidade = serializers.CharField(read_only=True)
-    tipo_qualidade_display = serializers.CharField(source="get_tipo_qualidade_display", read_only=True)
+    tipo_qualidade_display = serializers.CharField(
+        source="get_tipo_qualidade_display", read_only=True
+    )
     status_peca = serializers.CharField(read_only=True)
     status_peca_display = serializers.CharField(source="get_status_peca_display", read_only=True)
-    custo_real = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True, allow_null=True)
-    unidade_fisica_id = serializers.UUIDField(source="unidade_fisica.id", read_only=True, allow_null=True, default=None)
+    custo_real = serializers.DecimalField(
+        max_digits=12, decimal_places=2, read_only=True, allow_null=True
+    )
+    unidade_fisica_id = serializers.UUIDField(
+        source="unidade_fisica.id", read_only=True, allow_null=True, default=None
+    )
     payer_display = serializers.CharField(source="get_payer_display", read_only=True)
     source_type_display = serializers.CharField(source="get_source_type_display", read_only=True)
-    billing_status_display = serializers.CharField(source="get_billing_status_display", read_only=True)
+    billing_status_display = serializers.CharField(
+        source="get_billing_status_display", read_only=True
+    )
 
     class Meta:
         model = ServiceOrderPart
         fields = [
-            "id", "product", "product_name", "description", "part_number",
-            "ncm", "quantity", "unit_price", "discount", "total",
-            "origem", "origem_display",
-            "tipo_qualidade", "tipo_qualidade_display",
-            "status_peca", "status_peca_display",
-            "custo_real", "unidade_fisica_id",
-            "payer", "source_type", "billing_status", "billed_at",
-            "payer_display", "source_type_display", "billing_status_display",
-            "created_at", "updated_at",
+            "id",
+            "product",
+            "product_name",
+            "description",
+            "part_number",
+            "ncm",
+            "quantity",
+            "unit_price",
+            "discount",
+            "total",
+            "origem",
+            "origem_display",
+            "tipo_qualidade",
+            "tipo_qualidade_display",
+            "status_peca",
+            "status_peca_display",
+            "custo_real",
+            "unidade_fisica_id",
+            "payer",
+            "source_type",
+            "billing_status",
+            "billed_at",
+            "payer_display",
+            "source_type_display",
+            "billing_status_display",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = [
-            "id", "product_name", "total",
-            "origem", "origem_display",
-            "tipo_qualidade", "tipo_qualidade_display",
-            "status_peca", "status_peca_display",
-            "custo_real", "unidade_fisica_id",
-            "payer_display", "source_type_display", "billing_status_display",
-            "created_at", "updated_at",
+            "id",
+            "product_name",
+            "total",
+            "origem",
+            "origem_display",
+            "tipo_qualidade",
+            "tipo_qualidade_display",
+            "status_peca",
+            "status_peca_display",
+            "custo_real",
+            "unidade_fisica_id",
+            "payer_display",
+            "source_type_display",
+            "billing_status_display",
+            "created_at",
+            "updated_at",
         ]
 
     def get_product_name(self, obj: ServiceOrderPart) -> str | None:
@@ -285,19 +357,29 @@ class PartEstoqueInputSerializer(serializers.Serializer):
 
     unidade_fisica_id = serializers.UUIDField()
     tipo_qualidade = serializers.ChoiceField(choices=["genuina", "reposicao", "similar", "usada"])
-    unit_price = serializers.DecimalField(max_digits=12, decimal_places=2, help_text="Valor cobrado ao cliente -- PC-9")
-    description = serializers.CharField(max_length=300, required=False, allow_blank=True, default="")
+    unit_price = serializers.DecimalField(
+        max_digits=12, decimal_places=2, help_text="Valor cobrado ao cliente -- PC-9"
+    )
+    description = serializers.CharField(
+        max_length=300, required=False, allow_blank=True, default=""
+    )
 
 
 class PartCompraInputSerializer(serializers.Serializer):
     """Input para solicitar compra de peca para OS."""
 
     description = serializers.CharField(max_length=300)
-    part_number = serializers.CharField(max_length=100, required=False, allow_blank=True, default="")
+    part_number = serializers.CharField(
+        max_length=100, required=False, allow_blank=True, default=""
+    )
     tipo_qualidade = serializers.ChoiceField(choices=["genuina", "reposicao", "similar", "usada"])
-    unit_price = serializers.DecimalField(max_digits=12, decimal_places=2, help_text="Valor cobrado -- PC-9")
+    unit_price = serializers.DecimalField(
+        max_digits=12, decimal_places=2, help_text="Valor cobrado -- PC-9"
+    )
     quantity = serializers.DecimalField(max_digits=10, decimal_places=2, default=1)
-    observacoes = serializers.CharField(max_length=500, required=False, allow_blank=True, default="")
+    observacoes = serializers.CharField(
+        max_length=500, required=False, allow_blank=True, default=""
+    )
 
 
 class PartSeguradoraInputSerializer(serializers.Serializer):
@@ -305,7 +387,9 @@ class PartSeguradoraInputSerializer(serializers.Serializer):
 
     description = serializers.CharField(max_length=300)
     tipo_qualidade = serializers.ChoiceField(choices=["genuina", "reposicao", "similar", "usada"])
-    unit_price = serializers.DecimalField(max_digits=12, decimal_places=2, help_text="Valor cobrado -- PC-9")
+    unit_price = serializers.DecimalField(
+        max_digits=12, decimal_places=2, help_text="Valor cobrado -- PC-9"
+    )
     quantity = serializers.DecimalField(max_digits=10, decimal_places=2, default=1)
 
 
@@ -318,21 +402,40 @@ class ServiceOrderLaborSerializer(_LineItemValidationMixin, serializers.ModelSer
     )
     payer_display = serializers.CharField(source="get_payer_display", read_only=True)
     source_type_display = serializers.CharField(source="get_source_type_display", read_only=True)
-    billing_status_display = serializers.CharField(source="get_billing_status_display", read_only=True)
+    billing_status_display = serializers.CharField(
+        source="get_billing_status_display", read_only=True
+    )
 
     class Meta:
         model = ServiceOrderLabor
         fields = [
-            "id", "service_catalog", "service_catalog_name",
-            "description", "quantity", "unit_price", "discount", "total",
-            "payer", "source_type", "billing_status", "billed_at",
-            "payer_display", "source_type_display", "billing_status_display",
-            "created_at", "updated_at",
+            "id",
+            "service_catalog",
+            "service_catalog_name",
+            "description",
+            "quantity",
+            "unit_price",
+            "discount",
+            "total",
+            "payer",
+            "source_type",
+            "billing_status",
+            "billed_at",
+            "payer_display",
+            "source_type_display",
+            "billing_status_display",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = [
-            "id", "service_catalog_name", "total",
-            "payer_display", "source_type_display", "billing_status_display",
-            "created_at", "updated_at",
+            "id",
+            "service_catalog_name",
+            "total",
+            "payer_display",
+            "source_type_display",
+            "billing_status_display",
+            "created_at",
+            "updated_at",
         ]
 
 
@@ -344,8 +447,15 @@ class ServiceCatalogSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceCatalog
         fields = [
-            "id", "name", "description", "category", "category_display",
-            "suggested_price", "is_active", "created_at", "updated_at",
+            "id",
+            "name",
+            "description",
+            "category",
+            "category_display",
+            "suggested_price",
+            "is_active",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "category_display", "created_at", "updated_at"]
 
@@ -370,8 +480,15 @@ class ServiceOrderOverdueSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceOrder
         fields = [
-            "id", "number", "plate", "customer_name", "status", "status_display",
-            "estimated_delivery_date", "days_overdue", "urgency",
+            "id",
+            "number",
+            "plate",
+            "customer_name",
+            "status",
+            "status_display",
+            "estimated_delivery_date",
+            "days_overdue",
+            "urgency",
         ]
 
     def get_days_overdue(self, obj: ServiceOrder) -> int:
@@ -398,10 +515,18 @@ class ServiceOrderCalendarSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceOrder
         fields = [
-            "id", "number", "plate", "make", "model",
-            "customer_name", "customer_type",
-            "status", "status_display",
-            "scheduling_date", "estimated_delivery_date", "delivery_date",
+            "id",
+            "number",
+            "plate",
+            "make",
+            "model",
+            "customer_name",
+            "customer_type",
+            "status",
+            "status_display",
+            "scheduling_date",
+            "estimated_delivery_date",
+            "delivery_date",
         ]
 
 
@@ -443,6 +568,7 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
             "vehicle_version",
             "year",
             "color",
+            "vehicle_needs_review",
             "insurer_detail",
             "consultant_name",
             "entry_date",
@@ -486,9 +612,10 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
         # Faturada quando: NF foi emitida pelo sistema (invoice_issued=True)
         # OU possui NF emitida fora do sistema (number + date preenchidos).
         # Uso temporário enquanto Focus NF-e não está disponível.
-        has_external_invoice: bool = bool(
-            (obj.external_invoice_number or "").strip()
-        ) and obj.external_invoice_date is not None
+        has_external_invoice: bool = (
+            bool((obj.external_invoice_number or "").strip())
+            and obj.external_invoice_date is not None
+        )
         is_invoiced: bool = bool(obj.invoice_issued) or has_external_invoice
 
         has_any = getattr(obj, "_has_any_receivables", None)
@@ -514,6 +641,7 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
             "is_closed": is_closed,
         }
 
+
 class ServiceOrderDetailSerializer(serializers.ModelSerializer):
     """Serializer completo para a tela de abertura/edicao da OS."""
 
@@ -523,9 +651,7 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
         source="get_customer_type_display", read_only=True
     )
     os_type_display = serializers.CharField(source="get_os_type_display", read_only=True)
-    insured_type_display = serializers.CharField(
-        source="get_insured_type_display", read_only=True
-    )
+    insured_type_display = serializers.CharField(source="get_insured_type_display", read_only=True)
     vehicle_location_display = serializers.CharField(
         source="get_vehicle_location_display", read_only=True
     )
@@ -547,10 +673,14 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
     customer_person_id = serializers.SerializerMethodField()
     closure_status = serializers.SerializerMethodField()
     transition_requirements = serializers.SerializerMethodField()
+    catalog_path = serializers.SerializerMethodField()
 
     class Meta:
         model = ServiceOrder
         fields = "__all__"
+
+    def get_catalog_path(self, obj: ServiceOrder) -> dict[str, Any] | None:
+        return catalog_path(family=obj.catalog_family, version=obj.catalog_version)
 
     def get_customer(self, obj: "ServiceOrder") -> str | None:
         """Retorna customer_uuid para compatibilidade com frontend (nao o PK integer da Person)."""
@@ -586,9 +716,10 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
         # Faturada quando: NF foi emitida pelo sistema (invoice_issued=True)
         # OU possui NF emitida fora do sistema (number + date preenchidos).
         # Uso temporário enquanto Focus NF-e não está disponível.
-        has_external_invoice: bool = bool(
-            (obj.external_invoice_number or "").strip()
-        ) and obj.external_invoice_date is not None
+        has_external_invoice: bool = (
+            bool((obj.external_invoice_number or "").strip())
+            and obj.external_invoice_date is not None
+        )
         is_invoiced: bool = bool(obj.invoice_issued) or has_external_invoice
 
         has_any = getattr(obj, "_has_any_receivables", None)
@@ -617,14 +748,28 @@ class ServiceOrderDetailSerializer(serializers.ModelSerializer):
     def get_transition_requirements(self, obj: ServiceOrder) -> dict[str, dict]:
         """Retorna validacao de pre-requisitos para cada transicao permitida."""
         from django.core.cache import cache
+
         cache_key = f"transition_reqs:{obj.pk}:{obj.updated_at.timestamp()}"
         cached = cache.get(cache_key)
         if cached is not None:
             return cached
         from apps.service_orders.transition_validator import TransitionValidator
+
         result = TransitionValidator.validate_all_targets(obj)
         cache.set(cache_key, result, timeout=60)
         return result
+
+
+def _check_insurer_cnpj(attrs: dict, insurer: Any, cnpj: str) -> None:
+    """O CNPJ da nota precisa ser um dos CNPJs da seguradora; grava só o CNPJ limpo."""
+    if not insurer or not cnpj:
+        return
+    if clean_cnpj(cnpj) not in insurer.cnpjs:
+        raise serializers.ValidationError(
+            {"insurer_cnpj": "Escolha um dos CNPJs cadastrados da seguradora."}
+        )
+    if "insurer_cnpj" in attrs:
+        attrs["insurer_cnpj"] = clean_cnpj(cnpj)
 
 
 class ServiceOrderCreateSerializer(serializers.ModelSerializer):
@@ -648,6 +793,14 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
         allow_null=True,
         write_only=True,
     )
+    catalog_family = serializers.PrimaryKeyRelatedField(
+        queryset=VehicleFamily.objects.filter(is_active=True), required=False, allow_null=True
+    )
+    catalog_version = serializers.PrimaryKeyRelatedField(
+        queryset=VehicleYearVersion.objects.filter(is_active=True), required=False, allow_null=True
+    )
+    # Tolerante só na abertura: o app mobile ainda manda cor em texto livre ("Prata").
+    color = serializers.CharField(max_length=40, required=False, allow_blank=True, allow_null=True)
 
     class Meta:
         model = ServiceOrder
@@ -665,23 +818,34 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
             "delivered_at",
             "delivery_date",
             "client_delivery_date",
+            "vehicle_needs_review",
+            "vehicle_source",
+            "vehicle_source_text",
+            "vehicle_source_year",
+            "zero_km",
+            "import_warnings",
+            *VEHICLE_SNAPSHOT_FIELDS,
         ]
         extra_kwargs = {
-            # Campos opcionais do veiculo -- model tem default="" mas sem blank=True
-            "make":            {"required": False, "allow_blank": True},
-            "model":           {"required": False, "allow_blank": True},
-            "vehicle_version": {"required": False, "allow_blank": True},
-            "color":           {"required": False, "allow_blank": True},
-            "chassis":         {"required": False, "allow_blank": True},
-            "fuel_type":       {"required": False, "allow_blank": True},
-            "broker_name":     {"required": False, "allow_blank": True},
+            # Model tem default="" mas sem blank=True
+            "chassis": {"required": False, "allow_blank": True},
+            "broker_name": {"required": False, "allow_blank": True},
             "casualty_number": {"required": False, "allow_blank": True},
-            "customer_name":   {"required": False, "allow_blank": True},
+            "customer_name": {"required": False, "allow_blank": True},
         }
+
+    def validate_color(self, v: str | None) -> str:
+        # Texto livre vira código do enum em vez de 400; vazio/nulo continua vazio.
+        if not v or v in CorVeiculo.values:
+            return v or ""
+        return match_color(v) or CorVeiculo.NAO_INFORMADA
 
     def validate(self, attrs: dict) -> dict:
         # Proteção RBAC: apenas MANAGER+ pode setar campos de NF externa no create.
-        external_invoice_fields = {"external_invoice_number", "external_invoice_date"} & attrs.keys()
+        external_invoice_fields = {
+            "external_invoice_number",
+            "external_invoice_date",
+        } & attrs.keys()
         if external_invoice_fields:
             # Ignora valores vazios (string vazia / None) -- só bloqueia se tem valor real.
             has_real_value = bool(
@@ -690,6 +854,7 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
             )
             if has_real_value:
                 from apps.authentication.permissions import _has_min_role
+
                 request = self.context.get("request")
                 if request is None or not _has_min_role(request, "MANAGER"):
                     raise serializers.ValidationError(
@@ -700,6 +865,9 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
                         }
                     )
 
+        family, version = resulting_catalog_pair(None, attrs)
+        validate_catalog_vehicle(family, version, attrs.get("year_manufacture"))
+
         if attrs.get("customer_type") == ServiceOrder.CustomerType.INSURER:
             if not attrs.get("insurer"):
                 raise serializers.ValidationError(
@@ -709,64 +877,11 @@ class ServiceOrderCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {"insured_type": "Tipo de segurado e obrigatorio para OS de seguradora."}
                 )
+        _check_insurer_cnpj(attrs, attrs.get("insurer"), attrs.get("insurer_cnpj", ""))
+        # A versão traz a família junto (o servidor deriva).
+        if family is None and version is None:
+            raise serializers.ValidationError({"catalog_family": FAMILY_REQUIRED})
         return attrs
-
-    # Mapa de logos de montadoras -- fonte: apiplacas.com.br
-    _MAKE_LOGOS: dict[str, str] = {
-        "chevrolet": "https://apiplacas.com.br/logos/logosMarcas/chevrolet.png",
-        "fiat": "https://apiplacas.com.br/logos/logosMarcas/fiat.png",
-        "ford": "https://apiplacas.com.br/logos/logosMarcas/ford.png",
-        "honda": "https://apiplacas.com.br/logos/logosMarcas/honda.png",
-        "hyundai": "https://apiplacas.com.br/logos/logosMarcas/hyundai.png",
-        "toyota": "https://apiplacas.com.br/logos/logosMarcas/toyota.png",
-        "volkswagen": "https://apiplacas.com.br/logos/logosMarcas/volkswagen.png",
-        "renault": "https://apiplacas.com.br/logos/logosMarcas/renault.png",
-        "nissan": "https://apiplacas.com.br/logos/logosMarcas/nissan.png",
-        "jeep": "https://apiplacas.com.br/logos/logosMarcas/jeep.png",
-        "bmw": "https://apiplacas.com.br/logos/logosMarcas/bmw.png",
-        "mercedes-benz": "https://apiplacas.com.br/logos/logosMarcas/mercedes-benz.png",
-        "audi": "https://apiplacas.com.br/logos/logosMarcas/audi.png",
-        "kia": "https://apiplacas.com.br/logos/logosMarcas/kia.png",
-        "peugeot": "https://apiplacas.com.br/logos/logosMarcas/peugeot.png",
-        "mitsubishi": "https://apiplacas.com.br/logos/logosMarcas/mitsubishi.png",
-        "volvo": "https://apiplacas.com.br/logos/logosMarcas/volvo.png",
-        "byd": "https://apiplacas.com.br/logos/logosMarcas/byd.png",
-        "citron": "https://apiplacas.com.br/logos/logosMarcas/citroen.png",
-        "subaru": "https://apiplacas.com.br/logos/logosMarcas/subaru.png",
-        "dodge": "https://apiplacas.com.br/logos/logosMarcas/dodge.png",
-        "land rover": "https://apiplacas.com.br/logos/logosMarcas/land-rover.png",
-        "caoa chery": "https://apiplacas.com.br/logos/logosMarcas/caoa-chery.png",
-        "jac": "https://apiplacas.com.br/logos/logosMarcas/jac.png",
-        "gwm": "https://apiplacas.com.br/logos/logosMarcas/gwm.png",
-    }
-
-    def create(self, validated_data: dict) -> "ServiceOrder":
-        from apps.vehicles.models import Vehicle
-
-        # UUID do UnifiedCustomer nao pode ser salvo no FK inteiro de Person -- descarta.
-        validated_data.pop("customer", None)
-
-        # Resolve make_logo se nao fornecido
-        make = validated_data.get("make", "")
-        if make and not validated_data.get("make_logo"):
-            validated_data["make_logo"] = self._MAKE_LOGOS.get(make.lower(), "")
-
-        # Persiste veiculo na base para lookup futuro (DB-first)
-        plate = (validated_data.get("plate") or "").upper().strip().replace("-", "")
-        if plate:
-            model = validated_data.get("model", "")
-            description = f"{make} {model}".strip()
-            Vehicle.objects.get_or_create(
-                plate=plate,
-                is_active=True,
-                defaults={
-                    "description": description,
-                    "color": validated_data.get("color", ""),
-                    "year_manufacture": validated_data.get("year"),
-                },
-            )
-
-        return super().create(validated_data)
 
 
 class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
@@ -785,6 +900,12 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
         write_only=True,
         source="customer_id",
     )
+    catalog_family = serializers.PrimaryKeyRelatedField(
+        queryset=VehicleFamily.objects.filter(is_active=True), required=False, allow_null=True
+    )
+    catalog_version = serializers.PrimaryKeyRelatedField(
+        queryset=VehicleYearVersion.objects.filter(is_active=True), required=False, allow_null=True
+    )
 
     class Meta:
         model = ServiceOrder
@@ -801,20 +922,27 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
             "nfe_key",
             "nfse_number",
             "delivered_at",
+            "vehicle_needs_review",
+            "vehicle_source",
+            "vehicle_source_text",
+            "vehicle_source_year",
+            "zero_km",
+            *VEHICLE_SNAPSHOT_FIELDS,
         ]
         extra_kwargs = {
-            "make":            {"required": False, "allow_blank": True},
-            "make_logo":       {"required": False, "allow_blank": True},
-            "model":           {"required": False, "allow_blank": True},
-            "vehicle_version": {"required": False, "allow_blank": True},
-            "color":           {"required": False, "allow_blank": True},
-            "chassis":         {"required": False, "allow_blank": True},
-            "fuel_type":       {"required": False, "allow_blank": True},
-            "broker_name":     {"required": False, "allow_blank": True},
+            "color": {"required": False, "allow_blank": True},
+            "chassis": {"required": False, "allow_blank": True},
+            "broker_name": {"required": False, "allow_blank": True},
             "casualty_number": {"required": False, "allow_blank": True},
-            "customer_name":   {"required": False, "allow_blank": True},
-            "plate":           {"required": False, "allow_blank": True},
+            "customer_name": {"required": False, "allow_blank": True},
+            "plate": {"required": False, "allow_blank": True},
         }
+
+    def validate_import_warnings(self, value: Any) -> list[str]:
+        """Avisos da importacao so podem ser dispensados (lista vazia), nunca escritos."""
+        if value != []:
+            raise serializers.ValidationError("Envie [] para dispensar os avisos.")
+        return value
 
     def update(self, instance: "ServiceOrder", validated_data: dict) -> "ServiceOrder":
         # UUID do UnifiedCustomer nao pode ser salvo no FK inteiro de Person -- descarta.
@@ -832,9 +960,13 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
         fora do sistema (external_invoice_number / external_invoice_date).
         """
         # Proteção RBAC: apenas MANAGER+ pode editar campos de NF externa.
-        external_invoice_fields = {"external_invoice_number", "external_invoice_date"} & attrs.keys()
+        external_invoice_fields = {
+            "external_invoice_number",
+            "external_invoice_date",
+        } & attrs.keys()
         if external_invoice_fields:
             from apps.authentication.permissions import _has_min_role
+
             request = self.context.get("request")
             if request is None or not _has_min_role(request, "MANAGER"):
                 raise serializers.ValidationError(
@@ -846,6 +978,24 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
                 )
 
         instance = self.instance
+        # Veiculo do catalogo: valida o par resultante (chave ausente = valor atual da OS).
+        if {"catalog_family", "catalog_version", "year_manufacture"} & attrs.keys():
+            family, version = resulting_catalog_pair(instance, attrs)
+            year_manufacture = attrs.get(
+                "year_manufacture", getattr(instance, "year_manufacture", None)
+            )
+            validate_catalog_vehicle(family, version, year_manufacture)
+            if CATALOG_KEYS & attrs.keys() and family is None and version is None:
+                raise serializers.ValidationError({"catalog_family": FAMILY_REQUIRED})
+
+        # CNPJ da nota: trocar de seguradora sem escolher o CNPJ volta ao principal da nova.
+        if {"insurer", "insurer_cnpj"} & attrs.keys():
+            insurer = attrs.get("insurer", getattr(instance, "insurer", None))
+            cnpj = attrs.get("insurer_cnpj", getattr(instance, "insurer_cnpj", ""))
+            if "insurer_cnpj" not in attrs and insurer and clean_cnpj(cnpj) not in insurer.cnpjs:
+                attrs["insurer_cnpj"] = cnpj = clean_cnpj(insurer.cnpj)
+            _check_insurer_cnpj(attrs, insurer, cnpj)
+
         # So dispara validacao se algum campo relevante esta sendo alterado
         insurer_fields_in_payload = {"customer_type", "insurer", "insured_type"} & attrs.keys()
         if not insurer_fields_in_payload and instance is not None:
@@ -862,7 +1012,9 @@ class ServiceOrderUpdateSerializer(serializers.ModelSerializer):
                 getattr(instance, "insured_type", None) if instance else None,
             )
             if not insurer:
-                raise serializers.ValidationError({"insurer": "Seguradora e obrigatoria para OS de seguradora."})
+                raise serializers.ValidationError(
+                    {"insurer": "Seguradora e obrigatoria para OS de seguradora."}
+                )
             if not insured_type:
                 raise serializers.ValidationError(
                     {"insured_type": "Tipo de segurado e obrigatorio para OS de seguradora."}
@@ -933,10 +1085,10 @@ class ServiceOrderStatusTransitionSerializer(serializers.Serializer):
 class DeliverOSSerializer(serializers.Serializer):
     """Serializer para entrega da OS ao cliente."""
 
-    mileage_out  = serializers.IntegerField(required=False, allow_null=True, min_value=0)
-    notes        = serializers.CharField(required=False, allow_blank=True, max_length=2000)
-    nfe_key      = serializers.CharField(required=False, allow_blank=True, max_length=44)
-    nfse_number  = serializers.CharField(required=False, allow_blank=True, max_length=20)
+    mileage_out = serializers.IntegerField(required=False, allow_null=True, min_value=0)
+    notes = serializers.CharField(required=False, allow_blank=True, max_length=2000)
+    nfe_key = serializers.CharField(required=False, allow_blank=True, max_length=44)
+    nfse_number = serializers.CharField(required=False, allow_blank=True, max_length=20)
 
     def validate(self, attrs: dict) -> dict:
         """Valida fiscal para clientes particulares."""
@@ -954,22 +1106,21 @@ class DeliverOSSerializer(serializers.Serializer):
 class UploadPhotoSerializer(serializers.Serializer):
     """Serializer para upload de foto com pasta, slot, tipo de checklist e legenda."""
 
-    file           = serializers.FileField()   # ImageField exige Pillow; FileField basta aqui
-    folder         = serializers.ChoiceField(choices=OSPhotoFolder.choices)
-    caption        = serializers.CharField(required=False, allow_blank=True, max_length=200)
-    slot           = serializers.CharField(required=False, allow_blank=True, default="")
+    file = serializers.FileField()  # ImageField exige Pillow; FileField basta aqui
+    folder = serializers.ChoiceField(choices=OSPhotoFolder.choices)
+    caption = serializers.CharField(required=False, allow_blank=True, max_length=200)
+    slot = serializers.CharField(required=False, allow_blank=True, default="")
     checklist_type = serializers.CharField(required=False, allow_blank=True, default="")
 
 
 class PhotoIdsSerializer(serializers.Serializer):
     """IDs de fotos da OS para operações em lote (bulk-delete, download ZIP)."""
 
-    photo_ids = serializers.ListField(
-        child=serializers.UUIDField(), min_length=1, max_length=500
-    )
+    photo_ids = serializers.ListField(child=serializers.UUIDField(), min_length=1, max_length=500)
 
 
 # -- ChecklistItem Serializers (Sprint M4) --
+
 
 class ChecklistItemSerializer(serializers.ModelSerializer):
     """Serializer para leitura e escrita de itens de checklist."""
@@ -1011,14 +1162,20 @@ class HolidaySerializer(serializers.ModelSerializer):
 
 # -- Complemento: criacao de pecas e mao-de-obra particular --
 
+
 class ComplementPartCreateSerializer(serializers.ModelSerializer):
     """Cria peca de complemento (particular) vinculada a OS."""
 
     class Meta:
         model = ServiceOrderPart
         fields = [
-            "description", "part_number", "ncm", "quantity", "unit_price",
-            "discount", "tipo_qualidade",
+            "description",
+            "part_number",
+            "ncm",
+            "quantity",
+            "unit_price",
+            "discount",
+            "tipo_qualidade",
         ]
 
     def create(self, validated_data: dict) -> ServiceOrderPart:
@@ -1044,6 +1201,7 @@ class ComplementLaborCreateSerializer(serializers.ModelSerializer):
 
 # -- Resumo financeiro da OS --
 
+
 class FinancialSummarySerializer(serializers.Serializer):
     """Resumo financeiro completo da OS, desagregado por origem e pagador."""
 
@@ -1064,10 +1222,15 @@ class FinancialSummarySerializer(serializers.Serializer):
     active_version = serializers.SerializerMethodField()
 
     def get_active_version(self, obj: dict) -> dict | None:
-        version = obj.get("active_version") if isinstance(obj, dict) else getattr(obj, "active_version", None)
+        version = (
+            obj.get("active_version")
+            if isinstance(obj, dict)
+            else getattr(obj, "active_version", None)
+        )
         if version is None:
             return None
         from apps.service_orders.serializers.versioning import VersionDetailSerializer
+
         return VersionDetailSerializer(version).data
 
 
@@ -1094,6 +1257,7 @@ class VehicleHistoryItemSerializer(serializers.ModelSerializer):
 
 
 # -- Override de Transicao -- Serializers --
+
 
 class TransitionValidationResultSerializer(serializers.Serializer):
     """Resultado de validacao de transicao -- read-only."""
@@ -1131,11 +1295,21 @@ class OverrideRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = TransitionOverrideRequest
         fields = [
-            "id", "os_number", "os_plate", "os_customer_name",
-            "from_status", "to_status", "status",
-            "blocks_snapshot", "request_reason", "justification",
-            "requested_by_name", "approved_by_name",
-            "created_at", "resolved_at", "expires_at",
+            "id",
+            "os_number",
+            "os_plate",
+            "os_customer_name",
+            "from_status",
+            "to_status",
+            "status",
+            "blocks_snapshot",
+            "request_reason",
+            "justification",
+            "requested_by_name",
+            "approved_by_name",
+            "created_at",
+            "resolved_at",
+            "expires_at",
         ]
 
     def get_requested_by_name(self, obj) -> str:

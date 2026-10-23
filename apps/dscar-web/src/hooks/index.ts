@@ -19,14 +19,13 @@ export {
   useCreatePerson,
   useUpdatePerson,
   useDeactivatePerson,
-  useCepLookup,
 } from "./usePersonMutations";
 
 // ── Notificações ──────────────────────────────────────────────────────────────
 export { useOverdueOrders } from "./useOverdueOrders";
 
 // ── Relacionamentos ───────────────────────────────────────────────────────
-export { useClientOrders } from "./useClientOrders";
+export { useHistoricoOrders } from "./useHistoricoOrders";
 
 // ── RH (Recursos Humanos) ─────────────────────────────────────────────────────
 export {
@@ -113,18 +112,18 @@ export {
   useInsurer,
   useInsurerCreate,
   useInsurerUpdate,
-  useInsurerDelete,
+  useSetInsurerActive,
   useInsurerUploadLogo,
   type InsurerPayload,
 } from "./useInsurers";
 
-// ── Motor de Orçamentos — Catálogo FIPE ───────────────────────────────────────
+// ── Catálogo de veículos e consultas (CEP, CNPJ, placa) ──────────────────────
 export {
-  useFipeMakes,
-  useFipeModels,
-  useFipeYears,
-  fipeKeys,
-} from "./useVehicleFipe";
+  useCatalogOptions,
+  type CatalogLevel,
+  type CatalogParams,
+} from "./useCatalog";
+export { useLookup } from "./useLookup";
 
 // ── Motor de Orçamentos — Enquadramento Veicular ──────────────────────────────
 export { useResolverEnquadramento, enquadramentoKeys } from "./useEnquadramento";

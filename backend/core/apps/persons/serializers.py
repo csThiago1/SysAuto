@@ -12,6 +12,8 @@ import logging
 
 from rest_framework import serializers
 
+from apps.lookups.validators import is_valid_cnpj, is_valid_cpf
+
 from .models import (
     BrokerOffice,
     BrokerPerson,
@@ -24,6 +26,7 @@ from .models import (
     PersonRole,
     RolePessoa,
     SupplierProfile,
+    TipoDocumento,
 )
 from .utils import sha256_hex
 
@@ -115,14 +118,18 @@ class PersonDocumentWriteSerializer(serializers.ModelSerializer):
         """
         if value and "*" in value:
             raise serializers.ValidationError(
-                "Valor mascarado nao pode ser gravado. "
-                "Envie o valor completo ou omita o campo."
+                "Valor mascarado nao pode ser gravado. " "Envie o valor completo ou omita o campo."
             )
         return value
 
     def validate(self, attrs: dict) -> dict:
-        """Popula value_hash a partir de value."""
+        """Recusa CPF/CNPJ com DV inválido e popula value_hash a partir de value."""
         value = attrs.get("value", "")
+        doc_type = attrs.get("doc_type") or getattr(self.instance, "doc_type", None)
+        if value and doc_type == TipoDocumento.CPF and not is_valid_cpf(value):
+            raise serializers.ValidationError({"value": "CPF inválido."})
+        if value and doc_type == TipoDocumento.CNPJ and not is_valid_cnpj(value):
+            raise serializers.ValidationError({"value": "CNPJ inválido."})
         if value:
             attrs["value_hash"] = sha256_hex(value)
         return attrs
@@ -177,8 +184,7 @@ class PersonContactWriteSerializer(serializers.ModelSerializer):
         """
         if value and "*" in value:
             raise serializers.ValidationError(
-                "Valor mascarado nao pode ser gravado. "
-                "Envie o valor completo ou omita o campo."
+                "Valor mascarado nao pode ser gravado. " "Envie o valor completo ou omita o campo."
             )
         return value
 
@@ -328,6 +334,7 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
             "birth_date",
             "gender",
             "is_active",
+            "followup_opt_out",
             "notes",
             "roles",
             "contacts",
@@ -343,6 +350,14 @@ class PersonCreateUpdateSerializer(serializers.ModelSerializer):
     def validate_roles(self, value: list) -> list:
         if not value:
             raise serializers.ValidationError("Pelo menos um role é obrigatório.")
+        # Seguradora nasce em Cadastros → Seguradoras; quem já tem o papel o mantém.
+        already_insurer = (
+            self.instance is not None and self.instance.roles.filter(role="INSURER").exists()
+        )
+        if "INSURER" in value and not already_insurer:
+            raise serializers.ValidationError(
+                "Seguradoras são cadastradas em Cadastros → Seguradoras."
+            )
         return list(set(value))
 
     def validate(self, attrs: dict) -> dict:
@@ -448,6 +463,7 @@ class PersonDetailSerializer(serializers.ModelSerializer):
             "birth_date",
             "gender",
             "is_active",
+            "followup_opt_out",
             "notes",
             "created_at",
             "updated_at",

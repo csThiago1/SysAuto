@@ -1,7 +1,8 @@
 """Parser do payload JSON da Cilia → `ParsedBudget` DTO.
 
 Mapeamentos principais:
-    - `insurer.trade` → nosso `Insurer.code` (catálogo interno)
+    - `insurer.trade` / `insurer.document_identifier` → texto e CNPJ da seguradora
+      (o casamento com `Insurer` fica em `apps.cilia.normalization`)
     - `budgetings[]` → lista de `ParsedItemDTO` com operations inferidas
     - `conclusion` → `ParsedParecerDTO` (1 por versão)
     - `totals.franchise` → `ParsedBudget.franchise_amount`
@@ -25,22 +26,6 @@ from apps.cilia.dtos import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-# Mapeamento Cilia `insurer.trade` → nosso `Insurer.code`.
-# Chave é o texto exato que a Cilia retorna no campo `insurer.trade`.
-INSURER_TRADE_TO_CODE: dict[str, str] = {
-    "Yelum Seguradora": "yelum",
-    "Tokio Marine": "tokio",
-    "Porto Seguro": "porto",
-    "Azul Seguros": "azul",
-    "Itaú Seguros": "itau",
-    "HDI Seguros": "hdi",
-    "Mapfre": "mapfre",
-    "Bradesco Seguros": "bradesco",
-    "Allianz": "allianz",
-    "Suhai": "suhai",
-}
 
 
 # Mapeamento status Cilia (11 valores documentados) → nossos 5 status internos.
@@ -128,22 +113,23 @@ class CiliaParser:
         raw_phone = f"{ddd}{number}".strip()
         phone_digits = re.sub(r"\D", "", raw_phone) if raw_phone else ""
         if phone_digits and not (10 <= len(phone_digits) <= 11):
-            logger.warning(
-                "import_parse: telefone '%s' tem %d digitos",
-                raw_phone,
-                len(phone_digits),
-            )
+            logger.warning("import_parse: telefone com %d digitos", len(phone_digits))
         pb.segurado_phone = phone_digits
+        address = client.get("address") or {}
+        pb.segurado_city = address.get("city") or ""
+        pb.segurado_uf = address.get("state") or ""
+        pb.segurado_cep = address.get("zip_code") or address.get("cep") or ""
 
         # --- Veículo ---
         vehicle = payload.get("vehicle") or {}
         pb.vehicle_plate = (vehicle.get("license_plate") or "").upper()
         pb.vehicle_description = cls._build_vehicle_description(vehicle)
         pb.vehicle_chassis = (vehicle.get("body") or "").strip().upper()
-        pb.vehicle_color = cls._normalize_color(vehicle.get("color") or "")
+        pb.vehicle_color = (vehicle.get("color") or "").strip()
         pb.vehicle_km = str(vehicle.get("mileage") or "")
-        pb.vehicle_brand = cls._normalize_brand(vehicle.get("brand") or "")
-        pb.vehicle_model = cls._normalize_model(vehicle.get("model") or "")
+        pb.vehicle_brand = (vehicle.get("brand") or "").strip()
+        pb.vehicle_model = (vehicle.get("model") or "").strip()
+        pb.vehicle_tipo_hint = vehicle.get("type_key") or ""
 
         # Year validation
         raw_year = vehicle.get("model_year")
@@ -160,8 +146,8 @@ class CiliaParser:
 
         # --- Seguradora ---
         insurer = payload.get("insurer") or {}
-        trade = insurer.get("trade") or ""
-        pb.insurer_code = cls._resolve_insurer_code(trade)
+        pb.insurer_trade = insurer.get("trade") or ""
+        pb.insurer_cnpj = insurer.get("document_identifier") or ""
 
         # --- Financeiro ---
         totals = payload.get("totals") or {}
@@ -480,27 +466,6 @@ class CiliaParser:
         )
 
     @staticmethod
-    def _resolve_insurer_code(trade_name: str) -> str:
-        """Resolve insurer code: DB first, hardcoded fallback.
-
-        Looks up the Insurer model by trade_names ArrayField.
-        Falls back to INSURER_TRADE_TO_CODE dict if DB is unavailable
-        or no match is found.
-        """
-        if not trade_name:
-            return ""
-        try:
-            from apps.insurers.models import Insurer
-            insurer = Insurer.objects.filter(
-                trade_names__contains=[trade_name],
-            ).first()
-            if insurer and insurer.code:
-                return insurer.code
-        except Exception:
-            pass  # DB not available, use fallback
-        return INSURER_TRADE_TO_CODE.get(trade_name, "")
-
-    @staticmethod
     def _build_vehicle_description(vehicle: dict[str, Any]) -> str:
         """Concatena brand + model + year + color em string legível."""
         brand = vehicle.get("brand") or ""
@@ -509,43 +474,6 @@ class CiliaParser:
         color = vehicle.get("color") or ""
         parts = [p for p in [brand, model, str(year) if year else "", color] if p]
         return " ".join(parts).strip()
-
-    # ------------------------------------------------------------------ normalizers
-    # Cilia retorna dados do veículo em formatos irregulares (cor com prefixo "-",
-    # marca/cor em CAPS, model com range de anos entre parênteses). Os helpers
-    # abaixo padronizam pra que a OS e o PDF mostrem texto limpo.
-
-    _COR_PREFIX_RE = re.compile(r"^[-\s]+")
-    _MODEL_YEAR_RANGE_RE = re.compile(r"\s*\([^)]*\d{4}[^)]*\)\s*")
-
-    @classmethod
-    def _normalize_color(cls, raw: str) -> str:
-        """'-PRETA' → 'Preta'; '  BRANCA PEROLA  ' → 'Branca Perola'."""
-        if not raw:
-            return ""
-        cleaned = cls._COR_PREFIX_RE.sub("", raw).strip()
-        return cleaned.title() if cleaned else ""
-
-    @classmethod
-    def _normalize_brand(cls, raw: str) -> str:
-        """'CHEVROLET' → 'Chevrolet'. Mantém sigla curta em CAPS (BMW, VW, GM)."""
-        if not raw:
-            return ""
-        cleaned = raw.strip()
-        if len(cleaned) <= 3 and cleaned.isalpha():
-            return cleaned.upper()
-        return cleaned.title()
-
-    @classmethod
-    def _normalize_model(cls, raw: str) -> str:
-        """Remove range de anos entre parênteses.
-
-        'ONIX PLUS (2020 A 2025) PREMIER 1.0' → 'ONIX PLUS PREMIER 1.0'
-        """
-        if not raw:
-            return ""
-        cleaned = cls._MODEL_YEAR_RANGE_RE.sub(" ", raw)
-        return re.sub(r"\s+", " ", cleaned).strip()
 
     @staticmethod
     def _dec(value: Any, field_name: str = "unknown") -> Decimal:

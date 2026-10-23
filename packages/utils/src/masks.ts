@@ -40,9 +40,9 @@ export function formatCPF(value: string): string {
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
 }
 
-/** 12.345.678/0001-90 */
+/** 12.345.678/0001-90 — aceita o CNPJ alfanumérico (12.ABC.345/01DE-35). */
 export function formatCNPJ(value: string): string {
-  const d = onlyDigits(value).slice(0, 14);
+  const d = onlyAlnum(value).slice(0, 14);
   if (d.length <= 2) return d;
   if (d.length <= 5) return `${d.slice(0, 2)}.${d.slice(2)}`;
   if (d.length <= 8) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5)}`;

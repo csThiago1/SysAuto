@@ -27,7 +27,9 @@ import type {
   ModalProps,
   PersonDocumentWrite,
 } from "@paddock/types";
-import { PERSON_ROLE_LABEL, formatCPF, formatCNPJ, formatCEP, onlyDigits } from "@paddock/utils";
+import {
+  PERSON_ROLE_LABEL, formatCPF, formatCNPJ, formatCEP, isValidCNPJ, onlyAlnum, onlyDigits,
+} from "@paddock/utils";
 import {
   Dialog,
   DialogContent,
@@ -44,7 +46,10 @@ import {
   SelectValue,
   PhoneInput,
 } from "@/components/ui";
-import { useCreatePerson, useUpdatePerson, useCepLookup, usePerson } from "@/hooks";
+import { useCreatePerson, useUpdatePerson, usePerson } from "@/hooks";
+import { useLookup } from "@/hooks/useLookup";
+import { applyIfEmpty, locationGroup } from "@/lib/prefill";
+import { MunicipioCombobox } from "./MunicipioCombobox";
 import { handleApiFormError } from "@/lib/api";
 import { DateField } from "@/components/ui/date-field"
 
@@ -61,6 +66,7 @@ type FormValues = {
   birth_date: string;
   gender: "M" | "F" | "N" | "";
   is_active: boolean;
+  followup_opt_out: boolean;
   notes: string;
   roles: PersonRole[];
   documents: PersonDocumentWrite[];
@@ -98,7 +104,12 @@ interface PersonFormModalProps extends ModalProps {
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 
-const ALL_ROLES: PersonRole[] = ["CLIENT", "INSURER", "BROKER", "EMPLOYEE", "SUPPLIER"];
+// INSURER fora: seguradora nasce em Cadastros → Seguradoras (o backend recusa adicionar o papel).
+const ALL_ROLES: PersonRole[] = ["CLIENT", "BROKER", "EMPLOYEE", "SUPPLIER"];
+
+// Consulta pública da Receita; o CPF nunca vai na URL (o usuário digita lá).
+const RECEITA_CPF_URL =
+  "https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp";
 
 const CONTACT_TYPES = [
   { value: "CELULAR", label: "Celular" },
@@ -124,7 +135,6 @@ export function PersonFormModal({
   // ── Hooks de dados ────────────────────────────────────────────────────────
   const createPerson = useCreatePerson();
   const updatePerson = useUpdatePerson();
-  const cepLookup    = useCepLookup();
   const { data: personDetail } = usePerson(isEditing && open ? (person?.id ?? null) : null);
   const personData = personDetail ?? person;
 
@@ -133,13 +143,18 @@ export function PersonFormModal({
     person?.roles.map((r) => r.role) ?? defaultRoles ?? ["CLIENT"]
   );
 
+  // INSURER só aparece para quem já tem o papel (dá para tirar, não para pôr).
+  const hasInsurerRole = !!person?.roles.some((r) => r.role === "INSURER");
+  const visibleRoles = hasInsurerRole ? [...ALL_ROLES, "INSURER" as const] : ALL_ROLES;
+
   // ── Formulário ────────────────────────────────────────────────────────────
-  const { register, handleSubmit, reset, watch, setValue, control, setError } = useForm<FormValues>({
+  const form = useForm<FormValues>({
     defaultValues: {
       person_kind: defaultKind ?? "PF",
       full_name: "",
       fantasy_name: "",
       is_active: true,
+      followup_opt_out: false,
       notes: "",
       roles: defaultRoles ?? ["CLIENT"],
       documents: [],
@@ -149,6 +164,7 @@ export function PersonFormModal({
       addresses: [],
     },
   });
+  const { register, handleSubmit, reset, watch, setValue, control, setError, getValues } = form;
 
   const { fields: documentFields, append: appendDocument, remove: removeDocument } =
     useFieldArray({ control, name: "documents" });
@@ -158,6 +174,17 @@ export function PersonFormModal({
 
   const { fields: addressFields, append: appendAddress, remove: removeAddress } =
     useFieldArray({ control, name: "addresses" });
+
+  // ── Consultas de CEP e CNPJ (no blur; o cache do servidor cobre repetições) ──
+  // `n` muda a cada blur para a resposta já em cache ser aplicada de novo.
+  const [cepTarget, setCepTarget] = useState<{ index: number; key: string; n: number } | null>(null);
+  const [cnpjTarget, setCnpjTarget] = useState<{ key: string; n: number } | null>(null);
+  const cepQuery = useLookup("cep", cepTarget?.key ?? null);
+  const cnpjQuery = useLookup("cnpj", cnpjTarget?.key ?? null);
+  const cnpjSituacao =
+    cnpjQuery.data?.found && cnpjQuery.data.fields.situacao !== "ATIVA"
+      ? cnpjQuery.data.fields.situacao
+      : "";
 
   const personKind = watch("person_kind");
   const primaryPhoneValue = watch("primary_phone");
@@ -192,6 +219,7 @@ export function PersonFormModal({
       full_name:   src?.full_name ?? "",
       fantasy_name: src?.fantasy_name ?? "",
       is_active:   src?.is_active ?? true,
+      followup_opt_out: src?.followup_opt_out ?? false,
       notes:       src?.notes ?? "",
       roles:       src?.roles.map((r) => r.role) ?? defaultRoles ?? ["CLIENT"],
       // Ao editar, documentos existentes ficam somente-leitura (exibidos abaixo).
@@ -223,18 +251,61 @@ export function PersonFormModal({
     return valor;
   }
 
-  async function handleCepBlur(index: number, value: string): Promise<void> {
-    const clean = value.replace(/\D/g, "");
-    if (clean.length !== 8) return;
-    try {
-      const d = await cepLookup.mutateAsync(clean);
-      setValue(`addresses.${index}.street`, d.street);
-      setValue(`addresses.${index}.neighborhood`, d.neighborhood);
-      setValue(`addresses.${index}.city`, d.city);
-      setValue(`addresses.${index}.state`, d.state);
-      if (d.complement) setValue(`addresses.${index}.complement`, d.complement);
-    } catch { /* usuário preenche manualmente */ }
+  function handleCepBlur(index: number, value: string): void {
+    const clean = onlyDigits(value);
+    if (clean.length === 8) setCepTarget((t) => ({ index, key: clean, n: (t?.n ?? 0) + 1 }));
   }
+
+  function handleCnpjBlur(value: string): void {
+    // DV inválido não gasta cota de consulta; o backend revalida ao salvar.
+    if (isValidCNPJ(value)) setCnpjTarget((t) => ({ key: onlyAlnum(value), n: (t?.n ?? 0) + 1 }));
+  }
+
+  const prefixed = (p: string, g: Record<string, string>): Record<string, string> =>
+    Object.fromEntries(Object.entries(g).map(([k, v]) => [`${p}.${k}`, v]));
+
+  // Só preenche o que está vazio; o que o usuário já escolheu fica como está.
+  const cepData = cepQuery.data;
+  useEffect(() => {
+    if (!cepTarget || !cepData?.found) return;
+    const f = cepData.fields;
+    const p = `addresses.${cepTarget.index}` as const;
+    applyIfEmpty(form, {
+      // sem complemento: o do ViaCEP é da faixa do CEP ("lado ímpar"), não do cliente
+      [`${p}.street`]: f.logradouro,
+      [`${p}.neighborhood`]: f.bairro,
+      ...prefixed(p, locationGroup(getValues(p), f.municipio, f.uf)),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cepData, cepTarget]);
+
+  const cnpjData = cnpjQuery.data;
+  useEffect(() => {
+    if (!cnpjTarget || !cnpjData?.found) return;
+    const f = cnpjData.fields;
+    applyIfEmpty(form, {
+      full_name: f.razao_social,
+      fantasy_name: f.nome_fantasia,
+    });
+    // endereço: na linha principal; sem nenhuma, abre uma
+    if (getValues("addresses").length === 0) {
+      appendAddress({
+        address_type: "PRINCIPAL", zip_code: f.cep, street: f.logradouro, number: f.numero,
+        complement: f.complemento, neighborhood: f.bairro, city: f.municipio?.label ?? "",
+        state: f.uf, municipio_ibge: f.municipio?.id ?? "", is_primary: true,
+      });
+    } else {
+      applyIfEmpty(form, {
+        "addresses.0.zip_code": f.cep,
+        "addresses.0.street": f.logradouro,
+        "addresses.0.number": f.numero,
+        "addresses.0.complement": f.complemento,
+        "addresses.0.neighborhood": f.bairro,
+        ...prefixed("addresses.0", locationGroup(getValues("addresses.0"), f.municipio, f.uf)),
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cnpjData, cnpjTarget]);
 
   /** onSubmit delega inteiramente ao hook — sem lógica de fetch manual (PADRÃO-4) */
   async function onSubmit(data: FormValues): Promise<void> {
@@ -333,7 +404,7 @@ export function PersonFormModal({
             <div>
               <Label className="text-sm font-medium">Categorias</Label>
               <div className="flex flex-wrap gap-2 mt-1.5">
-                {ALL_ROLES.map((role) => (
+                {visibleRoles.map((role) => (
                   <button
                     key={role}
                     type="button"
@@ -501,6 +572,16 @@ export function PersonFormModal({
                       </Select>
                     )}
                   />
+                  {watch(`documents.${index}.doc_type`) === "CPF" && (
+                    <a
+                      href={RECEITA_CPF_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-3 mr-auto text-xs font-medium text-primary hover:underline"
+                    >
+                      Conferir na Receita
+                    </a>
+                  )}
                   <Button
                     type="button"
                     variant="ghost"
@@ -524,9 +605,12 @@ export function PersonFormModal({
                         const bruto = e.target.value
                         setValue(
                           `documents.${index}.value`,
-                          tipo === "CPF" || tipo === "CNPJ" ? onlyDigits(bruto) : bruto,
+                          tipo === "CPF" ? onlyDigits(bruto) : tipo === "CNPJ" ? onlyAlnum(bruto) : bruto,
                           { shouldDirty: true },
                         )
+                      }}
+                      onBlur={(e) => {
+                        if (watch(`documents.${index}.doc_type`) === "CNPJ") handleCnpjBlur(e.target.value)
                       }}
                       placeholder={
                         watch(`documents.${index}.doc_type`) === "CPF" ? "000.000.000-00"
@@ -560,6 +644,14 @@ export function PersonFormModal({
                 </label>
               </div>
             ))}
+            {cnpjSituacao && (
+              <p
+                role="alert"
+                className="rounded-md bg-warning-500/10 px-3 py-2 text-sm text-warning-400"
+              >
+                Situação cadastral na Receita: {cnpjSituacao}. Confira antes de cadastrar.
+              </p>
+            )}
           </div>
 
           {/* ── Seção 4: Contatos ────────────────────────────────────────── */}
@@ -689,26 +781,18 @@ export function PersonFormModal({
                     <Input {...register(`addresses.${index}.number`)} placeholder="Nº" /></div>
                   <div><Label className="text-xs">Complemento</Label>
                     <Input {...register(`addresses.${index}.complement`)} placeholder="Apto..." /></div>
-                  <div><Label className="text-xs">Bairro</Label>
+                  <div className="col-span-2"><Label className="text-xs">Bairro</Label>
                     <Input {...register(`addresses.${index}.neighborhood`)} /></div>
-                  <div><Label className="text-xs">Cidade</Label>
-                    <Input {...register(`addresses.${index}.city`)} /></div>
-                  <div>
-                    <Label className="text-xs">UF</Label>
-                    <Input {...register(`addresses.${index}.state`)} maxLength={2} className="w-16" placeholder="AM" />
-                  </div>
-                  <div>
-                    <Label className="text-xs" title="Código IBGE do município (7 dígitos). Obrigatório para NFS-e.">
-                      Cód. IBGE
-                    </Label>
-                    <Input
-                      {...register(`addresses.${index}.municipio_ibge`, {
-                        maxLength: { value: 7, message: "Máximo 7 dígitos" },
-                        pattern: { value: /^\d{0,7}$/, message: "Apenas dígitos" },
-                      })}
-                      maxLength={7}
-                      placeholder="1302603"
-                      title="Código IBGE do município (7 dígitos). Ex: 1302603 para Manaus. Obrigatório para NFS-e."
+                  <div className="col-span-4">
+                    <MunicipioCombobox
+                      uf={watch(`addresses.${index}.state`) ?? ""}
+                      municipio_ibge={watch(`addresses.${index}.municipio_ibge`) ?? ""}
+                      city={watch(`addresses.${index}.city`) ?? ""}
+                      onChange={(m) => {
+                        setValue(`addresses.${index}.state`, m.uf, { shouldDirty: true })
+                        setValue(`addresses.${index}.city`, m.city, { shouldDirty: true })
+                        setValue(`addresses.${index}.municipio_ibge`, m.municipio_ibge, { shouldDirty: true })
+                      }}
                     />
                   </div>
                 </div>
@@ -725,6 +809,12 @@ export function PersonFormModal({
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" id="is_active" {...register("is_active")} className="accent-primary" />
               <Label htmlFor="is_active">Ativo</Label>
+            </label>
+            {/* LGPD: sem este opt-out o cliente não teria como sair das
+                comunicações de pós-venda. */}
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="followup_opt_out" {...register("followup_opt_out")} className="accent-primary" />
+              <Label htmlFor="followup_opt_out">Não receber retornos (pesquisas e ofertas)</Label>
             </label>
           </div>
 

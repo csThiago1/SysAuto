@@ -8,12 +8,12 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useUpdateMakeLogo, type VehicleMake } from "@/hooks/useVehicleFipe"
+import { useUpdateMakeLogo, type MakeAdmin } from "@/hooks/useCatalog"
 
 interface Props {
   open: boolean
   onOpenChange: (v: boolean) => void
-  make: VehicleMake | null
+  make: MakeAdmin | null
 }
 
 export function MakeLogoDialog({ open, onOpenChange, make }: Props) {
@@ -40,7 +40,7 @@ export function MakeLogoDialog({ open, onOpenChange, make }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Logo — {make?.nome}</DialogTitle>
+          <DialogTitle>Logo — {make?.label}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3">

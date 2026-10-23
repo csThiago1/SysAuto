@@ -2,11 +2,15 @@
 Paddock Solutions — Insurers App
 Seguradoras — schema público, compartilhado entre todos os tenants.
 """
+
 import logging
 import uuid
+from typing import Any
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+
+from apps.lookups.validators import clean_cnpj
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +38,16 @@ class Insurer(models.Model):
         verbose_name="Código interno",
     )
     cnpj = models.CharField(max_length=18, unique=True, verbose_name="CNPJ")
+    cnpjs = ArrayField(
+        models.CharField(max_length=14),
+        default=list,
+        blank=True,
+        verbose_name="CNPJs",
+        help_text="Todos os CNPJs da seguradora, só dígitos, incluindo o principal.",
+    )
+    susep_code = models.CharField(
+        max_length=10, null=True, blank=True, unique=True, verbose_name="Código SUSEP (FIP)"
+    )
     brand_color = models.CharField(
         max_length=7,
         default="#000000",
@@ -54,13 +68,11 @@ class Insurer(models.Model):
         verbose_name="Nomes comerciais (importacao)",
         help_text="Nomes usados por sistemas externos (Cilia, Soma, Audatex) para identificar esta seguradora.",
     )
-    logo_url = models.CharField(
-        max_length=500, blank=True, default="", verbose_name="URL do logo"
-    )
+    logo_url = models.CharField(max_length=500, blank=True, default="", verbose_name="URL do logo")
     uses_cilia = models.BooleanField(
-        default=False, 
-        verbose_name="Utiliza Cilia?", 
-        help_text="Marque se a seguradora envia orçamentos pelo sistema Cilia"
+        default=False,
+        verbose_name="Utiliza Cilia?",
+        help_text="Marque se a seguradora envia orçamentos pelo sistema Cilia",
     )
     is_active = models.BooleanField(default=True, verbose_name="Ativo")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -73,6 +85,16 @@ class Insurer(models.Model):
 
     def __str__(self) -> str:
         return self.trade_name or self.name
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        self.susep_code = self.susep_code or None  # "" duplicaria o unique
+        digits = clean_cnpj(self.cnpj)
+        if digits and digits not in self.cnpjs:
+            self.cnpjs = [digits, *self.cnpjs]
+            update_fields = kwargs.get("update_fields")
+            if update_fields is not None:
+                kwargs["update_fields"] = {*update_fields, "cnpjs"}
+        super().save(*args, **kwargs)
 
 
 class InsurerTenantProfile(models.Model):
@@ -134,9 +156,7 @@ class InsurerTenantProfile(models.Model):
         max_length=200, blank=True, default="", verbose_name="Comercial — E-mail"
     )
 
-    portal_url = models.URLField(
-        blank=True, default="", verbose_name="Portal de acionamento (URL)"
-    )
+    portal_url = models.URLField(blank=True, default="", verbose_name="Portal de acionamento (URL)")
     sla_dias_uteis = models.PositiveSmallIntegerField(
         null=True, blank=True, verbose_name="SLA de resposta (dias úteis)"
     )

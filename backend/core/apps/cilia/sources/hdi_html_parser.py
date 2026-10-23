@@ -84,7 +84,7 @@ class HdiHtmlParser:
             )
 
         cls._parse_header(pb, tables[0])
-        # tables[1] (HDI razão) — não precisamos
+        cls._parse_insurer(pb, tables[1])
         cls._parse_vehicle_client(pb, tables[2])
         # tables[3] (oficina DS Car) — não precisamos
         cls._parse_parts(pb, tables[4], supplier="OFICINA")
@@ -141,6 +141,13 @@ class HdiHtmlParser:
             pb.external_version = f"{pb.external_budget_number}.{versions[-1]}"
 
     @classmethod
+    def _parse_insurer(cls, pb: ParsedBudget, table_html: str) -> None:
+        """CNPJ da razão HDI (a filial que emitiu o laudo)."""
+        m = re.search(r"CNPJ:\s*(\S+)", cls._flatten(table_html))
+        if m:
+            pb.insurer_cnpj = m.group(1)
+
+    @classmethod
     def _parse_vehicle_client(cls, pb: ParsedBudget, table_html: str) -> None:
         text = cls._flatten(table_html)
         m = re.search(r"Nome:\s*(.+?)\s+Telefone:", text)
@@ -170,7 +177,7 @@ class HdiHtmlParser:
             pb.vehicle_plate = m.group(1).upper()
         m = re.search(r"Cor:\s*([A-Za-zÀ-ú]+)", text)
         if m:
-            pb.vehicle_color = m.group(1).title()
+            pb.vehicle_color = m.group(1)
         m = re.search(r"Chassis:\s*(\S+)", text)
         if m:
             pb.vehicle_chassis = m.group(1).upper()

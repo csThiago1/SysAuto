@@ -1,254 +1,128 @@
-"""
-Paddock Solutions — Vehicle Catalog Tests: FIPE Sync Tasks
+import shutil
+from pathlib import Path
+from unittest.mock import patch
 
-Testa as tasks Celery de sincronização com a API FIPE.
-Usa unittest.mock para isolar httpx — sem chamadas reais à rede.
-"""
-import logging
-from unittest.mock import MagicMock, patch
+import pytest
 
-import httpx
 from django.test import TestCase
 
-from apps.vehicle_catalog.models import VehicleMake, VehicleModel
+from apps.vehicle_catalog.fipe_sync import derive_family, load_fipex
+from apps.vehicle_catalog.models import (
+    VehicleFamilyRule,
+    VehicleMake,
+    VehicleModel,
+    VehicleYearVersion,
+)
+from apps.vehicle_catalog.tasks import task_sync_fipe_catalog
+from apps.vehicle_catalog.tests.factories import SAMPLE, sample_without
 
-logger = logging.getLogger(__name__)
+
+def RULES() -> list[VehicleFamilyRule]:
+    return list(VehicleFamilyRule.objects.filter(is_active=True))  # seed da 0008
 
 
-class TestTaskSyncFipeMakes(TestCase):
-    """Testa task_sync_fipe_makes — sincronização de marcas."""
+@pytest.mark.parametrize(
+    "make,model,fam,tipo",
+    [
+        ("GM - Chevrolet", "ONIX HATCH LT 1.0 12V Flex 5p Mec.", "Onix", "carro"),
+        ("GM - Chevrolet", "ONIX SED. Plus PREM. 1.0 12V TB Flex Aut", "Onix Plus", "carro"),
+        ("GM - Chevrolet", "ONIX SEDAN Plus LT 1.0 12V Flex 4p Mec.", "Onix Plus", "carro"),
+        ("GM - Chevrolet", "ONIX SD. P. PR. MIDNIGHT 1.0 TB Flex Aut", "Onix Plus", "carro"),
+        ("Mercedes-Benz", "C 180 Avantgarde 1.6 TB 16V Aut.", "Classe C", "carro"),
+        ("Mercedes-Benz", "GLA-200 Advance 1.6 TB 16V Aut.", "Classe GLA", "carro"),
+        ("GM - Chevrolet", "MONTANA RS 1.2 Turbo Flex 12V Aut.", "Montana", "carro"),
+        ("Mercedes-Benz", "Sprinter 517 VAN E.L.T.A. 18L Die (E6)", "Sprinter", "carro"),
+        ("Fiat", "Grand Siena 1.0 EVO Flex 8V 4p", "Grand Siena", "carro"),
+        ("Honda", "HR-V Advance 1.5  Flex TB 16V 5p Aut.", "HR-V", "carro"),
+        ("VW - VolksWagen", "T-Cross 1.0 TSI Flex 12V 5p Mec.", "T-Cross", "carro"),
+        ("VW - VolksWagen", "Gol (novo) 1.0 Mi Total Flex 8V 4p", "Gol", "carro"),
+        ("VW - VolksWagen", "New Beetle 2.0 Mi Mec./Aut.", "Beetle", "carro"),
+        ("Hyundai", "HB20X Premium 1.6 Flex 16V Aut.", "HB20X", "carro"),
+        ("Land Rover", "Range Rover EVOQUE HSE 2.0 Diesel Aut.", "Range Rover Evoque", "carro"),
+        ("BMW", "320iA", "Série 3", "carro"),
+        ("HONDA", "POP 110i", "Pop", "moto"),
+    ],
+)
+@pytest.mark.django_db
+def test_derive_family(make: str, model: str, fam: str, tipo: str) -> None:
+    assert derive_family(make, model, RULES(), tipo) == fam
 
-    @patch("apps.vehicle_catalog.tasks.httpx.Client")
-    def test_sync_fipe_makes_cria_vehicle_make(
-        self, mock_httpx_client_cls: MagicMock
-    ) -> None:
-        """Mock httpx: verifica que cria VehicleMake com nome_normalizado."""
-        from apps.vehicle_catalog.tasks import task_sync_fipe_makes
 
-        # Monta o mock do contexto httpx.Client
-        mock_response = MagicMock()
-        mock_response.raise_for_status.return_value = None
-        mock_response.json.return_value = [
-            {"code": "59", "name": "Honda"},
-            {"code": "22", "name": "Volkswagen"},
-        ]
-        mock_client_instance = MagicMock()
-        mock_client_instance.get.return_value = mock_response
-        mock_httpx_client_cls.return_value.__enter__.return_value = (
-            mock_client_instance
+def test_derive_family_sem_regra_pega_primeiro_termo() -> None:
+    assert derive_family("Fiat", "Grand Siena 1.0 EVO Flex 8V 4p", []) == "Grand"
+
+
+class LoadFipexTest(TestCase):
+    def test_carga_cria_tudo(self) -> None:
+        rep = load_fipex(SAMPLE, ref="2026-10")
+        v = VehicleYearVersion.objects.get(modelo__codigo_fipe="004504-7", ano=2025)
+        assert v.combustivel == "flex" and v.modelo.familia.nome == "Onix Plus"
+        assert v.modelo.marca.display_name == "Chevrolet" and v.valor_referencia > 0
+        assert (
+            VehicleYearVersion.objects.get(modelo__codigo_fipe="004519-5", zero_km=True).ano
+            == 32000
         )
+        assert VehicleModel.objects.get(codigo_fipe="811132-4").tipo == "moto"
+        with open(SAMPLE, encoding="utf-8") as f:
+            assert rep.versions["upserted"] == sum(1 for _ in f) - 1
 
-        # Remove registros anteriores para garantir estado limpo
-        VehicleMake.objects.filter(fipe_id__in=["59", "22"]).delete()
+    def test_recarga_nao_duplica(self) -> None:
+        load_fipex(SAMPLE, ref="2026-10")
+        n = VehicleYearVersion.objects.count()
+        load_fipex(SAMPLE, ref="2026-11")
+        assert VehicleYearVersion.objects.count() == n
 
-        # Chama a task diretamente (sem Celery broker)
-        result = task_sync_fipe_makes.run()
+    def test_item_removido_vira_inativo_e_continua_legivel(self) -> None:
+        load_fipex(SAMPLE, ref="2026-10")
+        load_fipex(sample_without("005275-2"), ref="2026-11")
+        m = VehicleModel.objects.get(codigo_fipe="005275-2")
+        assert m.is_active is False and not m.versoes.filter(is_active=True).exists()
+        assert m.familia.is_active is True  # Gol segue ativo pelas outras versões
 
-        self.assertIn("created", result)
-        self.assertEqual(result["created"], 2)
+    def test_make_desativada_pelo_admin_continua_desativada(self) -> None:
+        load_fipex(SAMPLE, ref="2026-10")
+        VehicleMake.objects.filter(nome="Nissan").update(is_active=False)
+        load_fipex(SAMPLE, ref="2026-11")
+        assert not VehicleMake.objects.get(nome="Nissan").is_active
 
-        # Verifica que os registros foram criados com nome_normalizado
-        honda = VehicleMake.objects.get(fipe_id="59")
-        self.assertEqual(honda.nome, "Honda")
-        self.assertIsNotNone(honda.nome_normalizado)
-        self.assertEqual(honda.nome_normalizado, "honda")
+    def test_marca_que_some_num_mes_volta_ativa(self) -> None:
+        load_fipex(SAMPLE, ref="2026-10")
+        load_fipex(sample_without(marca="Hyundai"), ref="2026-11")  # 20 de 607 linhas
+        hyundai = VehicleMake.objects.get(nome="Hyundai")
+        assert hyundai.is_active  # sem família ativa, o Modelo já sai vazio
+        assert not hyundai.familias.filter(is_active=True).exists()
+        load_fipex(SAMPLE, ref="2026-12")
+        hyundai.refresh_from_db()
+        assert hyundai.is_active and hyundai.familias.filter(is_active=True).exists()
 
-        vw = VehicleMake.objects.get(fipe_id="22")
-        self.assertEqual(vw.nome, "Volkswagen")
-        self.assertEqual(vw.nome_normalizado, "volkswagen")
-
-    @patch("apps.vehicle_catalog.tasks.httpx.Client")
-    def test_sync_fipe_makes_atualiza_registro_existente(
-        self, mock_httpx_client_cls: MagicMock
-    ) -> None:
-        """Update_or_create: marca existente é atualizada (não duplicada)."""
-        from apps.vehicle_catalog.tasks import task_sync_fipe_makes
-
-        # Cria registro existente
-        VehicleMake.objects.update_or_create(
-            fipe_id="59",
-            defaults={"nome": "Honda Antigo", "nome_normalizado": "honda antigo"},
+    def test_dump_curto_nao_desativa_o_catalogo(self) -> None:
+        load_fipex(SAMPLE, ref="2026-10")
+        antes = (
+            list(VehicleYearVersion.objects.order_by("pk").values_list("pk", "is_active")),
+            list(VehicleMake.objects.order_by("pk").values_list("pk", "is_active")),
         )
-
-        mock_response = MagicMock()
-        mock_response.raise_for_status.return_value = None
-        mock_response.json.return_value = [
-            {"code": "59", "name": "Honda"},
-        ]
-        mock_client_instance = MagicMock()
-        mock_client_instance.get.return_value = mock_response
-        mock_httpx_client_cls.return_value.__enter__.return_value = (
-            mock_client_instance
+        with pytest.raises(ValueError, match="dump curto"):
+            load_fipex(sample_without(marca="Mercedes-Benz"), ref="2026-11")  # 190 linhas
+        depois = (
+            list(VehicleYearVersion.objects.order_by("pk").values_list("pk", "is_active")),
+            list(VehicleMake.objects.order_by("pk").values_list("pk", "is_active")),
         )
+        assert depois == antes
 
-        result = task_sync_fipe_makes.run()
+    def test_task_cai_para_o_mes_anterior_em_404(self) -> None:
+        pedidos: list[tuple[int, int]] = []
 
-        # Atualizado, não criado
-        self.assertEqual(result["updated"], 1)
-        self.assertEqual(result["created"], 0)
+        def fake_download(ano: int, mes: int, dest: Path) -> bool:
+            pedidos.append((ano, mes))
+            if len(pedidos) == 1:
+                return False  # mês corrente ainda não publicado
+            shutil.copyfile(SAMPLE, dest)
+            return True
 
-        # Nome atualizado
-        honda = VehicleMake.objects.get(fipe_id="59")
-        self.assertEqual(honda.nome, "Honda")
-
-    @patch("apps.vehicle_catalog.tasks.httpx.Client")
-    def test_sync_fipe_makes_ignora_entradas_sem_code_ou_nome(
-        self, mock_httpx_client_cls: MagicMock
-    ) -> None:
-        """Entradas sem 'code' ou sem 'name' devem ser ignoradas."""
-        from apps.vehicle_catalog.tasks import task_sync_fipe_makes
-
-        mock_response = MagicMock()
-        mock_response.raise_for_status.return_value = None
-        mock_response.json.return_value = [
-            {"code": "", "name": "Sem Code"},
-            {"code": "99", "name": ""},
-            {"name": "Sem Code Key"},
-        ]
-        mock_client_instance = MagicMock()
-        mock_client_instance.get.return_value = mock_response
-        mock_httpx_client_cls.return_value.__enter__.return_value = (
-            mock_client_instance
-        )
-
-        result = task_sync_fipe_makes.run()
-
-        self.assertEqual(result["created"], 0)
-        self.assertEqual(result["updated"], 0)
-
-    @patch("apps.vehicle_catalog.tasks.httpx.Client")
-    def test_sync_fipe_makes_retry_em_erro_http(
-        self, mock_httpx_client_cls: MagicMock
-    ) -> None:
-        """httpx.HTTPError deve disparar self.retry na task."""
-        from apps.vehicle_catalog.tasks import task_sync_fipe_makes
-
-        mock_client_instance = MagicMock()
-        mock_client_instance.get.side_effect = httpx.RequestError(
-            "Connection refused"
-        )
-        mock_httpx_client_cls.return_value.__enter__.return_value = (
-            mock_client_instance
-        )
-
-        # Simula o contexto de execução Celery com self.retry mockado
-        task_instance = task_sync_fipe_makes
-        mock_retry = MagicMock(side_effect=Exception("retry called"))
-
-        with patch.object(task_instance, "retry", mock_retry):
-            with self.assertRaises(Exception) as ctx:
-                task_instance.run()
-
-        self.assertIn("retry called", str(ctx.exception))
-        mock_retry.assert_called_once()
-
-    @patch("apps.vehicle_catalog.tasks.httpx.Client")
-    def test_sync_fipe_makes_retry_em_http_status_error(
-        self, mock_httpx_client_cls: MagicMock
-    ) -> None:
-        """raise_for_status com 5xx deve disparar self.retry."""
-        from apps.vehicle_catalog.tasks import task_sync_fipe_makes
-
-        mock_response = MagicMock()
-        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-            "500 Internal Server Error",
-            request=MagicMock(),
-            response=MagicMock(),
-        )
-        mock_client_instance = MagicMock()
-        mock_client_instance.get.return_value = mock_response
-        mock_httpx_client_cls.return_value.__enter__.return_value = (
-            mock_client_instance
-        )
-
-        task_instance = task_sync_fipe_makes
-        mock_retry = MagicMock(side_effect=Exception("retry called"))
-
-        with patch.object(task_instance, "retry", mock_retry):
-            with self.assertRaises(Exception) as ctx:
-                task_instance.run()
-
-        self.assertIn("retry called", str(ctx.exception))
-        mock_retry.assert_called_once()
-
-
-class TestTaskSyncFipeModels(TestCase):
-    """Testa task_sync_fipe_models — sincronização de modelos por marca."""
-
-    def setUp(self) -> None:
-        super().setUp()
-        # Cria marca base para os testes de modelos
-        self.honda, _ = VehicleMake.objects.update_or_create(
-            fipe_id="59",
-            defaults={"nome": "Honda", "nome_normalizado": "honda"},
-        )
-
-    @patch("apps.vehicle_catalog.tasks.httpx.Client")
-    def test_sync_fipe_models_cria_vehicle_model(
-        self, mock_httpx_client_cls: MagicMock
-    ) -> None:
-        """Sincroniza modelos de uma marca e cria VehicleModel com nome_normalizado."""
-        from apps.vehicle_catalog.tasks import task_sync_fipe_models
-
-        mock_response = MagicMock()
-        mock_response.raise_for_status.return_value = None
-        mock_response.json.return_value = {
-            "models": [
-                {"code": "1", "name": "Civic"},
-                {"code": "2", "name": "Fit"},
-            ]
-        }
-        mock_client_instance = MagicMock()
-        mock_client_instance.get.return_value = mock_response
-        mock_httpx_client_cls.return_value.__enter__.return_value = (
-            mock_client_instance
-        )
-
-        # Remove modelos anteriores para estado limpo
-        VehicleModel.objects.filter(marca=self.honda).delete()
-
-        result = task_sync_fipe_models.run(make_fipe_id="59")
-
-        self.assertEqual(result["created"], 2)
-        self.assertTrue(
-            VehicleModel.objects.filter(marca=self.honda, fipe_id="1").exists()
-        )
-        civic = VehicleModel.objects.get(marca=self.honda, fipe_id="1")
-        self.assertEqual(civic.nome, "Civic")
-        self.assertEqual(civic.nome_normalizado, "civic")
-
-    @patch("apps.vehicle_catalog.tasks.httpx.Client")
-    def test_sync_fipe_models_marca_inexistente_retorna_zero(
-        self, mock_httpx_client_cls: MagicMock
-    ) -> None:
-        """Marca não encontrada no DB → retorna zero sem chamar httpx."""
-        from apps.vehicle_catalog.tasks import task_sync_fipe_models
-
-        result = task_sync_fipe_models.run(make_fipe_id="999999")
-
-        self.assertEqual(result["created"], 0)
-        self.assertEqual(result["updated"], 0)
-        mock_httpx_client_cls.assert_not_called()
-
-    @patch("apps.vehicle_catalog.tasks.httpx.Client")
-    def test_sync_fipe_models_retry_em_erro_http(
-        self, mock_httpx_client_cls: MagicMock
-    ) -> None:
-        """httpx.HTTPError deve disparar self.retry."""
-        from apps.vehicle_catalog.tasks import task_sync_fipe_models
-
-        mock_client_instance = MagicMock()
-        mock_client_instance.get.side_effect = httpx.RequestError("timeout")
-        mock_httpx_client_cls.return_value.__enter__.return_value = (
-            mock_client_instance
-        )
-
-        task_instance = task_sync_fipe_models
-        mock_retry = MagicMock(side_effect=Exception("retry called"))
-
-        with patch.object(task_instance, "retry", mock_retry):
-            with self.assertRaises(Exception) as ctx:
-                task_instance.run(make_fipe_id="59")
-
-        self.assertIn("retry called", str(ctx.exception))
-        mock_retry.assert_called_once()
+        with patch("apps.vehicle_catalog.fipe_sync.download_fipex", side_effect=fake_download):
+            with patch("apps.vehicle_catalog.fipe_sync.timezone.localdate") as today:
+                today.return_value.year, today.return_value.month = 2026, 1
+                out = task_sync_fipe_catalog.run(tenant_schema="public")
+        assert pedidos == [(2026, 1), (2025, 12)]
+        assert VehicleModel.objects.get(codigo_fipe="004504-7").fonte_ref == "2025-12"
+        assert out["versions_upserted"] == VehicleYearVersion.objects.count()

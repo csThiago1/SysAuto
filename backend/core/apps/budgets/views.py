@@ -33,34 +33,36 @@ class BudgetViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated, IsConsultantOrAbove]
     serializer_class = BudgetReadSerializer
     filterset_fields = ["is_active"]
-    search_fields = ["number", "vehicle_plate", "customer__full_name"]
+    search_fields = ["number", "vehicle_plate", "vehicle_chassis", "customer__full_name"]
     ordering_fields = ["created_at", "number"]
 
     def get_queryset(self):  # type: ignore[override]
-        return Budget.objects.filter(is_active=True).select_related(
-            "customer"
-        ).prefetch_related(
-            "versions__items__operations__operation_type",
-            "versions__items__operations__labor_category",
+        return (
+            Budget.objects.filter(is_active=True)
+            .select_related(
+                "customer",
+                "catalog_family__make",
+                "catalog_version__modelo__marca",
+                "catalog_version__modelo__familia",
+            )
+            .prefetch_related(
+                "versions__items__operations__operation_type",
+                "versions__items__operations__labor_category",
+            )
         )
 
     def create(self, request) -> Response:  # type: ignore[override]
         ser = BudgetCreateSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
-        customer = get_object_or_404(
-            Person, pk=ser.validated_data["customer_id"]
-        )
+        customer = get_object_or_404(Person, pk=ser.validated_data["customer_id"])
         budget = BudgetService.create(
             customer=customer,
             vehicle_plate=ser.validated_data["vehicle_plate"],
-            vehicle_description=ser.validated_data["vehicle_description"],
-            vehicle_chassis=ser.validated_data.get("vehicle_chassis", ""),
-            vehicle_version=ser.validated_data.get("vehicle_version", ""),
-            vehicle_engine=ser.validated_data.get("vehicle_engine", ""),
-            vehicle_color=ser.validated_data.get("vehicle_color", ""),
-            vehicle_fuel_type=ser.validated_data.get("vehicle_fuel_type", ""),
-            vehicle_make_logo=ser.validated_data.get("vehicle_make_logo", ""),
-            vehicle_year=ser.validated_data.get("vehicle_year"),
+            catalog_family=ser.validated_data.get("catalog_family"),
+            catalog_version=ser.validated_data.get("catalog_version"),
+            vehicle_color=ser.validated_data["vehicle_color"],
+            vehicle_year_manufacture=ser.validated_data["vehicle_year_manufacture"],
+            vehicle_chassis=ser.validated_data["vehicle_chassis"],
             created_by=request.user.email,
         )
         return Response(
@@ -108,7 +110,10 @@ class BudgetVersionViewSet(PermissionsByActionMixin, viewsets.ReadOnlyModelViewS
 
     @action(detail=True, methods=["post"])
     def approve(
-        self, request, budget_pk: str | None = None, pk: str | None = None,
+        self,
+        request,
+        budget_pk: str | None = None,
+        pk: str | None = None,
     ) -> Response:
         version = self.get_object()
         ser = BudgetApproveSerializer(data=request.data)
@@ -121,14 +126,20 @@ class BudgetVersionViewSet(PermissionsByActionMixin, viewsets.ReadOnlyModelViewS
         )
         version.refresh_from_db()
         from apps.service_orders.serializers import ServiceOrderListSerializer
-        return Response({
-            "version": BudgetVersionReadSerializer(version).data,
-            "service_order": ServiceOrderListSerializer(os_instance).data,
-        })
+
+        return Response(
+            {
+                "version": BudgetVersionReadSerializer(version).data,
+                "service_order": ServiceOrderListSerializer(os_instance).data,
+            }
+        )
 
     @action(detail=True, methods=["post"])
     def reject(
-        self, request, budget_pk: str | None = None, pk: str | None = None,
+        self,
+        request,
+        budget_pk: str | None = None,
+        pk: str | None = None,
     ) -> Response:
         version = self.get_object()
         BudgetService.reject(version=version)
@@ -137,7 +148,10 @@ class BudgetVersionViewSet(PermissionsByActionMixin, viewsets.ReadOnlyModelViewS
 
     @action(detail=True, methods=["post"])
     def revision(
-        self, request, budget_pk: str | None = None, pk: str | None = None,
+        self,
+        request,
+        budget_pk: str | None = None,
+        pk: str | None = None,
     ) -> Response:
         version = self.get_object()
         new_v = BudgetService.request_revision(version=version)
@@ -148,7 +162,10 @@ class BudgetVersionViewSet(PermissionsByActionMixin, viewsets.ReadOnlyModelViewS
 
     @action(detail=True, methods=["get"], url_path="pdf")
     def pdf(
-        self, request, budget_pk: str | None = None, pk: str | None = None,
+        self,
+        request,
+        budget_pk: str | None = None,
+        pk: str | None = None,
     ) -> HttpResponse:
         """Download do PDF do orçamento."""
         from apps.documents.pdf_service import PDFService
@@ -172,7 +189,8 @@ class BudgetVersionItemViewSet(viewsets.ModelViewSet):
         return BudgetVersionItem.objects.filter(
             version_id=self.kwargs["version_pk"],
         ).prefetch_related(
-            "operations__operation_type", "operations__labor_category",
+            "operations__operation_type",
+            "operations__labor_category",
         )
 
     def get_serializer_class(self):  # type: ignore[override]
@@ -188,15 +206,13 @@ class BudgetVersionItemViewSet(viewsets.ModelViewSet):
         )
         if version.is_frozen():
             from rest_framework.exceptions import ValidationError
-            raise ValidationError(
-                {"status": "Só pode adicionar itens em versões draft"}
-            )
+
+            raise ValidationError({"status": "Só pode adicionar itens em versões draft"})
         serializer.save(version=version)
 
     def perform_update(self, serializer) -> None:  # type: ignore[override]
         if serializer.instance.version.is_frozen():
             from rest_framework.exceptions import ValidationError
-            raise ValidationError(
-                {"status": "Versão imutável — não é possível editar itens"}
-            )
+
+            raise ValidationError({"status": "Versão imutável — não é possível editar itens"})
         serializer.save()

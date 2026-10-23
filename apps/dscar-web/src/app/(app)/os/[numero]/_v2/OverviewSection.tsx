@@ -21,6 +21,7 @@ import type { PersonContact, ServiceOrder, ServiceOrderPhoto } from "@paddock/ty
 import { formatCurrency, formatDate } from "@paddock/utils"
 import { TransitionRequirementsPanel } from "../_components/TransitionRequirementsPanel"
 import { useOSPhotos } from "../_hooks/useOSItems"
+import { useVehicleColors } from "../_hooks/useVehicleCatalog"
 import { usePerson } from "@/hooks/usePersons"
 
 /** Telefone preferido pra contato: WhatsApp > celular > comercial. */
@@ -61,6 +62,12 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
 
   const { data: person } = usePerson(order.customer_person_id)
   const phone = pickPhone(person?.contacts)
+
+  const { data: colors } = useVehicleColors()
+  const colorLabel =
+    order.color && order.color !== "NAO_INFORMADA"
+      ? colors?.find((c) => c.value === order.color)?.label
+      : undefined
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -109,7 +116,7 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
             </p>
             <p className="text-xs font-mono text-muted-foreground mt-0.5 tracking-wider">
               {order.plate || "sem placa"}
-              {order.color ? ` · ${order.color}` : ""}
+              {colorLabel ? ` · ${colorLabel}` : ""}
               {order.year ? ` · ${order.year}` : ""}
             </p>
           </InfoCard>

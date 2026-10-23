@@ -8,6 +8,8 @@ import logging
 
 from rest_framework import serializers
 
+from apps.lookups.validators import is_valid_cpf
+
 from .models import UnifiedCustomer
 
 logger = logging.getLogger(__name__)
@@ -187,6 +189,8 @@ class UnifiedCustomerCreateSerializer(serializers.ModelSerializer):
         digits = "".join(filter(str.isdigit, value))
         if len(digits) != 11:
             raise serializers.ValidationError("CPF deve ter 11 dígitos.")
+        if not is_valid_cpf(digits):
+            raise serializers.ValidationError("CPF inválido.")
         # Checa duplicidade via hash
         cpf_hash = UnifiedCustomer._hash(digits)
         existing = UnifiedCustomer.objects.filter(cpf_hash=cpf_hash, is_active=True)

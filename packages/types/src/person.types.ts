@@ -69,15 +69,6 @@ export interface PersonAddress {
   is_primary: boolean;
 }
 
-export interface CepData {
-  zip_code: string;
-  street: string;
-  neighborhood: string;
-  city: string;
-  state: string;
-  complement: string;
-}
-
 export interface PersonDocument {
   id: number;
   doc_type: "CPF" | "CNPJ" | "RG" | "IE" | "IM" | "CNH";
@@ -134,6 +125,8 @@ export interface Person {
   birth_date?: string;
   gender?: Gender;
   is_active: boolean;
+  /** LGPD — cliente pediu para não receber pesquisas de satisfação nem ofertas. */
+  followup_opt_out: boolean;
   notes?: string;
   roles: PersonRoleEntry[];
   contacts: PersonContact[];
@@ -158,6 +151,7 @@ export interface CreatePersonPayload {
   birth_date?: string;
   gender?: Gender;
   is_active?: boolean;
+  followup_opt_out?: boolean;
   notes?: string;
   roles: PersonRole[];
   contacts: Omit<PersonContact, "id">[];

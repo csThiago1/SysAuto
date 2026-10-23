@@ -34,3 +34,13 @@ class TestEmployeeFields(TestCase):
 
     def test_has_emergency_contact_relationship_field(self):
         Employee._meta.get_field('emergency_contact_relationship')
+
+
+class TestEmployeeCpfDV(TestCase):
+    def test_cpf_com_dv_errado_e_recusado(self) -> None:
+        from rest_framework import serializers
+
+        from apps.hr.serializers import EmployeeCreateSerializer
+
+        with self.assertRaisesMessage(serializers.ValidationError, "CPF inválido."):
+            EmployeeCreateSerializer().validate_cpf("529.982.247-24")

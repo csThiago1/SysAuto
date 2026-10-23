@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
@@ -13,28 +13,24 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import { newOSSchema, type NewOSInput } from "./new-os.schema"
+import { newOSSchema, toCreatePayload, type NewOSInput } from "./new-os.schema"
 import { useServiceOrderCreate } from "../[numero]/_hooks/useServiceOrder"
 import { CustomerSearch } from "../[numero]/_components/shared/CustomerSearch"
 import { InsurerSelect } from "../[numero]/_components/shared/InsurerSelect"
 import { ColorSelect } from "../[numero]/_components/shared/ColorSelect"
-import { usePlateLookup } from "../[numero]/_hooks/useVehicleCatalog"
-import { VehicleFipeFields } from "@/components/vehicle/VehicleFipeFields"
+import { VehicleCatalogPicker } from "@/components/vehicle/VehicleCatalogPicker"
+import {
+  ChassiHint,
+  RestricaoAlert,
+  SinespHint,
+  keepYearManufacture,
+  placaPrefill,
+  useVehicleLookup,
+} from "@/components/vehicle/PlacaLookup"
+import { applyIfEmpty } from "@/lib/prefill"
 import { ApiError, handleApiFormError } from "@/lib/api"
-import { formatPlate } from "@paddock/utils"
-
-const FUEL_TYPE_PT: Record<string, string> = {
-  gasoline: "Gasolina", Gasoline: "Gasolina",
-  ethanol: "Etanol", Ethanol: "Etanol",
-  diesel: "Diesel", Diesel: "Diesel",
-  flex: "Flex", Flex: "Flex",
-  electric: "Elétrico", Electric: "Elétrico",
-  hybrid: "Híbrido", Hybrid: "Híbrido",
-  gas: "GNV", Gas: "GNV",
-}
-function translateFuelType(raw: string): string {
-  return FUEL_TYPE_PT[raw] ?? raw
-}
+import { formatCNPJ, formatPlate } from "@paddock/utils"
+import type { Insurer } from "@paddock/types"
 
 const LABEL = "block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-0.5"
 const INPUT =
@@ -51,6 +47,8 @@ const OS_TYPES = [
   { value: "aesthetic", label: "Estética", desc: "Polimento, higienização, estética veicular" },
 ] as const
 
+const mainCnpj = (ins: Insurer) => ins.cnpj.replace(/[^0-9A-Za-z]/g, "").toUpperCase()
+
 interface NewOSDrawerProps {
   open: boolean
   onOpenChange: (v: boolean) => void
@@ -59,10 +57,22 @@ interface NewOSDrawerProps {
 export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
   const router = useRouter()
   const createMutation = useServiceOrderCreate()
-  const [plateQuery, setPlateQuery] = useState("")
-  const { data: plateData, isFetching: plateFetching } = usePlateLookup(plateQuery)
   const [serverError, setServerError] = useState<string | null>(null)
+  const [insurer, setInsurer] = useState<Insurer | null>(null)
 
+  const form = useForm<NewOSInput>({
+    resolver: zodResolver(newOSSchema),
+    defaultValues: {
+      customer_type: "private",
+      customer_id: null,
+      customer_name: "",
+      plate: "",
+      catalog_selection: null,
+      year_manufacture: null,
+      color: "",
+      chassis: "",
+    },
+  })
   const {
     register,
     control,
@@ -72,20 +82,15 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
     reset,
     setError,
     formState: { errors, isSubmitting, dirtyFields },
-  } = useForm<NewOSInput>({
-    resolver: zodResolver(newOSSchema),
-    defaultValues: {
-      customer_type: "private",
-      customer_id: null,
-      customer_name: "",
-      plate: "",
-      make: "",
-      model: "",
-      vehicle_version: "",
-      color: "",
-      fuel_type: "",
-      chassis: "",
-    },
+  } = form
+
+  const placa = useVehicleLookup("placa", (fields) => {
+    applyIfEmpty(form, placaPrefill(fields, form.getValues("catalog_selection")))
+    toast.success("Dados do veículo preenchidos pela placa.")
+  })
+  const chassiLookup = useVehicleLookup("chassi", (fields) => {
+    applyIfEmpty(form, placaPrefill(fields, form.getValues("catalog_selection")))
+    toast.success("Dados do veículo preenchidos pelo chassi.")
   })
 
   const customerType = watch("customer_type")
@@ -95,45 +100,28 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
     onOpenChange(false)
     setTimeout(() => {
       reset()
+      placa.reset()
+      chassiLookup.reset()
       setServerError(null)
+      setInsurer(null)
     }, 300)
   }
 
   /** Previne fechamento acidental do Sheet quando tem dados preenchidos ou erro */
   function handleOpenChange(v: boolean) {
-    if (!v && (isSubmitting || serverError || hasDirtyFields || plateQuery)) return
+    if (!v && (isSubmitting || serverError || hasDirtyFields)) return
     onOpenChange(v)
   }
 
-  // Auto-preenche campos do veículo ao consultar placa
-  useEffect(() => {
-    if (!plateData || !plateQuery || plateFetching) return
-    const currentMake = watch("make")
-    if (!currentMake && plateData.make) {
-      setValue("make", plateData.make)
-      setValue("model", plateData.model ?? "")
-      if (plateData.year) setValue("year", plateData.year)
-      if (plateData.version) setValue("vehicle_version", plateData.version)
-      if (plateData.color) setValue("color", plateData.color)
-      if (plateData.fuel_type) setValue("fuel_type", translateFuelType(plateData.fuel_type))
-      if (plateData.chassis && !plateData.chassis.includes("*")) {
-        setValue("chassis", plateData.chassis)
-      }
-      toast.success("Dados do veículo preenchidos pela placa.")
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [plateData, plateFetching])
-
   function handlePlateChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 8)
-    setValue("plate", val)
-    if (val.length >= 7) setPlateQuery(val)
+    setValue("plate", val, { shouldDirty: true })
   }
 
   async function onSubmit(data: NewOSInput) {
     setServerError(null)
     try {
-      const os = await createMutation.mutateAsync(data)
+      const os = await createMutation.mutateAsync(toCreatePayload(data))
       handleClose()
       router.push(`/os/${os.number}`)
     } catch (err) {
@@ -151,6 +139,7 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
       <SheetContent
         side="right"
         className="w-full max-w-[420px] overflow-y-auto"
+        aria-describedby={undefined}
       >
         <SheetHeader className="mb-4">
           <SheetTitle>Nova Ordem de Serviço</SheetTitle>
@@ -198,7 +187,12 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                   render={({ field }) => (
                     <InsurerSelect
                       value={field.value ?? null}
-                      onChange={(insurerId) => field.onChange(insurerId)}
+                      onChange={(insurerId, ins) => {
+                        field.onChange(insurerId)
+                        setInsurer(ins)
+                        // O principal vem pré-selecionado.
+                        setValue("insurer_cnpj", ins ? mainCnpj(ins) : "")
+                      }}
                     />
                   )}
                 />
@@ -208,6 +202,19 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
                   </p>
                 )}
               </div>
+              {insurer && insurer.cnpjs.length > 1 && (
+                <div>
+                  <label htmlFor="insurer_cnpj" className={LABEL}>CNPJ da nota</label>
+                  <select id="insurer_cnpj" className={SELECT} {...register("insurer_cnpj")}>
+                    {insurer.cnpjs.map((c) => (
+                      <option key={c} value={c}>
+                        {formatCNPJ(c)}
+                        {c === mainCnpj(insurer) ? " (principal)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label className={LABEL}>Tipo de segurado *</label>
                 <select className={SELECT} {...register("insured_type")} aria-invalid={!!errors.insured_type}>
@@ -263,75 +270,107 @@ export function NewOSDrawer({ open, onOpenChange }: NewOSDrawerProps) {
             {/* Placa */}
             <div>
               <label className={LABEL}>Placa *</label>
-              <div className="relative">
-                <input
-                  className={errors.plate ? INPUT_ERROR : INPUT}
-                  placeholder="ABC-1D23"
-                  value={formatPlate(watch("plate") ?? "")}
-                  onChange={handlePlateChange}
-                  maxLength={8}
-                  autoCapitalize="characters"
-                  data-testid="plate-input"
-                />
-                {plateFetching && (
-                  <Loader2 className="absolute right-2 top-2 h-4 w-4 animate-spin text-muted-foreground" />
-                )}
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <input
+                    className={errors.plate ? INPUT_ERROR : INPUT}
+                    placeholder="ABC-1D23"
+                    value={formatPlate(watch("plate") ?? "")}
+                    onChange={handlePlateChange}
+                    onBlur={() => placa.lookup(watch("plate"))}
+                    maxLength={8}
+                    autoCapitalize="characters"
+                    data-testid="plate-input"
+                  />
+                  {placa.isFetching && (
+                    <Loader2 className="absolute right-2 top-2 h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => placa.lookup(watch("plate"))}
+                  disabled={placa.isFetching}
+                  className="h-8 rounded-md border border-border px-3 text-xs font-medium text-foreground/70 hover:bg-muted/30 disabled:opacity-50"
+                >
+                  Consultar
+                </button>
               </div>
               {errors.plate && (
                 <p className="mt-0.5 text-xs text-error-400">
                   {errors.plate.message}
                 </p>
               )}
+              {placa.notFound && (
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Placa não encontrada — escolha o veículo na lista.
+                </p>
+              )}
+            </div>
+            <RestricaoAlert restricao={placa.result?.fields.restricao} />
+            <SinespHint searched={placa.searched} />
+
+            <div>
+              <label htmlFor="new-os-chassis" className={LABEL}>
+                Chassi <span className="font-normal text-muted-foreground/60">(opcional)</span>
+              </label>
+              <div className="relative">
+                <input
+                  id="new-os-chassis"
+                  className={errors.chassis ? INPUT_ERROR : INPUT}
+                  placeholder="17 caracteres"
+                  value={watch("chassis") ?? ""}
+                  onChange={(e) =>
+                    setValue("chassis", e.target.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase(), {
+                      shouldDirty: true,
+                    })
+                  }
+                  onBlur={() => chassiLookup.lookup(watch("chassis"))}
+                  maxLength={17}
+                  autoCapitalize="characters"
+                  data-testid="chassis-input"
+                />
+                {chassiLookup.isFetching && (
+                  <Loader2 className="absolute right-2 top-2 h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+              </div>
+              {chassiLookup.notFound && (
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Chassi não encontrado — escolha o veículo na lista.
+                </p>
+              )}
+              <ChassiHint result={chassiLookup.result} />
             </div>
 
-            {/* Montadora / Modelo / Versão — FIPE autocomplete */}
-            <VehicleFipeFields
-              initialMake={watch("make")}
-              initialModel={watch("model")}
-              initialYear={watch("year")}
-              initialVersion={watch("vehicle_version")}
-              onFieldChange={(fields) => {
-                setValue("make", fields.make)
-                setValue("model", fields.model)
-                if (fields.vehicle_version) setValue("vehicle_version", fields.vehicle_version)
-                if (fields.year) setValue("year", fields.year)
-                if (fields.fuel_type) setValue("fuel_type", translateFuelType(fields.fuel_type))
-              }}
-              labelClass={LABEL}
-            />
-            {(errors.make || errors.model) && (
-              <p className="text-xs text-error-400">
-                {errors.make?.message || errors.model?.message}
-              </p>
-            )}
-
-            {/* Cor | Combustível */}
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className={LABEL}>Cor <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
-                <Controller
-                  name="color"
-                  control={control}
-                  render={({ field }) => (
-                    <ColorSelect
-                      value={field.value ?? ""}
-                      onChange={field.onChange}
-                    />
-                  )}
+            <Controller
+              name="catalog_selection"
+              control={control}
+              render={({ field }) => (
+                <VehicleCatalogPicker
+                  value={field.value ?? null}
+                  onChange={(sel) => {
+                    setValue(
+                      "year_manufacture",
+                      keepYearManufacture(field.value, sel, form.getValues("year_manufacture")),
+                    )
+                    field.onChange(sel)
+                  }}
+                  error={errors.catalog_selection?.message}
                 />
-              </div>
-              <div>
-                <label className={LABEL}>Combustível <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
-                <select className={SELECT} {...register("fuel_type")} aria-invalid={!!errors.fuel_type}>
-                  <option value="">Selecionar...</option>
-                  <option value="flex">Flex</option>
-                  <option value="gasoline">Gasolina</option>
-                  <option value="ethanol">Etanol</option>
-                  <option value="diesel">Diesel</option>
-                  <option value="electric">Elétrico</option>
-                  <option value="hybrid">Híbrido</option>
-                </select>
-              </div>
+              )}
+            />
+
+            <div>
+              <label className={LABEL}>Cor <span className="font-normal text-muted-foreground/60">(opcional)</span></label>
+              <Controller
+                name="color"
+                control={control}
+                render={({ field }) => (
+                  <ColorSelect
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
             </div>
           </div>
 

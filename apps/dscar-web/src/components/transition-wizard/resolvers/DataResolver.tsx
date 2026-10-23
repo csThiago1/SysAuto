@@ -11,6 +11,9 @@ import { toLocalDatetime } from "@/app/(app)/os/[numero]/_utils/form-defaults"
 import type { ResolverProps } from "./index"
 import { DateField } from "@/components/ui/date-field"
 import { formatPlate, onlyAlnum } from "@paddock/utils"
+import { ColorSelect } from "@/app/(app)/os/[numero]/_components/shared/ColorSelect"
+import { VehicleCatalogPicker } from "@/components/vehicle/VehicleCatalogPicker"
+import type { CatalogSelection } from "@/components/vehicle/catalog.schema"
 
 async function patchOrder(id: string, data: Record<string, unknown>): Promise<void> {
   await apiFetch(`/api/proxy/service-orders/${id}/`, {
@@ -20,47 +23,27 @@ async function patchOrder(id: string, data: Record<string, unknown>): Promise<vo
   })
 }
 
+/** Veículo pelo seletor do catálogo: ano e combustível vêm da versão (snapshot do servidor). */
 function VehicleDataForm({ block, order, onResolved }: ResolverProps) {
   const qc = useQueryClient()
-  const code = block.code
+  const needsPlate = block.code === "VEHICLE_BASIC_DATA"
   const [plate, setPlate] = useState(order.plate ?? "")
-  const [make, setMake] = useState(order.make ?? "")
-  const [model, setModel] = useState(order.model ?? "")
-  const [color, setColor] = useState(order.color ?? "")
-  const [year, setYear] = useState(order.year?.toString() ?? "")
+  const [selection, setSelection] = useState<CatalogSelection | null>(order.catalog_path ?? null)
   const [saving, setSaving] = useState(false)
 
-  // Quais campos cada code precisa
-  const needsBasic = code === "VEHICLE_BASIC_DATA"
-  const needsColor = code === "VEHICLE_COLOR"
-  const needsYear = code === "VEHICLE_YEAR"
-
   async function handleSave(): Promise<void> {
-    const payload: Record<string, unknown> = {}
-
-    if (needsBasic) {
-      if (!plate || !make || !model) {
-        toast.error("Preencha placa, montadora e modelo")
-        return
-      }
-      payload.plate = plate
-      payload.make = make
-      payload.model = model
+    if (needsPlate && !plate) {
+      toast.error("Preencha a placa")
+      return
     }
-    if (needsColor) {
-      if (!color.trim()) {
-        toast.error("Informe a cor do veículo")
-        return
-      }
-      payload.color = color.trim()
+    if (!selection?.family) {
+      toast.error("Escolha a montadora e o modelo")
+      return
     }
-    if (needsYear) {
-      const parsed = parseInt(year, 10)
-      if (isNaN(parsed) || parsed < 1900 || parsed > 2100) {
-        toast.error("Ano inválido (1900-2100)")
-        return
-      }
-      payload.year = parsed
+    const payload: Record<string, unknown> = {
+      ...(needsPlate && { plate }),
+      catalog_family: selection.family.id,
+      catalog_version: selection.version?.id ?? null,
     }
 
     setSaving(true)
@@ -78,71 +61,57 @@ function VehicleDataForm({ block, order, onResolved }: ResolverProps) {
 
   return (
     <div className="mt-2 space-y-2">
-      {needsBasic && (
-        <>
-          <div>
-            <label htmlFor="dv-plate" className="text-xs font-medium">Placa</label>
-            <input
-              id="dv-plate"
-              className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-              value={formatPlate(plate)}
-              onChange={(e) => setPlate(onlyAlnum(e.target.value))}
-              placeholder="ABC-1234"
-              maxLength={8}
-            />
-          </div>
-          <div>
-            <label htmlFor="dv-make" className="text-xs font-medium">Montadora</label>
-            <input
-              id="dv-make"
-              className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-              value={make}
-              onChange={(e) => setMake(e.target.value)}
-              placeholder="Fiat"
-            />
-          </div>
-          <div>
-            <label htmlFor="dv-model" className="text-xs font-medium">Modelo</label>
-            <input
-              id="dv-model"
-              className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              placeholder="Uno"
-            />
-          </div>
-        </>
-      )}
-
-      {needsColor && (
+      {needsPlate && (
         <div>
-          <label htmlFor="dv-color" className="text-xs font-medium">Cor</label>
+          <label htmlFor="dv-plate" className="text-xs font-medium">Placa</label>
           <input
-            id="dv-color"
+            id="dv-plate"
             className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-            placeholder="Vermelho"
+            value={formatPlate(plate)}
+            onChange={(e) => setPlate(onlyAlnum(e.target.value))}
+            placeholder="ABC-1D23"
+            maxLength={8}
           />
         </div>
       )}
+      <VehicleCatalogPicker value={selection} onChange={setSelection} disabled={saving} />
+      <Button size="sm" disabled={saving} onClick={() => void handleSave()}>
+        {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}
+        Salvar
+      </Button>
+    </div>
+  )
+}
 
-      {needsYear && (
-        <div>
-          <label htmlFor="dv-year" className="text-xs font-medium">Ano</label>
-          <input
-            id="dv-year"
-            type="number"
-            min="1900"
-            max="2100"
-            className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-            placeholder="2023"
-          />
-        </div>
-      )}
+function VehicleColorForm({ order, onResolved }: ResolverProps) {
+  const qc = useQueryClient()
+  const [color, setColor] = useState(order.color ?? "")
+  const [saving, setSaving] = useState(false)
 
+  async function handleSave(): Promise<void> {
+    if (!color || color === "NAO_INFORMADA") {
+      toast.error("Informe a cor do veículo")
+      return
+    }
+    setSaving(true)
+    try {
+      await patchOrder(order.id, { color })
+      void qc.invalidateQueries({ queryKey: ["service-orders", order.id] })
+      void qc.invalidateQueries({ queryKey: ["service-orders"] })
+      onResolved()
+    } catch {
+      toast.error("Erro ao salvar dados do veículo")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="mt-2 space-y-2">
+      <div className="space-y-0.5">
+        <span className="text-xs font-medium">Cor</span>
+        <ColorSelect value={color} onChange={setColor} />
+      </div>
       <Button size="sm" disabled={saving} onClick={() => void handleSave()}>
         {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}
         Salvar
@@ -233,54 +202,6 @@ function MileageOutForm({ order, onResolved }: ResolverProps) {
         {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}
         Salvar
       </Button>
-    </div>
-  )
-}
-
-const FUEL_OPTIONS = ["Gasolina", "Álcool", "Flex", "Diesel", "Elétrico", "Híbrido"]
-
-function FuelTypeForm({ order, onResolved }: ResolverProps) {
-  const qc = useQueryClient()
-  const [fuel, setFuel] = useState(order.fuel_type ?? "")
-  const [saving, setSaving] = useState(false)
-
-  async function handleSave(): Promise<void> {
-    if (!fuel) { toast.error("Selecione o combustível"); return }
-    setSaving(true)
-    try {
-      await patchOrder(order.id, { fuel_type: fuel })
-      void qc.invalidateQueries({ queryKey: ["service-orders", order.id] })
-      void qc.invalidateQueries({ queryKey: ["service-orders"] })
-      onResolved()
-    } catch {
-      toast.error("Erro ao salvar combustível")
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <div className="mt-2 space-y-2">
-      <div className="flex flex-wrap gap-1.5">
-        {FUEL_OPTIONS.map((f) => (
-          <Button
-            key={f}
-            size="sm"
-            variant={fuel === f ? "default" : "outline"}
-            className="h-7 text-xs"
-            disabled={saving}
-            onClick={() => setFuel(f)}
-          >
-            {f}
-          </Button>
-        ))}
-      </div>
-      {fuel && (
-        <Button size="sm" disabled={saving} onClick={() => void handleSave()}>
-          {saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}
-          Salvar
-        </Button>
-      )}
     </div>
   )
 }
@@ -553,12 +474,12 @@ function EntryDateForm({ order, onResolved }: ResolverProps) {
 
 export function DataResolver(props: ResolverProps) {
   const code = props.block.code
-  if (code === "VEHICLE_BASIC_DATA" || code === "VEHICLE_COLOR" || code === "VEHICLE_YEAR") {
+  if (code === "VEHICLE_BASIC_DATA" || code === "VEHICLE_YEAR" || code === "FUEL_TYPE") {
     return <VehicleDataForm {...props} />
   }
+  if (code === "VEHICLE_COLOR") return <VehicleColorForm {...props} />
   if (code === "CUSTOMER_TYPE_SET") return <CustomerTypeForm {...props} />
   if (code === "MILEAGE_OUT") return <MileageOutForm {...props} />
-  if (code === "FUEL_TYPE") return <FuelTypeForm {...props} />
   if (code === "MILEAGE_IN") return <MileageInForm {...props} />
   if (code === "CUSTOMER_LINKED") return <CustomerLinkedForm {...props} />
   if (code === "DEDUCTIBLE_SET") return <DeductibleSetForm {...props} />

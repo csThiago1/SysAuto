@@ -2,23 +2,6 @@
  * @paddock/types — Vehicle Catalog
  */
 
-export interface VehicleColor {
-  id: number;
-  name: string;
-  hex_code: string;
-}
-
-export interface VehiclePlateLookup {
-  plate: string;
-  make: string;
-  model: string;
-  year: number;
-  color: string;
-  chassis: string;
-  fuel_type: string;
-  fipe_value?: string;
-}
-
 // ─── Vehicle History (Consulta por Placa) ────────────────────────────────────
 
 export interface VehicleHistory {
@@ -35,24 +18,4 @@ export interface VehicleHistory {
   last_customer_uuid?: string | null;
   visits?: number;
   last_visit?: string | null;
-}
-
-export interface PlateApiResult {
-  plate: string;
-  make: string;
-  make_logo?: string;
-  model: string;
-  version?: string;
-  engine?: string;
-  year: number | null;
-  chassis: string;
-  renavam: string;
-  city: string;
-  color?: string;
-  fuel_type?: string;
-  fipe_value?: number | null;
-  situation?: string;
-  situation_code?: number;
-  cached?: boolean;
-  source?: "db" | "cache" | "api";
 }

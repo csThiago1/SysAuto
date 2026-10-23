@@ -4,10 +4,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type { ServiceOrder } from "@paddock/types"
 import { apiFetch } from "@/lib/api"
 import { toast } from "sonner"
-import type { ServiceOrderUpdateInput } from "../_schemas/service-order.schema"
 
 // Payload mínimo aceito pelo backend para criação de OS
 export type OSCreatePayload = Record<string, unknown>
+// PATCH: só os campos alterados, já no formato da API (ids do catálogo, não o caminho do seletor)
+export type OSUpdatePayload = Record<string, unknown>
 
 const API = "/api/proxy"
 
@@ -40,7 +41,7 @@ export function useServiceOrderCreate() {
 
 export function useServiceOrderUpdate(id: string) {
   const qc = useQueryClient()
-  return useMutation<ServiceOrder, Error, ServiceOrderUpdateInput>({
+  return useMutation<ServiceOrder, Error, OSUpdatePayload>({
     mutationFn: (data) =>
       apiFetch<ServiceOrder>(`${API}/service-orders/${id}/`, {
         method: "PATCH",

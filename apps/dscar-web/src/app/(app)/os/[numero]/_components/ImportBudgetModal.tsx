@@ -16,9 +16,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import type { ImportBudgetResponse, ServiceOrder } from "@paddock/types"
+import type { ImportBudgetResponse, Insurer, ServiceOrder } from "@paddock/types"
 import { ImportDiffView } from "./ImportDiffView"
 import { ImportReconcileModal, type ReconcilePayload } from "./ImportReconcileModal"
+import { InsurerSelect } from "./shared/InsurerSelect"
 import { parseCiliaSubject } from "../_utils/parse-cilia-subject"
 
 const SOURCES = [
@@ -29,13 +30,8 @@ const SOURCES = [
 
 type SourceId = (typeof SOURCES)[number]["id"]
 
-// Seguradoras suportadas pelo formato XML IFX (Soma)
-const XML_INSURERS = [
-  { code: "porto", label: "Porto Seguro" },
-  { code: "azul", label: "Azul Seguros" },
-  { code: "itau", label: "Itaú Seguros" },
-  { code: "soma", label: "Soma (genérico)" },
-] as const
+// Seguradoras com fonte XML própria no backend; as demais entram como "soma" (genérico)
+const XML_SOURCE_CODES: ReadonlySet<string> = new Set(["porto", "azul", "itau"])
 
 interface Props {
   order: ServiceOrder
@@ -51,7 +47,8 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
   const [budgetNumber, setBudgetNumber] = useState("")
   const [versionNumber, setVersionNumber] = useState("")
   const [file, setFile] = useState<File | null>(null)
-  const [xmlInsurer, setXmlInsurer] = useState<typeof XML_INSURERS[number]["code"]>("porto")
+  const [xmlInsurer, setXmlInsurer] = useState<Insurer | null>(null)
+  const xmlCode = xmlInsurer?.code ?? null
   const [diffResult, setDiffResult] = useState<ImportBudgetResponse | null>(null)
   const [reconcilePayload, setReconcilePayload] = useState<ReconcilePayload | null>(null)
   const [pastedSubject, setPastedSubject] = useState("")
@@ -97,9 +94,11 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
       // Upload de arquivo (XML IFX/Soma ou HDI HTML)
       const formData = new FormData()
       if (source === "xml_ifx") {
-        // Backend espera source=xml_porto/xml_azul/xml_itau/soma + insurer_code
-        formData.append("source", xmlInsurer === "soma" ? "soma" : `xml_${xmlInsurer}`)
-        formData.append("insurer_code", xmlInsurer)
+        // Backend aceita source=xml_porto/xml_azul/xml_itau/soma; insurer_code vai sempre real
+        if (xmlCode) {
+          formData.append("source", XML_SOURCE_CODES.has(xmlCode) ? `xml_${xmlCode}` : "soma")
+          formData.append("insurer_code", xmlCode)
+        }
       } else {
         // HDI
         formData.append("source", "hdi")
@@ -237,17 +236,12 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
           {source === "xml_ifx" && (
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="xml-insurer">Seguradora</Label>
-                <select
-                  id="xml-insurer"
-                  value={xmlInsurer}
-                  onChange={(e) => setXmlInsurer(e.target.value as typeof xmlInsurer)}
-                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors"
-                >
-                  {XML_INSURERS.map((ins) => (
-                    <option key={ins.code} value={ins.code}>{ins.label}</option>
-                  ))}
-                </select>
+                <Label>Seguradora</Label>
+                <InsurerSelect
+                  value={xmlInsurer?.id ?? null}
+                  onChange={(_id, insurer) => setXmlInsurer(insurer)}
+                  onlyWithCode
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="xml-file">Arquivo XML</Label>
@@ -269,7 +263,10 @@ export function ImportBudgetModal({ order, defaultSource = "cilia", open, onClos
 
           <DialogFooter className="mt-6">
             <Button variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button disabled={importMutation.isPending} onClick={() => importMutation.mutate()}>
+            <Button
+              disabled={importMutation.isPending || (source === "xml_ifx" && !xmlCode)}
+              onClick={() => importMutation.mutate()}
+            >
               {importMutation.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Consultando...</>
                 : source === "cilia" ? <><Search className="h-4 w-4" /> Consultar</>
                 : <><Upload className="h-4 w-4" /> Importar</>}

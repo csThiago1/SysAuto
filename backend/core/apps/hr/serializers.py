@@ -13,6 +13,7 @@ from rest_framework import serializers
 
 from apps.authentication.models import GlobalUser
 from apps.authentication.permissions import _get_role
+from apps.lookups.validators import is_valid_cpf
 from apps.persons.models import Person, PersonRole
 
 from .models import (
@@ -304,6 +305,8 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
         digits = "".join(c for c in value if c.isdigit())
         if digits and len(digits) != 11:
             raise serializers.ValidationError("CPF deve ter 11 dígitos.")
+        if digits and not is_valid_cpf(digits):
+            raise serializers.ValidationError("CPF inválido.")
         if digits:
             cpf_hash = hashlib.sha256(digits.encode()).hexdigest()
             if Employee.objects.filter(cpf_hash=cpf_hash).exists():

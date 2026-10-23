@@ -9,17 +9,13 @@ LGPD (Ciclo 06A):
 
 import logging
 
-import httpx
-from django.core.cache import cache
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.authentication.permissions import PermissionsByActionMixin
 
-from .models import (
-    CargoPessoa, ExpertProfile, Person, PersonDocument, SetorPessoa, SupplierProfile,
-)
+from .models import CargoPessoa, ExpertProfile, Person, PersonDocument, SetorPessoa, SupplierProfile
 from .serializers import (
     ExpertProfileSerializer,
     PersonCreateUpdateSerializer,
@@ -104,44 +100,13 @@ class PersonViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=False, methods=["get"], url_path=r"cep/(?P<cep>\d{8})")
-    def cep_lookup(self, request, cep: str = "") -> Response:
-        """Consulta endereço pelo CEP via ViaCEP."""
-        cache_key = f"cep:{cep}"
-        cached = cache.get(cache_key)
-        if cached:
-            return Response(cached)
-        try:
-            with httpx.Client(timeout=5.0) as client:
-                resp = client.get(f"https://viacep.com.br/ws/{cep}/json/")
-            data = resp.json()
-            if data.get("erro"):
-                return Response({"detail": "CEP não encontrado."}, status=404)
-            result = {
-                "zip_code": data.get("cep", ""),
-                "street": data.get("logradouro", ""),
-                "complement": data.get("complemento", ""),
-                "neighborhood": data.get("bairro", ""),
-                "city": data.get("localidade", ""),
-                "state": data.get("uf", ""),
-            }
-            cache.set(cache_key, result, timeout=86400)
-            return Response(result)
-        except httpx.TimeoutException:
-            return Response({"detail": "Timeout na consulta de CEP."}, status=504)
-        except Exception as e:
-            logger.exception("Erro ao consultar CEP %s: %s", cep, e)
-            return Response({"detail": "Erro ao consultar CEP."}, status=500)
-
     @action(detail=True, methods=["get", "patch"], url_path="supplier-profile")
     def supplier_profile(self, request, pk: str | None = None) -> Response:
         """GET/PATCH SupplierProfile da pessoa (auto-cria se não existir)."""
         person = self.get_object()
         profile, _ = SupplierProfile.objects.get_or_create(person=person)
         if request.method == "PATCH":
-            serializer = SupplierProfileSerializer(
-                profile, data=request.data, partial=True
-            )
+            serializer = SupplierProfileSerializer(profile, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
@@ -153,9 +118,7 @@ class PersonViewSet(PermissionsByActionMixin, viewsets.ModelViewSet):
         person = self.get_object()
         profile, _ = ExpertProfile.objects.get_or_create(person=person)
         if request.method == "PATCH":
-            serializer = ExpertProfileSerializer(
-                profile, data=request.data, partial=True
-            )
+            serializer = ExpertProfileSerializer(profile, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data)
