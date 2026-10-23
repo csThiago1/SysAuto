@@ -1970,3 +1970,65 @@ Nenhuma fonte externa é usada.
     - um chassi com menos de 17 caracteres não consulta.
 - [ ] **Step 2: Rodar e ver falhar → implementar → rodar** com `npx vitest run src/components/vehicle src/app/\(app\)/os src/app/\(app\)/recepcao src/app/\(app\)/orcamentos-particulares` mais `npm run typecheck`. Antes, rode `make gen-api-types` se o OpenAPI mudou.
 - [ ] **Step 3: Commit** `feat(dscar): chassi preenche o veículo nas telas de OS, recepção e orçamento`
+
+---
+
+# Registro da execução (19 a 23/10/2026)
+
+Execução subagent-driven: cada task teve implementação, revisão de spec e qualidade, até 5 rodadas de correção e nova revisão. Depois, uma revisão final do branch inteiro, com verificação adversarial de cada achado sério, e uma rodada única de correção. O adendo das Tasks 21-23 teve o mesmo ciclo.
+
+**Testes:** a comparação entre o início e o fim do branch, app por app, deu 277 falhas no fim, das quais 276 já existiam em `05b1b0e`. A restante é um teste instável do dashboard que já existia: ele usa cache real no Redis e o branch não o toca. Depois do adendo, os apps tocados não ganharam nenhuma falha nova. No front, o typecheck está limpo e os 228 testes do vitest passam; os 2 erros de IndexedDB que o vitest acusa vêm do módulo offline, que o branch não toca.
+
+## Decisões tomadas durante a execução
+1. **Varredura prévia:** foram 52 achados, todos confirmados. As correções sugeridas pelos verificadores foram aceitas uma a uma.
+2. **Dados de catálogo nos testes:** com `TenantTestCase`, a carga vai em `setUp()`, porque o `setUpTestData` nunca roda nessa classe.
+3. **Marca de duas palavras:** testada de ponta a ponta, com o Evoque incluído na fixture.
+4. **Consulta de CNPJ:** procura primeiro no cadastro (Person), como a spec manda.
+5. **CNPJ de filial:** um CNPJ válido que veio no orçamento é acrescentado a `Insurer.cnpjs`. Acrescentar não é criar seguradora.
+6. **Faturamento:** sem fallback por nome; o tomador sai sempre do CNPJ.
+7. **Campos de versão e descrição:** foram alargados (120 e 300 caracteres) em vez de truncados.
+8. **Ano da fonte:** a OS guarda `vehicle_source_year`, para a chave das regras aprendidas usar o ano que veio da fonte.
+9. **Permissões:** o mixin ganhou `action_permissions`, sem nenhum `get_permissions` escrito à mão.
+10. **Comparação de testes:** o branch é julgado contra as falhas que já existiam em `05b1b0e`, não contra uma suíte toda verde.
+11. **CNPJ:** é normalizado com `clean_cnpj`, que mantém o formato alfanumérico, nunca com `only_digits`.
+12. **CNPJs inválidos do seed:** são quatro (azul, itau, yelum e suhai).
+13. **Implementador que caiu:** o seguinte continua a partir do disco, em vez de descartar o trabalho.
+14. **Cópia do veículo entre OS da mesma placa:**
+    - só vai para OS abertas;
+    - o catálogo só é copiado quando a versão mudou de verdade;
+    - cor e chassi continuam sendo copiados;
+    - o texto do snapshot e os campos de origem nunca são copiados.
+15. **Itens de verificação da Task 7:** a aplicação das migrations é coberta pela criação do banco de teste, e o chassi cifrado ganhou um teste que lê a coluna gravada.
+16. **Pendências das Tasks 8 e 9:** cada uma foi encaminhada à task dona do arquivo.
+17. **API Placas com 402/403:** conta como erro e não vai para o cache. Junto: DB-first nos dois formatos de placa, e cor fora do enum tratada sem erro.
+18. **Fixture da API Placas:** escrita à mão a partir da estrutura da resposta real. Conferir contra uma resposta real é item de pré-produção.
+19. **Regra exata que aponta só para a família:** mantém o selo de versão a confirmar.
+20. **Quotes:** a correção de `customer_id` foi aceita no escopo. OS antiga sem família e sem casamento continua como está.
+21. **Agente que cai por rede:** o fluxo o relança uma vez automaticamente.
+22. **Modelos (pedido do dono):** a Task 19 rodou no Sonnet. A Task 18 já estava em andamento e continuou no modelo da sessão. Revisões, revisão final e rodadas 4-5 de correção continuaram no modelo mais forte.
+23. **Testes nas tasks:**
+    - nunca a suíte inteira;
+    - sempre com `timeout 1800`;
+    - nada em segundo plano.
+24. **Endereço:** cidade, UF e código IBGE são preenchidos juntos ou nenhum.
+25. **Revisão final:**
+    - foram 9 correções obrigatórias, com 2 ajustes de execução: MF-3, a cópia de cor e chassi, foi mantida; MF-4 virou uma migration nova em vez de alterar a 0008;
+    - acrescentei MF-10 (reescolher a mesma opção não limpa os níveis de baixo) e MF-11 (CNPJ alfanumérico digitável nos formulários);
+    - os itens deixados de julgar foram lidos e aceitos como fora de escopo.
+26. **Teste do dashboard:** é instabilidade que já existia, não regressão.
+27. **Adendo:** desenho aprovado pelo dono. O adendo também acrescentou F5, a coerência de spec e plano com o que foi construído.
+
+## Itens estacionados (reais, adiados)
+- **Teste do Sentry:** é pulado no CI, porque `sentry-sdk` só está em `requirements/prod.txt`. Colocar o pacote em `dev.txt` faz o teste rodar.
+- **Aviso de troca de CNPJ:** aparece numa OS antiga com `insurer_cnpj` vazio quando o arquivo traz o próprio CNPJ principal.
+- **Regra de chassi e primeira visita:** uma OS anterior do mesmo carro que nunca foi confirmada impede a OS seguinte de ensinar a regra. É conservador de propósito.
+- **Correção de versão:** corrigir a versão da mesma OS conta uma confirmação para o novo alvo.
+- **Chassi cifrado no futuro:** se `ServiceOrder.chassis` virar campo cifrado, a busca por chassi e a consulta precisam de uma coluna de hash.
+- **Demais itens menores:** cerca de 30 adiados, a triar depois.
+
+## Pendências do dono
+- Termos de uso comercial do CNPJá.
+- Restrição de roubo/furto: sem a API Placas, não há alerta automático. Se for religar, use `APIPLACAS_ENABLED=True`.
+- `VEHICLE_NEEDS_REVIEW` não bloqueia `final_survey`/`ready`/`delivered`, porque a spec cita só a entrada em produção. Decidir se deve bloquear.
+- As tabelas públicas `Insurer.cnpjs`, `Insurer.trade_names` e `VehicleAlias` são alteradas por ações dentro de um tenant. Hoje existe um tenant só.
+- A regra de chassi passa a "exata" quando uma sugestão "alta" é salva sem mexer. Decidir se isso deve contar como confirmação.
