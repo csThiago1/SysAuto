@@ -109,3 +109,11 @@ class UnifiedCustomerCreateSerializerTest(TestCase):
         }
         s = UnifiedCustomerCreateSerializer(data=payload)
         self.assertTrue(s.is_valid(), s.errors)
+
+
+class UnifiedCustomerCpfDVTest(TestCase):
+    def test_cpf_com_dv_errado_e_recusado(self) -> None:
+        from rest_framework import serializers
+
+        with self.assertRaisesMessage(serializers.ValidationError, "CPF inválido."):
+            UnifiedCustomerCreateSerializer().validate_cpf("529.982.247-24")

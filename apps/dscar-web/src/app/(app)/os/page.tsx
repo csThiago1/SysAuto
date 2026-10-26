@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation"
 import { Search, FilterX, Plus, ChevronLeft, ChevronRight, X, SlidersHorizontal, Columns3 } from "lucide-react"
 import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 
-import { useServiceOrders, useDebounce, usePersons } from "@/hooks"
+import { useServiceOrders, useDebounce, useInsurers } from "@/hooks"
 import { cn } from "@/lib/utils"
 import {
   Button,
@@ -34,16 +34,18 @@ interface AdvancedFiltersProps {
   setStatus: (v: string) => void
   insurerId: string
   setInsurerId: (v: string) => void
-  insurers?: { id: string | number; fantasy_name?: string | null; full_name?: string | null }[]
+  insurers?: { id: string; display_name: string }[]
   customerType: string
   setCustomerType: (v: string) => void
   closure: string
   setClosure: (v: string) => void
+  vehicleReview: string
+  setVehicleReview: (v: string) => void
   /** Empilhado e com alvo de 44px — usado dentro da folha mobile. */
   stacked?: boolean
 }
 
-/** Os quatro filtros secundarios. Inline no desktop, dentro da folha no mobile. */
+/** Os cinco filtros secundarios. Inline no desktop, dentro da folha no mobile. */
 function AdvancedFilters({
   status,
   setStatus,
@@ -54,6 +56,8 @@ function AdvancedFilters({
   setCustomerType,
   closure,
   setClosure,
+  vehicleReview,
+  setVehicleReview,
   stacked = false,
 }: AdvancedFiltersProps): React.ReactElement {
   const cls = stacked ? cn(SELECT_CLS, "h-11 w-full") : SELECT_CLS
@@ -98,8 +102,8 @@ function AdvancedFilters({
         <select className={cls} value={insurerId} onChange={(e) => setInsurerId(e.target.value)}>
           <option value="ALL">Qualquer Seguradora</option>
           {insurers?.map((insurer) => (
-            <option key={insurer.id} value={String(insurer.id)}>
-              {insurer.fantasy_name || insurer.full_name}
+            <option key={insurer.id} value={insurer.id}>
+              {insurer.display_name}
             </option>
           ))}
         </select>,
@@ -122,6 +126,14 @@ function AdvancedFilters({
           <option value="pending">Pendentes</option>
         </select>,
       )}
+
+      {field(
+        "Veículo",
+        <select className={cls} value={vehicleReview} onChange={(e) => setVehicleReview(e.target.value)}>
+          <option value="ALL">Todos</option>
+          <option value="true">A confirmar</option>
+        </select>,
+      )}
     </>
   )
 }
@@ -136,16 +148,17 @@ export default function ServiceOrdersPage() {
   const [ordering, setOrdering] = useState<string>("-number")
   const [excludeClosed, setExcludeClosed] = useState(true)
   const [closure, setClosure] = useState<string>("ALL")
+  const [vehicleReview, setVehicleReview] = useState<string>("ALL")
   const [page, setPage] = useState(1)
   const [filtersOpen, setFiltersOpen] = useState(false)
 
-  // Quantos dos 4 filtros secundarios estao ativos — vira o badge do botao "Filtros".
-  const advancedCount = [status, insurerId, customerType, closure].filter((v) => v !== "ALL").length
+  // Quantos dos 5 filtros secundarios estao ativos — vira o badge do botao "Filtros".
+  const advancedCount = [status, insurerId, customerType, closure, vehicleReview].filter((v) => v !== "ALL").length
 
   const debouncedSearch = useDebounce(search, 300)
 
-  // Fetch seguradoras dynamically
-  const { data: insurersData } = usePersons({ role: "INSURER" })
+  // Seguradoras vêm de /insurers/ (fonte única); o filtro envia o UUID.
+  const { data: insurersData } = useInsurers()
 
   // Omit empty/ALL filters
   const filters: Record<string, string> = {}
@@ -156,13 +169,14 @@ export default function ServiceOrdersPage() {
   if (ordering) filters.ordering = ordering
   if (excludeClosed && status === "ALL") filters.exclude_closed = "true"
   if (closure !== "ALL") filters.closure = closure
+  if (vehicleReview !== "ALL") filters.vehicle_needs_review = vehicleReview
 
   const { data, isLoading, isError } = useServiceOrders(filters, page, PAGE_SIZE)
 
   // Reset to page 1 whenever filters change
   useEffect(() => {
     setPage(1)
-  }, [debouncedSearch, status, customerType, insurerId, ordering, excludeClosed, closure])
+  }, [debouncedSearch, status, customerType, insurerId, ordering, excludeClosed, closure, vehicleReview])
 
   const clearFilters = () => {
     setSearch("")
@@ -171,9 +185,10 @@ export default function ServiceOrdersPage() {
     setInsurerId("ALL")
     setExcludeClosed(true)
     setClosure("ALL")
+    setVehicleReview("ALL")
   }
 
-  const hasFilters = search || status !== "ALL" || customerType !== "ALL" || insurerId !== "ALL" || !excludeClosed || closure !== "ALL"
+  const hasFilters = search || status !== "ALL" || customerType !== "ALL" || insurerId !== "ALL" || !excludeClosed || closure !== "ALL" || vehicleReview !== "ALL"
 
   const totalPages = data ? Math.ceil(data.count / PAGE_SIZE) : 0
   const firstItem = data && data.count > 0 ? (page - 1) * PAGE_SIZE + 1 : 0
@@ -225,7 +240,7 @@ export default function ServiceOrdersPage() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
-            placeholder="Buscar OS (ex: placa, num, cliente)..."
+            placeholder="Buscar OS (placa, chassi, nº, cliente)..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-11 pl-9 bg-muted/50 md:h-9"
@@ -298,6 +313,8 @@ export default function ServiceOrdersPage() {
             setCustomerType={setCustomerType}
             closure={closure}
             setClosure={setClosure}
+            vehicleReview={vehicleReview}
+            setVehicleReview={setVehicleReview}
           />
 
           {hasFilters && (
@@ -326,6 +343,8 @@ export default function ServiceOrdersPage() {
               setCustomerType={setCustomerType}
               closure={closure}
               setClosure={setClosure}
+              vehicleReview={vehicleReview}
+              setVehicleReview={setVehicleReview}
             />
           </div>
           <SheetFooter className="gap-2">
@@ -338,6 +357,7 @@ export default function ServiceOrdersPage() {
                   setInsurerId("ALL")
                   setCustomerType("ALL")
                   setClosure("ALL")
+                  setVehicleReview("ALL")
                 }}
               >
                 <FilterX className="mr-2 h-4 w-4" /> Limpar
@@ -371,7 +391,7 @@ export default function ServiceOrdersPage() {
           )}
           {insurerId !== "ALL" && (
             <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-3 py-1 text-xs font-medium text-foreground/80">
-              Seguradora: {insurersData?.results.find((i) => String(i.id) === insurerId)?.fantasy_name ?? insurerId}
+              Seguradora: {insurersData?.results.find((i) => i.id === insurerId)?.display_name ?? insurerId}
               <button type="button" onClick={() => setInsurerId("ALL")} className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors" aria-label="Remover filtro de seguradora">
                 <X className="h-3 w-3" />
               </button>
@@ -397,6 +417,14 @@ export default function ServiceOrdersPage() {
             <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-3 py-1 text-xs font-medium text-foreground/80">
               {closure === "closed" ? "Fechadas" : "Pendentes"}
               <button type="button" onClick={() => setClosure("ALL")} className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors" aria-label="Remover filtro de fechamento">
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          )}
+          {vehicleReview !== "ALL" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted border border-border px-3 py-1 text-xs font-medium text-foreground/80">
+              Veículo a confirmar
+              <button type="button" onClick={() => setVehicleReview("ALL")} className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors" aria-label="Remover filtro de veículo">
                 <X className="h-3 w-3" />
               </button>
             </span>

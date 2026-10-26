@@ -1,15 +1,16 @@
 """Tests for PDFService.render_budget, ServiceOrderService.create_from_budget,
 and BudgetService state machine.
 """
+
 from __future__ import annotations
 
 from django_tenants.test.cases import TenantTestCase
 
-from apps.items.models import NumberSequence
-from apps.persons.models import Person
 from apps.budgets.models import Budget, BudgetVersion, BudgetVersionItem
 from apps.documents.pdf_service import PDFService
-
+from apps.items.models import NumberSequence
+from apps.persons.models import Person
+from apps.vehicle_catalog.tests.factories import make_catalog
 
 # ── Task 3: PDFService + create_from_budget ───────────────────────────────────
 
@@ -27,10 +28,13 @@ class TestRenderBudget(TenantTestCase):
             number="ORC-2026-000001",
             customer=customer,
             vehicle_plate="ABC1D23",
-            vehicle_description="Toyota Corolla 2020",
+            catalog_family=make_catalog().modelo.familia,
         )
         return BudgetVersion.objects.create(
-            budget=budget, version_number=1, status="draft", created_by="test",
+            budget=budget,
+            version_number=1,
+            status="draft",
+            created_by="test",
         )
 
     def test_render_budget_returns_bytes(self) -> None:
@@ -56,10 +60,13 @@ class TestCreateFromBudget(TenantTestCase):
             number="ORC-2026-000001",
             customer=customer,
             vehicle_plate="XYZ9876",
-            vehicle_description="Honda Civic 2022",
+            catalog_family=make_catalog().modelo.familia,
         )
         version = BudgetVersion.objects.create(
-            budget=budget, version_number=1, status="sent", created_by="test",
+            budget=budget,
+            version_number=1,
+            status="sent",
+            created_by="test",
         )
 
         os = ServiceOrderService.create_from_budget(version=version)
@@ -89,7 +96,7 @@ def _make_budget(customer: Person | None = None) -> Budget:
     return BudgetService.create(
         customer=customer,
         vehicle_plate="ABC1D23",
-        vehicle_description="Toyota Corolla 2020",
+        catalog_family=make_catalog().modelo.familia,
         created_by="test_user",
     )
 
@@ -124,6 +131,7 @@ class TestBudgetServiceSendToCustomer(TenantTestCase):
 
     def test_send_draft_only(self) -> None:
         from rest_framework.exceptions import ValidationError
+
         budget = _make_budget()
         version = budget.active_version
         BudgetService.send_to_customer(version=version, sent_by="test_user")
@@ -186,6 +194,7 @@ class TestBudgetServiceApprove(TenantTestCase):
 
     def test_approve_sent_only(self) -> None:
         from rest_framework.exceptions import ValidationError
+
         budget = _make_budget()
         version = budget.active_version
         with self.assertRaises(ValidationError):
@@ -204,6 +213,7 @@ class TestBudgetServiceReject(TenantTestCase):
 
     def test_reject_draft_raises(self) -> None:
         from rest_framework.exceptions import ValidationError
+
         budget = _make_budget()
         version = budget.active_version
         with self.assertRaises(ValidationError):
@@ -257,8 +267,9 @@ class TestBudgetServiceClone(TenantTestCase):
 
 class TestBudgetServiceExpire(TenantTestCase):
     def test_expire_stale_versions(self) -> None:
-        from django.utils import timezone
         from datetime import timedelta
+
+        from django.utils import timezone
 
         budget = _make_budget()
         version = budget.active_version

@@ -2,7 +2,8 @@
 
 import React, { use, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import type { Route } from "next"
+import { ArrowLeft, Loader2 } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -12,12 +13,15 @@ import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import {
+  useCreateInsurerTomador,
   useInsurer,
   useInsurerTenantProfile,
+  useInsurerTomadores,
   useUpdateInsurerTenantProfile,
 } from "@/hooks/useInsurers"
+import { usePermission } from "@/hooks/usePermission"
 import type { InsurerTenantProfile } from "@paddock/types"
-import { formatPhone, onlyDigits } from "@paddock/utils"
+import { formatCNPJ, formatPhone, onlyDigits } from "@paddock/utils"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -104,6 +108,8 @@ export default function InsurerDetailPage({ params }: Props) {
           </CardContent>
         </Card>
       )}
+
+      {activeTab === "geral" && <TomadorPanel insurerId={id} />}
 
       {activeTab === "operacional" && (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -214,5 +220,77 @@ export default function InsurerDetailPage({ params }: Props) {
         </form>
       )}
     </div>
+  )
+}
+
+/** Tomador da nota de cada CNPJ: a Person INSURER que recebe a NF (só ADMIN+). */
+function TomadorPanel({ insurerId }: { insurerId: string }) {
+  const isAdmin = usePermission("ADMIN")
+  const { data, isLoading, isError } = useInsurerTomadores(insurerId, isAdmin)
+  const create = useCreateInsurerTomador(insurerId)
+  if (!isAdmin) return null
+
+  function handleCreate(cnpj: string) {
+    create.mutate(cnpj, {
+      onSuccess: () => toast.success("Tomador criado."),
+      onError: () => toast.error("Erro ao criar o tomador."),
+    })
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Tomador da nota</CardTitle>
+        <p className="text-xs text-muted-foreground">
+          Cadastro que recebe a nota fiscal de cada CNPJ da seguradora.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {isLoading ? (
+          <Skeleton className="h-16 w-full" />
+        ) : isError ? (
+          <p className="text-sm text-error-400">Erro ao carregar os tomadores.</p>
+        ) : !data?.length ? (
+          <p className="text-sm text-muted-foreground">Nenhum CNPJ cadastrado.</p>
+        ) : (
+          data.map((t) => (
+            <div
+              key={t.cnpj}
+              className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2"
+            >
+              <div className="min-w-0">
+                <p className="font-mono text-sm text-foreground">{formatCNPJ(t.cnpj)}</p>
+                {t.person_id !== null ? (
+                  <p className="truncate text-xs text-muted-foreground">
+                    {t.person_name}
+                    {!t.has_address && (
+                      <span className="ml-2 text-warning-500">sem endereço — a nota não sai</span>
+                    )}
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Sem tomador</p>
+                )}
+              </div>
+              {t.person_id !== null ? (
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/cadastros/${t.person_id}` as Route}>Abrir cadastro</Link>
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  disabled={create.isPending}
+                  onClick={() => handleCreate(t.cnpj)}
+                >
+                  {create.isPending && create.variables === t.cnpj && (
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  )}
+                  Criar tomador (busca na Receita)
+                </Button>
+              )}
+            </div>
+          ))
+        )}
+      </CardContent>
+    </Card>
   )
 }

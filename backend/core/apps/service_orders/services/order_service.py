@@ -2,25 +2,59 @@
 Paddock Solutions — Service Orders: Core Service Methods
 Mixin com os metodos principais do ServiceOrderService.
 """
+
 import logging
 from datetime import timedelta
 from typing import Any
 
 from django.db import models, transaction
+from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
+from apps.lookups.validators import clean_cnpj, decode_vin
+from apps.vehicle_catalog.matching import record_alias_confirmation, vin_rule_key
+from apps.vehicle_catalog.models import VehicleAlias
+
+from .vehicle import CATALOG_KEYS, apply_catalog_vehicle, resulting_catalog_pair
+
 logger = logging.getLogger(__name__)
+
+# HARD blocks que nem o override presencial de gerente fura.
+NON_OVERRIDABLE_BLOCKS: frozenset[str] = frozenset({"VEHICLE_NEEDS_REVIEW"})
 
 # Mapeamento campo -> (status_de_origem_validos, status_destino)
 # Quando um desses campos passa de None para um valor, o status muda automaticamente.
 AUTO_TRANSITIONS: dict[str, tuple[list[str], str]] = {
-    "authorization_date":   (["budget", "waiting_auth"], "authorized"),
-    "scheduling_date":      (["reception"],              "initial_survey"),
-    "final_survey_date":    (["washing"],                "final_survey"),
-    "client_delivery_date": (["ready"],                  "delivered"),
+    "authorization_date": (["budget", "waiting_auth"], "authorized"),
+    "scheduling_date": (["reception"], "initial_survey"),
+    "final_survey_date": (["washing"], "final_survey"),
+    "client_delivery_date": (["ready"], "delivered"),
     # Clientes particulares: ao definir data do orcamento, aguarda autorizacao
-    "quotation_date":       (["budget", "initial_survey"], "waiting_auth"),
+    "quotation_date": (["budget", "initial_survey"], "waiting_auth"),
 }
+
+
+def _learn_chassis(order: "ServiceOrder") -> None:
+    """Versão confirmada + chassi válido ensinam a regra do prefixo de fábrica do chassi."""
+    from apps.service_orders.models import ServiceOrder
+
+    vin = order.chassis.strip().upper()
+    if order.catalog_version_id is None or order.vehicle_needs_review or not vin_rule_key(vin):
+        return
+    # Mesmo carro voltando não é segunda confirmação; OS inativa anterior já contou uma vez.
+    if ServiceOrder.objects.filter(chassis__iexact=vin).exclude(pk=order.pk).exists():
+        return
+    model_year = decode_vin(vin).model_year
+    version = order.catalog_version
+    if not version.zero_km and version.ano != model_year:
+        return  # versão de outro ano que o do VIN: dado contraditório não ensina
+    record_alias_confirmation(
+        VehicleAlias.Source.CHASSI,
+        vin[:8],
+        model_year,
+        version=order.catalog_version,
+        family=order.catalog_family,
+    )
 
 
 class _ServiceOrderCoreMixin:
@@ -32,11 +66,9 @@ class _ServiceOrderCoreMixin:
         """Retorna proximo numero de OS disponivel (MAX + 1) no schema ativo usando lock de linha."""
         from apps.service_orders.models import ServiceOrder
 
-        last = (
-            ServiceOrder.objects
-            .select_for_update()
-            .aggregate(max_num=models.Max("number"))["max_num"]
-        )
+        last = ServiceOrder.objects.select_for_update().aggregate(max_num=models.Max("number"))[
+            "max_num"
+        ]
         return (last or 0) + 1
 
     @classmethod
@@ -71,13 +103,23 @@ class _ServiceOrderCoreMixin:
         customer_id = payload.get("customer_id")
         if customer_id and not payload.get("customer_name"):
             from apps.persons.models import Person
+
             try:
                 payload["customer_name"] = Person.objects.get(pk=customer_id).full_name
             except Person.DoesNotExist:
                 pass
 
+        # Sem CNPJ da nota escolhido, a nota sai no CNPJ principal da seguradora.
+        if payload.get("insurer") and not payload.get("insurer_cnpj"):
+            payload["insurer_cnpj"] = clean_cnpj(payload["insurer"].cnpj)
+
+        catalog_family = payload.pop("catalog_family", None)
+        catalog_version = payload.pop("catalog_version", None)
         order = ServiceOrder(**payload)
+        if catalog_family is not None or catalog_version is not None:
+            apply_catalog_vehicle(order, family=catalog_family, version=catalog_version)
         order.save()
+        _learn_chassis(order)
 
         ServiceOrderActivityLog.objects.create(
             service_order=order,
@@ -111,7 +153,11 @@ class _ServiceOrderCoreMixin:
         Returns:
             ServiceOrder atualizada.
         """
-        from apps.service_orders.models import ServiceOrder, StatusTransitionLog, ServiceOrderActivityLog
+        from apps.service_orders.models import (
+            ServiceOrder,
+            ServiceOrderActivityLog,
+            StatusTransitionLog,
+        )
 
         order = ServiceOrder.objects.select_for_update().get(id=order_id)
 
@@ -121,17 +167,42 @@ class _ServiceOrderCoreMixin:
         if customer_uuid is not None:
             data["customer_uuid"] = customer_uuid
 
+        old_vehicle = (
+            order.catalog_family_id,
+            order.catalog_version_id,
+            order.chassis.strip().upper(),  # só caixa/espaço não é chassi novo
+        )
+        # Par familia/versao resultante, calculado antes de aplicar o payload na OS
+        catalog_changed = bool(CATALOG_KEYS & data.keys())
+        if catalog_changed:
+            catalog_family, catalog_version = resulting_catalog_pair(order, data)
+            old_family_id = order.catalog_family_id
+            old_version_id = order.catalog_version_id
+            was_review = order.vehicle_needs_review
+
         # Detectar campos de data recem-preenchidos que disparam transicao
         triggered_transitions: list[tuple[str, str]] = []
 
         FIELD_LABELS: dict[str, str] = {
             # Veiculo
-            "plate": "Placa", "make": "Marca", "model": "Modelo", "year": "Ano",
-            "color": "Cor", "chassis": "Chassi", "fuel_type": "Combustivel",
-            "fipe_value": "Valor FIPE", "mileage_in": "KM entrada", "mileage_out": "KM saida",
-            "vehicle_version": "Versao do veiculo", "vehicle_location": "Localizacao do veiculo",
+            "plate": "Placa",
+            "make": "Marca",
+            "model": "Modelo",
+            "year": "Ano",
+            "color": "Cor",
+            "chassis": "Chassi",
+            "fuel_type": "Combustivel",
+            "fipe_value": "Valor FIPE",
+            "mileage_in": "KM entrada",
+            "mileage_out": "KM saida",
+            "vehicle_version": "Versao do veiculo",
+            "vehicle_location": "Localizacao do veiculo",
+            "catalog_family": "Modelo (catalogo)",
+            "catalog_version": "Versao (catalogo)",
+            "year_manufacture": "Ano de fabricacao",
             # Cliente
-            "customer_name": "Nome do cliente", "customer_uuid": "Cliente vinculado",
+            "customer_name": "Nome do cliente",
+            "customer_uuid": "Cliente vinculado",
             "customer_type": "Tipo de cliente",
             # Datas / prazo
             "entry_date": "Data de entrada",
@@ -145,39 +216,102 @@ class _ServiceOrderCoreMixin:
             "final_survey_date": "Vistoria final",
             "client_delivery_date": "Entrega ao cliente",
             # Seguradora
-            "insurer": "Seguradora", "insured_type": "Tipo de segurado",
-            "deductible_amount": "Franquia", "casualty_number": "Numero do sinistro",
-            "broker_name": "Corretor", "expert": "Perito",
-            "expert_date": "Visita do perito", "survey_date": "Data da vistoria",
+            "insurer": "Seguradora",
+            "insured_type": "Tipo de segurado",
+            "deductible_amount": "Franquia",
+            "casualty_number": "Numero do sinistro",
+            "broker_name": "Corretor",
+            "expert": "Perito",
+            "expert_date": "Visita do perito",
+            "survey_date": "Data da vistoria",
             "os_type": "Tipo de OS",
             # Geral
-            "consultant_id": "Consultor", "notes": "Observacoes",
-            "invoice_issued": "NF emitida", "nfe_key": "Chave NF-e", "nfse_number": "NFS-e",
+            "consultant_id": "Consultor",
+            "notes": "Observacoes",
+            "invoice_issued": "NF emitida",
+            "nfe_key": "Chave NF-e",
+            "nfse_number": "NFS-e",
         }
 
         # Grupos de campos -> activity_type separado no log
         FIELD_GROUPS: list[tuple[str, frozenset[str]]] = [
-            ("customer_updated", frozenset({
-                "customer_name", "customer_uuid", "customer_type",
-            })),
-            ("vehicle_updated", frozenset({
-                "plate", "make", "model", "year", "color", "chassis",
-                "fuel_type", "fipe_value", "mileage_in", "mileage_out",
-                "vehicle_version", "vehicle_location",
-            })),
-            ("schedule_updated", frozenset({
-                "entry_date", "service_authorization_date", "scheduling_date",
-                "authorization_date", "quotation_date", "repair_days",
-                "estimated_delivery_date", "delivery_date", "final_survey_date",
-                "client_delivery_date",
-            })),
-            ("insurer_updated", frozenset({
-                "insurer", "insured_type", "deductible_amount", "casualty_number",
-                "broker_name", "expert", "expert_date", "survey_date", "os_type",
-            })),
-            ("updated", frozenset({
-                "consultant_id", "notes", "invoice_issued", "nfe_key", "nfse_number",
-            })),
+            (
+                "customer_updated",
+                frozenset(
+                    {
+                        "customer_name",
+                        "customer_uuid",
+                        "customer_type",
+                    }
+                ),
+            ),
+            (
+                "vehicle_updated",
+                frozenset(
+                    {
+                        "plate",
+                        "make",
+                        "model",
+                        "year",
+                        "color",
+                        "chassis",
+                        "fuel_type",
+                        "fipe_value",
+                        "mileage_in",
+                        "mileage_out",
+                        "vehicle_version",
+                        "vehicle_location",
+                        "catalog_family",
+                        "catalog_version",
+                        "year_manufacture",
+                    }
+                ),
+            ),
+            (
+                "schedule_updated",
+                frozenset(
+                    {
+                        "entry_date",
+                        "service_authorization_date",
+                        "scheduling_date",
+                        "authorization_date",
+                        "quotation_date",
+                        "repair_days",
+                        "estimated_delivery_date",
+                        "delivery_date",
+                        "final_survey_date",
+                        "client_delivery_date",
+                    }
+                ),
+            ),
+            (
+                "insurer_updated",
+                frozenset(
+                    {
+                        "insurer",
+                        "insured_type",
+                        "deductible_amount",
+                        "casualty_number",
+                        "broker_name",
+                        "expert",
+                        "expert_date",
+                        "survey_date",
+                        "os_type",
+                    }
+                ),
+            ),
+            (
+                "updated",
+                frozenset(
+                    {
+                        "consultant_id",
+                        "notes",
+                        "invoice_issued",
+                        "nfe_key",
+                        "nfse_number",
+                    }
+                ),
+            ),
         ]
 
         for field, (valid_from, target) in AUTO_TRANSITIONS.items():
@@ -211,9 +345,39 @@ class _ServiceOrderCoreMixin:
                     other_changes.append(change)
             setattr(order, key, value)
 
+        if catalog_changed:
+            apply_catalog_vehicle(order, family=catalog_family, version=catalog_version)
+            # Usuario confirmou/corrigiu o veiculo de uma importacao: conta para a regra.
+            # So limpar a versao nao e confirmacao, nem reenviar o par de uma OS ja confirmada.
+            pair_changed = (order.catalog_family_id, order.catalog_version_id) != (
+                old_family_id,
+                old_version_id,
+            )
+            if (
+                order.vehicle_source
+                and order.vehicle_source_text
+                and order.catalog_family_id
+                and (order.catalog_version_id or order.catalog_family_id != old_family_id)
+                and (pair_changed or was_review)
+            ):
+                record_alias_confirmation(
+                    order.vehicle_source,
+                    order.vehicle_source_text,
+                    order.vehicle_source_year,
+                    version=order.catalog_version,
+                    family=order.catalog_family,
+                )
+        if (
+            order.catalog_family_id,
+            order.catalog_version_id,
+            order.chassis.strip().upper(),
+        ) != old_vehicle:
+            _learn_chassis(order)  # PATCH que não mexe no par nem no chassi não conta
+
         # Criar um log por grupo que teve alteracoes
         if any(changes_by_group.values()) or other_changes:
             from apps.authentication.models import GlobalUser
+
             user = GlobalUser.objects.filter(id=updated_by_id).first()
             user_name = user.get_full_name() or user.email if user else "Usuario"
 
@@ -255,26 +419,30 @@ class _ServiceOrderCoreMixin:
 
             result = TransitionValidator.validate(order, new_status)
             if result.hard_blocks:
-                raise ValidationError({
-                    "transition_blocks": {
-                        "type": "hard",
-                        "can_override": False,
-                        "blocks": [b.to_dict() for b in result.hard_blocks],
-                        "warnings": [w.to_dict() for w in result.warnings],
+                raise ValidationError(
+                    {
+                        "transition_blocks": {
+                            "type": "hard",
+                            "can_override": False,
+                            "blocks": [b.to_dict() for b in result.hard_blocks],
+                            "warnings": [w.to_dict() for w in result.warnings],
+                        }
                     }
-                })
+                )
             if result.soft_blocks:
-                raise ValidationError({
-                    "transition_blocks": {
-                        "type": "soft",
-                        "can_override": True,
-                        "blocks": [b.to_dict() for b in result.soft_blocks],
-                        "warnings": [w.to_dict() for w in result.warnings],
-                        "has_pending_override": TransitionValidator._has_pending_override(
-                            order, new_status
-                        ),
+                raise ValidationError(
+                    {
+                        "transition_blocks": {
+                            "type": "soft",
+                            "can_override": True,
+                            "blocks": [b.to_dict() for b in result.soft_blocks],
+                            "warnings": [w.to_dict() for w in result.warnings],
+                            "has_pending_override": TransitionValidator._has_pending_override(
+                                order, new_status
+                            ),
+                        }
                     }
-                })
+                )
 
             old_status = order.status
             order.status = new_status
@@ -301,17 +469,43 @@ class _ServiceOrderCoreMixin:
 
         order.save()
 
-        # -- Propagar dados do veiculo para outras OSes com a mesma placa --
-        vehicle_fields = {
-            "make", "make_logo", "model", "year", "color", "chassis",
-            "fuel_type", "vehicle_version",
+        # -- Propagar dados do veiculo para outras OSes abertas com a mesma placa --
+        # vehicle_source* nunca propagam: pertencem a importacao que criou cada OS.
+        # So uma versao nova propaga o catalogo: escolher so a familia (ou reenviar
+        # o mesmo par) nao pode apagar a versao confirmada de outra OS.
+        catalog_fields = {
+            "make",
+            "make_logo",
+            "model",
+            "year",
+            "fuel_type",
+            "vehicle_version",
+            "catalog_family",
+            "catalog_version",
+            "vehicle_needs_review",
+            "zero_km",
+            "year_manufacture",
+            "fipe_value",
+            "vehicle_fipe_value_snapshot",
         }
-        vehicle_changed = vehicle_fields & set(data.keys())
-        if vehicle_changed and order.plate:
-            update_payload = {f: getattr(order, f) for f in vehicle_fields}
-            ServiceOrder.objects.filter(
-                plate=order.plate, is_active=True,
-            ).exclude(pk=order.pk).update(**update_payload)
+        propagate_catalog = (
+            catalog_changed
+            and order.catalog_version_id is not None
+            and (order.catalog_family_id, order.catalog_version_id)
+            != (old_family_id, old_version_id)
+        )
+        legacy_changed = {"color", "chassis"} & data.keys()
+        if order.plate and (propagate_catalog or legacy_changed):
+            siblings = (
+                ServiceOrder.objects.filter(plate=order.plate, is_active=True)
+                .exclude(pk=order.pk)
+                .exclude(status__in=["delivered", "cancelled"])
+            )
+            now = timezone.now()
+            if legacy_changed:
+                siblings.update(color=order.color, chassis=order.chassis, updated_at=now)
+            if propagate_catalog:
+                siblings.update(updated_at=now, **{f: getattr(order, f) for f in catalog_fields})
 
         return order
 
@@ -348,11 +542,11 @@ class _ServiceOrderCoreMixin:
             ServiceOrder com status atualizado.
         """
         from apps.service_orders.models import (
-            ServiceOrder,
-            StatusTransitionLog,
-            ServiceOrderActivityLog,
-            TransitionOverrideRequest,
             VALID_TRANSITIONS,
+            ServiceOrder,
+            ServiceOrderActivityLog,
+            StatusTransitionLog,
+            TransitionOverrideRequest,
         )
         from apps.service_orders.transition_validator import TransitionValidator
 
@@ -369,25 +563,27 @@ class _ServiceOrderCoreMixin:
             )
 
         # Validar pre-requisitos de negocio
-        result = TransitionValidator.validate(
-            order, new_status, justification=justification
-        )
+        result = TransitionValidator.validate(order, new_status, justification=justification)
 
         # Hard blocks: nunca contornaveis por um force desacompanhado de autoridade —
         # so avanca com override presencial de MANAGER+ (manager_verified), que fica
-        # registrado abaixo para auditoria.
+        # registrado abaixo para auditoria. NON_OVERRIDABLE_BLOCKS recusam até esse override.
         if result.hard_blocks:
-            if not (force and manager_verified):
-                raise ValidationError({
-                    "transition_blocks": {
-                        "type": "hard",
-                        "can_override": True,
-                        "blocks": [b.to_dict() for b in result.hard_blocks],
-                        "warnings": [w.to_dict() for w in result.warnings],
+            non_overridable = {b.code for b in result.hard_blocks} & NON_OVERRIDABLE_BLOCKS
+            if non_overridable or not (force and manager_verified):
+                raise ValidationError(
+                    {
+                        "transition_blocks": {
+                            "type": "hard",
+                            "can_override": not non_overridable,
+                            "blocks": [b.to_dict() for b in result.hard_blocks],
+                            "warnings": [w.to_dict() for w in result.warnings],
+                        }
                     }
-                })
+                )
             # force=True: registra auditoria e permite avançar
             from django.utils import timezone as tz
+
             TransitionOverrideRequest.objects.create(
                 service_order=order,
                 from_status=order.status,
@@ -416,21 +612,24 @@ class _ServiceOrderCoreMixin:
                 ).exists()
 
             if not (force and manager_verified) and not has_approved_override:
-                raise ValidationError({
-                    "transition_blocks": {
-                        "type": "soft",
-                        "can_override": True,
-                        "blocks": [b.to_dict() for b in result.soft_blocks],
-                        "warnings": [w.to_dict() for w in result.warnings],
-                        "has_pending_override": TransitionValidator._has_pending_override(
-                            order, new_status
-                        ),
+                raise ValidationError(
+                    {
+                        "transition_blocks": {
+                            "type": "soft",
+                            "can_override": True,
+                            "blocks": [b.to_dict() for b in result.soft_blocks],
+                            "warnings": [w.to_dict() for w in result.warnings],
+                            "has_pending_override": TransitionValidator._has_pending_override(
+                                order, new_status
+                            ),
+                        }
                     }
-                })
+                )
 
             # Se force=True (com autoridade) sem override aprovado, criar registro de auditoria
             if force and manager_verified and not has_approved_override:
                 from django.utils import timezone as tz
+
                 TransitionOverrideRequest.objects.create(
                     service_order=order,
                     from_status=order.status,
@@ -449,6 +648,7 @@ class _ServiceOrderCoreMixin:
         order.status = new_status
 
         from django.utils import timezone
+
         now = timezone.now()
 
         # Auto-preenchimento de datas chaves ao avancar no Kanban
@@ -464,11 +664,17 @@ class _ServiceOrderCoreMixin:
             if not order.delivered_at:
                 order.delivered_at = now
 
-        order.save(update_fields=[
-            "status", "entry_date", "authorization_date",
-            "final_survey_date", "client_delivery_date",
-            "delivered_at", "updated_at"
-        ])
+        order.save(
+            update_fields=[
+                "status",
+                "entry_date",
+                "authorization_date",
+                "final_survey_date",
+                "client_delivery_date",
+                "delivered_at",
+                "updated_at",
+            ]
+        )
 
         if new_status == "delivered":
             # Agenda os retornos pós-entrega. Nunca interrompe a transição.
@@ -490,9 +696,11 @@ class _ServiceOrderCoreMixin:
         )
 
         from apps.authentication.models import GlobalUser
+
         user = GlobalUser.objects.filter(id=changed_by_id).first()
         user_name = user.get_full_name() or user.email if user else "Usuario"
         from apps.service_orders.models import ServiceOrderStatus as SOS
+
         old_label = dict(SOS.choices).get(old_status, old_status)
         new_label = dict(SOS.choices).get(new_status, new_status)
         ServiceOrderActivityLog.objects.create(
@@ -536,18 +744,19 @@ class _ServiceOrderCoreMixin:
         Raises:
             ValidationError: Transicao invalida.
         """
-        from apps.service_orders.models import VALID_TRANSITIONS
         from apps.service_orders.events import OSEventLogger
+        from apps.service_orders.models import VALID_TRANSITIONS
 
         current = service_order.status
         allowed = VALID_TRANSITIONS.get(current, [])
         if new_status not in allowed:
-            raise ValidationError({
-                "status": (
-                    f"Transicao invalida: {current} -> {new_status}. "
-                    f"Permitidas: {allowed}"
-                )
-            })
+            raise ValidationError(
+                {
+                    "status": (
+                        f"Transicao invalida: {current} -> {new_status}. " f"Permitidas: {allowed}"
+                    )
+                }
+            )
 
         if new_status == "budget":
             service_order.previous_status = current
@@ -642,38 +851,42 @@ class _ServiceOrderCoreMixin:
         Returns:
             BudgetSnapshot criado.
         """
-        from apps.service_orders.models import BudgetSnapshot, ServiceOrderPart, ServiceOrderLabor
+        from apps.service_orders.models import BudgetSnapshot, ServiceOrderLabor, ServiceOrderPart
 
         # Calcula proxima versao
         last_version = (
-            BudgetSnapshot.objects
-            .filter(service_order=order)
-            .aggregate(max_v=models.Max("version"))["max_v"]
+            BudgetSnapshot.objects.filter(service_order=order).aggregate(
+                max_v=models.Max("version")
+            )["max_v"]
         ) or 0
         next_version = last_version + 1
 
         # Serializa items
         items: list[dict[str, Any]] = []
         for part in ServiceOrderPart.objects.filter(service_order=order):
-            items.append({
-                "type": "part",
-                "description": part.description,
-                "part_number": part.part_number,
-                "product_name": part.product.name if part.product else None,
-                "quantity": float(part.quantity),
-                "unit_price": float(part.unit_price),
-                "discount": float(part.discount),
-                "total": part.total,
-            })
+            items.append(
+                {
+                    "type": "part",
+                    "description": part.description,
+                    "part_number": part.part_number,
+                    "product_name": part.product.name if part.product else None,
+                    "quantity": float(part.quantity),
+                    "unit_price": float(part.unit_price),
+                    "discount": float(part.discount),
+                    "total": part.total,
+                }
+            )
         for labor in ServiceOrderLabor.objects.filter(service_order=order):
-            items.append({
-                "type": "labor",
-                "description": labor.description,
-                "quantity": float(labor.quantity),
-                "unit_price": float(labor.unit_price),
-                "discount": float(labor.discount),
-                "total": labor.total,
-            })
+            items.append(
+                {
+                    "type": "labor",
+                    "description": labor.description,
+                    "quantity": float(labor.quantity),
+                    "unit_price": float(labor.unit_price),
+                    "discount": float(labor.discount),
+                    "total": labor.total,
+                }
+            )
 
         snapshot = BudgetSnapshot.objects.create(
             service_order=order,
@@ -718,14 +931,13 @@ class _ServiceOrderCoreMixin:
         from apps.service_orders.models import ServiceOrderPart, ServiceOrderStatus
 
         if order.status in (ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED):
-            raise ValidationError(
-                {"detail": "Nao e possivel modificar itens de uma OS encerrada."}
-            )
+            raise ValidationError({"detail": "Nao e possivel modificar itens de uma OS encerrada."})
 
         part = ServiceOrderPart(service_order=order, created_by=created_by, **data)
         part.save()
 
         from apps.service_orders.models import ServiceOrderActivityLog
+
         ServiceOrderActivityLog.objects.create(
             service_order=order,
             user_id=str(created_by.id),
@@ -758,14 +970,13 @@ class _ServiceOrderCoreMixin:
         from apps.service_orders.models import ServiceOrderLabor, ServiceOrderStatus
 
         if order.status in (ServiceOrderStatus.DELIVERED, ServiceOrderStatus.CANCELLED):
-            raise ValidationError(
-                {"detail": "Nao e possivel modificar itens de uma OS encerrada."}
-            )
+            raise ValidationError({"detail": "Nao e possivel modificar itens de uma OS encerrada."})
 
         labor = ServiceOrderLabor(service_order=order, created_by=created_by, **data)
         labor.save()
 
         from apps.service_orders.models import ServiceOrderActivityLog
+
         ServiceOrderActivityLog.objects.create(
             service_order=order,
             user_id=str(created_by.id),

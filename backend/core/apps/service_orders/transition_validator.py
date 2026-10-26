@@ -23,6 +23,8 @@ import uuid
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+from apps.vehicle_catalog.normalize import CorVeiculo
+
 if TYPE_CHECKING:
     from apps.service_orders.models import ServiceOrder
 
@@ -529,7 +531,7 @@ class TransitionValidator:
             warn.append(
                 ValidationBlock(code="VEHICLE_YEAR", message="Ano do veículo não informado")
             )
-        if not order.color:
+        if order.color in ("", CorVeiculo.NAO_INFORMADA):
             warn.append(
                 ValidationBlock(code="VEHICLE_COLOR", message="Cor do veículo não informada")
             )
@@ -715,6 +717,23 @@ class TransitionValidator:
 
         return ValidationResult(hard_blocks=hard, soft_blocks=soft, warnings=warn)
 
+    @staticmethod
+    def _vehicle_review_blocks(order: ServiceOrder) -> list[ValidationBlock]:
+        """HARD de produção: veículo sem versão do catálogo ("a confirmar").
+
+        Sem override de gerente (ver NON_OVERRIDABLE_BLOCKS em order_service).
+        """
+        if not order.vehicle_needs_review:
+            return []
+        return [
+            ValidationBlock(
+                code="VEHICLE_NEEDS_REVIEW",
+                message=(
+                    "Confirme a versão do veículo em Dados da OS antes de entrar em produção."
+                ),
+            )
+        ]
+
     @classmethod
     def _validate_to_waiting_parts(cls, order: ServiceOrder) -> ValidationResult:
         """Valida pré-requisitos para authorized → waiting_parts.
@@ -724,10 +743,10 @@ class TransitionValidator:
 
         Returns:
             ValidationResult com:
-              HARD: PARTS_EXIST (nenhuma peça cadastrada)
+              HARD: VEHICLE_NEEDS_REVIEW, PARTS_EXIST (nenhuma peça cadastrada)
               SOFT: PARTS_SOURCED (peças sem OC ou status insuficiente)
         """
-        hard: list[ValidationBlock] = []
+        hard: list[ValidationBlock] = cls._vehicle_review_blocks(order)
         soft: list[ValidationBlock] = []
         warn: list[ValidationBlock] = []
 
@@ -769,11 +788,11 @@ class TransitionValidator:
 
         Returns:
             ValidationResult com:
-              HARD: PARTS_OR_LABOR_EXIST (se de 'authorized')
+              HARD: VEHICLE_NEEDS_REVIEW, PARTS_OR_LABOR_EXIST (se de 'authorized')
               SOFT: PARTS_PURCHASED (se de 'waiting_parts')
               WARN: PARTS_PENDING (peças com status pendente), PARTS_INCOMPLETE
         """
-        hard: list[ValidationBlock] = []
+        hard: list[ValidationBlock] = cls._vehicle_review_blocks(order)
         soft: list[ValidationBlock] = []
         warn: list[ValidationBlock] = []
 
@@ -845,10 +864,11 @@ class TransitionValidator:
 
         Returns:
             ValidationResult com:
+              HARD: VEHICLE_NEEDS_REVIEW (final_survey herda só os SOFT)
               SOFT: TIMESHEET_CLOSED (sem apontamento encerrado no setor)
               SOFT: PROGRESS_PHOTO (sem foto de acompanhamento)
         """
-        hard: list[ValidationBlock] = []
+        hard: list[ValidationBlock] = cls._vehicle_review_blocks(order)
         soft: list[ValidationBlock] = []
         warn: list[ValidationBlock] = []
 

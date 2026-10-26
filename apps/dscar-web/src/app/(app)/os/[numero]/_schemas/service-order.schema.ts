@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { catalogSelectionSchema } from "@/components/vehicle/catalog.schema"
+
 // ─── Helpers de pré-processamento ────────────────────────────────────────────
 // Converte "" / null / undefined → null (campos string opcionais)
 const toNullStr = (v: unknown) =>
@@ -66,21 +68,11 @@ const serviceOrderBaseSchema = z.object({
   customer_person_id: z.preprocess(toNullNum, z.number().int().nullish()),
   customer_name: z.string().min(1, "Nome do cliente é obrigatório"),
   plate: z.string().min(7, "Placa inválida — mínimo 7 caracteres").max(8, "Placa inválida"),
-  make: z.string().optional().default(""),
-  make_logo: z.string().optional().default(""),
-  model: z.string().optional().default(""),
-  vehicle_version: z.string().optional().default(""),
-  year: z.preprocess(
-    toNullNum,
-    z.number().int().min(1900, "Ano inválido").max(2100, "Ano inválido").nullish()
-  ),
-  color: z.string().optional().default(""),
+  // Veículo: só o caminho do seletor; o texto (montadora, ano, combustível, FIPE) é do servidor.
+  catalog_selection: catalogSelectionSchema.nullish(),
+  year_manufacture: z.preprocess(toNullNum, z.number().int().nullish()),
+  color: z.string().optional().default("NAO_INFORMADA"),
   chassis: z.string().max(17, "Chassi inválido — máximo 17 caracteres").optional().default(""),
-  fuel_type: z.string().optional().default(""),
-  fipe_value: z.preprocess(
-    toNullNum,
-    z.number().nonnegative("Valor FIPE não pode ser negativo").nullish()
-  ),
   mileage_in: z.preprocess(
     toNullNum,
     z.number().int().nonnegative("KM de entrada não pode ser negativo").nullish()

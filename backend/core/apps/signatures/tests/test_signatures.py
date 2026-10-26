@@ -1,9 +1,11 @@
 """Tests do app signatures — model, service, API."""
+
 from __future__ import annotations
 
 import base64
 
 import pytest
+
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
@@ -12,15 +14,13 @@ from apps.persons.models import Person
 from apps.service_orders.models import ServiceOrder
 from apps.signatures.models import Signature
 from apps.signatures.services import SignatureService
-
+from apps.vehicle_catalog.tests.factories import make_catalog
 
 User = get_user_model()
 
 
 # PNG de 1×1 pixel (67 bytes) + header + zeros = 150 bytes decodificados, base64 válido
-_FAKE_PNG_BYTES = (
-    b"\x89PNG\r\n\x1a\n" + b"\x00" * 142  # 150 bytes total (PNG signature + zeros)
-)
+_FAKE_PNG_BYTES = b"\x89PNG\r\n\x1a\n" + b"\x00" * 142  # 150 bytes total (PNG signature + zeros)
 VALID_PNG_B64 = base64.b64encode(_FAKE_PNG_BYTES).decode("ascii")
 
 
@@ -32,8 +32,11 @@ def person(db):
 @pytest.fixture
 def os_instance(person):
     return ServiceOrder.objects.create(
-        os_number="OS-SIG-1", customer=person, customer_type="PARTICULAR",
-        vehicle_plate="SIG1234", vehicle_description="Test",
+        os_number="OS-SIG-1",
+        customer=person,
+        customer_type="PARTICULAR",
+        vehicle_plate="SIG1234",
+        vehicle_description="Test",
     )
 
 
@@ -57,6 +60,7 @@ class TestSignatureService:
 
     def test_capture_requires_owner(self):
         from rest_framework.exceptions import ValidationError
+
         with pytest.raises(ValidationError, match="Informe service_order ou budget"):
             SignatureService.capture(
                 document_type="OS_OPEN",
@@ -67,6 +71,7 @@ class TestSignatureService:
 
     def test_capture_rejects_invalid_base64(self, os_instance):
         from rest_framework.exceptions import ValidationError
+
         with pytest.raises(ValidationError, match="Base64 inválido"):
             SignatureService.capture(
                 service_order=os_instance,
@@ -78,6 +83,7 @@ class TestSignatureService:
 
     def test_capture_rejects_tiny_png(self, os_instance):
         from rest_framework.exceptions import ValidationError
+
         tiny = base64.b64encode(b"x").decode()
         with pytest.raises(ValidationError, match="muito pequeno"):
             SignatureService.capture(
@@ -125,8 +131,10 @@ class TestSignatureService:
 
     def test_capture_for_budget(self, person):
         budget = BudgetService.create(
-            customer=person, vehicle_plate="BDG1234",
-            vehicle_description="Test", created_by="x",
+            customer=person,
+            vehicle_plate="BDG1234",
+            catalog_family=make_catalog().modelo.familia,
+            created_by="x",
         )
         sig = SignatureService.capture(
             budget=budget,
@@ -213,17 +221,23 @@ class TestSignatureAPI:
 
     def test_list_filters_by_service_order(self, auth_client, os_instance, person):
         other_os = ServiceOrder.objects.create(
-            os_number="OS-SIG-OTHER", customer=person,
-            vehicle_plate="OTHER1", vehicle_description="x",
+            os_number="OS-SIG-OTHER",
+            customer=person,
+            vehicle_plate="OTHER1",
+            vehicle_description="x",
         )
         SignatureService.capture(
-            service_order=os_instance, document_type="OS_OPEN",
-            method="CANVAS_TABLET", signer_name="A",
+            service_order=os_instance,
+            document_type="OS_OPEN",
+            method="CANVAS_TABLET",
+            signer_name="A",
             signature_png_base64=VALID_PNG_B64,
         )
         SignatureService.capture(
-            service_order=other_os, document_type="OS_DELIVERY",
-            method="CANVAS_TABLET", signer_name="B",
+            service_order=other_os,
+            document_type="OS_DELIVERY",
+            method="CANVAS_TABLET",
+            signer_name="B",
             signature_png_base64=VALID_PNG_B64,
         )
         resp = auth_client.get(

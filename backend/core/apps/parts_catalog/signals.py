@@ -4,6 +4,7 @@ Auto-learning: when a ServiceOrder transitions to 'delivered', register
 PartApplication entries linking each part's manufacturer_code to the OS
 vehicle (make + model + year range).
 """
+
 from __future__ import annotations
 
 import logging
@@ -32,7 +33,8 @@ def register_part_applications_on_delivery(
 
     Only fires when:
     - ``instance.status == "delivered"``
-    - ``instance.make`` is a non-empty string (vehicle make is known)
+    - the vehicle make is known: ``catalog_family`` (make/model from the FKs) or, for legacy
+      OS without FKs, ``instance.make`` matched against the car makes' display name
 
     For each ServiceOrderPart with a non-empty part_number, the signal looks
     up the corresponding PartReference by manufacturer_code and calls
@@ -51,59 +53,58 @@ def register_part_applications_on_delivery(
     from apps.parts_catalog.models import PartApplication, PartReference
     from apps.vehicle_catalog.models import VehicleMake, VehicleModel
 
-    vehicle_make_name: str = (instance.make or "").strip()
-    if not vehicle_make_name:
-        logger.debug(
-            "parts_catalog.signal: OS #%s delivered but no vehicle make — skipping.",
-            instance.number,
-        )
-        return
-
-    # ── Resolve VehicleMake ───────────────────────────────────────────────────
     vehicle_make: VehicleMake | None = None
-
-    try:
-        vehicle_make = VehicleMake.objects.get(nome__iexact=vehicle_make_name)
-    except VehicleMake.DoesNotExist:
-        # Fallback: normalised name (lowercase, no accents).
-        normalised = vehicle_make_name.lower()
-        vehicle_make = (
-            VehicleMake.objects.filter(nome_normalizado__iexact=normalised).first()
-        )
-    except VehicleMake.MultipleObjectsReturned:
-        vehicle_make = VehicleMake.objects.filter(nome__iexact=vehicle_make_name).first()
-
-    if vehicle_make is None:
-        logger.warning(
-            "parts_catalog.signal: OS #%s — VehicleMake '%s' not found in catalog.",
-            instance.number,
-            vehicle_make_name,
-        )
-        return
-
-    # ── Resolve VehicleModel (optional) ──────────────────────────────────────
-    vehicle_model_name: str = (instance.model or "").strip()
     vehicle_model: VehicleModel | None = None
 
-    if vehicle_model_name:
-        vehicle_model = (
-            VehicleModel.objects.filter(
-                marca=vehicle_make,
-                nome__iexact=vehicle_model_name,
-            ).first()
-            or VehicleModel.objects.filter(
-                marca=vehicle_make,
-                nome_normalizado__iexact=vehicle_model_name.lower(),
-            ).first()
-        )
-        if vehicle_model is None:
+    if instance.catalog_family_id:
+        # OS com catálogo: marca e modelo saem das FKs, nunca do texto do snapshot.
+        vehicle_make = instance.catalog_family.make
+        if instance.catalog_version_id:
+            vehicle_model = instance.catalog_version.modelo
+    else:
+        # Legado (OS sem FK): casa a marca pelo nome exibido, só entre carros.
+        vehicle_make_name: str = (instance.make or "").strip()
+        if not vehicle_make_name:
             logger.debug(
-                "parts_catalog.signal: OS #%s — VehicleModel '%s' not found for make '%s',"
-                " will register against make only.",
+                "parts_catalog.signal: OS #%s delivered but no vehicle make — skipping.",
                 instance.number,
-                vehicle_model_name,
-                vehicle_make.nome,
             )
+            return
+
+        cars = VehicleMake.objects.filter(tipo="carro")
+        vehicle_make = (
+            cars.filter(display_name__iexact=vehicle_make_name).first()
+            or cars.filter(nome_normalizado__iexact=vehicle_make_name.lower()).first()
+        )
+
+        if vehicle_make is None:
+            logger.warning(
+                "parts_catalog.signal: OS #%s — VehicleMake '%s' not found in catalog.",
+                instance.number,
+                vehicle_make_name,
+            )
+            return
+
+        vehicle_model_name: str = (instance.model or "").strip()
+        if vehicle_model_name:
+            vehicle_model = (
+                VehicleModel.objects.filter(
+                    marca=vehicle_make,
+                    nome__iexact=vehicle_model_name,
+                ).first()
+                or VehicleModel.objects.filter(
+                    marca=vehicle_make,
+                    nome_normalizado__iexact=vehicle_model_name.lower(),
+                ).first()
+            )
+            if vehicle_model is None:
+                logger.debug(
+                    "parts_catalog.signal: OS #%s — VehicleModel '%s' not found for make '%s',"
+                    " will register against make only.",
+                    instance.number,
+                    vehicle_model_name,
+                    vehicle_make.nome,
+                )
 
     # ── Year range ────────────────────────────────────────────────────────────
     year: int | None = instance.year  # PositiveSmallIntegerField, nullable

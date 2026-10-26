@@ -13,7 +13,7 @@ import { apiFetch } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { PhotoCaptureGrid } from "@/components/photos/PhotoCaptureGrid";
-import { newOSSchema, type NewOSInput } from "../os/_components/new-os.schema";
+import { newOSSchema, toCreatePayload, type NewOSInput } from "../os/_components/new-os.schema";
 import { useServiceOrderCreate } from "../os/[numero]/_hooks/useServiceOrder";
 import { StepCliente } from "./_components/StepCliente";
 import { StepPlaca } from "./_components/StepPlaca";
@@ -23,7 +23,7 @@ const STEPS = ["Placa", "Cliente", "Fotos", "Confirmar"] as const;
 
 /** Campos validados antes de avançar cada passo. */
 const STEP_FIELDS: Array<Array<keyof NewOSInput>> = [
-  ["plate", "make", "model"],
+  ["plate", "catalog_selection"],
   ["customer_type", "customer_name", "insurer", "insured_type"],
   [],
   [],
@@ -43,11 +43,9 @@ export default function RecepcaoPage(): React.ReactElement {
       customer_id: null,
       customer_name: "",
       plate: "",
-      make: "",
-      model: "",
-      vehicle_version: "",
+      catalog_selection: null,
+      year_manufacture: null,
       color: "",
-      fuel_type: "",
       chassis: "",
     },
   });
@@ -61,7 +59,7 @@ export default function RecepcaoPage(): React.ReactElement {
     let osNumber: number;
     let osId: string;
     try {
-      const os = await createMutation.mutateAsync(data);
+      const os = await createMutation.mutateAsync(toCreatePayload(data));
       osNumber = os.number;
       osId = os.id;
     } catch {
@@ -153,7 +151,7 @@ export default function RecepcaoPage(): React.ReactElement {
                 <dd className="min-w-0">
                   <span className="font-mono tabular-nums">{values.plate}</span>
                   {" · "}
-                  {values.make} {values.model}
+                  {values.catalog_selection?.make.label} {values.catalog_selection?.family?.label}
                 </dd>
               </div>
               <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-2">

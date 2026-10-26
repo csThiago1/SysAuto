@@ -16,9 +16,12 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
+from apps.documents.pdf_service import PDFService
 from apps.items.services import NumberAllocator
 from apps.persons.models import Person
-from apps.documents.pdf_service import PDFService
+from apps.vehicle_catalog.models import VehicleFamily, VehicleYearVersion
+from apps.vehicle_catalog.normalize import CorVeiculo
+from apps.vehicle_catalog.snapshot import build_snapshot, resolve_family
 
 from .models import Budget, BudgetVersion, BudgetVersionItem
 
@@ -42,30 +45,28 @@ class BudgetService:
         *,
         customer: Person,
         vehicle_plate: str,
-        vehicle_description: str,
+        catalog_family: VehicleFamily | None = None,
+        catalog_version: VehicleYearVersion | None = None,
+        vehicle_color: str = CorVeiculo.NAO_INFORMADA,
+        vehicle_year_manufacture: int | None = None,
         vehicle_chassis: str = "",
-        vehicle_version: str = "",
-        vehicle_engine: str = "",
-        vehicle_color: str = "",
-        vehicle_fuel_type: str = "",
-        vehicle_make_logo: str = "",
-        vehicle_year: int | None = None,
         created_by: str,
     ) -> Budget:
-        """Cria Budget novo + BudgetVersion v1 em status draft."""
-        budget = Budget.objects.create(
+        """Cria Budget novo + BudgetVersion v1 em status draft.
+
+        O veículo vem só do catálogo (família, ou versão que traz a família; o
+        BudgetCreateSerializer exige um dos dois); o texto é o snapshot do servidor.
+        """
+        budget = Budget(
             number=NumberAllocator.allocate("BUDGET"),
             customer=customer,
             vehicle_plate=vehicle_plate.upper(),
-            vehicle_description=vehicle_description,
             vehicle_chassis=vehicle_chassis,
-            vehicle_version=vehicle_version,
-            vehicle_engine=vehicle_engine,
             vehicle_color=vehicle_color,
-            vehicle_fuel_type=vehicle_fuel_type,
-            vehicle_make_logo=vehicle_make_logo,
-            vehicle_year=vehicle_year,
+            vehicle_year_manufacture=vehicle_year_manufacture,
         )
+        cls._apply_catalog_vehicle(budget, catalog_family, catalog_version)
+        budget.save()
         BudgetVersion.objects.create(
             budget=budget,
             version_number=1,
@@ -142,7 +143,8 @@ class BudgetService:
         ).update(status="superseded")
 
         os_instance = ServiceOrderService.create_from_budget(
-            version=version, created_by_user=user,
+            version=version,
+            created_by_user=user,
         )
         version.budget.service_order = os_instance
         version.budget.save(update_fields=["service_order"])
@@ -193,22 +195,27 @@ class BudgetService:
     @transaction.atomic
     def clone(cls, *, source_budget: Budget, created_by: str) -> Budget:
         """Clona budget arquivado (rejected/expired) para reutilizar dados."""
-        new_budget = Budget.objects.create(
+        new_budget = Budget(
             number=NumberAllocator.allocate("BUDGET"),
             customer=source_budget.customer,
             vehicle_plate=source_budget.vehicle_plate,
             vehicle_description=source_budget.vehicle_description,
+            vehicle_year_manufacture=source_budget.vehicle_year_manufacture,
             cloned_from=source_budget,
         )
+        if source_budget.catalog_family_id or source_budget.catalog_version_id:
+            cls._apply_catalog_vehicle(
+                new_budget, source_budget.catalog_family, source_budget.catalog_version
+            )
+        new_budget.save()
         new_v = BudgetVersion.objects.create(
-            budget=new_budget, version_number=1,
-            status="draft", created_by=created_by,
+            budget=new_budget,
+            version_number=1,
+            status="draft",
+            created_by=created_by,
         )
         source_v = (
-            source_budget.versions
-            .exclude(status="draft")
-            .order_by("-version_number")
-            .first()
+            source_budget.versions.exclude(status="draft").order_by("-version_number").first()
         )
         if source_v:
             cls._copy_items_between_versions(source=source_v, target=new_v)
@@ -222,24 +229,60 @@ class BudgetService:
             Quantidade de versões marcadas como expired.
         """
         return BudgetVersion.objects.filter(
-            status="sent", valid_until__lt=timezone.now(),
+            status="sent",
+            valid_until__lt=timezone.now(),
         ).update(status="expired")
 
     # ── Helpers privados ──────────────────────────────────────────────────────
 
+    @staticmethod
+    def _apply_catalog_vehicle(
+        budget: Budget,
+        family: VehicleFamily | None,
+        version: VehicleYearVersion | None,
+    ) -> None:
+        """FKs + snapshot de texto do catálogo no orçamento (não salva)."""
+        snap = build_snapshot(family, version)
+        budget.catalog_family = resolve_family(family, version)
+        budget.catalog_version = version
+        budget.vehicle_description = snap.description
+        budget.vehicle_version = snap.version
+        budget.vehicle_fuel_type = snap.fuel_type
+        budget.vehicle_make_logo = snap.make_logo
+        budget.vehicle_year = snap.year
+        budget.vehicle_zero_km = snap.zero_km
+        budget.vehicle_needs_review = version is None
+
     @classmethod
     def _copy_items_between_versions(
-        cls, *, source: BudgetVersion, target: BudgetVersion,
+        cls,
+        *,
+        source: BudgetVersion,
+        target: BudgetVersion,
     ) -> None:
         """Copia items de source para target, preservando operations."""
         from apps.items.models import ItemOperation
 
         shared_fields = [
-            "bucket", "payer_block", "impact_area", "item_type",
-            "description", "external_code", "part_type", "supplier",
-            "quantity", "unit_price", "unit_cost", "discount_pct", "net_price",
-            "flag_abaixo_padrao", "flag_acima_padrao", "flag_inclusao_manual",
-            "flag_codigo_diferente", "flag_servico_manual", "flag_peca_da_conta",
+            "bucket",
+            "payer_block",
+            "impact_area",
+            "item_type",
+            "description",
+            "external_code",
+            "part_type",
+            "supplier",
+            "quantity",
+            "unit_price",
+            "unit_cost",
+            "discount_pct",
+            "net_price",
+            "flag_abaixo_padrao",
+            "flag_acima_padrao",
+            "flag_inclusao_manual",
+            "flag_codigo_diferente",
+            "flag_servico_manual",
+            "flag_peca_da_conta",
             "sort_order",
         ]
         for item in source.items.all().prefetch_related("operations"):
@@ -281,21 +324,29 @@ class BudgetService:
         version.subtotal = subtotal + labor
         version.discount_total = discount
         version.net_total = version.subtotal - version.discount_total
-        version.save(update_fields=[
-            "labor_total", "parts_total", "subtotal", "discount_total", "net_total",
-        ])
+        version.save(
+            update_fields=[
+                "labor_total",
+                "parts_total",
+                "subtotal",
+                "discount_total",
+                "net_total",
+            ]
+        )
 
     @classmethod
     def _compute_hash(cls, version: BudgetVersion) -> str:
         """SHA256 dos items da versão. Snapshot imutável pós-send."""
         payload = []
         for item in version.items.all().order_by("sort_order", "pk"):
-            payload.append({
-                "description": item.description,
-                "qty": str(item.quantity),
-                "unit_price": str(item.unit_price),
-                "net_price": str(item.net_price),
-                "item_type": item.item_type,
-            })
+            payload.append(
+                {
+                    "description": item.description,
+                    "qty": str(item.quantity),
+                    "unit_price": str(item.unit_price),
+                    "net_price": str(item.net_price),
+                    "item_type": item.item_type,
+                }
+            )
         serialized = json.dumps(payload, sort_keys=True)
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()

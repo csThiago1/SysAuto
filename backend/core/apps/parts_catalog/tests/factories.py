@@ -1,7 +1,9 @@
 """
 Paddock Solutions — Parts Catalog Test Factories
 """
+
 import factory
+
 from apps.parts_catalog.models import PartApplication, PartCategory, PartReference, PartSupplierRef
 
 
@@ -50,6 +52,11 @@ def _get_or_create_make():
 
     make, _ = VehicleMake.objects.get_or_create(
         fipe_id="59",
-        defaults={"nome": "CHEVROLET", "nome_normalizado": "chevrolet"},
+        defaults={
+            "tipo": "carro",
+            "nome": "CHEVROLET",
+            "nome_normalizado": "chevrolet",
+            "display_name": "Chevrolet",
+        },
     )
     return make

@@ -9,6 +9,8 @@ from typing import Any
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
 
+from .vehicle import apply_catalog_vehicle, apply_vehicle_text
+
 logger = logging.getLogger(__name__)
 
 
@@ -404,28 +406,35 @@ class _ServiceOrderVersioningMixin:
         budget = version.budget
         customer = budget.customer
 
-        # Separa vehicle_description em make/model (primeiras 2 palavras)
-        desc_parts = (budget.vehicle_description or "").split()
-        make = desc_parts[0] if desc_parts else ""
-        model_name = desc_parts[1] if len(desc_parts) > 1 else ""
-
-        os_instance = ServiceOrder.objects.create(
+        os_instance = ServiceOrder(
             number=cls.get_next_number(),
             customer=customer,
             customer_uuid=customer.pk if customer else None,
             customer_name=getattr(customer, "full_name", "") or "",
             plate=budget.vehicle_plate,
-            make=make,
-            make_logo=budget.vehicle_make_logo or "",
-            model=model_name,
-            vehicle_version=budget.vehicle_version or "",
             chassis=budget.vehicle_chassis or "",
             color=budget.vehicle_color or "",
-            fuel_type=budget.vehicle_fuel_type or "",
-            year=budget.vehicle_year,
+            year_manufacture=budget.vehicle_year_manufacture,
             customer_type="private",
             status="reception",
         )
+        if budget.catalog_family_id or budget.catalog_version_id:
+            apply_catalog_vehicle(
+                os_instance,
+                family=budget.catalog_family,
+                version=budget.catalog_version,
+                needs_review=budget.vehicle_needs_review,
+            )
+        else:
+            # Orçamento legado sem FK: casa a descrição livre com o catálogo
+            apply_vehicle_text(
+                os_instance,
+                brand="",
+                text=budget.vehicle_description or "",
+                year=budget.vehicle_year,
+                source="orcamento",
+            )
+        os_instance.save()
 
         # -- Copia itens do orcamento aprovado para a OS --
         from apps.items.models import ItemOperation

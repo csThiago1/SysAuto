@@ -21,6 +21,25 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# Campos que apply_catalog_vehicle grava na OS
+VEHICLE_FIELDS: tuple[str, ...] = (
+    "catalog_family",
+    "catalog_version",
+    "make",
+    "make_logo",
+    "model",
+    "vehicle_version",
+    "year",
+    "zero_km",
+    "fuel_type",
+    "fipe_value",
+    "vehicle_fipe_value_snapshot",
+    "vehicle_needs_review",
+    "vehicle_source",
+    "vehicle_source_text",
+    "vehicle_source_year",
+)
+
 
 class CiliaImportError(Exception):
     """Falha de importação, com mensagem pronta para exibição.
@@ -145,10 +164,9 @@ def apply_parsed_budget_to_order(
 ) -> list[str]:
     """Aplica os campos do ParsedBudget na OS. Retorna os update_fields.
 
-    Campos de identificação só são preenchidos quando estão vazios — nunca
-    sobrescreve o que o consultor digitou. Veículo (make/model/color/year)
-    entra nessa regra porque a normalização do parser Cilia não fica boa: a
-    descrição completa do modelo é difícil de quebrar em make+model.
+    Identificação só é preenchida quando está vazia — nunca sobrescreve o que o
+    consultor digitou. Veículo, cor e seguradora entram já casados com as listas
+    (`normalize_parsed_budget`); o que diverge da OS vira aviso em `import_warnings`.
 
     Args:
         order: ServiceOrder a atualizar (não salva — devolve os campos).
@@ -159,25 +177,74 @@ def apply_parsed_budget_to_order(
     Returns:
         Lista de campos alterados, para `order.save(update_fields=...)`.
     """
+    from apps.cilia.normalization import (
+        color_warning,
+        matched_insurer,
+        matched_vehicle,
+        normalize_parsed_budget,
+        note_cnpj,
+        vehicle_source_text,
+    )
+    from apps.lookups.validators import clean_cnpj
+    from apps.service_orders.services.vehicle import apply_catalog_vehicle
+    from apps.vehicle_catalog.matching import record_alias_confirmation
+    from apps.vehicle_catalog.normalize import CorVeiculo
+
+    normalize_parsed_budget(parsed)
     update_fields: list[str] = []
+    warnings: list[str] = list(order.import_warnings or [])
+
+    def warn(message: str) -> None:
+        if message not in warnings:  # reimportar a mesma fonte não repete o aviso
+            warnings.append(message)
 
     fill_if_empty = {
         "casualty_number": parsed.casualty_number,
         "plate": parsed.vehicle_plate,
         "chassis": parsed.vehicle_chassis,
         "customer_name": parsed.segurado_name,
-        "make": parsed.vehicle_brand,
-        "model": getattr(parsed, "vehicle_model", "") or parsed.vehicle_description or "",
-        "color": parsed.vehicle_color,
     }
     for field, value in fill_if_empty.items():
         if value and not getattr(order, field, None):
             setattr(order, field, value)
             update_fields.append(field)
 
-    if parsed.vehicle_year and not order.year:
-        order.year = parsed.vehicle_year
-        update_fields.append("year")
+    # Veículo
+    source_text = vehicle_source_text(parsed)
+    family, version = matched_vehicle(parsed)
+    if order.catalog_family_id is None:
+        # ponytail: sem família casada a OS fica como está (não apaga o texto legado)
+        if family is not None:
+            apply_catalog_vehicle(
+                order,
+                family=family,
+                version=version,
+                needs_review=parsed.vehicle_review,
+                source=parsed.source,
+                source_text=source_text,
+                source_year=parsed.vehicle_year,
+            )
+            update_fields.extend(VEHICLE_FIELDS)
+    elif not order.vehicle_needs_review and source_text:
+        if version is None and family in (None, order.catalog_family):
+            # nada casou (ou só a família da OS): a dupla texto → veículo da OS ensina a regra
+            record_alias_confirmation(
+                parsed.source,
+                source_text,
+                parsed.vehicle_year,
+                version=order.catalog_version,
+                family=order.catalog_family,
+            )
+        elif version is None or version.pk != order.catalog_version_id:
+            warn(f"Veículo diverge: o {parsed.source} diz '{source_text}'")
+
+    # Cor: só preenche a que ainda não foi informada
+    if order.color in ("", CorVeiculo.NAO_INFORMADA):
+        if parsed.color and parsed.color != order.color:
+            order.color = parsed.color
+            update_fields.append("color")
+        elif message := color_warning(parsed):
+            warn(message)
 
     # Orçamento Cilia (só se fonte for Cilia/IFX/HDI com budget_number)
     if budget_number and order.cilia_budget_number != str(budget_number):
@@ -189,24 +256,25 @@ def apply_parsed_budget_to_order(
         order.cilia_budget_version = str(version_number)
         update_fields.append("cilia_budget_version")
 
-    # Seguradora
-    if parsed.insurer_code:
-        if order.customer_type != "insurer":
-            order.customer_type = "insurer"
-            update_fields.append("customer_type")
-        if not order.insurer_id:
-            from apps.insurers.models import Insurer
-
-            insurer = Insurer.objects.filter(code=parsed.insurer_code).first()
-            if insurer:
-                order.insurer = insurer
-                update_fields.append("insurer_id")
-            else:
-                logger.warning(
-                    "Insurer code='%s' não cadastrado — OS %s fica sem FK.",
-                    parsed.insurer_code,
-                    order.pk,
-                )
+    # Seguradora: vale a da OS; a do arquivo só entra em OS sem seguradora
+    insurer = matched_insurer(parsed)
+    if insurer is not None and order.insurer_id is None:
+        order.insurer = insurer
+        order.customer_type = "insurer"
+        order.insurer_cnpj = note_cnpj(insurer, parsed.insurer_cnpj)
+        update_fields.extend(["insurer", "customer_type", "insurer_cnpj"])
+    elif insurer is not None and insurer.pk == order.insurer_id:
+        # Mesma seguradora: a nota sai no CNPJ do orçamento (spec); o aviso deixa reverter.
+        cnpj = note_cnpj(insurer, parsed.insurer_cnpj)
+        old = clean_cnpj(order.insurer_cnpj or "")
+        if cnpj and cnpj != old:
+            order.insurer_cnpj = cnpj
+            update_fields.append("insurer_cnpj")
+            warn(f"CNPJ da nota trocado de {old or 'principal'} para {cnpj} pelo orçamento")
+    elif insurer is not None:
+        warn(f"Seguradora diverge: o arquivo diz '{parsed.insurer_trade or insurer}'")
+    elif insurer is None and parsed.insurer_trade:
+        warn(f"Seguradora do arquivo não reconhecida: '{parsed.insurer_trade}'")
 
     # Franquia
     if parsed.franchise_amount:
@@ -227,6 +295,10 @@ def apply_parsed_budget_to_order(
         if obs_lines:
             order.notes = "\n".join(obs_lines)
             update_fields.append("notes")
+
+    if warnings != list(order.import_warnings or []):
+        order.import_warnings = warnings
+        update_fields.append("import_warnings")
 
     return update_fields
 

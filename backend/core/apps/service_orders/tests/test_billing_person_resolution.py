@@ -1,4 +1,5 @@
 """Tests for Person-based billing recipient resolution."""
+
 import hashlib
 from decimal import Decimal
 
@@ -6,14 +7,11 @@ from django.utils import timezone
 from django_tenants.test.cases import TenantTestCase
 
 from apps.accounts_receivable.models import ReceivableDocument
-from apps.accounts_receivable.services import (
-    ReceivableDocumentService,
-    normalize_free_reference_id,
-)
+from apps.accounts_receivable.services import ReceivableDocumentService, normalize_free_reference_id
 from apps.authentication.models import GlobalUser
 from apps.insurers.models import Insurer
 from apps.persons.models import Person, PersonDocument, PersonRole
-from apps.service_orders.billing import BillingService
+from apps.service_orders.billing import BillingResult, BillingService
 from apps.service_orders.models import ServiceOrder, ServiceOrderStatus
 
 
@@ -64,18 +62,18 @@ class BillingPersonResolutionTestCase(TenantTestCase):
     def test_resolve_insurer_person_matches_cnpj_with_or_without_mask(self) -> None:
         """Insurer fiscal recipient is a Person with role INSURER and matching CNPJ."""
         insurer = Insurer.objects.create(
-            name="Porto Seguro Cia Seguros",
-            cnpj="61.198.164/0001-60",
+            name="Mascara Seguros S.A.",
+            cnpj="11.444.777/0001-61",
         )
         person = Person.objects.create(
             person_kind="PJ",
-            full_name="Porto Seguro Cia Seguros",
+            full_name="Mascara Seguros S.A.",
         )
         PersonRole.objects.create(person=person, role="INSURER")
         PersonDocument.objects.create(
             person=person,
             doc_type="CNPJ",
-            value="61198164000160",
+            value="11444777000161",
             is_primary=True,
         )
 
@@ -83,6 +81,65 @@ class BillingPersonResolutionTestCase(TenantTestCase):
 
         assert resolved is not None
         assert resolved.pk == person.pk
+
+    def _tomador(self, name: str, cnpj: str) -> Person:
+        person = Person.objects.create(person_kind="PJ", full_name=name)
+        PersonRole.objects.create(person=person, role="INSURER")
+        PersonDocument.objects.create(person=person, doc_type="CNPJ", value=cnpj, is_primary=True)
+        return person
+
+    def _filial_insurer(self) -> Insurer:
+        return Insurer.objects.create(
+            name="Filial Seguros S.A.",
+            cnpj="11.222.333/0001-81",
+            cnpjs=["11222333000181", "11222333000262"],
+        )
+
+    def test_resolve_insurer_person_usa_cnpj_da_os(self) -> None:
+        """A OS com CNPJ de filial vai para o tomador daquele CNPJ; sem CNPJ, para o principal."""
+        insurer = self._filial_insurer()
+        matriz = self._tomador(insurer.name, "11222333000181")
+        filial = self._tomador(insurer.name, "11222333000262")
+        order = ServiceOrder.objects.create(
+            number=9403,
+            plate="FIL1D23",
+            customer_type="insurer",
+            insurer=insurer,
+            insurer_cnpj="11222333000262",
+            status=ServiceOrderStatus.REPAIR,
+            created_by=self.user,
+        )
+
+        assert BillingService._resolve_insurer_person(insurer, order.insurer_cnpj).pk == filial.pk
+        assert BillingService._resolve_insurer_person(insurer, "").pk == matriz.pk
+
+    def test_filial_sem_tomador_nao_emite_contra_a_matriz(self) -> None:
+        """Sem tomador para o CNPJ da OS não há fallback: título fica, nota não sai."""
+        insurer = self._filial_insurer()
+        self._tomador(insurer.name, "11222333000181")
+        order = ServiceOrder.objects.create(
+            number=9404,
+            plate="FIL2D23",
+            customer_type="insurer",
+            insurer=insurer,
+            insurer_cnpj="11222333000262",
+            status=ServiceOrderStatus.REPAIR,
+            created_by=self.user,
+        )
+        result = BillingResult()
+        items = [{"recipient_type": "insurer", "category": "services", "amount": "700.00"}]
+
+        BillingService._create_receivables_and_emit_fiscal(
+            order, items, self.user, timezone.now().date(), result
+        )
+
+        assert getattr(order, "destinatario_id", None) is None
+        assert len(result.receivables) == 1 and result.fiscal_documents == []
+        assert result.errors == [
+            "Seguradora 'Filial Seguros S.A.' não tem tomador da nota para o CNPJ "
+            "11.222.333/0002-62. Crie em Cadastros → Seguradoras → Filial Seguros S.A. → "
+            'Tomador da nota → "Criar tomador".'
+        ]
 
     def test_preview_splits_insurer_services_parts_and_deductible(self) -> None:
         """Insurer OS billing separates customer deductible from insurer amounts."""

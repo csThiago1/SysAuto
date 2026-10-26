@@ -173,11 +173,12 @@ class ServiceOrderViewSet(
         "insurer": ["exact"],
         "consultant": ["exact"],
         "is_active": ["exact"],
+        "vehicle_needs_review": ["exact"],
         "entry_date": ["gte", "lte", "date"],
         "estimated_delivery_date": ["gte", "lte"],
         "created_at": ["gte", "lte", "date"],
     }
-    search_fields = ["number", "casualty_number", "customer_name", "plate"]
+    search_fields = ["number", "casualty_number", "customer_name", "plate", "chassis"]
     ordering_fields = ["number", "created_at", "entry_date", "estimated_delivery_date", "opened_at"]
     ordering = ["-opened_at"]
 
@@ -228,7 +229,11 @@ class ServiceOrderViewSet(
         if self.action in ("retrieve", "update", "partial_update", "transition",
                            "deliver", "billing", "financial_summary"):
             from django.db.models import Prefetch
-            qs = qs.prefetch_related(
+            qs = qs.select_related(
+                "catalog_family__make",
+                "catalog_version__modelo__marca",
+                "catalog_version__modelo__familia",
+            ).prefetch_related(
                 Prefetch(
                     "transition_logs",
                     queryset=StatusTransitionLog.objects.select_related("changed_by").order_by("-created_at"),
@@ -313,12 +318,7 @@ class ServiceOrderViewSet(
         client_uuid = request.data.get("client_uuid") or None
         if client_uuid:
             ServiceOrder.objects.filter(pk=order.pk).update(client_uuid=client_uuid)
-        logger.info(
-            "OS #%d aberta para placa=%s por user_id=%s",
-            order.number,
-            order.plate,
-            request.user.id,
-        )
+        logger.info("OS #%d aberta por user_id=%s", order.number, request.user.id)
         return Response(
             ServiceOrderDetailSerializer(order, context={"request": request}).data,
             status=status.HTTP_201_CREATED,
@@ -1788,6 +1788,9 @@ class ServiceOrderViewSet(
                 pb.source_services_total = tmp.source_services_total
                 pb.source_grand_total = tmp.source_grand_total
                 pb.insurer_code = tmp.insurer_code
+                pb.insurer_trade = tmp.insurer_trade
+                pb.insurer_cnpj = tmp.insurer_cnpj
+                pb.vehicle_tipo_hint = tmp.vehicle_tipo_hint
                 pb.segurado_name = tmp.segurado_name
                 pb.vehicle_plate = tmp.vehicle_plate
                 pb.vehicle_brand = tmp.vehicle_brand

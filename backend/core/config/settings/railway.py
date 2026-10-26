@@ -105,18 +105,9 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # send_default_pii=False mantém o app dentro de LGPD (sem IP/email/body em error reports).
 SENTRY_DSN = config("SENTRY_DSN", default="")  # type: ignore[name-defined]
 if SENTRY_DSN:
-    import sentry_sdk
-    from sentry_sdk.integrations.celery import CeleryIntegration
-    from sentry_sdk.integrations.django import DjangoIntegration
+    from config.sentry import init_sentry
 
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        integrations=[DjangoIntegration(), CeleryIntegration()],
-        traces_sample_rate=config("SENTRY_TRACES_SAMPLE_RATE", default=0.1, cast=float),  # type: ignore[name-defined]
-        profiles_sample_rate=0.0,  # profiling tem custo extra — manter off
-        send_default_pii=False,  # LGPD — não enviar email/IP/body do request
-        environment=config("SENTRY_ENVIRONMENT", default="production"),  # type: ignore[name-defined]
-    )
+    init_sentry(SENTRY_DSN)
 
 # ─── Guards — falha imediata se vars críticas estiverem ausentes ──────────────
 _REQUIRED_R2_VARS = {

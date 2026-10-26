@@ -139,6 +139,8 @@ primeiro dado real.
 | Nível de modelo | Com família: montadora → modelo (família, ex.: Onix) → versão FIPE → ano. A família é derivada do nome FIPE, com uma tabela de exceções |
 | Versão desconhecida | A OS pode ser salva só com montadora e família, com selo "versão a confirmar". Não entra em produção até confirmar |
 | Seguradora × CNPJ | Uma seguradora (marca, com logo) aceita vários CNPJs e casa pela raiz. A nota sai no CNPJ que veio no orçamento da seguradora |
+| Placa só gratuita (22/10/2026) | A API Placas fica desligada (`APIPLACAS_ENABLED=False`) e a placa busca só no histórico de OS do tenant. O alerta automático de roubo/furto deixa de existir; no lugar, a tela mostra "Roubo/furto: confira no app Sinesp Cidadão." Não há API gratuita de placa. Com a chave ligada de novo, o comportamento anterior volta |
+| Chassi gratuito (22/10/2026) | `POST /api/v1/lookups/chassi/`, sem fonte externa e sem cache: última OS do tenant com o mesmo chassi → regra aprendida `VehicleAlias(source="chassi")` por `chassi[:8]` + ano-modelo → decodificação local do VIN. A busca de OS e de orçamento também acha pelo chassi |
 
 ## Objetivos, não objetivos e antiobjetivos
 
@@ -373,8 +375,8 @@ CHAINS = {
 | CNPJ | CNPJá aberto (`open.cnpja.com`, 5 req/min medido, aceita alfanumérico) | Minha Receita/BrasilAPI, CNPJ.ws (3/min) | tempo real | R$ 0 |
 | Inscrição estadual | `inscricoes_estaduais` da CNPJ.ws, quando vier | digitada com máscara e DV do AM; "ISENTO" válido | tempo real + validação local | R$ 0 |
 | CPF | validação local do DV | botão "Conferir na Receita" (abre o site oficial) | local | R$ 0 |
-| Placa → veículo + código FIPE | API Placas (wdapi2), `fipe.dados[]` de maior score | seletor manual | tempo real, banco antes | R$ 0,03/consulta |
-| Chassi (VIN) | decode local do WMI (montadora) e do 10º caractere (ano-modelo) | — | local | R$ 0 |
+| Placa → veículo + código FIPE | API Placas (wdapi2), `fipe.dados[]` de maior score. **Desligada desde 22/10/2026** (`APIPLACAS_ENABLED=False`): a placa busca só a última OS do tenant | seletor manual | tempo real, banco antes | R$ 0,03/consulta (só com a API ligada) |
+| Chassi (VIN) | ~~decode local do WMI (montadora) e do 10º caractere (ano-modelo)~~ — substituído em 22/10/2026 por `POST /lookups/chassi/`: última OS do tenant com o mesmo chassi → regra aprendida `VehicleAlias(source="chassi")` com chave `chassi[:8]` + ano-modelo (exata com 2 carros diferentes confirmados ou aprovação do admin) → decode local do WMI (montadora) e do 10º caractere (ano-modelo) | seletor manual | banco do tenant, regra no public, decode local | R$ 0 |
 | RENAVAM | validação local do DV | — | local | R$ 0 |
 
 **Ainda a confirmar antes de ligar:** os termos de uso comercial do CNPJá. O site
@@ -400,13 +402,25 @@ A resposta de todo endpoint segue o formato
   - Se casar só até a montadora ou a família, devolve até onde casou.
   - A cor vem convertida no enum.
   - O chassi vem mascarado pela API e não é gravado.
+  - **Desde 22/10/2026** a API Placas fica desligada por padrão: a placa devolve só o
+    veículo da última OS do tenant (`source="os"`, `restricao` vazio) ou `found: false`.
+- **Chassi (22/10/2026):** `fields = {vehicle, color, year_manufacture, ano_modelo,
+  confianca}`. `source` diz de onde veio: `os` (caminho completo da última OS ativa com o
+  mesmo chassi), `regra` (versão da regra aprendida; `confianca` `exata` ou `alta`), `vin`
+  (só a montadora e o ano-modelo) ou `none`/`invalid`. A regra só aprende de OS com versão
+  confirmada, chassi novo no tenant (o mesmo carro voltando não conta de novo) e ano da
+  versão igual ao ano-modelo do VIN. Os 8 primeiros caracteres identificam o modelo de
+  fábrica, não o carro; o chassi completo nunca vai para a regra nem para o log.
 - Texto da API que não casa com a lista vai para `unmatched` e deixa o campo vazio para o
   usuário escolher. Nunca vira opção nova.
 - Toda consulta é disparada por ação do usuário (blur do campo ou botão), com debounce de
   400 ms no front.
 - O valor pré-preenchido continua editável. A consulta nunca sobrescreve campo que o
   usuário já preencheu. Não há registro de origem campo a campo.
-- **Restrição (roubo/furto):** o alerta que existe hoje continua *(decisão minha)*.
+- **Restrição (roubo/furto):** ~~o alerta que existe hoje continua *(decisão minha)*.~~
+  Substituído em 22/10/2026: com a API Placas desligada não há alerta automático; a tela
+  mostra o aviso fixo "Roubo/furto: confira no app Sinesp Cidadão.". O texto abaixo vale só
+  com `APIPLACAS_ENABLED=True`.
   - O resultado de placa ganha `restricao {situacao, consultado_em}`, mostrado na recepção,
     na gaveta Nova OS e no orçamento.
   - Ao abrir OS ou orçamento, se a última consulta daquela placa tem mais de 30 dias, a API

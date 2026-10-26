@@ -69,15 +69,6 @@ export interface PersonAddress {
   is_primary: boolean;
 }
 
-export interface CepData {
-  zip_code: string;
-  street: string;
-  neighborhood: string;
-  city: string;
-  state: string;
-  complement: string;
-}
-
 export interface PersonDocument {
   id: number;
   doc_type: "CPF" | "CNPJ" | "RG" | "IE" | "IM" | "CNH";

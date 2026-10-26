@@ -211,7 +211,7 @@ class XmlIfxParser:
         # corVeiculo no IFX (ex: "VERMELHA")
         cor = (cls._text(dados, "corVeiculo") or "").strip()
         if cor:
-            pb.vehicle_color = cor.title()
+            pb.vehicle_color = cor
 
         # Status — XML é sempre "finalizado" (chega no final do fluxo)
         pb.external_status = "autorizado"

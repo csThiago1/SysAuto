@@ -1,8 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { ReceiptText, ChevronLeft, Search, X, AlertTriangle, CheckCircle } from "lucide-react"
+import { Controller, useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { ReceiptText, ChevronLeft, Search, X, Loader2 } from "lucide-react"
 import Link from "next/link"
 import type { Route } from "next"
 import { toast } from "sonner"
@@ -12,38 +15,37 @@ import { Label } from "@/components/ui/label"
 import { useQuery } from "@tanstack/react-query"
 import { useCreateBudget } from "@/hooks/useBudgets"
 import { formatPlate, onlyAlnum } from "@paddock/utils"
+import { catalogSelectionSchema } from "@/components/vehicle/catalog.schema"
+import { VehicleCatalogPicker } from "@/components/vehicle/VehicleCatalogPicker"
+import {
+  ChassiHint,
+  RestricaoAlert,
+  SinespHint,
+  keepYearManufacture,
+  placaPrefill,
+  useVehicleLookup,
+} from "@/components/vehicle/PlacaLookup"
+import { ColorSelect } from "@/app/(app)/os/[numero]/_components/shared/ColorSelect"
+import { applyIfEmpty } from "@/lib/prefill"
 
-const FUEL_TYPE_PT: Record<string, string> = {
-  gasoline: "Gasolina", Gasoline: "Gasolina",
-  ethanol: "Etanol", Ethanol: "Etanol",
-  diesel: "Diesel", Diesel: "Diesel",
-  flex: "Flex", Flex: "Flex",
-  electric: "Elétrico", Electric: "Elétrico",
-  hybrid: "Híbrido", Hybrid: "Híbrido",
-  gas: "GNV", Gas: "GNV",
-}
-function translateFuelType(raw: string): string {
-  return FUEL_TYPE_PT[raw] ?? raw
-}
+const budgetFormSchema = z.object({
+  customer: z
+    .object({ id: z.number(), name: z.string() })
+    .nullable()
+    .refine((c) => Boolean(c), "Selecione um cliente."),
+  plate: z.string().regex(/^[A-Z]{3}\d[A-Z0-9]\d{2}$/, "Informe a placa do veículo."),
+  catalog_selection: catalogSelectionSchema
+    .nullable()
+    .refine((s) => s?.family != null, "Escolha a montadora e o modelo."),
+  year_manufacture: z.number().int().nullable(),
+  color: z.string(),
+  chassis: z.string().max(17),
+})
+type BudgetForm = z.infer<typeof budgetFormSchema>
 
 interface PersonResult {
   id: number
   full_name: string
-}
-
-interface PlateData {
-  plate: string
-  make: string
-  make_logo: string
-  model: string
-  version: string
-  engine: string
-  year: number | null
-  chassis: string
-  color: string
-  fuel_type: string
-  situation: string
-  situation_code: number
 }
 
 function usePersonSearch(search: string) {
@@ -60,89 +62,56 @@ function usePersonSearch(search: string) {
   })
 }
 
-function usePlateLookup(plate: string) {
-  const normalized = plate.replace(/[^A-Z0-9]/gi, "").toUpperCase()
-  return useQuery<PlateData>({
-    queryKey: ["plate", normalized],
-    queryFn: async () => {
-      const res = await fetch(`/api/plate/${normalized}`)
-      if (!res.ok) throw new Error("Placa não encontrada")
-      return res.json() as Promise<PlateData>
-    },
-    enabled: normalized.length >= 7,
-    retry: false,
-    staleTime: 1000 * 60 * 60 * 24, // 24h
-  })
-}
-
 export default function NovoBudgetPage() {
   const router = useRouter()
-  const { mutateAsync: criar, isPending } = useCreateBudget()
+  const { mutateAsync: criar } = useCreateBudget()
 
-  // Cliente
-  const [clienteSearch, setClienteSearch]   = useState("")
-  const [clienteSelecionado, setClienteSel] = useState<{ id: number; name: string } | null>(null)
-  const { data: clientes = [] }             = usePersonSearch(clienteSearch)
+  const [clienteSearch, setClienteSearch] = useState("")
+  const { data: clientes = [] } = usePersonSearch(clienteSearch)
 
-  // Veículo
-  const [placa,       setPlaca]       = useState("")
-  const [marca,       setMarca]       = useState("")
-  const [modelo,      setModelo]      = useState("")
-  const [versao,      setVersao]      = useState("")
-  const [motorizacao, setMotorizacao] = useState("")
-  const [combustivel, setCombustivel] = useState("")
-  const [cor,         setCor]         = useState("")
-  const [ano,         setAno]         = useState("")
-  const [chassi,      setChassi]      = useState("")
-  const [makeLogo,    setMakeLogo]    = useState("")
+  const form = useForm<BudgetForm>({
+    resolver: zodResolver(budgetFormSchema),
+    defaultValues: {
+      customer: null,
+      plate: "",
+      catalog_selection: null,
+      year_manufacture: null,
+      color: "",
+      chassis: "",
+    },
+  })
+  const {
+    control,
+    watch,
+    setValue,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = form
 
-  const { data: plateData, isFetching: buscandoPlaca, isError: placaNaoEncontrada } =
-    usePlateLookup(placa)
+  const placa = useVehicleLookup("placa", (fields) => {
+    applyIfEmpty(form, placaPrefill(fields, form.getValues("catalog_selection")))
+    toast.success("Dados do veículo preenchidos pela placa.")
+  })
+  const chassiLookup = useVehicleLookup("chassi", (fields) => {
+    applyIfEmpty(form, placaPrefill(fields, form.getValues("catalog_selection")))
+    toast.success("Dados do veículo preenchidos pelo chassi.")
+  })
 
-  useEffect(() => {
-    if (!plateData) return
-    if (plateData.make_logo) setMakeLogo(plateData.make_logo)
-    if (plateData.make)      setMarca(plateData.make)
-    if (plateData.model)     setModelo(plateData.model)
-    if (plateData.version)   setVersao(plateData.version)
-    if (plateData.engine)    setMotorizacao(plateData.engine)
-    if (plateData.fuel_type) setCombustivel(translateFuelType(plateData.fuel_type))
-    if (plateData.color)     setCor(plateData.color)
-    if (plateData.year)      setAno(String(plateData.year))
-    // Chassi vem mascarado da API — não preencher automaticamente
-    if (plateData.chassis && !plateData.chassis.includes("*")) {
-      setChassi(plateData.chassis)
-    }
-    if (plateData.situation_code !== 0) {
-      toast.error(`Veículo com restrição: ${plateData.situation}`, { duration: 8000 })
-    } else {
-      toast.success("Dados do veículo preenchidos pela placa!")
-    }
-  }, [plateData])
+  const cliente = watch("customer")
+  const chassi = watch("chassis")
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!clienteSelecionado) { toast.error("Selecione um cliente."); return }
-    if (!placa.trim())        { toast.error("Informe a placa do veículo."); return }
-    if (!marca.trim() || !modelo.trim()) {
-      toast.error("Informe marca e modelo do veículo.")
-      return
-    }
-    const descricao = [marca, modelo, versao, motorizacao, combustivel, ano]
-      .map((s) => s.trim()).filter(Boolean).join(" ")
-    const anoNum = ano ? parseInt(ano, 10) : null
+  async function onSubmit(data: BudgetForm) {
+    const family = data.catalog_selection?.family
+    if (!data.customer || !family) return // o schema já barrou
     try {
       const budget = await criar({
-        customer_id:         clienteSelecionado.id,
-        vehicle_plate:       placa.toUpperCase().trim(),
-        vehicle_description: descricao,
-        vehicle_chassis:     chassi.trim(),
-        vehicle_version:     versao.trim(),
-        vehicle_engine:      motorizacao.trim(),
-        vehicle_color:       cor.trim(),
-        vehicle_fuel_type:   combustivel.trim(),
-        vehicle_make_logo:   makeLogo,
-        vehicle_year:        anoNum && !isNaN(anoNum) ? anoNum : null,
+        customer_id: data.customer.id,
+        vehicle_plate: data.plate,
+        catalog_family: family.id,
+        catalog_version: data.catalog_selection?.version?.id ?? null,
+        vehicle_color: data.color || "NAO_INFORMADA",
+        vehicle_year_manufacture: data.year_manufacture,
+        vehicle_chassis: data.chassis,
       })
       toast.success(`Orçamento ${budget.number} criado!`)
       router.push(`/orcamentos-particulares/${budget.id}` as Route)
@@ -150,9 +119,6 @@ export default function NovoBudgetPage() {
       toast.error(err instanceof Error ? err.message : "Erro ao criar orçamento.")
     }
   }
-
-  const hasRestriction = plateData && plateData.situation_code !== 0
-  const isOk           = plateData && plateData.situation_code === 0 && placa.length >= 7
 
   return (
     <div className="px-0 py-3 md:p-6 max-w-xl space-y-6">
@@ -167,16 +133,16 @@ export default function NovoBudgetPage() {
         <h1 className="text-lg font-semibold text-foreground">Novo Orçamento Particular</h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {/* Cliente */}
         <div className="space-y-2">
           <Label className="text-foreground/70">Cliente</Label>
-          {clienteSelecionado ? (
+          {cliente ? (
             <div className="flex items-center justify-between rounded-lg bg-muted/50 border border-border px-3 py-2">
-              <span className="text-foreground text-sm">{clienteSelecionado.name}</span>
+              <span className="text-foreground text-sm">{cliente.name}</span>
               <button
                 type="button"
-                onClick={() => { setClienteSel(null); setClienteSearch("") }}
+                onClick={() => { setValue("customer", null); setClienteSearch("") }}
                 className="text-muted-foreground hover:text-foreground"
               >
                 <X className="h-4 w-4" />
@@ -201,7 +167,7 @@ export default function NovoBudgetPage() {
                         type="button"
                         className="w-full text-left px-3 py-2 text-sm text-foreground/80 hover:bg-muted/50"
                         onClick={() => {
-                          setClienteSel({ id: c.id, name: c.full_name })
+                          setValue("customer", { id: c.id, name: c.full_name }, { shouldValidate: true })
                           setClienteSearch("")
                         }}
                       >
@@ -213,155 +179,108 @@ export default function NovoBudgetPage() {
               )}
             </div>
           )}
+          {errors.customer && <p className="text-xs text-error-400">{errors.customer.message}</p>}
         </div>
 
         {/* Veículo */}
         <div className="space-y-3 rounded-xl border border-border bg-white/[0.02] p-4">
-          <div className="flex items-center gap-2">
-            {makeLogo && (
-              <img src={makeLogo} alt={marca} className="h-6 w-6 object-contain" />
-            )}
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Veículo</p>
-          </div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Veículo</p>
 
-          {/* Placa + status */}
+          {/* Placa */}
           <div className="space-y-1.5">
-            <Label className="text-foreground/70 text-xs">Placa</Label>
+            <Label className="text-foreground/70 text-xs">Placa *</Label>
             <div className="flex items-center gap-3">
               <Input
                 placeholder="ABC-1D23"
-                value={formatPlate(placa)}
-                onChange={(e) => setPlaca(onlyAlnum(e.target.value))}
+                value={formatPlate(watch("plate"))}
+                onChange={(e) =>
+                  setValue("plate", onlyAlnum(e.target.value).toUpperCase().slice(0, 7), {
+                    shouldDirty: true,
+                  })
+                }
+                onBlur={() => placa.lookup(watch("plate"))}
                 maxLength={8}
+                data-testid="plate-input"
                 className="w-32 bg-muted/50 border-border text-foreground placeholder:text-muted-foreground font-mono uppercase tracking-widest font-bold"
               />
-              {buscandoPlaca && (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-primary" />
-              )}
-              {isOk && !buscandoPlaca && (
-                <span className="flex items-center gap-1 text-xs text-success-400">
-                  <CheckCircle className="h-3.5 w-3.5" /> Sem restrição
-                </span>
-              )}
-              {placaNaoEncontrada && placa.length >= 7 && !buscandoPlaca && (
-                <span className="text-xs text-warning-400">Não encontrada — preencha manualmente</span>
-              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => placa.lookup(watch("plate"))}
+                disabled={placa.isFetching}
+              >
+                Consultar
+              </Button>
+              {placa.isFetching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
             </div>
+            {errors.plate && <p className="text-xs text-error-400">{errors.plate.message}</p>}
+            {placa.notFound && (
+              <p className="text-xs text-muted-foreground">
+                Placa não encontrada — escolha o veículo na lista.
+              </p>
+            )}
           </div>
+          <RestricaoAlert restricao={placa.result?.fields.restricao} />
+          <SinespHint searched={placa.searched} />
 
-          {/* Alerta de restrição */}
-          {hasRestriction && (
-            <div className="flex items-start gap-2 rounded-lg border border-error-500/30 bg-error-500/10 px-3 py-2.5">
-              <AlertTriangle className="h-4 w-4 text-error-400 mt-0.5 shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-error-300">Veículo com restrição</p>
-                <p className="text-xs text-error-400/80 mt-0.5">{plateData.situation}</p>
-              </div>
-            </div>
-          )}
+          <Controller
+            name="catalog_selection"
+            control={control}
+            render={({ field }) => (
+              <VehicleCatalogPicker
+                value={field.value}
+                onChange={(sel) => {
+                  setValue(
+                    "year_manufacture",
+                    keepYearManufacture(field.value, sel, form.getValues("year_manufacture")),
+                  )
+                  field.onChange(sel)
+                }}
+                error={errors.catalog_selection?.message}
+              />
+            )}
+          />
 
-          {/* Montadora + Modelo */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-foreground/70 text-xs">Montadora *</Label>
-              <Input
-                placeholder="Chevrolet"
-                value={marca}
-                onChange={(e) => setMarca(e.target.value)}
-                className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-foreground/70 text-xs">Modelo *</Label>
-              <Input
-                placeholder="Onix"
-                value={modelo}
-                onChange={(e) => setModelo(e.target.value)}
-                className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
-              />
-            </div>
-          </div>
-
-          {/* Versão + Motorização */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-foreground/70 text-xs">Versão / Trim</Label>
-              <Input
-                placeholder="LT1, EXL, Touring…"
-                value={versao}
-                onChange={(e) => setVersao(e.target.value)}
-                className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-foreground/70 text-xs">Motorização</Label>
-              <Input
-                placeholder="1.0T, 2.0, 1.6"
-                value={motorizacao}
-                onChange={(e) => setMotorizacao(e.target.value)}
-                className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
-              />
-            </div>
-          </div>
-
-          {/* Combustível + Cor */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-foreground/70 text-xs">Combustível</Label>
-              <Input
-                placeholder="Flex, Gasolina, Diesel…"
-                value={combustivel}
-                onChange={(e) => setCombustivel(e.target.value)}
-                className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-foreground/70 text-xs">Cor</Label>
-              <Input
-                placeholder="Cinza, Branco, Preto…"
-                value={cor}
-                onChange={(e) => setCor(e.target.value)}
-                className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
-              />
-            </div>
-          </div>
-
-          {/* Ano */}
-          <div className="w-32 space-y-1.5">
-            <Label className="text-foreground/70 text-xs">Ano modelo</Label>
-            <Input
-              placeholder="2024"
-              value={ano}
-              onChange={(e) => setAno(e.target.value)}
-              maxLength={4}
-              className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground"
+          <div className="space-y-1.5">
+            <Label className="text-foreground/70 text-xs">Cor</Label>
+            <Controller
+              name="color"
+              control={control}
+              render={({ field }) => <ColorSelect value={field.value} onChange={field.onChange} />}
             />
           </div>
 
           {/* Chassi */}
           <div className="space-y-1.5">
-            <Label className="text-foreground/70 text-xs">
-              Chassi{" "}
-              <span className="text-muted-foreground font-normal">(ver CRLV — API retorna incompleto)</span>
-            </Label>
+            <Label className="text-foreground/70 text-xs">Chassi</Label>
             <Input
               placeholder="9BWZZZ377VT004251"
               value={chassi}
-              onChange={(e) => setChassi(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+              onChange={(e) =>
+                setValue("chassis", e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""), {
+                  shouldDirty: true,
+                })
+              }
+              onBlur={() => chassiLookup.lookup(chassi)}
               maxLength={17}
               className="bg-muted/50 border-border text-foreground placeholder:text-muted-foreground font-mono text-xs tracking-widest"
             />
             {chassi.length > 0 && chassi.length !== 17 && (
               <p className="text-xs text-warning-400">{chassi.length}/17 dígitos</p>
             )}
-            {chassi.length === 17 && (
-              <p className="text-xs text-success-400">✓ Chassi completo</p>
+            {chassiLookup.isFetching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+            {chassiLookup.notFound && (
+              <p className="text-xs text-muted-foreground">
+                Chassi não encontrado — escolha o veículo na lista.
+              </p>
             )}
+            <ChassiHint result={chassiLookup.result} />
           </div>
         </div>
 
-        <Button type="submit" disabled={isPending || buscandoPlaca} className="w-full">
-          {isPending ? "Criando..." : "Criar Orçamento"}
+        <Button type="submit" disabled={isSubmitting || placa.isFetching} className="w-full">
+          {isSubmitting ? "Criando..." : "Criar Orçamento"}
         </Button>
       </form>
     </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -11,28 +11,39 @@ import {
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { formatCNPJ } from "@paddock/utils"
-import { useInsurerCreate, useInsurerUpdate, useInsurerUploadLogo, type InsurerListItem } from "@/hooks/useInsurers"
+import { Textarea } from "@/components/ui/textarea"
+import { formatCNPJ, isValidCNPJ } from "@paddock/utils"
+import {
+  useInsurer,
+  useInsurerCreate,
+  useInsurerUpdate,
+  useInsurerUploadLogo,
+  type InsurerListItem,
+} from "@/hooks/useInsurers"
 
-const CNPJ_REGEX = /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/
+const cleanCNPJ = (c: string) => c.replace(/[^0-9A-Za-z]/g, "").toUpperCase()
+const lines = (text: string) => text.split("\n").map((l) => l.trim()).filter(Boolean)
 
-const schema = z.object({
-  name: z.string().min(2, "Razão social obrigatória"),
-  trade_name: z.string().optional(),
-  cnpj: z
-    .string()
-    .regex(CNPJ_REGEX, "CNPJ inválido (ex: 00.000.000/0000-00)")
-    .or(z.literal("")),
-  abbreviation: z.string().max(4, "Máx. 4 caracteres").optional(),
-  brand_color: z
-    .string()
-    .regex(/^#[0-9a-fA-F]{6}$/, "Cor hex inválida")
-    .optional()
-    .or(z.literal("")),
-  uses_cilia: z.boolean().optional(),
-})
+/** O DV só é conferido em CNPJ novo ou alterado: o seed tem CNPJs com DV inválido. */
+function makeSchema(known: Set<string>) {
+  const ok = (c: string) => known.has(cleanCNPJ(c)) || isValidCNPJ(c)
+  return z.object({
+    name: z.string().min(2, "Razão social obrigatória"),
+    trade_name: z.string().optional(),
+    cnpj: z.string().refine(ok, "CNPJ inválido"),
+    cnpjs: z.string().refine((t) => lines(t).every(ok), "Há CNPJ inválido na lista"),
+    trade_names: z.string(),
+    abbreviation: z.string().max(4, "Máx. 4 caracteres").optional(),
+    brand_color: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/, "Cor hex inválida")
+      .optional()
+      .or(z.literal("")),
+    uses_cilia: z.boolean().optional(),
+  })
+}
 
-type FormData = z.infer<typeof schema>
+type FormData = z.infer<ReturnType<typeof makeSchema>>
 
 interface Props {
   open: boolean
@@ -46,7 +57,13 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
   const create = useInsurerCreate()
   const update = useInsurerUpdate()
   const uploadLogo = useInsurerUploadLogo()
-  // editing usa InsurerListItem (gerado do InsurerMinimalSerializer)
+  // A lista não traz trade_names: na edição o formulário espera o registro completo.
+  const { data: full, isError: fullError } = useInsurer(open && editing ? editing.id : "")
+  const loadingFull = !!editing && full?.id !== editing.id
+  const schema = useMemo(
+    () => makeSchema(new Set(editing ? [cleanCNPJ(editing.cnpj), ...editing.cnpjs] : [])),
+    [editing],
+  )
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
@@ -62,24 +79,27 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
   useEffect(() => {
     if (!open) return
     if (editing) {
+      if (full?.id !== editing.id) return
       reset({
-        name: editing.name,
-        trade_name: editing.trade_name,
-        cnpj: editing.cnpj,
-        abbreviation: editing.abbreviation,
-        brand_color: editing.brand_color,
-        uses_cilia: editing.uses_cilia,
+        name: full.name,
+        trade_name: full.trade_name,
+        cnpj: full.cnpj,
+        cnpjs: full.cnpjs.map(formatCNPJ).join("\n"),
+        trade_names: full.trade_names.join("\n"),
+        abbreviation: full.abbreviation,
+        brand_color: full.brand_color,
+        uses_cilia: full.uses_cilia,
       })
-      setLogoPreview(editing.logo_url || null)
+      setLogoPreview(full.logo_url || null)
     } else {
       reset({
-        name: "", trade_name: "", cnpj: "",
+        name: "", trade_name: "", cnpj: "", cnpjs: "", trade_names: "",
         abbreviation: "", brand_color: "#000000", uses_cilia: false,
       })
       setLogoPreview(null)
     }
     setPendingFile(null)
-  }, [open, editing, reset])
+  }, [open, editing, full, reset])
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -106,7 +126,12 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
     if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
-  async function onSubmit(data: FormData) {
+  async function onSubmit(form: FormData) {
+    const data = {
+      ...form,
+      cnpjs: lines(form.cnpjs).map(cleanCNPJ),
+      trade_names: lines(form.trade_names),
+    }
     try {
       let targetId: string
 
@@ -138,6 +163,13 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
           <SheetTitle>{editing ? "Editar Seguradora" : "Nova Seguradora"}</SheetTitle>
         </SheetHeader>
 
+        {loadingFull && fullError ? (
+          <p className="py-10 text-center text-sm text-error-400">Erro ao carregar a seguradora.</p>
+        ) : loadingFull ? (
+          <div className="flex justify-center py-10">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
           {/* Logo */}
@@ -216,6 +248,33 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
             {errors.cnpj && <p className="mt-0.5 text-xs text-error-400">{errors.cnpj.message}</p>}
           </div>
 
+          {/* Todos os CNPJs */}
+          <div>
+            <label htmlFor="insurer-cnpjs" className={LABEL}>CNPJs (um por linha)</label>
+            <Textarea
+              id="insurer-cnpjs"
+              rows={3}
+              className="font-mono text-xs"
+              placeholder="Matriz e filiais que emitem orçamento"
+              {...register("cnpjs")}
+              aria-invalid={!!errors.cnpjs}
+            />
+            <p className="mt-0.5 text-xs text-muted-foreground">O CNPJ principal entra sozinho.</p>
+            {errors.cnpjs && <p className="mt-0.5 text-xs text-error-400">{errors.cnpjs.message}</p>}
+          </div>
+
+          {/* Nomes usados nas importações */}
+          <div>
+            <label htmlFor="insurer-trade-names" className={LABEL}>Nomes nas importações (um por linha)</label>
+            <Textarea
+              id="insurer-trade-names"
+              rows={3}
+              className="text-xs"
+              placeholder="Como o Cilia, o XML ou o HDI escrevem o nome"
+              {...register("trade_names")}
+            />
+          </div>
+
           {/* Abreviação + Cor */}
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -284,6 +343,7 @@ export function InsurerDialog({ open, onOpenChange, editing }: Props) {
             </Button>
           </div>
         </form>
+        )}
       </SheetContent>
     </Sheet>
   )

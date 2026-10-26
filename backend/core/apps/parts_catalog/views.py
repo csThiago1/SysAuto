@@ -2,10 +2,12 @@
 Paddock Solutions — Parts Catalog Views
 CRUD do catálogo cross-tenant de peças automotivas (schema público).
 """
+
 import logging
 
-from django.core.cache import cache
 from django_filters.rest_framework import DjangoFilterBackend
+
+from django.core.cache import cache
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -79,9 +81,8 @@ class PartReferenceViewSet(
 
     def get_queryset(self):  # type: ignore[override]
         if self.action == "retrieve":
-            return (
-                PartReference.objects.select_related("category")
-                .prefetch_related("applications__make", "applications__model", "suppliers")
+            return PartReference.objects.select_related("category").prefetch_related(
+                "applications__make", "applications__model", "suppliers"
             )
 
         qs = PartReference.objects.select_related("category").filter(is_active=True)
@@ -93,7 +94,9 @@ class PartReferenceViewSet(
 
             from apps.vehicle_catalog.models import VehicleMake, VehicleModel
 
-            make = VehicleMake.objects.filter(nome__icontains=vehicle_make_name).first()
+            make = VehicleMake.objects.filter(
+                tipo="carro", nome__icontains=vehicle_make_name
+            ).first()
             if make:
                 app_filter = PartApplication.objects.filter(
                     part_ref=OuterRef("pk"),
@@ -115,9 +118,7 @@ class PartReferenceViewSet(
 
                 qs = qs.annotate(is_compatible=Value(False))
 
-            qs = qs.prefetch_related(
-                "applications__make", "applications__model", "suppliers"
-            )
+            qs = qs.prefetch_related("applications__make", "applications__model", "suppliers")
 
         return qs
 
@@ -170,12 +171,10 @@ class PartApplicationViewSet(
     ordering = ["-confidence_score"]
 
     def get_queryset(self):  # type: ignore[override]
-        return (
-            PartApplication.objects.select_related(
-                "part_ref__category",
-                "make",
-                "model",
-            )
+        return PartApplication.objects.select_related(
+            "part_ref__category",
+            "make",
+            "model",
         )
 
     def create(self, request: Request, *args, **kwargs) -> Response:
@@ -197,7 +196,9 @@ class PartApplicationViewSet(
             part_ref=part_ref, make=make, model=model, source=source
         ).exists():
             return Response(
-                {"detail": "Aplicação já cadastrada para esta combinação peça/marca/modelo/origem."},
+                {
+                    "detail": "Aplicação já cadastrada para esta combinação peça/marca/modelo/origem."
+                },
                 status=status.HTTP_409_CONFLICT,
             )
 

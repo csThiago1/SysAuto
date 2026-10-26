@@ -1,13 +1,15 @@
 """API tests for budgets endpoints."""
+
 from __future__ import annotations
 
 from django_tenants.test.cases import TenantTestCase
 from rest_framework.test import APIClient
 
 from apps.authentication.models import GlobalUser
+from apps.budgets.models import Budget, BudgetVersion
 from apps.items.models import NumberSequence
 from apps.persons.models import Person
-from apps.budgets.models import Budget, BudgetVersion
+from apps.vehicle_catalog.tests.factories import make_catalog
 
 
 def _setup_seq() -> None:
@@ -24,15 +26,11 @@ class BudgetViewsBase(TenantTestCase):
         self.client = APIClient()
         self.client.defaults["HTTP_X_TENANT_DOMAIN"] = self.domain.domain
 
-        self.manager = GlobalUser.objects.create_user(
-            email="manager@test.com", password="pass"
-        )
+        self.manager = GlobalUser.objects.create_user(email="manager@test.com", password="pass")
         self.consultant = GlobalUser.objects.create_user(
             email="consultant@test.com", password="pass"
         )
-        self.customer = Person.objects.create(
-            full_name="Cliente API", person_kind="PF"
-        )
+        self.customer = Person.objects.create(full_name="Cliente API", person_kind="PF")
 
     def _auth(self, role: str = "MANAGER") -> None:
         user = self.manager if role in ("MANAGER", "ADMIN", "OWNER") else self.consultant
@@ -40,10 +38,11 @@ class BudgetViewsBase(TenantTestCase):
 
     def _create_budget(self) -> Budget:
         from apps.budgets.services import BudgetService
+
         return BudgetService.create(
             customer=self.customer,
             vehicle_plate="ABC1D23",
-            vehicle_description="Toyota Corolla 2020",
+            catalog_family=make_catalog().modelo.familia,
             created_by="test",
         )
 
@@ -58,20 +57,26 @@ class TestBudgetListCreate(BudgetViewsBase):
 
     def test_create_as_consultant(self) -> None:
         self._auth("CONSULTANT")
-        response = self.client.post("/api/v1/budgets/", {
-            "customer_id": self.customer.pk,
-            "vehicle_plate": "XYZ9876",
-            "vehicle_description": "Honda Civic 2022",
-        })
+        response = self.client.post(
+            "/api/v1/budgets/",
+            {
+                "customer_id": self.customer.pk,
+                "vehicle_plate": "XYZ9876",
+                "catalog_version": make_catalog().id,
+            },
+        )
         self.assertEqual(response.status_code, 201)
         self.assertIn("ORC-2026-", response.data["number"])
 
     def test_create_requires_auth(self) -> None:
-        response = self.client.post("/api/v1/budgets/", {
-            "customer_id": self.customer.pk,
-            "vehicle_plate": "XYZ9876",
-            "vehicle_description": "Honda Civic",
-        })
+        response = self.client.post(
+            "/api/v1/budgets/",
+            {
+                "customer_id": self.customer.pk,
+                "vehicle_plate": "XYZ9876",
+                "vehicle_description": "Honda Civic",
+            },
+        )
         self.assertEqual(response.status_code, 401)
 
 
@@ -131,32 +136,33 @@ class TestBudgetVersionItems(BudgetViewsBase):
         self.version = self.budget.active_version
 
     def _item_url(self) -> str:
-        return (
-            f"/api/v1/budgets/{self.budget.pk}"
-            f"/versions/{self.version.pk}/items/"
-        )
+        return f"/api/v1/budgets/{self.budget.pk}" f"/versions/{self.version.pk}/items/"
 
     def test_add_item_to_draft(self) -> None:
         self._auth("CONSULTANT")
-        response = self.client.post(self._item_url(), {
-            "description": "Parabrisa",
-            "item_type": "PART",
-            "quantity": "1.000",
-            "unit_price": "500.00",
-            "net_price": "500.00",
-        })
+        response = self.client.post(
+            self._item_url(),
+            {
+                "description": "Parabrisa",
+                "item_type": "PART",
+                "quantity": "1.000",
+                "unit_price": "500.00",
+                "net_price": "500.00",
+            },
+        )
         self.assertEqual(response.status_code, 201)
 
     def test_add_item_blocked_after_send(self) -> None:
         self._auth("CONSULTANT")
-        self.client.post(
-            f"/api/v1/budgets/{self.budget.pk}/versions/{self.version.pk}/send/"
+        self.client.post(f"/api/v1/budgets/{self.budget.pk}/versions/{self.version.pk}/send/")
+        response = self.client.post(
+            self._item_url(),
+            {
+                "description": "Item extra",
+                "item_type": "SERVICE",
+                "quantity": "1.000",
+                "unit_price": "100.00",
+                "net_price": "100.00",
+            },
         )
-        response = self.client.post(self._item_url(), {
-            "description": "Item extra",
-            "item_type": "SERVICE",
-            "quantity": "1.000",
-            "unit_price": "100.00",
-            "net_price": "100.00",
-        })
         self.assertEqual(response.status_code, 400)

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import type { Route } from "next"
-import { Plus, Pencil, Trash2, Search, Shield, ExternalLink } from "lucide-react"
+import { Plus, Pencil, Power, Search, Shield, ExternalLink } from "lucide-react"
 import { EmptyState } from "@/components/ui/empty-state"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -17,17 +17,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { useInsurers, useInsurerDelete, useInsurerUploadLogo, type InsurerListItem } from "@/hooks/useInsurers"
+import { PermissionGate } from "@/components/PermissionGate"
+import { usePermission } from "@/hooks/usePermission"
+import {
+  useInsurers,
+  useInsurerUploadLogo,
+  useSetInsurerActive,
+  type InsurerListItem,
+} from "@/hooks/useInsurers"
 import { InsurerDialog } from "./_components/InsurerDialog"
 
 export default function SeguradorasPage() {
   const [search, setSearch] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<InsurerListItem | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [togglingId, setTogglingId] = useState<string | null>(null)
 
-  const { data, isLoading } = useInsurers(search)
-  const deleteMutation = useInsurerDelete()
+  const isAdmin = usePermission("ADMIN")
+  const { data, isLoading, isError } = useInsurers(search, { includeInactive: isAdmin })
+  const setActive = useSetInsurerActive()
   const uploadLogo = useInsurerUploadLogo()
 
   const insurers: InsurerListItem[] = data?.results ?? []
@@ -42,16 +50,17 @@ export default function SeguradorasPage() {
     setDialogOpen(true)
   }
 
-  async function handleDelete(insurer: InsurerListItem): Promise<void> {
-    if (!confirm(`Remover "${insurer.trade_name || insurer.name}"?`)) return
-    setDeletingId(insurer.id)
+  async function handleToggleActive(insurer: InsurerListItem): Promise<void> {
+    const name = insurer.trade_name || insurer.name
+    if (insurer.is_active && !confirm(`Desativar "${name}"? Ela some das listas de seleção.`)) return
+    setTogglingId(insurer.id)
     try {
-      await deleteMutation.mutateAsync(insurer.id)
-      toast.success("Seguradora removida.")
+      await setActive.mutateAsync({ id: insurer.id, is_active: !insurer.is_active })
+      toast.success(insurer.is_active ? "Seguradora desativada." : "Seguradora reativada.")
     } catch {
-      toast.error("Erro ao remover seguradora.")
+      toast.error("Erro ao alterar a seguradora.")
     } finally {
-      setDeletingId(null)
+      setTogglingId(null)
     }
   }
 
@@ -87,10 +96,12 @@ export default function SeguradorasPage() {
             Seguradoras cadastradas no sistema — compartilhadas entre todas as unidades.
           </p>
         </div>
-        <Button onClick={handleNew} className="bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5">
-          <Plus className="h-4 w-4" />
-          Nova Seguradora
-        </Button>
+        <PermissionGate role="ADMIN">
+          <Button onClick={handleNew} className="bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5">
+            <Plus className="h-4 w-4" />
+            Nova Seguradora
+          </Button>
+        </PermissionGate>
       </div>
 
       {/* Search */}
@@ -107,15 +118,23 @@ export default function SeguradorasPage() {
       {/* Table */}
       {isLoading ? (
         <TableSkeleton columns={6} rows={6} />
+      ) : isError ? (
+        <EmptyState
+          icon={<Shield className="h-8 w-8" />}
+          title="Erro ao carregar seguradoras."
+          description="Tente novamente em instantes."
+        />
       ) : insurers.length === 0 ? (
         <EmptyState
           icon={<Shield className="h-8 w-8" />}
           title={search ? "Nenhuma seguradora encontrada." : "Nenhuma seguradora cadastrada."}
           action={!search && (
-            <Button variant="outline" size="sm" onClick={handleNew}>
-              <Plus className="h-3.5 w-3.5 mr-1" />
-              Nova Seguradora
-            </Button>
+            <PermissionGate role="ADMIN">
+              <Button variant="outline" size="sm" onClick={handleNew}>
+                <Plus className="h-3.5 w-3.5 mr-1" />
+                Nova Seguradora
+              </Button>
+            </PermissionGate>
           )}
         />
       ) : (
@@ -133,37 +152,31 @@ export default function SeguradorasPage() {
             </TableHeader>
             <TableBody>
               {insurers.map((ins) => (
-                <TableRow key={ins.id}>
-                  {/* Logo cell — click to upload */}
+                <TableRow key={ins.id} className={ins.is_active ? undefined : "opacity-60"}>
+                  {/* Logo cell — ADMIN clica para trocar */}
                   <TableCell className="py-2">
-                    <label className="cursor-pointer group relative" title="Clique para trocar o logo">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted/50 overflow-hidden shadow-sm group-hover:ring-2 group-hover:ring-ring/30 transition">
-                        {ins.logo_url ? (
-                          <img
-                            src={ins.logo_url}
-                            alt={ins.trade_name || ins.name}
-                            className="h-full w-full object-contain p-1"
-                          />
-                        ) : (
-                          <div
-                            className="flex h-full w-full items-center justify-center text-foreground text-xs font-bold"
-                            style={{ backgroundColor: ins.brand_color || "#6b7280" }}
-                          >
-                            {ins.abbreviation || ins.name.charAt(0)}
-                          </div>
-                        )}
-                      </div>
-                      <input
-                        type="file"
-                        accept=".png,.svg,image/png,image/svg+xml"
-                        className="hidden"
-                        onChange={(e) => handleLogoUpload(ins, e)}
-                      />
-                    </label>
+                    <PermissionGate role="ADMIN" fallback={<InsurerLogoBox insurer={ins} />}>
+                      <label className="cursor-pointer group relative" title="Clique para trocar o logo">
+                        <InsurerLogoBox insurer={ins} />
+                        <input
+                          type="file"
+                          accept=".png,.svg,image/png,image/svg+xml"
+                          className="hidden"
+                          onChange={(e) => handleLogoUpload(ins, e)}
+                        />
+                      </label>
+                    </PermissionGate>
                   </TableCell>
 
                   <TableCell className="py-2">
-                    <div className="font-medium text-foreground/90">{ins.trade_name || ins.name}</div>
+                    <div className="font-medium text-foreground/90">
+                      {ins.trade_name || ins.name}
+                      {!ins.is_active && (
+                        <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-xs font-normal text-muted-foreground">
+                          Inativa
+                        </span>
+                      )}
+                    </div>
                     {ins.trade_name && (
                       <div className="text-xs text-muted-foreground">{ins.name}</div>
                     )}
@@ -196,25 +209,29 @@ export default function SeguradorasPage() {
                           <ExternalLink className="h-3.5 w-3.5" />
                         </Link>
                       </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7"
-                        onClick={() => handleEdit(ins)}
-                        title="Editar"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-error-400 hover:text-error-300"
-                        disabled={deletingId === ins.id}
-                        onClick={() => handleDelete(ins)}
-                        title="Remover"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      <PermissionGate role="ADMIN">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7"
+                          onClick={() => handleEdit(ins)}
+                          title="Editar"
+                          aria-label="Editar"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className={ins.is_active ? "h-7 w-7 text-error-400 hover:text-error-300" : "h-7 w-7"}
+                          disabled={togglingId === ins.id}
+                          onClick={() => handleToggleActive(ins)}
+                          title={ins.is_active ? "Desativar" : "Reativar"}
+                          aria-label={ins.is_active ? "Desativar" : "Reativar"}
+                        >
+                          <Power className="h-3.5 w-3.5" />
+                        </Button>
+                      </PermissionGate>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -224,12 +241,35 @@ export default function SeguradorasPage() {
         </div>
       )}
 
-      <p className="text-xs text-muted-foreground flex items-center gap-1">
-        <Shield className="h-3 w-3" />
-        Clique no logo da seguradora para trocar a imagem rapidamente (PNG ou SVG).
-      </p>
+      <PermissionGate role="ADMIN">
+        <p className="text-xs text-muted-foreground flex items-center gap-1">
+          <Shield className="h-3 w-3" />
+          Clique no logo da seguradora para trocar a imagem rapidamente (PNG ou SVG).
+        </p>
+      </PermissionGate>
 
       <InsurerDialog open={dialogOpen} onOpenChange={setDialogOpen} editing={editing} />
+    </div>
+  )
+}
+
+function InsurerLogoBox({ insurer }: { insurer: InsurerListItem }) {
+  return (
+    <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted/50 overflow-hidden shadow-sm group-hover:ring-2 group-hover:ring-ring/30 transition">
+      {insurer.logo_url ? (
+        <img
+          src={insurer.logo_url}
+          alt={insurer.trade_name || insurer.name}
+          className="h-full w-full object-contain p-1"
+        />
+      ) : (
+        <div
+          className="flex h-full w-full items-center justify-center text-foreground text-xs font-bold"
+          style={{ backgroundColor: insurer.brand_color || "#6b7280" }}
+        >
+          {insurer.abbreviation || insurer.name.charAt(0)}
+        </div>
+      )}
     </div>
   )
 }

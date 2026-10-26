@@ -44,6 +44,7 @@ SHARED_APPS = [
     "apps.banks",
     "apps.vehicle_catalog",
     "apps.parts_catalog",
+    "apps.lookups",
 ]
 
 # Apps instalados em cada SCHEMA DE TENANT
@@ -272,6 +273,12 @@ CELERY_BEAT_SCHEDULE = {
         "task": "apps.imports.tasks.sync_active_cilia_os",
         "schedule": crontab(minute="*/15"),  # A cada 15 minutos
     },
+    # Catálogo FIPE — carga mensal do dump fipeX (dia 5, 04:00)
+    "vehicle-catalog-sync-fipe": {
+        "task": "vehicle_catalog.sync_fipe_catalog",
+        "schedule": crontab(hour=4, minute=0, day_of_month=5),
+        "kwargs": {"tenant_schema": "public"},
+    },
 }
 
 # ─── Django Channels ─────────────────────────────────────────────────────────
@@ -362,6 +369,8 @@ LOGGING = {
     "loggers": {
         "django": {"handlers": ["console"], "level": "WARNING", "propagate": False},
         "apps": {"handlers": ["console"], "level": "DEBUG", "propagate": False},
+        # O httpx loga a URL em INFO, e a URL das consultas traz CEP/CNPJ/placa.
+        "httpx": {"level": "WARNING"},
     },
 }
 
@@ -388,10 +397,14 @@ CILIA_BASE_URL = config("CILIA_BASE_URL", default="https://sistema.cilia.com.br"
 CILIA_AUTH_TOKEN = config("CILIA_AUTH_TOKEN", default="")
 
 # ─── API Placas ───────────────────────────────────────────────────────────────
+APIPLACAS_ENABLED = config("APIPLACAS_ENABLED", default=False, cast=bool)  # paga: desligada
 APIPLACAS_TOKEN = config("APIPLACAS_TOKEN", default="")
 # endpoint: GET https://wdapi2.com.br/consulta/{plate}/{token}
 APIPLACAS_URL = "https://wdapi2.com.br/consulta"
 APIPLACAS_TIMEOUT = 8.0
+
+# ─── AwesomeAPI (CEP, fallback das consultas) ─────────────────────────────────
+AWESOMEAPI_TOKEN = config("AWESOMEAPI_TOKEN", default="")
 
 # ─── Focus NF-e ──────────────────────────────────────────────────────────────
 FOCUS_NFE_TOKEN = config("FOCUSNFE_TOKEN", default="") or config("FOCUS_NFE_TOKEN", default="")

@@ -14,7 +14,9 @@ import { ChevronLeft } from "lucide-react";
 import { z } from "zod";
 import type { CreateEmployeePayload, HRDepartment, HRPosition, ContractType } from "@paddock/types";
 import { DEPARTMENT_LABELS, POSITION_LABELS, CONTRACT_TYPE_LABELS } from "@paddock/types";
-import { useCreateEmployee, useCepLookup } from "@/hooks";
+import { useCreateEmployee } from "@/hooks";
+import { useLookup } from "@/hooks/useLookup";
+import { fillEmpty } from "@/lib/prefill";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,7 +85,9 @@ type FormDraft = Omit<FormData, "department" | "position" | "contract_type" | "p
 export default function NovoColaboradorPage(): React.ReactElement {
   const router = useRouter();
   const create = useCreateEmployee();
-  const cepLookup = useCepLookup();
+  // `n` muda a cada blur: a resposta já em cache é aplicada de novo.
+  const [cepTarget, setCepTarget] = React.useState<{ key: string; n: number } | null>(null);
+  const cepQuery = useLookup("cep", cepTarget?.key ?? null);
   const [errors, setErrors] = React.useState<Partial<Record<keyof FormDraft, string>>>({});
   const [form, setForm] = React.useState<FormDraft>({
     name: "",
@@ -104,8 +108,9 @@ export default function NovoColaboradorPage(): React.ReactElement {
     address_street: "",
     address_number: "",
     address_neighborhood: "",
-    address_city: "Manaus",
-    address_state: "AM",
+    // vazios de propósito: o CEP preenche, e o preenchimento nunca sobrescreve o que já está lá
+    address_city: "",
+    address_state: "",
     emergency_contact_name: "",
   });
 
@@ -114,21 +119,24 @@ export default function NovoColaboradorPage(): React.ReactElement {
     setErrors((p) => ({ ...p, [key]: undefined }));
   };
 
-  const handleCepBlur = async (): Promise<void> => {
-    const cep = form.address_zip?.replace(/\D/g, "");
-    if (cep?.length === 8) {
-      try {
-        const data = await cepLookup.mutateAsync(cep);
-        setForm((p) => ({
-          ...p,
-          address_street: data.street ?? p.address_street,
-          address_neighborhood: data.neighborhood ?? p.address_neighborhood,
-          address_city: data.city ?? p.address_city,
-          address_state: data.state ?? p.address_state,
-        }));
-      } catch { /* silencioso — preenchimento manual */ }
-    }
+  const handleCepBlur = (): void => {
+    const cep = form.address_zip?.replace(/\D/g, "") ?? "";
+    if (cep.length === 8) setCepTarget((t) => ({ key: cep, n: (t?.n ?? 0) + 1 }));
   };
+
+  const cepData = cepQuery.data;
+  React.useEffect(() => {
+    if (!cepTarget || !cepData?.found) return;
+    const f = cepData.fields;
+    setForm((p) =>
+      fillEmpty(p, {
+        address_street: f.logradouro,
+        address_neighborhood: f.bairro,
+        address_city: f.municipio?.label,
+        address_state: f.uf,
+      }),
+    );
+  }, [cepData, cepTarget]);
 
   const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
@@ -385,14 +393,16 @@ export default function NovoColaboradorPage(): React.ReactElement {
               </FormField>
               <FormField label="Cidade">
                 <Input
-                  value={form.address_city ?? "Manaus"}
+                  value={form.address_city ?? ""}
                   onChange={(e) => set("address_city", e.target.value)}
+                  placeholder="Manaus"
                 />
               </FormField>
               <FormField label="Estado">
                 <Input
-                  value={form.address_state ?? "AM"}
+                  value={form.address_state ?? ""}
                   onChange={(e) => set("address_state", e.target.value)}
+                  placeholder="AM"
                   maxLength={2}
                 />
               </FormField>

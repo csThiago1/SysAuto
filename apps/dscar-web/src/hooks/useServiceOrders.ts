@@ -1,12 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
   PaginatedResponse,
-  PlateApiResult,
   ServiceOrder,
   AnyDashboardStats,
   PecaEstoqueResult,
   VehicleHistory,
 } from "@paddock/types";
+import { lookupResultSchemas } from "@/components/vehicle/catalog.schema";
+import type { VehicleData } from "@/components/vehicle/VehiclePlateSearch";
 import { apiFetch, fetchList } from "@/lib/api";
 
 const API = "/api/proxy";
@@ -86,12 +87,32 @@ export function useVehicleHistory(plate: string) {
   })
 }
 
-/** Consulta placa na API externa (placa-fipe via proxy Next.js). Apenas chamado manualmente. */
+/**
+ * Consulta placa em POST /lookups/placa/ e adapta para o VehicleData da tela pausada
+ * orcamentos/novo. Placa não encontrada vira erro, como na consulta antiga.
+ */
 export function usePlateApi() {
-  return useMutation<PlateApiResult, Error, string>({
-    mutationFn: (plate: string) => {
-      const normalized = plate.toUpperCase().replace(/[^A-Z0-9]/g, "")
-      return apiFetch<PlateApiResult>(`/api/plate/${normalized}`)
+  return useMutation<VehicleData, Error, string>({
+    mutationFn: async (plate: string) => {
+      const key = plate.toUpperCase().replace(/[^A-Z0-9]/g, "")
+      const result = lookupResultSchemas.placa.parse(
+        await apiFetch<unknown>(`${API}/lookups/placa/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key }),
+        }),
+      )
+      if (!result.found) throw new Error("Placa não encontrada.")
+      const { vehicle, color, year_manufacture } = result.fields
+      return {
+        plate: key,
+        make: vehicle?.make.label ?? "",
+        model: vehicle?.family?.label ?? "",
+        year: year_manufacture,
+        vehicle_version: vehicle?.model?.label ?? "",
+        color: color?.label ?? "",
+        fuel_type: "",
+      }
     },
   })
 }

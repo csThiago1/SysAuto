@@ -85,31 +85,3 @@ export interface EnquadramentoResolve {
   tamanho: CategoriaTamanho | null;
   tipo_pintura_default: TipoPintura | null;
 }
-
-// ─── FIPE — Catálogo Veicular ─────────────────────────────────────────────────
-
-export interface VehicleMake {
-  id: number;
-  fipe_id: string;
-  nome: string;
-  nome_normalizado: string;
-}
-
-export interface VehicleModel {
-  id: number;
-  fipe_id: string;
-  nome: string;
-  nome_normalizado: string;
-  marca: number;
-  marca_nome: string;
-}
-
-export interface VehicleYearVersion {
-  id: number;
-  fipe_id: string;
-  ano: number;
-  combustivel: string;
-  descricao: string;
-  codigo_fipe: string;
-  valor_referencia: string | null;
-}

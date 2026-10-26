@@ -2,6 +2,7 @@
 Paddock Solutions — OS Billing Service
 Faturamento de OS: preview de breakdown + execução atômica (títulos + NF).
 """
+
 from __future__ import annotations
 
 import logging
@@ -12,6 +13,8 @@ from typing import Any
 
 from django.db import transaction
 from django.utils import timezone
+
+from apps.lookups.validators import clean_cnpj, format_cnpj
 
 logger = logging.getLogger(__name__)
 
@@ -87,42 +90,33 @@ class BillingService:
         )
 
     @staticmethod
-    def _resolve_insurer_person(insurer: Any) -> Any | None:
-        """Busca Person com role INSURER e CNPJ da seguradora.
+    def _resolve_insurer_person(insurer: Any, cnpj: str = "") -> Any | None:
+        """Tomador da nota: Person INSURER com o CNPJ da OS (`cnpj`) ou o principal da seguradora.
+
+        Sem fallback por nome: cada CNPJ tem o seu tomador, e o nome é o mesmo em todos.
 
         Returns:
             Person com documents+addresses prefetched, ou None.
         """
         from apps.persons.models import Person, PersonDocument
-        from apps.persons.utils import sha256_lookup_candidates
+        from apps.persons.utils import sha256_hex
 
-        cnpj = getattr(insurer, "cnpj", "") or ""
-        if not cnpj:
+        digits = clean_cnpj(cnpj or getattr(insurer, "cnpj", "") or "")
+        if not digits:
             return None
-
-        # Busca Person que tenha documento CNPJ com mesmo valor
-        doc = PersonDocument.objects.filter(
-            doc_type="CNPJ",
-            value_hash__in=sha256_lookup_candidates(cnpj),
-            person__roles__role="INSURER",
-        ).select_related("person").first()
-
-        if doc:
-            return (
-                Person.objects.prefetch_related("documents", "addresses")
-                .get(pk=doc.person_id)
+        masked = format_cnpj(digits)
+        doc = (
+            PersonDocument.objects.filter(
+                doc_type="CNPJ",
+                value_hash__in={sha256_hex(digits), sha256_hex(masked)},
+                person__roles__role="INSURER",
             )
-
-        # Fallback: Person com role INSURER e nome similar
-        person = (
-            Person.objects.filter(
-                roles__role="INSURER",
-                full_name__icontains=insurer.name[:20] if insurer.name else "",
-            )
-            .prefetch_related("documents", "addresses")
+            .order_by("person_id")
             .first()
         )
-        return person
+        if doc is None:
+            return None
+        return Person.objects.prefetch_related("documents", "addresses").get(pk=doc.person_id)
 
     @classmethod
     def preview(cls, order: Any) -> dict[str, Any]:
@@ -148,79 +142,93 @@ class BillingService:
             pecas_seg = parts - franquia_pecas
 
             if deductible > ZERO:
-                items.append({
-                    "recipient_type": "customer",
-                    "category": "deductible",
-                    "label": f"Franquia → {customer_name}",
-                    "amount": str(deductible),
-                    "default_payment_method": "pix",
-                    "default_payment_term_days": 0,
-                    "note": None,
-                })
+                items.append(
+                    {
+                        "recipient_type": "customer",
+                        "category": "deductible",
+                        "label": f"Franquia → {customer_name}",
+                        "amount": str(deductible),
+                        "default_payment_method": "pix",
+                        "default_payment_term_days": 0,
+                        "note": None,
+                    }
+                )
 
             if servicos_seg > ZERO:
-                items.append({
-                    "recipient_type": "insurer",
-                    "category": "services",
-                    "label": f"Serviços → {insurer_name}",
-                    "amount": str(servicos_seg),
-                    "default_payment_method": "boleto",
-                    "default_payment_term_days": 30,
-                    "note": None,
-                })
+                items.append(
+                    {
+                        "recipient_type": "insurer",
+                        "category": "services",
+                        "label": f"Serviços → {insurer_name}",
+                        "amount": str(servicos_seg),
+                        "default_payment_method": "boleto",
+                        "default_payment_term_days": 30,
+                        "note": None,
+                    }
+                )
             elif services > ZERO:
-                items.append({
-                    "recipient_type": "insurer",
-                    "category": "services",
-                    "label": f"Serviços → {insurer_name}",
-                    "amount": "0.00",
-                    "default_payment_method": "boleto",
-                    "default_payment_term_days": 30,
-                    "note": "Franquia absorveu serviços",
-                })
+                items.append(
+                    {
+                        "recipient_type": "insurer",
+                        "category": "services",
+                        "label": f"Serviços → {insurer_name}",
+                        "amount": "0.00",
+                        "default_payment_method": "boleto",
+                        "default_payment_term_days": 30,
+                        "note": "Franquia absorveu serviços",
+                    }
+                )
 
             if pecas_seg > ZERO:
-                items.append({
-                    "recipient_type": "insurer",
-                    "category": "parts",
-                    "label": f"Peças → {insurer_name}",
-                    "amount": str(pecas_seg),
-                    "default_payment_method": "boleto",
-                    "default_payment_term_days": 30,
-                    "note": None,
-                })
+                items.append(
+                    {
+                        "recipient_type": "insurer",
+                        "category": "parts",
+                        "label": f"Peças → {insurer_name}",
+                        "amount": str(pecas_seg),
+                        "default_payment_method": "boleto",
+                        "default_payment_term_days": 30,
+                        "note": None,
+                    }
+                )
             elif parts > ZERO:
-                items.append({
-                    "recipient_type": "insurer",
-                    "category": "parts",
-                    "label": f"Peças → {insurer_name}",
-                    "amount": "0.00",
-                    "default_payment_method": "boleto",
-                    "default_payment_term_days": 30,
-                    "note": "Franquia absorveu peças",
-                })
+                items.append(
+                    {
+                        "recipient_type": "insurer",
+                        "category": "parts",
+                        "label": f"Peças → {insurer_name}",
+                        "amount": "0.00",
+                        "default_payment_method": "boleto",
+                        "default_payment_term_days": 30,
+                        "note": "Franquia absorveu peças",
+                    }
+                )
         else:
             # Particular: separar serviços (NFS-e) e peças (NF-e)
             if services > ZERO:
-                items.append({
-                    "recipient_type": "customer",
-                    "category": "services",
-                    "label": f"Serviços → {customer_name}",
-                    "amount": str(services),
-                    "default_payment_method": "pix",
-                    "default_payment_term_days": 0,
-                    "note": None,
-                })
+                items.append(
+                    {
+                        "recipient_type": "customer",
+                        "category": "services",
+                        "label": f"Serviços → {customer_name}",
+                        "amount": str(services),
+                        "default_payment_method": "pix",
+                        "default_payment_term_days": 0,
+                        "note": None,
+                    }
+                )
             if parts > ZERO:
-                items.append({
-                    "recipient_type": "customer",
-                    "category": "parts",
-                    "label": f"Peças → {customer_name}",
-                    "amount": str(parts - discount),
-                    "default_payment_method": "pix",
-                    "default_payment_term_days": 0,
-                    "note": None,
-                })
+                items.append(
+                    {
+                        "recipient_type": "customer",
+                        "category": "parts",
+                        "label": f"Peças → {customer_name}",
+                        "amount": str(parts - discount),
+                        "default_payment_method": "pix",
+                        "default_payment_term_days": 0,
+                        "note": None,
+                    }
+                )
 
         return {
             "parts_total": str(parts),
@@ -238,8 +246,16 @@ class BillingService:
     # ── Billing execution ────────────────────────────────────────────────────
 
     BILLABLE_STATUSES: set[str] = {
-        "authorized", "repair", "mechanic", "bodywork", "painting",
-        "assembly", "polishing", "washing", "final_survey", "ready",
+        "authorized",
+        "repair",
+        "mechanic",
+        "bodywork",
+        "painting",
+        "assembly",
+        "polishing",
+        "washing",
+        "final_survey",
+        "ready",
         "delivered",
     }
 
@@ -343,9 +359,7 @@ class BillingService:
             is_services = category == "services"
             is_parts = category == "parts"
             origin = "NFSE" if is_services else ("NFE" if is_parts else "MANUAL")
-            description = (
-                f"OS {order.number} — {item.get('label', category)}"
-            )
+            description = f"OS {order.number} — {item.get('label', category)}"
 
             # Cria título a receber
             receivable = ReceivableDocumentService.create_receivable(
@@ -364,16 +378,16 @@ class BillingService:
             # Resolve Person destinatário para o FiscalService
             # _get_person_for_os checa destinatario_id (atributo runtime)
             if recipient_type == "insurer" and order.insurer:
-                # Busca Person com role INSURER que tenha CNPJ da seguradora
-                insurer_person = cls._resolve_insurer_person(order.insurer)
+                insurer_person = cls._resolve_insurer_person(order.insurer, order.insurer_cnpj)
                 if insurer_person:
                     order.destinatario_id = insurer_person.pk
                     order.destinatario = insurer_person
                 else:
+                    cnpj = format_cnpj(clean_cnpj(order.insurer_cnpj or order.insurer.cnpj))
                     result.errors.append(
-                        f"Seguradora '{recv_customer_name}' não tem cadastro "
-                        f"completo (Person com CNPJ e endereço). "
-                        f"Cadastre-a em Cadastros → Pessoas."
+                        f"Seguradora '{recv_customer_name}' não tem tomador da nota para o "
+                        f"CNPJ {cnpj}. Crie em Cadastros → Seguradoras → {order.insurer.name} → "
+                        f'Tomador da nota → "Criar tomador".'
                     )
                     continue  # Pula emissão fiscal mas mantém o receivable
             elif order.customer_id:
@@ -389,13 +403,15 @@ class BillingService:
                 config = FiscalService.get_config()
                 if is_services:
                     fiscal_doc = FiscalService.emit_nfse(
-                        order, config,
+                        order,
+                        config,
                         triggered_by="BILLING",
                         parts_as_service=False,
                     )
                 else:
                     fiscal_doc = FiscalService.emit_nfe(
-                        order, config=config,
+                        order,
+                        config=config,
                     )
                 result.fiscal_documents.append(fiscal_doc)
 
@@ -441,9 +457,7 @@ class BillingService:
 
             JournalEntryService.create_from_service_order(order, user)
         except Exception as exc:
-            error_msg = (
-                f"Erro ao gerar lançamento contábil para OS {order.number}: {exc}"
-            )
+            error_msg = f"Erro ao gerar lançamento contábil para OS {order.number}: {exc}"
             logger.error(error_msg)
             result.errors.append(error_msg)
 
@@ -459,8 +473,7 @@ class BillingService:
 
         total_billed = sum(_d(r.amount) for r in result.receivables)
         activity_description = (
-            f"OS faturada — {len(result.receivables)} título(s), "
-            f"R$ {total_billed:,.2f}"
+            f"OS faturada — {len(result.receivables)} título(s), " f"R$ {total_billed:,.2f}"
         )
         if result.errors:
             activity_description += f" | {len(result.errors)} erro(s) fiscal"
@@ -518,14 +531,17 @@ class BillingService:
         """
         pending_parts, pending_labor = cls._get_pending_complement_items(order)
         parts_total, labor_total = cls._calc_complement_totals(
-            pending_parts, pending_labor,
+            pending_parts,
+            pending_labor,
         )
 
         if parts_total + labor_total <= ZERO:
             return {"billed": False, "message": "Nenhum item pendente para faturar."}
 
         items = cls._build_complement_billing_items(
-            order, parts_total, labor_total,
+            order,
+            parts_total,
+            labor_total,
         )
         cls._create_complement_receivables(order, items)
 
@@ -535,7 +551,9 @@ class BillingService:
 
         cls._mark_complement_items_billed(pending_parts, pending_labor)
         cls._log_complement_activity(
-            order, parts_total + labor_total, billed_by,
+            order,
+            parts_total + labor_total,
+            billed_by,
         )
 
         return {
@@ -549,10 +567,12 @@ class BillingService:
     def _get_pending_complement_items(order: Any) -> tuple[Any, Any]:
         """Retorna querysets de peças e mão-de-obra pendentes do complemento."""
         pending_parts = order.parts.filter(
-            source_type="complement", billing_status="pending",
+            source_type="complement",
+            billing_status="pending",
         )
         pending_labor = order.labor_items.filter(
-            source_type="complement", billing_status="pending",
+            source_type="complement",
+            billing_status="pending",
         )
         return pending_parts, pending_labor
 
@@ -562,12 +582,8 @@ class BillingService:
         pending_labor: Any,
     ) -> tuple[Decimal, Decimal]:
         """Calcula totais de peças e mão-de-obra pendentes."""
-        parts_total = sum(
-            p.quantity * p.unit_price - p.discount for p in pending_parts
-        )
-        labor_total = sum(
-            l.quantity * l.unit_price - l.discount for l in pending_labor
-        )
+        parts_total = sum(p.quantity * p.unit_price - p.discount for p in pending_parts)
+        labor_total = sum(l.quantity * l.unit_price - l.discount for l in pending_labor)
         return parts_total, labor_total
 
     @staticmethod
@@ -581,23 +597,27 @@ class BillingService:
         items: list[dict[str, Any]] = []
 
         if labor_total > ZERO:
-            items.append({
-                "recipient_type": "customer",
-                "category": "services",
-                "label": f"Complemento Serviços → {customer_name}",
-                "amount": str(labor_total),
-                "default_payment_method": "pix",
-                "default_payment_term_days": 0,
-            })
+            items.append(
+                {
+                    "recipient_type": "customer",
+                    "category": "services",
+                    "label": f"Complemento Serviços → {customer_name}",
+                    "amount": str(labor_total),
+                    "default_payment_method": "pix",
+                    "default_payment_term_days": 0,
+                }
+            )
         if parts_total > ZERO:
-            items.append({
-                "recipient_type": "customer",
-                "category": "parts",
-                "label": f"Complemento Peças → {customer_name}",
-                "amount": str(parts_total),
-                "default_payment_method": "pix",
-                "default_payment_term_days": 0,
-            })
+            items.append(
+                {
+                    "recipient_type": "customer",
+                    "category": "parts",
+                    "label": f"Complemento Peças → {customer_name}",
+                    "amount": str(parts_total),
+                    "default_payment_method": "pix",
+                    "default_payment_term_days": 0,
+                }
+            )
 
         return items
 
@@ -614,9 +634,12 @@ class BillingService:
         try:
             person = cls._resolve_customer_person(order)
             from apps.accounts_receivable.services import ReceivableDocumentService
+
             for item in items:
                 ReceivableDocumentService.create_from_billing(
-                    order=order, person=person, billing_item=item,
+                    order=order,
+                    person=person,
+                    billing_item=item,
                 )
         except (ImportError, AttributeError, Exception) as e:
             logger.warning("Receivable creation skipped for complement: %s", e)

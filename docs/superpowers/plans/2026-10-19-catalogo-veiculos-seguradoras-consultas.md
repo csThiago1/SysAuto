@@ -27,7 +27,7 @@ Caminhos:
 1. **Leitura do fipeX:** o fipeX publica `YYYY/MM/fipex-prices.csv`, que na verdade é TSV (5,3 MB, 12 colunas). Ele é lido com `csv` da stdlib, sem `pyarrow`.
 2. **Consultas por POST:** todas usam `POST /api/v1/lookups/{kind}/` com corpo `{"key": "..."}`, e não GET com a chave no path. O proxy Next grava a URL no log em resposta não-OK (`app/api/proxy/[...path]/route.ts:73`), e o access log também grava. CEP e municípios seguem o mesmo padrão; a lista de municípios é GET, porque não tem dado pessoal.
 3. **`PlateCache` sai:** o Redis já guarda 365 dias, e a tabela tinha placa em claro no public. O passo "banco antes" passa a ser a última OS do tenant com aquela placa e com `catalog_family`.
-4. **Ficam de fora o endpoint `/vin/` e a validação de inscrição estadual:** nenhuma tela chama o primeiro, e `Person` não tem campo de IE. `decode_vin` entra só como pista no casamento.
+4. **Fica de fora a validação de inscrição estadual:** `Person` não tem campo de IE. ~~Ficam de fora o endpoint `/vin/` e a validação de inscrição estadual: nenhuma tela chama o primeiro. `decode_vin` entra só como pista no casamento.~~ Substituído em 22/10/2026 pelo adendo (Tasks 22-23): existe `POST /api/v1/lookups/chassi/` (última OS do tenant → regra aprendida `VehicleAlias(source="chassi")` por `chassi[:8]` + ano-modelo → decodificação local do VIN), chamado no blur do chassi nas telas de OS, recepção e orçamento.
 5. **Tomador fiscal da seguradora:** continua sendo uma `Person` com papel `INSURER`, porque o fiscal e o `FiscalDocument.destinatario` exigem `Person`.
    - Ela passa a ser criada pelo sistema na página da seguradora.
    - O papel sai só do formulário genérico de pessoa.
@@ -48,6 +48,8 @@ Caminhos:
 16. **Vínculo de seguradora desconhecida sem tela:** quando a importação para por seguradora desconhecida, o vínculo do texto a uma seguradora existente ganha endpoint (CONSULTANT+), mas não ganha tela, porque não existe tela de tentativas de importação.
 17. **Casamento separado por domínio:** veículo, cor e combustível ficam em `vehicle_catalog`. `match_insurer` fica em `insurers/matching.py` e `match_municipio` em `lookups/municipios.py`, junto dos seus models.
 18. **CEP do segurado:** o CEP que vem do Cilia é gravado como veio. A importação não dispara consulta externa; a cidade casa pelo nome, com `match_municipio`.
+19. **Marca nunca é desativada pela carga FIPE:** `VehicleMake.is_active` fica só com o admin. A marca que some da fonte num mês fica sem família ativa (o Modelo dela sai vazio) e volta quando a fonte a traz de novo. A carga recusa (`ValueError`) dump com menos de 80% das versões ativas.
+20. **Placa só gratuita (22/10/2026):** a API Placas fica desligada por `APIPLACAS_ENABLED=False` (padrão). A placa busca só a última OS do tenant, sem chamada HTTP e sem ler nem gravar o cache de placa; o `restricao` vem `None`. O health reporta `api_placas = "disabled"`, conta como ok e não consulta o saldo. O aviso fixo "Roubo/furto: confira no app Sinesp Cidadão." (`SinespHint`) aparece nas 4 telas depois de uma consulta.
 
 ## Global Constraints
 
@@ -69,7 +71,7 @@ Caminhos:
   - nunca raw SQL;
   - nunca `except: pass`;
   - Black (linha 100) + isort;
-  - permissões só via `PermissionsByActionMixin` (`write_permission`, `read_permission`, `write_actions`), nunca `get_permissions` à mão.
+  - permissões só via `PermissionsByActionMixin` (`write_permission`, `read_permission`, `write_actions`, `action_permissions`), nunca `get_permissions` à mão.
 - **Front:**
   - TS strict, sem `any`;
   - toda resposta nova da API validada com Zod, nunca `as Type`;
@@ -1171,7 +1173,7 @@ Se um caso divergir, ajuste só `TOKEN_SYN` ou `DROP`, nunca os limiares, e regi
 - Modify: `apps/service_orders/models/service_order.py`: +`import_warnings` (JSONField, `default=list`, `blank=True`), exposto no Detail e gravável só como lista vazia, para dispensar o aviso.
 - Modify:
   - `apps/insurers/views.py`: action `trade_names` (POST, detail, `IsConsultantOrAbove`);
-  - `app/(app)/os/[numero]/_components/ImportBudgetModal.tsx:33-38,241-250`: troca a lista fixa por `InsurerSelect` (`os/[numero]/_components/shared/InsurerSelect.tsx`). O envio passa `insurer_code` = `code` da seguradora escolhida e `source = "xml_" + code`; o backend já trata como `xml_porto` o que não estiver em `XML_SOURCES` (`orders.py:1650-1652`).
+  - `app/(app)/os/[numero]/_components/ImportBudgetModal.tsx:33-38,241-250`: troca a lista fixa por `InsurerSelect` (`os/[numero]/_components/shared/InsurerSelect.tsx`). O select lista só seguradoras com `code`. O envio passa `insurer_code` = `code` da seguradora escolhida; `source` é `xml_{code}` para porto, azul e itau e `"soma"` para qualquer outro código (o ramo XML só aceita `soma`, `xml_porto`, `xml_azul` e `xml_itau`; com `soma` o backend grava a tentativa como `xml_porto`).
 - Delete: `apps/cilia/tests/test_cilia_parser_normalization.py`. Ajuste a cor esperada em `test_hdi_html_parser.py` de "Preta" para "PRETA".
 - Test:
   - `apps/cilia/tests/test_normalization.py`;
@@ -1355,7 +1357,7 @@ Run: `docker exec paddock_django pytest apps/lookups -v`.
 
 **`service.lookup`:**
 1. limpa e valida a chave: CEP com 8 dígitos; CNPJ com `is_valid_cnpj`; placa com `is_valid_plate`;
-2. passa pelo DB-first do tipo, se houver (só placa, na Task 14);
+2. passa pelo DB-first do tipo, se houver: placa (Task 14) e CNPJ (Task 13);
 3. lê o cache `cache_key(kind, key) = f"lookup:{kind}:{sha256_hex(key)}"`;
 4. percorre `CHAINS[kind]`:
    - para no prazo `monotonic() + 6.0`;
@@ -1841,3 +1843,192 @@ Run:
 Expected: tudo verde.
 
 - [ ] **Step 4: Commit** `feat(dscar): seguradora vira fonte única com edição só de admin e tomador fiscal por CNPJ`
+
+---
+
+# Adendo de 22/10/2026 — chassi e placa só gratuita
+
+**Pedido do dono, depois das 20 tasks:** "precisamos também de busca por chassis do veículo" e, sobre a placa, "Só gratuito". Ele também pediu uma busca gratuita ou interna no catálogo para o chassi, além de achar OS pelo chassi e de o chassi preencher o veículo.
+
+**Muda a decisão da spec.** Na tabela "Fontes por tipo", a placa era "API Placas, R$ 0,03/consulta". Agora a API Placas fica desligada por configuração, e a placa passa a buscar só no histórico de OS do tenant. O alerta automático de roubo/furto deixa de existir, e no lugar entra um aviso fixo para conferir no app Sinesp Cidadão. Não existe API gratuita de placa: o SINESP não publica uma, e as bibliotecas que o consultam funcionam por engenharia reversa do app.
+
+**Chassi, sempre gratuito e na ordem abaixo:**
+1. Última OS do tenant com o mesmo chassi (veículo completo).
+2. Regra aprendida no catálogo: `VehicleAlias(source="chassi")` com chave `alias_key(chassi[:8], ano_modelo)`.
+   - Os 8 primeiros caracteres são o WMI mais o VDS e identificam o modelo de fábrica, não o carro.
+   - A regra nasce quando uma OS com chassi válido fica com a versão confirmada pela tela.
+   - Ela passa a "exata" com 2 confirmações iguais, ou com aprovação do admin. Cada confirmação é de um carro diferente: o mesmo chassi voltando em outra OS não conta, nem versão cujo ano difere do ano-modelo do VIN (correção de 22/10/2026).
+3. Decodificação local: a montadora vem do WMI e o ano-modelo do 10º caractere.
+
+Nenhuma fonte externa é usada.
+
+### Task 21: Placa só gratuita
+
+**Files:**
+- Modify:
+  - `backend/core/config/settings/base.py:400-403`: acrescentar `APIPLACAS_ENABLED = config("APIPLACAS_ENABLED", default=False, cast=bool)`, e a mesma chave no `.env.example`;
+  - `apps/lookups/service.py`: `_chain` e `_lookup_placa`;
+  - `apps/authentication/views_health.py`.
+- Modify: `apps/dscar-web/src/components/vehicle/PlacaLookup.tsx`. Acrescentar `SinespHint` e usá-lo nas 4 telas que já usam o `PlacaLookup` (NewOSDrawer, StepPlaca, VehicleSection e orçamento particular).
+- Modify:
+  - `docs/superpowers/specs/2026-10-19-catalogo-veiculos-seguradoras-consultas-design.md`: uma nota datada em "Decisões do dono" e na tabela "Fontes por tipo";
+  - este plano: item 20 dos Desvios.
+- Test: `apps/lookups/tests/test_placa.py`, o teste do health em `apps/authentication/tests/` e `PlacaLookup.test.tsx`.
+
+**Interfaces:**
+- Produces:
+  - com `APIPLACAS_ENABLED=False`, `lookup("placa", ...)` nunca faz chamada HTTP e não lê nem grava o cache de placa;
+    - devolve o DB-first da OS (`source="os"`, `restricao=None`), ou `found: False` com `source="none"`;
+  - com `True`, o comportamento atual continua igual;
+  - o health, com a API desligada, reporta `checks["api_placas"] = "disabled"`, conta como ok e não consulta o saldo;
+  - o componente `SinespHint` mostra o texto "Roubo/furto: confira no app Sinesp Cidadão." abaixo do campo de placa, sempre que uma consulta de placa já rodou.
+
+- [ ] **Step 1: Escrever os testes**
+  - `test_api_desligada_nao_chama_rede`: com respx sem rotas (qualquer chamada falha), dá `found: False`, `source == "none"`, e nenhuma chave `lookup:placa:*` no cache;
+  - `test_api_desligada_usa_os_do_tenant`: devolve o veículo da OS, com `restricao` None;
+  - `test_api_ligada_continua_igual`: um teste existente com `override_settings(APIPLACAS_ENABLED=True)`;
+  - `test_health_api_desligada_200_sem_saldo`: o health responde 200, e a rota de saldo não é chamada;
+  - vitest: `SinespHint` aparece depois da consulta e não aparece antes.
+- [ ] **Step 2: Rodar e ver falhar → implementar → rodar.** Use `docker exec paddock_django timeout 1800 pytest apps/lookups apps/authentication -q` e, no front, `npx vitest run src/components/vehicle` mais `npm run typecheck`.
+- [ ] **Step 3: Commit** `feat(dscar): consulta de placa só gratuita, com a API Placas desligada por padrão`
+
+### Task 22: Chassi no backend — busca de OS e consulta gratuita com regra aprendida
+
+**Files:**
+- Modify: as buscas.
+  - `apps/service_orders/views/orders.py:181`: `search_fields` ganha `"chassis"`;
+  - `apps/budgets/views.py:36`: `search_fields` ganha `"vehicle_chassis"`.
+- Modify: a consulta por chassi.
+  - `apps/lookups/service.py`: `Kind`, `_clean_key`, `lookup` e o novo `_lookup_chassi`;
+  - `apps/lookups/urls.py`: a regex passa a `cep|cnpj|placa|chassi`;
+  - `apps/lookups/validators.py`: `decode_vin` ganha `tipo_hint` (`"moto"` para os WMI `9C2` e `9C6`, senão `"carro"`).
+- Modify:
+  - `apps/vehicle_catalog/models.py`: `VehicleAlias.Source` ganha `CHASSI = "chassi", "Chassi"`, com migration só de choices;
+  - `apps/vehicle_catalog/matching.py`: nova função `vin_rule_key(vin: str) -> str | None`.
+- Modify: `apps/service_orders/services/order_service.py`, nos pontos de `create` (≈96) e `update` (≈319), para gravar o aprendizado.
+- Test: `apps/lookups/tests/test_chassi.py` e `apps/service_orders/tests/test_chassi_search.py`.
+
+**Interfaces:**
+- Produces:
+  - `vin_rule_key(vin) -> str | None` = `alias_key(vin[:8], decode_vin(vin).model_year)`, ou `None` quando o VIN é inválido ou não tem ano;
+  - `lookup("chassi", vin) -> LookupResult` com `fields = {"vehicle": catalog_path | None, "color": {value,label} | None, "year_manufacture": int | None, "ano_modelo": int | None, "confianca": "exata" | "alta" | None}`. O campo `source` diz de onde veio:
+    - `"os"`: a última OS ativa do tenant com `chassis__iexact` e `catalog_family`;
+    - `"regra"`: um `VehicleAlias` de `source="chassi"` com aquela chave e alvo ativo. A confiança é `"exata"` se `is_exact`, senão `"alta"`;
+    - `"vin"`: só a make ativa cujo `display_name` normalizado é igual a `decode_vin(vin).make_hint`, com o tipo vindo de `tipo_hint` e carro como padrão, mais o `ano_modelo`;
+    - `"none"`: nada casou. Com VIN inválido, `found` é False e `source` é `"invalid"`;
+  - a consulta não usa cache nem fonte externa e é sempre 200. O chassi nunca aparece em log;
+  - **aprendizado:** chama `record_alias_confirmation("chassi", chassis[:8], model_year, version=order.catalog_version, family=order.catalog_family)` quando, depois de `create` ou `update`:
+    - a OS tem `catalog_version`;
+    - `vehicle_needs_review` é False;
+    - o `chassis` é um VIN válido;
+    - e, no `update`, o par do catálogo ou o chassi mudou.
+
+    PATCH que não mexe em veículo nem em chassi não conta.
+
+- [ ] **Step 1: Escrever os testes** (`TenantTestCase`; a carga vai no `setUp`, como manda o adendo das constraints)
+  - `test_busca_os_por_final_do_chassi`: `GET /service-orders/?search=254082` acha a OS com chassi `8AC907655SE254082`;
+  - `test_busca_orcamento_por_chassi`;
+  - `test_chassi_da_os_anterior`: `source == "os"`, com o caminho completo;
+  - `test_regra_aprendida`:
+    - uma OS criada pela tela com a versão 021506-6 (Sprinter 2025) e o chassi `8AC907655SE254082`;
+    - um `lookup` de `8AC90765XSE999999` (outro carro, mesmo prefixo e mesmo ano) dá `source == "regra"` e `confianca == "alta"`;
+    - depois de uma segunda OS confirmada, dá `"exata"`;
+  - `test_patch_sem_veiculo_nao_conta_confirmacao`;
+  - `test_decodificacao_local`: um chassi `8AC...S...` sem histórico dá `source == "vin"`, a make "Mercedes-Benz" do tipo carro e `ano_modelo == 2025`;
+  - `test_wmi_de_moto_escolhe_make_moto`: `9C2...` dá a make Honda do tipo moto;
+  - `test_vin_invalido_200`: dá `found` False e `source == "invalid"`;
+  - `test_chassi_fora_do_log`: o caplog não contém o chassi.
+- [ ] **Step 2: Rodar e ver falhar → implementar → rodar** com `docker exec paddock_django timeout 1800 pytest apps/lookups apps/vehicle_catalog/tests/test_matching.py apps/service_orders/tests/test_chassi_search.py apps/service_orders/tests/test_catalog_vehicle.py -q`.
+- [ ] **Step 3: Commit** `feat(dscar): busca de OS pelo chassi e consulta gratuita que aprende o modelo pelo chassi`
+
+### Task 23: Chassi nas telas
+
+**Files:**
+- Modify:
+  - `apps/dscar-web/src/hooks/useLookup.ts` e `components/vehicle/catalog.schema.ts`: kind `"chassi"`, com o schema Zod dos `fields` da Task 22;
+  - `components/vehicle/PlacaLookup.tsx`: generalizar `usePlacaLookup` para `useVehicleLookup(kind: "placa" | "chassi", onFound)`, mantendo o padrão de nonce e o `reset`. Sem duplicar o hook.
+- Modify: o campo de chassi passa a consultar no blur, quando tem 17 caracteres válidos.
+  - `app/(app)/os/_components/NewOSDrawer.tsx`;
+  - `app/(app)/recepcao/_components/StepPlaca.tsx`;
+  - `app/(app)/os/[numero]/_components/sections/VehicleSection.tsx`;
+  - `app/(app)/orcamentos-particulares/novo/page.tsx`.
+- Modify: `app/(app)/os/page.tsx:243`: o placeholder passa a "Buscar OS (placa, chassi, nº, cliente)...".
+- Test: `components/vehicle/PlacaLookup.test.tsx` (ampliar) e `app/(app)/os/_components/NewOSDrawer.test.tsx` (ampliar).
+
+**Interfaces:**
+- Consumes: Task 22.
+- Produces: no blur do chassi, `applyIfEmpty` / `placaPrefill` preenchem a seleção do catálogo e a cor, e `keepYearManufacture` preenche o ano de fabricação. Nunca sobrescreve o que já foi escolhido.
+  - Com `source="vin"`, só a montadora é pré-selecionada (família vazia), com a dica "Pelo chassi: <Montadora>, ano-modelo <ano>".
+  - Com `source="regra"` e confiança `"alta"`, a versão vem pré-selecionada, com a dica "Sugerido pelo chassi — confirme a versão".
+
+- [ ] **Step 1: Escrever os testes**
+  - o hook com `"chassi"` chama `POST /api/proxy/lookups/chassi/` com o chassi no corpo;
+  - NewOSDrawer:
+    - um resultado `os` preenche o picker;
+    - um resultado `vin` pré-seleciona só a montadora;
+    - nada sobrescreve uma família já escolhida;
+    - um chassi com menos de 17 caracteres não consulta.
+- [ ] **Step 2: Rodar e ver falhar → implementar → rodar** com `npx vitest run src/components/vehicle src/app/\(app\)/os src/app/\(app\)/recepcao src/app/\(app\)/orcamentos-particulares` mais `npm run typecheck`. Antes, rode `make gen-api-types` se o OpenAPI mudou.
+- [ ] **Step 3: Commit** `feat(dscar): chassi preenche o veículo nas telas de OS, recepção e orçamento`
+
+---
+
+# Registro da execução (19 a 23/10/2026)
+
+Execução subagent-driven: cada task teve implementação, revisão de spec e qualidade, até 5 rodadas de correção e nova revisão. Depois, uma revisão final do branch inteiro, com verificação adversarial de cada achado sério, e uma rodada única de correção. O adendo das Tasks 21-23 teve o mesmo ciclo.
+
+**Testes:** a comparação entre o início e o fim do branch, app por app, deu 277 falhas no fim, das quais 276 já existiam em `05b1b0e`. A restante é um teste instável do dashboard que já existia: ele usa cache real no Redis e o branch não o toca. Depois do adendo, os apps tocados não ganharam nenhuma falha nova. No front, o typecheck está limpo e os 228 testes do vitest passam; os 2 erros de IndexedDB que o vitest acusa vêm do módulo offline, que o branch não toca.
+
+## Decisões tomadas durante a execução
+1. **Varredura prévia:** foram 52 achados, todos confirmados. As correções sugeridas pelos verificadores foram aceitas uma a uma.
+2. **Dados de catálogo nos testes:** com `TenantTestCase`, a carga vai em `setUp()`, porque o `setUpTestData` nunca roda nessa classe.
+3. **Marca de duas palavras:** testada de ponta a ponta, com o Evoque incluído na fixture.
+4. **Consulta de CNPJ:** procura primeiro no cadastro (Person), como a spec manda.
+5. **CNPJ de filial:** um CNPJ válido que veio no orçamento é acrescentado a `Insurer.cnpjs`. Acrescentar não é criar seguradora.
+6. **Faturamento:** sem fallback por nome; o tomador sai sempre do CNPJ.
+7. **Campos de versão e descrição:** foram alargados (120 e 300 caracteres) em vez de truncados.
+8. **Ano da fonte:** a OS guarda `vehicle_source_year`, para a chave das regras aprendidas usar o ano que veio da fonte.
+9. **Permissões:** o mixin ganhou `action_permissions`, sem nenhum `get_permissions` escrito à mão.
+10. **Comparação de testes:** o branch é julgado contra as falhas que já existiam em `05b1b0e`, não contra uma suíte toda verde.
+11. **CNPJ:** é normalizado com `clean_cnpj`, que mantém o formato alfanumérico, nunca com `only_digits`.
+12. **CNPJs inválidos do seed:** são quatro (azul, itau, yelum e suhai).
+13. **Implementador que caiu:** o seguinte continua a partir do disco, em vez de descartar o trabalho.
+14. **Cópia do veículo entre OS da mesma placa:**
+    - só vai para OS abertas;
+    - o catálogo só é copiado quando a versão mudou de verdade;
+    - cor e chassi continuam sendo copiados;
+    - o texto do snapshot e os campos de origem nunca são copiados.
+15. **Itens de verificação da Task 7:** a aplicação das migrations é coberta pela criação do banco de teste, e o chassi cifrado ganhou um teste que lê a coluna gravada.
+16. **Pendências das Tasks 8 e 9:** cada uma foi encaminhada à task dona do arquivo.
+17. **API Placas com 402/403:** conta como erro e não vai para o cache. Junto: DB-first nos dois formatos de placa, e cor fora do enum tratada sem erro.
+18. **Fixture da API Placas:** escrita à mão a partir da estrutura da resposta real. Conferir contra uma resposta real é item de pré-produção.
+19. **Regra exata que aponta só para a família:** mantém o selo de versão a confirmar.
+20. **Quotes:** a correção de `customer_id` foi aceita no escopo. OS antiga sem família e sem casamento continua como está.
+21. **Agente que cai por rede:** o fluxo o relança uma vez automaticamente.
+22. **Modelos (pedido do dono):** a Task 19 rodou no Sonnet. A Task 18 já estava em andamento e continuou no modelo da sessão. Revisões, revisão final e rodadas 4-5 de correção continuaram no modelo mais forte.
+23. **Testes nas tasks:**
+    - nunca a suíte inteira;
+    - sempre com `timeout 1800`;
+    - nada em segundo plano.
+24. **Endereço:** cidade, UF e código IBGE são preenchidos juntos ou nenhum.
+25. **Revisão final:**
+    - foram 9 correções obrigatórias, com 2 ajustes de execução: MF-3, a cópia de cor e chassi, foi mantida; MF-4 virou uma migration nova em vez de alterar a 0008;
+    - acrescentei MF-10 (reescolher a mesma opção não limpa os níveis de baixo) e MF-11 (CNPJ alfanumérico digitável nos formulários);
+    - os itens deixados de julgar foram lidos e aceitos como fora de escopo.
+26. **Teste do dashboard:** é instabilidade que já existia, não regressão.
+27. **Adendo:** desenho aprovado pelo dono. O adendo também acrescentou F5, a coerência de spec e plano com o que foi construído.
+
+## Itens estacionados (reais, adiados)
+- **Teste do Sentry:** é pulado no CI, porque `sentry-sdk` só está em `requirements/prod.txt`. Colocar o pacote em `dev.txt` faz o teste rodar.
+- **Aviso de troca de CNPJ:** aparece numa OS antiga com `insurer_cnpj` vazio quando o arquivo traz o próprio CNPJ principal.
+- **Regra de chassi e primeira visita:** uma OS anterior do mesmo carro que nunca foi confirmada impede a OS seguinte de ensinar a regra. É conservador de propósito.
+- **Correção de versão:** corrigir a versão da mesma OS conta uma confirmação para o novo alvo.
+- **Chassi cifrado no futuro:** se `ServiceOrder.chassis` virar campo cifrado, a busca por chassi e a consulta precisam de uma coluna de hash.
+- **Demais itens menores:** cerca de 30 adiados, a triar depois.
+
+## Pendências do dono
+- Termos de uso comercial do CNPJá.
+- Restrição de roubo/furto: sem a API Placas, não há alerta automático. Se for religar, use `APIPLACAS_ENABLED=True`.
+- `VEHICLE_NEEDS_REVIEW` não bloqueia `final_survey`/`ready`/`delivered`, porque a spec cita só a entrada em produção. Decidir se deve bloquear.
+- As tabelas públicas `Insurer.cnpjs`, `Insurer.trade_names` e `VehicleAlias` são alteradas por ações dentro de um tenant. Hoje existe um tenant só.
+- A regra de chassi passa a "exata" quando uma sugestão "alta" é salva sem mexer. Decidir se isso deve contar como confirmação.

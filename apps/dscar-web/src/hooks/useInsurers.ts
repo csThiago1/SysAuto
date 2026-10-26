@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { z } from "zod"
 import type { InsurerTenantProfile, PaginatedResponse } from "@paddock/types"
 
 import { apiFetch } from "@/lib/api"
-import { useCreate, useDelete, useUpdate } from "@/lib/crud-mutations"
+import { useCreate, useUpdate } from "@/lib/crud-mutations"
 import type { ApiSchema } from "@/types"
 
 // Insurer minimal (list) vs completo (detail) — nomes espelham o Django.
@@ -18,15 +19,18 @@ const insurerKeys = {
   list: (search = "") => ["insurers", "list", search] as const,
   detail: (id: string) => ["insurers", "detail", id] as const,
   tenantProfile: (id: string) => ["insurers", "tenant-profile", id] as const,
+  tomadores: (id: string) => ["insurers", "tomadores", id] as const,
 }
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
-export function useInsurers(search = "") {
+/** `includeInactive` só tem efeito para ADMIN+ (o backend ignora para os outros). */
+export function useInsurers(search = "", { includeInactive = false } = {}) {
   const params = new URLSearchParams({ page_size: "200" })
   if (search) params.set("search", search)
+  if (includeInactive) params.set("include_inactive", "true")
   return useQuery<PaginatedResponse<InsurerListItem>>({
-    queryKey: insurerKeys.list(search),
+    queryKey: [...insurerKeys.list(search), includeInactive],
     queryFn: () =>
       apiFetch<PaginatedResponse<InsurerListItem>>(`${API}/?${params.toString()}`),
     staleTime: 5 * 60 * 1000,
@@ -47,6 +51,8 @@ export interface InsurerPayload {
   name: string
   trade_name?: string
   cnpj: string
+  cnpjs?: string[]
+  trade_names?: string[]
   brand_color?: string
   abbreviation?: string
   logo_url?: string
@@ -56,7 +62,54 @@ export interface InsurerPayload {
 
 export const useInsurerCreate = () => useCreate<Insurer, InsurerPayload>("insurers")
 export const useInsurerUpdate = () => useUpdate<Insurer, Partial<InsurerPayload>>("insurers")
-export const useInsurerDelete = () => useDelete("insurers")
+
+/** Seguradora não se apaga: desativa e reativa por PATCH. */
+export function useSetInsurerActive() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, is_active }: { id: string; is_active: boolean }) =>
+      apiFetch<Insurer>(`${API}/${id}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_active }),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: insurerKeys.all }),
+  })
+}
+
+// ─── Tomador da nota (Person INSURER por CNPJ) — ADMIN+ ───────────────────────
+
+const tomadorSchema = z.object({
+  cnpj: z.string(),
+  person_id: z.number().int().nullable(),
+  person_name: z.string(),
+  has_address: z.boolean(),
+})
+export type InsurerTomador = z.infer<typeof tomadorSchema>
+
+export function useInsurerTomadores(insurerId: string, enabled = true) {
+  return useQuery({
+    queryKey: insurerKeys.tomadores(insurerId),
+    queryFn: async () =>
+      z.array(tomadorSchema).parse(await apiFetch<unknown>(`${API}/${insurerId}/tomadores/`)),
+    enabled: !!insurerId && enabled,
+  })
+}
+
+export function useCreateInsurerTomador(insurerId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (cnpj: string) =>
+      z.object({ person_id: z.number().int() }).parse(
+        await apiFetch<unknown>(`${API}/${insurerId}/tomador/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cnpj }),
+        }),
+      ),
+    onSuccess: () => qc.invalidateQueries({ queryKey: insurerKeys.tomadores(insurerId) }),
+  })
+}
 
 export function useInsurerUploadLogo() {
   const qc = useQueryClient()
