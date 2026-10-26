@@ -121,6 +121,7 @@ export interface CreatePayableDocumentPayload {
   document_number?: string;
   origin?: PayableOrigin;
   cost_center_id?: string | null;
+  expense_account_id?: string | null;
   notes?: string;
 }
 

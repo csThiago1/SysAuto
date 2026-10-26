@@ -18,7 +18,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:16
+        image: pgvector/pgvector:pg16  # mesma do docker-compose.dev: as migrações criam a extensão vector
         env:
           POSTGRES_USER: paddock
           POSTGRES_PASSWORD: paddock
@@ -44,6 +44,8 @@ jobs:
     env:
       DJANGO_SETTINGS_MODULE: config.settings.test
       DJANGO_SECRET_KEY: ci-dummy-secret-key-for-tests-only
+      # Fernet fictícia só para testes: base64 de "ci-dummy-fernet-key-tests-only-0"
+      FIELD_ENCRYPTION_KEY: Y2ktZHVtbXktZmVybmV0LWtleS10ZXN0cy1vbmx5LTA=
       DATABASE_URL: postgres://paddock:paddock@localhost:5432/paddock_test
       REDIS_URL: redis://localhost:6379/0
       CELERY_BROKER_URL: redis://localhost:6379/0

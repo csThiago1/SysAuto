@@ -166,6 +166,8 @@ class ServiceOrderViewSet(
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
         "status": ["exact", "in"],
+        "customer": ["exact"],
+        "plate": ["exact", "iexact"],
         "customer_type": ["exact"],
         "os_type": ["exact"],
         "insurer": ["exact"],

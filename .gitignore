@@ -102,3 +102,6 @@ next
 data/migrations/*.xls
 data/migrations/*.xlsx
 .vercel
+
+# Página de revisão dos logos (imagens embutidas, ~1 MB) — gerada por scripts/collect_logos.py
+backend/core/data/logos/review.html

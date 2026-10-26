@@ -73,6 +73,59 @@ export function useAnalyticalAccounts(): ReturnType<
   });
 }
 
+/**
+ * Contas sugeríveis num lançamento de despesa: analíticas de custo ou despesa.
+ * O backend usa o mesmo recorte pra montar o prompt da LLM.
+ */
+export function useExpenseAccounts(): ReturnType<
+  typeof useQuery<ChartOfAccount[]>
+> {
+  return useQuery<ChartOfAccount[]>({
+    queryKey: ["fin-expense-accounts"],
+    queryFn: async () => {
+      const [costs, expenses] = await Promise.all([
+        fetchList<ChartOfAccount>(
+          `${API}/chart-of-accounts/?is_analytical=true&account_type=C&page_size=500`
+        ),
+        fetchList<ChartOfAccount>(
+          `${API}/chart-of-accounts/?is_analytical=true&account_type=X&page_size=500`
+        ),
+      ]);
+      return [...costs, ...expenses].sort((a, b) => a.code.localeCompare(b.code));
+    },
+    staleTime: 30 * 60_000,
+  });
+}
+
+export interface AccountSuggestion {
+  account_id: string;
+  code: string;
+  name: string;
+  source: "H" | "L" | "S";
+}
+
+/**
+ * Sugere a conta contábil a partir da descrição digitada.
+ * Resposta vazia ({}) quando não há sugestão — nunca é erro.
+ */
+export function useAccountSuggestion(description: string): ReturnType<
+  typeof useQuery<AccountSuggestion | null>
+> {
+  const query = description.trim();
+  return useQuery<AccountSuggestion | null>({
+    queryKey: ["fin-account-suggestion", query],
+    queryFn: async () => {
+      const data = await apiFetch<AccountSuggestion | Record<string, never>>(
+        `${API}/suggest-account/?q=${encodeURIComponent(query)}`
+      );
+      return data && "account_id" in data ? (data as AccountSuggestion) : null;
+    },
+    enabled: query.length >= 3,
+    staleTime: 30 * 60_000,
+    retry: false,
+  });
+}
+
 export function useCreateChartOfAccount(): ReturnType<
   typeof useMutation<ChartOfAccount, Error, CreateChartOfAccountPayload>
 > {

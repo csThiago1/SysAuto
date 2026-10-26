@@ -662,6 +662,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/accounting/suggest-account/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Sugere conta contábil a partir da descrição da despesa
+         * @description Resolve a sugestão para o termo em `q`.
+         */
+        get: operations["accounting_suggest_account_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts-payable/documents/": {
         parameters: {
             query?: never;
@@ -2464,6 +2484,159 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/followups/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Fila de retornos ao cliente.
+         *
+         *     list      GET  /followups/?status=&assigned_to_me=true&due_before=
+         *     complete  POST /followups/{id}/complete/    {outcome, notes}
+         *     reschedule POST /followups/{id}/reschedule/ {due_at}
+         *     skip      POST /followups/{id}/skip/        {notes}
+         */
+        get: operations["followups_list"];
+        put?: never;
+        /**
+         * @description Fila de retornos ao cliente.
+         *
+         *     list      GET  /followups/?status=&assigned_to_me=true&due_before=
+         *     complete  POST /followups/{id}/complete/    {outcome, notes}
+         *     reschedule POST /followups/{id}/reschedule/ {due_at}
+         *     skip      POST /followups/{id}/skip/        {notes}
+         */
+        post: operations["followups_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/followups/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Fila de retornos ao cliente.
+         *
+         *     list      GET  /followups/?status=&assigned_to_me=true&due_before=
+         *     complete  POST /followups/{id}/complete/    {outcome, notes}
+         *     reschedule POST /followups/{id}/reschedule/ {due_at}
+         *     skip      POST /followups/{id}/skip/        {notes}
+         */
+        get: operations["followups_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * @description Fila de retornos ao cliente.
+         *
+         *     list      GET  /followups/?status=&assigned_to_me=true&due_before=
+         *     complete  POST /followups/{id}/complete/    {outcome, notes}
+         *     reschedule POST /followups/{id}/reschedule/ {due_at}
+         *     skip      POST /followups/{id}/skip/        {notes}
+         */
+        patch: operations["followups_partial_update"];
+        trace?: never;
+    };
+    "/api/v1/followups/{id}/complete/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Registra o resultado do retorno e o encerra. */
+        post: operations["followups_complete_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/followups/{id}/reschedule/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Adia o retorno para uma nova data, devolvendo-o à fila. */
+        post: operations["followups_reschedule_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/followups/{id}/skip/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Dispensa o retorno sem executá-lo. */
+        post: operations["followups_skip_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/followups/rules/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description CRUD das regras de retorno. Escrita MANAGER+, leitura CONSULTANT+. */
+        get: operations["followups_rules_list"];
+        put?: never;
+        /** @description CRUD das regras de retorno. Escrita MANAGER+, leitura CONSULTANT+. */
+        post: operations["followups_rules_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/followups/rules/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description CRUD das regras de retorno. Escrita MANAGER+, leitura CONSULTANT+. */
+        get: operations["followups_rules_retrieve"];
+        /** @description CRUD das regras de retorno. Escrita MANAGER+, leitura CONSULTANT+. */
+        put: operations["followups_rules_update"];
+        post?: never;
+        /** @description CRUD das regras de retorno. Escrita MANAGER+, leitura CONSULTANT+. */
+        delete: operations["followups_rules_destroy"];
+        options?: never;
+        head?: never;
+        /** @description CRUD das regras de retorno. Escrita MANAGER+, leitura CONSULTANT+. */
+        patch: operations["followups_rules_partial_update"];
         trace?: never;
     };
     "/api/v1/health/": {
@@ -8398,14 +8571,65 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Lista de cores de veículos com código hex para preview na UI. */
+        /**
+         * @description CRUD de cores de veículos com código hex para preview na UI.
+         *
+         *     - list / retrieve: qualquer usuário autenticado
+         *     - create / update / destroy: MANAGER+
+         */
         get: operations["vehicle_catalog_colors_list"];
         put?: never;
-        post?: never;
+        /**
+         * @description CRUD de cores de veículos com código hex para preview na UI.
+         *
+         *     - list / retrieve: qualquer usuário autenticado
+         *     - create / update / destroy: MANAGER+
+         */
+        post: operations["vehicle_catalog_colors_create"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/vehicle-catalog/colors/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description CRUD de cores de veículos com código hex para preview na UI.
+         *
+         *     - list / retrieve: qualquer usuário autenticado
+         *     - create / update / destroy: MANAGER+
+         */
+        get: operations["vehicle_catalog_colors_retrieve"];
+        /**
+         * @description CRUD de cores de veículos com código hex para preview na UI.
+         *
+         *     - list / retrieve: qualquer usuário autenticado
+         *     - create / update / destroy: MANAGER+
+         */
+        put: operations["vehicle_catalog_colors_update"];
+        post?: never;
+        /**
+         * @description CRUD de cores de veículos com código hex para preview na UI.
+         *
+         *     - list / retrieve: qualquer usuário autenticado
+         *     - create / update / destroy: MANAGER+
+         */
+        delete: operations["vehicle_catalog_colors_destroy"];
+        options?: never;
+        head?: never;
+        /**
+         * @description CRUD de cores de veículos com código hex para preview na UI.
+         *
+         *     - list / retrieve: qualquer usuário autenticado
+         *     - create / update / destroy: MANAGER+
+         */
+        patch: operations["vehicle_catalog_colors_partial_update"];
         trace?: never;
     };
     "/api/v1/vehicle-catalog/makes/": {
@@ -10351,6 +10575,12 @@ export interface components {
          * @enum {string}
          */
         Category48eEnum: "funilaria" | "pintura" | "mecanica" | "eletrica" | "estetica" | "alinhamento" | "revisao" | "lavagem" | "outros";
+        /**
+         * @description * `task` - Tarefa interna
+         *     * `whatsapp` - WhatsApp
+         * @enum {string}
+         */
+        ChannelEnum: "task" | "whatsapp";
         /** @description Serializer de criação — valida código único e nível derivado do parent. */
         ChartOfAccountCreate: {
             /** Código */
@@ -10844,8 +11074,7 @@ export interface components {
         };
         /** @description Serializer de escrita para criacao de titulo a pagar. */
         CreatePayableDocument: {
-            /** Format: uuid */
-            supplier_id: string;
+            supplier_id: number;
             description: string;
             /** Format: decimal */
             amount: string;
@@ -10874,8 +11103,7 @@ export interface components {
         CreatePayableDocumentOriginEnum: "MAN" | "FOLHA" | "NFE_E" | "AUTO";
         /** @description Serializer de escrita para criacao de titulo a pagar. */
         CreatePayableDocumentRequest: {
-            /** Format: uuid */
-            supplier_id: string;
+            supplier_id: number;
             description: string;
             /** Format: decimal */
             amount: string;
@@ -12571,6 +12799,141 @@ export interface components {
          * @enum {string}
          */
         FolderEnum: "vistoria_inicial" | "complemento" | "checklist_entrada" | "checklist_saida" | "documentos" | "orcamentos" | "acompanhamento" | "vistoria_final" | "pericia" | "outros" | "financeiro";
+        /** @description Retorno na fila de trabalho, com os dados da OS para exibição. */
+        FollowUp: {
+            /** Format: uuid */
+            readonly id: string;
+            /**
+             * Regra
+             * Format: uuid
+             */
+            readonly rule: string;
+            readonly rule_name: string;
+            /**
+             * Ordem de serviço
+             * Format: uuid
+             */
+            readonly service_order: string;
+            readonly os_number: number;
+            readonly plate: string;
+            readonly customer_name: string;
+            /**
+             * Vence em
+             * Format: date-time
+             */
+            due_at: string;
+            /** Situação */
+            readonly status: components["schemas"]["FollowUpStatusEnum"];
+            /** Canal */
+            readonly channel: components["schemas"]["ChannelEnum"];
+            /**
+             * Responsável
+             * Format: uuid
+             */
+            assigned_to: string | null;
+            /** @description Nome do responsável, ou vazio quando não há. */
+            readonly assigned_to_name: string;
+            /**
+             * Disparado em
+             * Format: date-time
+             */
+            readonly dispatched_at: string | null;
+            /**
+             * Concluído em
+             * Format: date-time
+             */
+            readonly completed_at: string | null;
+            /** Resultado */
+            readonly outcome: components["schemas"]["OutcomeEnum"];
+            /** Observações */
+            notes: string;
+            readonly link: string;
+            /** @description Mensagem da regra já renderizada com os dados da OS. */
+            readonly message: string;
+        };
+        /** @description Retorno na fila de trabalho, com os dados da OS para exibição. */
+        FollowUpRequest: {
+            /**
+             * Vence em
+             * Format: date-time
+             */
+            due_at: string;
+            /**
+             * Responsável
+             * Format: uuid
+             */
+            assigned_to?: string | null;
+            /** Observações */
+            notes?: string;
+        };
+        /** @description CRUD das regras de retorno. */
+        FollowUpRule: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Nome */
+            name: string;
+            /** Gatilho */
+            trigger_event: components["schemas"]["TriggerEventEnum"];
+            /**
+             * Atraso (horas)
+             * @description 48 = dois dias após a entrega; 720 = trinta dias.
+             */
+            delay_hours: number;
+            /** Canal */
+            channel: components["schemas"]["ChannelEnum"];
+            /**
+             * Mensagem
+             * @description Placeholders disponíveis: {cliente}, {placa}, {os}.
+             */
+            message_template: string;
+            /** Format: uri */
+            link: string;
+            /**
+             * Tipos de OS
+             * @description Lista de os_type aplicáveis. Vazio = todos.
+             */
+            os_types: unknown;
+            is_active: boolean;
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        /** @description CRUD das regras de retorno. */
+        FollowUpRuleRequest: {
+            /** Nome */
+            name: string;
+            /** Gatilho */
+            trigger_event?: components["schemas"]["TriggerEventEnum"];
+            /**
+             * Atraso (horas)
+             * @description 48 = dois dias após a entrega; 720 = trinta dias.
+             */
+            delay_hours: number;
+            /** Canal */
+            channel?: components["schemas"]["ChannelEnum"];
+            /**
+             * Mensagem
+             * @description Placeholders disponíveis: {cliente}, {placa}, {os}.
+             */
+            message_template: string;
+            /** Format: uri */
+            link?: string;
+            /**
+             * Tipos de OS
+             * @description Lista de os_type aplicáveis. Vazio = todos.
+             */
+            os_types?: unknown;
+            is_active?: boolean;
+        };
+        /**
+         * @description * `scheduled` - Agendado
+         *     * `pending` - Na fila
+         *     * `done` - Concluído
+         *     * `skipped` - Dispensado
+         * @enum {string}
+         */
+        FollowUpStatusEnum: "scheduled" | "pending" | "done" | "skipped";
         /** @description Body de POST /auth/forgot-password/. */
         ForgotPasswordRequestRequest: {
             /** Format: email */
@@ -14945,6 +15308,15 @@ export interface components {
          * @enum {string}
          */
         OsTypeEnum: "bodywork" | "warranty" | "rework" | "mechanical" | "aesthetic";
+        /**
+         * @description * `satisfied` - Cliente satisfeito
+         *     * `dissatisfied` - Cliente insatisfeito
+         *     * `no_answer` - Não atendeu
+         *     * `scheduled_os` - Agendou serviço
+         *     * `not_interested` - Sem interesse
+         * @enum {string}
+         */
+        OutcomeEnum: "satisfied" | "dissatisfied" | "no_answer" | "scheduled_os" | "not_interested";
         /** @description Payload para registrar pagamento de colaborador PJ. */
         PJPayment: {
             /** Format: decimal */
@@ -15561,6 +15933,36 @@ export interface components {
              */
             previous: string | null;
             results: components["schemas"]["FiscalYear"][];
+        };
+        PaginatedFollowUpList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous: string | null;
+            results: components["schemas"]["FollowUp"][];
+        };
+        PaginatedFollowUpRuleList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous: string | null;
+            results: components["schemas"]["FollowUpRule"][];
         };
         PaginatedGoalTargetList: {
             /** @example 123 */
@@ -17404,6 +17806,48 @@ export interface components {
             prioridade?: number;
             is_active?: boolean;
         };
+        /** @description Retorno na fila de trabalho, com os dados da OS para exibição. */
+        PatchedFollowUpRequest: {
+            /**
+             * Vence em
+             * Format: date-time
+             */
+            due_at?: string;
+            /**
+             * Responsável
+             * Format: uuid
+             */
+            assigned_to?: string | null;
+            /** Observações */
+            notes?: string;
+        };
+        /** @description CRUD das regras de retorno. */
+        PatchedFollowUpRuleRequest: {
+            /** Nome */
+            name?: string;
+            /** Gatilho */
+            trigger_event?: components["schemas"]["TriggerEventEnum"];
+            /**
+             * Atraso (horas)
+             * @description 48 = dois dias após a entrega; 720 = trinta dias.
+             */
+            delay_hours?: number;
+            /** Canal */
+            channel?: components["schemas"]["ChannelEnum"];
+            /**
+             * Mensagem
+             * @description Placeholders disponíveis: {cliente}, {placa}, {os}.
+             */
+            message_template?: string;
+            /** Format: uri */
+            link?: string;
+            /**
+             * Tipos de OS
+             * @description Lista de os_type aplicáveis. Vazio = todos.
+             */
+            os_types?: unknown;
+            is_active?: boolean;
+        };
         PatchedGoalTargetUpdateRequest: {
             /**
              * Valor atual
@@ -17808,6 +18252,11 @@ export interface components {
             gender?: components["schemas"]["GenderEnum"] | components["schemas"]["BlankEnum"];
             /** Ativo */
             is_active?: boolean;
+            /**
+             * Não receber retornos
+             * @description Cliente pediu para não receber pesquisas de satisfação nem ofertas.
+             */
+            followup_opt_out?: boolean;
             /** Observações */
             notes?: string;
             roles?: components["schemas"]["RolesEnum"][];
@@ -17840,6 +18289,11 @@ export interface components {
             gender?: components["schemas"]["GenderEnum"] | components["schemas"]["BlankEnum"];
             /** Ativo */
             is_active?: boolean;
+            /**
+             * Não receber retornos
+             * @description Cliente pediu para não receber pesquisas de satisfação nem ofertas.
+             */
+            followup_opt_out?: boolean;
             /** Observações */
             notes?: string;
             legacy_code?: string;
@@ -18605,6 +19059,15 @@ export interface components {
             /** Format: uuid */
             user?: string;
             role?: number;
+        };
+        PatchedVehicleColorRequest: {
+            /** Nome */
+            name?: string;
+            /**
+             * Código hex
+             * @description Ex: #C0C0C0
+             */
+            hex_code?: string;
         };
         PatchedVehicleMakeRequest: {
             fipe_id?: string;
@@ -19405,6 +19868,11 @@ export interface components {
             gender: components["schemas"]["GenderEnum"] | components["schemas"]["BlankEnum"];
             /** Ativo */
             is_active: boolean;
+            /**
+             * Não receber retornos
+             * @description Cliente pediu para não receber pesquisas de satisfação nem ofertas.
+             */
+            followup_opt_out: boolean;
             /** Observações */
             notes: string;
             contacts: components["schemas"]["PersonContactWrite"][];
@@ -19436,6 +19904,11 @@ export interface components {
             gender?: components["schemas"]["GenderEnum"] | components["schemas"]["BlankEnum"];
             /** Ativo */
             is_active?: boolean;
+            /**
+             * Não receber retornos
+             * @description Cliente pediu para não receber pesquisas de satisfação nem ofertas.
+             */
+            followup_opt_out?: boolean;
             /** Observações */
             notes?: string;
             roles: components["schemas"]["RolesEnum"][];
@@ -19469,6 +19942,11 @@ export interface components {
             gender: components["schemas"]["GenderEnum"] | components["schemas"]["BlankEnum"];
             /** Ativo */
             is_active: boolean;
+            /**
+             * Não receber retornos
+             * @description Cliente pediu para não receber pesquisas de satisfação nem ofertas.
+             */
+            followup_opt_out: boolean;
             /** Observações */
             notes: string;
             /** Format: date-time */
@@ -19575,21 +20053,11 @@ export interface components {
         };
         PersonRole: {
             readonly id: number;
-            role: components["schemas"]["PersonRoleRoleEnum"];
+            role: components["schemas"]["Role6e7Enum"];
         };
         PersonRoleRequest: {
-            role: components["schemas"]["PersonRoleRoleEnum"];
+            role: components["schemas"]["Role6e7Enum"];
         };
-        /**
-         * @description * `CLIENT` - Cliente
-         *     * `INSURER` - Seguradora
-         *     * `BROKER` - Corretor
-         *     * `EMPLOYEE` - Funcionário
-         *     * `SUPPLIER` - Fornecedor
-         *     * `EXPERT` - Perito
-         * @enum {string}
-         */
-        PersonRoleRoleEnum: "CLIENT" | "INSURER" | "BROKER" | "EMPLOYEE" | "SUPPLIER" | "EXPERT";
         /** @description IDs de fotos da OS para operações em lote (bulk-delete, download ZIP). */
         PhotoIdsRequest: {
             photo_ids: string[];
@@ -20211,6 +20679,16 @@ export interface components {
          */
         Role377Enum: "STOREKEEPER" | "CONSULTANT" | "MANAGER" | "ADMIN" | "OWNER";
         /**
+         * @description * `CLIENT` - Cliente
+         *     * `INSURER` - Seguradora
+         *     * `BROKER` - Corretor
+         *     * `EMPLOYEE` - Funcionário
+         *     * `SUPPLIER` - Fornecedor
+         *     * `EXPERT` - Perito
+         * @enum {string}
+         */
+        Role6e7Enum: "CLIENT" | "INSURER" | "BROKER" | "EMPLOYEE" | "SUPPLIER" | "EXPERT";
+        /**
          * @description * `OWNER` - OWNER
          *     * `ADMIN` - ADMIN
          *     * `MANAGER` - MANAGER
@@ -20220,14 +20698,15 @@ export interface components {
          */
         RoleAa5Enum: "OWNER" | "ADMIN" | "MANAGER" | "CONSULTANT" | "STOREKEEPER";
         /**
-         * @description * `CLIENT` - CLIENT
-         *     * `INSURER` - INSURER
-         *     * `BROKER` - BROKER
-         *     * `EMPLOYEE` - EMPLOYEE
-         *     * `SUPPLIER` - SUPPLIER
+         * @description * `CLIENT` - Cliente
+         *     * `INSURER` - Seguradora
+         *     * `BROKER` - Corretor
+         *     * `EMPLOYEE` - Funcionário
+         *     * `SUPPLIER` - Fornecedor
+         *     * `EXPERT` - Perito
          * @enum {string}
          */
-        RolesEnum: "CLIENT" | "INSURER" | "BROKER" | "EMPLOYEE" | "SUPPLIER";
+        RolesEnum: "CLIENT" | "INSURER" | "BROKER" | "EMPLOYEE" | "SUPPLIER" | "EXPERT";
         /** @description CRUD de Rua — armazem_codigo resolvido via source. */
         Rua: {
             /** Format: uuid */
@@ -23119,6 +23598,11 @@ export interface components {
             /** Format: uuid */
             nivel_destino_id: string;
         };
+        /**
+         * @description * `delivered` - OS entregue
+         * @enum {string}
+         */
+        TriggerEventEnum: "delivered";
         /** @description Lista pública — sem valor_nf para roles abaixo de MANAGER. */
         UnidadeFisicaList: {
             /** Format: uuid */
@@ -23649,6 +24133,15 @@ export interface components {
         };
         VehicleColor: {
             readonly id: number;
+            /** Nome */
+            name: string;
+            /**
+             * Código hex
+             * @description Ex: #C0C0C0
+             */
+            hex_code: string;
+        };
+        VehicleColorRequest: {
             /** Nome */
             name: string;
             /**
@@ -24904,6 +25397,27 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["JournalEntryList"];
                 };
+            };
+        };
+    };
+    accounting_suggest_account_retrieve: {
+        parameters: {
+            query: {
+                /** @description Descrição da despesa */
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -28343,6 +28857,363 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResumoFiscalResponse"];
+                };
+            };
+        };
+    };
+    followups_list: {
+        parameters: {
+            query?: {
+                assigned_to?: string;
+                /**
+                 * @description * `task` - Tarefa interna
+                 *     * `whatsapp` - WhatsApp
+                 */
+                channel?: "task" | "whatsapp";
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                rule?: string;
+                /**
+                 * @description * `scheduled` - Agendado
+                 *     * `pending` - Na fila
+                 *     * `done` - Concluído
+                 *     * `skipped` - Dispensado
+                 */
+                status?: "done" | "pending" | "scheduled" | "skipped";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedFollowUpList"];
+                };
+            };
+        };
+    };
+    followups_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FollowUpRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["FollowUpRequest"];
+                "multipart/form-data": components["schemas"]["FollowUpRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowUp"];
+                };
+            };
+        };
+    };
+    followups_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this Retorno. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowUp"];
+                };
+            };
+        };
+    };
+    followups_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this Retorno. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedFollowUpRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedFollowUpRequest"];
+                "multipart/form-data": components["schemas"]["PatchedFollowUpRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowUp"];
+                };
+            };
+        };
+    };
+    followups_complete_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this Retorno. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FollowUpRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["FollowUpRequest"];
+                "multipart/form-data": components["schemas"]["FollowUpRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowUp"];
+                };
+            };
+        };
+    };
+    followups_reschedule_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this Retorno. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FollowUpRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["FollowUpRequest"];
+                "multipart/form-data": components["schemas"]["FollowUpRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowUp"];
+                };
+            };
+        };
+    };
+    followups_skip_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this Retorno. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FollowUpRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["FollowUpRequest"];
+                "multipart/form-data": components["schemas"]["FollowUpRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowUp"];
+                };
+            };
+        };
+    };
+    followups_rules_list: {
+        parameters: {
+            query?: {
+                /**
+                 * @description * `task` - Tarefa interna
+                 *     * `whatsapp` - WhatsApp
+                 */
+                channel?: "task" | "whatsapp";
+                is_active?: boolean;
+                /** @description Which field to use when ordering the results. */
+                ordering?: string;
+                /** @description A page number within the paginated result set. */
+                page?: number;
+                /** @description Number of results to return per page. */
+                page_size?: number;
+                /** @description * `delivered` - OS entregue */
+                trigger_event?: "delivered";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedFollowUpRuleList"];
+                };
+            };
+        };
+    };
+    followups_rules_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FollowUpRuleRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["FollowUpRuleRequest"];
+                "multipart/form-data": components["schemas"]["FollowUpRuleRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowUpRule"];
+                };
+            };
+        };
+    };
+    followups_rules_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this Regra de Retorno. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowUpRule"];
+                };
+            };
+        };
+    };
+    followups_rules_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this Regra de Retorno. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FollowUpRuleRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["FollowUpRuleRequest"];
+                "multipart/form-data": components["schemas"]["FollowUpRuleRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowUpRule"];
+                };
+            };
+        };
+    };
+    followups_rules_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this Regra de Retorno. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    followups_rules_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this Regra de Retorno. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedFollowUpRuleRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedFollowUpRuleRequest"];
+                "multipart/form-data": components["schemas"]["PatchedFollowUpRuleRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FollowUpRule"];
                 };
             };
         };
@@ -38607,6 +39478,7 @@ export interface operations {
                 created_at__date?: string;
                 created_at__gte?: string;
                 created_at__lte?: string;
+                customer?: number;
                 /** @description insurer | private */
                 customer_type?: string;
                 entry_date__date?: string;
@@ -38624,6 +39496,8 @@ export interface operations {
                 page?: number;
                 /** @description Number of results to return per page. */
                 page_size?: number;
+                plate?: string;
+                plate__iexact?: string;
                 /** @description Busca por placa, número, sinistro ou cliente */
                 search?: string;
                 /** @description Filtrar por status */
@@ -38868,6 +39742,7 @@ export interface operations {
                 created_at__date?: string;
                 created_at__gte?: string;
                 created_at__lte?: string;
+                customer?: number;
                 /**
                  * @description * `insurer` - Seguradora
                  *     * `private` - Particular
@@ -38894,6 +39769,8 @@ export interface operations {
                 page?: number;
                 /** @description Number of results to return per page. */
                 page_size?: number;
+                plate?: string;
+                plate__iexact?: string;
                 /** @description A search term. */
                 search?: string;
                 /**
@@ -39191,6 +40068,7 @@ export interface operations {
                 created_at__date?: string;
                 created_at__gte?: string;
                 created_at__lte?: string;
+                customer?: number;
                 /**
                  * @description * `insurer` - Seguradora
                  *     * `private` - Particular
@@ -39217,6 +40095,8 @@ export interface operations {
                 page?: number;
                 /** @description Number of results to return per page. */
                 page_size?: number;
+                plate?: string;
+                plate__iexact?: string;
                 /** @description A search term. */
                 search?: string;
                 /**
@@ -39267,6 +40147,7 @@ export interface operations {
                 created_at__date?: string;
                 created_at__gte?: string;
                 created_at__lte?: string;
+                customer?: number;
                 /**
                  * @description * `insurer` - Seguradora
                  *     * `private` - Particular
@@ -39293,6 +40174,8 @@ export interface operations {
                 page?: number;
                 /** @description Number of results to return per page. */
                 page_size?: number;
+                plate?: string;
+                plate__iexact?: string;
                 /** @description A search term. */
                 search?: string;
                 /**
@@ -40475,6 +41358,7 @@ export interface operations {
                 created_at__date?: string;
                 created_at__gte?: string;
                 created_at__lte?: string;
+                customer?: number;
                 /**
                  * @description * `insurer` - Seguradora
                  *     * `private` - Particular
@@ -40503,6 +41387,8 @@ export interface operations {
                 page?: number;
                 /** @description Number of results to return per page. */
                 page_size?: number;
+                plate?: string;
+                plate__iexact?: string;
                 /** @description A search term. */
                 search?: string;
                 /** @description Filtrar por status específico */
@@ -41097,6 +41983,130 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PaginatedVehicleColorList"];
+                };
+            };
+        };
+    };
+    vehicle_catalog_colors_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VehicleColorRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["VehicleColorRequest"];
+                "multipart/form-data": components["schemas"]["VehicleColorRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VehicleColor"];
+                };
+            };
+        };
+    };
+    vehicle_catalog_colors_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Cor de veículo. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VehicleColor"];
+                };
+            };
+        };
+    };
+    vehicle_catalog_colors_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Cor de veículo. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VehicleColorRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["VehicleColorRequest"];
+                "multipart/form-data": components["schemas"]["VehicleColorRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VehicleColor"];
+                };
+            };
+        };
+    };
+    vehicle_catalog_colors_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Cor de veículo. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    vehicle_catalog_colors_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A unique integer value identifying this Cor de veículo. */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedVehicleColorRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedVehicleColorRequest"];
+                "multipart/form-data": components["schemas"]["PatchedVehicleColorRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VehicleColor"];
                 };
             };
         };

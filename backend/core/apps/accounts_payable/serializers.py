@@ -1,7 +1,9 @@
 """
 Paddock Solutions — Accounts Payable Serializers
 """
+
 import logging
+from decimal import Decimal
 
 from rest_framework import serializers
 
@@ -159,9 +161,12 @@ class PayableDocumentSerializer(serializers.ModelSerializer):
 class CreatePayableDocumentSerializer(serializers.Serializer):
     """Serializer de escrita para criacao de titulo a pagar."""
 
-    supplier_id = serializers.UUIDField()
+    # Person tem PK inteira (BigAutoField), não UUID. Declarado como UUIDField,
+    # este endpoint rejeitava todo POST com 400 — nunca foi possível criar
+    # título a pagar pela API.
+    supplier_id = serializers.IntegerField()
     description = serializers.CharField(max_length=300)
-    amount = serializers.DecimalField(max_digits=18, decimal_places=2, min_value="0.01")
+    amount = serializers.DecimalField(max_digits=18, decimal_places=2, min_value=Decimal("0.01"))
     due_date = serializers.DateField()
     competence_date = serializers.DateField()
     document_number = serializers.CharField(max_length=100, required=False, default="")
@@ -179,7 +184,7 @@ class RecordPaymentSerializer(serializers.Serializer):
     """Serializer de escrita para registro de pagamento."""
 
     payment_date = serializers.DateField()
-    amount = serializers.DecimalField(max_digits=18, decimal_places=2, min_value="0.01")
+    amount = serializers.DecimalField(max_digits=18, decimal_places=2, min_value=Decimal("0.01"))
     payment_method = serializers.ChoiceField(
         choices=[
             "bank_transfer",
@@ -193,5 +198,7 @@ class RecordPaymentSerializer(serializers.Serializer):
         required=False,
         default="bank_transfer",
     )
-    bank_account = serializers.CharField(max_length=100, required=False, default="", allow_blank=True)
+    bank_account = serializers.CharField(
+        max_length=100, required=False, default="", allow_blank=True
+    )
     notes = serializers.CharField(required=False, default="", allow_blank=True)

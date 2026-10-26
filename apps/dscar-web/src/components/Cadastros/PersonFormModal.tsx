@@ -61,6 +61,7 @@ type FormValues = {
   birth_date: string;
   gender: "M" | "F" | "N" | "";
   is_active: boolean;
+  followup_opt_out: boolean;
   notes: string;
   roles: PersonRole[];
   documents: PersonDocumentWrite[];
@@ -140,6 +141,7 @@ export function PersonFormModal({
       full_name: "",
       fantasy_name: "",
       is_active: true,
+      followup_opt_out: false,
       notes: "",
       roles: defaultRoles ?? ["CLIENT"],
       documents: [],
@@ -192,6 +194,7 @@ export function PersonFormModal({
       full_name:   src?.full_name ?? "",
       fantasy_name: src?.fantasy_name ?? "",
       is_active:   src?.is_active ?? true,
+      followup_opt_out: src?.followup_opt_out ?? false,
       notes:       src?.notes ?? "",
       roles:       src?.roles.map((r) => r.role) ?? defaultRoles ?? ["CLIENT"],
       // Ao editar, documentos existentes ficam somente-leitura (exibidos abaixo).
@@ -725,6 +728,12 @@ export function PersonFormModal({
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" id="is_active" {...register("is_active")} className="accent-primary" />
               <Label htmlFor="is_active">Ativo</Label>
+            </label>
+            {/* LGPD: sem este opt-out o cliente não teria como sair das
+                comunicações de pós-venda. */}
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="followup_opt_out" {...register("followup_opt_out")} className="accent-primary" />
+              <Label htmlFor="followup_opt_out">Não receber retornos (pesquisas e ofertas)</Label>
             </label>
           </div>
 

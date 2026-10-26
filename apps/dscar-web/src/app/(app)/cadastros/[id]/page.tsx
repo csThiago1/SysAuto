@@ -36,7 +36,7 @@ import {
   TabsTrigger,
   TabsContent,
 } from "@/components/ui";
-import { usePerson, useClientOrders } from "@/hooks";
+import { usePerson } from "@/hooks";
 import {
   PERSON_ROLE_LABEL,
   PERSON_KIND_LABEL,
@@ -49,7 +49,7 @@ import type {
   PersonContact,
   PersonAddress,
 } from "@paddock/types";
-import { ClientHistoryTab } from "./_components/ClientHistoryTab";
+import { HistoricoAtendimentos } from "@/components/historico/HistoricoAtendimentos";
 import { SupplierProfileTab } from "./_components/SupplierProfileTab";
 import { ExpertProfileTab } from "./_components/ExpertProfileTab";
 import { cn } from "@/lib/utils";
@@ -74,7 +74,6 @@ export default function CadastroDetailPage({ params }: CadastroDetailPageProps):
 function CadastroDetailContent({ params }: CadastroDetailPageProps): React.ReactElement {
   const { id } = use(params);
   const { data: person, isLoading, isError } = usePerson(id);
-  const { data: ordersData, isLoading: ordersLoading } = useClientOrders(id);
   const [editOpen, setEditOpen] = useState(false);
 
   if (isLoading) {
@@ -109,7 +108,6 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
   }
 
   const roles = person.roles.map((r) => r.role);
-  const orders = ordersData?.results ?? [];
   const isPF = person.person_kind === "PF";
 
   return (
@@ -279,12 +277,7 @@ function CadastroDetailContent({ params }: CadastroDetailPageProps): React.React
         )}
 
         <TabsContent value="historico">
-          <ClientHistoryTab
-            personId={id}
-            orders={orders}
-            ordersLoading={ordersLoading}
-            ordersCount={ordersData?.count ?? 0}
-          />
+          <HistoricoAtendimentos customerId={id} />
         </TabsContent>
       </Tabs>
 
