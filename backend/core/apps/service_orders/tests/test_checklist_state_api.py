@@ -120,3 +120,21 @@ class ChecklistStateAPITest(TenantTestCase):
         body = response.json()
         assert [item["os_number"] for item in body] == [9972]
         assert body[0]["damage_count"] == 1
+
+    def test_history_empty_for_placeholder_plate(self) -> None:
+        ServiceOrder.objects.filter(pk=self.order.pk).update(plate="N/A")
+        other = self._order(9973)
+        ServiceOrder.objects.filter(pk=other.pk).update(plate="N/A")
+        EntryChecklist.objects.create(service_order=other, finalized_at=timezone.now())
+        response = self.client.get(f"{self.url}history/")
+        assert response.status_code == 200, response.content
+        assert response.json() == []
+
+    def test_history_matches_normalized_plate(self) -> None:
+        ServiceOrder.objects.filter(pk=self.order.pk).update(plate="abc-1d23")
+        other = self._order(9974)
+        ServiceOrder.objects.filter(pk=other.pk).update(plate="ABC1D23")
+        EntryChecklist.objects.create(service_order=other, finalized_at=timezone.now())
+        response = self.client.get(f"{self.url}history/")
+        assert response.status_code == 200, response.content
+        assert [item["os_number"] for item in response.json()] == [9974]

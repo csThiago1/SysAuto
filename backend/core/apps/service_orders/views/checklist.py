@@ -15,9 +15,11 @@ Sem DELETE: desativar é soft delete.
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import asdict
 
-from django.db.models import Count, Q, QuerySet
+from django.db.models import Count, Q, QuerySet, Value
+from django.db.models.functions import Replace, Upper
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -166,11 +168,19 @@ class EntryChecklistHistoryView(_ChecklistTypeView):
 
     def get(self, request: Request, **kwargs: object) -> Response:
         order = self.get_order()
+        plate = re.sub(r"[^A-Z0-9]", "", (order.plate or "").upper())
+        if len(plate) < 7:  # vazia ou coringa ("N/A") — não cruza OS de outros clientes
+            return Response([])
+        # ponytail: lado do banco só tira "-" e espaço (formatos reais de placa).
+        stored_plate = Upper(
+            Replace(Replace("service_order__plate", Value("-"), Value("")), Value(" "), Value(""))
+        )
         checklists = (
-            EntryChecklist.objects.filter(
+            EntryChecklist.objects.annotate(norm_plate=stored_plate)
+            .filter(
                 checklist_type=ENTRY,
                 finalized_at__isnull=False,
-                service_order__plate=order.plate,
+                norm_plate=plate,
                 service_order__is_active=True,
             )
             .exclude(service_order=order)
