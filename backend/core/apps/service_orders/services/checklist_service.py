@@ -21,10 +21,12 @@ from ..models import (
     ChecklistDamage,
     CustomerBelonging,
     EntryChecklist,
+    OSPhotoFolder,
     ServiceOrder,
     ServiceOrderPhoto,
 )
 from ..models.checklist import ENTRY
+from ..offline import find_by_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -67,11 +69,13 @@ def resolve_photos(order: ServiceOrder, data: dict[str, Any]) -> list[ServiceOrd
     if ids is None and client_uuids is None:
         return None
     qs = ServiceOrderPhoto.objects.filter(service_order=order, is_active=True)
-    if ids is not None:
-        wanted, photos = set(ids), list(qs.filter(id__in=ids))
-    else:
-        wanted, photos = set(client_uuids), list(qs.filter(client_uuid__in=client_uuids))
+    lookup = {"id__in": ids} if ids is not None else {"client_uuid__in": client_uuids}
+    wanted = set(ids if ids is not None else client_uuids)
+    photos = list(qs.filter(folder=OSPhotoFolder.ENTRY_CHECKLIST, checklist_type=ENTRY, **lookup))
     if len(photos) != len(wanted):
+        # Foto existe mas é de outra etapa: erro definitivo, o mobile não deve reenviar.
+        if qs.filter(**lookup).count() > len(photos):
+            raise ValidationError({"photos": "not_entry_checklist"})
         raise ValidationError({"photos": "pending"})
     return photos
 
@@ -85,10 +89,9 @@ def create_damage(
     # Trava a linha do checklist: serializa numeração e replays concorrentes da mesma OS.
     checklist = EntryChecklist.objects.select_for_update().get(pk=get_or_create_checklist(order).pk)
     client_uuid = data.pop("client_uuid", None) or None
-    if client_uuid:
-        existing = ChecklistDamage.objects.filter(client_uuid=client_uuid).first()
-        if existing is not None:
-            return existing, False
+    existing = find_by_uuid(ChecklistDamage, client_uuid)
+    if existing is not None:
+        return existing, False
     if checklist.is_locked:
         raise ChecklistLocked()
     photos = resolve_photos(order, data)
@@ -141,10 +144,9 @@ def create_belonging(
     """Cria pertence. Mesmo client_uuid → devolve o existente."""
     data = dict(data)
     client_uuid = data.pop("client_uuid", None) or None
-    if client_uuid:
-        existing = CustomerBelonging.objects.filter(client_uuid=client_uuid).first()
-        if existing is not None:
-            return existing, False
+    existing = find_by_uuid(CustomerBelonging, client_uuid)
+    if existing is not None:
+        return existing, False
     assert_editable(order)
     _resolve_belonging_photo(order, data)
     belonging = CustomerBelonging.objects.create(

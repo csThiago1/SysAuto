@@ -99,6 +99,19 @@ class ChecklistDamagesAPITest(TenantTestCase):
         assert resp.json()["photo_ids"] == [str(photo.id)]
         assert resp.json()["photos"][0]["id"] == str(photo.id)
 
+    def test_damage_rejects_photo_from_other_stage(self) -> None:
+        photo = ServiceOrderPhoto.objects.create(
+            service_order=self.order,
+            folder="checklist_saida",
+            checklist_type="saida",
+            s3_key="service_orders/x/checklist_saida/a.jpg",
+            uploaded_by_id=self.user.id,
+        )
+        resp = self._post_damage(photo_ids=[str(photo.id)])
+        assert resp.status_code == 400
+        assert resp.json()["photos"] == "not_entry_checklist"
+        assert ChecklistDamage.objects.count() == 0
+
     def test_damage_requires_known_photos(self) -> None:
         resp = self._post_damage(photo_client_uuids=["nao-existe"])
         assert resp.status_code == 400
