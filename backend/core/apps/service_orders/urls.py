@@ -16,7 +16,12 @@ from .views import (
     ServiceOrderViewSet,
 )
 from .views.apontamento import ApontamentoGlobalListView, ApontamentoViewSet
-from .views.checklist import ChecklistDamageViewSet, CustomerBelongingViewSet
+from .views.checklist import (
+    ChecklistDamageViewSet,
+    CustomerBelongingViewSet,
+    EntryChecklistHistoryView,
+    EntryChecklistStateView,
+)
 
 router = DefaultRouter()
 router.register(r"", ServiceOrderViewSet, basename="service-order")
@@ -59,6 +64,16 @@ urlpatterns = [
     path("<uuid:service_order_pk>/apontamentos/", include(apontamento_router.urls)),
     path("<uuid:service_order_pk>/checklist-damages/", include(checklist_damage_router.urls)),
     path("<uuid:service_order_pk>/belongings/", include(belonging_router.urls)),
+    path(
+        "<uuid:service_order_pk>/checklist/<str:checklist_type>/",
+        EntryChecklistStateView.as_view(),
+        name="entry-checklist-state",
+    ),
+    path(
+        "<uuid:service_order_pk>/checklist/<str:checklist_type>/history/",
+        EntryChecklistHistoryView.as_view(),
+        name="entry-checklist-history",
+    ),
     path("<uuid:service_order_pk>/payments/", include("apps.payments.urls")),
     path("", include(router.urls)),
 ]

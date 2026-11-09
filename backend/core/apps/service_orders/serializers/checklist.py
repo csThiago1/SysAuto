@@ -1,13 +1,92 @@
-"""Serializers do checklist de entrada 3D — danos e pertences."""
+"""Serializers do checklist de entrada 3D — estado, danos e pertences."""
 
 from __future__ import annotations
 
 from typing import Any
 
+from django.db.models import Count
 from rest_framework import serializers
 
-from ..models import ChecklistDamage, CustomerBelonging
+from apps.vehicle_catalog.normalize import COR_HEX
+
+from ..checklist_constants import BodyType
+from ..models import ChecklistDamage, ChecklistItemStatus, CustomerBelonging, EntryChecklist
+from ..models.checklist import ENTRY
+from ..services.checklist_service import suggest_body_type
 from .core import ServiceOrderPhotoSerializer
+
+NO_COLOR_HEX = "#9a9a9a"  # FANTASIA / NAO_INFORMADA / cor fora do mapa
+STOP_VALUES = ("done", "sem_dano")
+
+
+def pdf_url(pdf_id: object) -> str | None:
+    return f"/api/v1/documents/{pdf_id}/download/" if pdf_id else None
+
+
+class EntryChecklistStateSerializer(serializers.ModelSerializer):
+    """Estado do checklist. Escrita: `body_type` e `stops_done` (merge no service)."""
+
+    body_type = serializers.ChoiceField(choices=BodyType.choices, required=False)
+    stops_done = serializers.DictField(
+        child=serializers.ChoiceField(choices=STOP_VALUES), required=False
+    )
+    suggested_body_type = serializers.SerializerMethodField()
+    pdf_url = serializers.SerializerMethodField()
+    vehicle_color_hex = serializers.SerializerMethodField()
+    customer_type = serializers.CharField(source="service_order.customer_type", read_only=True)
+    items_summary = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EntryChecklist
+        fields = [
+            "id",
+            "body_type",
+            "suggested_body_type",
+            "stops_done",
+            "finalized_at",
+            "version",
+            "signature_status",
+            "pdf_url",
+            "vehicle_color_hex",
+            "customer_type",
+            "items_summary",
+        ]
+        read_only_fields = ["id", "finalized_at", "version", "signature_status"]
+
+    def get_suggested_body_type(self, obj: EntryChecklist) -> str | None:
+        return suggest_body_type(obj.service_order)
+
+    def get_pdf_url(self, obj: EntryChecklist) -> str | None:
+        return pdf_url(obj.pdf_id)
+
+    def get_vehicle_color_hex(self, obj: EntryChecklist) -> str:
+        return COR_HEX.get(obj.service_order.color) or NO_COLOR_HEX
+
+    def get_items_summary(self, obj: EntryChecklist) -> dict[str, int]:
+        """Itens do checklist textual de entrada, contados por status."""
+        counts = dict(
+            obj.service_order.checklist_items.filter(checklist_type=ENTRY)
+            .order_by()  # sem o ordering do model, senão o GROUP BY quebra
+            .values_list("status")
+            .annotate(n=Count("id"))
+        )
+        return {status: counts.get(status, 0) for status in ChecklistItemStatus.values}
+
+
+class ChecklistHistorySerializer(serializers.ModelSerializer):
+    """Checklist finalizado de outra OS do mesmo veículo (espera `damage_count` anotado)."""
+
+    os_number = serializers.IntegerField(source="service_order.number", read_only=True)
+    pdf_url = serializers.SerializerMethodField()
+    damage_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = EntryChecklist
+        fields = ["os_number", "finalized_at", "pdf_url", "damage_count"]
+        read_only_fields = fields
+
+    def get_pdf_url(self, obj: EntryChecklist) -> str | None:
+        return pdf_url(obj.pdf_id)
 
 
 class _PhotoRefSerializer(ServiceOrderPhotoSerializer):

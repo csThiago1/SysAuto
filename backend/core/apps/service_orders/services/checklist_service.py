@@ -21,6 +21,7 @@ from ..models import (
     ChecklistDamage,
     CustomerBelonging,
     EntryChecklist,
+    FamilyBodyType,
     OSPhotoFolder,
     ServiceOrder,
     ServiceOrderPhoto,
@@ -56,6 +57,43 @@ def assert_editable(order: ServiceOrder) -> None:
         service_order=order, checklist_type=ENTRY, finalized_at__isnull=False
     ).exists():
         raise ChecklistLocked()
+
+
+def suggest_body_type(order: ServiceOrder) -> str | None:
+    """Carroceria já usada na família do veículo; None se não houver família ou registro."""
+    if not order.catalog_family_id:
+        return None
+    return (
+        FamilyBodyType.objects.filter(family_id=order.catalog_family_id, is_active=True)
+        .values_list("body_type", flat=True)
+        .first()
+    )
+
+
+def set_body_type(checklist: EntryChecklist, body_type: str) -> None:
+    """Grava a carroceria no checklist e alimenta a sugestão da família (upsert)."""
+    checklist.body_type = body_type
+    checklist.save(update_fields=["body_type", "updated_at"])
+    family_id = checklist.service_order.catalog_family_id
+    if family_id:
+        FamilyBodyType.objects.update_or_create(
+            family_id=family_id, defaults={"body_type": body_type, "is_active": True}
+        )
+
+
+@transaction.atomic
+def update_checklist_state(order: ServiceOrder, data: dict[str, Any]) -> EntryChecklist:
+    """PATCH do estado: `body_type` e `stops_done` (merge por chave)."""
+    # Trava a linha: dois PATCHs de paradas simultâneos não se sobrescrevem.
+    checklist = EntryChecklist.objects.select_for_update().get(pk=get_or_create_checklist(order).pk)
+    if checklist.is_locked:
+        raise ChecklistLocked()
+    if "stops_done" in data:
+        checklist.stops_done = {**checklist.stops_done, **data["stops_done"]}
+        checklist.save(update_fields=["stops_done", "updated_at"])
+    if "body_type" in data:
+        set_body_type(checklist, data["body_type"])
+    return checklist
 
 
 def resolve_photos(order: ServiceOrder, data: dict[str, Any]) -> list[ServiceOrderPhoto] | None:

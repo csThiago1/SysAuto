@@ -48,7 +48,12 @@ from .core import (
 )
 
 # -- checklist.py --
-from .checklist import ChecklistDamageSerializer, CustomerBelongingSerializer
+from .checklist import (
+    ChecklistDamageSerializer,
+    ChecklistHistorySerializer,
+    CustomerBelongingSerializer,
+    EntryChecklistStateSerializer,
+)
 
 # -- mobile.py --
 from .mobile import ServiceOrderSyncSerializer
@@ -104,6 +109,8 @@ __all__ = [
     "OverrideRequestSerializer",
     # checklist
     "ChecklistDamageSerializer",
+    "ChecklistHistorySerializer",
+    "EntryChecklistStateSerializer",
     "CustomerBelongingSerializer",
     # mobile
     "ServiceOrderSyncSerializer",

@@ -1,5 +1,7 @@
 """
-Checklist de entrada 3D — danos e pertences (aninhados na OS).
+Checklist de entrada 3D — estado, danos e pertences (aninhados na OS).
+
+GET/PATCH /service-orders/{os}/checklist/entrada/           · GET …/history/
 
 GET/POST /service-orders/{os}/checklist-damages/            · PATCH …/{id}/ · POST …/{id}/deactivate/
 GET/POST /service-orders/{os}/belongings/                   · PATCH …/{id}/ · POST …/{id}/return/
@@ -10,19 +12,27 @@ from __future__ import annotations
 
 import logging
 
-from django.db.models import QuerySet
+from django.db.models import Count, Q, QuerySet
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
 from apps.authentication.permissions import HasTenantPermission
 
-from ..models import ChecklistDamage, CustomerBelonging, ServiceOrder
-from ..serializers.checklist import ChecklistDamageSerializer, CustomerBelongingSerializer
+from ..models import ChecklistDamage, CustomerBelonging, EntryChecklist, ServiceOrder
+from ..models.checklist import ENTRY
+from ..serializers.checklist import (
+    ChecklistDamageSerializer,
+    ChecklistHistorySerializer,
+    CustomerBelongingSerializer,
+    EntryChecklistStateSerializer,
+)
 from ..services import checklist_service as svc
 
 logger = logging.getLogger(__name__)
@@ -109,3 +119,58 @@ class CustomerBelongingViewSet(_ChecklistChildViewSet):
     @action(detail=True, methods=["post"], url_path="return", url_name="return")
     def return_(self, request: Request, **kwargs: object) -> Response:
         return self._respond(svc.return_belonging(self.get_object(), request.user))
+
+
+class _ChecklistTypeView(APIView):
+    """Base: `checklist_type` da URL só aceita `entrada`; leitura os.view, escrita os.edit."""
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        code = "os.view" if self.request.method == "GET" else "os.edit"
+        return [IsAuthenticated(), HasTenantPermission(code)]
+
+    def get_order(self) -> ServiceOrder:
+        # ponytail: só "entrada" por enquanto; saída entra quando existir o fluxo
+        if self.kwargs["checklist_type"] != ENTRY:
+            raise Http404
+        return get_object_or_404(ServiceOrder, pk=self.kwargs["service_order_pk"])
+
+
+class EntryChecklistStateView(_ChecklistTypeView):
+    def get(self, request: Request, **kwargs: object) -> Response:
+        checklist = svc.get_or_create_checklist(self.get_order())
+        return Response(EntryChecklistStateSerializer(checklist).data)
+
+    def patch(self, request: Request, **kwargs: object) -> Response:
+        order = self.get_order()
+        serializer = EntryChecklistStateSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        checklist = svc.update_checklist_state(order, serializer.validated_data)
+        return Response(EntryChecklistStateSerializer(checklist).data)
+
+
+class EntryChecklistHistoryView(_ChecklistTypeView):
+    """Checklists finalizados de outras OS da mesma placa, mais recentes primeiro."""
+
+    def get(self, request: Request, **kwargs: object) -> Response:
+        order = self.get_order()
+        checklists = (
+            EntryChecklist.objects.filter(
+                checklist_type=ENTRY,
+                finalized_at__isnull=False,
+                service_order__plate=order.plate,
+                service_order__is_active=True,
+            )
+            .exclude(service_order=order)
+            .select_related("service_order")
+            .annotate(
+                damage_count=Count(
+                    "service_order__checklist_damages",
+                    filter=Q(
+                        service_order__checklist_damages__is_active=True,
+                        service_order__checklist_damages__checklist_type=ENTRY,
+                    ),
+                )
+            )
+            .order_by("-finalized_at")
+        )
+        return Response(ChecklistHistorySerializer(checklists, many=True).data)
