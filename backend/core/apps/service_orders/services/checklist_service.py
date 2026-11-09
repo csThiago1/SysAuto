@@ -1,5 +1,5 @@
 """
-Checklist de entrada 3D — trava, numeração de danos e vínculo de fotos.
+Checklist de entrada 3D — trava, numeração de danos, vínculo de fotos, finalizar e reabrir.
 
 O checklist finalizado fica travado: só reabrindo (MANAGER+) volta a aceitar escrita.
 Devolver pertence é a exceção — acontece na entrega, com o checklist já travado.
@@ -7,23 +7,33 @@ Devolver pertence é a exceção — acontece na entrega, com o checklist já tr
 
 from __future__ import annotations
 
+import hashlib
 import logging
 from typing import Any
 
+from django.core.files.storage import default_storage
 from django.db import transaction
-from django.db.models import Max
+from django.db.models import Max, Prefetch
 from django.utils import timezone
 from rest_framework.exceptions import APIException, ValidationError
 
 from apps.authentication.models import GlobalUser
+from apps.documents.data_loaders import OSDataLoader
+from apps.documents.models import DocumentType
+from apps.documents.services import DocumentService
 
+from ..checklist_constants import EXTERIOR_STOPS, SignatureStatus
 from ..models import (
+    ActivityType,
     ChecklistDamage,
+    ChecklistItem,
     CustomerBelonging,
     EntryChecklist,
+    EntryChecklistVersion,
     FamilyBodyType,
     OSPhotoFolder,
     ServiceOrder,
+    ServiceOrderActivityLog,
     ServiceOrderPhoto,
 )
 from ..models.checklist import ENTRY
@@ -211,3 +221,148 @@ def return_belonging(belonging: CustomerBelonging, user: GlobalUser) -> Customer
         belonging.returned_by = user
         belonging.save(update_fields=["returned_at", "returned_by", "updated_at"])
     return belonging
+
+
+SNAPSHOT_KEYS: tuple[str, ...] = ("front34", "rear34", "left", "right")
+_PNG_DATA_URI = "data:image/png;base64,"
+
+
+def _active_damages(order: ServiceOrder) -> list[ChecklistDamage]:
+    active_photos = ServiceOrderPhoto.objects.filter(is_active=True).order_by("uploaded_at")
+    return list(
+        ChecklistDamage.objects.filter(service_order=order, checklist_type=ENTRY, is_active=True)
+        .prefetch_related(Prefetch("photos", queryset=active_photos))
+        .order_by("number")
+    )
+
+
+def _pdf_data(
+    order: ServiceOrder, damages: list[ChecklistDamage], snapshots: dict[str, str]
+) -> dict[str, Any]:
+    """Contexto do PDF — também vira o `data_snapshot` do DocumentGeneration."""
+    data = OSDataLoader._base_context(order)
+    data["order"]["customer_name"] = order.customer_name
+    data["vehicle"] = OSDataLoader._vehicle_dict(order)
+    data["snapshots"] = {key: snapshots[key] for key in SNAPSHOT_KEYS}
+    data["damages"] = [
+        {
+            "number": d.number,
+            "panel": d.get_panel_key_display(),
+            "type": d.get_damage_type_display(),
+            "severity": d.severity,
+            "severity_label": d.get_severity_display(),
+            "relation": d.get_relation_display(),
+            "photo_url": default_storage.url(d.photos.all()[0].s3_key),
+        }
+        for d in damages
+    ]
+    data["items"] = [
+        {
+            "category": item.get_category_display(),
+            "item_key": item.item_key,
+            "status": item.get_status_display(),
+            "notes": item.notes,
+        }
+        for item in ChecklistItem.objects.filter(service_order=order, checklist_type=ENTRY)
+    ]
+    data["belongings"] = list(
+        CustomerBelonging.objects.filter(service_order=order, is_active=True)
+        .order_by("created_at")
+        .values_list("description", flat=True)
+    )
+    return data
+
+
+@transaction.atomic
+def finalize(
+    checklist: EntryChecklist, snapshots: dict[str, str], user: GlobalUser
+) -> EntryChecklist:
+    """Valida, gera o PDF e trava o checklist. Pendências → 400 `{"missing": [...]}`."""
+    checklist = (
+        EntryChecklist.objects.select_for_update()
+        .select_related("service_order")
+        .get(pk=checklist.pk)
+    )
+    if checklist.is_locked:
+        raise ChecklistLocked()
+    order = checklist.service_order
+    damages = _active_damages(order)
+    missing = [f"stop:{stop}" for stop in EXTERIOR_STOPS if stop not in checklist.stops_done]
+    missing += [f"damage:{d.number}:photo" for d in damages if not d.photos.all()]
+    if not checklist.body_type:
+        missing.append("body_type")
+    missing += [
+        f"snapshot:{key}"
+        for key in SNAPSHOT_KEYS
+        if not (isinstance(snapshots.get(key), str) and snapshots[key].startswith(_PNG_DATA_URI))
+    ]
+    if missing:
+        raise ValidationError({"missing": missing})
+
+    doc = DocumentService.generate(
+        order.pk, DocumentType.CHECKLIST_ENTRADA, _pdf_data(order, damages, snapshots), user
+    )
+    with default_storage.open(doc.s3_key, "rb") as f:
+        pdf_sha256 = hashlib.sha256(f.read()).hexdigest()
+
+    checklist.finalized_at = timezone.now()
+    checklist.finalized_by = user
+    checklist.pdf = doc
+    checklist.pdf_sha256 = pdf_sha256
+    checklist.signature_status = SignatureStatus.PENDENTE
+    checklist.signature = None
+    checklist.save()
+    ServiceOrderActivityLog.objects.create(
+        service_order=order,
+        user=user,
+        activity_type=ActivityType.CHECKLIST_FINALIZED,
+        description=f"Checklist de entrada v{checklist.version} finalizado",
+        metadata={"version": checklist.version, "document_id": str(doc.pk)},
+    )
+    logger.info("Checklist de entrada v%s finalizado na OS %s", checklist.version, order.pk)
+    return checklist
+
+
+@transaction.atomic
+def reopen(checklist: EntryChecklist, reason: str, user: GlobalUser) -> EntryChecklist:
+    """Guarda a versão atual em EntryChecklistVersion e destrava (version + 1)."""
+    reason = (reason or "").strip()
+    if not reason:
+        raise ValidationError({"reason": "Informe o motivo da reabertura."})
+    checklist = (
+        EntryChecklist.objects.select_for_update()
+        .select_related("service_order")
+        .get(pk=checklist.pk)
+    )
+    if not checklist.is_locked:
+        raise ValidationError({"detail": "Checklist não está finalizado."})
+    EntryChecklistVersion.objects.create(
+        checklist=checklist,
+        version=checklist.version,
+        pdf=checklist.pdf,
+        pdf_sha256=checklist.pdf_sha256,
+        signature_status=checklist.signature_status,
+        signature=checklist.signature,
+        reopened_reason=reason,
+        reopened_by=user,
+        created_by=user,
+    )
+    previous = checklist.version
+    checklist.finalized_at = None
+    checklist.pdf = None
+    checklist.pdf_sha256 = ""
+    checklist.signature = None
+    checklist.remote_token_hash = ""
+    checklist.remote_expires_at = None
+    checklist.version = previous + 1
+    checklist.signature_status = SignatureStatus.PENDENTE
+    checklist.save()
+    ServiceOrderActivityLog.objects.create(
+        service_order=checklist.service_order,
+        user=user,
+        activity_type=ActivityType.CHECKLIST_REOPENED,
+        description=f"Checklist de entrada v{previous} reaberto: {reason}",
+        metadata={"version": previous, "reason": reason},
+    )
+    logger.info("Checklist de entrada v%s reaberto na OS %s", previous, checklist.service_order_id)
+    return checklist

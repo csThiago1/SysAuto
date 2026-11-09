@@ -1,0 +1,156 @@
+{% extends "pdf_engine/base.html" %}
+
+{% block title %}Checklist de Entrada — OS #{{ order.number }}{% endblock %}
+
+{% block extra_styles %}
+        body { font-family: Montserrat, Arial, sans-serif; }
+        .ck-header {
+            background: #000;
+            color: #fff;
+            padding: 10px 14px;
+            border-bottom: 4px solid #ea0e03;
+            margin-bottom: 16px;
+        }
+        .ck-header table { margin: 0; }
+        .ck-header td { border: none; color: #fff; padding: 0; vertical-align: middle; }
+        .ck-header tr:nth-child(even) { background: transparent; }
+        .ck-header img { height: 38px; width: auto; }
+        .ck-header h1 { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.04em; }
+        .ck-header p { margin: 2px 0 0; font-size: 9px; color: #ccc; }
+        .section-title { border-bottom: 2px solid #ea0e03; }
+        .shots { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
+        .shots td { width: 50%; border: 1px solid #ddd; padding: 4px; text-align: center; }
+        .shots tr:nth-child(even) { background: transparent; }
+        .shots img { width: 100%; height: auto; max-height: 6.5cm; object-fit: contain; display: block; }
+        .shots .label { font-size: 8px; text-transform: uppercase; color: #555; padding-top: 3px; }
+        .sev { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+        .sev-leve { background: #ffe000; }
+        .sev-moderada { background: #ff8a00; }
+        .sev-grave { background: #ea0e03; }
+        .thumb { width: 60px; height: 45px; object-fit: cover; }
+        .shots, .damages tr { page-break-inside: avoid; }
+{% endblock %}
+
+{% block doc_header %}
+<div class="ck-header">
+    <table>
+        <tr>
+            {% if logo_base64 %}<td style="width: 110px;"><img src="{{ logo_base64 }}" alt="DS Car" /></td>{% endif %}
+            <td>
+                <h1>CHECKLIST DE ENTRADA</h1>
+                <p>{{ company.razao_social|default:"DS Car Centro Automotivo" }}{% if company.cnpj_formatted %} · CNPJ {{ company.cnpj_formatted }}{% endif %}</p>
+            </td>
+            <td class="right">
+                <h1>OS #{{ order.number }}</h1>
+                <p>{{ location_date }}</p>
+            </td>
+        </tr>
+    </table>
+</div>
+{% endblock %}
+
+{% block content %}
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">01</span>Cliente e Veículo</h2>
+        <div class="info-grid">
+            <div class="info-row">
+                <span class="info-label">Cliente</span>
+                <span class="info-value bold">{{ order.customer_name|default:"—" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Veículo</span>
+                <span class="info-value bold">{{ vehicle.make }} {{ vehicle.model }}{% if vehicle.color %} — {{ vehicle.color }}{% endif %}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Placa / Ano</span>
+                <span class="info-value bold">{{ vehicle.plate|default:"—" }} · {{ vehicle.year|default:"—" }}</span>
+            </div>
+            {% if vehicle.mileage_in %}
+            <div class="info-row">
+                <span class="info-label">KM de entrada</span>
+                <span class="info-value">{{ vehicle.mileage_in }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">02</span>Vistas do Veículo</h2>
+        <table class="shots">
+            <tr>
+                <td><img src="{{ snapshots.front34 }}" alt="Frente" /><div class="label">Frente ¾</div></td>
+                <td><img src="{{ snapshots.rear34 }}" alt="Traseira" /><div class="label">Traseira ¾</div></td>
+            </tr>
+            <tr>
+                <td><img src="{{ snapshots.left }}" alt="Lado esquerdo" /><div class="label">Lado esquerdo</div></td>
+                <td><img src="{{ snapshots.right }}" alt="Lado direito" /><div class="label">Lado direito</div></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">03</span>Danos</h2>
+        {% if damages %}
+        <table class="damages">
+            <thead>
+                <tr>
+                    <th style="width: 26px;">Nº</th>
+                    <th>Peça</th>
+                    <th>Tipo</th>
+                    <th>Gravidade</th>
+                    <th>Relação</th>
+                    <th style="width: 66px;">Foto</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in damages %}
+                <tr>
+                    <td class="bold">{{ d.number }}</td>
+                    <td>{{ d.panel }}</td>
+                    <td>{{ d.type }}</td>
+                    <td><span class="sev sev-{{ d.severity }}"></span>{{ d.severity_label }}</td>
+                    <td>{{ d.relation }}</td>
+                    <td>{% if d.photo_url %}<img class="thumb" src="{{ d.photo_url }}" alt="Foto do dano {{ d.number }}" />{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="muted">Nenhum dano registrado na entrada.</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">04</span>Itens do Veículo</h2>
+        {% if items %}
+        <table>
+            <thead>
+                <tr><th>Categoria</th><th>Item</th><th>Status</th><th>Observações</th></tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.category }}</td>
+                    <td>{{ item.item_key }}</td>
+                    <td>{{ item.status }}</td>
+                    <td>{{ item.notes|default:"" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="muted">Nenhum item conferido.</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h2 class="section-title"><span class="section-number">05</span>Pertences do Cliente</h2>
+        {% if belongings %}
+        <ul class="check-list">
+            {% for description in belongings %}<li>{{ description }}</li>{% endfor %}
+        </ul>
+        {% else %}
+        <p class="muted">Nenhum pertence registrado.</p>
+        {% endif %}
+    </div>
+{% endblock %}

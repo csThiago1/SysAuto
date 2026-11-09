@@ -12,6 +12,7 @@ class DocumentType(models.TextChoices):
     WARRANTY = "warranty", "Termo de Garantia"
     SETTLEMENT = "settlement", "Termo de Quitação"
     RECEIPT = "receipt", "Recibo de Pagamento"
+    CHECKLIST_ENTRADA = "checklist_entrada", "Checklist de Entrada"
 
 
 class DocumentGeneration(PaddockBaseModel):

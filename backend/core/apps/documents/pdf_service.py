@@ -16,6 +16,7 @@ _DOCUMENT_TEMPLATES = {
     "warranty": "pdf_engine/warranty.html",
     "settlement": "pdf_engine/settlement.html",
     "receipt": "pdf_engine/receipt.html",
+    "checklist_entrada": "pdf_engine/checklist_entrada.html",
 }
 
 

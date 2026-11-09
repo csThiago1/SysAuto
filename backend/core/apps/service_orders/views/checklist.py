@@ -2,6 +2,7 @@
 Checklist de entrada 3D — estado, danos e pertences (aninhados na OS).
 
 GET/PATCH /service-orders/{os}/checklist/entrada/           · GET …/history/
+POST …/checklist/entrada/finalize/ {snapshots} (os.edit)    · POST …/reopen/ {reason} (MANAGER+)
 
 GET/POST /service-orders/{os}/checklist-damages/            · PATCH …/{id}/ · POST …/{id}/deactivate/
 GET/POST /service-orders/{os}/belongings/                   · PATCH …/{id}/ · POST …/{id}/return/
@@ -23,7 +24,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
-from apps.authentication.permissions import HasTenantPermission
+from apps.authentication.permissions import HasTenantPermission, IsManagerOrAbove
 
 from ..models import ChecklistDamage, CustomerBelonging, EntryChecklist, ServiceOrder
 from ..models.checklist import ENTRY
@@ -174,3 +175,28 @@ class EntryChecklistHistoryView(_ChecklistTypeView):
             .order_by("-finalized_at")
         )
         return Response(ChecklistHistorySerializer(checklists, many=True).data)
+
+
+class EntryChecklistFinalizeView(_ChecklistTypeView):
+    def post(self, request: Request, **kwargs: object) -> Response:
+        snapshots = request.data.get("snapshots")
+        checklist = svc.finalize(
+            svc.get_or_create_checklist(self.get_order()),
+            snapshots if isinstance(snapshots, dict) else {},
+            request.user,
+        )
+        return Response(EntryChecklistStateSerializer(checklist).data)
+
+
+class EntryChecklistReopenView(_ChecklistTypeView):
+    def get_permissions(self) -> list:  # type: ignore[override]
+        return [IsAuthenticated(), IsManagerOrAbove()]
+
+    def post(self, request: Request, **kwargs: object) -> Response:
+        reason = request.data.get("reason")
+        checklist = svc.reopen(
+            svc.get_or_create_checklist(self.get_order()),
+            reason if isinstance(reason, str) else "",
+            request.user,
+        )
+        return Response(EntryChecklistStateSerializer(checklist).data)

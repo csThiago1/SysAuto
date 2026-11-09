@@ -19,7 +19,9 @@ from .views.apontamento import ApontamentoGlobalListView, ApontamentoViewSet
 from .views.checklist import (
     ChecklistDamageViewSet,
     CustomerBelongingViewSet,
+    EntryChecklistFinalizeView,
     EntryChecklistHistoryView,
+    EntryChecklistReopenView,
     EntryChecklistStateView,
 )
 
@@ -73,6 +75,16 @@ urlpatterns = [
         "<uuid:service_order_pk>/checklist/<str:checklist_type>/history/",
         EntryChecklistHistoryView.as_view(),
         name="entry-checklist-history",
+    ),
+    path(
+        "<uuid:service_order_pk>/checklist/<str:checklist_type>/finalize/",
+        EntryChecklistFinalizeView.as_view(),
+        name="entry-checklist-finalize",
+    ),
+    path(
+        "<uuid:service_order_pk>/checklist/<str:checklist_type>/reopen/",
+        EntryChecklistReopenView.as_view(),
+        name="entry-checklist-reopen",
     ),
     path("<uuid:service_order_pk>/payments/", include("apps.payments.urls")),
     path("", include(router.urls)),
