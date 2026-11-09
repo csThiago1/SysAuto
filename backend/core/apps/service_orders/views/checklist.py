@@ -100,10 +100,7 @@ class ChecklistDamageViewSet(_ChecklistChildViewSet):
 
     @action(detail=True, methods=["post"])
     def deactivate(self, request: Request, **kwargs: object) -> Response:
-        damage = self.get_object()
-        svc.assert_editable(damage.service_order)
-        damage.soft_delete()
-        return self._respond(damage)
+        return self._respond(svc.deactivate_damage(self.get_object()))
 
 
 class CustomerBelongingViewSet(_ChecklistChildViewSet):

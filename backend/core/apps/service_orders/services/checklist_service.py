@@ -78,12 +78,20 @@ def get_or_create_checklist(order: ServiceOrder, checklist_type: str = ENTRY) ->
     return checklist
 
 
-def assert_editable(order: ServiceOrder) -> None:
-    """Levanta ChecklistLocked se o checklist de entrada da OS estiver finalizado."""
-    if EntryChecklist.objects.filter(
-        service_order=order, checklist_type=ENTRY, finalized_at__isnull=False
-    ).exists():
+def lock_checklist(order: ServiceOrder) -> EntryChecklist:
+    """Cria (se preciso) e trava a linha do checklist de entrada. Exige transaction.atomic."""
+    return EntryChecklist.objects.select_for_update().get(pk=get_or_create_checklist(order).pk)
+
+
+def assert_editable(order: ServiceOrder) -> EntryChecklist:
+    """Trava o checklist e levanta ChecklistLocked se finalizado. Exige transaction.atomic.
+
+    A trava serializa a escrita com um finalize concorrente: nada grava depois do PDF/sha256.
+    """
+    checklist = lock_checklist(order)
+    if checklist.is_locked:
         raise ChecklistLocked()
+    return checklist
 
 
 def suggest_body_type(order: ServiceOrder) -> str | None:
@@ -112,9 +120,7 @@ def set_body_type(checklist: EntryChecklist, body_type: str) -> None:
 def update_checklist_state(order: ServiceOrder, data: dict[str, Any]) -> EntryChecklist:
     """PATCH do estado: `body_type` e `stops_done` (merge por chave)."""
     # Trava a linha: dois PATCHs de paradas simultâneos não se sobrescrevem.
-    checklist = EntryChecklist.objects.select_for_update().get(pk=get_or_create_checklist(order).pk)
-    if checklist.is_locked:
-        raise ChecklistLocked()
+    checklist = assert_editable(order)
     if "stops_done" in data:
         checklist.stops_done = {**checklist.stops_done, **data["stops_done"]}
         checklist.save(update_fields=["stops_done", "updated_at"])
@@ -152,7 +158,7 @@ def create_damage(
     """Cria dano com número sequencial por OS. Mesmo client_uuid → devolve o existente."""
     data = dict(data)
     # Trava a linha do checklist: serializa numeração e replays concorrentes da mesma OS.
-    checklist = EntryChecklist.objects.select_for_update().get(pk=get_or_create_checklist(order).pk)
+    checklist = lock_checklist(order)
     client_uuid = data.pop("client_uuid", None) or None
     existing = find_by_uuid(ChecklistDamage, client_uuid)
     if existing is not None:
@@ -208,11 +214,14 @@ def create_belonging(
 ) -> tuple[CustomerBelonging, bool]:
     """Cria pertence. Mesmo client_uuid → devolve o existente."""
     data = dict(data)
+    # Trava antes do replay, como create_damage: serializa replays concorrentes do mesmo uuid.
+    checklist = lock_checklist(order)
     client_uuid = data.pop("client_uuid", None) or None
     existing = find_by_uuid(CustomerBelonging, client_uuid)
     if existing is not None:
         return existing, False
-    assert_editable(order)
+    if checklist.is_locked:
+        raise ChecklistLocked()
     _resolve_belonging_photo(order, data)
     belonging = CustomerBelonging.objects.create(
         service_order=order, client_uuid=client_uuid, created_by=user, **data
@@ -229,6 +238,13 @@ def update_belonging(belonging: CustomerBelonging, data: dict[str, Any]) -> Cust
         setattr(belonging, field, value)
     belonging.save()
     return belonging
+
+
+@transaction.atomic
+def deactivate_damage(damage: ChecklistDamage) -> ChecklistDamage:
+    assert_editable(damage.service_order)
+    damage.soft_delete()
+    return damage
 
 
 def return_belonging(belonging: CustomerBelonging, user: GlobalUser) -> CustomerBelonging:

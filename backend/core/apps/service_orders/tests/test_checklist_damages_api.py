@@ -2,6 +2,8 @@
 
 import hashlib
 
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 from django_tenants.test.cases import TenantTestCase
 from rest_framework.test import APIClient
@@ -149,6 +151,63 @@ class ChecklistDamagesAPITest(TenantTestCase):
         assert resp.json()["returned_at"]
         belonging = CustomerBelonging.objects.get()
         assert belonging.returned_by_id == self.user.id
+
+    def _assert_locks_checklist(self, request) -> None:  # noqa: ANN001
+        """A escrita trava a linha do checklist antes de checar a trava (corrida com finalize)."""
+        table = EntryChecklist._meta.db_table
+        with CaptureQueriesContext(connection) as ctx:
+            resp = request()
+        assert resp.status_code in (200, 201), resp.content
+        locks = [q["sql"] for q in ctx.captured_queries if "FOR UPDATE" in q["sql"]]
+        assert any(table in sql for sql in locks), locks
+
+    def test_writes_lock_checklist_row(self) -> None:
+        # Sem checklist ainda: a escrita cria e trava (mesmo padrão de create_damage).
+        belonging = self.client.post(
+            f"{self.base}/belongings/", {"description": "Guarda-chuva"}, format="json"
+        )
+        assert belonging.status_code == 201, belonging.content
+        assert EntryChecklist.objects.filter(service_order=self.order).exists()
+        damage_id = self._post_damage().json()["id"]
+        belonging_id = belonging.json()["id"]
+        self._assert_locks_checklist(
+            lambda: self.client.post(
+                f"{self.base}/belongings/", {"description": "Estepe"}, format="json"
+            )
+        )
+        self._assert_locks_checklist(
+            lambda: self.client.patch(
+                f"{self.base}/belongings/{belonging_id}/", {"description": "Capa"}, format="json"
+            )
+        )
+        self._assert_locks_checklist(
+            lambda: self.client.patch(
+                f"{self.base}/checklist-damages/{damage_id}/", {"severity": "grave"}, format="json"
+            )
+        )
+        self._assert_locks_checklist(
+            lambda: self.client.post(f"{self.base}/checklist-damages/{damage_id}/deactivate/")
+        )
+
+    def test_writes_after_finalize_are_409(self) -> None:
+        damage_id = self._post_damage().json()["id"]
+        belonging_id = self.client.post(
+            f"{self.base}/belongings/", {"description": "Óculos"}, format="json"
+        ).json()["id"]
+        self._lock()
+        responses = (
+            self.client.post(f"{self.base}/checklist-damages/{damage_id}/deactivate/"),
+            self.client.post(f"{self.base}/belongings/", {"description": "X"}, format="json"),
+            self.client.patch(
+                f"{self.base}/belongings/{belonging_id}/", {"description": "Y"}, format="json"
+            ),
+        )
+        for resp in responses:
+            assert resp.status_code == 409, resp.content
+            assert resp.json()["code"] == "checklist_locked"
+        assert ChecklistDamage.objects.get().is_active
+        assert CustomerBelonging.objects.count() == 1
+        assert CustomerBelonging.objects.get().description == "Óculos"
 
     def test_no_delete_route(self) -> None:
         created = self._post_damage().json()
