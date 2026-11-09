@@ -22,6 +22,8 @@ from .views.checklist import (
     EntryChecklistFinalizeView,
     EntryChecklistHistoryView,
     EntryChecklistReopenView,
+    EntryChecklistSendRemoteView,
+    EntryChecklistSignView,
     EntryChecklistStateView,
 )
 
@@ -85,6 +87,16 @@ urlpatterns = [
         "<uuid:service_order_pk>/checklist/<str:checklist_type>/reopen/",
         EntryChecklistReopenView.as_view(),
         name="entry-checklist-reopen",
+    ),
+    path(
+        "<uuid:service_order_pk>/checklist/<str:checklist_type>/sign/",
+        EntryChecklistSignView.as_view(),
+        name="entry-checklist-sign",
+    ),
+    path(
+        "<uuid:service_order_pk>/checklist/<str:checklist_type>/send-remote/",
+        EntryChecklistSendRemoteView.as_view(),
+        name="entry-checklist-send-remote",
     ),
     path("<uuid:service_order_pk>/payments/", include("apps.payments.urls")),
     path("", include(router.urls)),

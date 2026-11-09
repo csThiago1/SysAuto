@@ -7,6 +7,7 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from apps.authentication.views_health import healthz
+from apps.service_orders.views.checklist_public import ChecklistConfirmView
 
 urlpatterns = [
     # Health check (before API routes, no auth required)
@@ -42,6 +43,12 @@ urlpatterns = [
     path("api/v1/documents/", include("apps.documents.urls")),
     path("api/v1/purchasing/", include("apps.purchasing.urls")),
     path("api/v1/lookups/", include("apps.lookups.urls")),
+    # Link remoto do checklist de entrada (sem login; tenant pelo domínio, como o reset de senha)
+    path(
+        "api/v1/public/checklist-confirm/<str:token>/",
+        ChecklistConfirmView.as_view(),
+        name="checklist-confirm",
+    ),
     # MO-9: Capacidade
     path("api/v1/capacidade/", include("apps.service_orders.urls_capacidade")),
     # API Docs

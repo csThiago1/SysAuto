@@ -3,6 +3,7 @@ Checklist de entrada 3D — estado, danos e pertences (aninhados na OS).
 
 GET/PATCH /service-orders/{os}/checklist/entrada/           · GET …/history/
 POST …/checklist/entrada/finalize/ {snapshots} (os.edit)    · POST …/reopen/ {reason} (MANAGER+)
+POST …/checklist/entrada/sign/ {signer_name, signature_png_base64} · POST …/send-remote/ (os.edit)
 
 GET/POST /service-orders/{os}/checklist-damages/            · PATCH …/{id}/ · POST …/{id}/deactivate/
 GET/POST /service-orders/{os}/belongings/                   · PATCH …/{id}/ · POST …/{id}/return/
@@ -200,3 +201,31 @@ class EntryChecklistReopenView(_ChecklistTypeView):
             request.user,
         )
         return Response(EntryChecklistStateSerializer(checklist).data)
+
+
+def _str(request: Request, key: str) -> str:
+    value = request.data.get(key)
+    return value if isinstance(value, str) else ""
+
+
+class EntryChecklistSignView(_ChecklistTypeView):
+    """Assinatura presencial (iPad)."""
+
+    def post(self, request: Request, **kwargs: object) -> Response:
+        checklist = svc.get_or_create_checklist(self.get_order())
+        svc.sign_presencial(
+            checklist,
+            _str(request, "signer_name"),
+            _str(request, "signature_png_base64"),
+            request.META.get("REMOTE_ADDR"),
+            request.META.get("HTTP_USER_AGENT", ""),
+        )
+        checklist.refresh_from_db()
+        return Response(EntryChecklistStateSerializer(checklist).data)
+
+
+class EntryChecklistSendRemoteView(_ChecklistTypeView):
+    """Gera o link de aceite remoto → `{url, whatsapp_url}`."""
+
+    def post(self, request: Request, **kwargs: object) -> Response:
+        return Response(svc.create_remote_link(svc.get_or_create_checklist(self.get_order())))

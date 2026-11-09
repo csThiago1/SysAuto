@@ -7,20 +7,28 @@ Devolver pertence é a exceção — acontece na entrega, com o checklist já tr
 
 from __future__ import annotations
 
+import datetime
 import hashlib
 import logging
+import re
+import secrets
 from typing import Any
+from urllib.parse import quote
 
+from django.conf import settings
 from django.core.files.storage import default_storage
 from django.db import transaction
 from django.db.models import Max, Prefetch
 from django.utils import timezone
-from rest_framework.exceptions import APIException, ValidationError
+from rest_framework.exceptions import APIException, NotFound, ValidationError
 
 from apps.authentication.models import GlobalUser
 from apps.documents.data_loaders import OSDataLoader
 from apps.documents.models import DocumentType
 from apps.documents.services import DocumentService
+from apps.persons.models import PersonContact, TipoContato
+from apps.signatures.models import Signature
+from apps.signatures.services import SignatureService
 
 from ..checklist_constants import EXTERIOR_STOPS, SignatureStatus
 from ..models import (
@@ -52,6 +60,14 @@ class ChecklistLocked(APIException):
         "code": "checklist_locked",
     }
     default_code = "checklist_locked"
+
+
+class RemoteLinkExpired(APIException):
+    """HTTP 410 — link remoto vencido ou já usado."""
+
+    status_code = 410
+    default_detail = {"detail": "Link expirado ou já utilizado.", "code": "link_expired"}
+    default_code = "link_expired"
 
 
 def get_or_create_checklist(order: ServiceOrder, checklist_type: str = ENTRY) -> EntryChecklist:
@@ -366,3 +382,142 @@ def reopen(checklist: EntryChecklist, reason: str, user: GlobalUser) -> EntryChe
     )
     logger.info("Checklist de entrada v%s reaberto na OS %s", previous, checklist.service_order_id)
     return checklist
+
+
+SIGNATURE_DOC_TYPE = "VISTORIA_ENTRADA"
+REMOTE_LINK_TTL = datetime.timedelta(days=7)
+
+
+def _assert_signable(checklist: EntryChecklist, signer_name: str) -> None:
+    if not checklist.is_locked:
+        raise ValidationError({"detail": "Finalize o checklist antes de assinar."})
+    if not signer_name.strip():
+        raise ValidationError({"signer_name": "Informe o nome de quem assina."})
+
+
+def _record_signature(checklist: EntryChecklist, signature: Signature, status: str) -> None:
+    """Liga a assinatura ao checklist, inutiliza o link remoto e registra no log da OS."""
+    checklist.signature = signature
+    checklist.signature_status = status
+    # Hash fica: o mesmo link responde 410 (já usado) em vez de 404.
+    checklist.remote_expires_at = None
+    checklist.save(
+        update_fields=["signature", "signature_status", "remote_expires_at", "updated_at"]
+    )
+    ServiceOrderActivityLog.objects.create(
+        service_order=checklist.service_order,
+        # Aceite remoto não tem usuário logado: atribui a quem finalizou o checklist.
+        user_id=checklist.finalized_by_id,
+        activity_type=ActivityType.CHECKLIST_SIGNED,
+        description=f"Checklist de entrada v{checklist.version} assinado ({status})",
+        metadata={"version": checklist.version, "method": signature.method},
+    )
+    logger.info(
+        "Checklist de entrada v%s assinado (%s) na OS %s",
+        checklist.version,
+        status,
+        checklist.service_order_id,
+    )
+
+
+@transaction.atomic
+def sign_presencial(
+    checklist: EntryChecklist, signer_name: str, png_b64: str, ip: str | None, ua: str
+) -> Signature:
+    """Assinatura no iPad (canvas). Exige checklist finalizado."""
+    checklist = (
+        EntryChecklist.objects.select_for_update()
+        .select_related("service_order")
+        .get(pk=checklist.pk)
+    )
+    _assert_signable(checklist, signer_name)
+    signature = SignatureService.capture(
+        document_type=SIGNATURE_DOC_TYPE,
+        method="CANVAS_TABLET",
+        signer_name=signer_name.strip(),
+        # Canvas do navegador manda data URI; o capture espera base64 puro.
+        signature_png_base64=png_b64.removeprefix(_PNG_DATA_URI),
+        service_order=checklist.service_order,
+        ip_address=ip,
+        user_agent=ua,
+        notes=f"Checklist v{checklist.version} · sha256 {checklist.pdf_sha256}",
+    )
+    _record_signature(checklist, signature, SignatureStatus.PRESENCIAL)
+    return signature
+
+
+def _whatsapp_number(order: ServiceOrder) -> str:
+    """Dígitos do WhatsApp principal do cliente com DDI 55; vazio se não houver."""
+    if not order.customer_id:
+        return ""
+    contact = (
+        PersonContact.objects.filter(person_id=order.customer_id, contact_type=TipoContato.WHATSAPP)
+        .order_by("-is_primary", "pk")
+        .first()
+    )
+    digits = re.sub(r"\D", "", contact.value) if contact else ""
+    if not digits:
+        return ""
+    # Já salvo com DDI (+55 92 9…): não duplica.
+    return digits if digits.startswith("55") and len(digits) > 11 else f"55{digits}"
+
+
+@transaction.atomic
+def create_remote_link(checklist: EntryChecklist) -> dict[str, str]:
+    """Gera o link de aceite remoto (7 dias) e a URL wa.me com a mensagem pronta."""
+    checklist = (
+        EntryChecklist.objects.select_for_update()
+        .select_related("service_order")
+        .get(pk=checklist.pk)
+    )
+    if not checklist.is_locked:
+        raise ValidationError({"detail": "Finalize o checklist antes de enviar o link."})
+    token = secrets.token_urlsafe(32)
+    checklist.remote_token_hash = hashlib.sha256(token.encode()).hexdigest()
+    checklist.remote_expires_at = timezone.now() + REMOTE_LINK_TTL
+    checklist.save(update_fields=["remote_token_hash", "remote_expires_at", "updated_at"])
+
+    order = checklist.service_order
+    url = f"{settings.FRONTEND_URL}/confirmar-checklist/{token}"
+    message = (
+        f"Olá! Segue o checklist de entrada do seu veículo {order.plate} na DS Car. "
+        f"Confira e confirme: {url}"
+    )
+    whatsapp_url = f"https://wa.me/{_whatsapp_number(order)}?text={quote(message)}"
+    logger.info("Link remoto do checklist v%s gerado na OS %s", checklist.version, order.pk)
+    return {"url": url, "whatsapp_url": whatsapp_url}
+
+
+def get_by_remote_token(token: str, for_update: bool = False) -> EntryChecklist:
+    """Checklist do token. Não existe → 404; vencido ou já usado → 410."""
+    qs = EntryChecklist.objects.select_related("service_order", "pdf")
+    if for_update:
+        qs = qs.select_for_update(of=("self",))
+    checklist = qs.filter(
+        remote_token_hash=hashlib.sha256(token.encode()).hexdigest(),
+        finalized_at__isnull=False,
+    ).first()
+    if checklist is None:
+        raise NotFound()
+    if checklist.remote_expires_at is None or checklist.remote_expires_at <= timezone.now():
+        raise RemoteLinkExpired()
+    return checklist
+
+
+@transaction.atomic
+def confirm_remote(token: str, signer_name: str, ip: str | None, ua: str) -> Signature:
+    """Aceite remoto: sem desenho, grava o hash do PDF confirmado nas notas."""
+    checklist = get_by_remote_token(token, for_update=True)
+    _assert_signable(checklist, signer_name)
+    signature = SignatureService.capture(
+        document_type=SIGNATURE_DOC_TYPE,
+        method="REMOTE_LINK",
+        signer_name=signer_name.strip(),
+        signature_png_base64="",
+        service_order=checklist.service_order,
+        ip_address=ip,
+        user_agent=ua,
+        notes=f"Aceite remoto · checklist v{checklist.version} · sha256 {checklist.pdf_sha256}",
+    )
+    _record_signature(checklist, signature, SignatureStatus.REMOTO)
+    return signature
