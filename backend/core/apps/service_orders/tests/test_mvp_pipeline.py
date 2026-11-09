@@ -14,6 +14,7 @@ from apps.fiscal.models import FiscalDocument
 from apps.insurers.models import Insurer
 from apps.persons.models import Person, PersonRole, RolePessoa, TipoPessoa
 from apps.service_orders.models import (
+    EntryChecklist,
     OSPhotoFolder,
     ServiceOrder,
     ServiceOrderLabor,
@@ -72,7 +73,9 @@ class ServiceOrderMvpPipelineTest(TenantTestCase):
             "mileage_in": 10000,
         }
         data.update(kwargs)
-        return ServiceOrderService.create(data=data, created_by_id=str(self.user.id))
+        order = ServiceOrderService.create(data=data, created_by_id=str(self.user.id))
+        EntryChecklist.objects.create(service_order=order, finalized_at=timezone.now())
+        return order
 
     def _transition(self, order: ServiceOrder, status: str, *, force: bool = True) -> ServiceOrder:
         return ServiceOrderService.transition(
