@@ -153,4 +153,8 @@
         <p class="muted">Nenhum pertence registrado.</p>
         {% endif %}
     </div>
+
+    {% if model_credit %}
+    <p class="muted small">Modelo 3D: {{ model_credit }}</p>
+    {% endif %}
 {% endblock %}

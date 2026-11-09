@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 from celery.schedules import crontab
-from decouple import config
+from decouple import Csv, config
 
 # ─── Caminhos ────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -391,6 +391,10 @@ JWT_AUDIENCE = config("JWT_AUDIENCE", default="dscar-erp")  # claim 'aud' nos to
 RESEND_API_KEY = config("RESEND_API_KEY", default="")
 EMAIL_FROM = config("EMAIL_FROM", default="noreply@paddock.solutions")
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:3001")
+
+# ─── Checklist 3D ────────────────────────────────────────────────────────────
+# Schemas que podem usar modelos 3D CC BY-NC-SA (uso não comercial, com crédito).
+CAR3D_NC_TENANTS = config("CAR3D_NC_TENANTS", default="tenant_dscar", cast=Csv())
 
 # ─── Cilia Web Service ───────────────────────────────────────────────────────
 CILIA_BASE_URL = config("CILIA_BASE_URL", default="https://sistema.cilia.com.br")

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from django.conf import settings
+from django.db import connection
 from django.db.models import Count
 from rest_framework import serializers
 
@@ -19,7 +21,7 @@ from ..models import (
 )
 from ..models.checklist import ENTRY
 from ..services.budget_panels import normalize_description
-from ..services.checklist_service import suggest_body_type
+from ..services.checklist_service import model_slug, suggest_body_type
 from .core import ServiceOrderPhotoSerializer
 
 NO_COLOR_HEX = "#9a9a9a"  # FANTASIA / NAO_INFORMADA / cor fora do mapa
@@ -42,6 +44,9 @@ class EntryChecklistStateSerializer(serializers.ModelSerializer):
     vehicle_color_hex = serializers.SerializerMethodField()
     customer_type = serializers.CharField(source="service_order.customer_type", read_only=True)
     items_summary = serializers.SerializerMethodField()
+    vehicle_make = serializers.SerializerMethodField()
+    vehicle_family = serializers.SerializerMethodField()
+    allow_nc_models = serializers.SerializerMethodField()
 
     class Meta:
         model = EntryChecklist
@@ -57,6 +62,9 @@ class EntryChecklistStateSerializer(serializers.ModelSerializer):
             "vehicle_color_hex",
             "customer_type",
             "items_summary",
+            "vehicle_make",
+            "vehicle_family",
+            "allow_nc_models",
         ]
         read_only_fields = ["id", "finalized_at", "version", "signature_status"]
 
@@ -68,6 +76,18 @@ class EntryChecklistStateSerializer(serializers.ModelSerializer):
 
     def get_vehicle_color_hex(self, obj: EntryChecklist) -> str:
         return COR_HEX.get(obj.service_order.color) or NO_COLOR_HEX
+
+    def get_vehicle_make(self, obj: EntryChecklist) -> str | None:
+        family = obj.service_order.catalog_family
+        return model_slug(family.make.nome) if family else None
+
+    def get_vehicle_family(self, obj: EntryChecklist) -> str | None:
+        family = obj.service_order.catalog_family
+        return model_slug(family.nome) if family else None
+
+    def get_allow_nc_models(self, obj: EntryChecklist) -> bool:
+        """Tenant pode usar modelos 3D CC BY-NC-SA (setting CAR3D_NC_TENANTS)."""
+        return connection.schema_name in settings.CAR3D_NC_TENANTS
 
     def get_items_summary(self, obj: EntryChecklist) -> dict[str, int]:
         """Itens do checklist textual de entrada, contados por status."""

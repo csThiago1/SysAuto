@@ -2,6 +2,7 @@
 
 import hashlib
 
+from django.template.loader import render_to_string
 from django.test import override_settings
 from django_tenants.test.cases import TenantTestCase
 from rest_framework.test import APIClient
@@ -82,8 +83,33 @@ class ChecklistFinalizeAPITest(TenantTestCase):
             damage.photos.add(photo)
         return damage
 
-    def _finalize(self, snapshots: dict[str, str] = SNAPSHOTS):  # noqa: ANN202
-        return self.client.post(f"{self.url}finalize/", {"snapshots": snapshots}, format="json")
+    def _finalize(self, snapshots: dict[str, str] = SNAPSHOTS, **extra: str):  # noqa: ANN202
+        return self.client.post(
+            f"{self.url}finalize/", {"snapshots": snapshots, **extra}, format="json"
+        )
+
+    def test_finalize_prints_model_credit(self) -> None:
+        credit = "Polo · Ddiaz Design · CC BY-NC-SA 4.0"
+        response = self._finalize(model_credit=credit)
+        assert response.status_code == 200, response.content
+        self.checklist.refresh_from_db()
+        html = render_to_string(
+            "pdf_engine/checklist_entrada.html", self.checklist.pdf.data_snapshot
+        )
+        assert f"Modelo 3D: {credit}" in html
+
+    def test_finalize_without_credit_prints_no_credit_line(self) -> None:
+        assert self._finalize().status_code == 200
+        self.checklist.refresh_from_db()
+        html = render_to_string(
+            "pdf_engine/checklist_entrada.html", self.checklist.pdf.data_snapshot
+        )
+        assert "Modelo 3D:" not in html
+
+    def test_finalize_rejects_long_model_credit(self) -> None:
+        response = self._finalize(model_credit="x" * 301)
+        assert response.status_code == 400, response.content
+        assert "model_credit" in response.json()
 
     def test_finalize_requires_all_exterior_stops(self) -> None:
         stops = dict(self.checklist.stops_done)

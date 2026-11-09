@@ -2,7 +2,8 @@
 Checklist de entrada 3D — estado, danos e pertences (aninhados na OS).
 
 GET/PATCH /service-orders/{os}/checklist/entrada/           · GET …/history/
-POST …/checklist/entrada/finalize/ {snapshots} (os.edit)    · POST …/reopen/ {reason} (MANAGER+)
+POST …/checklist/entrada/finalize/ {snapshots, model_credit?} (os.edit)
+POST …/checklist/entrada/reopen/ {reason} (MANAGER+)
 POST …/checklist/entrada/sign/ {signer_name, signature_png_base64} · POST …/send-remote/ (os.edit)
 
 GET/POST /service-orders/{os}/checklist-damages/            · PATCH …/{id}/ · POST …/{id}/deactivate/
@@ -206,6 +207,7 @@ class EntryChecklistFinalizeView(_ChecklistTypeView):
             svc.get_or_create_checklist(self.get_order()),
             snapshots if isinstance(snapshots, dict) else {},
             request.user,
+            _str(request, "model_credit"),
         )
         return Response(EntryChecklistStateSerializer(checklist).data)
 

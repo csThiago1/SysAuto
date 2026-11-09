@@ -29,6 +29,7 @@ from apps.documents.services import DocumentService
 from apps.persons.models import PersonContact, TipoContato
 from apps.signatures.models import Signature
 from apps.signatures.services import SignatureService
+from apps.vehicle_catalog.normalize import normalize_name
 
 from ..checklist_constants import EXTERIOR_STOPS, SignatureStatus
 from ..models import (
@@ -103,6 +104,13 @@ def suggest_body_type(order: ServiceOrder) -> str | None:
         .values_list("body_type", flat=True)
         .first()
     )
+
+
+def model_slug(name: str | None) -> str | None:
+    """Nome do catálogo → chave do modelo 3D: minúsculas, sem acento, espaço/hífen → `_`."""
+    if not name:
+        return None
+    return re.sub(r"[\s-]+", "_", normalize_name(name).lower())
 
 
 def set_body_type(checklist: EntryChecklist, body_type: str) -> None:
@@ -257,6 +265,7 @@ def return_belonging(belonging: CustomerBelonging, user: GlobalUser) -> Customer
 
 
 SNAPSHOT_KEYS: tuple[str, ...] = ("front34", "rear34", "left", "right")
+MODEL_CREDIT_MAX = 300
 _PNG_DATA_URI = "data:image/png;base64,"
 
 
@@ -270,13 +279,17 @@ def _active_damages(order: ServiceOrder) -> list[ChecklistDamage]:
 
 
 def _pdf_data(
-    order: ServiceOrder, damages: list[ChecklistDamage], snapshots: dict[str, str]
+    order: ServiceOrder,
+    damages: list[ChecklistDamage],
+    snapshots: dict[str, str],
+    model_credit: str,
 ) -> dict[str, Any]:
     """Contexto do PDF — também vira o `data_snapshot` do DocumentGeneration."""
     data = OSDataLoader._base_context(order)
     data["order"]["customer_name"] = order.customer_name
     data["vehicle"] = OSDataLoader._vehicle_dict(order)
     data["snapshots"] = {key: snapshots[key] for key in SNAPSHOT_KEYS}
+    data["model_credit"] = model_credit
     data["damages"] = [
         {
             "number": d.number,
@@ -308,9 +321,18 @@ def _pdf_data(
 
 @transaction.atomic
 def finalize(
-    checklist: EntryChecklist, snapshots: dict[str, str], user: GlobalUser
+    checklist: EntryChecklist,
+    snapshots: dict[str, str],
+    user: GlobalUser,
+    model_credit: str = "",
 ) -> EntryChecklist:
-    """Valida, gera o PDF e trava o checklist. Pendências → 400 `{"missing": [...]}`."""
+    """Valida, gera o PDF e trava o checklist. Pendências → 400 `{"missing": [...]}`.
+
+    `model_credit`: crédito do modelo 3D usado nas vistas, impresso no rodapé do PDF.
+    """
+    model_credit = model_credit.strip()
+    if len(model_credit) > MODEL_CREDIT_MAX:
+        raise ValidationError({"model_credit": f"Máximo de {MODEL_CREDIT_MAX} caracteres."})
     checklist = (
         EntryChecklist.objects.select_for_update()
         .select_related("service_order")
@@ -334,7 +356,10 @@ def finalize(
 
     run_budget_match(order)
     doc = DocumentService.generate(
-        order.pk, DocumentType.CHECKLIST_ENTRADA, _pdf_data(order, damages, snapshots), user
+        order.pk,
+        DocumentType.CHECKLIST_ENTRADA,
+        _pdf_data(order, damages, snapshots, model_credit),
+        user,
     )
     with default_storage.open(doc.s3_key, "rb") as f:
         pdf_sha256 = hashlib.sha256(f.read()).hexdigest()

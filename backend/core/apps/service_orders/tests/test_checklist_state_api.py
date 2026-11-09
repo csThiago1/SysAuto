@@ -2,6 +2,8 @@
 
 import hashlib
 
+from django.db import connection
+from django.test import override_settings
 from django.utils import timezone
 from django_tenants.test.cases import TenantTestCase
 from rest_framework.test import APIClient
@@ -15,6 +17,7 @@ from apps.service_orders.models import (
     ServiceOrder,
     ServiceOrderStatus,
 )
+from apps.service_orders.services.checklist_service import model_slug
 from apps.vehicle_catalog.models import VehicleFamily, VehicleMake
 
 
@@ -138,3 +141,31 @@ class ChecklistStateAPITest(TenantTestCase):
         response = self.client.get(f"{self.url}history/")
         assert response.status_code == 200, response.content
         assert [item["os_number"] for item in response.json()] == [9974]
+
+    def test_state_exposes_normalized_family(self) -> None:
+        make, _ = VehicleMake.objects.get_or_create(
+            nome_normalizado="CHEVROLET",
+            defaults={"nome": "Chevrolet", "display_name": "Chevrolet"},
+        )
+        family = VehicleFamily.objects.create(
+            make=make, nome="Onix Plus", nome_normalizado="ONIX PLUS"
+        )
+        ServiceOrder.objects.filter(pk=self.order.pk).update(catalog_family=family)
+        body = self.client.get(self.url).json()
+        assert body["vehicle_make"] == "chevrolet"
+        assert body["vehicle_family"] == "onix_plus"
+
+    def test_model_slug_strips_accents_and_hyphens(self) -> None:
+        assert model_slug("Citroën  C4-Cactus") == "citroen_c4_cactus"
+
+    def test_state_family_null_without_catalog(self) -> None:
+        ServiceOrder.objects.filter(pk=self.order.pk).update(catalog_family=None)
+        body = self.client.get(self.url).json()
+        assert body["vehicle_make"] is None
+        assert body["vehicle_family"] is None
+
+    def test_allow_nc_models_follows_setting(self) -> None:
+        with override_settings(CAR3D_NC_TENANTS=[connection.schema_name]):
+            assert self.client.get(self.url).json()["allow_nc_models"] is True
+        with override_settings(CAR3D_NC_TENANTS=[]):
+            assert self.client.get(self.url).json()["allow_nc_models"] is False
