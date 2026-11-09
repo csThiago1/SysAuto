@@ -33,6 +33,20 @@ class BudgetPanelsTest(SimpleTestCase):
         rules = [("FAROL", ["farol_e"]), ("LANTERNA", ["lanterna_e"])]
         self.assertEqual(panels_for_description("FAROL LANTERNA", rules), ["farol_e", "lanterna_e"])
 
+    def test_two_parts_in_one_description_keep_both(self) -> None:
+        self.assertCountEqual(
+            panels_for_description("SOLEIRA PORTA TRAS ESQ", self.rules),
+            ["porta_tras_e", "soleira_e"],
+        )
+        self.assertCountEqual(
+            panels_for_description("PARACHOQUE DIANT GRADE", self.rules),
+            ["parachoque_diant", "grade"],
+        )
+
+    def test_fog_light_is_not_headlight(self) -> None:
+        self.assertEqual(panels_for_description("FAROL DE MILHA LE", self.rules), [])
+        self.assertEqual(panels_for_description("FAROL MILHA LD", self.rules), [])
+
     def test_unknown_returns_empty(self) -> None:
         self.assertEqual(panels_for_description("MAO DE OBRA FUNILARIA", self.rules), [])
 

@@ -2,7 +2,9 @@
 Dicionário de peças do orçamento — texto de item de orçamento → chaves de peça do checklist.
 
 Regras ficam em BudgetPanelRule (pattern já normalizado). Uma regra casa quando todos os
-tokens do pattern estão na descrição; vale a de mais tokens, empate une as peças.
+tokens do pattern estão na descrição. Vale a união das regras que casam, menos as contidas
+numa regra maior que também casa ("PORTA" cede a "PORTA DIANTEIRO ESQUERDO"). Assim uma
+descrição com duas peças ("SOLEIRA PORTA TRAS ESQ") devolve as duas.
 """
 
 from __future__ import annotations
@@ -45,6 +47,10 @@ _SYNONYMS: dict[str, str] = {
     "GRADE": "grade",
 }
 
+# Regras sem peça: descrição reconhecida que NÃO é peça do checklist. Por conterem a regra
+# genérica ("FAROL ESQUERDO"), a anulam; o item cai em "não mapeado" para ligação manual.
+_NOT_A_PANEL: tuple[str, ...] = ("FAROL MILHA ESQUERDO", "FAROL MILHA DIREITO")
+
 
 def normalize_description(text: str) -> str:
     """Maiúsculas, sem acento, pontuação vira espaço, abreviações e gênero padronizados."""
@@ -59,23 +65,23 @@ def normalize_description(text: str) -> str:
 
 
 def panels_for_description(description: str, rules: list[tuple[str, list[str]]]) -> list[str]:
-    """Peças da regra mais específica que casa com a descrição; empate une as peças."""
+    """União das peças das regras que casam, descartando regra contida em outra que casa."""
     tokens = set(normalize_description(description).split())
-    best_size = 0
+    matched = [(set(pattern.split()), keys) for pattern, keys in rules]
+    matched = [
+        (pattern_tokens, keys) for pattern_tokens, keys in matched if pattern_tokens <= tokens
+    ]
     panels: list[str] = []
-    for pattern, keys in rules:
-        pattern_tokens = set(pattern.split())
-        if not pattern_tokens <= tokens or len(pattern_tokens) < best_size:
+    for pattern_tokens, keys in matched:
+        if any(pattern_tokens < other for other, _ in matched):
             continue
-        if len(pattern_tokens) > best_size:
-            best_size, panels = len(pattern_tokens), []
         panels += [key for key in keys if key not in panels]
     return panels
 
 
 def seed_rules() -> list[tuple[str, list[str]]]:
-    """Regras do seed: uma por peça (rótulo normalizado) mais os sinônimos."""
-    seeded: dict[str, list[str]] = {}
+    """Regras do seed: uma por peça (rótulo normalizado), os sinônimos e as regras sem peça."""
+    seeded: dict[str, list[str]] = {pattern: [] for pattern in _NOT_A_PANEL}
     for pattern, key in [
         *((normalize_description(label), key) for key, label in PANEL_CHOICES),
         *_SYNONYMS.items(),
