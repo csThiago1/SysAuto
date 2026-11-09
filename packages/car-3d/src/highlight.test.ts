@@ -38,6 +38,8 @@ describe("buildHighlightUniforms", () => {
     };
     const u = buildHighlightUniforms([{ panel: "capo", color: "#ea0e03" }], regions);
     expect(u.count).toBe(24);
+    // chamado a cada render: o aviso não pode repetir
+    buildHighlightUniforms([{ panel: "capo", color: "#ea0e03" }], regions);
     expect(warn).toHaveBeenCalledTimes(1);
   });
 });

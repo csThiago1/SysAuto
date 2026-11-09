@@ -4,6 +4,9 @@ import type { Regions } from "./regions";
 /** Limite de caixas acesas no shader (uniforms de tamanho fixo). */
 export const MAX_HIGHLIGHT_BOXES = 24;
 
+// Aviso de corte só uma vez por sessão: o chamador pode rodar isto a cada render.
+let warnedCut = false;
+
 export type HighlightUniforms = {
   centers: Float32Array;
   sizes: Float32Array;
@@ -31,7 +34,8 @@ export function buildHighlightUniforms(
   const boxes = highlights.flatMap(({ panel, color }) =>
     (regions.panels[panel] ?? []).map((box) => ({ box, rgb: hexToRgb(color) })),
   );
-  if (boxes.length > MAX_HIGHLIGHT_BOXES) {
+  if (boxes.length > MAX_HIGHLIGHT_BOXES && !warnedCut) {
+    warnedCut = true;
     console.warn(`car-3d: ${boxes.length} caixas acesas, cortando em ${MAX_HIGHLIGHT_BOXES}`);
   }
   for (const { box, rgb } of boxes.slice(0, MAX_HIGHLIGHT_BOXES)) {
