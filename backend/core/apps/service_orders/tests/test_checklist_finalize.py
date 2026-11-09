@@ -156,3 +156,18 @@ class ChecklistFinalizeAPITest(TenantTestCase):
         assert ServiceOrderActivityLog.objects.filter(
             service_order=self.order, activity_type="checklist_reopened"
         ).exists()
+
+    def test_generic_generate_endpoint_rejects_checklist_entrada(self) -> None:
+        self._auth("CONSULTANT")
+        resp = self.client.post(
+            f"/api/v1/documents/os/{self.order.id}/generate/",
+            {"document_type": "checklist_entrada", "data": {"damages": []}},
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("document_type", resp.data)
+        self.assertFalse(
+            DocumentGeneration.objects.filter(
+                service_order=self.order, document_type="checklist_entrada"
+            ).exists()
+        )
