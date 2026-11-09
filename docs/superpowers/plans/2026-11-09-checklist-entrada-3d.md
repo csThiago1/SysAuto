@@ -466,7 +466,7 @@ Os modelos do Sketchfab exigem login para baixar, e o agente não faz login. **E
 
 ### Task 19: Fluxo das 7 paradas
 
-> Resultado do spike (Task 1): _preencher — `file://` ou `data:` URI para o `.glb`._
+> Resultado do spike (Task 1): **`data:` URI.** No iOS (simulador, dev build) o `file://` de `Paths.document` falha dentro do DOM component (`Could not load file:///…/car-3d/test.glb: Load failed`: a página do DOM component vem de `http://localhost:8081` e o WebKit não deixa uma origem http ler `file://`). Ler o arquivo no nativo com `new File(...).base64()` e passar `data:model/gltf-binary;base64,…` carrega; R3F renderiza, `useFrame` anima e o toque numa malha chega ao nativo pelo callback assíncrono (`onTap body`). Então `ensureModel` devolve a `data:` URI. Depende do `resolveRequest` em `apps/mobile/metro.config.js` (react da raiz no bundle web, igual ao react-dom).
 
 **Files:**
 - Create: `apps/mobile/src/components/car3d/Car3DDom.tsx` (`'use dom'`, embrulha `<Car3D>`; props serializáveis + `onPanelTap` assíncrono), `apps/mobile/src/lib/car3dAssets.ts` (`ensureModel(body: BodyType): Promise<string>` baixa `${WEB_URL}/car-3d/<body>.glb` e o `regions.json` para `Paths.document/car-3d/` uma vez e devolve o caminho/URI conforme o spike), `apps/mobile/src/components/entry-checklist/` (`StopProgress.tsx`, `StopScreen.tsx`, `DamageSheet.tsx`, `BelongingsStop.tsx`, `BodyTypePicker.tsx`)
