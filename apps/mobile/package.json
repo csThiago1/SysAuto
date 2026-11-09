@@ -15,6 +15,7 @@
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
     "@nozbe/watermelondb": "^0.28.0",
+    "@paddock/car-3d": "*",
     "@paddock/types": "*",
     "@react-native-community/datetimepicker": "8.6.0",
     "@react-native-community/netinfo": "11.5.2",
