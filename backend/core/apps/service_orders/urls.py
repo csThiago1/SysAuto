@@ -16,6 +16,7 @@ from .views import (
     ServiceOrderViewSet,
 )
 from .views.apontamento import ApontamentoGlobalListView, ApontamentoViewSet
+from .views.checklist import ChecklistDamageViewSet, CustomerBelongingViewSet
 
 router = DefaultRouter()
 router.register(r"", ServiceOrderViewSet, basename="service-order")
@@ -38,6 +39,12 @@ pareceres_router.register(r"", ServiceOrderParecerViewSet, basename="service-ord
 apontamento_router = SimpleRouter()
 apontamento_router.register(r"", ApontamentoViewSet, basename="apontamento")
 
+checklist_damage_router = SimpleRouter()
+checklist_damage_router.register(r"", ChecklistDamageViewSet, basename="checklist-damage")
+
+belonging_router = SimpleRouter()
+belonging_router.register(r"", CustomerBelongingViewSet, basename="belonging")
+
 urlpatterns = [
     path("dashboard/stats/", DashboardStatsView.as_view(), name="service-order-dashboard-stats"),
     path("calendar/", CalendarView.as_view(), name="service-order-calendar"),
@@ -50,6 +57,8 @@ urlpatterns = [
     path("events/", include(events_router.urls)),
     path("pareceres/", include(pareceres_router.urls)),
     path("<uuid:service_order_pk>/apontamentos/", include(apontamento_router.urls)),
+    path("<uuid:service_order_pk>/checklist-damages/", include(checklist_damage_router.urls)),
+    path("<uuid:service_order_pk>/belongings/", include(belonging_router.urls)),
     path("<uuid:service_order_pk>/payments/", include("apps.payments.urls")),
     path("", include(router.urls)),
 ]

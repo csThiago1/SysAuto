@@ -4,6 +4,7 @@ Paddock Solutions — Service Orders Serializers Package
 Re-exports todos os serializers para manter compatibilidade com imports existentes.
 Organizacao interna:
 - core.py: OS CRUD, photo, parts, labor, budget, status transition, checklist, etc.
+- checklist.py: danos e pertences do checklist de entrada 3D
 - mobile.py: ServiceOrderSyncSerializer (WatermelonDB)
 - versioning.py: Version, VersionItem, Event, Parecer, Diff serializers
 """
@@ -45,6 +46,9 @@ from .core import (
     _get_folder_display,
     _get_status_display,
 )
+
+# -- checklist.py --
+from .checklist import ChecklistDamageSerializer, CustomerBelongingSerializer
 
 # -- mobile.py --
 from .mobile import ServiceOrderSyncSerializer
@@ -98,6 +102,9 @@ __all__ = [
     "OverrideRequestCreateSerializer",
     "OverrideResolveSerializer",
     "OverrideRequestSerializer",
+    # checklist
+    "ChecklistDamageSerializer",
+    "CustomerBelongingSerializer",
     # mobile
     "ServiceOrderSyncSerializer",
     # versioning
