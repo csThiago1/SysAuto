@@ -7,7 +7,7 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from apps.authentication.views_health import healthz
-from apps.service_orders.views.checklist_public import ChecklistConfirmView
+from apps.service_orders.views.checklist_public import ChecklistConfirmPdfView, ChecklistConfirmView
 
 urlpatterns = [
     # Health check (before API routes, no auth required)
@@ -48,6 +48,11 @@ urlpatterns = [
         "api/v1/public/checklist-confirm/<str:token>/",
         ChecklistConfirmView.as_view(),
         name="checklist-confirm",
+    ),
+    path(
+        "api/v1/public/checklist-confirm/<str:token>/pdf/",
+        ChecklistConfirmPdfView.as_view(),
+        name="checklist-confirm-pdf",
     ),
     # MO-9: Capacidade
     path("api/v1/capacidade/", include("apps.service_orders.urls_capacidade")),

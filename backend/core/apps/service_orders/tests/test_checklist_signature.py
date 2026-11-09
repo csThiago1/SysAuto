@@ -4,11 +4,14 @@ import base64
 import datetime
 import hashlib
 
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.utils import timezone
 from django_tenants.test.cases import TenantTestCase
 from rest_framework.test import APIClient
 
 from apps.authentication.models import GlobalUser
+from apps.documents.models import DocumentGeneration
 from apps.persons.models import Person, PersonContact
 from apps.service_orders.models import (
     EntryChecklist,
@@ -140,6 +143,42 @@ class ChecklistSignatureAPITest(TenantTestCase):
         reopen = self.client.post(f"{self.url}reopen/", {"reason": "Dano novo"}, format="json")
         assert reopen.status_code == 200, reopen.content
         assert self._confirm(token).status_code == 404
+
+    def _attach_pdf(self) -> None:
+        key = default_storage.save("tests/checklist-signature.pdf", ContentFile(b"%PDF-1.4 teste"))
+        self.addCleanup(default_storage.delete, key)
+        self.checklist.pdf = DocumentGeneration.objects.create(
+            document_type="checklist_entrada",
+            service_order=self.order,
+            data_snapshot={},
+            s3_key=key,
+            generated_by=self.user,
+        )
+        self.checklist.save(update_fields=["pdf"])
+
+    def test_public_pdf_streams_while_valid(self) -> None:
+        self._attach_pdf()
+        token = self._send_remote()
+        response = self.public.get(f"/api/v1/public/checklist-confirm/{token}/pdf/")
+        assert response.status_code == 200
+        assert response["Content-Type"] == "application/pdf"
+        assert response["Content-Disposition"].startswith("inline")
+        assert response["Cache-Control"] == "no-store"
+        assert b"".join(response.streaming_content) == b"%PDF-1.4 teste"
+
+    def test_public_pdf_410_after_confirm(self) -> None:
+        self._attach_pdf()
+        token = self._send_remote()
+        assert self._confirm(token).status_code == 200
+        response = self.public.get(f"/api/v1/public/checklist-confirm/{token}/pdf/")
+        assert response.status_code == 410, response.content
+
+    def test_public_json_has_no_storage_url(self) -> None:
+        self._attach_pdf()
+        token = self._send_remote()
+        data = self.public.get(f"/api/v1/public/checklist-confirm/{token}/").json()
+        assert data["pdf_url"] == f"/api/v1/public/checklist-confirm/{token}/pdf/"
+        assert default_storage.url(self.checklist.pdf.s3_key) not in str(data)
 
     def test_whatsapp_url_without_contact(self) -> None:
         response = self.client.post(f"{self.url}send-remote/", format="json")
