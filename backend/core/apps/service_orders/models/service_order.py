@@ -680,6 +680,9 @@ class ActivityType(models.TextChoices):
     LABOR_UPDATED    = "labor_updated",    "Serviço Editado"
     INVOICE_ISSUED       = "invoice_issued",       "NF Emitida"
     DOCUMENT_GENERATED   = "document_generated",   "Documento Gerado"
+    CHECKLIST_FINALIZED  = "checklist_finalized",  "Checklist Finalizado"
+    CHECKLIST_REOPENED   = "checklist_reopened",   "Checklist Reaberto"
+    CHECKLIST_SIGNED     = "checklist_signed",     "Checklist Assinado"
 
 class ServiceOrderActivityLog(PaddockBaseModel):
     """Log descritivo e minucioso do histórico da OS."""
