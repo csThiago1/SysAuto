@@ -429,7 +429,18 @@ class _ServiceOrderCoreMixin:
                         }
                     }
                 )
-            if result.soft_blocks:
+            # Agendar antes de o carro chegar é normal: a data é gravada e a OS fica em
+            # reception; a transição manual cobra o checklist (com override de gerente).
+            if any(b.code == "ENTRY_CHECKLIST" for b in result.soft_blocks):
+                logger.info(
+                    "OS #%d: auto-transition %s->%s via campo '%s' adiada (checklist pendente)",
+                    order.number,
+                    order.status,
+                    new_status,
+                    field_trigger,
+                )
+                triggered_transitions = []
+            elif result.soft_blocks:
                 raise ValidationError(
                     {
                         "transition_blocks": {
@@ -444,6 +455,8 @@ class _ServiceOrderCoreMixin:
                     }
                 )
 
+        if triggered_transitions:
+            field_trigger, new_status = triggered_transitions[0]
             old_status = order.status
             order.status = new_status
             logger.info(
