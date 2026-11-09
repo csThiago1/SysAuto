@@ -171,6 +171,8 @@ Roda **toda vez que um orçamento é importado** para a OS e **toda vez que o ch
 - Se o orçamento complementar do Cilia passar a incluir a peça, o dano vira `no_orcamento` e sai do retorno.
 
 ### 5.5 Carros 3D (igual ao vídeo de referência)
+
+> **Emenda de 09/11/2026 (decisões do Thiago):** (1) além do modelo por carroceria, os carros mais vendidos têm **modelo próprio**. A resolução é: modelo da família → modelo padrão da carroceria → provisório. (2) Modelos **CC BY-NC-SA** (ex.: os do Ddiaz Design) são permitidos **só para a DS Car** (`CAR3D_NC_TENANTS`), por decisão do Thiago de que o uso é interno. Ele foi avisado de que a licença proíbe uso comercial e de que o perfil do autor diz que os modelos são só referência. Outros tenants nunca recebem esses modelos. O crédito (título, autor, licença) aparece na página de créditos e no rodapé do PDF. O restante desta seção vale como estava.
 - **5 carrocerias na v1:** hatch, sedã, SUV, picape, van/utilitário. Cada uma usa **um modelo realista
   gratuito** de um carro representativo (ex.: um hatch compacto para "hatch", uma picape média para "picape"),
   como o vídeo faz ao mostrar "Modelo 3D · Hatch".

@@ -22,7 +22,8 @@
 - `ChecklistDamage.checklist_type` e todas as fotos deste fluxo usam `checklist_type="entrada"` e a pasta `checklist_entrada`.
 - Chaves de peça, tipos, gravidades e relações são **exatamente** os valores da Task 2 (backend) e da Task 11 (TS), espelhados manualmente como `VALID_TRANSITIONS` já é.
 - Cores de gravidade: leve `#ffe000`, moderada `#ff8a00`, grave `#ea0e03`. Carro sem cor (`FANTASIA`/`NAO_INFORMADA`): `#9a9a9a`.
-- Modelos 3D: CC0 ou CC-BY apenas, sem *NoDerivatives*/*Editorial*, emblemas removidos, `.glb` ≤ 3 MB.
+- Modelos 3D: CC0 ou CC-BY; **CC BY-NC-SA só para tenants listados em `CAR3D_NC_TENANTS` (padrão `["tenant_dscar"]`), por decisão do Thiago em 09/11/2026**, sempre com crédito (autor, link, licença) na página de créditos e no rodapé do PDF. Nunca *NoDerivatives*/*Editorial*. Emblemas e placas removidos, `.glb` ≤ 3 MB.
+- Modelo por carro (emenda de 09/11/2026): resolução = modelo da família (marca + família normalizadas) → modelo padrão da carroceria → provisório da carroceria, sempre pulando modelos cuja licença o tenant não pode usar.
 - Assinatura **nunca** bloqueia Kanban nem entrega.
 - Testes backend, sempre por arquivo e com timeout (a suíte inteira leva horas e já tem 276 falhas antigas):
   `docker exec paddock_django timeout 1800 pytest <arquivo> -q -p no:cacheprovider -o addopts=""`
@@ -291,6 +292,20 @@ O resto do mobile depende disto. Se falhar, pare e traga ao Thiago (alternativa:
 - [ ] **Step 2:** FAIL. **Step 3:** Implementar. **Step 4:** PASS.
 - [ ] **Step 5:** Commit `feat(os): checklist finalizado como requisito da recepcao`.
 
+### Task 10b: Identidade do modelo 3D no estado e crédito no PDF (emenda de 09/11)
+
+**Files:**
+- Modify: `backend/core/config/settings/base.py` (`CAR3D_NC_TENANTS = config("CAR3D_NC_TENANTS", default="tenant_dscar", cast=Csv())`), `services/checklist_service.py`, `serializers/checklist.py`, `documents/templates/pdf_engine/checklist_entrada.html`
+- Test: `backend/core/apps/service_orders/tests/test_checklist_state_api.py` (acrescentar), `test_checklist_finalize.py` (acrescentar)
+
+**Produces:**
+- GET `checklist/entrada/` ganha `vehicle_make` e `vehicle_family`: nomes normalizados (minúsculas, sem acento, espaços e hífens viram `_`; ex.: `"chevrolet"`, `"onix_plus"`), vindos de `order.catalog_family.make.nome` / `order.catalog_family.nome`; `null` quando a OS não tem família. Ganha também `allow_nc_models: bool` (`connection.schema_name in settings.CAR3D_NC_TENANTS`).
+- `finalize` aceita `model_credit: str` opcional (≤ 300 caracteres, texto puro). Quando vem preenchido, o PDF imprime no rodapé: `Modelo 3D: {model_credit}`.
+
+- [ ] **Step 1: Testes que falham:** `test_state_exposes_normalized_family` (família "Onix Plus" da marca "Chevrolet" → `vehicle_family == "onix_plus"`, `vehicle_make == "chevrolet"`); `test_state_family_null_without_catalog`; `test_allow_nc_models_follows_setting` (com `override_settings(CAR3D_NC_TENANTS=[<schema do teste>])` → `true`; com `[]` → `false`); `test_finalize_prints_model_credit` (o HTML renderizado contém `Modelo 3D: Polo · Ddiaz Design · CC BY-NC-SA 4.0`).
+- [ ] **Step 2:** FAIL. **Step 3:** Implementar. **Step 4:** PASS.
+- [ ] **Step 5:** Commit `feat(os): familia do veiculo e credito do modelo 3d no checklist`.
+
 ---
 
 ## Fase 2 — Pacote `packages/car-3d`
@@ -308,8 +323,10 @@ O resto do mobile depende disto. Se falhar, pare e traga ao Thiago (alternativa:
 - `stops.ts`: `type StopKey = "frente" | "lado_direito" | "lado_esquerdo" | "traseira" | "teto" | "interior_itens" | "pertences"`. `STOPS: {key: StopKey; label: string; slots: string[]; panels: PanelKey[]; view: CameraView}[]` na ordem e com os slots da tabela 5.2 do spec (`frente: ["frente","diag_diant"]`, `lado_direito: ["lateral_dir"]`, `lado_esquerdo: ["lateral_esq"]`, `traseira: ["traseira","diag_tras"]`, `teto: []`, `interior_itens: ["painel","chave","motor","step","ferramentas","combustivel"]`, `pertences: []`). `canCompleteStop(stop: StopKey, s: {photoSlots: Set<string>; damageCount: number; noDamage: boolean}): {ok: boolean; missing: string[]}` — slots obrigatórios presentes **e** (para as 5 externas) `damageCount > 0 || noDamage`.
 - `highlight.ts`: `MAX_HIGHLIGHT_BOXES = 24`; `buildHighlightUniforms(highlights: {panel: PanelKey; color: string}[], regions: Regions): {centers: Float32Array; sizes: Float32Array; rotY: Float32Array; colors: Float32Array; count: number}` (corta em 24 e loga `console.warn` uma vez quando corta).
 - `type CameraView = "free" | "front" | "rear" | "left" | "right" | "top" | "front34" | "rear34"`.
+- `catalog.ts` (emenda de 09/11): `type ModelLicense = "CC0" | "CC-BY-4.0" | "CC-BY-NC-SA-4.0" | "PLACEHOLDER"`; `type CarModelEntry = {key: string; title: string; file: string; regionsFile: string; bodyType: BodyType; families: {make: string; family: string}[]; bodyDefault: boolean; license: ModelLicense; author: string; sourceUrl: string}`; `CAR_MODELS: CarModelEntry[]` (começa só com os 5 provisórios, `license: "PLACEHOLDER"`, um por carroceria; a Task 14 acrescenta os reais); `resolveCarModel(q: {make: string | null; family: string | null; bodyType: BodyType; allowNc: boolean}): CarModelEntry` — 1º entrada cuja `families` contém `{make, family}` e cuja licença é permitida; 2º entrada com `bodyDefault && bodyType` igual e licença permitida (a primeira da lista vence); 3º o provisório da carroceria. Licença permitida = tudo, menos `CC-BY-NC-SA-4.0` quando `allowNc` é falso. `creditLine(e: CarModelEntry): string | null` → `"{title} · {author} · {licença legível}"` (`null` para `PLACEHOLDER`).
 
 - [ ] **Step 1: Testes que falham:**
+  - `resolveCarModel` com um catálogo de teste: família casada e licença CC-BY → a entrada da família; família casada mas NC com `allowNc=false` → cai no padrão da carroceria; sem família → padrão da carroceria; carroceria sem padrão real → provisório. `creditLine` de uma entrada NC → `"Polo · Ddiaz Design · CC BY-NC-SA 4.0"`.
   - `panelAt` retorna `porta_diant_e` para um ponto dentro da caixa; retorna `null` fora de todas; com caixa grande e pequena se sobrepondo, retorna a pequena; respeita `rotationY = Math.PI/2`.
   - `RegionsSchema.parse` rejeita uma `panel_key` desconhecida.
   - `canCompleteStop("frente", {photoSlots: new Set(["frente"]), damageCount: 0, noDamage: true})` → `{ok: false, missing: ["diag_diant"]}`; com os dois slots e `noDamage` → `ok: true`; `"teto"` sem slots e sem dano nem `noDamage` → `missing: ["dano_ou_sem_dano"]`.
@@ -363,8 +380,8 @@ export const Car3D: React.ForwardRefExoticComponent<Car3DProps & React.RefAttrib
 
 **Produces:**
 - Página só para `ADMIN+` (gate no client pelo role e `notFound()` em produção quando `NEXT_PUBLIC_ENABLE_DEV_TOOLS !== "true"`).
-- Funções: escolher a carroceria → carrega `/car-3d/<body>.glb` + `/car-3d/regions/<body>.json`; lista de `PANEL_KEYS`; selecionar uma peça mostra as caixas dela com `TransformControls` (drei) para mover e escalar e um campo para `rotationY`; `showRegions` ligado; tocar no carro mostra qual peça foi detectada; botão **Exportar JSON** (download do `regions.json` validado por `RegionsSchema`); campo para os nomes dos materiais de pintura (lista dos materiais do `.glb`).
-- Modelo provisório para desenvolver antes dos definitivos: um carro CC0 do Kenney "Car Kit" (`sedan.glb`) servido como `hatch.glb`, `sedan.glb`, `suv.glb`, `pickup.glb` e `van.glb`, com um `regions.json` mínimo por carroceria calibrado nesta tela. Créditos no `CREDITS.md`. **Baixar arquivo pede aprovação do Thiago no momento da execução.**
+- Funções: escolher um modelo de `CAR_MODELS` → carrega `/car-3d/<file>` + `/car-3d/regions/<regionsFile>`; lista de `PANEL_KEYS`; selecionar uma peça mostra as caixas dela com `TransformControls` (drei) para mover e escalar e um campo para `rotationY`; `showRegions` ligado; tocar no carro mostra qual peça foi detectada; botão **Exportar JSON** (download do `regions.json` validado por `RegionsSchema`); campo para os nomes dos materiais de pintura (lista dos materiais do `.glb`).
+- Modelo provisório (ruling do ledger: gerado localmente, sem baixar nada): `packages/car-3d/scripts/make-placeholder.mjs` (devDependency `@gltf-transform/core`) gera 5 carros de caixas com proporções de hatch, sedã, SUV, picape e van, com malhas nomeadas (lataria com material `paint`, vidros `glass`, rodas `tire`), salvos como `apps/dscar-web/public/car-3d/placeholder-<body>.glb`, cada um com um `regions.json` calibrado nesta tela. São as 5 entradas `PLACEHOLDER` do `CAR_MODELS`.
 
 - [ ] **Step 1:** Implementar a página e verificar no navegador (`preview_start` do dscar-web): girar, selecionar `porta_diant_e`, mover a caixa, tocar e ver o nome certo, exportar.
 - [ ] **Step 2:** Calibrar o provisório para as 32 peças (as que existirem em cada carroceria) e salvar os 5 `regions.json`.
@@ -372,13 +389,13 @@ export const Car3D: React.ForwardRefExoticComponent<Car3DProps & React.RefAttrib
 
 ### Task 14: Modelos definitivos (Thiago + agente)
 
-Os modelos do Sketchfab exigem login para baixar, e o agente não faz login. **Esta task é do Thiago**, com o agente calibrando depois.
+Os modelos do Sketchfab exigem login para baixar, e o agente não faz login. **O download é do Thiago**, com o agente preparando e calibrando depois. A lista curada está em https://claude.ai/artifact/UZYbkSCJdg23FgsvdDTfnW.
 
-- [ ] **Step 1 (Thiago):** Baixar 5 modelos realistas, um por carroceria (sugestões de busca: "hatchback", "sedan", "compact SUV", "pickup truck double cab", "cargo van"), cada um com licença **CC0 ou CC-BY**, sem *NoDerivatives*/*Editorial*, formato glTF/GLB. Salvar em `~/Downloads/car-3d/` com o link e a licença de cada um.
-- [ ] **Step 2 (agente):** Otimizar cada um com `npx @gltf-transform/cli optimize <in> <out> --compress draco --texture-compress webp --texture-size 1024` até ≤ 3 MB. Remover os emblemas: apagar as malhas de logo e, se o emblema estiver na textura, cobrir com a cor da lataria.
-- [ ] **Step 3 (agente):** Copiar para `apps/dscar-web/public/car-3d/<body>.glb`, calibrar o `regions.json` de cada um na tela da Task 13 e atualizar o `CREDITS.md` (título, autor, link, licença). Os mesmos dados vão em `packages/car-3d/src/credits.ts` (`CREDITS: {body, title, author, url, license}[]`), que alimenta a página `apps/dscar-web/src/app/(app)/sobre/creditos/page.tsx`, exigida pela CC-BY.
-- [ ] **Step 4:** Mostrar ao Thiago os 5 carros na tela de calibração, pintados com 3 cores (branco, prata, vermelho). Ele aprova o visual antes de seguir.
-- [ ] **Step 5:** Commit `feat(car-3d): modelos definitivos por carroceria`.
+- [ ] **Step 1 (Thiago):** Arquivos em `~/Downloads/car-3d/`. Já estão lá (09/11): `polo.glb` (Polo 170 TSI, Ddiaz Design, CC BY-NC-SA 4.0 → modelo da família Polo e padrão hatch), `virtus.glb` (Virtus TSI, Ddiaz Design, NC → família Virtus e padrão sedã), `spark_euv.glb` (Spark EUV, Ddiaz Design, NC → família Spark EUV), `onix.glb` (uzb_rx7, CC-BY 4.0 → família Onix/Onix Plus; padrão sedã para tenants sem NC). Faltam os padrões **SUV, picape e van** e os demais da lista curada. A licença, o autor e o link estão em `asset.extras` dentro de cada `.glb`; leia de lá.
+- [ ] **Step 2 (agente):** Otimizar cada um com `npx @gltf-transform/cli optimize <in> <out> --compress draco --texture-compress webp --texture-size 1024` (e `simplify`/`weld` quando passar de 3 MB; o Spark EUV tem 954 mil triângulos) até ≤ 3 MB. Remover emblemas e placas: apagar as malhas de logo/placa e, se estiverem na textura, cobrir com a cor da lataria. Remover o interior se ajudar no peso (o checklist não usa).
+- [ ] **Step 3 (agente):** Copiar para `apps/dscar-web/public/car-3d/<key>.glb`, calibrar o `regions.json` de cada um na tela da Task 13, acrescentar a entrada em `CAR_MODELS` (licença, autor, link, famílias e `bodyDefault`) e gerar o `CREDITS.md` a partir dele. A página `apps/dscar-web/src/app/(app)/sobre/creditos/page.tsx` lista `CAR_MODELS` (exceto `PLACEHOLDER`) com título, autor, link e licença.
+- [ ] **Step 4:** Mostrar ao Thiago os carros na tela de calibração, pintados com 3 cores (branco, prata, vermelho). Ele aprova o visual antes de seguir.
+- [ ] **Step 5:** Commit `feat(car-3d): modelos definitivos por carro e carroceria`.
 
 ---
 
@@ -389,7 +406,7 @@ Os modelos do Sketchfab exigem login para baixar, e o agente não faz login. **E
 **Files:**
 - Create: `apps/dscar-web/src/app/(app)/os/[numero]/checklist/_schemas/checklist.schema.ts` (+ `.schema.test.ts`), `.../checklist/_hooks/useEntryChecklist.ts`
 
-**Produces:** schemas Zod `EntryChecklistStateSchema`, `ChecklistDamageSchema`, `CustomerBelongingSchema`, `MatchSummarySchema` e `RemoteLinkSchema`, com os campos das Tasks 3–8 e enums com os valores da Task 2. Hooks no padrão de `src/hooks/useServiceOrders.ts`, query keys `["checklist", osId]`, `["checklist-damages", osId]` e `["belongings", osId]`:
+**Produces:** (o estado traz também `vehicle_make`, `vehicle_family`, `allow_nc_models` — Task 10b — e `items_summary` no formato `{ok, attention, critical, pending}` com inteiros; a cor da OS vem pronta em `vehicle_color_hex`) schemas Zod `EntryChecklistStateSchema`, `ChecklistDamageSchema`, `CustomerBelongingSchema`, `MatchSummarySchema` e `RemoteLinkSchema`, com os campos das Tasks 3–8 e enums com os valores da Task 2. Hooks no padrão de `src/hooks/useServiceOrders.ts`, query keys `["checklist", osId]`, `["checklist-damages", osId]` e `["belongings", osId]`:
 `useEntryChecklist(osId)`, `usePatchChecklist(osId)`, `useChecklistDamages(osId)`, `useCreateDamage(osId)`, `usePatchDamage(osId)`, `useDeactivateDamage(osId)`, `useBelongings(osId)`, `useCreateBelonging(osId)`, `useReturnBelonging(osId)`, `useFinalizeChecklist(osId)`, `useReopenChecklist(osId)`, `useSignChecklist(osId)`, `useSendRemoteLink(osId)`, `useBudgetMatch(osId)`, `useBudgetReport(osId)`, `useChecklistHistory(osId)`, `useCreatePanelRule()`. Todos usam `apiFetch` com `offline: false` nas ações de finalizar, reabrir, assinar e enviar link.
 
 - [ ] **Step 1: Teste que falha:** `checklist.schema.test.ts` → `ChecklistDamageSchema.parse` aceita um payload completo de exemplo e rejeita `severity: "media"`.
@@ -406,6 +423,7 @@ Os modelos do Sketchfab exigem login para baixar, e o agente não faz login. **E
 - Test: `_components/DamagePanel.test.tsx`, `_components/BudgetDivergence.test.tsx`
 
 **Produces (comportamento):**
+- O modelo vem de `resolveCarModel({make: vehicle_make, family: vehicle_family, bodyType: body_type, allowNc: allow_nc_models})`; **Finalizar** envia `model_credit = creditLine(entrada)` junto com os snapshots (omitido quando `null`).
 - Layout da proposta A: o `Car3D` à esquerda, com os chips de vista (3D/Frente/Lado E/Trás/Lado D/Teto); painel lateral com as abas **Danos (n)**, **Itens do veículo** e **Pertences (n)**. Danos acendem com a cor da gravidade, com os marcadores numerados em `point`.
 - Tocar numa peça abre o `DamagePanel` (novo dano naquela peça), com chips de tipo, gravidade e relação, fotos (escolher entre as fotos da OS na pasta `checklist_entrada` ou subir uma nova pelo endpoint de fotos existente) e notas.
 - Se `body_type` estiver vazio, aparece primeiro um seletor de carroceria (sugestão pré-marcada).
@@ -469,7 +487,7 @@ Os modelos do Sketchfab exigem login para baixar, e o agente não faz login. **E
 > Resultado do spike (Task 1): **`data:` URI.** No iOS (simulador, dev build) o `file://` de `Paths.document` falha dentro do DOM component (`Could not load file:///…/car-3d/test.glb: Load failed`: a página do DOM component vem de `http://localhost:8081` e o WebKit não deixa uma origem http ler `file://`). Ler o arquivo no nativo com `new File(...).base64()` e passar `data:model/gltf-binary;base64,…` carrega; R3F renderiza, `useFrame` anima e o toque numa malha chega ao nativo pelo callback assíncrono (`onTap body`). Então `ensureModel` devolve a `data:` URI. Depende do `resolveRequest` em `apps/mobile/metro.config.js` (react da raiz no bundle web, igual ao react-dom).
 
 **Files:**
-- Create: `apps/mobile/src/components/car3d/Car3DDom.tsx` (`'use dom'`, embrulha `<Car3D>`; props serializáveis + `onPanelTap` assíncrono), `apps/mobile/src/lib/car3dAssets.ts` (`ensureModel(body: BodyType): Promise<string>` baixa `${WEB_URL}/car-3d/<body>.glb` e o `regions.json` para `Paths.document/car-3d/` uma vez e devolve o caminho/URI conforme o spike), `apps/mobile/src/components/entry-checklist/` (`StopProgress.tsx`, `StopScreen.tsx`, `DamageSheet.tsx`, `BelongingsStop.tsx`, `BodyTypePicker.tsx`)
+- Create: `apps/mobile/src/components/car3d/Car3DDom.tsx` (`'use dom'`, embrulha `<Car3D>`; props serializáveis + `onPanelTap` assíncrono), `apps/mobile/src/lib/car3dAssets.ts` (`ensureModel(entry: CarModelEntry): Promise<string>`, com a entrada vinda de `resolveCarModel` usando `vehicle_make`/`vehicle_family`/`allow_nc_models` do GET de estado; baixa `${WEB_URL}/car-3d/<entry.file>` e o `regions.json` para `Paths.document/car-3d/` uma vez e devolve o caminho/URI conforme o spike), `apps/mobile/src/components/entry-checklist/` (`StopProgress.tsx`, `StopScreen.tsx`, `DamageSheet.tsx`, `BelongingsStop.tsx`, `BodyTypePicker.tsx`)
 - Modify: `apps/mobile/app/(app)/vistoria/entrada/[osId].tsx` (reescrito; mantém a rota porque três telas já levam até ela), `apps/mobile/app/(app)/camera/index.tsx` (aceita `returnTo` com `stop` e devolve o `photoId` capturado), `apps/mobile/src/components/checklist/ItemChecklistGrid.tsx` (prop `categories?: string[]`)
 
 **Produces (comportamento):**
