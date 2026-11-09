@@ -17,6 +17,9 @@ from .views import (
 )
 from .views.apontamento import ApontamentoGlobalListView, ApontamentoViewSet
 from .views.checklist import (
+    BudgetMatchReportView,
+    BudgetMatchView,
+    BudgetPanelRuleView,
     ChecklistDamageViewSet,
     CustomerBelongingViewSet,
     EntryChecklistFinalizeView,
@@ -60,6 +63,7 @@ urlpatterns = [
     # vehicle-history/ é gerado automaticamente pelo router via @action no ServiceOrderViewSet
     # prefixo explícito ANTES do DefaultRouter em "" (senão vira pk)
     path("apontamentos/", ApontamentoGlobalListView.as_view(), name="apontamento-global"),
+    path("checklist/panel-rules/", BudgetPanelRuleView.as_view(), name="checklist-panel-rules"),
     path("service-catalog/", include(catalog_router.urls)),
     path("holidays/", include(holiday_router.urls)),
     path("versions/", include(versions_router.urls)),
@@ -68,6 +72,17 @@ urlpatterns = [
     path("<uuid:service_order_pk>/apontamentos/", include(apontamento_router.urls)),
     path("<uuid:service_order_pk>/checklist-damages/", include(checklist_damage_router.urls)),
     path("<uuid:service_order_pk>/belongings/", include(belonging_router.urls)),
+    # Antes de checklist/<checklist_type>/: senão "budget-match" vira um tipo de checklist.
+    path(
+        "<uuid:service_order_pk>/checklist/budget-match/",
+        BudgetMatchView.as_view(),
+        name="checklist-budget-match",
+    ),
+    path(
+        "<uuid:service_order_pk>/checklist/budget-match/report/",
+        BudgetMatchReportView.as_view(),
+        name="checklist-budget-match-report",
+    ),
     path(
         "<uuid:service_order_pk>/checklist/<str:checklist_type>/",
         EntryChecklistStateView.as_view(),

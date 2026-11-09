@@ -7,12 +7,15 @@ POST …/checklist/entrada/sign/ {signer_name, signature_png_base64} · POST …
 
 GET/POST /service-orders/{os}/checklist-damages/            · PATCH …/{id}/ · POST …/{id}/deactivate/
 GET/POST /service-orders/{os}/belongings/                   · PATCH …/{id}/ · POST …/{id}/return/
+POST /service-orders/{os}/checklist/budget-match/ (os.edit) · POST …/budget-match/report/ → {pdf_url}
+GET/POST /service-orders/checklist/panel-rules/ (ADMIN+)     · POST é upsert por pattern
 Sem DELETE: desativar é soft delete.
 """
 
 from __future__ import annotations
 
 import logging
+from dataclasses import asdict
 
 from django.db.models import Count, Q, QuerySet
 from django.http import Http404
@@ -25,17 +28,28 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
-from apps.authentication.permissions import HasTenantPermission, IsManagerOrAbove
+from apps.authentication.permissions import HasTenantPermission, IsAdminOrAbove, IsManagerOrAbove
+from apps.documents.models import DocumentType
+from apps.documents.services import DocumentService
 
-from ..models import ChecklistDamage, CustomerBelonging, EntryChecklist, ServiceOrder
+from ..models import (
+    BudgetPanelRule,
+    ChecklistDamage,
+    CustomerBelonging,
+    EntryChecklist,
+    ServiceOrder,
+)
 from ..models.checklist import ENTRY
 from ..serializers.checklist import (
+    BudgetPanelRuleSerializer,
     ChecklistDamageSerializer,
     ChecklistHistorySerializer,
     CustomerBelongingSerializer,
     EntryChecklistStateSerializer,
+    pdf_url,
 )
 from ..services import checklist_service as svc
+from ..services.budget_match import report_data, run_budget_match
 
 logger = logging.getLogger(__name__)
 
@@ -229,3 +243,58 @@ class EntryChecklistSendRemoteView(_ChecklistTypeView):
 
     def post(self, request: Request, **kwargs: object) -> Response:
         return Response(svc.create_remote_link(svc.get_or_create_checklist(self.get_order())))
+
+
+class _OrderEditView(APIView):
+    """Base: OS da URL, exige os.edit."""
+
+    def get_permissions(self) -> list:  # type: ignore[override]
+        return [IsAuthenticated(), HasTenantPermission("os.edit")]
+
+    def get_order(self) -> ServiceOrder:
+        return get_object_or_404(ServiceOrder, pk=self.kwargs["service_order_pk"])
+
+
+class BudgetMatchView(_OrderEditView):
+    """Refaz o cruzamento com o orçamento → `{inside, outside, unmapped}`."""
+
+    def post(self, request: Request, **kwargs: object) -> Response:
+        return Response(asdict(run_budget_match(self.get_order())))
+
+
+class BudgetMatchReportView(_OrderEditView):
+    """PDF do cruzamento, separado do checklist assinado (que nunca muda) → `{pdf_url}`."""
+
+    def post(self, request: Request, **kwargs: object) -> Response:
+        order = self.get_order()
+        doc = DocumentService.generate(
+            order.pk, DocumentType.CHECKLIST_CRUZAMENTO, report_data(order), request.user
+        )
+        return Response({"pdf_url": pdf_url(doc.pk)})
+
+
+class BudgetPanelRuleView(APIView):
+    """Dicionário de peças. POST: upsert manual por pattern e recruza a OS informada."""
+
+    permission_classes = [IsAuthenticated, IsAdminOrAbove]
+
+    def get(self, request: Request) -> Response:
+        rules = BudgetPanelRule.objects.filter(is_active=True).order_by("pattern")
+        return Response(BudgetPanelRuleSerializer(rules, many=True).data)
+
+    def post(self, request: Request) -> Response:
+        serializer = BudgetPanelRuleSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        order_id = serializer.validated_data.get("service_order_id")
+        order = get_object_or_404(ServiceOrder, pk=order_id) if order_id else None
+        rule, _ = BudgetPanelRule.objects.update_or_create(
+            pattern=serializer.validated_data["pattern"],
+            defaults={
+                "panel_keys": serializer.validated_data["panel_keys"],
+                "source": BudgetPanelRule.Source.MANUAL,
+                "is_active": True,
+            },
+        )
+        if order is not None:
+            run_budget_match(order)
+        return Response(BudgetPanelRuleSerializer(rule).data, status=status.HTTP_201_CREATED)

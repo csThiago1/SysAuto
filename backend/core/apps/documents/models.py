@@ -13,6 +13,7 @@ class DocumentType(models.TextChoices):
     SETTLEMENT = "settlement", "Termo de Quitação"
     RECEIPT = "receipt", "Recibo de Pagamento"
     CHECKLIST_ENTRADA = "checklist_entrada", "Checklist de Entrada"
+    CHECKLIST_CRUZAMENTO = "checklist_cruzamento", "Cruzamento Checklist x Orçamento"
 
 
 class DocumentGeneration(PaddockBaseModel):

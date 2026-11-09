@@ -9,9 +9,16 @@ from rest_framework import serializers
 
 from apps.vehicle_catalog.normalize import COR_HEX
 
-from ..checklist_constants import BodyType
-from ..models import ChecklistDamage, ChecklistItemStatus, CustomerBelonging, EntryChecklist
+from ..checklist_constants import PANEL_KEYS, BodyType
+from ..models import (
+    BudgetPanelRule,
+    ChecklistDamage,
+    ChecklistItemStatus,
+    CustomerBelonging,
+    EntryChecklist,
+)
 from ..models.checklist import ENTRY
+from ..services.budget_panels import normalize_description
 from ..services.checklist_service import suggest_body_type
 from .core import ServiceOrderPhotoSerializer
 
@@ -180,3 +187,26 @@ class CustomerBelongingSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data["photo_id"] = str(instance.photo_id) if instance.photo_id else None
         return data
+
+
+class BudgetPanelRuleSerializer(serializers.ModelSerializer):
+    """Regra do dicionário. Escrita grava `pattern` normalizado; `source` é sempre do servidor."""
+
+    panel_keys = serializers.ListField(
+        child=serializers.ChoiceField(choices=PANEL_KEYS), allow_empty=True
+    )
+    # Sem o UniqueValidator do model: o POST é upsert por pattern.
+    pattern = serializers.CharField(max_length=200)
+    # OS a recruzar depois de gravar a regra (ligação manual feita na conferência).
+    service_order_id = serializers.UUIDField(write_only=True, required=False)
+
+    class Meta:
+        model = BudgetPanelRule
+        fields = ["id", "pattern", "panel_keys", "source", "service_order_id"]
+        read_only_fields = ["id", "source"]
+
+    def validate_pattern(self, value: str) -> str:
+        normalized = normalize_description(value)
+        if not normalized:
+            raise serializers.ValidationError("Informe o texto do item.")
+        return normalized

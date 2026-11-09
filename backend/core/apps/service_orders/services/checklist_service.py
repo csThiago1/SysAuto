@@ -46,6 +46,7 @@ from ..models import (
 )
 from ..models.checklist import ENTRY
 from ..offline import find_by_uuid
+from .budget_match import run_budget_match
 
 logger = logging.getLogger(__name__)
 
@@ -315,6 +316,7 @@ def finalize(
     if missing:
         raise ValidationError({"missing": missing})
 
+    run_budget_match(order)
     doc = DocumentService.generate(
         order.pk, DocumentType.CHECKLIST_ENTRADA, _pdf_data(order, damages, snapshots), user
     )

@@ -220,3 +220,38 @@ def task_expire_overrides(tenant_schema: str = "") -> None:
                     schema,
                     expired_count,
                 )
+
+
+@shared_task(bind=True, max_retries=3, retry_backoff=True, soft_time_limit=60, time_limit=90)
+def task_run_budget_match(
+    self: object,
+    service_order_id: str,
+    tenant_schema: str,
+) -> dict:  # type: ignore[type-arg]
+    """Refaz o cruzamento do checklist de entrada com o orçamento ativo da OS.
+
+    Disparada pelo import/aplicação de versão do orçamento (on_commit).
+
+    Args:
+        service_order_id: PK da ServiceOrder.
+        tenant_schema: Schema do tenant (ex.: 'tenant_dscar').
+
+    Returns:
+        Dict com 'status' e, quando rodou, os totais do cruzamento.
+    """
+    with schema_context(tenant_schema):
+        from apps.service_orders.models import ServiceOrder
+        from apps.service_orders.services.budget_match import run_budget_match
+
+        order = ServiceOrder.objects.filter(pk=service_order_id, is_active=True).first()
+        if order is None:
+            logger.warning("task_run_budget_match: OS %s não encontrada", service_order_id)
+            return {"status": "skipped", "reason": "order_not_found"}
+
+        summary = run_budget_match(order)
+        return {
+            "status": "ok",
+            "inside": summary.inside,
+            "outside": len(summary.outside),
+            "unmapped": len(summary.unmapped),
+        }

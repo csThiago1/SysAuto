@@ -6,10 +6,12 @@ from rest_framework import serializers
 from apps.documents.models import DocumentGeneration, DocumentType
 
 
-# O checklist de entrada é evidência de sinistro: só nasce via checklist_service.finalize,
-# nunca pelo endpoint genérico com `data` vindo do cliente.
+# Checklist de entrada e cruzamento vão para a seguradora: só nascem pelos seus serviços
+# (finalize / budget-match/report), nunca pelo endpoint genérico com `data` vindo do cliente.
 GENERIC_DOCUMENT_TYPES = [
-    choice for choice in DocumentType.choices if choice[0] != DocumentType.CHECKLIST_ENTRADA
+    choice
+    for choice in DocumentType.choices
+    if choice[0] not in (DocumentType.CHECKLIST_ENTRADA, DocumentType.CHECKLIST_CRUZAMENTO)
 ]
 
 
