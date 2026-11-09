@@ -19,6 +19,7 @@ from apps.service_orders.models import (
 )
 from apps.service_orders.services.checklist_service import model_slug
 from apps.vehicle_catalog.models import VehicleFamily, VehicleMake
+from apps.vehicle_catalog.normalize import make_display_name, normalize_name
 
 
 class ChecklistStateAPITest(TenantTestCase):
@@ -143,17 +144,23 @@ class ChecklistStateAPITest(TenantTestCase):
         assert [item["os_number"] for item in response.json()] == [9974]
 
     def test_state_exposes_normalized_family(self) -> None:
-        make, _ = VehicleMake.objects.get_or_create(
-            nome_normalizado="CHEVROLET",
-            defaults={"nome": "Chevrolet", "display_name": "Chevrolet"},
-        )
-        family = VehicleFamily.objects.create(
-            make=make, nome="Onix Plus", nome_normalizado="ONIX PLUS"
-        )
-        ServiceOrder.objects.filter(pk=self.order.pk).update(catalog_family=family)
-        body = self.client.get(self.url).json()
-        assert body["vehicle_make"] == "chevrolet"
-        assert body["vehicle_family"] == "onix_plus"
+        # Marca semeada como o fipe_sync grava: nome FIPE cru + display_name canônico.
+        cases = [
+            ("GM - Chevrolet", "Onix Plus", "chevrolet", "onix_plus"),
+            ("VW - VolksWagen", "Polo", "volkswagen", "polo"),
+        ]
+        for fipe_nome, family_nome, make_slug, family_slug in cases:
+            make, _ = VehicleMake.objects.get_or_create(
+                nome_normalizado=normalize_name(fipe_nome),
+                defaults={"nome": fipe_nome, "display_name": make_display_name(fipe_nome)},
+            )
+            family = VehicleFamily.objects.create(
+                make=make, nome=family_nome, nome_normalizado=normalize_name(family_nome)
+            )
+            ServiceOrder.objects.filter(pk=self.order.pk).update(catalog_family=family)
+            body = self.client.get(self.url).json()
+            assert body["vehicle_make"] == make_slug
+            assert body["vehicle_family"] == family_slug
 
     def test_model_slug_strips_accents_and_hyphens(self) -> None:
         assert model_slug("Citroën  C4-Cactus") == "citroen_c4_cactus"

@@ -78,8 +78,9 @@ class EntryChecklistStateSerializer(serializers.ModelSerializer):
         return COR_HEX.get(obj.service_order.color) or NO_COLOR_HEX
 
     def get_vehicle_make(self, obj: EntryChecklist) -> str | None:
+        # display_name, não nome: o nome FIPE cru traz prefixo ("GM - Chevrolet").
         family = obj.service_order.catalog_family
-        return model_slug(family.make.nome) if family else None
+        return model_slug(family.make.display_name) if family else None
 
     def get_vehicle_family(self, obj: EntryChecklist) -> str | None:
         family = obj.service_order.catalog_family
