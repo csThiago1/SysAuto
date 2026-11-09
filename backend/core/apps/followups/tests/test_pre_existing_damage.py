@@ -6,11 +6,12 @@ A regra-semente vem da data migration; os testes usam a regra real do banco.
 
 import hashlib
 
+from django.utils import timezone
 from django_tenants.test.cases import TenantTestCase
 
 from apps.authentication.models import GlobalUser
 from apps.followups import services
-from apps.followups.models import FollowUp, FollowUpStatus, FollowUpTrigger
+from apps.followups.models import FollowUp, FollowUpOutcome, FollowUpStatus, FollowUpTrigger
 from apps.persons.models import Person
 from apps.service_orders.models import ServiceOrder
 
@@ -64,14 +65,53 @@ class PreExistingDamageFollowUpTest(TenantTestCase):
         self.assertIsNone(result)
         self.assertEqual(FollowUp.objects.get().status, FollowUpStatus.SKIPPED)
 
-    def test_skipped_returns_to_pending(self) -> None:
+    def test_auto_skipped_reopens_for_dispatch(self) -> None:
         order = self._make_order()
         services.upsert_pre_existing_damage(order, ["Capô"])
+        FollowUp.objects.update(status=FollowUpStatus.PENDING, dispatched_at=timezone.now())
         services.upsert_pre_existing_damage(order, [])
 
         followup = services.upsert_pre_existing_damage(order, ["Teto"])
 
-        self.assertEqual(followup.status, FollowUpStatus.PENDING)
+        # Volta para a fila: o dispatch_due manda o push de novo e passa para pending.
+        followup.refresh_from_db()
+        self.assertEqual(followup.status, FollowUpStatus.SCHEDULED)
+        self.assertIsNone(followup.dispatched_at)
+        self.assertIsNone(followup.completed_at)
+        self.assertLessEqual(followup.due_at, timezone.now())
+        self.assertIn("Teto", followup.notes)
+
+    def test_done_keeps_consultant_notes(self) -> None:
+        order = self._make_order()
+        services.upsert_pre_existing_damage(order, ["Capô"])
+        FollowUp.objects.update(
+            status=FollowUpStatus.DONE,
+            outcome=FollowUpOutcome.NOT_INTERESTED,
+            notes="Cliente recusou, valor alto",
+            completed_at=timezone.now(),
+        )
+
+        services.upsert_pre_existing_damage(order, ["Capô", "Teto"])
+
+        followup = FollowUp.objects.get()
+        self.assertEqual(followup.status, FollowUpStatus.DONE)
+        self.assertEqual(followup.notes, "Cliente recusou, valor alto")
+
+    def test_manual_skip_is_not_reopened(self) -> None:
+        order = self._make_order()
+        services.upsert_pre_existing_damage(order, ["Capô"])
+        # Mesmo efeito do POST /followups/{id}/skip/.
+        FollowUp.objects.update(
+            status=FollowUpStatus.SKIPPED,
+            notes="Cliente não quer orçamento particular",
+            completed_at=timezone.now(),
+        )
+
+        services.upsert_pre_existing_damage(order, ["Teto"])
+
+        followup = FollowUp.objects.get()
+        self.assertEqual(followup.status, FollowUpStatus.SKIPPED)
+        self.assertEqual(followup.notes, "Cliente não quer orçamento particular")
 
     def test_assigned_to_consultant(self) -> None:
         order = self._make_order()
