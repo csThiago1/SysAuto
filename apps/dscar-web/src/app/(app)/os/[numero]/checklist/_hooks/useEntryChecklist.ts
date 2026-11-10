@@ -64,7 +64,11 @@ export type ChecklistPatch = {
 }
 
 /** Grava o estado devolvido pelo servidor no cache do checklist. */
-function useStateMutation<V>(osId: string, fn: (vars: V) => Promise<EntryChecklistState>) {
+function useStateMutation<V>(
+  osId: string,
+  fn: (vars: V) => Promise<EntryChecklistState>,
+  alsoInvalidate: readonly (readonly unknown[])[] = [],
+) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: fn,
@@ -72,6 +76,7 @@ function useStateMutation<V>(osId: string, fn: (vars: V) => Promise<EntryCheckli
       qc.setQueryData(checklistKey(osId), state)
       // finalizar/reabrir mudam os requisitos de transição da OS
       void qc.invalidateQueries({ queryKey: ["service-orders", osId] })
+      for (const queryKey of alsoInvalidate) void qc.invalidateQueries({ queryKey })
     },
   })
 }
@@ -90,8 +95,12 @@ export type FinalizePayload = {
 }
 
 export function useFinalizeChecklist(osId: string) {
-  return useStateMutation(osId, (payload: FinalizePayload) =>
-    send(`${entry(osId)}/finalize/`, EntryChecklistStateSchema, payload, { offline: false }),
+  return useStateMutation(
+    osId,
+    (payload: FinalizePayload) =>
+      send(`${entry(osId)}/finalize/`, EntryChecklistStateSchema, payload, { offline: false }),
+    // o finalize roda run_budget_match e regrava budget_match dos danos
+    [damagesKey(osId)],
   )
 }
 

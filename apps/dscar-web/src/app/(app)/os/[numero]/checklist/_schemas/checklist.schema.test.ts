@@ -28,24 +28,29 @@ describe("ChecklistDamageSchema", () => {
   })
 })
 
+const state = {
+  id: "7d2f1e0a-1b2c-4d3e-8f90-a1b2c3d4e5f6",
+  body_type: "",
+  suggested_body_type: "sedan",
+  stops_done: { frente: "done", teto: "sem_dano" },
+  finalized_at: null,
+  version: 1,
+  signature_status: "pendente",
+  pdf_url: null,
+  vehicle_color_hex: "#9a9a9a",
+  customer_type: "insurer",
+  items_summary: { ok: 3, attention: 1, critical: 0, pending: 2 },
+  vehicle_make: "chevrolet",
+  vehicle_family: null,
+  allow_nc_models: false,
+}
+
 describe("EntryChecklistStateSchema", () => {
   it('body_type "" (checklist novo) vira null', () => {
-    const state = EntryChecklistStateSchema.parse({
-      id: "7d2f1e0a-1b2c-4d3e-8f90-a1b2c3d4e5f6",
-      body_type: "",
-      suggested_body_type: "sedan",
-      stops_done: { frente: "done", teto: "sem_dano" },
-      finalized_at: null,
-      version: 1,
-      signature_status: "pendente",
-      pdf_url: null,
-      vehicle_color_hex: "#9a9a9a",
-      customer_type: "insurer",
-      items_summary: { ok: 3, attention: 1, critical: 0, pending: 2 },
-      vehicle_make: "chevrolet",
-      vehicle_family: null,
-      allow_nc_models: false,
-    })
-    expect(state.body_type).toBeNull()
+    expect(EntryChecklistStateSchema.parse(state).body_type).toBeNull()
+  })
+
+  it.each([null, ""])("customer_type %j (OS sem tipo, ex.: migrada do Databox) vira null", (v) => {
+    expect(EntryChecklistStateSchema.parse({ ...state, customer_type: v }).customer_type).toBeNull()
   })
 })

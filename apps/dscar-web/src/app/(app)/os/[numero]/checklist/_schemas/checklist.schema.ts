@@ -23,12 +23,16 @@ export const BudgetMatchSchema = z.enum(["no_orcamento", "fora_do_orcamento", "s
 export const SignatureStatusSchema = z.enum(["pendente", "presencial", "remoto"])
 export const StopValueSchema = z.enum(["done", "sem_dano"])
 
+// CharField blank/null do Django: "" e null viram null
+const blankToNull = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess((v) => (v === "" ? null : v), schema.nullable())
+
 const PhotoRefSchema = z.object({ id: z.string(), url: z.string().nullable() })
 
 export const EntryChecklistStateSchema = z.object({
   id: z.string(),
   // checklist novo vem com "" (campo em branco no model)
-  body_type: z.preprocess((v) => (v === "" ? null : v), BodyTypeSchema.nullable()),
+  body_type: blankToNull(BodyTypeSchema),
   suggested_body_type: BodyTypeSchema.nullable(),
   stops_done: z.record(z.string(), StopValueSchema),
   finalized_at: z.string().nullable(),
@@ -36,7 +40,8 @@ export const EntryChecklistStateSchema = z.object({
   signature_status: SignatureStatusSchema,
   pdf_url: z.string().nullable(),
   vehicle_color_hex: z.string().regex(/^#[0-9a-fA-F]{6}$/),
-  customer_type: z.enum(["insurer", "private"]),
+  // OS sem tipo de atendimento (ex.: migrada do Databox) vem null ou ""
+  customer_type: blankToNull(z.enum(["insurer", "private"])),
   items_summary: z.object({
     ok: z.number().int(),
     attention: z.number().int(),
