@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils"
 import { BillingModal } from "../BillingModal"
 import { DocumentHistorySection } from "../DocumentHistorySection"
 import { DeliveryConfirmationDialog } from "./ClosingTab/DeliveryConfirmationDialog"
-import { SignatureSection } from "../../vistoria/_components/SignatureSection"
+import { SignatureSection } from "@/components/signature/SignatureSection"
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 

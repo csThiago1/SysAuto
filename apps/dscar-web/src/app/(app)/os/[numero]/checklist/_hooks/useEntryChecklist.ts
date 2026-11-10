@@ -90,8 +90,8 @@ export function usePatchChecklist(osId: string) {
 export type FinalizePayload = {
   /** PNG base64 de cada ângulo do carro 3D, por câmera. */
   snapshots: Record<string, string>
-  /** creditLine(resolveCarModel(...)); null para o modelo provisório. */
-  model_credit: string | null
+  /** creditLine(resolveCarModel(...)); omitido (ou null) para o modelo provisório. */
+  model_credit?: string | null
 }
 
 export function useFinalizeChecklist(osId: string) {

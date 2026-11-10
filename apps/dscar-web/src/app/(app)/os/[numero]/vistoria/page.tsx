@@ -1,6 +1,8 @@
 "use client";
 
 import { use, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import type { Route } from "next";
 import { drainQueue } from "@/lib/offline/queue";
 import { useQuery } from "@tanstack/react-query";
 import { v7 as uuidv7 } from "uuid";
@@ -10,18 +12,13 @@ import { apiFetch, fetchList } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { PageHeader } from "@/components/ui/page-header";
 import { PhotoCaptureGrid } from "@/components/photos/PhotoCaptureGrid";
-import { cn } from "@/lib/utils";
+import { SignatureSection } from "@/components/signature/SignatureSection";
 import { ChecklistSection } from "./_components/ChecklistSection";
-import { SignatureSection } from "./_components/SignatureSection";
 
 const API = "/api/proxy";
 
-const SEGMENTS = [
-  { value: "entrada", label: "Entrada", folder: "vistoria_inicial", docType: "VISTORIA_ENTRADA" },
-  { value: "saida", label: "Saída", folder: "vistoria_final", docType: "OS_DELIVERY" },
-] as const;
-
-type Segment = (typeof SEGMENTS)[number];
+// A entrada virou o checklist 3D (/os/[numero]/checklist); aqui fica a vistoria de saída.
+const segment = { value: "saida", folder: "vistoria_final", docType: "OS_DELIVERY" } as const;
 
 export default function VistoriaPage({
   params,
@@ -30,7 +27,6 @@ export default function VistoriaPage({
 }): React.ReactElement {
   const { numero } = use(params);
   const qc = useQueryClient();
-  const [segment, setSegment] = useState<Segment>(SEGMENTS[0]);
   const [pendingUploads, setPendingUploads] = useState(0);
 
   const { data: os } = useQuery<ServiceOrder>({
@@ -54,7 +50,7 @@ export default function VistoriaPage({
 
   const photos = useMemo(
     () => (photosQuery.data ?? []).filter((p) => p.folder === segment.folder),
-    [photosQuery.data, segment.folder]
+    [photosQuery.data]
   );
 
   async function handleAdd(files: File[]): Promise<void> {
@@ -92,23 +88,21 @@ export default function VistoriaPage({
         role="tablist"
         aria-label="Tipo de vistoria"
       >
-        {SEGMENTS.map((seg) => (
-          <button
-            key={seg.value}
-            type="button"
-            role="tab"
-            aria-selected={segment.value === seg.value}
-            onClick={() => setSegment(seg)}
-            className={cn(
-              "rounded-full py-1.5 text-sm font-medium transition-colors",
-              segment.value === seg.value
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground"
-            )}
-          >
-            {seg.label}
-          </button>
-        ))}
+        <Link
+          href={`/os/${numero}/checklist` as Route}
+          role="tab"
+          aria-selected={false}
+          className="rounded-full py-1.5 text-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Entrada
+        </Link>
+        <span
+          role="tab"
+          aria-selected
+          className="rounded-full bg-primary py-1.5 text-center text-sm font-medium text-primary-foreground"
+        >
+          Saída
+        </span>
       </div>
 
       {/* Fotos */}

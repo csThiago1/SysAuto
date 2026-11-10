@@ -246,11 +246,11 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
 
           <div className="ml-auto flex items-center gap-2">
             <a
-              href={`/os/${order.number}/vistoria`}
+              href={`/os/${order.number}/checklist`}
               className="inline-flex min-h-[44px] items-center whitespace-nowrap rounded-md bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 md:min-h-0 md:px-3 md:py-1.5"
             >
               <Camera className="mr-1.5 inline h-3.5 w-3.5" />
-              Vistoria
+              Checklist
             </a>
           </div>
         </div>

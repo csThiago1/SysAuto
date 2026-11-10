@@ -23,6 +23,10 @@ interface SignatureSectionProps {
   customerName: string;
   /** VISTORIA_ENTRADA (entrada), OS_DELIVERY (saída) ou BUDGET_APPROVAL (aprovação do orçamento) */
   documentType: "VISTORIA_ENTRADA" | "OS_DELIVERY" | "BUDGET_APPROVAL";
+  /** Grava por outra rota (ex.: `sign/` do checklist de entrada) em vez do capture genérico.
+   *  Quem passa `sign` mostra o selo de assinado: aqui fica só o botão. */
+  sign?: (pngBase64: string) => Promise<unknown>;
+  label?: string;
 }
 
 function fileToBase64(file: File): Promise<string> {
@@ -41,6 +45,8 @@ export function SignatureSection({
   osId,
   customerName,
   documentType,
+  sign,
+  label = "Coletar assinatura do cliente",
 }: SignatureSectionProps): React.ReactElement {
   const qc = useQueryClient();
   const [padOpen, setPadOpen] = useState(false);
@@ -53,11 +59,13 @@ export function SignatureSection({
         // prefixo dobrado é real: app montado em /signatures/ + router "signatures"
         `${API}/signatures/signatures/?service_order=${osId}&document_type=${documentType}`
       ),
+    enabled: !sign,
   });
 
   const capture = useMutation({
     mutationFn: async (file: File) => {
       const png = await fileToBase64(file);
+      if (sign) return sign(png);
       return apiFetch(`${API}/signatures/signatures/capture/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -72,13 +80,13 @@ export function SignatureSection({
       });
     },
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey });
+      if (!sign) void qc.invalidateQueries({ queryKey });
       toast.success("Assinatura registrada.");
     },
     onError: () => toast.error("Erro ao registrar assinatura. Tente novamente."),
   });
 
-  const signed = (signatures ?? []).length > 0;
+  const signed = !sign && (signatures ?? []).length > 0;
 
   return (
     <div className="rounded-[11px] bg-card px-3 py-2.5">
@@ -94,7 +102,7 @@ export function SignatureSection({
           onClick={() => setPadOpen(true)}
         >
           <PenLine className="mr-2 h-4 w-4" />
-          Coletar assinatura do cliente
+          {label}
         </Button>
       )}
       <SignaturePadDialog
