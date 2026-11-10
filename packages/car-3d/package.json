@@ -15,7 +15,19 @@
         "zod": "^3.24.1"
     },
     "devDependencies": {
+        "@react-three/drei": "^10.7.9",
+        "@react-three/fiber": "^9.8.2",
+        "@types/react": "^19",
+        "@types/three": "^0.187.0",
+        "react": "^19.0.0",
+        "three": "^0.187.0",
         "typescript": "^5.7.3",
         "vitest": "^2.1.9"
+    },
+    "peerDependencies": {
+        "@react-three/drei": "^10.7.9",
+        "@react-three/fiber": "^9.8.2",
+        "react": "^19.0.0",
+        "three": "^0.187.0"
     }
 }
