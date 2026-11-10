@@ -12,6 +12,7 @@ import {
   type ComponentRef,
   type JSX,
   type MutableRefObject,
+  type ReactNode,
 } from "react";
 import { Box3, CanvasTexture, PerspectiveCamera, SRGBColorSpace, Vector3 } from "three";
 import { poseFor } from "./cameras";
@@ -34,6 +35,8 @@ export type Car3DProps = {
   showRegions?: boolean; // wireframe das caixas (calibração)
   onPanelTap?: (panel: PanelKey | null, point: Vec3) => void;
   className?: string;
+  /** Extras dentro da cena (ex.: TransformControls da tela de calibração). */
+  children?: ReactNode;
 };
 
 const SNAPSHOT_W = 1200;
@@ -109,7 +112,7 @@ function RegionBoxes({ regions }: { regions: Regions }): JSX.Element {
   );
 }
 
-type SceneProps = Omit<Car3DProps, "className"> & { snapRef: MutableRefObject<SnapshotFn | null> };
+type SceneProps = Omit<Car3DProps, "className" | "children"> & { snapRef: MutableRefObject<SnapshotFn | null> };
 
 function Scene({
   modelUrl,
@@ -250,7 +253,7 @@ function Scene({
   );
 }
 
-export const Car3D = forwardRef<Car3DHandle, Car3DProps>(function Car3D({ className, ...props }, ref) {
+export const Car3D = forwardRef<Car3DHandle, Car3DProps>(function Car3D({ className, children, ...props }, ref) {
   const snapRef = useRef<SnapshotFn | null>(null);
   useImperativeHandle(ref, () => ({
     snapshot: (view) =>
@@ -265,6 +268,7 @@ export const Car3D = forwardRef<Car3DHandle, Car3DProps>(function Car3D({ classN
         <directionalLight position={[-6, 4, -5]} intensity={0.6} />
         <Suspense fallback={null}>
           <Scene {...props} snapRef={snapRef} />
+          {children}
         </Suspense>
       </Canvas>
     </div>

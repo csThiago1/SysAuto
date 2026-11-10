@@ -9,12 +9,14 @@
     },
     "scripts": {
         "typecheck": "tsc --noEmit",
-        "test": "vitest run"
+        "test": "vitest run",
+        "make-placeholder": "node scripts/make-placeholder.mjs"
     },
     "dependencies": {
         "zod": "^3.24.1"
     },
     "devDependencies": {
+        "@gltf-transform/core": "^4.5.1",
         "@react-three/drei": "^10.7.9",
         "@react-three/fiber": "^9.8.2",
         "@types/react": "^19",
