@@ -1,6 +1,12 @@
 import { z } from "zod";
 import { PANEL_KEYS, type PanelKey } from "./panels";
 
+/**
+ * Convenção de eixos de todo regions.json (é a do glTF; sistema destro):
+ * frente do carro = +z, y para cima, lado ESQUERDO do carro (motorista) = +x, lado DIREITO = -x.
+ * Logo as caixas `*_e` ficam em x > 0 e as `*_d` em x < 0. Um .glb fora dessa convenção é
+ * girado/espelhado no pipeline do modelo, nunca compensado nas caixas.
+ */
 export type Vec3 = [number, number, number];
 export type RegionBox = { center: Vec3; size: Vec3; rotationY?: number };
 export type Regions = {

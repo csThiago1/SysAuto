@@ -7,13 +7,27 @@ const bbox = new Box3(new Vector3(-0.9, 0, -2), new Vector3(0.9, 1.5, 2)).transl
 const center: [number, number, number] = [1, 0.75, 3];
 
 describe("poseFor", () => {
-  it("left: câmera em x < 0 olhando para o centro do bbox", () => {
+  // convenção glTF (destro, y para cima, frente = +z): esquerda do carro = +x
+  it("left: câmera em x > centro (lado esquerdo = +x) olhando para o centro do bbox", () => {
     const { position, target } = poseFor("left", bbox);
-    expect(position[0]).toBeLessThan(0);
+    expect(position[0]).toBeGreaterThan(center[0]);
+    expect(position[2]).toBeCloseTo(center[2]);
     expect(target).toEqual(center);
   });
 
-  it("front34: frente = +z, câmera com z > 0 e x > 0", () => {
+  it("right: câmera em x < centro (lado direito = -x)", () => {
+    const { position } = poseFor("right", bbox);
+    expect(position[0]).toBeLessThan(center[0]);
+    expect(position[2]).toBeCloseTo(center[2]);
+  });
+
+  it("rear34: traseira-direita, câmera com z < centro e x < centro", () => {
+    const { position } = poseFor("rear34", bbox);
+    expect(position[0]).toBeLessThan(center[0]);
+    expect(position[2]).toBeLessThan(center[2]);
+  });
+
+  it("front34: frente-esquerda (lado do motorista), câmera com z > 0 e x > 0", () => {
     const { position } = poseFor("front34", bbox);
     expect(position[0]).toBeGreaterThan(center[0]);
     expect(position[2]).toBeGreaterThan(center[2]);

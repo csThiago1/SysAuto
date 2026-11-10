@@ -5,14 +5,16 @@ import type { Vec3 } from "./regions";
 export type CameraPose = { position: Vec3; target: Vec3 };
 
 /**
- * Poses para um carro de comprimento 1 centrado na origem (convenção do regions.json:
- * frente = +z, lado esquerdo = -x, y para cima). poseFor escala pelo bbox do modelo.
+ * Poses para um carro de comprimento 1 centrado na origem, na convenção de eixos do glTF
+ * (ver REGIONS_AXES em regions.ts): frente = +z, y para cima, lado esquerdo = +x, direito = -x.
+ * front34 = frente-esquerda (lado do motorista), rear34 = traseira-direita: as duas diagonais
+ * cobrem os dois lados. poseFor escala pelo bbox do modelo.
  */
 export const CAMERA_POSES: Record<Exclude<CameraView, "free">, CameraPose> = {
   front: { position: [0, 0.2, 1.3], target: [0, 0, 0] },
   rear: { position: [0, 0.2, -1.3], target: [0, 0, 0] },
-  left: { position: [-1.4, 0.15, 0], target: [0, 0, 0] },
-  right: { position: [1.4, 0.15, 0], target: [0, 0, 0] },
+  left: { position: [1.4, 0.15, 0], target: [0, 0, 0] },
+  right: { position: [-1.4, 0.15, 0], target: [0, 0, 0] },
   top: { position: [0, 1.6, 0.001], target: [0, 0, 0] },
   front34: { position: [0.9, 0.45, 0.95], target: [0, 0, 0] },
   rear34: { position: [-0.9, 0.45, -0.95], target: [0, 0, 0] },
