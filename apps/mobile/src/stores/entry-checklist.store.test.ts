@@ -109,6 +109,47 @@ describe('syncEntryChecklist', () => {
     expect(damages()[0]).toMatchObject({ syncStatus: 'error', errorMessage: 'Checklist já finalizado na conferência' });
   });
 
+  it('foto que falhou sem rede volta a subir no sync seguinte (só as desta fila)', async () => {
+    const photo = { slot: 'dano', folder: 'checklist_entrada', checklistType: 'entrada', localUri: 'file://x' };
+    usePhotoStore.getState().addPhoto({ ...photo, id: 'ph-1', osId: OS });
+    usePhotoStore.getState().addPhoto({ ...photo, id: 'ph-outra', osId: 'os-2' });
+    usePhotoStore.getState().setError('ph-outra', 'x');
+    addDamage(['ph-1']);
+    vi.stubGlobal('fetch', async () => { throw new TypeError('Network request failed'); });
+    await syncEntryChecklist(OS);
+    expect(usePhotoStore.getState().queue[0].uploadStatus).toBe('error');
+
+    vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
+      calls.push({ url, method: init.method ?? 'GET', body: null });
+      return json(200, { id: `srv-${calls.length}`, url: 'u' });
+    });
+    expect(await syncEntryChecklist(OS)).toEqual({ ok: true, pending: 0 });
+    expect(calls.map((c) => `${c.method} ${c.url}`)).toEqual([
+      `POST http://api/api/v1/service-orders/${OS}/photos/`,
+      `POST http://api/api/v1/service-orders/${OS}/checklist-damages/`,
+      `PATCH http://api/api/v1/service-orders/${OS}/checklist-damages/srv-2/`, // replay do POST feito offline
+    ]);
+    expect(usePhotoStore.getState().queue.map((p) => p.uploadStatus)).toEqual(['done', 'error']);
+  });
+
+  it('POST sem resposta + edição local: o replay devolve o registro antigo e o sync faz PATCH', async () => {
+    const dmg = addDamage();
+    vi.stubGlobal('fetch', async () => { throw new DOMException('Aborted', 'AbortError'); });
+    await syncEntryChecklist(OS);
+    expect(damages()[0]).toMatchObject({ syncStatus: 'pending', serverId: undefined });
+    useEntryChecklistStore.getState().updateDamage(OS, dmg, { severity: 'grave', notes: 'nova' });
+
+    vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
+      calls.push({ url, method: init.method ?? 'GET', body: JSON.parse(String(init.body)) });
+      return json(200, { id: 'srv-antigo', severity: 'leve' });
+    });
+    expect(await syncEntryChecklist(OS)).toEqual({ ok: true, pending: 0 });
+    expect(calls.map((c) => c.method)).toEqual(['POST', 'PATCH']);
+    expect(calls[1].url).toBe(`http://api/api/v1/service-orders/${OS}/checklist-damages/srv-antigo/`);
+    expect(calls[1].body).toMatchObject({ severity: 'grave', notes: 'nova' });
+    expect(damages()[0]).toMatchObject({ syncStatus: 'synced', serverId: 'srv-antigo' });
+  });
+
   it('editar dano já sincado volta a pending e vai por PATCH no serverId', async () => {
     const dmg = addDamage();
     await syncEntryChecklist(OS);

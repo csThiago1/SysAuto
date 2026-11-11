@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { BodyType, DamageType, PanelKey, Relation, Severity, StopKey, Vec3 } from '@paddock/car-3d';
 import { api, ApiError } from '@/lib/api';
-import { uploadPendingPhotos } from '@/stores/photo.store';
+import { uploadPendingPhotos, usePhotoStore } from '@/stores/photo.store';
 
 // ─── MMKV storage (mesmo padrão do photo.store) ───────────────────────────────
 
@@ -45,6 +45,8 @@ export interface QueuedDamage {
   syncStatus: SyncStatus;
   serverId?: string;
   errorMessage?: string;
+  /** Já houve um POST (pode ter chegado ao servidor sem a resposta voltar). */
+  posted?: boolean;
 }
 
 export interface QueuedBelonging {
@@ -56,7 +58,7 @@ export interface QueuedBelonging {
   errorMessage?: string;
 }
 
-type SyncFields = 'clientUuid' | 'syncStatus' | 'serverId' | 'errorMessage';
+type SyncFields = 'clientUuid' | 'syncStatus' | 'serverId' | 'errorMessage' | 'posted';
 export type DamageInput = Omit<QueuedDamage, SyncFields>;
 export type BelongingInput = Omit<QueuedBelonging, SyncFields>;
 
@@ -198,11 +200,43 @@ async function send<T extends QueuedDamage | QueuedBelonging>(
   });
 }
 
+/** Grava `posted` antes do POST (persiste mesmo se o app morrer no meio) e devolve o item gravado. */
+function markPosted(osId: string, d: QueuedDamage): QueuedDamage {
+  const next = { ...d, posted: true };
+  useEntryChecklistStore.setState((state) => {
+    const draft = state.byOs[osId];
+    if (!draft) return state;
+    const damages = draft.damages.map((x) => (x === d ? next : x));
+    return { byOs: { ...state.byOs, [osId]: { ...draft, damages } } };
+  });
+  return next;
+}
+
+async function requestDamage(base: string, d: QueuedDamage, replay: boolean): Promise<unknown> {
+  if (d.serverId) return api.patch(`${base}/checklist-damages/${d.serverId}/`, damagePayload(d));
+  const created = CreatedSchema.parse(
+    await api.post(`${base}/checklist-damages/`, { client_uuid: d.clientUuid, ...damagePayload(d) }),
+  );
+  // Replay: o backend devolve o registro do 1º POST sem aplicar edições feitas depois dele.
+  return replay ? api.patch(`${base}/checklist-damages/${created.id}/`, damagePayload(d)) : created;
+}
+
+/** Fotos `error` (ex.: tentativa sem rede) citadas por itens pending desta OS voltam a `pending`. */
+function retryReferencedPhotos(draft: EntryChecklistDraft): void {
+  const refs = new Set<string>();
+  for (const d of draft.damages) if (d.syncStatus === 'pending') d.photoClientUuids.forEach((id) => refs.add(id));
+  for (const b of draft.belongings) if (b.syncStatus === 'pending' && b.photoClientUuid) refs.add(b.photoClientUuid);
+  const { queue, retryPhoto } = usePhotoStore.getState();
+  for (const p of queue) if (p.uploadStatus === 'error' && refs.has(p.id)) retryPhoto(p.id);
+}
+
 /**
  * Ordem: fotos → PATCH do estado → POST/PATCH de cada dano e pertence pending.
  * Idempotente por client_uuid (o backend devolve o existente).
  */
 export async function syncEntryChecklist(osId: string): Promise<{ ok: boolean; pending: number }> {
+  const before = useEntryChecklistStore.getState().byOs[osId];
+  if (before) retryReferencedPhotos(before);
   await uploadPendingPhotos();
 
   const draft = useEntryChecklistStore.getState().byOs[osId];
@@ -224,11 +258,8 @@ export async function syncEntryChecklist(osId: string): Promise<{ ok: boolean; p
   }
 
   for (const d of draft.damages.filter((x) => x.syncStatus === 'pending')) {
-    await send(osId, 'damages', d, () =>
-      d.serverId
-        ? api.patch(`${base}/checklist-damages/${d.serverId}/`, damagePayload(d))
-        : api.post(`${base}/checklist-damages/`, { client_uuid: d.clientUuid, ...damagePayload(d) }),
-    );
+    const item = d.serverId || d.posted ? d : markPosted(osId, d);
+    await send(osId, 'damages', item, () => requestDamage(base, item, !!d.posted));
   }
   for (const b of draft.belongings.filter((x) => x.syncStatus === 'pending')) {
     await send(osId, 'belongings', b, () =>
