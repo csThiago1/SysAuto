@@ -53,8 +53,9 @@ export default auth((req: Parameters<Parameters<typeof auth>[0]>[0]) => {
 });
 
 export const config = {
-  // manifest/sw ficam fora do auth — o browser busca sem cookies de sessão
+  // manifest/sw ficam fora do auth — o browser busca sem cookies de sessão.
+  // car-3d/: GLB e regiões do carro 3D são estáticos públicos; o app mobile baixa sem cookie.
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|.*\\.png$|.*\\.svg$|.*\\.jpg$|.*\\.ico$).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|car-3d/|.*\\.png$|.*\\.svg$|.*\\.jpg$|.*\\.ico$).*)",
   ],
 };
