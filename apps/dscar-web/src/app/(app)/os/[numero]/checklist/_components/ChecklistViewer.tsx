@@ -1,11 +1,12 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState, type ReactElement } from "react"
+import { useMemo, useRef, useState, type ReactElement } from "react"
 import { useGLTF, useProgress } from "@react-three/drei"
 import { useQuery } from "@tanstack/react-query"
 import dynamic from "next/dynamic"
 import { ErrorBoundary } from "react-error-boundary"
-import { FileText } from "lucide-react"
+import { FileText, GitCompareArrows, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 import {
   creditLine,
   RegionsSchema,
@@ -187,13 +188,6 @@ export function ChecklistViewer({ osId, customerName }: { osId: string; customer
   })
   const { active: glbLoading } = useProgress()
 
-  // OS de seguradora: recruza ao abrir, para listar os itens do orçamento sem peça
-  const isInsurer = state?.customer_type === "insurer"
-  const { mutate: runMatch } = match
-  useEffect(() => {
-    if (isInsurer) runMatch()
-  }, [isInsurer, runMatch])
-
   const highlights = useMemo(() => {
     const worst = new Map<PanelKey, ChecklistDamage["severity"]>()
     for (const d of damages) {
@@ -265,6 +259,15 @@ export function ChecklistViewer({ osId, customerName }: { osId: string; customer
     damages.some((d) => d.budget_match !== "sem_orcamento") ||
     (match.data ? match.data.inside > 0 || match.data.outside.length > 0 || match.data.unmapped.length > 0 : false)
   const belongingCount = belongings.data?.length ?? 0
+
+  // ponytail: o cruzamento grava budget_match nos danos, então é ação explícita e só com o
+  // checklist aberto; GET de leitura do resumo se a lista de não mapeados precisar abrir sozinha
+  const runMatch = (): void =>
+    match.mutate(undefined, {
+      onSuccess: (s) =>
+        toast.success(`Cruzamento feito: ${s.inside} no orçamento, ${s.outside.length} fora, ${s.unmapped.length} sem peça.`),
+      onError: (e) => toastChecklistError(e, "Não deu para cruzar com o orçamento. Tente de novo."),
+    })
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
@@ -350,6 +353,16 @@ export function ChecklistViewer({ osId, customerName }: { osId: string; customer
               </TabsList>
               <div className="flex-1 overflow-y-auto px-3 pb-3">
                 <TabsContent value="danos" className="space-y-3">
+                  {state.customer_type === "insurer" && !locked && (
+                    <Button variant="outline" size="sm" className="w-full" disabled={match.isPending} onClick={runMatch}>
+                      {match.isPending ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <GitCompareArrows className="mr-1.5 h-3.5 w-3.5" />
+                      )}
+                      Cruzar com o orçamento
+                    </Button>
+                  )}
                   {match.data && <UnmappedBudgetItems osId={osId} items={match.data.unmapped} />}
                   {damagesQuery.isLoading ? (
                     <div className="space-y-1.5">

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest"
 
-import { ChecklistDamageSchema, EntryChecklistStateSchema } from "./checklist.schema"
+import {
+  ChecklistDamageSchema,
+  ChecklistHistoryEntrySchema,
+  EntryChecklistStateSchema,
+  PdfUrlSchema,
+} from "./checklist.schema"
 
 const damage = {
   id: "0b6f8a52-7c1e-4d53-9a6e-3f1c2b4d5e6f",
@@ -52,5 +57,23 @@ describe("EntryChecklistStateSchema", () => {
 
   it.each([null, ""])("customer_type %j (OS sem tipo, ex.: migrada do Databox) vira null", (v) => {
     expect(EntryChecklistStateSchema.parse({ ...state, customer_type: v }).customer_type).toBeNull()
+  })
+})
+
+describe("pdf_url", () => {
+  // o backend devolve /api/v1/...; no Next só existe o proxy autenticado /api/proxy/...
+  const raw = "/api/v1/documents/42/download/"
+  const proxied = "/api/proxy/documents/42/download/"
+
+  it("estado, histórico e relatório de cruzamento saem apontando para o proxy", () => {
+    expect(EntryChecklistStateSchema.parse({ ...state, pdf_url: raw }).pdf_url).toBe(proxied)
+    expect(
+      ChecklistHistoryEntrySchema.parse({ os_number: 7, finalized_at: null, pdf_url: raw, damage_count: 2 }).pdf_url,
+    ).toBe(proxied)
+    expect(PdfUrlSchema.parse({ pdf_url: raw }).pdf_url).toBe(proxied)
+  })
+
+  it("null continua null", () => {
+    expect(PdfUrlSchema.parse({ pdf_url: null }).pdf_url).toBeNull()
   })
 })

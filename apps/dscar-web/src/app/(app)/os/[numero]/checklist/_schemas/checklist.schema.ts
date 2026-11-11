@@ -27,6 +27,13 @@ export const StopValueSchema = z.enum(["done", "sem_dano"])
 const blankToNull = <T extends z.ZodTypeAny>(schema: T) =>
   z.preprocess((v) => (v === "" ? null : v), schema.nullable())
 
+// O backend devolve `/api/v1/documents/{id}/download/`; no Next o caminho autenticado é o proxy
+// (/api/proxy acrescenta o /api/v1), igual às telas fiscais.
+const PdfUrl = z
+  .string()
+  .nullable()
+  .transform((url) => (url?.startsWith("/api/v1/") ? `/api/proxy/${url.slice("/api/v1/".length)}` : url))
+
 const PhotoRefSchema = z.object({ id: z.string(), url: z.string().nullable() })
 
 export const EntryChecklistStateSchema = z.object({
@@ -38,7 +45,7 @@ export const EntryChecklistStateSchema = z.object({
   finalized_at: z.string().nullable(),
   version: z.number().int(),
   signature_status: SignatureStatusSchema,
-  pdf_url: z.string().nullable(),
+  pdf_url: PdfUrl,
   vehicle_color_hex: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   // OS sem tipo de atendimento (ex.: migrada do Databox) vem null ou ""
   customer_type: blankToNull(z.enum(["insurer", "private"])),
@@ -95,12 +102,12 @@ export type MatchSummary = z.infer<typeof MatchSummarySchema>
 export const RemoteLinkSchema = z.object({ url: z.string(), whatsapp_url: z.string() })
 export type RemoteLink = z.infer<typeof RemoteLinkSchema>
 
-export const PdfUrlSchema = z.object({ pdf_url: z.string().nullable() })
+export const PdfUrlSchema = z.object({ pdf_url: PdfUrl })
 
 export const ChecklistHistoryEntrySchema = z.object({
   os_number: z.number().int(),
   finalized_at: z.string().nullable(),
-  pdf_url: z.string().nullable(),
+  pdf_url: PdfUrl,
   damage_count: z.number().int(),
 })
 export type ChecklistHistoryEntry = z.infer<typeof ChecklistHistoryEntrySchema>

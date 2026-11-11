@@ -93,7 +93,9 @@ export function DamagePanel({ osId, panelKey, point, damage, locked, onClose }: 
   const [severity, setSeverity] = useState<ChecklistDamage["severity"] | null>(damage?.severity ?? null)
   const [relation, setRelation] = useState<ChecklistDamage["relation"]>(damage?.relation ?? "nao_sei")
   const [notes, setNotes] = useState(damage?.notes ?? "")
-  const [photoIds, setPhotoIds] = useState<string[]>(damage?.photo_ids ?? [])
+  // null = fotos intocadas: o PATCH não reenvia `photo_ids` (uma foto apagada depois, que o
+  // M2M ainda lista, faria o backend recusar a edição com {"photos": "pending"})
+  const [pickedIds, setPickedIds] = useState<string[] | null>(null)
   const [confirmDeactivate, setConfirmDeactivate] = useState(false)
 
   const photos = useChecklistPhotos(osId)
@@ -103,14 +105,21 @@ export function DamagePanel({ osId, panelKey, point, damage, locked, onClose }: 
   const deactivate = useDeactivateDamage(osId)
   const busy = create.isPending || patch.isPending || deactivate.isPending
 
+  // só conta e mostra as fotos ativas do checklist (soft delete some da grade)
+  const activeIds = new Set((photos.data ?? []).map((p) => p.id))
+  const photoIds = pickedIds ?? (damage?.photo_ids ?? []).filter((id) => activeIds.has(id))
+
   const togglePhoto = (id: string): void =>
-    setPhotoIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]))
+    setPickedIds((ids) => {
+      const cur = ids ?? photoIds
+      return cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]
+    })
 
   async function handleFiles(files: FileList | null): Promise<void> {
     for (const file of Array.from(files ?? [])) {
       try {
         const photo = await upload.mutateAsync(file)
-        setPhotoIds((ids) => [...ids, photo.id])
+        setPickedIds((ids) => [...(ids ?? photoIds), photo.id])
       } catch {
         toast.error("Não deu para enviar a foto. Tente de novo.")
       }
@@ -127,7 +136,7 @@ export function DamagePanel({ osId, panelKey, point, damage, locked, onClose }: 
           severity,
           relation,
           notes: notes.trim(),
-          photo_ids: photoIds,
+          ...(pickedIds && { photo_ids: pickedIds }),
         })
       } else {
         const input: DamageInput = { panel_key: panel, damage_type: type, severity, relation }
