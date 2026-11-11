@@ -426,3 +426,8 @@ if FOCUS_NFE_AMBIENTE == "producao" and DEBUG:
     from django.core.exceptions import ImproperlyConfigured  # noqa: E402
 
     raise ImproperlyConfigured("FOCUS_NFE_AMBIENTE=producao não é permitido quando DEBUG=True.")
+
+# ─── Proxy do Next (/api/proxy) ───────────────────────────────────────────────
+# Mesmo valor no web (PROXY_SHARED_SECRET). Com ele o Django aceita o X-Client-IP
+# que o proxy repassa (IP do aparelho na assinatura). Vazio = usa REMOTE_ADDR.
+PROXY_SHARED_SECRET = config("PROXY_SHARED_SECRET", default="")

@@ -20,6 +20,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ..services import checklist_service as svc
+from .client_ip import client_ip
 
 
 class ChecklistConfirmView(APIView):
@@ -45,7 +46,7 @@ class ChecklistConfirmView(APIView):
         signature = svc.confirm_remote(
             token,
             signer_name if isinstance(signer_name, str) else "",
-            request.META.get("REMOTE_ADDR"),
+            client_ip(request),
             request.META.get("HTTP_USER_AGENT", ""),
         )
         return Response({"signed_at": signature.signed_at})

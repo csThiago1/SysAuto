@@ -6,6 +6,20 @@ const BACKEND_BASE =
   process.env.NEXT_PUBLIC_API_URL ??
   "http://localhost:8000";
 
+function clientHeaders(req: NextRequest): Record<string, string> {
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip")?.trim() ||
+    "";
+  const ua = req.headers.get("user-agent") ?? "";
+  const secret = process.env.PROXY_SHARED_SECRET ?? "";
+  return {
+    ...(ip ? { "X-Client-IP": ip } : {}),
+    ...(ua ? { "User-Agent": ua } : {}),
+    ...(secret ? { "X-Proxy-Secret": secret } : {}),
+  };
+}
+
 async function proxyRequest(
   req: NextRequest,
   pathSegments: string[],
@@ -41,6 +55,11 @@ async function proxyRequest(
     ...(session?.accessToken
       ? { Authorization: `Bearer ${session.accessToken}` }
       : {}),
+    // Evidência da assinatura (IP e navegador do aparelho, não do Next). O Caddy na frente
+    // do Django reescreve X-Forwarded-For, por isso X-Client-IP; o Django só confia nele
+    // com o X-Proxy-Secret certo. ponytail: confia no x-forwarded-for de entrada (a Vercel
+    // o sobrescreve); hospedado fora da Vercel, a borda precisa fazer o mesmo.
+    ...clientHeaders(req),
   };
 
   // Multipart usa ArrayBuffer para preservar bytes do arquivo intactos

@@ -6,6 +6,7 @@ import hashlib
 
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.test import override_settings
 from django.utils import timezone
 from django_tenants.test.cases import TenantTestCase
 from rest_framework.test import APIClient
@@ -78,18 +79,68 @@ class ChecklistSignatureAPITest(TenantTestCase):
         assert response.status_code == 200, response.content
         return response.json()["url"].rsplit("/", 1)[1]
 
-    def _confirm(self, token: str):  # noqa: ANN202
+    def _confirm(self, token: str, **headers: str):  # noqa: ANN202
         return self.public.post(
             f"/api/v1/public/checklist-confirm/{token}/",
             {"signer_name": "Cliente Remoto"},
             format="json",
+            **headers,
         )
+
+    # O POST chega pelo proxy do Next: o IP do aparelho vem no X-Client-IP,
+    # aceito só com o segredo do proxy (senão qualquer um forjaria a evidência).
+    PROXIED = {
+        "HTTP_X_PROXY_SECRET": "segredo-proxy",
+        "HTTP_X_CLIENT_IP": "203.0.113.7",
+        "HTTP_USER_AGENT": "Mozilla/5.0 (iPhone)",
+    }
+
+    @override_settings(PROXY_SHARED_SECRET="segredo-proxy")
+    def test_remote_confirm_records_device_ip_and_ua_from_proxy(self) -> None:
+        response = self._confirm(self._send_remote(), **self.PROXIED)
+        assert response.status_code == 200, response.content
+        self.checklist.refresh_from_db()
+        assert self.checklist.signature.ip_address == "203.0.113.7"
+        assert self.checklist.signature.user_agent == "Mozilla/5.0 (iPhone)"
+
+    @override_settings(PROXY_SHARED_SECRET="segredo-proxy")
+    def test_remote_confirm_ignores_client_ip_without_proxy_secret(self) -> None:
+        headers = {**self.PROXIED, "HTTP_X_PROXY_SECRET": "chute"}
+        assert self._confirm(self._send_remote(), **headers).status_code == 200
+        self.checklist.refresh_from_db()
+        assert self.checklist.signature.ip_address == "127.0.0.1"
+
+    @override_settings(PROXY_SHARED_SECRET="")
+    def test_remote_confirm_ignores_client_ip_when_secret_unset(self) -> None:
+        headers = {**self.PROXIED, "HTTP_X_PROXY_SECRET": ""}
+        assert self._confirm(self._send_remote(), **headers).status_code == 200
+        self.checklist.refresh_from_db()
+        assert self.checklist.signature.ip_address == "127.0.0.1"
+
+    @override_settings(PROXY_SHARED_SECRET="segredo-proxy")
+    def test_remote_confirm_invalid_client_ip_falls_back(self) -> None:
+        headers = {**self.PROXIED, "HTTP_X_CLIENT_IP": "nao-e-ip"}
+        assert self._confirm(self._send_remote(), **headers).status_code == 200
+        self.checklist.refresh_from_db()
+        assert self.checklist.signature.ip_address == "127.0.0.1"
 
     def test_sign_requires_finalized(self) -> None:
         EntryChecklist.objects.filter(pk=self.checklist.pk).update(finalized_at=None)
         response = self._sign()
         assert response.status_code == 400, response.content
         assert Signature.objects.count() == 0
+
+    @override_settings(PROXY_SHARED_SECRET="segredo-proxy")
+    def test_presencial_records_device_ip_from_proxy(self) -> None:
+        response = self.client.post(
+            f"{self.url}sign/",
+            {"signer_name": "Cliente Assinatura", "signature_png_base64": SIGNATURE_PNG},
+            format="json",
+            **self.PROXIED,
+        )
+        assert response.status_code == 200, response.content
+        self.checklist.refresh_from_db()
+        assert self.checklist.signature.ip_address == "203.0.113.7"
 
     def test_presencial_sets_status(self) -> None:
         response = self._sign()

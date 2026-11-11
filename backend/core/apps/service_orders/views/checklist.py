@@ -53,6 +53,7 @@ from ..serializers.checklist import (
 )
 from ..services import checklist_service as svc
 from ..services.budget_match import report_data, run_budget_match
+from .client_ip import client_ip
 
 logger = logging.getLogger(__name__)
 
@@ -240,7 +241,7 @@ class EntryChecklistSignView(_ChecklistTypeView):
             checklist,
             _str(request, "signer_name"),
             _str(request, "signature_png_base64"),
-            request.META.get("REMOTE_ADDR"),
+            client_ip(request),
             request.META.get("HTTP_USER_AGENT", ""),
         )
         checklist.refresh_from_db()
