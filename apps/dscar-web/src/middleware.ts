@@ -10,6 +10,10 @@ export default auth((req: Parameters<Parameters<typeof auth>[0]>[0]) => {
   const request = req as unknown as NextRequest;
   const { pathname } = request.nextUrl;
   const isLoggedIn = !!req.auth;
+
+  // Página do cliente (link por WhatsApp): abre com ou sem sessão, sem redirect.
+  if (pathname.startsWith("/confirmar-checklist")) return;
+
   const isAuthPage =
     pathname.startsWith("/login") ||
     pathname.startsWith("/esqueci-senha") ||
