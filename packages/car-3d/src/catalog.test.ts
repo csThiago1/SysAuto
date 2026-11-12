@@ -59,9 +59,10 @@ describe("resolveCarModel", () => {
 });
 
 describe("CAR_MODELS", () => {
-  it("começa com um provisório por carroceria", () => {
-    expect(CAR_MODELS.map((m) => m.bodyType).sort()).toEqual(["hatch", "pickup", "sedan", "suv", "van"]);
-    expect(CAR_MODELS.every((m) => m.license === "PLACEHOLDER")).toBe(true);
+  it("tem um provisório por carroceria, no fim da lista", () => {
+    const placeholders = CAR_MODELS.filter((m) => m.license === "PLACEHOLDER");
+    expect(placeholders.map((m) => m.bodyType).sort()).toEqual(["hatch", "pickup", "sedan", "suv", "van"]);
+    expect(CAR_MODELS.slice(-placeholders.length)).toEqual(placeholders);
   });
 });
 
@@ -71,6 +72,6 @@ describe("creditLine", () => {
   });
 
   it("provisório não tem crédito", () => {
-    expect(creditLine(CAR_MODELS[0])).toBeNull();
+    expect(creditLine(CAR_MODELS[CAR_MODELS.length - 1])).toBeNull();
   });
 });

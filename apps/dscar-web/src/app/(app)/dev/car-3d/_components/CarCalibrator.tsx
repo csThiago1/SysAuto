@@ -120,6 +120,7 @@ function Editor({ entry, initial }: { entry: CarModelEntry; initial: Regions | n
   const [materials, setMaterials] = useState<string[]>([]);
   const [tapped, setTapped] = useState<{ panel: PanelKey | null; point: Vec3 } | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [paint, setPaint] = useState<string>(NEUTRAL_PAINT);
 
   const modelUrl = `/car-3d/${entry.file}`;
   const boxes = selected ? regions.panels[selected] ?? [] : [];
@@ -170,7 +171,7 @@ function Editor({ entry, initial }: { entry: CarModelEntry; initial: Regions | n
           className="h-full w-full"
           modelUrl={modelUrl}
           regions={regions}
-          color={NEUTRAL_PAINT}
+          color={paint}
           highlights={highlights}
           showRegions={showRegions}
           onPanelTap={(panel, point) => setTapped({ panel, point })}
@@ -208,6 +209,13 @@ function Editor({ entry, initial }: { entry: CarModelEntry; initial: Regions | n
           <Button size="sm" variant="outline" onClick={() => setShowRegions((v) => !v)}>
             {showRegions ? "Esconder caixas" : "Mostrar caixas"}
           </Button>
+        </div>
+        <div className="flex flex-wrap gap-2" aria-label="Cor da lataria">
+          {PAINTS.map(([label, hex]) => (
+            <Button key={hex} size="sm" variant={paint === hex ? "default" : "outline"} onClick={() => setPaint(hex)}>
+              {label}
+            </Button>
+          ))}
         </div>
         {exportError && <p className="text-xs text-destructive">{exportError}</p>}
 
@@ -298,6 +306,14 @@ function Editor({ entry, initial }: { entry: CarModelEntry; initial: Regions | n
     </div>
   );
 }
+
+/** Cores de conferência do visual (aprovação dos modelos): cinza neutro, branco, prata e vermelho. */
+const PAINTS: [string, string][] = [
+  ["Cinza", NEUTRAL_PAINT],
+  ["Branco", "#f2f2f2"],
+  ["Prata", "#b8bcc2"],
+  ["Vermelho", "#b3121b"],
+];
 
 function Calibrator(): ReactElement {
   const [modelKey, setModelKey] = useState(CAR_MODELS[0]?.key ?? "");

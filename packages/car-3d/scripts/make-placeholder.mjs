@@ -143,7 +143,9 @@ function regions(key, b) {
   pair(p, "soleira", [box(side, [c - 0.02, c + 0.12], [doorsRear, b.doorFront])]);
 
   if (b.slideRear === undefined) {
-    pair(p, "lateral_tras", [box(side, [c, top], [-L / 2 - 0.02, doorsRear])]);
+    // a coluna C não tem peça própria na taxonomia: conta como lateral traseira
+    const colunaC = box([hw - inset - 0.05, hw - inset + 0.05], [belt, roof - ROOF_T + 0.01], [b.cabRear - 0.03, b.cabRear + 0.13]);
+    pair(p, "lateral_tras", [box(side, [c, top], [-L / 2 - 0.02, doorsRear]), colunaC]);
   } else {
     // van: a corrediça é só do lado direito (-x); à esquerda a lateral vai até a porta da frente
     // dividida na linha da janela: inteira, a caixa ficaria maior que a da roda e engoliria o pneu

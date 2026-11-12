@@ -37,10 +37,69 @@ const PLACEHOLDERS: Record<BodyType, CarModelEntry> = {
   van: placeholder("van", "Van (provisório)"),
 };
 
-/** Catálogo de modelos 3D. A Task 14 acrescenta os reais antes dos provisórios. */
-export const CAR_MODELS: CarModelEntry[] = Object.values(PLACEHOLDERS);
+const DDIAZ = "Ddiaz Design";
 
-const LICENSE_LABELS: Record<Exclude<ModelLicense, "PLACEHOLDER">, string> = {
+/**
+ * Catálogo de modelos 3D: os reais antes dos provisórios. A ordem importa no padrão da carroceria
+ * (o primeiro `bodyDefault` permitido vence): Virtus (NC) antes do Onix (CC BY), para quem não pode NC
+ * cair no Onix. Título, autor, licença e link vêm do `asset.extras` de cada .glb (Sketchfab).
+ */
+export const CAR_MODELS: CarModelEntry[] = [
+  {
+    key: "polo",
+    title: "2024 Volkswagen Polo 170 TSI",
+    file: "polo.glb",
+    regionsFile: "polo.regions.json",
+    bodyType: "hatch",
+    families: [{ make: "volkswagen", family: "polo" }],
+    bodyDefault: true,
+    license: "CC-BY-NC-SA-4.0",
+    author: DDIAZ,
+    sourceUrl: "https://sketchfab.com/3d-models/2024-volkswagen-polo-170-tsi-ec0f4dfd1ca84a859725e4002e9cf120",
+  },
+  {
+    key: "virtus",
+    title: "2024 Volkswagen Virtus TSI",
+    file: "virtus.glb",
+    regionsFile: "virtus.regions.json",
+    bodyType: "sedan",
+    families: [{ make: "volkswagen", family: "virtus" }],
+    bodyDefault: true,
+    license: "CC-BY-NC-SA-4.0",
+    author: DDIAZ,
+    sourceUrl: "https://sketchfab.com/3d-models/2024-volkswagen-virtus-tsi-2678bb3bfbe1482cb6faa084674e100b",
+  },
+  {
+    key: "onix",
+    title: "chevrolet onix",
+    file: "onix.glb",
+    regionsFile: "onix.regions.json",
+    bodyType: "sedan", // é o Onix Plus
+    families: [
+      { make: "chevrolet", family: "onix" },
+      { make: "chevrolet", family: "onix_plus" },
+    ],
+    bodyDefault: true,
+    license: "CC-BY-4.0",
+    author: "uzb_rx7",
+    sourceUrl: "https://sketchfab.com/3d-models/chevrolet-onix-bfd798c2695847b28ab681d42abc7056",
+  },
+  {
+    key: "spark_euv",
+    title: "2026 Chevrolet Spark EUV",
+    file: "spark_euv.glb",
+    regionsFile: "spark_euv.regions.json",
+    bodyType: "suv",
+    families: [{ make: "chevrolet", family: "spark_euv" }],
+    bodyDefault: false,
+    license: "CC-BY-NC-SA-4.0",
+    author: DDIAZ,
+    sourceUrl: "https://sketchfab.com/3d-models/2026-chevrolet-spark-euv-620ce2baa45d466ca599412c3b843efc",
+  },
+  ...Object.values(PLACEHOLDERS),
+];
+
+export const LICENSE_LABELS: Record<Exclude<ModelLicense, "PLACEHOLDER">, string> = {
   CC0: "CC0 1.0",
   "CC-BY-4.0": "CC BY 4.0",
   "CC-BY-NC-SA-4.0": "CC BY-NC-SA 4.0",
