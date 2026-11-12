@@ -165,7 +165,8 @@ function damagePayload(d: QueuedDamage): Record<string, unknown> {
     damage_type: d.damageType,
     severity: d.severity,
     relation: d.relation,
-    point: d.point,
+    // o backend e a conferência web leem o ponto como {x, y, z}
+    point: d.point ? { x: d.point[0], y: d.point[1], z: d.point[2] } : null,
     notes: d.notes,
     photo_client_uuids: d.photoClientUuids,
   };

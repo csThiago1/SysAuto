@@ -74,7 +74,7 @@ describe('syncEntryChecklist', () => {
     expect(calls[1].body).toEqual({ body_type: 'sedan', stops_done: { frente: 'done', teto: 'sem_dano' } });
     expect(calls[2].body).toEqual({
       client_uuid: dmg, panel_key: 'capo', damage_type: 'risco', severity: 'leve', relation: 'pre_existente',
-      point: [0, 1, 2], notes: 'n', photo_client_uuids: ['ph-1'],
+      point: { x: 0, y: 1, z: 2 }, notes: 'n', photo_client_uuids: ['ph-1'],
     });
     expect(calls[3].body).toEqual({ client_uuid: bel, description: 'Óculos', photo_client_uuid: null });
     expect(result).toEqual({ ok: true, pending: 0 });
