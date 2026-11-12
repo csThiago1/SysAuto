@@ -91,8 +91,8 @@ export default function RecepcaoPage(): React.ReactElement {
     } else {
       toast.success(`OS ${osNumber} criada.`);
     }
-    // segue direto pra vistoria de entrada (checklist + assinatura)
-    router.push(`/os/${osNumber}/vistoria` as Route);
+    // segue direto pro checklist de entrada (conferência 3D + assinatura)
+    router.push(`/os/${osNumber}/checklist` as Route);
   }
 
   const values = form.watch();

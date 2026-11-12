@@ -41,6 +41,11 @@ const DETAIL_SLOTS: SlotDef[] = [
 
 const MANDATORY_COUNT = EXTERNAL_SLOTS.length + DETAIL_SLOTS.length; // 12
 
+/** Rótulo de cada slot obrigatório (usado também pelo checklist de entrada em paradas). */
+export const SLOT_LABELS: Record<string, string> = Object.fromEntries(
+  [...EXTERNAL_SLOTS, ...DETAIL_SLOTS].map((s) => [s.key, s.label]),
+);
+
 // ─── Component API ────────────────────────────────────────────────────────────
 
 interface PhotoSlotGridProps {

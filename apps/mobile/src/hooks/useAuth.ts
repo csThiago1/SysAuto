@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { z } from 'zod';
 import { useAuthStore } from '@/stores/auth.store';
 import { API_BASE_URL, DEFAULT_TENANT } from '@/lib/constants';
 
@@ -17,13 +18,8 @@ interface JWTPayload {
   permissions?: string[];
 }
 
-/** Response from POST /api/v1/auth/login/ */
-interface LoginResponse {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-  expires_in: number;
-}
+/** Response from POST /api/v1/auth/login/ — o backend devolve {access, refresh}. */
+const LoginResponseSchema = z.object({ access: z.string(), refresh: z.string() });
 
 interface AuthReturn {
   login: (email: string, password: string) => Promise<boolean>;
@@ -52,9 +48,9 @@ export function useAuth(): AuthReturn {
         });
         if (!res.ok) return false;
 
-        const data = (await res.json()) as LoginResponse;
-        const token = data.access_token;
-        const refreshToken = data.refresh_token;
+        const data = LoginResponseSchema.parse(await res.json());
+        const token = data.access;
+        const refreshToken = data.refresh;
 
         // Store tokens securely on native platforms
         if (Platform.OS !== 'web') {

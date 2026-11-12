@@ -48,6 +48,14 @@ from .pricing import (
     OSIntervencao,
     OSItemAdicional,
 )
+from .checklist import (
+    EntryChecklist,
+    EntryChecklistVersion,
+    ChecklistDamage,
+    CustomerBelonging,
+    BudgetPanelRule,
+    FamilyBodyType,
+)
 
 __all__ = [
     # service_order
@@ -88,4 +96,11 @@ __all__ = [
     "OSAreaImpacto",
     "OSIntervencao",
     "OSItemAdicional",
+    # checklist
+    "EntryChecklist",
+    "EntryChecklistVersion",
+    "ChecklistDamage",
+    "CustomerBelonging",
+    "BudgetPanelRule",
+    "FamilyBodyType",
 ]

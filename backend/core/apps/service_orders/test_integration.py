@@ -10,7 +10,7 @@ from django_tenants.test.cases import TenantTestCase
 
 from apps.authentication.models import GlobalUser
 from apps.persons.models import Person, PersonRole, RolePessoa, TipoPessoa
-from apps.service_orders.models import ServiceOrder, StatusTransitionLog
+from apps.service_orders.models import EntryChecklist, ServiceOrder, StatusTransitionLog
 from apps.service_orders.services import ServiceOrderService
 
 class ServiceOrderIntegrationTestCase(TenantTestCase):
@@ -75,6 +75,7 @@ class ServiceOrderIntegrationTestCase(TenantTestCase):
             model="Golf",
             status="reception",
         )
+        EntryChecklist.objects.create(service_order=os, finalized_at=timezone.now())
 
         ServiceOrderService.update(
             order_id=str(os.id),
@@ -91,6 +92,23 @@ class ServiceOrderIntegrationTestCase(TenantTestCase):
         self.assertEqual(log.from_status, "reception")
         self.assertEqual(log.to_status, "initial_survey")
         self.assertEqual(log.triggered_by_field, "scheduling_date")
+
+    def test_scheduling_date_without_entry_checklist_keeps_reception(self):
+        """Agendar antes do checklist grava a data e não move a OS (nem levanta erro)."""
+        os = self._create_order(plate="ABC1236", status="reception")
+        when = timezone.now()
+
+        ServiceOrderService.update(
+            order_id=str(os.id),
+            data={"scheduling_date": when, "repair_days": 3},
+            updated_by_id=str(self.user.id),
+        )
+
+        os.refresh_from_db()
+        self.assertEqual(os.status, "reception")
+        self.assertEqual(os.scheduling_date, when)
+        self.assertEqual(os.repair_days, 3)
+        self.assertFalse(StatusTransitionLog.objects.filter(service_order=os).exists())
 
     def test_manual_status_transition_generates_log(self):
         """Transição manual via service deve gerar um log correto."""

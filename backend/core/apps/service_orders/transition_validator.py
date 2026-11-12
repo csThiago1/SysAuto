@@ -468,6 +468,7 @@ class TransitionValidator:
             ValidationResult com:
               HARD: VEHICLE_BASIC_DATA, CUSTOMER_TYPE_SET, CUSTOMER_LINKED,
                     INSURER_DATA (se seguradora)
+              SOFT: ENTRY_CHECKLIST (checklist de entrada não finalizado)
               WARN: VEHICLE_YEAR, VEHICLE_COLOR, FUEL_TYPE, MILEAGE_IN
         """
         hard: list[ValidationBlock] = []
@@ -525,6 +526,17 @@ class TransitionValidator:
                         ),
                     )
                 )
+
+        # SOFT: checklist de entrada finalizado (MANAGER+ faz override).
+        # A assinatura do cliente nunca entra aqui — não bloqueia o Kanban.
+        if not order.entry_checklists.filter(
+            checklist_type="entrada", finalized_at__isnull=False, is_active=True
+        ).exists():
+            soft.append(
+                ValidationBlock(
+                    code="ENTRY_CHECKLIST", message="Checklist de entrada não finalizado"
+                )
+            )
 
         # WARN: campos opcionais que enriquecem o laudo
         if not order.year:
@@ -1007,6 +1019,7 @@ class TransitionValidator:
             ValidationResult com:
               HARD: INVOICE_ISSUED (particular sem nota fiscal), CLIENT_SIGNATURE,
                     MILEAGE_OUT, RECEIVABLE_CREATED, COMPLEMENT_BILLED
+              WARN: BELONGINGS_NOT_RETURNED
         """
         hard: list[ValidationBlock] = []
         soft: list[ValidationBlock] = []
@@ -1055,6 +1068,15 @@ class TransitionValidator:
                 ValidationBlock(
                     code="COMPLEMENT_BILLED",
                     message="Há itens de complemento particular não faturados",
+                )
+            )
+
+        # WARN: pertences do cliente ainda não devolvidos
+        if order.belongings.filter(is_active=True, returned_at__isnull=True).exists():
+            warn.append(
+                ValidationBlock(
+                    code="BELONGINGS_NOT_RETURNED",
+                    message="Há pertences do cliente não devolvidos",
                 )
             )
 

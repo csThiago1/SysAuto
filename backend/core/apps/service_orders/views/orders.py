@@ -6,6 +6,7 @@ import logging
 from datetime import timedelta
 from typing import Any, Optional
 
+from django.db import transaction
 from django.db.models import Count, DecimalField, Exists, F, Max, Min, OuterRef, Q, QuerySet, Sum
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
@@ -69,7 +70,9 @@ from ..serializers import (
 from apps.accounts_receivable.models import ReceivableDocument
 from ..billing import BillingService
 from ..offline import check_if_match, find_by_client_uuid
+from ..models.checklist import ENTRY
 from ..services import ServiceOrderDeliveryService, ServiceOrderService
+from ..services import checklist_service
 
 logger = logging.getLogger(__name__)
 
@@ -1450,19 +1453,24 @@ class ServiceOrderViewSet(
         serializer = ChecklistItemBulkSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        items = serializer.validated_data["items"]
         updated: list[ChecklistItem] = []
-        for item_data in serializer.validated_data["items"]:
-            obj, _ = ChecklistItem.objects.update_or_create(
-                service_order=service_order,
-                checklist_type=item_data["checklist_type"],
-                category=item_data["category"],
-                item_key=item_data["item_key"],
-                defaults={
-                    "status": item_data["status"],
-                    "notes": item_data.get("notes", ""),
-                },
-            )
-            updated.append(obj)
+        with transaction.atomic():
+            # Checklist de entrada finalizado não aceita escrita → 409 checklist_locked.
+            if any(item.get("checklist_type", ENTRY) == ENTRY for item in items):
+                checklist_service.assert_editable(service_order)
+            for item_data in items:
+                obj, _ = ChecklistItem.objects.update_or_create(
+                    service_order=service_order,
+                    checklist_type=item_data["checklist_type"],
+                    category=item_data["category"],
+                    item_key=item_data["item_key"],
+                    defaults={
+                        "status": item_data["status"],
+                        "notes": item_data.get("notes", ""),
+                    },
+                )
+                updated.append(obj)
 
         return Response(ChecklistItemSerializer(updated, many=True).data)
 

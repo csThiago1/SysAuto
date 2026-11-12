@@ -6,8 +6,17 @@ from rest_framework import serializers
 from apps.documents.models import DocumentGeneration, DocumentType
 
 
+# Checklist de entrada e cruzamento vão para a seguradora: só nascem pelos seus serviços
+# (finalize / budget-match/report), nunca pelo endpoint genérico com `data` vindo do cliente.
+GENERIC_DOCUMENT_TYPES = [
+    choice
+    for choice in DocumentType.choices
+    if choice[0] not in (DocumentType.CHECKLIST_ENTRADA, DocumentType.CHECKLIST_CRUZAMENTO)
+]
+
+
 class GenerateDocumentSerializer(serializers.Serializer):
-    document_type = serializers.ChoiceField(choices=DocumentType.choices)
+    document_type = serializers.ChoiceField(choices=GENERIC_DOCUMENT_TYPES)
     receivable_id = serializers.UUIDField(required=False, allow_null=True)
     data = serializers.JSONField()
 

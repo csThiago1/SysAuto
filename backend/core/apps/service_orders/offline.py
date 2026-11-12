@@ -23,7 +23,11 @@ class Conflict(APIException):
 
 def find_by_client_uuid(model: Type[M], request) -> Optional[M]:
     """Retorna a instância já sincada se request.data trouxer um client_uuid conhecido."""
-    client_uuid = request.data.get("client_uuid") or ""
+    return find_by_uuid(model, request.data.get("client_uuid"))
+
+
+def find_by_uuid(model: Type[M], client_uuid: Optional[str]) -> Optional[M]:
+    """Igual a find_by_client_uuid, para services que recebem o client_uuid já extraído."""
     if not client_uuid:
         return None
     return model.objects.filter(client_uuid=client_uuid).first()

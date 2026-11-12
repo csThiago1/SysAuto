@@ -14,6 +14,7 @@ from .versioning import (
     ServiceOrderParecerViewSet,
 )
 from .vehicle_history import VehicleHistoryView
+from .checklist import ChecklistDamageViewSet, CustomerBelongingViewSet
 
 __all__ = [
     "ServiceOrderViewSet",
@@ -25,4 +26,6 @@ __all__ = [
     "ServiceOrderEventViewSet",
     "ServiceOrderParecerViewSet",
     "VehicleHistoryView",
+    "ChecklistDamageViewSet",
+    "CustomerBelongingViewSet",
 ]

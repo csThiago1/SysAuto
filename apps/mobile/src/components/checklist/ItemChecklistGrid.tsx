@@ -352,13 +352,16 @@ export function ChecklistSummaryBar({ osId, checklistType }: SummaryBarProps): R
 interface ItemChecklistGridProps {
   osId: string;
   checklistType: string;
+  /** Só estas categorias (chaves de CATEGORIES); sem a prop, todas. */
+  categories?: string[];
 }
 
-export function ItemChecklistGrid({ osId, checklistType }: ItemChecklistGridProps): React.ReactElement {
+export function ItemChecklistGrid({ osId, checklistType, categories }: ItemChecklistGridProps): React.ReactElement {
+  const shown = categories ? CATEGORIES.filter((c) => categories.includes(c.key)) : CATEGORIES;
   return (
     <View style={styles.container}>
       <ChecklistSummaryBar osId={osId} checklistType={checklistType} />
-      {CATEGORIES.map((cat) => (
+      {shown.map((cat) => (
         <CategorySection
           key={cat.key}
           osId={osId}
