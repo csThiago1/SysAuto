@@ -37,7 +37,11 @@ vi.mock('expo-file-system', () => {
     delete(): void {
       disk.delete(this.uri);
     }
-    static async downloadFileAsync(url: string, dest: File): Promise<File> {
+    write(content: string): void {
+      disk.set(this.uri, Buffer.from(content, 'utf8').toString('base64'));
+    }
+    static async downloadFileAsync(url: string, dest: File, opts?: { idempotent?: boolean }): Promise<File> {
+      if (disk.has(dest.uri) && opts?.idempotent !== true) throw new Error('DestinationAlreadyExists');
       downloads.push(url);
       const body = served[url];
       if (body === undefined) throw new Error('UnableToDownload: response has status 404');
@@ -54,13 +58,25 @@ const entry = resolveCarModel({ make: null, family: null, bodyType: 'hatch', all
 const GLB = 'glTF\u0002\u0000\u0000\u0000resto';
 const REGIONS = JSON.stringify({ model: 'placeholder-hatch.glb', paintMaterials: ['paint'], panels: { capo: [] } });
 
+// ETag servida por URL no HEAD; `online = false` simula sem rede.
+let etags: Record<string, string> = {};
+let online = true;
+vi.stubGlobal('fetch', async (url: string, init?: { method?: string }) => {
+  if (!online) throw new TypeError('Network request failed');
+  expect(init?.method).toBe('HEAD');
+  const ok = etags[url] !== undefined || served[url] !== undefined;
+  return { ok, headers: { get: (h: string) => (h === 'etag' ? (etags[url] ?? null) : null) } };
+});
+
+const GLB_URL = 'http://web/car-3d/placeholder-hatch.glb';
+const REGIONS_URL = 'http://web/car-3d/regions/placeholder-hatch.regions.json';
+
 beforeEach(() => {
   disk.clear();
   downloads.length = 0;
-  served = {
-    'http://web/car-3d/placeholder-hatch.glb': GLB,
-    'http://web/car-3d/regions/placeholder-hatch.regions.json': REGIONS,
-  };
+  online = true;
+  served = { [GLB_URL]: GLB, [REGIONS_URL]: REGIONS };
+  etags = { [GLB_URL]: '"g1"', [REGIONS_URL]: '"r1"' };
 });
 
 describe('ensureModel', () => {
@@ -71,10 +87,19 @@ describe('ensureModel', () => {
       'http://web/car-3d/placeholder-hatch.glb',
       'http://web/car-3d/regions/placeholder-hatch.regions.json',
     ]);
-    expect([...disk.keys()]).toEqual(['doc/car-3d/placeholder-hatch.glb', 'doc/car-3d/placeholder-hatch.regions.json']);
+    expect(disk.has('doc/car-3d/placeholder-hatch.glb')).toBe(true);
+    expect(disk.has('doc/car-3d/placeholder-hatch.regions.json')).toBe(true);
 
     await ensureModel(entry);
-    expect(downloads).toHaveLength(2); // segunda vez lê do cache
+    expect(downloads).toHaveLength(2); // mesma ETag: lê do cache
+  });
+
+  it('sem rede, usa o cache', async () => {
+    await ensureModel(entry);
+    online = false;
+    await expect(ensureModel(entry)).resolves.toMatch(/^data:/);
+    expect(await loadRegions(entry)).toEqual(JSON.parse(REGIONS));
+    expect(downloads).toHaveLength(2);
   });
 
   it('conteúdo que não é glTF (ex.: HTML de login) é apagado e falha', async () => {
@@ -94,6 +119,24 @@ describe('loadRegions', () => {
     await ensureModel(entry);
     expect(await loadRegions(entry)).toEqual(JSON.parse(REGIONS));
     expect(downloads).toHaveLength(2);
+  });
+
+  it('regions recalibrado com o mesmo nome (ETag nova) é baixado de novo', async () => {
+    await ensureModel(entry);
+    const novo = JSON.stringify({ model: 'placeholder-hatch.glb', paintMaterials: ['paint'], panels: { capo: [], teto: [] } });
+    served[REGIONS_URL] = novo;
+    etags[REGIONS_URL] = '"r2"';
+    expect(await loadRegions(entry)).toEqual(JSON.parse(novo));
+    expect(downloads).toEqual([GLB_URL, REGIONS_URL, REGIONS_URL]); // .glb com a mesma ETag não baixa de novo
+    await loadRegions(entry);
+    expect(downloads).toHaveLength(3); // ETag nova gravada
+  });
+
+  it('falha ao rebaixar mantém o cache antigo', async () => {
+    await ensureModel(entry);
+    etags[REGIONS_URL] = '"r2"';
+    delete served[REGIONS_URL]; // HEAD respondeu, GET falhou
+    expect(await loadRegions(entry)).toEqual(JSON.parse(REGIONS));
   });
 
   it('regions inválido é apagado e falha', async () => {

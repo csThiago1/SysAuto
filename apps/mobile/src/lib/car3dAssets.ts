@@ -2,14 +2,44 @@ import { Directory, File, Paths } from 'expo-file-system';
 import { RegionsSchema, type CarModelEntry, type Regions } from '@paddock/car-3d/core';
 import { WEB_BASE_URL } from '@/lib/constants';
 
-// Cache em Paths.document/car-3d/: baixa do web (/car-3d/, público) uma vez e serve offline depois.
+// Cache em Paths.document/car-3d/: baixa do web (/car-3d/, público) e serve offline depois.
+// O regions.json é recalibrado com o mesmo nome: com rede, um HEAD compara a ETag guardada
+// em `<nome>.etag` e rebaixa se mudou. Sem rede (ou sem ETag), usa o cache.
+
+const HEAD_TIMEOUT_MS = 4000;
+
+async function remoteEtag(url: string): Promise<string | null> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), HEAD_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, { method: 'HEAD', signal: ctrl.signal });
+    return res.ok ? res.headers.get('etag') : null;
+  } catch {
+    return null; // sem rede: o cache vale
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 async function cached(name: string, url: string): Promise<File> {
   const dir = new Directory(Paths.document, 'car-3d');
   if (!dir.exists) dir.create({ intermediates: true });
   const file = new File(dir, name);
-  // o download só move o arquivo para o destino depois de completo e com status 2xx
-  if (!file.exists) await File.downloadFileAsync(url, file);
+  const tag = new File(dir, `${name}.etag`);
+  const etag = await remoteEtag(url);
+  if (file.exists) {
+    if (etag === null || (tag.exists && (await tag.text()) === etag)) return file;
+    try {
+      // o download só move o arquivo para o destino depois de completo e com status 2xx
+      await File.downloadFileAsync(url, file, { idempotent: true });
+    } catch (err: unknown) {
+      console.warn(`[car3d] revalidação de ${name} falhou, usando cache`, err);
+      return file;
+    }
+  } else {
+    await File.downloadFileAsync(url, file);
+  }
+  if (etag !== null) tag.write(etag);
   return file;
 }
 
