@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { NEUTRAL_PAINT, resolveCarModel, STOPS, type PanelKey, type Vec3 } from '@paddock/car-3d/core';
+import { NEUTRAL_PAINT, STOPS, type PanelKey, type Vec3 } from '@paddock/car-3d/core';
 
 import { Colors, Radii, SemanticColors, Spacing } from '@/constants/theme';
 import { Button } from '@/components/ui/Button';
@@ -27,9 +27,10 @@ import {
 import { useEntryChecklistState } from '@/hooks/useEntryChecklistState';
 import { useServiceOrder } from '@/hooks/useServiceOrders';
 import { ApiError } from '@/lib/api';
-import { ensureModel, loadRegions } from '@/lib/car3dAssets';
+import { ensureModel, loadRegions, resolveEntryModel } from '@/lib/car3dAssets';
 import { syncChecklistItems } from '@/stores/checklist-items.store';
 import {
+  LOCKED_MESSAGE,
   syncEntryChecklist,
   useEntryChecklistStore,
   type DamageInput,
@@ -69,13 +70,14 @@ function EntryChecklistScreen({
   const stateQuery = useEntryChecklistState(osId);
   const state = stateQuery.data;
   const draft = useEntryChecklistStore((s) => s.byOs[osId]) ?? EMPTY_DRAFT;
+  const allowNcModels = useEntryChecklistStore((s) => s.allowNcModels);
   const queue = usePhotoStore((s) => s.queue);
 
   const [index, setIndex] = useState(() => Math.max(0, STOPS.findIndex((s) => s.key === stopParam)));
   const [noDamage, setNoDamage] = useState<Partial<Record<string, boolean>>>({});
   const [picking, setPicking] = useState<{ panel: PanelKey; point: Vec3 | null } | null>(null);
   const [sending, setSending] = useState(false);
-  const [result, setResult] = useState<{ ok: boolean } | null>(null);
+  const [result, setResult] = useState<{ ok: boolean; itemsLocked: boolean } | null>(null);
 
   // volta da câmera: `?stop=` reabre a parada de onde ela foi chamada
   useEffect(() => {
@@ -88,22 +90,29 @@ function EntryChecklistScreen({
   // ── Carroceria e modelo 3D ────────────────────────────────────────────────
   const suggested = state?.body_type ?? state?.suggested_body_type ?? null;
   const bodyType = draft.bodyType ?? suggested;
+  // o escolhido no picker vale até o PATCH aceitar; valor copiado acompanha o servidor (correção da web)
   useEffect(() => {
-    if (!draft.bodyType && suggested) useEntryChecklistStore.getState().setBodyType(osId, suggested);
-  }, [draft.bodyType, suggested, osId]);
+    if (suggested && !draft.bodyTypeFromPicker && draft.bodyType !== suggested) {
+      useEntryChecklistStore.getState().setBodyType(osId, suggested, false);
+    }
+  }, [draft.bodyType, draft.bodyTypeFromPicker, suggested, osId]);
+  // guarda o que o GET trouxe para resolver o mesmo modelo 3D offline
+  useEffect(() => {
+    if (state) {
+      useEntryChecklistStore
+        .getState()
+        .rememberServer(osId, { make: state.vehicle_make, family: state.vehicle_family }, state.allow_nc_models);
+    }
+  }, [state, osId]);
 
   // espera o GET de estado (ou a falha dele, sem rede) para não baixar o modelo errado
+  const vehicle = draft.vehicle;
   const entry = useMemo(
     () =>
       bodyType && !stateQuery.isPending
-        ? resolveCarModel({
-            make: state?.vehicle_make ?? null,
-            family: state?.vehicle_family ?? null,
-            bodyType,
-            allowNc: state?.allow_nc_models ?? false,
-          })
+        ? resolveEntryModel(state, vehicle, allowNcModels, bodyType)
         : null,
-    [bodyType, stateQuery.isPending, state],
+    [bodyType, stateQuery.isPending, state, vehicle, allowNcModels],
   );
   const carQuery = useQuery({
     queryKey: ['car-3d', entry?.key] as const,
@@ -167,17 +176,25 @@ function EntryChecklistScreen({
     setSending(true);
     try {
       const sync = await syncEntryChecklist(osId);
-      let itemsOk = true;
-      try {
-        await syncChecklistItems(osId);
-      } catch (err: unknown) {
-        itemsOk = false;
-        console.warn(`[entry checklist] osId=${osId} itens erro=${err instanceof ApiError ? err.status : 'rede'}`);
+      // finalizado na conferência: o backend recusaria os itens (409)
+      let itemsLocked = !!state?.finalized_at;
+      let itemsOk = !itemsLocked;
+      if (!itemsLocked) {
+        try {
+          itemsLocked = (await syncChecklistItems(osId)) === 'locked';
+          itemsOk = !itemsLocked;
+        } catch (err: unknown) {
+          itemsOk = false;
+          console.warn(`[entry checklist] osId=${osId} itens erro=${err instanceof ApiError ? err.status : 'rede'}`);
+        }
       }
-      setResult({ ok: sync.ok && itemsOk });
+      const photosOk = usePhotoStore
+        .getState()
+        .queue.every((p) => p.osId !== osId || p.folder !== FOLDER || p.uploadStatus === 'done');
+      setResult({ ok: sync.ok && itemsOk && photosOk, itemsLocked });
     } catch (err: unknown) {
       console.warn(`[entry checklist] osId=${osId} envio falhou: ${err instanceof Error ? err.message : 'desconhecido'}`);
-      setResult({ ok: false });
+      setResult({ ok: false, itemsLocked: false });
     } finally {
       setSending(false);
     }
@@ -226,7 +243,7 @@ function EntryChecklistScreen({
         stateQuery.isPending ? (
           <ActivityIndicator style={{ marginTop: Spacing.xxl }} color={Colors.brand} />
         ) : (
-          <BodyTypePicker onPick={(b) => useEntryChecklistStore.getState().setBodyType(osId, b)} />
+          <BodyTypePicker onPick={(b) => useEntryChecklistStore.getState().setBodyType(osId, b, true)} />
         )
       ) : (
         <>
@@ -303,6 +320,11 @@ function EntryChecklistScreen({
                   <Text variant="bodySmall" color={Colors.warning}>
                     Pendentes na fila: {pendingRecords} registro(s) e {pendingPhotos} foto(s). Ficam guardados no
                     aparelho; toque em Enviar de novo quando houver rede.
+                  </Text>
+                )}
+                {result?.itemsLocked && (
+                  <Text variant="bodySmall" color={Colors.error}>
+                    {LOCKED_MESSAGE}: itens não enviados
                   </Text>
                 )}
                 {errors.map((e) => (

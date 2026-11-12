@@ -52,7 +52,7 @@ vi.mock('expo-file-system', () => {
   return { Directory, File, Paths: { document: { uri: 'doc' } } };
 });
 
-import { ensureModel, loadRegions } from './car3dAssets';
+import { ensureModel, loadRegions, resolveEntryModel } from './car3dAssets';
 
 const entry = resolveCarModel({ make: null, family: null, bodyType: 'hatch', allowNc: false });
 const GLB = 'glTF\u0002\u0000\u0000\u0000resto';
@@ -143,5 +143,25 @@ describe('loadRegions', () => {
     served['http://web/car-3d/regions/placeholder-hatch.regions.json'] = '<html>';
     await expect(loadRegions(entry)).rejects.toThrow();
     expect(disk.has('doc/car-3d/placeholder-hatch.regions.json')).toBe(false);
+  });
+});
+
+describe('resolveEntryModel', () => {
+  const online = {
+    body_type: 'hatch' as const, suggested_body_type: null, finalized_at: null, vehicle_color_hex: '#ffffff',
+    vehicle_make: null, vehicle_family: null, allow_nc_models: true,
+  };
+
+  it('offline (sem estado) usa o último GET guardado e resolve o mesmo modelo do online', () => {
+    const vehicle = { make: online.vehicle_make, family: online.vehicle_family };
+    const on = resolveEntryModel(online, undefined, false, 'hatch');
+    expect(on.key).toBe('polo'); // DS Car permite NC: hatch → Polo
+    expect(resolveEntryModel(undefined, vehicle, true, 'hatch').key).toBe(on.key);
+  });
+
+  it('offline com família guardada resolve pela família', () => {
+    const vehicle = { make: 'chevrolet', family: 'onix' };
+    expect(resolveEntryModel({ ...online, vehicle_make: 'chevrolet', vehicle_family: 'onix' }, undefined, false, 'hatch').key).toBe('onix');
+    expect(resolveEntryModel(undefined, vehicle, true, 'hatch').key).toBe('onix');
   });
 });

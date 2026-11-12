@@ -56,7 +56,7 @@ describe('syncEntryChecklist', () => {
       id: 'ph-1', osId: OS, slot: 'dano', folder: 'checklist_entrada', checklistType: 'entrada', localUri: 'file://x',
     });
     const s = useEntryChecklistStore.getState();
-    s.setBodyType(OS, 'sedan');
+    s.setBodyType(OS, 'sedan', true);
     s.markStop(OS, 'frente', 'done');
     s.markStop(OS, 'teto', 'sem_dano');
     const dmg = addDamage(['ph-1']);
@@ -83,6 +83,31 @@ describe('syncEntryChecklist', () => {
     calls = [];
     await syncEntryChecklist(OS);
     expect(calls.map((c) => c.method)).toEqual(['PATCH']); // nada reenviado
+  });
+
+  it('body_type copiado do servidor não é reenviado; o do picker vai uma vez e passa a seguir o servidor', async () => {
+    const s = useEntryChecklistStore.getState();
+    s.setBodyType(OS, 'hatch', false);
+    s.markStop(OS, 'frente', 'done');
+    await syncEntryChecklist(OS);
+    expect(calls[0].body).toEqual({ stops_done: { frente: 'done' } });
+
+    s.setBodyType(OS, 'sedan', true);
+    calls = [];
+    await syncEntryChecklist(OS);
+    expect(calls[0].body).toEqual({ body_type: 'sedan', stops_done: { frente: 'done' } });
+    expect(useEntryChecklistStore.getState().byOs[OS].bodyTypeFromPicker).toBe(false);
+
+    calls = [];
+    await syncEntryChecklist(OS);
+    expect(calls[0].body).toEqual({ stops_done: { frente: 'done' } }); // correção da web não é sobrescrita
+  });
+
+  it('PATCH do estado falhou: body_type do picker continua para o próximo envio', async () => {
+    useEntryChecklistStore.getState().setBodyType(OS, 'suv', true);
+    respond = () => ({ status: 503, body: null });
+    await syncEntryChecklist(OS);
+    expect(useEntryChecklistStore.getState().byOs[OS].bodyTypeFromPicker).toBe(true);
   });
 
   it('400 {photos: "pending"} mantém o dano pending', async () => {

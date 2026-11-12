@@ -367,7 +367,7 @@ export const Car3D: React.ForwardRefExoticComponent<Car3DProps & React.RefAttrib
 - `snapshot` renderiza com `preserveDrawingBuffer: true` na vista pedida e devolve `gl.domElement.toDataURL("image/png")`.
 - Fundo transparente; plataforma circular com borda roxa `#ac27ce` (visual do ERP, conforme a proposta A).
 
-- [ ] **Step 1: Teste que falha:** `poseFor("left", bbox)` coloca a câmera em `x < 0` olhando para o centro do bbox; `poseFor("front34", bbox)` tem `z > 0` e `x > 0` (frente = +z, convenção registrada no `regions.json`).
+- [ ] **Step 1: Teste que falha:** `poseFor("left", bbox)` coloca a câmera em `x > 0` (esquerdo = +x, Ruling T12) olhando para o centro do bbox; `poseFor("front34", bbox)` tem `z > 0` e `x > 0` (frente = +z, convenção registrada no `regions.json`).
 - [ ] **Step 2:** FAIL. **Step 3:** Implementar.
 - [ ] **Step 4:** PASS. Verificar no navegador pela página da Task 13: o carro aparece pintado, a peça acende ao tocar e o snapshot devolve PNG.
 - [ ] **Step 5:** Commit `feat(car-3d): componente Car3D com volumes e snapshot`.

@@ -64,6 +64,10 @@ export type BelongingInput = Omit<QueuedBelonging, SyncFields>;
 
 export interface EntryChecklistDraft {
   bodyType: BodyType | null;
+  /** true: escolhido no BodyTypePicker e ainda não aceito pelo PATCH. Valor copiado do servidor não é reenviado. */
+  bodyTypeFromPicker?: boolean;
+  /** make/family do último GET do estado: resolve o modelo 3D offline. */
+  vehicle?: { make: string | null; family: string | null };
   stops: Partial<Record<StopKey, StopValue>>;
   damages: QueuedDamage[];
   belongings: QueuedBelonging[];
@@ -73,7 +77,11 @@ const EMPTY: EntryChecklistDraft = { bodyType: null, stops: {}, damages: [], bel
 
 interface EntryChecklistState {
   byOs: Record<string, EntryChecklistDraft>;
-  setBodyType(osId: string, bodyType: BodyType): void;
+  /** allow_nc_models do último GET (é do tenant, vale para qualquer OS offline). */
+  allowNcModels: boolean;
+  setBodyType(osId: string, bodyType: BodyType, fromPicker: boolean): void;
+  /** Guarda o que o GET do estado trouxe, para a tela offline resolver o mesmo modelo. */
+  rememberServer(osId: string, vehicle: { make: string | null; family: string | null }, allowNcModels: boolean): void;
   markStop(osId: string, stop: StopKey, value: StopValue): void;
   /** Retorna o client_uuid do dano criado. */
   addDamage(osId: string, damage: DamageInput): string;
@@ -96,8 +104,14 @@ export const useEntryChecklistStore = create<EntryChecklistState>()(
 
       return {
         byOs: {},
+        allowNcModels: false,
 
-        setBodyType: (osId, bodyType) => edit(osId, () => ({ bodyType })),
+        setBodyType: (osId, bodyType, fromPicker) => edit(osId, () => ({ bodyType, bodyTypeFromPicker: fromPicker })),
+
+        rememberServer: (osId, vehicle, allowNcModels) => {
+          set({ allowNcModels });
+          edit(osId, () => ({ vehicle }));
+        },
 
         markStop: (osId, stop, value) => edit(osId, (d) => ({ stops: { ...d.stops, [stop]: value } })),
 
@@ -246,11 +260,20 @@ export async function syncEntryChecklist(osId: string): Promise<{ ok: boolean; p
   let stateOk = true;
 
   const state: Record<string, unknown> = {};
-  if (draft.bodyType) state.body_type = draft.bodyType;
+  const sentBodyType = draft.bodyTypeFromPicker ? draft.bodyType : null;
+  if (sentBodyType) state.body_type = sentBodyType;
   if (Object.keys(draft.stops).length > 0) state.stops_done = draft.stops;
   if (Object.keys(state).length > 0) {
     try {
       await api.patch(`${base}/checklist/entrada/`, state);
+      // aceito: daqui em diante vale o do servidor (uma correção da web não é sobrescrita)
+      if (sentBodyType) {
+        useEntryChecklistStore.setState((st) => {
+          const d = st.byOs[osId];
+          if (!d || d.bodyType !== sentBodyType) return st;
+          return { byOs: { ...st.byOs, [osId]: { ...d, bodyTypeFromPicker: false } } };
+        });
+      }
     } catch (err: unknown) {
       stateOk = false;
       const status = err instanceof ApiError ? err.status : 'rede';

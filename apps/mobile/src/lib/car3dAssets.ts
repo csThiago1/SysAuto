@@ -1,6 +1,8 @@
 import { Directory, File, Paths } from 'expo-file-system';
-import { RegionsSchema, type CarModelEntry, type Regions } from '@paddock/car-3d/core';
+import { RegionsSchema, resolveCarModel, type BodyType, type CarModelEntry, type Regions } from '@paddock/car-3d/core';
+import type { EntryChecklistState } from '@/hooks/useEntryChecklistState';
 import { WEB_BASE_URL } from '@/lib/constants';
+import type { EntryChecklistDraft } from '@/stores/entry-checklist.store';
 
 // Cache em Paths.document/car-3d/: baixa do web (/car-3d/, público) e serve offline depois.
 // O regions.json é recalibrado com o mesmo nome: com rede, um HEAD compara a ETag guardada
@@ -67,4 +69,19 @@ export async function loadRegions(entry: CarModelEntry): Promise<Regions> {
     file.delete();
     throw err;
   }
+}
+
+/** Com o GET do estado usa o servidor; sem ele (offline), o último GET guardado no rascunho e no store. */
+export function resolveEntryModel(
+  state: EntryChecklistState | undefined,
+  saved: EntryChecklistDraft['vehicle'],
+  allowNcModels: boolean,
+  bodyType: BodyType,
+): CarModelEntry {
+  return resolveCarModel({
+    make: state ? state.vehicle_make : (saved?.make ?? null),
+    family: state ? state.vehicle_family : (saved?.family ?? null),
+    bodyType,
+    allowNc: state ? state.allow_nc_models : allowNcModels,
+  });
 }
