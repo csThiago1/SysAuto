@@ -72,6 +72,14 @@ class RemoteLinkExpired(APIException):
     default_code = "link_expired"
 
 
+class PdfGenerationFailed(APIException):
+    """HTTP 503 — o render não devolveu PDF (ex.: fallback HTML do WeasyPrint)."""
+
+    status_code = 503
+    default_detail = "Falha ao gerar o PDF; tente de novo."
+    default_code = "pdf_generation_failed"
+
+
 def get_or_create_checklist(order: ServiceOrder, checklist_type: str = ENTRY) -> EntryChecklist:
     checklist, _ = EntryChecklist.objects.get_or_create(
         service_order=order, checklist_type=checklist_type
@@ -334,7 +342,7 @@ def finalize(
     if len(model_credit) > MODEL_CREDIT_MAX:
         raise ValidationError({"model_credit": f"Máximo de {MODEL_CREDIT_MAX} caracteres."})
     checklist = (
-        EntryChecklist.objects.select_for_update()
+        EntryChecklist.objects.select_for_update(of=("self",))
         .select_related("service_order")
         .get(pk=checklist.pk)
     )
@@ -362,7 +370,12 @@ def finalize(
         user,
     )
     with default_storage.open(doc.s3_key, "rb") as f:
-        pdf_sha256 = hashlib.sha256(f.read()).hexdigest()
+        pdf_bytes = f.read()
+    if not pdf_bytes.startswith(b"%PDF-"):
+        # Sem PDF não trava: o atomic desfaz o DocumentGeneration.
+        logger.error("Render do checklist da OS %s não gerou PDF", order.pk)
+        raise PdfGenerationFailed()
+    pdf_sha256 = hashlib.sha256(pdf_bytes).hexdigest()
 
     checklist.finalized_at = timezone.now()
     checklist.finalized_by = user
@@ -434,8 +447,12 @@ REMOTE_LINK_TTL = datetime.timedelta(days=7)
 def _assert_signable(checklist: EntryChecklist, signer_name: str) -> None:
     if not checklist.is_locked:
         raise ValidationError({"detail": "Finalize o checklist antes de assinar."})
+    if checklist.signature_status != SignatureStatus.PENDENTE:
+        raise ValidationError({"detail": "Checklist já assinado."})
     if not signer_name.strip():
         raise ValidationError({"signer_name": "Informe o nome de quem assina."})
+    if len(signer_name.strip()) > 200:
+        raise ValidationError({"signer_name": "Máximo de 200 caracteres."})
 
 
 def _record_signature(checklist: EntryChecklist, signature: Signature, status: str) -> None:
@@ -469,7 +486,7 @@ def sign_presencial(
 ) -> Signature:
     """Assinatura no iPad (canvas). Exige checklist finalizado."""
     checklist = (
-        EntryChecklist.objects.select_for_update()
+        EntryChecklist.objects.select_for_update(of=("self",))
         .select_related("service_order")
         .get(pk=checklist.pk)
     )
@@ -509,12 +526,14 @@ def _whatsapp_number(order: ServiceOrder) -> str:
 def create_remote_link(checklist: EntryChecklist) -> dict[str, str]:
     """Gera o link de aceite remoto (7 dias) e a URL wa.me com a mensagem pronta."""
     checklist = (
-        EntryChecklist.objects.select_for_update()
+        EntryChecklist.objects.select_for_update(of=("self",))
         .select_related("service_order")
         .get(pk=checklist.pk)
     )
     if not checklist.is_locked:
         raise ValidationError({"detail": "Finalize o checklist antes de enviar o link."})
+    if checklist.signature_status != SignatureStatus.PENDENTE:
+        raise ValidationError({"detail": "Checklist já assinado."})
     token = secrets.token_urlsafe(32)
     checklist.remote_token_hash = hashlib.sha256(token.encode()).hexdigest()
     checklist.remote_expires_at = timezone.now() + REMOTE_LINK_TTL

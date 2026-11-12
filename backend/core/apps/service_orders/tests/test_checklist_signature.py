@@ -130,6 +130,29 @@ class ChecklistSignatureAPITest(TenantTestCase):
         assert response.status_code == 400, response.content
         assert Signature.objects.count() == 0
 
+    def test_sign_twice_is_400(self) -> None:
+        assert self._sign().status_code == 200
+        response = self._sign()
+        assert response.status_code == 400, response.content
+        assert response.json()["detail"] == "Checklist já assinado."
+        assert Signature.objects.count() == 1
+
+    def test_sign_rejects_long_signer_name(self) -> None:
+        response = self.client.post(
+            f"{self.url}sign/",
+            {"signer_name": "x" * 201, "signature_png_base64": SIGNATURE_PNG},
+            format="json",
+        )
+        assert response.status_code == 400, response.content
+        assert "signer_name" in response.json()
+        assert Signature.objects.count() == 0
+
+    def test_send_remote_after_signed_is_400(self) -> None:
+        assert self._sign().status_code == 200
+        response = self.client.post(f"{self.url}send-remote/", format="json")
+        assert response.status_code == 400, response.content
+        assert response.json()["detail"] == "Checklist já assinado."
+
     @override_settings(PROXY_SHARED_SECRET="segredo-proxy")
     def test_presencial_records_device_ip_from_proxy(self) -> None:
         response = self.client.post(

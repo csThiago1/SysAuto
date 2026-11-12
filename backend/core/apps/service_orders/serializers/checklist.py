@@ -164,6 +164,17 @@ class ChecklistDamageSerializer(serializers.ModelSerializer):
         data["photo_ids"] = [photo["id"] for photo in data["photos"]]
         return data
 
+    def validate_point(self, value: Any) -> Any:
+        """null ou `{x, y, z}` numéricos (bool não conta como número)."""
+        if value is None:
+            return value
+        if not isinstance(value, dict) or not all(
+            isinstance(value.get(axis), (int, float)) and not isinstance(value.get(axis), bool)
+            for axis in ("x", "y", "z")
+        ):
+            raise serializers.ValidationError("Informe null ou {x, y, z} numéricos.")
+        return value
+
     def get_fields(self) -> dict[str, serializers.Field]:
         fields = super().get_fields()
         if self.instance is not None:  # PATCH: client_uuid é só da criação

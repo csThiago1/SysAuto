@@ -1,6 +1,7 @@
 """Testes de finalizar (PDF + trava) e reabrir (versões) o checklist de entrada 3D."""
 
 import hashlib
+from unittest.mock import patch
 
 from django.template.loader import render_to_string
 from django.test import override_settings
@@ -151,6 +152,16 @@ class ChecklistFinalizeAPITest(TenantTestCase):
         ).exists()
         # Travado: segunda finalização é 409.
         assert self._finalize().status_code == 409
+
+    def test_finalize_rejects_non_pdf_render(self) -> None:
+        # Fallback do WeasyPrint devolve HTML: não pode travar com hash de HTML.
+        with patch("apps.documents.pdf_service._html_to_pdf", return_value=b"<html></html>"):
+            response = self._finalize()
+        assert response.status_code == 503, response.content
+        self.checklist.refresh_from_db()
+        assert self.checklist.finalized_at is None
+        assert self.checklist.pdf_id is None
+        assert not DocumentGeneration.objects.filter(document_type="checklist_entrada").exists()
 
     def test_reopen_requires_manager(self) -> None:
         self._finalize()

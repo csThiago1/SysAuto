@@ -11,6 +11,7 @@ from rest_framework.test import APIClient
 from apps.authentication.models import GlobalUser
 from apps.service_orders.models import (
     ChecklistDamage,
+    ChecklistItem,
     CustomerBelonging,
     EntryChecklist,
     ServiceOrder,
@@ -59,6 +60,47 @@ class ChecklistDamagesAPITest(TenantTestCase):
             checklist_type="entrada",
             defaults={"finalized_at": timezone.now()},
         )
+
+    def _bulk_items(self, checklist_type: str):  # noqa: ANN202
+        item = {
+            "checklist_type": checklist_type,
+            "category": "glass",
+            "item_key": "parabrisa",
+            "status": "ok",
+        }
+        return self.client.post(
+            f"{self.base}/checklist-items/bulk/", {"items": [item]}, format="json"
+        )
+
+    def test_bulk_entry_items_locked_is_409(self) -> None:
+        self._lock()
+        response = self._bulk_items("entrada")
+        assert response.status_code == 409, response.content
+        assert response.json()["code"] == "checklist_locked"
+        assert not ChecklistItem.objects.filter(service_order=self.order).exists()
+
+    def test_bulk_other_type_items_ignore_entry_lock(self) -> None:
+        self._lock()
+        response = self._bulk_items("saida")
+        assert response.status_code == 200, response.content
+        assert ChecklistItem.objects.filter(
+            service_order=self.order, checklist_type="saida"
+        ).exists()
+
+    def test_damage_point_must_be_null_or_xyz_numbers(self) -> None:
+        assert self._post_damage(point=None).status_code == 201
+        ok = self._post_damage(panel_key="capo", point={"x": 0, "y": 1.5, "z": -2})
+        assert ok.status_code == 201, ok.content
+        bad_points = (
+            {"x": 0, "y": 1},
+            {"x": "0", "y": 1, "z": 2},
+            {"x": True, "y": 1, "z": 2},
+            [0, 1, 2],
+        )
+        for bad in bad_points:
+            response = self._post_damage(panel_key="teto", point=bad)
+            assert response.status_code == 400, (bad, response.content)
+            assert "point" in response.json()
 
     def test_create_damage_assigns_sequential_numbers(self) -> None:
         first = self._post_damage()

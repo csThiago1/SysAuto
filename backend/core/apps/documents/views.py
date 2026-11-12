@@ -113,7 +113,7 @@ class DocumentHistoryView(APIView):
     def get(self, request: Request, order_id: str) -> Response:
         qs = DocumentGeneration.objects.filter(
             service_order_id=order_id,
-        ).select_related("generated_by").order_by("-created_at")
+        ).select_related("generated_by").defer("data_snapshot").order_by("-created_at")
         return Response(DocumentGenerationSerializer(qs, many=True).data)
 
 
