@@ -15,7 +15,7 @@ import { QuickActionsSheet } from '@/components/common/QuickActionsSheet';
 import { usePathname } from 'expo-router';
 
 // Rotas que escondem o FAB global (telas full-screen com ações próprias).
-const HIDDEN_FAB_ROUTES = ['/os/resolver', '/os/apontamento'];
+const HIDDEN_FAB_ROUTES = ['/os/resolver', '/os/apontamento', '/vistoria/', '/camera'];
 
 const QUICK_ACTIONS = [
   { icon: 'add-circle-outline' as const, label: 'Nova OS', route: '/(app)/nova-os' },

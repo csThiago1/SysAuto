@@ -215,7 +215,7 @@ function EntryChecklistScreen({
   const errors = records.filter((x) => x.syncStatus === 'error');
 
   return (
-    <SafeAreaView style={styles.safe} edges={['bottom']}>
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.back} onPress={() => router.replace(`/(app)/os/${osId}`)} hitSlop={8}>
           <Ionicons name="chevron-back" size={22} color={Colors.textPrimary} />
