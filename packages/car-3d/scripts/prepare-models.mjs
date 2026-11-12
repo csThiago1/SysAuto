@@ -2,11 +2,13 @@
 // Rodar: npm run prepare-models -w @paddock/car-3d [-- <key>...]   (padrão: todos de MODELS)
 // Origem: ~/Downloads/car-3d/<src> (ou CAR3D_SRC). Saída: apps/dscar-web/public/car-3d/<key>.glb e
 // regions/<key>.regions.json. Passos:
-//   1. apaga interior, emblemas e placas: nós por nome e peças soltas (componentes conexos) por caixa;
+//   1. apaga interior, emblemas e placas: nós por nome e peças soltas (componentes conexos) por caixa; onde o
+//      emblema estava fundido numa peça maior, corta os triângulos (`cuts`) e tampa o furo (`patches`);
 //   2. normaliza para a convenção de regions.ts: metro, frente +z, esquerda +x, chão em y = 0, centro em x/z;
 //      vidros escurecidos e sem transmissão (sem interior, vidro transparente mostraria o carro oco);
-//   3. otimiza com o CLI do glTF Transform (npx; meshopt em vez de draco: o decoder do meshopt vem no
-//      bundle do three, o do draco o drei busca no gstatic, o que quebraria o app offline);
+//   3. otimiza com o CLI do glTF Transform (npx; meshopt em vez do draco do plano: o decoder do meshopt vem no
+//      bundle do three, o do draco o drei busca no gstatic, o que quebraria o app offline — desvio registrado no
+//      plano, Task 14 Step 2);
 //   4. escreve o regions.json a partir das medidas de LANDMARKS (tiradas dos nós com nome de cada .glb,
 //      ou do bounding box onde não há nome). Ajuste fino na tela /dev/car-3d volta para LANDMARKS.
 import { execFileSync } from "node:child_process";
@@ -20,7 +22,20 @@ import { LANDMARKS, regionsFor } from "./model-regions.mjs";
 const OUT = new URL("../../../apps/dscar-web/public/car-3d/", import.meta.url);
 const SRC = process.env.CAR3D_SRC ?? join(homedir(), "Downloads/car-3d");
 
-/** Caixa [[x0,x1],[y0,y1],[z0,z1]] no espaço já normalizado (metros, frente +z, esquerda +x). */
+/** Tampa redonda de raio r no lado externo da roda (normal +x à esquerda, -x à direita), no plano x. */
+function hubCap(x, y, z, r) {
+  const s = Math.sign(x);
+  return Array.from({ length: 24 }, (_, k) => {
+    const a = (2 * Math.PI * k) / 24;
+    return [x, y + r * Math.cos(a), z + s * r * Math.sin(a)];
+  });
+}
+
+/**
+ * Caixa [[x0,x1],[y0,y1],[z0,z1]] e pontos no espaço já normalizado (metros, frente +z, esquerda +x).
+ * dropParts: peça solta inteira dentro da caixa sai. cuts: triângulos da malha com centro na caixa saem.
+ * patches: polígono convexo (anti-horário visto de fora) com o material de origem, para tampar o furo de um corte.
+ */
 const MODELS = {
   polo: {
     src: "polo.glb",
@@ -34,6 +49,11 @@ const MODELS = {
       [[-0.07, 0.05], [0.79, 0.92], [-1.97, -1.94]], // logo VW traseiro
       [[-0.1, 0.07], [0.74, 0.775], [-1.97, -1.95]], // letreiro POLO
       [[-0.6, -0.45], [0.715, 0.742], [-1.925, -1.88]], // letreiro 170 TSI
+      // logo VW cromado sobre a tampa escura do miolo das 4 rodas (a tampa, 5,6 cm, é maior e fica)
+      [[0.8, 0.83], [0.2705, 0.324], [1.1862, 1.2395]],
+      [[-0.85, -0.82], [0.2705, 0.324], [1.1862, 1.2395]],
+      [[0.8, 0.83], [0.2705, 0.324], [-1.377, -1.3237]],
+      [[-0.85, -0.82], [0.2705, 0.324], [-1.377, -1.3237]],
     ],
     paint: ["CarPaint"],
     glass: ["windows"],
@@ -51,6 +71,11 @@ const MODELS = {
       [[-0.05, 0.05], [0.955, 1.05], [-2.22, -2.18]], // logo VW traseiro
       [[-0.13, 0.13], [0.705, 0.735], [-2.195, -2.185]], // letreiro VIRTUS
       [[-0.49, -0.425], [0.705, 0.735], [-2.17, -2.15]], // letreiro TSI
+      // logo VW cromado sobre a tampa escura do miolo das 4 rodas (a tampa, 5,8 cm, é maior e fica)
+      [[0.81, 0.86], [0.3025, 0.357], [1.3752, 1.43]],
+      [[-0.86, -0.81], [0.3025, 0.357], [1.3752, 1.43]],
+      [[0.81, 0.86], [0.3025, 0.357], [-1.2755, -1.221]],
+      [[-0.86, -0.81], [0.3025, 0.357], [-1.2755, -1.221]],
     ],
     paint: ["CarP"],
     glass: ["Windwos", "D_glass"],
@@ -64,8 +89,18 @@ const MODELS = {
     // group_2: letreiro ONIX
     dropNodes: /^(onix_90_26|frontbump|group_2)$/,
     dropParts: [[[-0.1, 0.1], [0.99, 1.06], [-2.32, -2.29]]], // contorno cromado da gravata traseira
-    // contorno cromado da gravata dianteira: fundido na moldura da grade
-    cuts: [{ mesh: /^group_1_group_1\.1/, box: [[-0.12, 0.12], [0.675, 0.74], [2.27, 2.34]] }],
+    // gravata dianteira: o contorno cromado é fundido no friso (group_1) e a moldura escura em volta, na grade
+    // (onix_90_20); cortar os dois abre um furo de 26 cm no friso, que uma faixa cromada fecha
+    cuts: [
+      { mesh: /^group_1_group_1\.1/, box: [[-0.12, 0.12], [0.675, 0.74], [2.27, 2.34]] },
+      { mesh: /^onix_90_20_/, box: [[-0.125, 0.125], [0.675, 0.738], [2.2, 2.36]] },
+    ],
+    patches: [
+      {
+        material: "group_1.1", // friso: base mais à frente que o topo, como nas pontas que ficaram
+        points: [[-0.13, 0.6925, 2.312], [0.13, 0.6925, 2.312], [0.13, 0.7105, 2.294], [-0.13, 0.7105, 2.294]],
+      },
+    ],
     paint: ["primary"],
     glass: ["onix_90_8.0"], // "glass" é a lente dos faróis
     simplifyError: 0.0001,
@@ -79,6 +114,13 @@ const MODELS = {
     dropNodes:
       /^(INT\.006|polySurface2713\.00[345]|polySurface2720\.00[345]|polySurface11\.01[4-9]|polySurface289(\.001)?|polySurface290\.002|polySurface94\.004|pasted__ACTIVE_Logo\.001|pasted__SPARK\.001|polySurface2717\.00[23]|pasted__EUV1\.00[3678])$/,
     dropParts: [],
+    // sem as gravatas (11.014–019), a tampa do miolo das rodas fica com um furo em forma de gravata
+    patches: [
+      { material: "EXT_Plastic_S", points: hubCap(0.839, 0.3295, 1.275, 0.0285) },
+      { material: "EXT_Plastic_S", points: hubCap(-0.839, 0.3295, 1.275, 0.0285) },
+      { material: "EXT_Plastic_S", points: hubCap(0.839, 0.327, -1.286, 0.0285) },
+      { material: "EXT_Plastic_S", points: hubCap(-0.839, 0.327, -1.286, 0.0285) },
+    ],
     paint: ["EXT_CarPaint"],
     glass: ["Windows"],
     simplifyError: 0.0002, // 954 mil triângulos no original
@@ -187,6 +229,40 @@ function dropParts(doc, boxes, cuts, toNorm) {
   return dropped;
 }
 
+/**
+ * Polígono convexo `points` (espaço normalizado, anti-horário visto de fora) com o material `material`. Se as malhas
+ * desse material têm UV, o de todos os pontos é o do vértice mais próximo (mesma cor/textura da peça em volta).
+ */
+function addPatch(doc, { material, points }) {
+  const root = doc.getRoot();
+  const mat = root.listMaterials().find((m) => m.getName() === material);
+  if (!mat) throw new Error(`patch: material ${material} não existe`);
+  const [a, b, c] = points;
+  const u = [0, 1, 2].map((d) => b[d] - a[d]);
+  const v = [0, 1, 2].map((d) => c[d] - a[d]);
+  const n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+  const len = Math.hypot(...n);
+  const buffer = root.listBuffers()[0];
+  const acc = (type, array) => doc.createAccessor().setType(type).setArray(array).setBuffer(buffer);
+  const prim = doc
+    .createPrimitive()
+    .setMaterial(mat)
+    .setAttribute("POSITION", acc("VEC3", new Float32Array(points.flat())))
+    .setAttribute("NORMAL", acc("VEC3", new Float32Array(points.flatMap(() => n.map((x) => x / len)))))
+    .setIndices(acc("SCALAR", new Uint16Array(points.slice(2).flatMap((_, i) => [0, i + 1, i + 2]))));
+  let best = null;
+  for (const { prim: p, points: pts } of primitives(doc)) {
+    const uv = p.getAttribute("TEXCOORD_0");
+    if (p.getMaterial() !== mat || !uv) continue;
+    pts.forEach((q, i) => {
+      const d = Math.hypot(...[0, 1, 2].map((k) => q[k] - a[k]));
+      if (!best || d < best.d) best = { d, uv: uv.getElement(i, []) };
+    });
+  }
+  if (best) prim.setAttribute("TEXCOORD_0", acc("VEC2", new Float32Array(points.flatMap(() => best.uv))));
+  root.listScenes()[0].addChild(doc.createNode(`patch_${material}`).setMesh(doc.createMesh().addPrimitive(prim)));
+}
+
 async function prepare(key, cfg) {
   const doc = await io.read(join(SRC, cfg.src));
   const root = doc.getRoot();
@@ -210,6 +286,7 @@ async function prepare(key, cfg) {
     car.addChild(child);
   }
   scene.addChild(car);
+  for (const patch of cfg.patches ?? []) addPatch(doc, patch);
 
   for (const m of root.listMaterials()) {
     m.setExtension("KHR_materials_transmission", null);
