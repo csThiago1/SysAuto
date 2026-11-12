@@ -66,6 +66,8 @@ export interface EntryChecklistDraft {
   bodyType: BodyType | null;
   /** true: escolhido no BodyTypePicker e ainda não aceito pelo PATCH. Valor copiado do servidor não é reenviado. */
   bodyTypeFromPicker?: boolean;
+  /** true: o servidor já aceitou um body_type desta OS (um GET velho com body_type vazio não reenvia). */
+  bodyTypeSent?: boolean;
   /** make/family do último GET do estado: resolve o modelo 3D offline. */
   vehicle?: { make: string | null; family: string | null };
   stops: Partial<Record<StopKey, StopValue>>;
@@ -271,7 +273,7 @@ export async function syncEntryChecklist(osId: string): Promise<{ ok: boolean; p
         useEntryChecklistStore.setState((st) => {
           const d = st.byOs[osId];
           if (!d || d.bodyType !== sentBodyType) return st;
-          return { byOs: { ...st.byOs, [osId]: { ...d, bodyTypeFromPicker: false } } };
+          return { byOs: { ...st.byOs, [osId]: { ...d, bodyTypeFromPicker: false, bodyTypeSent: true } } };
         });
       }
     } catch (err: unknown) {

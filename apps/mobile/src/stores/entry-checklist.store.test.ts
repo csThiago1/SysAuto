@@ -97,6 +97,7 @@ describe('syncEntryChecklist', () => {
     await syncEntryChecklist(OS);
     expect(calls[0].body).toEqual({ body_type: 'sedan', stops_done: { frente: 'done' } });
     expect(useEntryChecklistStore.getState().byOs[OS].bodyTypeFromPicker).toBe(false);
+    expect(useEntryChecklistStore.getState().byOs[OS].bodyTypeSent).toBe(true);
 
     calls = [];
     await syncEntryChecklist(OS);

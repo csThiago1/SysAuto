@@ -90,12 +90,20 @@ function EntryChecklistScreen({
   // ── Carroceria e modelo 3D ────────────────────────────────────────────────
   const suggested = state?.body_type ?? state?.suggested_body_type ?? null;
   const bodyType = draft.bodyType ?? suggested;
-  // o escolhido no picker vale até o PATCH aceitar; valor copiado acompanha o servidor (correção da web)
+  // o escolhido no picker vale até o PATCH aceitar; valor copiado acompanha o servidor (correção da web).
+  // Servidor sem body_type: o do rascunho (sugestão ou rascunho antigo) vai no PATCH, senão o finalize cobra a carroceria.
   useEffect(() => {
-    if (suggested && !draft.bodyTypeFromPicker && draft.bodyType !== suggested) {
-      useEntryChecklistStore.getState().setBodyType(osId, suggested, false);
+    if (!state || draft.bodyTypeFromPicker) return;
+    const set = useEntryChecklistStore.getState().setBodyType;
+    if (state.body_type == null) {
+      if (draft.bodyTypeSent) return; // GET anterior ao PATCH aceito
+
+      const pick = draft.bodyType ?? state.suggested_body_type;
+      if (pick) set(osId, pick, true);
+    } else if (draft.bodyType !== state.body_type) {
+      set(osId, state.body_type, false);
     }
-  }, [draft.bodyType, draft.bodyTypeFromPicker, suggested, osId]);
+  }, [state, draft.bodyType, draft.bodyTypeFromPicker, draft.bodyTypeSent, osId]);
   // guarda o que o GET trouxe para resolver o mesmo modelo 3D offline
   useEffect(() => {
     if (state) {
