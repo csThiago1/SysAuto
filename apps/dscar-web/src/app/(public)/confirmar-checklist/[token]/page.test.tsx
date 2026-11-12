@@ -40,7 +40,7 @@ describe("ConfirmChecklistPage", () => {
   it("410 mostra que o link venceu", async () => {
     mockFetch(json({ detail: "Link expirado ou já utilizado.", code: "link_expired" }, 410));
     renderPage();
-    expect(await screen.findByText("Este link venceu. Peça um novo à DS Car.")).toBeInTheDocument();
+    expect(await screen.findByText("Este link venceu ou já foi usado. Se precisar, peça um novo à DS Car.")).toBeInTheDocument();
   });
 
   it("404 mostra link inválido", async () => {
@@ -93,7 +93,7 @@ describe("ConfirmChecklistPage", () => {
     await screen.findByText("ABC1D23");
     await user.type(screen.getByLabelText("Seu nome"), "Maria");
     await user.click(screen.getByRole("button", { name: /Confirmo/ }));
-    expect(await screen.findByText("Este link venceu. Peça um novo à DS Car.")).toBeInTheDocument();
+    expect(await screen.findByText("Este link venceu ou já foi usado. Se precisar, peça um novo à DS Car.")).toBeInTheDocument();
   });
 
   it("erro de rede no GET mostra erro genérico com nova tentativa", async () => {

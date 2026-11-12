@@ -26,7 +26,7 @@ class LinkError extends Error {
   }
 }
 
-const EXPIRED = "Este link venceu. Peça um novo à DS Car.";
+const EXPIRED = "Este link venceu ou já foi usado. Se precisar, peça um novo à DS Car.";
 const INVALID = "Link inválido.";
 
 /** 404/410 encerram o link; qualquer outro erro é transitório. */

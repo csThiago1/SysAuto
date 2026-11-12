@@ -72,4 +72,28 @@ describe("proxy", () => {
     expect(headers.get("X-Client-IP")).toBe("198.51.100.4")
     expect(headers.has("X-Proxy-Secret")).toBe(false)
   })
+
+  it("log de erro não leva o token da confirmação remota", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ detail: "x" }, { status: 410 })))
+    const log = vi.spyOn(console, "error").mockImplementation(() => {})
+    const req = new NextRequest("http://localhost/api/proxy/public/checklist-confirm/tok-secreto/")
+
+    await GET(req, { params: Promise.resolve({ path: ["public", "checklist-confirm", "tok-secreto"] }) })
+
+    const logged = JSON.stringify(log.mock.calls)
+    expect(logged).toContain("/public/checklist-confirm/<redacted>")
+    expect(logged).not.toContain("tok-secreto")
+  })
+
+  it("passthrough binário repassa o Cache-Control do backend", async () => {
+    const pdf = new Response("%PDF", {
+      headers: { "Content-Type": "application/pdf", "Cache-Control": "private, no-store" },
+    })
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(pdf))
+    const req = new NextRequest("http://localhost/api/proxy/service-orders/1/checklist/pdf/")
+
+    const res = await GET(req, { params: Promise.resolve({ path: ["service-orders", "1", "checklist", "pdf"] }) })
+
+    expect(res.headers.get("Cache-Control")).toBe("private, no-store")
+  })
 })

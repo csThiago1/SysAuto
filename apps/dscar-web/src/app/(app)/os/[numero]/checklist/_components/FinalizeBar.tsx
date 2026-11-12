@@ -95,9 +95,13 @@ export function FinalizeBar({
     }
   }
 
-  async function completeStop(item: string, stopKey: string): Promise<void> {
+  const stopHasDamage = (stopKey: string): boolean => {
     const stop = STOPS.find((s) => s.key === stopKey)
-    const hasDamage = damages.some((d) => stop?.panels.includes(d.panel_key))
+    return damages.some((d) => stop?.panels.includes(d.panel_key))
+  }
+
+  async function completeStop(item: string, stopKey: string): Promise<void> {
+    const hasDamage = stopHasDamage(stopKey)
     try {
       await patch.mutateAsync({ stops_done: { [stopKey]: hasDamage ? "done" : "sem_dano" } })
       setMissing((m) => m.filter((x) => x !== item))
@@ -193,7 +197,7 @@ export function FinalizeBar({
                   </button>
                   {kind === "stop" && key && (
                     <Button size="sm" variant="outline" disabled={patch.isPending} onClick={() => void completeStop(item, key)}>
-                      Concluir parada
+                      {stopHasDamage(key) ? "Concluir parada" : "Sem dano aqui"}
                     </Button>
                   )}
                 </li>

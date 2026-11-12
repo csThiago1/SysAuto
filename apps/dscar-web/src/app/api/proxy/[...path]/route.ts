@@ -93,6 +93,7 @@ async function proxyRequest(
     const logUrl = backendUrl
       .split("?")[0]
       .replace(/\/api\/v1\/lookups\/.*$/, "/api/v1/lookups/<redacted>")
+      .replace(/\/public\/checklist-confirm\/[^/]+/, "/public/checklist-confirm/<redacted>")
     console.error(`[proxy] ${method} ${logUrl} → ${response.status}`, errBody)
   }
 
@@ -106,13 +107,13 @@ async function proxyRequest(
     (contentType.includes("text/html") && response.headers.has("Content-Disposition"));
   if (isBinaryPassthrough) {
     const buf = await response.arrayBuffer();
-    return new NextResponse(buf, {
-      status: response.status,
-      headers: {
-        "Content-Type": contentType,
-        "Content-Disposition": response.headers.get("Content-Disposition") ?? "",
-      },
-    });
+    const headers: Record<string, string> = {
+      "Content-Type": contentType,
+      "Content-Disposition": response.headers.get("Content-Disposition") ?? "",
+    };
+    const cacheControl = response.headers.get("Cache-Control");
+    if (cacheControl) headers["Cache-Control"] = cacheControl;
+    return new NextResponse(buf, { status: response.status, headers });
   }
 
   // 204 No Content — não pode ter body (DELETE do DRF)

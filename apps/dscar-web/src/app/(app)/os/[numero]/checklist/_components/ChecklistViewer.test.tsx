@@ -3,8 +3,9 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import type { ReactElement } from "react"
 
-const { state, runMatch } = vi.hoisted(() => ({
+const { state, runMatch, match } = vi.hoisted(() => ({
   runMatch: vi.fn(),
+  match: { data: undefined as { inside: number; outside: unknown[]; unmapped: { item_id: number; description: string }[] } | undefined },
   state: {
     id: "c1",
     body_type: "sedan",
@@ -35,7 +36,7 @@ vi.mock("../_hooks/useEntryChecklist", () => {
     useChecklistDamages: query([]),
     useBelongings: query([]),
     useChecklistHistory: query([]),
-    useBudgetMatch: () => ({ ...mutation(), mutate: runMatch }),
+    useBudgetMatch: () => ({ ...mutation(), mutate: runMatch, data: match.data }),
     usePatchChecklist: mutation,
     useFinalizeChecklist: mutation,
     useReopenChecklist: mutation,
@@ -63,6 +64,7 @@ describe("ChecklistViewer", () => {
   beforeEach(() => {
     state.customer_type = "private"
     state.finalized_at = null
+    match.data = undefined
     runMatch.mockClear()
   })
 
@@ -73,6 +75,8 @@ describe("ChecklistViewer", () => {
     expect(screen.getByRole("tab", { name: "Danos (0)" })).toBeInTheDocument()
     expect(screen.getByText("Nenhum dano marcado — toque numa peça do carro")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Finalizar" })).toBeInTheDocument()
+    // crédito CC BY do modelo (sedã sem NC → Onix) leva à página de créditos
+    expect(screen.getByRole("link", { name: "chevrolet onix · uzb_rx7 · CC BY 4.0" })).toHaveAttribute("href", "/sobre/creditos")
   })
 
   it("OS de seguradora: abrir a tela não recruza; o cruzamento é pelo botão", async () => {
@@ -85,13 +89,24 @@ describe("ChecklistViewer", () => {
     expect(runMatch).toHaveBeenCalledTimes(1)
   })
 
-  it("checklist finalizado não oferece recruzar (a evidência está travada)", async () => {
+  it("checklist finalizado ainda recruza (budget_match fica fora do conteúdo assinado)", async () => {
     state.customer_type = "insurer"
     state.finalized_at = "2026-11-10T12:00:00Z"
     renderViewer()
 
     await screen.findByTestId("car3d")
-    expect(screen.queryByRole("button", { name: "Cruzar com o orçamento" })).not.toBeInTheDocument()
     expect(runMatch).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole("button", { name: "Cruzar com o orçamento" }))
+    expect(runMatch).toHaveBeenCalledTimes(1)
+  })
+
+  it("checklist finalizado mostra os itens do orçamento sem peça", async () => {
+    state.customer_type = "insurer"
+    state.finalized_at = "2026-11-10T12:00:00Z"
+    match.data = { inside: 0, outside: [], unmapped: [{ item_id: 7, description: "Friso da porta" }] }
+    renderViewer()
+
+    await screen.findByTestId("car3d")
+    expect(screen.getByText("Itens do orçamento sem peça (1)")).toBeInTheDocument()
   })
 })

@@ -15,7 +15,9 @@ describe("página de créditos", () => {
       expect(row?.querySelector(`a[href="${m.sourceUrl}"]`)).not.toBeNull();
     }
     expect(screen.getAllByText("CC BY-NC-SA 4.0").length).toBeGreaterThan(0);
-    expect(screen.getByText("CC BY 4.0")).toBeTruthy();
+    expect(screen.getByText("CC BY 4.0").getAttribute("href")).toBe("https://creativecommons.org/licenses/by/4.0/");
+    expect(screen.getAllByText("CC BY-NC-SA 4.0")[0]?.getAttribute("href")).toBe("https://creativecommons.org/licenses/by-nc-sa/4.0/");
+    expect(screen.getByText(/interior mantido/).closest("li")?.textContent).toContain("chevrolet onix");
     expect(screen.queryByText(/provisório/)).toBeNull();
   });
 });

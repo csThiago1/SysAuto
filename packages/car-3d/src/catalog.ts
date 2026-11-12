@@ -14,6 +14,8 @@ export type CarModelEntry = {
   license: ModelLicense;
   author: string;
   sourceUrl: string;
+  /** O que prepare-models removeu deste modelo (CC BY exige indicar as modificações). */
+  changes?: string;
 };
 
 const placeholder = (bodyType: BodyType, title: string): CarModelEntry => ({
@@ -56,6 +58,7 @@ export const CAR_MODELS: CarModelEntry[] = [
     license: "CC-BY-NC-SA-4.0",
     author: DDIAZ,
     sourceUrl: "https://sketchfab.com/3d-models/2024-volkswagen-polo-170-tsi-ec0f4dfd1ca84a859725e4002e9cf120",
+    changes: "interior, emblemas e placas removidos",
   },
   {
     key: "virtus",
@@ -68,6 +71,7 @@ export const CAR_MODELS: CarModelEntry[] = [
     license: "CC-BY-NC-SA-4.0",
     author: DDIAZ,
     sourceUrl: "https://sketchfab.com/3d-models/2024-volkswagen-virtus-tsi-2678bb3bfbe1482cb6faa084674e100b",
+    changes: "interior, emblemas e placas removidos",
   },
   {
     key: "onix",
@@ -83,6 +87,7 @@ export const CAR_MODELS: CarModelEntry[] = [
     license: "CC-BY-4.0",
     author: "uzb_rx7",
     sourceUrl: "https://sketchfab.com/3d-models/chevrolet-onix-bfd798c2695847b28ab681d42abc7056",
+    changes: "gravatas, letreiro ONIX e placa traseira removidos; interior mantido",
   },
   {
     key: "spark_euv",
@@ -95,6 +100,7 @@ export const CAR_MODELS: CarModelEntry[] = [
     license: "CC-BY-NC-SA-4.0",
     author: DDIAZ,
     sourceUrl: "https://sketchfab.com/3d-models/2026-chevrolet-spark-euv-620ce2baa45d466ca599412c3b843efc",
+    changes: "interior, emblemas e placas removidos",
   },
   ...Object.values(PLACEHOLDERS),
 ];
@@ -103,6 +109,12 @@ export const LICENSE_LABELS: Record<Exclude<ModelLicense, "PLACEHOLDER">, string
   CC0: "CC0 1.0",
   "CC-BY-4.0": "CC BY 4.0",
   "CC-BY-NC-SA-4.0": "CC BY-NC-SA 4.0",
+};
+
+export const LICENSE_URLS: Record<Exclude<ModelLicense, "PLACEHOLDER">, string> = {
+  CC0: "https://creativecommons.org/publicdomain/zero/1.0/",
+  "CC-BY-4.0": "https://creativecommons.org/licenses/by/4.0/",
+  "CC-BY-NC-SA-4.0": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
 };
 
 /** Família → padrão da carroceria → provisório, pulando NC quando o tenant não pode. */

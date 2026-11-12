@@ -4,6 +4,7 @@ import { useMemo, useRef, useState, type ReactElement } from "react"
 import { useGLTF, useProgress } from "@react-three/drei"
 import { useQuery } from "@tanstack/react-query"
 import dynamic from "next/dynamic"
+import Link from "next/link"
 import { ErrorBoundary } from "react-error-boundary"
 import { FileText, GitCompareArrows, Loader2 } from "lucide-react"
 import { toast } from "sonner"
@@ -259,9 +260,10 @@ export function ChecklistViewer({ osId, customerName }: { osId: string; customer
     damages.some((d) => d.budget_match !== "sem_orcamento") ||
     (match.data ? match.data.inside > 0 || match.data.outside.length > 0 || match.data.unmapped.length > 0 : false)
   const belongingCount = belongings.data?.length ?? 0
+  const modelCredit = creditLine(model)
 
-  // ponytail: o cruzamento grava budget_match nos danos, então é ação explícita e só com o
-  // checklist aberto; GET de leitura do resumo se a lista de não mapeados precisar abrir sozinha
+  // budget_match é calculado fora do conteúdo assinado (spec 5.4): recruzar vale também com o checklist
+  // travado; é ação explícita porque grava nos danos
   const runMatch = (): void =>
     match.mutate(undefined, {
       onSuccess: (s) =>
@@ -318,6 +320,11 @@ export function ChecklistViewer({ osId, customerName }: { osId: string; customer
             </p>
           )}
         </div>
+        {modelCredit && (
+          <Link href="/sobre/creditos" className="block text-[11px] text-muted-foreground underline-offset-2 hover:underline">
+            {modelCredit}
+          </Link>
+        )}
         <VehicleHistory osId={osId} />
       </div>
 
@@ -328,7 +335,7 @@ export function ChecklistViewer({ osId, customerName }: { osId: string; customer
           damages={damages}
           customerName={customerName}
           hasBudget={hasBudget}
-          modelCredit={creditLine(model)}
+          modelCredit={modelCredit}
           takeSnapshots={takeSnapshots}
           onMissing={onMissing}
         />
@@ -353,7 +360,7 @@ export function ChecklistViewer({ osId, customerName }: { osId: string; customer
               </TabsList>
               <div className="flex-1 overflow-y-auto px-3 pb-3">
                 <TabsContent value="danos" className="space-y-3">
-                  {state.customer_type === "insurer" && !locked && (
+                  {state.customer_type === "insurer" && (
                     <Button variant="outline" size="sm" className="w-full" disabled={match.isPending} onClick={runMatch}>
                       {match.isPending ? (
                         <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />

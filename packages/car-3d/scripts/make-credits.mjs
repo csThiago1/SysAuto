@@ -1,13 +1,10 @@
 // Gera assets/CREDITS.md a partir de CAR_MODELS (src/catalog.ts). Rodar: npm run make-credits -w @paddock/car-3d
 // (o Node lê o .ts direto: o catálogo só importa tipos.)
 import { writeFileSync } from "node:fs";
-import { CAR_MODELS } from "../src/catalog.ts";
+import { CAR_MODELS, LICENSE_LABELS, LICENSE_URLS } from "../src/catalog.ts";
 
-const LICENSES = {
-  CC0: "CC0 1.0",
-  "CC-BY-4.0": "CC BY 4.0",
-  "CC-BY-NC-SA-4.0": "CC BY-NC-SA 4.0 (só tenants em `CAR3D_NC_TENANTS`)",
-};
+const license = (l) =>
+  `[${LICENSE_LABELS[l]}](${LICENSE_URLS[l]})${l === "CC-BY-NC-SA-4.0" ? " (só tenants em `CAR3D_NC_TENANTS`)" : ""}`;
 
 const real = CAR_MODELS.filter((m) => m.license !== "PLACEHOLDER");
 const placeholders = CAR_MODELS.filter((m) => m.license === "PLACEHOLDER");
@@ -24,16 +21,16 @@ O crédito também aparece na página /sobre/creditos e no rodapé do PDF do che
 ## Modelos definitivos
 
 Ordem de \`CAR_MODELS\`: família → padrão da carroceria (o primeiro permitido vence) → provisório.
-Modificações em todos: interior, emblemas e placas removidos; malha simplificada e comprimida (meshopt),
-texturas em WebP; escala, giro e origem normalizados; vidros escurecidos
-(\`npm run prepare-models -w @paddock/car-3d\`).
+Modificações em todos: malha simplificada e comprimida (meshopt), texturas em WebP; escala, giro e origem
+normalizados; vidros escurecidos (\`npm run prepare-models -w @paddock/car-3d\`). O que saiu de cada um está
+na coluna Modificações.
 
-| Arquivo | Carroceria | Título | Autor | Licença | Origem | Famílias | Padrão da carroceria |
-|---|---|---|---|---|---|---|---|
+| Arquivo | Carroceria | Título | Autor | Licença | Origem | Famílias | Padrão da carroceria | Modificações |
+|---|---|---|---|---|---|---|---|---|
 ${real
   .map(
     (m) =>
-      `| \`${m.file}\` | ${m.bodyType} | ${m.title} | ${m.author} | ${LICENSES[m.license]} | ${m.sourceUrl} | ${families(m)} | ${m.bodyDefault ? "sim" : "não"} |`,
+      `| \`${m.file}\` | ${m.bodyType} | ${m.title} | ${m.author} | ${license(m.license)} | ${m.sourceUrl} | ${families(m)} | ${m.bodyDefault ? "sim" : "não"} | ${m.changes} |`,
   )
   .join("\n")}
 
