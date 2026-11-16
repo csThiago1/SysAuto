@@ -35,6 +35,7 @@ export function refreshAccessToken(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refresh_token: refreshToken }),
+        signal: AbortSignal.timeout(8_000),
       })
     } catch {
       throw new RefreshTransitorio("refresh_rede")

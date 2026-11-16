@@ -151,6 +151,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
 
+  events: {
+    // Logout revoga o refresh desta sessão no backend (antes só apagava o cookie,
+    // e o token seguia válido por 30 dias).
+    async signOut(message) {
+      const refresh =
+        "token" in message ? (message.token?.refreshToken as string | undefined) : undefined;
+      if (!refresh) return;
+      await fetch(`${BACKEND_URL}/api/v1/auth/logout/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refresh }),
+        signal: AbortSignal.timeout(5_000),
+      }).catch(() => undefined);
+    },
+  },
+
   callbacks: {
     async jwt({ token, user }) {
       // 1. Login inicial — propaga tudo do authorize()

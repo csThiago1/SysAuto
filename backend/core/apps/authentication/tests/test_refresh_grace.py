@@ -49,12 +49,19 @@ class TestRefreshGrace(TenantTestCase):
             self.c.post(REFRESH, {"refresh_token": rt}, format="json").status_code, 200
         )
         passado = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(seconds=1)
-        RefreshToken.objects.filter(expires_at__lt=passado + datetime.timedelta(minutes=5)).update(
+        RefreshToken.objects.filter(expires_at__lt=passado + datetime.timedelta(days=2)).update(
             expires_at=passado
         )
         self.assertEqual(
             self.c.post(REFRESH, {"refresh_token": rt}, format="json").status_code, 401
         )
+
+    def test_logout_revoga_o_refresh(self) -> None:
+        rt = self._refresh_inicial()
+        out = self.c.post("/api/v1/auth/logout/", {"refresh_token": rt}, format="json")
+        self.assertEqual(out.status_code, 204)
+        r = self.c.post(REFRESH, {"refresh_token": rt}, format="json")
+        self.assertEqual(r.status_code, 401)
 
     def test_revogado_no_logout_nao_renova(self) -> None:
         rt = self._refresh_inicial()

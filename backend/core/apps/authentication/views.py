@@ -239,7 +239,9 @@ class LoginView(APIView):
 
 # ─── RefreshView ─────────────────────────────────────────────────────────────
 
-ROTATION_GRACE = datetime.timedelta(seconds=60)
+# 24h, não segundos: toda resposta do proxy regrava o cookie, e uma request lenta
+# (upload, PDF) pode devolver o refresh anterior DEPOIS da rotação.
+ROTATION_GRACE = datetime.timedelta(hours=24)
 
 
 class RefreshView(APIView):
@@ -309,7 +311,7 @@ class RefreshView(APIView):
         # página, o /api/auth/session e o proxy renovam juntos ao reabrir o app,
         # às vezes em instâncias diferentes da Vercel, com o MESMO refresh;
         # revogando na hora, só o primeiro passava e os outros deslogavam.
-        # Logout e troca de senha continuam revogando tudo (is_revoked).
+        # Logout (LogoutView) e reset de senha revogam de verdade (is_revoked).
         if stored.expires_at > now + ROTATION_GRACE:
             stored.expires_at = now + ROTATION_GRACE
             stored.save(update_fields=["expires_at"])
@@ -323,6 +325,29 @@ class RefreshView(APIView):
 
         logger.info("Token refresh para user_id=%s", user.pk)
         return Response(_issue_tokens(user))
+
+
+class LogoutView(APIView):
+    """
+    POST /api/v1/auth/logout/ — revoga o refresh token desta sessão.
+
+    Chamado pelo servidor do front no signOut (events.signOut do next-auth),
+    com o refresh que vive só no cookie criptografado. Sempre 204: logout
+    não revela se o token existia.
+    Body: {"refresh_token": "<jwt>"}
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+    throttle_classes: list = []
+
+    def post(self, request: Request) -> Response:
+        """Revoga o refresh informado (idempotente)."""
+        raw: str = str(request.data.get("refresh_token", "") or "").strip()
+        if raw:
+            token_hash = hashlib.sha256(raw.encode()).hexdigest()
+            RefreshToken.objects.filter(token_hash=token_hash).update(is_revoked=True)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # ─── MeView ──────────────────────────────────────────────────────────────────

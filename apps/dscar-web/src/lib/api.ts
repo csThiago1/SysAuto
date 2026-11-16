@@ -85,7 +85,7 @@ export async function apiFetch<T>(
         // redirect: false evita que o signOut navegue sozinho e causa loop
         // quando o endpoint /api/auth/signout falha
         // apaga o cache de respostas da API do PWA antes de sair (LGPD)
-        caches.delete(API_CACHE).catch(() => false).finally(() => {
+        (globalThis.caches?.delete(API_CACHE) ?? Promise.resolve(false)).catch(() => false).finally(() => {
           signOut({ redirect: false }).finally(() => {
             window.location.href = "/login";
           });
