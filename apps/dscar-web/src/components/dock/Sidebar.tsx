@@ -128,12 +128,14 @@ export function Sidebar(): React.ReactElement {
   return (
     <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-card md:flex">
       <div className="space-y-4 border-b border-border px-4 pb-4 pt-4">
-        {/* Logo "Parada Obrigatória" (ticket): branca no escuro, preta no claro */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-ticket-preta.svg" alt="DS Car Centro Automotivo" className="h-20 w-auto dark:hidden" />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-ticket-branca.svg" alt="" aria-hidden className="hidden h-20 w-auto dark:block" />
-        <Placar />
+        <div className="flex gap-4">
+          {/* Logo "Parada Obrigatória" (ticket): branca no escuro, preta no claro */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-ticket-preta.svg" alt="DS Car Centro Automotivo" className="h-20 w-auto shrink-0 dark:hidden" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-ticket-branca.svg" alt="" aria-hidden className="hidden h-20 w-auto shrink-0 dark:block" />
+          <Placar torre className="min-w-0 flex-1" />
+        </div>
         {podeAbrirOS && (
           <Link
             href="/recepcao"
