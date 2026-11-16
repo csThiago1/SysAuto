@@ -1,3 +1,4 @@
+from .invites import InviteAcceptView, InviteListCreateView, InviteRevokeView, InviteTokenView
 from django.conf import settings
 from django.urls import path
 
@@ -26,6 +27,10 @@ urlpatterns = [
     # Staff management
     path("push-token/", PushTokenView.as_view(), name="auth-push-token"),
     path("staff/", StaffListView.as_view(), name="auth-staff-list"),
+    path("invites/", InviteListCreateView.as_view(), name="auth-invites"),
+    path("invites/<uuid:pk>/", InviteRevokeView.as_view(), name="auth-invite-revoke"),
+    path("invites/token/<str:token>/", InviteTokenView.as_view(), name="auth-invite-token"),
+    path("invites/token/<str:token>/accept/", InviteAcceptView.as_view(), name="auth-invite-accept"),
     path("staff/<str:pk>/", StaffDetailView.as_view(), name="auth-staff-detail"),
 ]
 

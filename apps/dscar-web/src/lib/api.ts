@@ -104,6 +104,7 @@ export async function apiFetch<T>(
     throw new ApiError(message, res.status, e);
   }
 
+  if (res.status === 204) return undefined as T; // DELETE sem corpo
   return res.json() as Promise<T>;
 }
 

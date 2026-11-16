@@ -631,19 +631,11 @@ class RegisterView(APIView):
         # Auto-create Employee profile in current tenant
         try:
             from apps.hr.models import Employee
+            from apps.hr.services import next_registration_number
             from django.utils import timezone as tz
 
-            # Generate registration number: EMP-YYYYMM-NNN
             now = tz.now()
-            prefix = f"EMP-{now.strftime('%Y%m')}"
-            last = Employee.objects.filter(
-                registration_number__startswith=prefix
-            ).order_by("-registration_number").first()
-            if last:
-                seq = int(last.registration_number.split("-")[-1]) + 1
-            else:
-                seq = 1
-            reg_number = f"{prefix}-{seq:03d}"
+            reg_number = next_registration_number()
 
             Employee.objects.create(
                 user=user,

@@ -818,6 +818,19 @@ class PayslipService:
         }
 
 
+def next_registration_number() -> str:
+    """Próxima matrícula do mês no tenant corrente: EMP-AAAAMM-NNN."""
+    prefix = f"EMP-{timezone.now().strftime('%Y%m')}"
+    last = (
+        Employee.objects.filter(registration_number__startswith=prefix)
+        .order_by("-registration_number")
+        .values_list("registration_number", flat=True)
+        .first()
+    )
+    seq = int(last.rsplit("-", 1)[-1]) + 1 if last else 1
+    return f"{prefix}-{seq:03d}"
+
+
 def calculate_termination(employee: "Employee") -> dict:
     """Calcula ferias proporcionais e 13o proporcional na rescisao."""
     from dateutil.relativedelta import relativedelta

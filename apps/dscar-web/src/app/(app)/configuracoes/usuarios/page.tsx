@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Plus, Search, Pencil, Power, Users, ShieldCheck } from "lucide-react"
+import { Plus, Search, Pencil, Power, Users, ShieldCheck, Copy, Send } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -95,30 +95,23 @@ const ALL_ROLES: RoleKey[] = ["OWNER", "ADMIN", "MANAGER", "CONSULTANT", "STOREK
 
 // ─── Zod Schemas ────────────────────────────────────────────────────────────
 
-const DEPARTMENTS = [
-  { value: "reception", label: "Recepcao" },
-  { value: "painting", label: "Pintura" },
-  { value: "bodywork", label: "Funilaria" },
-  { value: "mechanical", label: "Mecanica" },
-  { value: "polishing", label: "Polimento" },
-  { value: "washing", label: "Lavagem" },
-  { value: "admin", label: "Administracao" },
-  { value: "inventory", label: "Estoque" },
-  { value: "purchasing", label: "Compras" },
-] as const
-
-const inviteSchema = z.object({
-  name: z.string().min(1, "Nome obrigatorio"),
-  email: z.string().email("Email invalido"),
-  role: z.enum(["OWNER", "ADMIN", "MANAGER", "CONSULTANT", "STOREKEEPER"]),
-  department: z.string().default("reception"),
-  password: z.union([
-    z.string().min(8, "Minimo 8 caracteres"),
-    z.string().length(0),
-  ]).optional(),
+const inviteCreatedSchema = z.object({
+  id: z.string(),
+  token: z.string(),
+  role: z.string(),
+  expires_at: z.string(),
 })
 
-type InviteFormValues = z.infer<typeof inviteSchema>
+const pendingInviteSchema = z.array(
+  z.object({
+    id: z.string(),
+    role: z.string(),
+    role_display: z.string(),
+    expires_at: z.string(),
+  })
+)
+
+type PendingInvite = z.infer<typeof pendingInviteSchema>[number]
 
 const editSchema = z.object({
   role: z.enum(["OWNER", "ADMIN", "MANAGER", "CONSULTANT", "STOREKEEPER"]),
@@ -158,20 +151,6 @@ export default function UsuariosPage() {
   })
 
   // ─── Mutations ──────────────────────────────────────────────────────────
-
-  const inviteMutation = useMutation({
-    mutationFn: (data: InviteFormValues) =>
-      apiFetch("/api/proxy/auth/register/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: staffKeys.all })
-      toast.success("Convite enviado com sucesso.")
-      setInviteOpen(false)
-    },
-  })
 
   const updateMutation = useMutation({
     mutationFn: ({ id, ...data }: { id: string; role: string; job_title: string }) =>
@@ -358,14 +337,7 @@ export default function UsuariosPage() {
       </p>
 
       {/* ─── Invite Sheet ──────────────────────────────────────────────────── */}
-      <InviteSheet
-        open={inviteOpen}
-        onOpenChange={setInviteOpen}
-        isPending={inviteMutation.isPending}
-        onSubmit={async (data) => {
-          try { await inviteMutation.mutateAsync(data) } catch { toast.error("Erro ao convidar usuario.") }
-        }}
-      />
+      <InviteSheet open={inviteOpen} onOpenChange={setInviteOpen} />
 
       {/* ─── Edit Sheet ────────────────────────────────────────────────────── */}
       <EditSheet
@@ -414,77 +386,93 @@ export default function UsuariosPage() {
 
 // ─── InviteSheet ──────────────────────────────────────────────────────────────
 
+const inviteKeys = { pending: ["auth", "invites"] as const }
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("pt-BR")
+}
+
 function InviteSheet({
   open,
   onOpenChange,
-  isPending,
-  onSubmit,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  isPending: boolean
-  onSubmit: (data: InviteFormValues) => Promise<void>
 }) {
-  const form = useForm<InviteFormValues>({
-    resolver: zodResolver(inviteSchema),
-    defaultValues: { name: "", email: "", role: "CONSULTANT", department: "reception", password: "" },
+  const queryClient = useQueryClient()
+  const [role, setRole] = useState<RoleKey>("CONSULTANT")
+  const [link, setLink] = useState<string | null>(null)
+  const [revoking, setRevoking] = useState<PendingInvite | null>(null)
+
+  const pending = useQuery({
+    queryKey: inviteKeys.pending,
+    enabled: open,
+    queryFn: async () => pendingInviteSchema.parse(await apiFetch<unknown>("/api/proxy/auth/invites/")),
   })
 
-  async function handleSave(data: InviteFormValues) {
-    const payload = { ...data }
-    if (!payload.password) {
-      delete (payload as Record<string, unknown>).password
-    }
+  const create = useMutation({
+    mutationFn: async (r: RoleKey) =>
+      inviteCreatedSchema.parse(
+        await apiFetch<unknown>("/api/proxy/auth/invites/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ role: r }),
+        })
+      ),
+    onSuccess: (data) => {
+      setLink(`${window.location.origin}/convite/${data.token}`)
+      queryClient.invalidateQueries({ queryKey: inviteKeys.pending })
+    },
+    onError: () => toast.error("Nao foi possivel gerar o convite."),
+  })
+
+  const revoke = useMutation({
+    mutationFn: (id: string) => apiFetch<void>(`/api/proxy/auth/invites/${id}/`, { method: "DELETE" }),
+    onSuccess: () => {
+      toast.success("Convite revogado.")
+      setRevoking(null)
+      queryClient.invalidateQueries({ queryKey: inviteKeys.pending })
+    },
+    onError: () => toast.error("Nao foi possivel revogar o convite."),
+  })
+
+  function close(next: boolean) {
+    if (!next) setLink(null)
+    onOpenChange(next)
+  }
+
+  async function copy() {
+    if (!link) return
     try {
-      await onSubmit(payload)
-      form.reset()
+      await navigator.clipboard.writeText(link)
+      toast.success("Link copiado.")
     } catch {
-      // error handled by parent
+      toast.error("Nao foi possivel copiar. Selecione o link e copie manualmente.")
     }
   }
 
+  const whatsapp = link
+    ? `https://wa.me/?text=${encodeURIComponent(`Seu convite para o sistema da DS Car: ${link}`)}`
+    : ""
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[420px]">
+    <Sheet open={open} onOpenChange={close}>
+      <SheetContent className="w-full sm:w-[420px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Convidar Usuario</SheetTitle>
         </SheetHeader>
-        <form onSubmit={form.handleSubmit(handleSave)} className="mt-6 space-y-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium">
-              Nome <span className="text-error-400">*</span>
-            </Label>
-            <Input
-              placeholder="Nome completo"
-              {...form.register("name")}
-            />
-            {form.formState.errors.name && (
-              <p className="text-xs text-error-400">{form.formState.errors.name.message}</p>
-            )}
-          </div>
+
+        <div className="mt-6 space-y-4">
+          <p className="text-sm text-muted-foreground">
+            A pessoa recebe um link de uso unico (vale 7 dias), preenche os proprios dados e vira usuario e
+            funcionario com o papel escolhido.
+          </p>
 
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium">
-              Email <span className="text-error-400">*</span>
-            </Label>
-            <Input
-              type="email"
-              placeholder="usuario@email.com"
-              {...form.register("email")}
-            />
-            {form.formState.errors.email && (
-              <p className="text-xs text-error-400">{form.formState.errors.email.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium">Role</Label>
-            <Select
-              value={form.watch("role")}
-              onValueChange={(v) => form.setValue("role", v as RoleKey)}
-            >
+            <Label className="text-xs font-medium">Papel</Label>
+            <Select value={role} onValueChange={(v) => setRole(v as RoleKey)}>
               <SelectTrigger>
-                <SelectValue />
+                <span>{ROLE_LABELS[role]}</span>
               </SelectTrigger>
               <SelectContent>
                 {ALL_ROLES.map((r) => (
@@ -496,45 +484,73 @@ function InviteSheet({
             </Select>
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium">Setor</Label>
-            <Select
-              value={form.watch("department")}
-              onValueChange={(v) => form.setValue("department", v, { shouldDirty: true })}
-            >
-              <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-              <SelectContent>
-                {DEPARTMENTS.map((d) => (
-                  <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Button className="w-full" disabled={create.isPending} onClick={() => create.mutate(role)}>
+            {create.isPending ? "Gerando..." : "Gerar link de convite"}
+          </Button>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium">Senha (opcional)</Label>
-            <Input
-              type="password"
-              placeholder="Minimo 8 caracteres"
-              {...form.register("password")}
-            />
-            <p className="text-xs text-muted-foreground">
-              Se vazio, o usuario definira a senha pelo email de verificacao.
-            </p>
-            {form.formState.errors.password && (
-              <p className="text-xs text-error-400">{form.formState.errors.password.message}</p>
+          {link && (
+            <div className="space-y-2 rounded-md border border-border p-3">
+              <Label className="text-xs font-medium">Link do convite</Label>
+              <Input readOnly value={link} onFocus={(e) => e.currentTarget.select()} className="text-xs" />
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" className="flex-1 gap-1.5" onClick={copy}>
+                  <Copy className="h-4 w-4" /> Copiar
+                </Button>
+                <Button asChild type="button" className="flex-1 gap-1.5">
+                  <a href={whatsapp} target="_blank" rel="noopener noreferrer">
+                    <Send className="h-4 w-4" /> WhatsApp
+                  </a>
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2 pt-2">
+            <h3 className="text-sm font-medium text-foreground">Convites pendentes</h3>
+            {pending.isLoading ? (
+              <TableSkeleton columns={3} rows={2} />
+            ) : pending.isError ? (
+              <p className="text-xs text-error-400">Nao foi possivel carregar os convites.</p>
+            ) : !pending.data?.length ? (
+              <p className="text-xs text-muted-foreground">Nenhum convite pendente.</p>
+            ) : (
+              <ul className="divide-y divide-border rounded-md border border-border">
+                {pending.data.map((inv) => (
+                  <li key={inv.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+                    <span>
+                      {inv.role_display}
+                      <span className="ml-2 text-xs text-muted-foreground">vence {formatDate(inv.expires_at)}</span>
+                    </span>
+                    <Button variant="ghost" size="sm" onClick={() => setRevoking(inv)}>
+                      Revogar
+                    </Button>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
+        </div>
 
-          <div className="flex gap-2 pt-2">
-            <Button type="button" variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button type="submit" className="flex-1" disabled={isPending}>
-              {isPending ? "Enviando..." : "Convidar"}
-            </Button>
-          </div>
-        </form>
+        <AlertDialog open={!!revoking} onOpenChange={(o) => !o && setRevoking(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Revogar convite?</AlertDialogTitle>
+              <AlertDialogDescription>
+                O link de {revoking?.role_display} para de funcionar. Quem ainda nao se cadastrou vai precisar de
+                um novo convite.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={revoke.isPending}
+                onClick={() => revoking && revoke.mutate(revoking.id)}
+              >
+                Revogar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </SheetContent>
     </Sheet>
   )

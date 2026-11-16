@@ -402,7 +402,7 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
                     is_primary=True,
                 )
 
-            employee = Employee.objects.create(user=user, person=person, **validated_data)
+            employee = Employee.objects.create(user=user, person=person, cpf=cpf, **validated_data)
 
         return employee
 
