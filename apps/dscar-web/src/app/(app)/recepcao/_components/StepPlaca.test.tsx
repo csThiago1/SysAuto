@@ -55,7 +55,7 @@ const ULTIMA = {
 
 describe("StepPlaca — cliente pela placa", () => {
   beforeEach(() => {
-    vi.mocked(apiFetch).mockImplementation(async (url: string) => api(url) as never)
+    vi.mocked(apiFetch).mockImplementation(async (url) => api(String(url)) as never)
   })
 
   it("preenche o cliente da última OS da placa", async () => {
