@@ -5,7 +5,6 @@ import { DollarSign, Truck, TrendingUp, AlertTriangle } from "lucide-react"
 import { formatCurrency } from "@paddock/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TeamProductivityTable } from "./TeamProductivityTable"
-import { OverdueOSList } from "./OverdueOSList"
 import type { ManagerDashboardStats } from "@paddock/types"
 import { SectionLabel } from "@/components/ui/section-label"
 import { KpiStrip, type KpiItem } from "@/components/ui/kpi-strip"
@@ -69,12 +68,8 @@ export function ManagerDashboard({ data }: Props) {
 
   return (
     <div className="space-y-5">
-      {/* 1 — O que exige decisão agora. Só ocupa espaço quando existe; com zero
-             atrasadas o KPI abaixo já diz, e um card "nenhuma atrasada" era
-             ruído duplicado no topo da tela. */}
-      {atrasadas && <OverdueOSList items={data.overdue_os} />}
-
-      {/* 2 — O mês: os números e a forma real do negócio (seguradora × particular) */}
+      {/* O que exige decisão agora (atrasadas) mora na Torre de tempos, acima. */}
+      {/* 1 — O mês: os números e a forma real do negócio (seguradora × particular) */}
       <SectionLabel>Visão geral · {period}</SectionLabel>
       <div className="space-y-2">
         <KpiStrip items={kpis} />
@@ -84,11 +79,11 @@ export function ManagerDashboard({ data }: Props) {
         />
       </div>
 
-      {/* 3 — Tendência. Sem eyebrow: o próprio card já se chama
+      {/* 2 — Tendência. Sem eyebrow: o próprio card já se chama
              "Faturamento — Últimos 6 Meses". */}
       <BillingByTypeChart data={data.billing_last_6_months} />
 
-      {/* 4 — Equipe */}
+      {/* 3 — Equipe */}
       <SectionLabel>Equipe</SectionLabel>
       <TeamProductivityTable members={data.team_productivity} />
     </div>
