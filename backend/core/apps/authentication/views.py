@@ -51,8 +51,24 @@ _DEV_ACCESS_CODE = "paddock" + "123"
 # ─── Rate limit for auth endpoints ─────────────────────────────────────────────
 
 class AuthRateThrottle(AnonRateThrottle):
-    """5 requests/min per IP for auth endpoints."""
+    """5 tentativas/min por e-mail (ou por IP, quando não há e-mail).
+
+    O login chega pelo servidor da Vercel: para o backend, a empresa inteira
+    tem um IP só. Por IP — e com o escopo "anon", o mesmo do throttle padrão —
+    5 requisições anônimas quaisquer (ex.: refresh) travavam o login de todos.
+    """
+
+    scope = "auth"
     rate = "5/minute"
+
+    def get_cache_key(self, request: Request, view: APIView) -> str:
+        email = str(request.data.get("email", "") or "").strip().lower()
+        ident = (
+            hashlib.sha256(email.encode()).hexdigest()
+            if email
+            else self.get_ident(request)
+        )
+        return self.cache_format % {"scope": self.scope, "ident": ident}
 
 
 # ─── Helper: resolve user + permissions ─────────────────────────────────────────
@@ -234,6 +250,10 @@ class RefreshView(APIView):
 
     permission_classes = [AllowAny]
     authentication_classes: list = []
+    # Sem throttle: exige refresh token assinado. No padrão "anon" (20/min por IP,
+    # e a Vercel é um IP só) as renovações da empresa toda disputavam a mesma cota
+    # e as que estouravam derrubavam a sessão de quem estava usando.
+    throttle_classes: list = []
 
     @extend_schema(
         request=RefreshRequestSerializer,
