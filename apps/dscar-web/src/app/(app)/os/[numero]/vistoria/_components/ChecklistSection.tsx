@@ -82,7 +82,7 @@ export function ChecklistSection({
                 {CATEGORY_LABELS[item.category] ?? item.category}
               </p>
             )}
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-[11px] bg-card px-3 py-2">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-md bg-card px-3 py-2">
               <span className="min-w-0 truncate text-sm">{item.label}</span>
               <span className="flex gap-1">
                 {STATUS_OPTIONS.map((opt) => (

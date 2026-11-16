@@ -5,6 +5,7 @@
  * Sprint 14
  */
 
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
 import React from "react";
@@ -403,24 +404,24 @@ export default function NovoContaReceberPage(): React.ReactElement {
             </div>
             {installmentPreview.length > 0 && (
               <div className="mt-3 rounded-md border border-border overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/70">
-                    <tr>
-                      <th className="text-left px-3 py-2 font-medium text-foreground/70">Parcela</th>
-                      <th className="text-right px-3 py-2 font-medium text-foreground/70">Valor (R$)</th>
-                      <th className="text-right px-3 py-2 font-medium text-foreground/70">Vencimento</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                <Table>
+                  <TableHeader className="bg-muted/70">
+                    <TableRow>
+                      <TableHead>Parcela</TableHead>
+                      <TableHead className="text-right">Valor (R$)</TableHead>
+                      <TableHead className="text-right">Vencimento</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {installmentPreview.map((p) => (
-                      <tr key={p.parcela} className="border-t border-border">
-                        <td className="px-3 py-2 text-foreground">{p.parcela}/{numParcelas}</td>
-                        <td className="px-3 py-2 text-right text-foreground">{p.valor}</td>
-                        <td className="px-3 py-2 text-right text-muted-foreground">{p.vencimento}</td>
-                      </tr>
+                      <TableRow key={p.parcela} className="border-t">
+                        <TableCell className="text-foreground">{p.parcela}/{numParcelas}</TableCell>
+                        <TableCell className="text-right text-foreground">{p.valor}</TableCell>
+                        <TableCell className="text-right text-muted-foreground">{p.vencimento}</TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             )}
           </section>

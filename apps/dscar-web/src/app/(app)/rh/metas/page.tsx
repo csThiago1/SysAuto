@@ -19,6 +19,7 @@ import { DateField } from "@/components/ui/date-field"
 import { toast } from "sonner"
 import { NativeSelect } from "@/components/ui/native-select"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 const STATUS_CLASSES: Record<string, string> = {
   success: "bg-success-500/10 text-success-400",
@@ -322,21 +323,19 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
 
         <div className="flex flex-col gap-1">
           <label className="text-xs text-muted-foreground">Título *</label>
-          <input
+          <Input
             required
             type="text"
-            className="rounded border border-border px-2 py-1.5 text-sm"
             value={form.title}
             onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
           />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-muted-foreground">Valor alvo *</label>
-          <input
+          <Input
             required
             type="number"
             step="0.01"
-            className="rounded border border-border px-2 py-1.5 text-sm"
             value={form.target_value || ""}
             onChange={(e) =>
               setForm((p) => ({
@@ -360,11 +359,10 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-muted-foreground">Bônus ao atingir (R$)</label>
-          <input
+          <Input
             type="number"
             step="0.01"
             min="0"
-            className="rounded border border-border px-2 py-1.5 text-sm"
             value={form.bonus_amount ?? 0}
             onChange={(e) =>
               setForm((p) => ({
@@ -406,12 +404,11 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
         {isRecurring && (
           <div className="flex flex-col gap-1 max-w-xs">
             <label className="text-xs text-muted-foreground">Dia de reinício (1-28)</label>
-            <input
+            <Input
               type="number"
               min={1}
               max={28}
               required
-              className="rounded border border-border px-2 py-1.5 text-sm"
               value={form.recurrence_day ?? 1}
               onChange={(e) =>
                 setForm((p) => ({

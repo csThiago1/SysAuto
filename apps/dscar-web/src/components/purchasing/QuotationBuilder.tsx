@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useSuppliersWithContacts, useRegistrarCotacao } from "@/hooks/usePurchasing"
 
@@ -306,22 +307,22 @@ export function QuotationBuilder({ pedidos, open, onOpenChange }: QuotationBuild
             <div className="space-y-3">
               <div>
                 <label className="label-mono text-muted-foreground mb-1.5 block">Motor</label>
-                <input
+                <Input
                   type="text"
                   value={motor}
                   onChange={(e) => setMotor(e.target.value)}
                   placeholder="Ex: 1.0 Flex, 2.0 Turbo"
-                  className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full"
                 />
               </div>
               <div>
                 <label className="label-mono text-muted-foreground mb-1.5 block">Cambio</label>
-                <input
+                <Input
                   type="text"
                   value={cambio}
                   onChange={(e) => setCambio(e.target.value)}
                   placeholder="Ex: AT, MT, CVT"
-                  className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full"
                 />
               </div>
             </div>

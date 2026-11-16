@@ -152,7 +152,7 @@ export default function EstoquePage() {
           <div className="label-mono mb-2">RESERVADAS P/ OS</div>
           <div
             className={`text-3xl font-bold font-mono ${
-              reservadas > 0 ? "text-yellow-400" : "text-foreground"
+              reservadas > 0 ? "text-warning-400" : "text-foreground"
             }`}
           >
             {stats ? reservadas : "—"}

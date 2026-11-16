@@ -1,4 +1,5 @@
 "use client"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 import React, { useMemo } from "react"
 import Link from "next/link"
@@ -243,7 +244,7 @@ export default function ComprasPage() {
             return (
               <div
                 key={row.serviceOrderId}
-                className="relative rounded-[11px] bg-card px-3 py-2.5 transition-[transform] duration-150 ease-out active:scale-[0.98]"
+                className="relative rounded-md bg-card px-3 py-2.5 transition-[transform] duration-150 ease-out active:scale-[0.98]"
               >
                 {cfg && <span aria-hidden className={cn("absolute left-0 top-2 bottom-2 w-[3px] rounded-r-[3px]", cfg.dot)} />}
 
@@ -276,73 +277,73 @@ export default function ComprasPage() {
 
       <div className="hidden md:block bg-muted/50 rounded-md border border-border">
         <ScrollFade>
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="label-mono text-muted-foreground text-left px-4 py-3">OS</th>
-              <th className="label-mono text-muted-foreground text-left px-4 py-3">Veiculo</th>
-              <th className="label-mono text-muted-foreground text-left px-4 py-3">Tipo</th>
-              <th className="label-mono text-muted-foreground text-left px-4 py-3">Pecas</th>
-              <th className="label-mono text-muted-foreground text-left px-4 py-3">Status</th>
-              <th className="label-mono text-muted-foreground text-left px-4 py-3">Acao</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow className="border-border">
+              <TableHead className="py-3">OS</TableHead>
+              <TableHead className="py-3">Veiculo</TableHead>
+              <TableHead className="py-3">Tipo</TableHead>
+              <TableHead className="py-3">Pecas</TableHead>
+              <TableHead className="py-3">Status</TableHead>
+              <TableHead className="py-3">Acao</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {pedidosLoading ? (
               [...Array(5)].map((_, i) => (
-                <tr key={i} className="border-b border-white/5">
+                <TableRow key={i} className="border-white/5">
                   {[...Array(6)].map((__, j) => (
-                    <td key={j} className="px-4 py-3">
+                    <TableCell key={j}>
                       <div className="h-4 bg-muted/50 rounded animate-pulse w-20" />
-                    </td>
+                    </TableCell>
                   ))}
-                </tr>
+                </TableRow>
               ))
             ) : !osRows.length ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground text-sm">
+              <TableRow>
+                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground text-sm">
                   Nenhuma OS com pedidos de compra
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               osRows.map((row) => (
-                <tr
+                <TableRow
                   key={row.serviceOrderId}
-                  className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
+                  className="border-white/5 hover:bg-white/[0.02]"
                 >
-                  <td className="px-4 py-3">
+                  <TableCell>
                     <span className="font-mono text-sm text-primary font-medium">
                       {row.osNumber ? `#${row.osNumber}` : "--"}
                     </span>
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>
                     <span className="text-sm text-foreground/80">{row.vehicle || "—"}</span>
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>
                     <span className="text-xs text-muted-foreground">
                       {row.insurerName ? row.insurerName : "Particular"}
                     </span>
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>
                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted border border-border text-foreground/70">
                       {row.totalParts} {row.totalParts === 1 ? "peca" : "pecas"}
                     </span>
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>
                     {row.statusSummary !== "—" ? (
                       <OSStatusBadge label={row.statusSummary} />
                     ) : (
                       <span className="text-xs text-muted-foreground/50">—</span>
                     )}
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>
                     <RowAction row={row} />
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
         </ScrollFade>
       </div>
     </div>

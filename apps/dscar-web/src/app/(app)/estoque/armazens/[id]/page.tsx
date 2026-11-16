@@ -13,6 +13,7 @@ import {
   useNivelCreate,
   useRuas,
 } from "@/hooks/useInventoryLocation"
+import { Input } from "@/components/ui/input"
 import { ArmazemTree } from "@/components/inventory/ArmazemTree"
 import { NativeSelect } from "@/components/ui/native-select"
 import { Button } from "@/components/ui/button"
@@ -160,7 +161,7 @@ export default function ArmazemDetailPage({
                 {armazem.nome}
               </h1>
               <span
-                className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded ${badge.className}`}
+                className={`text-xs font-mono uppercase tracking-wider px-2 py-0.5 rounded ${badge.className}`}
               >
                 {badge.label}
               </span>
@@ -211,22 +212,22 @@ export default function ArmazemDetailPage({
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 CÓDIGO
               </label>
-              <input
+              <Input
                 value={ruaCodigo}
                 onChange={(e) => setRuaCodigo(e.target.value)}
                 placeholder="R01"
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full"
               />
             </div>
             <div>
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 DESCRIÇÃO
               </label>
-              <input
+              <Input
                 value={ruaDescricao}
                 onChange={(e) => setRuaDescricao(e.target.value)}
                 placeholder="Rua de Funilaria"
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full"
               />
             </div>
           </div>
@@ -277,23 +278,23 @@ export default function ArmazemDetailPage({
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 CÓDIGO
               </label>
-              <input
+              <Input
                 value={pratCodigo}
                 onChange={(e) => setPratCodigo(e.target.value)}
                 placeholder="P01"
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full"
               />
             </div>
             <div>
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 CAPACIDADE (KG)
               </label>
-              <input
+              <Input
                 value={pratCapacidade}
                 onChange={(e) => setPratCapacidade(e.target.value)}
                 placeholder="200"
                 type="number"
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full"
               />
             </div>
           </div>
@@ -367,11 +368,11 @@ export default function ArmazemDetailPage({
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 CÓDIGO
               </label>
-              <input
+              <Input
                 value={nivelCodigo}
                 onChange={(e) => setNivelCodigo(e.target.value)}
                 placeholder="N1"
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full"
               />
             </div>
           </div>

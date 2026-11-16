@@ -4,6 +4,7 @@
  * Plano de Contas — Arvore hierarquica interativa com colapso por nivel.
  */
 
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import React from "react";
 import Link from "next/link";
@@ -277,12 +278,12 @@ export default function PlanoContasPage(): React.ReactElement {
 
         {/* Search */}
         <div className="flex items-center gap-3">
-          <input
+          <Input
             type="text"
             placeholder="Filtrar por codigo ou nome..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-72 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-72"
           />
         </div>
 

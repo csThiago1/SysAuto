@@ -12,6 +12,7 @@ import { useEmployeeDeductions, useCreateDeduction } from "@/hooks";
 import { Skeleton } from "@/components/ui";
 import { NativeSelect } from "@/components/ui/native-select"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 interface TabDescontosProps {
   employee: Employee;
@@ -113,12 +114,11 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
             {discountType === "fixed" ? (
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-muted-foreground">Valor (R$)</label>
-                <input
+                <Input
                   type="number"
                   step="0.01"
                   min="0.01"
                   required
-                  className="rounded border border-border px-2 py-1.5 text-sm"
                   value={form.amount ?? ""}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, amount: parseFloat(e.target.value) }))
@@ -128,13 +128,12 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
             ) : (
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-muted-foreground">Taxa (%)</label>
-                <input
+                <Input
                   type="number"
                   step="0.01"
                   min="0.01"
                   max="100"
                   required
-                  className="rounded border border-border px-2 py-1.5 text-sm"
                   value={form.rate ?? ""}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, rate: parseFloat(e.target.value) }))
@@ -145,10 +144,9 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
 
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Mês referência</label>
-              <input
+              <Input
                 type="month"
                 required
-                className="rounded border border-border px-2 py-1.5 text-sm"
                 value={form.reference_month.slice(0, 7)}
                 onChange={(e) =>
                   setForm((p) => ({
@@ -160,10 +158,9 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Descrição</label>
-              <input
+              <Input
                 type="text"
                 required
-                className="rounded border border-border px-2 py-1.5 text-sm"
                 value={form.description}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, description: e.target.value }))

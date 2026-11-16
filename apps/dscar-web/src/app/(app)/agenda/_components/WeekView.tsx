@@ -131,7 +131,7 @@ export function WeekView({ currentDate, events, onSwitchToDayView }: Props) {
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); onSwitchToDayView?.(day) }}
-                          className="text-[10px] text-primary font-medium px-1 leading-tight hover:underline text-left w-full"
+                          className="text-xs text-primary font-medium px-1 leading-tight hover:underline text-left w-full"
                         >
                           +{dayHourEvents.length - MAX_VISIBLE} mais
                         </button>

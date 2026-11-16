@@ -28,6 +28,7 @@ import {
 import { usePecasCanonicas } from "@/hooks/usePricingCatalog"
 import { useServiceCatalog } from "@/hooks/useServiceCatalog"
 import type { Acao, Fornecimento, StatusOrcamento } from "@paddock/types"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 // ── Labels e cores ─────────────────────────────────────────────────────────────
 
@@ -502,34 +503,34 @@ export default function OrcamentoDetailPage() {
               <span className="text-xs text-muted-foreground">{ivs.length} item{ivs.length !== 1 ? "s" : ""}</span>
             </div>
             {ivs.length > 0 ? (
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-border text-muted-foreground">
-                    <th className="px-4 py-2 text-left">Peça</th>
-                    <th className="px-4 py-2 text-left">Ação</th>
-                    <th className="px-4 py-2 text-left">Fornecimento</th>
-                    <th className="px-4 py-2 text-right">Horas MO</th>
-                    <th className="px-4 py-2 text-right">Peça</th>
-                    <th className="px-4 py-2 text-right">MO</th>
-                    <th className="px-4 py-2 text-right">Insumos</th>
-                    <th className="px-4 py-2 text-right font-semibold">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table className="text-xs">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Peça</TableHead>
+                    <TableHead>Ação</TableHead>
+                    <TableHead>Fornecimento</TableHead>
+                    <TableHead className="text-right">Horas MO</TableHead>
+                    <TableHead className="text-right">Peça</TableHead>
+                    <TableHead className="text-right">MO</TableHead>
+                    <TableHead className="text-right">Insumos</TableHead>
+                    <TableHead className="text-right font-semibold">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {ivs.map((iv) => (
-                    <tr key={iv.id} className="border-b border-white/5">
-                      <td className="px-4 py-2.5 text-foreground/80">{iv.peca_nome || iv.peca_canonica}</td>
-                      <td className="px-4 py-2.5 text-foreground/60">{ACAO_LABELS[iv.acao as Acao] ?? iv.acao}</td>
-                      <td className="px-4 py-2.5 text-muted-foreground capitalize">{iv.fornecimento}</td>
-                      <td className="px-4 py-2.5 text-right text-foreground/60">{parseFloat(iv.horas_mao_obra).toFixed(1)}h</td>
-                      <td className="px-4 py-2.5 text-right text-foreground/60">{formatBRL(iv.valor_peca)}</td>
-                      <td className="px-4 py-2.5 text-right text-foreground/60">{formatBRL(iv.valor_mao_obra)}</td>
-                      <td className="px-4 py-2.5 text-right text-foreground/60">{formatBRL(iv.valor_insumos)}</td>
-                      <td className="px-4 py-2.5 text-right text-foreground font-medium">{formatBRL(iv.preco_total)}</td>
-                    </tr>
+                    <TableRow key={iv.id}>
+                      <TableCell className="py-2.5 text-foreground/80">{iv.peca_nome || iv.peca_canonica}</TableCell>
+                      <TableCell className="py-2.5 text-foreground/60">{ACAO_LABELS[iv.acao as Acao] ?? iv.acao}</TableCell>
+                      <TableCell className="py-2.5 text-muted-foreground capitalize">{iv.fornecimento}</TableCell>
+                      <TableCell className="py-2.5 text-right text-foreground/60">{parseFloat(iv.horas_mao_obra).toFixed(1)}h</TableCell>
+                      <TableCell className="py-2.5 text-right text-foreground/60">{formatBRL(iv.valor_peca)}</TableCell>
+                      <TableCell className="py-2.5 text-right text-foreground/60">{formatBRL(iv.valor_mao_obra)}</TableCell>
+                      <TableCell className="py-2.5 text-right text-foreground/60">{formatBRL(iv.valor_insumos)}</TableCell>
+                      <TableCell className="py-2.5 text-right text-foreground font-medium">{formatBRL(iv.preco_total)}</TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             ) : (
               <p className="px-4 py-3 text-xs text-muted-foreground italic">Nenhuma peça nesta área.</p>
             )}
@@ -543,26 +544,26 @@ export default function OrcamentoDetailPage() {
           <div className="px-4 py-2.5 bg-muted/50 border-b border-border">
             <span className="text-sm font-medium text-foreground">Serviços Adicionais</span>
           </div>
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-border text-muted-foreground">
-                <th className="px-4 py-2 text-left">Serviço</th>
-                <th className="px-4 py-2 text-right">Qtd</th>
-                <th className="px-4 py-2 text-right">Unitário</th>
-                <th className="px-4 py-2 text-right">Total</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table className="text-xs">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Serviço</TableHead>
+                <TableHead className="text-right">Qtd</TableHead>
+                <TableHead className="text-right">Unitário</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {orc.itens_adicionais.map((item) => (
-                <tr key={item.id} className="border-b border-white/5">
-                  <td className="px-4 py-2.5 text-foreground/80">{item.servico_nome || item.service_catalog}</td>
-                  <td className="px-4 py-2.5 text-right text-foreground/60">{item.quantidade}</td>
-                  <td className="px-4 py-2.5 text-right text-foreground/60">{formatBRL(item.preco_unitario)}</td>
-                  <td className="px-4 py-2.5 text-right text-foreground font-medium">{formatBRL(item.preco_total)}</td>
-                </tr>
+                <TableRow key={item.id}>
+                  <TableCell className="py-2.5 text-foreground/80">{item.servico_nome || item.service_catalog}</TableCell>
+                  <TableCell className="py-2.5 text-right text-foreground/60">{item.quantidade}</TableCell>
+                  <TableCell className="py-2.5 text-right text-foreground/60">{formatBRL(item.preco_unitario)}</TableCell>
+                  <TableCell className="py-2.5 text-right text-foreground font-medium">{formatBRL(item.preco_total)}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
 

@@ -13,7 +13,7 @@ import { ConsultantDashboard } from "./_components/ConsultantDashboard"
 import { ManagerDashboard } from "./_components/ManagerDashboard"
 
 export default function DashboardPage(): React.ReactElement {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const role = (session?.role ?? "STOREKEEPER") as PaddockRole
   const perms = (session?.extraPermissions ?? []) as ExtraPermission[]
   const level = ROLE_HIERARCHY[role] ?? 0
@@ -22,7 +22,7 @@ export default function DashboardPage(): React.ReactElement {
   const roleParam =
     role === "CONSULTANT" ? "CONSULTANT" : level >= ROLE_HIERARCHY.MANAGER ? "MANAGER" : undefined
 
-  const { data: stats, isLoading } = useDashboardStats(roleParam)
+  const { data: stats, isLoading } = useDashboardStats(roleParam, status === "authenticated" && !!roleParam)
   const mostrarValor = level >= ROLE_HIERARCHY.MANAGER || perms.includes("can_view_financial")
   const papel = stats && "role" in stats ? stats.role : undefined
 

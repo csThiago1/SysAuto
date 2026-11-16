@@ -19,6 +19,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import type { UnidadeFisicaStatus, UnidadeFisica } from "@paddock/types"
 import { toast } from "sonner"
 import { NativeSelect } from "@/components/ui/native-select"
@@ -84,12 +86,12 @@ function ReservarModal({
           <label className="label-mono text-muted-foreground mb-1.5 block">
             ID DA ORDEM DE SERVICO
           </label>
-          <input
+          <Input
             type="text"
             value={osId}
             onChange={(e) => setOsId(e.target.value)}
             placeholder="UUID da OS..."
-            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full font-mono"
             autoFocus
           />
         </div>
@@ -263,47 +265,47 @@ export default function UnidadesPage() {
         </div>
       ) : (
         <div className="overflow-hidden rounded-md border border-border bg-muted/50">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/30">
-                <th className="px-4 py-3 text-left label-mono text-muted-foreground">BARCODE</th>
-                <th className="px-4 py-3 text-left label-mono text-muted-foreground">PECA</th>
-                <th className="px-4 py-3 text-left label-mono text-muted-foreground">PRODUTO</th>
-                <th className="px-4 py-3 text-left label-mono text-muted-foreground">POSICAO</th>
-                <th className="px-4 py-3 text-left label-mono text-muted-foreground">STATUS</th>
-                <th className="px-4 py-3 text-left label-mono text-muted-foreground">DATA</th>
-                <th className="px-4 py-3 text-right label-mono text-muted-foreground">ACOES</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow className="border-border bg-muted/30">
+                <TableHead className="py-3">BARCODE</TableHead>
+                <TableHead className="py-3">PECA</TableHead>
+                <TableHead className="py-3">PRODUTO</TableHead>
+                <TableHead className="py-3">POSICAO</TableHead>
+                <TableHead className="py-3">STATUS</TableHead>
+                <TableHead className="py-3">DATA</TableHead>
+                <TableHead className="py-3 text-right">ACOES</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {unidades.map((u) => (
-                <tr
+                <TableRow
                   key={u.id}
-                  className="border-b border-white/5 hover:bg-muted/30 transition-colors"
+                  className="border-white/5"
                 >
-                  <td className="px-4 py-3 font-mono text-xs text-foreground/60">
+                  <TableCell className="font-mono text-xs text-foreground/60">
                     {u.codigo_barras}
-                  </td>
-                  <td className="px-4 py-3 text-foreground text-sm">
+                  </TableCell>
+                  <TableCell className="text-foreground text-sm">
                     {u.peca_nome}
-                  </td>
-                  <td className="px-4 py-3 text-foreground/60 text-sm">
+                  </TableCell>
+                  <TableCell className="text-foreground/60 text-sm">
                     {u.produto_peca || "\u2014"}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs text-foreground/60">
+                  </TableCell>
+                  <TableCell className="font-mono text-xs text-foreground/60">
                     {u.nivel || u.localizacao || "\u2014"}
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[u.status as UnidadeFisicaStatus]}`}
                     >
                       {STATUS_LABELS[u.status as UnidadeFisicaStatus]}
                     </span>
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">
                     {new Date(u.created_at).toLocaleDateString("pt-BR")}
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>
                     <div className="flex items-center justify-end gap-1">
                       {u.status === "available" && (
                         <button
@@ -332,11 +334,11 @@ export default function UnidadesPage() {
                         <Printer className="h-3.5 w-3.5" />
                       </button>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
 

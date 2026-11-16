@@ -9,6 +9,8 @@ import {
   useAprovar,
   useRejeitar,
 } from "@/hooks/useInventoryMovement"
+import { Input } from "@/components/ui/input"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 // ─── Tipo badge config ──────────────────────────────────────────────────────
 
@@ -98,33 +100,33 @@ export default function AprovacoesPage() {
         </div>
       ) : (
         <div className="overflow-hidden rounded-md border border-border bg-muted/50">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-muted/30">
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/30">
+                <TableHead className="px-3 py-2">
                   DATA
-                </th>
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">
+                </TableHead>
+                <TableHead className="px-3 py-2">
                   TIPO
-                </th>
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">
+                </TableHead>
+                <TableHead className="px-3 py-2">
                   ITEM
-                </th>
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">
+                </TableHead>
+                <TableHead className="px-3 py-2">
                   MOTIVO
-                </th>
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">
+                </TableHead>
+                <TableHead className="px-3 py-2">
                   EVIDENCIA
-                </th>
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">
+                </TableHead>
+                <TableHead className="px-3 py-2">
                   SOLICITADO POR
-                </th>
-                <th className="label-mono text-muted-foreground text-right px-3 py-2">
+                </TableHead>
+                <TableHead className="text-right px-3 py-2">
                   ACOES
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {pendentes.map((mov) => (
                 <ApprovalRow
                   key={mov.id}
@@ -142,8 +144,8 @@ export default function AprovacoesPage() {
                   }}
                 />
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>
@@ -201,24 +203,24 @@ function ApprovalRow({
 
   return (
     <>
-      <tr className="border-b border-white/5 hover:bg-muted/30 transition-colors">
-        <td className="px-3 py-2 text-foreground/70 whitespace-nowrap text-xs">
+      <TableRow className="border-white/5">
+        <TableCell className="px-3 py-2 text-foreground/70 whitespace-nowrap text-xs">
           {formatDateShort(mov.created_at)}
-        </td>
-        <td className="px-3 py-2">
+        </TableCell>
+        <TableCell className="px-3 py-2">
           <span
-            className={`inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded ${cfg.className}`}
+            className={`inline-block text-xs font-mono uppercase tracking-wider px-2 py-0.5 rounded ${cfg.className}`}
           >
             {cfg.label}
           </span>
-        </td>
-        <td className="px-3 py-2 font-mono text-xs text-foreground/60">
+        </TableCell>
+        <TableCell className="px-3 py-2 font-mono text-xs text-foreground/60">
           {barcode}
-        </td>
-        <td className="px-3 py-2 text-muted-foreground text-xs max-w-[200px] truncate">
+        </TableCell>
+        <TableCell className="px-3 py-2 text-muted-foreground text-xs max-w-[200px] truncate">
           {mov.motivo || "—"}
-        </td>
-        <td className="px-3 py-2">
+        </TableCell>
+        <TableCell className="px-3 py-2">
           {mov.evidencia ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
@@ -229,11 +231,11 @@ function ApprovalRow({
           ) : (
             <span className="text-muted-foreground/50 text-xs">—</span>
           )}
-        </td>
-        <td className="px-3 py-2 text-muted-foreground text-xs">
+        </TableCell>
+        <TableCell className="px-3 py-2 text-muted-foreground text-xs">
           {mov.realizado_por_nome || "—"}
-        </td>
-        <td className="px-3 py-2 text-right">
+        </TableCell>
+        <TableCell className="px-3 py-2 text-right">
           <div className="flex items-center justify-end gap-2">
             <button
               type="button"
@@ -252,22 +254,22 @@ function ApprovalRow({
               Rejeitar
             </button>
           </div>
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
       {isRejecting && (
-        <tr className="bg-white/[0.02]">
-          <td colSpan={7} className="px-4 py-3">
+        <TableRow className="bg-white/[0.02]">
+          <TableCell colSpan={7}>
             <div className="flex items-end gap-3 max-w-lg">
               <div className="flex-1">
                 <label className="label-mono text-muted-foreground mb-1.5 block">
                   MOTIVO DA REJEICAO
                 </label>
-                <input
+                <Input
                   type="text"
                   value={rejectMotivo}
                   onChange={(e) => onRejectMotivoChange(e.target.value)}
                   placeholder="Descreva o motivo..."
-                  className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full"
                   autoFocus
                 />
               </div>
@@ -287,8 +289,8 @@ function ApprovalRow({
                 Cancelar
               </button>
             </div>
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       )}
     </>
   )

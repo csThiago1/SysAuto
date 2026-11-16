@@ -151,6 +151,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
 
+  events: {
+    // Logout revoga o refresh desta sessão no backend (antes só apagava o cookie,
+    // e o token seguia válido por 30 dias).
+    async signOut(message) {
+      const refresh =
+        "token" in message ? (message.token?.refreshToken as string | undefined) : undefined;
+      if (!refresh) return;
+      await fetch(`${BACKEND_URL}/api/v1/auth/logout/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refresh }),
+        signal: AbortSignal.timeout(5_000),
+      }).catch(() => undefined);
+    },
+  },
+
   callbacks: {
     async jwt({ token, user }) {
       // 1. Login inicial — propaga tudo do authorize()
@@ -188,7 +204,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return token;
       }
 
-      const refreshed = await refreshAccessToken(BACKEND_URL, refreshToken);
+      let refreshed: Awaited<ReturnType<typeof refreshAccessToken>>;
+      try {
+        refreshed = await refreshAccessToken(BACKEND_URL, refreshToken);
+      } catch {
+        // Rede/servidor fora do ar: mantém a sessão e tenta na próxima request.
+        return token;
+      }
       if (!refreshed) {
         token.error = "RefreshTokenExpired";
         return token;

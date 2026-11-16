@@ -67,7 +67,7 @@ export default function BenchmarkRevisaoPage() {
   return (
     <div className="px-0 py-3 md:p-6 space-y-6">
       <div className="flex items-center gap-3">
-        <AlertCircle className="h-5 w-5 text-yellow-500" />
+        <AlertCircle className="h-5 w-5 text-warning-400" />
         <div>
           <h1 className="text-lg font-semibold text-foreground">Revisão de Aliases</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -77,7 +77,7 @@ export default function BenchmarkRevisaoPage() {
         {pendentes.length > 0 && (
           <Badge
             variant="outline"
-            className="ml-auto border-yellow-500/30 text-yellow-400 bg-yellow-400/10"
+            className="ml-auto border-warning-500/30 text-warning-400 bg-warning-500/10"
           >
             {pendentes.length} pendentes
           </Badge>
@@ -112,7 +112,7 @@ export default function BenchmarkRevisaoPage() {
                   <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                     <span>R$ {parseFloat(a.valor_praticado).toFixed(2)}</span>
                     {a.alias_match_confianca && (
-                      <span className="text-yellow-400">
+                      <span className="text-warning-400">
                         {(parseFloat(a.alias_match_confianca) * 100).toFixed(0)}%
                       </span>
                     )}
@@ -138,7 +138,7 @@ export default function BenchmarkRevisaoPage() {
               </div>
               <div>
                 <p className="text-muted-foreground">Confiança atual</p>
-                <p className="text-yellow-400">
+                <p className="text-warning-400">
                   {selected.alias_match_confianca
                     ? `${(parseFloat(selected.alias_match_confianca) * 100).toFixed(0)}%`
                     : "Sem match"}

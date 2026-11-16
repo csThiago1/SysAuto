@@ -18,6 +18,7 @@ import {
   CONTAGEM_TIPO_LABEL,
   CONTAGEM_TIPO_BADGE,
 } from "@paddock/utils"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { NativeSelect } from "@/components/ui/native-select"
 import { Button } from "@/components/ui/button"
 
@@ -195,60 +196,60 @@ export default function ContagensPage() {
         </div>
       ) : (
         <div className="overflow-hidden rounded-md border border-border bg-muted/50">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-muted/30">
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left font-normal">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/30">
+                <TableHead className="py-2.5 font-normal">
                   DATA
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left font-normal">
+                </TableHead>
+                <TableHead className="py-2.5 font-normal">
                   TIPO
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left font-normal">
+                </TableHead>
+                <TableHead className="py-2.5 font-normal">
                   STATUS
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left font-normal">
+                </TableHead>
+                <TableHead className="py-2.5 font-normal">
                   ESCOPO
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left font-normal">
+                </TableHead>
+                <TableHead className="py-2.5 font-normal">
                   ITENS
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left font-normal">
+                </TableHead>
+                <TableHead className="py-2.5 font-normal">
                   INICIADO POR
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {contagens.map((c) => {
                 return (
-                  <tr key={c.id} className="border-b border-white/5 hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-3">
+                  <TableRow key={c.id} className="border-white/5">
+                    <TableCell>
                       <Link
                         href={`/estoque/contagens/${c.id}` as Route}
                         className="text-foreground/80 hover:text-foreground transition-colors"
                       >
                         {formatDateTime(c.data_abertura)}
                       </Link>
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell>
                       <span
-                        className={`inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded ${CONTAGEM_TIPO_BADGE[c.tipo] ?? CONTAGEM_TIPO_BADGE.ciclica}`}
+                        className={`inline-block text-xs font-mono uppercase tracking-wider px-2 py-0.5 rounded ${CONTAGEM_TIPO_BADGE[c.tipo] ?? CONTAGEM_TIPO_BADGE.ciclica}`}
                       >
                         {CONTAGEM_TIPO_LABEL[c.tipo] ?? CONTAGEM_TIPO_LABEL.ciclica}
                       </span>
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell>
                       <span
-                        className={`inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded ${CONTAGEM_STATUS_BADGE[c.status] ?? CONTAGEM_STATUS_BADGE.aberta}`}
+                        className={`inline-block text-xs font-mono uppercase tracking-wider px-2 py-0.5 rounded ${CONTAGEM_STATUS_BADGE[c.status] ?? CONTAGEM_STATUS_BADGE.aberta}`}
                       >
                         {CONTAGEM_STATUS_LABEL[c.status] ?? CONTAGEM_STATUS_LABEL.aberta}
                       </span>
-                    </td>
-                    <td className="px-4 py-3 text-foreground/60 text-xs">
+                    </TableCell>
+                    <TableCell className="text-foreground/60 text-xs">
                       {c.tipo_display}
                       {c.observacoes ? ` — ${c.observacoes}` : ""}
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-2 text-xs">
                         <span className="text-foreground/80 font-mono">
                           {c.total_contados}/{c.total_itens}
@@ -259,15 +260,15 @@ export default function ContagensPage() {
                           </span>
                         )}
                       </div>
-                    </td>
-                    <td className="px-4 py-3 text-foreground/60 text-xs">
+                    </TableCell>
+                    <TableCell className="text-foreground/60 text-xs">
                       {c.iniciado_por_nome}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )
               })}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>

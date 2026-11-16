@@ -16,7 +16,7 @@ def _generate_presigned_url(key: str, expiration: int = 900) -> str:
 
     from django.conf import settings
 
-    s3 = boto3.client("s3")
+    s3 = boto3.session.Session().client("s3")  # default session não é thread-safe (gthread)
     return s3.generate_presigned_url(  # type: ignore[return-value]
         "get_object",
         Params={"Bucket": settings.AWS_S3_BUCKET, "Key": key},

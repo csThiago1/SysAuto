@@ -7,6 +7,10 @@ vi.mock("@/hooks/useOverdueOrders", () => ({
   useOverdueOrders: vi.fn(),
 }));
 
+vi.mock("next-auth/react", () => ({
+  useSession: () => ({ data: { role: "MANAGER" } }),
+}));
+
 vi.mock("@/hooks/useTransitionValidation", () => ({
   usePendingOverrides: vi.fn(() => ({ data: [] })),
 }));

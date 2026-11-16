@@ -35,7 +35,7 @@ export function BillingSplit({ insurer, private: privateAmount }: Props) {
   const partPct = 100 - segPct
 
   return (
-    <div className="rounded-xl bg-card px-3 py-2.5">
+    <div className="rounded-md bg-card px-3 py-2.5">
       <p className="label-mono mb-2">Origem do faturamento</p>
 
       {/* gap-px sobre a superfície: o vão de 1px separa os segmentos sem

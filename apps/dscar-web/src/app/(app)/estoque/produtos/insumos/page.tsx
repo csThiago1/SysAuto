@@ -9,13 +9,13 @@ import {
   useProdutoInsumoDelete,
   useCategoriasInsumo,
 } from "@/hooks/useInventoryProduct"
+import { Input } from "@/components/ui/input"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { ProdutoInsumoDialog } from "@/components/inventory/ProdutoInsumoDialog"
 import { ScrollFade } from "@/components/ui/scroll-fade"
 import { NativeSelect } from "@/components/ui/native-select"
 import { Button } from "@/components/ui/button"
 
-const INPUT_CLS =
-  "bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
 
 export default function ProdutosInsumosPage() {
   const [search, setSearch] = useState("")
@@ -82,11 +82,11 @@ export default function ProdutosInsumosPage() {
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
+          <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por SKU ou nome..."
-            className={INPUT_CLS + " w-full pl-9"}
+            className="pl-9"
           />
         </div>
         <NativeSelect
@@ -119,7 +119,7 @@ export default function ProdutosInsumosPage() {
             <div
               key={p.id}
               onClick={() => handleEdit(p)}
-              className="cursor-pointer rounded-[11px] bg-muted/30 px-3 py-2.5"
+              className="cursor-pointer rounded-md bg-muted/30 px-3 py-2.5"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
@@ -160,54 +160,54 @@ export default function ProdutosInsumosPage() {
         {/* Desktop table */}
         <div className="hidden md:block rounded-md border border-border bg-muted/50">
         <ScrollFade>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-muted/30">
-                <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/30">
+                <TableHead className="py-2.5">
                   SKU
-                </th>
-                <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
+                </TableHead>
+                <TableHead className="py-2.5">
                   NOME
-                </th>
-                <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
+                </TableHead>
+                <TableHead className="py-2.5">
                   UNIDADE BASE
-                </th>
-                <th className="label-mono text-muted-foreground text-left px-4 py-2.5">
+                </TableHead>
+                <TableHead className="py-2.5">
                   CATEGORIA
-                </th>
-                <th className="label-mono text-muted-foreground text-right px-4 py-2.5">
+                </TableHead>
+                <TableHead className="text-right py-2.5">
                   MARGEM %
-                </th>
-                <th className="label-mono text-muted-foreground text-right px-4 py-2.5">
+                </TableHead>
+                <TableHead className="text-right py-2.5">
                   ACOES
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {produtos.map((p) => (
-                <tr
+                <TableRow
                   key={p.id}
                   onClick={() => handleEdit(p)}
-                  className="border-b border-white/5 hover:bg-muted/30 transition-colors cursor-pointer"
+                  className="border-white/5 cursor-pointer"
                 >
-                  <td className="px-4 py-2.5 font-mono text-xs text-foreground/60">
+                  <TableCell className="py-2.5 font-mono text-xs text-foreground/60">
                     {p.sku_interno}
-                  </td>
-                  <td className="px-4 py-2.5 text-foreground/90">
+                  </TableCell>
+                  <TableCell className="py-2.5 text-foreground/90">
                     {p.nome_interno}
-                  </td>
-                  <td className="px-4 py-2.5 text-foreground/60 uppercase">
+                  </TableCell>
+                  <TableCell className="py-2.5 text-foreground/60 uppercase">
                     {p.unidade_base}
-                  </td>
-                  <td className="px-4 py-2.5 text-foreground/60">
+                  </TableCell>
+                  <TableCell className="py-2.5 text-foreground/60">
                     {p.categoria_insumo_nome || "--"}
-                  </td>
-                  <td className="px-4 py-2.5 text-right font-mono text-xs text-foreground/60">
+                  </TableCell>
+                  <TableCell className="py-2.5 text-right font-mono text-xs text-foreground/60">
                     {p.margem_padrao_pct
                       ? `${p.margem_padrao_pct}%`
                       : "--"}
-                  </td>
-                  <td className="px-4 py-2.5 text-right">
+                  </TableCell>
+                  <TableCell className="py-2.5 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <button
                         type="button"
@@ -232,11 +232,11 @@ export default function ProdutosInsumosPage() {
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </ScrollFade>
         </div>
         </>

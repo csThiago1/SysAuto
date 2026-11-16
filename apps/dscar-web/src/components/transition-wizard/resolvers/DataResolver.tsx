@@ -1,5 +1,6 @@
 "use client"
 
+import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { Loader2, Search } from "lucide-react"
 import { toast } from "sonner"
@@ -64,9 +65,9 @@ function VehicleDataForm({ block, order, onResolved }: ResolverProps) {
       {needsPlate && (
         <div>
           <label htmlFor="dv-plate" className="text-xs font-medium">Placa</label>
-          <input
+          <Input
             id="dv-plate"
-            className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+            className="mt-0.5"
             value={formatPlate(plate)}
             onChange={(e) => setPlate(onlyAlnum(e.target.value))}
             placeholder="ABC-1D23"
@@ -188,11 +189,11 @@ function MileageOutForm({ order, onResolved }: ResolverProps) {
     <div className="mt-2 flex items-end gap-2">
       <div className="flex-1">
         <label htmlFor="dv-mileage-out" className="text-xs font-medium">KM de Saída</label>
-        <input
+        <Input
           id="dv-mileage-out"
           type="number"
           min="0"
-          className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+          className="mt-0.5"
           value={km}
           onChange={(e) => setKm(e.target.value)}
           placeholder="45000"
@@ -231,11 +232,11 @@ function MileageInForm({ order, onResolved }: ResolverProps) {
     <div className="mt-2 flex items-end gap-2">
       <div className="flex-1">
         <label htmlFor="dv-mileage-in" className="text-xs font-medium">KM de Entrada</label>
-        <input
+        <Input
           id="dv-mileage-in"
           type="number"
           min="0"
-          className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+          className="mt-0.5"
           value={km}
           onChange={(e) => setKm(e.target.value)}
           placeholder="45000"
@@ -273,8 +274,8 @@ function CustomerLinkedForm({ order, onResolved }: ResolverProps) {
     <div className="mt-2 space-y-2">
       <div className="relative">
         <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-foreground" />
-        <input
-          className="w-full rounded-md border bg-background pl-7 pr-2 py-1.5 text-sm"
+        <Input
+          className="pl-7"
           placeholder="Buscar cliente por nome..."
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -335,12 +336,12 @@ function DeductibleSetForm({ order, onResolved }: ResolverProps) {
     <div className="mt-2 flex items-end gap-2">
       <div className="flex-1">
         <label htmlFor="dv-deductible" className="text-xs font-medium">Valor da Franquia (R$)</label>
-        <input
+        <Input
           id="dv-deductible"
           type="number"
           min="0"
           step="0.01"
-          className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+          className="mt-0.5"
           value={val.toString()}
           onChange={(e) => setVal(e.target.value)}
           placeholder="1500.00"
@@ -382,9 +383,9 @@ function CasualtyNumberForm({ order, onResolved }: ResolverProps) {
     <div className="mt-2 flex items-end gap-2">
       <div className="flex-1">
         <label htmlFor="dv-casualty" className="text-xs font-medium">Número do Sinistro</label>
-        <input
+        <Input
           id="dv-casualty"
-          className="mt-0.5 w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+          className="mt-0.5"
           value={val}
           onChange={(e) => setVal(e.target.value)}
           placeholder="SIN-12345"

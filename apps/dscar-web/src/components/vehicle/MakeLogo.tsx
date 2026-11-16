@@ -14,7 +14,7 @@ export function MakeLogo({ make }: { make: Pick<CatalogOption, "label" | "logo_u
   return (
     <span
       aria-hidden
-      className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-muted text-[10px] font-bold text-foreground select-none"
+      className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-muted text-2xs font-bold text-foreground select-none"
     >
       {make.label.slice(0, 2).toUpperCase() || "?"}
     </span>

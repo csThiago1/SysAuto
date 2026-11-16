@@ -1,8 +1,9 @@
 "use client"
 
+import { Input } from "@/components/ui/input"
 import { Controller, type UseFormReturn } from "react-hook-form"
 import type { ServiceOrder } from "@paddock/types"
-import { FORM_INPUT, FORM_LABEL } from "@paddock/utils"
+import { FORM_LABEL } from "@paddock/utils"
 import type { ServiceOrderUpdateInput } from "../../_schemas/service-order.schema"
 import { InsurerLogo } from "../shared/InsurerSelect"
 import { ExpertCombobox } from "../shared/ExpertCombobox"
@@ -13,7 +14,6 @@ import { DateField } from "@/components/ui/date-field"
 const SECTION_TITLE = "text-xs font-semibold uppercase tracking-widest text-muted-foreground"
 // Um unico sistema de campo na tela de OS — antes cada secao tinha o seu.
 const LABEL = FORM_LABEL
-const INPUT = FORM_INPUT
 
 interface InsurerSectionProps {
   form: UseFormReturn<ServiceOrderUpdateInput>
@@ -95,17 +95,16 @@ export function InsurerSection({ form, order, hideHeading }: InsurerSectionProps
           <div className="grid grid-cols-6 gap-x-2 gap-y-5">
             <div className="col-span-3 sm:col-span-2">
               <label className={LABEL}>Sinistro</label>
-              <input className={INPUT} type="text" placeholder="Ex: 2024/001234" {...register("casualty_number")} aria-invalid={!!errors.casualty_number} />
+              <Input type="text" placeholder="Ex: 2024/001234" {...register("casualty_number")} aria-invalid={!!errors.casualty_number} />
             </div>
             <div className="col-span-3 sm:col-span-2">
               <label className={LABEL}>Corretor</label>
-              <input className={INPUT} type="text" placeholder="Nome do corretor" {...register("broker_name")} aria-invalid={!!errors.broker_name} />
+              <Input type="text" placeholder="Nome do corretor" {...register("broker_name")} aria-invalid={!!errors.broker_name} />
             </div>
             {insuredType === "insured" && (
               <div className="col-span-3 sm:col-span-2">
                 <label className={LABEL}>Franquia (R$)</label>
-                <input
-                  className={INPUT}
+                <Input
                   type="number"
                   step="0.01"
                   min="0"
@@ -182,7 +181,7 @@ export function InsurerSection({ form, order, hideHeading }: InsurerSectionProps
               />
               {errors.authorization_date
                 ? <p className="mt-0.5 text-xs text-error-400">{errors.authorization_date.message}</p>
-                : <p className="mt-0.5 text-xs text-amber-600 font-medium">Preencher muda status</p>
+                : <p className="mt-0.5 text-xs text-warning-400 font-medium">Preencher muda status</p>
               }
             </div>
           </div>

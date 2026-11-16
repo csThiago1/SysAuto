@@ -239,6 +239,11 @@ class LoginView(APIView):
 
 # ─── RefreshView ─────────────────────────────────────────────────────────────
 
+# 24h, não segundos: toda resposta do proxy regrava o cookie, e uma request lenta
+# (upload, PDF) pode devolver o refresh anterior DEPOIS da rotação.
+ROTATION_GRACE = datetime.timedelta(hours=24)
+
+
 class RefreshView(APIView):
     """
     POST /api/v1/auth/refresh/
@@ -291,9 +296,10 @@ class RefreshView(APIView):
 
         # Find stored token by hash
         token_hash = hashlib.sha256(raw_refresh.encode()).hexdigest()
+        now = datetime.datetime.now(tz=datetime.timezone.utc)
         try:
             stored = RefreshToken.objects.select_related("user").get(
-                token_hash=token_hash, is_revoked=False
+                token_hash=token_hash, is_revoked=False, expires_at__gt=now
             )
         except RefreshToken.DoesNotExist:
             return Response(
@@ -301,9 +307,14 @@ class RefreshView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        # Revoke old token (rotation)
-        stored.is_revoked = True
-        stored.save(update_fields=["is_revoked"])
+        # Rotação com tolerância: o token usado ainda vale ROTATION_GRACE. A
+        # página, o /api/auth/session e o proxy renovam juntos ao reabrir o app,
+        # às vezes em instâncias diferentes da Vercel, com o MESMO refresh;
+        # revogando na hora, só o primeiro passava e os outros deslogavam.
+        # Logout (LogoutView) e reset de senha revogam de verdade (is_revoked).
+        if stored.expires_at > now + ROTATION_GRACE:
+            stored.expires_at = now + ROTATION_GRACE
+            stored.save(update_fields=["expires_at"])
 
         user = stored.user
         if not user.is_active:
@@ -314,6 +325,29 @@ class RefreshView(APIView):
 
         logger.info("Token refresh para user_id=%s", user.pk)
         return Response(_issue_tokens(user))
+
+
+class LogoutView(APIView):
+    """
+    POST /api/v1/auth/logout/ — revoga o refresh token desta sessão.
+
+    Chamado pelo servidor do front no signOut (events.signOut do next-auth),
+    com o refresh que vive só no cookie criptografado. Sempre 204: logout
+    não revela se o token existia.
+    Body: {"refresh_token": "<jwt>"}
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+    throttle_classes: list = []
+
+    def post(self, request: Request) -> Response:
+        """Revoga o refresh informado (idempotente)."""
+        raw: str = str(request.data.get("refresh_token", "") or "").strip()
+        if raw:
+            token_hash = hashlib.sha256(raw.encode()).hexdigest()
+            RefreshToken.objects.filter(token_hash=token_hash).update(is_revoked=True)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # ─── MeView ──────────────────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 "use client";
 
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { useCallback, useEffect, useState } from "react";
 import { Shield, Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -197,78 +198,78 @@ export default function PermissoesPage() {
       />
 
       <div className="rounded-lg border bg-card overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-muted/50">
-              <th className="text-left p-3 font-medium min-w-[250px] sticky left-0 bg-muted/50">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50">
+              <TableHead className="min-w-[250px] sticky left-0 bg-muted/50">
                 Permissao
-              </th>
+              </TableHead>
               {/* OWNER column (disabled) */}
-              <th className="text-center p-3 font-medium min-w-[100px]">
+              <TableHead className="text-center min-w-[100px]">
                 <div className="flex flex-col items-center gap-0.5">
                   <span>{ROLE_LABEL.OWNER}</span>
-                  <span className="text-[10px] text-muted-foreground font-normal">
+                  <span className="text-xs text-muted-foreground font-normal">
                     (fixo)
                   </span>
                 </div>
-              </th>
+              </TableHead>
               {EDITABLE_ROLES.map((role) => (
-                <th key={role} className="text-center p-3 font-medium min-w-[100px]">
+                <TableHead key={role} className="text-center min-w-[100px]">
                   {ROLE_LABEL[role]}
-                </th>
+                </TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {Object.entries(grouped).map(([module, perms]) => (
               <>
                 {/* Module header row */}
-                <tr key={`header-${module}`} className="bg-muted/30">
-                  <td
+                <TableRow key={`header-${module}`} className="bg-muted/30">
+                  <TableCell
                     colSpan={2 + EDITABLE_ROLES.length}
                     className="p-2 px-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground"
                   >
                     {PERMISSION_MODULES[module] ?? module}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
                 {perms.map(({ code, label }) => (
-                  <tr
+                  <TableRow
                     key={code}
-                    className="border-b last:border-0 hover:bg-muted/20 transition-colors"
+                    className="last:border-0 hover:bg-muted/20"
                   >
-                    <td className="p-3 sticky left-0 bg-card">
+                    <TableCell className="sticky left-0 bg-card">
                       <div>
                         <span className="font-medium">{label}</span>
                         <span className="ml-2 text-xs text-muted-foreground">
                           {code}
                         </span>
                       </div>
-                    </td>
+                    </TableCell>
                     {/* OWNER - always checked, disabled */}
-                    <td className="text-center p-3">
+                    <TableCell className="text-center">
                       <input
                         type="checkbox"
                         checked={true}
                         disabled
                         className="accent-primary h-4 w-4 cursor-not-allowed opacity-50"
                       />
-                    </td>
+                    </TableCell>
                     {EDITABLE_ROLES.map((role) => (
-                      <td key={`${code}-${role}`} className="text-center p-3">
+                      <TableCell key={`${code}-${role}`} className="text-center">
                         <input
                           type="checkbox"
                           checked={matrix[role]?.[code] ?? false}
                           onChange={() => handleToggle(role, code)}
                           className="accent-primary h-4 w-4 cursor-pointer"
                         />
-                      </td>
+                      </TableCell>
                     ))}
-                  </tr>
+                  </TableRow>
                 ))}
               </>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

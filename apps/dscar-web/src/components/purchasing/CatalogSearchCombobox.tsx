@@ -1,4 +1,5 @@
 "use client"
+import { Input } from "@/components/ui/input"
 
 import { useState, useRef, useEffect } from "react"
 import { usePartsCatalog } from "@/hooks/usePartsCatalog"
@@ -61,7 +62,7 @@ export function CatalogSearchCombobox({
 
   return (
     <div ref={containerRef} className="relative">
-      <input
+      <Input
         type="text"
         value={value}
         onChange={(e) => handleChange(e.target.value)}
@@ -69,7 +70,7 @@ export function CatalogSearchCombobox({
           if (debouncedSearch.length >= 2 && hasResults) setOpen(true)
         }}
         placeholder={placeholder}
-        className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-border"
+        className="w-full"
       />
 
       {open && debouncedSearch.length >= 2 && (
@@ -108,7 +109,7 @@ export function CatalogSearchCombobox({
                       {ref.category_name}
                     </span>
                     {ref.is_compatible && (
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-success-500/10 text-success-400 border border-success-500/20">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-success-500/10 text-success-400 border border-success-500/20">
                         Compativel
                       </span>
                     )}

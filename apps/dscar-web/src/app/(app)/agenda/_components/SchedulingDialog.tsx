@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { useScheduleOS } from "@/hooks/useAgenda"
 import { useServiceOrders } from "@/hooks"
 import { DateField } from "@/components/ui/date-field"
+import { Input } from "@/components/ui/input"
 
 const schema = z.object({
   osId: z.string().uuid("Selecione uma OS"),
@@ -23,7 +24,6 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 const LABEL = "block text-xs font-bold uppercase tracking-wide text-muted-foreground mb-0.5"
-const INPUT = "flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
 
 interface Props {
   open: boolean
@@ -109,8 +109,8 @@ export function SchedulingDialog({ open, onOpenChange, defaultDate }: Props) {
             ) : (
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-                <input
-                  className={`${INPUT} pl-8`}
+                <Input
+                  className="h-8 pl-8"
                   placeholder="Buscar por placa, número ou cliente..."
                   value={osSearch}
                   onChange={(e) => setOsSearch(e.target.value)}
@@ -154,7 +154,7 @@ export function SchedulingDialog({ open, onOpenChange, defaultDate }: Props) {
           {/* Dias de reparo */}
           <div>
             <label className={LABEL}>Dias de Reparo</label>
-            <input type="number" min="0" className={INPUT} placeholder="Ex: 5" {...register("repair_days")} aria-invalid={!!errors.repair_days} />
+            <Input type="number" min="0" className="h-8" placeholder="Ex: 5" {...register("repair_days")} aria-invalid={!!errors.repair_days} />
             {estimatedDelivery && (
               <p className="mt-0.5 text-xs text-success-400">
                 Previsão de entrega: {new Date(estimatedDelivery + "T12:00:00").toLocaleDateString("pt-BR")}

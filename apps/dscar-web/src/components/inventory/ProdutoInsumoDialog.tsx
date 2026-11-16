@@ -15,6 +15,7 @@ import {
   useProdutoInsumoCreate,
   useProdutoInsumoUpdate,
 } from "@/hooks/useInventoryProduct"
+import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
 import { Button } from "@/components/ui/button"
 
@@ -172,22 +173,20 @@ export function ProdutoInsumoDialog({
                 <label className="label-mono text-muted-foreground mb-1.5 block">
                   SKU INTERNO
                 </label>
-                <input
+                <Input
                   value={form.sku_interno}
                   onChange={(e) => set("sku_interno", e.target.value)}
                   placeholder="Auto se vazio"
-                  className={INPUT_CLS}
                 />
               </div>
               <div>
                 <label className="label-mono text-muted-foreground mb-1.5 block">
                   NOME INTERNO
                 </label>
-                <input
+                <Input
                   value={form.nome_interno}
                   onChange={(e) => set("nome_interno", e.target.value)}
                   placeholder="Verniz PU 2:1"
-                  className={INPUT_CLS}
                 />
               </div>
             </div>
@@ -196,20 +195,18 @@ export function ProdutoInsumoDialog({
                 <label className="label-mono text-muted-foreground mb-1.5 block">
                   COD. FABRICANTE
                 </label>
-                <input
+                <Input
                   value={form.codigo_fabricante}
                   onChange={(e) => set("codigo_fabricante", e.target.value)}
-                  className={INPUT_CLS}
                 />
               </div>
               <div>
                 <label className="label-mono text-muted-foreground mb-1.5 block">
                   COD. EAN
                 </label>
-                <input
+                <Input
                   value={form.codigo_ean}
                   onChange={(e) => set("codigo_ean", e.target.value)}
-                  className={INPUT_CLS}
                 />
               </div>
             </div>
@@ -217,10 +214,9 @@ export function ProdutoInsumoDialog({
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 NOME FABRICANTE
               </label>
-              <input
+              <Input
                 value={form.nome_fabricante}
                 onChange={(e) => set("nome_fabricante", e.target.value)}
-                className={INPUT_CLS}
               />
             </div>
           </div>
@@ -271,7 +267,7 @@ export function ProdutoInsumoDialog({
                 <label className="label-mono text-muted-foreground mb-1.5 block">
                   PRECO VENDA SUGERIDO
                 </label>
-                <input
+                <Input
                   type="number"
                   step="0.01"
                   min="0"
@@ -280,14 +276,13 @@ export function ProdutoInsumoDialog({
                     set("preco_venda_sugerido", e.target.value)
                   }
                   placeholder="0.00"
-                  className={INPUT_CLS}
                 />
               </div>
               <div>
                 <label className="label-mono text-muted-foreground mb-1.5 block">
                   MARGEM PADRAO %
                 </label>
-                <input
+                <Input
                   type="number"
                   step="0.01"
                   min="0"
@@ -295,7 +290,6 @@ export function ProdutoInsumoDialog({
                   value={form.margem_padrao_pct}
                   onChange={(e) => set("margem_padrao_pct", e.target.value)}
                   placeholder="0.00"
-                  className={INPUT_CLS}
                 />
               </div>
             </div>

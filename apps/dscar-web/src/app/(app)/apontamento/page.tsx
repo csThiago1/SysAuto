@@ -111,7 +111,7 @@ export default function ApontamentoPage(): React.ReactElement {
       {tecnicoId && (
         <>
           {timerAberto ? (
-            <div className="flex flex-col items-center gap-4 rounded-[11px] bg-card px-3 py-6">
+            <div className="flex flex-col items-center gap-4 rounded-md bg-card px-3 py-6">
               <TimerRing startIso={timerAberto.iniciado_em} />
               <div className="text-center">
                 <p className="font-mono text-sm tabular-nums text-muted-foreground">
@@ -134,7 +134,7 @@ export default function ApontamentoPage(): React.ReactElement {
               </Button>
             </div>
           ) : (
-            <div className="flex flex-col gap-2 rounded-[11px] bg-card px-3 py-2.5">
+            <div className="flex flex-col gap-2 rounded-md bg-card px-3 py-2.5">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -206,7 +206,7 @@ export default function ApontamentoPage(): React.ReactElement {
             {encerradosHoje.map((a) => (
               <li
                 key={a.id}
-                className="grid grid-cols-[minmax(0,1fr)_64px] items-center gap-2 rounded-[11px] bg-card px-3 py-2.5"
+                className="grid grid-cols-[minmax(0,1fr)_64px] items-center gap-2 rounded-md bg-card px-3 py-2.5"
               >
                 <span className="min-w-0">
                   <span className="block truncate font-mono text-sm tabular-nums">
@@ -222,7 +222,7 @@ export default function ApontamentoPage(): React.ReactElement {
               </li>
             ))}
             {!hoje.isLoading && encerradosHoje.length === 0 && (
-              <li className="rounded-[11px] bg-card px-3 py-2.5 text-sm text-muted-foreground">
+              <li className="rounded-md bg-card px-3 py-2.5 text-sm text-muted-foreground">
                 Nenhum apontamento hoje.
               </li>
             )}

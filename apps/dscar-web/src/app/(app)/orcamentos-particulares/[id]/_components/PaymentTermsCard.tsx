@@ -48,7 +48,7 @@ export function PaymentTermsCard({ budgetId, version }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-muted/30 p-5 space-y-4 max-w-lg">
+    <div className="rounded-md border border-border bg-muted/30 p-5 space-y-4 max-w-lg">
       <h3 className="text-sm font-semibold text-foreground">Condições Comerciais</h3>
 
       <div className="grid grid-cols-2 gap-3">

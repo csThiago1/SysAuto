@@ -15,6 +15,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui";
 import { NativeSelect } from "@/components/ui/native-select"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 export default function FolhaPage(): React.ReactElement {
   const { data, isLoading } = usePayslips();
@@ -138,10 +139,9 @@ export default function FolhaPage(): React.ReactElement {
                 <label className="text-xs text-muted-foreground">
                   Mês de referência *
                 </label>
-                <input
+                <Input
                   type="month"
                   required
-                  className="rounded border border-border px-2 py-1.5 text-sm"
                   value={genForm.reference_month.slice(0, 7)}
                   onChange={(e) =>
                     setGenForm((p) => ({

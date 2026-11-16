@@ -6,7 +6,22 @@ import logging
 from datetime import timedelta
 from typing import Any, Optional
 
-from django.db.models import Count, DecimalField, Exists, F, Max, Min, OuterRef, Q, QuerySet, Sum
+from django.db.models import (
+    Count,
+    DecimalField,
+    Exists,
+    ExpressionWrapper,
+    F,
+    Max,
+    Min,
+    OuterRef,
+    Q,
+    QuerySet,
+    Subquery,
+    Sum,
+    Value,
+)
+from django.db.models.functions import Coalesce
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -126,6 +141,30 @@ def _photo_deletion_locked_response(order: ServiceOrder) -> Response | None:
     return Response(
         {"detail": "Não é possível remover fotos de uma OS entregue ou cancelada."},
         status=422,
+    )
+
+
+_VALOR = DecimalField(max_digits=14, decimal_places=2)
+
+
+def _soma_nao_seguradora(model: type) -> Coalesce:
+    """Σ(quantidade × preço − desconto) dos itens com payer != insurer, por OS."""
+    soma = (
+        model.objects.filter(service_order_id=OuterRef("pk"))
+        .exclude(payer="insurer")
+        .order_by()
+        .values("service_order_id")
+        .annotate(t=Sum(ExpressionWrapper(F("quantity") * F("unit_price") - F("discount"), output_field=_VALOR)))
+        .values("t")[:1]
+    )
+    return Coalesce(Subquery(soma, output_field=_VALOR), Value(0, output_field=_VALOR))
+
+
+def _complemento_particular() -> ExpressionWrapper:
+    """Mesmo valor que ServiceOrder.total soma ao total oficial da seguradora."""
+    return ExpressionWrapper(
+        _soma_nao_seguradora(ServiceOrderPart) + _soma_nao_seguradora(ServiceOrderLabor),
+        output_field=_VALOR,
     )
 
 
@@ -262,6 +301,11 @@ class ServiceOrderViewSet(
                 ).exclude(status="received")
             ),
         )
+
+        if self.action == "list":
+            # ServiceOrder.total soma o complemento particular com 2 queries por OS
+            # de seguradora; na lista de 200 OS eram ~400 queries por request.
+            qs = qs.annotate(_complemento=_complemento_particular())
 
         if self.request.query_params.get("exclude_closed") == "true":
             qs = qs.exclude(

@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { CatalogSearchCombobox } from "./CatalogSearchCombobox"
 import { CatalogContextCard } from "./CatalogContextCard"
 import { NativeSelect } from "@/components/ui/native-select"
@@ -142,12 +143,12 @@ export function CompraFormModal({
             <label className="label-mono text-muted-foreground mb-1.5 block">
               Codigo / Referencia
             </label>
-            <input
+            <Input
               type="text"
               value={partNumber}
               onChange={(e) => setPartNumber(e.target.value)}
               placeholder="Ex: 5C6807221GRU, TYC-20-9646"
-              className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-border"
+              className="w-full"
             />
           </div>
 
@@ -178,12 +179,12 @@ export function CompraFormModal({
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                   R$
                 </span>
-                <input
+                <Input
                   type="text"
                   value={unitPrice}
                   onChange={(e) => setUnitPrice(e.target.value)}
                   placeholder="0,00"
-                  className="w-full bg-muted/50 border border-border text-foreground rounded-md pl-9 pr-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-border"
+                  className="w-full pl-9 pr-3"
                 />
               </div>
             </div>
@@ -194,12 +195,12 @@ export function CompraFormModal({
             <label className="label-mono text-muted-foreground mb-1.5 block">
               Quantidade
             </label>
-            <input
+            <Input
               type="number"
               min="1"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:border-border"
+              className="w-full"
             />
           </div>
 

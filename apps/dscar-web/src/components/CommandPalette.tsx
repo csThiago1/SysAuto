@@ -72,7 +72,7 @@ export function CommandPalette(): React.ReactElement {
       {/* Command */}
       <div className="absolute left-1/2 top-[20%] -translate-x-1/2 w-full max-w-lg">
         <Command
-          className="rounded-xl border border-border bg-card shadow-2xl overflow-hidden animate-fade-in"
+          className="rounded-lg border border-border bg-card shadow-2xl overflow-hidden animate-fade-in"
           label="Paleta de comandos"
         >
           <Command.Input
@@ -113,7 +113,7 @@ export function CommandPalette(): React.ReactElement {
           <div className="border-t border-border px-3 py-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>Navegar com as setas</span>
             <div className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded border border-border bg-muted text-[10px] font-mono">Esc</kbd>
+              <kbd className="px-1.5 py-0.5 rounded border border-border bg-muted text-xs font-mono">Esc</kbd>
               <span>fechar</span>
             </div>
           </div>

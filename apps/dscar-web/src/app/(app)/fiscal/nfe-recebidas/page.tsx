@@ -7,6 +7,7 @@
  * Botão "Sincronizar" busca novas NF-e na Focus e importa automaticamente.
  */
 
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react"
 import {
@@ -101,36 +102,36 @@ function NfeEntradaRow({ nfe }: { nfe: NFeEntradaLocal }) {
       : cnpj
 
   return (
-    <tr className="border-b border-border hover:bg-muted/30 transition-colors">
-      <td className="py-3 px-4">
+    <TableRow>
+      <TableCell>
         <p className="text-xs text-foreground/80 font-medium">{nfe.emitente_nome || "—"}</p>
         <p className="text-xs text-muted-foreground font-mono mt-0.5">
           {nfe.emitente_cnpj ? cnpjFmt(nfe.emitente_cnpj) : "—"}
         </p>
-      </td>
+      </TableCell>
 
-      <td className="py-3 px-4 text-xs text-foreground/60">
+      <TableCell className="text-xs text-foreground/60">
         {nfe.numero}/{nfe.serie}
-      </td>
+      </TableCell>
 
-      <td
-        className="py-3 px-4 text-xs font-mono text-muted-foreground max-w-[140px] truncate"
+      <TableCell
+        className="text-xs font-mono text-muted-foreground max-w-[140px] truncate"
         title={nfe.chave_acesso}
       >
         {nfe.chave_acesso
           ? `${nfe.chave_acesso.slice(0, 10)}…${nfe.chave_acesso.slice(-6)}`
           : "—"}
-      </td>
+      </TableCell>
 
-      <td className="py-3 px-4 text-xs text-foreground/80 text-right tabular-nums">
+      <TableCell className="text-xs text-foreground/80 text-right tabular-nums">
         {formatCurrency(nfe.valor_total)}
-      </td>
+      </TableCell>
 
-      <td className="py-3 px-4 text-xs text-muted-foreground">
+      <TableCell className="text-xs text-muted-foreground">
         {formatDate(nfe.data_emissao)}
-      </td>
+      </TableCell>
 
-      <td className="py-3 px-4">
+      <TableCell>
         <span
           className={cn(
             "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium",
@@ -140,13 +141,13 @@ function NfeEntradaRow({ nfe }: { nfe: NFeEntradaLocal }) {
           {NFE_ENTRADA_STATUS_LABEL[nfe.status] ?? nfe.status}
         </span>
         {nfe.auto_imported && (
-          <span className="ml-1.5 text-[10px] text-blue-400/60" title="Importada automaticamente via webhook">
+          <span className="ml-1.5 text-xs text-info-400/60" title="Importada automaticamente via webhook">
             auto
           </span>
         )}
-      </td>
+      </TableCell>
 
-      <td className="py-3 px-4 text-right">
+      <TableCell className="text-right">
         <div className="flex items-center justify-end gap-2">
           {nfe.chave_acesso && (
             <>
@@ -173,8 +174,8 @@ function NfeEntradaRow({ nfe }: { nfe: NFeEntradaLocal }) {
             </>
           )}
         </div>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   )
 }
 
@@ -228,33 +229,32 @@ export default function NfeRecebidasPage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl bg-muted/30 border border-white/[0.07] overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border">
+      <div className="rounded-md bg-muted/30 border border-white/[0.07] overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
               {["Emitente", "Num/Serie", "Chave", "Valor", "Emissao", "Status", ""].map((h) => (
-                <th
+                <TableHead
                   key={h}
                   className={cn(
-                    "py-2.5 px-4 text-xs font-semibold text-muted-foreground text-left",
                     h === "Valor" && "text-right"
                   )}
                 >
                   {h}
-                </th>
+                </TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {isLoading ? (
-              <tr>
-                <td colSpan={7} className="py-12 text-center text-xs text-muted-foreground">
+              <TableRow>
+                <TableCell colSpan={7} className="py-12 text-center text-xs text-muted-foreground">
                   Carregando...
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : nfes.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="py-12 text-center text-xs text-muted-foreground">
+              <TableRow>
+                <TableCell colSpan={7} className="py-12 text-center text-xs text-muted-foreground">
                   Nenhuma NF-e de entrada encontrada.
                   <br />
                   <button
@@ -263,13 +263,13 @@ export default function NfeRecebidasPage() {
                   >
                     Sincronizar com Focus
                   </button>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               nfes.map((nfe) => <NfeEntradaRow key={nfe.id} nfe={nfe} />)
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {/* Footer */}

@@ -4,6 +4,7 @@ Herda de base.py. R2 para media, WhiteNoise para estáticos.
 """
 
 from django.core.exceptions import ImproperlyConfigured
+from django.middleware.gzip import GZipMiddleware
 from django_tenants.middleware.main import TenantMainMiddleware
 
 from .base import *  # noqa: F401, F403
@@ -57,8 +58,20 @@ class RailwayTenantMiddleware(TenantMainMiddleware):
         return "dscar.localhost"
 
 
+class GZipTexto(GZipMiddleware):
+    """Comprime só texto/JSON: PDF, ZIP e imagens já vêm comprimidos e só gastariam CPU."""
+
+    def process_response(self, request, response):  # type: ignore[no-untyped-def]
+        tipo = response.get("Content-Type", "")
+        if tipo.startswith(("application/json", "text/")):
+            return super().process_response(request, response)
+        return response
+
+
 MIDDLEWARE = [
     "config.settings.railway.RailwayTenantMiddleware",
+    # JSON da lista de OS (até 200 linhas) ia sem compressão da VM até a Vercel.
+    "config.settings.railway.GZipTexto",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",

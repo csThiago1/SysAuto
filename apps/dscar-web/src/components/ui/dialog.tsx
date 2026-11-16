@@ -173,7 +173,10 @@ function DialogContent({
         aria-labelledby={titleId}
         tabIndex={-1}
         className={cn(
-          "fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2",
+          // margem de 1rem no celular e rolagem própria: formulários longos
+          // passavam da altura da tela e o botão de salvar ficava inalcançável
+          "fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2",
+          "max-h-[90dvh] overflow-y-auto",
           "rounded-lg border border-border bg-card p-6 shadow-lg",
           "animate-fade-in focus:outline-none",
           className

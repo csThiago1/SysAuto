@@ -7,6 +7,7 @@
  * Visivel apenas para MANAGER+.
  */
 
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { Package } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 import { formatCurrency } from "@paddock/utils"
@@ -168,60 +169,57 @@ export function EstoqueTab({ osId }: EstoqueTabProps) {
             </div>
           ) : (
             <div className="overflow-hidden rounded-md border border-border bg-muted/50">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="label-mono text-muted-foreground px-3 py-2 text-left">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="px-3 py-2">
                       PECA / INSUMO
-                    </th>
-                    <th className="label-mono text-muted-foreground px-3 py-2 text-left">
+                    </TableHead>
+                    <TableHead className="px-3 py-2">
                       SKU
-                    </th>
-                    <th className="label-mono text-muted-foreground px-3 py-2 text-left">
+                    </TableHead>
+                    <TableHead className="px-3 py-2">
                       POSICAO
-                    </th>
-                    <th className="label-mono text-muted-foreground px-3 py-2 text-right">
+                    </TableHead>
+                    <TableHead className="px-3 py-2 text-right">
                       CUSTO
-                    </th>
-                    <th className="label-mono text-muted-foreground px-3 py-2 text-right">
+                    </TableHead>
+                    <TableHead className="px-3 py-2 text-right">
                       COBRADO
-                    </th>
-                    <th className="label-mono text-muted-foreground px-3 py-2 text-right">
+                    </TableHead>
+                    <TableHead className="px-3 py-2 text-right">
                       MARGEM
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {margem.itens.map((item, i) => (
-                    <tr
-                      key={i}
-                      className="border-b border-border last:border-0"
-                    >
-                      <td className="px-3 py-2 text-foreground text-sm">
+                    <TableRow key={i}>
+                      <TableCell className="px-3 py-2 text-foreground text-sm">
                         {item.nome}
-                      </td>
-                      <td className="px-3 py-2 font-mono text-xs text-muted-foreground">
+                      </TableCell>
+                      <TableCell className="px-3 py-2 font-mono text-xs text-muted-foreground">
                         {item.sku || "\u2014"}
-                      </td>
-                      <td className="px-3 py-2 font-mono text-xs text-primary/80">
+                      </TableCell>
+                      <TableCell className="px-3 py-2 font-mono text-xs text-primary/80">
                         {item.posicao || "\u2014"}
-                      </td>
-                      <td className="px-3 py-2 text-right font-mono text-sm text-foreground/80">
+                      </TableCell>
+                      <TableCell className="px-3 py-2 text-right font-mono text-sm text-foreground/80">
                         R$ {parseFloat(item.custo).toFixed(2)}
-                      </td>
-                      <td className="px-3 py-2 text-right font-mono text-sm text-foreground/80">
+                      </TableCell>
+                      <TableCell className="px-3 py-2 text-right font-mono text-sm text-foreground/80">
                         R$ {parseFloat(item.cobrado).toFixed(2)}
-                      </td>
-                      <td className="px-3 py-2 text-right">
+                      </TableCell>
+                      <TableCell className="px-3 py-2 text-right">
                         <MargemBadge
                           custo={parseFloat(item.custo)}
                           cobrado={parseFloat(item.cobrado)}
                         />
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           )}
         </div>

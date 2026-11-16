@@ -4,6 +4,7 @@
  * JournalEntryTable — Tabela de lançamentos contábeis com badges de status.
  */
 
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import React from "react";
 import Link from "next/link";
 import type { Route } from "next";
@@ -73,79 +74,79 @@ export function JournalEntryTable({ entries }: JournalEntryTableProps): React.Re
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border bg-muted/30">
-            <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-muted/30">
+            <TableHead>
               Número
-            </th>
-            <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            </TableHead>
+            <TableHead>
               Data
-            </th>
-            <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            </TableHead>
+            <TableHead>
               Descrição
-            </th>
-            <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            </TableHead>
+            <TableHead>
               Origem
-            </th>
-            <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            </TableHead>
+            <TableHead className="text-right">
               Débito
-            </th>
-            <th className="text-right px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            </TableHead>
+            <TableHead className="text-right">
               Crédito
-            </th>
-            <th className="text-center px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            </TableHead>
+            <TableHead className="text-center">
               Status
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-white/5">
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {entries.map((entry) => (
-            <tr
+            <TableRow
               key={entry.id}
               className={cn(
-                "hover:bg-muted/30 transition-colors cursor-pointer",
+                "cursor-pointer",
                 entry.is_reversed && "opacity-60"
               )}
             >
-              <td className="px-4 py-3">
+              <TableCell>
                 <Link
                   href={`/financeiro/lancamentos/${entry.id}` as Route}
                   className="font-mono text-xs text-primary hover:text-primary/80 font-semibold"
                 >
                   {entry.number}
                 </Link>
-              </td>
-              <td className="px-4 py-3 text-foreground/60 whitespace-nowrap">
+              </TableCell>
+              <TableCell className="text-foreground/60 whitespace-nowrap">
                 {new Date(`${entry.competence_date}T12:00:00`).toLocaleDateString("pt-BR")}
-              </td>
-              <td className="px-4 py-3 text-foreground max-w-xs truncate">
+              </TableCell>
+              <TableCell className="text-foreground max-w-xs truncate">
                 <Link
                   href={`/financeiro/lancamentos/${entry.id}` as Route}
                   className="hover:text-primary transition-colors"
                 >
                   {entry.description}
                 </Link>
-              </td>
-              <td className="px-4 py-3 text-foreground/60 whitespace-nowrap">
+              </TableCell>
+              <TableCell className="text-foreground/60 whitespace-nowrap">
                 {ORIGIN_LABELS[entry.origin] ?? entry.origin}
-              </td>
-              <td className="px-4 py-3 text-right font-mono text-foreground/70 whitespace-nowrap">
+              </TableCell>
+              <TableCell className="text-right font-mono text-foreground/70 whitespace-nowrap">
                 {formatBRL(entry.total_debit)}
-              </td>
-              <td className="px-4 py-3 text-right font-mono text-foreground/70 whitespace-nowrap">
+              </TableCell>
+              <TableCell className="text-right font-mono text-foreground/70 whitespace-nowrap">
                 {formatBRL(entry.total_credit)}
-              </td>
-              <td className="px-4 py-3 text-center">
+              </TableCell>
+              <TableCell className="text-center">
                 <StatusBadge
                   isApproved={entry.is_approved}
                   isReversed={entry.is_reversed}
                 />
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }
@@ -155,35 +156,34 @@ export function JournalEntryTable({ entries }: JournalEntryTableProps): React.Re
 export function JournalEntryTableSkeleton(): React.ReactElement {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border bg-muted/30">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-muted/30">
             {["Número", "Data", "Descrição", "Origem", "Débito", "Crédito", "Status"].map(
               (col) => (
-                <th
+                <TableHead
                   key={col}
-                  className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide"
                 >
                   {col}
-                </th>
+                </TableHead>
               )
             )}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-white/5">
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {Array.from({ length: 8 }).map((_, i) => (
-            <tr key={i}>
-              <td className="px-4 py-3"><Skeleton className="h-4 w-16" /></td>
-              <td className="px-4 py-3"><Skeleton className="h-4 w-20" /></td>
-              <td className="px-4 py-3"><Skeleton className="h-4 w-48" /></td>
-              <td className="px-4 py-3"><Skeleton className="h-4 w-24" /></td>
-              <td className="px-4 py-3"><Skeleton className="h-4 w-24 ml-auto" /></td>
-              <td className="px-4 py-3"><Skeleton className="h-4 w-24 ml-auto" /></td>
-              <td className="px-4 py-3"><Skeleton className="h-5 w-20 mx-auto rounded-full" /></td>
-            </tr>
+            <TableRow key={i}>
+              <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-24 ml-auto" /></TableCell>
+              <TableCell><Skeleton className="h-5 w-20 mx-auto rounded-full" /></TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

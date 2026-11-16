@@ -12,7 +12,7 @@
 import { useState } from "react"
 import { Package, ClipboardList } from "lucide-react"
 import { withRoleGuard } from "@/lib/withRoleGuard"
-import { cn } from "@/lib/utils"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import type { FiscalDocument } from "@/hooks/useFiscal"
 import { TabFromOS } from "./_components/TabFromOS"
 import { TabManual } from "./_components/TabManual"
@@ -41,42 +41,25 @@ function EmitirNfePageInner() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 rounded-lg bg-muted/30 border border-border p-1">
-        <button
-          type="button"
-          onClick={() => setTab("os")}
-          className={cn(
-            "flex items-center gap-2 flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors",
-            tab === "os"
-              ? "bg-muted text-foreground"
-              : "text-muted-foreground hover:text-foreground/70"
-          )}
-        >
-          <ClipboardList className="h-4 w-4" />
-          A partir de uma OS
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("manual")}
-          className={cn(
-            "flex items-center gap-2 flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors",
-            tab === "manual"
-              ? "bg-muted text-foreground"
-              : "text-muted-foreground hover:text-foreground/70"
-          )}
-        >
-          <Package className="h-4 w-4" />
-          Manual (sem OS)
-        </button>
-      </div>
+      <Tabs value={tab} onValueChange={(v) => setTab(v === "manual" ? "manual" : "os")}>
+        <TabsList className="flex w-full">
+          <TabsTrigger value="os" className="flex-1 justify-center gap-2">
+            <ClipboardList className="h-4 w-4" />
+            A partir de uma OS
+          </TabsTrigger>
+          <TabsTrigger value="manual" className="flex-1 justify-center gap-2">
+            <Package className="h-4 w-4" />
+            Manual (sem OS)
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Tab content */}
-      {tab === "os" ? (
-        <TabFromOS onSuccess={setEmitted} />
-      ) : (
-        <TabManual onSuccess={setEmitted} />
-      )}
+        <TabsContent value="os" className="mt-6">
+          <TabFromOS onSuccess={setEmitted} />
+        </TabsContent>
+        <TabsContent value="manual" className="mt-6">
+          <TabManual onSuccess={setEmitted} />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

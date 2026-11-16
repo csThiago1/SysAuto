@@ -1,3 +1,4 @@
+import type { Session } from "next-auth";
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -9,12 +10,12 @@ const BACKEND_BASE =
 async function proxyRequest(
   req: NextRequest,
   pathSegments: string[],
-  method: string
+  method: string,
+  session: Session | null
 ): Promise<NextResponse> {
   if (pathSegments.some((s) => s.includes("..") || s.startsWith("/"))) {
     return NextResponse.json({ detail: "Path inválido" }, { status: 400 });
   }
-  const session = await auth();
   const joined = pathSegments.join("/");
   const withSlash = joined.endsWith("/") ? joined : `${joined}/`;
   const backendUrl = `${BACKEND_BASE}/api/v1/${withSlash}${req.nextUrl.search}`;
@@ -105,42 +106,29 @@ async function proxyRequest(
   return NextResponse.json(data, { status: response.status });
 }
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
-): Promise<NextResponse> {
-  const { path } = await params;
-  return proxyRequest(req, path, "GET");
+/**
+ * Handlers embrulhados em auth(): quando o callback jwt renova o token, o
+ * wrapper devolve o cookie novo na resposta. Com `await auth()` solto o
+ * next-auth descartava o Set-Cookie — o backend já tinha girado o refresh,
+ * o cookie ficava com o token revogado e a sessão caía na renovação seguinte.
+ */
+type RouteCtx = { params: Promise<{ path: string[] }> };
+type RouteHandler = (req: NextRequest, ctx: RouteCtx) => Promise<Response>;
+
+function handler(method: string): RouteHandler {
+  // Tipos explícitos: com `npm ci` limpo a inferência do overload de auth()
+  // muda (req/ctx viravam any no CI). O cast cobre a cópia do `next` que o
+  // next-auth enxerga, a mesma razão do cast no middleware.
+  const wrapped = auth(async (req: unknown, ctx: unknown) => {
+    const r = req as NextRequest & { auth: Session | null };
+    const { path } = await (ctx as RouteCtx).params;
+    return proxyRequest(r, path, method, r.auth);
+  });
+  return wrapped as unknown as RouteHandler;
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
-): Promise<NextResponse> {
-  const { path } = await params;
-  return proxyRequest(req, path, "POST");
-}
-
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
-): Promise<NextResponse> {
-  const { path } = await params;
-  return proxyRequest(req, path, "PATCH");
-}
-
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
-): Promise<NextResponse> {
-  const { path } = await params;
-  return proxyRequest(req, path, "PUT");
-}
-
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
-): Promise<NextResponse> {
-  const { path } = await params;
-  return proxyRequest(req, path, "DELETE");
-}
+export const GET = handler("GET");
+export const POST = handler("POST");
+export const PATCH = handler("PATCH");
+export const PUT = handler("PUT");
+export const DELETE = handler("DELETE");

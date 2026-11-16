@@ -1,4 +1,6 @@
 "use client"
+import { Input } from "@/components/ui/input"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 import { useMemo, useState } from "react"
 import { ArrowLeftRight, ChevronDown, ChevronRight } from "lucide-react"
@@ -104,8 +106,6 @@ export default function MovimentacoesPage() {
     setExpandedId((prev) => (prev === id ? null : id))
   }
 
-  const inputClass =
-    "text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
 
   return (
     <div className="px-0 py-3 md:p-6 space-y-4">
@@ -138,18 +138,18 @@ export default function MovimentacoesPage() {
 
         <DateField value={dataInicio} onChange={setDataInicio} />
         <DateField value={dataFim} onChange={setDataFim} />
-        <input
+        <Input
           type="text"
           value={osFilter}
           onChange={(e) => setOsFilter(e.target.value)}
-          className={inputClass}
+          className="w-auto"
           placeholder="OS (UUID)"
         />
-        <input
+        <Input
           type="text"
           value={userFilter}
           onChange={(e) => setUserFilter(e.target.value)}
-          className={inputClass}
+          className="w-auto"
           placeholder="Usuario"
         />
       </div>
@@ -175,7 +175,7 @@ export default function MovimentacoesPage() {
             return (
               <div
                 key={mov.id}
-                className="relative overflow-hidden rounded-[11px] bg-muted/30 py-2.5 pl-4 pr-3"
+                className="relative overflow-hidden rounded-md bg-muted/30 py-2.5 pl-4 pr-3"
               >
                 <span
                   aria-hidden
@@ -184,7 +184,7 @@ export default function MovimentacoesPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <span
-                      className={`inline-block rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${cfg.className}`}
+                      className={`inline-block rounded px-2 py-0.5 font-mono text-xs uppercase tracking-wider ${cfg.className}`}
                     >
                       {cfg.label}
                     </span>
@@ -217,37 +217,37 @@ export default function MovimentacoesPage() {
         {/* Desktop table */}
         <div className="hidden md:block rounded-md border border-border bg-muted/50">
         <ScrollFade>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-muted/30">
-                <th className="label-mono text-muted-foreground text-left px-3 py-2 w-8" />
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/30">
+                <TableHead className="px-3 py-2 w-8" />
+                <TableHead className="px-3 py-2">
                   DATA/HORA
-                </th>
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">
+                </TableHead>
+                <TableHead className="px-3 py-2">
                   TIPO
-                </th>
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">
+                </TableHead>
+                <TableHead className="px-3 py-2">
                   ITEM
-                </th>
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">
+                </TableHead>
+                <TableHead className="px-3 py-2">
                   ORIGEM
-                </th>
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">
+                </TableHead>
+                <TableHead className="px-3 py-2">
                   DESTINO
-                </th>
-                <th className="label-mono text-muted-foreground text-right px-3 py-2">
+                </TableHead>
+                <TableHead className="text-right px-3 py-2">
                   QTD
-                </th>
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">
+                </TableHead>
+                <TableHead className="px-3 py-2">
                   MOTIVO
-                </th>
-                <th className="label-mono text-muted-foreground text-left px-3 py-2">
+                </TableHead>
+                <TableHead className="px-3 py-2">
                   REALIZADO POR
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {movimentacoes.map((mov) => {
                 const cfg = TIPO_CONFIG[mov.tipo] ?? {
                   label: mov.tipo_display,
@@ -264,8 +264,8 @@ export default function MovimentacoesPage() {
                   />
                 )
               })}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </ScrollFade>
         </div>
         </>
@@ -290,49 +290,49 @@ function RowWithExpand({
   const barcode = mov.unidade_barcode || mov.lote_barcode || "—"
   return (
     <>
-      <tr
-        className="border-b border-white/5 hover:bg-muted/30 cursor-pointer transition-colors"
+      <TableRow
+        className="border-white/5 cursor-pointer"
         onClick={onToggle}
       >
-        <td className="px-3 py-2 text-muted-foreground">
+        <TableCell className="px-3 py-2 text-muted-foreground">
           {isExpanded ? (
             <ChevronDown className="h-3.5 w-3.5" />
           ) : (
             <ChevronRight className="h-3.5 w-3.5" />
           )}
-        </td>
-        <td className="px-3 py-2 text-foreground/70 whitespace-nowrap">
+        </TableCell>
+        <TableCell className="px-3 py-2 text-foreground/70 whitespace-nowrap">
           {formatDateShort(mov.created_at)}
-        </td>
-        <td className="px-3 py-2">
+        </TableCell>
+        <TableCell className="px-3 py-2">
           <span
-            className={`inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded ${cfg.className}`}
+            className={`inline-block text-xs font-mono uppercase tracking-wider px-2 py-0.5 rounded ${cfg.className}`}
           >
             {cfg.label}
           </span>
-        </td>
-        <td className="px-3 py-2 font-mono text-xs text-foreground/60">
+        </TableCell>
+        <TableCell className="px-3 py-2 font-mono text-xs text-foreground/60">
           {barcode}
-        </td>
-        <td className="px-3 py-2 text-muted-foreground text-xs">
+        </TableCell>
+        <TableCell className="px-3 py-2 text-muted-foreground text-xs">
           {mov.nivel_origem_endereco || "—"}
-        </td>
-        <td className="px-3 py-2 text-muted-foreground text-xs">
+        </TableCell>
+        <TableCell className="px-3 py-2 text-muted-foreground text-xs">
           {mov.nivel_destino_endereco || "—"}
-        </td>
-        <td className="px-3 py-2 text-foreground text-right font-mono">
+        </TableCell>
+        <TableCell className="px-3 py-2 text-foreground text-right font-mono">
           {mov.quantidade}
-        </td>
-        <td className="px-3 py-2 text-muted-foreground text-xs max-w-[160px] truncate">
+        </TableCell>
+        <TableCell className="px-3 py-2 text-muted-foreground text-xs max-w-[160px] truncate">
           {mov.motivo || "—"}
-        </td>
-        <td className="px-3 py-2 text-muted-foreground text-xs">
+        </TableCell>
+        <TableCell className="px-3 py-2 text-muted-foreground text-xs">
           {mov.realizado_por_nome || "—"}
-        </td>
-      </tr>
+        </TableCell>
+      </TableRow>
       {isExpanded && (
-        <tr className="bg-white/[0.02]">
-          <td colSpan={9} className="px-6 py-3 space-y-2">
+        <TableRow className="bg-white/[0.02]">
+          <TableCell colSpan={9} className="px-6 space-y-2">
             {mov.motivo && (
               <div>
                 <span className="label-mono text-muted-foreground">MOTIVO</span>
@@ -360,8 +360,8 @@ function RowWithExpand({
                   : ""}
               </div>
             )}
-          </td>
-        </tr>
+          </TableCell>
+        </TableRow>
       )}
     </>
   )

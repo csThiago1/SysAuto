@@ -1,5 +1,6 @@
 "use client"
 
+import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -49,10 +50,10 @@ export function ExpertCombobox({ value, onChange, insurerId, disabled, knownExpe
     <div className="space-y-2">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <input
+          <Input
             type="text"
             placeholder="Buscar perito..."
-            className="flex h-8 w-full rounded-md border border-input bg-background px-2.5 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+            className="h-8"
             value={selected ? selected.name : search}
             onChange={(e) => {
               setSearch(e.target.value)
@@ -92,18 +93,18 @@ export function ExpertCombobox({ value, onChange, insurerId, disabled, knownExpe
       {showCreate && (
         <div className="rounded-md border border-dashed bg-muted/30 p-3 space-y-2">
           <p className="text-xs font-medium text-foreground/60 uppercase tracking-wide">Novo perito</p>
-          <input
+          <Input
             type="text"
             placeholder="Nome *"
-            className="flex h-8 w-full rounded-md border border-input bg-muted/50 px-3 py-1 text-sm"
+            className="h-8"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
           />
-          <input
+          <Input
             type="text"
             placeholder="(92) 99999-9999"
             inputMode="numeric"
-            className="flex h-8 w-full rounded-md border border-input bg-muted/50 px-3 py-1 text-sm"
+            className="h-8"
             value={formatPhone(newPhone)}
             onChange={(e) => setNewPhone(onlyDigits(e.target.value))}
           />

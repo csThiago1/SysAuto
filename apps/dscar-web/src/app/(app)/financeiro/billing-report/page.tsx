@@ -5,6 +5,7 @@
  * Agrupamento por cliente, origem ou mes com totais.
  */
 
+import { Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { NativeSelect } from "@/components/ui/native-select";
 import React, { useMemo, useState } from "react";
 import { ReceiptText } from "lucide-react";
@@ -162,21 +163,21 @@ export default function FaturamentoPage(): React.ReactElement {
             </div>
             {/* Desktop table */}
             <ScrollFade className="hidden md:block">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left text-muted-foreground">
+              <Table>
+                <TableHeader>
+                  <TableRow>
                     {Object.keys(data.items[0] ?? {}).map((key) => (
-                      <th key={key} className="py-2 pr-4 font-medium capitalize">
+                      <TableHead key={key} className="capitalize">
                         {key.replace(/_/g, " ")}
-                      </th>
+                      </TableHead>
                     ))}
-                  </tr>
-                </thead>
-                <tbody>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {data.items.map((item, idx) => (
-                    <tr key={idx} className="border-b border-border/50">
+                    <TableRow key={idx}>
                       {Object.values(item).map((val, ci) => (
-                        <td
+                        <TableCell
                           key={ci}
                           className={`py-2 pr-4 text-foreground ${
                             typeof val === "string" && /^\d+\.\d{2}$/.test(val) ? "tabular-nums" : ""
@@ -185,20 +186,20 @@ export default function FaturamentoPage(): React.ReactElement {
                           {typeof val === "string" && /^\d+\.\d{2}$/.test(val)
                             ? formatCurrency(val)
                             : String(val ?? "—")}
-                        </td>
+                        </TableCell>
                       ))}
-                    </tr>
+                    </TableRow>
                   ))}
-                </tbody>
-                <tfoot>
-                  <tr className="border-t-2 border-border font-semibold">
-                    <td className="py-2 pr-4 text-foreground">Total</td>
-                    <td className="py-2 pr-4 text-foreground font-mono" colSpan={Object.keys(data.items[0] ?? {}).length - 1}>
+                </TableBody>
+                <TableFooter>
+                  <TableRow className="border-t-2 font-semibold">
+                    <TableCell className="text-foreground">Total</TableCell>
+                    <TableCell className="text-foreground font-mono" colSpan={Object.keys(data.items[0] ?? {}).length - 1}>
                       {formatCurrency(data.totals.total)}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
+                    </TableCell>
+                  </TableRow>
+                </TableFooter>
+              </Table>
             </ScrollFade>
             </>
           ) : (

@@ -253,7 +253,7 @@ export function HistoryTab({ order }: HistoryTabProps) {
   return (
     <div className="space-y-4 max-w-2xl">
       {/* Add note */}
-      <div className="bg-muted/50 p-4 rounded-xl border border-border shadow-sm space-y-3">
+      <div className="bg-muted/50 p-4 rounded-md border border-border shadow-sm space-y-3">
         <label htmlFor="history-note" className="text-sm font-semibold text-foreground/70 flex items-center gap-1.5">
           <MessageSquare className="h-4 w-4 text-muted-foreground" />
           Adicionar observação

@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/popover";
 import { useOverdueOrders } from "@/hooks/useOverdueOrders";
 import { usePendingOverrides } from "@/hooks/useTransitionValidation";
+import { useSession } from "next-auth/react";
+import { ROLE_HIERARCHY, type PaddockRole } from "@paddock/types";
 import type { OverdueServiceOrder } from "@paddock/types";
 
 function BadgeCount({ count }: { count: number }): React.ReactElement | null {
@@ -68,7 +70,9 @@ function OrderItem({ item }: { item: OverdueServiceOrder }): React.ReactElement 
 
 export function NotificationBell(): React.ReactElement {
   const { data, isLoading, isError, refetch } = useOverdueOrders();
-  const { data: pendingOverrides } = usePendingOverrides();
+  const { data: session } = useSession();
+  const gerente = (ROLE_HIERARCHY[session?.role as PaddockRole] ?? 0) >= ROLE_HIERARCHY.MANAGER;
+  const { data: pendingOverrides } = usePendingOverrides(gerente);
   const orders = data ?? [];
   const overdueAlertCount = orders.filter(
     (o) => o.urgency === "overdue" || o.urgency === "due_today"

@@ -75,7 +75,7 @@ export function NotesTab({ orderId, initialNotes = "" }: NotesTabProps) {
       </div>
 
       {isDirty && (
-        <p className="text-xs text-amber-600">Há alterações não salvas.</p>
+        <p className="text-xs text-warning-400">Há alterações não salvas.</p>
       )}
     </div>
   )

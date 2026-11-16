@@ -287,7 +287,7 @@ function NivelRow({ nivel }: { nivel: Nivel }) {
           }`}
         />
         <span
-          className={`text-[10px] font-mono uppercase tracking-wider ${
+          className={`text-xs font-mono uppercase tracking-wider ${
             isOcupado ? "text-success-400" : "text-muted-foreground"
           }`}
         >
