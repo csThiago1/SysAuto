@@ -69,7 +69,7 @@ export default function DashboardPage(): React.ReactElement {
             description="Meu painel de atendimento"
             actions={
               <Link
-                href="/os/nova"
+                href="/recepcao"
                 className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
               >
                 <Plus size={16} />
@@ -91,7 +91,7 @@ export default function DashboardPage(): React.ReactElement {
             title="Dashboard"
             actions={
               <Link
-                href="/os/nova"
+                href="/recepcao"
                 className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 md:min-h-0 md:py-2"
               >
                 <Plus size={16} />
@@ -115,7 +115,7 @@ export default function DashboardPage(): React.ReactElement {
           description="Visão geral das Ordens de Serviço"
           actions={
             <Link
-              href="/os/nova"
+              href="/recepcao"
               className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               <Plus size={16} />

@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
 import { Search, FilterX, Plus, ChevronLeft, ChevronRight, X, SlidersHorizontal, Columns3 } from "lucide-react"
 import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 
@@ -24,7 +23,6 @@ import {
 } from "@/components/ui/sheet"
 import { PendingDraftsBanner } from "@/components/offline/PendingDraftsBanner"
 import { ServiceOrderTable } from "./_components/ServiceOrderTable"
-import { NewOSDrawer } from "./_components/NewOSDrawer"
 
 const SELECT_CLS = "h-9 rounded-md border border-border bg-muted/50 px-3 py-1 text-sm text-foreground/70 shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
 const PAGE_SIZE = 20
@@ -139,8 +137,6 @@ function AdvancedFilters({
 }
 
 export default function ServiceOrdersPage() {
-  const searchParams = useSearchParams()
-  const [drawerOpen, setDrawerOpen] = useState(searchParams.get("nova") === "1")
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState<string>("ALL")
   const [customerType, setCustomerType] = useState<string>("ALL")
@@ -196,8 +192,6 @@ export default function ServiceOrdersPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6 px-0 py-3 md:p-6 max-w-7xl mx-auto">
-      <NewOSDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
-
       {/* Cabecalho proprio (nao o PageHeader compartilhado): esta tela tem
           contagem + alternador de visao, e a 390px o bloco de 3 linhas do
           PageHeader empurrava a primeira OS pra fora da tela. */}
@@ -222,14 +216,13 @@ export default function ServiceOrdersPage() {
               <Columns3 className="h-4 w-4 md:hidden" />
               <span className="hidden md:inline">Ver Kanban</span>
             </Link>
-            <button
-              type="button"
-              onClick={() => setDrawerOpen(true)}
+            <Link
+              href="/recepcao"
               className="flex min-h-[44px] items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 shadow-sm md:min-h-0 md:px-4 md:py-2"
             >
               <Plus className="h-4 w-4" />
               Nova OS
-            </button>
+            </Link>
         </div>
       </div>
 

@@ -47,7 +47,7 @@ export default auth((req: Parameters<Parameters<typeof auth>[0]>[0]) => {
   }
 
   // Criar nova OS: CONSULTANT ou superior
-  const isNewOSRoute = pathname === "/os/nova";
+  const isNewOSRoute = pathname === "/os/nova" || pathname === "/recepcao";
   if (isNewOSRoute && !hasMinRole(role, "CONSULTANT")) {
     return Response.redirect(new URL("/dashboard", request.url));
   }

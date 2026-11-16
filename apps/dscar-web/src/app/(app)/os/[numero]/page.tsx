@@ -31,9 +31,9 @@ async function getServiceOrder(numero: string, token: string, tenant: string): P
 export default async function ServiceOrderPage({ params }: PageProps) {
   const { numero } = await params
 
-  // "nova" não é um número de OS — redireciona para lista com drawer de criação
+  // "nova" não é um número de OS — a abertura de OS é a recepção
   if (numero === "nova") {
-    redirect("/os?nova=1")
+    redirect("/recepcao")
   }
 
   const session = await auth()
