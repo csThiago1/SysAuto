@@ -9,6 +9,7 @@ function hasMinRole(role: string | undefined, minRole: PaddockRole): boolean {
 export default auth((req: Parameters<Parameters<typeof auth>[0]>[0]) => {
   const request = req as unknown as NextRequest;
   const { pathname } = request.nextUrl;
+  if (pathname.startsWith("/convite")) return; // link de convite: público, logado ou não
   const isLoggedIn = !!req.auth;
   const isAuthPage =
     pathname.startsWith("/login") ||
