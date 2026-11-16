@@ -6,6 +6,7 @@ Access tokens: 15-min TTL. Refresh tokens: 7-day TTL.
 """
 import datetime
 import logging
+import secrets
 
 import jwt as pyjwt
 from django.conf import settings
@@ -96,6 +97,9 @@ def generate_refresh_token(user: "GlobalUser") -> str:  # noqa: F821
         "iat": now,
         "exp": now + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"],
         "token_type": "refresh",
+        # Único por emissão: sem ele, dois tokens do mesmo usuário no mesmo
+        # segundo saíam idênticos e o hash único do banco estourava (500).
+        "jti": secrets.token_hex(16),
     }
     return pyjwt.encode(payload, _get_secret(), algorithm=_get_algorithm())
 
