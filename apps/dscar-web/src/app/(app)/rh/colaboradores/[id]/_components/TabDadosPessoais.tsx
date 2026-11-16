@@ -9,6 +9,7 @@ import React from "react";
 import type { Employee, UpdateEmployeePayload } from "@paddock/types";
 import { useUpdateEmployee } from "@/hooks";
 import { NativeSelect } from "@/components/ui/native-select"
+import { Input } from "@/components/ui/input"
 
 const PAY_FREQUENCY_LABELS: Record<"monthly" | "biweekly" | "weekly", string> = {
   monthly: "Mensal",
@@ -113,8 +114,7 @@ export function TabDadosPessoais({
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Estado civil
                 </label>
-                <input
-                  className="rounded border border-border px-2 py-1 text-sm"
+                <Input
                   value={form.marital_status ?? ""}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, marital_status: e.target.value }))
@@ -125,8 +125,7 @@ export function TabDadosPessoais({
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Escolaridade
                 </label>
-                <input
-                  className="rounded border border-border px-2 py-1 text-sm"
+                <Input
                   value={form.education_level ?? ""}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, education_level: e.target.value }))
@@ -137,8 +136,7 @@ export function TabDadosPessoais({
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Nacionalidade
                 </label>
-                <input
-                  className="rounded border border-border px-2 py-1 text-sm"
+                <Input
                   value={form.nationality ?? ""}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, nationality: e.target.value }))
@@ -167,10 +165,10 @@ export function TabDadosPessoais({
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Nº de dependentes (IRRF)
                 </label>
-                <input
+                <Input
                   type="number"
                   min={0}
-                  className="rounded border border-border px-2 py-1 text-sm w-24"
+                  className="w-24"
                   value={form.dependents_count ?? 0}
                   onChange={(e) =>
                     setForm((p) => ({
@@ -221,8 +219,7 @@ export function TabDadosPessoais({
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   {label}
                 </label>
-                <input
-                  className="rounded border border-border px-2 py-1 text-sm"
+                <Input
                   value={(form[field] as string) ?? ""}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, [field]: e.target.value }))
@@ -254,8 +251,8 @@ export function TabDadosPessoais({
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Nome
             </label>
-            <input
-              className="rounded border border-border px-2 py-1 text-sm w-64"
+            <Input
+              className="w-64"
               value={form.emergency_contact_name ?? ""}
               onChange={(e) =>
                 setForm((p) => ({

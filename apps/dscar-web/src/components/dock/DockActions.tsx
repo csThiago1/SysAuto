@@ -38,7 +38,7 @@ export function SearchTrigger({
     >
       <Search className="h-4 w-4" />
       {atalho ? (
-        <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground/70">
+        <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground/70">
           ⌘K
         </kbd>
       ) : (

@@ -126,8 +126,9 @@ export function Sidebar(): React.ReactElement {
   const oficina = sections.filter((s) => OFICINA.has(s.label)).flatMap((s) => s.items);
   const gestao = sections.filter((s) => !OFICINA.has(s.label)).flatMap((s) => s.items);
   const gestaoAtiva = gestao.some((i) => isGroupActive(pathname, i));
-  // A barra fica escondida (CSS) no celular; sem isto ela buscava placar e
-  // notificações em toda tela do celular, disputando os 2 workers do backend.
+  // A barra fica escondida (CSS) no celular: sempre desenhada (sem pular no
+  // desktop), mas o placar só busca dados em tela md+. O sino divide a query de
+  // atrasadas com a barra de abas do celular, então não pesa a mais.
   const desktop = useIsDesktop();
   const counts = { "/os": usePlacar(desktop).patio };
 
@@ -140,7 +141,7 @@ export function Sidebar(): React.ReactElement {
           <img src="/logo-ticket-preta.svg" alt="DS Car Centro Automotivo" className="h-20 w-auto shrink-0 dark:hidden" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-ticket-branca.svg" alt="" aria-hidden className="hidden h-20 w-auto shrink-0 dark:block" />
-          {desktop && <Placar torre className="min-w-0 flex-1" />}
+          <Placar torre ativo={desktop} className="min-w-0 flex-1" />
         </div>
         {podeAbrirOS(role) && (
           <Link
@@ -207,7 +208,7 @@ export function Sidebar(): React.ReactElement {
             </DropdownMenuContent>
           </DropdownMenu>
           <OfflineStatusBar />
-          {desktop && <NotificationBell />}
+          <NotificationBell />
         </div>
       </div>
     </aside>

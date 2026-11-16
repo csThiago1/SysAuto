@@ -5,6 +5,7 @@
  * Lista clientes com titulos vencidos e totais em aberto.
  */
 
+import { Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import React from "react";
 import { AlertTriangle } from "lucide-react";
 import { useInadimplencia } from "@/hooks/useAccounting";
@@ -89,46 +90,46 @@ export default function InadimplenciaPage(): React.ReactElement {
             </div>
             {/* Desktop table */}
             <ScrollFade className="hidden md:block">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left text-muted-foreground">
-                    <th className="py-2 pr-4 font-medium">Cliente</th>
-                    <th className="py-2 pr-4 font-medium text-right">Valor Total</th>
-                    <th className="py-2 pr-4 font-medium text-right">Titulos</th>
-                    <th className="py-2 font-medium text-right">Valor Restante</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead className="text-right">Valor Total</TableHead>
+                    <TableHead className="text-right">Titulos</TableHead>
+                    <TableHead className="text-right">Valor Restante</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {data.items.map((item) => (
-                    <tr key={item.customer_id} className="border-b border-border/50">
-                      <td className="py-2 pr-4 text-foreground font-medium">
+                    <TableRow key={item.customer_id}>
+                      <TableCell className="text-foreground font-medium">
                         {item.customer_name}
-                      </td>
-                      <td className="py-2 pr-4 text-right text-muted-foreground font-mono">
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground font-mono">
                         {formatCurrency(item.total_amount)}
-                      </td>
-                      <td className="py-2 pr-4 text-right text-muted-foreground font-mono">
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground font-mono">
                         {item.count}
-                      </td>
-                      <td className="py-2 text-right font-mono font-semibold text-error-400">
+                      </TableCell>
+                      <TableCell className="text-right font-mono font-semibold text-error-400">
                         {formatCurrency(item.total_remaining)}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-                <tfoot>
-                  <tr className="border-t-2 border-border font-semibold">
-                    <td className="py-2 pr-4 text-foreground">Total</td>
-                    <td className="py-2 pr-4" />
-                    <td className="py-2 pr-4 text-right text-foreground font-mono">
+                </TableBody>
+                <TableFooter>
+                  <TableRow className="border-t-2 font-semibold">
+                    <TableCell className="text-foreground">Total</TableCell>
+                    <TableCell />
+                    <TableCell className="text-right text-foreground font-mono">
                       {data.totals.count}
-                    </td>
-                    <td className="py-2 text-right font-mono text-error-400">
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-error-400">
                       {formatCurrency(data.totals.total_remaining)}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
+                    </TableCell>
+                  </TableRow>
+                </TableFooter>
+              </Table>
             </ScrollFade>
             </>
           ) : (

@@ -16,6 +16,7 @@ import { useEmpresas, useCreateEmpresa } from "@/hooks/usePricingProfile"
 import type { EmpresaPayload } from "@/hooks/usePricingProfile"
 import { TableSkeleton } from "@/components/ui/table-skeleton"
 import { formatCNPJ, onlyDigits } from "@paddock/utils"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 const EMPTY_FORM: EmpresaPayload = {
   cnpj: "",
@@ -77,22 +78,22 @@ export default function EmpresasPage() {
         </div>
       ) : (
         <div className="rounded-md border">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="px-4 py-3 text-left font-medium">Nome Fantasia</th>
-                <th className="px-4 py-3 text-left font-medium">CNPJ</th>
-                <th className="px-4 py-3 text-left font-medium">Razão Social</th>
-                <th className="px-4 py-3 text-left font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/50">
+                <TableHead>Nome Fantasia</TableHead>
+                <TableHead>CNPJ</TableHead>
+                <TableHead>Razão Social</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {empresas.map((e) => (
-                <tr key={e.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3 font-medium">{e.nome_fantasia}</td>
-                  <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{e.cnpj}</td>
-                  <td className="px-4 py-3">{e.razao_social}</td>
-                  <td className="px-4 py-3">
+                <TableRow key={e.id}>
+                  <TableCell className="font-medium">{e.nome_fantasia}</TableCell>
+                  <TableCell className="text-muted-foreground font-mono text-xs">{e.cnpj}</TableCell>
+                  <TableCell>{e.razao_social}</TableCell>
+                  <TableCell>
                     <span
                       className={[
                         "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
@@ -103,11 +104,11 @@ export default function EmpresasPage() {
                     >
                       {e.is_active ? "Ativa" : "Inativa"}
                     </span>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
 

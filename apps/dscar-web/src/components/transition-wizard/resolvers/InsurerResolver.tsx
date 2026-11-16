@@ -1,5 +1,6 @@
 "use client"
 
+import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { Loader2, Search } from "lucide-react"
 import { toast } from "sonner"
@@ -43,8 +44,8 @@ export function InsurerResolver({ order, onResolved }: ResolverProps) {
     <div className="mt-2 space-y-2">
       <div className="relative">
         <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-muted-foreground" />
-        <input
-          className="w-full rounded-md border bg-background pl-7 pr-2 py-1.5 text-sm"
+        <Input
+          className="pl-7"
           placeholder="Buscar seguradora por nome..."
           value={q}
           onChange={(e) => setQ(e.target.value)}

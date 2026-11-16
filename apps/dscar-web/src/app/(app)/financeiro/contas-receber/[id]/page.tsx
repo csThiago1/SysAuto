@@ -236,8 +236,8 @@ export default function ContaReceberDetailPage(): React.ReactElement {
           <ValueCard
             label="Saldo Restante"
             value={formatBRL(doc.amount_remaining)}
-            iconBg="bg-amber-100"
-            icon={<DollarSign className="h-4 w-4 text-amber-600" />}
+            iconBg="bg-warning-500/10"
+            icon={<DollarSign className="h-4 w-4 text-warning-400" />}
             highlight={parseFloat(doc.amount_remaining) > 0}
           />
           <ValueCard

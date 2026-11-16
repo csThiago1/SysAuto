@@ -16,9 +16,9 @@ export default function BudgetDetailPage() {
   if (isLoading) {
     return (
       <div className="px-0 py-3 md:p-6 space-y-4">
-        <Skeleton className="h-14 w-full rounded-xl bg-muted/50" />
+        <Skeleton className="h-14 w-full rounded-md bg-muted/50" />
         <Skeleton className="h-8 w-64 rounded-lg bg-muted/50" />
-        <Skeleton className="h-48 w-full rounded-xl bg-muted/50" />
+        <Skeleton className="h-48 w-full rounded-md bg-muted/50" />
       </div>
     )
   }

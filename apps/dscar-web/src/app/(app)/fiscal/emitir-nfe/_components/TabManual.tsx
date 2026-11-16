@@ -195,7 +195,7 @@ export function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => v
   return (
     <form onSubmit={form.handleSubmit(onSubmit, () => toast.error("Preencha todos os campos obrigatórios."))} className="space-y-5">
       {/* Destinatário */}
-      <div className="rounded-xl bg-muted/30 border border-border p-5 space-y-4">
+      <div className="rounded-md bg-muted/30 border border-border p-5 space-y-4">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Destinatário
         </h2>
@@ -222,7 +222,7 @@ export function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => v
       </div>
 
       {/* Itens */}
-      <div className="rounded-xl bg-muted/30 border border-border p-5 space-y-4">
+      <div className="rounded-md bg-muted/30 border border-border p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Itens / Mercadorias
@@ -266,7 +266,7 @@ export function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => v
       </div>
 
       {/* Dados complementares */}
-      <div className="rounded-xl bg-muted/30 border border-border p-5 space-y-4">
+      <div className="rounded-md bg-muted/30 border border-border p-5 space-y-4">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Dados Complementares
         </h2>
@@ -279,7 +279,7 @@ export function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => v
               {...form.register("forma_pagamento")}
             >
               {FORMA_PAGAMENTO_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value} className="bg-zinc-900">
+                <option key={o.value} value={o.value} className="bg-card">
                   {o.label}
                 </option>
               ))}
@@ -317,7 +317,7 @@ export function TabManual({ onSuccess }: { onSuccess: (doc: FiscalDocument) => v
 
       {/* Inline error */}
       {apiError && (
-        <div className="flex items-start gap-2 rounded-lg bg-red-950/50 border border-red-700/40 px-3 py-2.5">
+        <div className="flex items-start gap-2 rounded-lg bg-error-500/10 border border-error-500/30 px-3 py-2.5">
           <AlertTriangle className="h-4 w-4 text-error-400 mt-0.5 shrink-0" />
           <p className="text-xs text-error-400">{apiError}</p>
         </div>

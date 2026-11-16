@@ -86,7 +86,7 @@ export function CancelDialog({
             <button
               type="submit"
               disabled={isPending || !reason.trim()}
-              className="rounded-md bg-error-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-red-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-error-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-error-700 disabled:opacity-50 transition-colors"
             >
               {isPending ? "Cancelando..." : "Confirmar Cancelamento"}
             </button>

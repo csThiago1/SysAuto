@@ -165,7 +165,7 @@ function EmitirNfseManualPageInner() {
   if (emitted) {
     return (
       <div className="px-0 py-3 md:p-6 max-w-xl space-y-4">
-        <div className="flex items-center gap-3 rounded-xl bg-success-950/40 border border-success-700/30 p-5">
+        <div className="flex items-center gap-3 rounded-md bg-success-950/40 border border-success-700/30 p-5">
           <CheckCircle2 className="h-6 w-6 text-success-400 shrink-0" />
           <div>
             <p className="font-semibold text-success-300">NFS-e em processamento</p>
@@ -175,7 +175,7 @@ function EmitirNfseManualPageInner() {
           </div>
         </div>
 
-        <div className="rounded-xl bg-muted/30 border border-border p-4 space-y-2 text-sm">
+        <div className="rounded-md bg-muted/30 border border-border p-4 space-y-2 text-sm">
           {emitted.ref && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">Referência</span>
@@ -219,7 +219,7 @@ function EmitirNfseManualPageInner() {
 
       <form onSubmit={form.handleSubmit(onSubmit, () => toast.error("Preencha todos os campos obrigatórios."))} className="space-y-6">
         {/* Destinatário */}
-        <div className="rounded-xl bg-muted/30 border border-border p-5 space-y-4">
+        <div className="rounded-md bg-muted/30 border border-border p-5 space-y-4">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Destinatário
           </h2>
@@ -246,7 +246,7 @@ function EmitirNfseManualPageInner() {
         </div>
 
         {/* Dados da nota */}
-        <div className="rounded-xl bg-muted/30 border border-border p-5 space-y-4">
+        <div className="rounded-md bg-muted/30 border border-border p-5 space-y-4">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Dados da Nota
           </h2>
@@ -332,7 +332,7 @@ function EmitirNfseManualPageInner() {
         </div>
 
         {/* Itens */}
-        <div className="rounded-xl bg-muted/30 border border-border p-5 space-y-4">
+        <div className="rounded-md bg-muted/30 border border-border p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Itens

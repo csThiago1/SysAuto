@@ -127,7 +127,7 @@ export default function ServicosPage() {
 
             const isOpen = expanded.has(cat)
             return (
-              <div key={cat} className="rounded-xl border border-border bg-muted/50 overflow-hidden shadow-sm">
+              <div key={cat} className="rounded-md border border-border bg-muted/50 overflow-hidden shadow-sm">
                 {/* Header da categoria */}
                 <button
                   onClick={() => toggle(cat)}

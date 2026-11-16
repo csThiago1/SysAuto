@@ -165,7 +165,7 @@ function MargensTab({ empresaId }: { empresaId: string }) {
       )}
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-md bg-zinc-950 border-border">
+        <SheetContent side="right" className="w-full sm:max-w-md bg-card border-border">
           <SheetHeader>
             <SheetTitle className="text-foreground">Nova Margem de Operação</SheetTitle>
           </SheetHeader>
@@ -378,7 +378,7 @@ function MarkupPecaTab({ empresaId }: { empresaId: string }) {
       )}
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-md bg-zinc-950 border-border">
+        <SheetContent side="right" className="w-full sm:max-w-md bg-card border-border">
           <SheetHeader>
             <SheetTitle className="text-foreground">Novo Markup por Peça</SheetTitle>
           </SheetHeader>

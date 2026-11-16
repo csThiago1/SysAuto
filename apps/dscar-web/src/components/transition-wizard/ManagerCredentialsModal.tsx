@@ -1,5 +1,6 @@
 "use client"
 
+import { Input } from "@/components/ui/input"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -51,11 +52,11 @@ export function ManagerCredentialsModal({
             <label htmlFor="manager-email" className="text-sm font-medium">
               Email
             </label>
-            <input
+            <Input
               id="manager-email"
               type="email"
               autoComplete="username"
-              className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="mt-1"
               placeholder="gerente@dscar.com"
               value={email}
               onChange={(e) => onEmailChange(e.target.value)}
@@ -65,11 +66,11 @@ export function ManagerCredentialsModal({
             <label htmlFor="manager-password" className="text-sm font-medium">
               Senha
             </label>
-            <input
+            <Input
               id="manager-password"
               type="password"
               autoComplete="current-password"
-              className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="mt-1"
               value={password}
               onChange={(e) => onPasswordChange(e.target.value)}
             />

@@ -139,7 +139,7 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
         </InfoCard>
 
         {/* Pendências / transição — motor existente, casca nova */}
-        <div className="rounded-xl border border-border bg-card shadow-card">
+        <div className="rounded-md border border-border bg-card shadow-card">
           <div className="flex items-center gap-2 border-b border-border px-4 py-3">
             <ClipboardList className="h-4 w-4 text-muted-foreground" />
             <h3 className="text-sm font-medium text-foreground">Próximo passo</h3>
@@ -152,7 +152,7 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
 
       {/* Coluna lateral */}
       <div className="space-y-4">
-        <div className="rounded-xl border border-border bg-card shadow-card">
+        <div className="rounded-md border border-border bg-card shadow-card">
           <div className="flex items-center gap-2 border-b border-border px-4 py-3">
             <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
             <h3 className="text-sm font-medium text-foreground">Financeiro</h3>
@@ -170,7 +170,7 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
         </div>
 
         {recentPhotos.length > 0 && (
-          <div className="rounded-xl border border-border bg-card shadow-card">
+          <div className="rounded-md border border-border bg-card shadow-card">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Images className="h-4 w-4" />
@@ -201,7 +201,7 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
           </div>
         )}
 
-        <div className="rounded-xl border border-border bg-card shadow-card">
+        <div className="rounded-md border border-border bg-card shadow-card">
           <div className="flex items-center gap-2 border-b border-border px-4 py-3">
             <Wrench className="h-4 w-4 text-muted-foreground" />
             <h3 className="text-sm font-medium text-foreground">Ações rápidas</h3>
@@ -233,7 +233,7 @@ function InfoCard({
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card shadow-card">
+    <div className="rounded-md border border-border bg-card shadow-card">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2 text-muted-foreground">
           {icon}
@@ -278,7 +278,7 @@ function DateItem({
 }) {
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
       <p className={`mt-0.5 text-sm font-medium ${highlight ? "text-foreground" : "text-foreground/70"}`}>
         {value}
       </p>

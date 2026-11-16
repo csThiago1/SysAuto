@@ -7,6 +7,7 @@ import Link from "next/link"
 import type { Route } from "next"
 import { useOrcamentos } from "@/hooks/useQuotes"
 import { ORCAMENTO_STATUS_LABEL, ORCAMENTO_STATUS_BADGE } from "@paddock/utils"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 const formatBRL = (v: string | number) =>
   parseFloat(String(v)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
@@ -86,49 +87,49 @@ export default function OrcamentosPage() {
         </div>
       ) : (
         <div className="rounded-lg border border-border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/50 text-muted-foreground text-xs">
-                <th className="px-4 py-3 text-left">Número</th>
-                <th className="px-4 py-3 text-left">Cliente</th>
-                <th className="px-4 py-3 text-left">Veículo</th>
-                <th className="px-4 py-3 text-left">Seguradora</th>
-                <th className="px-4 py-3 text-right">Total</th>
-                <th className="px-4 py-3 text-left">Validade</th>
-                <th className="px-4 py-3 text-left">Status</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/50">
+                <TableHead>Número</TableHead>
+                <TableHead>Cliente</TableHead>
+                <TableHead>Veículo</TableHead>
+                <TableHead>Seguradora</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+                <TableHead>Validade</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {orcamentos.map((orc) => (
-                <tr
+                <TableRow
                   key={orc.id}
-                  className="border-b border-white/5 hover:bg-muted/50 transition-colors cursor-pointer"
+                  className="hover:bg-muted/50 cursor-pointer"
                   onClick={() => { window.location.href = `/orcamentos/${orc.id}` }}
                 >
-                  <td className="px-4 py-3 text-foreground font-medium">
+                  <TableCell className="text-foreground font-medium">
                     {orc.numero} <span className="text-muted-foreground text-xs">v{orc.versao}</span>
-                  </td>
-                  <td className="px-4 py-3 text-foreground/80">{orc.customer_nome}</td>
-                  <td className="px-4 py-3 text-foreground/60">
+                  </TableCell>
+                  <TableCell className="text-foreground/80">{orc.customer_nome}</TableCell>
+                  <TableCell className="text-foreground/60">
                     {orc.veiculo_marca} {orc.veiculo_modelo} {orc.veiculo_ano}
                     {orc.veiculo_placa && (
                       <span className="ml-1 text-xs text-muted-foreground">{orc.veiculo_placa}</span>
                     )}
-                  </td>
-                  <td className="px-4 py-3 text-foreground/60">{orc.seguradora ?? "—"}</td>
-                  <td className="px-4 py-3 text-right text-foreground/80">{formatBRL(orc.total)}</td>
-                  <td className="px-4 py-3 text-foreground/60">
+                  </TableCell>
+                  <TableCell className="text-foreground/60">{orc.seguradora ?? "—"}</TableCell>
+                  <TableCell className="text-right text-foreground/80">{formatBRL(orc.total)}</TableCell>
+                  <TableCell className="text-foreground/60">
                     {new Date(orc.validade).toLocaleDateString("pt-BR")}
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${ORCAMENTO_STATUS_BADGE[orc.status]}`}>
                       {ORCAMENTO_STATUS_LABEL[orc.status]}
                     </span>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>

@@ -122,8 +122,8 @@ export function RemindersTab({ orderId }: RemindersTabProps) {
           <ul className="divide-y divide-white/5">
             {reminders.map((r) => (
               <li key={r.id} className="px-5 py-4 flex gap-3">
-                <div className="mt-0.5 h-6 w-6 flex items-center justify-center rounded-full bg-amber-50 ring-2 ring-amber-100 shrink-0">
-                  <Bell className="h-3.5 w-3.5 text-amber-500" />
+                <div className="mt-0.5 h-6 w-6 flex items-center justify-center rounded-full bg-warning-500/10 ring-2 ring-warning-500/30 shrink-0">
+                  <Bell className="h-3.5 w-3.5 text-warning-400" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-foreground/90 whitespace-pre-wrap">{r.description}</p>

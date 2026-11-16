@@ -72,7 +72,7 @@ export function ItemsTable({ budgetId, version }: Props) {
   return (
     <div className="space-y-3">
       {/* Tabela */}
-      <div className="rounded-xl border border-border overflow-hidden">
+      <div className="rounded-md border border-border overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
@@ -142,7 +142,7 @@ export function ItemsTable({ budgetId, version }: Props) {
       {/* Totais */}
       {items.length > 0 && (
         <div className="flex justify-end">
-          <div className="rounded-xl border border-border bg-muted/50 p-4 w-72 space-y-1.5 text-sm">
+          <div className="rounded-md border border-border bg-muted/50 p-4 w-72 space-y-1.5 text-sm">
             <div className="flex justify-between text-muted-foreground">
               <span>Peças</span>
               <span>{fmt(version.parts_total)}</span>

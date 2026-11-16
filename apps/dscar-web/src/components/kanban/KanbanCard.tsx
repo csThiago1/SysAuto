@@ -90,7 +90,7 @@ const CardContent = React.memo(function CardContent({
 
         {/* Linha própria: na coluna de 220px, junto do número, empurrava o status para fora do card. */}
         {order.vehicle_needs_review && (
-          <span className="inline-block text-[10px] font-semibold leading-none text-warning-400 bg-warning-500/10 px-1.5 py-0.5 rounded-sm border border-warning-500/30 whitespace-nowrap">
+          <span className="inline-block text-xs font-semibold leading-none text-warning-400 bg-warning-500/10 px-1.5 py-0.5 rounded-sm border border-warning-500/30 whitespace-nowrap">
             Veículo a confirmar
           </span>
         )}
@@ -126,7 +126,7 @@ const CardContent = React.memo(function CardContent({
                   />
                 ) : (
                   <span
-                    className="h-3.5 w-3.5 rounded-full flex items-center justify-center text-white text-[7px] font-bold shrink-0"
+                    className="h-3.5 w-3.5 rounded-full flex items-center justify-center text-white text-2xs font-bold shrink-0"
                     style={{ backgroundColor: order.insurer_detail.brand_color ?? "#6366f1" }}
                   >
                     {order.insurer_detail.abbreviation?.charAt(0)}

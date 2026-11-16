@@ -16,7 +16,7 @@ export function SuccessCard({
 
   return (
     <div className="p-6 max-w-xl space-y-4">
-      <div className="flex items-center gap-3 rounded-xl bg-success-950/40 border border-success-700/30 p-5">
+      <div className="flex items-center gap-3 rounded-md bg-success-950/40 border border-success-700/30 p-5">
         <CheckCircle2 className="h-6 w-6 text-success-400 shrink-0" />
         <div>
           <p className="font-semibold text-success-300">NF-e enviada para processamento</p>
@@ -26,7 +26,7 @@ export function SuccessCard({
         </div>
       </div>
 
-      <div className="rounded-xl bg-muted/30 border border-border p-4 space-y-2 text-sm">
+      <div className="rounded-md bg-muted/30 border border-border p-4 space-y-2 text-sm">
         {doc.ref && (
           <div className="flex justify-between">
             <span className="text-muted-foreground">Referência</span>
@@ -46,7 +46,7 @@ export function SuccessCard({
         {doc.key && (
           <div className="flex justify-between">
             <span className="text-muted-foreground">Chave</span>
-            <span className="font-mono text-foreground/60 text-[10px]">{doc.key}</span>
+            <span className="font-mono text-foreground/60 text-xs">{doc.key}</span>
           </div>
         )}
       </div>

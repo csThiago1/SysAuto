@@ -12,6 +12,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import type { LoteInsumo } from "@paddock/types"
 import { ScrollFade } from "@/components/ui/scroll-fade"
 import { toast } from "sonner"
@@ -115,12 +117,12 @@ function BaixarModal({
           <label className="label-mono text-muted-foreground mb-1.5 block">
             ID DA ORDEM DE SERVICO
           </label>
-          <input
+          <Input
             type="text"
             value={osId}
             onChange={(e) => setOsId(e.target.value)}
             placeholder="UUID da OS..."
-            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full font-mono"
             autoFocus
           />
         </div>
@@ -128,7 +130,7 @@ function BaixarModal({
           <label className="label-mono text-muted-foreground mb-1.5 block">
             QUANTIDADE ({lote.unidade_base})
           </label>
-          <input
+          <Input
             type="number"
             step="0.01"
             min="0"
@@ -136,7 +138,7 @@ function BaixarModal({
             value={quantidade}
             onChange={(e) => setQuantidade(e.target.value)}
             placeholder={`Max: ${lote.saldo}`}
-            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm font-mono placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full font-mono"
           />
         </div>
         <DialogFooter>
@@ -324,7 +326,7 @@ export default function LotesPage() {
             return (
               <div
                 key={lote.id}
-                className="relative overflow-hidden rounded-[11px] bg-muted/30 py-2.5 pl-4 pr-3"
+                className="relative overflow-hidden rounded-md bg-muted/30 py-2.5 pl-4 pr-3"
               >
                 <span
                   aria-hidden
@@ -393,50 +395,50 @@ export default function LotesPage() {
         {/* Desktop table */}
         <div className="hidden md:block rounded-md border border-border bg-muted/50">
         <ScrollFade>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/30">
-                <th className="px-4 py-3 text-left label-mono text-muted-foreground">BARCODE</th>
-                <th className="px-4 py-3 text-left label-mono text-muted-foreground">MATERIAL</th>
-                <th className="px-4 py-3 text-left label-mono text-muted-foreground">PRODUTO</th>
-                <th className="px-4 py-3 text-left label-mono text-muted-foreground">SALDO / CUSTO</th>
-                <th className="px-4 py-3 text-left label-mono text-muted-foreground">% RESTANTE</th>
-                <th className="px-4 py-3 text-left label-mono text-muted-foreground">POSICAO</th>
-                <th className="px-4 py-3 text-left label-mono text-muted-foreground">VALIDADE</th>
-                <th className="px-4 py-3 text-right label-mono text-muted-foreground">ACOES</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow className="border-border bg-muted/30">
+                <TableHead className="py-3">BARCODE</TableHead>
+                <TableHead className="py-3">MATERIAL</TableHead>
+                <TableHead className="py-3">PRODUTO</TableHead>
+                <TableHead className="py-3">SALDO / CUSTO</TableHead>
+                <TableHead className="py-3">% RESTANTE</TableHead>
+                <TableHead className="py-3">POSICAO</TableHead>
+                <TableHead className="py-3">VALIDADE</TableHead>
+                <TableHead className="py-3 text-right">ACOES</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {lotes.map((lote) => {
                 const saldo = parseFloat(lote.saldo)
                 const custo = parseFloat(lote.valor_unitario_base)
                 const dataLote = new Date(lote.created_at).toLocaleDateString("pt-BR")
 
                 return (
-                  <tr
+                  <TableRow
                     key={lote.id}
-                    className="border-b border-white/5 hover:bg-muted/30 transition-colors"
+                    className="border-white/5"
                   >
-                    <td className="px-4 py-3 font-mono text-xs text-foreground/60">
+                    <TableCell className="font-mono text-xs text-foreground/60">
                       {lote.codigo_barras}
-                    </td>
-                    <td className="px-4 py-3 text-foreground text-sm">
+                    </TableCell>
+                    <TableCell className="text-foreground text-sm">
                       {lote.material_nome}
-                    </td>
-                    <td className="px-4 py-3 text-foreground/60 text-sm">
+                    </TableCell>
+                    <TableCell className="text-foreground/60 text-sm">
                       {lote.produto_insumo || "\u2014"}
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell>
                       <div className="space-y-0.5">
                         <p className="font-mono text-xs text-foreground/80">
                           {saldo.toFixed(2)} {lote.unidade_base} a R$ {custo.toFixed(4)}/{lote.unidade_base}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           lote de {dataLote}
                         </p>
                       </div>
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-2">
                         <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
                           <div
@@ -456,16 +458,16 @@ export default function LotesPage() {
                           {lote.saldo_percentual}%
                         </span>
                       </div>
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs text-foreground/60">
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-foreground/60">
                       {lote.nivel || lote.localizacao || "\u2014"}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground">
                       {lote.validade
                         ? new Date(lote.validade).toLocaleDateString("pt-BR")
                         : "\u2014"}
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center justify-end gap-1">
                         {saldo > 0 && (
                           <button
@@ -494,12 +496,12 @@ export default function LotesPage() {
                           <Printer className="h-3.5 w-3.5" />
                         </button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )
               })}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </ScrollFade>
         </div>
         </>

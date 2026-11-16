@@ -10,6 +10,7 @@ import {
   useArmazens,
   useArmazemCreate,
 } from "@/hooks/useInventoryLocation"
+import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
 import { Button } from "@/components/ui/button"
 
@@ -82,20 +83,20 @@ export default function ArmazensPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="label-mono text-muted-foreground mb-1.5 block">NOME</label>
-              <input
+              <Input
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="Galpão Principal"
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full"
               />
             </div>
             <div>
               <label className="label-mono text-muted-foreground mb-1.5 block">CÓDIGO</label>
-              <input
+              <Input
                 value={codigo}
                 onChange={(e) => setCodigo(e.target.value)}
                 placeholder="G1"
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full"
               />
             </div>
             <div>
@@ -153,7 +154,7 @@ export default function ArmazensPage() {
                     </h2>
                   </div>
                   <span
-                    className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded ${badge.className}`}
+                    className={`text-xs font-mono uppercase tracking-wider px-2 py-0.5 rounded ${badge.className}`}
                   >
                     {badge.label}
                   </span>

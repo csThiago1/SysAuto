@@ -396,7 +396,7 @@ function FolderSection({
     ?? Camera
 
   return (
-    <div className={cn("rounded-xl border overflow-hidden", cfg.borderColor)}>
+    <div className={cn("rounded-md border overflow-hidden", cfg.borderColor)}>
       <div
         role="button"
         tabIndex={0}
@@ -665,7 +665,7 @@ export function FilesTab({ order }: FilesTabProps) {
 
       {/* Barra de ações da seleção */}
       {selectionMode && (
-        <div className="sticky bottom-4 z-10 flex items-center justify-between gap-2 rounded-xl border border-border bg-background/95 px-4 py-2.5 shadow-lg backdrop-blur">
+        <div className="sticky bottom-4 z-10 flex items-center justify-between gap-2 rounded-lg border border-border bg-background/95 px-4 py-2.5 shadow-lg backdrop-blur">
           <span className="text-sm text-foreground/70">
             <strong className="text-foreground/90">{selectedCount}</strong> selecionada
             {selectedCount !== 1 ? "s" : ""}

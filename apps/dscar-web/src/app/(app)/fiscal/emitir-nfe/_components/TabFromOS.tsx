@@ -114,7 +114,7 @@ export function TabFromOS({ onSuccess }: { onSuccess: (doc: FiscalDocument) => v
 
   return (
     <div className="space-y-5">
-      <div className="rounded-xl bg-muted/30 border border-border p-5 space-y-4">
+      <div className="rounded-md bg-muted/30 border border-border p-5 space-y-4">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Buscar Ordem de Serviço
         </h2>
@@ -166,7 +166,7 @@ export function TabFromOS({ onSuccess }: { onSuccess: (doc: FiscalDocument) => v
         )}
       </div>
 
-      <div className="rounded-xl bg-warning-950/30 border border-warning-700/20 p-4 text-xs text-warning-300/70 space-y-1">
+      <div className="rounded-md bg-warning-950/30 border border-warning-700/20 p-4 text-xs text-warning-300/70 space-y-1">
         <p className="font-semibold text-warning-300">Requisitos</p>
         <ul className="list-disc list-inside space-y-0.5 text-warning-300/60">
           <li>A OS precisa ter ao menos uma peça ativa</li>

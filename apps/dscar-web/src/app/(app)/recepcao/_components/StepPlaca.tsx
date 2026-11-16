@@ -147,7 +147,7 @@ export function StepPlaca(): React.ReactElement {
       {osAberta && (
         <Link
           href={`/os/${osAberta.number}`}
-          className="flex items-start gap-2 rounded-[11px] bg-warning-500/10 px-3 py-2.5 text-sm text-warning-400"
+          className="flex items-start gap-2 rounded-md bg-warning-500/10 px-3 py-2.5 text-sm text-warning-400"
         >
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>

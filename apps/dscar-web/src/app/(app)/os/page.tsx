@@ -436,7 +436,7 @@ export default function ServiceOrdersPage() {
            <>
              <div className="md:hidden space-y-2">
                {Array.from({ length: 6 }).map((_, i) => (
-                 <div key={i} className="rounded-[11px] bg-card px-3 py-2.5 space-y-1.5">
+                 <div key={i} className="rounded-md bg-card px-3 py-2.5 space-y-1.5">
                    <div className="flex items-center justify-between gap-2">
                      <Skeleton className="h-3.5 w-24" />
                      <Skeleton className="h-3 w-16" />

@@ -3,6 +3,8 @@
 import { useState } from "react"
 import { useEnquadramentos } from "@/hooks/usePricingProfile"
 import { TableSkeleton } from "@/components/ui/table-skeleton"
+import { Input } from "@/components/ui/input"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 export default function EnquadramentosPage() {
   const [search, setSearch] = useState("")
@@ -21,12 +23,12 @@ export default function EnquadramentosPage() {
         </p>
       </div>
 
-      <input
+      <Input
         type="text"
         placeholder="Buscar por marca ou modelo..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="h-9 rounded-md border bg-background px-3 text-sm w-72 focus:outline-none focus:ring-2 focus:ring-ring"
+        className="w-72"
       />
 
       {isLoading ? (
@@ -37,45 +39,44 @@ export default function EnquadramentosPage() {
         </div>
       ) : (
         <div className="rounded-md border overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="px-4 py-3 text-left font-medium">Marca</th>
-                <th className="px-4 py-3 text-left font-medium">Modelo</th>
-                <th className="px-4 py-3 text-left font-medium">Anos</th>
-                <th className="px-4 py-3 text-left font-medium">Segmento</th>
-                <th className="px-4 py-3 text-left font-medium">Tamanho</th>
-                <th className="px-4 py-3 text-left font-medium">Pintura default</th>
-                <th className="px-4 py-3 text-right font-medium">Prioridade</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/50">
+                <TableHead>Marca</TableHead>
+                <TableHead>Modelo</TableHead>
+                <TableHead>Anos</TableHead>
+                <TableHead>Segmento</TableHead>
+                <TableHead>Tamanho</TableHead>
+                <TableHead>Pintura default</TableHead>
+                <TableHead className="text-right">Prioridade</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {enquadramentos.map((e) => (
-                <tr
+                <TableRow
                   key={e.id}
-                  className="border-b last:border-0 hover:bg-muted/30 transition-colors"
                 >
-                  <td className="px-4 py-3 font-medium">{e.marca}</td>
-                  <td className="px-4 py-3">{e.modelo || "—"}</td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
+                  <TableCell className="font-medium">{e.marca}</TableCell>
+                  <TableCell>{e.modelo || "—"}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                     {e.ano_inicio ?? "∞"} — {e.ano_fim ?? "∞"}
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>
                     {e.segmento?.nome ?? e.segmento_codigo}
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell>
                     {e.tamanho?.nome ?? e.tamanho_codigo}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
                     {e.tipo_pintura_default?.nome ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-right text-muted-foreground font-mono text-xs">
+                  </TableCell>
+                  <TableCell className="text-right text-muted-foreground font-mono text-xs">
                     {e.prioridade}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>

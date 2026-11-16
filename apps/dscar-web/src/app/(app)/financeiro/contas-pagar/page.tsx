@@ -177,8 +177,8 @@ export default function ContasPagarPage(): React.ReactElement {
           <SummaryCard
             label="A Vencer Hoje"
             value={formatBRL(String(dueToday))}
-            iconBg="bg-amber-100"
-            icon={<Clock className="h-5 w-5 text-amber-600" />}
+            iconBg="bg-warning-500/10"
+            icon={<Clock className="h-5 w-5 text-warning-400" />}
             isLoading={isAllLoading}
           />
         </div>
@@ -332,7 +332,7 @@ export default function ContasPagarPage(): React.ReactElement {
                         #{doc.document_number}
                       </span>
                     )}
-                    <span className="ml-1.5 text-[10px] text-muted-foreground/60">
+                    <span className="ml-1.5 text-xs text-muted-foreground/60">
                       {PAYABLE_ORIGIN_LABELS[doc.origin]}
                     </span>
                   </span>

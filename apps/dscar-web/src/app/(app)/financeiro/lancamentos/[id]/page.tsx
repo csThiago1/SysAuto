@@ -4,6 +4,7 @@
  * Detalhe do Lançamento Contábil — visualizacao, aprovacao e estorno.
  */
 
+import { Table, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import React from "react";
 import Link from "next/link";
 import type { Route } from "next";
@@ -207,77 +208,77 @@ export default function LancamentoDetailPage(): React.ReactElement {
             </h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-y border-border bg-muted/30">
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-y bg-muted/30">
+                  <TableHead>
                     Conta
-                  </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  </TableHead>
+                  <TableHead>
                     Centro de Custo
-                  </th>
-                  <th className="text-right px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  </TableHead>
+                  <TableHead className="text-right">
                     Debito
-                  </th>
-                  <th className="text-right px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  </TableHead>
+                  <TableHead className="text-right">
                     Credito
-                  </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  </TableHead>
+                  <TableHead>
                     Descricao
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {entry.lines.map((line) => (
-                  <tr key={line.id} className="hover:bg-muted/30">
-                    <td className="px-4 py-3">
+                  <TableRow key={line.id}>
+                    <TableCell>
                       <span className="font-mono text-xs text-muted-foreground">
                         {line.account.code}
                       </span>{" "}
                       <span className="text-foreground">{line.account.name}</span>
-                    </td>
-                    <td className="px-4 py-3 text-foreground/60">
+                    </TableCell>
+                    <TableCell className="text-foreground/60">
                       {line.cost_center
                         ? `${line.cost_center.code} — ${line.cost_center.name}`
                         : <span className="text-muted-foreground">—</span>}
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono text-foreground/70">
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-foreground/70">
                       {parseFloat(line.debit_amount) > 0
                         ? formatBRL(line.debit_amount)
                         : <span className="text-muted-foreground">—</span>}
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono text-foreground/70">
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-foreground/70">
                       {parseFloat(line.credit_amount) > 0
                         ? formatBRL(line.credit_amount)
                         : <span className="text-muted-foreground">—</span>}
-                    </td>
-                    <td className="px-4 py-3 text-foreground/60 max-w-xs truncate">
+                    </TableCell>
+                    <TableCell className="text-foreground/60 max-w-xs truncate">
                       {line.description || <span className="text-muted-foreground">—</span>}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t-2 border-border bg-muted/30">
-                  <td colSpan={2} className="px-4 py-3 text-sm font-semibold text-foreground/70">
+              </TableBody>
+              <TableFooter>
+                <TableRow className="border-t-2 bg-muted/30">
+                  <TableCell colSpan={2} className="text-sm font-semibold text-foreground/70">
                     Totais
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono font-semibold text-foreground">
+                  </TableCell>
+                  <TableCell className="text-right font-mono font-semibold text-foreground">
                     {brl.format(totalDebit)}
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono font-semibold text-foreground">
+                  </TableCell>
+                  <TableCell className="text-right font-mono font-semibold text-foreground">
                     {brl.format(totalCredit)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
+                  </TableCell>
+                  <TableCell className="text-right">
                     {entry.is_balanced ? (
                       <Badge variant="success">Balanceado</Badge>
                     ) : (
                       <Badge variant="destructive">Desbalanceado</Badge>
                     )}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
+                  </TableCell>
+                </TableRow>
+              </TableFooter>
+            </Table>
           </div>
         </div>
       </div>
@@ -327,7 +328,7 @@ export default function LancamentoDetailPage(): React.ReactElement {
               type="button"
               onClick={handleReverse}
               disabled={reverse.isPending}
-              className="rounded-md bg-error-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-red-700 disabled:opacity-50 transition-colors"
+              className="rounded-md bg-error-600 px-4 py-2 text-sm font-medium text-foreground hover:bg-error-700 disabled:opacity-50 transition-colors"
             >
               {reverse.isPending ? "Estornando..." : "Confirmar Estorno"}
             </button>

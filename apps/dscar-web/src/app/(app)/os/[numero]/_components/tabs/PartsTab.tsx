@@ -242,7 +242,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
           <Loader2 className="animate-spin text-muted-foreground h-5 w-5" />
         </div>
       ) : partsList.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border bg-muted/20 p-10 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-md border border-dashed border-border bg-muted/20 p-10 text-center">
           <Package className="h-8 w-8 text-muted-foreground/50" />
           <p className="text-sm text-muted-foreground">Nenhuma peça nesta OS ainda.</p>
           <AddPartMenu
@@ -393,7 +393,7 @@ export function PartsTab({ orderId }: PartsTabProps) {
             return (
               <li
                 key={part.id}
-                className="rounded-[11px] bg-card px-3 py-2.5"
+                className="rounded-md bg-card px-3 py-2.5"
               >
                 <div className="flex items-start gap-2">
                   <div className="min-w-0 flex-1">
@@ -571,7 +571,7 @@ function AddPartMenu({
           Comprar
         </DropdownMenuItem>
         <DropdownMenuItem data-testid="part-seguradora-btn" onClick={onSeguradora}>
-          <Shield className="mr-2 h-4 w-4 text-purple-400" />
+          <Shield className="mr-2 h-4 w-4 text-info-400" />
           Seguradora fornece
         </DropdownMenuItem>
       </DropdownMenuContent>

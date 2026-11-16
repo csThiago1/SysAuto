@@ -1,5 +1,7 @@
 "use client"
 
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react"
 import { Printer, Plus, Trash2, Wifi } from "lucide-react"
@@ -45,14 +47,14 @@ function ImpressoraRow({ impressora }: { impressora: ImpressoraEtiqueta }) {
   }
 
   return (
-    <tr className="border-b border-white/5 hover:bg-muted/50 transition-colors">
-      <td className="px-4 py-3 text-foreground font-medium">{impressora.nome}</td>
-      <td className="px-4 py-3 text-foreground/60">{impressora.modelo_display}</td>
-      <td className="px-4 py-3 text-foreground/60 font-mono text-xs">{impressora.endpoint}</td>
-      <td className="px-4 py-3 text-foreground/60 text-xs">
+    <TableRow>
+      <TableCell className="text-foreground font-medium">{impressora.nome}</TableCell>
+      <TableCell className="text-foreground/60">{impressora.modelo_display}</TableCell>
+      <TableCell className="text-foreground/60 font-mono text-xs">{impressora.endpoint}</TableCell>
+      <TableCell className="text-foreground/60 text-xs">
         {impressora.largura_mm} × {impressora.altura_mm} mm
-      </td>
-      <td className="px-4 py-3">
+      </TableCell>
+      <TableCell>
         <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
           impressora.is_active
             ? "text-success-400 bg-success-400/10"
@@ -60,13 +62,13 @@ function ImpressoraRow({ impressora }: { impressora: ImpressoraEtiqueta }) {
         }`}>
           {impressora.is_active ? "Ativa" : "Inativa"}
         </span>
-      </td>
-      <td className="px-4 py-3">
+      </TableCell>
+      <TableCell>
         <div className="flex items-center gap-2">
           <button
             onClick={handleTestar}
             disabled={testar.isPending}
-            className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1 text-xs text-info-400 hover:text-info-500 disabled:opacity-50 transition-colors"
           >
             <Wifi className="h-3 w-3" />
             Testar
@@ -80,8 +82,8 @@ function ImpressoraRow({ impressora }: { impressora: ImpressoraEtiqueta }) {
             Remover
           </button>
         </div>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   )
 }
 
@@ -138,12 +140,12 @@ export default function ImpressorasPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground">Nome</label>
-              <input
+              <Input
                 required
                 value={form.nome}
                 onChange={(e) => setForm({ ...form, nome: e.target.value })}
                 placeholder="Ex: Zebra GK420d"
-                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full"
               />
             </div>
             <div className="space-y-1">
@@ -159,30 +161,30 @@ export default function ImpressorasPage() {
             </div>
             <div className="sm:col-span-2 space-y-1">
               <label className="text-xs text-muted-foreground">Endpoint (URL ou IP:porta)</label>
-              <input
+              <Input
                 required
                 value={form.endpoint}
                 onChange={(e) => setForm({ ...form, endpoint: e.target.value })}
                 placeholder="Ex: http://192.168.1.100:9100"
-                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full"
               />
             </div>
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground">Largura (mm)</label>
-              <input
+              <Input
                 type="number"
                 value={form.largura_mm}
                 onChange={(e) => setForm({ ...form, largura_mm: parseInt(e.target.value) })}
-                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full"
               />
             </div>
             <div className="space-y-1">
               <label className="text-xs text-muted-foreground">Altura (mm)</label>
-              <input
+              <Input
                 type="number"
                 value={form.altura_mm}
                 onChange={(e) => setForm({ ...form, altura_mm: parseInt(e.target.value) })}
-                className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full"
               />
             </div>
           </div>
@@ -213,23 +215,23 @@ export default function ImpressorasPage() {
         </div>
       ) : (
         <div className="rounded-lg border border-border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/50 text-muted-foreground text-xs">
-                <th className="px-4 py-3 text-left">Nome</th>
-                <th className="px-4 py-3 text-left">Modelo</th>
-                <th className="px-4 py-3 text-left">Endpoint</th>
-                <th className="px-4 py-3 text-left">Etiqueta</th>
-                <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-left">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/50">
+                <TableHead>Nome</TableHead>
+                <TableHead>Modelo</TableHead>
+                <TableHead>Endpoint</TableHead>
+                <TableHead>Etiqueta</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {impressoras.map((impressora) => (
                 <ImpressoraRow key={impressora.id} impressora={impressora} />
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>

@@ -1,5 +1,7 @@
 "use client"
 
+import { TableRow, TableCell } from "@/components/ui/table"
+import { Input } from "@/components/ui/input"
 import { Pencil, Trash2, Check, X } from "lucide-react"
 import { formatCurrency } from "@paddock/utils"
 import type { ServiceItem } from "../../../_utils/service-grouping"
@@ -34,15 +36,15 @@ export function ServiceSubRow({
   const isEditing = editingId === item.id
 
   return (
-    <tr className="border-t border-white/5">
-      <td className="py-2 pl-10 pr-3 text-foreground/60">{item._svcType}</td>
-      <td className="py-2 px-3 text-right text-foreground/90 font-mono">
+    <TableRow>
+      <TableCell className="py-2 pl-10 pr-3 text-foreground/60">{item._svcType}</TableCell>
+      <TableCell className="py-2 px-3 text-right text-foreground/90 font-mono">
         {isEditing ? (
-          <input
+          <Input
             type="number"
             value={editQty}
             onChange={(e) => setEditQty(e.target.value)}
-            className="w-16 border border-border rounded px-1 py-0.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary"
+            className="h-7 w-16 px-1 text-center"
             min="0.01"
             step="0.01"
             autoFocus
@@ -59,14 +61,14 @@ export function ServiceSubRow({
             {item.quantity}h
           </span>
         )}
-      </td>
-      <td className="py-2 px-3 text-right text-muted-foreground font-mono">
+      </TableCell>
+      <TableCell className="py-2 px-3 text-right text-muted-foreground font-mono">
         {isEditing ? (
-          <input
+          <Input
             type="number"
             value={editPrice}
             onChange={(e) => setEditPrice(e.target.value)}
-            className="w-20 border border-border rounded px-1 py-0.5 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary"
+            className="h-7 w-20 px-1 text-center"
             min="0"
             step="0.01"
             onKeyDown={(e) => {
@@ -82,12 +84,12 @@ export function ServiceSubRow({
             {formatCurrency(Number(item.unit_price))}/h
           </span>
         )}
-      </td>
-      <td className="py-2 px-4 text-right font-mono font-semibold text-foreground/90">
+      </TableCell>
+      <TableCell className="py-2 px-4 text-right font-mono font-semibold text-foreground/90">
         {formatCurrency(item.total)}
-      </td>
+      </TableCell>
       {!isBlocked && (
-        <td className="py-2 px-3 text-center w-16">
+        <TableCell className="py-2 px-3 text-center w-16">
           {isEditing ? (
             <div className="flex items-center gap-1 justify-center">
               <button
@@ -127,8 +129,8 @@ export function ServiceSubRow({
               </button>
             </div>
           )}
-        </td>
+        </TableCell>
       )}
-    </tr>
+    </TableRow>
   )
 }

@@ -10,6 +10,7 @@
  * os widgets pesados reusados da v1.
  */
 
+import { Input } from "@/components/ui/input"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Controller, useForm, useWatch } from "react-hook-form"
@@ -269,8 +270,7 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
         <div className="mt-4 grid grid-cols-6 gap-x-2 gap-y-5 border-t border-border pt-4">
           <div className="col-span-3">
             <span className={FORM_LABEL}>KM de entrada</span>
-            <input
-              className={FORM_INPUT}
+            <Input
               type="text"
               inputMode="numeric"
               placeholder="0"
@@ -300,8 +300,7 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
         <div className="grid grid-cols-1 gap-x-3 gap-y-5 sm:grid-cols-3">
           <div>
             <span className={FORM_LABEL}>Dias de reparo</span>
-            <input
-              className={FORM_INPUT}
+            <Input
               type="number"
               min="1"
               placeholder="Ex: 10"
@@ -346,7 +345,7 @@ export function DadosWorkspace({ order }: DadosWorkspaceProps) {
           className="fixed inset-x-0 z-30 px-2 md:left-44 md:px-6"
           style={{ bottom: "calc(4.5rem + env(safe-area-inset-bottom))" }}
         >
-        <div className="mx-auto flex max-w-6xl items-center justify-between rounded-xl border border-border bg-background/95 px-4 py-3 shadow-lg backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between rounded-lg border border-border bg-background/95 px-4 py-3 shadow-lg backdrop-blur">
           <p className="text-xs text-muted-foreground">Alterações não salvas</p>
           <div className="flex gap-2">
             <Button

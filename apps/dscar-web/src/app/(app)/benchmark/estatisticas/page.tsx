@@ -128,8 +128,8 @@ export default function BenchmarkEstatisticasPage() {
               {[
                 { label: "Amostras", value: String(stats.count), color: "text-foreground" },
                 { label: "Mínimo", value: formatBRL(stats.minimo), color: "text-foreground/70" },
-                { label: "p50 (Mediana)", value: formatBRL(stats.p50), color: "text-blue-400" },
-                { label: "p90 (Teto)", value: formatBRL(stats.p90), color: "text-yellow-400" },
+                { label: "p50 (Mediana)", value: formatBRL(stats.p50), color: "text-info-400" },
+                { label: "p90 (Teto)", value: formatBRL(stats.p90), color: "text-warning-400" },
                 { label: "Máximo", value: formatBRL(stats.maximo), color: "text-foreground/70" },
               ].map((kpi) => (
                 <div key={kpi.label} className="rounded-lg border border-border bg-muted/50 p-4">
@@ -139,7 +139,7 @@ export default function BenchmarkEstatisticasPage() {
               ))}
             </div>
             {stats.count < 8 && (
-              <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 p-4 text-sm text-yellow-400">
+              <div className="rounded-lg border border-warning-500/20 bg-warning-500/5 p-4 text-sm text-warning-400">
                 Atenção: apenas {stats.count} amostra{stats.count !== 1 ? "s" : ""} disponível
                 (mínimo 8 para p90 confiável). Janela: {stats.janela_dias} dias.
               </div>

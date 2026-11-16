@@ -36,7 +36,7 @@ export function StepCliente(): React.ReactElement {
               type="button"
               onClick={() => setValue("customer_type", opt.value, { shouldValidate: true })}
               className={cn(
-                "rounded-[11px] px-3 py-2.5 text-sm font-medium",
+                "rounded-md px-3 py-2.5 text-sm font-medium",
                 customerType === opt.value
                   ? "bg-primary text-primary-foreground"
                   : "bg-card text-muted-foreground"
@@ -73,7 +73,7 @@ export function StepCliente(): React.ReactElement {
                     setValue("insured_type", opt.value, { shouldValidate: true })
                   }
                   className={cn(
-                    "rounded-[11px] px-3 py-2.5 text-sm font-medium",
+                    "rounded-md px-3 py-2.5 text-sm font-medium",
                     watch("insured_type") === opt.value
                       ? "bg-primary text-primary-foreground"
                       : "bg-card text-muted-foreground"

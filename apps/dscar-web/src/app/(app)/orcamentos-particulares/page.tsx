@@ -163,7 +163,7 @@ export default function OrcamentosParticularesPage() {
       {isLoading ? (
         <TableSkeleton columns={6} />
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border border-border py-12 text-center text-muted-foreground">
+        <div className="rounded-md border border-border py-12 text-center text-muted-foreground">
           Nenhum orçamento encontrado
         </div>
       ) : (
@@ -179,7 +179,7 @@ export default function OrcamentosParticularesPage() {
                   tabIndex={0}
                   onClick={() => router.push(`/orcamentos-particulares/${b.id}` as Route)}
                   onKeyDown={(e) => { if (e.key === "Enter" && e.target === e.currentTarget) router.push(`/orcamentos-particulares/${b.id}` as Route) }}
-                  className="relative rounded-[11px] bg-card px-3 py-2.5 cursor-pointer hover:bg-primary/5 transition-[transform,background-color] duration-150 ease-out active:scale-[0.98]"
+                  className="relative rounded-md bg-card px-3 py-2.5 cursor-pointer hover:bg-primary/5 transition-[transform,background-color] duration-150 ease-out active:scale-[0.98]"
                 >
                   <span aria-hidden className={cn("absolute left-0 top-2 bottom-2 w-[3px] rounded-r-[3px]", status ? STATUS_DOT[status] : "bg-muted-foreground/30")} />
 
@@ -203,7 +203,7 @@ export default function OrcamentosParticularesPage() {
                       )}
                       <span className="truncate">{b.vehicle_plate}</span>
                       {b.active_version && (
-                        <Badge className="text-[10px] border-0 shrink-0 px-1.5 py-0 font-mono">
+                        <Badge className="text-xs border-0 shrink-0 px-1.5 py-0 font-mono">
                           v{b.active_version.version_number}
                         </Badge>
                       )}
@@ -219,7 +219,7 @@ export default function OrcamentosParticularesPage() {
           </div>
 
           {/* Table */}
-          <div className="hidden md:block rounded-xl border border-border overflow-hidden">
+          <div className="hidden md:block rounded-md border border-border overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow className="border-border hover:bg-transparent">

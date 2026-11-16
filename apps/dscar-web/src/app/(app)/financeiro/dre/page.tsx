@@ -215,7 +215,7 @@ export default function DREPage(): React.ReactElement {
 
         {/* DRE Table */}
         {dre && !isLoading && (
-          <div className="rounded-xl border border-border bg-card shadow-sm">
+          <div className="rounded-md border border-border bg-card shadow-sm">
             <div className="p-4 border-b border-border flex items-center gap-2">
               <BarChart3 size={18} className="text-primary" />
               <h2 className="text-sm font-semibold text-foreground">

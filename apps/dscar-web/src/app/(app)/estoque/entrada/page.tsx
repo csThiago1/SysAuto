@@ -8,6 +8,7 @@ import {
   useEntradaPeca,
   useEntradaLote,
 } from "@/hooks/useInventoryMovement"
+import { Input } from "@/components/ui/input"
 import { useProdutosPeca, useProdutosInsumo } from "@/hooks/useInventoryProduct"
 import type { ProdutoComercialPeca, ProdutoComercialInsumo } from "@paddock/types"
 import { DateField } from "@/components/ui/date-field"
@@ -272,7 +273,7 @@ export default function EntradaManualPage() {
               <div className="md:col-span-2" ref={pecaDropdownRef}>
                 <label className="label-mono text-muted-foreground mb-1.5 block">PRODUTO *</label>
                 <div className="relative">
-                  <input
+                  <Input
                     type="text"
                     value={pecaSearch}
                     onChange={(e) => {
@@ -288,7 +289,6 @@ export default function EntradaManualPage() {
                       }
                     }}
                     placeholder="Buscar por nome ou SKU..."
-                    className={INPUT_CLS}
                   />
                   {pecaDropdownOpen &&
                     pecaSearch.length >= 2 &&
@@ -340,12 +340,11 @@ export default function EntradaManualPage() {
                 <label className="label-mono text-muted-foreground mb-1.5 block">
                   NUMERO DE SERIE (OPCIONAL)
                 </label>
-                <input
+                <Input
                   type="text"
                   value={peca.numero_serie}
                   onChange={(e) => setPeca({ ...peca, numero_serie: e.target.value })}
                   placeholder="S/N"
-                  className={INPUT_CLS}
                 />
               </div>
             </div>
@@ -362,14 +361,14 @@ export default function EntradaManualPage() {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                   R$
                 </span>
-                <input
+                <Input
                   type="number"
                   step="0.01"
                   min="0"
                   value={peca.valor_nf}
                   onChange={(e) => setPeca({ ...peca, valor_nf: e.target.value })}
                   placeholder="0,00"
-                  className={`${INPUT_CLS} pl-9`}
+                  className="pl-9"
                 />
               </div>
             </div>
@@ -423,7 +422,7 @@ export default function EntradaManualPage() {
               <div className="md:col-span-2" ref={insumoDropdownRef}>
                 <label className="label-mono text-muted-foreground mb-1.5 block">PRODUTO *</label>
                 <div className="relative">
-                  <input
+                  <Input
                     type="text"
                     value={insumoSearch}
                     onChange={(e) => {
@@ -439,7 +438,6 @@ export default function EntradaManualPage() {
                       }
                     }}
                     placeholder="Buscar por nome ou SKU..."
-                    className={INPUT_CLS}
                   />
                   {insumoDropdownOpen &&
                     insumoSearch.length >= 2 &&
@@ -496,14 +494,13 @@ export default function EntradaManualPage() {
                 <label className="label-mono text-muted-foreground mb-1.5 block">
                   QUANTIDADE COMPRA *
                 </label>
-                <input
+                <Input
                   type="number"
                   step="0.01"
                   min="0"
                   value={lote.quantidade_compra}
                   onChange={(e) => setLote({ ...lote, quantidade_compra: e.target.value })}
                   placeholder="0"
-                  className={INPUT_CLS}
                 />
               </div>
               <div>
@@ -525,14 +522,13 @@ export default function EntradaManualPage() {
                 <label className="label-mono text-muted-foreground mb-1.5 block">
                   FATOR DE CONVERSÃO *
                 </label>
-                <input
+                <Input
                   type="number"
                   step="0.001"
                   min="0"
                   value={lote.fator_conversao}
                   onChange={(e) => setLote({ ...lote, fator_conversao: e.target.value })}
                   placeholder="1"
-                  className={INPUT_CLS}
                 />
               </div>
               <div>
@@ -543,14 +539,14 @@ export default function EntradaManualPage() {
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                     R$
                   </span>
-                  <input
+                  <Input
                     type="number"
                     step="0.01"
                     min="0"
                     value={lote.valor_total_nf}
                     onChange={(e) => setLote({ ...lote, valor_total_nf: e.target.value })}
                     placeholder="0,00"
-                    className={`${INPUT_CLS} pl-9`}
+                    className="pl-9"
                   />
                 </div>
               </div>

@@ -13,6 +13,8 @@ import {
   useFinalizarContagem,
   useCancelarContagem,
 } from "@/hooks/useInventoryCounting"
+import { Input } from "@/components/ui/input"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { usePermission } from "@/hooks/usePermission"
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog"
 import { formatDateTime } from "@paddock/utils"
@@ -102,19 +104,19 @@ function ItemRow({
   }
 
   return (
-    <tr className="border-b border-white/5 hover:bg-muted/30 transition-colors">
-      <td className="px-4 py-3 font-mono text-xs text-foreground/60">
+    <TableRow className="border-white/5">
+      <TableCell className="font-mono text-xs text-foreground/60">
         {item.nivel_endereco}
-      </td>
-      <td className="px-4 py-3 font-mono text-xs text-foreground/80">
+      </TableCell>
+      <TableCell className="font-mono text-xs text-foreground/80">
         {item.unidade_barcode || item.lote_barcode || "—"}
-      </td>
-      <td className="px-4 py-3 font-mono text-xs text-foreground/80 text-right">
+      </TableCell>
+      <TableCell className="font-mono text-xs text-foreground/80 text-right">
         {item.quantidade_sistema}
-      </td>
-      <td className="px-4 py-3">
+      </TableCell>
+      <TableCell>
         {editable ? (
-          <input
+          <Input
             value={qtd}
             onChange={(e) => setQtd(e.target.value)}
             onBlur={() => {
@@ -126,7 +128,7 @@ function ItemRow({
             type="number"
             min="0"
             step="any"
-            className="w-24 bg-muted/50 border border-border text-foreground rounded-md px-2 py-1 text-xs font-mono text-right placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="h-7 w-24 text-xs font-mono text-right"
             placeholder="0"
           />
         ) : (
@@ -134,19 +136,19 @@ function ItemRow({
             {item.quantidade_contada ?? "—"}
           </span>
         )}
-      </td>
-      <td className={`px-4 py-3 font-mono text-xs text-right ${divergenceColor(item.divergencia)}`}>
+      </TableCell>
+      <TableCell className={`px-4 py-3 font-mono text-xs text-right ${divergenceColor(item.divergencia)}`}>
         {divergenceLabel(item.divergencia)}
-      </td>
-      <td className="px-4 py-3">
+      </TableCell>
+      <TableCell>
         {editable ? (
-          <input
+          <Input
             value={obs}
             onChange={(e) => setObs(e.target.value)}
             onBlur={() => {
               if (dirty) handleSave()
             }}
-            className="w-full bg-muted/50 border border-border text-foreground rounded-md px-2 py-1 text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="h-7 w-full text-xs"
             placeholder="Observacao..."
           />
         ) : (
@@ -154,11 +156,11 @@ function ItemRow({
             {item.observacao || "—"}
           </span>
         )}
-      </td>
-      <td className="px-4 py-3 text-xs text-foreground/60">
+      </TableCell>
+      <TableCell className="text-xs text-foreground/60">
         {item.contado_por_nome || "—"}
-      </td>
-      <td className="px-4 py-3">
+      </TableCell>
+      <TableCell>
         {editable && dirty && (
           <Button
             type="button"
@@ -169,8 +171,8 @@ function ItemRow({
             {registrar.isPending ? "..." : "Salvar"}
           </Button>
         )}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   )
 }
 
@@ -250,12 +252,12 @@ export default function ContagemDetailPage({
                 Contagem #{id.slice(0, 8)}
               </h1>
               <span
-                className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded ${tipoBadge.className}`}
+                className={`text-xs font-mono uppercase tracking-wider px-2 py-0.5 rounded ${tipoBadge.className}`}
               >
                 {tipoBadge.label}
               </span>
               <span
-                className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded ${statusBadge.className}`}
+                className={`text-xs font-mono uppercase tracking-wider px-2 py-0.5 rounded ${statusBadge.className}`}
               >
                 {statusBadge.label}
               </span>
@@ -306,34 +308,34 @@ export default function ContagemDetailPage({
         </div>
       ) : (
         <div className="overflow-x-auto overflow-hidden rounded-md border border-border bg-muted/50">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-muted/30">
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left font-normal">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/30">
+                <TableHead className="py-2.5 font-normal">
                   POSIÇÃO
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left font-normal">
+                </TableHead>
+                <TableHead className="py-2.5 font-normal">
                   ITEM
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-right font-normal">
+                </TableHead>
+                <TableHead className="py-2.5 text-right font-normal">
                   QTD SISTEMA
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-right font-normal">
+                </TableHead>
+                <TableHead className="py-2.5 text-right font-normal">
                   QTD CONTADA
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-right font-normal">
+                </TableHead>
+                <TableHead className="py-2.5 text-right font-normal">
                   DIVERGÊNCIA
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left font-normal">
+                </TableHead>
+                <TableHead className="py-2.5 font-normal">
                   OBSERVAÇÃO
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left font-normal">
+                </TableHead>
+                <TableHead className="py-2.5 font-normal">
                   CONTADO POR
-                </th>
-                <th className="label-mono text-muted-foreground px-4 py-2.5 text-left font-normal w-20" />
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+                <TableHead className="py-2.5 font-normal w-20" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {contagem.itens.map((item) => (
                 <ItemRow
                   key={item.id}
@@ -342,8 +344,8 @@ export default function ContagemDetailPage({
                   editable={editable}
                 />
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
 

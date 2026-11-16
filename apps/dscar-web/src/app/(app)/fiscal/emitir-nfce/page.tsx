@@ -103,7 +103,7 @@ export default function EmitirNfcePage() {
   if (result) {
     return (
       <div className="px-0 py-3 md:p-6 max-w-2xl mx-auto space-y-6">
-        <div className="rounded-xl bg-success-500/10 border border-success-500/20 p-6 space-y-3">
+        <div className="rounded-md bg-success-500/10 border border-success-500/20 p-6 space-y-3">
           <div className="flex items-center gap-2 text-success-400">
             <CheckCircle2 className="h-5 w-5" />
             <h2 className="text-lg font-bold">NFC-e Emitida</h2>
@@ -140,7 +140,7 @@ export default function EmitirNfcePage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Consumidor (opcional) */}
-        <div className="rounded-xl bg-muted/30 border border-white/[0.07] p-4 space-y-3">
+        <div className="rounded-md bg-muted/30 border border-white/[0.07] p-4 space-y-3">
           <h3 className="text-sm font-semibold text-foreground/80">Consumidor (opcional)</h3>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -155,7 +155,7 @@ export default function EmitirNfcePage() {
         </div>
 
         {/* Itens */}
-        <div className="rounded-xl bg-muted/30 border border-white/[0.07] p-4 space-y-3">
+        <div className="rounded-md bg-muted/30 border border-white/[0.07] p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground/80">Itens</h3>
             <Button type="button" variant="ghost" size="sm" onClick={addItem}>
@@ -197,7 +197,7 @@ export default function EmitirNfcePage() {
         </div>
 
         {/* Pagamento */}
-        <div className="rounded-xl bg-muted/30 border border-white/[0.07] p-4 space-y-3">
+        <div className="rounded-md bg-muted/30 border border-white/[0.07] p-4 space-y-3">
           <h3 className="text-sm font-semibold text-foreground/80">Pagamento</h3>
           <div className="grid grid-cols-2 gap-3">
             <div>
