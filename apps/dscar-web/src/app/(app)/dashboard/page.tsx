@@ -1,178 +1,46 @@
 "use client"
 
 import React from "react"
-import Link from "next/link"
 import { useSession } from "next-auth/react"
-import { ClipboardList, CheckCircle2, Plus } from "lucide-react"
-import type { ServiceOrderStatus } from "@paddock/types"
-import { ROLE_HIERARCHY } from "@paddock/types"
-import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
-import { useDashboardStats, useServiceOrders } from "@/hooks"
-import { Skeleton, StatusBadge } from "@/components/ui"
+import { ROLE_HIERARCHY, type PaddockRole, type ExtraPermission } from "@paddock/types"
+import type { ConsultantDashboardStats, ManagerDashboardStats } from "@paddock/types"
+import { useDashboardStats } from "@/hooks"
+import { Skeleton } from "@/components/ui"
 import { PageHeader } from "@/components/ui/page-header"
-import { SectionLabel } from "@/components/ui/section-label"
-import { KpiStrip, type KpiItem } from "@/components/ui/kpi-strip"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
-import { StatCard } from "./_components/StatCard"
-import { RecentOSTable } from "./_components/RecentOSTable"
+import { TorreDeTempos } from "./_components/TorreDeTempos"
 import { ConsultantDashboard } from "./_components/ConsultantDashboard"
 import { ManagerDashboard } from "./_components/ManagerDashboard"
-import type { ConsultantDashboardStats, ManagerDashboardStats } from "@paddock/types"
 
 export default function DashboardPage(): React.ReactElement {
   const { data: session } = useSession()
-  const role = session?.role ?? "STOREKEEPER"
+  const role = (session?.role ?? "STOREKEEPER") as PaddockRole
+  const perms = (session?.extraPermissions ?? []) as ExtraPermission[]
+  const level = ROLE_HIERARCHY[role] ?? 0
 
   // Map PaddockRole → API role param
-  const roleParam = React.useMemo(() => {
-    if (role === "CONSULTANT") return "CONSULTANT"
-    if (ROLE_HIERARCHY[role] >= ROLE_HIERARCHY["MANAGER"]) return "MANAGER"
-    return undefined
-  }, [role])
+  const roleParam =
+    role === "CONSULTANT" ? "CONSULTANT" : level >= ROLE_HIERARCHY.MANAGER ? "MANAGER" : undefined
 
-  const { data: stats, isLoading: statsLoading } = useDashboardStats(roleParam)
+  const { data: stats, isLoading } = useDashboardStats(roleParam)
+  const mostrarValor = level >= ROLE_HIERARCHY.MANAGER || perms.includes("can_view_financial")
+  const papel = stats && "role" in stats ? stats.role : undefined
 
-  // Legacy view data (STOREKEEPER or unknown roles)
-  const { data: ordersData, isLoading: ordersLoading } = useServiceOrders(
-    roleParam ? {} : { ordering: "-opened_at", page: "1", page_size: "5" }
-  )
-
-  const topStatuses = React.useMemo<{ status: ServiceOrderStatus; count: number }[]>(() => {
-    if (!stats || "role" in stats) return []
-    const legacy = stats as { by_status?: Record<ServiceOrderStatus, number> }
-    if (!legacy.by_status) return []
-    return (Object.entries(legacy.by_status) as [ServiceOrderStatus, number][])
-      .filter(([s]) => s !== "delivered" && s !== "cancelled")
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 2)
-      .map(([status, count]) => ({ status, count }))
-  }, [stats])
-
-  // Role-based render
-  if (statsLoading) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title="Dashboard" description="Carregando..." />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => <StatCard.Skeleton key={i} />)}
-        </div>
-      </div>
-    )
-  }
-
-  if (stats && "role" in stats && stats.role === "consultant") {
-    return (
-      <ErrorBoundary>
-        <div className="space-y-6">
-          <PageHeader
-            title="Dashboard"
-            description="Meu painel de atendimento"
-            actions={
-              <Link
-                href="/recepcao"
-                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-              >
-                <Plus size={16} />
-                Nova OS
-              </Link>
-            }
-          />
-          <ConsultantDashboard data={stats as ConsultantDashboardStats} />
-        </div>
-      </ErrorBoundary>
-    )
-  }
-
-  if (stats && "role" in stats && stats.role === "manager") {
-    return (
-      <ErrorBoundary>
-        <div className="space-y-6">
-          <PageHeader
-            title="Dashboard"
-            actions={
-              <Link
-                href="/recepcao"
-                className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 md:min-h-0 md:py-2"
-              >
-                <Plus size={16} />
-                Nova OS
-              </Link>
-            }
-          />
-          <ManagerDashboard data={stats as ManagerDashboardStats} />
-        </div>
-      </ErrorBoundary>
-    )
-  }
-
-  // Legacy fallback (STOREKEEPER or no role param)
-  const legacyStats = stats as { total_open?: number; today_deliveries?: number } | undefined
   return (
     <ErrorBoundary>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <PageHeader
           title="Dashboard"
-          description="Visão geral das Ordens de Serviço"
-          actions={
-            <Link
-              href="/recepcao"
-              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              <Plus size={16} />
-              Nova OS
-            </Link>
-          }
+          description={new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}
         />
 
-        <SectionLabel>VISÃO GERAL</SectionLabel>
+        {/* 1 — O pátio agora: todo mundo vê, na ordem do que precisa de atenção */}
+        <TorreDeTempos mostrarValor={mostrarValor} />
 
-        <KpiStrip
-          items={[
-            {
-              label: "OS em aberto",
-              value: String(legacyStats?.total_open ?? 0),
-              icon: <ClipboardList size={14} />,
-              iconClass: "bg-primary/10 text-primary",
-            },
-            {
-              label: "Entregas hoje",
-              value: String(legacyStats?.today_deliveries ?? 0),
-              icon: <CheckCircle2 size={14} />,
-              iconClass: "bg-success-500/10 text-success-400",
-            },
-            ...topStatuses.map<KpiItem>(({ status, count }) => ({
-              label: SERVICE_ORDER_STATUS_CONFIG[status].label,
-              value: String(count),
-              icon: <span className={`h-2 w-2 rounded-full ${SERVICE_ORDER_STATUS_CONFIG[status].dot}`} />,
-              iconClass: "bg-muted",
-            })),
-          ]}
-        />
-
-        <SectionLabel>OS RECENTES</SectionLabel>
-
-        <div className="rounded-md bg-muted/50 shadow-card overflow-hidden">
-          <div className="flex items-center justify-between px-card-padding py-4 border-b border-white/5">
-            <h2 className="text-base font-semibold text-foreground">
-              Últimas Ordens de Serviço
-            </h2>
-            <Link
-              href="/os"
-              className="text-sm font-medium text-primary hover:text-primary/90 transition-colors"
-            >
-              Ver todas →
-            </Link>
-          </div>
-          {ordersLoading ? (
-            <div className="p-card-padding space-y-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : (
-            <RecentOSTable orders={ordersData?.results ?? []} />
-          )}
-        </div>
+        {/* 2 — O mês (gerente) ou a minha carteira (consultor) */}
+        {roleParam && isLoading && <Skeleton className="h-40 w-full" />}
+        {papel === "manager" && <ManagerDashboard data={stats as ManagerDashboardStats} />}
+        {papel === "consultant" && <ConsultantDashboard data={stats as ConsultantDashboardStats} />}
       </div>
     </ErrorBoundary>
   )
