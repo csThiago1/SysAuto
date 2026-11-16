@@ -9,7 +9,6 @@ import { PageHeader } from "@/components/ui/page-header";
 import { useServiceOrders } from "@/hooks/useServiceOrders";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { cn } from "@/lib/utils";
-import { NewOSDrawer } from "../_components/NewOSDrawer";
 
 const KanbanBoard = dynamic(
   () => import("@/components/kanban/KanbanBoard").then((m) => ({ default: m.KanbanBoard })),
@@ -24,7 +23,6 @@ const KanbanBoard = dynamic(
 );
 
 export default function KanbanPage(): React.ReactElement {
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [showDelivered, setShowDelivered] = useState(false);
   const [showCancelled, setShowCancelled] = useState(false);
 
@@ -42,8 +40,6 @@ export default function KanbanPage(): React.ReactElement {
   return (
     <ErrorBoundary>
     <div className="flex flex-col h-full gap-4">
-      <NewOSDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
-
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-y-2">
         <PageHeader
@@ -86,9 +82,11 @@ export default function KanbanPage(): React.ReactElement {
               Ver Lista
             </Link>
           </Button>
-          <Button onClick={() => setDrawerOpen(true)}>
-            <Plus className="h-4 w-4" />
-            Nova OS
+          <Button asChild>
+            <Link href="/recepcao">
+              <Plus className="h-4 w-4" />
+              Nova OS
+            </Link>
           </Button>
         </div>
       </div>

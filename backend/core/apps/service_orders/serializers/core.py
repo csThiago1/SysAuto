@@ -547,6 +547,8 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
     days_in_shop = serializers.SerializerMethodField()
     allowed_transitions = serializers.SerializerMethodField()
     closure_status = serializers.SerializerMethodField()
+    # a recepção puxa o cliente da última OS da placa
+    customer_person_id = serializers.IntegerField(source="customer_id", read_only=True)
 
     class Meta:
         model = ServiceOrder
@@ -560,6 +562,7 @@ class ServiceOrderListSerializer(serializers.ModelSerializer):
             "customer_type_display",
             "os_type",
             "os_type_display",
+            "customer_person_id",
             "customer_name",
             "plate",
             "make",
