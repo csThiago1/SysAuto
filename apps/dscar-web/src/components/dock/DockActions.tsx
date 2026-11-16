@@ -3,27 +3,12 @@
 import { useSession, signOut } from "next-auth/react";
 import { Search, LogOut } from "lucide-react";
 import { NotificationBell } from "@/components/header/NotificationBell";
-import { OfflineStatusBar } from "@/components/offline/OfflineStatusBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ROLE_LABELS, getInitials } from "./nav-config";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 /**
- * Utilitários do app — busca, notificações, conta.
- *
- * Viviam num header de largura inteira que não fazia mais nada: 48px de altura
- * permanente para uma logo e três botões encostados na quina. Aqui eles moram
- * na doca, depois de um divisor, como o Dock do macOS separa apps de utilidades.
- *
- * A doca é `md:` — no telefone estes mesmos controles ficam na folha "Mais"
- * da MobileTabBar. Ver `AccountSheetBlock`.
+ * Utilitários do app — busca e o bloco de conta do telefone.
+ * No desktop os mesmos controles moram no rodapé da `Sidebar`.
  */
 
 /**
@@ -61,60 +46,9 @@ export function SearchTrigger({
   );
 }
 
-export function DockActions(): React.ReactElement {
-  const { data: session } = useSession();
-  const roleLabel = ROLE_LABELS[session?.role ?? ""] ?? session?.role ?? "";
-
-  return (
-    <>
-      {/* Divisor: navegação de um lado, utilidades do outro. */}
-      <span className="mx-1 h-8 w-px self-center bg-border" aria-hidden />
-
-      <OfflineStatusBar />
-      <SearchTrigger />
-
-      <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:text-foreground">
-        <NotificationBell />
-      </span>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            aria-label="Menu do usuário"
-            className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 text-[12px] font-bold text-primary-foreground"
-          >
-            {getInitials(session?.user?.name)}
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent side="top" align="end" sideOffset={12} className="w-56">
-          <DropdownMenuLabel>
-            <p className="text-[13px] font-semibold text-foreground/85">
-              {session?.user?.name ?? "Usuário"}
-            </p>
-            <p className="text-xs font-normal text-muted-foreground">
-              DS Car{roleLabel ? ` · ${roleLabel}` : ""}
-            </p>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <div className="flex items-center justify-between px-2 py-1.5">
-            <span className="text-[13px] text-muted-foreground">Tema</span>
-            <ThemeToggle />
-          </div>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => void signOut({ callbackUrl: "/login" })}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sair
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </>
-  );
-}
-
 /**
- * Mesmos controles, no telefone: a doca não existe abaixo de `md`, e sem isto
- * matar o header tirava busca, notificação, tema e SAIR do mobile inteiro.
+ * Mesmos controles, no telefone: a barra lateral não existe abaixo de `md`, e
+ * sem isto o mobile ficava sem busca, notificação, tema e SAIR.
  */
 export function AccountSheetBlock(): React.ReactElement {
   const { data: session } = useSession();
