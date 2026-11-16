@@ -28,7 +28,7 @@ na tela Configurações → Usuários.
 - Link reaproveitável criando várias contas.
 - CPF, telefone ou e-mail em texto claro no banco ou nos logs.
 - Senha = CPF (o fluxo de admissão atual faz isso; o convite não pode).
-- Apagar arquivo de CNH do S3 (soft delete apenas).
+- Apagar arquivo de CNH do storage (soft delete apenas).
 
 ## Abordagens consideradas
 
@@ -45,8 +45,8 @@ na tela Configurações → Usuários.
 - Model `Invite(PaddockBaseModel)`: `token_hash` (sha256, único), `role` (GlobalUser.Role), `tenant_schema`
   (schema de quem gerou — o Employee mora no tenant), `expires_at`, `created_by` (FK GlobalUser), `used_at`,
   `used_by` (FK GlobalUser, null), `revoked_at`. Propriedade `is_usable`.
-- `POST /api/v1/auth/invites/` (IsAdminOrAbove): `{role}` → `{id, url, expires_at}`. URL = `FRONTEND_URL/convite/<token>`.
-  O token cru só aparece nessa resposta.
+- `POST /api/v1/auth/invites/` (IsAdminOrAbove): `{role}` → `{id, token, expires_at}`. O token cru só aparece nessa resposta; o painel monta o link com
+  `window.location.origin + /convite/<token>` (a produção não tem `FRONTEND_URL`).
 - `GET /api/v1/auth/invites/` (IsAdminOrAbove): convites pendentes (não usados, não revogados, não vencidos).
 - `DELETE /api/v1/auth/invites/<id>/` (IsAdminOrAbove): revoga (marca `revoked_at`).
 - `GET /api/v1/auth/invites/token/<token>/` (público, throttled): `{role_display, expires_at}` ou 404/410.
@@ -59,7 +59,7 @@ na tela Configurações → Usuários.
     (extraída para uma função de serviço, sem o "senha = CPF"), marca o convite usado.
   - Employee: `role` = papel do convite, `department="administrative"`, `position="administrative"` (ajustáveis depois no RH),
     matrícula `EMP-AAAAMM-NNN` como o `RegisterView` já gera, `hire_date` = hoje.
-  - CNH: sobe para o S3 em `hr/employees/<id>/cnh/<uuid>.<ext>` e cria `EmployeeDocument(document_type="cnh")`.
+  - CNH: sobe via `default_storage.save` (Cloudflare R2 em produção, como as fotos de OS) em `hr/employees/<id>/cnh/<uuid>.<ext>` e cria `EmployeeDocument(document_type="cnh")`.
     Se o upload falhar, a transação inteira volta e a pessoa vê "não foi possível enviar a CNH; tente de novo ou envie sem ela".
 - Tudo que toca Employee/Person roda em `schema_context(invite.tenant_schema)`.
 
@@ -78,4 +78,5 @@ na tela Configurações → Usuários.
 ## O que fica com quem implementa
 
 - Nomes de arquivos/funções, forma exata do serviço extraído, testes (pytest por app, conforme a suíte lenta).
-- Conferir se as variáveis AWS existem no `.env` da Oracle antes de prometer o upload da CNH em produção.
+- Storage confirmado em 16/11: Oracle usa `config.settings.oracle` → `railway` → R2 via `default_storage`.
+  Não usar `boto3.client("s3")` puro como `apps/hr` faz (aponta para AWS).
