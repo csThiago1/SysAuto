@@ -8,12 +8,14 @@
  * componentes de dados existentes enquanto são redesenhadas em fases.
  */
 
+import { Button } from "@/components/ui/button"
 import { Suspense, lazy, useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   Boxes,
   Camera,
+  Upload,
   CircleDollarSign,
   FileText,
   FolderOpen,
@@ -34,6 +36,9 @@ import { DadosWorkspace } from "./dados/DadosWorkspace"
 import { PartsTab } from "../_components/tabs/PartsTab"
 import { ServicesTab } from "../_components/tabs/ServicesTab"
 
+const ImportBudgetModal = lazy(() =>
+  import("../_components/ImportBudgetModal").then((m) => ({ default: m.ImportBudgetModal })),
+)
 const ClosingTab = lazy(() =>
   import("../_components/tabs/ClosingTab").then((m) => ({ default: m.ClosingTab })),
 )
@@ -151,6 +156,7 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
   const [execView, setExecView] = useState<ExecView>("parts")
   const [activityView, setActivityView] = useState<ActivityView>("history")
   const [historicoView, setHistoricoView] = useState<HistoricoView>("veiculo")
+  const [importOpen, setImportOpen] = useState(false)
 
   /**
    * A Visão Geral navega por nomes antigos ("parts", "services", "estoque"),
@@ -159,6 +165,10 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
    * em branco. Aqui o destino é traduzido de verdade.
    */
   function goTo(target: string) {
+    if (target === "importar") {
+      setImportOpen(true)
+      return
+    }
     const exec = EXEC_VIEWS.find((v) => v.id === target)
     if (exec) {
       setExecView(exec.id)
@@ -197,6 +207,18 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
 
   return (
     <div className="flex min-h-[calc(100vh-64px)] flex-col">
+      {importOpen && (
+        <Suspense fallback={null}>
+          <ImportBudgetModal
+            order={order}
+            open
+            onClose={() => {
+              setImportOpen(false)
+              router.refresh()
+            }}
+          />
+        </Suspense>
+      )}
       {/* ── Header ──────────────────────────────────────────────────── */}
       <header ref={headerRef} className="md:sticky md:top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
         {/* Breadcrumb */}
@@ -245,13 +267,22 @@ export function OSWorkspaceV2({ order }: OSWorkspaceV2Props) {
           )}
 
           <div className="ml-auto flex items-center gap-2">
-            <a
-              href={`/os/${order.number}/checklist`}
-              className="inline-flex min-h-[44px] items-center whitespace-nowrap rounded-md bg-primary px-3.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90 md:min-h-0 md:px-3 md:py-1.5"
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setImportOpen(true)}
+              className="min-h-[44px] md:min-h-0"
             >
-              <Camera className="mr-1.5 inline h-3.5 w-3.5" />
-              Checklist
-            </a>
+              <Upload className="h-3.5 w-3.5" />
+              Importar orçamento
+            </Button>
+            <Button asChild size="sm" className="min-h-[44px] md:min-h-0">
+              <a href={`/os/${order.number}/checklist`}>
+                <Camera className="h-3.5 w-3.5" />
+                Checklist
+              </a>
+            </Button>
           </div>
         </div>
 

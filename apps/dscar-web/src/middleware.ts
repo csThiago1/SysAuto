@@ -9,6 +9,7 @@ function hasMinRole(role: string | undefined, minRole: PaddockRole): boolean {
 export default auth((req: Parameters<Parameters<typeof auth>[0]>[0]) => {
   const request = req as unknown as NextRequest;
   const { pathname } = request.nextUrl;
+  if (pathname.startsWith("/convite")) return; // link de convite: público, logado ou não
   const isLoggedIn = !!req.auth;
 
   // Página do cliente (link por WhatsApp): abre com ou sem sessão, sem redirect.
@@ -50,7 +51,7 @@ export default auth((req: Parameters<Parameters<typeof auth>[0]>[0]) => {
   }
 
   // Criar nova OS: CONSULTANT ou superior
-  const isNewOSRoute = pathname === "/os/nova";
+  const isNewOSRoute = pathname === "/os/nova" || pathname === "/recepcao";
   if (isNewOSRoute && !hasMinRole(role, "CONSULTANT")) {
     return Response.redirect(new URL("/dashboard", request.url));
   }

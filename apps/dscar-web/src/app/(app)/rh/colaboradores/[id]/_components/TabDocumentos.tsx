@@ -10,6 +10,7 @@ import { FileText, Trash2 } from "lucide-react";
 import type { Employee } from "@paddock/types";
 import { useEmployeeDocuments } from "@/hooks";
 import { Skeleton } from "@/components/ui";
+import { Button } from "@/components/ui/button"
 
 interface TabDocumentosProps {
   employee: Employee;
@@ -38,9 +39,9 @@ export function TabDocumentos({
         <h3 className="text-base font-semibold text-foreground">
           Documentos ({documents.length})
         </h3>
-        <button className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+        <Button size="sm">
           + Enviar documento
-        </button>
+        </Button>
       </div>
 
       {documents.length === 0 ? (

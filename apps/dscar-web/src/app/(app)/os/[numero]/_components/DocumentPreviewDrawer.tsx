@@ -1,5 +1,6 @@
 "use client"
 
+import { NativeSelect } from "@/components/ui/native-select"
 import { useEffect, useState } from "react"
 import { FileText, Loader2, Plus, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -229,16 +230,17 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
                     {documentType === "warranty" && svc.warranty_months !== undefined && (
                       <div className="flex items-center gap-2 ml-8">
                         <Label className="text-xs text-muted-foreground shrink-0">Garantia:</Label>
-                        <select
+                        <NativeSelect
+                          wrapperClassName="w-auto"
                           value={svc.warranty_months}
                           onChange={(e) => updateServiceField(i, "warranty_months", parseInt(e.target.value))}
-                          className="h-7 text-xs bg-muted/50 border border-border rounded px-2 text-foreground"
+                          className="h-7 w-auto text-xs"
                         >
                           <option value={0}>Sem garantia</option>
                           <option value={3}>3 meses</option>
                           <option value={6}>6 meses</option>
                           <option value={12}>12 meses</option>
-                        </select>
+                        </NativeSelect>
                         {svc.warranty_until && (
                           <span className="text-xs text-muted-foreground">até {svc.warranty_until}</span>
                         )}
@@ -338,7 +340,6 @@ export function DocumentPreviewDrawer({ order, documentType, onClose }: Props) {
               <Button
                 onClick={handleGenerate}
                 disabled={generateMutation.isPending}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 {generateMutation.isPending ? (
                   <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Gerando...</>

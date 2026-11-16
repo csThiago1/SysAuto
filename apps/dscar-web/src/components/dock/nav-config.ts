@@ -101,7 +101,7 @@ export const NAV_SECTIONS: NavSection[] = [
         icon: ClipboardList,
         dynamicBadge: "overdue",
         children: [
-          { id: "os-lista",  label: "Lista de OS", href: "/os",         icon: ClipboardList },
+          { id: "os-lista",  label: "Ordens de Serviço", href: "/os",  icon: ClipboardList },
           { id: "os-kanban", label: "Kanban",       href: "/os/kanban", icon: KanbanSquare },
         ],
       },
@@ -144,7 +144,7 @@ export const NAV_SECTIONS: NavSection[] = [
         href: "/crm/retornos",
         children: [
           { id: "crm-retornos", label: "Retornos", href: "/crm/retornos", icon: Bell },
-          { id: "crm-regras",   label: "Regras",   href: "/crm/regras",   icon: Settings2 },
+          { id: "crm-regras",   label: "Regras de retorno", href: "/crm/regras",   icon: Settings2 },
         ],
       },
     ],
@@ -308,6 +308,11 @@ export function getInitials(name: string | null | undefined): string {
 }
 
 // ─── Role-gated helpers ───────────────────────────────────────────────
+
+/** Abrir OS (recepção) é de CONSULTANT para cima — o middleware barra o resto. */
+export function podeAbrirOS(role: string | undefined): boolean {
+  return (ROLE_HIERARCHY[role as PaddockRole] ?? 0) >= ROLE_HIERARCHY.CONSULTANT;
+}
 
 export function visibleSections(
   role: PaddockRole,

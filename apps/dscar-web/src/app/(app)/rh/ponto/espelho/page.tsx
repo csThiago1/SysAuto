@@ -15,6 +15,7 @@ import { useEmployees, useDailySummary } from "@/hooks";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui";
 import { DateField } from "@/components/ui/date-field"
+import { NativeSelect } from "@/components/ui/native-select"
 
 export default function EspelhoPontoPage(): React.ReactElement {
   const today = new Date().toISOString().split("T")[0];
@@ -55,12 +56,12 @@ export default function EspelhoPontoPage(): React.ReactElement {
         {/* Filters */}
         <div className="flex flex-wrap gap-3">
           <DateField value={selectedDate} onChange={setSelectedDate} />
-          <select
+          <NativeSelect
             value={department}
             onChange={(e) =>
               setDepartment(e.target.value as HRDepartment | "")
             }
-            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm"
+            wrapperClassName="w-auto" className="w-auto"
           >
             <option value="">Todos os setores</option>
             {(Object.entries(DEPARTMENT_LABELS) as [HRDepartment, string][]).map(
@@ -70,7 +71,7 @@ export default function EspelhoPontoPage(): React.ReactElement {
                 </option>
               )
             )}
-          </select>
+          </NativeSelect>
         </div>
 
         {/* Table */}

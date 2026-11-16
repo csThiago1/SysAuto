@@ -1,5 +1,6 @@
 "use client"
 
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react"
 import { FileText, Plus } from "lucide-react"
 import Link from "next/link"
@@ -63,16 +64,17 @@ export default function OrcamentosPage() {
 
       {/* Filtros */}
       <div className="flex items-center gap-3">
-        <select
+        <NativeSelect
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-auto"
+          wrapperClassName="w-auto"
         >
           <option value="">Todos os status</option>
           {Object.entries(ORCAMENTO_STATUS_LABEL).map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       {/* Tabela */}

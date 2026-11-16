@@ -240,7 +240,7 @@ export function ServicesTab({ osId, osStatus }: Props) {
                 disabled={isSubmitting}
                 size="sm"
                 data-testid="add-service-btn"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5"
+                className="gap-1.5"
               >
                 <Plus className="h-3.5 w-3.5" />
                 Adicionar

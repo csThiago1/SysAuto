@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button"
 
 export default function NotFound(): React.ReactElement {
   return (
@@ -10,12 +11,13 @@ export default function NotFound(): React.ReactElement {
       <p className="mt-2 text-sm text-muted-foreground text-center max-w-md">
         A página que você procura não existe ou foi movida.
       </p>
-      <Link
-        href="/dashboard"
-        className="mt-6 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-      >
+      <Button asChild className="mt-6">
+        <Link
+          href="/dashboard"
+        >
         Voltar ao início
-      </Link>
+        </Link>
+      </Button>
     </div>
   );
 }

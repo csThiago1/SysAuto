@@ -9,6 +9,7 @@ import React from "react";
 import type { Employee, UpdateEmployeePayload } from "@paddock/types";
 import { ROLE_LABEL, type PaddockRole } from "@paddock/types";
 import { useUpdateEmployee } from "@/hooks";
+import { NativeSelect } from "@/components/ui/native-select"
 
 interface TabAcessoProps {
   employee: Employee;
@@ -94,17 +95,17 @@ export function TabAcesso({ employee }: TabAcessoProps): React.ReactElement {
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Role
             </label>
-            <select
+            <NativeSelect
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="rounded-md border border-border bg-background px-3 py-2 text-sm w-64"
+              wrapperClassName="w-64" className="w-64"
             >
               {ROLE_OPTIONS.map((r) => (
                 <option key={r} value={r}>
                   {ROLE_LABEL[r]}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
             <p className="text-xs text-muted-foreground mt-1">
               Gerentes e acima possuem todas as permissões automaticamente.
             </p>

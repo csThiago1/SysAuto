@@ -7,6 +7,7 @@ import type { Route } from "next"
 import { useNFeEntradas } from "@/hooks/useInventory"
 import { ScrollFade } from "@/components/ui/scroll-fade"
 import type { NFeEntradaStatus } from "@paddock/types"
+import { NativeSelect } from "@/components/ui/native-select"
 
 const STATUS_LABELS: Record<NFeEntradaStatus, string> = {
   importada: "Importada",
@@ -49,16 +50,17 @@ export default function NFeRecebidaPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <select
+          <NativeSelect
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+            wrapperClassName="w-auto"
+            className="w-auto"
           >
             <option value="">Todos os status</option>
             {Object.entries(STATUS_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
       </div>
 

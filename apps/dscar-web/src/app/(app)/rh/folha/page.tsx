@@ -13,6 +13,8 @@ import type { GeneratePayslipPayload } from "@paddock/types";
 import { usePayslips, useGeneratePayslip, useEmployees } from "@/hooks";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui";
+import { NativeSelect } from "@/components/ui/native-select"
+import { Button } from "@/components/ui/button"
 
 export default function FolhaPage(): React.ReactElement {
   const { data, isLoading } = usePayslips();
@@ -95,12 +97,11 @@ export default function FolhaPage(): React.ReactElement {
             >
               Meus contracheques
             </Link>
-            <button
+            <Button
               onClick={() => setShowGenerate((p) => !p)}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >
               Gerar contracheque
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -118,13 +119,12 @@ export default function FolhaPage(): React.ReactElement {
                 <label className="text-xs text-muted-foreground">
                   Colaborador *
                 </label>
-                <select
+                <NativeSelect
                   required
                   value={genForm.employee}
                   onChange={(e) =>
                     setGenForm((p) => ({ ...p, employee: e.target.value }))
                   }
-                  className="rounded border border-border px-2 py-1.5 text-sm"
                 >
                   <option value="">Selecione...</option>
                   {employees.map((emp) => (
@@ -132,7 +132,7 @@ export default function FolhaPage(): React.ReactElement {
                       {emp.user.name}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-muted-foreground">
@@ -155,8 +155,7 @@ export default function FolhaPage(): React.ReactElement {
                 <label className="text-xs text-muted-foreground">
                   Tipo
                 </label>
-                <select
-                  className="rounded border border-border px-2 py-1.5 text-sm"
+                <NativeSelect
                   value={genForm.payslip_type}
                   onChange={(e) =>
                     setGenForm((p) => ({ ...p, payslip_type: e.target.value }))
@@ -166,7 +165,7 @@ export default function FolhaPage(): React.ReactElement {
                   <option value="thirteenth_first">13&ordm; &mdash; 1&ordf; parcela</option>
                   <option value="thirteenth_second">13&ordm; &mdash; 2&ordf; parcela</option>
                   <option value="thirteenth_full">13&ordm; &mdash; Integral</option>
-                </select>
+                </NativeSelect>
               </div>
             </div>
             <div className="flex justify-end gap-2">
@@ -177,13 +176,13 @@ export default function FolhaPage(): React.ReactElement {
               >
                 Cancelar
               </button>
-              <button
+              <Button
                 type="submit"
                 disabled={generate.isPending}
-                className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50"
+                size="sm"
               >
                 {generate.isPending ? "Gerando..." : "Gerar"}
-              </button>
+              </Button>
             </div>
           </form>
         )}

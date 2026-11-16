@@ -207,6 +207,7 @@ export function OverviewSection({ order, onNavigate }: OverviewSectionProps) {
             <h3 className="text-sm font-medium text-foreground">Ações rápidas</h3>
           </div>
           <div className="grid grid-cols-1 gap-1.5 p-3">
+            <QuickAction label="Importar orçamento" onClick={() => onNavigate("importar")} />
             <QuickAction label="Adicionar peça" onClick={() => onNavigate("parts")} />
             <QuickAction label="Adicionar serviço" onClick={() => onNavigate("services")} />
             <QuickAction label="Faturar / emitir NF" onClick={() => onNavigate("closing")} />

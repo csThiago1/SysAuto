@@ -17,6 +17,8 @@ import { Skeleton } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { DateField } from "@/components/ui/date-field"
 import { toast } from "sonner"
+import { NativeSelect } from "@/components/ui/native-select"
+import { Button } from "@/components/ui/button"
 
 const STATUS_CLASSES: Record<string, string> = {
   success: "bg-success-500/10 text-success-400",
@@ -49,12 +51,11 @@ export default function MetasPage(): React.ReactElement {
               {data?.count ?? "—"} meta{(data?.count ?? 0) !== 1 ? "s" : ""}
             </p>
           </div>
-          <button
+          <Button
             onClick={() => setShowCreate(true)}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
             + Nova meta
-          </button>
+          </Button>
         </div>
 
         {showCreate && (
@@ -65,10 +66,10 @@ export default function MetasPage(): React.ReactElement {
 
         {/* Filters */}
         <div className="flex flex-wrap gap-3">
-          <select
+          <NativeSelect
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as GoalStatus | "")}
-            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm"
+            wrapperClassName="w-auto" className="w-auto"
           >
             <option value="">Todos os status</option>
             {(Object.entries(GOAL_STATUS_CONFIG) as [GoalStatus, { label: string }][]).map(
@@ -78,13 +79,13 @@ export default function MetasPage(): React.ReactElement {
                 </option>
               )
             )}
-          </select>
-          <select
+          </NativeSelect>
+          <NativeSelect
             value={deptFilter}
             onChange={(e) =>
               setDeptFilter(e.target.value as HRDepartment | "")
             }
-            className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm"
+            wrapperClassName="w-auto" className="w-auto"
           >
             <option value="">Todos os setores</option>
             {(Object.entries(DEPARTMENT_LABELS) as [HRDepartment, string][]).map(
@@ -94,7 +95,7 @@ export default function MetasPage(): React.ReactElement {
                 </option>
               )
             )}
-          </select>
+          </NativeSelect>
         </div>
 
         {/* Goals */}
@@ -279,9 +280,8 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
         {scopeType === "employee" ? (
           <div className="flex flex-col gap-1">
             <label className="text-xs text-muted-foreground">Colaborador *</label>
-            <select
+            <NativeSelect
               required
-              className="rounded border border-border px-2 py-1.5 text-sm"
               value={form.employee ?? ""}
               onChange={(e) =>
                 setForm((p) => ({ ...p, employee: e.target.value }))
@@ -293,14 +293,13 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
                   {emp.user.name}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
         ) : (
           <div className="flex flex-col gap-1">
             <label className="text-xs text-muted-foreground">Setor *</label>
-            <select
+            <NativeSelect
               required
-              className="rounded border border-border px-2 py-1.5 text-sm"
               value={form.department ?? ""}
               onChange={(e) =>
                 setForm((p) => ({
@@ -317,7 +316,7 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
                   {l}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
         )}
 
@@ -349,8 +348,7 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-muted-foreground">Unidade</label>
-          <select
-            className="rounded border border-border px-2 py-1.5 text-sm"
+          <NativeSelect
             value={form.unit ?? "unit"}
             onChange={(e) => setForm((p) => ({ ...p, unit: e.target.value }))}
           >
@@ -358,7 +356,7 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
             <option value="currency">R$ (moeda)</option>
             <option value="percentage">Percentual (%)</option>
             <option value="hours">Horas</option>
-          </select>
+          </NativeSelect>
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-muted-foreground">Bônus ao atingir (R$)</label>
@@ -434,13 +432,13 @@ function CreateGoalForm({ onClose }: CreateGoalFormProps): React.ReactElement {
         >
           Cancelar
         </button>
-        <button
+        <Button
           type="submit"
           disabled={create.isPending}
-          className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          size="sm"
         >
           {create.isPending ? "Criando..." : "Criar meta"}
-        </button>
+        </Button>
       </div>
     </form>
   );

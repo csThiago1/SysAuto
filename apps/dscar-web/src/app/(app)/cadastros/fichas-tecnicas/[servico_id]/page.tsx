@@ -50,6 +50,7 @@ import type {
   NovaVersaoPayload,
 } from "@paddock/types"
 import { formatDate, formatDateTime } from "@paddock/utils"
+import { NativeSelect } from "@/components/ui/native-select"
 
 // ─── Zod schema ───────────────────────────────────────────────────────────────
 
@@ -570,8 +571,7 @@ export default function FichaTecnicaDetalhe() {
                       key={field.id}
                       className="grid grid-cols-[1fr_80px_80px_auto_auto] gap-2 items-center"
                     >
-                      <select
-                        className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                      <NativeSelect
                         value={form.watch(`insumos.${idx}.material_canonico`)}
                         onChange={(e) => {
                           form.setValue(`insumos.${idx}.material_canonico`, e.target.value)
@@ -583,7 +583,7 @@ export default function FichaTecnicaDetalhe() {
                         {materiais.map((m) => (
                           <option key={m.id} value={m.id}>{m.nome}</option>
                         ))}
-                      </select>
+                      </NativeSelect>
                       <Input
                         placeholder="Qtde"
                         className="h-9"

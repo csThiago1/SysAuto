@@ -10,6 +10,8 @@ import type { Employee, CreateDeductionPayload, DeductionType } from "@paddock/t
 import { DEDUCTION_TYPE_LABELS } from "@paddock/types";
 import { useEmployeeDeductions, useCreateDeduction } from "@/hooks";
 import { Skeleton } from "@/components/ui";
+import { NativeSelect } from "@/components/ui/native-select"
+import { Button } from "@/components/ui/button"
 
 interface TabDescontosProps {
   employee: Employee;
@@ -89,7 +91,7 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
               <label className="text-xs text-muted-foreground">Tipo</label>
-              <select
+              <NativeSelect
                 value={form.deduction_type}
                 onChange={(e) =>
                   setForm((p) => ({
@@ -97,7 +99,6 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
                     deduction_type: e.target.value as DeductionType,
                   }))
                 }
-                className="rounded border border-border px-2 py-1.5 text-sm"
               >
                 {(
                   Object.entries(DEDUCTION_TYPE_LABELS) as [DeductionType, string][]
@@ -106,7 +107,7 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
                     {l}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
 
             {discountType === "fixed" ? (
@@ -178,13 +179,13 @@ export function TabDescontos({ employee }: TabDescontosProps): React.ReactElemen
             >
               Cancelar
             </button>
-            <button
+            <Button
               type="submit"
               disabled={create.isPending}
-              className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              size="sm"
             >
               {create.isPending ? "Salvando..." : "Registrar desconto"}
-            </button>
+            </Button>
           </div>
         </form>
       )}

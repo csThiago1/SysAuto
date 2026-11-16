@@ -22,6 +22,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { AccountSheetBlock } from "./DockActions";
+import { Placar } from "./Placar";
 import { cn } from "@/lib/utils";
 
 interface TabButtonProps {
@@ -137,6 +138,7 @@ export function MobileTabBar(): React.ReactElement {
               Busca, notificações, tema, sair e lista de módulos
             </SheetDescription>
 
+            <Placar className="mb-5 p-1" />
             <AccountSheetBlock />
 
             {rest.length > 0 && (

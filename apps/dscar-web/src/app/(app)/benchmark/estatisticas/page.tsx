@@ -1,5 +1,6 @@
 "use client"
 
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react"
 import { BarChart3, Search, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -89,8 +90,7 @@ export default function BenchmarkEstatisticasPage() {
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label className="text-foreground/70 text-xs">Segmento do veículo</Label>
-            <select
-              className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
+            <NativeSelect
               value={segmento}
               onChange={(e) => setSegmento(e.target.value)}
             >
@@ -98,12 +98,11 @@ export default function BenchmarkEstatisticasPage() {
               {segmentos.map((s) => (
                 <option key={s.codigo} value={s.codigo}>{s.nome}</option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
           <div className="space-y-1.5">
             <Label className="text-foreground/70 text-xs">Tamanho do veículo</Label>
-            <select
-              className="w-full text-sm bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
+            <NativeSelect
               value={tamanho}
               onChange={(e) => setTamanho(e.target.value)}
             >
@@ -111,7 +110,7 @@ export default function BenchmarkEstatisticasPage() {
               {tamanhos.map((t) => (
                 <option key={t.codigo} value={t.codigo}>{t.nome}</option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
         </div>
 

@@ -8,6 +8,7 @@
 import React from "react";
 import type { Employee, UpdateEmployeePayload } from "@paddock/types";
 import { useUpdateEmployee } from "@/hooks";
+import { NativeSelect } from "@/components/ui/native-select"
 
 const PAY_FREQUENCY_LABELS: Record<"monthly" | "biweekly" | "weekly", string> = {
   monthly: "Mensal",
@@ -148,8 +149,7 @@ export function TabDadosPessoais({
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Periodicidade de pagamento
                 </label>
-                <select
-                  className="rounded border border-border px-2 py-1 text-sm"
+                <NativeSelect
                   value={form.pay_frequency ?? "monthly"}
                   onChange={(e) =>
                     setForm((p) => ({
@@ -161,7 +161,7 @@ export function TabDadosPessoais({
                   <option value="monthly">Mensal</option>
                   <option value="biweekly">Quinzenal</option>
                   <option value="weekly">Semanal</option>
-                </select>
+                </NativeSelect>
               </div>
               <div className="flex flex-col gap-0.5">
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">

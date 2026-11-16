@@ -10,12 +10,21 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        // Box de corrida: faixa vermelha inclinada (a do menu e do site).
+        // O fundo e um pseudo-elemento inclinado, nao clip-path: o anel de
+        // foco do teclado fica no retangulo do botao e continua visivel.
+        // Para outra cor, use outra variante (success, destructive), nao bg-*.
         default:
-          "bg-primary text-primary-foreground border border-primary shadow-sm hover:bg-primary/90 active:bg-primary/80",
+          "relative isolate text-primary-foreground before:absolute before:inset-0 before:-z-10 before:-skew-x-12 before:rounded-[2px] before:bg-primary before:transition-colors hover:before:bg-primary/90 active:before:bg-primary/80",
+        // Mesma faixa, em verde (confirmar entrega, faturar, aprovar). Um
+        // bg-* no className do default nao funciona: o ::before (z negativo
+        // dentro do isolate) pinta POR CIMA do fundo do proprio botao.
+        success:
+          "relative isolate text-white before:absolute before:inset-0 before:-z-10 before:-skew-x-12 before:rounded-[2px] before:bg-success-700 before:transition-colors hover:before:bg-success-800",
         destructive:
           "bg-error-600 text-primary-foreground border border-error-700 shadow-sm hover:bg-error-700",
         outline:
-          "border-2 border-foreground/20 bg-card text-foreground shadow-sm hover:bg-muted/50 hover:border-foreground/30",
+          "border border-foreground/30 bg-transparent text-foreground hover:bg-muted hover:border-foreground/50",
         secondary:
           // secondary-950 e quase preto: um degrau de rampa calibrado so pro escuro.
         // No tema claro o botao saia preto no meio do papel.

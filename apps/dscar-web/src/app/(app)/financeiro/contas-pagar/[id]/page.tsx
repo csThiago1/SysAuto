@@ -5,6 +5,7 @@
  * Sprint 14 — refatorado S2-T3 para usar componentes compartilhados.
  */
 
+import { Button } from "@/components/ui/button";
 import React from "react";
 import { useParams } from "next/navigation";
 import { FileText, User, Calendar, DollarSign } from "lucide-react";
@@ -188,13 +189,12 @@ export default function ContaPagarDetailPage(): React.ReactElement {
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0">
               {canPay && (
-                <button
+                <Button
                   type="button"
                   onClick={() => setPayDialogOpen(true)}
-                  className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                 >
                   Registrar Pagamento
-                </button>
+                </Button>
               )}
               {canCancel && isManager && (
                 <button

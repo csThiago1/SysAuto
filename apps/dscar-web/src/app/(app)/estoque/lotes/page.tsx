@@ -15,6 +15,7 @@ import {
 import type { LoteInsumo } from "@paddock/types"
 import { ScrollFade } from "@/components/ui/scroll-fade"
 import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
 
 const INV = "/api/proxy/inventory"
 
@@ -146,14 +147,14 @@ function BaixarModal({
           >
             Cancelar
           </button>
-          <button
+          <Button
             type="button"
+            size="sm"
             onClick={handleSubmit}
             disabled={!osId.trim() || !quantidade.trim() || baixar.isPending}
-            className="px-4 py-1.5 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {baixar.isPending ? "Baixando..." : "Baixar"}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -214,14 +215,14 @@ function TransferirLoteModal({
           >
             Cancelar
           </button>
-          <button
+          <Button
             type="button"
+            size="sm"
             onClick={handleSubmit}
             disabled={!nivelId || transferir.isPending}
-            className="px-4 py-1.5 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-md disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {transferir.isPending ? "Transferindo..." : "Transferir"}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

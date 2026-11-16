@@ -43,6 +43,7 @@ import {
 import { apiFetch } from "@/lib/api"
 import type { PecaCanonica } from "@paddock/types"
 import type { PecaCanonicoPayload } from "@/hooks/usePricingCatalog"
+import { NativeSelect } from "@/components/ui/native-select"
 
 const TIPO_PECA_LABELS: Record<PecaCanonica["tipo_peca"], string> = {
   genuina: "Genuina",
@@ -330,15 +331,14 @@ export default function PecasCanonicoPage() {
 
             <div className="space-y-1.5">
               <Label className="text-xs font-medium">Tipo de Peca</Label>
-              <select
+              <NativeSelect
                 value={form.tipo_peca}
                 onChange={(e) => set("tipo_peca", e.target.value)}
-                className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 {Object.entries(TIPO_PECA_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
 
             <div className="space-y-1.5">

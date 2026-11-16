@@ -292,6 +292,15 @@ class Employee(PaddockBaseModel):
         verbose_name = _("Colaborador")
         verbose_name_plural = _("Colaboradores")
 
+    def save(self, *args: object, **kwargs: object) -> None:
+        """Mantém cpf_hash em dia — é por ele que se detecta CPF duplicado."""
+        digits = "".join(c for c in (self.cpf or "") if c.isdigit())
+        self.cpf_hash = hashlib.sha256(digits.encode()).hexdigest() if digits else ""
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None and "cpf" in update_fields:
+            kwargs["update_fields"] = {*update_fields, "cpf_hash"}
+        super().save(*args, **kwargs)
+
     def __str__(self) -> str:
         return f"{self.registration_number} — {self.user.get_full_name()}"
 
@@ -310,12 +319,6 @@ class Employee(PaddockBaseModel):
         if ROLE_HIERARCHY.get(self.role, 0) >= ROLE_HIERARCHY.get("MANAGER", 3):
             return True
         return perm in (self.extra_permissions or [])
-
-    def save(self, *args: object, **kwargs: object) -> None:
-        """Gera cpf_hash automaticamente para lookup sem expor CPF em claro."""
-        if self.cpf:
-            self.cpf_hash = hashlib.sha256(self.cpf.encode()).hexdigest()
-        super().save(*args, **kwargs)
 
 
 class EmployeeDocument(PaddockBaseModel):

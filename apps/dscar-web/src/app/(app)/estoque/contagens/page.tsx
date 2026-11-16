@@ -18,6 +18,8 @@ import {
   CONTAGEM_TIPO_LABEL,
   CONTAGEM_TIPO_BADGE,
 } from "@paddock/utils"
+import { NativeSelect } from "@/components/ui/native-select"
+import { Button } from "@/components/ui/button"
 
 export default function ContagensPage() {
   const { data: contagens = [], isLoading } = useContagens()
@@ -77,14 +79,13 @@ export default function ContagensPage() {
           </div>
         </div>
 
-        <button
+        <Button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Nova Contagem
-        </button>
+        </Button>
       </div>
 
       {/* Inline create form */}
@@ -122,13 +123,12 @@ export default function ContagensPage() {
               <label className="label-mono text-muted-foreground mb-1.5 block">
                 ARMAZÉM
               </label>
-              <select
+              <NativeSelect
                 value={armazemId}
                 onChange={(e) => {
                   setArmazemId(e.target.value)
                   setRuaId("")
                 }}
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="">Selecione...</option>
                 {armazens.map((a) => (
@@ -136,7 +136,7 @@ export default function ContagensPage() {
                     {a.codigo} — {a.nome}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
 
             {/* Rua select — only for ciclica */}
@@ -145,11 +145,10 @@ export default function ContagensPage() {
                 <label className="label-mono text-muted-foreground mb-1.5 block">
                   RUA
                 </label>
-                <select
+                <NativeSelect
                   value={ruaId}
                   onChange={(e) => setRuaId(e.target.value)}
                   disabled={!armazemId}
-                  className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-40"
                 >
                   <option value="">
                     {armazemId ? "Selecione a rua..." : "Escolha o armazém primeiro"}
@@ -160,7 +159,7 @@ export default function ContagensPage() {
                       {r.descricao ? ` — ${r.descricao}` : ""}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </div>
             )}
           </div>
@@ -176,14 +175,13 @@ export default function ContagensPage() {
             >
               Cancelar
             </button>
-            <button
+            <Button
               type="button"
               onClick={handleCreate}
               disabled={createMut.isPending}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {createMut.isPending ? "Abrindo..." : "Abrir Contagem"}
-            </button>
+            </Button>
           </div>
         </div>
       )}

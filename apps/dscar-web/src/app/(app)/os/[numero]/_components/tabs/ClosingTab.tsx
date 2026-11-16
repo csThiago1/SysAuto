@@ -202,7 +202,8 @@ export function ClosingTab({ order }: ClosingTabProps) {
           <Button
             onClick={() => setShowDelivery(true)}
             disabled={deliveryBlocked}
-            className="bg-success-600 hover:bg-success-700 text-foreground shrink-0"
+            variant="success"
+            className="shrink-0"
           >
             <Truck className="h-4 w-4 mr-1.5" />
             Registrar Entrega
@@ -389,7 +390,8 @@ export function ClosingTab({ order }: ClosingTabProps) {
           {!order.invoice_issued && (
             <Button
               onClick={() => setShowBillingModal(true)}
-              className="gap-1.5 bg-success-600 hover:bg-success-700 text-foreground"
+              variant="success"
+              className="gap-1.5"
             >
               <DollarSign className="h-4 w-4" />
               Faturar OS

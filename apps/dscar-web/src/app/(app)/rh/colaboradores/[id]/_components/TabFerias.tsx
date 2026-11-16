@@ -10,6 +10,7 @@ import { VACATION_STATUS_CONFIG } from "@paddock/types";
 import { useVacations, useVacationBalance, useCreateVacation, useCancelVacation } from "@/hooks";
 import { DateField } from "@/components/ui/date-field"
 import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
 
 interface TabFeriasProps {
   employee: Employee;
@@ -138,10 +139,10 @@ export function TabFerias({ employee }: TabFeriasProps): React.ReactElement {
           </div>
           <div className="flex justify-end gap-2">
             <button type="button" onClick={() => setShowForm(false)} className="text-xs text-muted-foreground hover:underline">Cancelar</button>
-            <button type="submit" disabled={createVacation.isPending}
-              className="rounded bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50">
+            <Button type="submit" disabled={createVacation.isPending}
+              size="sm">
               {createVacation.isPending ? "Salvando..." : "Agendar"}
-            </button>
+            </Button>
           </div>
         </form>
       )}

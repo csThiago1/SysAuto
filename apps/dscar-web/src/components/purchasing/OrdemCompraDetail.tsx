@@ -32,6 +32,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { NativeSelect } from "@/components/ui/native-select"
 
 // ─── OC Status config ─────────────────────────────────────────────────────────
 
@@ -213,11 +214,10 @@ function ReceberDialog({ ocId, item, open, onOpenChange }: ReceberDialogProps) {
           {/* Localização no armazém */}
           <div className="space-y-2">
             <Label className="label-mono text-muted-foreground">LOCALIZAÇÃO NO ARMAZÉM *</Label>
-            <select
+            <NativeSelect
               value={selectedNivel}
               onChange={(e) => setSelectedNivel(e.target.value)}
               disabled={loadingNiveis}
-              className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-sm text-foreground/80 focus:outline-none focus:border-border disabled:opacity-50"
             >
               <option value="">
                 {loadingNiveis ? "Carregando localizações..." : "Selecione a localização..."}
@@ -227,7 +227,7 @@ function ReceberDialog({ ocId, item, open, onOpenChange }: ReceberDialogProps) {
                   {nivel.endereco_completo}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
 
           {/* Valor NF */}

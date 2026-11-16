@@ -2,11 +2,14 @@
 Paddock Solutions — Authentication App
 GlobalUser + PaddockBaseModel (abstract) + Auth Token Models
 """
+import datetime
 import hashlib
+import secrets
 import uuid
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.utils import timezone
 from encrypted_model_fields.fields import EncryptedCharField, EncryptedEmailField
 
 
@@ -239,3 +242,55 @@ class EmailVerificationToken(_AbstractToken):
 
     def __str__(self) -> str:
         return f"EmailVerificationToken({self.user_id}, used={self.is_used})"
+
+
+INVITE_TTL_DAYS = 7
+
+
+class Invite(PaddockBaseModel):
+    """Convite de colaborador: link de uso único que deixa a pessoa criar a própria conta.
+
+    Guarda só o hash do token. O Employee nasce no tenant de quem gerou (tenant_schema).
+    """
+
+    token_hash = models.CharField(max_length=64, unique=True)
+    role = models.CharField(max_length=20, choices=GlobalUser.Role.choices)
+    tenant_schema = models.CharField(max_length=63)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    used_by = models.ForeignKey(
+        GlobalUser, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "auth_invites"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"Invite({self.pk}, {self.role})"
+
+    @staticmethod
+    def hash_token(token: str) -> str:
+        return hashlib.sha256(token.encode()).hexdigest()
+
+    @property
+    def is_usable(self) -> bool:
+        return self.used_at is None and self.revoked_at is None and self.expires_at > timezone.now()
+
+    @classmethod
+    def issue(cls, role: str, tenant_schema: str, created_by: GlobalUser) -> "tuple[Invite, str]":
+        """Cria o convite e devolve o token cru — ele só existe nesta resposta."""
+        token = secrets.token_urlsafe(32)
+        invite = cls.objects.create(
+            token_hash=cls.hash_token(token),
+            role=role,
+            tenant_schema=tenant_schema,
+            expires_at=timezone.now() + datetime.timedelta(days=INVITE_TTL_DAYS),
+            created_by=created_by,
+        )
+        return invite, token
+
+    @classmethod
+    def find(cls, token: str) -> "Invite | None":
+        return cls.objects.filter(token_hash=cls.hash_token(token)).first()

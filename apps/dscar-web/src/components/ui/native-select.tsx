@@ -15,10 +15,10 @@ import { cn } from "@/lib/utils"
 
 export const NativeSelect = React.forwardRef<
   HTMLSelectElement,
-  React.SelectHTMLAttributes<HTMLSelectElement>
->(function NativeSelect({ className, children, ...props }, ref) {
+  React.SelectHTMLAttributes<HTMLSelectElement> & { wrapperClassName?: string }
+>(function NativeSelect({ className, wrapperClassName, children, ...props }, ref) {
   return (
-    <div className="relative w-full">
+    <div className={cn("relative w-full", wrapperClassName)}>
       <select ref={ref} className={cn(FORM_SELECT, className)} {...props}>
         {children}
       </select>

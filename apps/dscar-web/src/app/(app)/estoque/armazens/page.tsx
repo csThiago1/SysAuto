@@ -10,6 +10,8 @@ import {
   useArmazens,
   useArmazemCreate,
 } from "@/hooks/useInventoryLocation"
+import { NativeSelect } from "@/components/ui/native-select"
+import { Button } from "@/components/ui/button"
 
 const TIPO_BADGE: Record<
   ArmazemTipo,
@@ -65,14 +67,13 @@ export default function ArmazensPage() {
           </div>
         </div>
 
-        <button
+        <Button
           type="button"
           onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Novo Armazém
-        </button>
+        </Button>
       </div>
 
       {/* Inline create form */}
@@ -99,14 +100,13 @@ export default function ArmazensPage() {
             </div>
             <div>
               <label className="label-mono text-muted-foreground mb-1.5 block">TIPO</label>
-              <select
+              <NativeSelect
                 value={tipo}
                 onChange={(e) => setTipo(e.target.value as ArmazemTipo)}
-                className="w-full bg-muted/50 border border-border text-foreground rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="galpao">Galpão</option>
                 <option value="patio">Pátio</option>
-              </select>
+              </NativeSelect>
             </div>
           </div>
           <div className="flex justify-end gap-2">
@@ -117,14 +117,13 @@ export default function ArmazensPage() {
             >
               Cancelar
             </button>
-            <button
+            <Button
               type="button"
               onClick={handleCreate}
               disabled={createMut.isPending}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {createMut.isPending ? "Criando..." : "Criar"}
-            </button>
+            </Button>
           </div>
         </div>
       )}

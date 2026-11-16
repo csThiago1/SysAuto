@@ -1,8 +1,10 @@
 "use client"
 
+import { NativeSelect } from "@/components/ui/native-select"
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { useSession } from "next-auth/react"
+import { podeAbrirOS } from "@/components/dock/nav-config"
 import { Search, FilterX, Plus, ChevronLeft, ChevronRight, X, SlidersHorizontal, Columns3 } from "lucide-react"
 import { SERVICE_ORDER_STATUS_CONFIG } from "@paddock/utils"
 
@@ -24,9 +26,7 @@ import {
 } from "@/components/ui/sheet"
 import { PendingDraftsBanner } from "@/components/offline/PendingDraftsBanner"
 import { ServiceOrderTable } from "./_components/ServiceOrderTable"
-import { NewOSDrawer } from "./_components/NewOSDrawer"
 
-const SELECT_CLS = "h-9 rounded-md border border-border bg-muted/50 px-3 py-1 text-sm text-foreground/70 shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
 const PAGE_SIZE = 20
 
 interface AdvancedFiltersProps {
@@ -60,7 +60,8 @@ function AdvancedFilters({
   setVehicleReview,
   stacked = false,
 }: AdvancedFiltersProps): React.ReactElement {
-  const cls = stacked ? cn(SELECT_CLS, "h-11 w-full") : SELECT_CLS
+  // Em linha cada filtro fica do tamanho do texto; empilhado (folha do celular), largura cheia.
+  const sel = stacked ? { className: "h-11" } : { wrapperClassName: "w-auto", className: "w-auto" }
   const field = (label: string, node: React.ReactNode) =>
     stacked ? (
       <label className="block space-y-1">
@@ -75,7 +76,7 @@ function AdvancedFilters({
     <>
       {field(
         "Status",
-        <select className={cls} value={status} onChange={(e) => setStatus(e.target.value)}>
+        <NativeSelect {...sel} value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="ALL">Todos os status</option>
           <option value="reception">Recepção</option>
           <option value="initial_survey">Vistoria Inicial</option>
@@ -94,53 +95,52 @@ function AdvancedFilters({
           <option value="ready">Pronto p/ Entrega</option>
           <option value="delivered">Entregue</option>
           <option value="cancelled">Cancelada</option>
-        </select>,
+        </NativeSelect>,
       )}
 
       {field(
         "Seguradora",
-        <select className={cls} value={insurerId} onChange={(e) => setInsurerId(e.target.value)}>
+        <NativeSelect {...sel} value={insurerId} onChange={(e) => setInsurerId(e.target.value)}>
           <option value="ALL">Qualquer Seguradora</option>
           {insurers?.map((insurer) => (
             <option key={insurer.id} value={insurer.id}>
               {insurer.display_name}
             </option>
           ))}
-        </select>,
+        </NativeSelect>,
       )}
 
       {field(
         "Tipo de cliente",
-        <select className={cls} value={customerType} onChange={(e) => setCustomerType(e.target.value)}>
+        <NativeSelect {...sel} value={customerType} onChange={(e) => setCustomerType(e.target.value)}>
           <option value="ALL">Qualquer Tipo</option>
           <option value="insurer">Seguradora</option>
           <option value="private">Particular</option>
-        </select>,
+        </NativeSelect>,
       )}
 
       {field(
         "Fechamento",
-        <select className={cls} value={closure} onChange={(e) => setClosure(e.target.value)}>
+        <NativeSelect {...sel} value={closure} onChange={(e) => setClosure(e.target.value)}>
           <option value="ALL">Qualquer fechamento</option>
           <option value="closed">Fechadas</option>
           <option value="pending">Pendentes</option>
-        </select>,
+        </NativeSelect>,
       )}
 
       {field(
         "Veículo",
-        <select className={cls} value={vehicleReview} onChange={(e) => setVehicleReview(e.target.value)}>
+        <NativeSelect {...sel} value={vehicleReview} onChange={(e) => setVehicleReview(e.target.value)}>
           <option value="ALL">Todos</option>
           <option value="true">A confirmar</option>
-        </select>,
+        </NativeSelect>,
       )}
     </>
   )
 }
 
 export default function ServiceOrdersPage() {
-  const searchParams = useSearchParams()
-  const [drawerOpen, setDrawerOpen] = useState(searchParams.get("nova") === "1")
+  const { data: session } = useSession()
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState<string>("ALL")
   const [customerType, setCustomerType] = useState<string>("ALL")
@@ -196,8 +196,6 @@ export default function ServiceOrdersPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6 px-0 py-3 md:p-6 max-w-7xl mx-auto">
-      <NewOSDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
-
       {/* Cabecalho proprio (nao o PageHeader compartilhado): esta tela tem
           contagem + alternador de visao, e a 390px o bloco de 3 linhas do
           PageHeader empurrava a primeira OS pra fora da tela. */}
@@ -222,22 +220,22 @@ export default function ServiceOrdersPage() {
               <Columns3 className="h-4 w-4 md:hidden" />
               <span className="hidden md:inline">Ver Kanban</span>
             </Link>
-            <button
-              type="button"
-              onClick={() => setDrawerOpen(true)}
-              className="flex min-h-[44px] items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 shadow-sm md:min-h-0 md:px-4 md:py-2"
-            >
-              <Plus className="h-4 w-4" />
-              Nova OS
-            </button>
+            {podeAbrirOS(session?.role) && (
+              <Button asChild className="min-h-[44px] md:min-h-0">
+                <Link href="/recepcao">
+                  <Plus className="h-4 w-4" />
+                  Nova OS
+                </Link>
+              </Button>
+            )}
         </div>
       </div>
 
       <PendingDraftsBanner />
 
       {/* Filter Bar */}
-      <div className="bg-muted/50 p-4 rounded-md border border-border shadow-sm flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
+      <div className="bg-muted/50 p-4 rounded-md border border-border shadow-sm flex flex-col 2xl:flex-row gap-3">
+        <div className="relative flex-1 2xl:min-w-[260px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             placeholder="Buscar OS (placa, chassi, nº, cliente)..."
@@ -289,7 +287,7 @@ export default function ServiceOrdersPage() {
           </button>
         </div>
 
-        <div className="hidden md:flex md:flex-row gap-3">
+        <div className="hidden md:flex md:flex-row md:flex-wrap gap-3">
           <button
             type="button"
             onClick={() => setExcludeClosed(!excludeClosed)}

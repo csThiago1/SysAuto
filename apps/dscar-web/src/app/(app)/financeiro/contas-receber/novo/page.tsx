@@ -5,6 +5,8 @@
  * Sprint 14
  */
 
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
 import React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -352,17 +354,16 @@ export default function NovoContaReceberPage(): React.ReactElement {
                 <DateField value={form.competence_date} onChange={(v) => setField("competence_date", v)} />
               </FormField>
               <FormField label="Origem" error={errors.origin}>
-                <select
+                <NativeSelect
                   value={form.origin}
                   onChange={(e) => setField("origin", e.target.value)}
-                  className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   {ORIGIN_OPTIONS.map(([value, label]) => (
                     <option key={value} value={value}>
                       {label}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </FormField>
             </div>
           </section>
@@ -455,17 +456,16 @@ export default function NovoContaReceberPage(): React.ReactElement {
             >
               Cancelar
             </Link>
-            <button
+            <Button
               type="submit"
               disabled={isSaving}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
               {isSaving
                 ? "Salvando..."
                 : numParcelas > 1
                   ? `Criar ${numParcelas} Parcelas`
                   : "Salvar Título"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

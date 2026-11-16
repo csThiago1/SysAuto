@@ -6,6 +6,7 @@ import { apiFetch } from "@/lib/api";
 import { Button, Input, Label, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { PixKeyInput } from "@/components/ui/masked-input";
 import { toast } from "sonner";
+import { NativeSelect } from "@/components/ui/native-select"
 
 type Categoria = "PARTS" | "SERVICE" | "MATERIAL" | "GENERAL";
 type PixKeyType = "" | "CPF" | "CNPJ" | "EMAIL" | "PHONE" | "RANDOM";
@@ -98,15 +99,14 @@ export function SupplierProfileTab({ personId }: { personId: string }) {
         <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
           <div>
             <Label>Categoria</Label>
-            <select
+            <NativeSelect
               value={form.category}
               onChange={(e) => handleChange("category", e.target.value as Categoria)}
-              className="w-full rounded border bg-background px-3 py-2"
             >
               {Object.entries(CATEGORIA_LABEL).map(([v, l]) => (
                 <option key={v} value={v}>{l}</option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
           <div>
             <Label>Prazo de pagamento padrão (dias)</Label>
@@ -142,10 +142,9 @@ export function SupplierProfileTab({ personId }: { personId: string }) {
           </div>
           <div>
             <Label>Tipo de chave PIX</Label>
-            <select
+            <NativeSelect
               value={form.pix_key_type}
               onChange={(e) => handleChange("pix_key_type", e.target.value as PixKeyType)}
-              className="w-full rounded border bg-background px-3 py-2"
             >
               <option value="">—</option>
               <option value="CPF">CPF</option>
@@ -153,7 +152,7 @@ export function SupplierProfileTab({ personId }: { personId: string }) {
               <option value="EMAIL">E-mail</option>
               <option value="PHONE">Telefone</option>
               <option value="RANDOM">Aleatória</option>
-            </select>
+            </NativeSelect>
           </div>
           <div className="col-span-2">
             <Label>Chave PIX</Label>

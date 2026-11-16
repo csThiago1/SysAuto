@@ -8,6 +8,7 @@
  * Envia campos em português conforme ManualNfseInputSerializer.
  */
 
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, useFieldArray, Controller } from "react-hook-form"
@@ -272,14 +273,14 @@ function EmitirNfseManualPageInner() {
             </div>
             <div>
               <Label className="text-xs text-foreground/60">Código LC 116</Label>
-              <select
-                className="mt-1 w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground"
+              <NativeSelect
+                wrapperClassName="mt-1"
                 {...form.register("codigo_servico_lc116")}
               >
                 <option value="14.12">14.12 — Funilaria, lanternagem, manutenção veicular</option>
                 <option value="14.01">14.01 — Lubrificação, revisão, conserto geral</option>
                 <option value="14.05">14.05 — Restauração, acabamento</option>
-              </select>
+              </NativeSelect>
             </div>
           </div>
 
@@ -428,7 +429,6 @@ function EmitirNfseManualPageInner() {
           <Button
             type="submit"
             disabled={emitMutation.isPending}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {emitMutation.isPending ? (
               <>
